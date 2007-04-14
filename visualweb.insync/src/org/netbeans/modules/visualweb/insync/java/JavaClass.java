@@ -59,6 +59,11 @@ public class JavaClass {
     //JavaUnit javaUnit;    //To obtain FileObject/JavaSource
     private FileObject fObj;        //Temporary till we plug this into insync
     private String name;
+    private enum MethodKind {
+        NORMAL,
+        DELEGATOR,
+        EVENT
+    }
     
     /** Creates a new instance of TypeElementAdapter */
     public JavaClass(TypeElement element, FileObject fObj) {
@@ -282,7 +287,7 @@ public class JavaClass {
         }, fObj);
     }
     
-    public void renamePropertyBindingExpression(WorkingCopy wc, String name, String newName) {
+    private void renamePropertyBindingExpression(WorkingCopy wc, String name, String newName) {
         String oldLiteral = "#{" + getShortName() + "." + name + "}"; //NOI18N
         String newLiteral = "#{" + getShortName() + "." + newName + "}"; //NOI18N
         new Refactor.LiteralRenamer(wc, oldLiteral, newLiteral).scan(wc.getCompilationUnit(), null);
@@ -291,11 +296,11 @@ public class JavaClass {
     /*
      *  Internal method to add a method, returns element handle which can be cached by the caller
      */ 
-    private Method addMethod(final ContextMethod cm, final String retType, final boolean delegator) {
+    private Method addMethod(final ContextMethod cm, final String retType, final MethodKind kind) {
         Method method = null;
         method = (Method)WriteTaskWrapper.execute( new WriteTaskWrapper.Write() {
             public Object run(WorkingCopy wc) {
-                Method m = getMethod(wc, cm.getName(), cm.getParameterTypes(), delegator);
+                Method m = getMethod(wc, cm.getName(), cm.getParameterTypes(), kind);
                 if(m == null) {
                     TreeMaker make = wc.getTreeMaker();
                     TypeElement typeElement = typeElementHandle.resolve(wc);
@@ -311,28 +316,32 @@ public class JavaClass {
         //If the method is newly added, write task should be completed first before
         //we access the method
         if(method == null) {
-            method = getMethod(cm.getName(), cm.getParameterTypes(), delegator);
+            method = getMethod(cm.getName(), cm.getParameterTypes(), kind);
         }
         return method;
     }
     
-   public Method addMethod(ContextMethod cm) {
+    public Method addMethod(ContextMethod cm) {
         String retTypeName = null;
         if(cm.getReturnType() != null) {
             retTypeName = cm.getReturnType().getCanonicalName();
         }
-        return addMethod(cm, retTypeName, false);
+        return addMethod(cm, retTypeName, MethodKind.NORMAL);
     }
     
-
-   public Method addMethod(MethodInfo mInfo) {
-       return addMethod(mInfo, mInfo.getReturnTypeName(), false);
-   }
-   
-   public DelegatorMethod addDelegatorMethod(MethodInfo mInfo) {
-       return (DelegatorMethod)addMethod(mInfo, mInfo.getReturnTypeName(), true);
-   }
     
+    public Method addMethod(MethodInfo mInfo) {
+        return addMethod(mInfo, mInfo.getReturnTypeName(), MethodKind.NORMAL);
+    }
+    
+    public DelegatorMethod addDelegatorMethod(MethodInfo mInfo) {
+        return (DelegatorMethod)addMethod(mInfo, mInfo.getReturnTypeName(), MethodKind.DELEGATOR);
+    }
+    
+    public EventMethod addEventMethod(MethodInfo mInfo) {
+        return (EventMethod)addMethod(mInfo, mInfo.getReturnTypeName(), MethodKind.EVENT);
+    }
+
     /*
      * Removes a method corresponding to passed in element handle
      */     
@@ -372,7 +381,7 @@ public class JavaClass {
     public Method getMethod(final String name, final Class[] params) {
         return (Method)ReadTaskWrapper.execute( new ReadTaskWrapper.Read() {
             public Object run(CompilationInfo cinfo) {
-                return getMethod(cinfo, name, params, false);
+                return getMethod(cinfo, name, params, MethodKind.NORMAL);
             }
         }, fObj);
     }
@@ -380,13 +389,35 @@ public class JavaClass {
     /*
      * Returns a method corresponding to a method by given name and parameter types
      */     
-    public Method getMethod(final String name, final Class[] params, final boolean delegator) {
+    public Method getMethod(final String name, final Class[] params, final MethodKind kind) {
         return (Method)ReadTaskWrapper.execute( new ReadTaskWrapper.Read() {
             public Object run(CompilationInfo cinfo) {
-                return getMethod(cinfo, name, params, delegator);
+                return getMethod(cinfo, name, params, kind);
             }
         }, fObj);
     }
+    
+    /*
+     * Returns a event method
+     */     
+    public EventMethod getEventMethod(final String name, final Class[] params) {
+        return (EventMethod)ReadTaskWrapper.execute( new ReadTaskWrapper.Read() {
+            public Object run(CompilationInfo cinfo) {
+                return getMethod(cinfo, name, params, MethodKind.EVENT);
+            }
+        }, fObj);
+    }
+    
+    /*
+     * Returns a delegator method
+     */     
+    public DelegatorMethod getDelegatorMethod(final String name, final Class[] params) {
+        return (DelegatorMethod)ReadTaskWrapper.execute( new ReadTaskWrapper.Read() {
+            public Object run(CompilationInfo cinfo) {
+                return getMethod(cinfo, name, params, MethodKind.DELEGATOR);
+            }
+        }, fObj);
+    }        
     
     /*
      * Returns a public method corresponding to a method by given name and parameter types
@@ -408,14 +439,17 @@ public class JavaClass {
      * Returns a method corresponding to a method by given name and parameter types
      */     
     private Method getMethod(CompilationInfo cinfo, String name, Class[] params, 
-            boolean delegator) {
+            MethodKind kind) {
         ExecutableElement elem = getMethod(cinfo, name, params);
         if(elem != null) {
-            if(!delegator) {
-                return new Method(elem, this);
-            }else {
-                return new DelegatorMethod(elem, this);
-            }          
+            switch(kind) {
+                case NORMAL :
+                    return new Method(elem, this);
+                case DELEGATOR:
+                    return new DelegatorMethod(elem, this);
+                case EVENT:
+                    return new EventMethod(elem, this);
+            }
         }
         return null;
     }    

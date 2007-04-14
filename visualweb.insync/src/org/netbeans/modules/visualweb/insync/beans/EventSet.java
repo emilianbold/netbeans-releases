@@ -137,8 +137,8 @@ public class EventSet extends BeansNode {
     protected void bindEvents() {
         MethodDescriptor[] lmds = descriptor.getListenerMethodDescriptors();
         for (int i = 0; i < lmds.length; i++) {
-            DelegatorMethod m = (DelegatorMethod)adapterClass.getMethod(lmds[i].getName(), 
-                    lmds[i].getMethod().getParameterTypes(), true);
+            DelegatorMethod m = adapterClass.getDelegatorMethod(lmds[i].getName(), 
+                    lmds[i].getMethod().getParameterTypes());
             if(m != null ) {
                 Event e = newBoundEvent(lmds[i], m);
                 if (e != null)
@@ -175,8 +175,8 @@ public class EventSet extends BeansNode {
     }
 
     protected DelegatorMethod getDelegatorMethod(MethodDescriptor mdescr) {
-        DelegatorMethod delegate = (DelegatorMethod)adapterClass.getMethod(mdescr.getMethod().getName(), 
-                mdescr.getMethod().getParameterTypes(), true);
+        DelegatorMethod delegate = adapterClass.getDelegatorMethod(mdescr.getMethod().getName(), 
+                mdescr.getMethod().getParameterTypes());
         if (delegate == null)
             delegate = stubDelegatorMethod(mdescr);
         return delegate;

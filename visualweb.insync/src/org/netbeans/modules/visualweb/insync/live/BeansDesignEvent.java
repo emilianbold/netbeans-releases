@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.visualweb.insync.live;
 
-import java.util.List;
 
 import org.openide.util.NbBundle;
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
@@ -27,6 +26,7 @@ import com.sun.rave.designtime.EventDescriptor;
 import org.netbeans.modules.visualweb.insync.UndoEvent;
 import org.netbeans.modules.visualweb.insync.beans.Event;
 import org.netbeans.modules.visualweb.insync.beans.EventSet;
+import org.netbeans.modules.visualweb.insync.java.EventMethod;
 
 /**
  * DesignEvent implementation based on delegation to beans.Event and subclasses, using Java and/or
@@ -175,76 +175,30 @@ public class BeansDesignEvent extends SourceDesignEvent {
 
 
     /**
-     * @return
+     * @return the string literal if the last return statement of handler
+     * is a string return statement;
      */
-    protected Object/*ReturnTree*/ getHandlerMethodReturnStatement() {
-/*//NB6.0
-        if (event != null && event.getHandlerMethod() != null) {
-            StatementBlock stmtBlk = event.getHandlerMethod().getBody();
-            List stmts = stmtBlk.getStatements();
-            if(stmts.size() > 0) {
-                Statement s = (Statement)stmts.get(stmts.size()-1);
-                if(s instanceof ReturnStatement)
-                    return (ReturnStatement)s;
-            }
-        }
-        return null;
-//*/
-        return null;
-    }
-
-    /**
-     * @return
-     */
-    public Object getHandlerMethodReturn() {
-/*//NB6.0
-        ReturnStatement ret = getHandlerMethodReturnStatement();
-        if (ret != null) {
-            Expression expr = ret.getExpression();
-            if(expr instanceof StringLiteral)
-                return ((StringLiteral)expr).getValue();
-        }
-        return null;
-//*/    return null;
+    public String getHandlerMethodReturn() {
+        return (event != null && event.getHandlerMethod() != null)
+            ? event.getHandlerMethod().getMethodReturn() : null;
     }
 
     
-    /*
+    /**
+     * Update the last null return statement if the link is created for first
+     * time, else all the matching string return statements are updated
      */
     public void updateReturnStrings(String oldStr, String newStr) {    
-/*//NB6.0
         if(event != null) {
-            Method method = event.getHandlerMethod();
+            EventMethod method = event.getHandlerMethod();
             if(method != null) {
-                JMIUtils.beginTrans(true);
-                boolean rollback = true;
-                try {
-                    //oldStr will be null when the link is created first time
-                    if(oldStr == null) { //NOI18N
-                        StatementBlock stmtBlk = method.getBody();
-                        List stmts = stmtBlk.getStatements();
-                        if(stmts.size() > 0) {
-                            Statement s = (Statement)stmts.get(stmts.size()-1);
-                            if(s instanceof ReturnStatement) {
-                                Expression expr = ((ReturnStatement)s).getExpression();
-                                if(expr instanceof NullLiteral) {
-                                    JavaModelPackage jmodel = (JavaModelPackage) method.refImmediatePackage();
-                                    StringLiteral strLiteral = jmodel.getStringLiteral().createStringLiteral(newStr);
-                                    ((ReturnStatement)s).setExpression(strLiteral);
-                                }
-                            }
-                        }
-                    }else {
-                        JMIRefactor.ReturnStatementLiteralRenamer renamer =
-                                new JMIRefactor.ReturnStatementLiteralRenamer(oldStr, newStr);
-                        renamer.apply(method);
-                    }
-                    rollback = false;
-                }finally {
-                    JMIUtils.endTrans(rollback);
+                //oldStr will be null when the link is created first time
+                if(oldStr == null) { //NOI18N
+                    method.updateLastReturnStatement(newStr);
+                }else {
+                    method.updateReturnStrings(oldStr, newStr);
                 }
             }
         }
-//*/
     }
 }

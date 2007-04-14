@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.visualweb.insync.beans;
 
+import org.netbeans.modules.visualweb.insync.java.EventMethod;
 import org.netbeans.modules.visualweb.insync.java.JavaClass;
 import org.netbeans.modules.visualweb.insync.java.Method;
 import org.netbeans.modules.visualweb.insync.java.Statement;
@@ -782,7 +783,7 @@ public class BeansUnit implements Unit {
      * @param name  The name of the metod to find or create.
      * @return The existing or newly created method.
      */
-    public Method ensureEventMethod(MethodDescriptor md, String name, String defaultBody, 
+    public EventMethod ensureEventMethod(MethodDescriptor md, String name, String defaultBody, 
              String[] parameterNames, String[] requiredImports) {
         return getBeanStructureScanner().ensureEventMethod(md, name, defaultBody, 
                 parameterNames, requiredImports);

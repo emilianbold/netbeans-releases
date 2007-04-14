@@ -19,12 +19,12 @@
 package org.netbeans.modules.visualweb.insync.beans;
 
 import org.netbeans.modules.visualweb.insync.java.DelegatorMethod;
+import org.netbeans.modules.visualweb.insync.java.EventMethod;
 import org.netbeans.modules.visualweb.insync.java.JavaClass;
 import java.beans.MethodDescriptor;
 
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
 import java.util.List;
-import org.netbeans.modules.visualweb.insync.java.Method;
 
 /**
  * Representation of a wiring for a single event handler within an EventSet's listener adapter in
@@ -45,7 +45,7 @@ public class Event extends BeansNode {
 
     // Java source-based event fields
     protected DelegatorMethod delegator;
-    protected Method handler;
+    protected EventMethod handler;
 
     //--------------------------------------------------------------------------------- Construction
 
@@ -71,7 +71,7 @@ public class Event extends BeansNode {
      * @param handler  Our handler method that is populated by the user.
      */
     private Event(EventSet set, MethodDescriptor descriptor,
-            DelegatorMethod delegator, Object/*MethodInvocationTree*/ call, Method handler) {
+            DelegatorMethod delegator, Object/*MethodInvocationTree*/ call, EventMethod handler) {
         this(set, descriptor);
         this.delegator = delegator;
         this.handler = handler;
@@ -96,7 +96,7 @@ public class Event extends BeansNode {
     static Event newBoundInstance(EventSet set, MethodDescriptor md, DelegatorMethod method) {
         String mname = method.getDelegateName();
         if(mname != null) {
-            Method handler = set.getUnit().getThisClass().getMethod(mname, 
+            EventMethod handler = set.getUnit().getThisClass().getEventMethod(mname, 
                     md.getMethod().getParameterTypes());
             return new Event(set, md, method, null, handler);
         }
@@ -246,7 +246,7 @@ public class Event extends BeansNode {
      * 
      * @return The handler method itself.
      */
-    public Method getHandlerMethod() {
+    public EventMethod getHandlerMethod() {
         return handler;
     }
 

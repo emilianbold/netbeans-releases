@@ -20,6 +20,7 @@ package org.netbeans.modules.visualweb.insync.beans;
 
 import java.util.List;
 import org.netbeans.modules.visualweb.insync.UndoEvent;
+import org.netbeans.modules.visualweb.insync.java.EventMethod;
 import org.netbeans.modules.visualweb.insync.java.JavaClass;
 import org.netbeans.modules.visualweb.insync.java.JavaUnit;
 import java.beans.MethodDescriptor;
@@ -109,11 +110,11 @@ public class BeanStructureScanner {
      * @param requiredImports An array of classes to be imported, or null to import nothing
      * @return The existing or newly created method.
      */
-    public  Method ensureEventMethod(MethodDescriptor md, String name, 
+    public  EventMethod ensureEventMethod(MethodDescriptor md, String name, 
                                     String defaultBody, String[] parameterNames,
                                     String[] requiredImports) {
         Class[] pts = md.getMethod().getParameterTypes();
-        Method method = beansUnit.getThisClass().getPublicMethod(name, pts);
+        EventMethod method = beansUnit.getThisClass().getEventMethod(name, pts);
         if( method != null) {
             return method;
         }
@@ -140,7 +141,7 @@ public class BeanStructureScanner {
                     new org.netbeans.modules.visualweb.insync.java.MethodInfo(name, retType, Modifier.PUBLIC,
                     pns, pts, body, null);
             
-            return beansUnit.getThisClass().addMethod(info);
+            return beansUnit.getThisClass().addEventMethod(info);
 
         }finally {
             if(event != null) {

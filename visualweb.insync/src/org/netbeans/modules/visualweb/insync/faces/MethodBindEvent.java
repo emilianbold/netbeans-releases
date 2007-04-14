@@ -43,7 +43,7 @@ public class MethodBindEvent extends Event {
         // now find our handler as a method of host bean with the right param types
         String hname = getHandlerName();
         if(hname != null)
-            handler = set.getUnit().getThisClass().getMethod(
+            handler = set.getUnit().getThisClass().getEventMethod(
                     hname, md.getMethod().getParameterTypes());
         assert Trace.trace("insync.faces", "FE new bound MethodBindEvent: " + this);
     }

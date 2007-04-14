@@ -209,7 +209,7 @@ public class FacesJavaFileRenameRefactoringPlugin extends FacesRefactoringPlugin
                                 final String finalRefactoringSourceFQN = refactoringSourceFQN;
                                 final JavaClass javaClass = javaUnit.getJavaClass();                                
                                 if (javaClass != null) {
-                                    Method method = javaClass.getMethod("get" + oldBeanName, new Class[0], false);
+                                    Method method = javaClass.getMethod("get" + oldBeanName, new Class[0]);
                                     if (method != null) {
                                         final ElementHandle<ExecutableElement> elementHandle = method.getElementHandle();
                                         if (elementHandle != null) {

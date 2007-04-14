@@ -26,6 +26,7 @@ import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -112,6 +113,38 @@ public class Refactor {
             }
         }
     }
+   
+   /**
+    * Visitor class to update all return statements returning the old string literal 
+    * with the new string literal
+    * */
+   public static class ReturnStatementLiteralRenamer extends TreePathScanner<Tree, Void>{
+        private WorkingCopy workingCopy;
+        private String newName, oldName;
+        
+        public ReturnStatementLiteralRenamer(WorkingCopy workingCopy, String oldName, String newName) {
+            this.oldName = oldName;
+            this.newName = newName;
+            this.workingCopy = workingCopy;
+        }
+        
+        @Override
+        public Tree visitReturn(ReturnTree tree, Void v) {
+            renameIfMatch(tree);
+            return super.visitReturn(tree, v);
+        }
+
+        private void renameIfMatch(ReturnTree tree) {
+            ExpressionTree expr = tree.getExpression();
+            if(expr.getKind() == Tree.Kind.STRING_LITERAL) {
+                LiteralTree literal = (LiteralTree)expr;
+                if(oldName.equals(literal.getValue())) {
+                    Tree nju = workingCopy.getTreeMaker().Literal(newName);
+                    workingCopy.rewrite(tree, nju);
+                }           
+            }
+        }
+    }   
    
     public static class ElementsRenamer extends TreePathScanner<Tree, Void>{
         private final WorkingCopy workingCopy;
