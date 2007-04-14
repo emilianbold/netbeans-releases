@@ -24,12 +24,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.WeakHashMap;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -144,6 +147,10 @@ public final class DocumentModel {
     private static final int ELEMENT_ATTRS_CHANGED = 4;
     
     private static Map<Document, Object> locks = new WeakHashMap<Document, Object>();
+
+    final Map<String,String> elementsNamesCache = new WeakHashMap<String,String>();
+    final Map<String,String> elementsTypesCache = new WeakHashMap<String,String>();
+    
     
     DocumentModel(Document doc, DocumentModelProvider provider) throws DocumentModelException {
         this.doc = (BaseDocument)doc; //type changed in DocumentModel.getDocumentModel(document);

@@ -71,14 +71,31 @@ public final class DocumentElement {
     DocumentElementListener deListener = null;
     HashSet<DocumentElementListener> deListeners = null;
     
-    DocumentElement(String name, String type, Map attrsMap,
+    DocumentElement(String name, String type, Map<String,String> attrsMap,
             int startOffset, int endOffset, DocumentModel model) throws BadLocationException {
-        this.name = name;
+
+        //per DocumentModel name and type fields caching
+        if(!model.elementsNamesCache.containsKey(name)) {
+            model.elementsNamesCache.put(name, name);
+        }
+        this.name = model.elementsNamesCache.get(name);
+        
+        if(!model.elementsTypesCache.containsKey(type)) {
+            model.elementsTypesCache.put(type, type);
+        }
+        this.type = model.elementsTypesCache.get(type);
+
         this.model = model;
         this.startSectionLength = startSectionLength;
         this.endSectionLength = endSectionLength;
-        this.type = type;
-        this.attributes = new Attributes(this, attrsMap);
+        
+        //lazy attributes initialization when attrs are empty
+        if(!attrsMap.isEmpty()) {
+            this.attributes = new Attributes(this, attrsMap);
+        } else {
+            this.attributes = null;
+        }
+        
         this.isRootElement = false;
         
         //create positions for start and end offsets
@@ -92,7 +109,12 @@ public final class DocumentElement {
      * @return the attributes for the element
      */
     public AttributeSet getAttributes() {
-        return this.attributes;
+        if(attributes == null) {
+            //no attributes
+            Map<String, String> empty_map = Collections.emptyMap();
+            attributes = new Attributes(this, empty_map);
+        } 
+        return attributes;
     }
     
     /**
@@ -407,7 +429,7 @@ public final class DocumentElement {
         private Map attrs;
         private DocumentElement de;
         
-        Attributes(DocumentElement element, Map/*<String>*/ m) {
+        Attributes(DocumentElement element, Map<String,String> m) {
             de = element;
             attrs = m;
         }
