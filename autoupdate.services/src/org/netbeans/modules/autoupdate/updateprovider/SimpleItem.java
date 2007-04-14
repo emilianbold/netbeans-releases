@@ -76,12 +76,17 @@ public abstract class SimpleItem {
         public UpdateItem toUpdateItem(Map<String, String> licenses) {
             assert declaratingNode != null : "declaratingNode must be declared";
             String dependencies = getAttribute (declaratingNode, MODULE_DEPENDENCIES);
-            return UpdateItem.createFeature (
+            UpdateItem res = UpdateItem.createFeature (
                     getAttribute (declaratingNode, CODE_NAME_BASE),
                     getAttribute (declaratingNode, SPECIFICATION_VERSION),
                     readDependencies (dependencies),
                     getAttribute (declaratingNode, DESCRIPTION),
                     getAttribute (declaratingNode, DISPLAY_NAME));
+            
+            // clean up declaratingNode
+            declaratingNode = null;
+            
+            return res;
         }
         
         public String getId () {
@@ -102,6 +107,9 @@ public abstract class SimpleItem {
         public static final String IS_GLOBAL = "global";
         public static final String TARGET_CLUSTER = "targetcluster";
         public static final String ATTR_SPECIFICATION_VERSION = "OpenIDE-Module-Specification-Version";
+        
+        private String moduleCodeName;
+        private String specVersion;
         
         public Module (Node n) {
             super (n);
@@ -150,7 +158,7 @@ public abstract class SimpleItem {
         public UpdateItem toUpdateItem (Map<String, String> licenses) {
             assert declaratingNode != null : "declaratingNode must be declared";
             
-            String moduleCodeName = getModuleCodeName (declaratingNode);
+            moduleCodeName = getModuleCodeName (declaratingNode);
             String distribution = getAttribute (declaratingNode, DISTRIBUTION);
             if (declaratingNode.getBaseURI() != null || distribution == null || distribution.length() == 0) {
                 String baseURI = declaratingNode.getBaseURI();
@@ -201,14 +209,14 @@ public abstract class SimpleItem {
             Boolean needsRestart = needsrestart == null || needsrestart.trim ().length () == 0 ? null : Boolean.valueOf (needsrestart);
             Boolean isGlobal = global == null || global.trim ().length () == 0 ? null : Boolean.valueOf (global);
             
-            String specVersion = getSpecificationVersion (declaratingNode);
+            specVersion = getSpecificationVersion (declaratingNode);
             Manifest mf = getManifest (declaratingNode);
             
             String licName = getAttribute (declaratingNode, LICENSE);
             String licContent = licenses.get (licName);
             UpdateLicense lic = UpdateLicense.createUpdateLicense (licName, licContent);
             
-            return UpdateItem.createModule (
+            UpdateItem res = UpdateItem.createModule (
                     moduleCodeName,
                     specVersion,
                     distributionURL,
@@ -220,10 +228,15 @@ public abstract class SimpleItem {
                     isGlobal,
                     targetcluster,
                     lic);
+            
+            // clean up declaratingNode
+            declaratingNode = null;
+            
+            return res;
         }
 
         public String getId() {
-            return getModuleCodeName (declaratingNode) + '_' + getSpecificationVersion (declaratingNode);
+            return moduleCodeName + '_' + specVersion;
         }
 
     }
@@ -247,6 +260,9 @@ public abstract class SimpleItem {
         public static final String LOCALIZED_MODULE_DESCRIPTION = "OpenIDE-Module-Long-Description";
         
         private String specificationVersion;
+        private String moduleCodeName;
+        private String locale;
+        private String branding;
 
         public Localization (Node n) {
             super (n);
@@ -255,7 +271,7 @@ public abstract class SimpleItem {
         public UpdateItem toUpdateItem(Map<String, String> licenses) {
             assert declaratingNode != null : "declaratingNode must be declared";
             
-            String moduleCodeName = getAttribute (declaratingNode, CODE_NAME_BASE);
+            moduleCodeName = getAttribute (declaratingNode, CODE_NAME_BASE);
             String distribution = getAttribute (declaratingNode, DISTRIBUTION);
             String needsrestart = getAttribute (declaratingNode, NEEDS_RESTART);
             String global = getAttribute (declaratingNode, IS_GLOBAL);
@@ -277,8 +293,8 @@ public abstract class SimpleItem {
             
             Node n = l.item (0);
 
-            String locale = getAttribute (n, LOCALE);
-            String branding = getAttribute (n, BRANDING);
+            locale = getAttribute (n, LOCALE);
+            branding = getAttribute (n, BRANDING);
             
             String localizationCodeName = moduleCodeName + '_' + locale + '_' + branding;
             specificationVersion = "1.0"; // XXX issue 90185
@@ -303,14 +319,6 @@ public abstract class SimpleItem {
         }
         
         public String getId() {
-            String moduleCodeName = getAttribute (declaratingNode, CODE_NAME_BASE);
-            NodeList l = ((Element) declaratingNode).getElementsByTagName (AutoupdateCatalogParser.TAG_ELEMENT_L10N);
-            assert l != null && l.getLength() == 1 : "TAG_MANIFEST in module " + moduleCodeName + " should contains one and only one list, but was " + l.getLength ();
-            assert Node.ELEMENT_NODE == l.item (0).getNodeType ();
-            
-            Node n = l.item (0);
-            String locale = getAttribute (n, LOCALE);
-            String branding = getAttribute (n, BRANDING);
             return moduleCodeName + '_' + specificationVersion + '_'+ locale + '_' + branding;
         }
 
@@ -319,19 +327,13 @@ public abstract class SimpleItem {
     public static class License extends SimpleItem {
         public static final String LICENSE_ID = "name";
         
+        private String licenceId;
+        private String licenseContent;
+        
         public License (Node n) {
             super (n);
-        }
-        
-        public String getLicenseId () {
             assert declaratingNode != null : "declaratingNode must be declared";
-            
-            return getAttribute (declaratingNode, LICENSE_ID);
-        }
-    
-        public String getLicenseContent () {
-            StringBuffer sb = new StringBuffer ();
-
+            licenceId = getAttribute (declaratingNode, LICENSE_ID);
             NodeList innerList = declaratingNode.getChildNodes ();
             assert innerList != null && innerList.getLength() == 1 : "Lincese " + getAttribute (declaratingNode, LICENSE_ID) + " should contain only once data.";
 
@@ -344,7 +346,17 @@ public abstract class SimpleItem {
             }
             return sb.toString();*/
             
-            return innerList.item (0).getNodeValue ();
+            licenseContent = innerList.item (0).getNodeValue ();
+        }
+        
+        public String getLicenseId () {
+            assert licenceId != null : "licenceId cannot be null";
+            return licenceId;
+        }
+    
+        public String getLicenseContent () {
+            assert licenseContent != null : "licenseContent for " + licenceId + " cannot be null";
+            return licenseContent;
         }
     
         public UpdateItem toUpdateItem(Map<String, String> licenses) {
