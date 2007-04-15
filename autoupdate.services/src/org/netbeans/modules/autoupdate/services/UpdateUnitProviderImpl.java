@@ -38,7 +38,10 @@ import java.util.prefs.Preferences;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalog;
+import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory;
 import org.netbeans.modules.autoupdate.updateprovider.LocalNBMsProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -173,16 +176,36 @@ public final class UpdateUnitProviderImpl {
     }
     
     public static List<UpdateUnitProvider> getUpdateUnitProviders (boolean onlyEnabled) {
-        try {
-            Lookup.getDefault ().lookup (
-                    new Lookup.Template (
-                        Class.forName ("org.netbeans.modules.autoupdate.AutoupdateType",
-                        false,
-                        Thread.currentThread ().getContextClassLoader ())
-                    )).allInstances ();
-        } catch (ClassNotFoundException x) {
-            // here we can ignore this
-            err.log (Level.FINEST, x.getMessage (), x);
+        
+        // try to load Update Center from old autoupdate for backward compatibility
+        FileObject auTypeFolder = Repository.getDefault ().getDefaultFileSystem ().findResource ("Services/AutoupdateType");
+        if (auTypeFolder != null) {
+            FileObject [] auTypes = auTypeFolder.getChildren ();
+            for (int i = 0; i < auTypes.length; i++) {
+                // check first if already exist
+                try {
+                if (! getPreferences ().nodeExists (auTypes [i].getName ())) {
+                    try {
+                        String bundle = (String) auTypes [i].getAttribute ("SystemFileSystem.localizingBundle");
+                        if (bundle != null) {
+                            UpdateProvider p = AutoupdateCatalogFactory.createUpdateProvider (auTypes [i]);
+                            assert p != null : "UpdateProvider found for " + auTypes [i];
+                            getPreferences ().node (auTypes [i].getName ()).putBoolean ("loaded", Boolean.TRUE);
+                            err.log (Level.FINEST,
+                                    auTypes [i] + " loaded.");
+                        } else {
+                            err.log (Level.INFO,
+                                    auTypes [i] + " cannot be loaded because doesn't contain SystemFileSystem.localizingBundle.");
+                            getPreferences ().node (auTypes [i].getName ()).putBoolean ("loaded", Boolean.FALSE);
+                        }
+                    } catch (Exception x) {
+                        Exceptions.printStackTrace (x);
+                    }
+                }
+                } catch (BackingStoreException bse) {
+                    err.log (Level.INFO, bse.getMessage() + " while loading " + auTypes [i], bse);
+                }
+            }
         }
         Lookup.Result<UpdateProvider> result = Lookup.getDefault ().lookup (new Lookup.Template<UpdateProvider> (UpdateProvider.class));
 //        result.addLookupListener (new LookupListener () {
