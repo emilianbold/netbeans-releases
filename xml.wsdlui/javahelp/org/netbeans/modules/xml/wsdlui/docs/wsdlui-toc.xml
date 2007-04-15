@@ -28,9 +28,9 @@
 		</tocitem>
 		<tocitem text="Partner View">
 			<tocitem text="About the Partner View" target="wsdlui_partner" />
+			<tocitem text="Strategies for Defining the Abstract Elements" target="wsdlui_partner_top_bottom" />
 			<tocitem text="Partner View Layout" target="wsdlui_partner_layout" />
 			<tocitem text="Navigating in the Partner View" target="wsdlui_partner_nav" />
-			<tocitem text="Top-Down and Bottom-Up Approaches" target="wsdlui_partner_top_bottom" />
 			<tocitem text="Partner Link Types">
 				<tocitem text="Creating Partner Link Types Using the Partner View" target="wsdlui_partner_types" />
 				<tocitem text="Editing Partner Link Types Using the Partner View" target="wsdlui_partner_types_editing" />

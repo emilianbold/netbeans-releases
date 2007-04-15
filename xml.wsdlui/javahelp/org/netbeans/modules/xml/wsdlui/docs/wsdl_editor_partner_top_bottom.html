@@ -7,32 +7,35 @@
 <html>
 
 <head>
-<title>Understanding the Top-Down and Bottom-Up Approaches</title>
+<title>Strategies for Defining the Abstract Elements</title>
 <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 
 <body>
 
-<h2>Understanding the Top-Down and Bottom-Up Approaches</h2>
+<h2>Strategies for Defining the Abstract Elements</h2>
 
 <p><small><a href="#seealso">See Also</a></small></p>
 
-<p>The Partner view of the WSDL Editor supports the top-down and bottom-up approaches to creating a WSDL file.</p>
+<p>In the Partner view of the WSDL Editor, 
+you can define the abstract elements by starting with the partner interactions 
+or by starting with the messages that are exchanged by the partners.</p>
 
-<p>The top-down approach consists of the following steps:</p>
+<p><b>To define the abstract elements by starting with the partner interactions:</b></p>
 
 <ol>
   <li>Create a partner link type. 
     The partner link type contains a default role, which appears on the right. 
     If you want to define a peer-to-peer interaction, then you must add a second role on the left.</li>
+  <li>Choose or create the port types and operations.</li>
   <li>Create the messages that will be sent from one partner to another.</li>
   <li>Assign the messages to the partner link type's operations.</li>
-  <li>Specify the data types for the messages. 
+  <li>Specify the data types for the message parts. 
     Note that you can create or import an XML schema by using the Navigator window, 
     and then drag the schema elements or types into the messages.</li>
 </ol>
 
-<p>The bottom-up approach consists of the following steps:</p>
+<p><b>To define the abstract elements by starting with the messages:</b></p>
 
 <ol>
   <li>Create or import an XML schema by using the Navigator window.</li>
@@ -41,12 +44,9 @@
   <li>Create a partner link type. 
     The partner link type contains a default role, which appears on the right. 
     If you want to define a peer-to-peer interaction, then you must add a second role on the left.</li>
+  <li>Choose or create the port types and operations.</li>
   <li>Assign the messages to the partner link type's operations.</li>
 </ol>
-
-<p>If you are building a composite application, then you can use the 
-Composite Application Service Assembly (CASA) editor to configure the concrete bindings in the WSDL file. 
-This approach prevents the WSDL file from being tied to a particular binding.</p>
 
 <dl>
 <dt><a name="seealso">See Also</a></dt>
