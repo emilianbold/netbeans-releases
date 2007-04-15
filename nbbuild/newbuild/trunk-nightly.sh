@@ -17,7 +17,7 @@ init()
    export ANT_OPTS="-Xmx512m"
    export JAVA_HOME=$JDK_HOME
 
-   DATESTAMP=`date -u +%Y%m%d%%H%M`
+   DATESTAMP=`date -u +%Y%m%d%H%M`
    BUILDNUM=trunk-nightly-$DATESTAMP
 
    if [ -z $CVS_STAMP ]; then
