@@ -64,7 +64,7 @@ public class DataObjectSizeTest extends NbTestCase {
         
         assertSize ("If we exclude all the static things, like loader and " +
             " reference queue and things we do not have control upon like file object" +
-            " we should get some reasonable size for the data object. ", 
+            " we should get some reasonable size for the data object. " + original, 
             java.util.Collections.singleton (original), 280, exclude
         );
     }

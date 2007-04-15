@@ -22,9 +22,11 @@ package org.openide.loaders;
 
 import java.awt.Dialog;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.JButton;
@@ -54,9 +56,9 @@ public class CreateFromTemplateHandlerTest extends NbTestCase {
     }
     
     protected void setUp() throws Exception {
-        Hand.acceptObject = null;
-        Hand.fileObject = null;
-        Hand.origObject = null;
+        Hand.acceptObject = new ArrayList<FileObject>();
+        Hand.fileObject = new ArrayList<FileObject>();
+        Hand.origObject = new ArrayList<FileObject>();
         Hand.name = null;
         Hand.parameters = null;
         
@@ -81,9 +83,9 @@ public class CreateFromTemplateHandlerTest extends NbTestCase {
         assertEquals("Created in right place", folder, n.getFolder());
         assertEquals("Created with right name", "complex.txt", n.getName());
         
-        assertEquals("The right source", fo, Hand.origObject);
-        assertEquals("The right source in query", fo, Hand.acceptObject);
-        assertEquals("The right destiny folder", folder.getPrimaryFile(), Hand.fileObject);
+        assertEquals("The right source", fo, Hand.origObject.get(0));
+        assertEquals("The right source in query", fo, Hand.acceptObject.get(0));
+        assertEquals("The right destiny folder", folder.getPrimaryFile(), Hand.fileObject.get(0));
         assertEquals("The right name", "complex", Hand.name);
         if (Hand.parameters.size() < 2) {
             fail("As least two: " + Hand.parameters + " but was " + Hand.parameters.size());
@@ -107,10 +109,49 @@ public class CreateFromTemplateHandlerTest extends NbTestCase {
         DataObject obj = doTemplateWizardCopiesItsPropertiesToMap("simpleObject.prima");
         assertEquals("The right loader", SimpleLoader.class, obj.getLoader().getClass());
     }
-    
-    private DataObject doTemplateWizardCopiesItsPropertiesToMap(String fileName) throws Exception {
+
+    public void testTemplateWizardCopiesItsPropertiesToMapForOverridenEntryOnMoreEntries() throws Exception {
         FileObject root = FileUtil.createMemoryFileSystem().getRoot();
-        FileObject fo = FileUtil.createData(root, fileName);
+        FileObject fo = FileUtil.createData(root, "simpleObject.java");
+        FileObject fo2 = FileUtil.createData(root, "simpleObject.form");
+        
+        DataObject obj = DataObject.find(fo);
+        
+        DataFolder folder = DataFolder.findFolder(FileUtil.createFolder(root, "target"));
+        
+        Map<String,String> parameters = Collections.singletonMap("type", "empty");
+        DataObject n = obj.createFromTemplate(folder, "complex", parameters);
+        
+        assertEquals("Created in right place", folder, n.getFolder());
+        assertEquals("Created with right name", "complex", n.getName());
+        
+        assertEquals("The right source1", fo, Hand.origObject.get(0));
+        assertEquals("The right source2", fo2, Hand.origObject.get(1));
+        assertEquals("The right source in query", fo, Hand.acceptObject.get(0));
+        assertEquals("The right source in query2", fo2, Hand.acceptObject.get(1));
+        assertEquals("The right destiny folder", folder.getPrimaryFile(), Hand.fileObject.get(0));
+        assertEquals("The right destiny folder", folder.getPrimaryFile(), Hand.fileObject.get(1));
+        assertEquals("The right name", "complex", Hand.name);
+        if (Hand.parameters.size() < 2) {
+            fail("As least two: " + Hand.parameters + " but was " + Hand.parameters.size());
+        }
+        assertEquals("empty", Hand.parameters.get("type"));
+        assertEquals("complex", Hand.parameters.get("name"));
+        try {
+            Hand.parameters.put("kuk", "buk");
+        } catch (UnsupportedOperationException ex) {
+            // ok
+            return;
+        }
+        fail("Modifications shall be unsupported");
+    }
+    
+    private DataObject doTemplateWizardCopiesItsPropertiesToMap(String... fileName) throws Exception {
+        FileObject root = FileUtil.createMemoryFileSystem().getRoot();
+        FileObject fo = null;
+        for (String fn : fileName) {
+            fo = FileUtil.createData(root, fn);
+        }
         
         DataObject obj = DataObject.find(fo);
         
@@ -125,11 +166,11 @@ public class CreateFromTemplateHandlerTest extends NbTestCase {
         DataObject n = created.iterator().next();
         
         assertEquals("Created in right place", folder, n.getFolder());
-        assertEquals("Created with right name", fileName, n.getName());
+        assertEquals("Created with right name", fileName[0], n.getName());
         
-        assertEquals("The right source", fo, Hand.origObject);
-        assertEquals("The right source in query", fo, Hand.acceptObject);
-        assertEquals("The right destiny folder", folder.getPrimaryFile(), Hand.fileObject);
+        assertEquals("The right source", fo, Hand.origObject.get(0));
+        assertEquals("The right source in query", fo, Hand.acceptObject.get(0));
+        assertEquals("The right destiny folder", folder.getPrimaryFile(), Hand.fileObject.get(0));
         assertEquals("The right name", "simpleObject", Hand.name);
         assertTrue("At least two elements: " + Hand.parameters, 2 <= Hand.parameters.size());
         assertEquals("empty", Hand.parameters.get("type"));
@@ -152,13 +193,12 @@ public class CreateFromTemplateHandlerTest extends NbTestCase {
     }
 
     public static final class Hand extends CreateFromTemplateHandler {
-        public static FileObject fileObject, origObject, acceptObject;
+        public static List<FileObject>  fileObject, origObject, acceptObject;
         public static String name;
         public static Map<String, Object> parameters;
     
         protected boolean accept(FileObject fo) {
-            assertNull(acceptObject);
-            acceptObject = fo;
+            acceptObject.add(fo);
             return true;
         }
 
@@ -166,14 +206,12 @@ public class CreateFromTemplateHandlerTest extends NbTestCase {
             FileObject orig, FileObject f, String n,
             Map<String, Object> p
         ) throws IOException {
-            assertNull("Not yet filled", fileObject);
-            
-            origObject = orig;
-            fileObject = f;
+            origObject.add(orig);
+            fileObject.add(f);
             name = n;
             parameters = p;
 
-            return FileUtil.copyFile(orig, fileObject, name);
+            return FileUtil.copyFile(orig, f, name);
         }
     }
     
@@ -216,7 +254,10 @@ public class CreateFromTemplateHandlerTest extends NbTestCase {
     
     public static final class Pool extends DataLoaderPool {
         protected Enumeration<DataLoader> loaders() {
-            return Enumerations.<DataLoader>singleton(SimpleLoader.getLoader(SimpleLoader.class));
+            return Enumerations.<DataLoader>array(new DataLoader[] { 
+                SimpleLoader.getLoader(SimpleLoader.class),
+                TwoPartLoader.getLoader(TwoPartLoader.class),
+            });
         }
     }
     
@@ -266,6 +307,38 @@ public class CreateFromTemplateHandlerTest extends NbTestCase {
         
         public String getName() {
             return getPrimaryFile().getNameExt();
+        }
+    }
+    
+    
+
+    public static final class TwoPartLoader extends MultiFileLoader {
+        public TwoPartLoader() {
+            super(TwoPartObject.class.getName ());
+        }
+        protected String displayName() {
+            return "TwoPart";
+        }
+        protected FileObject findPrimaryFile(FileObject fo) {
+            if (fo.hasExt("java") || fo.hasExt("form")) {
+                return org.openide.filesystems.FileUtil.findBrother(fo, "java");
+            } else {
+                return null;
+            }
+        }
+        protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
+            return new TwoPartObject(this, primaryFile);
+        }
+        protected MultiDataObject.Entry createPrimaryEntry(MultiDataObject obj, FileObject primaryFile) {
+            return new FE(obj, primaryFile);
+        }
+        protected MultiDataObject.Entry createSecondaryEntry(MultiDataObject obj, FileObject secondaryFile) {
+            return new FE(obj, secondaryFile);
+        }
+    }
+    public static final class TwoPartObject extends MultiDataObject {
+        public TwoPartObject(TwoPartLoader l, FileObject folder) throws DataObjectExistsException {
+            super(folder, l);
         }
     }
     

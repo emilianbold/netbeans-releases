@@ -684,10 +684,11 @@ public class MultiDataObject extends DataObject {
         }
         
         
-        Iterator it = secondaryEntries().iterator();
+        Iterator<Entry> it = secondaryEntries().iterator();
         NEXT_ENTRY: while (it.hasNext ()) {
+            Entry entry = it.next();
             for (CreateFromTemplateHandler h : Lookup.getDefault().lookupAll(CreateFromTemplateHandler.class)) {
-                FileObject current = getPrimaryEntry().getFile();
+                FileObject current = entry.getFile();
                 if (h.accept(current)) {
                     if (params == null) {
                         params = DataObject.CreateAction.findParameters(name);
@@ -697,7 +698,7 @@ public class MultiDataObject extends DataObject {
                     continue NEXT_ENTRY;
                 }
             }
-            ((Entry)it.next()).createFromTemplate (df.getPrimaryFile (), name);
+            entry.createFromTemplate (df.getPrimaryFile (), name);
         }
         
         try {
