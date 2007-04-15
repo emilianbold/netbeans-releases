@@ -25,6 +25,8 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
+import javax.swing.JTextArea;
+import javax.swing.UIManager;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.openide.util.NbBundle;
 
@@ -52,8 +54,20 @@ public class LicenseApprovalPanel extends javax.swing.JPanel {
     
     private void postInitComponents (InstallUnitWizardModel model) {
         // XXX: Hack to set as same background as JLabel.background
-        taTitle.setBackground (new Color (new JLabel ().getBackground ().getRGB ()));
-        tpLicense.setBackground (Color.WHITE);
+        Color labelBackground = UIManager.getColor ("Label.background");
+        if (labelBackground == null) {
+            labelBackground = new Color (new JLabel ().getBackground ().getRGB ());
+        } else {
+            labelBackground = new Color (labelBackground.getRGB ());
+        }
+        taTitle.setBackground (labelBackground);
+        Color textAreaBackground = UIManager.getColor ("TextArea.background");
+        if (textAreaBackground == null) {
+            textAreaBackground = new Color (new JTextArea ().getBackground ().getRGB ());
+        } else {
+            textAreaBackground = new Color (textAreaBackground.getRGB ());
+        }
+        tpLicense.setBackground (textAreaBackground);
         rbDismis.setSelected (true);
         cbLicenseFor.setModel (new DefaultComboBoxModel (getItems (model)));
         cbLicenseFor.setSelectedIndex (0);
@@ -127,8 +141,7 @@ public class LicenseApprovalPanel extends javax.swing.JPanel {
             }
         });
 
-        tpLicense.setBackground(java.awt.SystemColor.controlLtHighlight);
-        tpLicense.setContentType(org.openide.util.NbBundle.getMessage(LicenseApprovalPanel.class, "LicenseApprovalPanel.tpLicense.contentType")); // NOI18N
+        tpLicense.setContentType("text/html");
         tpLicense.setEditable(false);
         spLicense.setViewportView(tpLicense);
 
@@ -158,7 +171,7 @@ public class LicenseApprovalPanel extends javax.swing.JPanel {
                     .add(lLicenseFor)
                     .add(cbLicenseFor, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(11, 11, 11)
-                .add(spLicense, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
+                .add(spLicense, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(rbAccept)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -194,8 +207,10 @@ private void cbLicenseForItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-F
     // End of variables declaration//GEN-END:variables
     
     private void writeLicense (String plugin, String license) {
+        license = license.replaceAll ("\\n", "<br>");
         tpLicense.setText ("<h1>" + 
                 NbBundle.getMessage (LicenseApprovalPanel.class, "LicenseApprovalPanel_tpLicense_Head", plugin) +
                 "</h1>" + license);
+        tpLicense.setCaretPosition (0);
     }
 }
