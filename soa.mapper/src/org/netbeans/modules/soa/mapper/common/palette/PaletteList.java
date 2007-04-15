@@ -29,7 +29,7 @@ import java.awt.event.MouseEvent;
  * columns in VERTICAL_ALIGN_STYLE.
  *
  * @author Tientien Li
- * @version $Revision$
+ * @version 
  */
 public class PaletteList extends javax.swing.JList {
 

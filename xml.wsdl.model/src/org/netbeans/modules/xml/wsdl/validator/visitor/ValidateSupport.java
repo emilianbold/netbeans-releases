@@ -33,7 +33,7 @@ import org.openide.util.NbBundle;
  * Supports validation of BPEL/WSDL documents.
  *
  * @author  edwong
- * @version $Revision$
+ * @version 
  */
 public class ValidateSupport  {
 

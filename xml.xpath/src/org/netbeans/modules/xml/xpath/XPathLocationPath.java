@@ -23,7 +23,7 @@ package org.netbeans.modules.xml.xpath;
  * Represents a location path.
  * 
  * @author Enrico Lelina
- * @version $Revision$
+ * @version 
  */
 public interface XPathLocationPath extends XPathExpression {
     

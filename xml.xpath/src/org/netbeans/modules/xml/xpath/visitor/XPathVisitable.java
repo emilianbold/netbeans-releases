@@ -24,7 +24,7 @@ package org.netbeans.modules.xml.xpath.visitor;
  * Visitable interface.
  * 
  * @author Enrico Lelina
- * @version $Revision$
+ * @version 
  */
 public interface XPathVisitable {
 

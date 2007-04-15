@@ -34,7 +34,7 @@ import org.netbeans.modules.xml.xpath.XPathVariableReference;
  * Visitor interface.
  * 
  * @author sbyn
- * @version $Revision$
+ * @version 
  */
 public interface XPathVisitor {
 

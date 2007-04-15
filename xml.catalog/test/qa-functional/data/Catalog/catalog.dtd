@@ -1,4 +1,4 @@
-<!-- $Id$ -->
+<!--  -->
 
 <!ENTITY % pubIdChars "CDATA">
 <!ENTITY % publicIdentifier "%pubIdChars;">

@@ -32,7 +32,7 @@ import org.netbeans.modules.xml.xpath.visitor.XPathVisitor;
  * Represents a extension XPath function.
  * 
  * @author Enrico Lelina
- * @version $Revision$
+ * @version 
  */
 public class XPathExtensionFunctionImpl
     extends XPathOperatorOrFunctionImpl

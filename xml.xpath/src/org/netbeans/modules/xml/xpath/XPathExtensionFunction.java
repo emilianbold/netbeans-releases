@@ -25,7 +25,7 @@ import org.netbeans.modules.xml.xpath.function.extension.visitor.XPathExtensionF
  * Represents a extension XPath function.
  * 
  * @author Enrico Lelina
- * @version $Revision$
+ * @version 
  */
 public interface XPathExtensionFunction extends XPathOperationOrFuntion {
     

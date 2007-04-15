@@ -48,7 +48,7 @@ import org.openide.DialogDisplayer;
  * implementation and call show() to display the wizard.
  * 
  * @author Jonathan Giron
- * @version $Revision$
+ * @version 
  */
 public abstract class JDBCWizard {
 

@@ -25,7 +25,7 @@ import java.util.Properties;
  * Provides configuration for the validate visitor of BPEL and WSDL documents.
  *
  * @author  ed.wong
- * @version $Revision$
+ * @version 
  */
 public class ValidateConfiguration extends Properties {
     

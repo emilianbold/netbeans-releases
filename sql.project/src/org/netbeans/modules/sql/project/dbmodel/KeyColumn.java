@@ -47,7 +47,7 @@ import java.util.ResourceBundle;
 /**
  *
  * @author Jonathan Giron
- * @version $Revision$
+ * @version 
  */
 public class KeyColumn {
     /**

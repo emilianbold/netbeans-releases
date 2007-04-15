@@ -52,7 +52,7 @@ import java.util.ResourceBundle;
  * column.
  *
  * @author Jonathan Giron
- * @version $Revision$
+ * @version 
  */
 public class IndexColumn implements Comparable {
     private static final String

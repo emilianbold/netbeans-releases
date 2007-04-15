@@ -24,7 +24,7 @@ package org.netbeans.modules.xml.wsdl.ui.common;
  * Implements a fully-qualified name model.
  *
  * @author Enrico Lelina
- * @version $Revision$
+ * @version 
  */
 public class QName {
 

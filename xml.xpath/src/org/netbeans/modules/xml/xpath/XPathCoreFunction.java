@@ -25,7 +25,7 @@ import org.netbeans.modules.xml.xpath.function.core.visitor.XPathCoreFunctionVis
  * Represents a core XPath function.
  * 
  * @author Enrico Lelina
- * @version $Revision$
+ * @version 
  */
 public interface XPathCoreFunction extends XPathOperationOrFuntion {
             

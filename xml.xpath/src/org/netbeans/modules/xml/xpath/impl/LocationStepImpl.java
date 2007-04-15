@@ -31,7 +31,7 @@ import org.netbeans.modules.xml.xpath.visitor.XPathVisitor;
  * Represents a location path step.
  * 
  * @author Enrico Lelina
- * @version $Revision$
+ * @version 
  */
 public class LocationStepImpl extends XPathExpressionImpl implements LocationStep {
     

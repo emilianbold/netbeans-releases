@@ -27,8 +27,8 @@ import javax.swing.JPanel;
 /**
  * DOCUMENT ME!
  *
- * @author $author$
- * @version $Revision$
+ * @author 
+ * @version 
  */
 abstract class SettingsPanel extends JPanel {
     /**

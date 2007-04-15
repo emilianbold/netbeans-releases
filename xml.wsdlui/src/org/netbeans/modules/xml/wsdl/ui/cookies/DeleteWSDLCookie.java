@@ -26,7 +26,7 @@ import org.openide.nodes.Node;
  * project object from the repository.
  *
  * @author Kiran B
- * @version $Revision$
+ * @version 
  *
  */
 public interface DeleteWSDLCookie

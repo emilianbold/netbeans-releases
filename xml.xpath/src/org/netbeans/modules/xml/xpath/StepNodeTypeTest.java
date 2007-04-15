@@ -23,7 +23,7 @@ package org.netbeans.modules.xml.xpath;
  * Represents a node test on type.
  * 
  * @author Enrico Lelina
- * @version $Revision$
+ * @version 
  */
 public class StepNodeTypeTest extends StepNodeTest {
 

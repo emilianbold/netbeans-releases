@@ -37,7 +37,7 @@ package org.netbeans.modules.sql.project.dbmodel;
  * Captures metadata information for a database table column.
  * 
  * @author Susan Chen
- * @version $Revision$
+ * @version 
  */
 public class TableColumn {
     private String name = "";           // name of table column

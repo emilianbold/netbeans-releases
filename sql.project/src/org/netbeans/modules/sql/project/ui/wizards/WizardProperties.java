@@ -22,8 +22,8 @@ package org.netbeans.modules.sql.project.ui.wizards;
 /**
  * DOCUMENT ME!
  *
- * @author $author$
- * @version $Revision$
+ * @author 
+ * @version 
  */
 public class WizardProperties {
     /**

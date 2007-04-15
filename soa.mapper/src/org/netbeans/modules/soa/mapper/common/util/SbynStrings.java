@@ -32,7 +32,7 @@ import java.util.Vector;
  *
  *
  * @created   December 3, 2002
- * @version   $Revision$
+ * @version   
  */
 public class SbynStrings {
     private SbynStrings() { }

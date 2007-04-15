@@ -43,7 +43,7 @@ import org.netbeans.modules.xml.xpath.visitor.XPathVisitor;
  * of an expression.
  * 
  * @author sbyn
- * @version $Revision$
+ * @version 
  */
 public class ExpressionWriter extends AbstractXPathVisitor  {
     

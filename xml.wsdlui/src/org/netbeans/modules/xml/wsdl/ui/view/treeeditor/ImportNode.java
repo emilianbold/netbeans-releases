@@ -51,7 +51,7 @@ import org.openide.util.actions.SystemAction;
  *
  * @author Ritesh Adval
  *
- * @version $Revision$
+ * @version 
  */
 public class ImportNode extends WSDLElementContainerNode {
     

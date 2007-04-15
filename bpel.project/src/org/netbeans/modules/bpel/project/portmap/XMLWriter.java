@@ -21,7 +21,7 @@
 // Written by David Megginson, david@megginson.com
 // NO WARRANTY!  This class is in the public domain.
 
-// $Id$
+// 
 
 package org.netbeans.modules.bpel.project.portmap;
 

@@ -36,7 +36,7 @@ package org.netbeans.modules.sql.project.dbmodel;
  * Class to hold resultset column metadata.
  *
  * @author Susan Chen
- * @version $Revision$
+ * @version 
  */
 public class ResultSetColumn {
     private String name = "";           // name of parameter

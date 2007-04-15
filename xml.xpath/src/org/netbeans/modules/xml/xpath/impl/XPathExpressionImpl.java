@@ -35,7 +35,7 @@ import org.netbeans.modules.xml.xpath.visitor.impl.ExpressionWriter;
  * Default implementation of the XPathExpression interface.
  * 
  * @author Enrico Lelina
- * @version $Revision$
+ * @version 
  */
 public abstract class XPathExpressionImpl
     implements XPathExpression {

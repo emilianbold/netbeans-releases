@@ -28,7 +28,7 @@ import org.apache.commons.jxpath.ri.compiler.VariableReference;
  * XPathModel helper class.
  *
  * @author Enrico Lelina
- * @version $Revision$
+ * @version 
  */
 public abstract class AbstractXPathModelHelper {
 

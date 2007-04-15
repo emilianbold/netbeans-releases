@@ -52,8 +52,8 @@ import javax.swing.JComponent;
 /**
  * DOCUMENT ME!
  *
- * @author $author$
- * @version $Revision$
+ * @author 
+ * @version 
  */
 public class WSDLEndpointAction extends NodeAction {
     /**

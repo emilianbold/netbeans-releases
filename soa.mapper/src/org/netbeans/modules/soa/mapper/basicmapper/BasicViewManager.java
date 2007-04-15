@@ -268,7 +268,7 @@ public class BasicViewManager
      *
      * @author    Un Seng Leong
      * @created   January 6, 2003
-     * @version   $Revision$
+     * @version   
      */
     private class ChangeLayerListener
          implements PropertyChangeListener {

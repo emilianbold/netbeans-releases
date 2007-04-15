@@ -48,7 +48,7 @@ import java.util.ResourceBundle;
  *
  * @author Susan Chen
  * @author Jonathan Giron
- * @version $Revision$
+ * @version 
  */
 public class Table {
     private String name = "";           // name of table

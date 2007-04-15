@@ -25,8 +25,8 @@ import org.openide.util.NbBundle;
 
 /**
  * Implementation of xsd:dateTime and xsd:duration
- * @author $author$
- * @version $Revision$
+ * @author 
+ * @version 
  */
 public class Duration {
 

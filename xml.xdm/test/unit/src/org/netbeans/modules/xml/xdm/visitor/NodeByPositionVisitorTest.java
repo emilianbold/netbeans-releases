@@ -2,7 +2,7 @@
  * Copyright 2005 Sun Microsystems, Inc. All rights reserved.
  * SUN PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
  * 
- * $Id$
+ * 
  */
 
 package org.netbeans.modules.xml.xdm.visitor;

@@ -28,7 +28,7 @@ import org.openide.filesystems.FileObject;
  * used by XPATH collaboration editor.
  *
  * @author Tientien Li
- * @version $Revision$
+ * @version 
  */
 public class XpathPaletteItemInfo {
     

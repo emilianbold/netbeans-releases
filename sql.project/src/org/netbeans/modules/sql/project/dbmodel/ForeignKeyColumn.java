@@ -50,7 +50,7 @@ import java.util.ResourceBundle;
  * table column.
  *
  * @author Jonathan Giron
- * @version $Revision$
+ * @version 
  */
 public class ForeignKeyColumn extends KeyColumn {
     private static final String

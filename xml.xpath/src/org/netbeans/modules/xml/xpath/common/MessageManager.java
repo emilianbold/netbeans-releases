@@ -43,7 +43,7 @@ import java.util.ResourceBundle;
  * information.
  *
  * @author Tom Carter
- * @version $Revision$
+ * @version 
  */
 public class MessageManager {
 

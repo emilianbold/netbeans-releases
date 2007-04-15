@@ -53,8 +53,8 @@ import org.openide.filesystems.FileObject;
 /**
  * Handles adding and removing of additional war content.
  *
- * @author $author$
- * @version $Revision$
+ * @author 
+ * @version 
  */
 
 final class VisualArchiveIncludesSupport {
@@ -506,8 +506,8 @@ final class VisualArchiveIncludesSupport {
     /**
      * DOCUMENT ME!
      *
-     * @author $author$
-     * @version $Revision$
+     * @author 
+     * @version 
      */
     class ClasspathTableModel extends AbstractTableModel {
         /**

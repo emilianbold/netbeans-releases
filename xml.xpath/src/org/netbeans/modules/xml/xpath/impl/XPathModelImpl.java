@@ -83,7 +83,7 @@ import org.netbeans.modules.xml.xpath.common.MessageManager;
  * expressions in BPEL4WS</a>.
  *
  * @author Enrico Lelina
- * @version $Revision$
+ * @version 
  */
 public class XPathModelImpl
     implements XPathModel {

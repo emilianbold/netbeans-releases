@@ -29,7 +29,7 @@ import org.netbeans.modules.xml.xpath.visitor.XPathVisitor;
  * Represents a core XPath function.
  * 
  * @author Enrico Lelina
- * @version $Revision$
+ * @version 
  */
 public class XPathCoreFunctionImpl
     extends XPathOperatorOrFunctionImpl

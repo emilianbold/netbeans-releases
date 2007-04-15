@@ -57,7 +57,7 @@ import java.util.StringTokenizer;
  * associated columns, etc.)
  *
  * @author Susan Chen
- * @version $Revision$
+ * @version 
  */
 public class DBMetaData {
     // constants

@@ -78,7 +78,7 @@ import org.openide.util.NbBundle;
  * @author  sbyn
  * TODO: add validation for extensibility elements like bpws: property, propertyAlias
  * in a generic way. someone can register a validator for these and validate them
- * @version $Revision$
+ * @version 
  */
 public class WSDLSemanticsVisitor  implements WSDLVisitor {
     

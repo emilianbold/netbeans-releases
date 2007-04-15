@@ -29,7 +29,7 @@ import org.openide.util.Utilities;
  *
  * @author Kiran
  *
- * @version $Revision$
+ * @version 
  */
 public interface IWSDLPanelConstants {
 

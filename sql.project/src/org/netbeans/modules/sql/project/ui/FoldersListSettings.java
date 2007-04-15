@@ -26,8 +26,8 @@ import org.openide.util.NbPreferences;
 /**
  * DOCUMENT ME!
  *
- * @author $author$
- * @version $Revision$
+ * @author 
+ * @version 
  */
 public class FoldersListSettings {
     /**

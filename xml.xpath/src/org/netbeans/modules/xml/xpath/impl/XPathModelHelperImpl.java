@@ -43,7 +43,7 @@ import org.netbeans.modules.xml.xpath.function.extension.impl.GetContainerDataFu
  * XPathModel helper class.
  *
  * @author Enrico Lelina
- * @version $Revision$
+ * @version 
  */
 public class XPathModelHelperImpl extends AbstractXPathModelHelper {
 

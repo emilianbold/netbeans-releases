@@ -39,7 +39,7 @@ import java.util.Iterator;
  * Class to hold procedure metadata.
  *
  * @author Susan Chen
- * @version $Revision$
+ * @version 
  */
 public class Procedure {
     /** Procedure type */

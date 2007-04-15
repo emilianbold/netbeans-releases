@@ -34,7 +34,7 @@ import org.netbeans.modules.xml.xpath.visitor.XPathVisitable;
  * represented as an ordered collection.
  *
  * @author Enrico Lelina
- * @version $Revision$
+ * @version 
  */
 public interface XPathExpression extends XPathVisitable {
     

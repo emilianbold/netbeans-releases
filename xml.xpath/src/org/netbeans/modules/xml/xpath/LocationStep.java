@@ -24,7 +24,7 @@ package org.netbeans.modules.xml.xpath;
  * Represents a step in a location path.
  * 
  * @author Enrico Lelina
- * @version $Revision$
+ * @version 
  */
 public interface LocationStep extends XPathExpression {
 

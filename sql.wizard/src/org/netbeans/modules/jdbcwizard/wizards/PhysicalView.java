@@ -162,8 +162,8 @@ public class PhysicalView {
     /**
      * DOCUMENT ME!
      * 
-     * @author $author$
-     * @version $Revision$
+     * @author 
+     * @version 
      */
     static final class VisibilityQueryDataFilter implements ChangeListener, ChangeableDataFilter {
         /**
@@ -232,8 +232,8 @@ public class PhysicalView {
     /**
      * DOCUMENT ME!
      * 
-     * @author $author$
-     * @version $Revision$
+     * @author 
+     * @version 
      */
     static final class GroupNode extends FilterNode implements PropertyChangeListener {
         private static final DataFilter VISIBILITY_QUERY_FILTER = new VisibilityQueryDataFilter();
@@ -415,8 +415,8 @@ public class PhysicalView {
     /**
      * DOCUMENT ME!
      * 
-     * @author $author$
-     * @version $Revision$
+     * @author 
+     * @version 
      */
     public static class PathFinder {
         private SourceGroup group;

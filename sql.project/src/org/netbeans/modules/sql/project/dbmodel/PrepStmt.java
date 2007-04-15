@@ -37,7 +37,7 @@ package org.netbeans.modules.sql.project.dbmodel;
  * Class to hold prepared statement metadata.
  *
  * @author Susan Chen
- * @version $Revision$
+ * @version 
  */
 public class PrepStmt {
     private String name = "";                   // name of prepared statement

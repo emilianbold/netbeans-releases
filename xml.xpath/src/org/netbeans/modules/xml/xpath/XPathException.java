@@ -24,7 +24,7 @@ package org.netbeans.modules.xml.xpath;
  * XPath exception class.
  *
  * @author Enrico Lelina
- * @version $Revision$
+ * @version 
  */
 public class XPathException
     extends Exception {

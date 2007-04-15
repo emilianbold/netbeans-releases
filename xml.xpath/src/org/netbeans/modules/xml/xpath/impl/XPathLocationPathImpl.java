@@ -29,7 +29,7 @@ import org.netbeans.modules.xml.xpath.visitor.XPathVisitor;
  * @todo PUT DESCRIPTION HERE
  * 
  * @author Enrico Lelina
- * @version $Revision$
+ * @version 
  */
 public class XPathLocationPathImpl
     extends XPathExpressionImpl

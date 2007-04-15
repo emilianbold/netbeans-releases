@@ -37,7 +37,7 @@ package org.netbeans.modules.sql.project.dbmodel;
  * Class to hold parameter metadata.
  *
  * @author Susan Chen
- * @version $Revision$
+ * @version 
  */
 public class Parameter {
     private String name = "";           // name of parameter

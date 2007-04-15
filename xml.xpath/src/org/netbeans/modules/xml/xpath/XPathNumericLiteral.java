@@ -24,7 +24,7 @@ package org.netbeans.modules.xml.xpath;
  * Represents a numeric literal.
  * 
  * @author Enrico Lelina
- * @version $Revision$
+ * @version 
  */
 public interface XPathNumericLiteral extends XPathLiteral {
     

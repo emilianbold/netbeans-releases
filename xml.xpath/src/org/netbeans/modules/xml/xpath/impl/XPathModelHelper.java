@@ -36,7 +36,7 @@ import org.netbeans.modules.xml.xpath.XPathStringLiteral;
  * XPathModel helper class.
  *
  * @author Enrico Lelina
- * @version $Revision$
+ * @version 
  * @deprecated Replaced by {@link #org.netbeans.modules.xml.xpath.AbstractXPathModelHelper}
  */
 public abstract class XPathModelHelper {

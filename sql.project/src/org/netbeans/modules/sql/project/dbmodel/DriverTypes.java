@@ -47,7 +47,7 @@ import java.util.List;
  * database metadata connections.
  *
  * @author Jonathan Giron
- * @version $Revision$
+ * @version 
  */
 public class DriverTypes {
 
@@ -264,7 +264,7 @@ public class DriverTypes {
      * fully-qualified Java classname and a standard JDBC URL template.
      *
      * @author Jonathan Giron
-     * @version $Revision$
+     * @version 
      */
     public static class TypeInfo {
         private String displayName;
