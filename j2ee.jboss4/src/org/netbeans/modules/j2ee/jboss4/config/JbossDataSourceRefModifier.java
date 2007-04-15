@@ -190,6 +190,8 @@ final class JbossDataSourceRefModifier {
      * @param beans the bean names (ejb-name) mapped to the message destinations (message-destination-link)
      * which might need to add resource reference specified by resRefName
      * @param jndiName JNDI name of the resource
+     * 
+     * @deprecated
      */
     static void modifyMsgDrv(Jboss modifiedJboss, String resRefName, Map beans, String jndiName) {
 
@@ -209,6 +211,8 @@ final class JbossDataSourceRefModifier {
      * @param beans the bean names (ejb-name) mapped to the message destinations (message-destination-link)
      * which might need to add resource reference specified by resRefName
      * @param jndiName JNDI name of the resource
+     * 
+     * @deprecated
      */
     private static void addMsgDrvResReference(Jboss modifiedJboss, String resRefName, Map beans, String jndiName) {
 

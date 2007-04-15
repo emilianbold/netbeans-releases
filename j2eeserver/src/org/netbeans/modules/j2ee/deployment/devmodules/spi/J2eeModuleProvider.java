@@ -536,12 +536,46 @@ public abstract class J2eeModuleProvider {
          * 
          * @throws NullPointerException if any of parameters is null
          * @throws ConfigurationException if there is some problem with message destination configuration
+         * @throws IllegalArgumentException if ejbType doesn't have one of allowed values
          * 
          * @since 1.25
          */
         public void bindMessageDestinationReferenceForEjb(String ejbName, String ejbType,
                 String referenceName, String connectionFactoryName,
                 String destName, MessageDestination.Type type) throws ConfigurationException;
+
+        /**
+         * Binds EJB reference name with EJB name.
+         * 
+         * @param referenceName name used to identify the EJB
+         * @param referencedEjbName name of the referenced EJB
+         * 
+         * @throws NullPointerException if any of parameters is null
+         * @throws ConfigurationException if there is some problem with EJB configuration
+         * 
+         * @since 1.26
+         */
+        public void bindEjbReference(String referenceName, String referencedEjbName) throws ConfigurationException;
+
+        /**
+         * Binds EJB reference name with EJB name within the EJB scope.
+         * 
+         * @param ejbName EJB name
+         * @param ejbType EJB type - the possible values are 
+         *        org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans.SESSION,
+         *        org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans.ENTITY and
+         *        org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans.MESSAGE_DRIVEN
+         * @param referenceName name used to identify the referenced EJB
+         * @param referencedEjbName name of the referenced EJB
+         * 
+         * @throws NullPointerException if any of parameters is null
+         * @throws ConfigurationException if there is some problem with EJB configuration
+         * @throws IllegalArgumentException if ejbType doesn't have one of allowed values
+         * 
+         * @since 1.26
+         */
+        public void bindEjbReferenceForEjb(String ejbName, String ejbType,
+                String referenceName, String referencedEjbName) throws ConfigurationException;
     }
 
     /**

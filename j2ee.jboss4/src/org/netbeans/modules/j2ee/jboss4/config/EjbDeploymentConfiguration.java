@@ -844,19 +844,39 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
         });
     }
 
+    public void bindEjbReferenceForEjb(String ejbName, String ejbType,
+            String referenceName, String referencedEjbName) throws ConfigurationException {
+    
+        Set beanNames = new HashSet();
+        beanNames.add(ejbName);
+        if (org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans.SESSION.equals(ejbType)) {
+            addEjbReference(referenceName, referencedEjbName, beanNames, BEAN_TYPE.SESSION);
+        }
+        else
+        if (org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans.ENTITY.equals(ejbType)) {
+            addEjbReference(referenceName, referencedEjbName, beanNames, BEAN_TYPE.ENTITY);
+        }
+        else
+        if (org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans.MESSAGE_DRIVEN.equals(ejbType)) {
+            addMsgDrvEjbReference(referenceName, referencedEjbName, ejbName);
+        }
+        
+    }
+    
     /**
      * Add a new ejb reference to the beans of the given type without it.
      * 
      * @param ejbRefName ejb reference name
+     * @param referencedEjbName name of the referenced EJB
      * @param beanNames the beans (ejb-name value) which might need to add ejb reference specified by ejbRefName
      * @param beanType type of bean to add ejb reference to
      */
-    private void addEjbReference(final String ejbRefName, final Set beanNames, final BEAN_TYPE beanType) 
-    throws ConfigurationException 
-    {
+    private void addEjbReference(final String ejbRefName, final String referencedEjbName,
+            final Set beanNames, final BEAN_TYPE beanType) throws ConfigurationException {
+
         modifyJboss(new JbossModifier() {
            public void modify(Jboss modifiedJboss) {
-               JbossEjbRefModifier.modify(modifiedJboss, ejbRefName, beanNames, beanType);
+               JbossEjbRefModifier.modify(modifiedJboss, ejbRefName, referencedEjbName, beanNames, beanType);
            }
         });
     }
@@ -865,15 +885,16 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
      * Add a new ejb reference to the message-driven beans without it.
      * 
      * @param ejbRefName ejb reference name
-     * @param beans the bean names (ejb-name) mapped to the message destinations (message-destination-link)
-     * which might need to add ejb reference specified by ejbRefName
+     * @param referencedEjbName name of the referenced EJB
+     * @param mdbName the MDB (ejb-name value) which might need to add EJB
+     *        reference specified by ejbRefName
      */
-    private void addMsgDrvEjbReference(final String ejbRefName, final Map beans) 
+    private void addMsgDrvEjbReference(final String ejbRefName, final String referencedEjbName, final String mdbName) 
     throws ConfigurationException 
     {
         modifyJboss(new JbossModifier() {
            public void modify(Jboss modifiedJboss) {
-               JbossEjbRefModifier.modifyMsgDrv(modifiedJboss, ejbRefName, beans);
+               JbossEjbRefModifier.modifyMsgDrv(modifiedJboss, mdbName, ejbRefName, referencedEjbName);
            }
         });
     }

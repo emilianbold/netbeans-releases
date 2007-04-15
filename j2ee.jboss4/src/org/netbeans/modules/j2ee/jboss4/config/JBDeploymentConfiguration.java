@@ -30,12 +30,14 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
+import org.netbeans.modules.j2ee.dd.api.common.ComponentInterface;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DatasourceConfiguration;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.EjbResourceConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.MessageDestinationConfiguration;
 import org.netbeans.modules.j2ee.jboss4.config.gen.Datasources;
 import org.netbeans.modules.j2ee.jboss4.config.gen.LocalTxDatasource;
@@ -63,7 +65,7 @@ import org.openide.util.NbBundle;
  * @author  Pavel Buzek, Libor Kotouc
  */
 public abstract class JBDeploymentConfiguration 
-        implements DatasourceConfiguration, MessageDestinationConfiguration {
+        implements DatasourceConfiguration, MessageDestinationConfiguration, EjbResourceConfiguration {
 
     
     protected static final String JBOSS4_DATASOURCE_JNDI_PREFIX = "java:"; // NOI18N
@@ -452,5 +454,12 @@ public abstract class JBDeploymentConfiguration
     public void bindMessageDestinationReferenceForEjb(String ejbName, String ejbType,
             String referenceName, String connectionFactoryName,
             String destName, MessageDestination.Type type) throws ConfigurationException {}
+    
+    public void ensureResourceDefined(ComponentInterface ejb, String jndiName) throws ConfigurationException {}
+
+    public void bindEjbReference(String referenceName, String ejbName) throws ConfigurationException {}
+
+    public void bindEjbReferenceForEjb(String ejbName, String ejbType,
+            String referenceName, String referencedEjbName) throws ConfigurationException {}
     
 }

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -46,10 +46,11 @@ final class JbossEjbRefModifier {
      *
      * @param modifiedJboss Jboss graph instance being modified
      * @param ejbRefName ejb reference name
+     * @param referencedEjbName name of the referenced EJB
      * @param beanNames the beans (ejb-name value) which might need to add ejb reference specified by ejbRefName
      * @param beanType type of bean to add ejb reference to
      */
-    static void modify(Jboss modifiedJboss, String ejbRefName, Set beanNames, BEAN_TYPE beanType) {
+    static void modify(Jboss modifiedJboss, String ejbRefName, String referencedEjbName, Set beanNames, BEAN_TYPE beanType) {
 
         assert(beanNames.size() > 0);
 
@@ -57,10 +58,10 @@ final class JbossEjbRefModifier {
             modifiedJboss.setEnterpriseBeans(new EnterpriseBeans());
 
         if (beanType == BEAN_TYPE.SESSION) {
-            addSessionEjbReference(modifiedJboss, ejbRefName, beanNames);
+            addSessionEjbReference(modifiedJboss, ejbRefName, referencedEjbName, beanNames);
         } else
         if (beanType == BEAN_TYPE.ENTITY) {
-            addEntityEjbReference(modifiedJboss, ejbRefName, beanNames);
+            addEntityEjbReference(modifiedJboss, ejbRefName, referencedEjbName, beanNames);
         }
     }
     
@@ -69,9 +70,11 @@ final class JbossEjbRefModifier {
      * 
      * @param modifiedJboss Jboss instance being modified
      * @param ejbRefName ejb reference name
+     * @param referencedEjbName name of the referenced EJB
      * @param sessionNames the sessions (ejb-name value) which might need to add ejb reference specified by ejbRefName
      */
-    private static void addSessionEjbReference(Jboss modifiedJboss, String ejbRefName, Set sessionNames) {
+    private static void addSessionEjbReference(Jboss modifiedJboss, String ejbRefName, 
+            String referencedEjbName, Set sessionNames) {
 
         List/*<Session>*/ sesssionsWithoutReference = new LinkedList();
 
@@ -113,7 +116,7 @@ final class JbossEjbRefModifier {
         for (Iterator it = sesssionsWithoutReference.iterator(); it.hasNext(); ) {
             EjbRef newER = new EjbRef();
             newER.setEjbRefName(ejbRefName);
-            newER.setJndiName(JBDeploymentConfiguration.JBOSS4_EJB_JNDI_PREFIX + ejbRefName);
+            newER.setJndiName(referencedEjbName);
             Session session = (Session)it.next();
             session.addEjbRef(newER);
         }
@@ -125,9 +128,11 @@ final class JbossEjbRefModifier {
      * 
      * @param modifiedJboss Jboss instance being modified
      * @param ejbRefName ejb reference name
+     * @param referencedEjbName name of the referenced EJB
      * @param entityNames the entities (ejb-name value) which might need to add ejb reference specified by ejbRefName
      */
-    private static void addEntityEjbReference(Jboss modifiedJboss, String ejbRefName, Set entityNames) {
+    private static void addEntityEjbReference(Jboss modifiedJboss, String ejbRefName,
+            String referencedEjbName, Set entityNames) {
 
         List/*<Entity>*/ entitiesWithoutReference = new LinkedList();
 
@@ -169,7 +174,7 @@ final class JbossEjbRefModifier {
         for (Iterator it = entitiesWithoutReference.iterator(); it.hasNext(); ) {
             EjbRef newER = new EjbRef();
             newER.setEjbRefName(ejbRefName);
-            newER.setJndiName(JBDeploymentConfiguration.JBOSS4_EJB_JNDI_PREFIX + ejbRefName);
+            newER.setJndiName(referencedEjbName);
             Entity entity = (Entity)it.next();
             entity.addEjbRef(newER);
         }
@@ -183,6 +188,8 @@ final class JbossEjbRefModifier {
      * @param ejbRefName ejb reference name
      * @param beans the bean names (ejb-name) mapped to the message destinations (message-destination-link)
      * which might need to add ejb reference specified by ejbRefName
+     * 
+     * @deprecated
      */
     static void modifyMsgDrv(Jboss modifiedJboss, String ejbRefName, Map beans) {
 
@@ -201,6 +208,8 @@ final class JbossEjbRefModifier {
      * @param ejbRefName ejb reference name
      * @param beans the bean names (ejb-name) mapped to the message destinations (message-destination-link)
      * which might need to add ejb reference specified by ejbRefName
+     * 
+     * @deprecated
      */
     private static void addMsgDrvEjbReference(Jboss modifiedJboss, String ejbRefName, Map beans) {
 
@@ -250,6 +259,58 @@ final class JbossEjbRefModifier {
             mdb.addEjbRef(newER);
         }
 
+    }
+
+    /**
+     * Add a reference to the given ejb to the message-driven beans if it does not exist yet.
+     *
+     * @param modifiedJboss Jboss graph instance being modified
+     * @param mdbName the MDB (ejb-name value) which might need to add EJB
+     *        reference specified by ejbRefName
+     * @param ejbRefName ejb reference name
+     * @param referencedEjbName name of the referenced EJB
+     */
+    static void modifyMsgDrv(Jboss modifiedJboss, String mdbName, 
+            String ejbRefName, String referencedEjbName) {
+
+        if (modifiedJboss.getEnterpriseBeans() == null)
+            modifiedJboss.setEnterpriseBeans(new EnterpriseBeans());
+
+        addMsgDrvEjbReference(modifiedJboss, mdbName, ejbRefName, referencedEjbName);
+    }
+
+    /**
+     * Add a new ejb reference to the message-driven beans without it.
+     * 
+     * @param modifiedJboss Jboss instance being modified
+     * @param mdbName the MDB (ejb-name value) which might need to add EJB
+     *        reference specified by ejbRefName
+     * @param ejbRefName ejb reference name
+     * @param referencedEjbName name of the referenced EJB
+     */
+    private static void addMsgDrvEjbReference(Jboss modifiedJboss, String mdbName,
+            String ejbRefName, String referencedEjbName) {
+
+        EnterpriseBeans eb = modifiedJboss.getEnterpriseBeans();
+
+        for (MessageDriven mdb : eb.getMessageDriven()) {
+            String ejbName = mdb.getEjbName();
+            if (mdbName.equals(ejbName)) { // msgdrv found -> check whether it has the ejb-ref
+                EjbRef[] ejbRefs = mdb.getEjbRef();
+                int j = 0;
+                for ( ; j < ejbRefs.length; j++) {
+                    String rrn = ejbRefs[j].getEjbRefName();
+                    if (ejbRefName.equals(rrn))
+                        break; // ejb-ref found, continuing with the next entity
+                }
+                if (j == ejbRefs.length) { // resource-ref not found
+                    EjbRef newER = new EjbRef();
+                    newER.setEjbRefName(ejbRefName);
+                    newER.setJndiName(referencedEjbName);
+                    mdb.addEjbRef(newER);
+                }
+            }
+        }
     }
     
 }

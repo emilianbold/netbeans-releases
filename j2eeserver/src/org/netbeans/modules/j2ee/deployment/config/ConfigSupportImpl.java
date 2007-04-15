@@ -639,6 +639,12 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         Parameters.notNull("destName", destName);                           // NOI18N
         Parameters.notNull("type", type);                                   // NOI18N
         
+        if (!EnterpriseBeans.SESSION.equals(ejbType) &&
+            !EnterpriseBeans.ENTITY.equals(ejbType) &&
+            !EnterpriseBeans.MESSAGE_DRIVEN.equals(ejbType)) {
+            throw new IllegalArgumentException("ejbType parameter doesn't have an allowed value.");
+        }
+        
         ModuleConfiguration config = getModuleConfiguration();
         if (server == null || config == null) {
             return;
@@ -651,6 +657,49 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         
     }
     
+    public void bindEjbReference(String referenceName, String referencedEjbName) throws ConfigurationException {
+        
+        Parameters.notNull("referenceName", referenceName);     // NOI18N
+        Parameters.notNull("referencedEjbName", referencedEjbName);                 // NOI18N
+        
+        ModuleConfiguration config = getModuleConfiguration();
+        if (server == null || config == null) {
+            return;
+        }
+        
+        EjbResourceConfiguration ejbConfig = config.getLookup().lookup(EjbResourceConfiguration.class);
+        if (ejbConfig != null) {
+            ejbConfig.bindEjbReference(referenceName, referencedEjbName);
+        }
+        
+    }
+
+    public void bindEjbReferenceForEjb(String ejbName, String ejbType,
+            String referenceName, String referencedEjbName) throws ConfigurationException {
+        
+        Parameters.notNull("ejbName", ejbName);                 // NOI18N
+        Parameters.notNull("ejbType", ejbType);                 // NOI18N
+        Parameters.notNull("referenceName", referenceName);     // NOI18N
+        Parameters.notNull("referencedEjbName", referencedEjbName);                 // NOI18N
+        
+        if (!EnterpriseBeans.SESSION.equals(ejbType) &&
+            !EnterpriseBeans.ENTITY.equals(ejbType) &&
+            !EnterpriseBeans.MESSAGE_DRIVEN.equals(ejbType)) {
+            throw new IllegalArgumentException("ejbType parameter doesn't have an allowed value.");
+        }
+        
+        ModuleConfiguration config = getModuleConfiguration();
+        if (server == null || config == null) {
+            return;
+        }
+        
+        EjbResourceConfiguration ejbConfig = config.getLookup().lookup(EjbResourceConfiguration.class);
+        if (ejbConfig != null) {
+            ejbConfig.bindEjbReferenceForEjb(ejbName, ejbType, referenceName, referencedEjbName);
+        }
+        
+    }
+
     // DeploymentConfigurationProvider implementation -------------------------
     
     /**

@@ -30,6 +30,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
  * Implementation of this interface should be registered in the {@link ModuleConfiguration}
  * lookup.
  *
+ * @since 1.25
  * @author Libor Kotouc
  */
 public interface MessageDestinationConfiguration {
@@ -40,8 +41,6 @@ public interface MessageDestinationConfiguration {
      * @return set of message destinations
      * 
      * @throws ConfigurationException if there is some problem with message destination configuration
-     * 
-     * @since 1.25
      */
     public Set<MessageDestination> getMessageDestinations() throws ConfigurationException;
     
@@ -49,8 +48,6 @@ public interface MessageDestinationConfiguration {
      * Tests whether a message destination creation is supported.
      *
      * @return true if message destination creation is supported, false otherwise.
-     *
-     * @since 1.25
      */
     public boolean supportsCreateMessageDestination();
             
@@ -65,8 +62,6 @@ public interface MessageDestinationConfiguration {
      * 
      * @throws UnsupportedOperationException if this opearation is not supported
      * @throws ConfigurationException if there is some problem with message destination configuration
-     *
-     * @since 1.25 
      */
     public MessageDestination createMessageDestination(String name, MessageDestination.Type type) 
     throws UnsupportedOperationException, ConfigurationException;
@@ -79,8 +74,6 @@ public interface MessageDestinationConfiguration {
      * @param type message destination type; the value is of 
      * 
      * @throws ConfigurationException if there is some problem with message destination configuration
-     * 
-     * @since 1.25
      */
     public void bindMdbToMessageDestination(String mdbName, String name, MessageDestination.Type type) throws ConfigurationException;
     
@@ -91,8 +84,6 @@ public interface MessageDestinationConfiguration {
      * @return message destination name
      * 
      * @throws ConfigurationException if there is some problem with message destination configuration
-     * 
-     * @since 1.25
      */
     public String findMessageDestinationName(String mdbName) throws ConfigurationException;
 
@@ -106,8 +97,6 @@ public interface MessageDestinationConfiguration {
      * @param type message destination type
      * 
      * @throws ConfigurationException if there is some problem with message destination configuration
-     * 
-     * @since 1.25
      */
     public void bindMessageDestinationReference(String referenceName, String connectionFactoryName, 
             String destName, MessageDestination.Type type) throws ConfigurationException;
@@ -127,8 +116,6 @@ public interface MessageDestinationConfiguration {
      * @param type message destination type
      * 
      * @throws ConfigurationException if there is some problem with message destination configuration
-     * 
-     * @since 1.25
      */
     public void bindMessageDestinationReferenceForEjb(String ejbName, String ejbType,
             String referenceName, String connectionFactoryName,

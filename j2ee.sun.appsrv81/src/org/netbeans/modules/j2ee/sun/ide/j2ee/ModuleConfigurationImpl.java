@@ -115,6 +115,10 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
 //        ((SunONEDeploymentConfiguration)config).ensureResourceDefinedForEjb(ci, jndiName);
     }
 
+    public void bindEjbReference(String referenceName, String referencedEjbName) throws ConfigurationException {}
+    
+    public void bindEjbReferenceForEjb(String ejbName, String ejbType,
+            String referenceName, String referencedEjbName) throws ConfigurationException {}
     
     /** Conduit to pass the cmp mapping information directly to the configuration
      *  backend.

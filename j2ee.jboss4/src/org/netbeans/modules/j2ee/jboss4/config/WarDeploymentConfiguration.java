@@ -182,7 +182,7 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
                 try {
                     String ejbRefType = ejbRef.getEjbRefType();
                     if ("Session".equals(ejbRefType) || "Entity".equals(ejbRefType)) { // NOI18N
-                        addEjbReference(ejbRef.getEjbRefName());
+                        addEjbReference(ejbRef.getEjbRefName(), ejbRef.getEjbRefName());
                     }
                 } catch (ConfigurationException ce) {
                     ErrorManager.getDefault().notify(ce);
@@ -349,12 +349,16 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
         });
     }
     
+    public void bindEjbReference(String referenceName, String ejbName) throws ConfigurationException {
+        addEjbReference(referenceName, ejbName);
+    }
+    
     /**
      * Add a new ejb reference.
      * 
      * @param name ejb reference name
      */
-    private void addEjbReference(final String name) throws ConfigurationException {
+    private void addEjbReference(final String referenceName, final String ejbName) throws ConfigurationException {
         modifyJbossWeb(new JbossWebModifier() {
             public void modify(JbossWeb modifiedJbossWeb) {
 
@@ -362,7 +366,7 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
                 EjbRef ejbRefs[] = modifiedJbossWeb.getEjbRef();
                 for (int i = 0; i < ejbRefs.length; i++) {
                     String ern = ejbRefs[i].getEjbRefName();
-                    if (name.equals(ern)) {
+                    if (referenceName.equals(ern)) {
                         // already exists
                         return;
                     }
@@ -370,12 +374,8 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
 
                 //if it doesn't exist yet, create a new one
                 EjbRef newER = new EjbRef();
-                newER.setEjbRefName(name);
-                String jndiName = name;
-                if (jndiName.indexOf('/') != -1) {
-                    jndiName = jndiName.substring(jndiName.lastIndexOf('/') + 1);
-                }
-                newER.setJndiName(jndiName);
+                newER.setEjbRefName(referenceName);
+                newER.setJndiName(ejbName);
                 modifiedJbossWeb.addEjbRef(newER);
             }
         });

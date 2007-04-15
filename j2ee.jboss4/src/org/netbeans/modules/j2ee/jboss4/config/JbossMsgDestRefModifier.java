@@ -198,6 +198,8 @@ final class JbossMsgDestRefModifier {
      * @param msgDestRefName message destination reference name
      * @param beans the beans (ejb-name value) which might need to add message destination reference specified by msgDestRefName
      * @param destPrefix prefix of the message destination
+     * 
+     * @deprecated
      */
     static void modifyMsgDrv(Jboss modifiedJboss, String msgDestRefName, Map beans, String destPrefix) {
 
@@ -216,6 +218,8 @@ final class JbossMsgDestRefModifier {
      * @param msgDestRefName message destination reference name
      * @param beans the beans (ejb-name value) which might need to add message destination reference specified by msgDestRefName
      * @param destPrefix prefix of the message destination
+     * 
+     * @deprecated
      */
     private static void addMsgDrvMsgDestReference(Jboss modifiedJboss, String msgDestRefName, Map beans, String destPrefix) {
 
