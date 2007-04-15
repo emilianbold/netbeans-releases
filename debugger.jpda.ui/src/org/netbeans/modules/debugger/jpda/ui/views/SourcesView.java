@@ -55,7 +55,7 @@ public class SourcesView extends TopComponent implements org.openide.util.HelpCt
         if (tree == null) {
             setLayout (new BorderLayout ());
             tree = Models.createView (Models.EMPTY_MODEL);
-            tree.setName (NbBundle.getMessage (ClassesView.class, "CTL_Sources_tooltip")); // NOI18N
+            tree.setName (NbBundle.getMessage (SourcesView.class, "CTL_Sources_tooltip")); // NOI18N
             add (tree, "Center");  //NOI18N
         }
         if (viewModelListener != null)

@@ -68,7 +68,6 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         <folder name="Window">
             <folder name="Debug">
-                <file name="org-netbeans-modules-debugger-jpda-ui-actions-ClassesViewAction.instance" />
                 <file name="org-netbeans-modules-debugger-jpda-ui-actions-SourcesViewAction.instance" />
             </folder>
         </folder>
@@ -186,12 +185,6 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         <folder name="Window">
             <folder name="Debug">
-                <attr name="org-netbeans-modules-debugger-ui-actions-CallStackViewAction.shadow/org-netbeans-modules-debugger-jpda-ui-actions-ClassesViewAction.shadow" boolvalue="true" />
-                <file name="org-netbeans-modules-debugger-jpda-ui-actions-ClassesViewAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-ui-actions-ClassesViewAction.instance"/>
-                </file>
-                <attr name="org-netbeans-modules-debugger-jpda-ui-actions-ClassesViewAction.shadow/org-netbeans-modules-debugger-ui-actions-BreakpointsViewAction.shadow" boolvalue="true" />
-
                 <attr name="org-netbeans-modules-debugger-ui-actions-ThreadsViewAction.shadow/org-netbeans-modules-debugger-jpda-ui-actions-SourcesViewAction.shadow" boolvalue="true" />
                 <file name="org-netbeans-modules-debugger-jpda-ui-actions-SourcesViewAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-ui-actions-SourcesViewAction.instance"/>
@@ -201,9 +194,6 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <folder name="Shortcuts">
-        <file name="SO-4.shadow">
-            <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-ui-actions-ClassesViewAction.instance"/>
-        </file>
         <file name="SO-8.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-ui-actions-SourcesViewAction.instance"/>
         </file>
@@ -261,15 +251,12 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Windows2">
         <folder name="Components">
-            <file name="classes.settings" url="classes.settings" />
             <file name="sources.settings" url="sources.settings" />
         </folder>
 
         <folder name="Modes">
             <folder name="debugger">
-                <attr name="threads.wstcref/classes.wstcref" boolvalue="true"/>
-                <file name="classes.wstcref" url="classes.wstcref" />
-                <attr name="classes.wstcref/sources.wstcref" boolvalue="true"/>
+                <attr name="threads.wstcref/sources.wstcref" boolvalue="true"/>
                 <file name="sources.wstcref" url="sources.wstcref" />
             </folder>
         </folder>
@@ -277,7 +264,6 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Groups">
             <folder name="debugger">
                 <file name="sources.wstcgrp" url="sources.wstcgrp" />
-                <file name="classes.wstcgrp" url="classes.wstcgrp" />
             </folder>
         </folder>
 

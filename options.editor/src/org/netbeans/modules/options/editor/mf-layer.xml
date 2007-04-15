@@ -597,7 +597,7 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-WatchesViewAction.instance"/>
                 </file>
                 <file name="Classes.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-ui-actions-ClassesViewAction.instance"/>
+                    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-heapwalk-actions-ClassesCountsViewAction.instance"/>
                 </file>
                 <file name="Call Stack.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-CallStackViewAction.instance"/>
