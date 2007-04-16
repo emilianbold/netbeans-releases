@@ -82,6 +82,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        
+        <change id="dependent-roots">
+            <api name="general"/>
+            <summary>Added a method which returns all the project source roots depending on a given source root.</summary>
+            <version major="0" minor="10"/>
+            <date day="13" month="4" year="2007"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+            <description>
+                The refactoring and find usages need to find the dependent roots of a project root in which the refactored type
+                is declared, but finding such an information using the project API may be very expensive especially when lots of
+                projects is opened. The goal of this API is to provide and cache this information.
+            </description>
+            <issue number="92030"/>
+        </change>
 
         <change id="ClassIndexListener">
             <api name="general"/>

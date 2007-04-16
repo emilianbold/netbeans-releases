@@ -22,9 +22,11 @@ package org.netbeans.api.java.source;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -32,12 +34,15 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.queries.SourceForBinaryQuery.Result;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.TestUtil;
+import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
@@ -234,6 +239,62 @@ public class SourceUtilsTest extends NbTestCase {
         }	
     }
     
+    
+    public void testGetDependentRoots () throws Exception {
+        final URL url0 = new URL ("file:///url0/");
+        final URL url1 = new URL ("file:///url1/");
+        final URL url2 = new URL ("file:///url2/");
+        final URL url3 = new URL ("file:///url3/");
+        final URL url4 = new URL ("file:///url4/");
+        final URL url5 = new URL ("file:///url5/");
+        
+        final List<URL> deps0 = Arrays.asList (new URL[] {url0});
+        final List<URL> deps1 = Arrays.asList (new URL[] {url1, url2});
+        final List<URL> deps2 = Arrays.asList (new URL[] {url2});
+        final List<URL> deps3 = Arrays.asList (new URL[] {url3, url4});
+
+        final ClassPath cp1 = ClassPathSupport.createClassPath(new URL[] {url1});
+        final ClassPath cp2 = ClassPathSupport.createClassPath(new URL[] {url2});
+        final ClassPath cp3 = ClassPathSupport.createClassPath(new URL[] {url3});
+        final ClassPath cp4 = ClassPathSupport.createClassPath(new URL[] {url4});
+        final ClassPath cp5 = ClassPathSupport.createClassPath(new URL[] {url5});
+
+        final ClassPath[] cps = new ClassPath[] {cp1,cp2,cp3,cp4,cp5};
+        
+        GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cps);
+
+        final Map<URL,List<URL>> deps = new HashMap<URL,List<URL>> ();
+        deps.put (url1,deps0);
+        deps.put (url3,deps1);
+        deps.put (url4,deps2);
+        deps.put (url5,deps3);
+        
+        Set<URL> result = SourceUtils.getDependentRootsImpl(url5, deps);
+        assertEquals (1, result.size());
+        assertEquals (url5,result.iterator().next());
+        
+        result = SourceUtils.getDependentRootsImpl(url4, deps);
+        assertEquals (new URL[] {url4, url5}, result);
+        
+        result = SourceUtils.getDependentRootsImpl(url3, deps);
+        assertEquals (new URL[] {url3, url5}, result);
+        
+        result = SourceUtils.getDependentRootsImpl(url2, deps);
+        assertEquals (new URL[] {url2, url3, url4, url5}, result);
+        
+        result = SourceUtils.getDependentRootsImpl(url1, deps);
+        assertEquals (new URL[] {url1, url3, url5}, result);
+    }
+    
+    
+    private void assertEquals (URL[] expected, Set<URL> result) {
+        assertEquals (expected.length,result.size());
+        for (URL eurl : expected) {
+            assertTrue (result.remove(eurl));
+        }
+        assertTrue(result.isEmpty());
+    }
+    
     private <E extends Element> E findElementBySimpleName(String simpleName, List<E> elements) {
         for (E e : elements) {
             if (simpleName.contentEquals(e.getSimpleName()))
@@ -294,7 +355,7 @@ public class SourceUtilsTest extends NbTestCase {
         assertNotNull(sourceFile);
         ClasspathInfo cpInfo = ClasspathInfo.create(ClassPathSupport.createClassPath(new FileObject[0]), ClassPathSupport.createClassPath(new FileObject[0]),
             ClassPathSupport.createClassPath(new FileObject[]{src}));
-        FileObject cls = cpInfo.getClassPath(PathKind.OUTPUT).getRoots()[0];
+        FileObject cls = ClasspathInfoAccessor.INSTANCE.getCachedClassPath(cpInfo,PathKind.OUTPUT).getRoots()[0];
         FileObject classInDefPkg = cls.createData("Foo","class");
         assertNotNull(classInDefPkg);
         FileObject classPkg = cls.createFolder("org").createFolder("me");

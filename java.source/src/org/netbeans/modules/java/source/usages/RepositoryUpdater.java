@@ -153,6 +153,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     private final ClassPath binCp;
     private Set<URL> scannedRoots;
     private Set<URL> scannedBinaries;
+    private Map<URL,List<URL>> deps;        //todo: may be shared with scannedRoots, may save some HashMap.Entry
     private Delay delay;
     private Work currentWork;
     private boolean dirty;
@@ -171,6 +172,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         try {
             this.scannedRoots = Collections.synchronizedSet(new HashSet<URL>());
             this.scannedBinaries = Collections.synchronizedSet(new HashSet<URL>());            
+            this.deps = Collections.synchronizedMap(new HashMap<URL,List<URL>>());
             this.delay = new Delay();
             this.cpImpl = GlobalSourcePath.getDefault();
             this.cpImpl.setExcludesListener (this);
@@ -191,6 +193,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     
     public ClassPath getScannedBinaries() {
         return this.binCp;
+    }
+    
+    public Map<URL,List<URL>> getDependencies () {
+        return new HashMap<URL,List<URL>> (this.deps);
     }
     
     public void close () {                
@@ -881,6 +887,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                     findDependencies (rootURL, new Stack<URL>(), depGraph, newBinaries, true);
                                 }                                
                                 CompileWorker.this.state = Utilities.topologicalSort(depGraph.keySet(), depGraph);
+                                deps.putAll(depGraph);
                                 completed = true;
                             } catch (final TopologicalSortException tse) {
                                 final IllegalStateException ise = new IllegalStateException ();                                
@@ -923,6 +930,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                     }
                                     try {
                                         CompileWorker.this.state = Utilities.topologicalSort(depGraph.keySet(), depGraph);
+                                        deps.putAll(depGraph);
                                     } catch (final TopologicalSortException tse) {
                                         final IllegalStateException ise = new IllegalStateException ();
                                         throw (IllegalStateException) ise.initCause(tse);
@@ -942,6 +950,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             }                            
                             final ClassIndexManager cim = ClassIndexManager.getDefault();
                             scannedRoots.removeAll(oldRoots);
+                            deps.keySet().remove(oldRoots);
                             for (URL oldRoot : oldRoots) {
                                 cim.removeRoot(oldRoot);
                                 JavaFileFilterImplementation filter = filters.remove(oldRoot);

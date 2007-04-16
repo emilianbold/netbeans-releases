@@ -55,6 +55,7 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Name;
 
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.CancellableTask;
@@ -639,6 +640,62 @@ out:                for (URL e : roots) {
         RepositoryUpdater.getDefault().waitScanFinished();
     }
     
+    
+    /**
+     * Returns the dependent source path roots for given source root.
+     * It returns all the open project source roots which have either
+     * direct or transitive dependency on the given source root.
+     * @param root to find the dependent roots for
+     * @return {@link Set} of {@link URL}s containinig at least the
+     * incomming root, never returns null.
+     * @since 0.10
+     */
+    public static Set<URL> getDependentRoots (final URL root) {
+        final Map<URL, List<URL>> deps = RepositoryUpdater.getDefault().getDependencies ();
+        return getDependentRootsImpl (root, deps);
+    }
+    
+    
+    static Set<URL> getDependentRootsImpl (final URL root, final Map<URL, List<URL>> deps) {
+        //Create inverse dependencies
+        final Map<URL, List<URL>> inverseDeps = new HashMap<URL, List<URL>> ();
+        for (Map.Entry<URL,List<URL>> entry : deps.entrySet()) {
+            final URL u1 = entry.getKey();
+            final List<URL> l1 = entry.getValue();
+            for (URL u2 : l1) {
+                List<URL> l2 = inverseDeps.get(u2);
+                if (l2 == null) {
+                    l2 = new ArrayList<URL>();
+                    inverseDeps.put (u2,l2);
+                }
+                l2.add (u1);
+            }
+        }
+        //Collect dependencies
+        final Set<URL> result = new HashSet<URL>();
+        final LinkedList<URL> todo = new LinkedList<URL> ();
+        todo.add (root);
+        while (!todo.isEmpty()) {
+            final URL u = todo.removeFirst();
+            if (!result.contains(u)) {
+                result.add (u);
+                final List<URL> ideps = inverseDeps.get(u);
+                if (ideps != null) {
+                    todo.addAll (ideps);
+                }
+            }
+        }
+        //Filter non opened projects
+        Set<ClassPath> cps = GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE);
+        Set<URL> toRetain = new HashSet<URL>();
+        for (ClassPath cp : cps) {
+            for (ClassPath.Entry e : cp.entries()) {
+                toRetain.add(e.getURL());
+            }
+        }
+        result.retainAll(toRetain);
+        return result;
+    }    
     
     //Helper methods    
     
