@@ -36,6 +36,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.CharBuffer;
+import java.nio.charset.Charset;
 import java.util.Comparator;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -104,10 +105,21 @@ public class FileObjects {
      * @return {@link JavaFileObject}, never returns null
      */
     public static JavaFileObject fileFileObject( final File file, final File root, final JavaFileFilterImplementation filter) {
+        return fileFileObject(file, root, filter, null);
+    }
+    
+    /**
+     * Creates {@link JavaFileObject} for a regular {@link File}
+     * @param file for which the {@link JavaFileObject} should be created
+     * @param root - the classpath root owning the file
+     * @param encoding - the file's encoding
+     * @return {@link JavaFileObject}, never returns null
+     */
+    public static JavaFileObject fileFileObject( final File file, final File root, final JavaFileFilterImplementation filter, Charset encoding) {
         assert file != null;
         assert root != null;
         String[] pkgNamePair = getFolderAndBaseName(getRelativePath(root,file),File.separatorChar);
-        return new RegularFileObject( file, convertFolder2Package(pkgNamePair[0], File.separatorChar), pkgNamePair[1], filter);
+        return new RegularFileObject( file, convertFolder2Package(pkgNamePair[0], File.separatorChar), pkgNamePair[1], filter, encoding);
     }
     
     /**
@@ -471,7 +483,7 @@ public class FileObjects {
     public static String getRelativePath (final File root, final File fo) {
         final String rootPath = root.getAbsolutePath();
         final String foPath = fo.getAbsolutePath();
-        assert foPath.startsWith(rootPath);
+        assert foPath.startsWith(rootPath) : String.format("getRelativePath(%s, %s)", rootPath, foPath);
         int index = rootPath.length();
         if (rootPath.charAt(index-1)!=File.separatorChar) {
             index++;
@@ -487,10 +499,12 @@ public class FileObjects {
         
         private URI uriCache;
         private final JavaFileFilterImplementation filter;
+        private Charset encoding;
 
-	public RegularFileObject(final File f, final String packageName, final String baseName, final JavaFileFilterImplementation filter) {
+	public RegularFileObject(final File f, final String packageName, final String baseName, final JavaFileFilterImplementation filter, Charset encoding) {
             super (f, packageName, baseName);
             this.filter = filter;
+            this.encoding = encoding;
 	}               
 
         public InputStream openInputStream() throws IOException {
@@ -507,7 +521,11 @@ public class FileObjects {
 
 	public Writer openWriter() throws IOException {
 	    //FIX: consider using encoding here
-	    return new OutputStreamWriter(new FileOutputStream(f));
+            if (encoding != null) {
+                return new OutputStreamWriter(new FileOutputStream(f), encoding);
+            } else {
+                return new OutputStreamWriter(new FileOutputStream(f));
+            }
 	}
 
 	public @Override boolean isNameCompatible(String simplename, JavaFileObject.Kind kind) {
@@ -541,17 +559,25 @@ public class FileObjects {
 	public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
             
             char[] result;
-            InputStreamReader in = new InputStreamReader (new FileInputStream(this.f), encodingName);
+            InputStreamReader in;
+            
+            if (encoding != null) {
+                in = new InputStreamReader (new FileInputStream(this.f), encoding);
+            } else {
+                in = new InputStreamReader (new FileInputStream(this.f));
+            }
+            int red = 0;
             try {
                 int len = (int)this.f.length();
                 result = new char [len+1];
-                int red = 0, rv;	    
-                while ((rv=in.read(result,red,len-red))>0 && (red=red+rv)<len);
+                int rv;	    
+                while ((rv=in.read(result,red,len-red))>0)
+                    red += rv;
             } finally {
                 in.close();
             }
-            result[result.length-1]='\n'; //NOI18N
-            CharSequence buffer = CharBuffer.wrap (result);
+            result[red++]='\n'; //NOI18N
+            CharSequence buffer = CharBuffer.wrap (result, 0, red);
             if (this.filter != null) {
                 buffer = this.filter.filterCharSequence(buffer);
             }

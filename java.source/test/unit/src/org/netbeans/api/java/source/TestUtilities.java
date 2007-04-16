@@ -212,6 +212,17 @@ public final class TestUtilities {
         InputStream is = new ByteArrayInputStream(content.getBytes("UTF-8"));
         FileUtil.copy(is, os);
         os.close ();
+        is.close();
+            
+        return f;
+    }
+    
+    public final static FileObject copyStringToFile (FileObject f, String content) throws Exception {
+        OutputStream os = f.getOutputStream();
+        InputStream is = new ByteArrayInputStream(content.getBytes("UTF-8"));
+        FileUtil.copy(is, os);
+        os.close ();
+        is.close();
             
         return f;
     }

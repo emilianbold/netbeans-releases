@@ -280,14 +280,21 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
         
     }
 
-    private static class TestSourceLevelQueryImplementation implements SourceLevelQueryImplementation {
+    public static class TestSourceLevelQueryImplementation implements SourceLevelQueryImplementation {
         
         public String getSourceLevel(FileObject javaFile) {
             String level = file2SourceLevel.get(javaFile);
             
-            if (level == null)
+            if (level == null) {
+                if (javaFile.isFolder()) {
+                    for (FileObject data : file2SourceLevel.keySet()) {
+                        if (FileUtil.isParentOf(javaFile, data)) {
+                            return file2SourceLevel.get(data);
+                        }
+                    }
+                }
                 return "1.5";
-            else
+            } else
                 return level;
         }
         

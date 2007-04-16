@@ -110,6 +110,7 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -767,11 +768,23 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
     JavacTaskImpl createJavacTask(final DiagnosticListener<? super JavaFileObject> diagnosticListener) {
         String sourceLevel = null;
         if (!this.files.isEmpty()) {
-            sourceLevel = SourceLevelQuery.getSourceLevel(files.iterator().next());
+            FileObject file = files.iterator().next();
+            
+            sourceLevel = SourceLevelQuery.getSourceLevel(file);
+            
+            FileObject root = getClasspathInfo().getClassPath(PathKind.SOURCE).findOwnerRoot(file);
+            
+            if (root != null) {
+                try {
+                    RepositoryUpdater.getDefault().verifySourceLevel(root.getURL(), sourceLevel);
+                } catch (IOException ex) {
+                    Logger.getLogger(JavaSource.class.getName()).log(Level.FINE, null, ex);
+                }
+            }
         }
         if (sourceLevel == null) {
             sourceLevel = JavaPlatformManager.getDefault().getDefaultPlatform().getSpecification().getVersion().toString();
-        }        
+        }
         JavacTaskImpl javacTask = createJavacTask(getClasspathInfo(), diagnosticListener, sourceLevel, false);
         Context context = javacTask.getContext();
         ParamNameResolver.preRegister(context, getClasspathInfo());
@@ -787,11 +800,11 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
     
     private static JavacTaskImpl createJavacTask(final ClasspathInfo cpInfo, final DiagnosticListener<? super JavaFileObject> diagnosticListener, final String sourceLevel, final boolean backgroundCompilation) {
         ArrayList<String> options = new ArrayList<String>();
+        if (Boolean.getBoolean("org.netbeans.api.java.source.JavaSource.USE_COMPILER_LINT")) { // XXX temp workaround for #76702
+            options.add("-Xlint");
+            options.add("-Xlint:-serial");
+        }
         if (!backgroundCompilation) {
-            if (Boolean.getBoolean("org.netbeans.api.java.source.JavaSource.USE_COMPILER_LINT")) { // XXX temp workaround for #76702
-                options.add("-Xlint");
-                options.add("-Xlint:-serial");
-            }
             options.add("-Xjcov"); //NOI18N, Make the compiler store end positions
         } else {
             options.add("-XDbackgroundCompilation");    //NOI18N

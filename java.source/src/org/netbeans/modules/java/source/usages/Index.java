@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.java.source.usages;
@@ -47,7 +47,7 @@ public abstract class Index {
     };
     
     private static final int VERSION = 0;
-    private static final int SUBVERSION = 2;
+    private static final int SUBVERSION = 3;
     private static final String NB_USER_DIR = "netbeans.user";   //NOI18N
     private static final String SEGMENTS_FILE = "segments";      //NOI18N
     private static final String CLASSES = "classes";             //NOI18N
@@ -143,10 +143,16 @@ public abstract class Index {
         
     
     public static synchronized File getDataFolder (final URL root) throws IOException {
+        return getDataFolder(root, false);
+    }
+    
+    public static synchronized File getDataFolder (final URL root, boolean onlyIfAlreadyExists) throws IOException {
         loadSegments ();
         final String rootName = root.toExternalForm();
         String slice = invertedSegments.get (rootName);
         if ( slice == null) {
+            if (onlyIfAlreadyExists)
+                return null;
             slice = SLICE_PREFIX + (++index);
             while (segments.getProperty(slice) != null) {                
                 slice = SLICE_PREFIX + (++index);
@@ -157,23 +163,35 @@ public abstract class Index {
         }        
         File result = FileUtil.normalizeFile (new File (cacheFolder, slice));
         if (!result.exists()) {
+            if (onlyIfAlreadyExists)
+                return null;
             result.mkdir();
         }
         return result;
     }
     
+    /**returns null if onlyIfAlreadyExists == true and the cache folder for the given url does not exist.
+     */
+    public static File getClassFolder (final URL url, boolean onlyIfAlreadyExists) throws IOException {
+        return getClassFolderImpl(url, onlyIfAlreadyExists);
+    }
+    
     public static File getClassFolder (final URL url) throws IOException {                
-        return getClassFolderImpl(url);        
+        return getClassFolder(url, false);
     }
     
     public static File getClassFolder (final File root) throws IOException {
-        return getClassFolderImpl(root.toURI().toURL());
+        return getClassFolderImpl(root.toURI().toURL(), false);
     }        
     
-    private static File getClassFolderImpl (final URL url) throws IOException {
-        final File dataFolder = getDataFolder (url);
+    private static File getClassFolderImpl (final URL url, boolean onlyIfAlreadyExists) throws IOException {
+        final File dataFolder = getDataFolder (url, onlyIfAlreadyExists);
+        if (onlyIfAlreadyExists && dataFolder == null)
+            return null;
         final File result = FileUtil.normalizeFile(new File (dataFolder, CLASSES));
         if (!result.exists()) {
+            if (onlyIfAlreadyExists)
+                return null;
             result.mkdir();
         }
         return result;
@@ -193,7 +211,7 @@ public abstract class Index {
         return nbUserProp;
     }
     
-    private static synchronized File getCacheFolder () {
+    public static synchronized File getCacheFolder () {
         if (cacheFolder == null) {
             final String nbUserDirProp = getNbUserDir();
             assert nbUserDirProp != null;

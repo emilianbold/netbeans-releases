@@ -20,8 +20,11 @@ package org.netbeans.modules.java.ui;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
 import org.netbeans.spi.options.AdvancedOption;
@@ -39,7 +42,6 @@ final class JavaOptionsPanelController extends OptionsPanelController {
     private static final String TAB_FOLDER = "org.netbeans.modules.java.source/options/";
     
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-    private boolean changed;
     
     private List<AdvancedOption> options;
 
@@ -50,26 +52,26 @@ final class JavaOptionsPanelController extends OptionsPanelController {
     }
             
     public void update() {
-        for (AdvancedOption advancedOption : options) {
-            advancedOption.create().update();
+        for (OptionsPanelController c : getControllers()) {
+            c.update();
         }
     }
     
     public void applyChanges() {
-        for (AdvancedOption advancedOption : options) {
-            advancedOption.create().applyChanges();
+        for (OptionsPanelController c : getControllers()) {
+            c.applyChanges();
         }
     }
     
     public void cancel() {
-	for (AdvancedOption advancedOption : options) {
-            advancedOption.create().cancel();
+        for (OptionsPanelController c : getControllers()) {
+            c.cancel();
         }
     }
     
     public boolean isValid() {
-        for (AdvancedOption advancedOption : options) {
-            if (!advancedOption.create().isValid()) {
+        for (OptionsPanelController c : getControllers()) {
+            if (!c.isValid()) {
                 return false;
             }
         }
@@ -77,8 +79,8 @@ final class JavaOptionsPanelController extends OptionsPanelController {
     }
     
     public boolean isChanged() {
-	for (AdvancedOption advancedOption : options) {
-            if (advancedOption.create().isValid()) {
+        for (OptionsPanelController c : getControllers()) {
+            if (c.isChanged()) {
                 return true;
             }
         }
@@ -92,9 +94,8 @@ final class JavaOptionsPanelController extends OptionsPanelController {
     public synchronized JComponent getComponent(Lookup masterLookup) {
         if ( pane == null ) {
             pane = new JTabbedPane();
-            for( AdvancedOption advancedOption : options) {
-                OptionsPanelController opc = advancedOption.create();                
-                pane.add( advancedOption.getDisplayName(), opc.getComponent( opc.getLookup()));
+            for (OptionsPanelController c : getControllers()) {
+                pane.add( controllers2Options.get(c).getDisplayName(), c.getComponent( c.getLookup()));
             }
         }
         return pane;
@@ -109,6 +110,23 @@ final class JavaOptionsPanelController extends OptionsPanelController {
     }
     
     // Private methods ---------------------------------------------------------
+    
+    private Map<OptionsPanelController, AdvancedOption> controllers2Options;
+    private List<OptionsPanelController> controllers;
+    
+    private synchronized Collection<OptionsPanelController> getControllers() {
+        if (controllers == null) {
+            controllers2Options = new LinkedHashMap<OptionsPanelController, AdvancedOption>();
+            controllers = new LinkedList<OptionsPanelController>();
+            for (AdvancedOption o : options) {
+                OptionsPanelController c = o.create();
+                controllers2Options.put(c, o);
+                controllers.add(c);
+            }
+        }
+        
+        return controllers;
+    }
     
     private void readPanels() {
         FileSystem fs = Repository.getDefault().getDefaultFileSystem();

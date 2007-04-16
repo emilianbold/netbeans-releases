@@ -43,9 +43,9 @@ Microsystems, Inc. All Rights Reserved.
     
     <folder name="org.netbeans.modules.java.source">
       <folder name="options">
-          <file name="Hints.instance">
+<!--          <file name="Hints.instance">
               <attr name="instanceClass" stringvalue="org.netbeans.modules.java.hints.options.HintsAdvancedOption"/>
-          </file>
+          </file>-->
       </folder>
   </folder>
     

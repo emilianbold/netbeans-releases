@@ -67,6 +67,7 @@ Microsystems, Inc. All Rights Reserved.
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.java.source</friend>
                 <friend>org.netbeans.modules.vcscore</friend>
                 <friend>org.netbeans.modules.versioning</friend>
                 <package>org.netbeans.modules.masterfs.providers</package>

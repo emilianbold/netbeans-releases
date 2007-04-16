@@ -136,7 +136,9 @@ public class CompilationInfo {
         if (this.jfo == null) {
             throw new IllegalStateException ();
         }
-        ArrayList<Diagnostic> localErrors = new ArrayList<Diagnostic>(errors.size());
+        List<Diagnostic> errors = ((DiagnosticListenerImpl) javacTask.getContext().get(DiagnosticListener.class)).errors;
+        List<Diagnostic> localErrors = new ArrayList<Diagnostic>(errors.size());
+        
         for(Diagnostic m : errors) {
             if (this.jfo == m.getSource())
                 localErrors.add(m);
