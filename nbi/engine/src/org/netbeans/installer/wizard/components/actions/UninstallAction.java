@@ -63,7 +63,11 @@ public class UninstallAction extends WizardAction {
         overallProgress.synchronizeDetails(true);
         
         getWizardUi().setProgress(overallProgress);
-        for (Product product: products) {
+        for (int i = 0; i < products.size(); i++) {
+            // get the handle of the current item
+            final Product product = products.get(i);
+            
+            // initiate the progress for the current element
             currentProgress = new Progress();
             
             overallProgress.addChild(currentProgress, percentageChunk);
