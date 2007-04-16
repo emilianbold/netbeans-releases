@@ -32,8 +32,10 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -95,6 +97,9 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
     private NbiLabel errorLabel;
     
     private NbiButton okButton;
+    private NbiButton cancelButton;
+    
+    private NbiPanel buttonsPanel;
     
     private Icon errorIcon;
     private Icon emptyIcon;
@@ -128,8 +133,6 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         
         // componentsTree ///////////////////////////////////////////////////////////
         componentsList = new NbiList();
-        componentsList.setModel(
-                new ComponentsListModel(registryNodes));
         componentsList.setCellRenderer(
                 new ComponentsListCellRenderer());
         componentsList.setBorder(
@@ -211,6 +214,33 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
             }
         });
         
+        // cancelButton /////////////////////////////////////////////////////////////
+        cancelButton = new NbiButton();
+        cancelButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                cancelButtonPressed();
+            }
+        });
+        
+        // buttonsPanel /////////////////////////////////////////////////////////////
+        buttonsPanel = new NbiPanel();
+        buttonsPanel.add(okButton, new GridBagConstraints(
+                0, 0,                             // x, y
+                1, 1,                             // width, height
+                1.0, 0.0,                         // weight-x, weight-y
+                GridBagConstraints.LINE_END,      // anchor
+                GridBagConstraints.NONE,          // fill
+                new Insets(0, 0, 0, 0),           // padding
+                0, 0));                           // padx, pady - ???)
+        buttonsPanel.add(cancelButton, new GridBagConstraints(
+                1, 0,                             // x, y
+                1, 1,                             // width, height
+                0.0, 0.0,                         // weight-x, weight-y
+                GridBagConstraints.CENTER,        // anchor
+                GridBagConstraints.NONE,          // fill
+                new Insets(0, 6, 0, 0),           // padding
+                0, 0));                           // padx, pady - ???)
+        
         // getContentPane() /////////////////////////////////////////////////////////
         getContentPane().add(messageLabel, new GridBagConstraints(
                 0, 0,                             // x, y
@@ -252,12 +282,12 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
                 GridBagConstraints.HORIZONTAL,    // fill
                 new Insets(11, 11, 0, 11),        // padding
                 0, 0));                           // padx, pady - ???
-        getContentPane().add(okButton, new GridBagConstraints(
+        getContentPane().add(buttonsPanel, new GridBagConstraints(
                 0, 4,                             // x, y
                 2, 1,                             // width, height
                 1.0, 0.0,                         // weight-x, weight-y
-                GridBagConstraints.LINE_END,      // anchor
-                GridBagConstraints.NONE,          // fill
+                GridBagConstraints.CENTER,        // anchor
+                GridBagConstraints.BOTH,          // fill
                 new Insets(11, 11, 11, 11),       // padding
                 0, 0));                           // padx, pady - ???
         
@@ -288,6 +318,9 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
             messageLabel.setText(panel.getProperty(panel.MESSAGE_PROPERTY));
         }
         
+        componentsList.setModel(
+                new ComponentsListModel(registryNodes));
+        
         descriptionPane.setContentType(
                 panel.getProperty(panel.COMPONENT_DESCRIPTION_CONTENT_TYPE_PROPERTY));
         
@@ -299,6 +332,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         updateSizes();
         
         okButton.setText(panel.getProperty(panel.OK_BUTTON_TEXT_PROPERTY));
+        cancelButton.setText(panel.getProperty(panel.CANCEL_BUTTON_TEXT_PROPERTY));
     }
     
     private void updateDescription() {
@@ -456,7 +490,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
     }
     
     private void okButtonPressed() {
-        String errorMessage = validateInput();
+        final String errorMessage = validateInput();
         
         if (errorMessage != null) {
             ErrorManager.notifyError(errorMessage);
@@ -466,16 +500,35 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         }
     }
     
+    private void cancelButtonPressed() {
+        final ComponentsListModel model = 
+                (ComponentsListModel) componentsList.getModel();
+        
+        model.cancelChanges();
+        setVisible(false);
+    }
+    
     /////////////////////////////////////////////////////////////////////////////////
     // Inner Classes
     public class ComponentsListModel implements ListModel {
         private List<RegistryNode> registryNodes;
+        private Map<Product, Status> initialStatuses;
         
         private List<ListDataListener> listeners;
         
         public ComponentsListModel(List<RegistryNode> registryNodes) {
             this.registryNodes = registryNodes;
+            
+            initialStatuses = new HashMap<Product, Status>();
             listeners = new LinkedList<ListDataListener>();
+            
+            for (RegistryNode node: registryNodes) {
+                if (node instanceof Product) {
+                    final Product product = (Product) node;
+                    
+                    initialStatuses.put(product, product.getStatus());
+                }
+            }
         }
         
         public int getSize() {
@@ -542,6 +595,16 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
             
             for (ListDataListener listener: clone) {
                 listener.contentsChanged(event);
+            }
+        }
+        
+        public void cancelChanges() {
+            for (RegistryNode node: registryNodes) {
+                if (node instanceof Product) {
+                    final Product product = (Product) node;
+                    
+                    product.setStatus(initialStatuses.get(product));
+                }
             }
         }
     }

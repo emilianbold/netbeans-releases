@@ -93,6 +93,8 @@ public class NbWelcomePanel extends WizardPanel {
                 DEFAULT_DOWNLOAD_SIZE);
         setProperty(OK_BUTTON_TEXT_PROPERTY,
                 DEFAULT_OK_BUTTON_TEXT);
+        setProperty(CANCEL_BUTTON_TEXT_PROPERTY,
+                DEFAULT_CANCEL_BUTTON_TEXT);
         setProperty(DEFAULT_COMPONENT_DESCRIPTION_PROPERTY, 
                 DEFAULT_DEFAULT_COMPONENT_DESCRIPTION);
         
@@ -220,8 +222,15 @@ public class NbWelcomePanel extends WizardPanel {
         public String getTitle() {
             return null; // the welcome page does not have a title
         }
-        
+
         // protected ////////////////////////////////////////////////////////////////
+        @Override
+        protected void initializeContainer() {
+            super.initializeContainer();
+            
+            container.getBackButton().setVisible(false);
+        }
+        
         @Override
         protected void initialize() {
             final StringBuilder welcomeText = new StringBuilder();
@@ -410,6 +419,8 @@ public class NbWelcomePanel extends WizardPanel {
             "default.download.size"; // NOI18N
     public static final String OK_BUTTON_TEXT_PROPERTY =
             "ok.button.text"; // NOI18N
+    public static final String CANCEL_BUTTON_TEXT_PROPERTY =
+            "cancel.button.text"; // NOI18N
     public static final String DEFAULT_COMPONENT_DESCRIPTION_PROPERTY = 
             "default.component.description";
     
@@ -446,6 +457,9 @@ public class NbWelcomePanel extends WizardPanel {
     public static final String DEFAULT_OK_BUTTON_TEXT =
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.ok.button.text"); // NOI18N
+    public static final String DEFAULT_CANCEL_BUTTON_TEXT =
+            ResourceUtils.getString(NbWelcomePanel.class,
+            "NWP.cancel.button.text"); // NOI18N
     public static final String DEFAULT_DEFAULT_COMPONENT_DESCRIPTION = 
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.default.component.description"); // NOI18N
