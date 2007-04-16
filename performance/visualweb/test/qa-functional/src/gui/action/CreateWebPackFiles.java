@@ -28,6 +28,7 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.TimeoutExpiredException;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
@@ -41,7 +42,7 @@ import org.netbeans.junit.NbTestSuite;
  */
 public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.PerformanceTestCase {
    
-    private String doccategory, doctype, docname, docfolder, suffix, projectfolder;
+    private String doccategory, doctype, docname, docfolder, suffix, projectfolder, buildedname;
     private NewFileNameLocationStepOperator location;
     
     private int index;
@@ -80,7 +81,6 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
         doctype ="Visual Web JSF Page"; //NOI18N
 	docfolder = "web";
 	suffix = ".jsp";
-        index = 1;
         projectfolder = VWPUtilities.WEB_PAGES;
 	doMeasurement();
     }
@@ -93,7 +93,6 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
         doctype = "Visual Web JSF Page Fragment"; //NOI18N
 	docfolder = "web";
 	suffix = ".jspf";
-        index = 1;
         projectfolder = VWPUtilities.WEB_PAGES;
 	doMeasurement();
     }
@@ -106,7 +105,6 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
         doctype = "Cascading Style Sheet"; //NOI18N
 	docfolder = "web" + java.io.File.separatorChar + "resources"; // NOI18N
 	suffix = ".css";
-        index = 1;
         projectfolder = VWPUtilities.WEB_PAGES+"|"+"resources"; // NOI18N
 	doMeasurement();
     }
@@ -146,7 +144,8 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
 
         waitNoEvent(1000);
         location = new NewFileNameLocationStepOperator();
-        location.txtObjectName().setText(docname+"_"+(index));
+        buildedname = docname+"_"+System.currentTimeMillis();
+        location.txtObjectName().setText(buildedname);
 
 	JTextFieldOperator pathField = new JTextFieldOperator(wizard,2);
 	pathField.setText(docfolder);
@@ -156,25 +155,31 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
     public void close(){
         log("::close");
         cleanupTest();
-	index++;
         new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
     }
     
     private void cleanupTest() {
         log(":: do cleanup.....");
         Node projectRootNode = new ProjectsTabOperator().getProjectRootNode(project_name);        
-        Node objNode = new Node(projectRootNode,projectfolder+"|"+ docname+"_"+(index)+suffix);
+        Node objNode = new Node(projectRootNode,projectfolder+"|"+ buildedname+suffix);
         objNode.select();
-        log(":: Document: "+docname+"_"+(index)+suffix);
+        log(":: Document: "+buildedname+suffix);
         log(":: Selected: "+objNode.getTreePath().toString());
         
-        new DeleteAction().performAPI(objNode);
-        String dialogCaption = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.navigation.Bundle", "MSG_ConfirmDeleteObjectTitle");
-        new NbDialogOperator(dialogCaption).yes(); 
+        try {
+            new DeleteAction().performAPI(objNode);
+            String dialogCaption = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.navigation.Bundle", "MSG_ConfirmDeleteObjectTitle");
+            new NbDialogOperator(dialogCaption).yes();
+            
+        } catch (TimeoutExpiredException timeoutExpiredException) {
+            log("Cleanup failed because of: "+timeoutExpiredException.getMessage());
+            return;
+        }
+ 
         log(":: cleanup passed");
     }
     
-    protected void shutdown() {
+    public void shutdown() {
         log("::shutdown");
         super.shutdown();
     }
