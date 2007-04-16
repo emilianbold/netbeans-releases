@@ -54,7 +54,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             "glassfish"; // NOI18N
     
     private static final String AM_INSTALLER =
-            "addons/am-installer.jar"; // NOI18N
+            "addons/am_installer.jar"; // NOI18N
     private static final String AM_SUBDIR =
             "addons/accessmanager"; // NOI18N
     private static final String AM_CONFIGURATOR =
