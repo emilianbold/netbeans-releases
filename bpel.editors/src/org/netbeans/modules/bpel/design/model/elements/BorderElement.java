@@ -39,7 +39,6 @@ public abstract class BorderElement extends VisualElement {
         super(shape);
         this.insets = insets;
     }
-
     
     
     public FInsets getInsets() {

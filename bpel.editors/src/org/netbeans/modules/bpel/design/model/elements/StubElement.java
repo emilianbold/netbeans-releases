@@ -32,7 +32,9 @@ public class StubElement extends VisualElement {
     }
 
     public void paint(Graphics2D g2) {}
+    public void paintThumbnail(Graphics2D g2) {}
 
 
     private static final FShape SHAPE = new FEllipse(1);
+
 }

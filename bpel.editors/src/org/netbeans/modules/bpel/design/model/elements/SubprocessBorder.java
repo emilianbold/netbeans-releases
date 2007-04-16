@@ -57,10 +57,22 @@ public class SubprocessBorder extends BorderElement {
         }
     }
     
+
+    public void paintThumbnail(Graphics2D g2) {
+        FShape shape = this.shape;
+        g2.setRenderingHint(
+                RenderingHints.KEY_STROKE_CONTROL,
+                RenderingHints.VALUE_STROKE_NORMALIZE);
+        g2.setPaint(STROKE_COLOR);
+        g2.setStroke(STROKE.createStroke(g2));
+        g2.draw(shape);
+    }
+    
     
     public static final FShape SHAPE = new FRectangle(32, 32, 10);
     public static final FInsets INSETS = new FInsets(16, 16, 16, 16);
 
     
     private static FStroke STROKE = new FStroke(1);
+
 }

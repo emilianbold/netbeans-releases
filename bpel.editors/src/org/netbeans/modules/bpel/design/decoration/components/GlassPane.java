@@ -31,7 +31,6 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
-import java.awt.Paint;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.event.ActionEvent;
@@ -41,8 +40,6 @@ import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
 import java.awt.geom.Arc2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
@@ -62,6 +59,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.text.html.HTMLEditorKit;
 import org.netbeans.modules.bpel.design.DesignView;
 import org.netbeans.modules.bpel.design.decoration.Decoration;
+import org.netbeans.modules.bpel.design.geometry.FStroke;
 import org.openide.util.NbBundle;
 
 
@@ -76,7 +74,6 @@ public class GlassPane extends JPanel implements ActionListener,
     private JPanel labelPane;
     private JButton hideButton;
     
-//    private ListLabel list;
     private JEditorPane editorPane;
     private JScrollPane scrollPane;
     
@@ -88,9 +85,6 @@ public class GlassPane extends JPanel implements ActionListener,
         setPreferredSize(new Dimension(320, 180)); 
         setOpaque(false);
 
-//        list = new ListLabel();
-//        scrollPane = createScrollPane(list);
-        
         editorPane = new JEditorPane() {
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
@@ -297,6 +291,25 @@ public class GlassPane extends JPanel implements ActionListener,
     }
     
     
+    public void paintThumbnail(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g;
+        
+        g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, 
+                RenderingHints.VALUE_STROKE_NORMALIZE);
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, 
+                RenderingHints.VALUE_ANTIALIAS_ON);
+        
+        Shape borderShape = createBorderShape();
+        g2.setPaint(new Color(FILL.getRed(), FILL.getGreen(), FILL.getBlue(), 
+                128));
+        g2.fill(borderShape);
+        
+        g2.setStroke(new FStroke(1).createStroke(g2));
+        g2.setPaint(STROKE);
+        g2.draw(borderShape);
+    }
+    
+    
     protected void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, 
@@ -485,241 +498,6 @@ public class GlassPane extends JPanel implements ActionListener,
     }
     
     
-//    private static class ListLabel extends JLabel {
-//
-//        private List<ListItem> items = new ArrayList<ListItem>();
-//        
-//        
-//        public void ListLabel() {
-//            setBackground(null);
-//            setOpaque(false);
-//            setBorder(new EmptyBorder(getBorderInsets()));
-//            setFont(getFont().deriveFont(Font.PLAIN));
-//        }
-//                
-//        
-//        
-//        public void addListItem(Icon icon, String text) {
-//            items.add(new ListItem(icon, text));
-//        }
-//        
-//        
-//        public void addListItem(ListItem item) {
-//            items.add(item);
-//        }
-//        
-//        
-//        private Insets getBorderInsets() {
-//            return new Insets(5, 5, 5, 5);
-//        }
-//        
-//        
-//        public Dimension getPreferredSize() {
-//            JViewport viewPort = (JViewport) getParent();
-//            Insets borderInsets = getBorderInsets();
-//            
-//            int x1 = borderInsets.left;
-//            int x2 = x1;
-//            
-//            for (ListItem item : items) {
-//                Icon icon = item.getIcon();
-//                if (icon != null) {
-//                    x2 = Math.max(x2, x1 + icon.getIconWidth() 
-//                            + getIconTextGap());
-//                }
-//            }
-//            
-//            int x3 = viewPort.getWidth() - borderInsets.right;
-//            
-//            int wrappingWidth = Math.max(200, x3 - x2);
-//            
-//            int height = 0;
-//            
-//            FontRenderContext frc = new FontRenderContext(null, true, false);
-//            
-//            for (int i = 0; i < items.size(); i++) {
-//                ListItem item = items.get(i);
-//                        
-//                AttributedCharacterIterator iterator = new AttributedString(
-//                        item.getText(), getFont().getAttributes()).getIterator();
-//                
-//                LineBreakMeasurer measurer = new LineBreakMeasurer(iterator, frc);
-//                
-//                int lineAscent = 0;
-//                int lineHeight = 0;
-//                int lineCount = 0;
-//                
-//                while (measurer.getPosition() < iterator.getEndIndex()) {
-//                    TextLayout layout = measurer.nextLayout(wrappingWidth);
-//                    
-//                    lineAscent = Math.max(lineAscent, getLayoutAscent(layout));
-//                    lineHeight = Math.max(lineHeight, getLayoutHeight(layout));
-//                    
-//                    lineCount++;
-//                }
-//                
-//                Icon icon = item.getIcon();
-//                
-//                int itemHeight;
-//                
-//                if (icon != null) {
-//                    if (lineCount == 1) {
-//                        itemHeight = Math.max(icon.getIconHeight(), lineHeight);
-//                    } else {
-//                        int yoff = (icon.getIconHeight() - lineHeight) / 2;
-//                        
-//                        if (yoff >= 0) {
-//                            itemHeight = Math.max(icon.getIconHeight(), 
-//                                    yoff + lineHeight * lineCount);
-//                        } else {
-//                            itemHeight = Math.max(lineHeight * lineCount,
-//                                    icon.getIconHeight() - yoff);
-//                        }
-//                    }
-//                } else {
-//                    itemHeight = lineHeight * lineCount;
-//                }
-//                
-//                height += itemHeight + borderInsets.top + borderInsets.bottom
-//                        - ((i == 0) ? 1 : 0);
-//            }
-//            
-//            height += Math.max(0, items.size() - 1);
-//            
-//            return new Dimension(viewPort.getWidth(), height);
-//        }
-//        
-//        
-//        protected void paintComponent(Graphics g) {
-//            Graphics2D g2 = (Graphics2D) g;
-//            
-//            Object oldAntialiasing = g2.getRenderingHint(RenderingHints
-//                    .KEY_ANTIALIASING);
-//            
-//            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-//                    RenderingHints.VALUE_ANTIALIAS_ON);
-//            
-//            Insets borderInsets = getBorderInsets();
-//            
-//            int x1 = borderInsets.left;
-//            int x2 = x1;
-//            
-//            for (ListItem item : items) {
-//                Icon icon = item.getIcon();
-//                if (icon != null) {
-//                    x2 = Math.max(x2, x1 + icon.getIconWidth() 
-//                            + getIconTextGap());
-//                }
-//            }
-//            
-//            int x3 = getWidth() - borderInsets.right;
-//            
-//            int wrappingWidth = x3 - x2;
-//            
-//            FontRenderContext frc = g2.getFontRenderContext();
-//            
-//            List<TextLayout> layoutedText = new ArrayList<TextLayout>();
-//            
-//            int itemY = borderInsets.top - 1;
-//            
-//            for (int i = 0; i < items.size(); i++) {
-//                ListItem item = items.get(i);
-//                
-//                AttributedCharacterIterator iterator = new AttributedString(
-//                        item.getText(), getFont().getAttributes()).getIterator();
-//                
-//                LineBreakMeasurer measurer = new LineBreakMeasurer(iterator, frc);
-//                
-//                int lineAscent = 0;
-//                int lineHeight = 0;
-//                int lineCount = 0;
-//                
-//                while (measurer.getPosition() < iterator.getEndIndex()) {
-//                    TextLayout layout = measurer.nextLayout(wrappingWidth);
-//                    
-//                    layoutedText.add(layout);
-//                    
-//                    lineAscent = Math.max(lineAscent, getLayoutAscent(layout));
-//                    lineHeight = Math.max(lineHeight, getLayoutHeight(layout));
-//                    
-//                    lineCount++;
-//                }
-//                
-//                Icon icon = item.getIcon();
-//                
-//                int itemYOff = 0;
-//                int itemHeight;
-//                
-//                if (icon != null) {
-//                    itemYOff = (icon.getIconHeight() - lineHeight) / 2;
-//                    
-//                    if (lineCount == 1) {
-//                        itemHeight = Math.max(icon.getIconHeight(), lineHeight);
-//                    } else {
-//                        if (itemYOff >= 0) {
-//                            itemHeight = Math.max(icon.getIconHeight(),
-//                                    itemYOff + lineHeight * lineCount);
-//                        } else {
-//                            itemHeight = Math.max(lineHeight * lineCount,
-//                                    icon.getIconHeight() - itemYOff);
-//                        }
-//                    }
-//                } else {
-//                    itemHeight = lineHeight * lineCount;
-//                }
-//                
-//                if (icon != null) {
-//                    if (itemYOff < 0) {
-//                        icon.paintIcon(this, g, x1, itemY - itemYOff);
-//                    } else {
-//                        icon.paintIcon(this, g, x1, itemY);
-//                    }
-//                }
-//                
-//                int lineY = itemY + lineAscent;
-//                
-//                if (itemYOff > 0) {
-//                    lineY += itemYOff;
-//                }
-//
-//                for (int l = 0; l < layoutedText.size(); l++) {
-//                    layoutedText.get(l).draw(g2, x2, lineY);
-//                    lineY += lineHeight;
-//                }
-//                
-//                itemY += itemHeight;
-//                itemY += borderInsets.bottom;
-//                
-//                if (i + 1 < items.size()) {
-//                    Color oldColor = g.getColor();
-//                    g.setColor(SEPARATOR);
-//                    g.drawLine(0, itemY, getWidth() - 1, itemY);
-//                    g.setColor(oldColor);
-//                    itemY += borderInsets.top + 1;
-//                }
-//                
-//                layoutedText.clear();
-//            }            
-//            
-//            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, 
-//                    oldAntialiasing);
-//        }
-//        
-//        
-//        private int getLayoutAscent(TextLayout textLayout) {
-//            return Math.round(textLayout.getAscent());
-//        }
-//
-//        private int getLayoutHeight(TextLayout textLayout) {
-//            return (int) Math.ceil(textLayout.getAscent() 
-//                    + textLayout.getDescent()
-//                    + textLayout.getLeading());
-//        }
-//        
-//        private static final Color SEPARATOR = new Color(0x999999);
-//    }
-    
-    
     private static class UnderlineBorder implements Border {
         
         private int top;
@@ -761,105 +539,10 @@ public class GlassPane extends JPanel implements ActionListener,
     }
 
     
-//    private static class ListItem {
-//        private Icon icon;
-//        private String text;
-//
-//        public ListItem(Icon icon, String text) {
-//            this.icon = icon;
-//            this.text = text;
-//        }
-//
-//        public Icon getIcon() {
-//            return icon;
-//        }
-//        
-//        public String getText() {
-//            return text;
-//        }
-//        
-//        public String toString() {
-//            return text;
-//        }
-//    }
-    
-    
-//    private class MouseEventCatcher extends JPanel implements 
-//            MouseListener, MouseWheelListener 
-//    {
-//        public MouseEventCatcher() {
-//            addMouseMotionListener(this);
-//            addMouseWheelListener(this);
-//        }
-//        
-//
-//        public boolean contains(int x, int y) {
-//            return getParent().contains(x, y);
-//        }
-//        
-//
-//        public void mouseReleased(MouseEvent e) {
-//        }
-//
-//        public void mousePressed(MouseEvent e) {
-//        }
-//
-//        public void mouseExited(MouseEvent e) {
-//        }
-//
-//        public void mouseEntered(MouseEvent e) {
-//        }
-//
-//        public void mouseClicked(MouseEvent e) {
-//        }
-//
-//        public void mouseWheelMoved(MouseWheelEvent e) {
-//        }
-//        
-//        
-//        public private forwardMouseEvent(MouseEvent event) {
-//            Component target = findComponentAt(frame.getRootPane().getLayeredPane(), 
-//                    e.getX(), e.getY());
-//        }
-//    }
-//    
-//    
-//    private class GlassPaneLayout extends BorderLayout {
-//        public GlassPaneLayout(int hgap, int vgap) {
-//            super(hgap, vgap);
-//        }
-//        
-//        public void addLayoutComponent(Component comp, Object constraints) {
-//            if (comp == mouseEventCatcher) return;
-//            super.addLayoutComponent(comp, constraints);
-//        }
-//        
-//        public void addLayoutComponent(String name, Component comp) {
-//            if (comp == mouseEventCatcher) return;
-//            super.addLayoutComponent(name, comp);
-//        }
-//
-//        public void removeLayoutComponent(Component comp) {
-//            if (comp == mouseEventCatcher) return;
-//            super.removeLayoutComponent(comp);
-//        }
-//
-//        public void layoutContainer(Container target) {
-//            super.layoutContainer(target);
-//            synchronized (getTreeLock()) {
-//                mouseEventCatcher.setBounds(0, 0, getWidth(), getHeight());
-//            }
-//        }
-//    }
-    
-    
-    
-    
-    
     private static final URL E_IMAGE_URL 
             = Decoration.class.getResource("resources/e.png"); // NOI18N
     
-    private static final Paint FILL = Color.WHITE; // new Color(0xCCFFFFFF, true);
+    private static final Color FILL = Color.WHITE;
     private static final Color STROKE = new Color(0x444444);
 }
 

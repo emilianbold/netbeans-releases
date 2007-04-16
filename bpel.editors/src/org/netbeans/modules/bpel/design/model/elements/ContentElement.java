@@ -130,6 +130,23 @@ public class ContentElement extends VisualElement {
     }
     
     
+    public void paintThumbnail(Graphics2D g2) {
+        FShape shape = this.shape;
+        
+        // draw background;
+        g2.setPaint(GRADIENT_TEXTURE_COLOR);
+        g2.fill(shape);
+
+        // draw border
+        g2.setRenderingHint(
+                RenderingHints.KEY_STROKE_CONTROL,
+                RenderingHints.VALUE_STROKE_NORMALIZE);
+        g2.setStroke(STROKE.createStroke(g2));
+        g2.setPaint(STROKE_COLOR);
+        g2.draw(shape);
+    }
+    
+    
     public Icon2D getIcon() {
         return icon;
     }

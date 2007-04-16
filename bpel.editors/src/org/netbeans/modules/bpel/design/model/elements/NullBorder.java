@@ -34,10 +34,12 @@ public class NullBorder extends BorderElement {
     }
     
     
+    
     private static final FInsets INSETS = new FInsets(4, 4, 4, 4);
     private static final FShape SHAPE = new FRectangle(72 + 8, 40 + 8, 8);
     
     
     public void paint(Graphics2D g2) {}
+    public void paintThumbnail(Graphics2D g2) {}
 }
 

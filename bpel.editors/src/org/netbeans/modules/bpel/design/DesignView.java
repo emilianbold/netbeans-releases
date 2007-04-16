@@ -110,6 +110,7 @@ import org.netbeans.modules.bpel.design.geometry.FDimension;
 import org.netbeans.modules.bpel.design.geometry.FPoint;
 import org.netbeans.modules.soa.ui.nodes.NodeFactory;
 import org.netbeans.modules.bpel.editors.api.ExternalBpelEditorTopComponentListener;
+import org.netbeans.modules.bpel.editors.multiview.ThumbScrollPane;
 import org.netbeans.modules.bpel.properties.NodeUtils;
 import org.netbeans.modules.soa.ui.form.CustomNodeEditor;
 import org.openide.ErrorManager;
@@ -117,7 +118,7 @@ import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
 public class DesignView extends JPanel implements
-        Autoscroll, HelpCtx.Provider, ThumbnailPaintable {
+        Autoscroll, HelpCtx.Provider, ThumbScrollPane.Thumbnailable {
     
     public static double CORNER45 = Math.PI/4.0;
     ////////////////////////////////////////////////////////////////////////////
@@ -854,9 +855,116 @@ public class DesignView extends JPanel implements
         scrollRectToVisible(getFocusAreaBounds(pattern));
     }
     
+    
     public void paintThumbnail(Graphics g) {
-        paintComponent(g);
+        Pattern rootPattern = getRootPattern();
+        
+        if (rootPattern == null) return;
+        
+        Graphics2D g2 = GUtils.createGraphics(g);
+        
+        double zoom = getCorrectedZoom();
+        
+        Point p = convertDiagramToScreen(new FPoint(0, 0));
+        g2.translate(p.x, p.y);
+        g2.scale(zoom, zoom);
+        
+        Graphics2D g2bw = new BWGraphics2D(g2);
+        
+        Rectangle clipBounds = g2.getClipBounds();
+        
+        double exWidth = layoutManager.HSPACING * zoom;
+        double exHeight = layoutManager.VSPACING * zoom;
+
+        FBounds exClipBounds = new FBounds(
+                clipBounds.x - exWidth,
+                clipBounds.y - exHeight,
+                clipBounds.width + 2 * exWidth,
+                clipBounds.height + 2 * exHeight);
+        
+        paintPatternThumbnail(g2, g2bw, exClipBounds, rootPattern);
+        paintPatternThumbnailConnections(g2, g2bw, rootPattern);
+        g2.dispose();
+        
+        Graphics componentGraphics = g.create();
+        for (int i = getComponentCount() - 1; i >= 0; i--) {
+            Component c = getComponent(i);
+            if (c instanceof GlassPane) {
+                int tx = c.getX();
+                int ty = c.getY();
+                componentGraphics.translate(tx, ty);
+                ((GlassPane) c).paintThumbnail(componentGraphics);
+                componentGraphics.translate(-tx, -ty);
+            }
+        }
+        componentGraphics.dispose();
     }
+    
+    
+    private void paintPatternThumbnail(Graphics2D g2, Graphics2D g2bw, 
+            FBounds clipBounds, Pattern pattern) {
+        if (!pattern.getBounds().isIntersects(clipBounds)) {
+            return;
+        }
+        
+        Decoration decoration = getDecoration(pattern);
+        
+        if (pattern instanceof CompositePattern) {
+            CompositePattern composite = (CompositePattern) pattern;
+            
+            BorderElement border = composite.getBorder();
+            
+            Graphics2D g = (decoration.hasDimmed()) ? g2bw : g2;
+            
+            if (border != null) {
+                border.paintThumbnail(g);
+            }
+            
+            for (VisualElement e : composite.getElements()) {
+                e.paintThumbnail(g);
+            }
+            
+            for (Pattern p : composite.getNestedPatterns()) {
+                paintPatternThumbnail(g2, g2bw, clipBounds, p);
+            }
+            
+            if (decoration.hasStroke()) {
+                decoration.getStroke().paint(g2, composite.createSelection());
+            }
+        } else {
+            Graphics2D g = (decoration.hasDimmed()) ? g2bw : g2;
+            
+            for (VisualElement e : pattern.getElements()) {
+                e.paintThumbnail(g);
+            }
+            
+            if (decoration.hasStroke()) {
+                decoration.getStroke().paint(g2, pattern.createSelection());
+            }
+        }
+    }
+    
+
+    private void paintPatternThumbnailConnections(Graphics2D g2, 
+            Graphics2D g2bw, Pattern pattern) 
+    {
+        if (pattern == null) return;
+        
+        if (pattern instanceof CompositePattern) {
+            CompositePattern composite = (CompositePattern) pattern;
+            for (Pattern p : composite.getNestedPatterns()) {
+                paintPatternThumbnailConnections(g2, g2bw, p);
+            }
+        }
+        
+        Graphics2D g = (getDecoration(pattern).hasDimmed()) ? g2bw : g2;
+        
+        for (Connection c : pattern.getConnections()) {
+            c.paintThumbnail(g);
+        }
+    }
+    
+    
     
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);

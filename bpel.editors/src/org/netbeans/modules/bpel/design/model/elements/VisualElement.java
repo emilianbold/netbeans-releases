@@ -128,7 +128,7 @@ public abstract class VisualElement {
     
     
     public abstract void paint(Graphics2D g2);
-    
+    public abstract void paintThumbnail(Graphics2D g2);
     
     public FShape getShape() {
         return shape;
@@ -349,6 +349,7 @@ public abstract class VisualElement {
     
     private static final double COS_45 = Math.sqrt(2.0) / 2.0;
     
+    public static final Color GRADIENT_TEXTURE_COLOR = new Color(0xE7ECF4);
     public static final BufferedImage GRADIENT_TEXTURE;
 
     

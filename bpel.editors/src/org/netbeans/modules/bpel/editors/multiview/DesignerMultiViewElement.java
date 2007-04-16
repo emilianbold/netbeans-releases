@@ -40,7 +40,6 @@ import org.netbeans.modules.bpel.design.NavigationTools;
 import org.netbeans.modules.bpel.design.PartnerLinkFilterButton;
 import org.netbeans.modules.bpel.design.SequenceFilterButton;
 import org.netbeans.modules.bpel.design.DiagramImpl;
-import org.netbeans.modules.soa.ui.tnv.api.ThumbnailView;
 import org.openide.awt.UndoRedo;
 import org.openide.loaders.DataNode;
 import org.openide.windows.TopComponent;
@@ -128,7 +127,6 @@ import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
-import org.netbeans.modules.soa.ui.tnv.scrollpane.ThumbnailScrollPane;
 import org.netbeans.modules.print.api.PrintManagerAccess;
 import org.netbeans.modules.bpel.search.api.SearchManagerAccess;
 import org.openide.loaders.DataObject;
@@ -484,12 +482,7 @@ public class DesignerMultiViewElement extends TopComponent
         setLayout(new BorderLayout());
         
         myDesignView = createDesignView();
-        ThumbnailScrollPane scroll = new ThumbnailScrollPane(myDesignView.getView());
-        scroll.getThumbnailView().getUIComponent().
-                setPreferredSize(new Dimension(100, 150));
-        scroll.getThumbnailView().repaintMainViewRightAway(false);
-        scroll.getThumbnailView().repaintThumbnailViewRightAway(false);
-        scroll.setTnvIndent(10);
+        ThumbScrollPane scroll = new ThumbScrollPane(myDesignView.getView());
 //        JScrollPane scroll = new JScrollPane(myDesignView.getView());
         scroll.setBorder(null);
         scroll.getVerticalScrollBar().setUnitIncrement(16);

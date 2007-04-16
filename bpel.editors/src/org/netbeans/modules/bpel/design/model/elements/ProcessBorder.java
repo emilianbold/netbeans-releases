@@ -74,10 +74,34 @@ public class ProcessBorder extends BorderElement {
         }
     }
     
+
+    public void paintThumbnail(Graphics2D g2) {
+        FShape shape = this.shape;
+        Rectangle2D headerRectangle = new Rectangle2D.Float(shape.x, shape.y, 
+                shape.width, 32);
+
+        g2.setPaint(BACKGROUND);
+        g2.fill(shape);
+        g2.setPaint(GRADIENT_TEXTURE_COLOR);
+        g2.fill(headerRectangle);
+
+        g2.setRenderingHint(
+                RenderingHints.KEY_STROKE_CONTROL,
+                RenderingHints.VALUE_STROKE_NORMALIZE);
+        g2.setPaint(ContentElement.STROKE_COLOR);
+        g2.setStroke(STROKE.createStroke(g2));
+        
+        g2.draw(shape);
+        float x = shape.x;
+        float y = shape.y + 32;
+        g2.draw(new Line2D.Float(x, y, x + shape.width, y));
+    }
+    
     
     public static final FShape SHAPE = new FRectangle(72 + 16 + 16, 48 + 16);
     public static final FInsets INSETS = new FInsets(48, 16, 16, 16);
 
     public static Paint BACKGROUND = new Color(0xFFFFFF);
     private static FStroke STROKE = new FStroke(1);
+
 }

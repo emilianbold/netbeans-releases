@@ -431,6 +431,13 @@ public class Connection {
                 isPaintSlash(), isPaintCircle(), null);
     }
     
+    
+    public void paintThumbnail(Graphics2D g2) {
+        assert (path != null): "Invalid connection(path is null) found on diagram: " + this;
+        paintConnection(g2, path, false, false, false, false, null);
+    }
+    
+    
     // Rendering constants
     public static final Color COLOR = new Color(0xE68B2C);
     public static final Color CIRCLE_FILL = new Color(0xFFFFFF);

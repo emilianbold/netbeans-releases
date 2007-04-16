@@ -60,9 +60,38 @@ public final class FStroke {
         }
     }
 
+
+    public final Stroke createSolidStroke(Graphics2D g2) {
+        return createSolidStroke(g2.getTransform());
+    }
+    
     
     public final Stroke createStroke(Graphics2D g2) {
         return createStroke(g2.getTransform());
+    }
+    
+    
+    public final Stroke createSolidStroke(AffineTransform at) {
+        double scale;
+        
+        if (at == null) { 
+            scale = 1.0;
+        } else {
+            double a = at.getScaleX();
+            double b = at.getShearY();
+            scale = Math.sqrt(a * a + b * b);
+            if (scale <= 0.0) scale = 1.0;
+        }
+
+        double k = scale * width;
+        
+        if (k < 1.0) {
+            return new BasicStroke((float) (width / k), 
+                    BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL);
+        }
+        
+        return new BasicStroke((float) width, 
+                BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL);
     }
     
     

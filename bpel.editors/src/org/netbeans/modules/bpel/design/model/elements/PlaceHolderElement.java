@@ -47,5 +47,8 @@ public class PlaceHolderElement extends ContentElement {
     }
     
     
+    public void paintThumbnail(Graphics2D g2) {}
+    
+    
     public static final FShape SHAPE = new FEllipse(20);
 }

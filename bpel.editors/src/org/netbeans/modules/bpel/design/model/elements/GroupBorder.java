@@ -53,6 +53,17 @@ public class GroupBorder extends BorderElement {
             drawString(g2, getText(), getX() + 6, getY() + 1, getWidth() - 12);
         }
     }
+
+
+    public void paintThumbnail(Graphics2D g2) {
+        g2.setRenderingHint(
+                RenderingHints.KEY_STROKE_CONTROL,
+                RenderingHints.VALUE_STROKE_NORMALIZE);
+        g2.setPaint(STROKE_COLOR);
+        
+        g2.setStroke(STROKE.createSolidStroke(g2));
+        g2.draw(getShape());
+    }
     
     
     public static final FShape SHAPE = new FRectangle(32, 32, 10);
