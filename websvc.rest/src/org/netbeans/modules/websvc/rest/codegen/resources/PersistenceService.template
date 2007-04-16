@@ -9,6 +9,7 @@
 
 package Templates.Classes;
 
+import com.sun.ws.rest.api.WebApplicationException;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
@@ -32,8 +33,16 @@ public class PersistenceService {
     private EntityManager em;
     
     private PersistenceService(String puName) {
-        this.emf = Persistence.createEntityManagerFactory(puName);
-        this.em = emf.createEntityManager();
+        try {
+            this.emf = Persistence.createEntityManagerFactory(puName);
+            this.em = emf.createEntityManager();
+        } catch (Exception ex) {
+            if (emf != null) {
+                emf.close();
+            }
+            
+            throw new WebApplicationException(ex);
+        }
     }
     
     public static PersistenceService getInstance() {
@@ -100,8 +109,13 @@ public class PersistenceService {
     }
     
     public void close() {
-        em.close();
-        emf.close();
+        if (em != null && em.isOpen()) {
+            em.close();
+        }
+        
+        if (emf != null && emf.isOpen()) {
+            emf.close();
+        }
         
         removeInstance();
     }
