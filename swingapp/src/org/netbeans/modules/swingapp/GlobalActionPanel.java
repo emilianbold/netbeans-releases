@@ -708,6 +708,7 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
     
     private PropertyChangeListener amListener;
     private void switchedToTopComponent(TopComponent active) {
+        if(active == null) { return; }
         FormEditorSupport fes = FormEditorSupport.getFormEditor(active);
         if(fes == null) { return; }
         
