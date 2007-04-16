@@ -395,6 +395,11 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
         private NbiButton cancelButton;
         
         /**
+         * Spacer panel which used to correctly position the standard buttons.
+         */
+        private NbiPanel spacerPanel;
+        
+        /**
          * Container for the standard buttons swing components.
          */
         private NbiPanel buttonsPanel;
@@ -558,39 +563,49 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
             // cancelButton /////////////////////////////////////////////////////////
             cancelButton = new NbiButton();
             
+            // spacerPanel //////////////////////////////////////////////////////////
+            spacerPanel = new NbiPanel();
+            
             // buttonsPanel /////////////////////////////////////////////////////////
             buttonsPanel = new NbiPanel();
-            buttonsPanel.setLayout(new GridBagLayout());
             
             buttonsPanel.add(helpButton, new GridBagConstraints(
                     0, 0,                             // x, y
                     1, 1,                             // width, height
                     0.0, 0.0,                         // weight-x, weight-y
-                    GridBagConstraints.LINE_START,    // anchor
+                    GridBagConstraints.CENTER,        // anchor
                     GridBagConstraints.NONE,          // fill
                     new Insets(11, 11, 11, 11),       // padding
                     0, 0));                           // padx, pady - ???
-            buttonsPanel.add(backButton, new GridBagConstraints(
+            buttonsPanel.add(spacerPanel, new GridBagConstraints(
                     1, 0,                             // x, y
                     1, 1,                             // width, height
                     1.0, 0.0,                         // weight-x, weight-y
-                    GridBagConstraints.LINE_END,      // anchor
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(0, 0, 0, 0),           // padding
+                    0, 0));                           // padx, pady - ???
+            buttonsPanel.add(backButton, new GridBagConstraints(
+                    2, 0,                             // x, y
+                    1, 1,                             // width, height
+                    0.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
                     GridBagConstraints.NONE,          // fill
                     new Insets(11, 0, 11, 6),         // padding
                     0, 0));                           // padx, pady - ???
             buttonsPanel.add(nextButton, new GridBagConstraints(
-                    2, 0,                             // x, y
+                    3, 0,                             // x, y
                     1, 1,                             // width, height
                     0.0, 0.0,                         // weight-x, weight-y
-                    GridBagConstraints.LINE_END,      // anchor
+                    GridBagConstraints.CENTER,        // anchor
                     GridBagConstraints.NONE,          // fill
                     new Insets(11, 0, 11, 11),        // padding
                     0, 0));                           // padx, pady - ???
             buttonsPanel.add(cancelButton, new GridBagConstraints(
-                    3, 0,                             // x, y
+                    4, 0,                             // x, y
                     1, 1,                             // width, height
                     0.0, 0.0,                         // weight-x, weight-y
-                    GridBagConstraints.LINE_END,      // anchor
+                    GridBagConstraints.CENTER,        // anchor
                     GridBagConstraints.NONE,          // fill
                     new Insets(11, 0, 11, 11),        // padding
                     0, 0));                           // padx, pady - ???
