@@ -641,22 +641,56 @@ accepts a list of other lookup implementations (in the constructor and
 also changeable later). The results it provides are constructed by
 merging together the results of the delegate lookups.
 
-<p>If you want to use the common mechanism of finding instances in
+<p>
+<a name="folderlookup"></a>
+
+If you want to use the common mechanism of finding instances in
 folders (or subfolders) and serving these as the results,
 
-<code>FolderLookup</code>
+<a href="../lookup/Lookups.html#forPath(java.lang.String)">Lookups.forPath(String)</a>
 
-makes this possible: you need only provide a folder to look in, and
+makes this possible: you need only provide a name of a folder to look in, and
 use
 
-<code>getLookup</code>
+<code>Lookups.forPath(theFolderName)</code>
 
 to retrieve a lookup implementation which will scan this folder and
 its subfolders for data objects with <code>InstanceCookie</code>
 matching the lookup template. Furthermore, any instance cookies whose
 instance class is assignable to <code>Lookup</code> will be treated
 specially: they will be proxied to, so these sub-lookups may provide
-additional instances if they match the lookup template.
+additional instances if they match the lookup template. In order to
+get the full functionality associated with such a lookup it is wise
+to request presence of <code>org.netbeans.modules.settings > 1.13</code>
+as that is the module that does most of the work behind <code>Lookups.forPath</code>.
+To register <code>javax.xml.parsers.DocumentBuilderFactory</code> into
+<code>Lookups.forName("my/xml/app/data")</code> add the above described dependency
+and put following code in your layer file:
+<pre>
+&lt;folder name="my"&gt;
+  &lt;folder name="xml"&gt;
+    &lt;folder name="app"&gt;
+      &lt;folder name="data"&gt;
+        &lt;file name="ThisIsMyRegistration.instance&gt;
+          &lt;attr name="instanceCreate" newvalue="pkg.ClassNameOfYourImpl"/&gt;
+        &lt;/file&gt;
+      &lt;/folder&gt;
+    &lt;/folder&gt;
+  &lt;/folder&gt;
+&lt;/folder&gt;
+</pre>
+
+<p>
+In fact the <code>Lookups.forPath</code> can be used in completely 
+standalone mode. This is not very recommended in the NetBeans IDE, but 
+can be found pretty useful when using this library in standalone applications:
+<code>Lookups.forPath(path)</code> scans all instances registered in the 
+<a href="#service-lookup">META-INF/services style</a> just it uses
+<code>META-INF/namedservices/path</code> prefix instead. As a result to
+perform a successfull search for all <code>javax.xml.parsers.DocumentBuilderFactory</code> 
+inside <code>Lookups.forName("my/xml/app/data")</code> one can register the
+implementation into <code>META-INF/namedservices/my/xml/app/data/javax.xml.parsers.DocumentBuilderFactory</code>.
+</p>
 
 <p>The most powerful way to provide a lookup is to directly define
 what instances and items it should provide, by subclassing. For this,

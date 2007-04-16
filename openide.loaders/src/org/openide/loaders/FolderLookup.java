@@ -38,7 +38,9 @@ import org.openide.util.lookup.*;
  * in the lookup system easily.
  * @author  Jaroslav Tulach
  * @since 1.11
+ * @deprecated use {@link Lookups#forPath} instead.
  */
+@Deprecated
 public class FolderLookup extends FolderInstance {
     
     /** Lock for initiliazation of lookup. */

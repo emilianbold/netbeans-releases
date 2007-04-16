@@ -34,12 +34,9 @@ import javax.swing.border.EmptyBorder;
 import org.netbeans.modules.options.ui.TabbedPanelModel;
 import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.FolderLookup;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
 /**
@@ -153,10 +150,8 @@ public final class Model extends TabbedPanelModel {
     private void init () {
         if (initialized) return;
         initialized = true;
-        FileObject fo = Repository.getDefault ().getDefaultFileSystem ().
-            findResource ("OptionsDialog/Advanced");
-        if (fo == null) return;
-        Lookup lookup = new FolderLookup (DataFolder.findFolder (fo)).getLookup ();
+        
+        Lookup lookup = Lookups.forPath("OptionsDialog/Advanced"); // NOI18N
         Iterator<? extends AdvancedOption> it = lookup.lookup (new Lookup.Template<AdvancedOption> (AdvancedOption.class)).
                 allInstances ().iterator ();
         while (it.hasNext ()) {

@@ -102,6 +102,15 @@ Microsystems, Inc. All Rights Reserved.
                     <run-dependency/>
                 </dependency>
             </module-dependencies>
+            <test-dependencies>
+                <test-type>
+                    <name>unit</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.settings</code-name-base>
+                        <recursive/>
+                    </test-dependency>
+                </test-type>
+            </test-dependencies>
             <public-packages>
                 <package>org.netbeans.api.options</package>
                 <package>org.netbeans.spi.options</package>

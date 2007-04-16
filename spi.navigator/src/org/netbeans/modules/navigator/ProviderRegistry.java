@@ -19,25 +19,12 @@
 
 package org.netbeans.modules.navigator;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
-import java.util.logging.Logger;
 import org.netbeans.spi.navigator.NavigatorPanel;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.FolderLookup;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Storage/lookup of NavigatorPanel providers. Providers are mapped to
@@ -105,28 +92,9 @@ class ProviderRegistry {
      * exist for given content type
      */
     private Collection<? extends NavigatorPanel> loadProviders (String contentType) {
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileObject fo = fs.findResource(PANELS_FOLDER + contentType);
+        String path = PANELS_FOLDER + contentType;
 
-        if (fo == null) {
-            // no available providers or malformed contentType 
-            Logger.getAnonymousLogger().fine("No providers for content type " + contentType); //NOI18N
-            return Collections.emptyList();
-        }
-        
-        DataFolder.Container dContainer;
-        try {
-            dContainer = DataFolder.findContainer(fo);
-        } catch (IllegalArgumentException exc) {
-            ErrorManager.getDefault().annotate(exc,
-                "Navigator content type " + contentType +
-                " is probably malformed, as it doesn't point to folder.");            
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, exc);
-            return Collections.emptyList();
-        }
-        
-        FolderLookup fLookup = new FolderLookup(dContainer, "");
-        Lookup.Result<NavigatorPanel> result = fLookup.getLookup().lookup(NAV_PANEL_TEMPLATE);
+        Lookup.Result<NavigatorPanel> result = Lookups.forPath(path).lookup(NAV_PANEL_TEMPLATE);
 
         return result.allInstances();
     }

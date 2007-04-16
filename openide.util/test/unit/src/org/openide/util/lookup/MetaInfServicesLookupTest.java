@@ -25,6 +25,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -32,8 +34,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Set;
 import java.util.TreeSet;
@@ -55,18 +60,32 @@ import org.openide.util.RequestProcessor;
  */
 public class MetaInfServicesLookupTest extends NbTestCase {
     private Logger LOG;
+    private Map<ClassLoader,Lookup> lookups = new HashMap<ClassLoader,Lookup>();
     
     public MetaInfServicesLookupTest(String name) {
         super(name);
         LOG = Logger.getLogger("Test." + name);
     }
     
-    private String prefix() {
+    protected String prefix() {
         return "META-INF/services/";
+    }
+    
+    protected Lookup createLookup(ClassLoader c) {
+        return Lookups.metaInfServices(c);
     }
     
     protected Level logLevel() {
         return Level.INFO;
+    }
+
+    private Lookup getTestedLookup(ClassLoader c) {
+        Lookup l = lookups.get(c);
+        if (l == null) {
+            l = createLookup(c);
+            lookups.put(c, l);
+        }
+        return l;
     }
 
     private URL findJar(String n) throws IOException {
@@ -159,8 +178,21 @@ public class MetaInfServicesLookupTest extends NbTestCase {
         }, c0);
     }
 
+    protected void tearDown() throws Exception {
+        Set<Reference<Lookup>> weak = new HashSet<Reference<Lookup>>();
+        for (Lookup l : lookups.values()) {
+            weak.add(new WeakReference<Lookup>(l));
+        }
+        
+        lookups = null;
+        
+        for(Reference<Lookup> ref : weak) {
+            assertGC("Lookup can disappear", ref);
+        }
+    }
+
     public void testBasicUsage() throws Exception {
-        Lookup l = Lookups.metaInfServices(c2);
+        Lookup l = getTestedLookup(c2);
         Class xface = c1.loadClass("org.foo.Interface");
         List results = new ArrayList(l.lookup(new Lookup.Template(xface)).allInstances());
         assertEquals(2, results.size());
@@ -174,11 +206,11 @@ public class MetaInfServicesLookupTest extends NbTestCase {
 
     public void testLoaderSkew() throws Exception {
         Class xface1 = c1.loadClass("org.foo.Interface");
-        Lookup l3 = Lookups.metaInfServices(c3);
+        Lookup l3 = getTestedLookup(c3);
         // If we cannot load Interface, there should be no impls of course... quietly!
         assertEquals(Collections.EMPTY_LIST,
                 new ArrayList(l3.lookup(new Lookup.Template(xface1)).allInstances()));
-        Lookup l4 = Lookups.metaInfServices(c4);
+        Lookup l4 = getTestedLookup(c4);
         // If we can load Interface but it is the wrong one, ignore it.
         assertEquals(Collections.EMPTY_LIST,
                 new ArrayList(l4.lookup(new Lookup.Template(xface1)).allInstances()));
@@ -188,18 +220,18 @@ public class MetaInfServicesLookupTest extends NbTestCase {
     }
 
     public void testStability() throws Exception {
-        Lookup l = Lookups.metaInfServices(c2);
+        Lookup l = getTestedLookup(c2);
         Class xface = c1.loadClass("org.foo.Interface");
         Object first = l.lookup(new Lookup.Template(xface)).allInstances().iterator().next();
-        l = Lookups.metaInfServices(c2a);
+        l = getTestedLookup(c2a);
         Object second = l.lookup(new Lookup.Template(xface)).allInstances().iterator().next();
         assertEquals(first, second);
     }
 
     public void testMaskingOfResources() throws Exception {
-        Lookup l1 = Lookups.metaInfServices(c1);
-        Lookup l2 = Lookups.metaInfServices(c2);
-        Lookup l4 = Lookups.metaInfServices(c4);
+        Lookup l1 = getTestedLookup(c1);
+        Lookup l2 = getTestedLookup(c2);
+        Lookup l4 = getTestedLookup(c4);
 
         assertNotNull("services1.jar defines a class that implements runnable", l1.lookup(Runnable.class));
         assertNull("services2.jar does not defines a class that implements runnable", l2.lookup(Runnable.class));
@@ -207,12 +239,12 @@ public class MetaInfServicesLookupTest extends NbTestCase {
     }
 
     public void testOrdering() throws Exception {
-        Lookup l = Lookups.metaInfServices(c1);
+        Lookup l = getTestedLookup(c1);
         Class xface = c1.loadClass("java.util.Comparator");
         List results = new ArrayList(l.lookup(new Lookup.Template(xface)).allInstances());
         assertEquals(1, results.size());
 
-        l = Lookups.metaInfServices(c2);
+        l = getTestedLookup(c2);
         xface = c2.loadClass("java.util.Comparator");
         results = new ArrayList(l.lookup(new Lookup.Template(xface)).allInstances());
         assertEquals(2, results.size());
@@ -221,7 +253,7 @@ public class MetaInfServicesLookupTest extends NbTestCase {
         assertEquals("org.foo.impl.Comparator1", results.get(1).getClass().getName());
 
         // test that items without position are always at the end
-        l = Lookups.metaInfServices(c2);
+        l = getTestedLookup(c2);
         xface = c2.loadClass("java.util.Iterator");
         results = new ArrayList(l.lookup(new Lookup.Template(xface)).allInstances());
         assertEquals(2, results.size());
@@ -256,7 +288,7 @@ public class MetaInfServicesLookupTest extends NbTestCase {
             }
         }
         Loader loader = new Loader();
-        Lookup l = Lookups.metaInfServices(loader);
+        Lookup l = getTestedLookup(loader);
 
         Object no = l.lookup(String.class);
         assertNull("Not found of course", no);
@@ -264,7 +296,7 @@ public class MetaInfServicesLookupTest extends NbTestCase {
     }
 
     public void testListenersAreNotifiedWithoutHoldingALockIssue36035() throws Exception {
-        final Lookup l = Lookups.metaInfServices(c2);
+        final Lookup l = getTestedLookup(c2);
         final Class xface = c1.loadClass("org.foo.Interface");
         final Lookup.Result res = l.lookup(new Lookup.Template(Object.class));
 
@@ -305,7 +337,7 @@ public class MetaInfServicesLookupTest extends NbTestCase {
         ClassLoader c1 = new URLClassLoader(new URL[] {
             findJar("problem100320.jar"),
         }, c0);
-        Lookup lookup = Lookups.metaInfServices(c1);
+        Lookup lookup = Lookups.metaInfServices(c1, prefix());
 
         Collection<?> colAWT = lookup.lookupAll(Component.class);
         assertEquals("There is enough objects to switch to InheritanceTree", 12, colAWT.size());

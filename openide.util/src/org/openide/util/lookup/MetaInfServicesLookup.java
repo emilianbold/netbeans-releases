@@ -68,18 +68,14 @@ final class MetaInfServicesLookup extends AbstractLookup {
 
     /** class loader to use */
     private final ClassLoader loader;
-
-    /** Create a lookup reading from the classpath.
-     * That is, the same classloader as this class itself.
-     */
-    public MetaInfServicesLookup() {
-        this(MetaInfServicesLookup.class.getClassLoader());
-    }
+    /** prefix to prepend */
+    private final String prefix;
 
     /** Create a lookup reading from a specified classloader.
      */
-    public MetaInfServicesLookup(ClassLoader loader) {
+    public MetaInfServicesLookup(ClassLoader loader, String prefix) {
         this.loader = loader;
+        this.prefix = prefix;
 
         LOGGER.log(Level.FINE, "Created: {0}", this);
     }
@@ -123,7 +119,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
             LOGGER.log(Level.FINER, "Searching for " + clazz.getName() + " in " + clazz.getClassLoader() + " from " + this);
         }
 
-        String res = "META-INF/services/" + clazz.getName(); // NOI18N
+        String res = prefix + clazz.getName(); // NOI18N
         Enumeration<URL> en;
 
         try {

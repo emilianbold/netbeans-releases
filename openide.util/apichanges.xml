@@ -26,6 +26,24 @@ Microsystems, Inc. All Rights Reserved.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="Lookups.forPath">
+        <api name="util"/>
+        <summary>Added simplified support for named lookups <code>Lookups.forPath</code></summary>
+        <version major="7" minor="9"/>
+        <date day="17" month="4" year="2007"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                New method <a href="@TOP@/org/openide/util/lookup/Lookups.html#forPath(java.lang.String)">Lookups.forPath(String)</a>
+                has been added to replace now deprecated <a href="@org-openide-loaders@/org/openide/loaders/FolderLookup.html">FolderLookup</a>
+                and allow modules who wants to read settings from layers
+                to do so with a simpler code, without dependency on DataSystems API.
+            </p>
+        </description>
+        <class package="org.openide.util.lookup" name="Lookups"/>
+        <issue number="98426"/>
+    </change>
 
     <change id="ChangeSupport">
         <api name="util"/>

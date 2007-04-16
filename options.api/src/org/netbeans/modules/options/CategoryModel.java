@@ -24,27 +24,22 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.SynchronousQueue;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.FolderLookup;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
 /**
@@ -96,7 +91,7 @@ public final class CategoryModel implements LookupListener {
     }
         
     public static CategoryModel getInstance() {
-        CategoryModel retval = (CategoryModel)INSTANCE.get();
+        CategoryModel retval = INSTANCE.get();
         if (retval == null) {
             retval = new CategoryModel();
             INSTANCE = new WeakReference<CategoryModel>(retval);
@@ -247,7 +242,7 @@ public final class CategoryModel implements LookupListener {
     
     Category getCategory(String categoryID) {
         categoryTask.waitFinished();
-        return (Category)id2Category.get(categoryID);
+        return id2Category.get(categoryID);
     }
         
     private MasterLookup getMasterLookup() {
@@ -258,19 +253,15 @@ public final class CategoryModel implements LookupListener {
     }
     
     private Map<String, OptionsCategory> loadOptionsCategories() {
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("OptionsDialog");// NOI18N
-        if (fo != null) {
-            Lookup lookup = new FolderLookup(DataFolder.findFolder(fo),null).getLookup();//NOI18N
-            Lookup.Result<OptionsCategory> result = lookup.lookup(new Lookup.Template<OptionsCategory>(OptionsCategory.class));
-            result.addLookupListener(this);
-            Map<String, OptionsCategory> m = new LinkedHashMap<String, OptionsCategory>();
-            for (Iterator<? extends Lookup.Item<OptionsCategory>> it = result.allItems().iterator(); it.hasNext();) {
-                Lookup.Item<OptionsCategory> item = it.next();
-                m.put(item.getId(), item.getInstance());                
-            }
-            return Collections.unmodifiableMap(m);
+        Lookup lookup = Lookups.forPath("OptionsDialog"); // NOI18N
+        Lookup.Result<OptionsCategory> result = lookup.lookup(new Lookup.Template<OptionsCategory>(OptionsCategory.class));
+        result.addLookupListener(this);
+        Map<String, OptionsCategory> m = new LinkedHashMap<String, OptionsCategory>();
+        for (Iterator<? extends Lookup.Item<OptionsCategory>> it = result.allItems().iterator(); it.hasNext();) {
+            Lookup.Item<OptionsCategory> item = it.next();
+            m.put(item.getId().substring("OptionsDialog".length() + 1), item.getInstance()); // NOI18N
         }
-        return Collections.<String, OptionsCategory>emptyMap();
+        return Collections.unmodifiableMap(m);
     }
 
     public void resultChanged(LookupEvent ev) {

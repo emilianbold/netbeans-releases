@@ -21,6 +21,7 @@ package org.openide.util.lookup;
 
 import java.util.Arrays;
 import java.util.Collections;
+import org.netbeans.modules.openide.util.NamedServicesProvider;
 import org.openide.util.Lookup;
 
 /**
@@ -134,9 +135,41 @@ public class Lookups {
      * @since 3.35
      */
     public static Lookup metaInfServices(ClassLoader classLoader) {
-        return new MetaInfServicesLookup(classLoader);
+        return new MetaInfServicesLookup(classLoader, "META-INF/services/"); // NOI18N
     }
 
+    /** Returns a lookup that behaves exactly as the one
+     * created <code>metaInfServices(ClassLoader)</code> except that
+     * it does not read data from META-INF/services, but instead
+     * from the specified <code>prefix</code>.
+     * @param classLoader class loader to use for loading
+     * @param prefix prefix to prepend to the class name when searching
+     * @since 7.9
+     */
+    public static Lookup metaInfServices(ClassLoader classLoader, String prefix) {
+        return new MetaInfServicesLookup(classLoader, prefix);
+    }
+    
+    /** Creates a <q>named</q> lookup. It is a lookup identified by a 
+     * given path. Two lookups with the same path are going to have 
+     * the same content. It is expected that each <q>named</q> lookup
+     * will contain a superset of what would lookup created by
+     * <code>metaInfServices(theRightLoader, "META-INF/namedservices/" + path)</code>
+     * contain. However various environments can add their own
+     * extensions to its content. For example when running inside NetBeans Runtime
+     * Container, the content of system file system under the given
+     * <code>path</code> is also present in the returned lookup.
+     * <p>
+     * Read more about the <a href="../doc-files/api.html#folderlookup">usage of this method...</a>
+     * 
+     * @param path the path identifying the lookup, for example <q>Databases/</q>, etc.
+     * @return lookup associated with this path
+     * @since 7.9
+     */
+    public static Lookup forPath(String path) {
+        return NamedServicesProvider.find(path);
+    }
+    
     /** Creates a lookup that wraps another one and filters out instances
      * of specified classes. If you have a lookup and
      * you want to remove all instances of ActionMap you can use:
