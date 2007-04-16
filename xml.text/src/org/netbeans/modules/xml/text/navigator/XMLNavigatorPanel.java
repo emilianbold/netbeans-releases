@@ -40,7 +40,8 @@ public class XMLNavigatorPanel implements NavigatorPanel {
     private Lookup.Result selection;
     private final LookupListener selectionListener = new LookupListener() {
         public void resultChanged(LookupEvent ev) {
-            navigate(selection.allInstances());
+            if(selection != null)
+                navigate(selection.allInstances());
         }
     };
     

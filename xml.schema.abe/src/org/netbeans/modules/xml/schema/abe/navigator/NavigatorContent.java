@@ -166,7 +166,8 @@ public class NavigatorContent extends JPanel
         try {
             SchemaModelCookie modelCookie = (SchemaModelCookie)dobj.
                     getCookie(SchemaModelCookie.class);
-            assert modelCookie != null;            
+            if(modelCookie == null)
+                return null;
             AXIModel model = AXIModelFactory.getDefault().getModel(modelCookie.getModel());
             if(model != null) {
                 model.removePropertyChangeListener(this);

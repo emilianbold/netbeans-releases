@@ -77,6 +77,8 @@ public class ABENavigatorPanel implements LookupListener, NavigatorPanel {
     }
 
     public void resultChanged(LookupEvent ev) {
+        if(selection == null)
+            return;        
         Collection selected = selection.allInstances();
         if (selected.size() == 1) {
 	    DataObject olddobj = dobj;
