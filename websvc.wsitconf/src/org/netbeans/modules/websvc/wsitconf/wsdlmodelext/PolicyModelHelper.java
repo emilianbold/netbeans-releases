@@ -57,7 +57,7 @@ public class PolicyModelHelper {
      * should be used in order to create a policy, or to access the All element
      * component c must not be null
      */
-    public static All createPolicy(final WSDLComponent c) {
+    public static All createPolicy(final WSDLComponent c, boolean addressing) {
 
         WSDLModel model = c.getModel();
         WSDLComponentFactory wcf = model.getFactory();
@@ -142,7 +142,7 @@ public class PolicyModelHelper {
         }
                         
         All all = createTopExactlyOneAll(policy);        
-        if (c instanceof Binding) {
+        if ((c instanceof Binding) && (addressing)) {
             PolicyModelHelper.createElement(all, Addressing10WsdlQName.USINGADDRESSING.getQName(), Addressing10WsdlUsingAddressing.class, false);
         }
         return all;

@@ -142,7 +142,7 @@ public class SecurityPolicyModelHelper {
         if ((c instanceof Binding) || 
             (c instanceof BindingOperation) || 
             (c instanceof BindingInput) || (c instanceof BindingOutput) || (c instanceof BindingFault)) {
-            c = PolicyModelHelper.createPolicy(c);
+            c = PolicyModelHelper.createPolicy(c, true);
         }
         
         if (wss11) {
@@ -170,7 +170,7 @@ public class SecurityPolicyModelHelper {
         if ((c instanceof Binding) || 
             (c instanceof BindingOperation) || 
             (c instanceof BindingInput) || (c instanceof BindingOutput) || (c instanceof BindingFault)) {
-            c = PolicyModelHelper.createPolicy(c);
+            c = PolicyModelHelper.createPolicy(c, true);
         }
         if (!isTrust10(c)) {
             return PolicyModelHelper.createElement(c, SecurityPolicyQName.TRUST10.getQName(), Trust10.class, false);
@@ -185,7 +185,7 @@ public class SecurityPolicyModelHelper {
         if ((c instanceof Binding) || 
             (c instanceof BindingOperation) || 
             (c instanceof BindingInput) || (c instanceof BindingOutput) || (c instanceof BindingFault)) {
-            c = PolicyModelHelper.createPolicy(c);
+            c = PolicyModelHelper.createPolicy(c, true);
         }
         WssElement wss10 = getWss10(c);
         WssElement wss11 = getWss11(c);
@@ -214,7 +214,7 @@ public class SecurityPolicyModelHelper {
         if ((c instanceof Binding) || 
             (c instanceof BindingOperation) || 
             (c instanceof BindingInput) || (c instanceof BindingOutput) || (c instanceof BindingFault)) {
-            c = PolicyModelHelper.createPolicy(c);
+            c = PolicyModelHelper.createPolicy(c, true);
         }
         boolean isTransaction = model.isIntransaction();
         if (!isTransaction) {
@@ -760,7 +760,7 @@ public class SecurityPolicyModelHelper {
             }
             
             if (p == null) {
-                topLevel = PolicyModelHelper.createPolicy(comp);
+                topLevel = PolicyModelHelper.createPolicy(comp, true);
             } else if (!(comp instanceof Policy)) {
                 topLevel = PolicyModelHelper.createTopExactlyOneAll(p);
             } else {
@@ -970,7 +970,7 @@ public class SecurityPolicyModelHelper {
             model.startTransaction();
         }
 
-        All a = PolicyModelHelper.createPolicy(c);
+        All a = PolicyModelHelper.createPolicy(c, true);
         
         try {
             SymmetricBinding sb = (SymmetricBinding)PolicyModelHelper.getTopLevelElement(a, SymmetricBinding.class);

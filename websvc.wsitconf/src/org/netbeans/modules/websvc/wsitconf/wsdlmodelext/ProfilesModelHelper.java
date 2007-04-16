@@ -308,7 +308,7 @@ public class ProfilesModelHelper {
             model.startTransaction();
         }
 
-        All a = PolicyModelHelper.createPolicy(c);
+        All a = PolicyModelHelper.createPolicy(c, true);
         try {
             // Profile #1
             if (ComboConstants.PROF_TRANSPORT.equals(profile)) {

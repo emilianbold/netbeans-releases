@@ -179,9 +179,9 @@ public class KeystorePanel extends JPanel {
         }
         
         //these depend on jsr109 stateand whether location of the store is known or not
-        keystoreLocationButton.setEnabled(!jsr109 || !storeLocKnown);
-        keystoreLocationLabel.setEnabled(!jsr109 || !storeLocKnown);
-        keystoreLocationTextField.setEnabled(!jsr109 || !storeLocKnown);
+//        keystoreLocationButton.setEnabled(!jsr109 || !storeLocKnown);
+//        keystoreLocationLabel.setEnabled(!jsr109 || !storeLocKnown);
+//        keystoreLocationTextField.setEnabled(!jsr109 || !storeLocKnown);
     }
     
     private String getServerStoreLocation() {

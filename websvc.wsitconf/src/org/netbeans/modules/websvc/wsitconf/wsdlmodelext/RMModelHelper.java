@@ -77,7 +77,7 @@ public class RMModelHelper {
     
     // enables RM in the config wsdl on specified binding
     public static void enableRM(Binding b) {
-        All a = PolicyModelHelper.createPolicy(b);
+        All a = PolicyModelHelper.createPolicy(b, true);
         PolicyModelHelper.createElement(a, RMQName.RMASSERTION.getQName(), RMAssertion.class, false);
     }
 

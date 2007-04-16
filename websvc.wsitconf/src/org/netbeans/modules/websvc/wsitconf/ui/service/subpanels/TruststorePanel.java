@@ -185,9 +185,9 @@ public class TruststorePanel extends JPanel {
         }
         
         //these depend on jsr109 stateand whether location of the store is known or not
-        storeLocationButton.setEnabled(!jsr109 || !storeLocKnown);
-        storeLocationLabel.setEnabled(!jsr109 || !storeLocKnown);
-        storeLocationTextField.setEnabled(!jsr109 || !storeLocKnown);
+//        storeLocationButton.setEnabled(!jsr109 || !storeLocKnown);
+//        storeLocationLabel.setEnabled(!jsr109 || !storeLocKnown);
+//        storeLocationTextField.setEnabled(!jsr109 || !storeLocKnown);
     }
     
     /** This method is called from within the constructor to

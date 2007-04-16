@@ -43,7 +43,7 @@ public class RMMSModelHelper {
     
     // enables FlowControl in the config wsdl on specified binding
     public static void enableFlowControl(Binding b) {
-        All a = PolicyModelHelper.createPolicy(b);
+        All a = PolicyModelHelper.createPolicy(b, true);
         PolicyModelHelper.createElement(a, RMMSQName.RMFLOWCONTROL.getQName(), FlowControl.class, false);
     }
 

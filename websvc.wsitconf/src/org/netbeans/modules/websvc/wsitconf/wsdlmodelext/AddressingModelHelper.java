@@ -53,7 +53,7 @@ public class AddressingModelHelper {
     
     // enables Addressing in the config wsdl on specified binding
     public static void enableAddressing(Binding b) {
-        All a = PolicyModelHelper.createPolicy(b);
+        All a = PolicyModelHelper.createPolicy(b, false);
         PolicyModelHelper.createElement(a, Addressing10WsdlQName.USINGADDRESSING.getQName(), Addressing10WsdlUsingAddressing.class, false);
     }
 

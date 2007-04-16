@@ -44,7 +44,7 @@ public class RMSunModelHelper {
     
     // enables Ordered delivery in the config wsdl on specified binding
     public static void enableOrdered(Binding b) {
-        All a = PolicyModelHelper.createPolicy(b);
+        All a = PolicyModelHelper.createPolicy(b, true);
         PolicyModelHelper.createElement(a, RMSunQName.ORDERED.getQName(), Ordered.class, false);
     }
 
@@ -86,7 +86,7 @@ public class RMSunModelHelper {
     
     public static void setResendInterval(Binding b, String value) {
         WSDLModel model = b.getModel();
-        All all = PolicyModelHelper.createPolicy(b);
+        All all = PolicyModelHelper.createPolicy(b, false);
         ResendInterval ri = PolicyModelHelper.createElement(all, 
                 RMSunClientQName.RESENDINTERVAL.getQName(), ResendInterval.class, false);
         boolean isTransaction = model.isIntransaction();
@@ -118,7 +118,7 @@ public class RMSunModelHelper {
     
     public static void setCloseTimeout(Binding b, String value) {
         WSDLModel model = b.getModel();
-        All all = PolicyModelHelper.createPolicy(b);
+        All all = PolicyModelHelper.createPolicy(b, false);
         CloseTimeout ct = PolicyModelHelper.createElement(all, 
                 RMSunClientQName.CLOSETIMEOUT.getQName(), CloseTimeout.class, false);
         boolean isTransaction = model.isIntransaction();
@@ -150,7 +150,7 @@ public class RMSunModelHelper {
     
     public static void setAckRequestInterval(Binding b, String value) {
         WSDLModel model = b.getModel();
-        All all = PolicyModelHelper.createPolicy(b);
+        All all = PolicyModelHelper.createPolicy(b, false);
         AckRequestInterval ri = PolicyModelHelper.createElement(all, 
                 RMSunClientQName.ACKREQUESTINTERVAL.getQName(), AckRequestInterval.class, false);
         boolean isTransaction = model.isIntransaction();

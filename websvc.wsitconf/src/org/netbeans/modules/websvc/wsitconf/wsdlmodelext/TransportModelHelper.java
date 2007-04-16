@@ -73,7 +73,7 @@ public class TransportModelHelper {
     
     // enables Mtom in the config wsdl on specified binding
     public static void enableMtom(Binding b) {
-        All a = PolicyModelHelper.createPolicy(b);
+        All a = PolicyModelHelper.createPolicy(b, true);
         PolicyModelHelper.createElement(a, MtomQName.OPTIMIZEDMIMESERIALIZATION.getQName(), OptimizedMimeSerialization.class, false);
     }
 
@@ -105,7 +105,7 @@ public class TransportModelHelper {
     
     // enables/disables TCP in the config wsdl on specified binding
     public static void enableTCP(Service s, boolean isFromJava, Binding b, Project p, boolean enable, boolean jsr109) {
-        All a = PolicyModelHelper.createPolicy(b);
+        All a = PolicyModelHelper.createPolicy(b, true);
         OptimizedTCPTransport tcp = 
                 PolicyModelHelper.createElement(a, TCPQName.OPTIMIZEDTCPTRANSPORT.getQName(), 
                 OptimizedTCPTransport.class, false);
@@ -223,7 +223,7 @@ public class TransportModelHelper {
     
     // enables/disables FI in the config wsdl on specified binding
     public static void enableFI(Binding b, boolean enable) {
-        All a = PolicyModelHelper.createPolicy(b);
+        All a = PolicyModelHelper.createPolicy(b, true);
         OptimizedFastInfosetSerialization fi = 
                 PolicyModelHelper.createElement(a, FIQName.OPTIMIZEDFASTINFOSETSERIALIZATION.getQName(), 
                 OptimizedFastInfosetSerialization.class, false);
@@ -272,7 +272,7 @@ public class TransportModelHelper {
     
     public static void setAutoEncoding(Binding b, boolean enable) {
         if (enable) {
-            All a = PolicyModelHelper.createPolicy(b);
+            All a = PolicyModelHelper.createPolicy(b, false);
             PolicyModelHelper.createElement(a, FIQName.AUTOMATICALLYSELECTFASTINFOSET.getQName(), AutomaticallySelectFastInfoset.class, false);
         } else {
             Policy p = PolicyModelHelper.getPolicyForElement(b);
@@ -298,7 +298,7 @@ public class TransportModelHelper {
     
     public static void setAutoTransport(Binding b, boolean enable) {
         if (enable) {
-            All a = PolicyModelHelper.createPolicy(b);
+            All a = PolicyModelHelper.createPolicy(b, false);
             PolicyModelHelper.createElement(a, 
                     TCPQName.AUTOMATICALLYSELECTOPTIMALTRANSPORT.getQName(), 
                     AutomaticallySelectOptimalTransport.class, false);

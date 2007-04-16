@@ -583,7 +583,7 @@ public class SecurityTokensModelHelper {
             if (c instanceof Policy) {
                 topLevel = c;
             } else {
-                topLevel = PolicyModelHelper.createPolicy(c);
+                topLevel = PolicyModelHelper.createPolicy(c, true);
             }
         
             if (SUPPORTING == supportingType) {

@@ -1262,7 +1262,7 @@ public class ProprietarySecurityPolicyModelHelper {
                 }
                 try {
                     WSDLComponentFactory wcf = model.getFactory();
-                    All all = PolicyModelHelper.createPolicy(b);
+                    All all = PolicyModelHelper.createPolicy(b, !client);
                     if (client) {
                         ks = (TrustStore)wcf.create(all, ProprietarySecurityPolicyQName.TRUSTSTORE.getQName());
                     } else {
@@ -1286,7 +1286,7 @@ public class ProprietarySecurityPolicyModelHelper {
                 }
                 try {
                     WSDLComponentFactory wcf = model.getFactory();
-                    All all = PolicyModelHelper.createPolicy(b);
+                    All all = PolicyModelHelper.createPolicy(b,!client);
                     if (client) {
                         ks = (KeyStore)wcf.create(all, ProprietarySecurityPolicyQName.KEYSTORE.getQName());
                     } else {
@@ -1316,7 +1316,7 @@ public class ProprietarySecurityPolicyModelHelper {
             }
             try {
                 WSDLComponentFactory wcf = model.getFactory();
-                All all = PolicyModelHelper.createPolicy(c);
+                All all = PolicyModelHelper.createPolicy(c, !client);
                 if (client) {
                     vc = (ValidatorConfiguration)wcf.create(all, ProprietarySecurityPolicyQName.VALIDATORCONFIGURATION.getQName());
                 } else {
@@ -1344,7 +1344,7 @@ public class ProprietarySecurityPolicyModelHelper {
             }
             try {
                 WSDLComponentFactory wcf = model.getFactory();
-                All all = PolicyModelHelper.createPolicy(b);
+                All all = PolicyModelHelper.createPolicy(b, false);
                 ps = (PreconfiguredSTS)wcf.create(all, ProprietaryTrustClientQName.PRECONFIGUREDSTS.getQName());
                 all.addExtensibilityElement(ps);
                 ps.setVisibility(ProprietaryPolicyQName.INVISIBLE);
@@ -1369,7 +1369,7 @@ public class ProprietarySecurityPolicyModelHelper {
             try {
                 WSDLComponentFactory wcf = model.getFactory();
 
-                All all = PolicyModelHelper.createPolicy(b);
+                All all = PolicyModelHelper.createPolicy(b, true);
                 sts = (STSConfiguration)wcf.create(all, ProprietaryTrustServiceQName.STSCONFIGURATION.getQName());
                 all.addExtensibilityElement(sts);
                 sts.setVisibility(ProprietaryPolicyQName.INVISIBLE);
@@ -1396,7 +1396,7 @@ public class ProprietarySecurityPolicyModelHelper {
             try {
                 WSDLComponentFactory wcf = model.getFactory();
 
-                All all = PolicyModelHelper.createPolicy(b);
+                All all = PolicyModelHelper.createPolicy(b, !client);
                 if (client) {
                     c = (SCClientConfiguration)wcf.create(all, ProprietarySCClientQName.SCCLIENTCONFIGURATION.getQName());
                     all.addExtensibilityElement((ExtensibilityElement) c);
@@ -1426,7 +1426,7 @@ public class ProprietarySecurityPolicyModelHelper {
             }
             try {
                 WSDLComponentFactory wcf = model.getFactory();
-                All all = PolicyModelHelper.createPolicy(b);
+                All all = PolicyModelHelper.createPolicy(b, !client);
                 if (client) {
                     c = (Timestamp)wcf.create(all, ProprietarySecurityPolicyQName.TIMESTAMP.getQName());
                 } else {
@@ -1568,7 +1568,7 @@ public class ProprietarySecurityPolicyModelHelper {
             try {
                 WSDLComponentFactory wcf = model.getFactory();
 
-                All all = PolicyModelHelper.createPolicy(b);
+                All all = PolicyModelHelper.createPolicy(b, !client);
                 if (client) {
                     chc = (CallbackHandlerConfiguration)wcf.create(all, 
                             ProprietarySecurityPolicyQName.CALLBACKHANDLERCONFIGURATION.getQName());

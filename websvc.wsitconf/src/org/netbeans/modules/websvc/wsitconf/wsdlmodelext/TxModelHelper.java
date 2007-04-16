@@ -99,7 +99,7 @@ public class TxModelHelper {
 
             // now add what is required
             WSDLComponentFactory wcf = model.getFactory();
-            All all = PolicyModelHelper.createPolicy(bop);
+            All all = PolicyModelHelper.createPolicy(bop, true);
             
             if ((ComboConstants.TX_NEVER.equals(txValue)) || 
                 (ComboConstants.TX_NOTSUPPORTED.equals(txValue))) {
