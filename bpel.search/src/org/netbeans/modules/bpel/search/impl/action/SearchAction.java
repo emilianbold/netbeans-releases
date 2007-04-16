@@ -58,7 +58,14 @@ public final class SearchAction extends NodeAction {
 
     if (dataObject instanceof Lookup.Provider) {
       Lookup.Provider provider = (Lookup.Provider) dataObject;
-      return (BpelModel) provider.getLookup().lookup(BpelModel.class);
+
+      // hot fix for 100277. todo as search provider
+      try {
+        return (BpelModel) provider.getLookup().lookup(BpelModel.class);
+      }
+      catch (IllegalStateException e) {
+        return null;
+      }
     }
     return null;
   }
