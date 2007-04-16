@@ -13,13 +13,14 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2004 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2004-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openidex.search;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -51,9 +52,11 @@ class CompoundSearchInfo implements SearchInfo {
     /**
      */
     public boolean canSearch() {
-        for (int i = 0; i < elements.length; i++) {
-            if (elements[i].canSearch()) {
-                return true;
+        if (elements != null) {
+            for (int i = 0; i < elements.length; i++) {
+                if (elements[i].canSearch()) {
+                    return true;
+                }
             }
         }
         return false;
@@ -62,6 +65,10 @@ class CompoundSearchInfo implements SearchInfo {
     /**
      */
     public Iterator objectsToSearch() {
+        if (elements == null) {
+            return Collections.EMPTY_LIST.iterator();
+        }
+        
         List searchableElements = new ArrayList(elements.length);
         for (int i = 0; i < elements.length; i++) {
             if (elements[i].canSearch()) {
