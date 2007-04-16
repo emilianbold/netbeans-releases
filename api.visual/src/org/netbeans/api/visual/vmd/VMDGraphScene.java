@@ -19,7 +19,6 @@
 package org.netbeans.api.visual.vmd;
 
 import org.netbeans.api.visual.action.ActionFactory;
-import org.netbeans.api.visual.action.PopupMenuProvider;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.anchor.AnchorFactory;
@@ -30,12 +29,9 @@ import org.netbeans.api.visual.layout.SceneLayout;
 import org.netbeans.api.visual.router.Router;
 import org.netbeans.api.visual.router.RouterFactory;
 import org.netbeans.api.visual.widget.ConnectionWidget;
+import org.netbeans.api.visual.widget.EventProcessingType;
 import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.api.visual.widget.EventProcessingType;
-
-import javax.swing.*;
-import java.awt.*;
 
 /**
  * This class represents a GraphPinScene for the VMD visualization style. Nodes, edges and pins are represented using String class.
@@ -60,7 +56,6 @@ public class VMDGraphScene extends GraphPinScene<String, String, String> {
     private Router router;
 
     private WidgetAction moveControlPointAction = ActionFactory.createOrthogonalMoveControlPointAction ();
-    private WidgetAction popupMenuAction = ActionFactory.createPopupMenuAction (new MyPopupMenuProvider ());
     private WidgetAction moveAction = ActionFactory.createMoveAction ();
 
     private SceneLayout sceneLayout;
@@ -96,7 +91,6 @@ public class VMDGraphScene extends GraphPinScene<String, String, String> {
 
         widget.getHeader ().getActions ().addAction (createObjectHoverAction ());
         widget.getActions ().addAction (createSelectAction ());
-        widget.getActions ().addAction (popupMenuAction);
         widget.getActions ().addAction (moveAction);
 
         return widget;
@@ -178,16 +172,6 @@ public class VMDGraphScene extends GraphPinScene<String, String, String> {
      */
     public void layoutScene () {
         sceneLayout.invokeLayout ();
-    }
-
-    private static class MyPopupMenuProvider implements PopupMenuProvider {
-
-        public JPopupMenu getPopupMenu (Widget widget, Point localLocation) {
-            JPopupMenu popupMenu = new JPopupMenu ();
-            popupMenu.add (new JMenuItem ("Open " + ((VMDNodeWidget) widget).getNodeName ()));
-            return popupMenu;
-        }
-
     }
 
 }
