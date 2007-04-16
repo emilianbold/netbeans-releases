@@ -208,7 +208,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <!-- Web Project workflow -->
-    <testbag testattribs="footprint_all or web_project" prio="320"
+<!-- TODO no tomcat - see issue 101104                 <testbag testattribs="footprint_all or web_project" prio="320"
              executor="ide_footprint" name="Footprint - Web project workflow" >
         <testset dir="footprint/src">
             <patternset>
@@ -234,6 +234,7 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
+-->
     
     <!-- Visual Web Project workflow -->
     <testbag testattribs="footprint_all or visualweb_project" prio="330"
