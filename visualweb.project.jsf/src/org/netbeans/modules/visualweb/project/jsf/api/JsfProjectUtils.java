@@ -343,6 +343,26 @@ public class JsfProjectUtils {
         }
     }
     
+    /** Check for start page
+     * @param webPage JSP file
+     */
+    public static boolean isStartPage(FileObject webPage) {
+        Project project = FileOwnerQuery.getOwner(webPage);
+        if (project == null)
+            return false;
+
+        FileObject webFolder = getDocumentRoot(project);
+        if (webFolder == null)
+            return false;
+
+        String startPagePath = getProjectProperty(project, JsfProjectConstants.PROP_START_PAGE);
+        if (startPagePath == null || startPagePath.length() == 0)
+            return false;
+
+        FileObject actualStartPage = webFolder.getFileObject(startPagePath);
+        return (actualStartPage != null && actualStartPage.equals(webPage));
+    }
+    
     /** Sets the start page for the application
      * @param startPage the path to the JSP or HTML file relative to the document root.
      * @return If successful, returns the path of the new start page relative to the document root, null if unsuccessful.
@@ -357,6 +377,24 @@ public class JsfProjectUtils {
             return null;
 
         String newStartPage = FileUtil.getRelativePath(webFolder, webPage);
+        return setStartPage(project, newStartPage);
+    }
+
+    /**
+     * Sets the start page for the application
+     * We need to the ability to specify the actual value for the new start page, since refactoring does not guarantee
+     * the order in which refactoring elements are processed.  Since the rename of the file object and the setting of the
+     * start page are separate refactoring elements, the setting of the start page can occur prior to the rename of the
+     * file object.
+     * We use the webPage file object to identify the appro
+     * @param project the project to set the start page on
+     * @param newStartPage the web folder relative path to the new start page
+     * @return If successful, returns the path of the new start page relative to the document root, null if unsuccessful.
+     */
+    public static String setStartPage(Project project, String newStartPage) {
+        if (project == null)
+            return null;
+
         putProjectProperty(project, JsfProjectConstants.PROP_START_PAGE, newStartPage);
 
         // Adjust the path to the startpage based on JSF parameters
@@ -430,42 +468,6 @@ public class JsfProjectUtils {
         return "faces/" + pageName;
     }
 
-    /**
-     * Sets the start page for the application
-     * We need to the ability to specify the actual value for the new start page, since refactoring does not guarantee
-     * the order in which refactoring elements are processed.  Since the rename of the file object and the setting of the
-     * start page are separate refactoring elements, the setting of the start page can occur prior to the rename of the
-     * file object.
-     * We use the webPage file object to identify the appro
-     * @param project the project to set the start page on
-     * @param newStartPage the web folder relative path to the new start page
-     * @return If successful, returns the path of the new start page relative to the document root, null if unsuccessful.
-     */
-    public static String setStartPage(Project project, String newStartPage) {
-        if (project == null)
-            return null;
-        putProjectProperty(project, JsfProjectConstants.PROP_START_PAGE, newStartPage);
-        return newStartPage;
-    }
-    
-    /** Check for start page
-     * @param webPage JSP file
-     */
-    public static boolean isStartPage(FileObject webPage) {
-        Project project = FileOwnerQuery.getOwner(webPage);
-        boolean isStartPage = false;
-        String startPagePath = getProjectProperty(project, JsfProjectConstants.PROP_START_PAGE);
-        if (startPagePath != null) {
-            FileObject docRoot = getDocumentRoot(project);
-            if (docRoot != null) {
-                FileObject actualStartPage = docRoot.getFileObject(startPagePath);
-                if (actualStartPage != null && actualStartPage.equals(webPage))
-                    isStartPage = true;
-            }
-        }
-        return isStartPage;
-    }
-    
     /**
      * Convenience method to obtain the project's source encoding
      * @param project the Project object
