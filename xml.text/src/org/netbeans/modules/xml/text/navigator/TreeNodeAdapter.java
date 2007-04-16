@@ -54,13 +54,14 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
     
     private ArrayList children = null; //a list of non-content nodes
     private ArrayList textElements = new ArrayList(); //stores wrappers of DocumentElement-s which are children of the DocumentElement held by this TreeNode
-    private Object childrenLock = new Object();
-    private String textContent = new String();
+    private String textContent = EMPTY_STRING;
     
     //if the node itself contains an error
     private boolean containsError = false;
     //if one of its descendants contains an error
     private int childrenErrorCount = 0;
+    
+    private static final String EMPTY_STRING = new String("");
     
     public TreeNodeAdapter(DocumentElement de, DefaultTreeModel tm, JTree tree, TreeNode parent) {
         this.de = de;
@@ -74,7 +75,7 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
      *
      * @return the text content of this node.
      */
-    public String getDocumentContent() {
+    private String getDocumentContent() {
         checkChildrenAdapters();
         checkDocumentContent();
         return textContent;
@@ -143,7 +144,7 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
     
     public String getText(boolean html) {
         if(de.getType().equals(XMLDocumentModelProvider.XML_TAG)
-        || de.getType().equals(XMLDocumentModelProvider.XML_EMPTY_TAG)) {
+                || de.getType().equals(XMLDocumentModelProvider.XML_EMPTY_TAG)) {
             //XML TAG text
             String attribsVisibleText = "";
             AttributeSet attribs = getDocumentElement().getAttributes();
@@ -203,7 +204,7 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
     
     public String getToolTipText() {
         if(de.getType().equals(XMLDocumentModelProvider.XML_TAG)
-        || de.getType().equals(XMLDocumentModelProvider.XML_EMPTY_TAG)) {
+                || de.getType().equals(XMLDocumentModelProvider.XML_EMPTY_TAG)) {
             return getAttribsText() + " " + getDocumentContent();
         } else if(de.getType().equals(XMLDocumentModelProvider.XML_PI)) {
             return getPIText();
@@ -362,8 +363,8 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
             
             //skip text and error tokens
             if(!child.getType().equals(XMLDocumentModelProvider.XML_CONTENT)
-            && !child.getType().equals(XMLDocumentModelProvider.XML_ERROR)
-            && !child.getType().equals(XMLDocumentModelProvider.XML_COMMENT)) index++;
+                    && !child.getType().equals(XMLDocumentModelProvider.XML_ERROR)
+                    && !child.getType().equals(XMLDocumentModelProvider.XML_COMMENT)) index++;
         }
         return -1;
     }
@@ -428,37 +429,35 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
     
     //---- private -----
     
-    private void checkChildrenAdapters() {
-        synchronized (childrenLock) {
-            if(children == null) {
-                //attach myself to the document element as a listener
-                de.addDocumentElementListener(this);
-                
-                //lazyloading children for node
-                children = new ArrayList();
-                Iterator i = de.getChildren().iterator();
-                boolean textElementAdded = false;
-                while(i.hasNext()) {
-                    DocumentElement chde = (DocumentElement)i.next();
-                    if(chde.getType().equals(XMLDocumentModelProvider.XML_CONTENT)) {
-                        //create a text node listener
-                        textElements.add(new TextElementWrapper(chde));
-                        textElementAdded = true;
-                    } else if(chde.getType().equals(XMLDocumentModelProvider.XML_ERROR)) {
-                        markNodeAsError(this);
-                    } else if(chde.getType().equals(XMLDocumentModelProvider.XML_COMMENT)) {
-                        //do nothing for comments
-                    } else {
-                        //add the adapter only when there isn't any
-                        if(getChildTreeNode(chde) == null) {
-                            TreeNodeAdapter tna = new TreeNodeAdapter(chde, tm, tree, this);
-                            children.add(tna);
-                        }
+    private synchronized void checkChildrenAdapters() {
+        if(children == null) {
+            //attach myself to the document element as a listener
+            de.addDocumentElementListener(this);
+            
+            //lazyloading children for node
+            children = new ArrayList();
+            Iterator i = de.getChildren().iterator();
+            boolean textElementAdded = false;
+            while(i.hasNext()) {
+                DocumentElement chde = (DocumentElement)i.next();
+                if(chde.getType().equals(XMLDocumentModelProvider.XML_CONTENT)) {
+                    //create a text node listener
+                    textElements.add(new TextElementWrapper(chde));
+                    textElementAdded = true;
+                } else if(chde.getType().equals(XMLDocumentModelProvider.XML_ERROR)) {
+                    markNodeAsError(this);
+                } else if(chde.getType().equals(XMLDocumentModelProvider.XML_COMMENT)) {
+                    //do nothing for comments
+                } else {
+                    //add the adapter only when there isn't any
+                    if(getChildTreeNode(chde) == null) {
+                        TreeNodeAdapter tna = new TreeNodeAdapter(chde, tm, tree, this);
+                        children.add(tna);
                     }
                 }
-                //update text text content of the node
-                if(textElementAdded) childTextElementChanged();
             }
+            //update text text content of the node
+            if(textElementAdded) childTextElementChanged();
         }
     }
     
@@ -466,7 +465,7 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
         textContent = null;
         tm.nodeChanged(this);
     }
-
+    
     //generate this node text if one of its nodes has changed
     private void checkDocumentContent() {
         if(textContent == null) {
@@ -489,7 +488,12 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
                     }
                 }
             }
-            textContent = buf.toString();
+            if(buf.length() == 0) {
+                System.out.println("using EMPTY_STRING");
+                textContent = EMPTY_STRING;
+            } else {
+                textContent = buf.toString();
+            }
             //fire a change event for this node
             tm.nodeChanged(TreeNodeAdapter.this);
         }
