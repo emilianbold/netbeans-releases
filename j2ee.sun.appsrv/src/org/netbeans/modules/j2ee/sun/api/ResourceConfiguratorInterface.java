@@ -27,6 +27,7 @@ import java.io.File;
 import java.util.HashSet;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 
 /**
  *
@@ -37,6 +38,8 @@ public interface ResourceConfiguratorInterface {
     public boolean isJMSResourceDefined(String jndiName, File dir);
 
     public void createJMSResource(String jndiName, String msgDstnType, String msgDstnName, String ejbName, File dir);
+    
+    public MessageDestination createJMSResource(String jndiName, MessageDestination.Type type, String ejbName, File dir);
 
     public void createJDBCDataSourceFromRef(String refName, String databaseInfo, File dir);
 
@@ -47,5 +50,7 @@ public interface ResourceConfiguratorInterface {
     public HashSet getServerDataSources();  
     
     public HashSet getResources(File dir);   
+    
+    public HashSet getMessageDestinations(File dir);   
     
 }

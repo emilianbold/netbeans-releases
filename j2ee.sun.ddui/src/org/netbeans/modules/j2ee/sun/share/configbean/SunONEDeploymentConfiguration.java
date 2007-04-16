@@ -75,7 +75,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsEx
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
 import org.netbeans.modules.j2ee.sun.dd.api.DDException;
@@ -2076,6 +2076,76 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
         return ds;
     }
 
+    public void bindDatasourceReference(String referenceName, String jndiName) throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException  {
+                
+    }
+    
+    public String findDatasourceJndiName(String referenceName) throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException  {
+        return null;
+    }
+    
+    public void bindDatasourceReferenceForEjb(String ejbName, String ejbType, 
+            String referenceName, String jndiName) throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException  {
+        
+    }
+    
+    public String findDatasourceJndiNameForEjb(String ejbName, String referenceName) throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException  {
+        return null;
+    }
+
+    /*****************************  MessageDestinationConfiguration **************************************/
+    public Set getMessageDestinations() throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException {
+        Set destinations = new HashSet();
+        ResourceConfiguratorInterface rci = getResourceConfigurator();
+        if(resourceDir != null && resourceDir.exists()) {
+           //destinations = rci.getMessageDestinations(resourceDir);
+        }
+        return destinations;
+    }
+    
+    public boolean supportsCreateMessageDestination(){
+        return true;
+    }
+    
+    public MessageDestination createMessageDestination(String name, MessageDestination.Type type) throws UnsupportedOperationException, 
+            org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException {
+        MessageDestination jmsResource = null;
+        if(resourceDir == null) {
+            // Unable to create reqested JMS Resource
+            postResourceError(NbBundle.getMessage(SunONEDeploymentConfiguration.class,
+                    "ERR_NoJMSResource", name)); // NOI18N
+            throw new org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException(NbBundle.getMessage(SunONEDeploymentConfiguration.class,
+                    "ERR_NoJMSResource", name)); // NOI18N
+        }
+        
+        ResourceConfiguratorInterface rci = getResourceConfigurator();
+        if(rci != null) {
+             if(!rci.isJMSResourceDefined(name, resourceDir)) {
+                 jmsResource = rci.createJMSResource(name, type, name, resourceDir);
+             }    
+        }
+        return jmsResource;
+    }
+    
+    public void bindMdbToMessageDestination(String mdbName, String name, MessageDestination.Type type) throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException {
+        
+    }
+    
+    public String findMessageDestinationName(String mdbName) throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException {
+        return null; 
+    }
+    
+    public void bindMessageDestinationReference(String referenceName, String connectionFactoryName, 
+            String destName, MessageDestination.Type type) throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException {
+        
+    }
+    
+    public void bindMessageDestinationReferenceForEjb(String ejbName, String ejbType,
+            String referenceName, String connectionFactoryName,
+            String destName, MessageDestination.Type type) throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException {
+        
+    }
+    
     private DConfigBeanRoot getDConfigBeanRoot(J2eeModule module) throws ConfigurationException {
         if (null == module) {
             throw Utils.makeCE("ERR_DDBeanIsNull", null, null);

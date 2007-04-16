@@ -48,6 +48,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 
 import org.netbeans.modules.j2ee.sun.api.ResourceConfiguratorInterface;
 import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
@@ -56,9 +57,11 @@ import org.netbeans.modules.j2ee.sun.dd.api.serverresources.ConnectorConnectionP
 import org.netbeans.modules.j2ee.sun.dd.api.serverresources.ConnectorResource;
 import org.netbeans.modules.j2ee.sun.dd.api.serverresources.Resources;
 import org.netbeans.modules.j2ee.sun.dd.api.serverresources.JdbcResource;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.ConnectorResource;
 import org.netbeans.modules.j2ee.sun.dd.api.serverresources.PropertyElement;
 import org.netbeans.modules.j2ee.sun.dd.api.serverresources.JdbcConnectionPool;
 import org.netbeans.modules.j2ee.sun.share.serverresources.SunDatasource;
+import org.netbeans.modules.j2ee.sun.share.serverresources.SunMessageDestination;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.DatabaseUtils;
 
 import org.netbeans.modules.j2ee.sun.sunresources.beans.Field;
@@ -120,6 +123,56 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         return resourceAlreadyDefined(jndiName, dir, __JMSResource);
     }
 
+    public MessageDestination createJMSResource(String jndiName, MessageDestination.Type type, String ejbName, File dir) {
+        SunMessageDestination msgDest = null;
+        try {
+            Resources resources = DDProvider.getDefault().getResourcesGraph();
+            AdminObjectResource aoresource = resources.newAdminObjectResource();
+            aoresource.setJndiName(jndiName);
+            aoresource.setResType(type.name());
+            aoresource.setResAdapter(WizardConstants.__JmsResAdapter);
+            aoresource.setEnabled("true"); // NOI18N
+            aoresource.setDescription(""); // NOI18N
+            PropertyElement prop = aoresource.newPropertyElement();
+            prop.setName("Name"); // NOI18N
+            prop.setValue(ejbName);
+            aoresource.addPropertyElement(prop);
+            resources.addAdminObjectResource(aoresource);
+            
+            createFile(dir, jndiName, __JMSResource, resources);
+            resources = DDProvider.getDefault().getResourcesGraph();
+            ConnectorResource connresource = resources.newConnectorResource();
+            ConnectorConnectionPool connpoolresource = resources.newConnectorConnectionPool();
+            
+            String connectionFactoryJndiName= "jms/" + jndiName + "Factory"; // NOI18N
+            connresource.setJndiName(connectionFactoryJndiName);
+            connresource.setDescription("");
+            connresource.setEnabled("true");
+            connresource.setPoolName(connectionFactoryJndiName);
+
+            connpoolresource.setName(connectionFactoryJndiName);
+            connpoolresource.setResourceAdapterName(WizardConstants.__JmsResAdapter);
+            
+            if(type.equals(MessageDestination.Type.QUEUE)) {
+                connpoolresource.setConnectionDefinitionName(WizardConstants.__QUEUE_CNTN_FACTORY);
+            } else {
+                if(type.equals(MessageDestination.Type.TOPIC)) {
+                    connpoolresource.setConnectionDefinitionName(WizardConstants.__TOPIC_CNTN_FACTORY);
+                } else {
+                    assert false; //control should never reach here
+                }
+            }
+            resources.addConnectorResource(connresource);
+            resources.addConnectorConnectionPool(connpoolresource);                              
+            createFile(dir, jndiName, __JMSConnectionFactory, resources);
+            msgDest = new SunMessageDestination(jndiName, type);
+        } catch(IOException ex) {
+            // XXX Report I/O Exception to the user.  We should do a nicely formatted
+            // message identifying the problem.
+            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+        }
+        return msgDest;
+    }
     /** Creates a new JMS resource with the specified values.
      *
      * @param jndiName jndi-name that identifies this JMS resource.
@@ -1224,6 +1277,47 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
             poolAndFile.put(cpName, null);
         }    
         return poolAndFile;
+    }
+    
+    /**
+     * Implementation of Message Destination API in ConfigurationSupport
+     * @return returns Set of SunMessageDestination's(JMS Resources) present in this J2EE project
+     * @param dir File providing location of the project's server resource directory
+     */
+    public HashSet getMessageDestinations(File resourceDir) {
+        HashSet serverresources = getServerResourceFiles(resourceDir);
+        if (serverresources.size() == 0) {
+            return serverresources;
+        }    
+
+        HashSet destinations = new HashSet();
+        List jmsResources = getJmsResources(serverresources);
+        
+        return destinations;
+    }
+    
+    private List getJmsResources(HashSet serverresources) {
+        List jmsResources = new ArrayList();
+        for (Iterator it = serverresources.iterator(); it.hasNext();) {
+            try {
+                FileObject connObj = (FileObject)it.next();
+                File connFile = FileUtil.toFile(connObj);
+                if(! connFile.isDirectory()){
+                    FileInputStream in = new FileInputStream(connFile);
+                    
+                    Resources resources = DDProvider.getDefault().getResourcesGraph(in);
+                    
+                    // identify JDBC Resources xml
+                    ConnectorResource[] connResources = resources.getConnectorResource();
+                    if(connResources.length != 0){
+                        jmsResources.add(connResources[0]);
+                    }
+                }
+            } catch (Exception ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
+        }
+        return jmsResources;
     }
     
     private File getResourceFile(String fileName, File dir){

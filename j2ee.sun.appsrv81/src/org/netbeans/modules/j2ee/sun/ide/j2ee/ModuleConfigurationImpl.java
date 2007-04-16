@@ -27,10 +27,11 @@ import org.netbeans.modules.j2ee.dd.api.common.ComponentInterface;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
-
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DatasourceConfiguration;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.MessageDestinationConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.EjbResourceConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ContextRootConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.MappingConfiguration;
@@ -50,7 +51,7 @@ import org.openide.util.lookup.Lookups;
  *
  */
 public class ModuleConfigurationImpl implements DatasourceConfiguration, DeploymentPlanConfiguration,
-        EjbResourceConfiguration, ContextRootConfiguration, MappingConfiguration, ModuleConfiguration {
+        EjbResourceConfiguration, ContextRootConfiguration, MappingConfiguration, ModuleConfiguration, MessageDestinationConfiguration {
     
     private SunONEDeploymentConfiguration config;
     private J2eeModule module;
@@ -115,11 +116,6 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
 //        ((SunONEDeploymentConfiguration)config).ensureResourceDefinedForEjb(ci, jndiName);
     }
 
-    public void bindEjbReference(String referenceName, String referencedEjbName) throws ConfigurationException {}
-    
-    public void bindEjbReferenceForEjb(String ejbName, String ejbType,
-            String referenceName, String referencedEjbName) throws ConfigurationException {}
-    
     /** Conduit to pass the cmp mapping information directly to the configuration
      *  backend.
      */
@@ -170,9 +166,7 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
      * SunDataSource is a combination of JDBC & JDBC Connection Pool Resources.
      */
     public Set getDatasources() {
-        checkConfiguration(config);
-        SunONEDeploymentConfiguration sunConfig = ((SunONEDeploymentConfiguration)config);
-        Set projectDS = sunConfig.getDatasources();
+        Set projectDS = getSunConfig().getDatasources();
         return projectDS;
     }    
     
@@ -199,9 +193,7 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
     public Datasource createDatasource(String jndiName, String  url, String username, 
             String password, String driver) 
     throws UnsupportedOperationException, ConfigurationException, DatasourceAlreadyExistsException    {
-        checkConfiguration(config);
-        SunONEDeploymentConfiguration sunConfig = ((SunONEDeploymentConfiguration)config);
-        return sunConfig.createDatasource(jndiName, url, username, password, driver);
+        return getSunConfig().createDatasource(jndiName, url, username, password, driver);
     }
 
     /**
@@ -216,19 +208,72 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
                 new UnsupportedOperationException());
     }
 
-    public void bindDatasourceReference(String jndiName, String dsJNDIName) throws ConfigurationException {
+    public void bindDatasourceReference(String referenceName, String jndiName) throws ConfigurationException {
+        getSunConfig().bindDatasourceReference(referenceName, jndiName);
     }
 
-    public void bindDatasourceReferenceForEjb(String ejbName, String ejbType, String jndiName, String dsJNDIName) throws ConfigurationException {
+    public void bindDatasourceReferenceForEjb(String ejbName, String ejbType, 
+            String referenceName, String jndiName) throws ConfigurationException {
+        getSunConfig().bindDatasourceReferenceForEjb(ejbName, ejbType, referenceName, jndiName);
     }
 
-    public String findDatasourceJndiName(String jndiName) throws ConfigurationException {
-        return null;
+    public String findDatasourceJndiName(String referenceName) throws ConfigurationException {
+        return getSunConfig().findDatasourceJndiName(referenceName);
     }
 
-    public String findDatasourceJndiNameForEjb(String ejbName, String jndiName) throws ConfigurationException {
-        return null;
+    public String findDatasourceJndiNameForEjb(String ejbName, String referenceName) throws ConfigurationException {
+        return getSunConfig().findDatasourceJndiNameForEjb(ejbName, referenceName); 
     }
 
-}
+    /****************************  EjbResourceConfiguration ************************************/
+    public void bindEjbReference(String referenceName, String referencedEjbName) throws ConfigurationException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void bindEjbReferenceForEjb(String ejbName, String ejbType,
+                                       String referenceName,
+                                       String referencedEjbName) throws ConfigurationException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    /****************************  MessageDestinationConfiguration ************************************/
+    public Set<MessageDestination> getMessageDestinations() throws ConfigurationException {
+        return getSunConfig().getMessageDestinations(); 
+    }
+    
+    public boolean supportsCreateMessageDestination(){
+        return true;
+    }
+    
+    public MessageDestination createMessageDestination(String name, MessageDestination.Type type) throws UnsupportedOperationException, ConfigurationException {
+        return getSunConfig().createMessageDestination(name, type);
+    }
+    
+    public void bindMdbToMessageDestination(String mdbName, String name, MessageDestination.Type type) throws ConfigurationException {
+        getSunConfig().bindMdbToMessageDestination(mdbName, name, type); 
+    }
+    
+    public String findMessageDestinationName(String mdbName) throws ConfigurationException {
+        return getSunConfig().findMessageDestinationName(mdbName); 
+    }
+    
+    public void bindMessageDestinationReference(String referenceName, String connectionFactoryName, 
+            String destName, MessageDestination.Type type) throws ConfigurationException {
+        getSunConfig().bindMessageDestinationReference(referenceName, connectionFactoryName, 
+            destName, type); 
+    }
+    
+    public void bindMessageDestinationReferenceForEjb(String ejbName, String ejbType,
+            String referenceName, String connectionFactoryName,
+            String destName, MessageDestination.Type type) throws ConfigurationException {
+        getSunConfig().bindMessageDestinationReferenceForEjb(ejbName, ejbType, referenceName, 
+            connectionFactoryName, destName, type); 
+    }
+    
+    private SunONEDeploymentConfiguration getSunConfig(){
+        checkConfiguration(config);
+        SunONEDeploymentConfiguration sunConfig = ((SunONEDeploymentConfiguration)config);
+        return sunConfig;
+    }
+}   
 
