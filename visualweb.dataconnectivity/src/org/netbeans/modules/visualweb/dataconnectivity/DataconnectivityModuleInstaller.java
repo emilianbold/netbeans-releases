@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject;
+import org.netbeans.modules.visualweb.dataconnectivity.naming.DatabaseSettingsImporter;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInstall;
 import org.openide.windows.WindowManager;
@@ -120,6 +121,10 @@ public class DataconnectivityModuleInstaller extends ModuleInstall {
         // Create sample database in Shortfin 
         SampleDatabaseCreator.createAll("travel", "travel", "travel", "TRAVEL", "modules/ext/travel.zip", false, "localhost", 1527);       
         init();
+        
+        // Dataconnectivity implementation to support Project migration of previous releases projects
+        DatabaseSettingsImporter.getInstance().locateAndRegisterDrivers();
+        DatabaseSettingsImporter.getInstance().locateAndRegisterConnections(); 
         
   
        // Won't include other databases yet

@@ -24,16 +24,13 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URL;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.Stack;
 import java.util.TreeMap;
-import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -51,12 +48,12 @@ import org.netbeans.modules.visualweb.dataconnectivity.datasource.DataSourceReso
 import org.netbeans.modules.visualweb.dataconnectivity.model.DataSourceInfo;
 import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
+import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- *
+ * DatabaseSettingsImporter imports JDBC drivers and connections from previous Creator/visualweb releases then registers them in DB Explorer
  * @author John Baker
  */
 public class DatabaseSettingsImporter {
@@ -77,17 +74,23 @@ public class DatabaseSettingsImporter {
     private NameParser   nameParser = DesignTimeNameParser.getInstance();
     private String       ctxPathName;
     private File         userCtxFile;
+    private ArrayList    dataSources;
     private boolean      initMode;   /* used only by initial context ctor, signals not to
                                       * call saveContext during InitialContext construction
                                       */
     
-     private static ResourceBundle rb = ResourceBundle.getBundle("com.sun.rave.naming.Bundle", // NOI18N
+     private static ResourceBundle rb = ResourceBundle.getBundle("org.netbeans.modules.visualweb.dataconnectivity.naming.Bundle", // NOI18N
         Locale.getDefault());
      
     /** Creates a new instance of DatabaseImporter */
     private DatabaseSettingsImporter() {
+        dataSources = new ArrayList();
     }
     
+    /**
+     * this class is a Singleton 
+     * @return 
+     */
     public static DatabaseSettingsImporter getInstance() {
         if (databaseSettingsImporter == null){
             databaseSettingsImporter = new DatabaseSettingsImporter();
@@ -96,9 +99,13 @@ public class DatabaseSettingsImporter {
     }
     
     
+    /**
+     * Obtain JDBC driver jars from previous release then register the drivers
+     * @return 
+     */
     public boolean locateAndRegisterDrivers() {
         String driversPath = locateDrivers();
-        if (locateDrivers().equals(""))
+        if (driversPath.equals("")) // NOI18N
             return false;
         
         registerDrivers(driversToRegister(driversPath));
@@ -108,8 +115,10 @@ public class DatabaseSettingsImporter {
     private String locateDrivers() {
         String driverLocation;
         
-        driverLocation = System.getProperty("netbeans.user") + File.separator + File.separator + "jdbc-drivers";
+        driverLocation = System.getProperty("netbeans.user") + File.separator + File.separator + "jdbc-drivers"; // NOI18N
         File driverDir = new File(driverLocation);
+        if (driverDir == null)
+            return ""; // NOI18N
         if (driverDir.exists())                
            return driverLocation;
         else
@@ -122,7 +131,7 @@ public class DatabaseSettingsImporter {
         File[] drivers = driverDir.listFiles(
                 new FilenameFilter() {
             public boolean accept(File dir, String name) {
-                return name.endsWith(".jar") || name.endsWith(".zip");
+                return name.endsWith(".jar") || name.endsWith(".zip"); // NOI18N
             }
         });
         
@@ -132,9 +141,7 @@ public class DatabaseSettingsImporter {
     private void registerDriver(File driverJar) {
         String[] drivers = (String[]) DriverListUtil.getDrivers().toArray(new String[DriverListUtil.getDrivers().size()]);
         
-        try {
-            URL url = (URL)driverJar.toURL();
-            
+        try {            
             JarFile jf = new JarFile(driverJar);
             
             String drv;
@@ -144,8 +151,10 @@ public class DatabaseSettingsImporter {
                 drv = (String) it.next();
                 if (jf.getEntry(drv.replace('.', '/') + ".class") != null) {//NOI18N
                     String driverName = DriverListUtil.findFreeName(DriverListUtil.getName(drv));
+                    if (DataSourceResolver.getInstance().findMatchingDriver(driverName) == null)
+                        break;
                     JDBCDriver driver = JDBCDriver.create(driverName, driverName, drv, new URL[] {driverJar.toURI().toURL()});
-                    try {
+                    try {                        
                         JDBCDriverManager.getDefault().addDriver(driver);
                     } catch (DatabaseException e) {
                         ErrorManager.getDefault().notify(e);
@@ -167,14 +176,11 @@ public class DatabaseSettingsImporter {
         }        
     }
     
-
-    // Locate $userdir/$release/context.xml
-    // Open context.xml
-    // Read context.xml
-    // get connection information store in a map, return map
-    // check if driver has been registered
-    // read map and register connection(s)
     
+     /**
+      * Obtain connection info from previous release's context.xml then register connections
+      * @return 
+      */
      public boolean locateAndRegisterConnections() {
         File contextFile = locateContextFile();
         if (contextFile == null)
@@ -185,11 +191,29 @@ public class DatabaseSettingsImporter {
     }
     
     private File locateContextFile() {
-        File contextReleaseRoot  = new File(System.getProperty("netbeans.user") + File.separator + File.separator + "config" + File.separator + File.separator);
+        String seps =  File.separator ;
+        File contextReleaseRoot  = new File(System.getProperty("netbeans.user") + seps + "config" +  seps); // NOI18N
+        String contextReleasePath = contextReleaseRoot.getPath();
+        String creator2_1Path = contextReleasePath  +  seps + "2_1"; // NOI18N
+        String nb55Path = contextReleasePath +  seps  + "5_5"; // NOI18N
+        String nb551Path = contextReleasePath  +  seps + "5_5_1"; // NOI18N
+        File contextReleaseDir = null;
+        File[] configDir = contextReleaseRoot.listFiles();
+        for (File releaseDir : configDir) {
+            String rPath = releaseDir.getPath();
+            
+            if ((rPath.equals(creator2_1Path) || rPath.equals(nb55Path) || 
+                    rPath.equals(nb551Path))) {
+                contextReleaseDir = releaseDir;
+                break;
+            }
+        }
         
-        File[] contextReleaseDir = contextReleaseRoot.listFiles();
-                
-        File[] contextReleaseDirFiles = contextReleaseDir[0].listFiles();
+        File[] contextReleaseDirFiles = contextReleaseDir.listFiles();
+        
+        if (contextReleaseDirFiles == null)
+            return null;
+        
         if (contextReleaseDirFiles[0].exists())                
            return contextReleaseDirFiles[0];
         else
@@ -197,13 +221,10 @@ public class DatabaseSettingsImporter {
     }
     
     private void registerConnections(File contextFile) {
-        ArrayList <DataSourceInfo> dataSources = createDataSourceInfoFromCtx(contextFile);
+        ArrayList <DataSourceInfo> dataSourcesInfo = createDataSourceInfoFromCtx(contextFile);
         
-        try {
-            //            JdbcDriverInfo jdbcInfo = JdbcDriverInfoManager.getInstance().getCurrentJdbcDriverInfo();
-            //            dsInfo = DataSourceInfoManager.getInstance().getDataSourceInfoByName(itemSelected);
-            
-            Iterator it = dataSources.iterator();
+        try {           
+            Iterator it = dataSourcesInfo.iterator();
             DataSourceInfo dsInfo = null;
             
             // From each Data Source, add a connection to DB Explorer
@@ -267,37 +288,33 @@ public class DatabaseSettingsImporter {
         }
     }
     
-    private DataSourceInfo createDataSourceInfo(ArrayList<DataSourceInfo> dataSource) {
-        Iterator it = dataSource.iterator();
-        String dsName = null;
-        String schema = null;
-        String driverClassName = null;
-        String driverUrl = null;
-        String username = null;
-        String password = null;
-        String[] dataSourceContents = null;
-        
-        int pos = 0;
-        int i = 0;
-        while (it.hasNext()) {
-            // exclude unneeded items of data source
-            if ((pos != 1) && (pos != 3) && (pos != 6)) 
-                dataSourceContents[i++] = (String)it.next();
-            
-            pos++;
-        }
+    private DataSourceInfo createDataSourceInfo(String[] dataSource) {                
+        String dsName = dataSource[0];
+        String driverClassName = dataSource[1];
+        String driverUrl = dataSource[2];
+        String username = dataSource[3];
+        String password = dataSource[4];        
         
         // create data source info
         password = decryptPassword(password);
-        return new DataSourceInfo(dsName, driverClassName, driverUrl, "", username, password);        
+        
+        if (driverClassName.equals("org.apache.derby.jdbc.ClientDriver")) {
+            int oldPortLoc = driverUrl.indexOf(":21527");
+            if (oldPortLoc != -1) { // NOI18N
+                String beginURL = driverUrl.substring(0, oldPortLoc);
+                String endURL = driverUrl.substring(driverUrl.lastIndexOf(":21527")+6, driverUrl.length());
+                driverUrl = beginURL + ":1527" + endURL;                           
+            }
+        }
+        return new DataSourceInfo(dsName, driverClassName, driverUrl, "", username, password);
     }
     
     private ArrayList<DataSourceInfo> createDataSourceInfoFromCtx(File contextFile) {
-        ArrayList <DataSourceInfo> dsInfo = null;
-        ArrayList dataSources = null;
+        ArrayList <DataSourceInfo> dsInfo = new ArrayList();        
         
         try {
-            dataSources = parseContextFile(contextFile);            
+            userCtxFile = contextFile;
+            parseContextFile(); 
         } catch (ParserConfigurationException ex) {
             Exceptions.printStackTrace(ex);
         } catch (SAXException ex) {
@@ -307,96 +324,74 @@ public class DatabaseSettingsImporter {
         }
         
         // extract data source info from each datasource ArrayList
-        Iterator its = dataSources.iterator();
-        ArrayList dataSource = null;
-        Iterator it = null;
+        Iterator itDss = dataSources.iterator();
+        String[] dataSource = new String[5];
         
-        while (its.hasNext()) {
-            dataSource = (ArrayList)its.next();
-            it = dataSource.iterator();
-            
-            while (it.hasNext()) {
-                dsInfo.add(createDataSourceInfo((ArrayList)it.next()));
-            }                        
+        while (itDss.hasNext()) {
+            dataSource = (String[])itDss.next();
+            dsInfo.add(createDataSourceInfo(dataSource));
         }
+        
         return dsInfo;
 }
 
+    private void storeArgs(ArrayList args) {
+        String[] dsItems = new String[5];
+        
+        Iterator it = args.iterator();
+        int i = 0;
+        int cnt = 0;
+        while (it.hasNext()) {           
+            // exclude unneeded items of data source
+            if ((cnt == 1) || (cnt == 2) || (cnt == 3) || (cnt == 6)) 
+                it.next();
+            else
+                dsItems[i++] = (String)it.next();   
+            
+            cnt++;
+        }
+            
+        dataSources.add(dsItems);
+    }
     
-    
-     private ArrayList parseContextFile(File userCtxFile) throws ParserConfigurationException, SAXException,
-        IOException {
+     private void parseContextFile() throws ParserConfigurationException, SAXException, IllegalArgumentException, IOException {
             SAXParserFactory factory = SAXParserFactory.newInstance();
             factory.setNamespaceAware(true);
             factory.setValidating(false);
-            SAXParser parser = factory.newSAXParser();
-            final ArrayList dataSources = new ArrayList();
-            
+            SAXParser parser = factory.newSAXParser();       
+            final ArrayList storArgs = new ArrayList();
+
             parser.parse(userCtxFile, new DefaultHandler() {
-
-                private Stack ctxStack = new Stack();
-                private ArrayList args = new ArrayList();
                 private String objectName;
-                private String className;
-                public void startElement(String uri, String localName, String qName,
-                        Attributes attributes) throws SAXException {
-                    if (qName.equals(CTX_TAG)) {
-                        
-                        String nameValue = attributes.getValue(NAME_ATTR);
-                        if (nameValue == null) {
-                            throw new SAXException(
-                                    MessageFormat.format(rb.getString("MISSING_ATTR"),
-                                    new Object[] { "name" })); // NOI18N
-                        }
-                        
-                    } else if (qName.equals(OBJ_TAG)) {
-                        args.clear();
+                private String className;  
+                private int tagCount = 0;
+                ArrayList args = new ArrayList(); 
+                public void startElement(String uri, String localName, String qName, Attributes attributes)  throws SAXException {   
+                                                           
+                   if (qName.equals(OBJ_TAG)) {
                         objectName = attributes.getValue(NAME_ATTR);
-                        className  = attributes.getValue(CLASS_ATTR);
-                        if (objectName == null) {
-                            throw new SAXException(
-                                    MessageFormat.format(rb.getString("MISSING_ATTR"),
-                                    new Object[] { "name" })); // NOI18N
-                        } else
-                            args.add(objectName);
-                    } else if (qName.equals("arg")) { // NOI18N
-                        String classValue = attributes.getValue(CLASS_ATTR);
-                        if (classValue == null) {
-                            throw new SAXException(
-                                    MessageFormat.format(rb.getString("MISSING_ATTR"),
-                                    new Object[] { "class" })); // NOI18N
+
+                        if (objectName != null) {
+                            if (!args.isEmpty()) {                           
+                                storeArgs(args);
+                            }
+                            
+                            args.clear();
+                            args.add(objectName);                            
                         }
-                        String valueValue = attributes.getValue(VALUE_ATTR);
-                        args.add(new ArgPair(classValue, valueValue));
-                    } else {
-                        throw new SAXNotRecognizedException(qName);
+
+                        
+                    } else  if (qName.equals("arg")) {
+                        String valueValue = attributes.getValue(VALUE_ATTR);                                                
+                        args.add(valueValue);
+                    }                        
+                }      
+                
+                public void endDocument() {
+                    if (!args.isEmpty()) {
+                        storeArgs(args);
                     }
-                    
-                    dataSources.add(args);
                 }
-                
-                
-
-            });
-            
-            return dataSources;
-     }
-     
-     
-
-    private class ArgPair {
-        private String clazz;
-        private String value;
-        ArgPair(String clazz, String value) {
-            this.clazz = clazz;
-            this.value = value;
-        }
-        String getClazz() {
-            return clazz;
-        }
-        String getValue() {
-            return value;
-        }
-    }
-
+            });           
+     }            
 }
