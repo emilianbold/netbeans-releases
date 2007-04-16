@@ -76,6 +76,8 @@ public class LanguagesEditorKit extends NbEditorKit {
      */
     public LanguagesEditorKit (final String mimeType) { 
         this.mimeType = mimeType;
+        if (mimeType == null)
+            throw new NullPointerException ();
         //Settings.setValue (LanguagesEditorKit.class, SettingsNames.CODE_FOLDING_ENABLE, Boolean.TRUE);
         Settings.addInitializer (new Settings.Initializer () {
             public String getName() {
