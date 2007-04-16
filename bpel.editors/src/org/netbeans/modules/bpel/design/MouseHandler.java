@@ -21,30 +21,21 @@ package org.netbeans.modules.bpel.design;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
 import javax.swing.JPopupMenu;
 import org.netbeans.modules.bpel.design.model.patterns.Pattern;
 
 import org.netbeans.modules.bpel.design.selection.EntitySelectionModel;
 import org.netbeans.modules.bpel.design.selection.PlaceHolderManager;
-import org.netbeans.modules.bpel.editors.api.ExternalBpelEditorDiagramClickListener;
-import org.openide.util.Lookup;
 
 
 public class MouseHandler extends MouseAdapter {
     
     private DesignView designView;
-    private List mExternalClickListeners = new ArrayList(4);
  
 
     public MouseHandler(DesignView designView) {
         this.designView = designView;
         designView.addMouseListener(this);
-        initializeExternalClickListeners();
     }
     
     public DesignView getDesignView() {
@@ -82,11 +73,6 @@ public class MouseHandler extends MouseAdapter {
                 }
             }
         }
-        
-        // Notify external modules of the click.
-        if (!getDesignView().getNameEditor().isActive()) {
-            notifyExternalClickListeners(e);
-        }
     }
     
     public NameEditor getNameEditor() {
@@ -117,26 +103,4 @@ public class MouseHandler extends MouseAdapter {
         return true;
     }
 
-    private void initializeExternalClickListeners() {
-        Lookup.Result lookupResult = 
-                Lookup.getDefault().lookup(new Lookup.Template(ExternalBpelEditorDiagramClickListener.class));
-        if (lookupResult != null) {
-            Collection instances = lookupResult.allInstances();
-            for (Iterator iter=instances.iterator(); iter.hasNext();) {
-                ExternalBpelEditorDiagramClickListener listener = 
-                        (ExternalBpelEditorDiagramClickListener) iter.next();
-                mExternalClickListeners.add(new WeakReference(listener));
-            }
-        }
-    }
-    
-    private void notifyExternalClickListeners(MouseEvent e) {
-        for (Iterator iter=mExternalClickListeners.iterator(); iter.hasNext();) {
-            WeakReference ref = (WeakReference) iter.next();
-            ExternalBpelEditorDiagramClickListener listener = (ExternalBpelEditorDiagramClickListener) ref.get();
-            if (listener != null) {
-                listener.diagramClicked(e);
-            }
-        }
-    }
 }
