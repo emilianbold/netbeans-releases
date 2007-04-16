@@ -1300,10 +1300,15 @@ public final class Util {
         String fileName = InSyncServiceProvider.get().computeFileName(location);
         line = InSyncServiceProvider.get().computeLineNumber(location, line);
 
-        File file = new File(fileName);
-        FileObject fo = FileUtil.toFileObject(file);
+        // XXX There was no file found.
+        if (fileName == null || "".equals(fileName)) { // NOI18N
+            displayError(message, null);
+        } else {
+            File file = new File(fileName);
+            FileObject fo = FileUtil.toFileObject(file);
 
-        displayErrorForFileObject(message, fo, line >= 1 ? line : 1, column);
+            displayErrorForFileObject(message, fo, line >= 1 ? line : 1, column);
+        }
     }
 
     public static void displayErrorForFileObject(String message, final FileObject fileObject, final int line, final int column) {
