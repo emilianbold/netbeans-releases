@@ -51,12 +51,13 @@ public class ShowLocalHistoryAction extends NodeAction {
 
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+                File[] files = rootSet.toArray(new File[rootSet.size()]);                
+
                 final LocalHistoryTopComponent tc = new LocalHistoryTopComponent();
-                tc.setName(NbBundle.getMessage(this.getClass(), "CTL_LocalHistoryTopComponent", activatedNodes[0].getDisplayName()));
+                tc.setName(NbBundle.getMessage(this.getClass(), "CTL_LocalHistoryTopComponent", files[0].getName()));
                 tc.open();
                 tc.requestActive();                                
-
-                File[] files = rootSet.toArray(new File[rootSet.size()]);                
+                
                 if(files[0].isFile()) {
                     // XXX hm 
                     LocalHistoryFileView fileView = new LocalHistoryFileView();                
