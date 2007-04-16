@@ -55,7 +55,8 @@ public class RaveRenderedDocument extends AbstractRaveDocument {
     }
 
     protected Text createTextNode(CoreDocumentImpl document, String data) {
-        return new RaveRenderedTextImpl(document, data);
+//        return new RaveRenderedTextImpl(document, data);
+        return new RaveText(document, data);
     }
 
 }

@@ -233,10 +233,11 @@ public abstract class AbstractRaveDocument extends DocumentImpl /*implements Par
 //        } else if (src instanceof RaveSourceText) {
         } else if (src instanceof Text && src.getOwnerDocument() instanceof RaveSourceDocument) {
 //            assert dst instanceof RaveRenderedText;
-            RaveSourceText srcText = (RaveSourceText)src;
+//            RaveSourceText srcText = (RaveSourceText)src;
+            Text srcText = (Text)src;
             
-            if (dst instanceof AbstractRaveText) {
-                ((AbstractRaveText)dst).copyFrom((AbstractRaveText)srcText);
+            if (dst instanceof RaveText) {
+                ((RaveText)dst).copyFrom((RaveText)srcText);
             }
 //            if (dst instanceof RaveRenderedText) {
             if (dst instanceof Text && dst.getOwnerDocument() instanceof RaveRenderedDocument) {

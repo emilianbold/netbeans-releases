@@ -351,10 +351,13 @@ public final class  MarkupServiceImpl {
 //            dstElement.source = srcElement;
 //            dstElement.linkToSourceElement(srcElement);
             linkToSourceElement(dstElement, srcElement);
-        } else if (src instanceof RaveSourceText) {
-            assert dst instanceof RaveRenderedText;      
-            RaveSourceText srcText = (RaveSourceText)src;
-            RaveRenderedText dstText = (RaveRenderedText)dst;
+//        } else if (src instanceof RaveSourceText) {
+        } else if (src instanceof Text && src.getOwnerDocument() instanceof RaveSourceDocument) {
+//            assert dst instanceof RaveRenderedText;      
+//            RaveSourceText srcText = (RaveSourceText)src;
+//            RaveRenderedText dstText = (RaveRenderedText)dst;
+            Text srcText = (Text)src;
+            Text dstText = (Text)dst;
 //            srcText.source = null;
 //            dstText.source = srcText;
 //            dstText.linkToSourceText(srcText);
@@ -395,7 +398,8 @@ public final class  MarkupServiceImpl {
 //            RaveRenderNode rn = (RaveRenderNode)node;
         
 //        if (node instanceof RaveElementImpl || node instanceof RaveTextImpl) {
-        if (node instanceof RaveRenderedElementImpl || node instanceof RaveRenderedTextImpl) {
+//        if (node instanceof RaveRenderedElementImpl || node instanceof RaveRenderedTextImpl) {
+        if (node != null && node.getOwnerDocument() instanceof RaveRenderedDocument) {
 
             if (element != null) {
 //                if ((parent != null) && (parent.getDesignBean() == element.getDesignBean())) {
@@ -609,11 +613,13 @@ public final class  MarkupServiceImpl {
         if (node instanceof RaveSourceElement) {
 //            return ((RaveSourceElement)node).getRenderedElement();
             return getRenderedElement((Element)node);
-        } else if (node instanceof RaveSourceText) {
+//        } else if (node instanceof RaveSourceText) {
+        } else if (node instanceof Text && node.getOwnerDocument() instanceof RaveSourceDocument) {
 //            return ((RaveSourceText)node).getRenderedText();
             return getRenderedText((Text)node);
-        } else if (node instanceof RaveRenderedElement
-        || node instanceof RaveRenderedText) { // XXX
+//        } else if (node instanceof RaveRenderedElement
+//        || node instanceof RaveRenderedText) { // XXX
+        } else if (node != null && node.getOwnerDocument() instanceof RaveRenderedDocument) {
             return node;
         }
         
@@ -632,11 +638,13 @@ public final class  MarkupServiceImpl {
         if (node instanceof RaveRenderedElement) {
 //            return ((RaveRenderedElement)node).getSourceElement();
             return getSourceElement((Element)node);
-        } else if (node instanceof RaveRenderedText) {
+//        } else if (node instanceof RaveRenderedText) {
+        } else if (node != null && node.getOwnerDocument() instanceof RaveRenderedDocument) {
 //            return ((RaveRenderedText)node).getSourceText();
             return getSourceText((Text)node);
-        } else if (node instanceof RaveSourceElement
-        || node instanceof RaveSourceText) { // XXX
+//        } else if (node instanceof RaveSourceElement
+//        || node instanceof RaveSourceText) { // XXX
+        } else if (node != null && node.getOwnerDocument() instanceof RaveSourceDocument) {
             return node;
         }
         return null;
@@ -682,10 +690,12 @@ public final class  MarkupServiceImpl {
 //        if (text instanceof RaveText) {
 //            return ((RaveText)text).getRendered();
 //        }
-        if (text instanceof RaveSourceText) {
+//        if (text instanceof RaveSourceText) {
+        if (text != null && text.getOwnerDocument() instanceof RaveSourceDocument) {
 //            return ((RaveSourceText)text).getRenderedText();
             return getRenderedText(text);
-        } else if (text instanceof RaveRenderedText) { // XXX
+//        } else if (text instanceof RaveRenderedText) { // XXX
+        } else if (text != null && text.getOwnerDocument() instanceof RaveRenderedDocument) {
             return text;
         }
         return null;
@@ -695,10 +705,12 @@ public final class  MarkupServiceImpl {
 //        if (text instanceof RaveText) {
 //            return ((RaveText)text).getSource();
 //        }
-        if (text instanceof RaveRenderedText) {
+//        if (text instanceof RaveRenderedText) {
+        if (text != null && text.getOwnerDocument() instanceof RaveRenderedDocument) {
 //            return ((RaveRenderedText)text).getSourceText();
             return getSourceText(text);
-        } else if (text instanceof RaveSourceText) { // XXX
+//        } else if (text instanceof RaveSourceText) { // XXX
+        } else if (text != null && text.getOwnerDocument() instanceof RaveSourceDocument) {
             return text;
         }
         return null;
@@ -708,7 +720,8 @@ public final class  MarkupServiceImpl {
 //        if (text instanceof RaveText) {
 //            ((RaveText)text).setSource((RaveText)sourceText);
 //        }
-        if (text instanceof RaveRenderedText) {
+//        if (text instanceof RaveRenderedText) {
+        if (text != null && text.getOwnerDocument() instanceof RaveRenderedDocument) {
 //            ((RaveRenderedText)text).linkToSourceText((RaveSourceText)sourceText);
             linkToSourceText(text, sourceText);
         }
