@@ -313,13 +313,9 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                         facesVerify.setParamValue(value);
                     }
                     
-                    InitParam contextParam = (InitParam)ddRoot.createBean("InitParam"); // NOI18N
-                    contextParam.setParamName("javax.faces.CONFIG_FILES"); // NOI18N
-                    contextParam.setParamValue("/WEB-INF/navigation.xml,/WEB-INF/managed-beans.xml"); // NOI18N
-                    ddRoot.addContextParam(contextParam);
-                    
                     // The UpLoad Filter
                     Filter filter;
+                    InitParam contextParam;
                     boolean hasUploadFilter = false;
                     Filter[] filters = ddRoot.getFilter();
                     for (int i = 0; i < filters.length; i++) {

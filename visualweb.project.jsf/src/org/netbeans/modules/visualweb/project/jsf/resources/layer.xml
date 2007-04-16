@@ -156,35 +156,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="JsfAdvanced">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/advancedTemplateHelp.html" />
-            <!-- managed-beans/navigation/faces-config xml templates -->
-            <file name="managed-beans.xml" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/managed-beans.xml.template">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
-                <attr name="template" boolvalue="true" />
-                <attr name="templateCategory" stringvalue="rave-advanced"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/managedBeansTemplateHelp.html" />
-            </file>
-            <attr name="managed-beans.xml/managed-beans12.xml" boolvalue="true"/>
-            <file name="managed-beans12.xml" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/1_5/managed-beans.xml.template">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
-                <attr name="template" boolvalue="true" />
-                <attr name="templateCategory" stringvalue="rave-advanced_1.5"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/managedBeansTemplateHelp.html" />
-            </file>
-            <attr name="managed-beans12.xml/navigation.xml" boolvalue="true"/>
-            <file name="navigation.xml" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/navigation.xml.template">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
-                <attr name="template" boolvalue="true" />
-                <attr name="templateCategory" stringvalue="rave-advanced"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/navigationTemplateHelp.html" />
-            </file>
-            <attr name="navigation.xml/navigation12.xml" boolvalue="true"/>
-            <file name="navigation12.xml" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/1_5/navigation.xml.template">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
-                <attr name="template" boolvalue="true" />
-                <attr name="templateCategory" stringvalue="rave-advanced_1.5"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/navigationTemplateHelp.html" />
-            </file>
-            <attr name="navigation12.xml/faces-config.xml" boolvalue="true"/>
+            <!-- faces-config xml templates -->
             <file name="faces-config.xml" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/faces-config.xml.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
                 <attr name="template" boolvalue="true" />
