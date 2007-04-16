@@ -20,6 +20,7 @@
 
 package org.netbeans.modules.vmd.properties;
 
+import java.lang.ref.WeakReference;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.properties.common.PropertiesSupport;
@@ -31,27 +32,32 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author devil
+ * @author Karol Harezlak
  */
 public class PropertiesNode extends AbstractNode{
     
-    private DesignComponent component;
+    private WeakReference<DesignComponent> component;
     private String displayName;
     
-    /** Creates a new instance of PropertiesNode */
     public PropertiesNode(DesignComponent component, Lookup lookup) {
         super(Children.LEAF, lookup);
-        this.component = component;
+        this.component = new WeakReference<DesignComponent>(component);
     }
     
     public Sheet createSheet() {
-        return PropertiesSupport.createSheet(component);
+        if(component.get() == null)
+            super.createSheet();        
+        return PropertiesSupport.createSheet(component.get());
     }
     
     public String getDisplayName() {
-        component.getDocument().getTransactionManager().readAccess(new Runnable() {
+        if (component.get() == null)
+            return super.getDisplayName();
+        component.get().getDocument().getTransactionManager().readAccess(new Runnable() {
             public void run() {
-                displayName = InfoPresenter.getDisplayName(component);
+                if (component.get().getParentComponent() == null)
+                    return;
+                displayName = InfoPresenter.getDisplayName(component.get());
             }
         });
         return displayName;

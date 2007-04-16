@@ -27,12 +27,12 @@ import org.netbeans.modules.vmd.api.io.ActiveViewSupport;
 import org.netbeans.modules.vmd.api.io.DataEditorView;
 import org.netbeans.modules.vmd.api.io.providers.IOSupport;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.windows.WindowManager;
 
 /**
  * @author Karol Harezlak
@@ -96,13 +96,13 @@ public class PropertiesNodesManager implements ActiveViewSupport.Listener{
     }
     
     public void activeViewChanged(DataEditorView deactivatedView, final DataEditorView activatedView) {
-        if (activatedView != null)
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                changeLookup(activatedView);
-            }
-        });
-        
+        if (activatedView != null && activatedView.getKind() == DataEditorView.Kind.MODEL) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    changeLookup(activatedView);
+                }
+            });
+        }
     }
 }
 
