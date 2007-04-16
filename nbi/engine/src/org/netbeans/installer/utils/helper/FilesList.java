@@ -284,7 +284,6 @@ public class FilesList implements Iterable<FileEntry> {
             FileUtils.copyFile(tempFile, listFile);
             
             entries.clear();
-            System.gc(); // just in case
         }
     }
     
