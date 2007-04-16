@@ -2740,7 +2740,7 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
                 return false;
             }
 
-            range.setRange(dot.getNode(), dot.getOffset(), mark.getNode(), mark.getOffset());
+            range.setRange(mark.getNode(), mark.getOffset(), dot.getNode(), dot.getOffset());
     //        range.deleteContents();
     //        removeSelection();
             deleteRangeContents(range);
