@@ -169,7 +169,6 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- To update, run: ant -f nbbuild/build.xml check-module-configs -->
                 <project>../ant</project>
                 <project>../ant/browsetask</project>
-                <project>../ant/debugger</project>
                 <project>../ant/freeform</project>
                 <project>../ant/grammar</project>
                 <project>../ant/project</project>
@@ -203,6 +202,9 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../core/startup</project>
                 <project>../core/swing/plaf</project>
                 <project>../core/swing/tabcontrol</project>
+                <project>../core/tasklist/api</project>
+                <project>../core/tasklist/todo</project>
+                <project>../core/tasklist/ui</project>
                 <project>../core/ui</project>
                 <project>../core/windows</project>
                 <project>../db</project>
@@ -217,6 +219,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../debuggerjpda</project>
                 <project>../debuggerjpda/ant</project>
                 <project>../debuggerjpda/api</project>
+                <project>../debuggerjpda/profiler/heapwalk</project>
                 <project>../debuggerjpda/projects</project>
                 <project>../debuggerjpda/ui</project>
                 <project>../diff</project>
@@ -304,6 +307,8 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../javadoc</project>
                 <project>../javawebstart</project>
                 <project>../junit</project>
+                <project>../languages/css</project>
+                <project>../languages/engine</project>
                 <project>../lexer</project>
                 <project>../lexer/editorbridge</project>
                 <project>../lexer/nbbridge</project>
@@ -342,11 +347,13 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../projects/projectui</project>
                 <project>../projects/projectuiapi</project>
                 <project>../projects/queries</project>
+                <project>../projects/tasklist</project>
                 <project>../properties</project>
                 <project>../properties/syntax</project>
                 <project>../refactoring/api</project>
                 <project>../refactoring/java</project>
                 <project>../schema2beans/rt</project>
+                <project>../scripting/javascript</project>
                 <project>../serverplugins/jboss4</project>
                 <project>../serverplugins/sun/appsrv</project>
                 <project>../serverplugins/sun/appsrv81</project>
@@ -356,12 +363,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../subversion/client</project>
                 <project>../subversion/ini4j</project>
                 <project>../subversion/main</project>
-                <project>../tasklist/api</project>
-                <project>../tasklist/core</project>
-                <project>../tasklist/docscan</project>
-                <project>../tasklist/suggestions</project>
                 <project>../tomcatint/tomcat5</project>
-                <project>../tomcatint/tomcat5/bundled</project>
                 <project>../usersguide</project>
                 <project>../usersguide/j2seexamples</project>
                 <project>../utilities</project>
@@ -370,6 +372,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../versioncontrol/localhistory</project>
                 <project>../versioncontrol/util</project>
                 <project>../web/core</project>
+                <project>../web/css</project>
                 <project>../web/el/lexer</project>
                 <project>../web/examples</project>
                 <project>../web/freeform</project>
@@ -405,7 +408,6 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../xml/axi</project>
                 <project>../xml/catalog</project>
                 <project>../xml/core</project>
-                <project>../xml/css</project>
                 <project>../xml/lexer</project>
                 <project>../xml/multiview</project>
                 <project>../xml/retriever</project>
