@@ -101,6 +101,9 @@ public final class CssEngineServiceImpl implements CssEngineService {
 
 
     private XhtmlCssEngine getCssEngine(Document document) {
+        if (document == null) {
+            return null;
+        }
 //        XhtmlCssEngine ret;
 //        synchronized (document2engine) {
 //            ret = document2engine.get(document);
