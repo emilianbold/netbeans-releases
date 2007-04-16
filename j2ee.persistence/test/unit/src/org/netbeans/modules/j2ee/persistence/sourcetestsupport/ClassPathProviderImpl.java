@@ -34,11 +34,17 @@ import org.openide.filesystems.FileUtil;
  */
 public class ClassPathProviderImpl implements ClassPathProvider {
     
-    public ClassPathProviderImpl(){
+    private final ClassPath classPath;
+    
+    public ClassPathProviderImpl(FileObject[] sources){
+        this.classPath = ClassPathSupport.createClassPath(sources);
     }
     
     public ClassPath findClassPath(FileObject file, String type) {
-        if (ClassPath.COMPILE == type){
+        if(ClassPath.SOURCE.equals(type)){
+            return this.classPath;
+        }
+        if (ClassPath.COMPILE.equals(type)){
             try {
                 URL toplinkJarUrl = Class.forName("javax.persistence.EntityManager").getProtectionDomain().getCodeSource().getLocation();
                 return ClassPathSupport.createClassPath(new URL[]{FileUtil.getArchiveRoot(toplinkJarUrl)});

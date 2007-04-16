@@ -20,7 +20,6 @@
 package org.netbeans.modules.j2ee.persistence.api.entity.generator;
 
 
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.dbschema.DBException;
 import org.netbeans.modules.j2ee.persistence.api.*;
 import java.io.IOException;
@@ -30,8 +29,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
@@ -42,14 +39,11 @@ import org.netbeans.modules.dbschema.jdbcimpl.SchemaElementImpl;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.JavaPersistenceGenerator;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.DBSchemaTableProvider;
-import org.netbeans.modules.j2ee.persistence.wizard.fromdb.PersistenceGenerator;
-import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ProgressPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.RelatedCMPHelper;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.SelectedTables;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.Table;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.TableClosure;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.TableProvider;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
@@ -140,6 +134,7 @@ public final class EntitiesFromDBGenerator {
             throw wrapper;
         }
         
+        
         generator.generateBeans(null, helper, null, progressContributor);
         
         Set<FileObject> result = generator.createdObjects();
@@ -171,10 +166,11 @@ public final class EntitiesFromDBGenerator {
             return this.schemaElement;
         }
         
-        SchemaElementImpl impl = new SchemaElementImpl(getConnectionProvider());
-        this.schemaElement = new SchemaElement(impl);
-        schemaElement.setName(DBIdentifier.create("schema"));
-        impl.initTables(getConnectionProvider(), new LinkedList(tableNames), new LinkedList(), true);
+        ConnectionProvider connectionProvider = getConnectionProvider();
+        SchemaElementImpl impl = new SchemaElementImpl(connectionProvider);
+        schemaElement = new SchemaElement(impl);
+        schemaElement.setName(DBIdentifier.create("schema")); // NO18N
+        impl.initTables(connectionProvider, new LinkedList(tableNames), new LinkedList(), true);
         
         return schemaElement;
     }

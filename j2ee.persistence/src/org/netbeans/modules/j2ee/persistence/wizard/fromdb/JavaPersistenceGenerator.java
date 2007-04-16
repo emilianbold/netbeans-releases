@@ -21,7 +21,6 @@ package org.netbeans.modules.j2ee.persistence.wizard.fromdb;
 
 import com.sun.source.tree.*;
 import java.util.HashMap;
-import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Table;
@@ -44,7 +43,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.util.AbstractTask;
@@ -149,15 +147,20 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
         progressContributor.progress(progressMax);
     }
 
+    
     /**
      * Adds the given entities to out persistence unit found in the project.
      */
     private void addToPersistenceUnit(Set<FileObject> entities){
 
-        if (entities.isEmpty() || !addToAutoDiscoveredPU){
+        if (entities.isEmpty()){
             return;
         }
 
+        if (persistenceUnit == null && !addToAutoDiscoveredPU){
+            return;
+        }
+        
         Project project = FileOwnerQuery.getOwner(entities.iterator().next());
         if (project != null && !Util.isSupportedJavaEEVersion(project) && ProviderUtil.getDDFile(project) != null) {
             try {
@@ -394,6 +397,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 needsPKClass = !entityClass.isUsePkField();
                 pkClassName = needsPKClass ? createPKClassName(entityClass.getClassName()) : null;
                 pkFQClassName = entityClass.getPackage() + "." + pkClassName; // NOI18N
+
 
                 genUtils = GenerationUtils.newInstance(copy);
                 if (genUtils == null) {
