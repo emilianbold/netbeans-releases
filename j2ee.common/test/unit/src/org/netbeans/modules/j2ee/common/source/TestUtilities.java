@@ -21,9 +21,11 @@ package org.netbeans.modules.j2ee.common.source;
 
 import java.io.ByteArrayInputStream;
 import java.io.EOFException;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -63,4 +65,17 @@ public class TestUtilities {
             stream.close();
         }
     }
+    
+    /**
+     * Creates a cache folder for the Java infrastructure.
+     * 
+     * @param folder the parent folder for the cache folder, 
+     * typically the working dir.
+     */ 
+    public static void setCacheFolder(File folder){
+        File cacheFolder = new File(folder,"cache");
+        cacheFolder.mkdirs();
+        IndexUtil.setCacheFolder(cacheFolder);
+    }
+    
 }

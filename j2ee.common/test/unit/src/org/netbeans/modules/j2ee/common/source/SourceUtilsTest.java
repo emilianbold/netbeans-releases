@@ -47,6 +47,7 @@ public class SourceUtilsTest extends NbTestCase {
         MockServices.setServices(FakeJavaDataLoaderPool.class, RepositoryImpl.class);
 
         clearWorkDir();
+        TestUtilities.setCacheFolder(getWorkDir());
         FileObject workDir = FileUtil.toFileObject(getWorkDir());
         testFO = workDir.createData("TestClass.java");
     }

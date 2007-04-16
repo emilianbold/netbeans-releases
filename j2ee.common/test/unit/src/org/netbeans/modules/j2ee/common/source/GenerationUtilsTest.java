@@ -33,7 +33,6 @@ import javax.lang.model.type.*;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -41,7 +40,6 @@ import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
 /**
  *
@@ -60,6 +58,7 @@ public class GenerationUtilsTest extends NbTestCase {
         MockServices.setServices(FakeJavaDataLoaderPool.class, RepositoryImpl.class);
 
         clearWorkDir();
+        TestUtilities.setCacheFolder(getWorkDir());
         workDir = FileUtil.toFileObject(getWorkDir());
         testFO = workDir.createData("TestClass.java");
     }
