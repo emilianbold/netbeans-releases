@@ -13,17 +13,15 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2004 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2004-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openidex.search;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 
@@ -31,7 +29,7 @@ import org.openide.loaders.DataFolder;
  *
  * @author  Marian Petras
  */
-final class SimpleSearchInfo implements SearchInfo {
+class SimpleSearchInfo implements SearchInfo {
 
     /**
      * Empty search info object.
