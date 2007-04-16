@@ -122,7 +122,7 @@ public class DatabaseSettingsImporter {
         if (driverDir.exists())                
            return driverLocation;
         else
-           return "";
+           return ""; // NOI18N
     }
     
     private File[] driversToRegister(String driversPath) {
@@ -242,10 +242,18 @@ public class DatabaseSettingsImporter {
                 String username = dsInfo.getUsername();
                 String password = dsInfo.getPassword();
                 JDBCDriver drvs = DataSourceResolver.getInstance().findMatchingDriver(dsInfo.getDriverClassName());
-                DatabaseConnection dbconn = DatabaseConnection.create(drvs, dsInfo.getUrl(), username,  username.toUpperCase(), password,  true); // NOI18N
-                ConnectionManager.getDefault().addConnection(dbconn);
+                if (drvs != null) {
+                    DatabaseConnection dbconn = DatabaseConnection.create(drvs, dsInfo.getUrl(), username,  username.toUpperCase(), password,  true); // NOI18N
+                    ConnectionManager.getDefault().addConnection(dbconn);
+                }
+
             }
             
+            // Cleanup
+            if (contextFile.exists()) {
+                contextFile.delete();
+                contextFile.getParentFile().delete();
+            }
         } catch (DatabaseException de) {
             de.printStackTrace();
         }
@@ -307,12 +315,12 @@ public class DatabaseSettingsImporter {
         // create data source info
         password = decryptPassword(password);
         
-        if (driverClassName.equals("org.apache.derby.jdbc.ClientDriver")) {
-            int oldPortLoc = driverUrl.indexOf(":21527");
+        if (driverClassName.equals("org.apache.derby.jdbc.ClientDriver")) { // NOI18N
+            int oldPortLoc = driverUrl.indexOf(":21527"); // NOI18N
             if (oldPortLoc != -1) { // NOI18N
                 String beginURL = driverUrl.substring(0, oldPortLoc);
-                String endURL = driverUrl.substring(driverUrl.lastIndexOf(":21527")+6, driverUrl.length());
-                driverUrl = beginURL + ":1527" + endURL;                           
+                String endURL = driverUrl.substring(driverUrl.lastIndexOf(":21527")+6, driverUrl.length()); // NOI18N
+                driverUrl = beginURL + ":1527" + endURL; // NOI18N                           
             }
         }
         return new DataSourceInfo(dsName, driverClassName, driverUrl, "", username, password);
@@ -390,7 +398,7 @@ public class DatabaseSettingsImporter {
                         }
 
                         
-                    } else  if (qName.equals("arg")) {
+                    } else  if (qName.equals("arg")) { // NOI18N
                         String valueValue = attributes.getValue(VALUE_ATTR);                                                
                         args.add(valueValue);
                     }                        
