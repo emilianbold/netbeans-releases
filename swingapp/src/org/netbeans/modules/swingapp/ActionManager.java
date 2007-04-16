@@ -259,6 +259,9 @@ public class ActionManager {
             if(editorCookie.getDocument() == null) {
                 editorCookie.openDocument();
             }
+            // make sure the editor window is open
+            editorCookie.open();
+            
             Line lineObj = null;
             if (editorCookie != null) {
                 Line.Set lineSet = editorCookie.getLineSet();
