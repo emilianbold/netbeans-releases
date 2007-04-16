@@ -46,9 +46,6 @@ import java.util.List;
  */
 public interface PrimaryKey extends Cloneable {
 
-    /** RCS id */
-    static final String RCS_ID = "$Id$";
-
     /**
      * Gets (optional) name of this primary key.
      * 

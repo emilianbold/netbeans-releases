@@ -65,9 +65,6 @@ import org.openide.util.NbBundle;
  */
 public class DBTableImpl implements DBTable, Cloneable, Comparable {
 
-    /** RCS id */
-    static final String RCS_ID = "$Id$";
-
     /* Log4J category string */
     private static final String LOG_CATEGORY = DBTableImpl.class.getName();
 

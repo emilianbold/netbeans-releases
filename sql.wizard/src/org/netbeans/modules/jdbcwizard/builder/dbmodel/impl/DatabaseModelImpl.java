@@ -61,9 +61,6 @@ import org.openide.util.NbBundle;
  */
 public class DatabaseModelImpl implements DatabaseModel, Cloneable {
 
-    /** RCS id */
-    static final String RCS_ID = "$Id$";
-
     /* Initial buffer size for StringBuffer used in marshalling OTDs to XML */
     private static final String LOG_CATEGORY = DatabaseModelImpl.class.getName();
 

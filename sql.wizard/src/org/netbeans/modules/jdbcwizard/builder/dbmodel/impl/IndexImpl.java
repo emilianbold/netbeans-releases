@@ -54,9 +54,6 @@ import org.openide.util.NbBundle;
  */
 public class IndexImpl implements Index, Cloneable {
 
-    /** RCS ID */
-    static final String RCS_ID = "$Id$";
-
     /* Name of this index */
     private String name;
 

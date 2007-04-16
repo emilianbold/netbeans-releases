@@ -48,9 +48,7 @@ import java.util.Set;
  */
 public interface DBTable extends Cloneable {
 
-    /** RCS id */
-    static final String RCS_ID = "$Id$";
-
+    
     /**
      * Gets the user-defined name of this DBTable object.
      * 

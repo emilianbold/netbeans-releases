@@ -50,8 +50,6 @@ import org.netbeans.modules.jdbcwizard.builder.dbmodel.DBTable;
  */
 public class DBColumnImpl implements DBColumn, Cloneable, Comparable {
 
-    /** the RCS id */
-    static final String RCS_ID = "$Id$";
 
     /** String constant for unknown SQL type */
     public static final String UNKNOWN_TYPE = "unknown";

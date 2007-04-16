@@ -57,8 +57,6 @@ import org.openide.util.NbBundle;
  */
 public class ForeignKeyImpl implements ForeignKey, Cloneable {
 
-    /** RCS ID */
-    static final String RCS_ID = "$Id$";
 
     /* Name of this key; may be null */
     private String fkName;

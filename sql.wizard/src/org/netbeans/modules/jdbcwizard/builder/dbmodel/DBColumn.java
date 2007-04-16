@@ -44,9 +44,7 @@ package org.netbeans.modules.jdbcwizard.builder.dbmodel;
  */
 public interface DBColumn extends Cloneable, Comparable {
 
-    /** RCS id */
-    static final String RCS_ID = "$Id$";
-
+   
     /**
      * Gets the column name
      * 

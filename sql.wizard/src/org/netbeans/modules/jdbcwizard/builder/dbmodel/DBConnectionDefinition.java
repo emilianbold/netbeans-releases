@@ -44,9 +44,6 @@ package org.netbeans.modules.jdbcwizard.builder.dbmodel;
  */
 public interface DBConnectionDefinition extends Cloneable {
 
-    /** RCS id */
-    static final String RCS_ID = "$Id$";
-
     /**
      * Get name defined for this DBConnectionDefinition.
      * 

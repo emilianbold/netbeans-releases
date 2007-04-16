@@ -56,8 +56,6 @@ import org.openide.util.NbBundle;
  * @version $Revision$
  */
 public class PrimaryKeyImpl implements PrimaryKey, Cloneable {
-    /** RCS ID */
-    static final String RCS_ID = "$Id$";
 
     public static final PrimaryKeyImpl NULL = new PrimaryKeyImpl();
 

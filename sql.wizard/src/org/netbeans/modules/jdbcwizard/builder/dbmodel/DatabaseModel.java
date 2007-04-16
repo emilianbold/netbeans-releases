@@ -45,9 +45,7 @@ import java.util.List;
  * @author
  */
 public interface DatabaseModel extends Cloneable {
-    /** RCS id */
-    static final String RCS_ID = "$Id$";
-
+   
     /**
      * Gets associated DBConnectionDefinition
      * 

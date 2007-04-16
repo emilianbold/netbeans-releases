@@ -46,9 +46,6 @@ import java.util.List;
  */
 public interface ForeignKey extends Cloneable {
 
-    /** RCS id */
-    static final String RCS_ID = "$Id$";
-
     /**
      * Gets user-defined name for this Foreign Key.
      * 
