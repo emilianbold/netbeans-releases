@@ -23,7 +23,6 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 import org.openide.nodes.Node;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.status.StatusAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.checkout.CheckoutAction;
@@ -399,12 +398,12 @@ public class Annotator {
      */ 
     public static Action [] getActions(VCSContext ctx, VCSAnnotator.ActionDestination destination) {
         ResourceBundle loc = NbBundle.getBundle(Annotator.class);
-        Node [] nodes = ctx.getNodes();
+        Node [] nodes = ctx.getElements().lookupAll(Node.class).toArray(new Node[0]);
         File [] files = ctx.getRootFiles().toArray(new File[ctx.getRootFiles().size()]);
-        Lookup context = ctx.getNodes() != null ? Lookups.fixed(ctx.getNodes()) : null;
+        Lookup context = ctx.getElements();
         boolean noneVersioned = isNothingVersioned(files);
         boolean onlyFolders = onlyFolders(files);
-        boolean onlyProjects = onlyProjects(ctx.getNodes());
+        boolean onlyProjects = onlyProjects(nodes);
         
         List<Action> actions = new ArrayList<Action>(20);
         if (destination == VCSAnnotator.ActionDestination.MainMenu) {
@@ -482,7 +481,7 @@ public class Annotator {
     }
 
     private static boolean onlyProjects(Node[] nodes) {
-        if (nodes == null) return false;
+        if (nodes == null || nodes.length == 0) return false;
         for (Node node : nodes) {
             if (node.getLookup().lookup(Project.class) == null) return false;
         }

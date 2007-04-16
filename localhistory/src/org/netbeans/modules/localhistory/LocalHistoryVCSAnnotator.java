@@ -31,7 +31,6 @@ import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -56,7 +55,7 @@ public class LocalHistoryVCSAnnotator extends VCSAnnotator {
     }
     
     public Action[] getActions(VCSContext ctx, VCSAnnotator.ActionDestination destination) {
-        Lookup context = Lookups.fixed(ctx.getNodes());
+        Lookup context = ctx.getElements();
         List<Action> actions = new ArrayList<Action>();
         if (destination == VCSAnnotator.ActionDestination.MainMenu) {
             actions.add(SystemAction.get(ShowLocalHistoryAction.class));

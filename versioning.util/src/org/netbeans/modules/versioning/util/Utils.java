@@ -477,7 +477,7 @@ public final class Utils {
         // It avoids "Show changes 2 files" on project node
         // caused by fact that project contains two source groups.
 
-        Node[] activatedNodes = ctx.getNodes();
+        Node[] activatedNodes = ctx.getElements().lookupAll(Node.class).toArray(new Node[0]);
         boolean projectsOnly = true;
         for (int i = 0; i < activatedNodes.length; i++) {
             Node activatedNode = activatedNodes[i];
@@ -539,7 +539,7 @@ public final class Utils {
         // It avoids "Show changes 2 files" on project node
         // caused by fact that project contains two source groups.
 
-        Node[] activatedNodes = ctx.getNodes();
+        Node[] activatedNodes = ctx.getElements().lookupAll(Node.class).toArray(new Node[0]);
         boolean projectsOnly = true;
         for (int i = 0; i < activatedNodes.length; i++) {
             Node activatedNode = activatedNodes[i];

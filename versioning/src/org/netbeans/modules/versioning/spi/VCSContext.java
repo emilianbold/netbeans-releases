@@ -30,6 +30,7 @@ import org.openide.nodes.Node;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
 
@@ -58,7 +59,7 @@ public final class VCSContext {
     private static Reference<VCSContext>  contextCached = new WeakReference<VCSContext>(null);    
     private static Reference<Node[]> contextNodesCached = new WeakReference<Node []>(null); 
 
-    private final Node []   nodes;
+    private final Lookup    elements;
     
     private final Set<File> rootFiles;
     private final Set<File> exclusions;
@@ -136,12 +137,14 @@ public final class VCSContext {
     }
     
     /**
-     * Retrieves Nodes that were originally used to construct this context object.
-     * 
-     * @return Node[] array of Nodes this context represents or null if this context was not originally created from Nodes 
+     * Retrieves elements that make up this VCS context. The returned lookup may be empty
+     * or may contain any number of the following elements:
+     * - instances of Node that were originally used to construct this context object
+     *
+     * @return Lookup lookup of this VCSContext
      */ 
-    public Node[] getNodes() {
-        return nodes;
+    public Lookup getElements() {
+        return elements;
     }
 
     /**
@@ -244,7 +247,7 @@ public final class VCSContext {
     }    
 
     private VCSContext(Node [] nodes, Set<File> rootFiles, Set<File> exclusions) {
-        this.nodes = nodes; // TODO: construct artificial nodes in case nodes == null ?
+        this.elements = nodes != null ? Lookups.fixed(nodes) : Lookups.fixed(new Node[0]);
         Set<File> tempRootFiles = new HashSet<File>(rootFiles);
         Set<File> tempExclusions = new HashSet<File>(exclusions);
         // TODO remove all exclusions without some ancestor root 
