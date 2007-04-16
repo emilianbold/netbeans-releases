@@ -1006,7 +1006,7 @@ introduced by support for multiple source roots. -jglick
                 </xsl:if>
             </target>
             
-            <target name="-init-rest">
+            <target name="-init-rest" if="rest.support.on">
                  <taskdef name="restapt" classname="com.sun.ws.rest.tools.ant.RestBeansProcessorTask">
                      <classpath><path path="${{j2ee.platform.classpath}}"/></classpath>
                  </taskdef>
