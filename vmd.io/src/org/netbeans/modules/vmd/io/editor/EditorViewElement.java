@@ -34,120 +34,131 @@ import javax.swing.*;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.WeakHashMap;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * @author David Kaspar
  */
 public class EditorViewElement implements MultiViewElement, Serializable {
-
+    
     private static final long serialVersionUID = -1;
-
+    
     private static final String CLOSING_ID = "ID_JAVA_CLOSING"; // NOI18N
-
+    
     private DataObjectContext context;
     private DataEditorView view;
     private transient DataEditorView.Kind kind;
     private transient Lookup lookup;
-    private transient TopComponent topComponent;
+    private transient EditorTopComponent topComponent;
     private transient MultiViewElementCallback callback;
-
-    public EditorViewElement () {
+    private static WeakHashMap<DataEditorView, TopComponent> views = new WeakHashMap<DataEditorView, TopComponent>();
+    
+    public EditorViewElement() {
     }
-
-    public EditorViewElement (DataObjectContext context, DataEditorView view) {
+    
+    public EditorViewElement(DataObjectContext context, DataEditorView view) {
         this.context = context;
         this.view = view;
-        init ();
+        init();
     }
-
-    private void init () {
-        kind = view.getKind ();
-        ArrayList<Object> lookupObjects = DataEditorViewLookupFactoryRegistry.getLookupObjects (context, view);
-        lookupObjects.add (view);
-        lookup = Lookups.fixed (lookupObjects.toArray ());
-        IOSupport.getDocumentSerializer (context.getDataObject ()).startLoadingDocument ();
+    
+    private void init() {
+        kind = view.getKind();
+        ArrayList<Object> lookupObjects = DataEditorViewLookupFactoryRegistry.getLookupObjects(context, view);
+        ArrayList<Lookup> lookups = DataEditorViewLookupFactoryRegistry.getLookups(context, view);
+        lookupObjects.add(view);
+        lookups.add(Lookups.fixed(lookupObjects.toArray()));
+        lookup = new ProxyLookup(lookups.toArray(new Lookup[lookups.size()]));
+        IOSupport.getDocumentSerializer(context.getDataObject()).startLoadingDocument();
     }
-
-    public JComponent getVisualRepresentation () {
+    
+    public JComponent getVisualRepresentation() {
         if (topComponent == null) {
-            JComponent visualRepresentation = view.getVisualRepresentation ();
-            if (visualRepresentation != null)
-                topComponent = kind == DataEditorView.Kind.CODE ? new CodeEditorTopComponent (context, lookup, visualRepresentation) : new EditorTopComponent (context, lookup, visualRepresentation);
+            JComponent visualRepresentation = view.getVisualRepresentation();
+            if (visualRepresentation != null) {
+                topComponent = kind == DataEditorView.Kind.CODE ? new CodeEditorTopComponent(context, lookup, visualRepresentation) : new EditorTopComponent(context, lookup, visualRepresentation);
+                views.put(view, topComponent);
+            }
         }
         return topComponent;
     }
-
-    public JComponent getToolbarRepresentation () {
-        return view.getToolbarRepresentation ();
+    
+    public JComponent getToolbarRepresentation() {
+        return view.getToolbarRepresentation();
     }
-
-    public Action[] getActions () {
-        return callback != null ? callback.createDefaultActions () : new Action[0];
+    
+    public Action[] getActions() {
+        return callback != null ? callback.createDefaultActions() : new Action[0];
     }
-
-    public Lookup getLookup () {
-        getVisualRepresentation ();
-        return topComponent.getLookup ();
+    
+    public Lookup getLookup() {
+        getVisualRepresentation();
+        return topComponent.getLookup();
     }
-
-    public void componentOpened () {
-        view.componentOpened ();
+    
+    public void componentOpened() {
+        view.componentOpened();
     }
-
-    public void componentClosed () {
-        view.componentClosed ();
+    
+    public void componentClosed() {
+        view.componentClosed();
     }
-
-    public void componentShowing () {
-        view.componentShowing ();
+    
+    public void componentShowing() {
+        view.componentShowing();
     }
-
-    public void componentHidden () {
-        view.componentHidden ();
+    
+    public void componentHidden() {
+        view.componentHidden();
     }
-
-    public void componentActivated () {
-        IOSupport.notifyDataEditorViewActivated (view);
-        view.componentActivated ();
+    
+    public void componentActivated() {
+        IOSupport.notifyDataEditorViewActivated(view);
+        view.componentActivated();
     }
-
-    public void componentDeactivated () {
-        view.componentDeactivated ();
+    
+    public void componentDeactivated() {
+        view.componentDeactivated();
     }
-
-    public UndoRedo getUndoRedo () {
-        UndoRedo undoRedo = view.getUndoRedo ();
+    
+    public UndoRedo getUndoRedo() {
+        UndoRedo undoRedo = view.getUndoRedo();
         if (undoRedo != null)
             return undoRedo;
         if (kind != DataEditorView.Kind.MODEL)
             return null;
-        return IOSupport.getDocumentSerializer (context.getDataObject ()).getUndoRedoManager ();
+        return IOSupport.getDocumentSerializer(context.getDataObject()).getUndoRedoManager();
     }
-
-    public void setMultiViewCallback (MultiViewElementCallback callback) {
+    
+    public void setMultiViewCallback(MultiViewElementCallback callback) {
         this.callback = callback;
-        IOSupport.getDataObjectInteface (context.getDataObject ()).setMVTC (callback.getTopComponent ());
+        IOSupport.getDataObjectInteface(context.getDataObject()).setMVTC(callback.getTopComponent());
     }
-
-    public CloseOperationState canCloseElement () {
-        return MultiViewFactory.createUnsafeCloseState (CLOSING_ID, null, null);
+    
+    public CloseOperationState canCloseElement() {
+        return MultiViewFactory.createUnsafeCloseState(CLOSING_ID, null, null);
     }
-
-    private void writeObject (java.io.ObjectOutputStream out) throws IOException {
-        out.writeObject (context);
-        out.writeObject (view);
+    
+    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+        out.writeObject(context);
+        out.writeObject(view);
     }
-
-    private void readObject (java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
-        Object object = in.readObject ();
+    
+    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+        Object object = in.readObject();
         if (! (object instanceof DataObjectContext))
-            throw new ClassNotFoundException ("DataObjectContext expected but not found");
+            throw new ClassNotFoundException("DataObjectContext expected but not found");
         context = (DataObjectContext) object;
-        object = in.readObject ();
+        object = in.readObject();
         if (! (object instanceof DataEditorView))
-            throw new ClassNotFoundException ("DataEditorView expected but not found");
+            throw new ClassNotFoundException("DataEditorView expected but not found");
         view = (DataEditorView) object;
-        init ();
+        init();
     }
-
+    
+    public static TopComponent getTopComponent(DataEditorView view) {
+        return views.get(view);
+    }
+    
 }

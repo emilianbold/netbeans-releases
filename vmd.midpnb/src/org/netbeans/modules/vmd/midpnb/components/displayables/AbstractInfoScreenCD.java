@@ -24,7 +24,6 @@ import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
-import org.netbeans.modules.vmd.api.properties.common.TextFieldBC;
 import org.netbeans.modules.vmd.midp.codegen.MidpCodePresenterSupport;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
@@ -91,7 +90,7 @@ public class AbstractInfoScreenCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
             .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
-                .addProperty("Text", PropertyEditorString.createInstance(), new TextFieldBC(), PROP_TEXT)
+                .addProperty("Text", PropertyEditorString.createInstance(), PROP_TEXT)
                 .addProperty("Image", PropertyEditorResourcesComboBox.createImagePropertyEditor(), PROP_IMAGE)
                 .addProperty("Text Font", PropertyEditorResourcesComboBox.createFontPropertyEditor(), PROP_TEXT_FONT);
     }

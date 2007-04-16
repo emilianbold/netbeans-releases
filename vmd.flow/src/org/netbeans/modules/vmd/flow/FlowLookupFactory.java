@@ -18,32 +18,26 @@
  */
 
 
-package org.netbeans.modules.vmd.inspector;
+package org.netbeans.modules.vmd.flow;
 
 import org.netbeans.modules.vmd.api.io.DataEditorView;
 import org.netbeans.modules.vmd.api.io.DataEditorViewLookupFactory;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 
-import java.util.Arrays;
 import java.util.Collection;
-import org.netbeans.spi.navigator.NavigatorLookupHint;
+import java.util.Collections;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  * @author Karol Harezlak
  */
 
-public class InspectorLookupFactory implements DataEditorViewLookupFactory {
+public class FlowLookupFactory implements DataEditorViewLookupFactory {
     
     public Collection<?> getLookupObjects(DataObjectContext context, DataEditorView view) {
-        if (view.canShowSideWindows()  &&  view.getKind() == DataEditorView.Kind.MODEL) {
-            return Arrays.asList( new NavigatorLookupHint() {
-                public String getContentType() {
-                    return "vmd"; // NOI18N
-                }
-            });
-        }
-        return null;
+        return Collections.singleton(new AbstractLookup(new InstanceContent()));
     }
 
     public Collection<? extends Lookup> getLookups(DataObjectContext context, DataEditorView view) {

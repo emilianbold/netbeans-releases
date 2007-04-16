@@ -36,26 +36,29 @@ import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.openide.util.actions.Presenter;
 import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;
+import org.openide.windows.TopComponent;
 
 /**
  *
  * @author Karol Harezlak
  */
-final class InspectorUI  extends JPanel implements ExplorerManager.Provider,
-                                                   PropertyChangeListener,
-                                                   InspectorAccessController.InspectorACListener,
-                                                   ActiveDocumentSupport.Listener,
-                                                   Presenter.Popup {
+final class InspectorUI  extends TopComponent implements ExplorerManager.Provider,
+        PropertyChangeListener,
+        InspectorAccessController.InspectorACListener,
+        ActiveDocumentSupport.Listener,
+        Presenter.Popup {
     
     private ExplorerManager explorerManager;
     private DesignDocument document;
     private volatile boolean lockSelectionSetting;
     private BeanTreeView inspectorBeanTreeView;
     private InspectorWrapperTree folderWrapperTree;
+    private InspectorPanel panel;
     
-    InspectorUI() {
+    InspectorUI(InspectorPanel panel) {
         lockSelectionSetting = false;
         explorerManager = new ExplorerManager();
         explorerManager.addPropertyChangeListener(this);
@@ -67,6 +70,8 @@ final class InspectorUI  extends JPanel implements ExplorerManager.Provider,
         ActiveDocumentSupport.getDefault().addActiveDocumentListener(this);
         initComponents();
         activeDocumentChanged(null, ActiveDocumentSupport.getDefault().getActiveDocument());
+        this.panel = panel;
+        associateLookup(ExplorerUtils.createLookup(explorerManager, getActionMap()));
     }
     
     
@@ -86,6 +91,9 @@ final class InspectorUI  extends JPanel implements ExplorerManager.Provider,
         if (! ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName()))
             return;
         
+        if (explorerManager.getSelectedNodes().length < 1)
+            return;
+        panel.selectionChanged(explorerManager.getSelectedNodes());
         final DesignDocument localDocument = this.document;
         if (localDocument == null || localDocument.getTransactionManager().isAccess())
             return;
@@ -222,7 +230,7 @@ final class InspectorUI  extends JPanel implements ExplorerManager.Provider,
                 Long  componentID = folder.getFolder().getComponentID();
                 if (componentID == null || componentID  != component.getComponentID())
                     continue;
-                if (folder.getFolder().getDisplayName().equals(InfoPresenter.getHtmlDisplayName(component)) )
+                if (folder.getFolder().getDisplayName().equals(InfoPresenter.getDisplayName(component)) )
                     selectedNodes.add(folder.getNode());
             }
         }

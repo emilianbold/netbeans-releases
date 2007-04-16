@@ -27,37 +27,44 @@ import org.openide.windows.TopComponent;
 
 import javax.swing.*;
 import java.awt.*;
+import org.openide.util.lookup.InstanceContent;
+
 
 /**
  * @author David Kaspar
  */
 public class EditorTopComponent extends TopComponent {
-
+    
     private JComponent view;
-
-    public EditorTopComponent (DataObjectContext context, Lookup lookup, JComponent view) {
+    private InstanceContent ic;
+    private Node node;
+    private Lookup lookup;
+    
+    public EditorTopComponent(DataObjectContext context, Lookup lookup, JComponent view) {
         this.view = view;
-        setLayout (new BorderLayout ());
-        setFocusable (true);
-        add (view, BorderLayout.CENTER);
-        Node node = context.getDataObject ().getNodeDelegate ();
-        setActivatedNodes (new Node[] { node });
-        lookup = new ProxyLookup (lookup, node.getLookup (), Lookups.singleton (getActionMap ()));
-        associateLookup (lookup);
+        setLayout(new BorderLayout());
+        setFocusable(true);
+        add(view, BorderLayout.CENTER);
+        ic = new InstanceContent();
+        this.lookup =  lookup = (new ProxyLookup(lookup, /*new AbstractLookup(ic),*/ Lookups.singleton(getActionMap())));
     }
 
-    JComponent getView () {
+    public Lookup getLookup() {
+        return lookup;
+    }
+    
+    JComponent getView() {
         return view;
     }
-
-    public void requestFocus () {
-        super.requestFocus ();
-        view.requestFocus ();
+   
+    public void requestFocus() {
+        super.requestFocus();
+        view.requestFocus();
     }
-
-    public boolean requestFocusInWindow () {
-        super.requestFocusInWindow ();
-        return view.requestFocusInWindow ();
+    
+    public boolean requestFocusInWindow() {
+        super.requestFocusInWindow();
+        return view.requestFocusInWindow();
     }
-
+   
 }

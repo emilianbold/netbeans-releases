@@ -26,7 +26,6 @@ import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
-import org.netbeans.modules.vmd.api.properties.common.TextFieldBC;
 import org.netbeans.modules.vmd.api.screen.actions.EditDependencyPresenter;
 import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
@@ -102,7 +101,7 @@ public final class DisplayableCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter () {
         return new DefaultPropertiesPresenter (DesignEventFilterResolver.THIS_COMPONENT)
                 .addPropertiesCategory (PropertiesCategories.CATEGORY_PROPERTIES)
-                    .addProperty ("Title", PropertyEditorString.createInstance(), new TextFieldBC(), PROP_TITLE)
+                    .addProperty ("Title", PropertyEditorString.createInstance(), PROP_TITLE)
                     .addProperty ("Ticker", PropertyEditorResourcesComboBox.createTickerPropertyEditor(), PROP_TICKER);
     }
 

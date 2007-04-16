@@ -29,9 +29,9 @@ import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.AddAction;
 import org.netbeans.modules.vmd.api.model.presenters.actions.AddActionPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteAction;
-import org.netbeans.modules.vmd.api.properties.common.PropertiesAction;
 import org.netbeans.modules.vmd.api.screen.actions.DesignerEditAction;
 import org.netbeans.modules.vmd.api.screen.actions.DesignerEditParentAction;
+import org.openide.actions.PropertiesAction;
 
 
 import org.openide.util.actions.SystemAction;

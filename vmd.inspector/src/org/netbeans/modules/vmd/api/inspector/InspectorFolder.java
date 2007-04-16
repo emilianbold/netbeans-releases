@@ -37,13 +37,15 @@ public interface InspectorFolder extends  InspectorPositionController {
     Image getIcon();
 
     String getDisplayName();
+    
+    String getHtmlDisplayName();
 
     String getName();
 
-    public Action[] getActions();
+    Action[] getActions();
 
-    public boolean canRename();
+    boolean canRename();
 
-    public InspectorOrderingController[] getOrderingControllers();
+    InspectorOrderingController[] getOrderingControllers();
     
 }

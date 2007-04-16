@@ -30,34 +30,43 @@ import org.openide.util.WeakSet;
  * @author Karol Harezlak
  */
 public final class InspectorRegistry {
-
-    private static WeakSet<DesignComponent> registry = new WeakSet<DesignComponent>();;
+    
+    private static InspectorRegistry INSTANCE;
+    
+    private WeakSet<DesignComponent> registry = new WeakSet<DesignComponent>();;
 
     private InspectorRegistry() {
     }
-
-    public static void addComponent(DesignComponent component) {
+    
+    public static InspectorRegistry getDefault() {
+        if (INSTANCE == null)
+            INSTANCE = new InspectorRegistry();
+        
+        return INSTANCE;
+    }
+    
+    public void addComponent(DesignComponent component) {
         registry.add(component);
     }
 
-    public static Collection<DesignComponent> getRegistry() {
+    public Collection<DesignComponent> getRegistry() {
         if (registry == null)
             return null;
         
         return Collections.unmodifiableCollection(registry);
     }
     
-    public static void clearRegistry() {
+    public void clearRegistry() {
         if (registry != null)
             registry.clear();
     }
     
-    public static void removeAll(Collection<DesignComponent> components) {
+    public void removeAll(Collection<DesignComponent> components) {
         if ((registry != null && registry.size() > 0) && (components != null && components.size() == 0))
             registry.removeAll(components);
     }
     
-    public static void remove(DesignComponent component) {
+    public void remove(DesignComponent component) {
         if (registry != null || component != null)
             registry.remove(component);
     }

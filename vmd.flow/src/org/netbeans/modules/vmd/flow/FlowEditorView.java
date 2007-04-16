@@ -28,16 +28,18 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 
+
+
 /**
  * @author David Kaspar
  */
 public class FlowEditorView implements DataEditorView {
 
     private static final long serialVersionUID = -1;
-
+    
     private DataObjectContext context;
     private transient FlowViewController controller;
-
+    
     public FlowEditorView (DataObjectContext context) {
         this.context = context;
         init ();
@@ -128,5 +130,5 @@ public class FlowEditorView implements DataEditorView {
         context = (DataObjectContext) object;
         init ();
     }
-
+     
 }

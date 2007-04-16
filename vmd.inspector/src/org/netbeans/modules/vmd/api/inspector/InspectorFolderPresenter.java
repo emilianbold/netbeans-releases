@@ -70,7 +70,7 @@ public abstract class InspectorFolderPresenter extends DynamicPresenter {
             
             protected void designChanged(DesignEvent event) {
                 if (event.isStructureChanged())
-                    InspectorRegistry.addComponent(super.getComponent());
+                    InspectorRegistry.getDefault().addComponent(super.getComponent());
             }
         };
         
@@ -162,6 +162,19 @@ public abstract class InspectorFolderPresenter extends DynamicPresenter {
         }
         
         public String getDisplayName() {
+            getComponent().getDocument().getTransactionManager().readAccess(new Runnable() {
+                public void run() {
+                    if (getComponent().getParentComponent() != null)
+                        displayName = InfoPresenter.getDisplayName(getComponent());
+                    else if (getComponent() == getComponent().getDocument().getRootComponent())
+                        displayName = InfoPresenter.getDisplayName(getComponent());
+                }
+            });
+            
+            return displayName;
+        }
+        
+        public String getHtmlDisplayName() {
             getComponent().getDocument().getTransactionManager().readAccess(new Runnable() {
                 public void run() {
                     if (getComponent().getParentComponent() != null)
@@ -298,6 +311,10 @@ public abstract class InspectorFolderPresenter extends DynamicPresenter {
                 return true;
             
             return false;
+        }
+        
+        public String getHtmlDisplayName() {
+           return displayName;
         }
         
     }

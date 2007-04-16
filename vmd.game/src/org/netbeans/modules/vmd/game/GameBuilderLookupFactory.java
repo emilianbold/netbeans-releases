@@ -26,9 +26,10 @@ import org.netbeans.spi.navigator.NavigatorLookupHint;
 
 import java.util.Arrays;
 import java.util.Collection;
+import org.openide.util.Lookup;
 
 /**
- *
+ *rm -rf testus 
  * @author karel herink
  */
 public class GameBuilderLookupFactory implements DataEditorViewLookupFactory {
@@ -43,5 +44,9 @@ public class GameBuilderLookupFactory implements DataEditorViewLookupFactory {
 				}
 			}
 		);
+    }
+
+    public Collection<? extends Lookup> getLookups(DataObjectContext context, DataEditorView view) {
+        return null;
     }
 }

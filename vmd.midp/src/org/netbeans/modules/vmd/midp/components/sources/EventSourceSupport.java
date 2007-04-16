@@ -29,13 +29,14 @@ import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenterForwarder;
-import org.netbeans.modules.vmd.api.properties.common.PropertiesAction;
 import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
 import org.netbeans.modules.vmd.midp.codegen.InstanceNameResolver;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
+import org.openide.actions.PropertiesAction;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -64,7 +65,7 @@ public final class EventSourceSupport {
         }
         MidpActionsSupport.addCommonActionsPresenters(presenters, true, true, true, true, false);
         MidpActionsSupport.addMoveActionPresenter(presenters, DisplayableCD.PROP_COMMANDS);
-        presenters.add(ActionsPresenterForwarder.createByReference(PROP_COMMAND, PropertiesAction.DISPLAY_NAME));
+        presenters.add(ActionsPresenterForwarder.createByReference(PROP_COMMAND, NbBundle.getMessage(PropertiesAction.class, "Properties"))); //NOI18N
     }
     
     private static class EventSourceResolver implements InfoPresenter.Resolver {

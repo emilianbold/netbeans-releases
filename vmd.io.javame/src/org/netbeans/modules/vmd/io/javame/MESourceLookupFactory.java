@@ -29,21 +29,28 @@ import org.netbeans.modules.vmd.api.model.Debug;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import org.openide.util.Lookup;
 
 /**
  * @author David Kaspar
  */
 public final class MESourceLookupFactory implements DataEditorViewLookupFactory {
-
-    public Collection<? extends Object> getLookupObjects (DataObjectContext context, DataEditorView view) {
+    
+    public Collection<? extends Object> getLookupObjects(DataObjectContext context, DataEditorView view) {
         try {
-            if (view instanceof MESourceEditorView  &&  view.getKind () == DataEditorView.Kind.CODE)
-                return Collections.singleton (SnippetsPaletteSupport.getPaletteController ());
+            if (view instanceof MESourceEditorView  &&  view.getKind() == DataEditorView.Kind.CODE)
+                return Collections.singleton(SnippetsPaletteSupport.getPaletteController());
         } catch (IOException e) {
-            Debug.warning (e);
+            Debug.warning(e);
         }
-
+        
         return null;
     }
-
+    
+    public Collection<? extends Lookup> getLookups(DataObjectContext context, DataEditorView view) {
+        if (view.getKind().equals(DataEditorView.Kind.CODE))
+            return Collections.singleton(view.getContext().getDataObject().getNodeDelegate().getLookup());
+        return null;
+    }
+    
 }

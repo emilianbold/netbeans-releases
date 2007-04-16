@@ -35,7 +35,6 @@ public final class MidpPropertyEditorSupport {
 
     public static boolean singleSelectionEditAsTextOnly() {
        final DesignDocument document =  ActiveDocumentSupport.getDefault().getActiveDocument();
-       
        if (document == null)
            return false;
        document.getTransactionManager().readAccess(new Runnable() {
@@ -43,7 +42,6 @@ public final class MidpPropertyEditorSupport {
                 canEditAsText = !(document.getSelectedComponents().size() > 1);
             }
         });
-        
        return canEditAsText;
     }
     

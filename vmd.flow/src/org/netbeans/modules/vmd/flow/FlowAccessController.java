@@ -131,7 +131,6 @@ public class FlowAccessController implements AccessController {
         public AccessController createAccessController (DesignDocument document) {
             return new FlowAccessController (document);
         }
-
     }
 
 }

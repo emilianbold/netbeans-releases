@@ -30,17 +30,27 @@ import java.util.Collection;
  * @author David Kaspar
  */
 final class DataEditorViewLookupFactoryRegistry {
-
-    private static final Lookup.Result<DataEditorViewLookupFactory> factoriesLookupResult = Lookup.getDefault ().lookupResult (DataEditorViewLookupFactory.class);
-
-    static ArrayList<Object> getLookupObjects (DataObjectContext context, DataEditorView view) {
+    
+    private static final Lookup.Result<DataEditorViewLookupFactory> factoriesLookupResult = Lookup.getDefault().lookupResult(DataEditorViewLookupFactory.class);
+    
+    static ArrayList<Object> getLookupObjects(DataObjectContext context, DataEditorView view) {
         ArrayList<Object> list = new ArrayList<Object> ();
-        for (DataEditorViewLookupFactory factory : factoriesLookupResult.allInstances ()) {
-            Collection<? extends Object> objects = factory.getLookupObjects (context, view);
+        for (DataEditorViewLookupFactory factory : factoriesLookupResult.allInstances()) {
+            Collection<? extends Object> objects = factory.getLookupObjects(context, view);
             if (objects != null)
-                list.addAll (objects);
+                list.addAll(objects);
         }
         return list;
     }
-
+    
+    static ArrayList<Lookup> getLookups(DataObjectContext context, DataEditorView view) {
+        ArrayList<Lookup> list = new ArrayList<Lookup> ();
+        for (DataEditorViewLookupFactory factory : factoriesLookupResult.allInstances()) {
+            Collection<? extends Lookup> lookups = factory.getLookups(context, view);
+            if (lookups != null)
+                list.addAll(lookups);
+        }
+        return list;
+    }
+    
 }

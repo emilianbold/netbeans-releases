@@ -37,8 +37,6 @@ public interface DesignPropertyDescriptor {
 
     String getPropertyCategory();
 
-    PropertyBasicComponent getBasicPanelComponent();
-
     DesignPropertyEditor getPropertyEditor();
 
     DesignComponent getComponent();

@@ -34,6 +34,9 @@ import org.openide.text.CloneableEditorSupport;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.WeakHashMap;
+import org.netbeans.modules.vmd.io.editor.EditorViewElement;
+import org.openide.nodes.Node;
+import org.openide.windows.TopComponent;
 
 /**
  * Custom DataObject used by the IOSupport class must:
@@ -47,148 +50,154 @@ import java.util.WeakHashMap;
  * @author David Kaspar
  */
 public final class IOSupport {
-
+    
     private IOSupport() {
     }
-
+    
     private static final WeakHashMap<DataObject, DataObjectContext> contexts = new WeakHashMap<DataObject, DataObjectContext> ();
     private static final WeakHashMap<DataObject, DocumentSerializer> serializers = new WeakHashMap<DataObject, DocumentSerializer> ();
     private static final WeakHashMap<DataObject, CodeResolver> resolvers = new WeakHashMap<DataObject, CodeResolver> ();
-
+    
     /**
      * Returns a data object context representing specified data object.
      * @param dataObject the data object
      * @return the data object context
      */
-    public synchronized static DataObjectContext getDataObjectContext (DataObject dataObject) {
-        DataObjectContext context = contexts.get (dataObject);
+    public synchronized static DataObjectContext getDataObjectContext(DataObject dataObject) {
+        DataObjectContext context = contexts.get(dataObject);
         if (context == null) {
-            getDataObjectInteface (dataObject);
-            context = new DataObjectContextImpl (dataObject);
-            contexts.put (dataObject, context);
+            getDataObjectInteface(dataObject);
+            context = new DataObjectContextImpl(dataObject);
+            contexts.put(dataObject, context);
         }
         return context;
     }
-
+    
+    public static void setActivatedNodes(DataEditorView view, Node[] nodes) {
+        TopComponent tc = EditorViewElement.getTopComponent(view);
+        if (tc != null)
+            tc.setActivatedNodes(nodes);
+        
+    }
     /**
      * Returns a document serializer related to specified data object.
      * @param dataObject the data object
      * @return the related document serializer
      */
-    public synchronized static DocumentSerializer getDocumentSerializer (DataObject dataObject) {
-        DocumentSerializer serializer = serializers.get (dataObject);
+    public synchronized static DocumentSerializer getDocumentSerializer(DataObject dataObject) {
+        DocumentSerializer serializer = serializers.get(dataObject);
         if (serializer == null) {
-            DataObjectContext context = getDataObjectContext (dataObject);
-            serializer = new DocumentSerializer (context);
-            serializers.put (dataObject, serializer);
-            resolvers.put (dataObject, new CodeResolver (context, serializer));
+            DataObjectContext context = getDataObjectContext(dataObject);
+            serializer = new DocumentSerializer(context);
+            serializers.put(dataObject, serializer);
+            resolvers.put(dataObject, new CodeResolver(context, serializer));
         }
         return serializer;
     }
-
+    
     /**
      * Force update of code. This is usually invoked immediately after a document is loaded and immediately a document is saved
      * to keep the generated code synchronized with related design document.
      * @param dataObject the data object
      */
-    public static void forceUpdateCode (DataObject dataObject) {
-        CodeResolver resolver = resolvers.get (dataObject);
+    public static void forceUpdateCode(DataObject dataObject) {
+        CodeResolver resolver = resolvers.get(dataObject);
         if (resolver != null)
-            resolver.forceUpdateCode ();
+            resolver.forceUpdateCode();
     }
-
+    
     /**
      * Call this method to free all objects related to the data object that very assigned by the class.
      * @param dataObject
      */
-    public synchronized static void notifyDataObjectClosed (DataObject dataObject) {
-        CodeResolver resolver = resolvers.remove (dataObject);
+    public synchronized static void notifyDataObjectClosed(DataObject dataObject) {
+        CodeResolver resolver = resolvers.remove(dataObject);
         if (resolver != null)
-            resolver.notifyDataObjectClosed ();
-        DocumentSerializer serializer = serializers.remove (dataObject);
+            resolver.notifyDataObjectClosed();
+        DocumentSerializer serializer = serializers.remove(dataObject);
         if (serializer != null)
-            serializer.notifyDataObjectClosed ();
-        contexts.remove (dataObject);
+            serializer.notifyDataObjectClosed();
+        contexts.remove(dataObject);
     }
-
+    
     /**
      * Returns data object interface for specified data object.
      * DataObject must implement DataObjectInterface.
      * @param dataObject the data object
      * @return the data object interface
      */
-    public static DataObjectInterface getDataObjectInteface (DataObject dataObject) {
+    public static DataObjectInterface getDataObjectInteface(DataObject dataObject) {
         if (! (dataObject instanceof DataObjectInterface))
-            throw Debug.illegalArgument ("DataObject does not implement DataObjectInterface", dataObject);
+            throw Debug.illegalArgument("DataObject does not implement DataObjectInterface", dataObject);
         return (DataObjectInterface) dataObject;
     }
-
+    
     /**
      * Returns a cloneable editor lookup for specified data object.
      * The CloneableEditorSupport has to be in data object lookup.
      * @param dataObject the data object
      * @return the cloneable editor support
      */
-    public static CloneableEditorSupport getCloneableEditorSupport (DataObject dataObject) {
-        CloneableEditorSupport editorSupport = dataObject.getLookup ().lookup (CloneableEditorSupport.class);
+    public static CloneableEditorSupport getCloneableEditorSupport(DataObject dataObject) {
+        CloneableEditorSupport editorSupport = dataObject.getLookup().lookup(CloneableEditorSupport.class);
         if (editorSupport == null)
-            throw Debug.illegalArgument ("Missing CloneableEditorSupport in DataObject lookup", dataObject);
+            throw Debug.illegalArgument("Missing CloneableEditorSupport in DataObject lookup", dataObject);
         return editorSupport;
     }
-
+    
     /**
      * Returns the design file of specified data object context.
      * @param context the data object context
      * @return the design file object
      */
-    public static FileObject getDesignFile (DataObjectContext context) {
-        return getDataObjectInteface (context.getDataObject ()).getDesignFile ();
+    public static FileObject getDesignFile(DataObjectContext context) {
+        return getDataObjectInteface(context.getDataObject()).getDesignFile();
     }
-
+    
     /**
      * Creates an array of multi view descriptions for editor support for a specified context.
      * @param context the data object context
      */
-    public static MultiViewDescription[] createEditorSupportPane (DataObjectContext context) {
-        Collection<DataEditorView> views = EditorViewFactorySupport.createEditorViews (context);
+    public static MultiViewDescription[] createEditorSupportPane(DataObjectContext context) {
+        Collection<DataEditorView> views = EditorViewFactorySupport.createEditorViews(context);
         ArrayList<EditorViewDescription> descriptions = new ArrayList<EditorViewDescription> ();
         for (DataEditorView view : views)
-            descriptions.add (new EditorViewDescription (context, view));
-        return descriptions.toArray (new MultiViewDescription[descriptions.size ()]);
+            descriptions.add(new EditorViewDescription(context, view));
+        return descriptions.toArray(new MultiViewDescription[descriptions.size()]);
     }
-
+    
     /**
      * Returns data editor view instance assigned to a multi view description.
      * @param description the description
      * @return the data editor view
      */
-    public static DataEditorView getDataEditorView (MultiViewDescription description) {
-        return description instanceof EditorViewDescription ? ((EditorViewDescription) description).getView () : null;
+    public static DataEditorView getDataEditorView(MultiViewDescription description) {
+        return description instanceof EditorViewDescription ? ((EditorViewDescription) description).getView() : null;
     }
-
+    
     /**
      * Returns a data object context for specified document
      * @param document the design document
      * @return the data object context
      */
     // TODO - should be hidden - used by ProjectUtils.getDataObjectContextForDocument method only
-    public synchronized static DataObjectContext getDataObjectForDocument (DesignDocument document) {
-        for (DataObject dataObject : serializers.keySet ()) {
+    public synchronized static DataObjectContext getDataObjectForDocument(DesignDocument document) {
+        for (DataObject dataObject : serializers.keySet()) {
             if (dataObject == null)
                 continue;
-            DocumentSerializer documentSerializer = getDocumentSerializer (dataObject); // TODO - use direct access to serializers field
-            if (document == documentSerializer.getActualDocument ())
-                return getDataObjectContext (dataObject);
+            DocumentSerializer documentSerializer = getDocumentSerializer(dataObject); // TODO - use direct access to serializers field
+            if (document == documentSerializer.getActualDocument())
+                return getDataObjectContext(dataObject);
         }
         return null;
     }
-
+    
     // TODO - should be hidden - used by EditorViewElement.componentActivated method only
-    public static void notifyDataEditorViewActivated (DataEditorView activatedView) {
+    public static void notifyDataEditorViewActivated(DataEditorView activatedView) {
         if (activatedView == null)
             return;
-        CodeResolver resolver = resolvers.get (activatedView.getContext ().getDataObject ());
-        resolver.viewActivated (activatedView);
+        CodeResolver resolver = resolvers.get(activatedView.getContext().getDataObject());
+        resolver.viewActivated(activatedView);
     }
-
+    
 }

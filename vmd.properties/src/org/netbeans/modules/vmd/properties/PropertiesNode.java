@@ -17,90 +17,45 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
+
 package org.netbeans.modules.vmd.properties;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
 import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.properties.GroupPropertyEditor;
-import org.netbeans.modules.vmd.api.properties.DesignPropertyEditor;
-import org.netbeans.modules.vmd.api.properties.PropertiesPresenter;
-import org.netbeans.modules.vmd.api.properties.DesignPropertyDescriptor;
+import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
+import org.netbeans.modules.vmd.api.properties.common.PropertiesSupport;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
+import org.openide.util.Lookup;
+
 
 /**
- * @author KarolHarezlak
+ *
+ * @author devil
  */
-public final  class PropertiesNode extends AbstractNode {
+public class PropertiesNode extends AbstractNode{
     
-    private Sheet sheet;
-    private List<DesignPropertyDescriptor> designerPropertyDescriptors;
-    private List<String> categories;
-    private Comparator<DesignPropertyDescriptor> compareByDisplayName = new Comparator<DesignPropertyDescriptor>() {
-        public int compare(DesignPropertyDescriptor descriptor1, DesignPropertyDescriptor descriptor2) {
-            
-            return descriptor1.getPropertyDisplayName().compareTo(descriptor2.getPropertyDisplayName());
-        }
-    };
+    private DesignComponent component;
+    private String displayName;
     
-    public PropertiesNode(DesignComponent component) {
-        super(Children.LEAF);
-        designerPropertyDescriptors = new ArrayList<DesignPropertyDescriptor>();
-        categories = new ArrayList<String>();
-        for (PropertiesPresenter propertiesPresenter : component.getPresenters(PropertiesPresenter.class)) {
-            designerPropertyDescriptors.addAll(propertiesPresenter.getDesignerPropertyDescriptors());
-            categories.addAll(propertiesPresenter.getPropertiesCategories());
-        }
-        if (designerPropertyDescriptors != null)
-            Collections.sort(designerPropertyDescriptors, compareByDisplayName);
+    /** Creates a new instance of PropertiesNode */
+    public PropertiesNode(DesignComponent component, Lookup lookup) {
+        super(Children.LEAF, lookup);
+        this.component = component;
     }
     
-    protected Sheet createSheet() {
-        sheet = sheet == null ? new Sheet() : sheet;
-        createCategoriesSet();
-        for (DesignPropertyDescriptor designerPropertyDescriptor : designerPropertyDescriptors) {
-            Node.Property property;
-            DesignPropertyEditor propertyEditor = designerPropertyDescriptor.getPropertyEditor();
-            
-            if (propertyEditor instanceof GroupPropertyEditor && designerPropertyDescriptor.getPropertyNames().size() == 0)
-                throw new IllegalStateException("To use AdvancedPropertyEditorSupport you need to specific at least one propertyName");
-            
-            if (propertyEditor instanceof GroupPropertyEditor)
-                property = new AdvancedPropertySupport(designerPropertyDescriptor, designerPropertyDescriptor.getPropertyEditorType());
-            else if (designerPropertyDescriptor.getPropertyNames().size() <= 1)
-                property = new PrimitivePropertySupport(designerPropertyDescriptor, designerPropertyDescriptor.getPropertyEditorType());
-            else {
-                throw new IllegalArgumentException("Defualt PropertyEditor: "+ designerPropertyDescriptor.getPropertyDisplayName() + " " +
-                    designerPropertyDescriptor.getPropertyEditorType() + " cant be maped one to many with DesignComponent property: use DefaultPropertyEditorSupport");
+    public Sheet createSheet() {
+        return PropertiesSupport.createSheet(component);
+    }
+    
+    public String getDisplayName() {
+        component.getDocument().getTransactionManager().readAccess(new Runnable() {
+            public void run() {
+                displayName = InfoPresenter.getDisplayName(component);
             }
-            
-            if (propertyEditor != null && (! propertyEditor.canEditAsText()) )
-                property.setValue("canEditAsText", false);
-            property.setValue("changeImmediate", false); // NOI18
-            sheet.get(designerPropertyDescriptor.getPropertyCategory()).put(property);
-        }
-        
-        return sheet;
+        });
+        return displayName;
     }
     
-    private  Sheet.Set createPropertiesSet(String categoryName) {
-        Sheet.Set setSheet = new Sheet.Set();
-        setSheet.setName(categoryName);
-        setSheet.setDisplayName(categoryName);
-        
-        return setSheet;
-    }
-    
-    private  void createCategoriesSet() {
-        for (String propertyCategory : categories) {
-            PropertiesNode.this.sheet.put(createPropertiesSet(propertyCategory));
-        }
-    }
     
 }

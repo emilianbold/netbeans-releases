@@ -25,6 +25,7 @@ import org.netbeans.modules.vmd.api.palette.PaletteSupport;
 
 import java.util.Collection;
 import java.util.Collections;
+import org.openide.util.Lookup;
 
 /**
  * @author David Kaspar, Anton Chechel
@@ -37,6 +38,10 @@ public class PaletteLookupFactory implements DataEditorViewLookupFactory {
         } else {
             return null;
         }
+    }
+    
+    public Collection<? extends Lookup> getLookups(DataObjectContext context, DataEditorView view) {
+        return null;
     }
 
 }

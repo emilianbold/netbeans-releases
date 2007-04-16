@@ -28,31 +28,34 @@ import org.openide.nodes.Node;
 
 import javax.swing.*;
 import java.awt.*;
+import org.netbeans.modules.vmd.api.properties.common.PropertiesSupport;
+import org.openide.nodes.Sheet;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Karol Harezlak
  */
 final class InspectorFolderNode extends AbstractNode {
-
+    
     private static final Action[] EMPTY_ACTION_ARRAY = new Action[0];
     
     private Long componentID;
     private DesignComponent component;
     private InspectorFolder folder;
     
-    InspectorFolderNode() {
-        super(new InspectorChildren());
+    InspectorFolderNode(Lookup lookup) {
+        super(new InspectorChildren(), lookup);
     }
     
     Long getComponentID() {
         return componentID;
     }
-
-    public String getHtmlDisplayName () {
-        return getDisplayName ();
+    
+    public String getHtmlDisplayName() {
+        return folder.getHtmlDisplayName();
     }
-
+    
     public Image getIcon(int type) {
         if (folder == null)
             throw new IllegalStateException("Not resolved Folder- Broken tree structure. Check InspectorPosisitonPresenters and InspectorFolderPresenters"); //NOI18N
@@ -67,14 +70,14 @@ final class InspectorFolderNode extends AbstractNode {
         if (folder.getActions() == null)
             return EMPTY_ACTION_ARRAY;
         
-        return folder.getActions(); 
+        return folder.getActions();
     }
-   
+    
     public boolean canRename() {
         return folder.canRename();
     }
     
-    public void setName(final String name){
+    public void setName(final String name) {
         if (name == null)
             throw new IllegalArgumentException("Argument name cant be null");//NOI18N
         
@@ -84,7 +87,7 @@ final class InspectorFolderNode extends AbstractNode {
             public void run() {
                 InfoPresenter presenter = component.getPresenter(InfoPresenter.class);
                 if (presenter != null){
-                    presenter.setEditableName (name);
+                    presenter.setEditableName(name);
                 }
             }
         });
@@ -93,13 +96,12 @@ final class InspectorFolderNode extends AbstractNode {
     void resolveNode(final InspectorFolderWrapper folderWrapper, final DesignDocument document) {
         warmUp(this);
         this.folder = folderWrapper.getFolder();
-        setDisplayName(folder.getDisplayName());
+        super.setDisplayName(folder.getDisplayName());
         this.componentID = folder.getComponentID();
         if (folder.getName() == null)
             super.setName(folder.getDisplayName());
-        else 
+        else
             super.setName(folder.getName());
-        
         if (componentID != null) {
             document.getTransactionManager().readAccess(new Runnable() {
                 public void run() {
@@ -119,9 +121,15 @@ final class InspectorFolderNode extends AbstractNode {
             warmUp(child);
     }
     
-     void terminate() {
+    void terminate() {
         componentID = null;
         component = null;
         folder = null;
+    }
+    
+    public Sheet createSheet() {
+        if (component != null)
+            return PropertiesSupport.createSheet(component);
+        return super.createSheet();
     }
 }

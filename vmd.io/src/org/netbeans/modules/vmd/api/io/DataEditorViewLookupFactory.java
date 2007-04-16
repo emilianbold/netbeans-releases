@@ -19,6 +19,7 @@
 package org.netbeans.modules.vmd.api.io;
 
 import java.util.Collection;
+import org.openide.util.Lookup;
 
 /**
  * This interface is used for obtaining objects that should be added into the lookup of a TopComponent related to a particular view.
@@ -36,5 +37,15 @@ public interface DataEditorViewLookupFactory {
      * @return the collection of objects
      */
     public Collection<? extends Object> getLookupObjects (DataObjectContext context, DataEditorView view);
+    
+    /**
+     * This method is called to obtains a collection of Lookup's.
+     * These Lookup's will be automatically added into the lookup of a TopComponent which is related to a particular view
+     * For example: it could be InstanceContent which contains dynamic set of nodes for TopComponent.
+     * @param context the data object context
+     * @param view the view
+     * @return the collection of objects
+     */
+    public Collection<? extends Lookup> getLookups (DataObjectContext context, DataEditorView view);
 
 }

@@ -79,7 +79,7 @@ public final class RootCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
                 .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
-                    .addProperty("Version", "MIDP Version",false, PropertyEditorVersion.createInstance(), null, PROP_VERSION);
+                    .addProperty("Version", "MIDP Version",false, PropertyEditorVersion.createInstance(), PROP_VERSION);
     }
 
     private InspectorOrderingController[] creatOrderingControllers() {

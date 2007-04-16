@@ -34,11 +34,14 @@ import java.util.TreeMap;
 import org.netbeans.modules.vmd.api.inspector.InspectorFolder;
 import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
 import org.netbeans.modules.vmd.api.inspector.common.DefaultOrderingController;
+import org.netbeans.modules.vmd.api.io.ActiveViewSupport;
+import org.netbeans.modules.vmd.api.io.DataEditorView;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.openide.nodes.AbstractNode;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -46,12 +49,12 @@ import org.openide.nodes.AbstractNode;
  */
 final class InspectorFolderWrapper {
     
-    private List<InspectorFolderWrapper> children; 
-    private InspectorFolder folder; 
-    private InspectorFolderNode node;  
-    private DesignComponent component; 
-    private Collection<InspectorFolder> childrenFolders; 
-    private Set<InspectorFolderWrapper> toRemove; 
+    private List<InspectorFolderWrapper> children;
+    private InspectorFolder folder;
+    private InspectorFolderNode node;
+    private DesignComponent component;
+    private Collection<InspectorFolder> childrenFolders;
+    private Set<InspectorFolderWrapper> toRemove;
     private Map<InspectorOrderingController, List<InspectorFolder>> ocMap;
     private Map<Integer, List<InspectorFolder>> sortedLists;
     private List<InspectorFolderWrapper> tempChildren;
@@ -60,7 +63,8 @@ final class InspectorFolderWrapper {
     
     InspectorFolderWrapper(InspectorFolder folder) {
         this.folder = folder;
-        node = new InspectorFolderNode();
+        Lookup lookup = ActiveViewSupport.getDefault().getActiveView().getContext().getDataObject().getLookup();
+        node = new InspectorFolderNode(lookup);
     }
     
     List<InspectorFolderWrapper> getChildren() {
@@ -140,15 +144,15 @@ final class InspectorFolderWrapper {
     public String toString() {
         
         StringBuffer buffer = new StringBuffer()
-        .append("[ ")  // NOI18N
-        .append(folder.getDisplayName())
-        .append(" ] TYPE : ")  // NOI18N
-        .append( folder.getTypeID())
-        .append(", ID : ") //NOI18N
-        .append(folder.getComponentID())
-        .append(", Children : ")  // NOI18N
-        .append(children == null ? 0 : children.size())
-        .append(super.toString());
+                .append("[ ")  // NOI18N
+                .append(folder.getDisplayName())
+                .append(" ] TYPE : ")  // NOI18N
+                .append( folder.getTypeID())
+                .append(", ID : ") //NOI18N
+                .append(folder.getComponentID())
+                .append(", Children : ")  // NOI18N
+                .append(children == null ? 0 : children.size())
+                .append(super.toString());
         
         return buffer.toString();
     }

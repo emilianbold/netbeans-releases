@@ -29,7 +29,7 @@ import org.netbeans.modules.vmd.api.properties.DesignPropertyDescriptor;
  *
  * @author Karol Harezlak
  */
-final class PrimitivePropertySupport extends DefaultPropertySupport {
+public final class PrimitivePropertySupport extends DefaultPropertySupport {
 
     private DesignPropertyDescriptor designerPropertyDescriptor;
     private String displayName;
@@ -75,7 +75,6 @@ final class PrimitivePropertySupport extends DefaultPropertySupport {
         this.value = value;
         if (designerPropertyDescriptor.getComponent() == null)
             throw new IllegalStateException("No DesignComponent for designerPropertyDescriptor : " + designerPropertyDescriptor.getPropertyDisplayName()); //NOI18N
-        
         if (getPropertyEditor() instanceof DesignPropertyEditor)
             SaveToModelSupport.saveToModel(designerPropertyDescriptor.getComponent(), tempValue, (DesignPropertyEditor) getPropertyEditor());
         else

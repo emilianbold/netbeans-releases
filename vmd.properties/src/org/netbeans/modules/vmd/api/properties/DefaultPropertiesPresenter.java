@@ -57,44 +57,12 @@ public final class DefaultPropertiesPresenter extends PropertiesPresenter {
                                                   String toolTip,
                                                   boolean editorEditableOnly,
                                                   DesignPropertyEditor propertyEditor,
-                                                  PropertyBasicComponent basicPanelComponent,
                                                   String... propertyNames) {
         
         if (propertyEditor == null)
             throw new IllegalArgumentException(); 
         
-        descriptors.add(new DefaultDesignerPropertyDescriptor(displayName, toolTip, category, basicPanelComponent,
-            propertyEditor, propertyEditor.getClass(), propertyNames));
-        
-        return this;
-    }
-    
-    public DefaultPropertiesPresenter addProperty(String displayName,
-                                                  String toolTip,
-                                                  boolean editorEditableOnly,
-                                                  Class propertyEditorType,
-                                                  PropertyBasicComponent basicPanelComponent,
-                                                  String... propertyNames) {
-        
-        if (propertyEditorType == null)
-            throw new IllegalArgumentException(NULL_EDITOR); 
-        
         descriptors.add(new DefaultDesignerPropertyDescriptor(displayName, toolTip, category,
-            basicPanelComponent, null, propertyEditorType, propertyNames));
-        
-        return this;
-    }
-    
-    public DefaultPropertiesPresenter addProperty(String displayName,
-                                                  String toolTip,
-                                                  DesignPropertyEditor propertyEditor,
-                                                  PropertyBasicComponent basicPanelComponent,
-                                                  String... propertyNames) {
-        
-        if (propertyEditor == null)
-            throw new IllegalArgumentException(NULL_DEFAULT); 
-        
-        descriptors.add(new DefaultDesignerPropertyDescriptor(displayName, toolTip, category, basicPanelComponent,
             propertyEditor, propertyEditor.getClass(), propertyNames));
         
         return this;
@@ -102,28 +70,24 @@ public final class DefaultPropertiesPresenter extends PropertiesPresenter {
     
     public DefaultPropertiesPresenter addProperty(String displayName,
                                                   String toolTip,
-                                                  Class propertyEditorType,
-                                                  PropertyBasicComponent basicPanelComponent,
+                                                  DesignPropertyEditor propertyEditor,
                                                   String... propertyNames) {
         
-        if (propertyEditorType == null)
-            throw new IllegalArgumentException(NULL_EDITOR); 
+        if (propertyEditor == null)
+            throw new IllegalArgumentException(NULL_DEFAULT); 
         
-        descriptors.add(new DefaultDesignerPropertyDescriptor(displayName, toolTip, category, basicPanelComponent,
-            null, propertyEditorType, propertyNames));
+        descriptors.add(new DefaultDesignerPropertyDescriptor(displayName, toolTip, category, propertyEditor, propertyEditor.getClass(), propertyNames));
         
         return this;
     }
-    //TODO remove it 
+   
     public DefaultPropertiesPresenter addProperty(String displayName,
                                                   DesignPropertyEditor propertyEditor,
-                                                  PropertyBasicComponent basicPanelComponent,
                                                   String... propertyNames) {
         if (propertyEditor == null)
             throw new IllegalArgumentException(NULL_DEFAULT); 
         
-        descriptors.add(new DefaultDesignerPropertyDescriptor(displayName, displayName, category, basicPanelComponent,
-            propertyEditor, propertyEditor.getClass(), propertyNames));
+        descriptors.add(new DefaultDesignerPropertyDescriptor(displayName, displayName, category, propertyEditor, propertyEditor.getClass(), propertyNames));
         
         return this;
     }
@@ -134,83 +98,24 @@ public final class DefaultPropertiesPresenter extends PropertiesPresenter {
         if (propertyEditor == null)
             throw new IllegalArgumentException(NULL_DEFAULT); 
         
-        descriptors.add(new DefaultDesignerPropertyDescriptor(displayName, displayName, category, null,
-            propertyEditor, propertyEditor.getClass(), new String[0]));
+        descriptors.add(new DefaultDesignerPropertyDescriptor(displayName, displayName, category, propertyEditor, propertyEditor.getClass(), new String[0]));
         
         return this;
     }
-    
+    @Deprecated
     public DefaultPropertiesPresenter addProperty(String displayName,
                                                   Class propertyEditorType,
-                                                  PropertyBasicComponent basicPanelComponent,
                                                   String... propertyNames) {
         
         if (propertyEditorType == null)
             throw new IllegalArgumentException(NULL_EDITOR); 
         
-        descriptors.add(new DefaultDesignerPropertyDescriptor(displayName, displayName, category, basicPanelComponent,
+        descriptors.add(new DefaultDesignerPropertyDescriptor(displayName, displayName, category,
             null, propertyEditorType, propertyNames));
         
         return this;
     }
     
-    public DefaultPropertiesPresenter addProperty(String displayName,
-                                                  String toolTip,
-                                                  DesignPropertyEditor propertyEditor,
-                                                  String... propertyNames) {
-        
-        if (propertyEditor == null)
-            throw new IllegalArgumentException(NULL_DEFAULT); 
-        
-        descriptors.add(new DefaultDesignerPropertyDescriptor(displayName, toolTip, category, null,
-            propertyEditor, propertyEditor.getClass(), propertyNames));
-        
-        return this;
-    }
-    
-    public DefaultPropertiesPresenter addProperty(String displayName,
-                                                  String toolTip,
-                                                  Class propertyEditorType,
-                                                  String... propertyNames) {
-
-        if (propertyEditorType == null)
-            throw new IllegalArgumentException(NULL_EDITOR); 
-        
-        descriptors.add(new DefaultDesignerPropertyDescriptor(displayName, toolTip, category, null, null,
-            propertyEditorType, propertyNames));
-        
-        return this;
-    }
-    
-    public DefaultPropertiesPresenter addProperty(String displayName,
-                                                  DesignPropertyEditor propertyEditor,
-                                                  String... propertyNames) {
-        
-        if (propertyEditor == null)
-            throw new IllegalArgumentException(NULL_DEFAULT); 
-        
-        descriptors.add(new DefaultDesignerPropertyDescriptor(displayName, displayName, category, null,
-            propertyEditor, propertyEditor.getClass(), propertyNames));
-        
-        return this;
-    }
-    
-    
-    
-    public DefaultPropertiesPresenter addProperty(String displayName,
-                                                  Class propertyEditorType,
-                                                  String... propertyNames) {
-        
-        if (propertyEditorType == null)
-            throw new IllegalArgumentException(NULL_EDITOR); 
-        
-        descriptors.add(new DefaultDesignerPropertyDescriptor(displayName, displayName, category, null,
-            null, propertyEditorType, propertyNames));
-        
-        return this;
-    }
-    
-
     public DefaultPropertiesPresenter addProperty(DesignPropertyDescriptor designerPropertyDescriptor) {
         descriptors.add(designerPropertyDescriptor);
         return this;
@@ -251,9 +156,6 @@ public final class DefaultPropertiesPresenter extends PropertiesPresenter {
     
     protected void notifyAttached(DesignComponent component) {
         for (DesignPropertyDescriptor designerPropertyDescriptor : getDesignerPropertyDescriptors()) {
-            if (designerPropertyDescriptor.getBasicPanelComponent() != null) 
-                designerPropertyDescriptor.getBasicPanelComponent().init(getComponent());
-
             if (designerPropertyDescriptor.getPropertyEditor() != null) 
                 designerPropertyDescriptor.getPropertyEditor().init(component);
 

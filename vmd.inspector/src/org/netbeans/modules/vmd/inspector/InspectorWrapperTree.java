@@ -156,7 +156,7 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener, Acti
                 else if ( tempWrapperChildren != null)
                     wrapperChildren.addAll(tempWrapperChildren);
             }
-            if ((! InspectorRegistry.getRegistry().isEmpty()) && InspectorRegistry.getRegistry().contains(component)) {
+            if ((! InspectorRegistry.getDefault().getRegistry().isEmpty()) && InspectorRegistry.getDefault().getRegistry().contains(component)) {
                 if (wrapperChildren == null)
                     wrapperChildren = changedComponentsRecursion(path, parentWrapper, component);
                 else {
@@ -354,8 +354,8 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener, Acti
             }
         }
         
-        InspectorRegistry.removeAll(componentsToAdd);
-        InspectorRegistry.removeAll(componentsToDelete);
+        InspectorRegistry.getDefault().removeAll(componentsToAdd);
+        InspectorRegistry.getDefault().removeAll(componentsToDelete);
     }
     
     private void updateViewChildren(InspectorFolderWrapper parentWrapper) {
@@ -512,6 +512,10 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener, Acti
         
         public InspectorOrderingController[] getOrderingControllers() {
             return null;
+        }
+
+        public String getHtmlDisplayName() {
+            return "ROOT FOLDER - SHOULD BE HIDDEN"; //NOI18N
         }
         
     }
