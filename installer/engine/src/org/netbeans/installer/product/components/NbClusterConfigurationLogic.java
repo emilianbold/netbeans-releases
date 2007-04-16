@@ -35,6 +35,7 @@ import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.exceptions.UninstallationException;
 import org.netbeans.installer.utils.helper.Dependency;
+import org.netbeans.installer.utils.helper.RemovalMode;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.wizard.components.WizardAction;
 import org.netbeans.installer.wizard.components.WizardComponent;
@@ -81,6 +82,12 @@ public abstract class NbClusterConfigurationLogic extends ProductConfigurationLo
                 SetInstallationLocationAction.SOURCE_UID_PROPERTY,
                 sourceUid);
         wizardComponents.add(action);
+    }
+    
+    protected NbClusterConfigurationLogic(
+            final String clusterName,
+            final String productId) throws InitializationException {
+        this(new String[]{clusterName}, productId);
     }
     
     protected NbClusterConfigurationLogic(
@@ -230,7 +237,13 @@ public abstract class NbClusterConfigurationLogic extends ProductConfigurationLo
         return wizardComponents;
     }
     
+    @Override
     public boolean registerInSystem() {
         return false;
+    }
+
+    @Override
+    public RemovalMode getRemovalMode() {
+        return RemovalMode.LIST;
     }
 }
