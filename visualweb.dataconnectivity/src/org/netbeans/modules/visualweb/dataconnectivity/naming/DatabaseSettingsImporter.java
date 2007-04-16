@@ -199,25 +199,34 @@ public class DatabaseSettingsImporter {
         String nb551Path = contextReleasePath  +  seps + "5_5_1"; // NOI18N
         File contextReleaseDir = null;
         File[] configDir = contextReleaseRoot.listFiles();
+        boolean found = false;
+        File[] contextReleaseDirFiles = null;
+        
         for (File releaseDir : configDir) {
             String rPath = releaseDir.getPath();
             
             if ((rPath.equals(creator2_1Path) || rPath.equals(nb55Path) || 
                     rPath.equals(nb551Path))) {
                 contextReleaseDir = releaseDir;
+                found = true;
                 break;
             }
         }
         
-        File[] contextReleaseDirFiles = contextReleaseDir.listFiles();
+        // If there are settings to migrate, list the contents
+        if (found) {
+            contextReleaseDirFiles = contextReleaseDir.listFiles();
+        }
         
         if (contextReleaseDirFiles == null)
             return null;
         
-        if (contextReleaseDirFiles[0].exists())                
-           return contextReleaseDirFiles[0];
+        if (contextReleaseDirFiles[0].exists())
+            return contextReleaseDirFiles[0];
         else
-           return null;
+            return null;
+        
+
     }
     
     private void registerConnections(File contextFile) {
