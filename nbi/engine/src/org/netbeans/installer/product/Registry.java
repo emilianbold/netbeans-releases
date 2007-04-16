@@ -184,7 +184,6 @@ public class Registry {
             loadProductRegistry(remoteRegistryURI, childProgress, RegistryType.REMOTE, true);
         }
         
-        validateInstallations();
         validateDependencies();
         
         if (System.getProperty(SOURCE_STATE_FILE_PATH_PROPERTY) != null) {
@@ -583,7 +582,7 @@ public class Registry {
                             "you click No the installer will exit.");
                     
                     if (result) {
-                        product.setStatus(Status.NOT_INSTALLED);
+                        product.getParent().removeChild(product);
                     } else {
                         finishHandler.criticalExit();
                     }
@@ -665,6 +664,8 @@ public class Registry {
             
             // load the components
             loadRegistryComponents(registryRoot, registryElement, registryType);
+            
+            validateInstallations();
             
             progress.setPercentage(Progress.COMPLETE);
         } catch (ParseException e) {
