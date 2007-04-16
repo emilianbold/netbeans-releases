@@ -106,8 +106,8 @@
             file="${temp.file}" 
             prefix="sjsam"/>
         -->
-        <property name="sjsam.milestone.number" value="7"/>
-        <property name="sjsam.build.number" value="20070405"/>
+        <property name="sjsam.milestone.number" value="8"/>
+        <property name="sjsam.build.number" value="20070413"/>
             
         <delete file="${temp.file}"/>
     </target>
