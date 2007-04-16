@@ -247,6 +247,7 @@ public final class JavaSource {
     //Preprocessor support
     private FilterListener filterListener;
     
+    private static final Logger LOGGER = Logger.getLogger(JavaSource.class.getName());
         
     static {
         Executors.newSingleThreadExecutor(factory).submit (new CompilationJob());
@@ -268,7 +269,7 @@ public final class JavaSource {
         try {
             return new JavaSource(cpInfo, files);
         } catch (DataObjectNotFoundException donf) {
-            Logger.getLogger("global").warning("Ignoring non existent file: " + FileUtil.getFileDisplayName(donf.getFileObject()));     //NOI18N
+            LOGGER.warning("Ignoring non existent file: " + FileUtil.getFileDisplayName(donf.getFileObject()));     //NOI18N
         } catch (IOException ex) {            
             Exceptions.printStackTrace(ex);
         }        
@@ -371,7 +372,7 @@ public final class JavaSource {
                 }
             } catch (DataObjectNotFoundException donf) {
                 if (multipleSources) {
-                    Logger.getLogger("global").warning("Ignoring non existent file: " + FileUtil.getFileDisplayName(file));     //NOI18N
+                    LOGGER.warning("Ignoring non existent file: " + FileUtil.getFileDisplayName(file));     //NOI18N
                     it.remove();
                 }
                 else {
@@ -406,6 +407,13 @@ public final class JavaSource {
         }
         
         assert !holdsDocumentWriteLock(files) : "JavaSource.runCompileControlTask called under Document write lock.";    //NOI18N
+        
+        boolean a = false;
+        assert a = true;        
+        if (a && javax.swing.SwingUtilities.isEventDispatchThread()) {
+            StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+            LOGGER.warning("JavaSource.runUserActionTask called in AWT event thread by: " + stackTrace[stackTrace.length-2]);       //NOI18N
+        }
         
         if (this.files.size()<=1) {                        
             final JavaSource.Request request = currentRequest.getTaskToCancel();
@@ -544,6 +552,13 @@ public final class JavaSource {
         }
         
         assert !holdsDocumentWriteLock(files) : "JavaSource.runModificationTask called under Document write lock.";    //NOI18N
+        
+        boolean a = false;
+        assert a = true;        
+        if (a && javax.swing.SwingUtilities.isEventDispatchThread()) {
+            StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+            LOGGER.warning("JavaSource.runModificationTask called in AWT event thread by: " + stackTrace[stackTrace.length-2]);     //NOI18N
+        }
         
         ModificationResult result = new ModificationResult(this);
         if (this.files.size()<=1) {
@@ -1070,7 +1085,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         if (ec != null) {
             this.listener = new DocListener (ec);
         } else {
-            Logger.getLogger("global").log(Level.WARNING,String.format("File: %s has no EditorCookie.Observable", FileUtil.getFileDisplayName (fo)));      //NOI18N
+            LOGGER.log(Level.WARNING,String.format("File: %s has no EditorCookie.Observable", FileUtil.getFileDisplayName (fo)));      //NOI18N
         }
     }
     
@@ -1225,12 +1240,12 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                                                         final long endTime = System.currentTimeMillis();
                                                         if (reportSlowTasks) {
                                                             if ((endTime - startTime) > SLOW_TASK_LIMIT) {
-                                                                Logger.getLogger("global").log(Level.INFO,String.format("JavaSource executed a slow task: %s in %d ms.",  //NOI18N
+                                                                LOGGER.log(Level.INFO,String.format("JavaSource executed a slow task: %s in %d ms.",  //NOI18N
                                                                     r.task.getClass().toString(), (endTime-startTime)));
                                                             }
                                                             final long cancelTime = currentRequest.getCancelTime();
                                                             if (cancelTime >= startTime && (endTime - cancelTime) > SLOW_CANCEL_LIMIT) {
-                                                                Logger.getLogger("global").log(Level.INFO,String.format("Task: %s ignored cancel for %d ms.",  //NOI18N
+                                                                LOGGER.log(Level.INFO,String.format("Task: %s ignored cancel for %d ms.",  //NOI18N
                                                                     r.task.getClass().toString(), (endTime-cancelTime)));
                                                             }
                                                         }
@@ -1438,9 +1453,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                     resetState(true, true);
                 } catch (IOException ex) {
                     // should not occur
-                    Logger.getLogger(JavaSource.class.getName()).log(Level.SEVERE,
-                                                                     ex.getMessage(),
-                                                                     ex);
+                    LOGGER.log(Level.SEVERE,ex.getMessage(),ex);
                 }
             }
         }
@@ -1789,7 +1802,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                     dumpSucceeded = true;
                 }
             } catch (IOException ioe) {
-                Logger.getLogger("global").log(Level.INFO, "Error when writing parser dump file!", ioe); // NOI18N
+                LOGGER.log(Level.INFO, "Error when writing parser dump file!", ioe); // NOI18N
             }
         }
         if (dumpSucceeded) {
@@ -1797,7 +1810,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                     + f.getAbsolutePath() + "'."); // NOI18N
             Exceptions.printStackTrace(t);
         } else {
-            Logger.getLogger("global").log(Level.WARNING,
+            LOGGER.log(Level.WARNING,
                     "Dump could not be written. Either dump file could not " + // NOI18N
                     "be created or all dump files were already used. Please " + // NOI18N
                     "check that you have write permission to '" + dumpDir + "' and " + // NOI18N
