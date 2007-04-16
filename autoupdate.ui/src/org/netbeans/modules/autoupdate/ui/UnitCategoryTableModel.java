@@ -300,7 +300,8 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
                 int size = getCategorySize(c);
                 if (row > unitRow && row <= unitRow + size) {
                     if (! c.isExpanded()) assert false : "No Unit at row " + row + ", but Category " + c;
-                    return getUnits(c).get(row - unitRow - 1);
+                    int idx = row - unitRow - 1;                    
+                    return (idx < getUnits(c).size()) ? getUnits(c).get(idx) : null;
                 }
                 unitRow += size;
             }
