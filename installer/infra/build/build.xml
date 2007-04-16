@@ -649,6 +649,42 @@ jarsigner.storepass=${jarsigner.storepass}
         <get 
             src="http://${glassfish.host}:${glassfish.http.port}${context.path}/download-2/img/warning_badge_white.gif"
             dest="${output.dir}/img/warning_badge_white.gif"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/download-2/img/warning_badge_beige_macosx-x86.gif"
+            dest="${output.dir}/img/warning_badge_beige_macosx-x86.gif"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/download-2/img/warning_badge_text_macosx-x86.gif"
+            dest="${output.dir}/img/warning_badge_text_macosx-x86.gif"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/download-2/img/warning_badge_white_macosx-x86.gif"
+            dest="${output.dir}/img/warning_badge_white_macosx-x86.gif"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/download-2/img/warning_badge_beige_macosx-ppc.gif"
+            dest="${output.dir}/img/warning_badge_beige_macosx-ppc.gif"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/download-2/img/warning_badge_text_macosx-ppc.gif"
+            dest="${output.dir}/img/warning_badge_text_macosx-ppc.gif"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/download-2/img/warning_badge_white_macosx-ppc.gif"
+            dest="${output.dir}/img/warning_badge_white_macosx-ppc.gif"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/download-2/img/warning_badge_beige_solaris-x86.gif"
+            dest="${output.dir}/img/warning_badge_beige_solaris-x86.gif"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/download-2/img/warning_badge_text_solaris-x86.gif"
+            dest="${output.dir}/img/warning_badge_text_solaris-x86.gif"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/download-2/img/warning_badge_white_solaris-x86.gif"
+            dest="${output.dir}/img/warning_badge_white_solaris-x86.gif"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/download-2/img/warning_badge_beige_solaris-sparc.gif"
+            dest="${output.dir}/img/warning_badge_beige_solaris-sparc.gif"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/download-2/img/warning_badge_text_solaris-sparc.gif"
+            dest="${output.dir}/img/warning_badge_text_solaris-sparc.gif"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/download-2/img/warning_badge_white_solaris-sparc.gif"
+            dest="${output.dir}/img/warning_badge_white_solaris-sparc.gif"/>
     </target>
     
     <target name="-undeploy-server">
