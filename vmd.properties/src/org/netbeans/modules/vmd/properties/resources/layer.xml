@@ -16,13 +16,15 @@
     The Original Software is NetBeans. The Initial Developer of the Original
     Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
     Microsystems, Inc. All Rights Reserved.
-    -->
+-->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+    <folder name="Windows2">
         <folder name="Groups">
-            <file name="vmd.wsgrp" url="groups/vmd.wsgrp" />
+            <file name="vmd.wsgrp" url="vmd.wsgrp" />
             <folder name="vmd">
-                <file name="properties.wstcgrp" url="groups/vmd/properties.wstcgrp" />
+                <file name="properties.wstcgrp" url="properties.wstcgrp" />
             </folder>
         </folder>
+    </folder>
 </filesystem>
