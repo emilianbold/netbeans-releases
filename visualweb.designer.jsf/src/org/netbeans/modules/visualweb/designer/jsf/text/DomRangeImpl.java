@@ -172,10 +172,33 @@ import org.w3c.dom.ranges.DocumentRange;
     }
 
     public void setDot(Node dotNode, int dotOffset, Bias bias) {
+        // XXX It seems this RangeImpl.setEnd will also reset the start if the new 
+        // end is before the old start.
+        Node markNode;
+        int markOffset;
+        if (dotIsFirst) {
+            markNode = domRange.getEndContainer();
+            markOffset = domRange.getEndOffset();
+        } else {
+            markNode = domRange.getStartContainer();
+            markOffset = domRange.getStartOffset();
+        }
+        
+        int result = DomPositionImpl.compareBoundaryPoints(markNode, markOffset, dotNode, dotOffset);
+        boolean oldDotIsFirst = dotIsFirst;
+        dotIsFirst = result < 0;
+        
+        
         if (dotIsFirst) {
             domRange.setStart(dotNode, dotOffset);
+            if (oldDotIsFirst != dotIsFirst) {
+                domRange.setEnd(markNode, markOffset);
+            }
         } else {
             domRange.setEnd(dotNode, dotOffset);
+            if (oldDotIsFirst != dotIsFirst) {
+                domRange.setStart(markNode, markOffset);
+            }
         }
 
         dotBias = bias;
@@ -183,16 +206,42 @@ import org.w3c.dom.ranges.DocumentRange;
     }
 
     public void setMark(Node markNode, int markOffset, Bias bias) {
+        // XXX It seems this RangeImpl.setEnd will also reset the start if the new 
+        // end is before the old start.
+        Node dotNode;
+        int dotOffset;
+        if (dotIsFirst) {
+            dotNode = domRange.getStartContainer();
+            dotOffset = domRange.getStartOffset();
+        } else {
+            dotNode = domRange.getEndContainer();
+            dotOffset = domRange.getEndOffset();
+        }
+        
+        int result = DomPositionImpl.compareBoundaryPoints(markNode, markOffset, dotNode, dotOffset);
+        boolean oldDotIsFirst = dotIsFirst;
+        dotIsFirst = result < 0;
+        
+        
         if (dotIsFirst) {
             domRange.setEnd(markNode, markOffset);
+            if (oldDotIsFirst != dotIsFirst) {
+                domRange.setStart(dotNode, dotOffset);
+            }
         } else {
             domRange.setStart(markNode, markOffset);
+            if (oldDotIsFirst != dotIsFirst) {
+                domRange.setEnd(dotNode, dotOffset);
+            }
         }
 
         markBias = bias;
         ensureMarkIsFirst();
     }
 
+    // XXX This is very suspicoius.
+    // There is not check whether the start or the end is the mark or the dot.
+    // Get rid of it.
     /** Ensure that the mark location is before the dot location in
      * the range. If not, it will swap the two and flip the "dotIsFirst"
      * flag. (So getMark() will correctly return a mark location after the
