@@ -51,7 +51,7 @@ public class CasaConnectionWidget extends ConnectionWidget {
             bringToFront();
             setStroke(STROKE_SELECTED);
             setForeground (CasaFactory.getCasaCustomizer().getCOLOR_SELECTION());
-        } else if (state.isHovered ()) {
+        } else if (state.isHovered () || state.isHighlighted()) {
             bringToFront();
             setStroke(STROKE_DEFAULT);
             setForeground (CasaFactory.getCasaCustomizer().getCOLOR_HOVERED_EDGE());

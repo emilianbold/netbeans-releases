@@ -35,7 +35,10 @@ import java.awt.image.ImageProducer;
 import java.awt.image.RescaleOp;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.GrayFilter;
 import javax.swing.ImageIcon;
 import org.netbeans.api.visual.anchor.Anchor;
@@ -114,8 +117,11 @@ public abstract class CasaPinWidget extends Widget {
             setSelected(false);
         }
         
-        if (state.isHovered()) {
+        if (!previousState.isHovered() && state.isHovered()) {
             hoverConnections();
+        } else if (previousState.isHovered() && !state.isHovered()) {
+            CasaModelGraphScene scene = (CasaModelGraphScene) getScene();
+            scene.setHighlightedObjects(Collections.emptySet());
         }
     }
 
@@ -123,7 +129,7 @@ public abstract class CasaPinWidget extends Widget {
         CasaModelGraphScene scene = (CasaModelGraphScene) getScene();
         CasaEndpointRef pinObject = (CasaEndpointRef) scene.findObject(this);
         Collection<CasaComponent> edges = scene.getEdges();
-        List<CasaComponent> pinConnections = new ArrayList<CasaComponent>();
+        Set<CasaComponent> pinConnections = new HashSet<CasaComponent>();
         for (CasaComponent edge : edges) {
             CasaComponent source = scene.getEdgeSource(edge);
             CasaComponent target = scene.getEdgeTarget(edge);
@@ -133,9 +139,7 @@ public abstract class CasaPinWidget extends Widget {
                 pinConnections.add(edge);
             }
         }
-        for (CasaComponent pinConnection : pinConnections) {
-            scene.setHoveredObject(pinConnection);
-        }
+        scene.setHighlightedObjects(pinConnections);
     }
     
     /**
