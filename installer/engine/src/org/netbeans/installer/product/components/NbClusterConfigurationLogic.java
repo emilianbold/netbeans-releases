@@ -179,8 +179,6 @@ public abstract class NbClusterConfigurationLogic extends ProductConfigurationLo
             }
         }
         
-        /////////////////////////////////////////////////////////////////////////////
-        progress.setPercentage(Progress.COMPLETE);
     }
     
     public void uninstall(
@@ -229,8 +227,6 @@ public abstract class NbClusterConfigurationLogic extends ProductConfigurationLo
                         e);
             }
         }
-        /////////////////////////////////////////////////////////////////////////////
-        progress.setPercentage(Progress.COMPLETE);
     }
     
     public List<WizardComponent> getWizardComponents() {
