@@ -88,6 +88,7 @@ public class OpenProjectFirstPage extends org.netbeans.performance.test.utilitie
             throw new Error("Cannot get context menu for node ");
         }
         log("------------------------- after popup invocation ------------");
+        popup.getTimeouts().setTimeout("JMenuOperator.PushMenuTimeout", 90000);
         try {
             popup.pushMenu(OPEN);
         } catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
