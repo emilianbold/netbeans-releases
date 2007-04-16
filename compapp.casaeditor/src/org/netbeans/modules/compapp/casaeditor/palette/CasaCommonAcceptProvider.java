@@ -48,7 +48,8 @@ public class CasaCommonAcceptProvider implements CasaAcceptProvider {
     private static final Point msInvisiblePointLocation = new Point(-1210,-1210);
     
     private static final int TOP_VISIBLE_HEIGHT = 8;    //This is gap, which will force scroll bar start scrolling.
-    
+    private static final int HORIZONTAL_VISIBLE_LEFT_WIDTH = 8;
+            
     public CasaCommonAcceptProvider(CasaModelGraphScene scene) {
         mScene = scene;
         mIconImage = null;
@@ -102,8 +103,10 @@ public class CasaCommonAcceptProvider implements CasaAcceptProvider {
             iconNodeWidget.setPreferredSize(newDimension);
             iconNodeWidget.setPreferredLocation(curPoint);
 
-            //Rectangle visibleRect = new Rectangle(curPoint.x, curPoint.y - newDimension.height,newDimension.width,2 * newDimension.height); 
-            Rectangle visibleRect = new Rectangle(curPoint.x, curPoint.y - TOP_VISIBLE_HEIGHT,newDimension.width,TOP_VISIBLE_HEIGHT + newDimension.height); 
+            Rectangle visibleRect = new Rectangle(curPoint.x - HORIZONTAL_VISIBLE_LEFT_WIDTH, 
+                                                  curPoint.y - TOP_VISIBLE_HEIGHT,
+                                                  HORIZONTAL_VISIBLE_LEFT_WIDTH + newDimension.width,
+                                                  TOP_VISIBLE_HEIGHT + newDimension.height); 
             mScene.getView().scrollRectToVisible(visibleRect);
         }
     }
