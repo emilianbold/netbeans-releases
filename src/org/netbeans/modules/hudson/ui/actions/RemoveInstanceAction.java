@@ -30,7 +30,7 @@ import org.openide.util.actions.NodeAction;
 
 /**
  * Add Hudson instance action removes instance
- * 
+ *
  * @author Michal Mocnak
  */
 public class RemoveInstanceAction extends NodeAction {

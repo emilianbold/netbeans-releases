@@ -17,14 +17,48 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.hudson.ui.nodes;
+package org.netbeans.modules.hudson.api;
+
+import java.util.Collection;
 
 /**
- * Marks objects that can be open in browser
+ * Describes Hudson view
  *
  * @author Michal Mocnak
  */
-public interface OpenableInBrowser {
+public interface HudsonView {
     
+    /**
+     * Default all view name
+     */
+    public static final String ALL_VIEW = "All";
+    
+    
+    /**
+     * Returns name of the hudson view
+     *
+     * @return Hudson's view name
+     */
+    public String getName();
+    
+    /**
+     * Returns description of the hudson view
+     *
+     * @return Hudson's view description
+     */
+    public String getDescription();
+    
+    /**
+     * Returns url of the hudson view
+     *
+     * @return Hudson's view url
+     */
     public String getUrl();
+    
+    /**
+     * Returns jobs of the hudson view
+     *
+     * @return Hudson's view job
+     */
+    public Collection<String> getJobs();
 }

@@ -31,18 +31,18 @@ public interface HudsonVersion extends Comparable<HudsonVersion> {
     /**
      * Supported version
      */
-    public static final HudsonVersion SUPPORTED_VERSION = new HudsonVersionImpl("1.101");
+    public static final HudsonVersion SUPPORTED_VERSION = new HudsonVersionImpl("1.102");
     
     /**
      * Returns major version
-     * 
+     *
      * @return major version
      */
     public int getMajorVersion();
     
     /**
      * Returns minor version
-     * 
+     *
      * @return minor version
      */
     public int getMinorVersion();

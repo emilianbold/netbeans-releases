@@ -33,7 +33,7 @@ import org.openide.util.actions.NodeAction;
  * @author Michal Mocnak
  */
 public class AddInstanceAction extends NodeAction {
-
+    
     public void performAction(Node[] nodes) {
         InstanceWizard wizard = new InstanceWizard();
         Dialog dialog = null;

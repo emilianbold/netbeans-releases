@@ -28,12 +28,12 @@ import org.openide.util.NbBundle;
  * @author Michal Mocnak
  */
 public class InstanceWizard extends WizardDescriptor implements InstanceWizardConstants {
-
+    
     /**
-     * 
+     *
      */
     public InstanceWizard() {
-    super(new InstanceWizardIterator());
+        super(new InstanceWizardIterator());
         
         putProperty(PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);
         putProperty(PROP_CONTENT_DISPLAYED, Boolean.TRUE);

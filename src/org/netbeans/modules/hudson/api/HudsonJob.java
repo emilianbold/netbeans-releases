@@ -19,10 +19,11 @@
 
 package org.netbeans.modules.hudson.api;
 
+import java.util.Collection;
 
 /**
  * Instance of the Hudson Job in specified instance
- * 
+ *
  * @author Michal Mocnak
  */
 public interface HudsonJob extends Comparable<HudsonJob> {
@@ -30,31 +31,61 @@ public interface HudsonJob extends Comparable<HudsonJob> {
     /**
      * Describes state of the Hudson Job
      */
-    public enum Color { 
+    public enum Color {
         blue, blue_anime, red, red_anime, yellow, yellow_anime, grey, grey_anime
     }
     
     /**
+     * Display name of the Hudson Job
+     *
+     * @return job display name
+     */
+    public String getDisplayName();
+    
+    /**
      * Name of the Hudson Job
-     * 
-     * @return job name
+     *
+     * @return job's name
      */
     public String getName();
     
     /**
+     * Description of the Hudson Job
+     *
+     * @return job's description
+     */
+    public String getDescription();
+    
+    /**
      * URL of the Hudson Job
-     * 
+     *
      * @return job url
      */
     public String getUrl();
     
+    public Collection<HudsonView> getViews();
+    
     /**
      * Color of the Hudson Job's state
-     * 
+     *
      * @return job color (state)
      */
     public Color getColor();
-        
+    
+    /**
+     * Returns job's queue state
+     *
+     * @return true if the job is in queue
+     */
+    public boolean isInQueue();
+    
+    /**
+     * Returns job's buildable state
+     *
+     * @return true if the job is buildable
+     */
+    public boolean isBuildable();
+    
     /**
      * Starts Hudson job
      */

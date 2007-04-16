@@ -20,7 +20,6 @@
 package org.netbeans.modules.hudson.ui.actions;
 
 import org.netbeans.modules.hudson.api.HudsonJob;
-import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -49,8 +48,8 @@ public class StartJobAction extends NodeAction {
         for (Node node : nodes) {
             HudsonJob job = node.getLookup().lookup(HudsonJob.class);
             
-            if (null != job)
-                continue;
+            if (null == job || job.isInQueue() || !job.isBuildable())
+                return false;
         }
         
         return true;

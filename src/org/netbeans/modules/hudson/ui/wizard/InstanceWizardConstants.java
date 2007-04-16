@@ -20,7 +20,8 @@
 package org.netbeans.modules.hudson.ui.wizard;
 
 /**
- *
+ * Add instance wizard constants
+ * 
  * @author Michal Mocnak
  */
 public interface InstanceWizardConstants {

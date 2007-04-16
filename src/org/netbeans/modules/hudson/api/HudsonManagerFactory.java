@@ -23,14 +23,14 @@ import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
 
 /**
  * Factory for HudsonManager
- * 
+ *
  * @author Michal Mocnak
  */
 public class HudsonManagerFactory {
-
+    
     /**
      * Returns default instance of the HudsonManager
-     * 
+     *
      * @return hudson manager
      */
     public static HudsonManager getDefaultHudsonManager() {

@@ -19,18 +19,17 @@
 
 package org.netbeans.modules.hudson.ui.nodes;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import javax.swing.Action;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.modules.hudson.api.HudsonChangeListener;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.HudsonVersion;
+import org.netbeans.modules.hudson.api.HudsonView;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
-import org.netbeans.modules.hudson.impl.HudsonJobImpl;
 import org.netbeans.modules.hudson.ui.actions.OpenUrlAction;
 import org.netbeans.modules.hudson.ui.actions.RemoveInstanceAction;
 import org.netbeans.modules.hudson.ui.actions.SynchronizeAction;
@@ -39,9 +38,6 @@ import org.openide.actions.PropertiesAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.nodes.NodeAdapter;
-import org.openide.nodes.NodeMemberEvent;
-import org.openide.nodes.NodeReorderEvent;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -57,6 +53,8 @@ public class HudsonInstanceNode extends AbstractNode {
     private static final String ICON_BASE = "org/netbeans/modules/hudson/ui/resources/instance.png";
     
     private HudsonInstanceImpl instance;
+    private InstanceNodeChildren children;
+    
     private boolean warn = false;
     private boolean run = false;
     private boolean alive = false;
@@ -67,7 +65,9 @@ public class HudsonInstanceNode extends AbstractNode {
      * @param instance
      */
     public HudsonInstanceNode(final HudsonInstanceImpl instance) {
-        super(new InstanceNodeChildren(instance), Lookups.singleton(instance));
+        super(new Children.Array(), Lookups.singleton(instance));
+        
+        children = new InstanceNodeChildren(instance);
         
         setDisplayName(instance.getName());
         setShortDescription(instance.getUrl());
@@ -127,6 +127,12 @@ public class HudsonInstanceNode extends AbstractNode {
         alive = instance.getConnector().isConnected();
         version = Utilities.isSupportedVersion(instance.getVersion());
         
+        // Refresh children
+        if (!alive || !version)
+            setChildren(new Children.Array());
+        else if (getChildren().getNodesCount() == 0)
+            setChildren(children);
+        
         // Fire changes if any
         fireDisplayNameChange(oldHtmlName, getHtmlDisplayName());
     }
@@ -141,15 +147,23 @@ public class HudsonInstanceNode extends AbstractNode {
         
         // Refresh state flags
         for (Node n : getChildren().getNodes()) {
-            if (n instanceof HudsonJobNode) {
-                Color c = ((HudsonJobNode) n).getColor();
+            if (n instanceof HudsonViewNode &&
+                    n.getLookup().lookup(HudsonView.class).getName().equals(HudsonView.ALL_VIEW)) {
+                for (Node o : n.getChildren().getNodes()) {
+                    if (o instanceof HudsonJobNode) {
+                        Color c = ((HudsonJobNode) o).getColor();
+                        
+                        if (c.equals(Color.red) || c.equals(Color.red_anime))
+                            warn = true;
+                        
+                        if (c.equals(Color.blue_anime) || c.equals(Color.grey_anime)
+                                || c.equals(Color.red_anime) || c.equals(Color.yellow_anime))
+                            run = true;
+                    }
+                }
                 
-                if (c.equals(Color.red) || c.equals(Color.red_anime))
-                    warn = true;
-                
-                if (c.equals(Color.blue_anime) || c.equals(Color.grey_anime)
-                        || c.equals(Color.red_anime) || c.equals(Color.yellow_anime))
-                    run = true;
+                // Other nodes can be skipped
+                break;
             }
         }
         
@@ -157,47 +171,74 @@ public class HudsonInstanceNode extends AbstractNode {
         fireDisplayNameChange(oldHtmlName, getHtmlDisplayName());
     }
     
-    private static class InstanceNodeChildren extends Children.Keys<HudsonJobImpl> implements HudsonChangeListener {
+    private static class InstanceNodeChildren extends Children.Keys<Node> implements HudsonChangeListener {
         
         private HudsonInstanceImpl instance;
+        private HudsonQueueNode queue;
+        
+        private java.util.Map<String, HudsonViewNode> cache = new HashMap<String, HudsonViewNode>();
         
         public InstanceNodeChildren(HudsonInstanceImpl instance) {
             this.instance = instance;
+            this.queue = new HudsonQueueNode(instance);
             
             // Add HudsonChangeListener into instance
             instance.addHudsonChangeListener(this);
         }
         
-        protected Node[] createNodes(HudsonJobImpl job) {
-            return new Node[] {new HudsonJobNode(job)};
+        protected Node[] createNodes(Node node) {
+            return new Node[] {node};
         }
         
         @Override
         protected void addNotify() {
             super.addNotify();
-            setKeys(getKeys());
+            refreshKeys();
         }
         
         @Override
         protected void removeNotify() {
-            instance.removeHudsonChangeListener(this);
-            setKeys(Collections.<HudsonJobImpl>emptySet());
+            setKeys(Collections.<Node>emptySet());
             super.removeNotify();
         }
         
-        private Collection<HudsonJobImpl> getKeys() {
-            List<HudsonJobImpl> l = Arrays.asList(instance.getJobs().toArray(new HudsonJobImpl[] {}));
+        private void refreshKeys() {
+            List<Node> l = new ArrayList<Node>();
             
-            // Sort repositories
-            Collections.sort(l);
+            // Add queue node
+            l.add(queue);
+            
+            for (Node n : getKeys())
+                l.add(n);
+            
+            setKeys(l);
+        }
+        
+        private Collection<Node> getKeys() {
+            List<Node> l = new ArrayList<Node>();
+            
+            for (HudsonView h : instance.getViews()) {
+                HudsonViewNode n = cache.get(h.getName());
+                
+                if (null == n) {
+                    n = new HudsonViewNode(instance, h);
+                    cache.put(h.getName(), n);
+                } else {
+                    n.setHudsonView(h);
+                }
+                
+                l.add(n);
+            }
             
             return l;
         }
         
-        public void stateChanged() {}
+        public void stateChanged() {
+            
+        }
         
         public void contentChanged() {
-            setKeys(getKeys());
+            refreshKeys();
         }
     }
 }

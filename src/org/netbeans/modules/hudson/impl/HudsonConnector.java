@@ -25,9 +25,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.List;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import java.util.Collection;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -36,6 +34,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.HudsonVersion;
+import org.netbeans.modules.hudson.api.HudsonView;
 import org.netbeans.modules.hudson.impl.HudsonJobImpl;
 import org.netbeans.modules.hudson.util.Utilities;
 import org.netbeans.modules.hudson.util.Utilities;
@@ -54,11 +53,23 @@ import org.xml.sax.SAXException;
  */
 public class HudsonConnector {
     
+    // XML API Suffix
     private static final String XML_API_URL ="/api/xml";
+    
+    // Hudson Instance Element
+    private static final String VIEW_ELEMENT_NAME = "view";
     private static final String JOB_ELEMENT_NAME = "job";
     private static final String NAME_ELEMENT_NAME = "name";
     private static final String URL_ELEMENT_NAME = "url";
     private static final String COLOR_ELEMENT_NAME = "color";
+    
+    // Hudson Job Elements
+    private static final String DESCRIPTION_ELEMENT_NAME = "description";
+    private static final String DISPLAY_NAME_ELEMENT_NAME = "displayName";
+    private static final String BUILDABLE_ELEMENT_NAME = "buildable";
+    private static final String INQUEUE_ELEMENT_NAME = "inQueue";
+    
+    // Start Hudson Job Command
     private static final String BUILD_URL = "build";
     
     private DocumentBuilder builder;
@@ -68,9 +79,9 @@ public class HudsonConnector {
     private boolean isConnected = false;
     
     /**
-     * Creates a new instance of HudsonXMLFacade
+     * Creates a new instance of HudsonConnector
      *
-     * @param instanceURL
+     * @param HudsonInstance
      */
     public HudsonConnector(HudsonInstanceImpl instance) {
         this.instance = instance;
@@ -93,65 +104,31 @@ public class HudsonConnector {
         return version;
     }
     
-    private synchronized HudsonVersion retrievedHudsonVersion() {
-        HudsonVersion v = null;
+    public synchronized Collection<HudsonJob> getAllJobs() {
+        Document docInstance = getDocument(instance.getUrl());
         
-        try {
-            URL u = new java.net.URL(instance.getUrl());
-            HttpURLConnection conn = (HttpURLConnection) u.openConnection();
-            
-            // Get string version
-            String sVersion = conn.getHeaderField("X-Hudson");
-            
-            // Create a HudsonVersion object
-            v = new HudsonVersionImpl(sVersion);
-        } catch (MalformedURLException e) {
-            // Nothing
-        } catch (IOException e) {
-            // Nothing
-        }
+        if (null == docInstance)
+            return new ArrayList<HudsonJob>();
         
-        return v;
-    }
-    
-    /**
-     *
-     * @return
-     */
-    public synchronized List<HudsonJob> getAllJobs() {
-        ArrayList<HudsonJob> jobsArray = new ArrayList<HudsonJob>();
-        Document doc = getDocument();
+        // Get views and jobs
+        NodeList views = docInstance.getElementsByTagName(VIEW_ELEMENT_NAME);
+        NodeList jobs = docInstance.getElementsByTagName(JOB_ELEMENT_NAME);
         
-        if (null == doc)
-            return jobsArray;
+        // Parse views and set them into instance
+        Collection<HudsonView> cViews = getViews(views);
         
-        NodeList jobs = doc.getElementsByTagName(JOB_ELEMENT_NAME);
+        if (null == cViews)
+            cViews = new ArrayList<HudsonView>();
         
-        for (int i = 0; i < jobs.getLength(); i++) {
-            Node job = jobs.item(i);
-            String name = null;
-            String url = null;
-            Color color = null;
-            
-            for (int j = 0; j < job.getChildNodes().getLength(); j++) {
-                Node jobNode = job.getChildNodes().item(j);
-                
-                if (jobNode.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
-                    if (jobNode.getNodeName().equals(NAME_ELEMENT_NAME)) {
-                        name = jobNode.getFirstChild().getTextContent();
-                    } else if (jobNode.getNodeName().equals(URL_ELEMENT_NAME)) {
-                        url = jobNode.getFirstChild().getTextContent();
-                    } else if (jobNode.getNodeName().equals(COLOR_ELEMENT_NAME)) {
-                        color = Color.valueOf(jobNode.getFirstChild().getTextContent());
-                    }
-                }
-            }
-            
-            if (null != name && null != url && null != color)
-                jobsArray.add(new HudsonJobImpl(name, url, color, instance));
-        }
+        instance.setViews(cViews);
         
-        return jobsArray;
+        // Parse jobs and return them
+        Collection<HudsonJob> cJobs = getJobs(jobs);
+        
+        if (null == cJobs)
+            cJobs = new ArrayList<HudsonJob>();
+        
+        return cJobs;
     }
     
     public synchronized boolean startJob(HudsonJob job) {
@@ -189,11 +166,178 @@ public class HudsonConnector {
         return false;
     }
     
-    private synchronized Document getDocument() {
+    private Collection<HudsonView> getViews(NodeList nodes) {
+        Collection<HudsonView> views = new ArrayList<HudsonView>();
+        
+        for (int i = 0; i < nodes.getLength(); i++) {
+            Node n = nodes.item(i);
+            
+            String name = null;
+            String url = null;
+            String description = null;
+            
+            for (int j = 0; j < n.getChildNodes().getLength(); j++) {
+                Node o = n.getChildNodes().item(j);
+                
+                if (o.getNodeType() == Node.ELEMENT_NODE) {
+                    if (o.getNodeName().equals(NAME_ELEMENT_NAME)) {
+                        name = o.getFirstChild().getTextContent();
+                    } else if (o.getNodeName().equals(URL_ELEMENT_NAME)) {
+                        url = o.getFirstChild().getTextContent();
+                    }
+                }
+            }
+            
+            if (null != name && null != url) {
+                Document docView = getDocument(url);
+                
+                if (null == docView)
+                    continue;
+                
+                // Retrieve description
+                NodeList descriptionList = docView.getElementsByTagName(DESCRIPTION_ELEMENT_NAME);
+                
+                try {
+                    description = descriptionList.item(0).getFirstChild().getTextContent();
+                } catch (NullPointerException e) {
+                    description = "";
+                }
+                
+                // Create HudsonView
+                HudsonViewImpl view = new HudsonViewImpl(name, description, url);
+                
+                if (!view.getName().equals(HudsonView.ALL_VIEW)) {
+                    
+                    // Retrieve jobs
+                    NodeList jobsList = docView.getElementsByTagName(JOB_ELEMENT_NAME);
+                    
+                    for (int k = 0; k < jobsList.getLength(); k++) {
+                        Node d = jobsList.item(k);
+                        
+                        for (int l = 0; l < d.getChildNodes().getLength(); l++) {
+                            Node e = d.getChildNodes().item(l);
+                            
+                            if (e.getNodeType() == Node.ELEMENT_NODE) {
+                                if (e.getNodeName().equals(NAME_ELEMENT_NAME)) {
+                                    view.addJob(e.getFirstChild().getTextContent());
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                views.add(view);
+            }
+            
+        }
+        
+        return views;
+    }
+    
+    private Collection<HudsonJob> getJobs(NodeList nodes) {
+        Collection<HudsonJob> jobs = new ArrayList<HudsonJob>();
+        
+        for (int i = 0; i < nodes.getLength(); i++) {
+            Node n = nodes.item(i);
+            
+            String displayName = null;
+            String name = null;
+            String description = null;
+            String url = null;
+            Color color = null;
+            boolean inQueue = false;
+            boolean buildable = false;
+            
+            for (int j = 0; j < n.getChildNodes().getLength(); j++) {
+                Node o = n.getChildNodes().item(j);
+                
+                if (o.getNodeType() == Node.ELEMENT_NODE) {
+                    if (o.getNodeName().equals(NAME_ELEMENT_NAME)) {
+                        name = o.getFirstChild().getTextContent();
+                    } else if (o.getNodeName().equals(URL_ELEMENT_NAME)) {
+                        url = o.getFirstChild().getTextContent();
+                    } else if (o.getNodeName().equals(COLOR_ELEMENT_NAME)) {
+                        color = Color.valueOf(o.getFirstChild().getTextContent());
+                    }
+                }
+            }
+            
+            if (null != name && null != url && null != color) {
+                Document docJob = getDocument(url);
+                
+                if (null == docJob)
+                    continue;
+                
+                NodeList jobDetails = docJob.getDocumentElement().getChildNodes();
+                
+                for (int k = 0; k < jobDetails.getLength(); k++) {
+                    Node d = jobDetails.item(k);
+                    
+                    if (d.getNodeType() == Node.ELEMENT_NODE) {
+                        if (d.getNodeName().equals(DESCRIPTION_ELEMENT_NAME)) {
+                            try {
+                                description = d.getFirstChild().getTextContent();
+                            } catch (NullPointerException e) {
+                                description = "";
+                            }
+                        } else if (d.getNodeName().equals(DISPLAY_NAME_ELEMENT_NAME)) {
+                            displayName = d.getFirstChild().getTextContent();
+                        } else if (d.getNodeName().equals(BUILDABLE_ELEMENT_NAME)) {
+                            buildable = Boolean.valueOf(d.getFirstChild().getTextContent());
+                        } else if (d.getNodeName().equals(INQUEUE_ELEMENT_NAME)) {
+                            inQueue = Boolean.valueOf(d.getFirstChild().getTextContent());
+                        }
+                    }
+                }
+                
+                HudsonJobImpl job = new HudsonJobImpl(displayName, name,
+                        description, url, color, inQueue, buildable, instance);
+                
+                for (HudsonView v : instance.getViews()) {
+                    // All view synchronization
+                    if (v.getName().equals(HudsonView.ALL_VIEW)) {
+                        ((HudsonViewImpl) v).addJob(job.getName());
+                        job.addView(v);
+                        continue;
+                    }
+                    
+                    if (v.getJobs().contains(name))
+                        job.addView(v);
+                }
+                
+                jobs.add(job);
+            }
+        }
+        
+        return jobs;
+    }
+    
+    private synchronized HudsonVersion retrievedHudsonVersion() {
+        HudsonVersion v = null;
+        
+        try {
+            URL u = new java.net.URL(instance.getUrl());
+            HttpURLConnection conn = (HttpURLConnection) u.openConnection();
+            
+            // Get string version
+            String sVersion = conn.getHeaderField("X-Hudson");
+            
+            // Create a HudsonVersion object
+            v = new HudsonVersionImpl(sVersion);
+        } catch (MalformedURLException e) {
+            // Nothing
+        } catch (IOException e) {
+            // Nothing
+        }
+        
+        return v;
+    }
+    
+    private Document getDocument(String url) {
         Document doc = null;
         
         try {
-            URL u = new java.net.URL(instance.getUrl() + XML_API_URL);
+            URL u = new java.net.URL(url + XML_API_URL);
             HttpURLConnection conn = (HttpURLConnection) u.openConnection();
             
             // Connected failed
@@ -227,9 +371,9 @@ public class HudsonConnector {
             if(conn != null)
                 conn.disconnect();
         } catch (MalformedURLException ex) {
-            ErrorManager.getDefault().log(ErrorManager.ERROR,NbBundle.getMessage(HudsonConnector.class, "MSG_MalformedURL", instance.getUrl() + XML_API_URL));
+            ErrorManager.getDefault().log(ErrorManager.ERROR,NbBundle.getMessage(HudsonConnector.class, "MSG_MalformedURL", url + XML_API_URL));
         } catch (IOException ex) {
-            ErrorManager.getDefault().log(ErrorManager.ERROR,NbBundle.getMessage(HudsonConnector.class, "MSG_IOError", instance.getUrl() + XML_API_URL));
+            ErrorManager.getDefault().log(ErrorManager.ERROR,NbBundle.getMessage(HudsonConnector.class, "MSG_IOError", url + XML_API_URL));
         } catch (SAXException ex) {
             ErrorManager.getDefault().log(ErrorManager.ERROR,NbBundle.getMessage(HudsonConnector.class, "MSG_ParserError", ex.getLocalizedMessage()));
         } catch (NullPointerException ex) {

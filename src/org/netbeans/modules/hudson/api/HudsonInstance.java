@@ -20,7 +20,6 @@
 package org.netbeans.modules.hudson.api;
 
 import java.util.Collection;
-import javax.swing.event.ChangeListener;
 
 /**
  * Instance of the the Hudson Server
@@ -56,6 +55,13 @@ public interface HudsonInstance extends Comparable<HudsonInstance> {
      * @return collection of all jobs
      */
     public Collection<HudsonJob> getJobs();
+    
+    /**
+     * Returns all Hudson views from registered instance
+     *
+     * @return collection of all views
+     */
+    public Collection<HudsonView> getViews();
     
     /**
      * Register HudsonChangeListener

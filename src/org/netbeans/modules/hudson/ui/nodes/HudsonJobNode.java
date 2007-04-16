@@ -19,20 +19,22 @@
 
 package org.netbeans.modules.hudson.ui.nodes;
 
+import java.awt.datatransfer.Transferable;
+import java.io.IOException;
 import javax.swing.Action;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
-import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.impl.HudsonJobImpl;
 import org.netbeans.modules.hudson.ui.actions.OpenUrlAction;
 import org.netbeans.modules.hudson.ui.actions.StartJobAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.NodeTransfer;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
 /**
  * Describes HudsonJob in the RuntimeTab
- * 
+ *
  * @author Michal Mocnak
  */
 public class HudsonJobNode extends AbstractNode {
@@ -48,53 +50,19 @@ public class HudsonJobNode extends AbstractNode {
     
     private String htmlDisplayName;
     private Color color;
+    private HudsonJobImpl job;
     
     public HudsonJobNode(HudsonJobImpl job) {
         super(Children.LEAF, Lookups.fixed(job));
         
-        setShortDescription(job.getUrl());
-        
-        htmlDisplayName = job.getName();
-        color = job.getColor();
-        
-        switch(color) {
-        case red:
-            setIconBaseWithExtension(ICON_BASE_RED);
-            htmlDisplayName = "<font color=\"#A40000\">"+job.getName()+"</font>";
-            break;
-        case red_anime:
-            setIconBaseWithExtension(ICON_BASE_RED_RUN);
-            htmlDisplayName = "<b><font color=\"#A40000\">"+job.getName()+"</font></b>";
-            break;    
-        case blue:
-            setIconBaseWithExtension(ICON_BASE_BLUE);
-            break;
-        case blue_anime:
-            setIconBaseWithExtension(ICON_BASE_BLUE_RUN);
-            htmlDisplayName = "<b>"+job.getName()+"</b>";
-            break;    
-        case yellow:
-            setIconBaseWithExtension(ICON_BASE_YELLOW);
-            break;
-        case yellow_anime:
-            setIconBaseWithExtension(ICON_BASE_YELLOW_RUN);
-            htmlDisplayName = "<b>"+job.getName()+"</b>";
-            break;    
-        case grey:
-            setIconBaseWithExtension(ICON_BASE_GREY);
-            break;
-        case grey_anime:
-            setIconBaseWithExtension(ICON_BASE_GREY_RUN);
-            htmlDisplayName = "<b>"+job.getName()+"</b>";
-            break;
-        }
+        setJob(job);
     }
     
     @Override
     public String getHtmlDisplayName() {
         return htmlDisplayName;
     }
-
+    
     @Override
     public Action[] getActions(boolean context) {
         return new Action [] {
@@ -102,13 +70,72 @@ public class HudsonJobNode extends AbstractNode {
             SystemAction.get(OpenUrlAction.class)
         };
     }
-
+    
     @Override
     public Action getPreferredAction() {
         return SystemAction.get(OpenUrlAction.class);
     }
     
+    @Override
+    public Transferable drag() throws IOException {
+        return NodeTransfer.transferable(this, NodeTransfer.DND_COPY);
+    }
+    
+    private void refreshState() {
+        // Set new node data
+        htmlDisplayName = job.getDisplayName();
+        color = job.getColor();
+        setShortDescription(job.getUrl());
+        
+        // Decorate node
+        switch(color) {
+        case red:
+            setIconBaseWithExtension(ICON_BASE_RED);
+            htmlDisplayName = "<font color=\"#A40000\">"+job.getDisplayName()+"</font>";
+            break;
+        case red_anime:
+            setIconBaseWithExtension(ICON_BASE_RED_RUN);
+            htmlDisplayName = "<b><font color=\"#A40000\">"+job.getDisplayName()+"</font></b>";
+            break;
+        case blue:
+            setIconBaseWithExtension(ICON_BASE_BLUE);
+            break;
+        case blue_anime:
+            setIconBaseWithExtension(ICON_BASE_BLUE_RUN);
+            htmlDisplayName = "<b>"+job.getDisplayName()+"</b>";
+            break;
+        case yellow:
+            setIconBaseWithExtension(ICON_BASE_YELLOW);
+            break;
+        case yellow_anime:
+            setIconBaseWithExtension(ICON_BASE_YELLOW_RUN);
+            htmlDisplayName = "<b>"+job.getDisplayName()+"</b>";
+            break;
+        case grey:
+            setIconBaseWithExtension(ICON_BASE_GREY);
+            break;
+        case grey_anime:
+            setIconBaseWithExtension(ICON_BASE_GREY_RUN);
+            htmlDisplayName = "<b>"+job.getDisplayName()+"</b>";
+            break;
+        }
+        
+        // Fire changes if any
+        fireIconChange();
+    }
+    
     public Color getColor() {
         return color;
+    }
+    
+    public void setJob(HudsonJobImpl job) {
+        this.job = job;
+        
+        // Refresh
+        refreshState();
+    }
+    
+    public HudsonJobImpl getJob() {
+        return job;
     }
 }

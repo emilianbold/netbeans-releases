@@ -28,8 +28,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.modules.hudson.api.HudsonChangeListener;
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonManager;
@@ -177,6 +175,9 @@ public class HudsonManagerImpl implements HudsonManager {
                     } finally {
                         // Deactivate startup flag
                         startupFlag = false;
+                        
+                        // Fire changes
+                        fireChangeListeners();
                     }
                 }
             });

@@ -142,7 +142,7 @@ public class InstanceWizardIterator implements WizardDescriptor.InstantiatingIte
             l.stateChanged(event);
         }
     }
-
+    
     public void stateChanged(ChangeEvent e) {
         fireChangeEvent();
     }
@@ -167,6 +167,6 @@ public class InstanceWizardIterator implements WizardDescriptor.InstantiatingIte
                 // Turn on numbering of all steps
                 jc.putClientProperty(PROP_CONTENT_NUMBERED, Boolean.TRUE);          //NOI18N
             }
-        }   
+        }
     }
 }

@@ -35,7 +35,7 @@ import org.openide.util.NbBundle;
 
 /**
  * Instance properties for Hudson instance
- * 
+ *
  * @author Michal Mocnak
  */
 public class HudsonInstanceProperties extends Properties {

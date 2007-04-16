@@ -27,7 +27,7 @@ import org.openide.util.actions.NodeAction;
 
 /**
  * Action which synchronize instance's jobs
- * 
+ *
  * @author Michal Mocnak
  */
 public class SynchronizeAction extends NodeAction {

@@ -24,8 +24,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.modules.hudson.api.HudsonChangeListener;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
@@ -104,7 +102,6 @@ public class HudsonRootNode extends AbstractNode {
         
         @Override
         protected void removeNotify() {
-            HudsonManagerImpl.getDefault().removeHudsonChangeListener(this);
             setKeys(Collections.<HudsonInstanceImpl>emptySet());
             super.removeNotify();
         }
@@ -127,9 +124,9 @@ public class HudsonRootNode extends AbstractNode {
             
             return l;
         }
-
+        
         public void stateChanged() {}
-
+        
         public void contentChanged() {
             refreshKeys();
         }
