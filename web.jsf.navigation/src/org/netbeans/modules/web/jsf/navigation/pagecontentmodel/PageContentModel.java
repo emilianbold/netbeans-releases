@@ -9,31 +9,63 @@
 
 package org.netbeans.modules.web.jsf.navigation.pagecontentmodel;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author joelle
+ * @author joelle lam
  */
 public abstract class PageContentModel {
-    private Set<PageContentItem> pageContentItems = new HashSet<PageContentItem>();
+    /**
+     * Returns the current Page Content Items
+     * @return 
+     */
+    public abstract Collection<PageContentItem> getPageContentItems();
+    /**
+     * addPageContentItem
+     * @param pageContentItem 
+     */
+    public abstract void addPageContentItem(PageContentItem pageContentItem);
+    /**
+     * remove page content item.
+     * @param pageContentItem 
+     */
+    public abstract void removePageContentItem(PageContentItem pageContentItem);
+    
+    /**
+     * retrive all actions specific to this ndoe 
+     * @return actions
+     */
+    public abstract SystemAction[] getActions();
+    
+    private Set<? extends PageContentItem> pageContentItems = new HashSet<PageContentItem>();
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
     
+    /**
+     * Add the change listener.
+     * @param l 
+     */
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
+    /**
+     * Remove the change listener.
+     * @param l 
+     */
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
         }
     }
-    protected final void fireChangeEvent() {
+    private final void fireChangeEvent() {
         Iterator it;
         synchronized (listeners) {
             it = new HashSet(listeners).iterator();
@@ -43,4 +75,16 @@ public abstract class PageContentModel {
             ((ChangeListener)it.next()).stateChanged(ev);
         }
     }
+    
+    /**
+     * Handle Model Change Event To Update The Page.  This is this time
+     * to update your page content items.  
+     */
+    public final void handleModelChangeEvent() {
+        fireChangeEvent();
+    }
+    
+    
+    
+    
 }

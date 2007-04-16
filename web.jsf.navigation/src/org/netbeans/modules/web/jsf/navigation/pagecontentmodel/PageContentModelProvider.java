@@ -9,10 +9,17 @@
 
 package org.netbeans.modules.web.jsf.navigation.pagecontentmodel;
 
+import org.openide.filesystems.FileObject;
+
 /**
  *
- * @author joelle
+ * @author joelle lam
  */
 public interface PageContentModelProvider {
-    public PageContentModel getPageContentModel();
+    /**
+     * Returns the Page Content Model
+     * @param fileObject 
+     * @return PageContentModel for a given fileobject, null if none exists.
+     */
+    public PageContentModel getPageContentModel(FileObject fileObject);
 }
