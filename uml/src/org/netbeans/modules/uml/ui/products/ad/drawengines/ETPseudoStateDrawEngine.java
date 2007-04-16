@@ -103,7 +103,7 @@ public class ETPseudoStateDrawEngine extends ETNodeDrawEngine
       if (nPSKind == IPseudostateKind.PK_CHOICE)
       {
          sFillResource = "choicestatefill";
-         sLightFillResource = "choicestatelightgradientfill";
+         sLightFillResource = "choicestatelightgradient";
          sBorderResource = "choicestateborder";
          nFillColor = new Color(167, 240, 240);
          nLightFillColor = new Color(255, 255, 255);
@@ -112,7 +112,7 @@ public class ETPseudoStateDrawEngine extends ETNodeDrawEngine
       {
          sFontResource = "deephistorystatefont";
          sFillResource = "deephistorystatefill";
-         sLightFillResource = "deephistorystatelightgradientfill";
+         sLightFillResource = "deephistorystatelightgradient";
          sBorderResource = "deephistorystateborder";
          nFillColor = new Color(101, 154, 210);
          nLightFillColor = new Color(255, 255, 255);
@@ -121,7 +121,7 @@ public class ETPseudoStateDrawEngine extends ETNodeDrawEngine
       {
          sFontResource = "shallowhistorystatefont";
          sFillResource = "shallowhistorystatefill";
-         sLightFillResource = "shallowhistorystatelightgradientfill";
+         sLightFillResource = "shallowhistorystatelightgradient";
          sBorderResource = "shallowhistorystateborder";
          nFillColor = new Color(255, 255, 0);
          nLightFillColor = new Color(255, 255, 255);
@@ -129,7 +129,7 @@ public class ETPseudoStateDrawEngine extends ETNodeDrawEngine
       else if (nPSKind == IPseudostateKind.PK_INITIAL)
       {
          sFillResource = "initialstatefill";
-         sLightFillResource = "initialstatelightgradientfill";
+         sLightFillResource = "initialstatelightgradient";
          sBorderResource = "initialstateborder";
          nFillColor = new Color(0, 146, 0);
          nLightFillColor = new Color(238, 247, 238);
@@ -143,7 +143,7 @@ public class ETPseudoStateDrawEngine extends ETNodeDrawEngine
       else if (nPSKind == IPseudostateKind.PK_JUNCTION)
       {
          sFillResource = "junctionstatefill";
-         sLightFillResource = "junctionstatelightgradientfill";
+         sLightFillResource = "junctionstatelightgradient";
          sBorderResource = "junctionstateborder";
          nFillColor = new Color(102, 102, 204);
          nLightFillColor = new Color(255, 255, 255);
@@ -151,7 +151,7 @@ public class ETPseudoStateDrawEngine extends ETNodeDrawEngine
       else if (nPSKind == IPseudostateKind.PK_ENTRYPOINT)
       {
          sFillResource = "entrypointstatefill";
-         sLightFillResource = "entrypointstatelightgradientfill";
+         sLightFillResource = "entrypointstatelightgradient";
          sBorderResource = "entrypointstateborder";
          nFillColor = new Color(255, 153, 51);
          nLightFillColor = new Color(255, 255, 255);
@@ -159,7 +159,7 @@ public class ETPseudoStateDrawEngine extends ETNodeDrawEngine
       else if (nPSKind == IPseudostateKind.PK_STOP)
       {
          sFillResource = "stopstatefill";
-         sLightFillResource = "stopstatelightgradientfill";
+         sLightFillResource = "stopstatelightgradient";
          sBorderResource = "stopstateborder";
          nFillColor = new Color(255, 51, 0);
          nLightFillColor = new Color(255, 255, 255);

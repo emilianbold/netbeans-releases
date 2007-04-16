@@ -95,14 +95,9 @@ import com.tomsawyer.editor.TSEObject;
 import com.tomsawyer.graph.TSGraph;
 import com.tomsawyer.graph.TSGraphObject;
 import com.tomsawyer.editor.graphics.TSEGraphics;
-//import com.tomsawyer.util.TSConstPoint;
 import com.tomsawyer.drawing.geometry.TSConstPoint;
-//import com.tomsawyer.util.TSConstRect;
 import com.tomsawyer.drawing.geometry.TSConstRect;
-//import com.tomsawyer.util.TSRect;
 import com.tomsawyer.drawing.geometry.TSRect;
-import com.tomsawyer.editor.TSEInteractiveConstants;
-//import com.tomsawyer.util.TSTransform;
 import com.tomsawyer.editor.TSTransform;
 import javax.swing.SwingConstants;
 

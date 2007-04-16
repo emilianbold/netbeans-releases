@@ -24,12 +24,7 @@ package org.netbeans.modules.uml.ui.products.ad.drawengines;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GradientPaint;
-import java.awt.Shape;
 import java.util.Iterator;
-import java.util.Vector;
-
-import org.netbeans.modules.uml.common.ETException;
-import org.netbeans.modules.uml.common.ETStrings;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.structure.IDeploymentSpecification;
@@ -40,8 +35,6 @@ import org.netbeans.modules.uml.core.support.umlsupport.IETSize;
 import org.netbeans.modules.uml.ui.products.ad.compartments.ETClassNameCompartment;
 import org.netbeans.modules.uml.ui.products.ad.compartments.ETClassNameListCompartment;
 import org.netbeans.modules.uml.ui.products.ad.compartments.IADClassNameListCompartment;
-import org.netbeans.modules.uml.ui.products.ad.compartments.INameListCompartment;
-import org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.GDISupport;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartment;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.IDrawInfo;
@@ -49,9 +42,7 @@ import org.netbeans.modules.uml.ui.support.viewfactorysupport.IListCompartment;
 import com.tomsawyer.editor.TSEColor;
 import com.tomsawyer.editor.TSEFont;
 import com.tomsawyer.editor.graphics.TSEGraphics;
-//import com.tomsawyer.util.TSConstRect;
 import com.tomsawyer.drawing.geometry.TSConstRect;
-//import com.tomsawyer.util.TSTransform;
 import com.tomsawyer.editor.TSTransform;
 
 public class ETDeploymentSpecDrawEngine extends ETNodeDrawEngine
@@ -80,7 +71,7 @@ public class ETDeploymentSpecDrawEngine extends ETNodeDrawEngine
    public void initResources()
    {
       setFillColor("deploymentspecfill", 195, 226, 203);
-      setLightGradientFillColor("deploymentspeclightgradientfill", 255, 255, 255);
+      setLightGradientFillColor("deploymentspeclightgradient", 255, 255, 255);
       setBorderColor("deploymentspecborder", Color.BLACK);
 
       super.initResources();

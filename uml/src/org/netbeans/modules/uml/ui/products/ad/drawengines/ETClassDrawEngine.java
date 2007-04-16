@@ -165,7 +165,7 @@ public class ETClassDrawEngine extends ETNodeDrawEngine
     public void initResources()
     {
         setFillColor("classfill", 251, 233, 127);
-        setLightGradientFillColor("classlightfill", 254,254,254);
+        setLightGradientFillColor("classlightgradient", 254,254,254);
         setBorderColor("classborder", Color.BLACK);
         
         super.initResources();

@@ -25,7 +25,6 @@ import java.awt.Color;
 import java.awt.GradientPaint;
 import java.awt.event.ActionEvent;
 import java.util.Iterator;
-
 import org.netbeans.modules.uml.common.ETException;
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
@@ -60,21 +59,14 @@ import org.netbeans.modules.uml.ui.support.viewfactorysupport.PresentationHelper
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.TypeConversions;
 import org.netbeans.modules.uml.ui.swing.drawingarea.IDiagramEngine;
 import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
-import com.tomsawyer.editor.TSEColor;
 import com.tomsawyer.editor.TSEFont;
 import com.tomsawyer.editor.TSENode;
 import com.tomsawyer.editor.graphics.TSEGraphics;
-//import com.tomsawyer.jnilayout.TSSide;
 import org.netbeans.modules.uml.ui.support.TSSide;
-//import com.tomsawyer.util.TSConstPoint;
 import com.tomsawyer.drawing.geometry.TSConstPoint;
-//import com.tomsawyer.util.TSConstRect;
 import com.tomsawyer.drawing.geometry.TSConstRect;
-//import com.tomsawyer.util.TSPoint;
 import com.tomsawyer.drawing.geometry.TSPoint;
-//import com.tomsawyer.util.TSRect;
 import com.tomsawyer.drawing.geometry.TSRect;
-//import com.tomsawyer.util.TSTransform;
 import com.tomsawyer.editor.TSTransform;
 
 public class ETComponentDrawEngine extends ETContainerDrawEngine implements IComponentDrawEngine
@@ -97,9 +89,6 @@ public class ETComponentDrawEngine extends ETContainerDrawEngine implements ICom
 
    // Should we autoroute edges during graph events
    boolean m_autoRouteEdges;
-   
-   private TSEFont m_defaultTextFont = new TSEFont("Arial-plain-12");
-   private TSEFont m_staticTextFont = new TSEFont("Arial-italic-11");
 
    class PortLocations
    {
@@ -259,7 +248,7 @@ public class ETComponentDrawEngine extends ETContainerDrawEngine implements ICom
    public void initResources()
    {
       setFillColor("componentfill", 255, 204, 0);
-      setLightGradientFillColor("componentlightgradientfill", 254, 241, 187);
+      setLightGradientFillColor("componentlightgradient", 254, 241, 187);
       setBorderColor("componentborder", Color.BLACK);
 
       super.initResources();
