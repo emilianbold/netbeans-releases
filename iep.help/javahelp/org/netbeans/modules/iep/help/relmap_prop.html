@@ -11,25 +11,25 @@
 <body>
 <h2>Using the Relation Map Operator Property Editor </h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p> The Relation Map operator performs a select on two or more incoming relations, equivalent to a SQL join view of two tables, based on input from two tables or a relation and a table. The Relation Map operator can take multiple inputs and provide multiple outputs. </p>
+<p> The Relation Map operator performs a select on two or more incoming relations, equivalent to a SQL join view of  a minmum of one relation and additional tables and relations. The Relation Map operator can take multiple inputs.</p>
 <p>You can use a Relation Map to join input from other operator sources, for example two or more Tuple Based windows, or two or more Partitioned Windows. </p>
 <p><strong>To create a Relation Map Operator</strong></p>
 <ol>
   <li>Drag a Relation Map operator from the Palette to the Design view.</li>
+  <li>Connect at least two inputs. </li>
   <li>Click the Relation Map operator icon to examine the Details and Attribute sections in the Property Editor, if needed. </li>
   <li>Click OK.</li>
 </ol>
 <p><strong>To define the SQL statements to use with a Relation Map  operator:</strong> </p>
 <ol>
-  <li>In the Expression box, enter the expression for the SQL Select statement which is used to specify the input attribute upon which the Select is performed. Add atrribute names, data types. and sizes, as applicable. Note that any atrribute specified here must appear in the group-by clause.</li>
+  <li>In the Expression box, enter the expression for the SQL Select statement. Add attribute names, data types and sizes, as applicable. </li>
   <li>In the From field, define the input on which to perform the selection. <span class="bold"></span></li>
   <li>In the Where clause field, provide additional search criteria. </li>
 </ol>
-<p>For example, provided the latest two hour window of stock transactions, and the latest two hour window of news, you can compute the latest two hour window of possible trades by joining the trader's name with the name mentioned in the news </p>
 <dl>
 <dt><a name="seealso">See Also</a></dt>
 <dd>&nbsp;</dd>
-<dd><a href="aboutpalettecan.html">Using the Relation Map Property Window </a></dd>
+<dd>&nbsp;</dd>
 </dl>
 <hr>
 <small><a href="credits.html">Legal Notices</a></small>
