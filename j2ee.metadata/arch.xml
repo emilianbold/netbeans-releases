@@ -47,7 +47,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-overall">
   <p>
-   This module provides the <api group="java" name="J2EEMetadataAPI" type="export" category="devel" url="@TOP@index.html"/>,
+   This module provides the <api group="java" name="GenericJavaEEMetadataModelAPI" type="export" category="devel" url="@TOP@index.html"/>,
    which is a generic framework for models of Java EE metadata expressed as either XML deployment descriptors or Java annotations. 
    The framework itself doesn't provide access to any specific metadata. Instead, it allows metadata providers to plug in SPI
    implementations returning whichever kind of metadata they want to provide.
@@ -120,7 +120,7 @@ Microsystems, Inc. All Rights Reserved.
     class. The client then implements a model action, represented by the 
     <a href="@TOP@org/netbeans/modules/j2ee/metadata/model/api/MetadataModelAction.html">MetadataModelAction</a> class,
     and executes this action in the model context by calling the model's 
-    <a href="@TOP@org/netbeans/modules/j2ee/metadata/model/api/MetadataModel.html#runReadAction(org.netbeans.modules.j2ee.metadata.MetadataModelAction">runReadAction()</a>
+    <a href="@TOP@org/netbeans/modules/j2ee/metadata/model/api/MetadataModel.html#runReadAction(org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction)">runReadAction()</a>
     method:
    </p>
    <pre>
