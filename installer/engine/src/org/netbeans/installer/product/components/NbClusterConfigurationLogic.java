@@ -60,6 +60,13 @@ public abstract class NbClusterConfigurationLogic extends ProductConfigurationLo
             new LinkedList<WizardComponent>();
     
     protected NbClusterConfigurationLogic(
+            final String clusterName,
+            final String productId,
+            final String sourceUid) throws InitializationException {
+        this(new String[]{clusterName}, productId, sourceUid);
+    }
+    
+    protected NbClusterConfigurationLogic(
             final String[] clusterNames,
             final String productId,
             final String sourceUid) throws InitializationException {
