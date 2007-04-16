@@ -70,7 +70,7 @@ public class AntArtifactProviderImplTest extends TestBase {
         arts = AntArtifactQuery.findArtifactsByType(javaProjectProject, JavaProjectConstants.ARTIFACT_TYPE_JAR);
         assertEquals("one artifact produced", 1, arts.length);
         assertEquals("correct location",
-            Collections.singletonList(URI.create("../../nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/org-netbeans-modules-java-project.jar")),
+            Collections.singletonList(URI.create("../../nbbuild/netbeans/" + TestBase.CLUSTER_JAVA + "/modules/org-netbeans-modules-java-project.jar")),
             Arrays.asList(arts[0].getArtifactLocations()));
     }
     

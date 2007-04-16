@@ -40,15 +40,15 @@ public class UpdateTrackingFileOwnerQueryTest extends TestBase {
     
     public void testOwnershipNetBeansOrg() throws Exception {
         // Basic module:
-        assertOwnership("ant", "nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/org-apache-tools-ant-module.jar");
+        assertOwnership("ant", "nbbuild/netbeans/" + TestBase.CLUSTER_JAVA + "/modules/org-apache-tools-ant-module.jar");
         // Explicitly listed additions:
-        assertOwnership("ant", "nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/ant/nblib/bridge.jar");
+        assertOwnership("ant", "nbbuild/netbeans/" + TestBase.CLUSTER_JAVA + "/ant/nblib/bridge.jar");
         // Pattern matches (here "ant/lib/"):
-        assertTrue("ant module built (cannot scan by pattern unless files exist)", file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/ant/lib/ant.jar").isFile());
-        assertOwnership("ant", "nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/ant/lib/ant.jar");
+        assertTrue("ant module built (cannot scan by pattern unless files exist)", file("nbbuild/netbeans/" + TestBase.CLUSTER_JAVA + "/ant/lib/ant.jar").isFile());
+        assertOwnership("ant", "nbbuild/netbeans/" + TestBase.CLUSTER_JAVA + "/ant/lib/ant.jar");
         // These two always included:
-        assertOwnership("ant", "nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/config/Modules/org-apache-tools-ant-module.xml");
-        assertOwnership("ant", "nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/update_tracking/org-apache-tools-ant-module.xml");
+        assertOwnership("ant", "nbbuild/netbeans/" + TestBase.CLUSTER_JAVA + "/config/Modules/org-apache-tools-ant-module.xml");
+        assertOwnership("ant", "nbbuild/netbeans/" + TestBase.CLUSTER_JAVA + "/update_tracking/org-apache-tools-ant-module.xml");
         // Different pattern match ("modules/ext/jh*.jar"):
         assertOwnership("core/javahelp", "nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/ext/jh-2.0_04.jar");
         // Use of release dir:

@@ -62,6 +62,9 @@ import org.openide.util.Lookup;
     public static final String CLUSTER_IDE = "ide8";
     public static final String CLUSTER_PLATFORM = "platform7";
     public static final String CLUSTER_ENTERPRISE = "enterprise4";
+    public static final String CLUSTER_APISUPPORT = "apisupport1";
+    public static final String CLUSTER_JAVA = "java1";
+    
     
     protected TestBase(String name) {
         super(name);
@@ -199,7 +202,7 @@ import org.openide.util.Lookup;
     }
     
     private static boolean isCVSAvailable() {
-        return new File(getTestNBRoot(), "nbbuild/netbeans/" + CLUSTER_IDE
+        return new File(getTestNBRoot(), "nbbuild/netbeans/" + CLUSTER_APISUPPORT
                 + "/modules/org-netbeans-modules-apisupport-project.jar").isFile();
     }
     
