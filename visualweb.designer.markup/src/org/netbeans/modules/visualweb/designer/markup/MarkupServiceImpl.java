@@ -343,10 +343,13 @@ public final class  MarkupServiceImpl {
 ////            dstText.source = srcText;
 //            dstText.setSource(srcText);
 //        }
-        if (src instanceof RaveSourceElement) {
-            assert dst instanceof RaveRenderedElement;            
-            RaveSourceElement srcElement = (RaveSourceElement)src;
-            RaveRenderedElement dstElement = (RaveRenderedElement)dst;
+//        if (src instanceof RaveSourceElement) {
+        if (src instanceof Element && src.getOwnerDocument() instanceof RaveSourceDocument) {
+//            assert dst instanceof RaveRenderedElement;            
+//            RaveSourceElement srcElement = (RaveSourceElement)src;
+//            RaveRenderedElement dstElement = (RaveRenderedElement)dst;
+            Element srcElement = (Element)src;
+            Element dstElement = (Element)dst;
 //            srcElement.source = null;
 //            dstElement.source = srcElement;
 //            dstElement.linkToSourceElement(srcElement);
@@ -378,9 +381,12 @@ public final class  MarkupServiceImpl {
 //        RaveElement element;
 //        if (node instanceof RaveElement) {
 //            element = (RaveElement)node;
-        RaveRenderedElement element;
-        if (node instanceof RaveRenderedElement) {
-            element = (RaveRenderedElement)node;
+//        RaveRenderedElement element;
+        Element element;
+//        if (node instanceof RaveRenderedElement) {
+//            element = (RaveRenderedElement)node;
+        if (node instanceof Element && node.getOwnerDocument() instanceof RaveRenderedDocument) {
+            element = (Element)node;
         } else {
             element = null;
         }
@@ -414,7 +420,8 @@ public final class  MarkupServiceImpl {
 //                    element.setSource((RaveElement)InSyncService.getProvider().getMarkupDesignBeanForElement(element).getElement());
                     // #6455709 Some strange class cast exception, couldn't reproduce, needs to be tested more carefully.
                     Element elem = markupDesignBean.getElement();
-                    if (elem instanceof RaveSourceElement) {
+//                    if (elem instanceof RaveSourceElement) {
+                    if (elem != null && elem.getOwnerDocument() instanceof RaveSourceDocument) {
 //                        element.linkToSourceElement((RaveSourceElement)elem);
                         linkToSourceElement(element, elem);
                     } else {
@@ -497,13 +504,15 @@ public final class  MarkupServiceImpl {
     public static Element getCorrespondingSourceElement(Element elem) {
 //        if (!(elem instanceof RaveElement)) {
 //        if (!(elem instanceof RaveElementImpl)) {
-        if (!(elem instanceof RaveRenderedElementImpl)) {
+//        if (!(elem instanceof RaveRenderedElementImpl)) {
+        if (!(elem != null && elem.getOwnerDocument() instanceof RaveRenderedDocument)) {
             return elem;
         }
         
 //        RaveElement element = (RaveElement)elem;
 //        RaveElementImpl element = (RaveElementImpl)elem;
-        RaveRenderedElementImpl element = (RaveRenderedElementImpl)elem;
+//        RaveRenderedElementImpl element = (RaveRenderedElementImpl)elem;
+        Element element = elem;
         
 //        if (!element.isRendered()) {
 //            return element;
@@ -518,8 +527,10 @@ public final class  MarkupServiceImpl {
 //                if (xel.isRendered()) {
 //                    RaveElement src = xel.getSource();
 //                    if (src != null) {
-            if (node instanceof RaveRenderedElementImpl) {
-                RaveRenderedElementImpl xel = (RaveRenderedElementImpl)node;
+//            if (node instanceof RaveRenderedElementImpl) {
+            if (node instanceof Element && node.getOwnerDocument() instanceof RaveRenderedDocument) {
+//                RaveRenderedElementImpl xel = (RaveRenderedElementImpl)node;
+                Element xel = (Element)node;
 //                if (xel.isRendered()) {
 //                    RaveSourceElement src = xel.getSourceElement();
                     Element src = getSourceElement(xel);
@@ -610,7 +621,8 @@ public final class  MarkupServiceImpl {
 //        } else if (node instanceof RaveTextImpl) {
 //            return ((RaveTextImpl)node).getRenderedNode();
 //        }
-        if (node instanceof RaveSourceElement) {
+//        if (node instanceof RaveSourceElement) {
+        if (node instanceof Element && node.getOwnerDocument() instanceof RaveSourceDocument) {
 //            return ((RaveSourceElement)node).getRenderedElement();
             return getRenderedElement((Element)node);
 //        } else if (node instanceof RaveSourceText) {
@@ -635,11 +647,12 @@ public final class  MarkupServiceImpl {
 //        } else if (node instanceof RaveTextImpl) {
 //            return ((RaveTextImpl)node).getSourceNode();
 //        }
-        if (node instanceof RaveRenderedElement) {
+//        if (node instanceof RaveRenderedElement) {
+        if (node instanceof Element && node.getOwnerDocument() instanceof RaveRenderedDocument) {
 //            return ((RaveRenderedElement)node).getSourceElement();
             return getSourceElement((Element)node);
 //        } else if (node instanceof RaveRenderedText) {
-        } else if (node != null && node.getOwnerDocument() instanceof RaveRenderedDocument) {
+        } else if (node instanceof Text && node.getOwnerDocument() instanceof RaveRenderedDocument) {
 //            return ((RaveRenderedText)node).getSourceText();
             return getSourceText((Text)node);
 //        } else if (node instanceof RaveSourceElement
@@ -654,10 +667,12 @@ public final class  MarkupServiceImpl {
 //        if (element instanceof RaveElement) {
 //            return ((RaveElement)element).getRendered();
 //        }
-        if (element instanceof RaveSourceElement) {
+//        if (element instanceof RaveSourceElement) {
+        if (element != null && element.getOwnerDocument() instanceof RaveSourceDocument) {
 //            return ((RaveSourceElement)element).getRenderedElement();
             return getRenderedElement(element);
-        } else if (element instanceof RaveRenderedElement) { // XXX
+//        } else if (element instanceof RaveRenderedElement) { // XXX
+        } else if (element != null && element.getOwnerDocument() instanceof RaveRenderedDocument) {
             return element;
         }
         return null;
@@ -667,7 +682,8 @@ public final class  MarkupServiceImpl {
 //        if (element instanceof RaveElement) {
 //            ((RaveElement)element).setRendered((RaveElement)renderedElement);
 //        }
-        if (element instanceof RaveSourceElement) {
+//        if (element instanceof RaveSourceElement) {
+        if (element != null && element.getOwnerDocument() instanceof RaveSourceDocument) {
 //            ((RaveSourceElement)element).linkToRenderedElement((RaveRenderedElement)renderedElement);
             linkToRenderedElement(element, renderedElement);
         }
@@ -677,10 +693,12 @@ public final class  MarkupServiceImpl {
 //        if (element instanceof RaveElement) {
 //            return ((RaveElement)element).getSource();
 //        }
-        if (element instanceof RaveRenderedElement) {
+//        if (element instanceof RaveRenderedElement) {
+        if (element != null && element.getOwnerDocument() instanceof RaveRenderedDocument) {
 //            return ((RaveRenderedElement)element).getSourceElement();
             return getSourceElement(element);
-        } else if (element instanceof RaveSourceElement) { // XXX
+//        } else if (element instanceof RaveSourceElement) { // XXX
+        } else if (element != null && element.getOwnerDocument() instanceof RaveSourceDocument) { // XXX
             return element;
         }
         return null;

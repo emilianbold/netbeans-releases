@@ -35,11 +35,13 @@ public class RaveRenderedDocument extends AbstractRaveDocument {
     }
 
     protected Element createDefaultElement(CoreDocumentImpl document, String namespaceURI, String qualifiedName) {
-        return new RaveRenderedElementImpl(document, namespaceURI, qualifiedName);
+//        return new RaveRenderedElementImpl(document, namespaceURI, qualifiedName);
+        return new RaveElement(document, namespaceURI, qualifiedName);
     }
 
     protected Element createDefaultElement(CoreDocumentImpl document, String namespaceURI, String qualifiedName, String localpart) {
-        return new RaveRenderedElementImpl(document, namespaceURI, qualifiedName, localpart);
+//        return new RaveRenderedElementImpl(document, namespaceURI, qualifiedName, localpart);
+        return new RaveElement(document, namespaceURI, qualifiedName, localpart);
     }
 
     protected Element createStyleElement(CoreDocumentImpl document, String namespaceURI, String qualifiedName) {

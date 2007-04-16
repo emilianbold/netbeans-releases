@@ -220,8 +220,8 @@ public abstract class AbstractRaveDocument extends DocumentImpl /*implements Par
 //            RaveSourceElement srcElement = (RaveSourceElement)src;
             Element srcElement = (Element)src;
             
-            if (dst instanceof AbstractRaveElement) {
-                ((AbstractRaveElement)dst).copyFrom((AbstractRaveElement)srcElement);
+            if (dst instanceof RaveElement) {
+                ((RaveElement)dst).copyFrom((RaveElement)srcElement);
             }
             
 //            if (dst instanceof RaveRenderedElement) {
@@ -251,9 +251,9 @@ public abstract class AbstractRaveDocument extends DocumentImpl /*implements Par
             Element srcElement = MarkupServiceImpl.getSourceElement((Element)src);
             
 //            if (srcElement != null) {
-            if (srcElement instanceof AbstractRaveElement) {
-                if (dst instanceof AbstractRaveElement) {
-                    ((AbstractRaveElement)dst).copyFrom((AbstractRaveElement)srcElement);
+            if (srcElement instanceof RaveElement) {
+                if (dst instanceof RaveElement) {
+                    ((RaveElement)dst).copyFrom((RaveElement)srcElement);
                 }
 
 //                if (dst instanceof RaveRenderedElement) {

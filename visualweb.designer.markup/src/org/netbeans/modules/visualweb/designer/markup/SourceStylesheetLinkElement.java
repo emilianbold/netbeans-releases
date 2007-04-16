@@ -94,7 +94,7 @@ import org.w3c.dom.Document;
  * @author <a href="mailto:stephane@hillion.org">Stephane Hillion</a>
  * @author Tor Norbye
  */
-class SourceStylesheetLinkElement extends RaveSourceElementImpl
+class SourceStylesheetLinkElement extends RaveElement
 implements CSSStyleSheetNode, StyleRefreshable {
 
     /**

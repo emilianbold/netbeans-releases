@@ -93,7 +93,7 @@ import org.netbeans.modules.visualweb.designer.html.HtmlTag;
  * @author <a href="mailto:stephane@hillion.org">Stephane Hillion</a>
  * @author Tor Norbye
  */
-class SourceStyleElement extends RaveSourceElementImpl
+class SourceStyleElement extends RaveElement
 implements CSSStyleSheetNode, StyleRefreshable {
 
     /**
