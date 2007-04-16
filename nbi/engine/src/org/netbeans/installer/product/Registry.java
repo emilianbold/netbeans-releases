@@ -1300,7 +1300,7 @@ public class Registry {
                 
                 documentElement.appendChild(productsNode);
             }
-            
+            FileUtils.mkdirs(stateFile.getParentFile());
             XMLUtils.saveXMLDocument(document, stateFile);
         } catch (DownloadException e) {
             throw new FinalizationException("Could not finalize registry", e);
