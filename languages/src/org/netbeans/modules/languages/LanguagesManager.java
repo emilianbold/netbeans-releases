@@ -98,6 +98,7 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
             try {
                 l = NBSLanguageReader.readLanguage (fo, mimeType);
                 l.getAnalyser ();
+                initLanguage (l);
             } catch (ParseException ex) {
                 l = new Language (mimeType);
                 Utils.message (ex.getMessage ());
@@ -105,7 +106,6 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
                 l = new Language (mimeType);
                 Utils.message ("Editors/" + mimeType + "/language.nbs: " + ex.getMessage ());
             }
-            initLanguage (l);
             //l.print ();
             mimeTypeToLanguage.put (mimeType, l);
         }
@@ -184,12 +184,10 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
                 });
 
             // init code folding bar
-            if (root.getFileObject ("SideBar/org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance") == null
-                //l.supportsCodeFolding ()  does not work if you first open language without folding than no languages will have foding.
+            if (root.getFileObject ("SideBar/org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance") == null &&
+                l.getFeatures(Language.FOLD).size () > 0
             ) {
-                if(l.getFeatures(Language.FOLD).size () > 0) {
-                    FileUtil.createData (root, "FoldManager/org-netbeans-modules-languages-features-LanguagesFoldManager$Factory.instance");
-                }
+                FileUtil.createData (root, "FoldManager/org-netbeans-modules-languages-features-LanguagesFoldManager$Factory.instance");
                 FileUtil.createData (root, "SideBar/org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance");
                 FileObject fo = root.getFileObject ("SideBar");
                 fo.setAttribute ("org-netbeans-editor-GlyphGutter.instance/org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance", Boolean.TRUE);
@@ -205,7 +203,7 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
             initPopupMenu (root, l);
 
             // init navigator
-            if (l.getFeatures ("NAVIGATOR") != null) {
+            if (l.getFeatures ("NAVIGATOR").size () > 0) {
                 String foldFileName = "Navigator/Panels/" + l.getMimeType () + 
                     "/org-netbeans-modules-languages-features-LanguagesNavigator.instance";
                 if (fs.findResource (foldFileName) == null)
@@ -213,7 +211,7 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
             }
 
             // init tooltips
-            if (l.getFeatures ("TOOLTIP") != null)
+            if (l.getFeatures ("TOOLTIP").size () > 0)
                 FileUtil.createData (root, "ToolTips/org-netbeans-modules-languages-features-ToolTipAnnotation.instance");
 
             } catch (IOException ex) {
