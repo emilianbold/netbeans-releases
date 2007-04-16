@@ -19,16 +19,9 @@
 <p>When you create a WSDL file from scratch, the wizard contains three pages that you can fill out.</p>
 
 <ul>
-
-<li>The Name and Location page prompts you to enter basic information 
-about the WSDL file.</li>
-
-<li>The Abstract Configuration page prompts you to enter information about the 
-following elements of the WSDL file: port type, operation, and message.</li>
-
-<li>The Concrete Configuration page prompts you to enter information about the 
-following elements of the WSDL file: binding, service, and port. </li>
-
+<li>The Name and Location page prompts you to enter basic information about the WSDL file.</li>
+<li>The Abstract Configuration page prompts you to define the port type, operation, and messages.</li>
+<li>The Concrete Configuration page prompts you to define the binding, service, and port.</li>
 </ul>
 
 <p>You do <i>not</i> need to complete all three pages. 
@@ -45,12 +38,12 @@ Or you can fill out the Name and Location page and the Abstract Configuration pa
 
 <ol>
 
-  <li>In the Projects window, right-click the Process Files folder and choose New &gt; WSDL Document.</li>
+  <li>In the Projects window, right-click the <tt>Process Files</tt> node and choose New &gt; WSDL Document.</li>
 
   <li>In the Name and Location wizard page, do the following:</li>
 
   <ol type="a">
-    <li>Enter a name for the file. You cannot enter a name that already exists in the project.</li>
+    <li>Enter a name for the file. The name must comply with the rules for the <a href="wsdl_editor_ncname.html"><tt>NCName</tt></a> data type. You cannot enter a name that already exists in the project.</li>
     <li>(Optional) Change the default folder by clicking Browse and selecting the new folder.</li>
     <li>Enter the target namespace for the WSDL file. The target namespace will appear in the root element.</li>
     <li>Specify any XML Schema files that you want to import.</li>
@@ -64,12 +57,9 @@ Or you can fill out the Name and Location page and the Abstract Configuration pa
     <li>Enter a name for the port type.</li>
     <li>Enter a name for the operation.</li>
     <li>Select the category of operation.</li>
-    <li>Depending on the category of operation, 
-      you enter message information for the input, or both the input and output. 
-      Each message contains one or more logical parts. 
-      The Add and Remove buttons enable you to add and remove message parts.</li>
-    <li>(Optional) If the operation is a request-response operation, 
-      then you can enter message information for a fault.</li>
+    <li>Define the message that the operation receives as input.</li>
+    <li>If the operation is a request-response operation, then define the message that the operation sends as output.</li>
+    <li>(Optional) If the operation is a request-response operation, then you can optionally define a message that the operation sends as a fault.</li>
     <li>If you want to configure the concrete information from the wizard, then click Next. 
         Otherwise, click Finish.</li>
   </ol>
@@ -78,18 +68,8 @@ Or you can fill out the Name and Location page and the Abstract Configuration pa
 
   <ol type="a">
     <li>Enter a name for the binding.</li>
-    <li>Select the type of binding. 
-        The appropriate extensibility elements will be added to the WSDL file.</li>
-    <li>  
-
-  If you selected the HTTP binding type, then you must specify whether the binding uses the GET or POST verb and 
-  whether message parts are encoded into the HTTP request URI using the standard URI-encoding rules or using a replacement algorithm. 
-
-  If you selected the SOAP binding type, then you must specify whether the operations are RPC-oriented or document-oriented and 
-  how the message parts reference their types.
-
-  For other binding types, you typically have only one choice for the binding subtype.</li>
-
+    <li>Select the type of binding.</li>
+    <li>Select the binding subtype. The choices vary depending on the binding type.</li>
     <li>Enter a name for the service.</li>
     <li>Enter a name for the port.</li>
     <li>Click Finish.</li>
@@ -100,7 +80,7 @@ Or you can fill out the Name and Location page and the Abstract Configuration pa
 </ol>
 
 <ul class="note">
-  <li>If you selected the SOAP binding type, then the port's <tt>soap:address</tt> node includes a Location property.
+  <li>If you created a SOAP binding, then the port's <tt>soap:address</tt> node includes a Location property.
     The Location property specifies the address of the port. 
     The wizard generates a dummy value for the Location property. 
     The Location property must be unique; that is, the value must not conflict with any other WSDL files 
