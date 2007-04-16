@@ -120,18 +120,49 @@ fi
 
 #VisualWeb component
 ant -Dnb_all=$NB_ALL -f visualweb/ravebuild/build.xml > $VISUALWEB_BUILD_LOG 2>&1
+ERROR_CODE=$?
+
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - Can't build VISUALWEB"
+    exit $ERROR_CODE;
+fi
+
 
 #Mobility component
 ant -f mobility/build.xml build > $MOBILITY_BUILD_LOG 2>&1
+ERROR_CODE=$?
+
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - Can't build MOBILITY"
+    exit $ERROR_CODE;
+fi
 
 #UML component
 ant -f uml/build.xml build > $UML_BUILD_LOG 2>&1
+ERROR_CODE=$?
+
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - Can't build UML"
+    exit $ERROR_CODE;
+fi
 
 #Ruby scripting
 ant -f scripting/ruby/build.xml build > $RUBY_BUILD_LOG 2>&1
+ERROR_CODE=$?
+
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - Can't build RUBY"
+    exit $ERROR_CODE;
+fi
 
 #SOA component
 ant -f nbbuild/entpack/build.xml build > $SOA_BUILD_LOG 2>&1
+ERROR_CODE=$?
+
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - Can't build SOA"
+    exit $ERROR_CODE;
+fi
 
 
 #Remove the build helper files
