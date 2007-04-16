@@ -177,4 +177,19 @@ public final class Task {
         hash = 17 * hash + (this.resource != null ? this.resource.hashCode() : 0);
         return hash;
     }
+    
+    @Override
+    public String toString() {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append( "[" ); 
+        buffer.append( getResource() );
+        buffer.append( ", " ); 
+        buffer.append( getLine() );
+        buffer.append( ", " ); 
+        buffer.append( getDescription() );
+        buffer.append( ", " ); 
+        buffer.append( getGroup() );
+        buffer.append( "]" ); 
+        return buffer.toString();
+    }
 }
