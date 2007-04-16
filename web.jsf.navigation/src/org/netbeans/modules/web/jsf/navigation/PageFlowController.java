@@ -57,7 +57,6 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-
 /**
  *
  * @author joelle lam
@@ -100,7 +99,7 @@ public class PageFlowController {
         webFolder = project.getProjectDirectory().getFileObject(DEFAULT_DOC_BASE_FOLDER);
         webFiles = getAllProjectRelevantFilesObjects();
         
-        //        setupGraph();
+        
     }
     
     
@@ -156,10 +155,10 @@ public class PageFlowController {
      * Set From outcome by default.
      * @param source
      * @param target
-     * @param comp
+     * @param pinNode if null then it was not conntect to a pin.
      * @return
      */
-    public NavigationCase createLink(PageFlowNode source, PageFlowNode target, String comp) {
+    public NavigationCase createLink(PageFlowNode source, PageFlowNode target, PinNode pinNode) {
         
         String sourceName = source.getDisplayName();
         int caseNum = 1;
@@ -177,8 +176,14 @@ public class PageFlowController {
         } else {
             caseNum = getNewCaseNumber(navRule);
         }
+        String caseName = CASE_STRING + Integer.toString(caseNum);
         
-        navCase.setFromOutcome(CASE_STRING + Integer.toString(caseNum));
+        if( pinNode != null ){
+            pinNode.setFromOutcome(caseName);
+        }
+        navCase.setFromOutcome(caseName);
+        
+        
         navCase.setToViewId(target.getDisplayName());
         navRule.addNavigationCase(navCase);
         
@@ -190,7 +195,11 @@ public class PageFlowController {
         }
         
         return navCase;
-        
+    }
+    
+    public void updatePageItems( PageFlowNode pageNode ) {
+        view.resetNodeWidget(pageNode, true);
+        view.validateGraph();
     }
     
     private final static String CASE_STRING = "case";
@@ -200,7 +209,7 @@ public class PageFlowController {
         List<NavigationCase> navCases = navRule.getNavigationCases();
         for( NavigationCase navCase : navCases ){
             caseOutcomes.add(navCase.getFromOutcome());
-            caseOutcomes.add(navCase.getFromAction());
+            //            caseOutcomes.add(navCase.getFromAction());
         }
         
         int caseNum = 1;
@@ -234,13 +243,7 @@ public class PageFlowController {
     
     private Collection<FileObject> getAllProjectRelevantFilesObjects() {
         Collection<FileObject> webFiles = getProjectKnownFileOjbects(webFolder);
-        //        System.out.println("Web Files: " + webFiles);
         return webFiles;
-        
-        //Add a listener to the Filesystem that listens to fileDelete, fileCreated, etc.
-        //DataObject.find
-        //        DataObject.find(parentFolder)
-        
     }
     
     
@@ -373,14 +376,14 @@ public class PageFlowController {
         
         //Create all pages in the project...
         for( FileObject webFile : webFiles ) {
-            //DISPLAYNAME:
-            String webFileName = PageFlowNode.getFolderDisplayName(getWebFolder(), webFile);
-            //            String webFileName = webFile.getNameExt();
-            pages.remove(webFileName);
-            PageFlowNode node = null;
             try {
+                //DISPLAYNAME:
+                String webFileName = PageFlowNode.getFolderDisplayName(getWebFolder(), webFile);
+                PageFlowNode node = null;
                 node = createPageFlowNode((DataObject.find(webFile)).getNodeDelegate());
                 view.createNode(node, null, null);
+                //Do not remove the webFile page until it has been created with a data Node.  If the dataNode throws and exception, then it can be created with an Abstract node.
+                pages.remove(webFileName);
             } catch ( DataObjectNotFoundException ex ) {
                 ex.printStackTrace();
             } catch( ClassCastException cce ){
@@ -540,7 +543,7 @@ public class PageFlowController {
                 setupGraph();
                 //                }
             } else {
-                System.out.println("Did not catch this event.: " + ev.getPropertyName());
+//                System.out.println("Did not catch this event.: " + ev.getPropertyName());
                 setupGraph();
             }
         }
@@ -653,7 +656,7 @@ public class PageFlowController {
         Node tmpNode = new AbstractNode(Children.LEAF);
         tmpNode.setName(displayName);
         oldNode.replaceWrappedNode(tmpNode);  //Does this take care of pageName2Node?
-        view.resetNodeWidget(oldNode);
+        view.resetNodeWidget(oldNode, false);
     }
     
     private class WebFolderListener extends FileChangeAdapter{
@@ -686,7 +689,7 @@ public class PageFlowController {
                     PageFlowNode pageNode = pageName2Node.get(PageFlowNode.getFolderDisplayName(getWebFolder(), fileObj));
                     if( pageNode != null  ) {
                         pageNode.replaceWrappedNode(dataNode);
-                        view.resetNodeWidget(pageNode);
+                        view.resetNodeWidget(pageNode, false);
                         view.validateGraph();
                     } else if ( PageFlowUtilities.getInstance().getCurrentScope() == PageFlowUtilities.LBL_SCOPE_PROJECT ){
                         PageFlowNode node = createPageFlowNode(dataNode);
@@ -721,7 +724,7 @@ public class PageFlowController {
                     Node tmpNode = new AbstractNode(Children.LEAF);
                     tmpNode.setName(pageDisplayName);
                     oldNode.replaceWrappedNode(tmpNode);
-                    view.resetNodeWidget(oldNode);  /* If I add a listener to PageFlowNode, then I won't have to do this*/
+                    view.resetNodeWidget(oldNode, false);  /* If I add a listener to PageFlowNode, then I won't have to do this*/
                 } else {
                     pageName2Node.remove(oldNode);
                     view.removeNodeWithEdges(oldNode);
@@ -820,7 +823,7 @@ public class PageFlowController {
                     view.removeNodeWithEdges(oldNode);
                 }
                 abstractNode.replaceWrappedNode(newNodeDelegate);
-                view.resetNodeWidget(abstractNode);
+                view.resetNodeWidget(abstractNode, false);
             } else if ( oldNode != null ){
                 if( isPageInFacesConfig(oldDisplayName) ){
                     changeToAbstractNode(oldNode, oldDisplayName);
@@ -829,7 +832,7 @@ public class PageFlowController {
                         view.createNode(newNode, null, null);
                     }
                 } else {
-                    view.resetNodeWidget(oldNode);
+                    view.resetNodeWidget(oldNode, false);
                 }
             }
             view.validateGraph();

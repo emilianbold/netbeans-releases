@@ -32,8 +32,12 @@ import org.netbeans.api.visual.action.ConnectProvider;
 import org.netbeans.api.visual.action.ConnectorState;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
+import org.netbeans.modules.web.jsf.navigation.NavigationCaseNode;
 import org.netbeans.modules.web.jsf.navigation.PageFlowController;
 import org.netbeans.modules.web.jsf.navigation.PageFlowNode;
+import org.netbeans.modules.web.jsf.navigation.PageFlowUtilities;
+import org.netbeans.modules.web.jsf.navigation.PinNode;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 import org.openide.nodes.Node;
 
@@ -46,7 +50,7 @@ public class LinkCreateProvider implements ConnectProvider {
     private PageFlowScene graphScene;
     PageFlowNode source = null;
     PageFlowNode target = null;
-    String navComp = null;
+    PinNode pinNode = null;
     
     /**
      * Creates a new instance of LinkCreateProvider
@@ -61,15 +65,11 @@ public class LinkCreateProvider implements ConnectProvider {
         
         Object object = graphScene.findObject(sourceWidget);
         source = null;
-//        navComp = null;
-//        if (graphScene.isPin(object)){
-//            Pin pin = (Pin)object;
-//            source = pin.getPage();
-//            navComp = pin.getNavComp();
-//        } else if ( graphScene.isNode(object) ){
-//            source = (Page)object;
-//        }
-        if( graphScene.isNode(object)){
+        pinNode = null;
+        if (graphScene.isPin(object)){
+            pinNode = (PinNode)object;
+            source = pinNode.getPageFlowNode();
+        } else if ( graphScene.isNode(object) ){
             source = (PageFlowNode)object;
         }
         
@@ -108,7 +108,8 @@ public class LinkCreateProvider implements ConnectProvider {
     public void createConnection(Widget sourceWidget, Widget targetWidget) {
         PageFlowController pfc = graphScene.getPageFlowView().getPageFlowController();
         if ( pfc != null && sourceWidget != null && targetWidget != null ) {
-            pfc.createLink(source, target, navComp);
+            
+            NavigationCase caseNode = pfc.createLink(source, target, pinNode);
             graphScene.validate();
         }
 //            addEdge (edge);

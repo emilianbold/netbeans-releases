@@ -19,8 +19,11 @@
 package org.netbeans.modules.web.jsf.navigation.graph;
 
 import java.awt.Image;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.util.Arrays;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
 import org.netbeans.api.visual.model.ObjectSceneEvent;
@@ -45,7 +48,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.WeakHashMap;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
@@ -53,6 +55,9 @@ import javax.swing.border.Border;
 import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
 import org.netbeans.api.visual.action.WidgetAction.Chain;
+import org.netbeans.api.visual.graph.layout.GraphLayoutListener;
+import org.netbeans.api.visual.graph.layout.GridGraphLayout;
+import org.netbeans.api.visual.graph.layout.UniversalGraph;
 import org.netbeans.api.visual.model.ObjectSceneEventType;
 import org.netbeans.api.visual.model.ObjectSceneListener;
 import org.netbeans.api.visual.model.ObjectState;
@@ -106,7 +111,7 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
     private WidgetAction connectAction = ActionFactory.createConnectAction(connectionLayer, new LinkCreateProvider(this));
     private WidgetAction selectAction = ActionFactory.createSelectAction(new PageFlowSelectProvider());
     
-    private SceneLayout sceneLayout;
+    private SceneLayout sceneGraphLayout;
     private PageFlowView tc;
     
     /**
@@ -138,8 +143,37 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         //        actions.addAction(selectAction);
         
         
-        
+//        GridGraphLayout<PageFlowNode, NavigationCaseNode> gridGraphLayout = new GridGraphLayout<PageFlowNode, NavigationCaseNode> ();
+//        gridGraphLayout.addGraphLayoutListener(new GridGraphListener());
+//        sceneGraphLayout = LayoutFactory.createSceneGraphLayout(this, gridGraphLayout);
     }
+    
+//    /**
+//     *
+//     */
+//    public static class GridGraphListener implements GraphLayoutListener<PageFlowNode, NavigationCaseNode> {
+//        
+//        public void graphLayoutStarted(UniversalGraph<PageFlowNode, NavigationCaseNode> graph) {
+//            System.out.println("Layout started");
+//        }
+//        
+//        public void graphLayoutFinished(UniversalGraph<PageFlowNode, NavigationCaseNode> graph) {
+//            PageFlowScene scene = (PageFlowScene)graph.getScene();
+//            //           scene.saveLocations();
+//            System.out.println("Layout finished");
+//            
+//        }
+//        
+//        public void nodeLocationChanged(UniversalGraph<PageFlowNode, NavigationCaseNode> graph,
+//                PageFlowNode node,
+//                Point previousPreferredLocation,
+//                Point newPreferredLocation) {
+//            
+//            PageFlowScene scene = (PageFlowScene)graph.getScene();
+//            scene.saveLocation(node, newPreferredLocation);
+//            System.out.println("Node location changed: " + node + " -> " + newPreferredLocation);
+//        }
+//    }
     
     
     
@@ -217,29 +251,61 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         lblWidget.getActions().addAction(
                 ActionFactory.createInplaceEditorAction( new PageNodeTextFieldInplaceEditor(nodeWidget) ));
         
-        
-        
         mainLayer.addChild(nodeWidget);
         
         nodeWidget.getHeader().getActions().addAction(createObjectHoverAction());
         nodeWidget.getActions().addAction(selectAction);
         nodeWidget.getActions().addAction(moveAction);
-        nodeWidget.setMinimized(true);
         
-        Point point = locations.get(displayName);
-        if( point == null ) {
-            point = PageFlowLayoutUtilities.getPreferredNodePosition(this,true);
-        } else {
-            //Just in case there is another widget there. Relocate that one instead.
-            Widget widget = PageFlowLayoutUtilities.isWidgetAt(this, point);
-            if (widget != null ){
-                widget.setPreferredLocation(PageFlowLayoutUtilities.getPreferredNodePosition(this,true));
-            }
+        if ( node.getPinNodes().size() == 0 ){
+            nodeWidget.setMinimized(true);
         }
-        nodeWidget.setPreferredLocation(point);
+        
+        if ( !initialSetup ) {
+            pageFlowSceneGraphLayout.invokeLayout();
+            //            Point point = locations.get(displayName);
+            //            if( point == null ) {
+            //                point = PageFlowLayoutUtilities.getPreferredNodePosition(this,true);
+            //            } else {
+            //                //Just in case there is another widget there. Relocate that one instead.
+            //                Widget widget = PageFlowLayoutUtilities.isWidgetAt(this, point);
+            //                if (widget != null ){
+            //                    widget.setPreferredLocation(PageFlowLayoutUtilities.getPreferredNodePosition(this,true));
+            //                }
+            //            }
+            //            nodeWidget.setPreferredLocation(point);
+        }
         
         return nodeWidget;
     }
+    
+    public void saveLocations() {
+        pageFlowSceneGraphLayout.saveLocations();
+    }
+    public void saveLocation(PageFlowNode pageNode, String newDisplayName){
+        pageFlowSceneGraphLayout.saveLocation(pageNode,newDisplayName);
+    }
+    public void saveLocation(PageFlowNode pageNode, Point  newPoint){
+        pageFlowSceneGraphLayout.saveLocation(pageNode,newPoint);
+    }
+    private PageFlowSceneGraphLayout pageFlowSceneGraphLayout = new PageFlowSceneGraphLayout(this);
+    boolean initialSetup = true;
+    public boolean initLayout(){
+//        if( pageFlowSceneGraphLayout != null ) {
+            pageFlowSceneGraphLayout.invokeLayoutImmediately();
+            initialSetup = false;
+            return isValidated();
+//        } else {
+//            System.out.println("SceneGraphLayout is still null");
+//            return false;
+//        }
+    }
+    
+    
+    //    public boolean layoutGraph(){
+    //        pageFlowSceneGraphLayout.invokeLayout();
+    //    }
+    
     
     private Map<VMDNodeWidget,Point> nodeWidget2Point = new HashMap<VMDNodeWidget,Point>();
     
@@ -289,7 +355,7 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
     public PinNode getDefaultPin( PageFlowNode pageNode ){
         Collection<PinNode> pins = getNodePins(pageNode);
         if( pins == null ){
-            System.out.println("Node is null?");
+            System.err.println("Node is null?: " + pageNode);
         }
         for ( PinNode pin : pins ){
             if( pin.isDefault())
@@ -316,9 +382,13 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         VMDPinWidget widget = new VMDPinWidget(this);
         VMDNodeWidget nodeWidget = ((VMDNodeWidget) findWidget(node));
         nodeWidget.attachPinWidget(widget);
+        widget.setProperties(pinNode.getName(), Arrays.asList(pinNode.getIcon()));
         
-        widget.getActions().addAction(createObjectHoverAction());
-        widget.getActions().addAction(createSelectAction());
+        
+        Chain actions = widget.getActions();
+        actions.addAction(createObjectHoverAction());
+        actions.addAction(createSelectAction());
+        actions.addAction(connectAction);
         
         return widget;
     }
@@ -406,52 +476,7 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         return anchor;
     }
     
-    /**
-     * Invokes layout of the scene.
-     */
-    public void layoutScene() {
-        sceneLayout.invokeLayout();
-    }
     
-    /**
-     * Invokes the Layout Immediately.
-     */
-    public void layoutSceneImmediately() {
-        sceneLayout.invokeLayoutImmediately();
-    }
-    
-    private Map<String,Point> locations = new HashMap<String,Point>();
-    public void saveLocations() {
-        if( !newSavedLocations ){
-            locations.clear();
-        }
-        Collection<PageFlowNode> pageNodes = getNodes();
-        for( PageFlowNode pageNode : pageNodes ){
-            locations.put(pageNode.getDisplayName(), findWidget(pageNode).getLocation());
-        }
-        newSavedLocations=false;
-    }
-    
-    private boolean newSavedLocations = false;
-    public void saveLocation(PageFlowNode pageNode, String newDisplayName){
-        newSavedLocations=true;
-        Widget widget = findWidget(pageNode);
-        Point widgetPoint = widget.getLocation();
-        widget.setPreferredLocation(widgetPoint);
-        locations.put(newDisplayName, widgetPoint);
-    }
-    
-    /* Save For Later */
-    private boolean isLocationReserved( Point potentionalPoint ) {
-        Collection<Point> points = locations.values();
-        for( Point point : points ) {
-            Rectangle rect = new Rectangle( point.x, point.y, PageFlowLayoutUtilities.NODE_SIZE_APPROX_WIDTH, PageFlowLayoutUtilities.NODE_SIZE_APPROX_HEIGHT);
-            if( rect.contains(potentionalPoint)){
-                return true;
-            }
-        }
-        return false;
-    }
     
     private final class PageFlowSelectProvider implements SelectProvider {
         
