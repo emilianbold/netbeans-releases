@@ -46,7 +46,7 @@ import org.netbeans.installer.utils.system.NativeUtils;
  */
 public class ExeLauncher extends CommonLauncher {
     private static final String EXE_EXT = ".exe"; //NOI18N
-    private static final int EXE_STUB_FILL_SIZE = 85000; //NOI18N
+    private static final int EXE_STUB_FILL_SIZE = 90000;
     private static final long MAXDWORD = 4294967296L; // actually it is MAXDWORD + 1
     
     public static final String DEFAULT_WINDOWS_RESOURCE_SUFFIX =
@@ -82,7 +82,12 @@ public class ExeLauncher extends CommonLauncher {
             progress.setPercentage(Progress.START);
             fos = new FileOutputStream(outputFile,false);
             
-            long total = getBundledFilesSize();
+            long bundledSize = getBundledFilesSize();
+            long total = bundledSize;
+            if(stubFile!=null) {
+                total += FileUtils.getSize(stubFile);
+            }
+            
             addExeInitialStub(fos, progress, total);
             
             LogManager.log("Adding i18n..."); //NOI18N
@@ -110,15 +115,13 @@ public class ExeLauncher extends CommonLauncher {
             LogManager.log("TestJVM Class : " +   //NOI18N
                     testJVMClass);
             
-            //java locations that the launcher should see at first
-            LogManager.log("Adding JVM external locations and bundled files"); //NOI18N
-            addData(fos, jvms, progress, total);
-            
             // add java compatibility properties number
             addNumber(fos, new Long("" + compatibleJava.size()).longValue());
-            
             addJavaCompatibleProperties(fos);
             
+            //add overall bundled number and size
+            addNumber(fos, getBundledFilesNumber());
+            addNumber(fos, bundledSize, true);
             
             //add testJVM section
             if(testJVMFile!=null) {
@@ -127,6 +130,10 @@ public class ExeLauncher extends CommonLauncher {
                 addFileSection(fos, TEST_JVM_RESOURCE, progress);
             }
             
+            //java locations that the launcher should see at first
+            LogManager.log("Adding JVM external locations and bundled files"); //NOI18N
+            addData(fos, jvms, progress, total);
+            
             // number of bundled and external jars
             LogManager.log("Adding bundled and external jars"); //NOI18N
             addData(fos, jars, progress, total);
@@ -134,7 +141,9 @@ public class ExeLauncher extends CommonLauncher {
         } catch (IOException ex) {
             LogManager.log(ex);
             try {
-                fos.close();
+                if(fos!=null) {
+                    fos.close();
+                }
             } catch (IOException e) {
                 LogManager.log(e);
             }
@@ -186,31 +195,6 @@ public class ExeLauncher extends CommonLauncher {
         return str;
     }
     
-    private long getBundledFilesSize() {
-        long total = 0;
-        
-        if(stubFile!=null) {
-            total += FileUtils.getSize(stubFile);
-        }
-        for (LauncherResource jvmFile : jvms) {
-            if ( jvmFile .isBundled()) {
-                File file = new File(jvmFile.getPath());
-                total += FileUtils.getSize(file);
-            }
-        }
-        if(testJVMFile!=null) {
-            if(testJVMFile.isBundled()) {
-                total += FileUtils.getSize(new File(testJVMFile.getPath()));
-            }
-        }
-        for (LauncherResource jarFile : jars) {
-            if ( jarFile.isBundled()) {
-                File file = new File(jarFile.getPath());
-                total += FileUtils.getSize(file);
-            }
-        }
-        return total;
-    }
     private void addExeInitialStub(FileOutputStream fos, Progress progress, long total) throws IOException {
         long stubSize;
         if(stubFile!=null)  {

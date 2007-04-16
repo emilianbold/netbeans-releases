@@ -23,6 +23,7 @@
 #include <windows.h>
 #include <stdarg.h>
 #include "Types.h"
+#include "Errors.h"
 #ifdef	__cplusplus
 extern "C" {
 #endif
@@ -31,13 +32,14 @@ extern "C" {
 
 #define  JVM_NOT_FOUND_PROP           "nlw.jvm.notfoundmessage"
 #define  JVM_USER_DEFINED_ERROR_PROP  "nlw.jvm.usererror"
+    
 #define  JVM_UNSUPPORTED_VERSION_PROP "nlw.jvm.unsupportedversion"
 #define  NOT_ENOUGH_FREE_SPACE_PROP   "nlw.freespace"
 #define  CANT_CREATE_TEMP_DIR_PROP    "nlw.tmpdir"
 #define  INTEGRITY_ERROR_PROP         "nlw.integrity"
 #define  OUTPUT_ERROR_PROP            "nlw.output.error"
 #define  JAVA_PROCESS_ERROR_PROP      "nlw.java.process.error"
-    
+   
 #define  ARG_OUTPUT_PROPERTY          "nlw.arg.output"
 #define  ARG_JAVA_PROP                "nlw.arg.javahome"
 #define  ARG_DEBUG_PROP               "nlw.arg.debug"
@@ -55,15 +57,14 @@ extern "C" {
 #define MSG_RUNNING           "nlw.msg.running"
 #define MSG_TITLE             "nlw.msg.title"    
 #define MSG_MESSAGEBOX_TITLE  "nlw.msg.messagebox.title"
-    
+#define MSG_PROGRESS_TITLE    "nlw.msg.progress.title"
+
+#define EXIT_BUTTON_PROP     "nlw.msg.button.error"    
 
     
 #define FREE(x) { if((x)!=NULL) {free(x); (x)=NULL;}}
     
-    typedef struct _string {
-        char * bytes;
-        DWORD length;
-    } SizedString ;
+    
     
     
     typedef struct _streamstring {
@@ -72,18 +73,11 @@ extern "C" {
         struct _streamstring * next;
     } StreamString;
     
-    typedef struct _i18nstrings {
-        char  ** properties; //property name as ASCII
-        WCHAR ** strings; //value as UNICODE
-    } I18NStrings;
+    void freeI18NMessages(LauncherProperties * props);
     
-    
-    extern I18NStrings * i18nMessages;
-    extern DWORD I18N_PROPERTIES_NUMBER;
-    
-    void initializeI18NMessages();
-    WCHAR * getI18nProperty(char * name);
-    WCHAR * getDefaultString(char *name);
+    void getI18nPropertyTitleDetail(LauncherProperties * props, const char * name, WCHAR ** title, WCHAR ** detail);
+    const WCHAR * getI18nProperty(LauncherProperties * props, const char * name);
+    WCHAR * getDefaultString(const char *name);
     
     WCHAR * addString(WCHAR *  initial, WCHAR *addString, long number, WCHAR * totalWCHARs, WCHAR * capacity);
     char *  appendStringN(char *  initial, DWORD initialLength, const char * addString, DWORD addStringLength);
@@ -101,11 +95,11 @@ extern "C" {
     WCHAR *createWCHAR(SizedString * sz);
     
     SizedString * createSizedString();
-    
+    double int64ttoDouble(int64t*);
     char * int64ttoCHAR(int64t*);
     WCHAR * int64ttoWCHAR(int64t*);
     char * DWORDtoCHAR(DWORD);
-    WCHAR * DWORDtoWCHAR(DWORD);
+    WCHAR * DWORDtoWCHAR(DWORD);    
     
     char * doubleToChar(double dl);
     
@@ -128,6 +122,8 @@ extern "C" {
     
     WCHAR * getErrorDescription(DWORD dw);
     WCHAR * formatMessageW(const DWORD varArgsNumber, const WCHAR* message, ...);
+    
+    DWORD isOK(LauncherProperties * props);
 #ifdef	__cplusplus
 }
 #endif

@@ -33,17 +33,13 @@ extern "C" {
     extern const WCHAR * NEW_LINE;
     
     LauncherProperties * createLauncherProperties();
-    
     void freeLauncherProperties(LauncherProperties ** props);
+
+    DWORD isSilent(LauncherProperties * props);
     
-    void setRunningMode(WCHARList * commandLine);
-    void setSpaceChecking(WCHARList * commandLine);
+    void processLauncher(LauncherProperties * props);
     
-    DWORD isSilent();
-    
-    DWORD processLauncher(DWORD * status, WCHARList * commandLine);
-    
-    void resolvePath (LauncherProperties * props, LauncherResource * file);
+    void resolvePath(LauncherProperties * props, LauncherResource * file);
     
     void appendCommandLineArgument( WCHAR ** command, const WCHAR * arg);
     

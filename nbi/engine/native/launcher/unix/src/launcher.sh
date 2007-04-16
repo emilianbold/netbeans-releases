@@ -81,14 +81,17 @@ MSG_ERROR_JVM_UNCOMPATIBLE="nlu.jvm.uncompatible"
 MSG_ERROR_INTEGRITY="nlu.integrity"
 MSG_ERROR_FREESPACE="nlu.freespace"
 MSG_RUNNING="nlu.running"
+MSG_STARTING="nlu.starting"
 MSG_EXTRACTING="nlu.extracting"
 MSG_JVM_SEARCH="nlu.jvm.search"
 MSG_ARG_JAVAHOME="nlu.arg.javahome"
 MSG_ARG_DEBUG="nlu.arg.debug"
+MSG_ARG_OUTPUT="nlu.arg.output"
 MSG_ARG_EXTRACT="nlu.arg.extract"
 MSG_ARG_TEMPDIR="nlu.arg.tempdir"
 MSG_ARG_CPA="nlu.arg.cpa"
 MSG_ARG_CPP="nlu.arg.cpp"
+MSG_ARG_DISABLE_FREE_SPACE_CHECK="nlw.arg.disable.space.check"
 MSG_ARG_HELP="nlu.arg.help"
 MSG_USAGE="nlu.msg.usage"
 
@@ -101,12 +104,19 @@ entryPoint() {
 	if [ 1 -eq $SHOW_HELP_ONLY ] ; then
 		showHelp
 	fi
+
         createTempDirectory
-        extractBundledData     
+	checkFreeSpace "$TOTAL_BUNDLED_FILES_SIZE" "$LAUNCHER_TEMP"	
+
+        extractJVMData
+	if [ 0 -eq $EXTRACT_ONLY ] ; then 
+            searchJava
+	fi
+
+	extractBundledData
 	verifyIntegrity
 
 	if [ 0 -eq $EXTRACT_ONLY ] ; then 
-            searchJava
 	    executeMainClass
 	else 
 	    exitProgram $ERROR_OK
@@ -251,6 +261,7 @@ setLauncherLocale() {        index=0
 
         
         debug "Final Launcher Locale : $LAUNCHER_LOCALE"
+	message "$MSG_STARTING"
 }
 
 ifLess() {
@@ -361,10 +372,12 @@ showHelp() {
 	msg1=`message "$MSG_ARG_JAVAHOME $ARG_JAVAHOME"`
 	msg2=`message "$MSG_ARG_TEMPDIR $ARG_TEMPDIR"`
 	msg3=`message "$MSG_ARG_EXTRACT $ARG_EXTRACT"`
-	msg4=`message "$MSG_ARG_DEBUG $ARG_DEBUG"`
-	msg5=`message "$MSG_ARG_CPA $ARG_CLASSPATHA"`
-	msg6=`message "$MSG_ARG_CPP $ARG_CLASSPATHP"`
-	msg7=`message "$MSG_ARG_HELP $ARG_HELP"`
+	msg4=`message "$MSG_ARG_DEBUG $ARG_OUTPUT"`
+	msg5=`message "$MSG_ARG_DEBUG $ARG_DEBUG"`
+	msg6=`message "$MSG_ARG_CPA $ARG_CLASSPATHA"`
+	msg7=`message "$MSG_ARG_CPP $ARG_CLASSPATHP"`
+	msg8=`message "$MSG_ARG_DISABLE_FREE_SPACE_CHECK"`
+	msg9=`message "$MSG_ARG_HELP $ARG_HELP"`
 	out "$msg0"
 	out "$msg1"
 	out "$msg2"
@@ -373,6 +386,8 @@ showHelp() {
 	out "$msg5"
 	out "$msg6"
 	out "$msg7"
+	out "$msg8"
+	out "$msg9"
 	exitProgram $ERROR_OK
 }
 
@@ -456,16 +471,17 @@ createTempDirectory() {
         fi
         debug "Using subdir $LAUNCHER_TEMP_RUNNING for extracting data"
 }
-extractBundledData() {
-        debug "Extracting data..."
-	message "$MSG_EXTRACTING"
+extractJVMData() {
 	debug "Extracting testJVM file data..."
         extractTestJVMFile
-	debug "Extracting bundled jars  data..."
-        extractJars	
 	debug "Extracting bundled JVMs ..."
-	extractJVMFiles
-        debug "Extracting finished..."
+	extractJVMFiles        
+}
+extractBundledData() {
+	message "$MSG_EXTRACTING"
+	debug "Extracting bundled jars  data..."
+	extractJars		
+	debug "Extracting finished..."
 }
 
 setTestJVMClasspath() {
@@ -620,7 +636,7 @@ extractFile() {
 
 	if [ 0 -eq $diskSpaceCheck ] ; then
 		dir=`dirname "$name"`
-		message "$MSG_ERROR_FREESPACE" "$dir" "$ARG_TEMPDIR"	
+		message "$MSG_ERROR_FREESPACE" "$size" "$dir" "$ARG_TEMPDIR"	
 		exitProgram $ERROR_FREESPACE
 	fi
 
@@ -662,7 +678,7 @@ searchJava() {
 			    		message "$MSG_ERROR_JVM_UNCOMPATIBLE" "$LAUNCHER_JAVA" "$ARG_JAVAHOME"
 			    		exitProgram $ERROR_JVM_UNCOMPATIBLE
 				elif [ $VERIFY_NOJAVA -eq $verifyResult ] ; then
-					message "$MSG_ERROR_USER_ERROR" "$LAUNCHER_JAVA" "$ARG_JAVAHOME"
+					message "$MSG_ERROR_USER_ERROR" "$LAUNCHER_JAVA"
 			    		exitProgram $ERROR_JVM_NOT_FOUND
 				fi
                 	fi
@@ -1042,6 +1058,19 @@ checkFreeSpace() {
 		else 
 		        debug "... disk space check FAILED"
 		fi
+	fi
+	if [ 0 -eq $diskSpaceCheck ] ; then
+		mbDownSize=`expr "$size" / 1024 / 1024`
+		mbUpSize=`expr "$size" / 1024 / 1024 + 1`
+		mbSize=`expr "$mbDownSize" \* 1024 \* 1024`
+		if [ $size -ne $mbSize ] ; then	
+			mbSize="$mbUpSize"
+		else
+			mbSize="$mbDownSize"
+		fi
+		
+		message "$MSG_ERROR_FREESPACE" "$LAUNCHER_TEMP" "$mbSize" "$ARG_TEMPDIR"	
+		exitProgram $ERROR_FREESPACE
 	fi
 }
 

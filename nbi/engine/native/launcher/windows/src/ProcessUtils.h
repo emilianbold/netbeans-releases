@@ -23,8 +23,10 @@
 #include <windows.h>
 #include <stdio.h>
 #include "Errors.h"
+#include "Types.h"
 #include "ExtractUtils.h"
 #include "FileUtils.h"
+
 
 
 #ifdef	__cplusplus
@@ -37,7 +39,7 @@ extern "C" {
     
     char * readHandle(HANDLE hRead);
     
-    DWORD executeCommand(DWORD * status, WCHAR * command, WCHAR * dir, DWORD timeLimitMillis, HANDLE hWriteOutput, HANDLE hWriteError, DWORD priority);
+    void executeCommand(LauncherProperties * props, WCHAR * command, WCHAR * dir, DWORD timeLimitMillis, HANDLE hWriteOutput, HANDLE hWriteError, DWORD priority);
     
 #ifdef	__cplusplus
 }

@@ -17,6 +17,7 @@
  * Microsystems, Inc. All Rights Reserved.
  *
  */
+#include <wchar.h>
 #include <windows.h>
 #include <winnls.h>
 #include <stdio.h>
@@ -30,39 +31,52 @@
 //        It is modified to store returning string length
 // addString - additional string
 //
-I18NStrings * i18nMessages;
 
-void freeI18NMessages() {
-    if(i18nMessages!=NULL) {
+
+void freeI18NMessages(LauncherProperties * props) {
+    if(props->i18nMessages!=NULL) {
         DWORD i=0;
-        for(i=0;i<I18N_PROPERTIES_NUMBER;i++) {
-            FREE(i18nMessages->properties[i]);
-            FREE(i18nMessages->strings[i]);
-        }
-        FREE(i18nMessages->properties);
-        FREE(i18nMessages->strings);
-        free(i18nMessages);
+        
+        for(i=0;i<props->I18N_PROPERTIES_NUMBER;i++) {
+            FREE(props->i18nMessages->properties[i]);
+            FREE(props->i18nMessages->strings[i]);
+        }        
+        FREE(props->i18nMessages->properties);        
+        FREE(props->i18nMessages->strings);        
+        free(props->i18nMessages);
     }
 }
 
-WCHAR * getI18nProperty(char * name) {
+void getI18nPropertyTitleDetail(LauncherProperties * props, const char * name, WCHAR ** title, WCHAR ** detail) {
+    const WCHAR * prop = getI18nProperty(props,name);    
+    WCHAR * detailStringSep = wcsstr(prop, L"\n");
+    
+    if(detailStringSep == NULL) {
+        *title = appendStringW(NULL, prop);
+        *detail = NULL;
+    } else {
+        DWORD dif = getLengthW(prop) - getLengthW(detailStringSep);
+        *title = appendStringNW(NULL, 0, prop, dif);
+        *detail = appendStringW(NULL, prop + (dif + 1));
+    }    
+}
+const WCHAR * getI18nProperty(LauncherProperties * props, const char * name) {
     if(name==NULL) return NULL;
-    if(name!=NULL) {
+    if(name!=NULL && props->i18nMessages!=NULL) {
         DWORD i;
-        for(i=0;i<I18N_PROPERTIES_NUMBER;i++) {
-            char * pr = i18nMessages->properties[i];
+        for(i=0;i<props->I18N_PROPERTIES_NUMBER;i++) {
+            char * pr = props->i18nMessages->properties[i];
             if(pr!=NULL) { // hope so it`s true
                 if(strcmp(name, pr)==0) {
-                    return i18nMessages->strings[i];
+                    return props->i18nMessages->strings[i];
                 }
             }
         }
     }
-    
     return getDefaultString(name);
 }
 
-WCHAR * getDefaultString(char *name) {
+WCHAR * getDefaultString(const char *name) {
     if(strcmp(name, JVM_NOT_FOUND_PROP)==0) {
         return L"Can`t find suitable JVM. Specify it with %s argument";
     } else if(strcmp(name, NOT_ENOUGH_FREE_SPACE_PROP)==0) {
@@ -109,6 +123,10 @@ WCHAR * getDefaultString(char *name) {
         return L"Setting command options...";
     } else if(strcmp(name, MSG_MESSAGEBOX_TITLE)==0) {
         return L"Message";
+    } else if(strcmp(name, MSG_PROGRESS_TITLE)==0) {
+        return L"Running";
+    } else if(strcmp(name, EXIT_BUTTON_PROP)==0) {
+        return L"Exit";
     }
     return NULL;
 }
@@ -192,12 +210,16 @@ WCHAR * DWORDtoWCHAR(DWORD dw) {
     return str;
 }
 
+double int64ttoDouble(int64t * value) {
+    return (((double) value->High * ((double)(MAXDWORD) + 1)) + ((double) value->Low));
+}
+
 char * int64ttoCHAR(int64t* value) {
     if(value->High==0) {
         return DWORDtoCHAR(value->Low);
     } else {
         char * str = newpChar(34);
-        double d = ((double) value->High * (MAXDWORD + 1)) + ((double) value->Low);
+        double d = int64ttoDouble(value);
         sprintf(str, "%.0lf", d);
         return str;
     }
@@ -207,12 +229,11 @@ WCHAR * int64ttoWCHAR(int64t*value) {
         return DWORDtoWCHAR(value->Low);
     } else {
         WCHAR * str = newpWCHAR(34);
-        double d = ((double) value->High * (MAXDWORD + 1)) + ((double) value->Low);
-        wsprintfW(str, L"%.0lf", d);
+        double d = int64ttoDouble(value);
+        wsprintfW(str, L"%.0Lf", d);
         return str;
     }
 }
-
 
 char * doubleToChar(double dl) {
     char * str = newpChar(17);
@@ -438,4 +459,8 @@ WCHAR * formatMessageW(const DWORD varArgsNumber, const WCHAR* message, ...) {
     wvsprintfW(result, message, ap);
     va_end(ap);
     return result;
+}
+
+DWORD isOK(LauncherProperties * props) {
+    return (props->status == ERROR_OK);
 }

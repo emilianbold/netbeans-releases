@@ -38,7 +38,7 @@ extern "C" {
 
 WCHAR * getJavaResource(WCHAR * location, const WCHAR * suffix);
 
-DWORD getJavaProperties(WCHAR * location, LauncherProperties * props, JavaProperties ** javaProps);
+void getJavaProperties(WCHAR * location, LauncherProperties * props, JavaProperties ** javaProps);
 
 void findSystemJava(LauncherProperties * props);
 
@@ -48,7 +48,7 @@ char compareJavaVersion(JavaVersion * first, JavaVersion * second);
 
 DWORD isJavaCompatible(JavaProperties *currentJava, JavaCompatible ** compatibleJava, DWORD number);
 
-void printJavaProperties(JavaProperties * javaProps);
+void printJavaProperties(LauncherProperties * props, JavaProperties * javaProps);
 
 void freeJavaProperties(JavaProperties ** props);
 

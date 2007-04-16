@@ -26,17 +26,24 @@
 extern "C" {
 #endif
     
-void addProgressPosition(DWORD add);
-void setProgressRange(double size);
-void setDetailString(WCHAR * message);
-void setTitleString(WCHAR * message);
+void addProgressPosition(LauncherProperties *props,DWORD add);
+void setProgressRange(LauncherProperties *props, int64t * size);
+void setErrorDetailString(LauncherProperties *props,const WCHAR * message);
+void setErrorTitleString(LauncherProperties *props,const WCHAR * message);
+void setButtonString(LauncherProperties *props,const WCHAR * message);
+void setProgressTitleString(LauncherProperties *props,const WCHAR * message);
 
-void showLauncherWindows();
-void closeLauncherWindows();
-void hideLauncherWindows();
+void showLauncherWindows(LauncherProperties *props);
+void closeLauncherWindows(LauncherProperties *props);
+void hideLauncherWindows(LauncherProperties *props);
 
-void showMessageW(const DWORD number, const WCHAR* message,...);
-void showMessageA(const DWORD varArgsNumber, const char * message, ...);
+void hide(LauncherProperties *props,HWND hwnd);
+void show(LauncherProperties *props,HWND hwnd);
+
+void showErrorW(LauncherProperties *props, const char * error, const DWORD varArgsNumber, ...);
+
+void showMessageW(LauncherProperties *props,const WCHAR* message, const DWORD number, ...);
+void showMessageA(LauncherProperties *props,const char * message, const DWORD varArgsNumber, ...);
 
 #ifdef	__cplusplus
 }

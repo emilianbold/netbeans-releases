@@ -270,4 +270,45 @@ public abstract class CommonLauncher extends Launcher {
     protected String getJavaCounter(int counter) {
         return "{" + counter + "}";
     }
+    protected long getBundledFilesSize() {
+        long total = 0;
+        
+        for (LauncherResource jvmFile : jvms) {
+            if ( jvmFile .isBundled()) {
+                File file = new File(jvmFile.getPath());
+                total += FileUtils.getSize(file);
+            }
+        }
+        if(testJVMFile!=null) {
+            if(testJVMFile.isBundled()) {
+                total += FileUtils.getSize(new File(testJVMFile.getPath()));
+            }
+        } else {
+            total += ResourceUtils.getResourceSize(TEST_JVM_RESOURCE);
+        }
+        for (LauncherResource jarFile : jars) {
+            if ( jarFile.isBundled()) {
+                File file = new File(jarFile.getPath());
+                total += FileUtils.getSize(file);
+            }
+        }
+        return total;
+    }
+    protected long getBundledFilesNumber() {
+        long total=0;
+        for (LauncherResource jvmFile : jvms) {
+            if ( jvmFile .isBundled()) {
+                total ++;
+            }
+        }
+        if(testJVMFile==null || testJVMFile.isBundled()) {
+            total++;
+        }
+        for (LauncherResource jarFile : jars) {
+            if ( jarFile.isBundled()) {
+                total ++;
+            }
+        }
+        return total;
+    }
 }

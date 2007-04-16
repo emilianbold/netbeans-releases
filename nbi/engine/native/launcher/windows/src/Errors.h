@@ -33,7 +33,9 @@ extern "C" {
 #define ERROR_JVM_NOT_FOUND                 1004
 #define ERROR_ON_EXECUTE_PROCESS            1005
 #define ERROR_PROCESS_TIMEOUT               1006
+#define ERROR_USER_TERMINATED               1007
     
+#define EXIT_CODE_EVENTS_INITIALIZATION_ERROR 1022
 #define EXIT_CODE_GUI_INITIALIZATION_ERROR  1023
 #define EXIT_CODE_STUB                      1024
 #define EXIT_CODE_SYSTEM_ERROR              1025

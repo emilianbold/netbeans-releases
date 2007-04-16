@@ -52,11 +52,8 @@ const WCHAR * NEW_LINE            = L"\n";
 const WCHAR * CLASSPATH_SEPARATOR = L";";
 const WCHAR * CLASS_SUFFIX = L".class";
 
-DWORD I18N_PROPERTIES_NUMBER;
-
-DWORD silentMode = 0;
-
-DWORD getArgumentIndex(WCHARList *cmd, const WCHAR *arg, DWORD removeArgument) {
+DWORD getArgumentIndex(LauncherProperties * props, const WCHAR *arg, DWORD removeArgument) {
+    WCHARList *cmd = props->commandLine;
     DWORD i=0;
     for(i=0;i<cmd->size;i++) {
         if(cmd->items[i]!=NULL) { // argument has not been cleaned yet
@@ -69,10 +66,15 @@ DWORD getArgumentIndex(WCHARList *cmd, const WCHAR *arg, DWORD removeArgument) {
     return cmd->size;
 }
 
-WCHAR * getArgumentValue(WCHARList *cmd, const WCHAR *arg, DWORD removeArgument) {
+DWORD argumentExists(LauncherProperties * props, const WCHAR *arg, DWORD removeArgument) {
+    DWORD index = getArgumentIndex(props, arg, removeArgument);
+    return (index < props->commandLine->size);
     
+}
+WCHAR * getArgumentValue(LauncherProperties * props, const WCHAR *arg, DWORD removeArgument) {
+    WCHARList *cmd = props->commandLine;
     WCHAR * result = NULL;
-    DWORD i = getArgumentIndex(cmd, arg, removeArgument);
+    DWORD i = getArgumentIndex(props, arg, removeArgument);
     if((i+1) < cmd->size) { //we have at least one more argument
         result = appendStringW(NULL, cmd->items[i+1]);
         if(removeArgument) FREE(cmd->items[i+1]);
@@ -82,177 +84,159 @@ WCHAR * getArgumentValue(WCHARList *cmd, const WCHAR *arg, DWORD removeArgument)
 }
 
 
-void setOutputFile(WCHAR *path) {
+void setOutputFile(LauncherProperties * props, WCHAR *path) {
     HANDLE out = INVALID_HANDLE_VALUE ;
     
     out = CreateFileW(path, GENERIC_WRITE | GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, 0, CREATE_ALWAYS, 0, 0);
     if(out!=INVALID_HANDLE_VALUE) {
         SetStdHandle(STD_OUTPUT_HANDLE, out);
         SetStdHandle(STD_ERROR_HANDLE, out);
-        setStdoutHandle(out);
-        setStderrHandle(out);
-        writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "[CMD Argument] Redirect output to file : ", 0);
-        writeMessageW(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), path, 1);
+        props->stdoutHandle = out;
+        props->stderrHandle = out;
+        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "[CMD Argument] Redirect output to file : ", 0);
+        writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, path, 1);
     } else  {
-        writeErrorA(OUTPUT_LEVEL_DEBUG, getStderrHandle(), "[CMD Argument] Can`t create file: ", path, GetLastError());
+        props->status = ERROR_INPUTOUPUT;
+        writeErrorA(props, OUTPUT_LEVEL_DEBUG, 1, "[CMD Argument] Can`t create file: ", path, GetLastError());
+        WCHAR * err = getErrorDescription(GetLastError());
+        showMessageW(props, L"Can`t redirect output to file!\n\nRequested file : %s\n%s", 2, path, err);
+        FREE(err);        
     }
 }
 
-void setOutput(WCHARList *cmd) {
-    if(getArgumentIndex(cmd, debugArg, 1) < cmd->size) {
-        outputLevel = OUTPUT_LEVEL_DEBUG;
-    }
-    
-    WCHAR * file = getArgumentValue(cmd, outputFileArg, 1);
+void setOutput(LauncherProperties * props) {
+    WCHAR * file = props->userDefinedOutput;
     if(file!=NULL) {
         DWORD exists = fileExists(file);
         if((exists && !isDirectory(file) )|| !exists) {
-            setOutputFile(file);
+            setOutputFile(props, file);
         }
-        FREE(file);
     }
-    writeMessageA(OUTPUT_LEVEL_NORMAL, getStdoutHandle(),
-    (outputLevel == OUTPUT_LEVEL_DEBUG) ?
+    
+    writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0,
+    (props->outputLevel == OUTPUT_LEVEL_DEBUG) ?
     "[CMD Argument] Using debug output." :
         "Using normal output." , 1);
         
 }
 
-void setFreeSpaceChecking(WCHARList * commandLine) {
-    if(getArgumentIndex(commandLine, nospaceCheckArg, 1) < commandLine->size) {
-        checkForFreeSpace = 0;
-    } else {
-        checkForFreeSpace = 1;
-    }
-}
 
-
-
-
-void loadLocalizationStrings(DWORD * status, HANDLE hFileRead, DWORD bufsize, SizedString * restOfBytes) {
+void loadLocalizationStrings(LauncherProperties *props) {
     
     // load localized messages
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "Loading I18N Strings.", 1);
-    loadI18NStrings(status, hFileRead, restOfBytes, bufsize);
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "Loading I18N Strings.", 1);
+    loadI18NStrings(props);
     
-    if((*status)!=ERROR_OK) {
-        writeMessageA(OUTPUT_LEVEL_NORMAL, getStderrHandle(), "Error! Can`t load i18n strings!!", 1);
-        WCHAR * exe = getExeName();
-        showMessageW(1, getI18nProperty(INTEGRITY_ERROR_PROP), exe);
-        FREE(exe);
+    if(!isOK(props)) {
+        writeMessageA(props, OUTPUT_LEVEL_NORMAL, 1, "Error! Can`t load i18n strings!!", 1);
+        showErrorW(props, INTEGRITY_ERROR_PROP, 1, props->exePath);
     }
 }
 
-void createTMPDir(DWORD * status, LauncherProperties * props,  WCHARList *cmd) {
-    WCHAR * tmpDirectory = NULL;
+void createTMPDir(LauncherProperties * props) {    
+    WCHAR * argTempDir = NULL;;
     DWORD createRndSubDir = 1;
     
-    WCHAR * argTempDir = getArgumentValue(cmd, extractArg, 1);
-    
-    if(argTempDir!=NULL) {
-        writeMessageA(OUTPUT_LEVEL_DEBUG, getStderrHandle(), "[CMD Argument] Extract data to directory: ", 0);
-        writeMessageW(OUTPUT_LEVEL_DEBUG, getStderrHandle(), argTempDir, 2);
-        props->extractOnly = 1;
+    if((argTempDir = props->userDefinedExtractDir) !=NULL) {
+        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "[CMD Argument] Extract data to directory: ", 0);
+        writeMessageW(props, OUTPUT_LEVEL_DEBUG, 1, argTempDir, 1);
         createRndSubDir = 0;
-    } else {
-        // check if have --tempdir argument specified
-        argTempDir = getArgumentValue(cmd, tempdirArg, 1);
-        if(argTempDir!=NULL) {
-            writeMessageA(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), "[CMD Argument] Using tmp directory: ", 0);
-            writeMessageW(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), argTempDir, 2);
-        }
-        
+    } else if((argTempDir = props->userDefinedTempDir) !=NULL) {
+        writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "[CMD Argument] Using tmp directory: ", 0);
+        writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, argTempDir, 1);
     }
     
-    createTempDirectory(status, argTempDir, &tmpDirectory, createRndSubDir);
-    if((*status)!=ERROR_OK) {
-        showMessageW(1, getI18nProperty(CANT_CREATE_TEMP_DIR_PROP), tmpDirectory);
-    }
-    FREE(argTempDir);
-    props->tmpDir = tmpDirectory;
+    createTempDirectory(props, argTempDir, createRndSubDir);
+    if(!isOK(props)) {
+        showErrorW(props, CANT_CREATE_TEMP_DIR_PROP, 1, props->tmpDir);
+    }    
 }
 
-void extract(DWORD * status, LauncherProperties *props, HANDLE hFileRead, DWORD bufsize, SizedString * restOfBytes) {
-    if((*status)!=ERROR_OK) return;
-    writeMessageA(OUTPUT_LEVEL_NORMAL, getStderrHandle(), "Starting extracting data", 1);
-    extractData(status, hFileRead, restOfBytes, bufsize, props);
-    
-    if((*status) == ERROR_FREESPACE) {
-        showMessageW(2, getI18nProperty(NOT_ENOUGH_FREE_SPACE_PROP), props->tmpDir, tempdirArg);
+void checkExtractionStatus(LauncherProperties *props) {
+    if(props->status == ERROR_FREESPACE) {
+        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "Error! Not enought free space !", 1);
+        double d = int64ttoDouble(props->bundledSize) / (1024.0 * 1024.0) + 1.0;
+        DWORD dw = (DWORD) d;
+        WCHAR * size = DWORDtoWCHAR(dw);
+        showErrorW(props, NOT_ENOUGH_FREE_SPACE_PROP, 2, size, tempdirArg);
+        FREE(size);
     }
-    else if((*status) == ERROR_INTEGRITY) {
-        writeMessageA(OUTPUT_LEVEL_DEBUG, getStderrHandle(), "Error! Can`t extract data from bundle. Seems to be integrirty error!", 1);
-        showMessageW(1, getI18nProperty(INTEGRITY_ERROR_PROP), props->exePath);
+    else if(props->status == ERROR_INTEGRITY) {
+        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "Error! Can`t extract data from bundle. Seems to be integrirty error!", 1);
+        showErrorW(props, INTEGRITY_ERROR_PROP, 1, props->exePath);
     }
-    writeMessageA(OUTPUT_LEVEL_NORMAL, getStderrHandle(), "... extracting data finished", 1);
-    return;
 }
 
 
-void trySetCompatibleJava(DWORD * status, WCHAR * location, LauncherProperties * props) {
+void trySetCompatibleJava(WCHAR * location, LauncherProperties * props) {
+    if(isTerminated(props)) return;
     if(location!=NULL) {
         JavaProperties * javaProps = NULL;
-        *status = getJavaProperties(location, props, &javaProps);
+        getJavaProperties(location, props, &javaProps);
         
-        if(*status==ERROR_OK) {
-            writeMessageA(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), "... some java at ", 0);
-            writeMessageW(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), location, 1);
+        if(isOK(props)) {
+            writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "... some java at ", 0);
+            writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, location, 1);
             // some java there, check compatibility
-            writeMessageA(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), "... checking compatibility of java : ", 0);
-            writeMessageW(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), javaProps->javaHome, 1);
+            writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "... checking compatibility of java : ", 0);
+            writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, javaProps->javaHome, 1);
             if(isJavaCompatible(javaProps, props->compatibleJava, props->compatibleJavaNumber)) {
-                writeMessageA(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), "... compatible", 1);
+                writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "... compatible", 1);
                 props->java = javaProps;
             } else {
-                * status = ERROR_JVM_UNCOMPATIBLE;
-                writeMessageA(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), "... uncompatible", 1);
+                props->status = ERROR_JVM_UNCOMPATIBLE;
+                writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "... uncompatible", 1);
                 freeJavaProperties(&javaProps);
             }
         } else {
-            writeMessageA(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), "... no java at ", 0);
-            writeMessageW(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), location, 1);
-            if (*status==ERROR_INPUTOUPUT) {
-                *status = ERROR_JVM_NOT_FOUND;
+            writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "... no java at ", 0);
+            writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, location, 1);
+            if (props->status==ERROR_INPUTOUPUT) {
+                props->status = ERROR_JVM_NOT_FOUND;
             }
         }
         
-        if( *status != ERROR_OK) { // check private JRE
-            DWORD privateJreStatus = *status;
+        if(props->status == ERROR_JVM_NOT_FOUND) { // check private JRE
+            DWORD privateJreStatus = props->status;
             WCHAR * privateJre = appendStringW(NULL, location);
             privateJre = appendStringW(privateJre, L"\\jre");
-            writeMessageA(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), "... check private jre at ", 0);
-            writeMessageW(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), privateJre, 1);
+            writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "... check private jre at ", 0);
+            writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, privateJre, 1);
+            getJavaProperties(privateJre, props, &javaProps);
             
-            if(getJavaProperties(privateJre, props, &javaProps)==ERROR_OK) {
-                writeMessageA(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), "... checking compatibility of private jre : ", 0);
-                writeMessageW(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), javaProps->javaHome, 1);
+            if(isOK(props)) {
+                writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "... checking compatibility of private jre : ", 0);
+                writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, javaProps->javaHome, 1);
                 if(isJavaCompatible(javaProps, props->compatibleJava, props->compatibleJavaNumber)) {
                     props->java = javaProps;
-                    * status = ERROR_OK;
+                    props->status = ERROR_OK;
                 } else {
                     freeJavaProperties(&javaProps);
+                    props->status = ERROR_JVM_UNCOMPATIBLE;
                 }
+            } else if (props->status==ERROR_INPUTOUPUT) {
+                props->status = ERROR_JVM_NOT_FOUND;
             }
             FREE(privateJre);
         }
     } else {
-        * status = ERROR_JVM_NOT_FOUND;
+        props->status = ERROR_JVM_NOT_FOUND;
     }
 }
 
 void resolveTestJVM(LauncherProperties * props) {
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "Resolving testJVM classpath...", 1);
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... first step : ", 0);
-    writeMessageW(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), props->testJVMFile->path, 1);
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "Resolving testJVM classpath...", 1);
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... first step : ", 0);
+    writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, props->testJVMFile->path, 1);
     resolvePath(props, props->testJVMFile);
     WCHAR * testJVMFile = props->testJVMFile->resolved;
     
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... second     : ", 0);
-    writeMessageW(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), props->testJVMFile->resolved, 1);
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... second     : ", 0);
+    writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, props->testJVMFile->resolved, 1);
     
     WCHAR * testJVMClassPath = NULL;
     if(isDirectory(testJVMFile)) { // the directory of the class file is set
-        writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... testJVM is : directory ", 1);
+        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... testJVM is : directory ", 1);
         testJVMClassPath = appendStringW(NULL, testJVMFile);
     } else { // testJVMFile is either .class file or .jar/.zip file with the neccessary class file
         WCHAR * dir = getParentDirectory(testJVMFile);
@@ -260,14 +244,14 @@ void resolveTestJVM(LauncherProperties * props) {
         do {
             ptr = wcsstr(ptr, CLASS_SUFFIX); // check if ptr contains .class
             if(ptr==NULL) { // .jar or .zip file
-                writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... testJVM is : ZIP/JAR file", 1);
+                writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... testJVM is : ZIP/JAR file", 1);
                 testJVMClassPath = appendStringW(NULL, testJVMFile);
                 break;
             }
             ptr += getLengthW(CLASS_SUFFIX); // shift to the right after the ".class"
             
             if(ptr==NULL || getLengthW(ptr)==0) { // .class was at the end of the ptr
-                writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... testJVM is : .class file ", 1);
+                writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... testJVM is : .class file ", 1);
                 testJVMClassPath = appendStringW(NULL, dir);
                 break;
             }
@@ -277,53 +261,54 @@ void resolveTestJVM(LauncherProperties * props) {
     
     FREE(props->testJVMFile->resolved);
     props->testJVMFile->resolved = testJVMClassPath;
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... resolved   : ", 0);
-    writeMessageW(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), props->testJVMFile->resolved, 1);
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... resolved   : ", 0);
+    writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, props->testJVMFile->resolved, 1);
 }
 
-void findSuitableJava(DWORD * status, LauncherProperties * props, WCHARList * cmd) {
-    if((*status)!=ERROR_OK) return;
+void findSuitableJava(LauncherProperties * props) {
+    if(!isOK(props)) return;
     
     //resolve testJVM file
     resolveTestJVM(props);
     
     if(!fileExists(props->testJVMFile->resolved)) {
-        writeMessageA(OUTPUT_LEVEL_NORMAL, getStderrHandle(), "Can`t find TestJVM classpath : ", 0);
-        writeMessageW(OUTPUT_LEVEL_NORMAL, getStderrHandle(), props->testJVMFile->resolved, 1);
-        showMessageW(1, getI18nProperty(JVM_NOT_FOUND_PROP), javaArg);
-        * status = ERROR_JVM_NOT_FOUND;
+        writeMessageA(props, OUTPUT_LEVEL_NORMAL, 1, "Can`t find TestJVM classpath : ", 0);
+        writeMessageW(props, OUTPUT_LEVEL_NORMAL, 1, props->testJVMFile->resolved, 1);
+        showErrorW(props, JVM_NOT_FOUND_PROP, 1, javaArg);
+        props->status = ERROR_JVM_NOT_FOUND;
         return;
-    } else {
+    } else if(!isTerminated(props)) {
         
         // try to get java location from command line arguments
-        writeMessageA(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), "", 1);
-        writeMessageA(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), "Finding JAVA...", 1);
+        writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "", 1);
+        writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Finding JAVA...", 1);
         
         WCHAR * java = NULL;
-        WCHAR * javaHome = getArgumentValue(cmd, javaArg, 1);
         
-        if(javaHome!=NULL) { // using user-defined JVM via command-line parameter
-            writeMessageA(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), "[CMD Argument] Try to use java from ", 0);
-            writeMessageW(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), javaHome, 1);
+        if(props->userDefinedJavaHome!=NULL) { // using user-defined JVM via command-line parameter            
+            writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "[CMD Argument] Try to use java from ", 0);
+            writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, props->userDefinedJavaHome, 1);
             
-            trySetCompatibleJava(status, javaHome, props);
-            if( *status == ERROR_JVM_NOT_FOUND || *status == ERROR_JVM_UNCOMPATIBLE) {
-                showMessageW(1, getI18nProperty((*status == ERROR_JVM_NOT_FOUND) ? JVM_USER_DEFINED_ERROR_PROP : JVM_UNSUPPORTED_VERSION_PROP), javaHome);
-            }
-            FREE(javaHome);
+            trySetCompatibleJava(props->userDefinedJavaHome, props);
+            if( props->status == ERROR_JVM_NOT_FOUND || props->status == ERROR_JVM_UNCOMPATIBLE) {
+                const char * prop = (props->status == ERROR_JVM_NOT_FOUND) ?
+                JVM_USER_DEFINED_ERROR_PROP :
+                    JVM_UNSUPPORTED_VERSION_PROP;
+                    showErrorW(props, prop, 1, props->userDefinedJavaHome);
+            }        
         } else { // no user-specified java argument
             findSystemJava(props);
             if( props->java ==NULL) {
-                showMessageW(1, getI18nProperty(JVM_NOT_FOUND_PROP), javaArg);
-                * status = ERROR_JVM_NOT_FOUND;
+                showErrorW(props, JVM_NOT_FOUND_PROP, 1, javaArg);
+                props->status = ERROR_JVM_NOT_FOUND;
             }
         }
         
         if(props->java!=NULL) {
-            writeMessageA(OUTPUT_LEVEL_NORMAL, getStderrHandle(), "Compatible jvm is found on the system", 1);
-            printJavaProperties(props->java);
+            writeMessageA(props, OUTPUT_LEVEL_NORMAL, 1, "Compatible jvm is found on the system", 1);
+            printJavaProperties(props, props->java);
         } else {
-            writeMessageA(OUTPUT_LEVEL_NORMAL, getStderrHandle(), "No compatible jvm was found on the system", 1);
+            writeMessageA(props, OUTPUT_LEVEL_NORMAL, 1, "No compatible jvm was found on the system", 1);
         }
     }
     return;
@@ -367,15 +352,16 @@ void resolvePath(LauncherProperties * props, LauncherResource * file) {
     }
 }
 
-void setClasspathElements(DWORD * status, LauncherProperties * props, WCHARList * cmd) {
-    if((*status)!=ERROR_OK) return;
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "Modifying classpath ...", 1);
+void setClasspathElements(LauncherProperties * props) {
+    if(!isOK(props)) return;
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "Modifying classpath ...", 1);
     WCHAR * preCP = NULL;
     WCHAR * appCP = NULL;
+    
     // add some libraries to the beginning of the classpath
-    while((preCP = getArgumentValue(cmd, classPathPrepend, 1))!=NULL) {
-        writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... adding entry to the beginning of classpath : ", 0);
-        writeMessageW(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), preCP, 1);
+    while((preCP = getArgumentValue(props, classPathPrepend, 1))!=NULL) {
+        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... adding entry to the beginning of classpath : ", 0);
+        writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, preCP, 1);
         if (props->classpath != NULL) {
             preCP = appendStringW(preCP, CLASSPATH_SEPARATOR);
         }
@@ -384,29 +370,35 @@ void setClasspathElements(DWORD * status, LauncherProperties * props, WCHARList 
         FREE(props->classpath);
         props->classpath = tmp;
     }
+    
     DWORD i = 0 ;
     for(i=0;i<props->jars->size;i++) {
         props->classpath = appendStringW(props->classpath, CLASSPATH_SEPARATOR);
+        
         resolvePath(props, props->jars->items[i]);
+        
         props->classpath = appendStringW(props->classpath, props->jars->items[i]->resolved);
+        
     }
     
     // add some libraries to the end of the classpath
-    while((appCP = getArgumentValue(cmd, classPathAppend, 1))!=NULL) {
-        writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... adding entry to the end of classpath : ", 0);
-        writeMessageW(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), appCP, 1);
+    while((appCP = getArgumentValue(props, classPathAppend, 1))!=NULL) {
+        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... adding entry to the end of classpath : ", 0);
+        writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, appCP, 1);
         if (props->classpath != NULL) {
             props->classpath = appendStringW(props->classpath, CLASSPATH_SEPARATOR);
         }
         props->classpath = appendStringW(props->classpath, appCP);
         FREE(appCP);
     }
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... finished", 1);
+    
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... finished", 1);
 }
 
-void setAdditionalArguments(DWORD * status, LauncherProperties * props, WCHARList * cmd) {
-    if((*status)!=ERROR_OK) return;
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(),
+void setAdditionalArguments(LauncherProperties * props) {
+    WCHARList * cmd = props->commandLine;
+    if(!isOK(props)) return;
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0,
     "Parsing rest of command line arguments to add them to java or application parameters... ", 1);
     WCHAR ** javaArgs;
     WCHAR ** appArgs;
@@ -451,13 +443,13 @@ void setAdditionalArguments(DWORD * status, LauncherProperties * props, WCHARLis
         if(cmd->items[i]!=NULL) {
             if(wcsstr(cmd->items[i], javaParameterPrefix)!=NULL) {
                 javaArgs [ props->jvmArguments->size + jArg] = appendStringW(NULL, cmd->items[i] + getLengthW(javaParameterPrefix));
-                writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... adding JVM argument : ", 0);
-                writeMessageW(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), javaArgs [ props->jvmArguments->size + jArg], 1);
+                writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... adding JVM argument : ", 0);
+                writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, javaArgs [ props->jvmArguments->size + jArg], 1);
                 jArg ++ ;
             } else {
                 appArgs  [ props->appArguments->size + aArg] = appendStringW(NULL, cmd->items[i]);
-                writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... adding APP argument : ", 0);
-                writeMessageW(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), appArgs  [ props->appArguments->size + aArg], 1);
+                writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... adding APP argument : ", 0);
+                writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, appArgs  [ props->appArguments->size + aArg], 1);
                 aArg++;
             }
             FREE(cmd->items[i]);
@@ -467,7 +459,7 @@ void setAdditionalArguments(DWORD * status, LauncherProperties * props, WCHARLis
     props->jvmArguments->size  = props->jvmArguments->size + jArg;
     if(props->jvmArguments->items==NULL) props->jvmArguments->items = javaArgs;
     if(props->appArguments->items==NULL) props->appArguments->items = appArgs;
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... finished parsing parameters", 1);
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... finished parsing parameters", 1);
 }
 void appendCommandLineArgument( WCHAR ** command, const WCHAR * arg) {
     if(wcsstr(arg, L" ")) {
@@ -480,11 +472,11 @@ void appendCommandLineArgument( WCHAR ** command, const WCHAR * arg) {
     *command = appendStringW(*command, L" ");
 }
 
-void setLauncherCommand(DWORD * status, LauncherProperties *props) {
-    if((*status)!=ERROR_OK) return;
+void setLauncherCommand(LauncherProperties *props) {
+    if(!isOK(props)) return;
     
     if(props->java==NULL) {
-        *status = ERROR_JVM_NOT_FOUND;
+        props->status = ERROR_JVM_NOT_FOUND;
         return;
     }
     
@@ -510,33 +502,34 @@ void setLauncherCommand(DWORD * status, LauncherProperties *props) {
     props->command = command;
 }
 
-DWORD executeMainClass(DWORD * status, LauncherProperties * props) {
-    if((*status) != ERROR_OK) return (*status);
+void executeMainClass(LauncherProperties * props) {
+    if(!isOK(props)) return;
     
-    writeMessageA(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), "Executing main class", 1);
-    DWORD exitCode = ERROR_OK;
-    int64t * minSize = newint64_t(0,0);
-    if(checkFreeSpace(props->tmpDir, minSize)) {        
+    writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Executing main class", 1);
+    
+    int64t * minSize = newint64_t(0, 0);
+    checkFreeSpace(props, props->tmpDir, minSize);
+    if(isOK(props)) {
         HANDLE hErrorRead;
         HANDLE hErrorWrite;
         CreatePipe(&hErrorRead, &hErrorWrite, NULL, 0);
         
-        hideLauncherWindows();
-        exitCode = executeCommand(status, props->command, NULL, INFINITE, getStdoutHandle(), hErrorWrite, NORMAL_PRIORITY_CLASS);
-        if((*status) != ERROR_OK) {
-            writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... an error occured during JVM running main class", 1);
-            exitCode = *status;
+        hideLauncherWindows(props);
+        executeCommand(props, props->command, NULL, INFINITE, props->stdoutHandle, hErrorWrite, NORMAL_PRIORITY_CLASS);
+        if(!isOK(props)) {
+            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... an error occured during JVM running main class", 1);
+            props->exitCode = props->status;
         } else {
-            writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... main class has finished his work. Exit code is ", 0);
-            char * s = DWORDtoCHAR(exitCode);
-            writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), s, 1);
+            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... main class has finished his work. Exit code is ", 0);
+            char * s = DWORDtoCHAR(props->exitCode);
+            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, s, 1);
             FREE(s);
         }
         
         char * error = readHandle(hErrorRead);
         if(getLengthA(error)>1) {
             WCHAR * errorW = toWCHAR(error);
-            showMessageW(1, getI18nProperty(JAVA_PROCESS_ERROR_PROP), errorW);
+            showErrorW(props, JAVA_PROCESS_ERROR_PROP, 1, errorW);
             FREE(errorW);
         }
         CloseHandle(hErrorWrite);
@@ -544,73 +537,103 @@ DWORD executeMainClass(DWORD * status, LauncherProperties * props) {
         FREE(error);
         Sleep(1);
     } else {
-        *status = ERROR_FREESPACE;
-        exitCode = (*status);
-        writeMessageA(OUTPUT_LEVEL_DEBUG, getStderrHandle(), "... there is not enough space in tmp dir to execute main jar", 1);
+        props->status = ERROR_FREESPACE;
+        props->exitCode = props->status;
+        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "... there is not enough space in tmp dir to execute main jar", 1);
     }
     free(minSize);
-    return exitCode ;
 }
 
-DWORD isOnlyHelp(WCHARList * cmd) {
-    if(getArgumentIndex(cmd, helpArg, 1) < cmd->size) {
+DWORD isOnlyHelp(LauncherProperties * props) {
+    if(argumentExists(props, helpArg, 1)) {
         
         WCHARList * help = newWCHARList(NUMBER_OF_HELP_ARGUMENTS);
         
         int counter = 0;
-        help->items[counter++] = formatMessageW(1, getI18nProperty(ARG_JAVA_PROP), javaArg);
-        help->items[counter++] = formatMessageW(1, getI18nProperty(ARG_TMP_PROP), tempdirArg);
-        help->items[counter++] = formatMessageW(1, getI18nProperty(ARG_EXTRACT_PROP), extractArg);
-        help->items[counter++] = formatMessageW(1, getI18nProperty(ARG_OUTPUT_PROPERTY), outputFileArg);
-        help->items[counter++] = formatMessageW(1, getI18nProperty(ARG_DEBUG_PROP), debugArg);
-        help->items[counter++] = formatMessageW(1, getI18nProperty(ARG_CPA_PROP), classPathAppend);
-        help->items[counter++] = formatMessageW(1, getI18nProperty(ARG_CPP_PROP), classPathPrepend);
-        help->items[counter++] = formatMessageW(1, getI18nProperty(ARG_DISABLE_SPACE_CHECK), nospaceCheckArg);
-        help->items[counter++] = formatMessageW(1, getI18nProperty(ARG_HELP_PROP), helpArg);
+        help->items[counter++] = formatMessageW(1, getI18nProperty(props, ARG_JAVA_PROP), javaArg);
+        help->items[counter++] = formatMessageW(1, getI18nProperty(props, ARG_TMP_PROP), tempdirArg);
+        help->items[counter++] = formatMessageW(1, getI18nProperty(props, ARG_EXTRACT_PROP), extractArg);
+        help->items[counter++] = formatMessageW(1, getI18nProperty(props, ARG_OUTPUT_PROPERTY), outputFileArg);
+        help->items[counter++] = formatMessageW(1, getI18nProperty(props, ARG_DEBUG_PROP), debugArg);
+        help->items[counter++] = formatMessageW(1, getI18nProperty(props, ARG_CPA_PROP), classPathAppend);
+        help->items[counter++] = formatMessageW(1, getI18nProperty(props, ARG_CPP_PROP), classPathPrepend);
+        help->items[counter++] = formatMessageW(1, getI18nProperty(props, ARG_DISABLE_SPACE_CHECK), nospaceCheckArg);
+        help->items[counter++] = formatMessageW(1, getI18nProperty(props, ARG_HELP_PROP), helpArg);
         
         WCHAR * helpString = NULL;
         for(counter=0;counter<NUMBER_OF_HELP_ARGUMENTS;counter++) {
             helpString = appendStringW(appendStringW(helpString, help->items[counter]), NEW_LINE);
         }
         freeWCHARList(&help);
-        showMessageW(0, helpString);
+        showMessageW(props, helpString, 0);
         FREE(helpString);
         return 1;
     }
     return 0;
 }
 
-void setRunningMode(WCHARList * commandLine) {
-    if(getArgumentIndex(commandLine, silentArg, 0) < commandLine->size) {
-        silentMode = 1;
-    } else {
-        silentMode = 0;
+DWORD isSilent(LauncherProperties * props) {
+    return props->silentMode;
+}
+
+WCHARList * getCommandlineArguments() {
+    int argumentsNumber = 0;
+    int i=0;
+    WCHAR ** commandLine = CommandLineToArgvW(GetCommandLineW(), &argumentsNumber);
+    // the first is always the running program..  we don`t need it
+    // it is that same as GetModuleFileNameW says
+    WCHARList * commandsList = newWCHARList((DWORD) (argumentsNumber - 1) );
+    for(i=0;i<argumentsNumber - 1;i++) {
+        commandsList->items[i] = appendStringW(NULL, commandLine[i + 1]);
     }
+    
+    LocalFree(commandLine);
+    return commandsList;
 }
 
-DWORD isSilent() {
-    return silentMode;
-}
-
-LauncherProperties * createLauncherProperties() {
+LauncherProperties * createLauncherProperties(WCHARList * commandLine) {
     LauncherProperties *props = (LauncherProperties*)malloc(sizeof(LauncherProperties));
-    props->jvmArguments=NULL;
-    props->appArguments=NULL;
-    props->extractOnly = 0;
-    props->mainClass = NULL;
+    props->jvmArguments = NULL;
+    props->appArguments = NULL;
+    props->extractOnly  = 0;
+    props->mainClass    = NULL;
     props->testJVMClass = NULL;
-    props->classpath = NULL;
-    props->jars=NULL;
-    props->testJVMFile=NULL;
-    props->tmpDir = NULL;
+    props->classpath    = NULL;
+    props->jars         = NULL;
+    props->testJVMFile  = NULL;
+    props->tmpDir       = NULL;
     props->compatibleJava=NULL;
     props->compatibleJavaNumber=0;
-    props->java=NULL;
-    props->command=NULL;
-    props->jvms=NULL;
+    props->java    = NULL;
+    props->command = NULL;
+    props->jvms    = NULL;
     props->exePath = getExeName();
     props->exeDir  = getExeDirectory();
-    return props;
+    props->handler = CreateFileW(props->exePath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    props->bundledSize = newint64_t(0, 0);
+    props->bundledNumber = 0;
+    props->commandLine   = getCommandlineArguments();
+    props->status       = ERROR_OK;
+    props->exitCode     = 0;
+    props->outputLevel  = argumentExists(props, debugArg, 1) ?
+    OUTPUT_LEVEL_DEBUG :
+        OUTPUT_LEVEL_NORMAL;
+        props->stdoutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+        props->stderrHandle = GetStdHandle(STD_ERROR_HANDLE);
+        props->bufsize = 65536;
+        props->restOfBytes = createSizedString();
+        props->I18N_PROPERTIES_NUMBER = 0;
+        props->i18nMessages = NULL;
+        props->userDefinedJavaHome    = getArgumentValue(props, javaArg, 1);
+        props->userDefinedTempDir     = getArgumentValue(props, tempdirArg, 1);
+        props->userDefinedExtractDir  = getArgumentValue(props, extractArg, 1);
+        props->userDefinedOutput      = getArgumentValue(props, outputFileArg, 1);
+        props->checkForFreeSpace      = !argumentExists(props, nospaceCheckArg, 1);
+        props->silentMode             = argumentExists(props, silentArg, 0);
+        props->extractOnly            = (props->userDefinedExtractDir!=NULL) ? 1 : 0;
+        props->launcherSize = getFileSize(props->exePath);
+        props->isOnlyStub = (compare(props->launcherSize, STUB_FILL_SIZE) < 0);
+        return props;
 }
 freeLauncherResourceList(LauncherResourceList ** list) {
     if(*list!=NULL) {
@@ -627,10 +650,9 @@ freeLauncherResourceList(LauncherResourceList ** list) {
 
 
 void freeLauncherProperties(LauncherProperties **props) {
-    
     if((*props)!=NULL) {
+        writeMessageA(*props, OUTPUT_LEVEL_DEBUG, 0, "Closing launcher properties", 1);
         DWORD i=0;
-        
         freeWCHARList(& ( (*props)->appArguments));
         freeWCHARList(& ( (*props)->jvmArguments));
         
@@ -655,105 +677,97 @@ void freeLauncherProperties(LauncherProperties **props) {
                 FREE((*props)->compatibleJava[i]);
             }
         }
+        
         FREE((*props)->compatibleJava);
         freeJavaProperties(&((*props)->java));
-        
+        FREE((*props)->userDefinedJavaHome);
+        FREE((*props)->userDefinedTempDir);
+        FREE((*props)->userDefinedExtractDir);
+        FREE((*props)->userDefinedOutput);
         FREE((*props)->command);
         FREE((*props)->exePath);
         FREE((*props)->exeDir);
+        FREE((*props)->bundledSize);
+        FREE((*props)->launcherSize);
+        freeSizedString(&((*props)->restOfBytes));
+        
+        flushHandle((*props)->stdoutHandle);
+        flushHandle((*props)->stderrHandle);
+        CloseHandle((*props)->stdoutHandle);
+        CloseHandle((*props)->stderrHandle);
+        
+        freeI18NMessages((*props));
+        
+        freeWCHARList(& ((*props)->commandLine));
+        CloseHandle((*props)->handler);
+        
         FREE((*props));
     }
     return;
 }
-void printStatus(DWORD * status, DWORD exitCode) {
-    char * s = DWORDtoCHAR(*status);
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... EXIT status : ", 0);
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), s, 1);
+void printStatus(LauncherProperties * props) {
+    char * s = DWORDtoCHAR(props->status);
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... EXIT status : ", 0);
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, s, 1);
     FREE(s);
-    s = DWORDtoCHAR(exitCode);
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... EXIT code : ", 0);
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), s, 1);
+    s = DWORDtoCHAR(props->exitCode);
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... EXIT code : ", 0);
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, s, 1);
     FREE(s);
 }
-DWORD processLauncher(DWORD * status, WCHARList * commandLine) {
-    I18N_PROPERTIES_NUMBER = 0;
-    setOutput(commandLine);
-    setFreeSpaceChecking(commandLine);
-    // size of buffer for reading data from exe file
-    DWORD bufsize = 65536;
-    *status = ERROR_OK;
-    DWORD exitCode = 0;
-    HANDLE hFileRead = getLauncherHandler(status);
+
+void processLauncher(LauncherProperties * props) {
+    setOutput(props);
+    if(!isOK(props) || isTerminated(props)) return;
     
-    if(*status != ERROR_OK) {
-        WCHAR * err = getErrorDescription(GetLastError());
-        showMessageW(1, L"%s", err);
-        FREE(err);
-    } else {
-        DWORD size = getRunningFileSize();
-        DWORD findJavaSize = size / 4;
-        setProgressRange(size + findJavaSize);
-        SizedString * restOfBytes = createSizedString();
-        //skip laucher stub
-        skipStub(status, hFileRead, bufsize);
-        if(*status == ERROR_OK) {
-            loadLocalizationStrings(status, hFileRead, bufsize, restOfBytes);
-            if(*status == ERROR_OK) {
-                if(!isOnlyHelp(commandLine)) {
-                    
-                    setTitleString(getI18nProperty(MSG_TITLE));
-                    
-                    showLauncherWindows();
-                    
-                    // create temp direcotry NBIXXXXX at <TEMP> direcotry
-                    LauncherProperties * props = createLauncherProperties();
-                    
-                    setDetailString(getI18nProperty(MSG_CREATE_TMPDIR));
-                    createTMPDir(status, props, commandLine);
-                    
-                    if(*status == ERROR_OK) {
-                        setDetailString(getI18nProperty(MSG_EXTRACT_DATA));
-                        //extract data and load launcher properties
-                        extract(status, props, hFileRead, bufsize, restOfBytes);
-                        
-                        if(!props->extractOnly) {
-                            if(*status == ERROR_OK) {
-                                setDetailString(getI18nProperty(MSG_JVM_SEARCH));
-                                findSuitableJava(status, props, commandLine);
-                                addProgressPosition(findJavaSize);
-                                if(props->java!=NULL) {
-                                    setDetailString(getI18nProperty(MSG_SET_OPTIONS));
-                                    setClasspathElements(status, props, commandLine);
-                                    
-                                    setAdditionalArguments(status, props, commandLine);
-                                    
-                                    setLauncherCommand(status, props);
-                                    
-                                    setDetailString(getI18nProperty(MSG_RUNNING));
-                                    Sleep(500);
-                                    exitCode = executeMainClass(status, props);
-                                }
-                            }
-                            writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... deleting temporary directory ", 1);
-                            deleteDirectory(props->tmpDir);
-                        } else {
-                            writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... exraction finished. ", 1);
-                        }
-                    }
-                    
-                    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... free launcher properties", 1);
-                    freeLauncherProperties(&props);
-                }
-                writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... free i18n strings", 1);
-                freeI18NMessages();
+    setProgressRange(props, props->launcherSize);    
+    if(!isOK(props) || isTerminated(props)) return;
+    
+    skipStub(props);
+    if(!isOK(props) || isTerminated(props)) return;
+    
+    loadLocalizationStrings(props);
+    if(!isOK(props) || isTerminated(props)) return;
+    
+    if(isOnlyHelp(props)) return;
+    
+    setProgressTitleString(props, getI18nProperty(props, MSG_PROGRESS_TITLE));
+    showLauncherWindows(props);
+    if(!isOK(props) || isTerminated(props)) return;
+    
+    readLauncherProperties(props);
+    checkExtractionStatus(props);
+    if(!isOK(props) || isTerminated(props)) return;
+    
+    if(props->bundledNumber > 0) {
+        createTMPDir(props);
+        if(isOK(props)) {
+            checkFreeSpace(props, props->tmpDir, props->bundledSize);
+            checkExtractionStatus(props);
+        }
+    }
+    
+    if (isOK(props) ){
+        extractJVMData(props);
+        checkExtractionStatus(props);
+        if (isOK(props) && !props->extractOnly && !isTerminated(props)) {
+            findSuitableJava(props);
+        }
+        
+        if (isOK(props) && !isTerminated(props)) {
+            extractData(props);
+            checkExtractionStatus(props);
+            if (isOK(props) && (props->java!=NULL)  && !isTerminated(props)) {
+                setClasspathElements(props);
+                setAdditionalArguments(props);
+                setLauncherCommand(props);
+                Sleep(500);
+                executeMainClass(props);
             }
         }
-        freeSizedString(&restOfBytes);
+        if(!props->extractOnly && props->bundledNumber>0) {
+            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... deleting temporary directory ", 1);
+            deleteDirectory(props, props->tmpDir);
+        }
     }
-    printStatus(status, exitCode);
-    
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... closing file and std handles", 1);
-    CloseHandle(hFileRead);
-    closeStdHandles();
-    return exitCode;
 }

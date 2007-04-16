@@ -110,7 +110,7 @@ char * readHandle(HANDLE hRead) {
 // return ERROR_ON_EXECUTE_PROCESS for serios error
 // return ERROR_PROCESS_TIMEOUT for timeout
 
-DWORD executeCommand(DWORD * status, WCHAR * command, WCHAR * dir, DWORD timeLimitMillis, HANDLE hWriteOutput, HANDLE hWriteError, DWORD priority) {
+void executeCommand(LauncherProperties * props, WCHAR * command, WCHAR * dir, DWORD timeLimitMillis, HANDLE hWriteOutput, HANDLE hWriteError, DWORD priority) {
     STARTUPINFOW si;
     SECURITY_ATTRIBUTES sa;
     SECURITY_DESCRIPTOR sd;
@@ -132,27 +132,27 @@ DWORD executeCommand(DWORD * status, WCHAR * command, WCHAR * dir, DWORD timeLim
     
     
     if (!CreatePipe(&newProcessInput, &currentProcessStdin, &sa, 0)) {
-        writeErrorA(OUTPUT_LEVEL_NORMAL, getStderrHandle(), "Can`t create pipe for input. ", NULL , GetLastError());
-        *status = ERROR_ON_EXECUTE_PROCESS;
-        return (*status);
+        writeErrorA(props, OUTPUT_LEVEL_NORMAL, 1, "Can`t create pipe for input. ", NULL , GetLastError());
+        props->status = ERROR_ON_EXECUTE_PROCESS;
+        return;
     }
     
     if (!CreatePipe(&currentProcessStdout, &newProcessOutput, &sa, 0)) {
-        writeErrorA(OUTPUT_LEVEL_NORMAL, getStderrHandle(), "Can`t create pipe for output. ", NULL , GetLastError());
+        writeErrorA(props, OUTPUT_LEVEL_NORMAL, 1, "Can`t create pipe for output. ", NULL , GetLastError());
         CloseHandle(newProcessInput);
         CloseHandle(currentProcessStdin);
-        *status = ERROR_ON_EXECUTE_PROCESS;
-        return (*status);
+        props->status = ERROR_ON_EXECUTE_PROCESS;
+        return;
     }
     
     if (!CreatePipe(&currentProcessStderr, &newProcessError, &sa, 0)) {
-        writeErrorA(OUTPUT_LEVEL_NORMAL, getStderrHandle(), "Can`t create pipe for error. ", NULL , GetLastError());
+        writeErrorA(props, OUTPUT_LEVEL_NORMAL, 1, "Can`t create pipe for error. ", NULL , GetLastError());
         CloseHandle(newProcessInput);
         CloseHandle(currentProcessStdin);
         CloseHandle(newProcessOutput);
         CloseHandle(currentProcessStdout);
-        *status = ERROR_ON_EXECUTE_PROCESS;
-        return (*status);
+        props->status = ERROR_ON_EXECUTE_PROCESS;
+        return;
     }
     
     
@@ -165,43 +165,43 @@ DWORD executeCommand(DWORD * status, WCHAR * command, WCHAR * dir, DWORD timeLim
     si.hStdInput = newProcessInput;
     
     WCHAR * directory = (dir!=NULL) ? dir : getCurrentDirectory();
-    writeMessageA(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), "Create new process: ", 1);
-    writeMessageA(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), "          command : ", 0);
-    writeMessageW(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), command, 1);
-    writeMessageA(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), "        directory : ", 0);
-    writeMessageW(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), directory, 1);
+    writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Create new process: ", 1);
+    writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "          command : ", 0);
+    writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, command, 1);
+    writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "        directory : ", 0);
+    writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, directory, 1);
     
-    DWORD exitCode = ERROR_OK;
+    props->exitCode = ERROR_OK;
     if (CreateProcessW(NULL, command, NULL, NULL, TRUE,
     CREATE_NEW_CONSOLE | CREATE_NO_WINDOW | CREATE_DEFAULT_ERROR_MODE | priority,
     NULL, directory, &si, &pi)) {
-        *status = ERROR_OK;
+        props->status = ERROR_OK;
         
-        writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... process created", 1);
+        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... process created", 1);
         DWORD timeOut = ((timeLimitMillis<=0) ? DEFAULT_PROCESS_TIMEOUT: timeLimitMillis);
         
-        exitCode = readProcessStream(pi, currentProcessStdin, currentProcessStdout, currentProcessStderr, timeOut, newProcessInput, hWriteOutput, hWriteError);
+        props->exitCode = readProcessStream(pi, currentProcessStdin, currentProcessStdout, currentProcessStderr, timeOut, newProcessInput, hWriteOutput, hWriteError);
         
-        if(exitCode==STILL_ACTIVE) {
+        if(props->exitCode==STILL_ACTIVE) {
             //actually we have reached the timeout of the process and need to terminate it
-            writeMessageA(OUTPUT_LEVEL_DEBUG, getStderrHandle(), "... process is timeouted", 1);
-            GetExitCodeProcess(pi.hProcess, &exitCode);
+            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "... process is timeouted", 1);
+            GetExitCodeProcess(pi.hProcess, & (props->exitCode));
             
-            if(exitCode==STILL_ACTIVE) {
+            if(props->exitCode==STILL_ACTIVE) {
                 TerminateProcess(pi.hProcess, 0);
-                writeMessageA(OUTPUT_LEVEL_DEBUG, getStderrHandle(), "... terminate process", 1);
+                writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "... terminate process", 1);
                 //Terminating process...It worked too much without any stdout/stdin/stderr
-                *status = ERROR_PROCESS_TIMEOUT;//terminated by timeout
+                props->status = ERROR_PROCESS_TIMEOUT;//terminated by timeout
             }
         } else {
             //application finished its work... succesfully or not - it doesn`t matter            
-            writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... process finished his work", 1);
+            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... process finished his work", 1);
         }
         CloseHandle(pi.hThread);
         CloseHandle(pi.hProcess);
     }  else {
-        writeErrorA(OUTPUT_LEVEL_DEBUG, getStderrHandle(), "... can`t create process.", NULL, GetLastError());
-        *status = ERROR_ON_EXECUTE_PROCESS;
+        writeErrorA(props, OUTPUT_LEVEL_DEBUG, 1, "... can`t create process.", NULL, GetLastError());
+        props->status = ERROR_ON_EXECUTE_PROCESS;
     }
     
     
@@ -210,8 +210,7 @@ DWORD executeCommand(DWORD * status, WCHAR * command, WCHAR * dir, DWORD timeLim
     CloseHandle(newProcessError);
     CloseHandle(currentProcessStdin);
     CloseHandle(currentProcessStdout);
-    CloseHandle(currentProcessStderr);
-    return exitCode;
+    CloseHandle(currentProcessStderr);    
 }
 
 

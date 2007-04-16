@@ -28,29 +28,12 @@
 
 HANDLE stdoutHandle = INVALID_HANDLE_VALUE;
 HANDLE stderrHandle = INVALID_HANDLE_VALUE;
-DWORD outputLevel = OUTPUT_LEVEL_NORMAL;
+
 DWORD newLine = 1;
 const WCHAR * FILE_SEP = L"\\";
-DWORD checkForFreeSpace = 1;
 
 char TIME_STRING [30];
 
-
-void setStdoutHandle(HANDLE hndl) {
-    stdoutHandle = hndl;
-}
-HANDLE getStdoutHandle() {
-    if(stdoutHandle == INVALID_HANDLE_VALUE) setStdoutHandle(GetStdHandle(STD_OUTPUT_HANDLE));
-    return stdoutHandle;
-}
-
-void setStderrHandle(HANDLE hndl) {
-    stderrHandle = hndl;
-}
-HANDLE getStderrHandle() {
-    if(stderrHandle == INVALID_HANDLE_VALUE) setStderrHandle(GetStdHandle(STD_ERROR_HANDLE));
-    return stderrHandle;
-}
 void writeTimeStamp(HANDLE hd, DWORD need) {
     DWORD written;
     if(need==1) {
@@ -62,15 +45,16 @@ void writeTimeStamp(HANDLE hd, DWORD need) {
     }
 }
 
-void writeMessageA(DWORD level, HANDLE hd, const char * message, DWORD needEndOfLine) {
-    if(level<outputLevel) return;
+void writeMessageA(LauncherProperties * props, DWORD level, DWORD isErr,  const char * message, DWORD needEndOfLine) {
+    if(level<props->outputLevel) return;
+    HANDLE hd = (isErr) ? props->stderrHandle : props->stdoutHandle;
     writeTimeStamp(hd, newLine);
-    DWORD written;    
+    DWORD written;
     WriteFile(hd, message, sizeof(char) * getLengthA(message), & written, NULL);
     if(needEndOfLine>0) {
         newLine = 0;
         while((needEndOfLine--)>0) {
-            writeMessageA(level, hd, "\n", 0);
+            writeMessageA(props, level, isErr, "\n", 0);
             newLine = 1;
         }
         flushHandle(hd);
@@ -79,48 +63,43 @@ void writeMessageA(DWORD level, HANDLE hd, const char * message, DWORD needEndOf
     }
 }
 
-void writeMessageW(DWORD level, HANDLE hd, const WCHAR * message, DWORD needEndOfLine) {
-    if(level<outputLevel) return;
+void writeMessageW(LauncherProperties * props, DWORD level, DWORD isErr,  const WCHAR * message, DWORD needEndOfLine) {
+    if(level<props->outputLevel) return;
+    HANDLE hd = (isErr) ? props->stderrHandle : props->stdoutHandle;
     char * msg = toChar(message);
-    writeMessageA(level, hd, msg, needEndOfLine);
+    writeMessageA(props, level, isErr, msg, needEndOfLine);
     FREE(msg);
 }
-void writeDWORD(DWORD level, HANDLE hd, const char * message, DWORD value, DWORD needEndOfLine) {
+void writeDWORD(LauncherProperties * props, DWORD level,  DWORD isErr,  const char * message, DWORD value, DWORD needEndOfLine) {
     char * dwordStr = DWORDtoCHAR(value);
-    writeMessageA(level, hd, message, 0);
-    writeMessageA(level, hd, dwordStr, needEndOfLine);
+    writeMessageA(props, level, isErr, message, 0);
+    writeMessageA(props, level, isErr, dwordStr, needEndOfLine);
     FREE(dwordStr);
 }
 
-void writeint64t(DWORD level, HANDLE hd, const char * message, int64t * value, DWORD needEndOfLine) {
+void writeint64t(LauncherProperties * props, DWORD level, DWORD isErr, const char * message, int64t * value, DWORD needEndOfLine) {
     char * str = int64ttoCHAR(value);
-    writeMessageA(level, hd, message, 0);
-    writeMessageA(level, hd, str, needEndOfLine);
+    writeMessageA(props, level, isErr, message, 0);
+    writeMessageA(props, level, isErr, str, needEndOfLine);
     FREE(str);
 }
-void writeErrorA(DWORD level, HANDLE hd, const char * message, const WCHAR * param, DWORD errorCode) {
+void writeErrorA(LauncherProperties * props, DWORD level, DWORD isErr, const char * message, const WCHAR * param, DWORD errorCode) {
     WCHAR * err = getErrorDescription(errorCode);
-    writeMessageA(level, hd, message, 0);
-    writeMessageW(level, hd, param, 1);
-    writeMessageW(level, hd, err, 1);
+    writeMessageA(props, level, isErr, message, 0);
+    writeMessageW(props, level, isErr, param, 1);
+    writeMessageW(props, level, isErr, err, 1);
     FREE(err);
 }
 
 void flushHandle(HANDLE hd) {
     FlushFileBuffers(hd);
 }
-void closeStdHandles() {
-    flushHandle(getStdoutHandle());
-    flushHandle(getStderrHandle());
-    CloseHandle(getStdoutHandle());
-    CloseHandle(getStderrHandle());
-}
-
 
 int64t * getFreeSpace(WCHAR *path) {
     int64t bytes;
     int64t * result = newint64_t(0, 0);
     WCHAR * dst = appendStringW(NULL, path);
+    
     while(!fileExists(dst)) {
         WCHAR * parent = getParentDirectory(dst);
         FREE(dst);
@@ -128,27 +107,26 @@ int64t * getFreeSpace(WCHAR *path) {
         if(dst==NULL) break;
     }
     if(dst==NULL) return result; // no parent ? strange
-    
     if (GetDiskFreeSpaceExW(dst, (PULARGE_INTEGER) &bytes, NULL, NULL)) {
         result->High = bytes.High;
         result->Low  = bytes.Low;
     }
-    
     FREE(dst);
     return result;
 }
 
-DWORD checkFreeSpace(WCHAR *path, int64t * size) {
-    if(checkForFreeSpace) {
-        int64t * space = getFreeSpace(path);
+void checkFreeSpace(LauncherProperties * props, WCHAR * tmpDir, int64t * size) {
+    if(props->checkForFreeSpace) {
+        int64t * space = getFreeSpace(tmpDir);
         DWORD result = 0;
         result = ((space->High > size->High) ||
         (space->High == size->High && space->Low >= size->Low));
         free(space);
-        return result;
+        if(!result) {
+            props->status = ERROR_FREESPACE;
+        }
     } else {
-        writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... free space checking is disabled", 1);
-        return 1;
+        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... free space checking is disabled", 1);
     }
 }
 
@@ -196,66 +174,65 @@ WCHAR * normalizePath(WCHAR * dir) {
     return directory;
 }
 
-DWORD createDirectory(WCHAR * directory) {
-    DWORD status = ERROR_OK;
+void createDirectory(LauncherProperties * props, WCHAR * directory) {
     
     // now directory is the absolute path with normalized slashes
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "Getting parent directory of ", 0);
-    writeMessageW(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), directory, 1);
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "Getting parent directory of ", 0);
+    writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, directory, 1);
     WCHAR * parent = getParentDirectory(directory);
     DWORD parentAttrs;
     if(parent!=NULL) {
-        writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "    parent = ", 0);
-        writeMessageW(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), parent, 1);
+        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "    parent = ", 0);
+        writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, parent, 1);
         
         if(!fileExists(parent)) {
-            writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... doesn`t exist. Create it...", 1);
-            status = createDirectory(parent);
+            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... doesn`t exist. Create it...", 1);
+            createDirectory(props, parent);
         } else {
-            writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "    ... exist. ", 1);
+            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "    ... exist. ", 1);
         }
-        if(status == ERROR_OK) {
+        if(isOK(props)) {
             parentAttrs = GetFileAttributesW(parent);
             if(parentAttrs == INVALID_FILE_ATTRIBUTES) {
-                status = ERROR_INPUTOUPUT;
+                props-> status = ERROR_INPUTOUPUT;
             }
         }
     } else {
-        status = ERROR_INPUTOUPUT;
+        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "    parent is NULL ", 1);
+        props-> status = ERROR_INPUTOUPUT;
     }
-    if(status==ERROR_OK) {
+    if(isOK(props)) {
         SECURITY_ATTRIBUTES secattr;
         secattr.nLength = sizeof(SECURITY_ATTRIBUTES);
         secattr.lpSecurityDescriptor = 0;
         secattr.bInheritHandle = 1;
-        writeMessageA(OUTPUT_LEVEL_DEBUG, getStderrHandle(), "... creating directory itself... ", 0);
-        writeMessageW(OUTPUT_LEVEL_DEBUG, getStderrHandle(), directory, 1);
+        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "... creating directory itself... ", 0);
+        writeMessageW(props, OUTPUT_LEVEL_DEBUG, 1, directory, 1);
         int64t * minSize = newint64_t(0, 0);
-        status = checkFreeSpace(parent, minSize) ? ERROR_OK : ERROR_FREESPACE;
+        checkFreeSpace(props, parent, minSize);
         free(minSize);
         
-        if(status == ERROR_OK) {
-            status = (CreateDirectoryExW(parent, directory, &secattr)) ? ERROR_OK : ERROR_INPUTOUPUT;
-            if(status!=ERROR_OK) {
-                status = (CreateDirectoryW(directory, &secattr)) ? ERROR_OK : ERROR_INPUTOUPUT;
+        if(isOK(props)) {
+            props->status = (CreateDirectoryExW(parent, directory, &secattr)) ? ERROR_OK : ERROR_INPUTOUPUT;
+            if(!isOK(props)) {
+                props->status = (CreateDirectoryW(directory, &secattr)) ? ERROR_OK : ERROR_INPUTOUPUT;
             }
-            status = (fileExists(directory)) ? ERROR_OK : ERROR_INPUTOUPUT;
+            props->status = (fileExists(directory)) ? ERROR_OK : ERROR_INPUTOUPUT;
             
-            if(status==ERROR_OK) {
+            if(isOK(props)) {
                 SetFileAttributesW(directory, parentAttrs);
             } else {
-                writeErrorA(OUTPUT_LEVEL_DEBUG, getStderrHandle(), "Error! Can`t create directory : ", directory, GetLastError());
+                writeErrorA(props, OUTPUT_LEVEL_DEBUG, 1, "Error! Can`t create directory : ", directory, GetLastError());
             }
         }
     }
     FREE(parent);
-    return status ;
 }
 
 WCHAR newRandDigit() {
     return ((rand()%10)+'0');
 }
-void createTempDirectory(DWORD * status, WCHAR * argTempDir, WCHAR ** resultDir, DWORD createRndSubDir) {
+void createTempDirectory(LauncherProperties * props, WCHAR * argTempDir, DWORD createRndSubDir) {
     WCHAR * t = (argTempDir!=NULL) ? appendStringW(NULL, argTempDir) : getSystemTemporaryDirectory();
     
     WCHAR * nbiTmp = normalizePath(t);
@@ -272,50 +249,49 @@ void createTempDirectory(DWORD * status, WCHAR * argTempDir, WCHAR ** resultDir,
         free(randString);
     }
     
-    writeMessageA(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), "Using temp directory for extracting data : ", 0);
-    writeMessageW(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), nbiTmp, 1);
+    writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Using temp directory for extracting data : ", 0);
+    writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, nbiTmp, 1);
     
     if(fileExists(nbiTmp) ) {
         if(!isDirectory(nbiTmp)) {
-            *status = ERROR_INPUTOUPUT;
-            writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), ".. exists but not a directory", 1);
+            props->status = ERROR_INPUTOUPUT;
+            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, ".. exists but not a directory", 1);
         } else {
-            writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "Output directory already exist so don`t create it", 1);
+            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "Output directory already exist so don`t create it", 1);
         }
     }
     else {
-        writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "creating directory...", 1);
-        *status = createDirectory(nbiTmp);
-        if(*status == ERROR_OK) {
-            writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "Directory created : ", 0);
-            writeMessageW(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), nbiTmp, 1);
+        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "creating directory...", 1);
+        createDirectory(props, nbiTmp);
+        if(isOK(props)) {
+            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "Directory created : ", 0);
+            writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, nbiTmp, 1);
             // set hidden attribute
             if(createRndSubDir) {
-                writeMessageA(OUTPUT_LEVEL_DEBUG, getStderrHandle(), "Setting hidden attributes to ", 0);
-                writeMessageW(OUTPUT_LEVEL_DEBUG, getStderrHandle(), nbiTmp, 1);
+                writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "Setting hidden attributes to ", 0);
+                writeMessageW(props, OUTPUT_LEVEL_DEBUG, 1, nbiTmp, 1);
                 DWORD wAttrs = GetFileAttributesW(nbiTmp);
                 SetFileAttributesW(nbiTmp, wAttrs | FILE_ATTRIBUTE_HIDDEN);
             }
         } else {
-            writeMessageA(OUTPUT_LEVEL_DEBUG, getStderrHandle(), "Error! Can`t create nbi temp directory : ", 0);
-            writeMessageW(OUTPUT_LEVEL_DEBUG, getStderrHandle(), nbiTmp, 1);
+            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "Error! Can`t create nbi temp directory : ", 0);
+            writeMessageW(props, OUTPUT_LEVEL_DEBUG, 1, nbiTmp, 1);
         }
     }
-    
-    *resultDir = nbiTmp;
+    props->tmpDir = nbiTmp;
     return;
 }
 
 
-void deleteDirectory(WCHAR * dir) {
+void deleteDirectory(LauncherProperties * props, WCHAR * dir) {
     DWORD attrs = GetFileAttributesW(dir);
     DWORD dwError;
     if(attrs==INVALID_FILE_ATTRIBUTES) {
-        writeErrorA(OUTPUT_LEVEL_DEBUG, getStderrHandle(), "Error! Can`t get attributes of the dir : ", dir, GetLastError());
+        writeErrorA(props, OUTPUT_LEVEL_DEBUG, 1, "Error! Can`t get attributes of the dir : ", dir, GetLastError());
         return;
     }
     if(!SetFileAttributesW(dir, attrs & FILE_ATTRIBUTE_NORMAL)) {
-        writeErrorA(OUTPUT_LEVEL_DEBUG, getStderrHandle(), "Error! Can`t set attributes of the dir : ", dir, GetLastError());
+        writeErrorA(props, OUTPUT_LEVEL_DEBUG, 1, "Error! Can`t set attributes of the dir : ", dir, GetLastError());
     }
     
     
@@ -329,7 +305,7 @@ void deleteDirectory(WCHAR * dir) {
         hFind = FindFirstFileW(DirSpec, &FindFileData);
         
         if (hFind == INVALID_HANDLE_VALUE) {
-            writeErrorA(OUTPUT_LEVEL_DEBUG, getStderrHandle(), "Error! Can`t file with pattern ", DirSpec, GetLastError());
+            writeErrorA(props, OUTPUT_LEVEL_DEBUG, 1, "Error! Can`t file with pattern ", DirSpec, GetLastError());
         }
         else {
             // List all the other files in the directory.
@@ -337,7 +313,7 @@ void deleteDirectory(WCHAR * dir) {
                 if(wcscmp(FindFileData.cFileName, L".")!=0 &&
                 wcscmp(FindFileData.cFileName, L"..")!=0 ) {
                     WCHAR * child = appendStringW(appendStringW(appendStringW(NULL, dir), FILE_SEP), FindFileData.cFileName);
-                    deleteDirectory(child);
+                    deleteDirectory(props, child);
                     free(child);
                 }
             }
@@ -345,7 +321,7 @@ void deleteDirectory(WCHAR * dir) {
             dwError = GetLastError();
             FindClose(hFind);
             if (dwError != ERROR_NO_MORE_FILES) {
-                writeErrorA(OUTPUT_LEVEL_DEBUG, getStderrHandle(), "Error! Can`t find file with pattern : ", DirSpec, dwError);
+                writeErrorA(props, OUTPUT_LEVEL_DEBUG, 1, "Error! Can`t find file with pattern : ", DirSpec, dwError);
             }
         }
         DWORD count = 0 ;
@@ -394,7 +370,6 @@ WCHAR * getExeName() {
     WCHAR szPath[MAX_PATH];
     
     if( !GetModuleFileNameW( NULL, szPath, MAX_PATH ) ) {
-        writeErrorA(OUTPUT_LEVEL_DEBUG, getStderrHandle(), "Error! Can`t get running program path.", NULL, GetLastError());
         return NULL;
     } else {
         return appendStringNW(NULL, 0, szPath, getLengthW(szPath));
@@ -412,7 +387,6 @@ WCHAR * getExeDirectory() {
         long length = getLengthW(szPath) - getLengthW(lastSlash) - 1;
         return appendStringNW(NULL, 0 , szPath, length);
     } else {
-        writeErrorA(OUTPUT_LEVEL_DEBUG, getStderrHandle(), "Error! Can`t get running program path.", NULL, GetLastError());
         return NULL;
     }
 }
@@ -458,17 +432,14 @@ WCHAR * getCurrentUserHome() {
     }
     return buf;
 }
-double getFileSize(WCHAR * path) {
+int64t * getFileSize(WCHAR * path) {
     WIN32_FILE_ATTRIBUTE_DATA wfad;
-    double res;
+    int64t * res = newint64_t(0, 0);
     if (GetFileAttributesExW(path,
     GetFileExInfoStandard,
     &wfad)) {
-        res = (double)MAXDWORD + (double)1;
-        res*= wfad.nFileSizeHigh ;
-        res+= wfad.nFileSizeLow;
-        return res;
-    } else {
-        return -1.0;
+        res->Low  = wfad.nFileSizeLow;
+        res->High = wfad.nFileSizeHigh ;
     }
+    return res;
 }

@@ -28,44 +28,34 @@
 extern "C" {
 #endif
     
-    #define OUTPUT_LEVEL_DEBUG 0
+#define OUTPUT_LEVEL_DEBUG 0
 #define OUTPUT_LEVEL_NORMAL 1
     
     
-    
-    extern HANDLE stdoutHandle;
-    extern HANDLE stderrHandle;
-    extern DWORD outputLevel;
-    extern DWORD checkForFreeSpace;
     extern const WCHAR * FILE_SEP;
+    
     int64t * getFreeSpace(WCHAR *path);
-    DWORD checkFreeSpace(WCHAR *path, int64t * size);    
+    int64t * getFileSize(WCHAR * path);
+    void checkFreeSpace(LauncherProperties * props, WCHAR * tmpDir, int64t * size);
     WCHAR * getParentDirectory(WCHAR * dir);
-    DWORD createDirectory(WCHAR * dir);
-    void createTempDirectory(DWORD * status, WCHAR * argTempDir, WCHAR ** resultDir, DWORD createRndSubDir);
-    void deleteDirectory(WCHAR * dir);
+    void createDirectory(LauncherProperties * props, WCHAR * directory);
+    void createTempDirectory(LauncherProperties * props, WCHAR * argTempDir, DWORD createRndSubDir);
+    void deleteDirectory(LauncherProperties * props,WCHAR * dir);
     WCHAR * getExeName();
     WCHAR * getSystemTemporaryDirectory();
     WCHAR * getExeDirectory();
     DWORD isDirectory(WCHAR *path);
     WCHAR * getCurrentDirectory();
     WCHAR * getCurrentUserHome();
+        
     
-    HANDLE getStdoutHandle();
-    HANDLE getStderrHandle();
+    void writeMessageW(LauncherProperties * props, DWORD level,DWORD isErr,  const WCHAR * message, DWORD needEndOfLine);
+    void writeMessageA(LauncherProperties * props,DWORD level, DWORD isErr,  const char  * message, DWORD needEndOfLine);
+    void writeErrorA(LauncherProperties * props,DWORD level,   DWORD isErr,  const char  * message, const WCHAR * param, DWORD errorCode);
+    void writeDWORD(LauncherProperties * props,DWORD level,    DWORD isErr,  const char  * message, DWORD value, DWORD needEndOfLine);
+    void writeint64t(LauncherProperties * props,DWORD level,   DWORD isErr,  const char  * message, int64t * value, DWORD needEndOfLine);
     
-    
-    void writeMessageW(DWORD level, HANDLE hd, const WCHAR * message, DWORD needEndOfLine);
-    void writeMessageA(DWORD level, HANDLE hd, const char * message, DWORD needEndOfLine);
-    void writeErrorA(DWORD level, HANDLE hd, const char * message, const WCHAR * param, DWORD errorCode);
-    void writeDWORD(DWORD level, HANDLE hd, const char * message, DWORD value, DWORD needEndOfLine);
-    void writeint64t(DWORD level, HANDLE hd, const char * message, int64t * value, DWORD needEndOfLine);
     void flushHandle(HANDLE hd);
-    
-  
-    void  setStdoutHandle(HANDLE hndl);
-    void  setStderrHandle(HANDLE hndl);
-    
     DWORD fileExists(WCHAR * path);
     
     #ifdef	__cplusplus

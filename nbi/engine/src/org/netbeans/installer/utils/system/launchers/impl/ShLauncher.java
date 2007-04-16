@@ -51,7 +51,7 @@ public class ShLauncher extends CommonLauncher {
             NativeUtils.NATIVE_LAUNCHER_RESOURCE_SUFFIX +
             "unix/"; //NOI18N
     public static final String I18N = "i18n"; //NOI18N
-    public static final String SH_LAUNCHER_STUB = 
+    public static final String SH_LAUNCHER_STUB =
             DEFAULT_UNIX_RESOURCE_SUFFIX + SH_LAUNCHER_STUB_NAME;
     
     private static final String SH_EXT = ".sh"; //NOI18N
@@ -115,6 +115,9 @@ public class ShLauncher extends CommonLauncher {
             addTestJVMFile(sb);
             addClasspathJars(sb);
             addJavaCompatible(sb);
+            
+            addNumberVariable(sb, "TOTAL_BUNDLED_FILES_SIZE", getBundledFilesSize());
+            addNumberVariable(sb, "TOTAL_BUNDLED_FILES_NUMBER", getBundledFilesNumber());
             
             LogManager.log("Main Class : " + mainClass);
             addStringVariable(sb, "MAIN_CLASS", mainClass);
@@ -200,27 +203,6 @@ public class ShLauncher extends CommonLauncher {
         list.add(new JavaCompatibleProperties(
                 MIN_JAVA_VERSION_UNIX, null, null, null, null));
         return list;
-    }
-    
-    private long getBundledFilesSize() {
-        long total = 0;
-        
-        for (LauncherResource jvmFile : jvms) {
-            if ( jvmFile.isBundled()) {
-                total += FileUtils.getSize(new File(jvmFile.getPath()));
-            }
-        }
-        if(testJVMFile!=null && testJVMFile.isBundled()) {
-            total += FileUtils.getSize(new File(testJVMFile.getPath()));
-        }
-        
-        for (LauncherResource jarFile : jars) {
-            if ( jarFile.isBundled()) {
-                File file = new File(jarFile.getPath());
-                total += FileUtils.getSize(file);
-            }
-        }
-        return total;
     }
     
     protected String getI18NResourcePrefix() {
@@ -357,7 +339,7 @@ public class ShLauncher extends CommonLauncher {
     }
     private void addTestJVMFile(StringBuilder sb) throws IOException {
         nextLine(sb);
-        long type = (testJVMFile!=null) ? testJVMFile.getPathType().toLong() : 0;
+        long type = (testJVMFile!=null) ? testJVMFile.getPathType().toLong() : 0L;
         
         addNumberVariable(sb, "TEST_JVM_FILE_TYPE", type); //NOI18N
         
@@ -516,6 +498,16 @@ public class ShLauncher extends CommonLauncher {
             fillWithPads(fos, sz);
             
             LogManager.log("... done bundle testJVM file");//NOI18N
+        }        
+        for(LauncherResource jvm : jvms) {
+            if(jvm.isBundled()) {
+                File jvmFile = new File(jvm.getPath());
+                LogManager.log("Bundle jvm " + jvmFile);        //NOI18N
+                addData(fos, jvmFile, progress, total);
+                LogManager.log("... done bundle jvm");          //NOI18N
+                long sz = FileUtils.getSize(jvmFile);
+                fillWithPads(fos, sz);
+            }
         }
         for(LauncherResource file : jars) {
             if(file.isBundled()) {
@@ -527,16 +519,6 @@ public class ShLauncher extends CommonLauncher {
                 fillWithPads(fos, sz);
             }
         }
-        
-        for(LauncherResource jvm : jvms) {
-            if(jvm.isBundled()) {
-                File jvmFile = new File(jvm.getPath());
-                LogManager.log("Bundle jvm " + jvmFile);        //NOI18N
-                addData(fos, jvmFile, progress, total);
-                LogManager.log("... done bundle jvm");          //NOI18N
-                long sz = FileUtils.getSize(jvmFile);
-                fillWithPads(fos, sz);
-            }
-        }
+
     }
 }

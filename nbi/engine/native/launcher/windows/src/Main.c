@@ -37,175 +37,185 @@ TCHAR mainClassName[80] = TEXT("Main NBI Window Class");
 
 HWND hwndPB = NULL;
 HWND hwndMain = NULL;
-HWND hwndDetail = NULL;
-HWND hwndTitle = NULL;
-HINSTANCE globalInstance;
+HWND hwndErrorDetail = NULL;
+HWND hwndErrorTitle = NULL;
+HWND hwndButton = NULL;
+HWND hwndProgressTitle = NULL;
+
+HINSTANCE globalInstance = NULL;
 double totalProgressSize = 0;
 double currentProgressSize = 0;
 double steps = 1000;
 int iCmdShowGlobal = 0;
-HANDLE initializationSuccess, initializationFailed;
+
+HANDLE initializationSuccess = NULL;
+HANDLE initializationFailed = NULL;
+HANDLE closingWindowsRequired = NULL;
+HANDLE closingWindowsConfirmed = NULL;
+HANDLE buttonPressed = NULL;
+
+#define BTN_EXIT 254
+#define MAIN_WINDOW 255
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam) {
     switch (umsg) {
         case WM_CLOSE:
+            SetEvent(closingWindowsRequired);
+            DestroyWindow(hwndPB);
+            DestroyWindow(hwndProgressTitle);
+            DestroyWindow(hwndErrorDetail);
+            DestroyWindow(hwndErrorTitle);
+            DestroyWindow(hwndButton);
             DestroyWindow(hwnd);
             return 0;
             
         case WM_DESTROY:
+            UnregisterClass(mainClassName, globalInstance);
             PostQuitMessage(0);
             return 0;
-            
-            
+        case WM_COMMAND:
+            if(LOWORD(wParam)==BTN_EXIT) {                
+                SetEvent(buttonPressed);
+                return 0;
+            }
     }
     
     return DefWindowProc(hwnd, umsg, wParam, lParam);
 }
 
-BOOL InitInstance(HINSTANCE hInstance, int iCmdShow, HWND * MainWindowHandle) {
-    if(isSilent()) return TRUE;
-    
+void initMainWindow(LauncherProperties * props, HINSTANCE hInstance) {
+    if(isSilent(props)) return;
     int systemWidth = GetSystemMetrics(SM_CXSCREEN);
     int systemHeight = GetSystemMetrics(SM_CYSCREEN);
     
-    int w = 400;
-    int h = 140;
+    int w = 436;
+    int h = 178;
     int x = (systemWidth - w)/2;
     int y = (systemHeight - h)/2;
     
     InitCommonControls();
     
-    HWND hwndMain = CreateWindow( mainClassName,   mainWindowTitle, WS_OVERLAPPED,  x, y, w, h, NULL, NULL, hInstance, NULL);
-    
+    hwndMain = CreateWindow(mainClassName,   mainWindowTitle,
+    //WS_OVERLAPPED | WS_EX_TOOLWINDOW,
+    WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_BORDER | WS_DLGFRAME | WS_SYSMENU | WS_MINIMIZEBOX /* | WS_THICKFRAME | WS_MAXIMIZEBOX*/
+    ,
+    x, y, w, h, NULL, NULL, hInstance, NULL);
+}
+
+void initErrorTitleWindow(LauncherProperties *props, HINSTANCE hInstance) {
+    if(isSilent(props)) return;
     RECT rcClient;
     int cyVScroll;
-    
     cyVScroll = GetSystemMetrics(SM_CYVSCROLL);
     GetClientRect(hwndMain, &rcClient);
-    
-    hwndTitle = CreateWindowExW(0,  WC_STATICW,  WC_STATICW, WS_CHILD | WS_VISIBLE,
-    rcClient.left + 10,  15, rcClient.right - 20, 30,
+    hwndErrorTitle = CreateWindowExW(0,  WC_STATICW,  WC_STATICW, WS_CHILD,
+    rcClient.left + 10,  15, rcClient.right - 20, 30, hwndMain, NULL, hInstance, NULL);
+    if (hwndErrorTitle)  {
+        HFONT hFont = (HFONT) GetStockObject(DEFAULT_GUI_FONT);
+        LOGFONT lfTitle;
+        GetObject(hFont, sizeof(lfTitle), &lfTitle);
+        lfTitle.lfWeight = FW_ULTRABOLD;//OLD;
+        lfTitle.lfHeight = lfTitle.lfHeight  + 2 ;
+        lfTitle.lfWidth  = 0;
+        HFONT titleFont = CreateFontIndirect(&lfTitle);
+        SendMessage(hwndErrorTitle, WM_SETFONT, (WPARAM) titleFont , FALSE);
+        //DeleteObject(titleFont );
+        setErrorTitleString(props, NULL);
+    }
+}
+
+void initErrorDetailWindow(LauncherProperties *props, HINSTANCE hInstance) {
+    if(isSilent(props)) return;
+    RECT rcClient;
+    int cyVScroll;
+    cyVScroll = GetSystemMetrics(SM_CYVSCROLL);
+    GetClientRect(hwndMain, &rcClient);
+    hwndErrorDetail = CreateWindowExW(0,  WC_STATICW,  WC_STATICW, WS_CHILD  ,
+    rcClient.left + 10,  50, rcClient.right - 20, 50,
     hwndMain, NULL, hInstance, NULL);
-    SendMessage(hwndTitle, WM_SETFONT, (WPARAM)GetStockObject(DEFAULT_GUI_FONT), MAKELPARAM(TRUE, 0));
-    setTitleString(NULL);
-    
-    iCmdShowGlobal = iCmdShow;
-    
-    hwndDetail = CreateWindowExW(0,  WC_STATICW,  WC_STATICW, WS_CHILD | WS_VISIBLE,
-    rcClient.left + 10,  50, rcClient.right - 20, 30,
+    if (hwndErrorDetail)  {
+        LOGFONT lfDetail;
+        HFONT hFont = (HFONT) GetStockObject(DEFAULT_GUI_FONT);
+        GetObject(hFont, sizeof(lfDetail), &lfDetail);
+        lfDetail.lfHeight = lfDetail.lfHeight + 2;
+        lfDetail.lfWidth  = 0;
+        HFONT detailFont = CreateFontIndirect(&lfDetail);
+        SendMessage(hwndErrorDetail, WM_SETFONT, (WPARAM) detailFont, FALSE);
+        //DeleteObject(detailFont);
+        setErrorDetailString(props, NULL);
+    }
+}
+
+void initProgressTitleWindow(LauncherProperties *props, HINSTANCE hInstance) {
+    if(isSilent(props)) return;
+    RECT rcClient;
+    int cyVScroll;
+    int height = 30;
+    cyVScroll = GetSystemMetrics(SM_CYVSCROLL);
+    GetClientRect(hwndMain, &rcClient);
+    hwndProgressTitle = CreateWindowExW(0,  WC_STATICW,  WC_STATICW, WS_CHILD | WS_VISIBLE ,
+    rcClient.left + 10, (rcClient.bottom - cyVScroll)/2 - height, rcClient.right - 20, height,
     hwndMain, NULL, hInstance, NULL);
-    SendMessage(hwndDetail, WM_SETFONT, (WPARAM)GetStockObject(DEFAULT_GUI_FONT), MAKELPARAM(TRUE, 0));
-    
+    if (hwndProgressTitle)  {
+        LOGFONT lfTitle;
+        HFONT hFont = (HFONT) GetStockObject(DEFAULT_GUI_FONT);
+        GetObject(hFont, sizeof(lfTitle), &lfTitle);
+        lfTitle.lfHeight = lfTitle.lfHeight + 2;
+        lfTitle.lfWidth  = 0;
+        HFONT detailFont = CreateFontIndirect(&lfTitle);
+        SendMessage(hwndProgressTitle, WM_SETFONT, (WPARAM) detailFont, FALSE);
+        //DeleteObject(detailFont);
+        setProgressTitleString(props, NULL);
+    }
+}
+
+void initProgressWindow(LauncherProperties * props, HINSTANCE hInstance) {
+    if(isSilent(props)) return;
+    RECT rcClient;
+    int cyVScroll;
+    cyVScroll = GetSystemMetrics(SM_CYVSCROLL);
+    GetClientRect(hwndMain, &rcClient);
     hwndPB = CreateWindowExW(0, PROGRESS_CLASSW, NULL, WS_CHILD | WS_VISIBLE | PBS_SMOOTH,
-    rcClient.left + 10,  rcClient.bottom - cyVScroll - 10, rcClient.right - 20, cyVScroll,
+    rcClient.left + 10,  (rcClient.bottom - cyVScroll)/2 , rcClient.right - 20, cyVScroll,
     hwndMain, NULL, hInstance, NULL);
-    totalProgressSize = STUB_FILL_SIZE;
-    if (! hwndMain)  return FALSE;
-    
-    setDetailString(NULL);
-    
-    UpdateWindow(hwndMain);
-    * MainWindowHandle = hwndMain;
-    return TRUE;
+    totalProgressSize = 100;
 }
 
-void messageLoop(){
-    MSG message;
-    while(GetMessage(&message, NULL, 0, 0) > 0) {
-        TranslateMessage(&message);
-        DispatchMessage(&message);
+void initExitButton(LauncherProperties * props, HINSTANCE hInstance) {
+    if(isSilent(props)) return;
+    RECT rcClient;
+    int cyVScroll    = GetSystemMetrics(SM_CYVSCROLL);
+    int buttonWidth  = 90;
+    int buttonHeight = 25;
+    
+    GetClientRect(hwndMain, &rcClient);
+    hwndButton = CreateWindowExW(0, WC_BUTTONW, NULL,
+    WS_CHILD  | BS_DEFPUSHBUTTON | WS_TABSTOP | BS_PUSHBUTTON  ,
+    rcClient.right - 20 - buttonWidth, rcClient.bottom - 10 - buttonHeight, buttonWidth, buttonHeight,
+    hwndMain, (HMENU)BTN_EXIT, hInstance, 0);
+    if (hwndButton)  {
+        LOGFONT lfButton;
+        HFONT hFont = (HFONT) GetStockObject(DEFAULT_GUI_FONT);
+        GetObject(hFont, sizeof(lfButton), &lfButton);
+        lfButton.lfHeight = lfButton.lfHeight + 2;
+        lfButton.lfWidth  = 0;
+        HFONT buttonFont = CreateFontIndirect(&lfButton);
+        SendMessage(hwndButton, WM_SETFONT, (WPARAM) buttonFont, FALSE);
+        SetFocus(hwndButton);
+        //DeleteObject(detailFont);
+        setButtonString(props, NULL);
+        UpdateWindow(hwndButton);
     }
 }
 
-BOOL InitApplication(HINSTANCE hInstance) {
-    if(isSilent()) return TRUE;
+void showErrorW(LauncherProperties * props, const char * error, const DWORD varArgsNumber, ...) {
+    WCHAR * errorTitle = NULL;
+    WCHAR * errorMessage = NULL;
+    getI18nPropertyTitleDetail(props, error, & errorTitle, &errorMessage);
     
-    WNDCLASS wndclass;
-    
-    wndclass.style = CS_HREDRAW | CS_VREDRAW;
-    wndclass.lpfnWndProc = (WNDPROC)WndProc;
-    wndclass.cbClsExtra = 0;
-    wndclass.cbWndExtra = 0;
-    wndclass.hIcon = NULL;
-    wndclass.hInstance = hInstance;
-    wndclass.hCursor = NULL;
-    wndclass.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
-    wndclass.lpszMenuName = NULL;
-    wndclass.lpszClassName = mainClassName;
-    return RegisterClass(&wndclass);
-}
-
-
-
-void addProgressPosition(DWORD add) {
-    if(isSilent()) return;
-    if ( add > 0 ) {
-        currentProgressSize += (double) add;
-        double pos = currentProgressSize / totalProgressSize;
-        SendMessage(hwndPB, PBM_SETPOS, (long) pos, 0);
-        UpdateWindow(hwndPB);
-        UpdateWindow(hwndMain);
-    }
-}
-
-void setProgressRange(double range) {
-    if(isSilent()) return;
-    totalProgressSize = range / steps;
-    currentProgressSize = 0;
-    SendMessage(hwndPB, PBM_SETRANGE, 0, MAKELPARAM(0, steps));
-    SendMessage(hwndPB, PBM_SETSTEP, 1, 0);
-    UpdateWindow(hwndPB);
-    UpdateWindow(hwndMain);
-}
-
-void setTitleString(WCHAR * message) {
-    if(isSilent()) return;
-    SetWindowTextW(hwndTitle, message);
-    UpdateWindow(hwndTitle);
-    UpdateWindow(hwndMain);
-}
-
-void setDetailString(WCHAR * message) {
-    if(isSilent()) return;
-    SetWindowTextW(hwndDetail, message);
-    UpdateWindow(hwndDetail);
-    UpdateWindow(hwndMain);
-}
-
-void closeLauncherWindows() {
-    if(isSilent()) return;
-    
-    if(hwndMain != NULL) {
-        DestroyWindow(hwndPB);
-        DestroyWindow(hwndDetail);
-        DestroyWindow(hwndTitle);
-        DestroyWindow(hwndMain);
-        UnregisterClass(mainClassName, globalInstance);
-        hwndMain  = NULL;
-    }
-}
-
-void hideLauncherWindows() {
-    if(isSilent()) return;
-    
-    if(hwndMain != NULL) {
-        ShowWindow(hwndMain, HIDE_WINDOW);
-    }
-}
-
-
-void showLauncherWindows() {
-    ShowWindow(hwndMain, iCmdShowGlobal);
-    SetForegroundWindow(hwndMain);
-    UpdateWindow(hwndMain);
-    
-}
-
-void showMessageW(const DWORD varArgsNumber, const WCHAR* message, ...) {
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "\n<ShowMessage>\n", 0);
-    DWORD totalLength=getLengthW(message);
+    DWORD totalLength=getLengthW(errorMessage);
     va_list ap;
-    va_start(ap, message);
+    va_start(ap, varArgsNumber);
     DWORD counter=0;
     while((counter++)<varArgsNumber) {
         WCHAR * arg = va_arg( ap, WCHAR * );
@@ -214,22 +224,210 @@ void showMessageW(const DWORD varArgsNumber, const WCHAR* message, ...) {
     va_end(ap);
     
     WCHAR * result = newpWCHAR(totalLength + 1);
-    va_start(ap, message);
-    wvsprintfW(result, message, ap);
+    va_start(ap, varArgsNumber);
+    wvsprintfW(result, errorMessage, ap);
     va_end(ap);
-    writeMessageW(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), result, 1);
-    if(!isSilent()) {
-        hideLauncherWindows();
-        MessageBoxW(NULL, result, getI18nProperty(MSG_MESSAGEBOX_TITLE), MB_OK);
+    
+    if(!isSilent(props)) {
+        hide(props, hwndProgressTitle);
+        hide(props, hwndPB);
+        setErrorDetailString(props, result);
+        setErrorTitleString(props, errorTitle);
+        setButtonString(props, getI18nProperty(props, EXIT_BUTTON_PROP));
+        show(props, hwndErrorDetail);
+        show(props, hwndErrorTitle);
+        show(props, hwndButton);
+        
+        HANDLE * events = (HANDLE *) malloc(sizeof(HANDLE)*2);
+        events[0] = buttonPressed;
+        events[1] = closingWindowsRequired;
+        DWORD result = WaitForMultipleObjects(2, events, FALSE, INFINITE);
+        FREE(events);
+    }
+    FREE(result);
+    FREE(errorTitle);
+    FREE(errorMessage);
+}
+
+BOOL InitInstance(LauncherProperties * props, HINSTANCE hInstance, int iCmdShow, HWND * MainWindowHandle) {
+    if(isSilent(props)) return TRUE;
+    iCmdShowGlobal = iCmdShow;
+    
+    initMainWindow(props, hInstance);
+    if(!hwndMain) return FALSE;
+    
+    initErrorTitleWindow(props, hInstance);
+    if(!hwndErrorTitle) return FALSE;
+    
+    initErrorDetailWindow(props, hInstance);
+    if(!hwndErrorDetail) return FALSE;
+    
+    initProgressWindow(props, hInstance);
+    if (! hwndPB)  return FALSE;
+    
+    initProgressTitleWindow(props, hInstance);
+    if (! hwndPB)  return FALSE;
+    
+    initExitButton(props, hInstance);
+    if (! hwndButton)  return FALSE;
+    
+    UpdateWindow(hwndMain);
+    * MainWindowHandle = hwndMain;
+    return TRUE;
+}
+
+void messageLoop(LauncherProperties * props){
+    if(isSilent(props)) return;
+    MSG message;
+    while(GetMessage(&message, NULL, 0, 0) > 0) {
+        if(!IsDialogMessage(hwndMain,& message)) {
+            TranslateMessage(&message);
+            DispatchMessage(&message);
+        }
+    }
+}
+
+BOOL InitApplication(LauncherProperties * props, HINSTANCE hInstance) {
+    if(isSilent(props)) return TRUE;
+    
+    WNDCLASS wndclass;
+    wndclass.style = CS_HREDRAW | CS_VREDRAW;
+    wndclass.lpfnWndProc = (WNDPROC)WndProc;
+    wndclass.cbClsExtra = 0;
+    wndclass.cbWndExtra = 0;
+    wndclass.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(100));
+    wndclass.hInstance = hInstance;
+    //wndclass.hCursor = NULL;
+    wndclass.hCursor = LoadCursor( 0, IDC_ARROW );
+    wndclass.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);    
+    wndclass.lpszMenuName = NULL;
+    wndclass.lpszClassName = mainClassName;
+    return RegisterClass(&wndclass);
+}
+
+
+DWORD isTerminated(LauncherProperties * props) {
+    if(props->status == ERROR_USER_TERMINATED) {
+        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... already terminated", 1);
+        return 1;
+    }
+    if (WAIT_OBJECT_0 == WaitForSingleObject(closingWindowsRequired, 0)) {
+        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... terminate signal!", 1);
+        props->status = ERROR_USER_TERMINATED;
+        return 1;
+    }
+    return 0;
+}
+
+void addProgressPosition(LauncherProperties * props, DWORD add) {
+    if(isSilent(props)) return;
+    if ( add > 0 ) {
+        currentProgressSize += (double) add;
+        double pos = currentProgressSize / totalProgressSize;
+        SendMessage(hwndPB, PBM_SETPOS, (long) pos, 0);
+    }
+}
+
+void setProgressRange(LauncherProperties * props, int64t * range) {
+    if(isSilent(props)) return;
+    totalProgressSize = int64ttoDouble(range) / steps;
+    currentProgressSize = 0;
+    SendMessage(hwndPB, PBM_SETRANGE, 0, MAKELPARAM(0, steps));
+    SendMessage(hwndPB, PBM_SETSTEP, 1, 0);
+}
+
+void hide(LauncherProperties * props, HWND hwnd) {
+    if(!isSilent(props) && hwndMain != NULL && hwnd!=NULL ) {
+        ShowWindow(hwnd, SW_HIDE);
+        UpdateWindow(hwnd);
+    }
+}
+void show(LauncherProperties * props, HWND hwnd) {
+    if(!isSilent(props) && hwndMain != NULL && hwnd!=NULL ) {
+        ShowWindow(hwnd, iCmdShowGlobal);
+        UpdateWindow(hwnd);
+    }
+}
+
+void setProgressTitleString(LauncherProperties * props, const WCHAR * message) {
+    if(isSilent(props)) return;
+    SetWindowTextW(hwndProgressTitle, message);
+    UpdateWindow(hwndProgressTitle);
+    UpdateWindow(hwndMain);
+}
+
+void setErrorTitleString(LauncherProperties * props, const WCHAR * message) {
+    if(isSilent(props)) return;
+    SetWindowTextW(hwndErrorTitle, message);
+    UpdateWindow(hwndErrorTitle);
+    UpdateWindow(hwndMain);
+}
+
+void setErrorDetailString(LauncherProperties * props, const WCHAR * message) {
+    if(isSilent(props)) return;
+    SetWindowTextW(hwndErrorDetail, message);
+    UpdateWindow(hwndErrorDetail);
+    UpdateWindow(hwndMain);
+}
+
+void setButtonString(LauncherProperties * props, const WCHAR * message) {
+    if(isSilent(props)) return;
+    SetWindowTextW(hwndButton, message);
+    UpdateWindow(hwndButton);
+    UpdateWindow(hwndMain);
+}
+
+void closeLauncherWindows(LauncherProperties * props) {
+    if(isSilent(props)) return;
+    SendMessage(hwndMain, WM_CLOSE, 0, 0);
+}
+
+
+void hideLauncherWindows(LauncherProperties * props) {
+    if(isSilent(props)) return;
+    if(hwndMain != NULL) {
+        ShowWindow(hwndMain, HIDE_WINDOW);
     }
 }
 
 
-void showMessageA(const DWORD varArgsNumber, const char* message, ...) {
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "\n<ShowMessage>\n", 0);
+void showLauncherWindows(LauncherProperties * props) {
+    if(isSilent(props)) return;
+    ShowWindow(hwndMain, iCmdShowGlobal);
+    SetForegroundWindow(hwndMain);
+    UpdateWindow(hwndMain);
+    
+}
+
+void showMessageW(LauncherProperties * props, const WCHAR* message, const DWORD varArgsNumber, ...) {
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "\n<ShowMessage>\n", 0);
+    DWORD totalLength=getLengthW(message);
+    va_list ap;
+    va_start(ap, varArgsNumber);
+    DWORD counter=0;
+    while((counter++)<varArgsNumber) {
+        WCHAR * arg = va_arg( ap, WCHAR * );
+        totalLength+=getLengthW(arg);
+    }
+    va_end(ap);
+    
+    WCHAR * result = newpWCHAR(totalLength + 1);
+    va_start(ap, varArgsNumber);
+    wvsprintfW(result, message, ap);
+    va_end(ap);
+    writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, result, 1);
+    if(!isSilent(props)) {
+        hideLauncherWindows(props);
+        MessageBoxW(NULL, result, getI18nProperty(props, MSG_MESSAGEBOX_TITLE), MB_OK);
+    }
+}
+
+
+void showMessageA(LauncherProperties * props, const char* message, const DWORD varArgsNumber, ...) {
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "\n<ShowMessage>\n", 0);
     DWORD totalLength=getLengthA(message);
     va_list ap;
-    va_start(ap, message);
+    va_start(ap, varArgsNumber);
     DWORD counter=0;
     while((counter++)<varArgsNumber) {
         char * arg = va_arg( ap, char * );
@@ -238,12 +436,12 @@ void showMessageA(const DWORD varArgsNumber, const char* message, ...) {
     va_end(ap);
     
     char * result = newpChar(totalLength + 1);
-    va_start(ap, message);
+    va_start(ap, varArgsNumber);
     vsprintf(result, message, ap);
     va_end(ap);
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), result, 1);
-    char * prop = toChar(getI18nProperty(MSG_MESSAGEBOX_TITLE));
-    if(!isSilent()) MessageBoxA(NULL, result, prop, MB_OK);
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, result, 1);
+    char * prop = toChar(getI18nProperty(props, MSG_MESSAGEBOX_TITLE));
+    if(!isSilent(props)) MessageBoxA(NULL, result, prop, MB_OK);
     FREE(prop);
 }
 
@@ -284,94 +482,96 @@ void showMessageA(const DWORD varArgsNumber, const char* message, ...) {
 
  }*/
 
-typedef struct _guiArguments {
-    HINSTANCE hInstance;
-    HINSTANCE hi;
-    int nCmdShow;
-} GuiArguments;
 
 
-DWORD WINAPI guiThread(void * ptr)  {
-    GuiArguments * guiArg = (GuiArguments * ) ptr;
-    HINSTANCE hInstance = guiArg->hInstance;
-    HINSTANCE hi = guiArg->hi;
-    int nCmdShow = guiArg->nCmdShow;
-    if (!hi && !InitApplication(hInstance)) {
-        SetEvent(initializationFailed);
-    } else if (!InitInstance(hInstance, nCmdShow, & hwndMain)) {
-        SetEvent(initializationFailed);
-    } else {
-        SetEvent(initializationSuccess);
-        messageLoop();
-    }
-}
 
-
-DWORD createGui(HINSTANCE hInstance, HINSTANCE hi, int nCmdShow) {
-    GuiArguments * guiArgs = (GuiArguments*) malloc(sizeof(GuiArguments));
-    guiArgs->hInstance=hInstance;
-    guiArgs->hi=hi;
-    guiArgs->nCmdShow=nCmdShow;
-    initializationSuccess = CreateEventW(NULL, TRUE, FALSE, L"Application Initialization Successfull");
-    if(initializationSuccess==NULL) {
-        return 0;
-    }
-    
-    initializationFailed = CreateEventW(NULL, TRUE, FALSE, L"Application Initialization Failed");
-    if(initializationFailed==NULL) {
-        return 0;
-    }
-    
-    DWORD threadId;
-    CreateThread( NULL, 0, &guiThread, (LPVOID) guiArgs, 0, &threadId );
+DWORD WINAPI launcherThread(void * ptr) {
     HANDLE * events = (HANDLE *) malloc(sizeof(HANDLE)*2);
     events[0] = initializationSuccess;
     events[1] = initializationFailed;
     DWORD result = WaitForMultipleObjects(2, events, FALSE, INFINITE);
+    
     FREE(events);
-    return (result == WAIT_OBJECT_0);
+    
+    if (result == WAIT_OBJECT_0) {
+        LauncherProperties * props = (LauncherProperties*) ptr;
+        processLauncher(props);
+        SetEvent(closingWindowsConfirmed);
+        closeLauncherWindows(props);
+    }
 }
 
-WCHARList * getCommandlineArguments() {
-    int argumentsNumber = 0;
-    int i=0;
-    
-    WCHAR ** commandLine = CommandLineToArgvW(GetCommandLineW(), &argumentsNumber);
-    
-    // the first is always the running program..  we don`t need it
-    // it is that same as GetModuleFileNameW says
-    WCHARList * commandsList = newWCHARList((DWORD) (argumentsNumber - 1) );
-    
-    for(i=0;i<argumentsNumber - 1;i++) {
-        
-        commandsList->items[i] = appendStringW(NULL, commandLine[i + 1]);
+
+void createLauncherThread(LauncherProperties *props) {
+    DWORD threadId;
+    if(CreateThread( NULL, 0, &launcherThread, (LPVOID) props, 0, &threadId )==NULL) {
+        SetEvent(closingWindowsConfirmed);
+    }
+}
+
+DWORD createGui(LauncherProperties* props, HINSTANCE hInstance, HINSTANCE hi, int nCmdShow) {
+    if (!hi && !InitApplication(props, hInstance)) {
+        SetEvent(initializationFailed);
+        return 0;
+    } else if (!InitInstance(props, hInstance, nCmdShow, & hwndMain)) {
+        SetEvent(initializationFailed);
+        return 0;
+    } else {
+        SetEvent(initializationSuccess);
+    }
+}
+
+
+DWORD createEvents() {
+    initializationSuccess = CreateEventW(NULL, TRUE, FALSE, L"Application Initialization Successfull");
+    if(initializationSuccess==NULL) {
+        return 0;
+    }
+    initializationFailed = CreateEventW(NULL, TRUE, FALSE, L"Application Initialization Failed");
+    if(initializationFailed==NULL) {
+        return 0;
+    }
+    buttonPressed = CreateEventW(NULL, TRUE, FALSE, L"Exit button pressed");
+    if(buttonPressed ==NULL) {
+        return 0;
+    }
+    closingWindowsRequired = CreateEventW(NULL, TRUE, FALSE, L"Closing windows required");
+    if(closingWindowsRequired ==NULL) {
+        return 0;
+    }
+    closingWindowsConfirmed = CreateEventW(NULL, TRUE, FALSE, L"Closing windows confirmed");
+    if(closingWindowsConfirmed ==NULL) {
+        return 0;
     }
     
-    LocalFree(commandLine);
-    return commandsList;
+    return 1;
 }
+
 int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hi, PSTR pszCmdLine, int nCmdShow) {
     DWORD exitCode = 1;
     DWORD status = ERROR_OK;
     globalInstance = hInstance;
+    
     if(is9x()) {
-        showMessageA(0, "Windows 9X platform is not supported");
+        MessageBoxA(0, "Windows 9X platform is not supported", "Message", MB_OK);
         status = EXIT_CODE_SYSTEM_ERROR;
     } else {
-        if(isOnlyLauncher()) {
-            showMessageW(0, L"It is only a launcher stub!");
-            status = EXIT_CODE_STUB;
+        if(!createEvents()) {
+            status = EXIT_CODE_EVENTS_INITIALIZATION_ERROR;
         } else {
-            setStdoutHandle(GetStdHandle(STD_OUTPUT_HANDLE));
-            WCHARList * commandsList = getCommandlineArguments();
-            setRunningMode(commandsList);
-            if(!createGui(hInstance, hi, nCmdShow)) {
+            LauncherProperties * props = createLauncherProperties();
+            createLauncherThread(props);
+            if(!createGui(props, hInstance, hi, nCmdShow)) {
                 status = EXIT_CODE_GUI_INITIALIZATION_ERROR;
             } else {
-                exitCode = processLauncher(&status, commandsList);
-                closeLauncherWindows();
+                messageLoop(props);
+                WaitForSingleObject(closingWindowsConfirmed, INFINITE);
             }
-            freeWCHARList(&commandsList);
+            
+            status = props->status;
+            exitCode = props->exitCode;
+            printStatus(props);
+            freeLauncherProperties(&props);
         }
     }
     return (status==ERROR_OK) ? exitCode : status;

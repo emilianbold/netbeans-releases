@@ -114,7 +114,6 @@ DWORD isJavaCompatible(JavaProperties *currentJava, JavaCompatible ** compatible
 
 JavaVersion * getJavaVersionFromString(char * string, DWORD * result) {
     JavaVersion *vers = NULL;
-    
     if(getLengthA(string)>=3) {
         //hope that at least we "major.minor" : 1.5
         if(string[1]=='.') {
@@ -171,7 +170,7 @@ JavaVersion * getJavaVersionFromString(char * string, DWORD * result) {
     return vers;
 }
 
-DWORD getJavaPropertiesFromOutput(char *str, JavaProperties ** javaProps) {
+DWORD getJavaPropertiesFromOutput(LauncherProperties * props, char *str, JavaProperties ** javaProps) {
     * javaProps = NULL;
     DWORD separators = getLineSeparatorNumber(str);
     if(separators != TEST_JAVA_PARAMETERS) return ERROR_INPUTOUPUT;
@@ -180,33 +179,33 @@ DWORD getJavaPropertiesFromOutput(char *str, JavaProperties ** javaProps) {
     char * end = strstr(start, "\n");
     
     char * javaVersion = appendStringN(NULL, 0, start, getLengthA(start) - getLengthA(end)-1);
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "    java.version =  ", 0);
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), javaVersion, 1);
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "    java.version =  ", 0);
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, javaVersion, 1);
     start = end + 1;
     end = strstr(start, "\n");
     
     
     char * javaVmVersion = appendStringN(NULL, 0, start, getLengthA(start) - getLengthA(end)-1);
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "    java.vm.version = ", 0);
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), javaVmVersion, 1);
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "    java.vm.version = ", 0);
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, javaVmVersion, 1);
     start = end + 1;
     end = strstr(start, "\n");
     
     char * javaVendor = appendStringN(NULL, 0, start, getLengthA(start) - getLengthA(end)-1);
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "    java.vendor = ", 0);
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), javaVendor, 1);
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "    java.vendor = ", 0);
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, javaVendor, 1);
     start = end + 1;
     end = strstr(start, "\n");
     
     char * osName = appendStringN(NULL, 0, start, getLengthA(start) - getLengthA(end)-1);
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "    os.name = ", 0);
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), osName, 1);
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "    os.name = ", 0);
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, osName, 1);
     start = end + 1;
     end = strstr(start, "\n");
     
     char * osArch = appendStringN(NULL, 0, start, getLengthA(start) - getLengthA(end)-1);
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "    os.arch = ", 0);
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), osArch, 2);
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "    os.arch = ", 0);
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, osArch, 2);
     
     char * string = javaVersion;
     DWORD result = ERROR_INPUTOUPUT;
@@ -217,11 +216,12 @@ DWORD getJavaPropertiesFromOutput(char *str, JavaProperties ** javaProps) {
             string = javaVersion;
         }
     }
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "getting java version from string : ", 0);
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), string, 1);
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "getting java version from string : ", 0);
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, string, 1);
     
     JavaVersion * vers = getJavaVersionFromString(string, & result);
-    if(result==ERROR_OK) {
+    if(javaProps != NULL) {
+        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, ".. some java  there", 1);
         * javaProps = (JavaProperties *) malloc(sizeof(JavaProperties));
         (*javaProps)->version = vers;
         (*javaProps)->vendor   = javaVendor;
@@ -230,6 +230,7 @@ DWORD getJavaPropertiesFromOutput(char *str, JavaProperties ** javaProps) {
         (*javaProps)->javaHome = NULL;
         (*javaProps)->javaExe  = NULL;
     } else {
+        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, ".. no java  there", 1);
         FREE(javaVendor);
         FREE(osName);
         FREE(osArch);
@@ -241,12 +242,13 @@ DWORD getJavaPropertiesFromOutput(char *str, JavaProperties ** javaProps) {
 }
 
 
-DWORD getJavaProperties(WCHAR * location, LauncherProperties * props, JavaProperties ** javaProps) {
+void getJavaProperties(WCHAR * location, LauncherProperties * props, JavaProperties ** javaProps) {
     WCHAR *testJavaClass  = props->testJVMClass;
     WCHAR *javaExecutable = getJavaResource(location, JAVA_EXE_SUFFIX);
     WCHAR *libDirectory   = getJavaResource(location, JAVA_LIB_SUFFIX);
-    DWORD result = ERROR_OK;
+    
     if(fileExists(javaExecutable) && testJavaClass!=NULL && isDirectory(libDirectory)) {
+        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "java hierarchy there...", 1);
         // <location>\bin\java.exe exists
         WCHAR * command = NULL;
         
@@ -258,16 +260,15 @@ DWORD getJavaProperties(WCHAR * location, LauncherProperties * props, JavaProper
         HANDLE hRead;
         HANDLE hWrite;
         CreatePipe(&hRead, &hWrite, NULL, 0);
-        // Start the child process.
-        DWORD status = ERROR_OK;
-        executeCommand(&status, command, NULL, JAVA_VERSION_PROCESS_TIMEOUT, hWrite, hWrite, NORMAL_PRIORITY_CLASS);
-        if(status!= ERROR_ON_EXECUTE_PROCESS && status!= ERROR_PROCESS_TIMEOUT) {
+        // Start the child process.        
+        executeCommand(props, command, NULL, JAVA_VERSION_PROCESS_TIMEOUT, hWrite, hWrite, NORMAL_PRIORITY_CLASS);
+        if(props->status!= ERROR_ON_EXECUTE_PROCESS && props->status!= ERROR_PROCESS_TIMEOUT) {
             char * output = readHandle(hRead);
-            writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "           output :\n", 0);
-            writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), output, 1);
+            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "           output :\n", 0);
+            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, output, 1);
             
-            result = getJavaPropertiesFromOutput(output, javaProps);
-            if(status==ERROR_OK) {
+            props->status = getJavaPropertiesFromOutput(props, output, javaProps);
+            if(props->status == ERROR_OK) {
                 (*javaProps)->javaHome = appendStringW(NULL, location);
                 (*javaProps)->javaExe  = appendStringW(NULL, javaExecutable);
             }
@@ -277,12 +278,11 @@ DWORD getJavaProperties(WCHAR * location, LauncherProperties * props, JavaProper
         CloseHandle(hWrite);
         CloseHandle(hRead);
     } else {
-        result = ERROR_INPUTOUPUT;
+        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... not a java hierarchy", 1);
+        props->status = ERROR_INPUTOUPUT;
     }
-    
     FREE(libDirectory);
     FREE(javaExecutable);
-    return result;
 }
 
 
@@ -338,15 +338,17 @@ void searchCurrentJavaRegistry(LauncherProperties * props) {
     HKEY rootKeys [2] = {HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER};
     DWORD rootKeysNumber = sizeof(rootKeys)/sizeof(HKEY);
     DWORD keysNumber = sizeof(JAVA_REGISTRY_KEYS)/sizeof(WCHAR*);
-    writeMessageA(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), ".. search java in CurrentVersion values", 1);
+    writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, ".. search java in CurrentVersion values", 1);
     DWORD status = ERROR_OK;
+    
     for ( k = 0; k < rootKeysNumber; k++) {
         for(i=0; i < keysNumber;i++) {
+            if(isTerminated(props)) return;
             WCHAR * value = getStringValue(rootKeys[k], keys[i], CURRENT_VERSION);
             if(value!=NULL) {
                 WCHAR *javaHome = getStringValuePC(rootKeys[k], keys[i], value, JAVA_HOME);
                 free(value);
-                trySetCompatibleJava(&status, javaHome, props);
+                trySetCompatibleJava(javaHome, props);
                 FREE(javaHome);
                 if(props->java!=NULL) {
                     return;
@@ -358,7 +360,7 @@ void searchCurrentJavaRegistry(LauncherProperties * props) {
     
     
     // we found no CurrentVersion java... just search for other possible keys
-    writeMessageA(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), ".. search java in other values", 1);
+    writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, ".. search java in other values", 1);
     WCHAR buffer [MAX_LEN_VALUE_NAME];
     
     for(k=0;k<rootKeysNumber;k++) {
@@ -376,7 +378,7 @@ void searchCurrentJavaRegistry(LauncherProperties * props) {
                         if (err == ERROR_SUCCESS) {
                             WCHAR  * javaHome = getJavaHomeValue(keys[i], buffer);
                             status = ERROR_OK;
-                            trySetCompatibleJava(&status, javaHome, props);
+                            trySetCompatibleJava(javaHome, props);
                             FREE(javaHome);
                             if(props->java!=NULL) {
                                 i = keysNumber; // to the end of cycles
@@ -417,15 +419,16 @@ void searchJavaFromEnvVariables(LauncherProperties * props) {
     int ret;
     
     for(i=0;i<size;i++) {
+        if(isTerminated(props)) return;
         buffer[0]='\0';
         ret = GetEnvironmentVariableW((WCHAR *) ENVS[i], (WCHAR *) buffer, MAX_PATH);
         if (ret > 0 && ret <= MAX_PATH) {
-            writeMessageA(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), "    <", 0);
-            writeMessageW(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), ENVS[i], 0);
-            writeMessageA(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), "> = ", 0);
-            writeMessageW(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), buffer, 1);
+            writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "    <", 0);
+            writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, ENVS[i], 0);
+            writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "> = ", 0);
+            writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, buffer, 1);
             DWORD status = ERROR_OK;
-            trySetCompatibleJava(&status, buffer, props);
+            trySetCompatibleJava(buffer, props);
             if(props->java!=NULL) {
                 break;
             }
@@ -434,46 +437,49 @@ void searchJavaFromEnvVariables(LauncherProperties * props) {
 }
 
 
-void findSystemJava(LauncherProperties * props) {
-    DWORD status = ERROR_OK;
+void findSystemJava(LauncherProperties * props) {        
     if ( props->jvms->size > 0 ) {
-        writeMessageA(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), "Search jvm using some predefined locations", 1);
+        writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Search jvm using some predefined locations", 1);
         DWORD i=0;
-        for(i=0;i<props->jvms->size;i++) {
+        for(i=0;i<props->jvms->size && !isTerminated(props);i++) {
             resolvePath(props, props->jvms->items[i]);
-            trySetCompatibleJava(&status, props->jvms->items[i]->resolved, props);
-            if(status==ERROR_OK) break;
+            trySetCompatibleJava(props->jvms->items[i]->resolved, props);
+            if(props->status==ERROR_OK) break;
         }
     }
+    
     // search JVM in the registry
+    if(isTerminated(props)) return;
     if(props->java==NULL) {
-        writeMessageA(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), "Search java in registry", 1);
+        writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Search java in registry", 1);
         searchCurrentJavaRegistry(props);
     }
+    
+    if(isTerminated(props)) return;
     // search JVM in the environment
     if(props->java==NULL) {
-        writeMessageA(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), "Search java in environment variables", 1);
+        writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Search java in environment variables", 1);
         searchJavaFromEnvVariables(props);
-    }
+    }    
 }
 
 
-void printJavaProperties(JavaProperties * javaProps) {
+void printJavaProperties(LauncherProperties * props, JavaProperties * javaProps) {
     if(javaProps!=NULL) {
         char * jv = getJavaVersionFormatted(javaProps);
-        writeMessageA(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), "Current Java:", 1);
-        writeMessageA(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), "       javaHome: ", 0);
-        writeMessageW(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), javaProps->javaHome, 1);
-        writeMessageA(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), "        javaExe: ", 0);
-        writeMessageW(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), javaProps->javaExe, 1);
-        writeMessageA(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), "        version: ", 0);
-        writeMessageA(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), jv, 1);
-        writeMessageA(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), "         vendor: ", 0);
-        writeMessageA(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), javaProps->vendor, 1);
-        writeMessageA(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), "        os.name: ", 0);
-        writeMessageA(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), javaProps->osName, 1);
-        writeMessageA(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), "        os.arch: ", 0);
-        writeMessageA(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), javaProps->osArch, 1);
+        writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Current Java:", 1);
+        writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "       javaHome: ", 0);
+        writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, javaProps->javaHome, 1);
+        writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "        javaExe: ", 0);
+        writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, javaProps->javaExe, 1);
+        writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "        version: ", 0);
+        writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, jv, 1);
+        writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "         vendor: ", 0);
+        writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, javaProps->vendor, 1);
+        writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "        os.name: ", 0);
+        writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, javaProps->osName, 1);
+        writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "        os.arch: ", 0);
+        writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, javaProps->osArch, 1);
         FREE(jv);
     }
 }
