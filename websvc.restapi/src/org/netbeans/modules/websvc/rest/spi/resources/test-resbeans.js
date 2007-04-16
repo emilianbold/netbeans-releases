@@ -4,7 +4,7 @@
 var wadlDoc;            
 var app;
 var wadlURL = baseURL+"/application.wadl";  
-var wadlErr = 'Cannot access WADL: Please restart your REST application, and refresh this page.';
+var wadlErr = 'MSG_TEST_RESBEANS_wadlErr';
 var currentUrl;
 var currentValidUrl;
 var breadCrumbs = new Array();
@@ -12,16 +12,20 @@ var currentContainer;
 var treeHook;
 var myTree;
 
+var expand = new Image();
+expand.src = "expand.gif";
+var collapse = new Image();
+collapse.src = "collapse.gif";
+var og = new Image();
+og.src = "og.gif";
+var cg = new Image();
+cg.src = "cg.gif";
+
 function getHttpRequest() {
     var xmlHttpReq;
     try
     {    // Firefox, Opera 8.0+, Safari, IE7.0+
         xmlHttpReq=new XMLHttpRequest();
-        try {
-            netscape.security.PrivilegeManager.enablePrivilege ("UniversalBrowserRead");
-        } catch (e) {
-            //alert("Permission UniversalBrowserRead denied.");
-        }
     }
     catch (e)
     {    // Internet Explorer 6.0+, 5.0+
@@ -37,7 +41,7 @@ function getHttpRequest() {
             }
             catch (e)
             {
-                alert("Your browser does not support AJAX!");
+                alert("MSG_TEST_RESBEANS_No_AJAX");
             }
         }
     }
@@ -47,7 +51,7 @@ function getHttpRequest() {
     currentUrl = url;
     var xmlHttpReq = getHttpRequest();
     if(xmlHttpReq == null) {
-    	alert('Error: Cannot create XMLHttpRequest');
+    	//alert('Error: Cannot create XMLHttpRequest');
         return null;
     }
     try {
@@ -90,7 +94,6 @@ function updateMenu(xmlHttpReq) {
                 }
                 return;
             }
-            //alert("[here]");
             setvisibility('main', 'inherit');
             document.getElementById('subheader').innerHTML = '<br/><b>WADL: </b>'+wadlURL;
             wadlDoc = loadXml(rtext);
@@ -101,7 +104,7 @@ function updateMenu(xmlHttpReq) {
             log("state: "+xmlHttpReq.readyState);
         }
     } catch( e ) {
-        alert('Caught Exception; name: ' + e.name + ' message: ' + e.message);
+        alert('Caught Exception; name: [' + e.name + '] message: [' + e.message+']');
     }
 }
 function initTree(wadlDoc) {
@@ -207,7 +210,6 @@ function changeMimeType()
     document.getElementById("mimeType").value = mime;
 };
 function showContent(path, ri, mi) {
-    //updatepage('result', 'Loading...');
     var app1 = wadlDoc.documentElement;
     var rs = app1.getElementsByTagName('resources')[0];
     var r = rs.getElementsByTagName('resource')[ri];
@@ -221,7 +223,7 @@ function showContent(path, ri, mi) {
     doShowContent(uri, mName, mediaType);     
 }
 function doShowContent(uri) {
-    doShowContent(uri, getDefaultMethod(), 'text/xml');
+    doShowContent(uri, getDefaultMethod(), getDefaultMime());
 }
 function getDefaultMime() {
     return "application/xml";
@@ -259,16 +261,12 @@ function doShowContent(uri, mName, mediaType) {
     var disp = getDisplayUri(req);
     var uriLink = "<a id='"+req+"' href=javascript:doShowContent('"+req+"') >"+disp+"</a>";
     updatepage('request', '<b>Resource:</b> '+uriLink+' (<a href="'+req+'" target="_blank">'+req+'</a>)');
-    //alert(str);
-    /*try {
-        testResource();
-    } catch(e) { alert(e.name+e.message);}*/
 }
 function getFormRep(req, uri, mName, mediaType) {
     if(mName == null || mName == 'undefined')
         mName = getDefaultMethod();
     if(mediaType == null || mediaType == 'undefined')
-        mediaType = 'text/xml';
+        mediaType = getDefaultMime();
     //alert(req + uri + mName + mediaType);
     var str = "<div id='formSubmittal'>";
     str += "<form action='' method="+mName+" name='form1'>";
@@ -320,7 +318,7 @@ function getParamRep(req, mName) {
                     for(j=0;j<params.length;j++) {
                         var pname = params[j].attributes.getNamedItem('name').nodeValue;
                         var num = j+1;
-                        str += "<b>Param"+num+":</b>"+"<input id='params' name='"+pname+"' type='text' value='"+pname+"'>"+"<br><br>";
+                        str += "<b>MSG_TEST_RESBEANS_Param"+num+":</b>"+"<input id='params' name='"+pname+"' type='text' value='"+pname+"'>"+"<br><br>";
                     }
                 }
             }
@@ -331,7 +329,7 @@ function getParamRep(req, mName) {
     else if(mName == 'DELETE')
         str = "";
     if(str != "")
-        str = "<b>Resource Inputs:</b><br><br><div style='margin-left:20px'>"+str+"</div><br/>";
+        str = "<b>MSG_TEST_RESBEANS_ResourceInputs</b><br><br><div style='margin-left:20px'>"+str+"</div><br/>";
     return str;
 }
 function testResource() {
@@ -383,18 +381,14 @@ function testResource() {
     if(method == 'GET' && p.length > 0)
         req+= "?"+p;
     var disp = getDisplayUri(req);
-    if (mimetype == 'image/jpg') {//image
-        alert('The image/jpg MimeType currently does not work with the MimeType selection method.\nInstead of seeing the image, you will see the image data');
-    } else {
-        //alert('method: '+method+'mimetype: '+mimetype+' length: '+paramLength+'params: '+params);
-        var xmlHttpReq4 = open(method, req, mimetype, paramLength, true);
-        xmlHttpReq4.onreadystatechange = function() { updateContent(xmlHttpReq4); };
-        xmlHttpReq4.send(params);
-    }
+    //alert('method: '+method+'mimetype: '+mimetype+' length: '+paramLength+'params: '+params);
+    var xmlHttpReq4 = open(method, req, mimetype, paramLength, true);
+    xmlHttpReq4.onreadystatechange = function() { updateContent(xmlHttpReq4); };
+    xmlHttpReq4.send(params);
 }
 function createIFrame(currentValidUrl) {
     var c = '<iframe src="'+currentValidUrl+'" width="600" height="300" align="left">'+
-            '<p>See <a href="'+currentValidUrl+'">"'+currentValidUrl+'"</a>.</p>'+
+            '<p>MSG_TEST_RESBEANS_See <a href="'+currentValidUrl+'">"'+currentValidUrl+'"</a>.</p>'+
         '</iframe>';
     return c;
 }
@@ -430,8 +424,7 @@ function updateContent(xmlHttpReq) {
                 try {
                     var tableContent = '';
                     //alert(content);
-                    var cErr = '<table border=1><tr><td width=600>Content may not have Container-Containee Relationship.'+
-                            ' See Raw View for content.</td></tr></table>';
+                    var cErr = '<table border=1><tr><td width=600>MSG_TEST_RESBEANS_No_Container</td></tr></table>';
                     if(content.indexOf("<?xml ") != -1) {
                         tableContent = getContainerTable(content);
                         if(tableContent == null || tableContent.length <= 594 || 
@@ -441,14 +434,14 @@ function updateContent(xmlHttpReq) {
                         tableContent = cErr;
                     }
                     var rawContent = createIFrame(currentValidUrl);
-                    updatepage('result', '<b>Content:</b> '+
+                    updatepage('result', '<b>MSG_TEST_RESBEANS_Content</b> '+
                         '<div id="tabs1">'+'<table class="result"><tr>'+
-                        '<td width=100 class="tbs1"><a href="javascript:showTableView(\'true\')"><span style="color: #ffffff;">Tabular View</span></a></td>'+
-                        '<td width=100 class="tbs2"><a href="javascript:showTableView(\'false\')"><span style="color: #000000;">Raw View</span></a></td></tr></table>'+
+                        '<td width=100 class="tbs1"><a href="javascript:showTableView(\'true\')"><span style="color: #ffffff;">MSG_TEST_RESBEANS_TabularView</span></a></td>'+
+                        '<td width=100 class="tbs2"><a href="javascript:showTableView(\'false\')"><span style="color: #000000;">MSG_TEST_RESBEANS_RawView</span></a></td></tr></table>'+
                         '</div>'+
                         '<div id="tabs2" style="display: none;">'+'<table class="result"><tr>'+
-                        '<td width=100 class="tbs2"><a href="javascript:showTableView(\'true\')"><span style="color: #000000;">Tabular View</span></a></td>'+
-                        '<td width=100 class="tbs1"><a href="javascript:showTableView(\'false\')"><span style="color: #ffffff;">Raw View</span></a></td></tr></table>'+
+                        '<td width=100 class="tbs2"><a href="javascript:showTableView(\'true\')"><span style="color: #000000;">MSG_TEST_RESBEANS_TabularView</span></a></td>'+
+                        '<td width=100 class="tbs1"><a href="javascript:showTableView(\'false\')"><span style="color: #ffffff;">MSG_TEST_RESBEANS_RawView</span></a></td></tr></table>'+
                         '</div>'+
                         '<div id="menu_bottom" class="tbs1 tabsbottom"></div>'+
                         '<div id="tableContent">'+tableContent+'</div>'+
@@ -456,17 +449,17 @@ function updateContent(xmlHttpReq) {
                 } catch( e ) {
                     //alert('upd err '+e.name+e.mesage);
                     var c = createIFrame(currentValidUrl);
-                    updatepage('result', '<b>Content:</b> '+c);
+                    updatepage('result', '<b>MSG_TEST_RESBEANS_Content</b> '+c);
                 }  
             }
             //alert(xmlHttpReq.getAllResponseHeaders());
             var hTable = getHeaderAsTable(xmlHttpReq.getAllResponseHeaders());
-            updatepage('resultheaders', '<b>Response Headers:</b> '+hTable);
+            updatepage('resultheaders', '<b>MSG_TEST_RESBEANS_ResponseHeaders</b> '+hTable);
         } else {
             log("state: "+xmlHttpReq.readyState);
         }
     } catch( e ) {
-        alert('Caught Exception; name: ' + e.name + ' message: ' + e.message);
+        alert('Caught Exception; name: [' + e.name + '] message: ]' + e.message+"]");
     }
 } 
 function getHeaderAsTable(header) {
@@ -623,26 +616,10 @@ function init() {
         xmlHttpReq.send(null);
     } else {
         setvisibility('main', 'inherit');
-        var str = '<b>Help Page</b><br/><br/>'+
-            '<p>Cannot access WADL: Please restart your REST application, and refresh this page.</p>' +
-            '<p>If you still see this error and if you are accessing this page using Firefox with Firebug plugin, then'+
-            '<br/>you need to disable firebug for local files. That is from Firefox menubar, check '+
-            '<br/>Tools > Firebug > Disable Firebug for Local Files</p>';
+        var str = 'MSG_TEST_RESBEANS_Help';
         document.getElementById('content').innerHTML = str;
     }            
 }
-
-/*
-* Function to support uri navigation
-*/
-var expand = new Image();
-expand.src = "expand.gif";
-var collapse = new Image();
-collapse.src = "collapse.gif";
-var og = new Image();
-og.src = "og.gif";
-var cg = new Image();
-cg.src = "cg.gif";
 
 function tree(){
     this.categories = new Array();
@@ -721,7 +698,7 @@ function showCategory(category){
         categoryNode.display="none";
     else
         categoryNode.display="block";
-    changeGesture(category);
+    toggleCategory(category);
 }
 
 function updateTree(catId){    
@@ -730,7 +707,7 @@ function updateTree(catId){
     childrenContent = '';
     getChildren(catId);
     currentCategory = catId;
-    setTimeout("alertIt()",500);
+    setTimeout("alertIt()",700);
 }
 
 function alertIt(){
@@ -742,7 +719,7 @@ function alertIt(){
 }
 
 function getChildren(uri) {
-    var xmlHttpReq5 = open('GET', baseURL+uri, 'text/xml', 0, true);
+    var xmlHttpReq5 = open('GET', baseURL+uri, getDefaultMime(), 0, true);
     xmlHttpReq5.onreadystatechange = function() { getChildrenContent(xmlHttpReq5); };
     xmlHttpReq5.send(null);
 }
@@ -797,7 +774,6 @@ function getChildrenAsItems(xmlStr) {
                                 var idval = id.childNodes[0].nodeValue;
                                 var disp = getDisplayUri(uri);
                                 str += getItemString(idval, uri);
-                                //str += "<a id='"+uri+"' href=javascript:doShowContent('"+uri+"') >"+disp+"</a><br/>";
                             }
                         }
                     }
@@ -822,7 +798,7 @@ function getItemString(name, uri){
     return itemString;
 }
 
-function changeGesture(img){
+function toggleCategory(img){
     ImageNode = document.getElementById('I' + img);
     ImageNode1 = document.getElementById('I1' + img);
     if(ImageNode.src.indexOf('collapse.gif')>-1) {

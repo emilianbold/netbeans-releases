@@ -46,6 +46,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 /**
  * All development project type supporting REST framework should provide
@@ -107,25 +108,62 @@ public abstract class RestSupport {
         if (! testdir.isDirectory()) {
             testdir.mkdirs();
         }
+        String[] replaceKeys1 = {
+            "TTL_TEST_RESBEANS", "MSG_TEST_RESBEANS_Trail", 
+            "MSG_TEST_RESBEANS_TestInput", "MSG_TEST_RESBEANS_TestOutput"
+        };
+        String[] replaceKeys2 = {
+            "MSG_TEST_RESBEANS_wadlErr", "MSG_TEST_RESBEANS_No_AJAX",
+            "MSG_TEST_RESBEANS_Param", "MSG_TEST_RESBEANS_ResourceInputs", "MSG_TEST_RESBEANS_See",
+            "MSG_TEST_RESBEANS_No_Container", "MSG_TEST_RESBEANS_Content", "MSG_TEST_RESBEANS_TabularView",
+            "MSG_TEST_RESBEANS_RawView", "MSG_TEST_RESBEANS_ResponseHeaders", "MSG_TEST_RESBEANS_Help"
+        };
+        FileObject testFO = copyFile(testdir, TEST_RESBEANS_HTML, replaceKeys1, true);
+        copyFile(testdir, TEST_RESBEANS_JS, replaceKeys2, false);
+        copyFile(testdir, TEST_RESBEANS_CSS);
+        copyFile(testdir, "expand.gif");
+        copyFile(testdir, "collapse.gif");
+        copyFile(testdir, "item.gif");
+        copyFile(testdir, "cc.gif");
+        copyFile(testdir, "og.gif");
+        copyFile(testdir, "cg.gif");
+        return testFO;
+    }
+
+    /*
+     * Copy File, as well as replace tokens, overwrite if specified
+     */
+    private FileObject copyFile(File testdir, String name, String[] replaceKeys, boolean overwrite) throws IOException {
         FileObject dir = FileUtil.toFileObject(testdir);
-        FileObject testFO = dir.getFileObject(TEST_RESBEANS_HTML);
-        if (testFO == null) {
-            testFO = dir.createData(TEST_RESBEANS_HTML);
+        FileObject fo = dir.getFileObject(name);
+        if (fo == null) {
+            fo = dir.createData(name);
+        } else {
+            if(!overwrite)
+                return fo;
         }
         FileLock lock = null;
         BufferedWriter writer = null;
         BufferedReader reader = null;
         try {
-            lock = testFO.lock();
-            OutputStream os = testFO.getOutputStream(lock);
+            lock = fo.lock();
+            OutputStream os = fo.getOutputStream(lock);
             writer = new BufferedWriter(new OutputStreamWriter(os));
-            InputStream is = RestSupport.class.getResourceAsStream("resources/"+TEST_RESBEANS_HTML);
+            InputStream is = RestSupport.class.getResourceAsStream("resources/"+name);
             reader = new BufferedReader(new InputStreamReader(is));
             String line;
             String lineSep = "\n";//Unix
             if(File.separatorChar == '\\')//Windows
                 lineSep = "\r\n";
+            String[] replaceValues = null;
+            if(replaceKeys != null) {
+                replaceValues = new String[replaceKeys.length];
+                for(int i=0;i<replaceKeys.length;i++)
+                    replaceValues[i] = NbBundle.getMessage(RestSupport.class, replaceKeys[i]);
+            }
             while((line = reader.readLine()) != null) {
+                for(int i=0;i<replaceKeys.length;i++)
+                    line = line.replaceAll(replaceKeys[i], replaceValues[i]);
                 writer.write(line);
                 writer.write(lineSep);
             }
@@ -138,18 +176,13 @@ public abstract class RestSupport {
             if (reader != null) {
                 reader.close();
             }
-        }
-        copyFile(testdir, TEST_RESBEANS_JS);
-        copyFile(testdir, TEST_RESBEANS_CSS);
-        copyFile(testdir, "expand.gif");
-        copyFile(testdir, "collapse.gif");
-        copyFile(testdir, "item.gif");
-        copyFile(testdir, "cc.gif");
-        copyFile(testdir, "og.gif");
-        copyFile(testdir, "cg.gif");
-        return testFO;
+        }      
+        return fo;
     }
-
+    
+    /*
+     * Copy File only
+     */    
     private void copyFile(File testdir, String name) throws IOException {
         String path = "resources/"+name;
         File df = new File(testdir, name);
