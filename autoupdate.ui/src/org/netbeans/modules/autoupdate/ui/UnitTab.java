@@ -303,6 +303,7 @@ public class UnitTab extends javax.swing.JPanel {
         bTabAction = new javax.swing.JButton();
         bAddLocallyDownloads = new javax.swing.JButton();
 
+        lSearch.setLabelFor(tfSearch);
         org.openide.awt.Mnemonics.setLocalizedText(lSearch, org.openide.util.NbBundle.getMessage(UnitTab.class, "UnitTab_lSearch_Text")); // NOI18N
 
         tfSearch.setText(org.openide.util.NbBundle.getMessage(UnitTab.class, "UnitTab.tfSearch.text")); // NOI18N
