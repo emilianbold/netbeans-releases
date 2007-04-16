@@ -32,10 +32,15 @@ A <i>port</i> associates a binding with a network address, thus defining an indi
 
   <ul>
 
-    <li><b>HTTP.</b> If you selected the HTTP binding type, then you must specify whether the binding uses the GET or POST verb and 
-    whether message parts are encoded into the HTTP request URI using the standard URI-encoding rules (urlEncoded) or using a replacement algorithm (urlReplacement).</li>
+    <li><b>FTP.</b> If the binding type is FTP, then you must select FTP Message or FTP Transport as the binding subtype. 
+    Both subtypes provide basic FTP functionality, such as a directory from which to read or write files, filename pattern matching, and message correlation. 
+    Select FTP Message if you plan to rely on default values. 
+    Select FTP Transport if you want to add customizations such as specifying custom directories on the FTP server and specifying pre-transfer and post-transfer operations.</li>
 
-    <li><b>SOAP.</b> If you selected the SOAP binding type, then you must specify whether the operations are RPC-oriented or document-oriented and 
+    <li><b>HTTP.</b> If the binding type is HTTP, then you must specify whether the binding uses the GET or POST verb and 
+    whether message parts are encoded into the HTTP request URI using the standard URI-encoding rules (<tt>urlEncoded</tt>) or using a replacement algorithm (<tt>urlReplacement</tt>).</li>
+
+    <li><b>SOAP.</b> If the binding type is SOAP, then you must specify whether the operations are RPC-oriented or document-oriented and 
     how the message parts reference their types.</li>
 
     <li>For other binding types, you typically have only one choice for the binding subtype.</li>
@@ -50,9 +55,9 @@ A <i>port</i> associates a binding with a network address, thus defining an indi
 
 <dl>
 <dt><a name="seealso">See Also</a></dt>
+<dd><a href="../wsdl_editor.html" title="About the WSDL Editor">About the WSDL Editor</a></dd>
 <dd><a href="../wsdl_editor_bindings.html" title="Configuring Bindings Using the WSDL View">Configuring Bindings Using the WSDL View</a></dd>
 <dd><a href="../wsdl_editor_services.html" title="Configuring Services Using the WSDL View">Configuring Services Using the WSDL View</a></dd>
-<dd><a href="../wsdl_editor.html" title="About the WSDL Editor">About the WSDL Editor</a></dd>
 </dl>
 <hr>
 <small>  

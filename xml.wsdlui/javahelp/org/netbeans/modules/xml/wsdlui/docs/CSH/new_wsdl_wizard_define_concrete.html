@@ -19,7 +19,7 @@
 <p>The New WSDL Document wizard enables you to create a WSDL file from scratch. 
 To open the wizard in a BPEL Module project, you right-click the Process Files node and choose New > WSDL Document.</p>
 
-<p>The Concrete Configuration page prompts you to enter information about the binding, service, and port.</p>
+<p>The Concrete Configuration page prompts you to define the binding, service, and port.</p>
 
 <p>A <i>binding</i> contains protocol and data format information for the operations and messages of a port type. 
 A <i>service</i> consists of one or more related ports. 
@@ -29,7 +29,7 @@ A <i>port</i> associates a binding with a network address, thus defining an indi
 
 <ul>
 
-  <li><b>Binding Name.</b> Enter a name for the binding. The default value is derived from the WSDL name.</li>
+  <li><b>Binding Name.</b> Enter a name for the binding.</li>
 
   <li><b>Binding Type.</b> Select the type of binding.</li>
 
@@ -37,29 +37,28 @@ A <i>port</i> associates a binding with a network address, thus defining an indi
 
   <ul>
 
+    <li><b>FTP.</b> If the binding type is FTP, then you must select FTP Message or FTP Transport as the binding subtype. 
+    Both subtypes provide basic FTP functionality, such as a directory from which to read or write files, filename pattern matching, and message correlation. 
+    Select FTP Message if you plan to rely on default values. 
+    Select FTP Transport if you want to add customizations such as specifying custom directories on the FTP server and specifying pre-transfer and post-transfer operations.</li>
+
     <li><b>HTTP.</b> If the binding type is HTTP, then you must specify whether the binding uses the GET or POST verb and 
     whether message parts are encoded into the HTTP request URI using the standard URI-encoding rules (<tt>urlEncoded</tt>) or using a replacement algorithm (<tt>urlReplacement</tt>).</li>
 
     <li><b>SOAP.</b> If the binding type is SOAP, then you must specify whether the operations are RPC-oriented or document-oriented and 
     how the message parts reference their types.</li>
 
-    <li><b>FTP.</b> If the binding type is FTP, then you must select FTP Message or FTP Transport as the binding subtype. 
-    Both subtypes provide basic FTP functionality, such as a directory from which to read or write files, filename pattern matching, and message correlation. 
-    Select FTP Message if you plan to rely on default values. 
-    Select FTP Transport if you want to add customizations such as specifying custom directories on the FTP server and specifying pre-transfer and post-transfer operations. 
-    For more information, refer to the FTP Binding Component User Guide.</li>
-
     <li>For other binding types, you typically have only one choice for the binding subtype.</li>
 
   </ul>
 
-  <li><b>Service Name.</b> Enter a name for the service. The default value is derived from the WSDL name.</li>
+  <li><b>Service Name.</b> Enter a name for the service.</li>
 
-  <li><b>Port Name.</b> Enter a name for the port. The default value is derived from the WSDL name.</li>
+  <li><b>Port Name.</b> Enter a name for the port.</li>
 
 </ul>
 
-<p>If you selected the SOAP binding type, 
+<p>If the binding type is SOAP, 
   then the wizard checks for comformance to various requirements of the 
   Web Services Interoperability Organization (WS-I) Basic Profile Version 1.1. 
   These requirements concern the RPC Literal and Document Literal binding subtypes. 
@@ -71,7 +70,7 @@ A <i>port</i> associates a binding with a network address, thus defining an indi
   In addition, the binding node and the service node contain the appropriate binding-specific subnodes (for example, <tt>soap:binding</tt>).</p>
 
 <ul class="note">
-  <li>If you selected the SOAP binding type, then the port's <tt>soap:address</tt> node includes a Location property.
+  <li>If you created a SOAP binding, then the port's <tt>soap:address</tt> node includes a Location property.
     The Location property specifies the address of the port. 
     The wizard generates a dummy value for the Location property. 
     The Location property must be unique; that is, the value must not conflict with any other WSDL files 
