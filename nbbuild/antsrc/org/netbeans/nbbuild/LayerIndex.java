@@ -28,13 +28,16 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.zip.ZipEntry;
 import javax.xml.parsers.SAXParserFactory;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.FileSet;
 import org.xml.sax.Attributes;
@@ -67,6 +70,7 @@ public class LayerIndex extends Task {
             throw new BuildException();
         }
         SortedMap<String,String> files = new TreeMap<String,String>(); // layer path -> cnb
+        SortedMap<String,SortedMap<String,String>> labels = new TreeMap<String,SortedMap<String,String>>(); // layer path -> cnb -> label
         for (FileSet fs : filesets) {
             DirectoryScanner ds = fs.getDirectoryScanner(getProject());
             File basedir = ds.getBasedir();
@@ -88,7 +92,7 @@ public class LayerIndex extends Task {
                         if (layer == null) {
                             continue;
                         }
-                        parse(jf.getInputStream(jf.getEntry(layer)), files, cnb);
+                        parse(jf.getInputStream(jf.getEntry(layer)), files, labels, cnb, jf);
                     } finally {
                         jf.close();
                     }
@@ -112,6 +116,16 @@ public class LayerIndex extends Task {
                     cnb = "";
                 }
                 String line = String.format("%-" + maxlength + "s %s", cnb, path);
+                SortedMap<String,String> cnb2Label = labels.get(path);
+                if (cnb2Label != null) {
+                    if (cnb2Label.size() == 1 && cnb2Label.keySet().iterator().next().equals(cnb)) {
+                        line += String.format(" (\"%s\")", cnb2Label.values().iterator().next());
+                    } else {
+                        for (Map.Entry<String,String> labelEntry : cnb2Label.entrySet()) {
+                            line += String.format(" (%s: \"%s\")", labelEntry.getKey(), labelEntry.getValue());
+                        }
+                    }
+                }
                 if (pw != null) {
                     pw.println(line);
                 } else {
@@ -129,7 +143,7 @@ public class LayerIndex extends Task {
         }
     }
 
-    private void parse(InputStream is, final Map<String,String> files, final String cnb) throws Exception {
+    private void parse(InputStream is, final Map<String,String> files, final SortedMap<String,SortedMap<String,String>> labels, final String cnb, final JarFile jf) throws Exception {
         SAXParserFactory f = SAXParserFactory.newInstance();
         f.setValidating(false);
         f.setNamespaceAware(false);
@@ -150,13 +164,41 @@ public class LayerIndex extends Task {
                     register(prefix);
                 } else if (qName.equals("file")) {
                     String n = attributes.getValue("name");
-                    register(prefix + n);
+                    prefix += n;
+                    register(prefix);
+                } else if (qName.equals("attr") && attributes.getValue("name").equals("SystemFileSystem.localizingBundle")) {
+                    String bundlepath = attributes.getValue("stringvalue").replace('.', '/') + ".properties";
+                    Properties props = new Properties();
+                    try {
+                        ZipEntry entry = jf.getEntry(bundlepath);
+                        if (entry == null) {
+                            log(bundlepath + " not found in reference from " + prefix + " in " + cnb, Project.MSG_WARN);
+                            return;
+                        }
+                        props.load(jf.getInputStream(entry));
+                    } catch (IOException x) {
+                        throw new SAXException(x);
+                    }
+                    String key = prefix.replaceAll("/$", "");
+                    String label = props.getProperty(key);
+                    if (label == null) {
+                        log("Key " + key + " not found in " + bundlepath + " from " + cnb, Project.MSG_WARN);
+                        return;
+                    }
+                    SortedMap<String,String> cnb2label = labels.get(prefix);
+                    if (cnb2label == null) {
+                        cnb2label = new TreeMap<String,String>();
+                        labels.put(prefix, cnb2label);
+                    }
+                    cnb2label.put(cnb, label);
                 }
             }
             @Override
             public void endElement(String uri, String localName, String qName) throws SAXException {
                 if (qName.equals("folder")) {
                     prefix = prefix.replaceFirst("[^/]+/$", "");
+                } else if (qName.equals("file")) {
+                    prefix = prefix.replaceFirst("[^/]+$", "");
                 }
             }
             @Override
