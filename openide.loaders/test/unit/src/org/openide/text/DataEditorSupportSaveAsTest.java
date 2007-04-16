@@ -120,7 +120,7 @@ public class DataEditorSupportSaveAsTest extends NbTestCase {
         assertFalse("the original document is no longer modified", obj.isModified() );
         assertEquals("the original document was closed", 1, des.closeCounter );
         assertEquals("we don't ask before closing the original document", 0, des.canCloseCounter );
-        assertEquals("new document was opened", 1, myObj.openCookieCalls);
+        assertTrue("new document was opened", myObj.openCookieCalls > 0);
     }
     
 //    public void testEnvAddsSaveAsImpl() throws IOException {

@@ -166,6 +166,8 @@ public class DataObjectSaveAsTest extends NbTestCase {
         DataObject obj = DataObject.find(fs.findResource("someFile.unknownExtension"));
         assertEquals(DefaultDataObject.class, obj.getClass());
         
+        assertNotNull( obj.getLookup().lookup(SaveAsCapable.class) );
+        
         sfs.clear();
         
         DataObject newDob = obj.copyRename( obj.getFolder(), "newName", "newExt" );

@@ -45,7 +45,7 @@ import org.openide.windows.CloneableOpenSupport;
  * @author Jaroslav Tulach
  */
 final class DefaultES extends DataEditorSupport 
-implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie {
+implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, SaveAsCapable {
     /** SaveCookie for this support instance. The cookie is adding/removing 
      * data object's cookie set depending on if modification flag was set/unset. */
     private final SaveCookie saveCookie = new SaveCookie() {
