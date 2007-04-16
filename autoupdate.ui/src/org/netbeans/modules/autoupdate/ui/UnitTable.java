@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.autoupdate.ui;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.MouseAdapter;
@@ -27,7 +26,6 @@ import java.awt.event.MouseEvent;
 import javax.swing.Icon;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
@@ -86,6 +84,8 @@ public class UnitTable extends JTable {
         getColumnModel ().getColumn (3).setPreferredWidth (75);
         getColumnModel ().getColumn (4).setPreferredWidth (50);
         
+        SortColumnHeaderRenderer scRenderer = new SortColumnHeaderRenderer(this.model,getColumnModel ().getColumn(0).getHeaderRenderer());
+        getColumnModel().getColumn(1).setHeaderRenderer(scRenderer);
         initTable ();
         revalidate ();
     }

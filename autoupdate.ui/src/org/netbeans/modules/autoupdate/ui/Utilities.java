@@ -266,7 +266,7 @@ public class Utilities {
         for (UnitCategory unitCategory : res) {
             Collections.sort (unitCategory.units, new Comparator<Unit> () {
                 public int compare (Unit u1, Unit u2) {
-                    return u1.getDisplayName ().compareTo (u2.getDisplayName ());
+                    return collator.compare (u1.getDisplayName (), u2.getDisplayName ());
                 }
             });
         }

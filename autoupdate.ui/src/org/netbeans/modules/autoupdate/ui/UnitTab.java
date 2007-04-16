@@ -456,7 +456,7 @@ private void bTabActionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                     Unit unit = it.next();
                     if (unit.updateUnit.getInstalled() != null) {
                         it.remove();
-                    }
+            }
                 }
                 if (units.size() == 0) {
                     categoryIt.remove();

@@ -47,7 +47,7 @@ public class UpdateTableModel extends UnitCategoryTableModel {
         }
         super.setValueAt (anValue, row, col);
         if (! isCategoryAtRow (row)) {
-            assert getCategoryAtRow (row).isExpanded ();
+            //assert getCategoryAtRow (row).isExpanded ();
             Unit.Update u = (Unit.Update) getUnitAtRow (row);
             assert anValue instanceof Boolean : anValue + " must be instanceof Boolean.";
             boolean beforeMarked = u.isMarked();
@@ -68,7 +68,7 @@ public class UpdateTableModel extends UnitCategoryTableModel {
         if (isCategoryAtRow (row)) {
             res = col == 0 ? getCategoryAtRow (row) : null;
         } else {
-            assert getCategoryAtRow (row).isExpanded ();
+            //assert getCategoryAtRow (row).isExpanded ();
             Unit.Update u = (Unit.Update) getUnitAtRow (row);
             switch (col) {
             case 0 :

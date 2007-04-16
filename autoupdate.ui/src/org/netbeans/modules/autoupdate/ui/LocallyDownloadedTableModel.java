@@ -46,7 +46,7 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
             if (! (anValue instanceof Boolean)) {
                 return ;
             }
-            assert getCategoryAtRow (row).isExpanded ();
+            //assert getCategoryAtRow (row).isExpanded ();
             Unit u = getUnitAtRow (row);
             assert anValue instanceof Boolean : anValue + " must be instanceof Boolean.";
             boolean beforeMarked = u.isMarked();
@@ -64,7 +64,7 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
         if (isCategoryAtRow (row)) {
             res = col == 0 ? getCategoryAtRow (row) : null;
         } else {
-            assert getCategoryAtRow (row).isExpanded ();
+            //assert getCategoryAtRow (row).isExpanded ();
             Unit u = getUnitAtRow (row);
             boolean isAvailable = (u instanceof Unit.Available);
             switch (col) {

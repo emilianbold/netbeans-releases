@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.autoupdate.ui;
 
+import java.text.Collator;
+import java.util.Comparator;
 import java.util.List;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
@@ -33,7 +35,7 @@ public class AvailableTableModel extends UnitCategoryTableModel {
     
     /** Creates a new instance of InstalledTableModel */
     public AvailableTableModel (List<UnitCategory> categories) {
-        super (categories);
+        super (categories);    
     }
     
     @Override
@@ -47,7 +49,7 @@ public class AvailableTableModel extends UnitCategoryTableModel {
             if (anValue == null) {
                 return ;
             }
-            assert getCategoryAtRow (row).isExpanded ();
+            //assert getCategoryAtRow (row).isExpanded ();
             Unit.Available u = (Unit.Available) getUnitAtRow (row);
             assert anValue instanceof Boolean : anValue + " must be instanceof Boolean.";
             boolean beforeMarked = u.isMarked();
@@ -64,7 +66,7 @@ public class AvailableTableModel extends UnitCategoryTableModel {
         if (isCategoryAtRow (row)) {
             res = col == 0 ? getCategoryAtRow (row) : null;
         } else {
-            assert getCategoryAtRow (row).isExpanded ();
+            //assert getCategoryAtRow (row).isExpanded ();
             Unit.Available u = (Unit.Available) getUnitAtRow (row);
             switch (col) {
             case 0 :
@@ -133,5 +135,4 @@ public class AvailableTableModel extends UnitCategoryTableModel {
     public Type getType () {
         return UnitCategoryTableModel.Type.AVAILABLE;
     }
-    
 }

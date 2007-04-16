@@ -56,7 +56,7 @@ public class InstalledTableModel extends UnitCategoryTableModel {
             if (anValue == null) {
                 return ;
             }
-            assert getCategoryAtRow(row).isExpanded();
+            //assert getCategoryAtRow(row).isExpanded();
             Unit.Installed u = (Unit.Installed) getUnitAtRow(row);
             assert anValue instanceof Boolean : anValue + " must be instanceof Boolean.";
             boolean beforeMarked = u.isMarked ();
@@ -77,7 +77,7 @@ public class InstalledTableModel extends UnitCategoryTableModel {
         if (isCategoryAtRow(row)) {
             res = col == 0 ? getCategoryAtRow(row) : null;
         } else {
-            assert getCategoryAtRow(row).isExpanded();
+            //assert getCategoryAtRow(row).isExpanded();
             Unit.Installed u = (Unit.Installed) getUnitAtRow(row);
             switch (col) {
             case 0 :

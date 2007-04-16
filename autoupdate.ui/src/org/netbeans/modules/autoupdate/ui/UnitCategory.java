@@ -102,6 +102,12 @@ public class UnitCategory {
         return units.add (u);
     }
 
+    public void addUnits (List<Unit> units) {
+        for (Unit unit : units) {
+            addUnit(unit);
+        }
+    }
+    
     public boolean removeUnit (Unit u) {
         return units.remove (u);
     }

@@ -207,7 +207,7 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
     }
 
     private int findRowWithFirstUnit(UnitCategoryTableModel model) {
-        for (int row = 1; row <= model.getRowCount(); row++) {
+        for (int row = 0; row <= model.getRowCount(); row++) {
             if (model.getUnitAtRow(row) != null) {
                 return row;
             }

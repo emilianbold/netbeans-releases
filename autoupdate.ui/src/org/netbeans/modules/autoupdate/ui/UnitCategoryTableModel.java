@@ -22,6 +22,8 @@ package org.netbeans.modules.autoupdate.ui;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
@@ -32,8 +34,13 @@ import javax.swing.table.AbstractTableModel;
  */
 public abstract class UnitCategoryTableModel extends AbstractTableModel {
     List<UnitCategory> data = Collections.emptyList ();
+    private List<Unit> unitData = Collections.emptyList ();
+    
     private List<UpdateUnitListener> listeners = new ArrayList<UpdateUnitListener> ();
-    private String filter = "";//NOI18N
+    private String filter = "";//NOI18N    
+    private Comparator<Unit> unitCmp;
+    private Comparator<UnitCategory> categoryCmp;
+    private boolean showCategories = true;
 
     
     public static enum Type {
@@ -45,22 +52,57 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
     
     /** Creates a new instance of CategoryTableModel */
     public UnitCategoryTableModel (List<UnitCategory> categories) {
-        this.data = categories;
+        setData(categories);
     }
+
+    public abstract Object getValueAt (int row, int col);
+    public abstract Class getColumnClass (int c);
+    public abstract Type getType ();
     
-    public void setData (List<UnitCategory> data) {
+    public final void setData (List<UnitCategory> data, boolean showCategories, Comparator<UnitCategory> categoryCmp, Comparator<Unit> unitCmp) {
+        //TODO: if null cmpput in default one
+        this.categoryCmp = categoryCmp;
+        this.unitCmp = unitCmp;
+        this.showCategories = showCategories;
         this.data = data;
+        this.unitData = Collections.emptyList();
+        if (showCategories) {
+            if (categoryCmp != null) {
+                Collections.sort(this.data,categoryCmp);
+            }
+            if (unitCmp != null) {
+                for (UnitCategory unitCategory : data) {
+                    Collections.sort(unitCategory.units,unitCmp);
+                }
+            }
+        } else {
+            this.unitData = new ArrayList<Unit>();
+            for (UnitCategory unitCategory : data) {
+                this.unitData.addAll(unitCategory.getUnits());
+            }
+            if (unitCmp != null) {
+                Collections.sort(this.unitData,unitCmp);
+            }
+        }
         this.fireTableDataChanged ();
     }
     
-    public List<Unit> getExposedUnits () {
-        List<Unit> exposedList = new ArrayList<Unit> ();
-        for (UnitCategory c : data) {
-            exposedList.addAll (c.getUnits());
-        }
-        return exposedList;
+    public void setUnitComparator(Comparator<Unit> comparator, boolean showCategories) {
+        setData(data, showCategories, categoryCmp,comparator);
+    }
+
+    public void setCategoryComparator(Comparator<UnitCategory> comparator, boolean showCategories) {
+        setData(data, showCategories, comparator,unitCmp);
     }
     
+    public void setShowCategoriesEnabled(boolean showCategories) {
+        setData(data, showCategories, categoryCmp,unitCmp);
+    }
+    
+    public final void setData (List<UnitCategory> data) {
+        setData(data, showCategories, categoryCmp, unitCmp);
+    }
+                
     public void setFilter(final String filter) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -72,29 +114,13 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
             }            
         });        
     }
-
-    private List<UnitCategory> getCategories() {
-        return new ArrayList<UnitCategory>(data);
-    }
-    
-    private List<UnitCategory> getVisibleCategories() {
-        String filter = getFilter();
-        List<UnitCategory> retval = new ArrayList<UnitCategory>();
-        for (UnitCategory unitCategory : data) {
-            if (unitCategory.isVisible(filter)) {
-                retval.add(unitCategory);
-            }
-        }
-        return retval;
-    }
     
     public String getFilter() {
         synchronized(UnitCategoryTableModel.class) {
             return this.filter == null ? "" : this.filter;
         }                
     }
-
-        
+    
     public void addUpdateUnitListener (UpdateUnitListener l) {
         listeners.add (l);
     }
@@ -116,48 +142,83 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
             l.buttonsChanged ();
         }
     }
-    
-    public abstract Object getValueAt (int row, int col);
-    public abstract Class getColumnClass (int c);
-    public abstract Type getType ();
-    
-    public int getRowCount() {
-        List<UnitCategory> data = getVisibleCategories();
-        int size = data.size ();
-        String filter = getFilter();
-        for (UnitCategory c : data) {
-            if (c.isExpanded () && c.isVisible(filter)) size += getUnits (c).size ();
-        }
-        
-        return size;
-    }
 
     public int getColumnCount () {
         return 5;
     }
+    
+    private List<UnitCategory> getCategories() {
+        assert showCategories;
+        return new ArrayList<UnitCategory>(data);
+    }
+    
+    private List<Unit> getVisibleUnits() {
+        assert !showCategories;
+        String filter = getFilter();
+        List<Unit> retval = new ArrayList<Unit>();
+        for (Unit unit : unitData) {
+            if (unit.isVisible(filter)) {
+                retval.add(unit);
+            }
+        }
+        return retval;
+    }
+    
+    private List<UnitCategory> getVisibleCategories() {
+        assert showCategories;
+        String filter = getFilter();
+        List<UnitCategory> retval = new ArrayList<UnitCategory>();
+        for (UnitCategory unitCategory : data) {
+            if (unitCategory.isVisible(filter)) {
+                retval.add(unitCategory);
+            }
+        }
+        return retval;
+    }        
+    
+    public int getRowCount() {
+        if (showCategories) {
+            List<UnitCategory> data = getVisibleCategories();
+            int size = data.size();
+            String filter = getFilter();
+            for (UnitCategory c : data) {
+                if (c.isExpanded() && c.isVisible(filter)) size += getUnits(c).size();
+            }
+            return size;
+        }
+        return getVisibleUnits().size();        
+    }
 
     public int getRawItemCount () {
         int size = 0;                
-        
-        for (UnitCategory c : getCategories()) {
-            size += c.getUnits().size();
-        }        
+        if (showCategories) {
+            for (UnitCategory c : getCategories()) {
+                size += c.getUnits().size();
+            }
+        } else {
+            size = unitData.size();
+        }
         
         return size;
     }
     
     public int getItemCount () {
-        int size = 0;                
-        List<UnitCategory> data = getVisibleCategories();
-        
-        for (UnitCategory c : data) {
-            size += getUnits(c).size();
-        }        
+        int size = 0;        
+        if (showCategories) {
+            List<UnitCategory> data = getVisibleCategories();
+            
+            for (UnitCategory c : data) {
+                size += getUnits(c).size();
+            }
+        } else {
+            size = getVisibleUnits().size();
+        }
         
         return size;
     }
         
     private List<Unit> getUnits(UnitCategory category) {
+        assert showCategories;
         String filter = getFilter();
         return filter.length() == 0 ? category.getUnits() :             
             category.getVisibleUnits(filter, !Type.INSTALLED.equals(getType()));
@@ -165,17 +226,26 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
         
     public Collection<Unit> getMarkedUnits() {
         List<Unit> units = new ArrayList<Unit> ();
-        for (UnitCategory c : data) {
-            for (Unit u : c.getUnits ()) {
-                if (u.isMarked ()) {
-                    units.add (u);
+        if (showCategories) {
+            for (UnitCategory c : data) {
+                for (Unit u : c.getUnits()) {
+                    if (u.isMarked()) {
+                        units.add(u);
+                    }
                 }
             }
-        };
+        } else {
+            for (Unit u : unitData) {
+                if (u.isMarked()) {
+                    units.add(u);
+                }
+            }
+        }
         return units;
     }
 
     private int getCategorySize (UnitCategory c) {
+        assert showCategories;
         int retval = 0;
         String filter = getFilter();
         if (c.isVisible(filter)) {
@@ -187,56 +257,61 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
     }
     
     protected UnitCategory getCategoryAtRow (int row) {
-        int categoryRow = 0;
-        List<UnitCategory> data = getVisibleCategories();
-        
-        for (UnitCategory c : data) {
-            int size = getCategorySize (c);
-            if (row >= categoryRow && row < categoryRow + size) {
-                return c;
+        if (showCategories) {
+            int categoryRow = 0;
+            List<UnitCategory> data = getVisibleCategories();
+            
+            for (UnitCategory c : data) {
+                int size = getCategorySize(c);
+                if (row >= categoryRow && row < categoryRow + size) {
+                    return c;
+                }
+                categoryRow += size;
             }
-            categoryRow += size;
-        }
-         
-        assert false : "No UpdateCategory on row " + row;
+            assert false : "No UpdateCategory on row " + row;
+        }                 
         return null;
     }
     
     public Unit getUnitAtRow (int row) {
-        int unitRow = 0;
-        List<UnitCategory> data = getVisibleCategories();
-        
-        for (UnitCategory c : data) {
-            int size = getCategorySize (c);
-            if (row > unitRow && row <= unitRow + size) {
-                if (! c.isExpanded ()) assert false : "No Unit at row " + row + ", but Category " + c;
-                return getUnits (c).get (row - unitRow - 1);
+        if (showCategories) {
+            int unitRow = 0;
+            List<UnitCategory> data = getVisibleCategories();
+            
+            for (UnitCategory c : data) {
+                int size = getCategorySize(c);
+                if (row > unitRow && row <= unitRow + size) {
+                    if (! c.isExpanded()) assert false : "No Unit at row " + row + ", but Category " + c;
+                    return getUnits(c).get(row - unitRow - 1);
+                }
+                unitRow += size;
             }
-            unitRow += size;
+            
+            return null;
         }
-        
-        assert false : "No Unit on row " + row;
-        return null;
+        return getVisibleUnits().size() <= row ? null : getVisibleUnits().get(row);
     }
     
     public void toggleCategoryExpanded (int row) {
+        assert showCategories;
         getCategoryAtRow (row).toggleExpanded ();
         fireTableDataChanged ();
     }
     
     public boolean isCategoryAtRow (int row) {
-        return isCategoryAtRow (row, data);
+        return showCategories ? isCategoryAtRow (row, data) : false;
     }
     
     private boolean isCategoryAtRow (int row,List<UnitCategory> data) {
         int accumulatedRow = 0;
-        
-        for (UnitCategory c : data) {
-            int size = getCategorySize (c);
-            if (row >= accumulatedRow && row < accumulatedRow + size) {
-                return row == accumulatedRow;
-            } else {
-                accumulatedRow += size;
+        if (showCategories) {
+            for (UnitCategory c : data) {
+                int size = getCategorySize(c);
+                if (row >= accumulatedRow && row < accumulatedRow + size) {
+                    return row == accumulatedRow;
+                } else {
+                    accumulatedRow += size;
+                }
             }
         }
         
@@ -250,5 +325,4 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
             return col == 0 || col == 1;
         }
     }
-
 }
