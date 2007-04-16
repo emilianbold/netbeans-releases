@@ -19,6 +19,7 @@
 
 package gui.window;
 
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.Action;
 
@@ -75,26 +76,26 @@ public class ProfilerWindows extends org.netbeans.performance.test.utilities.Per
     }
     
     public void testProfilerTelemetryOverview() {
-        commandName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.profiler.actions.Bundle", "HINT_TelemetryOverviewAction");
-        windowName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.profiler.Bundle", "LAB_TelemetryOverviewPanelName");
+        commandName = Bundle.getStringTrimmed("org.netbeans.modules.profiler.actions.Bundle", "HINT_TelemetryOverviewAction");
+        windowName = Bundle.getStringTrimmed("org.netbeans.modules.profiler.Bundle", "LAB_TelemetryOverviewPanelName");
         doMeasurement();
     }
     
     public void testProfilerLiveResults() {
-        commandName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.profiler.actions.Bundle", "LBL_ShowLiveResultsWindowAction");
-        windowName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.profiler.Bundle", "LiveResultsWindow_LiveResultsTabName");
+        commandName = Bundle.getStringTrimmed("org.netbeans.modules.profiler.actions.Bundle", "LBL_ShowLiveResultsWindowAction");
+        windowName = Bundle.getStringTrimmed("org.netbeans.modules.profiler.Bundle", "LiveResultsWindow_LiveResultsTabName");
         doMeasurement();
     }
     
     public void testProfilerVMTelemetry() {
         commandName = "VM Telemetry"; //NOI18N
-        windowName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.profiler.Bundle", "LAB_TelemetryWindowName");
+        windowName = Bundle.getStringTrimmed("org.netbeans.modules.profiler.Bundle", "LAB_TelemetryWindowName");
         doMeasurement();
     }
     
     public void testProfilerThreads() {
         commandName = "Threads"; //NOI18N
-        windowName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.profiler.Bundle", "ThreadsWindow_ThreadsWindowName");
+        windowName = Bundle.getStringTrimmed("org.netbeans.modules.profiler.Bundle", "ThreadsWindow_ThreadsWindowName");
         doMeasurement();
     }
     
