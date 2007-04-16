@@ -53,14 +53,9 @@ public class SetProjectStartPageRefactoringElement extends SimpleRefactoringElem
     public FileObject getParentFile() {
         WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
         if (webModule != null){
-            FileObject webInfDir = webModule.getWebInf();
-            if (webInfDir != null) {
-                // Should really use the following API - ProjectWebModule not in public package
-                // FileObject webXml = webInfDir.getFileObject(ProjectWebModule.FILE_DD);
-                FileObject webXml = webInfDir.getFileObject("web.xml"); // NOI18N
-                if (webXml != null) {
-                    return webXml;
-                }
+            FileObject webXml = webModule.getDeploymentDescriptor ();
+            if (webXml != null) {
+                return webXml;
             }
         }
         return project.getProjectDirectory();
