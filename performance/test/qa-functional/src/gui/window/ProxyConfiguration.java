@@ -75,6 +75,11 @@ public class ProxyConfiguration extends UpdateCenter {
         return new OptionsOperator();
     }
 
+    @Override
+    public void close() {
+        ((OptionsOperator) testedComponentOperator).close();
+    }
+    
     public void shutdown() {
         if(wizard!=null && wizard.isShowing())
             wizard.close();
