@@ -395,26 +395,76 @@ public class Utils {
             List<ParamModel> params = methodModel.getParams();
             int i=0;
             for (ParamModel param:params) {
-                Name paramName = envelope.createName(param.getName());
-                SOAPElement paramElement = methodElement.addChildElement(paramName);
                 String paramNs = param.getTargetNamespace();
-                if (paramNs!=null) {
+                Name paramName = null;
+                if (paramNs!=null) {                   
                     String pref = "ns"+String.valueOf(++i); //NOI18N
-                    paramElement.setPrefix(pref);
+                    paramName = envelope.createName(param.getName(), pref, paramNs);
                     methodElement.addNamespaceDeclaration(pref,paramNs);
+                } else {
+                    paramName = envelope.createName(param.getName());
                 }
+                
+                SOAPElement paramElement = methodElement.addChildElement(paramName);
                 paramElement.addTextNode(getSampleValue(param.getParamType()));
             }
             
             methodModel.setSoapRequest(request);
             
         } catch (SOAPException ex) {
-            ex.printStackTrace();
+            ErrorManager.getDefault().notify(ex);
         }
     }
     
-    private static void setSoapResponse(MethodModel model, String tns) {
+    private static void setSoapResponse(MethodModel methodModel, String tns) {
+        if (methodModel.isOneWay()) return;
         
+        try {
+            // create a sample SOAP request using SAAJ API
+            MessageFactory messageFactory = MessageFactory.newInstance();
+
+            SOAPMessage response = messageFactory.createMessage();
+            SOAPPart part = response.getSOAPPart();
+            SOAPEnvelope envelope = part.getEnvelope();
+            String prefix = envelope.getPrefix();
+            if (!"soap".equals(prefix)) { //NOI18N
+                envelope.removeAttribute("xmlns:"+prefix); // NOI18N
+                envelope.setPrefix("soap"); //NOI18N
+            }
+            SOAPBody body = envelope.getBody();
+            body.setPrefix("soap"); //NOI18N
+            
+            // removing soap header
+            SOAPHeader header = envelope.getHeader();
+            envelope.removeChild(header);
+
+            // implementing body
+            Name responseName = envelope.createName(methodModel.getOperationName()+"Response"); //NOI18N
+            SOAPElement responseElement = body.addBodyElement(responseName);
+            responseElement.setPrefix("ns0"); //NOI18N
+            responseElement.addNamespaceDeclaration("ns0",tns); //NOI18N
+            
+            // return
+            
+            ResultModel resultModel = methodModel.getResult();
+            String resultNs = resultModel.getTargetNamespace();
+            
+            Name resultName = null;
+            if (resultNs!=null) {
+                responseElement.addNamespaceDeclaration("ns1",resultNs); //NOI18N
+                resultName = envelope.createName(resultModel.getName(), "ns1", resultNs); //NOI18N
+            } else {
+                resultName = envelope.createName(resultModel.getName()); //NOI18N
+            }
+            
+            SOAPElement resultElement = responseElement.addChildElement(resultName);
+            resultElement.addTextNode(getSampleValue(resultModel.getResultType()));
+
+            methodModel.setSoapResponse(response);
+            
+        } catch (SOAPException ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
     }
     
     private static String getSampleValue(String paramType) {

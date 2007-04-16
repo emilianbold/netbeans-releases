@@ -31,10 +31,10 @@ public class AddNumbers_1 {
      * @return SUM of 2 numbers
      */  
     @WebMethod
-    @WebResult(name="sum")
-    public int add(@WebParam(name = "x")
+    @WebResult(name="sum", targetNamespace = "http://www.netbeans.org/sum")
+    public int add(@WebParam(name = "x", targetNamespace = "http://www.netbeans.org/sum/x")
                    int x,
-                   @WebParam(name = "y")
+                   @WebParam(name = "y", targetNamespace = "http://www.netbeans.org/sum/y")
                    int y) {
         // TODO write your implementation code here:
         return 0;

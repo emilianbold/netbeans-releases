@@ -175,6 +175,13 @@ private static ServiceModelTest DEFAULT_LOOKUP = null;
                 op.getSoapRequest().writeTo(System.out);
                 System.out.println("");
                 System.out.println("------------------");
+                if (!op.isOneWay()) {
+                    System.out.println("SOAP RESPONSE :");
+                    op.getSoapResponse().writeTo(System.out);
+                    System.out.println("");
+                    System.out.println("------------------");
+                }
+                
                 i++;
             }
             // testing merge
