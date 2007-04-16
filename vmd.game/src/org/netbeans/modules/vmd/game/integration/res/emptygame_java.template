@@ -1,14 +1,21 @@
-package Templates.Classes;
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
 
+<#if package?? && package != "">
+package ${package};
+
+</#if>
 import javax.microedition.midlet.*;
 import javax.microedition.lcdui.*;
 import javax.microedition.lcdui.game.*;
 import java.io.IOException;
 
 /**
- * @author __USER__
+ * @author ${user}
  */
-public class GameDesign {
+public class ${name} {
 
     //GEN-LINE:|fields|0|
 

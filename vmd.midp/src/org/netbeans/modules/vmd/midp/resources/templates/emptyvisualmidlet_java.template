@@ -1,18 +1,25 @@
-package Templates.Classes;
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
 
+<#if package?? && package != "">
+package ${package};
+
+</#if>
 import javax.microedition.midlet.*;
 import javax.microedition.lcdui.*;
 
 /**
- * @author __USER__
+ * @author ${user}
  */
-public class VisualMIDlet extends MIDlet {
+public class ${name} extends MIDlet {
 
     private boolean midletPaused = false;
 
     //GEN-LINE:|fields|0|
 
-    public VisualMIDlet () {
+    public ${name}() {
     }
 
     //GEN-LINE:|methods|0|

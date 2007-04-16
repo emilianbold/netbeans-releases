@@ -36,6 +36,7 @@
                 <attr name="SystemFileSystem.icon" stringvalue="nbresloc:org/netbeans/modules/vmd/game/integration/res/canvas_16.png"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:org/netbeans/modules/vmd/game/integration/res/emptygame.html"/>
                 <attr name="template" boolvalue="true"/>
+		<attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.mobility.project.ui.wizard.FileWizardIterator.singleton"/>
                 <attr name="MIDP" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="MIDP"/>
