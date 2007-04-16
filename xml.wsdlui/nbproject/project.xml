@@ -357,7 +357,9 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>com.gestalt.netbeans.modules.wsdlextensions.sip</friend>
                 <friend>com.gestalt.netbeans.modules.wsdlextensions.uddi</friend>
+                <friend>com.gestalt.netbeans.modules.wsdlextensions.xmpp</friend>
                 <friend>org.netbeans.modules.compapp.casaeditor</friend>
                 <friend>org.netbeans.modules.wsdlextensions.file</friend>
                 <friend>org.netbeans.modules.wsdlextensions.ftp</friend>
