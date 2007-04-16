@@ -147,7 +147,7 @@ public class FileProxy {
                 }
                 final InputStream resource = (loader != null ? loader: getClass().getClassLoader()).getResourceAsStream(uri.getSchemeSpecificPart());
                 out = new FileOutputStream(file);
-                if (resource == null) throw new DownloadException(RESOURCE_SCHEME_PREFIX + uri + "not found");
+                if (resource == null) throw new DownloadException(RESOURCE_SCHEME_PREFIX + uri.getSchemeSpecificPart() + " not found");
                 StreamUtils.transferData(resource, out);
                 cache.put(uri.toString(), file);
                 return file;
