@@ -147,61 +147,53 @@ public class ImportCDCProjectWizardIterator implements TemplateWizard.Iterator {
         final EditableProperties oldpriv=new EditableProperties();
         if (f.exists())
             oldpriv.load(new FileInputStream(f));
-        String pa=oldep.getProperty(DefaultPropertiesDescriptor.PLATFORM_ACTIVE);
-        PlatformSelectionPanel.PlatformDescription desc=new PlatformSelectionPanel.PlatformDescription();
         JavaPlatform platforms[]=JavaPlatformManager.getDefault().getPlatforms(null,new Specification(CDCPlatform.PLATFORM_CDC,null));
-        for (final JavaPlatform platform : platforms)
-        {
-            final CDCPlatform cdcplatform=(CDCPlatform)platform;
-            if (cdcplatform.getAntName().equals(pa))
+       
+        PlatformSelectionPanel.PlatformDescription pdesc=new PlatformSelectionPanel.PlatformDescription();
+        AntProjectHelper helper=J2MEProjectGenerator.createProject(newLocation,name,pdesc,new J2MEProjectGenerator.ProjectGeneratorCallback() {
+            public void doPostGeneration(Project project, AntProjectHelper helper, FileObject projectLocation, 
+                                         File projectLocationFile, ArrayList<String> configurations) throws IOException 
             {
-                PlatformSelectionPanel.PlatformDescription pdesc=new PlatformSelectionPanel.PlatformDescription();
-                AntProjectHelper helper=J2MEProjectGenerator.createProject(newLocation,name,pdesc,new J2MEProjectGenerator.ProjectGeneratorCallback() {
-                    public void doPostGeneration(Project project, AntProjectHelper helper, FileObject projectLocation, 
-                                                 File projectLocationFile, ArrayList<String> configurations) throws IOException 
-                    {
-                        final EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                        final EditableProperties priv = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                                                
-                        
-                        if (oldep.getProperty("main.class.applet")!=null && oldep.getProperty("main.class.applet").equals("true"))
-                            ep.setProperty(CDCPropertiesDescriptor.MAIN_CLASS_CLASS,"applet");
-                        else if (oldep.getProperty("main.class.xlet")!=null && oldep.getProperty("main.class.xlet").equals("true"))
-                            ep.setProperty(CDCPropertiesDescriptor.MAIN_CLASS_CLASS,"xlet");
-                        else
-                            ep.setProperty(CDCPropertiesDescriptor.MAIN_CLASS_CLASS,"main"); 
-                                                
-                        //Copy properties of individual property descriptors
-                        for (ProjectPropertiesDescriptor p : Lookup.getDefault().lookup(new Lookup.Template<ProjectPropertiesDescriptor>(ProjectPropertiesDescriptor.class)).allInstances() ) {
-                            for (PropertyDescriptor d : p.getPropertyDescriptors()) {
-                                String name=d.getName();
-                                if (d.isShared()) {
-                                    String s=oldep.getProperty(name);
-                                    if (s!=null)
-                                        ep.setProperty(name,s);
-                                }
-                                else
-                                {
-                                    String s=oldpriv.getProperty(name);
-                                    if (s!=null)
-                                        priv.setProperty(name,s);
-                                }
-                            }
+                final EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                final EditableProperties priv = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+
+
+                if (oldep.getProperty("main.class.applet")!=null && oldep.getProperty("main.class.applet").equals("true"))
+                    ep.setProperty(CDCPropertiesDescriptor.MAIN_CLASS_CLASS,"applet");
+                else if (oldep.getProperty("main.class.xlet")!=null && oldep.getProperty("main.class.xlet").equals("true"))
+                    ep.setProperty(CDCPropertiesDescriptor.MAIN_CLASS_CLASS,"xlet");
+                else
+                    ep.setProperty(CDCPropertiesDescriptor.MAIN_CLASS_CLASS,"main"); 
+
+                //Copy properties of individual property descriptors
+                for (ProjectPropertiesDescriptor p : Lookup.getDefault().lookup(new Lookup.Template<ProjectPropertiesDescriptor>(ProjectPropertiesDescriptor.class)).allInstances() ) {
+                    for (PropertyDescriptor d : p.getPropertyDescriptors()) {
+                        String name=d.getName();
+                        if (d.isShared()) {
+                            String s=oldep.getProperty(name);
+                            if (s!=null)
+                                ep.setProperty(name,s);
                         }
-                        
-                        ep.setProperty(DefaultPropertiesDescriptor.PLATFORM_TRIGGER,"CDC");
-                        ep.setProperty(DefaultPropertiesDescriptor.LIBS_CLASSPATH,oldep.getProperty("javac.classpath"));
-                        ep.setProperty(DefaultPropertiesDescriptor.SRC_DIR,location+File.separator+oldep.getProperty(DefaultPropertiesDescriptor.SRC_DIR));
-                        ep.setProperty(CDCPropertiesDescriptor.DLL_DIR, location+File.separator+oldep.getProperty(CDCPropertiesDescriptor.DLL_DIR));                        
-                        
-                        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-                    }});
-                NewCDCProjectWizardIterator.createManifest(helper.getProjectDirectory(),NewCDCProjectWizardIterator.MANIFEST_FILE);
-                return Collections.singleton(DataObject.find(helper.getProjectDirectory()));
-            }
-        }        
-        
-        throw new java.io.IOException("Platform "+pa+" not installed");
+                        else
+                        {
+                            String s=oldpriv.getProperty(name);
+                            if (s!=null)
+                                priv.setProperty(name,s);
+                        }
+                    }
+                }
+                String pa=oldep.getProperty(DefaultPropertiesDescriptor.PLATFORM_ACTIVE);
+                if (pa!=null)
+                    ep.setProperty(DefaultPropertiesDescriptor.PLATFORM_ACTIVE_DESCRIPTION,pa.replace('_',' '));
+                ep.setProperty(DefaultPropertiesDescriptor.PLATFORM_TRIGGER,"CDC");
+                ep.setProperty(DefaultPropertiesDescriptor.LIBS_CLASSPATH,oldep.getProperty("javac.classpath"));
+                ep.setProperty(DefaultPropertiesDescriptor.SRC_DIR,location+File.separator+oldep.getProperty(DefaultPropertiesDescriptor.SRC_DIR));
+                ep.setProperty(CDCPropertiesDescriptor.DLL_DIR, location+File.separator+oldep.getProperty(CDCPropertiesDescriptor.DLL_DIR));                        
+
+                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+            }});
+        NewCDCProjectWizardIterator.createManifest(helper.getProjectDirectory(),NewCDCProjectWizardIterator.MANIFEST_FILE);
+        return Collections.singleton(DataObject.find(helper.getProjectDirectory()));
     }
     
     public String name() {
