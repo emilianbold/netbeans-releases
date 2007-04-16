@@ -471,7 +471,7 @@ public abstract class WizardAction extends WizardComponent {
      * Name of a resource bundle entry.
      */
     private static final String RESOURCE_CANCEL_DIALOG_TITLE =
-            "WAC.cancel.dialog.title"; // NOI18N
+            "WA.cancel.dialog.title"; // NOI18N
     
     /**
      * Name of a resource bundle entry.
