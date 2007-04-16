@@ -575,7 +575,7 @@ public class Registry {
                     boolean result = UiUtils.showYesNoDialog(
                             "Validation Problem",
                             "It seems that the installation of " +
-                            product.getDisplayName() + "is corrupted.\nThe " +
+                            product.getDisplayName() + " is corrupted.\nThe " +
                             "validation procedure issued the following " +
                             "warning:\n\n" + message + "\n\nWould you like to " +
                             "mark this product as not installed and continue?\nIf " +
