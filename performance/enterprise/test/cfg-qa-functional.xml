@@ -20,7 +20,7 @@
 -->
 
 
-<mconfig name="core qa-performance test config">
+<mconfig name="enterprise pack qa-performance test config">
 
     <!-- testbag common for all suites to setup usedir -->
     <testbag testattribs="all or menus or dialogs or actions or setup or editor_related or java_related or apisupport_related or temp" prio="1"
@@ -189,7 +189,7 @@
     </testbag>
     
     <!-- Web Project workflow -->
-    <testbag testattribs="footprint_all or web_project" prio="320"
+<!-- TODO no tomcat - see issue 101104                 <testbag testattribs="footprint_all or web_project" prio="320"
              executor="ide_footprint" name="Footprint - Web project workflow" >
         <testset dir="footprint/src">
             <patternset>
@@ -215,7 +215,7 @@
             </patternset>
         </testset>
     </testbag>
-    
+-->    
     <!-- J2EE Project workflow -->
     <testbag testattribs="all or j2ee_project or j2ee_project_once" prio="330"
              executor="ide_footprint" name="Footprint - J2EE project workflow" >
