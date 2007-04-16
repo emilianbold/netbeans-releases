@@ -58,10 +58,6 @@ public class FacesRefactoringsPluginFactory implements RefactoringPluginFactory 
                 if (refactoring instanceof RenameRefactoring) {
                     return new FacesJspFileRenameRefactoringPlugin((RenameRefactoring)refactoring);
                 } else if (refactoring instanceof MoveRefactoring) { 
-                    // Temporarily disabled
-                    if (true) {
-                        return null;
-                    }
                     return new FacesJspFileMoveRefactoringPlugin((MoveRefactoring)refactoring);
                 }
             } else if (FacesRefactoringUtils.isJavaFileObjectOfInterest(refactoredFileObject)) {
@@ -72,10 +68,6 @@ public class FacesRefactoringsPluginFactory implements RefactoringPluginFactory 
                     if (refactoring instanceof RenameRefactoring) {
                         return new FacesJavaFileRenameRefactoringPlugin((RenameRefactoring)refactoring);
                     } else if (refactoring instanceof MoveRefactoring) {
-                        // Temporarily disabled
-                        if (true) {
-                            return null;
-                        }
                         return new FacesJavaFileMoveRefactoringPlugin((MoveRefactoring)refactoring);
                     }
                 }

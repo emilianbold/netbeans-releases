@@ -30,7 +30,6 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.visualweb.insync.faces.FacesUnit;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
-import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -150,46 +149,12 @@ public class FacesJspFileRenameRefactoringPlugin extends FacesRefactoringPlugin 
                         String newStartPage = parentRelativePath +
                                               (parentRelativePath.length() > 0 ? "/" : "") + // NOI18N
                                               newName + "." +refactoringSourcefileObject.getExt();
-                        
-                        refactoringElements.add(getRefactoring(), new SetProjectStartPageRefactoringElement(project, oldStartPage, newStartPage));
+                        refactoringElements.addFileChange(getRefactoring(), new SetProjectStartPageRefactoringElement(project, oldStartPage, newStartPage));
                     }
                 }
             }
         }
 
         return null;
-    }    
-    
-    public static class JSFConfigRenameBeanNameElement extends SimpleRefactoringElementImplementation {
-        private final FacesRefactoringUtils.OccurrenceItem item;
-        
-        JSFConfigRenameBeanNameElement(FacesRefactoringUtils.OccurrenceItem item){
-            this.item = item;
-        }
-        
-        public String getText() {
-            return getDisplayText();
-        }
-        
-        public String getDisplayText() {
-            return item.getRenameMessage();
-        }
-        
-        public void performChange() {
-            LOGGER.fine("JSFConfigRenameClassElement.performChange()");
-            item.performRename();
-        }
-               
-        public FileObject getParentFile() {
-            return item.getFacesConfig();
-        }
-        
-        public PositionBounds getPosition() {
-            return item.getClassDefinitionPosition();
-        }
-        
-        public Lookup getLookup() {
-            return Lookups.singleton(item.getFacesConfig());
-        }
     }
 }

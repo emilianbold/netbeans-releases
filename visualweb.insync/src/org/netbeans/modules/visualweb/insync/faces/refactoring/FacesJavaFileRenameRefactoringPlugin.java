@@ -22,7 +22,6 @@ package org.netbeans.modules.visualweb.insync.faces.refactoring;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Logger;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -43,15 +42,13 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.visualweb.insync.Model;
 import org.netbeans.modules.visualweb.insync.faces.ElBindingScanner;
 import org.netbeans.modules.visualweb.insync.faces.FacesUnit;
-import org.netbeans.modules.visualweb.insync.faces.refactoring.FacesJspFileRenameRefactoringPlugin.JSFConfigRenameBeanNameElement;
 import org.netbeans.modules.visualweb.insync.java.JavaClass;
 import org.netbeans.modules.visualweb.insync.java.JavaUnit;
 import org.netbeans.modules.visualweb.insync.java.Method;
@@ -63,6 +60,8 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.text.PositionBounds;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Document;
@@ -72,8 +71,6 @@ import com.sun.source.util.TreePath;
 
 public class FacesJavaFileRenameRefactoringPlugin extends FacesRefactoringPlugin {
     
-    private static final Logger LOGGER = Logger.getLogger(FacesJavaFileRenameRefactoringPlugin.class.getName());
-
     public FacesJavaFileRenameRefactoringPlugin(RenameRefactoring refactoring) {
         super(refactoring);
     }
@@ -94,7 +91,7 @@ public class FacesJavaFileRenameRefactoringPlugin extends FacesRefactoringPlugin
             return null;
         }
         
-        FileObject fileObject = getRenameRefactoring().getRefactoringSource().lookup(FileObject.class);
+        FileObject fileObject = getRefactoring().getRefactoringSource().lookup(FileObject.class);
         if (fileObject != null) {
             if (FacesRefactoringUtils.isJavaFileObjectOfInterest(fileObject)) {
                 String newName = getRenameRefactoring().getNewName();
@@ -124,7 +121,7 @@ public class FacesJavaFileRenameRefactoringPlugin extends FacesRefactoringPlugin
 
     @Override
     public Problem prepare(RefactoringElementsBag refactoringElements){
-        FileObject refactoringSourcefileObject = getRenameRefactoring().getRefactoringSource().lookup(FileObject.class);
+        FileObject refactoringSourcefileObject = getRefactoring().getRefactoringSource().lookup(FileObject.class);
         if (refactoringSourcefileObject != null) {
             Project project = FileOwnerQuery.getOwner(refactoringSourcefileObject);
             if (FacesRefactoringUtils.isJavaFileObjectOfInterest(refactoringSourcefileObject)) {                
@@ -372,4 +369,36 @@ public class FacesJavaFileRenameRefactoringPlugin extends FacesRefactoringPlugin
             fireProgressListenerStep();
         }
     }    
+    
+    public static class JSFConfigRenameBeanNameElement extends SimpleRefactoringElementImplementation {
+        private final FacesRefactoringUtils.OccurrenceItem item;
+        
+        JSFConfigRenameBeanNameElement(FacesRefactoringUtils.OccurrenceItem item){
+            this.item = item;
+        }
+        
+        public String getText() {
+            return getDisplayText();
+        }
+        
+        public String getDisplayText() {
+            return item.getRenameMessage();
+        }
+        
+        public void performChange() {
+            item.performRename();
+        }
+               
+        public FileObject getParentFile() {
+            return item.getFacesConfig();
+        }
+        
+        public PositionBounds getPosition() {
+            return item.getClassDefinitionPosition();
+        }
+        
+        public Lookup getLookup() {
+            return Lookups.singleton(item.getFacesConfig());
+        }
+    }
 }

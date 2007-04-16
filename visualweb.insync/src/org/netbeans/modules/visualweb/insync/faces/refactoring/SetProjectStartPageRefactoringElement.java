@@ -21,6 +21,7 @@ package org.netbeans.modules.visualweb.insync.faces.refactoring;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
 import org.openide.util.Lookup;
@@ -29,19 +30,15 @@ import org.openide.util.NbBundle;
 
 public class SetProjectStartPageRefactoringElement extends SimpleRefactoringElementImplementation {
 
-    private Project project;
-    private String oldStartPageName;
-    private String newStartPageName;
-    private String displayText;
+    private final Project project;
+    private final String oldStartPageName;
+    private final String newStartPageName;
+    private final String displayText;
 
     public SetProjectStartPageRefactoringElement(Project project, String oldStartPageName, String newStartPageName) {
         this.project = project;
         this.oldStartPageName = oldStartPageName;
         this.newStartPageName = newStartPageName;
-        initDisplayText();
-    }
-
-    protected void initDisplayText() {
         displayText = NbBundle.getMessage(SetProjectStartPageRefactoringElement.class, "LBL_SetProjectStartPage", newStartPageName); // NOI18N
     }
 
@@ -54,6 +51,18 @@ public class SetProjectStartPageRefactoringElement extends SimpleRefactoringElem
     }
 
     public FileObject getParentFile() {
+        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        if (webModule != null){
+            FileObject webInfDir = webModule.getWebInf();
+            if (webInfDir != null) {
+                // Should really use the following API - ProjectWebModule not in public package
+                // FileObject webXml = webInfDir.getFileObject(ProjectWebModule.FILE_DD);
+                FileObject webXml = webInfDir.getFileObject("web.xml"); // NOI18N
+                if (webXml != null) {
+                    return webXml;
+                }
+            }
+        }
         return project.getProjectDirectory();
     }
 
@@ -74,3 +83,4 @@ public class SetProjectStartPageRefactoringElement extends SimpleRefactoringElem
         JsfProjectUtils.setStartPage(project, oldStartPageName);
     }
 }
+

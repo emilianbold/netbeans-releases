@@ -87,10 +87,6 @@ public class FacesRefactoringActionsProvider extends ActionsImplementationProvid
      */
     @Override
     public boolean canMove(Lookup lookup) {
-        // Temporarily disabled
-        if (true) {
-            return false;
-        }
         // Get the Node being renamed
         Node node = lookup.lookup(Node.class);
         if (node != null) {

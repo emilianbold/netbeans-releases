@@ -20,29 +20,34 @@
 package org.netbeans.modules.visualweb.insync.faces.refactoring;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.logging.Logger;
 
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.modules.visualweb.insync.faces.FacesUnit;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 
 /**
  * 
  * @author
  */
 public class FacesJspFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
+    
+    private static final Logger LOGGER = Logger.getLogger(FacesJspFileMoveRefactoringPlugin.class.getName());
 
     /**
      * 
@@ -64,8 +69,8 @@ public class FacesJspFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
     @Override
     public Problem fastCheckParameters() {
         FileObject fileObject = getMoveRefactoring().getRefactoringSource().lookup(FileObject.class);
-        URL targetURL = getMoveRefactoring().getTarget().lookup(URL.class);
         if (fileObject != null) {
+            URL targetURL = getMoveRefactoring().getTarget().lookup(URL.class);
             if (FacesRefactoringUtils.isFileUnderDocumentRoot(fileObject)) {
                 if (fileObject.isFolder()) {
                     return new Problem(true, NbBundle.getMessage(FacesJspFileRenameRefactoringPlugin.class, "ERR_FolderMoveNotImplementedYet")); // NOI18N
@@ -75,6 +80,8 @@ public class FacesJspFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
                     } 
                     
                     if (FacesRefactoringUtils.isVisualWebJspFile(fileObject)) {
+                        Project project = FileOwnerQuery.getOwner(fileObject);
+                        
                         FileObject targetFileObject = URLMapper.findFileObject(targetURL);
                         if (targetFileObject == null) {
                             File file = null;
@@ -95,12 +102,19 @@ public class FacesJspFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
                         if (targetFileObjectProject == null) {
                             return new Problem(true, NbBundle.getMessage(FacesJspFileRenameRefactoringPlugin.class, "ERR_TargetLocationIsNotInAnOpenProject")); // NOI18N                            
                         }
+                                               
+                        if (!project.equals(targetFileObjectProject)) {
+                            return new Problem(true, NbBundle.getMessage(FacesJspFileRenameRefactoringPlugin.class, "ERR_TargetLocationIsNotInSameProject")); // NOI18N
+                        }
+                        
                         if (!targetFileObject.isFolder()) {
                             return new Problem(true, NbBundle.getMessage(FacesJspFileRenameRefactoringPlugin.class, "ERR_TargetLocationIsNotAFolder")); // NOI18N
                         }
+                        
                         if (targetFileObject.equals(fileObject.getParent())) {
                             return new Problem(true, NbBundle.getMessage(FacesJspFileRenameRefactoringPlugin.class, "ERR_CannotMoveToSameLocation")); // NOI18N
                         }
+                        
                         FileObject targetFileObjectWithSameName = targetFileObject.getFileObject(fileObject.getName(), fileObject.getExt());
                         if (targetFileObjectWithSameName != null && targetFileObjectWithSameName.isValid()) {
                             return new Problem(true, NbBundle.getMessage(FacesJspFileRenameRefactoringPlugin.class, "ERR_TargetJspFileAlreadyExists")); // NOI18N
@@ -123,10 +137,6 @@ public class FacesJspFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
                         }
                     }
                 }
-            } else if (FacesRefactoringUtils.isJavaFileObjectOfInterest(fileObject)) {
-                if (targetURL != null) {                   
-                    
-                }                
             }
         }       
         return null;
@@ -134,6 +144,120 @@ public class FacesJspFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
 
     @Override
     public Problem prepare(RefactoringElementsBag refactoringElements) {
+        RefactoringSession refactoringSession = refactoringElements.getSession();
+        FileObject refactoringSourcefileObject = getRefactoring().getRefactoringSource().lookup(FileObject.class);
+        if (refactoringSourcefileObject != null) {
+            if (FacesRefactoringUtils.isFileUnderDocumentRoot(refactoringSourcefileObject)) {
+                if (FacesRefactoringUtils.isVisualWebJspFile(refactoringSourcefileObject)) {
+                    Project project = FileOwnerQuery.getOwner(refactoringSourcefileObject);
+                    if (project == null) {
+                        return new Problem(true, NbBundle.getMessage(FacesJspFileRenameRefactoringPlugin.class, "ERR_")); // NOI18N
+                    }
+                    
+                    URL targetURL = getMoveRefactoring().getTarget().lookup(URL.class);
+                    
+                    if (targetURL == null) {
+                        return new Problem(true, NbBundle.getMessage(FacesJspFileRenameRefactoringPlugin.class, "ERR_TargetLocationCannotBeNull")); // NOI18N
+                    }
+                    
+                    FileObject targetFileObject = URLMapper.findFileObject(targetURL);
+                    if (targetFileObject == null) {
+                        File file = null;
+                        try {
+                            file = new File(targetURL.toURI());
+                        } catch (URISyntaxException e) {
+                            Exceptions.printStackTrace(e);
+                        }
+                        if (file == null) {
+                            return new Problem(true, NbBundle.getMessage(FacesJspFileRenameRefactoringPlugin.class, "ERR_TargetLocationCannotBeResolved")); // NOI18N
+                        }
+                        targetFileObject = FileUtil.toFileObject(file);
+                        if (targetFileObject == null) {
+                            return new Problem(true, NbBundle.getMessage(FacesJspFileRenameRefactoringPlugin.class, "ERR_TargetLocationCannotBeResolved")); // NOI18N
+                        }
+                    }
+                    Project targetFileObjectProject = FileOwnerQuery.getOwner(targetFileObject);
+                    if (targetFileObjectProject == null) {
+                        return new Problem(true, NbBundle.getMessage(FacesJspFileRenameRefactoringPlugin.class, "ERR_TargetLocationIsNotInAnOpenProject")); // NOI18N                            
+                    }
+                    
+                    if (!project.equals(targetFileObjectProject)) {
+                        return new Problem(true, NbBundle.getMessage(FacesJspFileRenameRefactoringPlugin.class, "ERR_TargetLocationIsNotInSameProject")); // NOI18N
+                    }
+                    
+                    if (!targetFileObject.isFolder()) {
+                        return new Problem(true, NbBundle.getMessage(FacesJspFileRenameRefactoringPlugin.class, "ERR_TargetLocationIsNotAFolder")); // NOI18N
+                    }
+                    
+                    // Invoke Java refactoring (first) only if original refactoring was invoked on JSP.
+                    if (!isDelegatedRefactoring(getRefactoring())) {
+                        FileObject javaFileObject = FacesModel.getJavaForJsp(refactoringSourcefileObject);
+                        if (javaFileObject == null) {
+                            // TODO
+                        }
+                        
+                        FileObject targetDocumentRoot = JsfProjectUtils.getDocumentRoot(targetFileObjectProject);
+                        if (targetDocumentRoot == null) {
+                            // TODO
+                        }
+                        
+                        // Compute relative path of target folder to document root.
+                        String targetRelativePath = FileUtil.getRelativePath(targetDocumentRoot, targetFileObject); // NOI18N
+                        
+                        // Deleggate to Java refactoring to rename the backing bean
+                        MoveRefactoring javaMoveRefactoring = new MoveRefactoring(Lookups.singleton(javaFileObject));
+                        
+                        // new folder
+                        
+                        FileObject targetPageBeanRoot = JsfProjectUtils.getPageBeanRoot(targetFileObjectProject);
+                        if (targetPageBeanRoot == null) {
+                            // TODO
+                        }
+                        
+                        FileObject targetJavaFolder = targetPageBeanRoot.getFileObject(targetRelativePath);
+                        if (targetJavaFolder == null) {
+                            // TODO
+                        }
+                        
+                        URL url = URLMapper.findURL(targetJavaFolder, URLMapper.EXTERNAL);
+                        try {
+                            javaMoveRefactoring.setTarget(Lookups.singleton(new URL(url.toExternalForm())));
+                        } catch (MalformedURLException ex) {
+                            // TODO return problem
+                            ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
+                        }
+                        
+                        // Indicate delegation
+                        javaMoveRefactoring.getContext().add(FacesRefactoringsPluginFactory.DELEGATED_REFACTORING);
+                        Problem problem = javaMoveRefactoring.prepare(refactoringSession);
+                        if (problem != null) {
+                            return problem;
+                        }
+                    }
+                    
+                    // Add a refactoring element to set the start page
+                    if (JsfProjectUtils.isStartPage(refactoringSourcefileObject)) {
+                        FileObject webFolderFileobject = JsfProjectUtils.getDocumentRoot(project);
+                        FileObject parentObject = refactoringSourcefileObject.getParent();
+                        String parentRelativePath = FileUtil.getRelativePath(webFolderFileobject, parentObject);
+                        String oldStartPage = parentRelativePath +
+                                              (parentRelativePath.length() > 0 ? "/" : "") + // NOI18N
+                                              refactoringSourcefileObject.getNameExt();
+                        
+                        FileObject targetDocumentRoot = JsfProjectUtils.getDocumentRoot(targetFileObjectProject);
+                        if (targetDocumentRoot == null) {
+                            // TODO
+                        }
+                        
+                        String targetRelativePath = FileUtil.getRelativePath(targetDocumentRoot, targetFileObject);
+                        String newStartPage = targetRelativePath +
+                                              (targetRelativePath.length() > 0 ? "/" : "") + // NOI18N
+                                              refactoringSourcefileObject.getNameExt();
+                        refactoringElements.addFileChange(getRefactoring(), new SetProjectStartPageRefactoringElement(project, oldStartPage, newStartPage));
+                    }
+                }
+            }
+        }
 
         return null;
     }
