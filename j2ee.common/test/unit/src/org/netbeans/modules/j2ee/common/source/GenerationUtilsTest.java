@@ -121,8 +121,7 @@ public class GenerationUtilsTest extends NbTestCase {
     }
 
     public void testCreateClass() throws Exception {
-        FileObject pac = workDir.createFolder("testing");
-        FileObject javaFO = GenerationUtils.createClass(pac, "NewTestClass", "Javadoc");
+        FileObject javaFO = GenerationUtils.createClass(workDir, "NewTestClass", "Javadoc");
         runUserActionTask(javaFO, new AbstractTask<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 SourceUtils srcUtils = SourceUtils.newInstance(controller);
