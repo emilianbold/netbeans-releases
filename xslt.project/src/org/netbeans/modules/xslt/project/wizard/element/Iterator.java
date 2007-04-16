@@ -106,6 +106,13 @@ public final class Iterator implements TemplateWizard.Iterator {
   /**{@inheritDoc}*/
   public void removeChangeListener(ChangeListener listener) {}
 
+  private boolean isRequestTransform(TemplateWizard wizard) {
+    String inputFileStr = (String) wizard.getProperty(Panel.INPUT_FILE);
+    return !(inputFileStr == null || "".equals(inputFileStr)
+            || ".xsl".equals(inputFileStr));
+
+  }
+  
   private DataObject createFile(TemplateWizard wizard) throws IOException {
     FileObject file = null;
     Project project = Templates.getProject(wizard);
@@ -122,31 +129,18 @@ public final class Iterator implements TemplateWizard.Iterator {
             org.netbeans.modules.xslt.core.xsltmap.util.Util.getTMapModel(tMapFo);
 
     configureTMapModel(tMapModel, wizard);
-    file = createXslFile(
-            project, (String) wizard.getProperty(Panel.INPUT_FILE),
-            ((Boolean) wizard.getProperty(Panel.INPUT_TRANSFORM_JBI)).booleanValue());
-// TODO m    
-/*
-    if (Panel.CHOICE_REQUEST_REPLY.equals(choice)) {
-      file = createXslFile(
-      project, (String) wizard.getProperty(Panel.INPUT_FILE),
-      ((Boolean) wizard.getProperty(Panel.INPUT_TRANSFORM_JBI)).booleanValue());
+    if (isRequestTransform(wizard)) {
+        file = createXslFile(
+                project, (String) wizard.getProperty(Panel.INPUT_FILE),
+                ((Boolean) wizard.getProperty(Panel.INPUT_TRANSFORM_JBI)).booleanValue());
     }
-    else if (Panel.CHOICE_FILTER_ONE_WAY.equals(choice)) {
-      file = createXslFile(
-        project, (String) wizard.getProperty(Panel.INPUT_FILE),
-        ((Boolean) wizard.getProperty(Panel.INPUT_TRANSFORM_JBI)).booleanValue());
-    }
-    else */if (Panel.CHOICE_FILTER_REQUEST_REPLY.equals(choice)) {
-//      file = createXslFile(
-//        project, (String) wizard.getProperty(Panel.INPUT_FILE),
-//        ((Boolean) wizard.getProperty(Panel.INPUT_TRANSFORM_JBI)).booleanValue());
+
+    if (Panel.CHOICE_FILTER_REQUEST_REPLY.equals(choice)) {
       file = createXslFile(
         project, (String) wizard.getProperty(Panel.OUTPUT_FILE),
         ((Boolean) wizard.getProperty(Panel.OUTPUT_TRANSFORM_JBI)).booleanValue());
     }
-//    model.addTransformationUC(use);
-//    tMapModel.sync();
+
 
     return DataObject.find(file);
   }
@@ -158,115 +152,144 @@ public final class Iterator implements TemplateWizard.Iterator {
           return;
       }
       
+      String choice = (String) wizard.getProperty(Panel.CHOICE);      
       TMapComponentFactory componentFactory = tMapModel.getFactory();
 
-      String inputFileStr;
-      Operation wizardInputOperation;
-      Panel.PartnerRolePort wizardInputPartnerRolePort;
-      Boolean wizardInputIsTransformJBI = false;
-      
-      inputFileStr = (String) wizard.getProperty(Panel.INPUT_FILE);
-      wizardInputOperation = (Operation) wizard.getProperty(Panel.INPUT_OPERATION);
-      wizardInputPartnerRolePort =
-              (Panel.PartnerRolePort) wizard.getProperty(Panel.INPUT_PARTNER_ROLE_PORT);
-      PartnerLinkType wizardInPlt = wizardInputPartnerRolePort == null ? null : wizardInputPartnerRolePort.getPartnerLinkType();
-      Role wizardInRole = wizardInputPartnerRolePort == null ? null : wizardInputPartnerRolePort.getRole();
-      wizardInputIsTransformJBI =
-              ((Boolean) wizard.getProperty(Panel.INPUT_TRANSFORM_JBI));
-      
-      
-      if (wizardInPlt == null || wizardInRole == null || wizardInputOperation == null) {
-          return;
-      }
-      
-
-      String outputFileStr;
-      Operation wizardOutputOperation;
-      Panel.PartnerRolePort wizardOutputPartnerRolePort;
-      Boolean wizardOutputIsTransformJBI = false;
-      
-      outputFileStr = (String) wizard.getProperty(Panel.OUTPUT_FILE);
-      wizardOutputOperation = (Operation) wizard.getProperty(Panel.OUTPUT_OPERATION);
-      wizardOutputPartnerRolePort =
-              (Panel.PartnerRolePort) wizard.getProperty(Panel.OUTPUT_PARTNER_ROLE_PORT);
-      PartnerLinkType wizardOutPlt = wizardOutputPartnerRolePort == null ? null : wizardOutputPartnerRolePort.getPartnerLinkType();
-      Role wizardOutRole = wizardOutputPartnerRolePort == null ? null : wizardOutputPartnerRolePort.getRole();
-      wizardOutputIsTransformJBI =
-              ((Boolean) wizard.getProperty(Panel.OUTPUT_TRANSFORM_JBI));
-      
-      
       try {
           tMapModel.startTransaction();
           
-          TransformMap root = tMapModel.getTransformMap();
-          // TODO m
-          if (root == null) {
-              root = componentFactory.createTransformMap();
-              tMapModel.addChildComponent(null, root, -1);
-          }
+          org.netbeans.modules.xslt.core.transformmap.api.Operation tMapOp = 
+                  setOperation(tMapModel, wizard, componentFactory);
           
-          if (root == null) {
-              return;
-          }
-          
-          Service reqService = null;
-          Collection<Service> services = root.getServices();
-          // search for approprite service
-          if (services != null) {
-              for (Service serviceElem : services) {
-                  WSDLReference<PartnerLinkType> pltRef = serviceElem.getPartnerLinkType();
-                  PartnerLinkType plt = pltRef == null ? null : pltRef.get();
-                  
-                  WSDLReference<Role> roleRef = serviceElem.getRole();
-                  Role role = roleRef == null ? null : roleRef.get();
-                  
-                  if (plt != null && role != null
-                          && plt.equals(wizardInPlt) && role.equals(wizardInRole)) {
-                      reqService = serviceElem;
-                      break;
-                  }
-              }
-          }
-          
-          if (reqService == null) {
-              reqService = componentFactory.createService();
-              reqService.setPartnerLinkType(reqService.createWSDLReference(wizardInPlt, PartnerLinkType.class));
-              reqService.setRole(reqService.createWSDLReference(wizardInRole, Role.class));
-              
-              root.addService(reqService);
-          }
-          
-          // reqService != null
-          org.netbeans.modules.xslt.core.transformmap.api.Operation tMapOp =
-                  componentFactory.createOperation();
-          tMapOp.setOperation(tMapOp.createWSDLReference(wizardInputOperation, Operation.class));
-          if (inputFileStr != null && ! "".equals(inputFileStr)) {
-              tMapOp.setFile(inputFileStr);
-          }
-          tMapOp.setTransformJbi(BooleanType.parseBooleanType(wizardInputIsTransformJBI));
-          
-          reqService.addOperation(tMapOp);
-          
-          
-          // create invokes
-          if (wizardOutPlt != null && wizardOutRole != null && wizardOutputOperation != null) {
-              Invokes invokes = componentFactory.createInvokes();
-              invokes.setPartnerLinkType(invokes.createWSDLReference(wizardOutPlt, PartnerLinkType.class));
-              invokes.setRole(invokes.createWSDLReference(wizardOutRole, Role.class));
-              invokes.setOperation(invokes.createWSDLReference(wizardOutputOperation, Operation.class));
-              
-              if (outputFileStr != null && ! "".equals(outputFileStr)) {
-                  invokes.setFile(outputFileStr);
-              }
-              invokes.setTransformJbi(BooleanType.parseBooleanType(wizardOutputIsTransformJBI));
-              
-              tMapOp.setInvokes(invokes);
+          if (tMapOp != null 
+                  && (Panel.CHOICE_FILTER_REQUEST_REPLY.equals(choice) 
+                  || Panel.CHOICE_FILTER_ONE_WAY.equals(choice))) 
+          {
+              setInvokes(tMapOp, wizard, componentFactory,
+                      Panel.CHOICE_FILTER_REQUEST_REPLY.equals(choice));
           }
       } finally {
           tMapModel.endTransaction();
       }
   }
 
+  private org.netbeans.modules.xslt.core.transformmap.api.Operation setOperation(
+          TMapModel tMapModel,
+          TemplateWizard wizard, 
+          TMapComponentFactory componentFactory) 
+  {
+      assert tMapModel != null && wizard != null && componentFactory != null;
+      
+      String inputFileStr = (String) wizard.getProperty(Panel.INPUT_FILE);
+      Operation wizardInputOperation =
+              (Operation) wizard.getProperty(Panel.INPUT_OPERATION);
+      Panel.PartnerRolePort wizardInputPartnerRolePort =
+              (Panel.PartnerRolePort) wizard.getProperty(Panel.INPUT_PARTNER_ROLE_PORT);
+      Boolean wizardInputIsTransformJBI = 
+              ((Boolean) wizard.getProperty(Panel.INPUT_TRANSFORM_JBI));
+      
+      PartnerLinkType wizardInPlt = wizardInputPartnerRolePort == null ? null : wizardInputPartnerRolePort.getPartnerLinkType();
+      Role wizardInRole = wizardInputPartnerRolePort == null ? null : wizardInputPartnerRolePort.getRole();
+      
+      if (wizardInPlt == null || wizardInRole == null || wizardInputOperation == null) {
+          return null;
+      }
+      
+      TransformMap root = tMapModel.getTransformMap();
+      // TODO m
+      if (root == null) {
+          root = componentFactory.createTransformMap();
+          tMapModel.addChildComponent(null, root, -1);
+      }
+      
+      if (root == null) {
+          return null;
+      }
+      
+      Service reqService = null;
+      Collection<Service> services = root.getServices();
+      // search for approprite service
+      if (services != null) {
+          for (Service serviceElem : services) {
+              WSDLReference<PartnerLinkType> pltRef = serviceElem.getPartnerLinkType();
+              PartnerLinkType plt = pltRef == null ? null : pltRef.get();
+              
+              WSDLReference<Role> roleRef = serviceElem.getRole();
+              Role role = roleRef == null ? null : roleRef.get();
+              
+              if (plt != null && role != null
+                      && plt.equals(wizardInPlt) && role.equals(wizardInRole)) {
+                  reqService = serviceElem;
+                  break;
+              }
+          }
+      }
+      
+      if (reqService == null) {
+          reqService = componentFactory.createService();
+          reqService.setPartnerLinkType(reqService.createWSDLReference(wizardInPlt, PartnerLinkType.class));
+          reqService.setRole(reqService.createWSDLReference(wizardInRole, Role.class));
+          
+          root.addService(reqService);
+      }
+      
+      org.netbeans.modules.xslt.core.transformmap.api.Operation tMapOp =
+              componentFactory.createOperation();
+      tMapOp.setOperation(tMapOp.createWSDLReference(wizardInputOperation, Operation.class));
+      if (isRequestTransform(wizard)) {
+          if (inputFileStr != null && ! "".equals(inputFileStr)) {
+              tMapOp.setFile(inputFileStr);
+          }
+          tMapOp.setTransformJbi(BooleanType.parseBooleanType(wizardInputIsTransformJBI));
+      }
+      
+     reqService.addOperation(tMapOp);      
+
+     return tMapOp;
+}
+  
+  private Invokes setInvokes(
+          org.netbeans.modules.xslt.core.transformmap.api.Operation tMapOp,
+          TemplateWizard wizard, 
+          TMapComponentFactory componentFactory,
+          boolean isFilterRequestReply) 
+  {
+      assert tMapOp != null && wizard != null && componentFactory != null;
+      Invokes invokes = null;
+      String outputFileStr = (String) wizard.getProperty(Panel.OUTPUT_FILE);
+      Operation wizardOutputOperation =
+              (Operation) wizard.getProperty(Panel.OUTPUT_OPERATION);
+      Panel.PartnerRolePort wizardOutputPartnerRolePort = 
+              (Panel.PartnerRolePort) wizard.getProperty(Panel.OUTPUT_PARTNER_ROLE_PORT);
+      Boolean wizardOutputIsTransformJBI = ((Boolean) wizard.getProperty(Panel.OUTPUT_TRANSFORM_JBI));
+      
+      PartnerLinkType wizardOutPlt = wizardOutputPartnerRolePort == null ? null : wizardOutputPartnerRolePort.getPartnerLinkType();
+      Role wizardOutRole = wizardOutputPartnerRolePort == null ? null : wizardOutputPartnerRolePort.getRole();
+      
+      if (wizardOutPlt != null 
+              && wizardOutRole != null 
+              && wizardOutputOperation != null) 
+      {
+          invokes = componentFactory.createInvokes();
+          invokes.setPartnerLinkType(invokes.createWSDLReference(wizardOutPlt, PartnerLinkType.class));
+          invokes.setRole(invokes.createWSDLReference(wizardOutRole, Role.class));
+          invokes.setOperation(invokes.createWSDLReference(wizardOutputOperation, Operation.class));
+          
+          if (isFilterRequestReply) {
+              if (outputFileStr != null && ! "".equals(outputFileStr)) {
+                  invokes.setFile(outputFileStr);
+              }
+              invokes.setTransformJbi(BooleanType.parseBooleanType(wizardOutputIsTransformJBI));
+          }
+      }
+      
+      if (invokes != null) {
+        tMapOp.setInvokes(invokes);
+      }
+      
+      return invokes;
+  }
+  
   private FileObject createXslFile(
     Project project,
     String file,
