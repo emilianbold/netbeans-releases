@@ -348,7 +348,7 @@ public abstract class WizardAction extends WizardComponent {
             
             // set up the back button
             container.getBackButton().setEnabled(false);
-            container.getBackButton().setVisible(true);
+            container.getBackButton().setVisible(false);
             
             // set up the next (or finish) button
             container.getNextButton().setEnabled(false);

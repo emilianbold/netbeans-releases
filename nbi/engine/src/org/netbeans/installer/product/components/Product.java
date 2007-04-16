@@ -62,7 +62,6 @@ import org.netbeans.installer.utils.system.UnixNativeUtils;
 import org.netbeans.installer.wizard.components.WizardComponent;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 /**
  *
@@ -889,7 +888,7 @@ public final class Product extends RegistryNode {
     
     private ApplicationDescriptor getApplicationDescriptor() {
         final String key = "nbi-" + uid + "-" + version;
-        final String displayName = getDisplayName();
+        final String displayName = configurationLogic.getSystemDisplayName();
         final String icon;
         if (configurationLogic.getIcon() != null) {
             icon = new File(

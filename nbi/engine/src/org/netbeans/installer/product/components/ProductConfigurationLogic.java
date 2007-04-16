@@ -127,6 +127,10 @@ public abstract class ProductConfigurationLogic {
         return true;
     }
     
+    public String getSystemDisplayName() {
+        return product.getDisplayName();
+    }
+    
     public boolean wrapForMacOs() {
         return false;
     }

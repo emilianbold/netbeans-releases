@@ -27,6 +27,7 @@ import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.LogManager;
+import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.applications.NetBeansUtils;
@@ -245,6 +246,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     
     public List<WizardComponent> getWizardComponents() {
         return wizardComponents;
+    }
+
+    @Override
+    public String getSystemDisplayName() {
+        return getString("CL.system.display.name");
     }
     
     @Override

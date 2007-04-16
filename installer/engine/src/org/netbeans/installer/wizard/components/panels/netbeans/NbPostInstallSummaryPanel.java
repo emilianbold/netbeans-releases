@@ -140,7 +140,7 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
             super.initializeContainer();
             
             // set up the back button
-            container.getBackButton().setVisible(true);
+            container.getBackButton().setVisible(false);
             container.getBackButton().setEnabled(false);
             
             // set up the next (or finish) button
@@ -151,7 +151,7 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
                     component.getProperty(NEXT_BUTTON_TEXT_PROPERTY));
             
             // set up the cancel button
-            container.getCancelButton().setVisible(true);
+            container.getCancelButton().setVisible(false);
             container.getCancelButton().setEnabled(false);
         }
         
@@ -169,7 +169,7 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
                 
                 if (errorsEncountered) {
                     messagePaneInstall.setContentType(component.getProperty(MESSAGE_CONTENT_TYPE_ERRORS_PROPERTY));
-                    messagePaneInstall.setText(component.getProperty(MESSAGE_TEXT_ERRORS_PROPERTY));
+                    messagePaneInstall.setText(StringUtils.format(component.getProperty(MESSAGE_TEXT_ERRORS_PROPERTY), LogManager.getLogFile()));
                 } else if (warningsEncountered) {
                     messagePaneInstall.setContentType(component.getProperty(MESSAGE_CONTENT_TYPE_WARNINGS_PROPERTY));
                     messagePaneInstall.setText(StringUtils.format(component.getProperty(MESSAGE_TEXT_WARNINGS_PROPERTY), LogManager.getLogFile()));
@@ -192,7 +192,7 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
                 
                 if (errorsEncountered) {
                     messagePaneUninstall.setContentType(component.getProperty(MESSAGE_CONTENT_TYPE_ERRORS_UNINSTALL_PROPERTY));
-                    messagePaneUninstall.setText(component.getProperty(MESSAGE_TEXT_ERRORS_UNINSTALL_PROPERTY));
+                    messagePaneUninstall.setText(StringUtils.format(component.getProperty(MESSAGE_TEXT_ERRORS_UNINSTALL_PROPERTY), LogManager.getLogFile()));
                 } else if (warningsEncountered) {
                     messagePaneUninstall.setContentType(component.getProperty(MESSAGE_CONTENT_TYPE_WARNINGS_UNINSTALL_PROPERTY));
                     messagePaneUninstall.setText(StringUtils.format(component.getProperty(MESSAGE_TEXT_WARNINGS_UNINSTALL_PROPERTY), LogManager.getLogFile()));
