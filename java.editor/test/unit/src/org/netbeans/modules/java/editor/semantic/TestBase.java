@@ -145,7 +145,11 @@ public abstract class TestBase extends NbTestCase {
             public void run(CompilationController parameter) {
                 try {
                     parameter.toPhase(Phase.UP_TO_DATE);
-                    highlights.addAll(performer.compute(parameter, doc));
+                    
+                    Collection<Highlight> result = performer.compute(parameter, doc);
+                    
+                    if (result != null)
+                        highlights.addAll(result);
                 } catch (IOException e) {
                     e.printStackTrace();
                 } finally {

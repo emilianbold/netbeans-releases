@@ -13,18 +13,18 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.java.editor.semantic;
 
-import javax.swing.event.CaretEvent;
+import java.util.prefs.Preferences;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
+import org.netbeans.modules.java.editor.options.MarkOccurencesSettings;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -39,7 +39,16 @@ public class MarkOccurrencesHighlighterFactory extends CaretAwareJavaSourceTaskF
     }
 
     public CancellableTask<CompilationInfo> createTask(FileObject file) {
-        return new MarkOccurencesHighlighter(file);
+        Preferences node = MarkOccurencesSettings.getCurrentNode();
+        
+        if (node.getBoolean(MarkOccurencesSettings.ON_OFF, true))
+            return new MarkOccurencesHighlighter(file);
+        else
+            return new CancellableTask<CompilationInfo>() {
+                public void cancel() {}
+                
+                public void run(CompilationInfo parameter) throws Exception {}
+            };
     }
 
 }

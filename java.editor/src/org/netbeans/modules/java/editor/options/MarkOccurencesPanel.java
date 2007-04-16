@@ -50,7 +50,7 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
     public void load( MarkOccurencesOptionsPanelController controller ) {
         this.controller = controller;
         
-        Preferences node = controller.getCurrentNode();
+        Preferences node = MarkOccurencesSettings.getCurrentNode();
         
         for (JCheckBox box : boxes) {
             box.setSelected(node.getBoolean(box.getActionCommand(), DEFAULT_VALUE));
@@ -61,7 +61,7 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
     }
     
     public void store( ) {
-        Preferences node = controller.getCurrentNode();
+        Preferences node = MarkOccurencesSettings.getCurrentNode();
 
         for (javax.swing.JCheckBox box : boxes) {
             boolean value = box.isSelected();
@@ -82,7 +82,7 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
     
     public boolean changed() {
         
-        Preferences node = controller.getCurrentNode();
+        Preferences node = MarkOccurencesSettings.getCurrentNode();
         
         for (JCheckBox box : boxes) {
             boolean value = box.isSelected();
@@ -116,6 +116,7 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
         implementsCheckBox = new javax.swing.JCheckBox();
         overridesCheckBox = new javax.swing.JCheckBox();
         breakContinueCheckBox = new javax.swing.JCheckBox();
+        keepMarks = new javax.swing.JCheckBox();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
         setLayout(new java.awt.GridBagLayout());
@@ -134,6 +135,8 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
         typesCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         typesCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 20, 8, 0);
@@ -216,11 +219,20 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
         breakContinueCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 20, 8, 0);
+        add(breakContinueCheckBox, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(keepMarks, org.openide.util.NbBundle.getBundle(MarkOccurencesPanel.class).getString("CTL_KeepMarks_CheckBox")); // NOI18N
+        keepMarks.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        keepMarks.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 20, 8, 0);
-        add(breakContinueCheckBox, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(20, 20, 8, 0);
+        add(keepMarks, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     
     
@@ -231,6 +243,7 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
     private javax.swing.JCheckBox exitCheckBox;
     private javax.swing.JCheckBox fieldsCheckBox;
     private javax.swing.JCheckBox implementsCheckBox;
+    private javax.swing.JCheckBox keepMarks;
     private javax.swing.JCheckBox localVariablesCheckBox;
     private javax.swing.JCheckBox methodsCheckBox;
     private javax.swing.JCheckBox onOffCheckBox;
@@ -253,18 +266,20 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
         boxes.add( implementsCheckBox );
         boxes.add( overridesCheckBox );
         boxes.add( breakContinueCheckBox );
+        boxes.add( keepMarks );
         
-        onOffCheckBox.setActionCommand(MarkOccurencesOptionsPanelController.ON_OFF);
-        typesCheckBox.setActionCommand(MarkOccurencesOptionsPanelController.TYPES);
-        methodsCheckBox.setActionCommand(MarkOccurencesOptionsPanelController.METHODS);
-        constantsCheckBox.setActionCommand(MarkOccurencesOptionsPanelController.CONSTANTS);
-        fieldsCheckBox.setActionCommand(MarkOccurencesOptionsPanelController.FIELDS);
-        localVariablesCheckBox.setActionCommand(MarkOccurencesOptionsPanelController.LOCAL_VARIABLES);
-        exceptionsCheckBox.setActionCommand(MarkOccurencesOptionsPanelController.EXCEPTIONS);
-        exitCheckBox.setActionCommand(MarkOccurencesOptionsPanelController.EXIT);
-        implementsCheckBox.setActionCommand(MarkOccurencesOptionsPanelController.IMPLEMENTS);
-        overridesCheckBox.setActionCommand(MarkOccurencesOptionsPanelController.OVERRIDES);
-        breakContinueCheckBox.setActionCommand(MarkOccurencesOptionsPanelController.BREAK_CONTINUE);
+        onOffCheckBox.setActionCommand(MarkOccurencesSettings.ON_OFF);
+        typesCheckBox.setActionCommand(MarkOccurencesSettings.TYPES);
+        methodsCheckBox.setActionCommand(MarkOccurencesSettings.METHODS);
+        constantsCheckBox.setActionCommand(MarkOccurencesSettings.CONSTANTS);
+        fieldsCheckBox.setActionCommand(MarkOccurencesSettings.FIELDS);
+        localVariablesCheckBox.setActionCommand(MarkOccurencesSettings.LOCAL_VARIABLES);
+        exceptionsCheckBox.setActionCommand(MarkOccurencesSettings.EXCEPTIONS);
+        exitCheckBox.setActionCommand(MarkOccurencesSettings.EXIT);
+        implementsCheckBox.setActionCommand(MarkOccurencesSettings.IMPLEMENTS);
+        overridesCheckBox.setActionCommand(MarkOccurencesSettings.OVERRIDES);
+        breakContinueCheckBox.setActionCommand(MarkOccurencesSettings.BREAK_CONTINUE);
+        keepMarks.setActionCommand(MarkOccurencesSettings.KEEP_MARKS);
     }
     
     

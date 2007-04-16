@@ -29,20 +29,6 @@ import org.openide.util.NbPreferences;
 
 final class MarkOccurencesOptionsPanelController extends OptionsPanelController {
     
-    private static final String MARK_OCCURENCES = "MarkOccurences";
-    
-    static String ON_OFF = "OnOff";
-    static String TYPES = "Types";
-    static String METHODS = "Methods";
-    static String CONSTANTS = "Constants";
-    static String FIELDS = "Fields";
-    static String LOCAL_VARIABLES = "LocalVariables";
-    static String EXCEPTIONS = "Exceptions";
-    static String EXIT = "Exit";
-    static String IMPLEMENTS = "Implements";
-    static String OVERRIDES = "Overrides";
-    static String BREAK_CONTINUE = "BreakContinue";
-   
     private Preferences node;
     
     private MarkOccurencesPanel panel;
@@ -97,16 +83,4 @@ final class MarkOccurencesOptionsPanelController extends OptionsPanelController 
 	pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
     }
    
-    synchronized Preferences getCurrentNode() {
-        if ( node == null ) {
-            Preferences preferences = NbPreferences.forModule(MarkOccurencesOptionsPanelController.class);
-            node = preferences.node(MARK_OCCURENCES).node(getCurrentProfileId());
-        }
-                
-        return node;
-    }
-    
-    private String getCurrentProfileId() {
-        return "default"; // NOI18N
-    }
 }
