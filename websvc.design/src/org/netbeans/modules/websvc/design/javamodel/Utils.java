@@ -38,6 +38,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.xml.soap.*;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -89,6 +90,7 @@ public class Utils {
                         boolean nameFound=false;
                         boolean serviceNameFound=false;
                         boolean portNameFound=false;
+                        boolean tnsFound = false;
                         for(ExecutableElement ex:expressions.keySet()) {
                             if (ex.getSimpleName().contentEquals("serviceName")) { //NOI18N
                                 serviceModel.serviceName = (String)expressions.get(ex).getValue();
@@ -100,7 +102,8 @@ public class Utils {
                                 serviceModel.portName = (String)expressions.get(ex).getValue();
                                 portNameFound=true;
                             } else if (ex.getSimpleName().contentEquals("targetNamespace")) { //NOI18N
-                                serviceModel.setTargetNamespace((String)expressions.get(ex).getValue());
+                                serviceModel.targetNamespace = (String)expressions.get(ex).getValue();
+                                tnsFound = true;
                             } else if (ex.getSimpleName().contentEquals("endpointInterface")) { //NOI18N
                                 serviceModel.setEndpointInterface((String)expressions.get(ex).getValue());
                             } else if (ex.getSimpleName().contentEquals("wsdlLocation")) { //NOI18N
@@ -110,7 +113,12 @@ public class Utils {
                         // set default names
                         if (!nameFound) serviceModel.name=implClass.getName();
                         if (!portNameFound) serviceModel.portName = serviceModel.getName()+"Port"; //NOI18N
-                        if (!serviceNameFound) serviceModel.serviceName=implClass.getName()+"Service"; //NOI18N
+                        if (!serviceNameFound) serviceModel.serviceName = implClass.getName()+"Service"; //NOI18N
+                        if (!tnsFound) {
+                            String qualifName = classEl.getQualifiedName().toString();
+                            int ind = qualifName.lastIndexOf(".");                           
+                            serviceModel.targetNamespace = "http://"+(ind>=0?qualifName.substring(0,ind):"")+"/";
+                        }
                         
                         //TODO: Also have to apply JAXWS/JAXB rules regarding collision of names
                     }
@@ -161,7 +169,7 @@ public class Utils {
                     for (int i=0;i<methods.size();i++) {
                         MethodModel operation = new MethodModel();
                         operation.setImplementationClass(implClass);
-                        Utils.populateOperation(controller, methods.get(i), operation);
+                        Utils.populateOperation(controller, methods.get(i), operation, serviceModel.getTargetNamespace());
                         operations.add(operation);
                     }
                     serviceModel.operations=operations;
@@ -177,7 +185,7 @@ public class Utils {
         }
     }
     
-    private static void populateOperation(CompilationController controller, ExecutableElement methodEl, MethodModel methodModel) {
+    private static void populateOperation(CompilationController controller, ExecutableElement methodEl, MethodModel methodModel, String targetNamespace) {
         TypeElement methodAnotationEl = controller.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
         TypeElement onewayAnotationEl = controller.getElements().getTypeElement("javax.jws.Oneway"); //NOI18N
         TypeElement resultAnotationEl = controller.getElements().getTypeElement("javax.jws.WebResult"); //NOI18N
@@ -317,6 +325,12 @@ public class Utils {
             params.add(param);
         }
         methodModel.setParams(params);
+        
+        // set SOAP Request
+        setSoapRequest(methodModel, targetNamespace);
+        
+        // set SOAP Response
+        setSoapResponse(methodModel, targetNamespace);
     }
     
     private static void populateParam(CompilationController controller, VariableElement paramEl, ParamModel paramModel) {
@@ -346,4 +360,81 @@ public class Utils {
             }
         }
     }
+    
+    private static void setSoapRequest(MethodModel methodModel, String tns) {
+
+        try {
+            // create a sample SOAP request using SAAJ API
+            MessageFactory messageFactory = MessageFactory.newInstance();
+
+            SOAPMessage request = messageFactory.createMessage();
+            MimeHeaders headers = request.getMimeHeaders();
+            String action = methodModel.getAction();
+            headers.addHeader("SOAPAction", action==null? "\"\"":action); //NOI18N
+            SOAPPart part = request.getSOAPPart();
+            SOAPEnvelope envelope = part.getEnvelope();
+            String prefix = envelope.getPrefix();
+            if (!"soap".equals(prefix)) { //NOI18N
+                envelope.removeAttribute("xmlns:"+prefix); // NOI18N
+                envelope.setPrefix("soap"); //NOI18N
+            }
+            SOAPBody body = envelope.getBody();
+            body.setPrefix("soap"); //NOI18N
+            
+            // removing soap header
+            SOAPHeader header = envelope.getHeader();
+            envelope.removeChild(header);
+
+            // implementing body
+            Name methodName = envelope.createName(methodModel.getOperationName());
+            SOAPElement methodElement = body.addBodyElement(methodName);
+            methodElement.setPrefix("ns0"); //NOI18N
+            methodElement.addNamespaceDeclaration("ns0",tns); //NOI18N
+            
+            // params
+            List<ParamModel> params = methodModel.getParams();
+            int i=0;
+            for (ParamModel param:params) {
+                Name paramName = envelope.createName(param.getName());
+                SOAPElement paramElement = methodElement.addChildElement(paramName);
+                String paramNs = param.getTargetNamespace();
+                if (paramNs!=null) {
+                    String pref = "ns"+String.valueOf(++i); //NOI18N
+                    paramElement.setPrefix(pref);
+                    methodElement.addNamespaceDeclaration(pref,paramNs);
+                }
+                paramElement.addTextNode(getSampleValue(param.getParamType()));
+            }
+            
+            methodModel.setSoapRequest(request);
+            
+        } catch (SOAPException ex) {
+            ex.printStackTrace();
+        }
+    }
+    
+    private static void setSoapResponse(MethodModel model, String tns) {
+        
+    }
+    
+    private static String getSampleValue(String paramType) {
+        if ("java.lang.String".equals(paramType)) {
+            return "sample text";
+        } else if ("int".equals(paramType)) {
+            return "99";
+        } else if ("double".equals(paramType)) {
+            return "999.999";
+        } else if ("float".equals(paramType)) {
+            return "99.99";
+        } else if ("long".equals(paramType)) {
+            return "999";
+        } else if ("long".equals(paramType)) {
+            return "999";
+        } else if ("boolean".equals(paramType)) {
+            return "false";
+        } else if ("byte[]".equals(paramType)) {
+            return "";
+        } else return "...";
+    }
+    
 }

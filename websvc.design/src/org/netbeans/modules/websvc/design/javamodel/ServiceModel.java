@@ -46,7 +46,7 @@ public class ServiceModel {
     String name;
     private String endpointInterface;
     private String wsdlLocation;
-    private String targetNamespace;
+    String targetNamespace;
     private int status = STATUS_OK;
     
     List<MethodModel> operations;    

@@ -20,6 +20,7 @@
 package org.netbeans.modules.websvc.design.javamodel;
 
 import java.util.List;
+import javax.xml.soap.SOAPMessage;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -36,6 +37,8 @@ public class MethodModel {
     private boolean oneWay;
     private JavadocModel javadoc;
     private List<FaultModel> faults;
+    private SOAPMessage soapRequest;
+    private SOAPMessage soapResponse;
     
     /** Creates a new instance of MethodModel */
     MethodModel(FileObject implementationClass, String operationName) {
@@ -127,5 +130,23 @@ public class MethodModel {
         }
         return true;
     }
+    
+    public SOAPMessage getSoapRequest() {
+        return soapRequest;
+    }
 
+    void setSoapRequest(SOAPMessage soapRequest) {
+        this.soapRequest = soapRequest;
+    }
+    
+    public SOAPMessage getSoapResponse() {
+        return soapResponse;
+    }
+
+    void setSoapResponse(SOAPMessage soapResponse) {
+        this.soapResponse = soapResponse;
+    }
+
+    
+    
 }

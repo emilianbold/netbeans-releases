@@ -9,7 +9,7 @@
 
 package org.netbeans.modules.websvc.design.javamodel;
 
-import java.io.IOException;
+import java.io.IOException; 
 import java.util.ArrayList;
 import java.util.List;
 import javax.jws.WebParam.Mode;
@@ -94,7 +94,7 @@ private static ServiceModelTest DEFAULT_LOOKUP = null;
     
     private static final String[][] EXPECTED_EVENTS = {
         {"propertyChanged","serviceName","AddNumbersService","AddNumbers"},
-        {"propertyChanged","targetNamespace",null,"http://www.netbeans.org/tests/AddNumbersTest"},
+        {"propertyChanged","targetNamespace","http://add/","http://www.netbeans.org/tests/AddNumbersTest"},
         {"operationChanged","send"},
         {"operationAdded","hello"}      
     };
@@ -171,6 +171,10 @@ private static ServiceModelTest DEFAULT_LOOKUP = null;
                     assertEquals(FAULT_TYPES[i][j], fault.getFaultType());
                     j++;
                 }
+                System.out.println("SOAP REQUEST :");
+                op.getSoapRequest().writeTo(System.out);
+                System.out.println("");
+                System.out.println("------------------");
                 i++;
             }
             // testing merge
