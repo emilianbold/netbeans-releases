@@ -9,10 +9,20 @@
 
 package org.netbeans.modules.websvc.design.javamodel;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException; 
+import java.io.InputStream;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import javax.jws.WebParam.Mode;
+import javax.xml.soap.SOAPMessage;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.JavaDataLoader;
@@ -172,12 +182,13 @@ private static ServiceModelTest DEFAULT_LOOKUP = null;
                     j++;
                 }
                 System.out.println("SOAP REQUEST :");
-                op.getSoapRequest().writeTo(System.out);
+                System.out.println(getFormatedDocument(op.getSoapRequest()));
+                
                 System.out.println("");
                 System.out.println("------------------");
                 if (!op.isOneWay()) {
                     System.out.println("SOAP RESPONSE :");
-                    op.getSoapResponse().writeTo(System.out);
+                    System.out.println(getFormatedDocument(op.getSoapResponse()));
                     System.out.println("");
                     System.out.println("------------------");
                 }
@@ -248,4 +259,28 @@ private static ServiceModelTest DEFAULT_LOOKUP = null;
             ex.printStackTrace();
         }
     }
+    
+    private String getFormatedDocument(SOAPMessage message) {
+        try {;
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            transformerFactory.setAttribute("indent-number", new Integer(4));
+            Transformer transformer = transformerFactory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            
+            StreamResult result = new StreamResult(new StringWriter());
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            message.writeTo(bos);
+            String output = bos.toString();
+            InputStream bis = new ByteArrayInputStream(output.getBytes());
+            StreamSource source = new StreamSource(bis);
+            
+            transformer.transform(source, result);
+            
+            return result.getWriter().toString();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
 }
