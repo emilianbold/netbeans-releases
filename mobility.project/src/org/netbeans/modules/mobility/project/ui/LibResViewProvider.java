@@ -42,6 +42,7 @@ import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.actions.CopyAction;
 import org.openide.actions.PasteAction;
+import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -309,7 +310,11 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
             {
                 if (TopComponent.Registry.PROP_ACTIVATED_NODES.equals(evt.getPropertyName()))
                 {
-                    if (evt.getNewValue() instanceof Node[] )
+                    /* We need to react just on changes which happens in ProjectTab
+                     * This solution is not perfect but close to it as possible
+                     */
+                    if (evt.getNewValue() instanceof Node[] && evt.getSource() instanceof TopComponent.Registry && 
+                            ((TopComponent.Registry)evt.getSource()).getActivated() instanceof ExplorerManager.Provider)
                     {
                         final Node nodes[]=(Node[])evt.getNewValue();
                         if (nodes.length>0)
