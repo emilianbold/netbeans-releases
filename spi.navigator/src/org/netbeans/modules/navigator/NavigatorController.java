@@ -37,6 +37,7 @@ import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import org.netbeans.spi.navigator.NavigatorLookupHint;
+import org.netbeans.spi.navigator.NavigatorLookupPanelsPolicy;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.netbeans.spi.navigator.NavigatorPanelWithUndo;
 import org.openide.awt.UndoRedo;
@@ -298,10 +299,15 @@ public final class NavigatorController implements LookupListener, ActionListener
      * @node Node context, may be also null.
      */
     /* package private for tests */ List<NavigatorPanel> obtainProviders (Node node) {
+        // obtain policy for panels if there is one
+        Lookup globalContext = Utilities.actionsGlobalContext();
+        NavigatorLookupPanelsPolicy panelsPolicy = globalContext.lookup(NavigatorLookupPanelsPolicy.class);
+        
         List<NavigatorPanel> result = null; 
+        
         // search in global lookup first, they had preference
         Collection<? extends NavigatorLookupHint> lkpHints =
-                Utilities.actionsGlobalContext().lookupAll(NavigatorLookupHint.class);
+                globalContext.lookupAll(NavigatorLookupHint.class);
         for (NavigatorLookupHint curHint : lkpHints) {
             Collection<? extends NavigatorPanel> providers = ProviderRegistry.getInstance().getProviders(curHint.getContentType());
             if (providers != null && !providers.isEmpty()) {
@@ -312,7 +318,13 @@ public final class NavigatorController implements LookupListener, ActionListener
             }
         }
         
-        // search in declarative layers
+        // #100457: exclude Node/DataObject providers if requested 
+        if (panelsPolicy != null && 
+                panelsPolicy.getPanelsPolicy() == NavigatorLookupPanelsPolicy.LOOKUP_HINTS_ONLY) {
+            return result;
+        }
+        
+        // search based on Node/DataObject's primary file mime type
         if (node != null) {
             DataObject dObj = (DataObject)node.getLookup().lookup(DataObject.class);
             // #64871: Follow DataShadows to their original

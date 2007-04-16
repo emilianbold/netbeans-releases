@@ -529,7 +529,7 @@ public class NavigatorTCTest extends NbTestCase {
     /** Envelope for textual (mime-type like) content type to be used in 
      * global lookup
      */
-    private static class TestLookupHint implements NavigatorLookupHint {
+    public static class TestLookupHint implements NavigatorLookupHint {
         
         private final String contentType; 
                 
@@ -544,7 +544,7 @@ public class NavigatorTCTest extends NbTestCase {
     }
             
     
-    private static final class GlobalLookup4TestImpl extends AbstractLookup implements ContextGlobalProvider {
+    public static final class GlobalLookup4TestImpl extends AbstractLookup implements ContextGlobalProvider {
         
         public GlobalLookup4TestImpl (AbstractLookup.Content content) {
             super(content);

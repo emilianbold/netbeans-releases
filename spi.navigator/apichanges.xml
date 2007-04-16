@@ -83,6 +83,25 @@ is the proper place.
 
   <changes>
 
+    <change id="panelsPolicy">
+        <api name="navigator_api"/>
+        <summary>Added SPI interface NavigatorLookupPanelsPolicy.</summary>
+        <version major="1" minor="6"/>
+        <date day="16" month="4" year="2007"/>
+        <author login="dsimonek"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            <a href="@TOP@/org/netbeans/spi/navigator/NavigatorLookupPanelsPolicy.html">NavigatorLookupPanelsPolicy</a>
+            is new SPI interface for SPI clients
+            who want to affect searching mechanism for available NavigatorPanel
+            implementations. Method NavigatorLookupPanelsPolicy.getPanelsPolicy()
+            allows for example to remove active Node/DataObject related NavigatorPanel
+            implementations from Navigator window.<p></p>
+        </description>
+        <class package="org.netbeans.spi.navigator" name="NavigatorLookupPanelsPolicy"/>
+        <issue number="100457"/>
+    </change>      
+
     <change id="undoRedo">
         <api name="navigator_api"/>
         <summary>Added SPI interface NavigatorPanelWithUndo.</summary>
@@ -91,7 +110,8 @@ is the proper place.
         <author login="dsimonek"/>
         <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
         <description>
-            NavigatorPanelWithUndo is new SPI interface which extands NavigatorPanel
+            <a href="@TOP@/org/netbeans/spi/navigator/NavigatorPanelWithUndo.html">NavigatorPanelWithUndo</a>
+            is new SPI interface which extands NavigatorPanel
             by support for undoing and redoing changes in navigation views.
             Method NavigatorPanelWithUndo.getUndoRedo() allows clients
             to specify UndoRedo support that will be propagated to the 

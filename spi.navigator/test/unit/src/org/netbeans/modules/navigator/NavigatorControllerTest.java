@@ -23,7 +23,11 @@ import java.io.File;
 import java.net.URL;
 import java.util.List;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import junit.framework.*;
+import org.netbeans.modules.navigator.NavigatorTCTest.GlobalLookup4TestImpl;
+import org.netbeans.modules.navigator.NavigatorTCTest.TestLookupHint;
+import org.netbeans.spi.navigator.NavigatorLookupPanelsPolicy;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -32,6 +36,8 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.Lookups;
 
 
 /**
@@ -62,9 +68,23 @@ public class NavigatorControllerTest extends TestCase {
         return suite;
     }
 
+    /**
+     * Tests correct retrieving ans instantiating of NavigatorPanel instances 
+     * for various scenarios.
+     * 
+     * @throws java.lang.Exception 
+     */
     public void testObtainProviders() throws Exception {
         System.out.println("Testing NavigatorController.obtainProviders");
-        UnitTestUtils.prepareTest(new String [] { "/org/netbeans/modules/navigator/resources/NavigatorControllerTestProvider.xml" });
+
+        InstanceContent ic = new InstanceContent();
+        
+        GlobalLookup4TestImpl nodesLkp = new GlobalLookup4TestImpl(ic);
+        UnitTestUtils.prepareTest(new String [] { 
+            "/org/netbeans/modules/navigator/resources/NavigatorControllerTestProvider.xml" }, 
+            Lookups.singleton(nodesLkp)
+        );
+        
         URL url = NavigatorControllerTest.class.getResource("resources/sample_folder/subfolder1/subfolder2");
         assertNotNull("url not found.", url);
 
@@ -95,11 +115,24 @@ public class NavigatorControllerTest extends TestCase {
         assertNotNull("provider not found", result);
         assertEquals(1, result.size());
         assertTrue(result.get(0) instanceof TestJavaNavigatorPanel);
-    }
+        
+        TestLookupHint lookupHint = new TestLookupHint("contentType/tester");
+        ic.add(lookupHint);
+        TestLookupPanelsPolicy lookupContentType = new TestLookupPanelsPolicy();
+        ic.add(lookupContentType);
 
+        System.out.println("Testing LookupContentType functionality...");
+        result = nc.obtainProviders(shadow1.getNodeDelegate());
+        assertNotNull("provider not found", result);
+        assertEquals("Expected 1 item, got " + result.size(), 1, result.size());
+        assertTrue("Expected provider class TestContentTypeNavigatorPanel, but got " 
+                + result.get(0).getClass().getName(), result.get(0) instanceof TestContentTypeNavigatorPanel);
+        
+    }
+    
     /** Dummy navigator panel provider, just for testing
      */ 
-    public static final class TestJavaNavigatorPanel implements NavigatorPanel {
+    public static class TestJavaNavigatorPanel implements NavigatorPanel {
         
         public String getDisplayName () {
             return JAVA_DATA_TYPE;
@@ -125,7 +158,24 @@ public class NavigatorControllerTest extends TestCase {
         
     }
     
-            
-            
+    /**
+     * test impl fo NavigatorPanel for testing LookupContentType functionality
+     */
+    public static final class TestContentTypeNavigatorPanel extends TestJavaNavigatorPanel {
+
+        public String getDisplayName () {
+            return "Test content type";
+        }
+
+    }
+    
+    /** Test implementation of content type */
+    public static final class TestLookupPanelsPolicy implements NavigatorLookupPanelsPolicy {
+
+        public int getPanelsPolicy() {
+            return NavigatorLookupPanelsPolicy.LOOKUP_HINTS_ONLY;
+        }
+        
+    }
     
 }

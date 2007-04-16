@@ -406,6 +406,36 @@ Microsystems, Inc. All Rights Reserved.
         </ul>
            
    </usecase>
+
+   <usecase id="panelsPolicy" name="Removing active Node/DataObject related NavigatorPanels from Navigator window" >
+        <p>In certain situations it's not desired to show NavigatorPanel implementations
+            related to DataObject of active Node in Navigator window. Typically
+            you need to have active Node of some type, so that actions in the system
+            works properly. But you don't want to show NavigatorPanels that "come"
+            with such active Node. 
+        </p>
+
+        <b>Steps to remove such NavigatorPanels:</b>
+
+        <ul>
+         <li>Implement interface <a href="@TOP@/org/netbeans/spi/navigator/NavigatorLookupPanelsPolicy.html">NavigatorLookupPanelsPolicy</a>,
+             return kind of policy that suits you from <code>getPanelsPolicy()</code> method.
+             <p></p>
+        </li>
+         <li>Put implementation instance into your TopComponent's subclass lookup,
+             see <a href="@org-openide-windows@/org/openide/windows/TopComponent.html#getLookup()">TopComponent.getLookup()</a>
+             for details.
+             <p></p>
+         </li>
+         <li>Now when your TopComponent becomes active in the system, found
+             panels policy is used to limit/affect set of available
+             <a href="@TOP@/org/netbeans/spi/navigator/NavigatorPanel.html">NavigatorPanel</a>
+             implementations. 
+             <p></p>
+         </li>
+        </ul>
+
+   </usecase>
             
  </answer>
 
