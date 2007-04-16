@@ -270,6 +270,14 @@ public class DriverListUtil {
         
         return "";
     }
+    
+    public static String getDriver(String name) {
+        for (int i = 0; i < names.size(); i++)
+            if (((String) names.get(i)).equals(name))
+                return (String) drivers.get(i);
+        
+        return "";
+    }
 
     public static String findFreeName(String name) {
         String ret;

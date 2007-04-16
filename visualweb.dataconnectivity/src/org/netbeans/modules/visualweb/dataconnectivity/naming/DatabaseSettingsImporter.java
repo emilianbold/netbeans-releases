@@ -150,8 +150,8 @@ public class DatabaseSettingsImporter {
             while (it.hasNext()) {
                 drv = (String) it.next();
                 if (jf.getEntry(drv.replace('.', '/') + ".class") != null) {//NOI18N
-                    String driverName = DriverListUtil.findFreeName(DriverListUtil.getName(drv));
-                    if (DataSourceResolver.getInstance().findMatchingDriver(driverName) == null)
+                    String driverName = DriverListUtil.getName(drv);
+                    if (DataSourceResolver.getInstance().findMatchingDriver(DriverListUtil.getDriver(driverName)) != null)
                         break;
                     JDBCDriver driver = JDBCDriver.create(driverName, driverName, drv, new URL[] {driverJar.toURI().toURL()});
                     try {                        
