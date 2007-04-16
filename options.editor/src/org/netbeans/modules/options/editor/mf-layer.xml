@@ -663,7 +663,7 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="Check XML.shadow">
                     <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-actions-CheckAction.instance"/>
                 </file>-->
-                <file name="Check CSS.shadow">
+                <!--<file name="Check CSS.shadow">
                     <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-css-actions-CheckStyleAction.instance"/>
                 </file>
                 <file name="Copy HTML Style.shadow">
@@ -671,7 +671,7 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
                 <file name="Copy XML Style.shadow">
                     <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-css-actions-CopyStyleAction$XML.instance"/>
-                </file>
+                </file>-->
 <!--retouche:-->
 <!--                <file name="Generate DOM Tree Scanner....shadow">
                     <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDOMScannerAction.instance"/>
