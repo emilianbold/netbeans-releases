@@ -576,7 +576,7 @@ public class ComplibServiceProvider implements ComplibService {
                         ExtensionComplib userComplib = userScope
                                 .getExistingComplib(projectComplib);
                         if (userComplib != null) {
-                            addLibraryDefsAndRefs(project, userComplib);
+                            addLibraryRef(project, userComplib);
                         }
                     }
                 } catch (IOException e) {
@@ -661,55 +661,37 @@ public class ComplibServiceProvider implements ComplibService {
     }
 
     /**
-     * Add any needed library definitions and references for a project scoped
-     * complib.
+     * Add a Library Ref to a user scoped complib for a project.
      * 
      * @param project
-     * @param complib
+     * @param userComplib
      * @throws IOException
      */
-    private void addLibraryDefsAndRefs(Project project, ExtensionComplib complib)
+    private void addLibraryRef(Project project, ExtensionComplib userComplib)
             throws IOException {
-        String localizingBundle = LibraryLocalizationBundle.class.getName();
-
-        // Derive unique name and description for global NB Library Defs.
-        String libName = complib.getDirectoryBaseName();
-        String description = complib.getVersionedTitle();
-
+        String libName = deriveUniqueLibraryName(userComplib);
         Library libDef = LibraryManager.getDefault().getLibrary(libName);
         if (libDef == null) {
-            /*
-             * If we don't find a lib def create one, else assume the lib def is
-             * correct. If it is not the user can manually remove it and it will
-             * be recreated when the project is re-opened.
-             */
-
-            // Use the name of the library as a key for the description
-            LibraryLocalizationBundle.add(libName, description);
-
-            List<URL> rtPath = fileListToUrlList(complib.getRuntimePath());
-            List<URL> dtPath = fileListToUrlList(complib.getDesignTimePath());
-            List<URL> javadocPath = fileListToUrlList(complib.getJavadocPath());
-            List<URL> sourcePath = fileListToUrlList(complib.getSourcePath());
-            libDef = JsfProjectUtils.createComponentLibrary(libName, libName,
-                    localizingBundle, rtPath, sourcePath, javadocPath, dtPath);
+            // assert false;
+            IdeUtil
+                    .logError("Cannot add Library Ref, unable to find Library Definition: "
+                            + libName);
+            return;
         }
 
-        // If needed, create new compile-time and deploy Library Ref
+        // If needed, create new Library Ref
         if (!JsfProjectUtils.hasLibraryReference(project, libDef)) {
             if (!JsfProjectUtils.addLibraryReferences(project,
                     new Library[] { libDef })) {
-                IdeUtil
-                        .logError("Failed to add compile-time library reference to project: "
-                                + libDef.getName());
+                IdeUtil.logError("Failed to add library reference to project: "
+                        + libDef.getName());
             }
         }
     }
 
     /**
      * Remove an existing NB Library Ref corresponding to a project embedded
-     * complib and possibly also its corresponding global Library Def if it is
-     * no longer used by any other open project.
+     * complib.
      * 
      * @param project
      * @param prjCompLib
@@ -717,40 +699,33 @@ public class ComplibServiceProvider implements ComplibService {
      */
     private void removeLibraryDefsAndRefs(Project project,
         ExtensionComplib prjCompLib) throws IOException {
-        String libName = deriveUniqueLibraryName(project, prjCompLib);
+        ExtensionComplib userComplib = userScope.getExistingComplib(prjCompLib);
+        if (userComplib == null) {
+            // assert false;
+            IdeUtil
+                    .logWarning("Unable to find installed component library in userdir: "
+                            + prjCompLib.getVersionedTitle());
+            return;
+        }
+        String libName = deriveUniqueLibraryName(userComplib);
         Library libDef = LibraryManager.getDefault().getLibrary(libName);
         if (libDef != null) {
-            // Existing definition so first remove any existing reference
             if (JsfProjectUtils.hasLibraryReference(project, libDef)) {
                 JsfProjectUtils.removeLibraryReferences(project,
                         new Library[] { libDef });
             }
-
-            /**
-             * Check to see if the lib def is used by any other project and
-             * remove it if it is not
-             */
-            boolean inUse = false;
-            Project[] projectsArray = OpenProjects.getDefault()
-                    .getOpenProjects();
-            for (Project iProject : projectsArray) {
-                if (JsfProjectUtils.hasLibraryReference(iProject, libDef)) {
-                    inUse = true;
-                    break;
-                }
-            }
-
-            if (!inUse) {
-                JsfProjectUtils.removeLibrary(libName);
-
-                // Cleanup bundle
-                LibraryLocalizationBundle.remove(libName);
-            }
         }
     }
 
-    private String deriveUniqueLibraryName(Project project,
-        ExtensionComplib complib) {
+    /**
+     * Derive unique name for global NB Library Defs.
+     * 
+     * @param complib
+     *            User scope complib
+     * @return
+     */
+    private String deriveUniqueLibraryName(ExtensionComplib complib) {
+        // assert: complib is in user scope
         return complib.getDirectoryBaseName();
     }
 
@@ -873,27 +848,10 @@ public class ComplibServiceProvider implements ComplibService {
      */
     public ExtensionComplib installComplibPackage(ComplibPackage pkg)
             throws ComplibException, IOException {
-        // Install pkg to user scope
-        Scope scope = userScope;
         Identifier identifer = pkg.getIdentifer();
-
         removeExistingInstalledComplib(identifer);
-
-        /*
-         * Temporarily install the complib into the system so that UI Item-s can
-         * be created and then rollback if a problem occurs
-         */
-        ExtensionComplib complib = scope.installComplibPackage(pkg);
-        try {
-            addToPalette(complib);
-        } catch (ComplibException e1) {
-            // Rollback
-            remove(complib);
-            throw e1;
-        }
-        JavaHelpStorage.installComplibHelp(complib);
-
-        fireAddableComplibsChanged(scope);
+        ExtensionComplib complib = userScope.installComplibPackage(pkg);
+        finishInstallToUserScope(complib);
         return complib;
     }
 
@@ -909,20 +867,54 @@ public class ComplibServiceProvider implements ComplibService {
      */
     private void installProjectComplib(ExtensionComplib projectComplib)
             throws ComplibException, IOException {
-        // Install to user scope
-        Scope scope = userScope;
         Identifier identifer = projectComplib.getIdentifier();
-
         removeExistingInstalledComplib(identifer);
+        ExtensionComplib newComplib = userScope.installComplib(projectComplib);
+        finishInstallToUserScope(newComplib);
+    }
 
+    private void finishInstallToUserScope(ExtensionComplib complib)
+            throws ComplibException, IOException, MalformedURLException {
         /*
          * Temporarily install the complib into the system so that UI Item-s can
          * be created and then rollback if a problem occurs
          */
-        ExtensionComplib newComplib = scope.installComplib(projectComplib);
-        addToPalette(newComplib);
-        JavaHelpStorage.installComplibHelp(newComplib);
-        fireAddableComplibsChanged(scope);
+        try {
+            addToPalette(complib);
+        } catch (ComplibException e1) {
+            // Rollback
+            remove(complib);
+            throw e1;
+        }
+        JavaHelpStorage.installComplibHelp(complib);
+
+        // Create Lib Def
+        createUserScopeLibDef(complib);
+
+        fireAddableComplibsChanged(userScope);
+    }
+
+    private Library createUserScopeLibDef(ExtensionComplib complib)
+            throws IOException, MalformedURLException {
+        String libName = deriveUniqueLibraryName(complib);
+
+        Library libDef = LibraryManager.getDefault().getLibrary(libName);
+        if (libDef != null) {
+            // assert false;
+            JsfProjectUtils.removeLibrary(libName);
+        }
+
+        // Use unique libName as a key for the description.
+        String description = complib.getVersionedTitle();
+        LibraryLocalizationBundle.add(libName, description);
+
+        String localizingBundle = LibraryLocalizationBundle.class.getName();
+        List<URL> rtPath = fileListToUrlList(complib.getRuntimePath());
+        List<URL> dtPath = fileListToUrlList(complib.getDesignTimePath());
+        List<URL> javadocPath = fileListToUrlList(complib.getJavadocPath());
+        List<URL> sourcePath = fileListToUrlList(complib.getSourcePath());
+        return JsfProjectUtils.createComponentLibrary(libName, libName,
+                localizingBundle, rtPath, sourcePath, javadocPath, dtPath);
     }
 
     /**
@@ -1031,6 +1023,19 @@ public class ComplibServiceProvider implements ComplibService {
 
         // Remove from user scope
         userScope.remove(complib);
+
+        // Remove the corresponding Library Definition
+        String libName = deriveUniqueLibraryName(complib);
+        Library libDef = LibraryManager.getDefault().getLibrary(libName);
+        if (libDef != null) {
+            try {
+                JsfProjectUtils.removeLibrary(libName);
+            } catch (IOException e) {
+                IdeUtil.logWarning("Unable to remove Library Definition: "
+                        + libName, e);
+            }
+        }
+
         fireAddableComplibsChanged(userScope);
     }
 
@@ -1240,7 +1245,7 @@ public class ComplibServiceProvider implements ComplibService {
         ExtensionComplib projectComplib = scope
                 .installComplib(userDirExtComplib);
         fireAddableComplibsChanged(scope);
-        addLibraryDefsAndRefs(project, userDirExtComplib);
+        addLibraryRef(project, userDirExtComplib);
         installProjectResources(userDirExtComplib, project);
         return projectComplib;
     }
