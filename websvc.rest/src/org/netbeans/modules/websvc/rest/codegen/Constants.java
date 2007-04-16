@@ -123,7 +123,6 @@ class Constants {
         HTTP_METHOD,
         PRODUCE_MIME,
         SUB_RESOURCES,
-        WEB_APPLICATION_EXCEPTION,
         CREATED,
         RESOURCE
     };
@@ -135,7 +134,6 @@ class Constants {
         PRODUCE_MIME,
         CONSUME_MIME,
         RESOURCE,
-        WEB_APPLICATION_EXCEPTION,
         NOT_FOUND_EXCEPTION,
         NO_RESULT_EXCEPTION
     };

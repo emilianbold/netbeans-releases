@@ -36,12 +36,12 @@ public class PersistenceService {
         try {
             this.emf = Persistence.createEntityManagerFactory(puName);
             this.em = emf.createEntityManager();
-        } catch (Exception ex) {
+        } catch (RuntimeException ex) {
             if (emf != null) {
                 emf.close();
             }
             
-            throw new WebApplicationException(ex);
+            throw ex;
         }
     }
     
@@ -110,6 +110,7 @@ public class PersistenceService {
     
     public void close() {
         if (em != null && em.isOpen()) {
+            rollbackTx();
             em.close();
         }
         
