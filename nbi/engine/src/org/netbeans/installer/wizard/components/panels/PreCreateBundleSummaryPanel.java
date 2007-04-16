@@ -45,16 +45,25 @@ public class PreCreateBundleSummaryPanel extends WizardPanel {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     public PreCreateBundleSummaryPanel() {
-        setProperty(MESSAGE_TEXT_PROPERTY, DEFAULT_MESSAGE_TEXT);
-        setProperty(MESSAGE_CONTENT_TYPE_PROPERTY, DEFAULT_MESSAGE_CONTENT_TYPE);
-        setProperty(COMPONENTS_TO_BUNDLE_LABEL_TEXT_PROPERTY, DEFAULT_COMPONENTS_TO_BUNDLE_LABEL_TEXT);
-        setProperty(COMPONENTS_TO_BUNDLE_TEXT_PROPERTY, DEFAULT_COMPONENTS_TO_BUNDLE_TEXT);
-        setProperty(COMPONENTS_TO_BUNDLE_CONTENT_TYPE_PROPERTY, DEFAULT_COMPONENTS_TO_BUNDLE_CONTENT_TYPE);
-        setProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY, DEFAULT_COMPONENTS_LIST_SEPARATOR);
-        setProperty(DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY, DEFAULT_DOWNLOAD_SIZE_LABEL_TEXT);
-        setProperty(REQUIRED_DISK_SPACE_LABEL_TEXT_PROPERTY, DEFAULT_REQUIRED_DISK_SPACE_LABEL_TEXT);
+        setProperty(TITLE_PROPERTY, 
+                DEFAULT_TITLE);
         
-        setProperty(TITLE_PROPERTY, DEFAULT_TITLE);
+        setProperty(MESSAGE_TEXT_PROPERTY, 
+                DEFAULT_MESSAGE_TEXT);
+        setProperty(MESSAGE_CONTENT_TYPE_PROPERTY, 
+                DEFAULT_MESSAGE_CONTENT_TYPE);
+        setProperty(COMPONENTS_TO_BUNDLE_LABEL_TEXT_PROPERTY, 
+                DEFAULT_COMPONENTS_TO_BUNDLE_LABEL_TEXT);
+        setProperty(COMPONENTS_TO_BUNDLE_TEXT_PROPERTY, 
+                DEFAULT_COMPONENTS_TO_BUNDLE_TEXT);
+        setProperty(COMPONENTS_TO_BUNDLE_CONTENT_TYPE_PROPERTY, 
+                DEFAULT_COMPONENTS_TO_BUNDLE_CONTENT_TYPE);
+        setProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY, 
+                DEFAULT_COMPONENTS_LIST_SEPARATOR);
+        setProperty(DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY, 
+                DEFAULT_DOWNLOAD_SIZE_LABEL_TEXT);
+        setProperty(REQUIRED_DISK_SPACE_LABEL_TEXT_PROPERTY, 
+                DEFAULT_REQUIRED_DISK_SPACE_LABEL_TEXT);
     }
     
     @Override
@@ -121,7 +130,7 @@ public class PreCreateBundleSummaryPanel extends WizardPanel {
         // protected ////////////////////////////////////////////////////////////////
         @Override
         protected void initializeContainer() {
-            container.getNextButton().setText("&Install");
+            container.getNextButton().setText("&Create");
         }
         
         @Override
