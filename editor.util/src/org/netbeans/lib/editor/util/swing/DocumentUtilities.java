@@ -528,7 +528,9 @@ public final class DocumentUtilities {
                 throw new IndexOutOfBoundsException(e.getMessage()
                     + " at offset=" + e.offsetRequested()); // NOI18N
             }
-            return segment.array[segment.offset];
+            char ch = segment.array[segment.offset];
+            segment.array = null; // Allow GC of large char arrays
+            return ch;
         }
 
     }
