@@ -75,7 +75,7 @@ public class MeasureDialogs  {
         suite.addTest(new FindInProjects("measureTime", "Find in Projects dialog open"));
         suite.addTest(new ProjectPropertiesWindow("testJSEProject", "JSE Project Properties window open"));
         suite.addTest(new ProjectPropertiesWindow("testNBProject", "NB Project Properties window open"));
-        suite.addTest(new ProjectPropertiesWindow("testWebProject", "Web Project Properties window open"));
+//TODO no tomcat - see issue 101104                 suite.addTest(new ProjectPropertiesWindow("testWebProject", "Web Project Properties window open"));
  
         suite.addTest(new DeleteFileDialog("measureTime", "Delete Object dialog open"));
         

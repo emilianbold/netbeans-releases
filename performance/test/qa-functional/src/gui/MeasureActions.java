@@ -49,9 +49,8 @@ public class MeasureActions  {
         suite.addTest(new OpenFiles("testOpening20kBXmlFile", "Open Xml file (20kB)"));
         suite.addTest(new OpenFilesWithOpenedEditor("testOpening20kBXmlFile", "Open Xml file (20kB) if Editor opened"));
         
-        
-        suite.addTest(new OpenJspFile("testOpening20kBJSPFile", "Open JSP file"));
-        suite.addTest(new OpenJspFileWithOpenedEditor("testOpening20kBJSPFile", "Open JSP file if Editor opened"));
+//TODO no tomcat - see issue 101104         suite.addTest(new OpenJspFile("testOpening20kBJSPFile", "Open JSP file"));
+//TODO no tomcat - see issue 101104         suite.addTest(new OpenJspFileWithOpenedEditor("testOpening20kBJSPFile", "Open JSP file if Editor opened"));
         
         suite.addTest(new OpenFilesNoCloneableEditor("testOpening20kBPropertiesFile", "Open Properties file (20kB)"));
         suite.addTest(new OpenFilesNoCloneableEditorWithOpenedEditor("testOpening20kBPropertiesFile", "Open Properties file (20kB) if Editor opened"));
@@ -92,7 +91,7 @@ public class MeasureActions  {
         
         suite.addTest(new CreateProject("testCreateJavaApplicationProject", "Create Java Application project"));
         suite.addTest(new CreateProject("testCreateJavaLibraryProject", "Create Java Library project"));
-        suite.addTest(new CreateProject("testCreateWebApplicationProject", "Create Web Application project"));
+//TODO no tomcat - see issue 101104         suite.addTest(new CreateProject("testCreateWebApplicationProject", "Create Web Application project"));
         //TODO    suite.addTest(new CreateProject("testCreateJavaProjectWithExistingSources", "Create Java Project with Existing sources"));
         
         suite.addTest(new CreateNBProject("testCreateModuleProject", "Create Module Project"));

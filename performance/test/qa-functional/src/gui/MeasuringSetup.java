@@ -45,7 +45,7 @@ public class MeasuringSetup extends NbTestSuite {
         
         suite.addTest(new IDESetupTest("openFoldersProject"));
         suite.addTest(new IDESetupTest("openDataProject"));
-        suite.addTest(new IDESetupTest("openWebProject"));
+        //TODO no tomcat - see issue 101104                 suite.addTest(new IDESetupTest("openWebProject"));
         suite.addTest(new IDESetupTest("openNBProject"));
 
         suite.addTest(new IDESetupTest("closeAllDocuments"));
