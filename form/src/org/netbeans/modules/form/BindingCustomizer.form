@@ -141,6 +141,9 @@
                   <ResourceString bundle="org/netbeans/modules/form/Bundle.properties" key="MSG_BindingCustomizer_ImportData" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="importDataButtonActionPerformed"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JLabel" name="displayExpressionLabel">
               <Properties>

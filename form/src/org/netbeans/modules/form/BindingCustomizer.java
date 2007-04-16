@@ -28,9 +28,6 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.List;
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TreeModelListener;
 import javax.swing.text.JTextComponent;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -39,13 +36,12 @@ import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.form.FormUtils.TypeHelper;
-import org.netbeans.modules.form.project.ClassPathUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.propertysheet.PropertyPanel;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -184,13 +180,13 @@ public class BindingCustomizer extends JPanel {
     }
 
     private boolean showImportData() {
-        return false; // temporarily disabled
-//        String path = bindingDescriptor.getPath();
-//        Class clazz = bindingComponent.getBeanClass();
-//        return "elements".equals(path) // NOI18N
-//            && (JList.class.isAssignableFrom(clazz)
-//                || JComboBox.class.isAssignableFrom(clazz)
-//                || JTable.class.isAssignableFrom(clazz));
+        String path = bindingDescriptor.getPath();
+        Class clazz = bindingComponent.getBeanClass();
+        return "elements".equals(path) // NOI18N
+            && (JList.class.isAssignableFrom(clazz)
+                || JComboBox.class.isAssignableFrom(clazz)
+                || JTable.class.isAssignableFrom(clazz))
+            && (Lookup.getDefault().lookup(DataImporter.class) != null);
     }
 
     private boolean showDisplayExpression() {
@@ -584,6 +580,7 @@ public class BindingCustomizer extends JPanel {
         treeCombo.addActionListener(formListener);
 
         org.openide.awt.Mnemonics.setLocalizedText(importDataButton, org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_ImportData")); // NOI18N
+        importDataButton.addActionListener(formListener);
 
         org.openide.awt.Mnemonics.setLocalizedText(displayExpressionLabel, org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_DisplayExpression")); // NOI18N
 
@@ -887,8 +884,23 @@ public class BindingCustomizer extends JPanel {
             else if (evt.getSource() == incompletePathValueCheckBox) {
                 BindingCustomizer.this.incompletePathValueCheckBoxActionPerformed(evt);
             }
+            else if (evt.getSource() == importDataButton) {
+                BindingCustomizer.this.importDataButtonActionPerformed(evt);
+            }
         }
     }// </editor-fold>//GEN-END:initComponents
+
+private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importDataButtonActionPerformed
+    DataImporter importer = Lookup.getDefault().lookup(DataImporter.class);
+    if (importer != null) {
+        RADComponent data = importer.importData(bindingComponent.getFormModel());
+        if (data != null) {
+            // refresh source components combo
+            fillSourceComponentsCombo();
+            sourceCombo.setSelectedItem(data.getName());
+        }
+    }
+}//GEN-LAST:event_importDataButtonActionPerformed
 
     private void treeComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_treeComboActionPerformed
         updateColumnSelector();
