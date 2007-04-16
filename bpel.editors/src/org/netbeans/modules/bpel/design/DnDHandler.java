@@ -140,9 +140,15 @@ public class DnDHandler implements DragSourceListener , DragGestureListener, Dro
             FPoint location = designView.convertScreenToDiagram(dge.getDragOrigin());
             Pattern clicked = designView.findPattern(dge.getDragOrigin());
             Pattern selected  = designView.getSelectionModel().getSelectedPattern();
-            if (!clicked.isDraggable()){
+            
+            if (clicked == null) {
                 return;
             }
+            
+            if (!clicked.isDraggable()) {
+                return;
+            }
+            
             if (clicked == selected || clicked.isNestedIn(selected)){
                 //start a move tool
                 if (!getDesignView().getModel().isReadOnly()) {
