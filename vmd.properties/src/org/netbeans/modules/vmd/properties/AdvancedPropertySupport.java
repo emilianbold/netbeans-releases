@@ -28,7 +28,7 @@ import org.netbeans.modules.vmd.api.properties.GroupValue;
  *
  * @author Karol Harezlak
  */
-final class AdvancedPropertySupport extends DefaultPropertySupport {
+public final class AdvancedPropertySupport extends DefaultPropertySupport {
 
     private DesignPropertyDescriptor designerPropertyDescriptor;
     private String displayName;
