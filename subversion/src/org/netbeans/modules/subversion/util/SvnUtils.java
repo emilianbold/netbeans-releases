@@ -522,12 +522,30 @@ public class SvnUtils {
             if (c == '?') {
                 inQuery = true;
             } else if (c == '+' && inQuery) {
-                c = ' ';
-            } else if (c == '%' && i + 2 < s.length() && isHexDigit(s.charAt(i + 1)) && isHexDigit(s.charAt(i + 2))) {
-                c = (char) Integer.parseInt(s.substring(i + 1, i + 3), 16); 
-                i += 2;
-            }
-            sb.append(c);
+                sb.append(' ');
+            } else if (isEncodedByte(c, s, i)) {      
+                List<Byte> byteList = new ArrayList<Byte>();
+                do  {
+                    byteList.add((byte) Integer.parseInt(s.substring(i + 1, i + 3), 16));                     
+                    i += 3;    
+                    c = s.charAt(i);
+                } while(isEncodedByte(c, s, i));
+                
+                if(byteList.size() > 0) {
+                    byte[] bytes = new byte[byteList.size()];
+                    for(int ib = 0; ib < byteList.size(); ib++) {
+                        bytes[ib] = byteList.get(ib);
+                    }
+                    try {
+                        sb.append(new String(bytes, "UTF8")); 
+                    } catch (Exception e) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);  // oops
+                    }                    
+                    i--;                    
+                }                                             
+            } else {
+                sb.append(c);           
+            } 
         }
         try {
             return new SVNUrl(sb.toString());
@@ -536,6 +554,10 @@ public class SvnUtils {
         }
     }
 
+    private static boolean isEncodedByte(char c, String s, int i) {
+        return c == '%' && i + 2 < s.length() && isHexDigit(s.charAt(i + 1)) && isHexDigit(s.charAt(i + 2));
+    }    
+    
     private static boolean isHexDigit(char c) {
         return c >= '0' && c <= '9' || c >= 'A' && c <= 'F' || c >= 'a' && c <= 'f';
     }
