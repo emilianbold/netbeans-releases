@@ -37,7 +37,6 @@ public class MeasureMemoryUsage_dialog_1 {
 
         suite.addTest(new EmptyTestCase("measureMemoryUsage", "Empty test case"));
 
-        suite.addTest(new ModuleManager("measureTime", "Module Manager dialog open"));
         suite.addTest(new ServerManager("measureTime", "Server Manager dialog open"));
         suite.addTest(new TemplateManager("measureTime", "Template Manager dialog open"));
         
