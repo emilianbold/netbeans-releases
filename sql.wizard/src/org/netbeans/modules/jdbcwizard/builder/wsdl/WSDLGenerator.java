@@ -547,7 +547,7 @@ public class WSDLGenerator {
 		
 			Attr attrParamOrder = delSqlEle
 					.getAttributeNode(WSDLGenerator.PARAM_ORDER);
-			attrParamOrder.setNodeValue(dao.getParamOrder(WSDLGenerator.UPDATE_QUERY));
+			attrParamOrder.setNodeValue("");
 
 			Attr attrSqlEle = delSqlEle
 					.getAttributeNode(WSDLGenerator.SQL_ELEMENT);
