@@ -261,7 +261,7 @@ public final class Product extends RegistryNode {
         // run custom configuration logic
         progress.setDetail("Running custom configuration logic");
         configurationLogic.install(logicProgress);
-        logicProgress.setPercentage(Progress.COMPLETED);
+        logicProgress.setPercentage(Progress.COMPLETE);
 
         // check for cancel status
         if (progress.isCanceled()) return;
