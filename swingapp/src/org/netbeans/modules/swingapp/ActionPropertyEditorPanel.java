@@ -840,6 +840,12 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
     }*/
     
     ProxyAction getSelectedAction() {
+        if(this.mode == Mode.NewActionGlobal) {
+            return newAction;
+        }
+        
+        
+        // this stuff needs to be revisited
         if(globalMode) {
             return globalAction;
         }
@@ -1058,6 +1064,10 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
         public void actionPerformed(ActionEvent e) {
             ProxyAction action = getSelectedAction();
             IconEditor iconEditor = new IconEditor();
+            // if this is a dir, then use the application class instead
+            if(sourceFile.isFolder()) {
+                sourceFile = ActionManager.getActionManager(sourceFile).getApplicationClassFile();
+            }
             iconEditor.setSourceFile(sourceFile);
             
             if(Action.SMALL_ICON.equals(iconKey)){

@@ -163,6 +163,10 @@ public class ActionManager {
         return reverseams.get(this);
     }
     
+    public FileObject getApplicationClassFile() {
+        String appClassName = AppFrameworkSupport.getApplicationClassName(getRoot());
+        return getFileForClass(appClassName);
+    }
     
     /** Creates a new instance of ActionManager */
     private ActionManager(FileObject root) {
