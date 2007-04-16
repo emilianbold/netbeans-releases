@@ -22,7 +22,6 @@
 			<tocitem text="Configuring Partner Link Types Using the WSDL View" target="wsdlui_bpel_ext" />
 			<tocitem text="Configuring Properties and Property Aliases Using the WSDL View" target="wsdlui_prop" />
 			<tocitem text="Finding Usages of WSDL Components" target="wsdlui_wsdlview_showusages" />
-			<tocitem text="Using Refactoring to Rename or Delete WSDL File Components" target="wsdlui_refactoring" />
 			<tocitem text="Adding Documentation" target="wsdlui_documentation" />
 			<tocitem text="Using Find in the WSDL View" target="wsdlui_find" />
 		</tocitem>
@@ -43,8 +42,9 @@
 		<tocitem text="Working with WSDL Files">
 			<tocitem text="Creating a WSDL File From Scratch" target="wsdlui_creating" />
 			<tocitem text="Creating a WSDL File Based On an Existing WSDL File" target="wsdlui_creating_existing" />
-			<tocitem text="Validating WSDL Files" target="wsdlui_validation" />
 			<tocitem text="NCNAME Data Type" target="wsdlui_ncname" />
+			<tocitem text="Using Refactoring to Rename or Delete WSDL Components" target="wsdlui_refactoring" />
+			<tocitem text="Validating WSDL Files" target="wsdlui_validation" />
 		</tocitem>
 	</tocitem>
 </toc>
