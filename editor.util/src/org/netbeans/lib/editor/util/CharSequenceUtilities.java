@@ -370,22 +370,22 @@ public final class CharSequenceUtilities {
     public static void debugChar(StringBuffer sb, char ch) {
         switch (ch) {
             case '\n':
-                sb.append("\\n");
+                sb.append("\\n"); // NOI18N
                 break;
             case '\r':
-                sb.append("\\r");
+                sb.append("\\r"); // NOI18N
                 break;
             case '\t':
-                sb.append("\\t");
+                sb.append("\\t"); // NOI18N
                 break;
             case '\b':
-                sb.append("\\b");
+                sb.append("\\b"); // NOI18N
                 break;
             case '\f':
-                sb.append("\\f");
+                sb.append("\\f"); // NOI18N
                 break;
             case '\\':
-                sb.append("\\\\");
+                sb.append("\\\\"); // NOI18N
                 break;
             default:
                 sb.append(ch);
@@ -403,22 +403,22 @@ public final class CharSequenceUtilities {
     public static void debugChar(StringBuilder sb, char ch) {
         switch (ch) {
             case '\n':
-                sb.append("\\n");
+                sb.append("\\n"); // NOI18N
                 break;
             case '\r':
-                sb.append("\\r");
+                sb.append("\\r"); // NOI18N
                 break;
             case '\t':
-                sb.append("\\t");
+                sb.append("\\t"); // NOI18N
                 break;
             case '\b':
-                sb.append("\\b");
+                sb.append("\\b"); // NOI18N
                 break;
             case '\f':
-                sb.append("\\f");
+                sb.append("\\f"); // NOI18N
                 break;
             case '\\':
-                sb.append("\\\\");
+                sb.append("\\\\"); // NOI18N
                 break;
             default:
                 sb.append(ch);
@@ -484,7 +484,7 @@ public final class CharSequenceUtilities {
      */
     public static void checkIndexNonNegative(int index) {
         if (index < 0) {
-            throw new IndexOutOfBoundsException("index=" + index + " < 0");
+            throw new IndexOutOfBoundsException("index=" + index + " < 0"); // NOI18N
         }
     }
 
@@ -495,8 +495,8 @@ public final class CharSequenceUtilities {
     public static void checkIndexValid(int index, int length) {
         checkIndexNonNegative(index);
         if (index >= length) {
-            throw new IndexOutOfBoundsException("index=" + index
-                + " >= length()=" + length);
+            throw new IndexOutOfBoundsException("index=" + index // NOI18N
+                + " >= length()=" + length); // NOI18N
         }
     }
 
@@ -508,14 +508,14 @@ public final class CharSequenceUtilities {
      */
     public static void checkIndexesValid(CharSequence text, int start, int end) {
         if (start < 0) {
-            throw new IndexOutOfBoundsException("start=" + start + " < 0");
+            throw new IndexOutOfBoundsException("start=" + start + " < 0"); // NOI18N
         }
         if (end < start) {
-            throw new IndexOutOfBoundsException("end=" + end + " < start=" + start);
+            throw new IndexOutOfBoundsException("end=" + end + " < start=" + start); // NOI18N
         }
         if (end > text.length()) {
-            throw new IndexOutOfBoundsException("end=" + end
-            + " > text.length()=" + text.length());
+            throw new IndexOutOfBoundsException("end=" + end // NOI18N
+            + " > text.length()=" + text.length()); // NOI18N
         }
     }
     
