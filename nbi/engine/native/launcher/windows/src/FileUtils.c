@@ -54,7 +54,7 @@ void writeMessageA(LauncherProperties * props, DWORD level, DWORD isErr,  const 
     if(needEndOfLine>0) {
         newLine = 0;
         while((needEndOfLine--)>0) {
-            writeMessageA(props, level, isErr, "\n", 0);
+            writeMessageA(props, level, isErr, "\r\n", 0);
             newLine = 1;
         }
         flushHandle(hd);
