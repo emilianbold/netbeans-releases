@@ -37,7 +37,6 @@ public class MeasureDialogs  {
         //remove from test run for NB4.1        suite.addTest(new About("measureTime", "About dialog open"));
         //remove from test run for NB4.1        suite.addTest(new About_2("measureTime", "About details open"));
         
-        suite.addTest(new ModuleManager("measureTime", "Module Manager dialog open"));
         suite.addTest(new ServerManager("measureTime", "Server Manager dialog open"));
         suite.addTest(new TemplateManager("measureTime", "Template Manager dialog open"));
         
