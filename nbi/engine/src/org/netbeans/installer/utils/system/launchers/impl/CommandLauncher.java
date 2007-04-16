@@ -20,6 +20,9 @@
 
 package org.netbeans.installer.utils.system.launchers.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.installer.utils.helper.JavaCompatibleProperties;
 import org.netbeans.installer.utils.system.launchers.LauncherProperties;
 
 /**
@@ -37,6 +40,9 @@ public class CommandLauncher extends ShLauncher {
         "/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0", // NOI18N
         "/System/Library/Frameworks/JavaVM.framework/Versions/"       // NOI18N
     };
+    // the 1.5.0_02 is the first fcs release of J2SE5 for MacOSX according to
+    // http://developer.apple.com/releasenotes/Java/Java50RN/index.html
+    public static final String MIN_JAVA_VERSION_MACOSX = "1.5.0_02";
     
     public CommandLauncher(LauncherProperties props) {
         super(props);
@@ -48,5 +54,12 @@ public class CommandLauncher extends ShLauncher {
     @Override
     public String getExtension() {
         return COMMAND_EXT;
+    }
+    @Override
+    public List <JavaCompatibleProperties> getDefaultCompatibleJava() {
+        List <JavaCompatibleProperties> list = new ArrayList <JavaCompatibleProperties>();
+        list.add(new JavaCompatibleProperties(
+                MIN_JAVA_VERSION_MACOSX, null, null, null, null));
+        return list;
     }
 }

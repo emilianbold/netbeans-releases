@@ -59,8 +59,10 @@ public class ExeLauncher extends CommonLauncher {
             DEFAULT_WINDOWS_RESOURCE_SUFFIX + EXE_LAUNCHER_STUB_NAME;
     public static final String DEFAULT_WINDOWS_RESOURCE_I18N =
             DEFAULT_WINDOWS_RESOURCE_SUFFIX + I18N;
-    
-    public static final String MIN_JAVA_VERSION_WINDOWS       = "1.5.0_06";
+    /**
+     * See <code>ShLauncher#MIN_JAVA_VERSION_UNIX</code> for details.
+     */
+    public static final String MIN_JAVA_VERSION_WINDOWS       = "1.5.0_03";
     public static final String MIN_JAVA_VERSION_WINDOWS_VISTA = "1.5.0_11";
     public static final String OSNAME_WINDOWS_XP = "XP";
     public static final String OSNAME_WINDOWS_VISTA = "Vista";

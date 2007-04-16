@@ -59,7 +59,19 @@ public class ShLauncher extends CommonLauncher {
     private static final String SH_INDENT = "        "; //NOI18N
     private static final String SH_LINE_SEPARATOR = StringUtils.LF;
     private static final String SH_COMMENT = "#";
-    public static final String MIN_JAVA_VERSION_UNIX = "1.5.0_01";
+    
+    /**
+     *  Minimal supported Java version for the launcher.<br><br>
+     *  Due to the URLConnection issues with "spaced" names set this value to 1.5.0_03
+     *  as these issues were fixed somewhere between Update 1 and Update 3. <br>
+     *  Related issues:
+     *  <a href="http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5103449">5103449</a>
+     *  <a href="http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6181108">6181108</a>
+     *  <a href="http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6227551">6227551</a>
+     *  <a href="http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6219199">6219199</a>
+     *  <a href="http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4979820">4979820</a>
+     */
+    public static final String MIN_JAVA_VERSION_UNIX = "1.5.0_03";
     
     // if the location ends with "/" then all its children will be checked as well
     private static final String [] JAVA_COMMON_LOCATIONS = {
@@ -498,7 +510,7 @@ public class ShLauncher extends CommonLauncher {
             fillWithPads(fos, sz);
             
             LogManager.log("... done bundle testJVM file");//NOI18N
-        }        
+        }
         for(LauncherResource jvm : jvms) {
             if(jvm.isBundled()) {
                 File jvmFile = new File(jvm.getPath());
@@ -519,6 +531,6 @@ public class ShLauncher extends CommonLauncher {
                 fillWithPads(fos, sz);
             }
         }
-
+        
     }
 }
