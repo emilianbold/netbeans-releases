@@ -49,7 +49,8 @@ public class RaveSourceDocument extends AbstractRaveDocument {
     }
 
     protected Element createTableElement(CoreDocumentImpl document, String namespaceURI, String qualifiedName) {
-        return new RaveSourceTableElementImpl(document, namespaceURI, qualifiedName);
+//        return new RaveSourceTableElementImpl(document, namespaceURI, qualifiedName);        
+        return new RaveTableElement(document, namespaceURI, qualifiedName);
     }
 
     protected Element createStylesheetLinkElement(CoreDocumentImpl document, String namespaceURI, String qualifiedName) {

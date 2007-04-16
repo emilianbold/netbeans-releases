@@ -746,10 +746,13 @@ public final class  MarkupServiceImpl {
     }
     
     public static Element getTBodyElementForTableElement(Element tableElement) {
-        if (tableElement instanceof RaveRenderedTableElement) {
-            ((RaveRenderedTableElement)tableElement).getTbody();
-        } else if (tableElement instanceof RaveSourceTableElement) {
-            return ((RaveSourceTableElement)tableElement).getTbody();
+//        if (tableElement instanceof RaveRenderedTableElement) {
+//            ((RaveRenderedTableElement)tableElement).getTbody();
+//        } else if (tableElement instanceof RaveSourceTableElement) {
+//            return ((RaveSourceTableElement)tableElement).getTbody();
+//        }
+        if (tableElement instanceof RaveTableElement) {
+            return ((RaveTableElement)tableElement).getTbody();
         }
         return null;
     }
