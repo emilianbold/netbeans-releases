@@ -23,14 +23,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 
 /**
  *
- * @author Jiri Rechtacek
+ * @author Jiri Rechtacek, Radek Matous
  */
 public abstract class UnitCategoryTableModel extends AbstractTableModel {
     List<UnitCategory> data = Collections.emptyList ();
@@ -120,6 +119,25 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
             return this.filter == null ? "" : this.filter;
         }                
     }
+    
+    public void expandAll() {
+        if (showCategories) {
+            List<UnitCategory> data = getCategories();
+            for (UnitCategory unitCategory : data) {
+                unitCategory.setExpanded(true);
+            }
+        }
+    }
+    
+    public void collapseAll() {
+        if (showCategories) {
+            List<UnitCategory> data = getCategories();
+            for (UnitCategory unitCategory : data) {
+                unitCategory.setExpanded(false);
+            }        
+        }
+    }
+    
     
     public void addUpdateUnitListener (UpdateUnitListener l) {
         listeners.add (l);

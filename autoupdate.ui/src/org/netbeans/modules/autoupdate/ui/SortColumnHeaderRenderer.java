@@ -106,7 +106,7 @@ public class SortColumnHeaderRenderer implements TableCellRenderer{
                 }
 };
             this.model.setUnitComparator(cmp, false);
-        } else {
+        } else {            
             this.model.setUnitComparator(null, true);
         }
         if (this.table != null) {

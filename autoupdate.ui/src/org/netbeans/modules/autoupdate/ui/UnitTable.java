@@ -21,12 +21,18 @@ package org.netbeans.modules.autoupdate.ui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import javax.swing.AbstractAction;
 import javax.swing.Icon;
+import javax.swing.InputMap;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTable;
+import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
@@ -85,9 +91,33 @@ public class UnitTable extends JTable {
         getColumnModel ().getColumn (4).setPreferredWidth (50);
         
         SortColumnHeaderRenderer scRenderer = new SortColumnHeaderRenderer(this.model,getColumnModel ().getColumn(0).getHeaderRenderer());
-        getColumnModel().getColumn(1).setHeaderRenderer(scRenderer);
+        getColumnModel().getColumn(1).setHeaderRenderer(scRenderer);        
         initTable ();
+        initActions ();
         revalidate ();
+    }
+
+    private void initActions () {
+        final String collapseKey = "CollapseAll", expandKey="ExpandAll";//NOI18N
+        
+        if (getActionMap ().get(collapseKey) == null) {            
+            InputMap inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+            inputMap.put (KeyStroke.getKeyStroke (KeyEvent.VK_SUBTRACT, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK), collapseKey);
+            inputMap.put (KeyStroke.getKeyStroke (KeyEvent.VK_ADD, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK), expandKey);
+            
+            getActionMap().put(collapseKey,new AbstractAction(){
+                public void actionPerformed(ActionEvent e) {
+                    model.collapseAll();
+                    model.fireTableDataChanged();
+                }
+            });
+            getActionMap().put(expandKey,new AbstractAction(){
+                public void actionPerformed(ActionEvent e) {
+                    model.expandAll();
+                    model.fireTableDataChanged();
+                }
+            });            
+        }
     }
     
     private void initTable () {
