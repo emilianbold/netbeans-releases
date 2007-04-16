@@ -39,7 +39,6 @@ import javax.swing.UnsupportedLookAndFeelException;
 import org.netbeans.installer.downloader.DownloadManager;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.DateUtils;
-import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StreamUtils;
 import org.netbeans.installer.utils.StringUtils;
@@ -49,7 +48,6 @@ import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.UiUtils;
 import org.netbeans.installer.utils.XMLUtils;
-import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.helper.EngineResources;
 import org.netbeans.installer.utils.helper.ErrorLevel;
@@ -60,8 +58,8 @@ import org.netbeans.installer.wizard.Wizard;
 import static org.netbeans.installer.utils.StringUtils.LF;
 
 /**
- * The main class of the NBI engine. It represents the installer and provides 
- * methods to start the installation/maintenance process as well as to 
+ * The main class of the NBI engine. It represents the installer and provides
+ * methods to start the installation/maintenance process as well as to
  * finish/cancel/break the installation.
  *
  * @author Kirill Sorokin
@@ -70,7 +68,7 @@ public class Installer implements FinishHandler {
     /////////////////////////////////////////////////////////////////////////////////
     // Main
     /**
-     * The main method. It creates an instance of {@link Installer} and calls 
+     * The main method. It creates an instance of {@link Installer} and calls
      * the {@link #start()} method, passing in the command line arguments.
      *
      * @param arguments The command line arguments
@@ -179,8 +177,8 @@ public class Installer implements FinishHandler {
      * @see #finish()
      * @see #criticalExit()
      */
-    public void cancel() {     
-        // shut down everything that needs it   
+    public void cancel() {
+        // shut down everything that needs it
         // exit with the cancel error code
         cleanupAndExit(CANCEL_ERRORCODE);
     }
@@ -192,8 +190,8 @@ public class Installer implements FinishHandler {
      * @see #cancel()
      * @see #criticalExit()
      */
-    public void finish() {        
-        Wizard.getInstance().close();        
+    public void finish() {
+        Wizard.getInstance().close();
         cleanupAndExit(NORMAL_ERRORCODE);
     }
     
@@ -205,9 +203,9 @@ public class Installer implements FinishHandler {
      * @see #finish()
      */
     public void criticalExit() {
-        // exit immediately, as the system is apparently in a crashed state        
+        // exit immediately, as the system is apparently in a crashed state
         cleanupAndExit(CRITICAL_ERRORCODE);
-    }    
+    }
     
     // private //////////////////////////////////////////////////////////////////////
     private void cleanupAndExit(int errorCode) {
@@ -319,17 +317,17 @@ public class Installer implements FinishHandler {
                     
                     Locale targetLocale = null;
                     switch (valueParts.length) {
-                        case 1:
-                            targetLocale = new Locale(valueParts[0]);
-                            break;
-                        case 2:
-                            targetLocale = new Locale(valueParts[0], valueParts[1]);
-                            break;
-                        case 3:
-                            targetLocale = new Locale(valueParts[0], valueParts[1], valueParts[2]);
-                            break;
-                        default:
-                            ErrorManager.notifyWarning("Invalid parameter command line argument \"--locale\". Should be \"<language>[_<country>[_<variant>]]\".");
+                    case 1:
+                        targetLocale = new Locale(valueParts[0]);
+                        break;
+                    case 2:
+                        targetLocale = new Locale(valueParts[0], valueParts[1]);
+                        break;
+                    case 3:
+                        targetLocale = new Locale(valueParts[0], valueParts[1], valueParts[2]);
+                        break;
+                    default:
+                        ErrorManager.notifyWarning("Invalid parameter command line argument \"--locale\". Should be \"<language>[_<country>[_<variant>]]\".");
                     }
                     
                     if (targetLocale != null) {
@@ -606,17 +604,31 @@ public class Installer implements FinishHandler {
         
         LogManager.log("... class name: " + className);
         
+        JFrame.setDefaultLookAndFeelDecorated(true);
         try {
-            JFrame.setDefaultLookAndFeelDecorated(true);
-            UIManager.setLookAndFeel(className);
+            try {
+                UIManager.getInstalledLookAndFeels(); // this helps to avoid some
+                                                      // GTK L&F bugs for some 
+                                                      // locales
+                UIManager.setLookAndFeel(className);
+            } catch (Exception e) {
+                // we're catching Exception here as pretty much anything can happen
+                // while setting the look and feel and we have no control over it
+                // if something wrong happens we should fall back to the default
+                // cross-platform look and feel which is assumed to be working
+                // correctly
+                ErrorManager.notifyWarning("Could not activate the defined look and feel - falling back to the default cross-platform one.", e);
+                UIManager.setLookAndFeel(
+                        UIManager.getCrossPlatformLookAndFeelClassName());
+            }
         } catch (ClassNotFoundException e) {
-            ErrorManager.notifyWarning("Could not set the look and feel.", e);
+            ErrorManager.notifyWarning("Could not activate the cross-platform look and feel - proceeding with whatever look and feel was the default.", e);
         } catch (InstantiationException e) {
-            ErrorManager.notifyWarning("Could not set the look and feel.", e);
+            ErrorManager.notifyWarning("Could not activate the cross-platform look and feel - proceeding with whatever look and feel was the default.", e);
         } catch (IllegalAccessException e) {
-            ErrorManager.notifyWarning("Could not set the look and feel.", e);
+            ErrorManager.notifyWarning("Could not activate the cross-platform look and feel - proceeding with whatever look and feel was the default.", e);
         } catch (UnsupportedLookAndFeelException e) {
-            ErrorManager.notifyWarning("Could not set the look and feel.", e);
+            ErrorManager.notifyWarning("Could not activate the cross-platform look and feel - proceeding with whatever look and feel was the default.", e);
         }
         
         LogManager.logUnindent("... finished setting the look and feel");
@@ -752,7 +764,7 @@ public class Installer implements FinishHandler {
             
             System.setProperty(
                     EngineResources.LOCAL_ENGINE_PATH_PROPERTY,
-                    cachedEngine.getAbsolutePath());            
+                    cachedEngine.getAbsolutePath());
             
         } catch (IOException ex) {
             ErrorManager.notifyCritical("can`t cache installer engine", ex);
