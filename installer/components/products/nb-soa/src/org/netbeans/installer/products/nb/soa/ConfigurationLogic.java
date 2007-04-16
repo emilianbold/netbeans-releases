@@ -47,6 +47,7 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
     
     @Override
     public void install(Progress progress) throws InstallationException {
+	super.install(progress);
         final File soaLocation = getProduct().getInstallationLocation();
         
         // get the list of suitable netbeans ide installations
@@ -106,9 +107,6 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
                     getString("CL.install.error.netbeans.conf.am"),  // NOI18N
                     e);
         }
-        
-        /////////////////////////////////////////////////////////////////////////////
-        super.install(progress);
     }
     
     @Override

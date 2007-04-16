@@ -78,8 +78,9 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
     }
     
     public void install(final Progress progress) throws InstallationException {
-        // get the list of suitable netbeans ide installations
+	super.install(progress);        
         LogManager.log("Configuring UML...");
+	// get the list of suitable netbeans ide installations
         List<Dependency> dependencies =
                 getProduct().getDependencyByUid(BASE_IDE_UID);
         List<Product> sources =
@@ -128,9 +129,7 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
                 }
             }
             
-        }
-        /////////////////////////////////////////////////////////////////////////////
-        super.install(progress);
+        }        
     }
     
     public void uninstall(final Progress progress) throws UninstallationException {
