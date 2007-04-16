@@ -36,10 +36,13 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
@@ -50,17 +53,31 @@ public class GenerationUtilsTest extends NbTestCase {
     private FileObject workDir;
     private FileObject testFO;
 
+    static {
+        // set the lookup which will be returned by Lookup.getDefault()
+        System.setProperty("org.openide.util.Lookup",Lkp.class.getName());
+        assertEquals("Unable to set the default lookup!",Lkp.class, Lookup.getDefault().getClass());
+        assertEquals(RepositoryImpl.class, Lookup.getDefault().lookup(Repository.class).getClass());
+        assertEquals("The default Repository is not our repository!", RepositoryImpl.class, Repository.getDefault().getClass());
+    }
+
     public GenerationUtilsTest(String testName) {
         super(testName);
     }
 
     protected void setUp() throws Exception {
-        MockServices.setServices(FakeJavaDataLoaderPool.class, RepositoryImpl.class);
 
         clearWorkDir();
         TestUtilities.setCacheFolder(getWorkDir());
         workDir = FileUtil.toFileObject(getWorkDir());
         testFO = workDir.createData("TestClass.java");
+        
+        ClassPathProviderImpl classPathProvider = new ClassPathProviderImpl(new FileObject[]{FileUtil.toFileObject(getWorkDir())});
+        setLookups(
+                classPathProvider,
+                new FakeJavaDataLoaderPool()
+                );
+        
     }
 
     public void testNewInstance() throws Exception {
@@ -104,7 +121,8 @@ public class GenerationUtilsTest extends NbTestCase {
     }
 
     public void testCreateClass() throws Exception {
-        FileObject javaFO = GenerationUtils.createClass(workDir, "NewTestClass", "Javadoc");
+        FileObject pac = workDir.createFolder("testing");
+        FileObject javaFO = GenerationUtils.createClass(pac, "NewTestClass", "Javadoc");
         runUserActionTask(javaFO, new AbstractTask<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 SourceUtils srcUtils = SourceUtils.newInstance(controller);
@@ -398,5 +416,29 @@ public class GenerationUtilsTest extends NbTestCase {
             }
         }
         fail("Type " + typeElement + " does not implement " + interfaceName);
+    }
+    
+
+    private static void setLookups(Object... lookups) {
+        ((Lkp)Lookup.getDefault()).setProxyLookups(Lookups.fixed(lookups));
+    }
+
+    public static final class Lkp extends ProxyLookup {
+        
+        private final Repository repository = new RepositoryImpl();
+        
+        public Lkp() {
+            setProxyLookups(new Lookup[0]);
+        }
+        
+        private void setProxyLookups(Lookup... lookups) {
+            Lookup[] allLookups = new Lookup[lookups.length + 3];
+            ClassLoader classLoader = GenerationUtilsTest.class.getClassLoader();
+            allLookups[0] = Lookups.singleton(classLoader);
+            allLookups[1] = Lookups.singleton(repository);
+            System.arraycopy(lookups, 0, allLookups, 2, lookups.length);
+            allLookups[allLookups.length - 1] = Lookups.metaInfServices(classLoader);
+            setLookups(allLookups);
+        }
     }
 }
