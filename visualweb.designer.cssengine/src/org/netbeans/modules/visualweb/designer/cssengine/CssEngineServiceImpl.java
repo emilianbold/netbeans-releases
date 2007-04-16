@@ -115,6 +115,9 @@ public final class CssEngineServiceImpl implements CssEngineService {
 //    }
 
     public void createCssEngineForDocument(Document document, URL url) {
+        if (document == null) {
+            return;
+        }
         CssUserAgentInfo userAgentInfo = getUserAgentInfo();
         XhtmlCssEngine engine = XhtmlCssEngine.create(document, url, userAgentInfo);
 //        synchronized (document2engine) {
@@ -175,6 +178,10 @@ public final class CssEngineServiceImpl implements CssEngineService {
 
     
     public void removeCssEngineForDocument(Document document) {
+        if (document == null) {
+            return;
+        }
+        
         XhtmlCssEngine engine;
 //        synchronized (document2engine) {
 //            engine = document2engine.remove(document);
@@ -187,6 +194,9 @@ public final class CssEngineServiceImpl implements CssEngineService {
     }
     
     public void reuseCssEngineForDocument(Document document, Document originalDocument) {
+        if (document == null || originalDocument == null) {
+            return;
+        }
 //        synchronized (document2engine) {
 //            XhtmlCssEngine engine = document2engine.get(originalDocument);
 //            document2engine.put(document, engine);
