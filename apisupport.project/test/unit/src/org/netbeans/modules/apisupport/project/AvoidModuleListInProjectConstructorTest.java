@@ -42,11 +42,11 @@ public class AvoidModuleListInProjectConstructorTest extends TestBase {
         FileObject fo = nbCVSRoot().getFileObject("ant");
         Project p = ProjectManager.getDefault().findProject(fo);
         assertNotNull(p);
-        assertEquals("still no scans", 0, ModuleList.getKnownEntries(file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/org-apache-tools-ant-module.jar")).size());
+        assertEquals("still no scans", 0, ModuleList.getKnownEntries(file("nbbuild/netbeans/" + TestBase.CLUSTER_JAVA + "/modules/org-apache-tools-ant-module.jar")).size());
         assertEquals("org.apache.tools.ant.module", ProjectUtils.getInformation(p).getName());
-        assertEquals("still no scans", 0, ModuleList.getKnownEntries(file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/org-apache-tools-ant-module.jar")).size());
+        assertEquals("still no scans", 0, ModuleList.getKnownEntries(file("nbbuild/netbeans/" + TestBase.CLUSTER_JAVA + "/modules/org-apache-tools-ant-module.jar")).size());
         ClassPath.getClassPath(fo.getFileObject("src"), ClassPath.COMPILE);
-        assertEquals("now have scanned something", 1, ModuleList.getKnownEntries(file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/org-apache-tools-ant-module.jar")).size());
+        assertEquals("now have scanned something", 1, ModuleList.getKnownEntries(file("nbbuild/netbeans/" + TestBase.CLUSTER_JAVA + "/modules/org-apache-tools-ant-module.jar")).size());
     }
     
 }

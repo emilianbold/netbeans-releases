@@ -57,18 +57,18 @@ public class SourceForBinaryImplTest extends TestBase {
         doTestFindSourceRootForCompiledClasses("ant/src-bridge", "ant/build/bridge-classes");
         // Have to load at least one module to get the scan going.
         ClassPath.getClassPath(FileUtil.toFileObject(file("beans/src")), ClassPath.COMPILE);
-        check("ant/src-bridge", TestBase.CLUSTER_IDE + "/ant/nblib/bridge.jar");
+        check("ant/src-bridge", TestBase.CLUSTER_JAVA + "/ant/nblib/bridge.jar");
     }
     
     public void testFindSourceRootForModuleJar() throws Exception {
         ClassPath.getClassPath(FileUtil.toFileObject(file("ant/src")), ClassPath.COMPILE);
-        check("java/project/src", TestBase.CLUSTER_IDE + "/modules/org-netbeans-modules-java-project.jar");
+        check("java/project/src", TestBase.CLUSTER_JAVA + "/modules/org-netbeans-modules-java-project.jar");
         check("openide/loaders/src", TestBase.CLUSTER_PLATFORM + "/modules/org-openide-loaders.jar");
         check("core/bootstrap/src", TestBase.CLUSTER_PLATFORM + "/lib/boot.jar");
         check("diff/src", TestBase.CLUSTER_IDE + "/modules/org-netbeans-modules-diff.jar");
         check("editor/libsrc", TestBase.CLUSTER_IDE + "/modules/org-netbeans-modules-editor-lib.jar");
         check("xtest/nbjunit/src", "testtools/modules/org-netbeans-modules-nbjunit.jar");
-        check("apisupport/project/test/unit/src",file("nbbuild/build/testdist/unit/" + TestBase.CLUSTER_IDE + "/org-netbeans-modules-apisupport-project/tests.jar"));
+        check("apisupport/project/test/unit/src",file("nbbuild/build/testdist/unit/" + TestBase.CLUSTER_APISUPPORT + "/org-netbeans-modules-apisupport-project/tests.jar"));
     }
     
     public void testExternalModules() throws Exception {

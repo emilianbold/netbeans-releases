@@ -65,9 +65,9 @@ public class EvaluatorTest extends TestBase {
         assertEquals("right manifest.mf", "manifest.mf", eval.getProperty("manifest.mf"));
         assertEquals("right core.dir", file("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM),
             javaProjectProject.getHelper().resolveFile(eval.getProperty("core.dir")));
-        assertEquals("right apisupport/project.dir", file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE),
+        assertEquals("right apisupport/project.dir", file("nbbuild/netbeans/" + TestBase.CLUSTER_APISUPPORT),
             javaProjectProject.getHelper().resolveFile(eval.getProperty("apisupport/project.dir")));
-        assertEquals("right module JAR", file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/org-netbeans-modules-java-project.jar"),
+        assertEquals("right module JAR", file("nbbuild/netbeans/" + TestBase.CLUSTER_JAVA + "/modules/org-netbeans-modules-java-project.jar"),
             javaProjectProject.getHelper().resolveFile(eval.evaluate("${cluster}/${module.jar}")));
         eval = loadersProject.evaluator();
         assertEquals("right module JAR", file("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-openide-loaders.jar"),
