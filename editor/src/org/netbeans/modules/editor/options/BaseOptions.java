@@ -284,6 +284,26 @@ public class BaseOptions extends OptionSupport {
         BaseKit kit = BaseKit.getKit(getKitClass());
         return kit.getContentType();
     }
+
+    // diagnostics for #101078
+    private String getCTImpl() {
+        String mimeType = getContentType();
+        if (mimeType == null) {
+            String msg = "Can't determine mime type for " + simpleToString(this) + "; kitClass = " + getKitClass(); //NOI18N
+            LOG.log(Level.WARNING, null, new Throwable(msg));
+            
+            mimeType="text/plain"; //NOI18N
+        }
+        return mimeType;
+    }
+    
+    private static String simpleToString(Object o) {
+        if (o == null) {
+            return null;
+        } else {
+            return o.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(o)); //NOI18N
+        }
+    }
     
     /**
      * Gets an instance of <code>BaseOptions</code> for an editir kit implementation
@@ -343,7 +363,7 @@ public class BaseOptions extends OptionSupport {
          * is first obtained and then the synchronization is done
          * to avoid the deadlock caused by locking in opposite order.
          */
-        String name = getContentType();
+        String name = getCTImpl();
         if (name == null) {
             return null;
         }
@@ -950,7 +970,7 @@ public class BaseOptions extends OptionSupport {
     private KeyBindingSettings getKeybindingSettings() {
         synchronized (Settings.class) {
             if (keyBindingsSettings == null){
-                String mime = getContentType();
+                String mime = getCTImpl();
                 Lookup lookup = MimeLookup.getLookup(MimePath.parse(mime));
                 resultKB = lookup.lookup(new Lookup.Template(KeyBindingSettings.class));
                 Collection inst = resultKB.allInstances();
@@ -982,7 +1002,7 @@ public class BaseOptions extends OptionSupport {
     private FontColorSettings getFontColorSettings() {
         synchronized (Settings.class) {
             if (fontColorSettings == null) {
-                String mime = getContentType();
+                String mime = getCTImpl();
                 Lookup lookup = MimeLookup.getLookup(MimePath.parse(mime));
                 Lookup.Result result = lookup.lookup(new Lookup.Template(FontColorSettings.class));
                 Collection inst = result.allInstances();
@@ -1827,7 +1847,7 @@ public class BaseOptions extends OptionSupport {
         if (!loaded) {
             loaded = true;
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Loading " + getClass() + "; mimeType='" + getContentType() + "'"); //NOI18N
+                LOG.fine("Loading " + getClass() + "; mimeType='" + getCTImpl() + "'"); //NOI18N
             }
 
             getKeyBindingList();
@@ -1837,11 +1857,11 @@ public class BaseOptions extends OptionSupport {
             loadSettings(PropertiesMIMEProcessor.class);
 
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Loaded! " + getClass() + "; mimeType='" + getContentType() + "'"); //NOI18N
+                LOG.fine("Loaded! " + getClass() + "; mimeType='" + getCTImpl() + "'"); //NOI18N
             }
         } else {
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Already loaded! " + getClass() + "; mimeType='" + getContentType() + "'"); //NOI18N
+                LOG.fine("Already loaded! " + getClass() + "; mimeType='" + getCTImpl() + "'"); //NOI18N
             }
         }
     }
