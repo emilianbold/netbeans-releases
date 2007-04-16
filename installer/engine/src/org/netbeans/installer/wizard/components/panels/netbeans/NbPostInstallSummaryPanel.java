@@ -212,7 +212,7 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
             messagePaneNetBeans.setContentType(DEFAULT_MESSAGE_NETBEANS_CONTENT_TYPE);
             messagePaneNetBeans.setText("");
             for (Product product: products) {
-                if (product.getUid().equals("nb-ide")) {
+                if (product.getUid().equals("nb-base")) {
                     if (SystemUtils.isWindows()) {
                         messagePaneNetBeans.setText(DEFAULT_MESSAGE_NETBEANS_TEXT_WINDOWS);
                     } else if (SystemUtils.isMacOS()) {
