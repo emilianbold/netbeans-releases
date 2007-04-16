@@ -40,7 +40,9 @@
 
             <!-- sorting -->
             <attr name="J2EE/SOA" boolvalue="true"/>
+            <attr name="J2ME/SOA" boolvalue="true"/>
             <attr name="SOA/Samples" boolvalue="true"/>
+            <attr name="SOA/UML" boolvalue="true"/>
             <attr name="SOA/APISupport" boolvalue="true"/>
         </folder>
     </folder>

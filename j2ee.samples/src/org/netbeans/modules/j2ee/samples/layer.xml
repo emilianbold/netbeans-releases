@@ -65,6 +65,7 @@
                 </folder>
                 <attr name="Enterprise/Standard" boolvalue="false"/>
                 <attr name="Enterprise/TestingTools" boolvalue="true"/>
+                <attr name="Enterprise/Blueprints" boolvalue="true"/>
                 <attr name="Enterprise/ApiSupport" boolvalue="true"/>
             </folder>
         </folder>

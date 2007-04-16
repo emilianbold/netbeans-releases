@@ -25,6 +25,7 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="Samples">
                 <attr name="Standard/J2ME" boolvalue="true"/>
                 <attr name="Web/J2ME" boolvalue="true"/>
+                <attr name="Enterprise/J2ME" boolvalue="true"/>
                 <attr name="J2ME/Blueprints" boolvalue="true"/>
                 <folder name="J2ME">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>

@@ -25,7 +25,9 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
         <folder name="Project">
             <folder name="Samples">
                 <attr name="Standard/Identity" boolvalue="true"/>
-                <attr name="Identity/Web" boolvalue="true"/>
+                <attr name="Enterprise/Identity" boolvalue="true"/>
+                <attr name="J2ME/Identity" boolvalue="true"/>
+                <attr name="SOA/Identity" boolvalue="true"/>
                 <attr name="Identity/Blueprints" boolvalue="true"/>
                 <folder name="Identity">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.identity.samples.resources.Bundle"/>

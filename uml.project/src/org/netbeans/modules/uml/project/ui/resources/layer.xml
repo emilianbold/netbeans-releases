@@ -18,17 +18,12 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
-<!--
-    Document   : layer.xml.xml
-    Created on : February 15, 2004, 8:38 AM
-    Author     : TreyS
-    Description:
-        Purpose of the document follows.
--->
-<?xml-stylesheet type="text/xml" href="http://openide.netbeans.org/fs/filesystem.xsl"?>
 <filesystem>
     <folder name="Templates">
         <folder name="Project">
+            <attr name="J2EE/UML" boolvalue="true"/>
+            <attr name="UML/APISupport" boolvalue="true"/>
+            <attr name="UML/Samples" boolvalue="true"/>
             <folder name="UML">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.project.ui.wizards.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/uml/project/ui/resources/emptyProject.html"/>

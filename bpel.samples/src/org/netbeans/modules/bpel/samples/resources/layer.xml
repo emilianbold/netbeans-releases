@@ -25,6 +25,8 @@
             <folder name="Samples">
                 <!-- sorting -->
                 <attr name="Enterprise/SOA" boolvalue="true"/>
+                <attr name="J2ME/SOA" boolvalue="true"/>
+                <attr name="SOA/Blueprints" boolvalue="true"/>
                 <attr name="SOA/ApiSupport" boolvalue="true"/>
 
                 <folder name="SOA">
