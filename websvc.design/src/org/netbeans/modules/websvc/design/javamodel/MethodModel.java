@@ -104,6 +104,10 @@ public class MethodModel {
         this.javadoc=javadoc;
     }
     
+    public void setJavadoc(String javadoc) {
+        Utils.setJavadoc(implementationClass, this, javadoc);
+    }
+    
     public List<FaultModel> getFaults() {
         return faults;
     }

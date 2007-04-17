@@ -21,6 +21,12 @@ package org.netbeans.modules.websvc.design.javamodel;
 
 import com.sun.javadoc.Doc;
 import com.sun.javadoc.Tag;
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.ArrayList;
@@ -40,8 +46,13 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.xml.soap.*;
 import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Comment;
+import org.netbeans.api.java.source.Comment.Style;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.websvc.design.util.SourceUtils;
 import org.openide.ErrorManager;
 import static org.netbeans.api.java.source.JavaSource.Phase;
@@ -485,6 +496,64 @@ public class Utils {
         } else if ("byte[]".equals(paramType)) {
             return "";
         } else return "...";
+    }
+    
+    public static void setJavadoc(final FileObject implClass, final MethodModel methodModel, final String text) {
+        JavaSource javaSource = JavaSource.forFileObject(implClass);
+        CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);            
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree classTree = SourceUtils.findPublicTopLevelClass(workingCopy);
+                List<? extends Tree> members = classTree.getMembers();
+                TypeElement methodAnotationEl = workingCopy.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
+                if (methodAnotationEl==null) return;
+                MethodTree targetMethod=null;
+                for (Tree member:members) {
+                    if (Tree.Kind.METHOD==member.getKind()) {
+                        MethodTree method = (MethodTree)member;
+                        ModifiersTree modifiers = method.getModifiers();
+                        List<? extends AnnotationTree> annotations = modifiers.getAnnotations();
+                        for (AnnotationTree an:annotations) {
+                            TreePath anPath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), an.getAnnotationType());
+                            TypeMirror anMirror = workingCopy.getTrees().getTypeMirror(anPath);
+                            if (workingCopy.getTypes().isSameType(methodAnotationEl.asType(),anMirror)) {
+                                Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = ((AnnotationMirror)anMirror).getElementValues();
+                                for(ExecutableElement ex:expressions.keySet()) {
+                                    if (ex.getSimpleName().contentEquals("operationName")) { //NOI18N
+                                        if (methodModel.getOperationName().equals(expressions.get(ex).getValue())) {
+                                            targetMethod = method;    
+                                        }
+                                        break;
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                        if (targetMethod!=null) break;
+                        else if (method.getName().contentEquals(methodModel.getOperationName())) {
+                            targetMethod = method;
+                            break;
+                        }
+                    }
+                    
+                }
+                if (targetMethod!=null) {
+                    Comment comment = Comment.create(Style.JAVADOC, 0,0,0, text);
+                    // Issue in Retouche : the following part couldn't be used for now
+                    // MethodTree newMethod = make.addComment(targetMethod, comment , true);
+                    // workingCopy.rewrite(targetMethod, newMethod);
+                }
+                
+             }
+             public void cancel() {}
+            
+        };
+        try {
+            javaSource.runModificationTask(modificationTask).commit();
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
     }
     
 }
