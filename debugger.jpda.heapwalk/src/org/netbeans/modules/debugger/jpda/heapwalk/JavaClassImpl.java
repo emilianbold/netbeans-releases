@@ -44,6 +44,9 @@ public class JavaClassImpl implements JavaClass {
     
     /** Creates a new instance of JavaClassImpl */
     public JavaClassImpl(JPDAClassType classType) {
+        if (classType == null) {
+            throw new NullPointerException("classType == null");
+        }
         this.classType = classType;
     }
 
