@@ -28,6 +28,7 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
@@ -49,7 +50,7 @@ public class WhereUsedQueryUI implements RefactoringUI {
 
     public WhereUsedQueryUI(TreePathHandle jmiObject, CompilationInfo info) {
         this.query = new WhereUsedQuery(Lookups.singleton(jmiObject));
-        this.query.getContext().add(info.getClasspathInfo());
+        this.query.getContext().add(RetoucheUtils.getClasspathInfoFor(jmiObject));
         this.element = jmiObject;
         Element el = jmiObject.resolveElement(info);
         name = UiUtils.getHeader(el, info, UiUtils.PrintPart.NAME);

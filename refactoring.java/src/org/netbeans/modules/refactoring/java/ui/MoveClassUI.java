@@ -30,6 +30,7 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUIBypass;
@@ -65,6 +66,7 @@ public class MoveClassUI implements RefactoringUI, RefactoringUIBypass {
         this.javaObject = javaObject;
         this.pasteType = pasteType;
         this.refactoring = new MoveRefactoring(Lookups.fixed(javaObject.getPrimaryFile(), handles.toArray(new Object[handles.size()])));
+        this.refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(javaObject.getPrimaryFile()));
     }
     
     public String getName() {

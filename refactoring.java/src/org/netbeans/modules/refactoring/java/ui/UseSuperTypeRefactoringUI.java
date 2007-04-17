@@ -31,6 +31,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.UseSuperTypeRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
@@ -57,6 +58,7 @@ public class UseSuperTypeRefactoringUI implements RefactoringUI{
     public UseSuperTypeRefactoringUI(TreePathHandle selectedElement) {
         this.subType = selectedElement;
         refactoring = new UseSuperTypeRefactoring(subType);
+        refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(subType));
     }
     
     /**

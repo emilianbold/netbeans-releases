@@ -126,8 +126,8 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
         
         Collection importStmts = new ArrayList();
         
-        for (Iterator iter = inner.getRefactoringElements().iterator(); iter.hasNext(); ) {
-            ElementGrip elem = ((DiffElement) iter.next()).getLookup().lookup(ElementGrip.class);
+        for (Iterator<RefactoringElement> iter = inner.getRefactoringElements().iterator(); iter.hasNext(); ) {
+            ElementGrip elem = iter.next().getLookup().lookup(ElementGrip.class);
             //ElementGrip comp = elem;
             boolean isOuterRef = true;
 //            //Check if this usage is an import statement & ignore it if so.

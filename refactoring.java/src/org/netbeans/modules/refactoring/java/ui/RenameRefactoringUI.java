@@ -20,9 +20,7 @@ package org.netbeans.modules.refactoring.java.ui;
 
 import java.io.IOException;
 import java.text.MessageFormat;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.TypeElement;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -119,7 +117,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         this.jmiObject = jmiObject;
         this.refactoring = new RenameRefactoring(Lookups.singleton(jmiObject));
         oldName = jmiObject.resolveElement(info).getSimpleName().toString();
-        refactoring.getContext().add(info);
+        refactoring.getContext().add(info.getClasspathInfo());
         dispOldName = oldName;
 
         //this(jmiObject, (FileObject) null, true);
@@ -135,14 +133,14 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
             oldName = file.getName();
         }
         dispOldName = oldName;
-        if (info!=null)
-            refactoring.getContext().add(info);
+        refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(handle));
         //this(jmiObject, (FileObject) null, true);
     }
 
     public RenameRefactoringUI(NonRecursiveFolder file) {
         this.refactoring = new RenameRefactoring(Lookups.singleton(file));
         oldName = RetoucheUtils.getPackageName(file.getFolder());
+        refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(file.getFolder()));
         dispOldName = oldName;
         pkgRename = true;
         //this(jmiObject, (FileObject) null, true);
@@ -159,12 +157,13 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         oldName = newName;
         //[FIXME] this should be oldName of refactored object
         this.dispOldName = newName;
-        refactoring.getContext().add(info);
+        refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(handle));
         fromListener = true;
     }
     
     RenameRefactoringUI(NonRecursiveFolder jmiObject, String newName) {
         this.refactoring = new RenameRefactoring(Lookups.singleton(jmiObject));
+        refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(jmiObject.getFolder()));
         //this.jmiObject = jmiObject;
         oldName = newName;
         //[FIXME] this should be oldName of refactored object
@@ -198,18 +197,18 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
             String name = oldName;
             String suffix = "";
             if (jmiObject != null) {
-                Element jmiObject = this.jmiObject.resolveElement(refactoring.getContext().lookup(CompilationInfo.class));
-                if (jmiObject instanceof TypeElement) {
-                    suffix  = jmiObject.getKind().isInterface() ? getString("LBL_Interface") : getString("LBL_Class");
-                } else if (jmiObject.getKind() == ElementKind.METHOD) {
+                ElementKind kind = RetoucheUtils.getElementKind(jmiObject);
+                if (kind.isClass() || kind.isInterface()) {
+                    suffix  = kind.isInterface() ? getString("LBL_Interface") : getString("LBL_Class");
+                } else if (kind == ElementKind.METHOD) {
                     suffix = getString("LBL_Method");
-                } else if (jmiObject.getKind() == ElementKind.FIELD) {
+                } else if (kind == ElementKind.FIELD) {
                     suffix = getString("LBL_Field");
-                } else if (jmiObject.getKind() == ElementKind.LOCAL_VARIABLE) {
+                } else if (kind == ElementKind.LOCAL_VARIABLE) {
                     suffix = getString("LBL_LocalVar");
-                } else if (jmiObject.getKind() == ElementKind.PACKAGE || (jmiObject == null && fromListener)) {
+                } else if (kind == ElementKind.PACKAGE || (jmiObject == null && fromListener)) {
                     suffix = pkgRename ? getString("LBL_Package") : getString("LBL_Folder");
-                } else if (jmiObject.getKind() == ElementKind.PARAMETER) {
+                } else if (kind == ElementKind.PARAMETER) {
                     suffix = getString("LBL_Parameter");
                 }
             }
@@ -264,7 +263,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
 
     public HelpCtx getHelpCtx() {
         String postfix;
-        ElementKind k = jmiObject.resolveElement(refactoring.getContext().lookup(CompilationInfo.class)).getKind();
+        ElementKind k = RetoucheUtils.getElementKind(jmiObject);
                
         if (k == ElementKind.PACKAGE)
             postfix = ".JavaPackage";//NOI18N

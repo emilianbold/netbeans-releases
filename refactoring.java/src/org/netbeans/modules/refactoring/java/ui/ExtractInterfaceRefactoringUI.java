@@ -57,6 +57,7 @@ public final class ExtractInterfaceRefactoringUI implements RefactoringUI {
         sourceType = getSourceType(selectedElement, info);
         // create an instance of pull up refactoring object
         refactoring = new ExtractInterfaceRefactoring(sourceType);
+        refactoring.getContext().add(info.getClasspathInfo());
     }
     
     // --- IMPLEMENTATION OF RefactoringUI INTERFACE ---------------------------

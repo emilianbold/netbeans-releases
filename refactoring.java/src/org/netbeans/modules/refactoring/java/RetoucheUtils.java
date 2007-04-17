@@ -32,6 +32,7 @@ import java.util.LinkedList;
 import java.util.Set;
 import java.util.StringTokenizer;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
@@ -44,13 +45,18 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -59,8 +65,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -318,13 +326,24 @@ public class RetoucheUtils {
         return result;
     }
     
+    public static Collection<FileObject> getSuperTypesFiles(TreePathHandle handle) {
+        try {
+            SuperTypesTask ff;
+            JavaSource source = JavaSource.forFileObject(handle.getFileObject());
+            source.runUserActionTask(ff=new SuperTypesTask(handle), true);
+            return ff.getFileObjects();
+        } catch (IOException ex) {
+            throw (RuntimeException) new RuntimeException().initCause(ex);
+        }    
+    }
+    
     public static Collection<Element> getSuperTypes(TypeElement type, CompilationInfo info, boolean sourceOnly) {
         if (!sourceOnly)
             return getSuperTypes(type, info);
         Collection<Element> result = new HashSet();
         for (Element el: getSuperTypes(type, info)) {
             FileObject file = SourceUtils.getFile(el, info.getClasspathInfo());
-            if (isFileInOpenProject(file) && !isFromLibrary(el, info.getClasspathInfo())) {
+            if (file!=null && isFileInOpenProject(file) && !isFromLibrary(el, info.getClasspathInfo())) {
                 result.add(el);
             }
         }
@@ -364,5 +383,215 @@ public class RetoucheUtils {
         return false;
     }
     
+    public static ElementHandle getElementHandle(TreePathHandle tph) {
+        try {
+            CompilerTask ff;
+            JavaSource source = JavaSource.forFileObject(tph.getFileObject());
+            source.runUserActionTask(ff=new CompilerTask(tph), true);
+            return ff.getElementHandle();
+        } catch (IOException ex) {
+            throw (RuntimeException) new RuntimeException().initCause(ex);
+        }    
+    }
     
+    public static ElementKind getElementKind(TreePathHandle tph) {
+        try {
+            CompilerTask ff;
+            JavaSource source = JavaSource.forFileObject(tph.getFileObject());
+            source.runUserActionTask(ff=new CompilerTask(tph), true);
+            return ff.getElementKind();
+        } catch (IOException ex) {
+            throw (RuntimeException) new RuntimeException().initCause(ex);
+        }    
+    }
+    
+    
+    public static String getSimpleName(TreePathHandle tph) {
+        try {
+            CompilerTask ff;
+            JavaSource source = JavaSource.forFileObject(tph.getFileObject());
+            source.runUserActionTask(ff=new CompilerTask(tph), true);
+            return ff.getSimpleName();
+        } catch (IOException ex) {
+            throw (RuntimeException) new RuntimeException().initCause(ex);
+        }    
+    }
+    
+    
+    public static FileObject getFileObject(final TreePathHandle handle) {
+        try {
+            CompilerTask ff;
+            JavaSource source = JavaSource.forFileObject(handle.getFileObject());
+            source.runUserActionTask(ff=new CompilerTask(handle), true);
+            return ff.getFileObject();
+        } catch (IOException ex) {
+            throw (RuntimeException) new RuntimeException().initCause(ex);
+        }
+    }
+    
+    public static String getQualifiedName(TreePathHandle tph) {
+        try {
+            CompilerTask ff;
+            JavaSource source = JavaSource.forFileObject(tph.getFileObject());
+            source.runUserActionTask(ff=new CompilerTask(tph), true);
+            return ff.getQualifiedName();
+        } catch (IOException ex) {
+            throw (RuntimeException) new RuntimeException().initCause(ex);
+        }    
+    }
+    
+    public static boolean typeExist(TreePathHandle tph, String fqn) {
+        try {
+            CompilerTask ff;
+            JavaSource source = JavaSource.forFileObject(tph.getFileObject());
+            source.runUserActionTask(ff=new CompilerTask(tph, fqn), true);
+            return ff.typeExist();
+        } catch (IOException ex) {
+            throw (RuntimeException) new RuntimeException().initCause(ex);
+        }    
+    }
+    
+    public static ClasspathInfo getClasspathInfoFor(FileObject ... files) {
+        assert files.length >0;
+        Set<URL> dependentRoots = new HashSet();
+        for (FileObject fo: files) {
+            Project p = null;
+            if (fo!=null)
+                p=FileOwnerQuery.getOwner(fo);
+            if (p!=null) {
+                URL sourceRoot = URLMapper.findURL(ClassPath.getClassPath(fo, ClassPath.SOURCE).findOwnerRoot(fo), URLMapper.INTERNAL);
+                dependentRoots.addAll(SourceUtils.getDependentRoots(sourceRoot));
+            } else {
+                for(ClassPath cp: GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {
+                    for (FileObject root:cp.getRoots()) {
+                        dependentRoots.add(URLMapper.findURL(root, URLMapper.INTERNAL));
+                    }
+                }
+            }
+        }
+        
+        ClassPath rcp = ClassPathSupport.createClassPath(dependentRoots.toArray(new URL[dependentRoots.size()]));
+        ClassPath nullPath = ClassPathSupport.createClassPath(new FileObject[0]);
+        ClasspathInfo cpInfo = ClasspathInfo.create(nullPath, nullPath, rcp);
+        return cpInfo;
+    }
+    
+    public static ClasspathInfo getClasspathInfoFor(TreePathHandle handle) {
+        return getClasspathInfoFor(getFileObject(handle));
+    }
+    
+    private static class CompilerTask implements CancellableTask<CompilationController> {
+        
+        private FileObject f;
+        private ElementHandle eh;
+        private String name;
+        private String fqn;
+        private String typeToCheck;
+        private boolean typeExist;
+        private ElementHandle<TypeElement> enclosingTypeHandle;
+        private ElementKind kind;
+        private IllegalArgumentException iae;
+        
+        TreePathHandle handle;
+        
+        CompilerTask(TreePathHandle handle) {
+            this.handle = handle;
+        }
+        
+        CompilerTask(TreePathHandle handle, String fqn) {
+            this(handle);
+            typeToCheck = fqn;
+        }
+        
+        public void cancel() {
+            
+        }
+        
+        public void run(CompilationController cc) {
+            try {
+                cc.toPhase(JavaSource.Phase.RESOLVED);
+            } catch (IOException ex) {
+                throw (RuntimeException) new RuntimeException().initCause(ex);
+            }
+            Element el = handle.resolveElement(cc);
+            f = SourceUtils.getFile(el, cc.getClasspathInfo());
+            try {
+                eh=ElementHandle.create(el);
+            } catch (IllegalArgumentException iae)  {
+                this.iae = iae;
+            }
+            name = el.getSimpleName().toString();
+            if (el instanceof TypeElement) 
+                fqn = ((TypeElement) el).getQualifiedName().toString();
+            if (typeToCheck!=null) {
+                typeExist = cc.getElements().getTypeElement(typeToCheck)!=null;
+            }
+                if (el instanceof TypeElement) {
+                    enclosingTypeHandle = ElementHandle.create((TypeElement)el);
+                } else {
+                    enclosingTypeHandle = ElementHandle.create(SourceUtils.getEnclosingTypeElement(el));
+                }
+            
+            kind = el.getKind();
+        }
+        
+        public FileObject getFileObject() {
+            return f;
+        }
+        
+        public ElementHandle getElementHandle() {
+            return eh;
+        }
+        
+        public String getSimpleName() {
+            return name;
+        }
+        
+        public String getQualifiedName() {
+            return fqn;
+        }
+        
+        public boolean typeExist() {
+            return typeExist;
+        }
+        
+        public ElementHandle<TypeElement> getEnclosingTypeHandle() {
+            if (iae!=null)
+                throw iae;
+            return enclosingTypeHandle;
+        }
+        
+        public ElementKind getElementKind() {
+            return kind;
+        }
+    }
+    
+    private static class SuperTypesTask implements CancellableTask<CompilationController> {
+        
+        private Collection<FileObject> files;
+        
+        TreePathHandle handle;
+        
+        SuperTypesTask(TreePathHandle handle) {
+            this.handle = handle;
+        }
+        
+        public void cancel() {
+            
+        }
+        
+        public void run(CompilationController cc) {
+            try {
+                cc.toPhase(JavaSource.Phase.RESOLVED);
+            } catch (IOException ex) {
+                throw (RuntimeException) new RuntimeException().initCause(ex);
+            }
+            Element el = handle.resolveElement(cc);
+            files = elementsToFile(getSuperTypes((TypeElement) el, cc), cc.getClasspathInfo());
+        }
+        
+        public Collection<FileObject> getFileObjects() {
+            return files;
+        }
+}    
 }

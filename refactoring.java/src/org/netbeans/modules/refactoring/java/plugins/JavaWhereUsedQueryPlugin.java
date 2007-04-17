@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.HashSet;
 import javax.lang.model.element.*;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
@@ -35,7 +34,6 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
-import org.netbeans.modules.refactoring.java.classpath.RefactoringClassPathImplementation;
 import org.netbeans.modules.refactoring.java.plugins.FindOverridingVisitor;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.ErrorManager;
@@ -50,23 +48,12 @@ import org.openide.util.NbBundle;
  */
 public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
     private WhereUsedQuery refactoring;
-    private ClasspathInfo classPathInfo=null;
-    
     
     /** Creates a new instance of WhereUsedQuery */
     public JavaWhereUsedQueryPlugin(WhereUsedQuery refactoring) {
         this.refactoring = refactoring;
     }
     
-    private ClasspathInfo getClasspathInfo(ClasspathInfo info) {
-        if (classPathInfo == null) {
-            ClassPath boot = info.getClassPath(ClasspathInfo.PathKind.BOOT);
-            FileObject fo = getSearchHandle().getFileObject();
-            ClassPath rcp = RefactoringClassPathImplementation.getCustom(Collections.singleton(fo));
-            classPathInfo = ClasspathInfo.create(boot, rcp, rcp);
-        }
-        return classPathInfo; 
-    }
     private TreePathHandle getSearchHandle() {
         return refactoring.getRefactoringSource().lookup(TreePathHandle.class);
     }
@@ -84,7 +71,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
     }
     
     private Set<FileObject> getRelevantFiles(final TreePathHandle tph) {
-        final ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
+        final ClasspathInfo cpInfo = getClasspathInfo(refactoring);
         final ClassIndex idx = cpInfo.getClassIndex();
         final Set<FileObject> set = new HashSet<FileObject>();
                 
@@ -174,10 +161,6 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
     
     //@Override
     public Problem prepare(final RefactoringElementsBag elements) {
-        ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
-        
-        refactoring.getContext().add(getClasspathInfo(cpInfo));
-        
         Set<FileObject> a = getRelevantFiles(getSearchHandle());
         fireProgressListenerStart(ProgressEvent.START, a.size());
         processFiles(a, new FindTask(elements));

@@ -31,7 +31,6 @@ import org.netbeans.api.java.source.*;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.java.*;
-import org.netbeans.modules.refactoring.java.classpath.RefactoringClassPathImplementation;
 import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.ErrorManager;
@@ -74,7 +73,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
     }
 
     private Set<FileObject> getRelevantFiles() {
-        ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
+        ClasspathInfo cpInfo = getClasspathInfo(refactoring);
         ClassIndex idx = cpInfo.getClassIndex();
         Set<FileObject> set = new HashSet<FileObject>();
         for (Map.Entry<FileObject, ElementHandle> entry : classes.entrySet()) {
@@ -86,13 +85,6 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
         set.addAll(filesToMove);
         return set;
     }    
-
-    private ClasspathInfo getClasspathInfo(CompilationInfo info) {
-        //ClassPath boot = info.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.BOOT);
-        ClassPath rcp = RefactoringClassPathImplementation.getCustom(filesToMove);
-        ClasspathInfo cpi = ClasspathInfo.create(rcp, rcp, rcp);
-        return cpi;
-    }
     
     private void initClasses() {
         classes = new HashMap();
@@ -129,14 +121,6 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
     }
     
     public Problem prepare(RefactoringElementsBag elements) {
-        ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
-        final CompilationInfo mainInfo = refactoring.getContext().lookup(CompilationInfo.class);
-        
-        if (cpInfo==null) {
-            cpInfo = getClasspathInfo(mainInfo);
-            refactoring.getContext().add(cpInfo);
-        }
-        
         initClasses();
         
         Set<FileObject> a = getRelevantFiles();

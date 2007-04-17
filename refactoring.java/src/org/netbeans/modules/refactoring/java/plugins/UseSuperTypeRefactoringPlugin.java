@@ -26,14 +26,12 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClassIndex.SearchKind;
@@ -50,8 +48,8 @@ import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.java.DiffElement;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.UseSuperTypeRefactoring;
-import org.netbeans.modules.refactoring.java.classpath.RefactoringClassPathImplementation;
 import org.netbeans.modules.refactoring.java.plugins.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.ErrorManager;
@@ -89,7 +87,6 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
      * for the visibility of the target type.
      */
     public Problem prepare(RefactoringElementsBag refactoringElements) {
-        
         TreePathHandle subClassHandle = refactoring.getTypeElement();
         replaceSubtypeUsages(subClassHandle, refactoringElements);
         return null;
@@ -142,15 +139,8 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
                 public void run(CompilationController complController) throws IOException {
                     complController.toPhase(Phase.ELEMENTS_RESOLVED);
                     
-                    ClassPath bootClassPath = complController.getClasspathInfo().
-                            getClassPath(ClasspathInfo.PathKind.BOOT);
-                    ClassPath srcClassPath = complController.getClasspathInfo().
-                            getClassPath(ClasspathInfo.PathKind.SOURCE);
                     FileObject fo = subClassHandle.getFileObject();
-                    ClassPath refacClassPath = RefactoringClassPathImplementation.
-                            getCustom(Collections.singleton(fo));
-                    ClasspathInfo classpathInfo = ClasspathInfo.
-                            create(bootClassPath, srcClassPath, refacClassPath);
+                    ClasspathInfo classpathInfo = getClasspathInfo(refactoring);
                     
                     ClassIndex clsIndx = classpathInfo.getClassIndex();
                     TypeElement javaClassElement = (TypeElement) subClassHandle.

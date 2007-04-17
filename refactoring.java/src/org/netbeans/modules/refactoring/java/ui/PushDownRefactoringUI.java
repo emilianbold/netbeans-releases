@@ -25,12 +25,12 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.java.api.PushDownRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
@@ -71,7 +71,7 @@ public class PushDownRefactoringUI implements RefactoringUI {
         TreePathHandle sourceType = TreePathHandle.create(tp, info);
         description = UiUtils.getHeader(tp, info, UiUtils.PrintPart.NAME);
         refactoring = new PushDownRefactoring(Lookups.singleton(sourceType));
-        refactoring.getContext().add(info);
+        refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(sourceType));
     }
     
     // --- IMPLEMENTATION OF RefactoringUI INTERFACE ---------------------------

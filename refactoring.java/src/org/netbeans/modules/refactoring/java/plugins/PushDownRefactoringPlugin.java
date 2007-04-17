@@ -19,29 +19,22 @@
 package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.ModificationResult.Difference;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
@@ -50,7 +43,6 @@ import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.java.DiffElement;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.PushDownRefactoring;
-import org.netbeans.modules.refactoring.java.classpath.RefactoringClassPathImplementation;
 import org.netbeans.modules.refactoring.java.plugins.PushDownTransformer;
 import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -153,38 +145,20 @@ public class PushDownRefactoringPlugin extends JavaRefactoringPlugin {
         return null;
     }
    
-    private Set<FileObject> getRelevantFiles(CompilationInfo info, Element el) {
-        ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
+    private Set<FileObject> getRelevantFiles(TreePathHandle handle) {
+        ClasspathInfo cpInfo = getClasspathInfo(refactoring);
         ClassIndex idx = cpInfo.getClassIndex();
         Set<FileObject> set = new HashSet<FileObject>();
-        set.add(SourceUtils.getFile(el, cpInfo));
-        set.addAll(idx.getResources(ElementHandle.create((TypeElement) el), EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+        set.add(RetoucheUtils.getFileObject(handle));
+        set.addAll(idx.getResources(RetoucheUtils.getElementHandle(handle), EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
         return set;
     }    
     
-    private ClasspathInfo getClasspathInfo(CompilationInfo info) {
-        ClassPath boot = info.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.BOOT);
-        FileObject fo = treePathHandle.getFileObject();
-        ClassPath rcp = RefactoringClassPathImplementation.getCustom(Collections.singleton(fo));
-        ClasspathInfo cpi = ClasspathInfo.create(boot, rcp, rcp);
-        return cpi;
-    }
-    
-
     public Problem prepare(RefactoringElementsBag refactoringElements) {
-        ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
-        final CompilationInfo mainInfo = refactoring.getContext().lookup(CompilationInfo.class);
-        final Element element = treePathHandle.resolveElement(mainInfo);
-        
-        if (cpInfo==null) {
-            cpInfo = getClasspathInfo(mainInfo);
-            refactoring.getContext().add(cpInfo);
-        }
-        
-        Set<FileObject> a = getRelevantFiles(mainInfo, element);
+        Set<FileObject> a = getRelevantFiles(treePathHandle);
         fireProgressListenerStart(ProgressEvent.START, a.size());
         if (!a.isEmpty()) {
-            final Collection<ModificationResult> results = processFiles(a, new FindTask(refactoringElements, element));
+            final Collection<ModificationResult> results = processFiles(a, new FindTask(refactoringElements));
             refactoringElements.registerTransaction(new RetoucheCommit(results));
             for (ModificationResult result:results) {
                 for (FileObject jfo : result.getModifiedFileObjects()) {
@@ -478,12 +452,10 @@ public class PushDownRefactoringPlugin extends JavaRefactoringPlugin {
     private class FindTask implements CancellableTask<WorkingCopy> {
         
         private RefactoringElementsBag elements;
-        private Element element;
         
-        public FindTask(RefactoringElementsBag elements, Element element) {
+        public FindTask(RefactoringElementsBag elements) {
             super();
             this.elements = elements;
-            this.element = element;
         }
         
         public void cancel() {

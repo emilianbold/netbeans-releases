@@ -31,14 +31,11 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.modules.refactoring.java.plugins.RetoucheCommit;
-import org.netbeans.modules.refactoring.spi.Transaction;
 import org.netbeans.modules.refactoring.java.DiffElement;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
-import org.netbeans.modules.refactoring.java.classpath.RefactoringClassPathImplementation;
 import org.netbeans.modules.refactoring.java.plugins.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
-import org.netbeans.modules.refactoring.spi.BackupFacility;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.ErrorManager;
@@ -95,88 +92,104 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         }
     }
     
+    private Problem preCheckProblem;
     public Problem preCheck() {
         if (treePathHandle == null)
             return null;
-        CompilationInfo info = refactoring.getContext().lookup(CompilationInfo.class);
-        Element el = treePathHandle.resolveElement(info);
-        
+        preCheckProblem =null;
+        ClasspathInfo cpInfo = getClasspathInfo(refactoring);
+        JavaSource source = JavaSource.create(cpInfo, treePathHandle.getFileObject());
         fireProgressListenerStart(refactoring.PRE_CHECK, 4);
         try {
-            Problem result = isElementAvail(treePathHandle, info);
-            if (result != null) {
-                return result;
-            }
-            FileObject file = SourceUtils.getFile(el, info.getClasspathInfo());
-            if (FileUtil.getArchiveFile(file)!= null) { //NOI18N
-                return createProblem(result, true, getCannotRename(file));
-            }
-            
-            if (!RetoucheUtils.isElementInOpenProject(file)) {
-                return new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ProjectNotOpened"));
-            }
-            
-            switch(el.getKind()) {
-                case METHOD:
-                    fireProgressListenerStep();
-                    fireProgressListenerStep();
-                    overriddenByMethods = RetoucheUtils.getOverridingMethods((ExecutableElement)el, info);
-                    fireProgressListenerStep();
-                    if (!overriddenByMethods.isEmpty()) {
-                        String msg = new MessageFormat(getString("ERR_IsOverridden")).format(
-                                new Object[] {SourceUtils.getEnclosingTypeElement(el).getSimpleName().toString()});
-                        result = createProblem(result, false, msg);
+            source.runUserActionTask(new CancellableTask<CompilationController>() {
+                
+                public void cancel() {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+                
+                public void run(CompilationController info) throws Exception {
+                    info.toPhase(JavaSource.Phase.RESOLVED);
+                    Element el = treePathHandle.resolveElement(info);
+                    preCheckProblem = isElementAvail(treePathHandle, info);
+                    if (preCheckProblem != null) {
+                        return;
                     }
-                    overridesMethods = RetoucheUtils.getOverridenMethods((ExecutableElement)el, info);
-                    fireProgressListenerStep();
-                    if (!overridesMethods.isEmpty()) {
-                        boolean fatal = false;
-                        for (Iterator iter = overridesMethods.iterator();iter.hasNext();) {
-                            ExecutableElement method = (ExecutableElement) iter.next();
-                            if (RetoucheUtils.isFromLibrary(method, info.getClasspathInfo())) {
-                                fatal = true;
-                                break;
-                            }
+                    FileObject file = SourceUtils.getFile(el, info.getClasspathInfo());
+                    if (FileUtil.getArchiveFile(file)!= null) { //NOI18N
+                        preCheckProblem = createProblem(preCheckProblem, true, getCannotRename(file));
+                        return;
+                    }
+                    
+                    if (!RetoucheUtils.isElementInOpenProject(file)) {
+                        preCheckProblem = new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ProjectNotOpened"));
+                        return;
+                    }
+                    
+                    switch(el.getKind()) {
+                    case METHOD:
+                        fireProgressListenerStep();
+                        fireProgressListenerStep();
+                        overriddenByMethods = RetoucheUtils.getOverridingMethods((ExecutableElement)el, info);
+                        fireProgressListenerStep();
+                        if (!overriddenByMethods.isEmpty()) {
+                            String msg = new MessageFormat(getString("ERR_IsOverridden")).format(
+                                    new Object[] {SourceUtils.getEnclosingTypeElement(el).getSimpleName().toString()});
+                            preCheckProblem = createProblem(preCheckProblem, false, msg);
                         }
-                        String msg = fatal?getString("ERR_Overrides_Fatal"):getString("ERR_Overrides");
-                        result = createProblem(result, fatal, msg);
+                        overridesMethods = RetoucheUtils.getOverridenMethods((ExecutableElement)el, info);
+                        fireProgressListenerStep();
+                        if (!overridesMethods.isEmpty()) {
+                            boolean fatal = false;
+                            for (Iterator iter = overridesMethods.iterator();iter.hasNext();) {
+                                ExecutableElement method = (ExecutableElement) iter.next();
+                                if (RetoucheUtils.isFromLibrary(method, info.getClasspathInfo())) {
+                                    fatal = true;
+                                    break;
+                                }
+                            }
+                            String msg = fatal?getString("ERR_Overrides_Fatal"):getString("ERR_Overrides");
+                            preCheckProblem = createProblem(preCheckProblem, fatal, msg);
+                        }
+                        break;
+                    case FIELD:
+                    case ENUM_CONSTANT:
+                        fireProgressListenerStep();
+                        fireProgressListenerStep();
+                        Element hiddenField = hides(el, el.getSimpleName().toString(), info);
+                        fireProgressListenerStep();
+                        fireProgressListenerStep();
+                        if (hiddenField != null) {
+                            String msg = new MessageFormat(getString("ERR_Hides")).format(
+                                    new Object[] {SourceUtils.getEnclosingTypeElement(el)}
+                            );
+                            preCheckProblem = createProblem(preCheckProblem, false, msg);
+                        }
+                        break;
+                    case PACKAGE:
+                        //TODO: any prechecks?
+                        break;
+                    case LOCAL_VARIABLE:
+                        //TODO: any prechecks for formal parametr or local variable?
+                        break;
+                    case CLASS:
+                    case INTERFACE:
+                    case ANNOTATION_TYPE:
+                    case ENUM:
+                        //TODO: any prechecks for JavaClass?
+                        break;
+                    default:
+                        //                if (!((jmiObject instanceof Resource) && ((Resource)jmiObject).getClassifiers().isEmpty()))
+                        //                    result = createProblem(result, true, NbBundle.getMessage(RenameRefactoring.class, "ERR_RenameWrongType"));
                     }
-                    break;
-                case FIELD:
-                case ENUM_CONSTANT:
-                    fireProgressListenerStep();
-                    fireProgressListenerStep();
-                    Element hiddenField = hides(el, el.getSimpleName().toString(), info);
-                    fireProgressListenerStep();
-                    fireProgressListenerStep();
-                    if (hiddenField != null) {
-                        String msg = new MessageFormat(getString("ERR_Hides")).format(
-                                new Object[] {SourceUtils.getEnclosingTypeElement(el)}
-                        );
-                        result = createProblem(result, false, msg);
-                    }
-                    break;
-                case PACKAGE:
-                    //TODO: any prechecks?
-                    break;
-                case LOCAL_VARIABLE:
-                    //TODO: any prechecks for formal parametr or local variable?
-                    break;
-                case CLASS:
-                case INTERFACE:
-                case ANNOTATION_TYPE:
-                case ENUM:
-                    //TODO: any prechecks for JavaClass?
-                    break;
-                default:
-                    //                if (!((jmiObject instanceof Resource) && ((Resource)jmiObject).getClassifiers().isEmpty()))
-                    //                    result = createProblem(result, true, NbBundle.getMessage(RenameRefactoring.class, "ERR_RenameWrongType"));
-            }
+                }
+            }, true);
+        } catch (IOException ioe) {
+            throw (RuntimeException) new RuntimeException().initCause(ioe);
             
-            return result;
         } finally {
             fireProgressListenerStop();
         }
+        return preCheckProblem;
     }
     
     private static final String getCannotRename(FileObject r) {
@@ -186,17 +199,15 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
     public Problem fastCheckParameters() {
         if (treePathHandle == null)
             return null;
-        CompilationInfo info = refactoring.getContext().lookup(CompilationInfo.class);
-        Element el = treePathHandle.resolveElement(info);
-        ElementKind kind = el.getKind();
+        ElementKind kind = RetoucheUtils.getElementKind(treePathHandle);
         
         String newName = refactoring.getNewName();
         Problem result = null;
-        String oldName = el.getSimpleName().toString();
+        String oldName = RetoucheUtils.getSimpleName(treePathHandle);
         
         if (oldName.equals(newName)) {
             boolean nameNotChanged = true;
-            if (el.getKind().isClass()) {
+            if (kind.isClass()) {
                 //                Object comp = jmiObject.refImmediateComposite();
                 //                if (comp instanceof Resource && isResourceClass((Resource)comp, jmiObject)) {
                 //                    String dobjName = JavaMetamodel.getManager().getDataObject((Resource)comp).getName();
@@ -218,11 +229,10 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         
         if (kind.isClass()) {
             if (doCheckName) {
-                TypeElement type = (TypeElement) el;
-                String oldfqn = type.getQualifiedName().toString();
-                String newFqn = oldfqn.substring(0, oldfqn.lastIndexOf(type.getSimpleName().toString()));
+                String oldfqn = RetoucheUtils.getQualifiedName(treePathHandle);
+                String newFqn = oldfqn.substring(0, oldfqn.lastIndexOf(oldName));
                 
-                String pkgname = type.getQualifiedName().toString();
+                String pkgname = oldfqn;
                 int i = pkgname.indexOf('.');
                 if (i>=0)
                     pkgname = pkgname.substring(0,i);
@@ -232,7 +242,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                 String fqn = "".equals(pkgname) ? newName : pkgname + '.' + newName;
                 FileObject fo = treePathHandle.getFileObject();
                 ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-                if (info.getElements().getTypeElement(newFqn)!=null) {
+                if (RetoucheUtils.typeExist(treePathHandle, newFqn)) {
                     String msg = new MessageFormat(getString("ERR_ClassClash")).format(
                             new Object[] {newName, pkgname}
                     );
@@ -270,65 +280,83 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         return result;
     }
     
+    private Problem checkProblem;
     public Problem checkParameters() {
         if (treePathHandle == null)
             return null;
         
+        checkProblem = null;
         int steps = 0;
         if (overriddenByMethods != null)
             steps += overriddenByMethods.size();
         if (overridesMethods != null)
             steps += overridesMethods.size();
         
-        CompilationInfo info = refactoring.getContext().lookup(CompilationInfo.class);
-        Element element = treePathHandle.resolveElement(info);
-        
-        Problem result = null;
         fireProgressListenerStart(refactoring.PARAMETERS_CHECK, 8 + 3*steps);
         
+        ClasspathInfo cpInfo = getClasspathInfo(refactoring);
+        JavaSource source = JavaSource.create(cpInfo, treePathHandle.getFileObject());
+        
         try {
-            fireProgressListenerStep();
-            fireProgressListenerStep();
-            String msg;
-            if (element.getKind() == ElementKind.METHOD) {
-                //                result = checkMethodForOverriding(m, newName, result);
-                //                for (Iterator iter = overridesMethods.iterator(); iter.hasNext();) {
-                //                    m = (Method) iter.next();
-                //                    msg = clashes(m, newName);
-                //                    if (msg != null) {
-                //                        result = createProblem(result, true, msg);
-                //                    }
-                //                    result = checkMethodForOverriding(m, newName, result);
-                //                }
-                //                for (Iterator iter = overriddenByMethods.iterator(); iter.hasNext();) {
-                //                    m = (Method) iter.next();
-                //                    msg = clashes(m, newName);
-                //                    if (msg != null) {
-                //                        result = createProblem(result, true, msg);
-                //                    }
-                //                    result = checkMethodForOverriding(m, newName, result);
-                //                }
-                fireProgressListenerStep();
-                fireProgressListenerStep();
-            } else if (element.getKind().isField()) {
-                fireProgressListenerStep();
-                fireProgressListenerStep();
-                Element hiddenField = hides(element, refactoring.getNewName(), info);
-                fireProgressListenerStep();
-                fireProgressListenerStep();
-                fireProgressListenerStep();
-                if (hiddenField != null) {
-                    msg = new MessageFormat(getString("ERR_WillHide")).format(
-                            new Object[] {SourceUtils.getEnclosingTypeElement(element).toString()}
-                    );
-                    result = createProblem(result, false, msg);
+            source.runUserActionTask(new CancellableTask<CompilationController>() {
+                
+                public void cancel() {
+                    throw new UnsupportedOperationException("Not supported yet.");
                 }
-            }
+                
+                public void run(CompilationController info) throws Exception {
+                    info.toPhase(JavaSource.Phase.RESOLVED);
+                    Element element = treePathHandle.resolveElement(info);
+                    
+                    Problem result = null;
+                    
+                    fireProgressListenerStep();
+                    fireProgressListenerStep();
+                    String msg;
+                    if (element.getKind() == ElementKind.METHOD) {
+                        //                result = checkMethodForOverriding(m, newName, result);
+                        //                for (Iterator iter = overridesMethods.iterator(); iter.hasNext();) {
+                        //                    m = (Method) iter.next();
+                        //                    msg = clashes(m, newName);
+                        //                    if (msg != null) {
+                        //                        result = createProblem(result, true, msg);
+                        //                    }
+                        //                    result = checkMethodForOverriding(m, newName, result);
+                        //                }
+                        //                for (Iterator iter = overriddenByMethods.iterator(); iter.hasNext();) {
+                        //                    m = (Method) iter.next();
+                        //                    msg = clashes(m, newName);
+                        //                    if (msg != null) {
+                        //                        result = createProblem(result, true, msg);
+                        //                    }
+                        //                    result = checkMethodForOverriding(m, newName, result);
+                        //                }
+                        fireProgressListenerStep();
+                        fireProgressListenerStep();
+                    } else if (element.getKind().isField()) {
+                        fireProgressListenerStep();
+                        fireProgressListenerStep();
+                        Element hiddenField = hides(element, refactoring.getNewName(), info);
+                        fireProgressListenerStep();
+                        fireProgressListenerStep();
+                        fireProgressListenerStep();
+                        if (hiddenField != null) {
+                            msg = new MessageFormat(getString("ERR_WillHide")).format(
+                                    new Object[] {SourceUtils.getEnclosingTypeElement(element).toString()}
+                            );
+                            result = createProblem(result, false, msg);
+                        }
+                    }
+                }
+            }, true);
             
-            return result;
+        } catch (IOException ioe) {
+            throw (RuntimeException) new RuntimeException().initCause(ioe);
+            
         } finally {
             fireProgressListenerStop();
         }
+        return checkProblem;
     }
     
     //    private Problem checkMethodForOverriding(ExecutableElement m, String newName, Problem problem) {
@@ -341,63 +369,71 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
     //        return problem;
     //    }
     
-    private Set<FileObject> getRelevantFiles(CompilationInfo info, Element el) {
-        ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
-        ClassIndex idx = cpInfo.getClassIndex();
-        Set<FileObject> set = new HashSet<FileObject>();
-        set.add(SourceUtils.getFile(el, cpInfo));
-        if (el.getKind().isField()) {
-            set.addAll(idx.getResources(ElementHandle.create((TypeElement)el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.FIELD_REFERENCES), EnumSet.of(ClassIndex.SearchScope.SOURCE)));
-        } else if (el instanceof TypeElement) {
-            set.addAll(idx.getResources(ElementHandle.create((TypeElement) el), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
-        } else if (el.getKind() == ElementKind.METHOD) {
-            //XXX: IMPLEMENTORS_RECURSIVE was removed
-            Set<ElementHandle<TypeElement>> s = idx.getElements(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE));
-            for (ElementHandle<TypeElement> eh:s) {
-                TypeElement te = eh.resolve(info);
-                if (te==null) {
-                    continue;
+    private Set<FileObject> getRelevantFiles() {
+        ClasspathInfo cpInfo = getClasspathInfo(refactoring);
+        final Set<FileObject> set = new HashSet<FileObject>();
+        JavaSource source = JavaSource.create(cpInfo, treePathHandle.getFileObject());
+        
+        try {
+            source.runUserActionTask(new CancellableTask<CompilationController>() {
+                
+                public void cancel() {
+                    throw new UnsupportedOperationException("Not supported yet.");
                 }
-                //add all references of overriding methods
-                for (ExecutableElement e:RetoucheUtils.getOverridingMethods((ExecutableElement)el, info)) {
-                    set.add(SourceUtils.getFile(e, cpInfo));
-                    set.addAll(idx.getResources(ElementHandle.create(SourceUtils.getEnclosingTypeElement(e)), EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));                
+                
+                public void run(CompilationController info) throws Exception {
+                    final ClassIndex idx = info.getClasspathInfo().getClassIndex();
+                    info.toPhase(JavaSource.Phase.RESOLVED);
+                    Element el = treePathHandle.resolveElement(info);
+                    ElementKind kind = el.getKind();
+                    ElementHandle<TypeElement> enclosingType;
+                    if (el instanceof TypeElement) {
+                         enclosingType = ElementHandle.create((TypeElement)el);
+                    } else {
+                         enclosingType = ElementHandle.create(SourceUtils.getEnclosingTypeElement(el));
+                    }
+                    set.add(SourceUtils.getFile(el, info.getClasspathInfo()));
+                    if (kind.isField()) {
+                        set.addAll(idx.getResources(enclosingType, EnumSet.of(ClassIndex.SearchKind.FIELD_REFERENCES), EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+                    } else if (el instanceof TypeElement) {
+                        set.addAll(idx.getResources(enclosingType, EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+                    } else if (kind == ElementKind.METHOD) {
+                        //XXX: IMPLEMENTORS_RECURSIVE was removedSa
+                        Set<ElementHandle<TypeElement>> s = idx.getElements(enclosingType, EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE));
+                        for (ElementHandle<TypeElement> eh:s) {
+                            TypeElement te = eh.resolve(info);
+                            if (te==null) {
+                                continue;
+                            }
+                            //add all references of overriding methods
+                            for (ExecutableElement e:RetoucheUtils.getOverridingMethods((ExecutableElement)el, info)) {
+                                set.add(SourceUtils.getFile(e, info.getClasspathInfo()));
+                                set.addAll(idx.getResources(enclosingType, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+                            }
+                            //add all references of overriden methods
+                            for (ExecutableElement e:RetoucheUtils.getOverridenMethods((ExecutableElement)el, info)) {
+                                set.add(SourceUtils.getFile(e, info.getClasspathInfo()));
+                                set.addAll(idx.getResources(enclosingType, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+                            }
+                        }
+                        set.addAll(idx.getResources(enclosingType, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE))); //?????
+                    }
                 }
-                //add all references of overriden methods
-                for (ExecutableElement e:RetoucheUtils.getOverridenMethods((ExecutableElement)el, info)) {
-                    set.add(SourceUtils.getFile(e, cpInfo));
-                    set.addAll(idx.getResources(ElementHandle.create(SourceUtils.getEnclosingTypeElement(e)), EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));                
-                }
-            }
-            set.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE))); //?????
+            }, true);
+        } catch (IOException ioe) {
+            throw (RuntimeException) new RuntimeException().initCause(ioe);
         }
         return set;
     }
     
-    private ClasspathInfo getClasspathInfo(CompilationInfo info) {
-        ClassPath boot = info.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.BOOT);
-        FileObject fo = treePathHandle.getFileObject();
-        ClassPath rcp = RefactoringClassPathImplementation.getCustom(Collections.singleton(fo));
-        ClasspathInfo cpi = ClasspathInfo.create(boot, rcp, rcp);
-        return cpi;
-    }
     
     public Problem prepare(RefactoringElementsBag elements) {
         if (treePathHandle == null)
             return null;
-        ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
-        final CompilationInfo mainInfo = refactoring.getContext().lookup(CompilationInfo.class);
-        final Element element = treePathHandle.resolveElement(mainInfo);
-        
-        if (cpInfo==null) {
-            cpInfo = getClasspathInfo(mainInfo);
-            refactoring.getContext().add(cpInfo);
-        }
-        
-        Set<FileObject> a = getRelevantFiles(mainInfo, element);
+        Set<FileObject> a = getRelevantFiles();
         fireProgressListenerStart(ProgressEvent.START, a.size());
         if (!a.isEmpty()) {
-            final Collection<ModificationResult> results = processFiles(a, new FindTask(elements, element));
+            final Collection<ModificationResult> results = processFiles(a, new FindTask(elements));
             elements.registerTransaction(new RetoucheCommit(results));
             for (ModificationResult result:results) {
                 for (FileObject jfo : result.getModifiedFileObjects()) {
@@ -1236,12 +1272,10 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
     private class FindTask implements CancellableTask<WorkingCopy> {
         
         private RefactoringElementsBag elements;
-        private Element element;
         
-        public FindTask(RefactoringElementsBag elements, Element element) {
+        public FindTask(RefactoringElementsBag elements) {
             super();
             this.elements = elements;
-            this.element = element;
         }
         
         public void cancel() {

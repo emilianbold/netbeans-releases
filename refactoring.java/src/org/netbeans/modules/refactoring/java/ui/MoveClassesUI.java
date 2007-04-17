@@ -36,6 +36,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUIBypass;
@@ -55,8 +56,8 @@ import org.openide.util.lookup.Lookups;
  */
 public class MoveClassesUI implements RefactoringUI, RefactoringUIBypass {
     
-    private List resources;
-    private Set javaObjects;
+    private List<FileObject> resources;
+    private Set<FileObject> javaObjects;
     private MovePanel panel;
     private MoveRefactoring refactoring;
     private String targetPkgName = "";
@@ -68,18 +69,17 @@ public class MoveClassesUI implements RefactoringUI, RefactoringUIBypass {
         return NbBundle.getMessage(MoveClassUI.class, key);
     }
     
-    public MoveClassesUI(Set javaObjects) {
+    public MoveClassesUI(Set<FileObject> javaObjects) {
         this(javaObjects, null, null);
     }
 
-    public MoveClassesUI(Set javaObjects, FileObject targetFolder, PasteType paste) {
+    public MoveClassesUI(Set<FileObject> javaObjects, FileObject targetFolder, PasteType paste) {
         this.disable = targetFolder != null;
         this.targetFolder = targetFolder;
         this.javaObjects=javaObjects;
         this.pasteType = paste;
         if (!disable) {
-            resources = new ArrayList(javaObjects.size());
-            resources.addAll(javaObjects);
+            resources = new ArrayList(javaObjects);
         }
     }
     
@@ -153,8 +153,10 @@ public class MoveClassesUI implements RefactoringUI, RefactoringUIBypass {
         if (refactoring == null) {
             if (disable) {
                 refactoring = new MoveRefactoring(Lookups.fixed(javaObjects.toArray()));
+                refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(javaObjects.toArray(new FileObject[javaObjects.size()])));
             } else {
                 refactoring = new MoveRefactoring (Lookups.fixed(resources.toArray()));
+                refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(resources.toArray(new FileObject[resources.size()])));
             }
         }
         return refactoring;

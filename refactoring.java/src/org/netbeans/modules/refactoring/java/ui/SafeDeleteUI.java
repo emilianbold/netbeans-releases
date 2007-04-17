@@ -29,6 +29,7 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.filesystems.FileObject;
@@ -59,6 +60,7 @@ public class SafeDeleteUI implements RefactoringUI{
     public SafeDeleteUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
         this.elementsToDelete = selectedElements;
         refactoring = new SafeDeleteRefactoring(new ProxyLookup(Lookups.fixed(elementsToDelete), Lookups.fixed(handles.toArray(new Object[handles.size()]))));
+        refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(selectedElements));
     }
 
     /**
@@ -69,7 +71,7 @@ public class SafeDeleteUI implements RefactoringUI{
     public SafeDeleteUI(TreePathHandle[] selectedElements, CompilationInfo info) {
         this.elementsToDelete = selectedElements;
         refactoring = new SafeDeleteRefactoring(Lookups.fixed(elementsToDelete));
-        refactoring.getContext().add(info.getClasspathInfo());
+        refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(selectedElements[0]));
     }
     
     /**
