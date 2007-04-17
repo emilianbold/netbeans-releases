@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.autoupdate.ui;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.OperationContainer;
@@ -161,5 +162,33 @@ public class InstalledTableModel extends UnitCategoryTableModel {
     public Type getType() {
         return UnitCategoryTableModel.Type.INSTALLED;
     }
+
+    public boolean isSortAllowed(Object columnIdentifier) {
+        boolean isUninstall = getColumnName(0).equals(columnIdentifier);
+        boolean isPrevious = getColumnName(3).equals(columnIdentifier);                        
+        boolean isRating = getColumnName(4).equals(columnIdentifier);                
+        return isUninstall || isPrevious || isRating ? false : true;
+    }
+
+    protected Comparator<Unit> getComparator(final Object columnIdentifier, final boolean sortAscending) {
+        return new Comparator<Unit>(){
+            public int compare(Unit o1, Unit o2) {
+                Unit unit1 = sortAscending ? o1 : o2;
+                Unit unit2 = sortAscending ? o2 : o1;
+                if (getColumnName(0).equals(columnIdentifier)) {
+                    assert false : columnIdentifier.toString();
+                } else if (getColumnName(1).equals(columnIdentifier)) {
+                    return Unit.compareDisplayNames(unit1, unit2);
+                } else if (getColumnName(2).equals(columnIdentifier)) {
+                    return Unit.Installed.compareInstalledVersions(unit1, unit2);
+                } else if (getColumnName(3).equals(columnIdentifier)) {
+                    assert false : columnIdentifier.toString();
+                } else if (getColumnName(4).equals(columnIdentifier)) {
+                    assert false : columnIdentifier.toString();
+                }                
+                return 0;
+            }
+        };
+    }                
     
 }

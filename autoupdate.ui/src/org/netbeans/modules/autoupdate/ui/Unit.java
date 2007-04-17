@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.autoupdate.ui;
 
+import java.text.Collator;
+import java.util.Comparator;
 import java.util.Set;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
@@ -27,6 +29,7 @@ import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.openide.modules.ModuleInfo;
+import org.openide.modules.SpecificationVersion;
 
 /**
  *
@@ -68,6 +71,18 @@ public abstract class Unit {
         return getRelevantElement().getSpecificationVersion().toString();
     }    
     
+    public static int compareDisplayNames(Unit unit1, Unit unit2) {
+        return Collator.getInstance().compare(unit1.getDisplayName(), unit2.getDisplayName());
+    }
+
+    public static int compareDisplayVersions(Unit unit1, Unit unit2) {
+        return new SpecificationVersion(unit1.getDisplayVersion()).compareTo (new SpecificationVersion (unit2.getDisplayVersion()));
+    }
+
+    public static int compareCompleteSizes(Unit unit1, Unit unit2) {
+        return Integer.valueOf(unit1.getCompleteSize()).compareTo(unit2.getCompleteSize());
+    }
+        
     public static class Installed extends Unit {
         
         private UpdateElement installEl = null;
@@ -138,6 +153,15 @@ public abstract class Unit {
                 }
             }
         }*/
+
+        public static int compareInstalledVersions(Unit u1, Unit u2) {
+            if (u1 instanceof Unit.Installed && u2 instanceof Unit.Installed) {
+                Unit.Installed unit1 = (Unit.Installed )u1;
+                Unit.Installed unit2 = (Unit.Installed )u2; 
+                return new SpecificationVersion(unit1.getInstalledVersion()).compareTo(new SpecificationVersion(unit2.getInstalledVersion()));
+            } 
+            return Unit.compareDisplayVersions(u1, u2);
+        }
         
         public boolean isNotEditable() {
             return isNotEditable ;
@@ -196,6 +220,25 @@ public abstract class Unit {
                 container.remove(updateEl);
             }
         }
+
+        public static int compareInstalledVersions(Unit u1, Unit u2) {
+            if (u1 instanceof Unit.Update && u2 instanceof Unit.Update) {
+                Unit.Update unit1 = (Unit.Update)u1;
+                Unit.Update unit2 = (Unit.Update)u2; 
+                return new SpecificationVersion(unit1.getInstalledVersion()).compareTo(new SpecificationVersion(unit2.getInstalledVersion()));
+            } 
+            return Unit.compareDisplayVersions(u1, u2);
+        }
+        
+        public static int compareAvailableVersions(Unit u1, Unit u2) {
+            if (u1 instanceof Unit.Update && u2 instanceof Unit.Update) {
+                Unit.Update unit1 = (Unit.Update)u1;
+                Unit.Update unit2 = (Unit.Update)u2; 
+                return new SpecificationVersion(unit1.getAvailableVersion()).compareTo(new SpecificationVersion(unit2.getAvailableVersion()));
+            } 
+            return Unit.compareDisplayVersions(u1, u2);
+        }
+        
         
         public String getInstalledVersion() {
             return installEl.getSpecificationVersion().toString();
@@ -257,6 +300,15 @@ public abstract class Unit {
             } else {
                 container.remove(updateEl);
             }
+        }
+
+        public static int compareAvailableVersion(Unit u1, Unit u2) {
+            if (u1 instanceof Unit.Available && u2 instanceof Unit.Available) {
+                Unit.Available unit1 = (Unit.Available)u1;
+                Unit.Available unit2 = (Unit.Available)u2; 
+                return new SpecificationVersion(unit1.getAvailableVersion()).compareTo(new SpecificationVersion(unit2.getAvailableVersion()));
+            } 
+            return Unit.compareDisplayVersions(u1, u2);
         }
         
         public String getAvailableVersion() {

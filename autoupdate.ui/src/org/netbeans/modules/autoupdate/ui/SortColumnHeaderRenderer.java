@@ -17,19 +17,12 @@
  */
 package org.netbeans.modules.autoupdate.ui;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Font;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.Comparator;
-import javax.swing.JComponent;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JTable;
-import javax.swing.LookAndFeel;
-import javax.swing.table.JTableHeader;
+import javax.swing.SwingConstants;
 import javax.swing.table.TableCellRenderer;
 
 /**
@@ -39,21 +32,15 @@ import javax.swing.table.TableCellRenderer;
 public class SortColumnHeaderRenderer implements TableCellRenderer{
     private UnitCategoryTableModel model;
     private TableCellRenderer textRenderer;
-    private int sortColumn = -1;
-    //private boolean sortAscending = true;
-    private JTable table;
-    private MouseListener mlistener = new MouseAdapter() {
-        @Override
-        public void mousePressed(MouseEvent e) {
-            JTableHeader header = (JTableHeader)e.getSource();
-            int index = header.columnAtPoint(e.getPoint());
-            if (index == 1) {
-                SortColumnHeaderRenderer.this.columnSelected(index);
-                table.setColumnSelectionInterval(index, index);
-            }
-        }
-        
-    };
+    private Object sortColumn = null;
+    private static ImageIcon SORT_DESC_ICON =
+        new ImageIcon(org.openide.util.Utilities.loadImage(
+        "org/netbeans/modules/autoupdate/ui/columnsSortedDesc.gif")); // NOI18N
+    private static ImageIcon SORT_ASC_ICON = 
+        new ImageIcon(org.openide.util.Utilities.loadImage(
+        "org/netbeans/modules/autoupdate/ui/columnsSortedAsc.gif")); // NOI18N
+    
+    private boolean sortAscending = false;
     public SortColumnHeaderRenderer(UnitCategoryTableModel model, TableCellRenderer textRenderer) {
         this.model = model;
         this.textRenderer = textRenderer;
@@ -63,54 +50,31 @@ public class SortColumnHeaderRenderer implements TableCellRenderer{
                                                    boolean isSelected,
                                                    boolean hasFocus, int row,
                                                    int column) {
-        if (this.table == null) {
-            this.table = table;
-            this.table.getTableHeader().addMouseListener(mlistener);
-        }
-        Component text;
-        JPanel panel = new JPanel();
-        panel.setLayout(new BorderLayout());
-        if (textRenderer != null) {
-            text = textRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-        } else {
-            text = new JLabel((String)value,JLabel.CENTER);
-            LookAndFeel.installColorsAndFont((JComponent)text, "TableHeader.background", "TableHeader.foreground", "TableHeader.font");
-        }
-        panel.add(text,BorderLayout.CENTER);
-        if (column == sortColumn) {
-            text.setFont(text.getFont().deriveFont(Font.BOLD));                       
-            //BasicArrowButton bab = new BasicArrowButton(sortAscending ? SwingConstants.NORTH : SwingConstants.SOUTH);
-            //panel.add(bab,BorderLayout.WEST);
-        } else {
-            text.setFont(text.getFont().deriveFont(Font.PLAIN));
-        }
-        LookAndFeel.installBorder(panel, "TableHeader.cellBorder");
-        return panel;
+        Component text = textRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        if( text instanceof JLabel ) {
+            JLabel label = (JLabel)text;
+            if (table.getColumnModel().getColumn(column).getIdentifier().equals(sortColumn)) {
+                label.setIcon( sortAscending ? SORT_ASC_ICON : SORT_DESC_ICON);
+                label.setHorizontalTextPosition( SwingConstants.LEFT );
+            } else {
+                label.setIcon( null);
+            }
+        }        
+        return text;
     }
     
-
-    public void columnSelected(int column) {
-        if (column != sortColumn) {
+    public void columnSelected(Object column) {
+        if (!column.equals(sortColumn)) {
             sortColumn = column;
-            //sortAscending = true;
+            sortAscending = true;
         } else {
-            //sortAscending = !sortAscending;
-            /*if (sortAscending)*/ {
-                sortColumn = -1;
+            sortAscending = !sortAscending;
+            if (sortAscending) {
+                sortColumn = null;
+                this.model.sort(null, sortAscending);
+                return;
             }
         }
-        if (sortColumn != -1) {
-            Comparator<Unit> cmp = new Comparator<Unit>(){
-                public int compare(Unit o1, Unit o2) {
-                    return java.text.Collator.getInstance().compare(o1.getDisplayName(), o2.getDisplayName());
-                }
-};
-            this.model.setUnitComparator(cmp, false);
-        } else {            
-            this.model.setUnitComparator(null, true);
-        }
-        if (this.table != null) {
-            this.model.fireTableDataChanged();
-        }
+        this.model.sort(column, sortAscending);
     }
 }

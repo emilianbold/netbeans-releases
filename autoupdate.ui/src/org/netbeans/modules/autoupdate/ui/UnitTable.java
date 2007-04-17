@@ -41,7 +41,10 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableColumnModelEvent;
 import javax.swing.event.TableColumnModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import org.openide.util.NbBundle;
 
@@ -78,20 +81,13 @@ public class UnitTable extends JTable {
             this.installedPluginColumn = new InstalledPluginColumn (this, 1, this.model);
         }
         
-        // set sizes XXX
-//        getColumnModel ().getColumn (0).setPreferredWidth ((int) (getWidth () * .1));
-//        getColumnModel ().getColumn (1).setPreferredWidth ((int) (getWidth () * .5));
-//        getColumnModel ().getColumn (2).setPreferredWidth ((int) (getWidth () * .15));
-//        getColumnModel ().getColumn (3).setPreferredWidth ((int) (getWidth () * .15));
-//        getColumnModel ().getColumn (4).setPreferredWidth ((int) (getWidth () * .1));
         getColumnModel ().getColumn (0).setPreferredWidth (50);
         getColumnModel ().getColumn (1).setPreferredWidth (250);
         getColumnModel ().getColumn (2).setPreferredWidth (75);
         getColumnModel ().getColumn (3).setPreferredWidth (75);
         getColumnModel ().getColumn (4).setPreferredWidth (50);
         
-        SortColumnHeaderRenderer scRenderer = new SortColumnHeaderRenderer(this.model,getColumnModel ().getColumn(0).getHeaderRenderer());
-        getColumnModel().getColumn(1).setHeaderRenderer(scRenderer);        
+        
         initTable ();
         initActions ();
         revalidate ();
@@ -276,6 +272,60 @@ public class UnitTable extends JTable {
     }
            
     private String getBundle (String key) {
-        return NbBundle.getMessage (UnitTable.class, key);
+        return NbBundle.getMessage (UnitTable.class, key);        
+    }    
+
+    @Override
+    protected JTableHeader createDefaultTableHeader() {
+        return new MyTableHeader( columnModel );
+    }
+    
+    private class MyTableHeader extends JTableHeader {
+        private SortColumnHeaderRenderer sortingRenderer;
+        
+        public MyTableHeader( TableColumnModel model ) {
+            super( model );
+            addMouseListener( new MouseAdapter() {
+                public void mouseClicked(MouseEvent e) {
+                    if( e.getClickCount() != 1 )
+                        return;
+                    int column = columnAtPoint( e.getPoint() );
+                    if( sortingRenderer != null) {
+                        UnitCategoryTableModel model = (UnitCategoryTableModel)getModel();
+                        Object id = getColumnModel().getColumn(column).getIdentifier();
+                        if (model.isSortAllowed(id)) {
+                            sortingRenderer.columnSelected(id);
+                            repaint();
+                        }
+                    }
+                }
+            });
+            this.setReorderingAllowed( false );
+        }
+        
+        @Override
+        public void setDraggedColumn( TableColumn aColumn ) {
+            if( null != aColumn && aColumn.getModelIndex() == 0 )
+                return; //don't allow the first column to be dragged
+            super.setDraggedColumn( aColumn );
+        }
+        
+        @Override
+        public void setDefaultRenderer(TableCellRenderer defaultRenderer) {
+            if( !(defaultRenderer instanceof SortColumnHeaderRenderer) ) {
+                sortingRenderer = new SortColumnHeaderRenderer((UnitCategoryTableModel)getModel(), defaultRenderer );
+                defaultRenderer = sortingRenderer;
+            }
+            super.setDefaultRenderer( defaultRenderer );
+        }
+        
+        @Override
+        public void setResizingColumn( TableColumn col ) {
+            if( null != getResizingColumn() && null == col ) {
+                //maybe could be persistent later
+                //storeColumnState();
+            }
+            super.setResizingColumn( col );
+        }
     }    
 }

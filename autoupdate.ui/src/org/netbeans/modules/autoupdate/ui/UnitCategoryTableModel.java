@@ -57,6 +57,25 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
     public abstract Object getValueAt (int row, int col);
     public abstract Class getColumnClass (int c);
     public abstract Type getType ();
+    public abstract boolean isSortAllowed (Object columnIdentifier);    
+    protected abstract Comparator<Unit> getComparator(final Object columnIdentifier, final boolean sortAscending);
+
+    protected Comparator<Unit> getDefaultComparator() {
+        return new Comparator<Unit>(){
+            public int compare(Unit o1, Unit o2) {
+                return Unit.compareDisplayNames(o1, o2);
+            }
+        };
+    }
+    
+    public final void sort(Object columnIdentifier, boolean sortAscending) {
+        if (columnIdentifier == null) {
+            setUnitComparator(getDefaultComparator(), true);
+        } else {
+            setUnitComparator(getComparator(columnIdentifier, sortAscending), false);
+        }
+        fireTableDataChanged();
+    }
     
     public final void setData (List<UnitCategory> data, boolean showCategories, Comparator<UnitCategory> categoryCmp, Comparator<Unit> unitCmp) {
         //TODO: if null cmpput in default one
@@ -89,6 +108,11 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
     public void setUnitComparator(Comparator<Unit> comparator, boolean showCategories) {
         setData(data, showCategories, categoryCmp,comparator);
     }
+    
+    public void setUnitComparator(Comparator<Unit> comparator) {
+        setUnitComparator(comparator, showCategories);
+    }
+    
 
     public void setCategoryComparator(Comparator<UnitCategory> comparator, boolean showCategories) {
         setData(data, showCategories, comparator,unitCmp);
