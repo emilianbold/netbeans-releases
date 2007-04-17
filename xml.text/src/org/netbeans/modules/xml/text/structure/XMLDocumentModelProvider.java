@@ -26,7 +26,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
+import java.util.TreeSet;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
@@ -256,7 +258,7 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
         
         if(debug) System.out.println("[XMLDocumentModelProvider] regenerating " + de);
         
-        ArrayList addedElements = new ArrayList();
+        Set addedElements = new TreeSet(DocumentModel.ELEMENTS_COMPARATOR);
         ArrayList skipped = new ArrayList();
         try {
             Stack elementsStack = new Stack(); //we need this to determine tags nesting

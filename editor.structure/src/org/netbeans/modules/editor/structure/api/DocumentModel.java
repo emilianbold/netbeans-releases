@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.WeakHashMap;
 import java.util.WeakHashMap;
 import javax.swing.SwingUtilities;
@@ -545,6 +546,8 @@ public final class DocumentModel {
             ArrayList<DocumentElement> children = new ArrayList<DocumentElement>();
             //get all elements with startOffset >= de.getStartOffset()
             
+            assert elements.get(index) == de;
+            
             index++;//skip the first element - this is the given element
             
             //is there any other elements behind the 'de' element?
@@ -1014,7 +1017,7 @@ public final class DocumentModel {
             }
         }
     }
-    
+
     /** This exception is thrown when someone tries to add a request to an already cancelled transaction.*/
     public final class DocumentModelTransactionCancelledException extends Exception {
         
@@ -1026,7 +1029,7 @@ public final class DocumentModel {
     
     //compares elements according to their start offsets
     //XXX - design - this comparator should be defined in DocumentElement class in the compareTo method!!!!
-    private static final Comparator<DocumentElement> ELEMENTS_COMPARATOR = new Comparator<DocumentElement>() {
+    public static final Comparator<DocumentElement> ELEMENTS_COMPARATOR = new Comparator<DocumentElement>() {
         public int compare(DocumentElement de1, DocumentElement de2) {
             //fastly handle root element comparing
             DocumentModel model = de1.getDocumentModel();
