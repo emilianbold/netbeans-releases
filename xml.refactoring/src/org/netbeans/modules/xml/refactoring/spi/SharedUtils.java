@@ -298,6 +298,8 @@ public class SharedUtils {
       public static void silentFileRefactor(Model model, String name, boolean b) throws CannotRefactorException, IOException{
          RenameRefactoring refactoring = new RenameRefactoring(Lookups.singleton(model));
          refactoring.setNewName(name);
+         String oldFileName =( model.getModelSource().getLookup().lookup(FileObject.class)).getName();
+         refactoring.getContext().add(oldFileName);
          XMLRefactoringTransaction transaction = new XMLRefactoringTransaction((Referenceable)model, refactoring);
          refactoring.getContext().add(transaction);
          refactor(refactoring, b);
