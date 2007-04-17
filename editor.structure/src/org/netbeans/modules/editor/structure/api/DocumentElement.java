@@ -69,6 +69,8 @@ public final class DocumentElement {
     DocumentElementListener deListener = null;
     HashSet<DocumentElementListener> deListeners = null;
     
+    private static final Attributes EMPTY_ATTRIBUTES = new Attributes(null, Collections.EMPTY_MAP);
+    
     DocumentElement(String name, String type, Map<String,String> attrsMap,
             int startOffset, int endOffset, DocumentModel model) throws BadLocationException {
 
@@ -89,7 +91,7 @@ public final class DocumentElement {
         if(!attrsMap.isEmpty()) {
             this.attributes = new Attributes(this, attrsMap);
         } else {
-            this.attributes = null;
+            this.attributes = EMPTY_ATTRIBUTES;
         }
         
         //create positions for start and end offsets
@@ -103,11 +105,6 @@ public final class DocumentElement {
      * @return the attributes for the element
      */
     public AttributeSet getAttributes() {
-        if(attributes == null) {
-            //no attributes
-            Map<String, String> empty_map = Collections.emptyMap();
-            attributes = new Attributes(this, empty_map);
-        } 
         return attributes;
     }
     

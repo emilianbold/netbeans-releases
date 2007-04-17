@@ -137,8 +137,8 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
             }
             
             if((attribsOnly || dch.getChangeType() == DocumentChange.REMOVE)
-            && (leaf.getType().equals(XML_TAG)
-            || leaf.getType().equals(XML_EMPTY_TAG))) {
+                    && (leaf.getType().equals(XML_TAG)
+                    || leaf.getType().equals(XML_EMPTY_TAG))) {
                 if(debug) System.out.println("POSSIBLE ATTRIBS UPDATE!!!");
                 //we need to parse the tag element attributes and set them according to the new values
                 try {
@@ -381,7 +381,7 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
                     addedElements.add(dtm.addDocumentElement("...", XML_CONTENT, Collections.EMPTY_MAP, sel.getElementOffset(), getSyntaxElementEndOffset(sel)));
                 }
                 //find next syntax element
-//                sel = sel.getNext();     //this cannot be used since it chains the results and they are hard to GC then.                
+                //                sel = sel.getNext();     //this cannot be used since it chains the results and they are hard to GC then.
                 try {
                     //prevent cycles
                     SyntaxElement prev = null;
@@ -412,7 +412,7 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
                     if(debug) System.out.println("[xml model] removed element " + d);
                 }
             }
-
+            
         } catch( BadLocationException e ) {
             throw new DocumentModelException("Error occurred during generation of Document elements", e);
         }
@@ -445,12 +445,16 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
     }
     
     private Map createAttributesMap(Tag tag) {
-        HashMap map = new HashMap(tag.getAttributes().getLength());
-        for(int i = 0; i < tag.getAttributes().getLength(); i++) {
-            AttrImpl attr = (AttrImpl)tag.getAttributes().item(i);
-            map.put(attr.getName(), attr.getValue());
+        if(tag.getAttributes().getLength() == 0) {
+            return Collections.EMPTY_MAP;
+        } else {
+            HashMap map = new HashMap(tag.getAttributes().getLength());
+            for(int i = 0; i < tag.getAttributes().getLength(); i++) {
+                AttrImpl attr = (AttrImpl)tag.getAttributes().item(i);
+                map.put(attr.getName(), attr.getValue());
+            }
+            return map;
         }
-        return map;
     }
     
     public static final String XML_TAG = "tag";
