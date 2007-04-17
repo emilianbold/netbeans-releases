@@ -55,6 +55,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="LibrariesCustomizerAction.instance/org-netbeans-modules-favorites-templates-TemplatesAction.instance" boolvalue="true" />
             <attr name="org-netbeans-modules-favorites-templates-TemplatesAction.instance/Separator2.instance" boolvalue="true" />
             <attr name="ServerManagerAction.instance/org-netbeans-modules-favorites-templates-TemplatesAction.instance" boolvalue="true"/>
+            <attr name="org-netbeans-modules-favorites-templates-TemplatesAction.instance/PaletteManager" boolvalue="true"/>
         </folder>
       <folder name="Window">
             <attr name="org-netbeans-modules-project-ui-physical-tab-action.shadow/ViewFavoritesTabAction.shadow" boolvalue="true" />

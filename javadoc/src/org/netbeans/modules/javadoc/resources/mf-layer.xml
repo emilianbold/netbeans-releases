@@ -28,11 +28,13 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-javadoc-search-IndexOverviewAction.instance"/>
             <attr name="org-netbeans-modules-javadoc-search-IndexOverviewAction.instance/org-netbeans-modules-j2ee-blueprints-ShowBluePrintsAction.instance" boolvalue="true"/>
         </folder>
+        <!-- 
       <folder name="Tools">
           <file name="javadoc-Search-Doc-Action.instance">
               <attr name="instanceClass" stringvalue="org.netbeans.modules.javadoc.search.SearchDocAction"/>
           </file>
       </folder>
+      -->
   </folder>  <!-- Main menu -->
 
   <!-- Register actions in actions pool -->

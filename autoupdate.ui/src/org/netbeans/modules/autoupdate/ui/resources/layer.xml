@@ -3,21 +3,14 @@
 <filesystem>
   <folder name="Menu">
         <folder name="Tools">
-	    <attr boolvalue="true" name="org-netbeans-modules-options-OptionsWindowAction.shadow/Separator3.instance"/>
-	    <attr boolvalue="true" name="org-netbeans-core-actions-OptionsAction.shadow/Separator3.instance"/>
-	    <attr boolvalue="true" name="org-netbeans-core-actions-OptionsAction.instance/Separator3.instance"/>
             <!-- the following ordering attributes is necessary because of macosx where options action is not present in Tools menu -->
-            <attr name="org-netbeans-modules-favorites-templates-TemplatesAction.instance/Separator3.instance" boolvalue="true"/>
-            <attr name="ServerManagerAction.instance/Separator3.instance" boolvalue="true"/>
+            <attr name="org-netbeans-modules-favorites-templates-TemplatesAction.instance/Separator2.instance" boolvalue="true"/>
+            <attr name="ServerManagerAction.instance/Separator2.instance" boolvalue="true"/>
             <attr name="org-netbeans-modules-favorites-templates-TemplatesAction.instance/org-netbeans-modules-autoupdate-catalog-ModuleCatalogAction.shadow" boolvalue="true"/>
             <attr name="ServerManagerAction.instance/org-netbeans-modules-autoupdate-catalog-ModuleCatalogAction.shadow" boolvalue="true"/>
             
-            <file name="Separator3.instance">
-		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-	    </file>
-            <attr boolvalue="true" name="Separator3.instance/org-netbeans-modules-autoupdate-catalog-ModuleCatalogAction.shadow"/>
             <attr boolvalue="true" name="org-netbeans-modules-autoupdate-catalog-ModuleCatalogAction.shadow/org-netbeans-modules-autoupdate-UpdateAction.shadow"/>
-            <attr boolvalue="true" name="Separator3.instance/org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.shadow"/>
+            <attr boolvalue="true" name="Separator2.instance/org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.shadow"/>
             <attr boolvalue="true" name="org-netbeans-modules-autoupdate-catalog-ModuleCatalogAction.shadow/org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.shadow"/>
             <attr boolvalue="true" name="org-netbeans-modules-autoupdate-UpdateAction.shadow/org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.shadow"/>
             <file name="org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.shadow">

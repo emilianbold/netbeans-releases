@@ -29,6 +29,7 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Menu">
         <folder name="Tools">
             <attr name="LibrariesCustomizerAction.instance/PaletteManager" boolvalue="true"/>
+            <attr name="ServerManagerAction.instance/PaletteManager" boolvalue="true"/>
             <attr name="PaletteManager/Separator2.instance" boolvalue="true"/>
             <folder name="PaletteManager">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.palette.resources.Bundle"/>
