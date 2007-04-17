@@ -40,6 +40,8 @@ public abstract class OperationWizardModel {
     private List<UpdateElement> allElements = null;
     private JButton originalCancel = null;
     private JButton originalNext = null;
+    private JButton originalFinish = null;
+    private boolean reconized = false;
     
     abstract OperationType getOperation ();
     abstract OperationContainer getContainer ();
@@ -118,6 +120,7 @@ public abstract class OperationWizardModel {
     
     // XXX Hack in WizardDescriptor
     public void modifyOptionsForDoClose (WizardDescriptor wd) {
+        recognizeButtons (wd);
         JButton b = getOriginalCancel (wd);
         Mnemonics.setLocalizedText (b, getBundle ("InstallUnitWizardModel_Buttons_Close"));
         wd.setOptions (new JButton [] {b});
@@ -125,6 +128,7 @@ public abstract class OperationWizardModel {
     
     // XXX Hack in WizardDescriptor
     public void modifyOptionsForStartWizard (WizardDescriptor wd) {
+        recognizeButtons (wd);
         removeFinish (wd);
         Mnemonics.setLocalizedText (getOriginalNext (wd), NbBundle.getMessage (InstallUnitWizardModel.class,
                 "InstallUnitWizardModel_Buttons_MnemonicNext", getBundle ("InstallUnitWizardModel_Buttons_Next")));
@@ -132,6 +136,7 @@ public abstract class OperationWizardModel {
     
     // XXX Hack in WizardDescriptor
     public void modifyOptionsForDoOperation (WizardDescriptor wd) {
+        recognizeButtons (wd);
         removeFinish (wd);
         switch (getOperation ()) {
             case INSTALL :
@@ -161,6 +166,7 @@ public abstract class OperationWizardModel {
     
     // XXX Hack in WizardDescriptor
     public void modifyOptionsForDisabledCancel (WizardDescriptor wd) {
+        recognizeButtons (wd);
         Object [] options = wd.getOptions ();
         List<JButton> newOptionsL = new ArrayList<JButton> ();
         List<Object> optionsL = Arrays.asList (options);
@@ -180,39 +186,26 @@ public abstract class OperationWizardModel {
         wd.setOptions (newOptionsL.toArray ());
     }
     
-    private JButton getOriginalNext (WizardDescriptor wd) {
-        if (originalNext == null) {
+    private void recognizeButtons (WizardDescriptor wd) {
+        if (! reconized) {
             Object [] options = wd.getOptions ();
-            List<Object> optionsL = Arrays.asList (options);
-            for (Object o : optionsL) {
-                assert o instanceof JButton : o + " instanceof JButton";
-                if (o instanceof JButton) {
-                    JButton b = (JButton) o;
-                    // find next button
-                    if (b.getText ().contains (getBundle ("InstallUnitWizardModel_Buttons_Next"))) {
-                        originalNext = b;
-                    }
-                }
-            }
+            assert options != null && options.length >= 4;
+            assert options [1] instanceof JButton : options [1] + " instanceof JButton";
+            originalNext = (JButton) options [1];
+            assert options [2] instanceof JButton : options [2] + " instanceof JButton";
+            originalFinish = (JButton) options [2];
+            assert options [3] instanceof JButton : options [3] + " instanceof JButton";
+            originalCancel = (JButton) options [3];
+            reconized = true;
         }
+        
+    }
+    
+    private JButton getOriginalNext (WizardDescriptor wd) {
         return originalNext;
     }
     
     private JButton getOriginalCancel (WizardDescriptor wd) {
-        if (originalCancel == null) {
-            Object [] options = wd.getOptions ();
-            List<Object> optionsL = Arrays.asList (options);
-            for (Object o : optionsL) {
-                assert o instanceof JButton : o + " instanceof JButton";
-                if (o instanceof JButton) {
-                    JButton b = (JButton) o;
-                    // find next button
-                    if (b.getText ().contains (getBundle ("InstallUnitWizardModel_Buttons_Cancel"))) {
-                        originalCancel = b;
-                    }
-                }
-            }
-        }
         return originalCancel;
     }
     
@@ -224,7 +217,7 @@ public abstract class OperationWizardModel {
             assert o instanceof JButton : o + " instanceof JButton";
             if (o instanceof JButton) {
                 JButton b = (JButton) o;
-                if (! b.getText ().contains (getBundle ("InstallUnitWizardModel_Buttons_Finish"))) {
+                if (! b.equals (originalFinish)) {
                     newOptionsL.add (b);
                 }
             }
