@@ -82,6 +82,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="ui.gestures.collector">
+            <api name="completion"/>
+            <summary>Support for UI Gestures Collector</summary>
+            <version major="1" minor="8"/>
+            <date day="17" month="4" year="2007"/>
+            <author login="dbalek"/>
+            <compatibility addition="yes"/>
+            <description>
+            <p>
+            Adds few <a href="@org-openide-util@/org/openide/util/doc-files/logging.html">structured logging</a> 
+            <a href="@TOP@/architecture-summary.html#logger-org.netbeans.ui.editor.completion">triggers</a> 
+            to cooperate with <a href="@org-netbeans-modules-uihandler@/overview-summary.html">UI Gestures Collector</a>.
+            </p>
+            </description>
+        </change>
 
         <change id="CompletionResultSet.setWaitText">
             <api name="completion"/>

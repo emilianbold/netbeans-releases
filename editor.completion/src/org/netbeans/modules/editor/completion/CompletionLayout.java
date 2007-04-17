@@ -31,6 +31,8 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
@@ -130,6 +132,10 @@ public final class CompletionLayout {
     
     public CompletionItem getSelectedCompletionItem() {
         return completionPopup.getSelectedCompletionItem();
+    }
+    
+    public int getSelectedIndex() {
+        return completionPopup.getSelectedIndex();
     }
     
     public void processKeyEvent(KeyEvent evt) {
@@ -291,6 +297,9 @@ public final class CompletionLayout {
                                     CompletionItem selectedItem
                                             = completionScrollPane.getSelectedCompletionItem();
                                     if (selectedItem != null) {
+                                        LogRecord r = new LogRecord(Level.FINE, "COMPL_MOUSE_SELECT"); // NOI18N
+                                        r.setParameters(new Object[] { null, completionScrollPane.getSelectedIndex(), selectedItem.getClass().getSimpleName()});
+                                        CompletionImpl.uilog(r);
                                         selectedItem.defaultAction(c);
                                     }
                                 }
@@ -343,6 +352,10 @@ public final class CompletionLayout {
 
         public CompletionItem getSelectedCompletionItem() {
             return isVisible() ? completionScrollPane.getSelectedCompletionItem() : null;
+        }
+
+        public int getSelectedIndex() {
+            return isVisible() ? completionScrollPane.getSelectedIndex() : -1;
         }
 
         public void processKeyEvent(KeyEvent evt) {

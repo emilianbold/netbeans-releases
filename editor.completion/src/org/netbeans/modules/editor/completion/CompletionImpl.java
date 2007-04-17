@@ -28,6 +28,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.CaretListener;
@@ -74,6 +77,8 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     private static final boolean debug = Boolean.getBoolean("org.netbeans.modules.editor.completion.debug");
     private static final boolean allowFallbacks = !Boolean.getBoolean("org.netbeans.modules.editor.completion.noFallbacks");
     private static final boolean alphaSort = Boolean.getBoolean("org.netbeans.modules.editor.completion.alphabeticalSort"); // [TODO] create an option
+    
+    private static final Logger UI_LOG = Logger.getLogger("org.netbeans.ui.editor.completion"); // NOI18N
 
     private static CompletionImpl singleton = null;
 
@@ -491,16 +496,22 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         if (layout.isCompletionVisible()) {
             CompletionItem item = layout.getSelectedCompletionItem();
             if (item != null) {
+                    LogRecord r = new LogRecord(Level.FINE, "COMPL_KEY_SELECT"); // NOI18N
+                    r.setParameters(new Object[] {e.getKeyChar(), layout.getSelectedIndex(), item.getClass().getSimpleName()});
                 if (compEditable)
                     item.processKeyEvent(e);
                 if (e.isConsumed()) {
+                    uilog(r);
                     return;
                 }
                 // Call default action if ENTER was pressed
                 if (e.getKeyCode() == KeyEvent.VK_ENTER && e.getID() == KeyEvent.KEY_PRESSED) {
                     e.consume();
+                    r = new LogRecord(Level.FINE, "COMPL_KEY_SELECT_DEFAULT"); // NOI18N
+                    r.setParameters(new Object[] {'\n', layout.getSelectedIndex(), item.getClass().getSimpleName()});
                     if (compEditable)
                         item.defaultAction(getActiveComponent());
+                    uilog(r);
                     return;
                 }
             } else if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_DOWN
@@ -660,6 +671,10 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
             return;
         }
 
+        LogRecord r = new LogRecord(Level.FINE, "COMPL_INVOCATION"); // NOI18N
+        r.setParameters(new Object[] {explicitQuery});
+        uilog(r);
+        
         this.explicitQuery = explicitQuery;
         if (activeProviders != null) {
             completionAutoPopupTimer.stop();
@@ -1493,5 +1508,12 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
     
     public CompletionResultSetImpl createTestResultSet(CompletionTask task, int queryType) {
         return new CompletionResultSetImpl(this, "TestResult", task, queryType);
+    }
+    
+    static void uilog(LogRecord rec) {
+        rec.setResourceBundle(NbBundle.getBundle(CompletionImpl.class));
+        rec.setResourceBundleName(CompletionImpl.class.getPackage().getName() + ".Bundle"); // NOI18N
+        rec.setLoggerName(UI_LOG.getName());
+        UI_LOG.log(rec);
     }
 }

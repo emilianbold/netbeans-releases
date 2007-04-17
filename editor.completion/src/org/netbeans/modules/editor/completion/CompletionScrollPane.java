@@ -28,6 +28,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseListener;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -116,6 +118,10 @@ public class CompletionScrollPane extends JScrollPane {
     public CompletionItem getSelectedCompletionItem() {
         Object ret = view.getSelectedValue();
         return ret instanceof CompletionItem ? (CompletionItem) ret : null;
+    }
+    
+    public int getSelectedIndex() {
+        return view.getSelectedIndex();
     }
     
     public Dimension getPreferredSize() {
@@ -233,7 +239,9 @@ public class CompletionScrollPane extends JScrollPane {
         public void actionPerformed(ActionEvent actionEvent) {
             switch (action) {
 		case ACTION_ESCAPE:
-		    CompletionImpl.get().hideCompletion(false);
+                    LogRecord r = new LogRecord(Level.FINE, "COMPL_CANCEL"); // NOI18N
+                    CompletionImpl.uilog(r);
+                    CompletionImpl.get().hideCompletion(false);
 		    break;
                 case ACTION_COMPLETION_UP:
                     view.up();
