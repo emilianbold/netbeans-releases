@@ -149,6 +149,8 @@ public class AXIComponentCreator extends AbstractModelBuilder {
      * Visit AttributeReference.
      */
     public void visit(AttributeReference component) {
+        if(component == null || component.getRef() == null)
+            return;        
         SchemaComponent originalElement = component.getRef().get();
         if(originalElement == null)
             return;

@@ -24,12 +24,7 @@ import junit.framework.*;
 import org.netbeans.modules.xml.axi.impl.AXIModelImpl;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.xam.Model;
-import org.netbeans.modules.xml.xam.ModelSource;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-
         
 /**
  *

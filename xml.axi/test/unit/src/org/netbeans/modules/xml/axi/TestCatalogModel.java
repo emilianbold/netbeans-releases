@@ -47,8 +47,8 @@ import org.openide.util.lookup.Lookups;
  */
 
 public class TestCatalogModel extends CatalogWriteModelImpl {
-        
-    private TestCatalogModel(File file) throws IOException{
+    
+    private TestCatalogModel(File file) throws IOException {
         super(file);
     }
     
@@ -71,13 +71,12 @@ public class TestCatalogModel extends CatalogWriteModelImpl {
     }
     
     
-    
     /**
      * This method could be overridden by the Unit testcase to return a special
      * ModelSource object for a FileObject with custom impl of classes added to the lookup.
      * This is optional if both getDocument(FO) and createCatalogModel(FO) are overridden.
      */
-    protected ModelSource createModelSource(FileObject thisFileObj, boolean editable) throws CatalogModelException{
+    protected ModelSource createModelSource(final FileObject thisFileObj, boolean editable) throws CatalogModelException{
         assert thisFileObj != null : "Null file object.";
         final CatalogModel catalogModel = createCatalogModel(thisFileObj);
         final DataObject dobj;
@@ -89,12 +88,10 @@ public class TestCatalogModel extends CatalogWriteModelImpl {
         Lookup proxyLookup = Lookups.proxy(
                 new Lookup.Provider() {
             public Lookup getLookup() {
-                Document document = null;
-                Logger l = Logger.getLogger(getClass().getName());
-                document = getDocument(dobj.getPrimaryFile());
                 return Lookups.fixed(new Object[] {
-                    dobj.getPrimaryFile(),
-                    document,
+                    FileUtil.toFile(thisFileObj),
+                    thisFileObj,
+                    getDocument(dobj.getPrimaryFile()),
                     dobj,
                     catalogModel
                 });
@@ -104,7 +101,7 @@ public class TestCatalogModel extends CatalogWriteModelImpl {
         return new ModelSource(proxyLookup, editable);
     }
     
-    private Document  getDocument(FileObject fo){
+    private Document getDocument(FileObject fo){
         Document result = null;
         if (documentPooling) {
             result = documentPool().get(fo);
@@ -161,7 +158,7 @@ public class TestCatalogModel extends CatalogWriteModelImpl {
 //        this.addURI(nl.getLocationURI(), nl.getResourceURI());
 //    }
 //        
-    
+        
     public SchemaModel getSchemaModel(URI lcationURI) throws Exception {
         SchemaModel model = SchemaModelFactory.getDefault().getModel(
                 singletonCatMod.getModelSource(lcationURI));

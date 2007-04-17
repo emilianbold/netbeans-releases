@@ -29,7 +29,7 @@ import org.netbeans.modules.xml.axi.Compositor;
 import org.netbeans.modules.xml.axi.Compositor.CompositorType;
 import org.netbeans.modules.xml.axi.ContentModel;
 import org.netbeans.modules.xml.axi.Element;
-import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
+//import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.xam.Nameable;
@@ -161,23 +161,23 @@ public class SimulationHelper {
         return ( (c.getParent() != null) && (c.getModel() != null) && (c.getPeer() != null));
     }
     
-    public boolean refactorRename(AXIContainer container, String name) {
-        assert(container.getParent() instanceof AXIDocument);
-        NamedReferenceable ref = null;
-        SchemaComponent comp = container.getPeer();
-        if (comp instanceof NamedReferenceable) {
-            ref = NamedReferenceable.class.cast(comp);
-        }
-        
-        
-        try {
-            SchemaModel sm = model.getSchemaModel();
-            SharedUtils.locallyRenameRefactor((Nameable)ref, name);
-            model.sync();
-        } catch (IOException ex) {
-            return false;
-        }
-        return true;
-    }    
+//    public boolean refactorRename(AXIContainer container, String name) {
+//        assert(container.getParent() instanceof AXIDocument);
+//        NamedReferenceable ref = null;
+//        SchemaComponent comp = container.getPeer();
+//        if (comp instanceof NamedReferenceable) {
+//            ref = NamedReferenceable.class.cast(comp);
+//        }
+//        
+//        
+//        try {
+//            SchemaModel sm = model.getSchemaModel();
+//            SharedUtils.locallyRenameRefactor((Nameable)ref, name);
+//            model.sync();
+//        } catch (IOException ex) {
+//            return false;
+//        }
+//        return true;
+//    }    
 
 }
