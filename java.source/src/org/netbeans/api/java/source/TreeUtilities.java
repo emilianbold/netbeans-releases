@@ -35,6 +35,7 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.source.query.CommentHandler;
 import org.netbeans.modules.java.source.query.CommentSet;
@@ -302,6 +303,55 @@ public final class TreeUtilities {
         HashSet<TypeMirror> set = new HashSet<TypeMirror>();
         new UncaughtExceptionsVisitor(info).scan(path, set);
         return set;
+    }
+    
+    /**Find the target of <code>break</code> or <code>continue</code>. The given
+     * {@link CompilationInfo} has to be at least in the {@link Phase#RESOLVED} phase.
+     * 
+     * @param info CompilationInfo to work against
+     * @param breakOrContinue {@link TreePath} to the tree that should be inspected.
+     *                        The <code>breakOrContinue.getLeaf().getKind()</code>
+     *                        has to be either {@link Kind#BREAK} or {@link Kind#CONTINUE}, or
+     *                        an IllegalArgumentException is thrown
+     * @return the tree that is the "target" for the given break or continue statement, or null if there is none.
+     * @throws IllegalArgumentException if the given tree is not a break or continue tree or if the given {@link CompilationInfo}
+     *         is not in the {@link Phase#RESOLVED} phase.
+     * @since 0.11
+     */
+    public StatementTree getBreakContinueTarget(CompilationInfo info, TreePath breakOrContinue) throws IllegalArgumentException {
+        if (info.getPhase().compareTo(Phase.RESOLVED) < 0)
+            throw new IllegalArgumentException("Not in correct Phase. Required: Phase.RESOLVED, got: Phase." + info.getPhase().toString());
+        
+        Tree leaf = breakOrContinue.getLeaf();
+        
+        switch (leaf.getKind()) {
+            case BREAK:
+                return (StatementTree) ((JCTree.JCBreak) leaf).target;
+            case CONTINUE:
+                StatementTree target = (StatementTree) ((JCTree.JCContinue) leaf).target;
+                
+                if (target == null)
+                    return null;
+                
+                if (((JCTree.JCContinue) leaf).label == null)
+                    return target;
+                
+                TreePath tp = breakOrContinue;
+                
+                while (tp.getLeaf() != target) {
+                    tp = tp.getParentPath();
+                }
+                
+                Tree parent = tp.getParentPath().getLeaf();
+                
+                if (parent.getKind() == Kind.LABELED_STATEMENT) {
+                    return (StatementTree) parent;
+                } else {
+                    return target;
+                }
+            default:
+                throw new IllegalArgumentException("Unsupported kind: " + leaf.getKind());
+        }
     }
 
     private static class UncaughtExceptionsVisitor extends TreePathScanner<Void, Set<TypeMirror>> {
