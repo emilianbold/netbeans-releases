@@ -19,16 +19,19 @@
 
 package org.netbeans.modules.autoupdate.ui;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.UIManager;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -44,10 +47,14 @@ public class NetworkProblemPanel extends javax.swing.JPanel {
     }
     
     private void postInitComponents () {
-        taMessage.setBackground (new JLabel ().getBackground ());
-        taTitle.setBackground (new JLabel ().getBackground ());
+        // XXX: Hack to set as same background as JLabel.background
+        Color c = UIManager.getColor ("Label.background");
+        if (c == null) c = new JLabel ().getBackground ();
+        c = new Color (c.getRGB ());
+        taMessage.setBackground (c);
+        taTitle.setBackground (c);
     }
-    
+        
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -122,7 +129,7 @@ public class NetworkProblemPanel extends javax.swing.JPanel {
         continueButton.setEnabled (true);
         continueButton.addActionListener (new ActionListener () {
             public void actionPerformed (ActionEvent evt) {
-                getPerformAgain ().run ();
+                RequestProcessor.getDefault().post (getPerformAgain (), 100);
             }
         });
         Mnemonics.setLocalizedText (continueButton, getBundle ("CTL_Error_Continue"));

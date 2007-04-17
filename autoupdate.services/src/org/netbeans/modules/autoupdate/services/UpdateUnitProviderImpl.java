@@ -115,7 +115,7 @@ public final class UpdateUnitProviderImpl {
         }
         try {
             if (handle != null) {
-                handle.progress (getDisplayName ());
+                handle.progress (NbBundle.getMessage (UpdateUnitProviderImpl.class, "UpdateUnitProviderImpl_FormatCheckingForUpdates", getDisplayName ()));
             } else if (ownHandle != null) {
                 ownHandle.progress (getDisplayName ());
             }
