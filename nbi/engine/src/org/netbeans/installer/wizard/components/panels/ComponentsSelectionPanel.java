@@ -88,6 +88,8 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                 DEFAULT_DESCRIPTION_INSTALL);
         setProperty(DESCRIPTION_UNINSTALL_PROPERTY,
                 DEFAULT_DESCRIPTION_UNINSTALL);
+        setProperty(FEATURE_DESCRIPTION_TITLE_PROPERTY,
+                DEFAULT_FEATURE_DESCRIPTION_TITLE);
         
         setProperty(COMPONENT_DESCRIPTION_TEXT_PROPERTY,
                 DEFAULT_COMPONENT_DESCRIPTION_TEXT);
@@ -419,7 +421,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             descriptionScrollPane.setVerticalScrollBarPolicy(
                     NbiScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
             descriptionScrollPane.setBorder(
-                    new TitledBorder("Feature Description"));
+                    new TitledBorder(component.getProperty(FEATURE_DESCRIPTION_TITLE_PROPERTY)));
             
             // sizesLabel ///////////////////////////////////////////////////////////
             sizesLabel = new NbiLabel();
@@ -902,6 +904,8 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             "description.install"; // NOI18N
     public static final String DESCRIPTION_UNINSTALL_PROPERTY =
             "description.uninstall"; // NOI18N
+    public static final String FEATURE_DESCRIPTION_TITLE_PROPERTY = 
+            "feature.description.title";
     
     public static final String DEFAULT_TITLE =
             ResourceUtils.getString(ComponentsSelectionPanel.class,
@@ -915,7 +919,9 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
     public static final String DEFAULT_DESCRIPTION_UNINSTALL =
             ResourceUtils.getString(ComponentsSelectionPanel.class,
             "CSP.description.uninstall"); // NOI18N
-    
+    public static final String DEFAULT_FEATURE_DESCRIPTION_TITLE =
+            ResourceUtils.getString(ComponentsSelectionPanel.class,
+            "CSP.feature.description.title");// NOI18N    
     public static final String COMPONENT_DESCRIPTION_TEXT_PROPERTY =
             "component.description.text"; // NOI18N
     public static final String COMPONENT_DESCRIPTION_CONTENT_TYPE_PROPERTY =
