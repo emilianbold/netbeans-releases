@@ -19,16 +19,11 @@
 
 package org.netbeans.core.windows.services;
 
-import java.awt.Dialog;
-import java.awt.EventQueue;
 import java.awt.Window;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
