@@ -39,10 +39,13 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
+import org.netbeans.api.java.source.Comment;
+import org.netbeans.api.java.source.Comment.Style;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
+//import org.netbeans.api.java.source.query.Query;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.openide.ErrorManager;
@@ -116,7 +119,7 @@ public class JavaSourceHelper {
                             
                             break;
                         }
-                    }           
+                    }
                 }
             }, true);
         } catch (IOException ex) {
@@ -388,7 +391,7 @@ public class JavaSourceHelper {
     
     public static ClassTree addConstructor(WorkingCopy copy, ClassTree tree,
             Modifier[] modifiers, String[] parameters,
-            Object[] paramTypes, String bodyText) {
+            Object[] paramTypes, String bodyText, String comment) {
         TreeMaker maker = copy.getTreeMaker();
         ModifiersTree modifiersTree = createModifiersTree(copy, modifiers, null, null);
         ModifiersTree paramModTree = maker.Modifiers(Collections.<Modifier>emptySet());
@@ -406,6 +409,11 @@ public class JavaSourceHelper {
                 paramTrees,
                 Collections.<ExpressionTree>emptyList(),
                 bodyText);
+        
+        if (comment != null) {
+            maker.addComment(methodTree, createJavaDocComment(comment), true);
+        }
+        
         return maker.addClassMember(tree, methodTree);
     }
     
@@ -443,7 +451,7 @@ public class JavaSourceHelper {
             String name, Object returnType,
             String[] parameters, Object[] paramTypes,
             String[] paramAnnotations, Object[] paramAnnotationAttrs,
-            String bodyText) {
+            String bodyText, String comment) {
         TreeMaker maker = copy.getTreeMaker();
         ModifiersTree modifiersTree = createModifiersTree(copy, modifiers,
                 annotations, annotationAttrs);
@@ -471,6 +479,7 @@ public class JavaSourceHelper {
             }
         }
         
+        
         MethodTree methodTree = maker.Method(modifiersTree,
                 name, returnTypeTree,
                 Collections.<TypeParameterTree>emptyList(),
@@ -478,6 +487,10 @@ public class JavaSourceHelper {
                 Collections.<ExpressionTree>emptyList(),
                 bodyText,
                 null);
+        
+        if (comment != null) {
+            maker.addComment(methodTree, createJavaDocComment(comment), true);
+        }
         
         return maker.addClassMember(tree, methodTree);
     }
@@ -570,5 +583,10 @@ public class JavaSourceHelper {
         }
         
         return annotationTrees;
+    }
+    
+    private static Comment createJavaDocComment(String text) {
+        
+        return Comment.create(Style.JAVADOC, -2, -2, -2, text);
     }
 }
