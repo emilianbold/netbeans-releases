@@ -1396,7 +1396,7 @@ public class CasaWrapperModel extends CasaModelImpl {
                 public void run() {
                     Binding binding = port.getBinding().get();
                     Service service = (Service) port.getParent();
-                    Definitions definitions = (Definitions) service.getParent();
+                    Definitions definitions = (Definitions) service.getParent();                                     
                     
                     WSDLModel casaWSDLModel = port.getModel();
                     casaWSDLModel.startTransaction();
@@ -1409,6 +1409,8 @@ public class CasaWrapperModel extends CasaModelImpl {
                             casaWSDLModel.endTransaction();
                         }
                     }
+                    
+                    checkAndCleanUpDummyPortType(casaWSDLModel);
                 }
             });
             
@@ -1417,11 +1419,37 @@ public class CasaWrapperModel extends CasaModelImpl {
         }
     }
     
-    public void reloadCasaPorts(CasaServiceEngineServiceUnit seSU) {
+    /**
+     * Clean up the dummy portType if it is no longer used in casa wsdl.
+     */
+    private void checkAndCleanUpDummyPortType(WSDLModel casaWSDLModel) {
+        PortType dummyPortType = getDummyPortType(casaWSDLModel, false);
         
+        Definitions definitions = casaWSDLModel.getDefinitions();
+        
+        boolean dummyPortTypeUsed = false;
+        if (dummyPortType != null) {
+            for (Binding b : definitions.getBindings()) {
+                if (b.getType().get() == dummyPortType) {
+                    dummyPortTypeUsed = true;
+                    break;
+                }
+            }
+        }
+        
+        if (dummyPortType != null && !dummyPortTypeUsed) {
+            casaWSDLModel.startTransaction();
+            try {
+                definitions.removePortType(dummyPortType);
+            } finally {
+                if (casaWSDLModel.isIntransaction()) {
+                    casaWSDLModel.endTransaction();
+                }
+            }
+        }
     }
     
-     private void setCasaPortState(final CasaPort casaPort,
+    private void setCasaPortState(final CasaPort casaPort,
             final CasaPortState state) {
         String initialState = casaPort.getState();
         startTransaction();
@@ -2453,10 +2481,13 @@ public class CasaWrapperModel extends CasaModelImpl {
             return;
         }
         
+        Port port = getLinkedWSDLPort(casaPort);
+        WSDLModel casaWSDLModel = port.getModel();
+        
         if (interfaceQName == null || interfaceQName.equals(new QName(""))) { // NOI18N
+            PortType dummyPT = getDummyPortType(casaWSDLModel, true);
+            
             // Here we also need to clean up casa wsdl:
-            Port port = getLinkedWSDLPort(casaPort);
-            WSDLModel casaWSDLModel = port.getModel();
             casaWSDLModel.startTransaction();
             try {
                 // (1) remove wsdl port children
@@ -2472,7 +2503,6 @@ public class CasaWrapperModel extends CasaModelImpl {
                     binding.removeExtensibilityElement(ex);
                 }
                 // (3) change binding type to dummy porttype
-                PortType dummyPT = getDummyPortType(casaWSDLModel, true);
                 binding.setType(binding.createReferenceTo(dummyPT, PortType.class));
             } finally {
                 if (casaWSDLModel.isIntransaction()) {
@@ -2484,21 +2514,11 @@ public class CasaWrapperModel extends CasaModelImpl {
             // cascade the change in this case.
             
         } else {
-//                startTransaction();
-//                try {
-//                    //todo: 12/22 temp method to add portType name...
-//                    casaPort.setPortType(interfaceQName.toString());
-//                } finally {
-//                    if (isIntransaction()) {
-//                        endTransaction();
-//                    }
-//                }
             CasaBindingComponentServiceUnit bcSU =
                     (CasaBindingComponentServiceUnit) casaPort.getParent().getParent();
             String bcName = bcSU.getComponentName();
             String bindingType = bcName2BindingType.get(bcName);
             
-            Port port = getLinkedWSDLPort(casaPort);
             try {
                 populateBindingAndPort(casaPort, port, interfaceQName, bindingType);
             } catch (RuntimeException e) { 
@@ -2525,6 +2545,8 @@ public class CasaWrapperModel extends CasaModelImpl {
                 CasaEndpointRef casaProvides = getCasaEndpointRef(connection, false);
                 setEndpointInterfaceQName(casaProvides, interfaceQName);
             }
+            
+            checkAndCleanUpDummyPortType(casaWSDLModel);
         }
     }
     
