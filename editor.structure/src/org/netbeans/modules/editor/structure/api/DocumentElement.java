@@ -62,10 +62,8 @@ public final class DocumentElement {
     private String name;
     private String type;
     private Position startPos, endPos;
-    private int startSectionLength, endSectionLength;
     private DocumentModel model;
     private Attributes attributes;
-    private boolean isRootElement;
     
     //stores DocumentElement listeners
     DocumentElementListener deListener = null;
@@ -86,8 +84,6 @@ public final class DocumentElement {
         this.type = model.elementsTypesCache.get(type);
 
         this.model = model;
-        this.startSectionLength = startSectionLength;
-        this.endSectionLength = endSectionLength;
         
         //lazy attributes initialization when attrs are empty
         if(!attrsMap.isEmpty()) {
@@ -95,8 +91,6 @@ public final class DocumentElement {
         } else {
             this.attributes = null;
         }
-        
-        this.isRootElement = false;
         
         //create positions for start and end offsets
         setStartPosition(startOffset);
@@ -320,15 +314,6 @@ public final class DocumentElement {
     
     /* <<< EOF public methods */
     
-    //called by the DocumentModel - performance improvement
-    void setRootElement(boolean value) {
-        this.isRootElement = value;
-    }
-    
-    boolean isRootElement() {
-        return this.isRootElement;
-    }
-    
     void setStartPosition(int offset) throws BadLocationException {
         startPos = model.getDocument().createPosition(offset);
     }
@@ -499,5 +484,5 @@ public final class DocumentElement {
         
     }
     
-    private final int PRINT_MAX_CHARS = 10;
+    private static final int PRINT_MAX_CHARS = 10;
 }

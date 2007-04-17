@@ -345,6 +345,10 @@ public final class DocumentModel {
         MODEL_UPDATE_TIMEOUT = timeout;
     }
     
+    private boolean isRootElement(DocumentElement de) {
+        return de == getRootElement();
+    }
+    
     /** Returns a DocumentElement instance if there is such one with given boundaries. */
     DocumentElement getDocumentElement(int startOffset, int endOffset) throws BadLocationException {
         readLock();
@@ -495,9 +499,8 @@ public final class DocumentModel {
     private void addRootElement() {
         try {
             DocumentModelModificationTransaction dmt = createTransaction(false);
-            this.rootElement = dmt.addDocumentElement("root", DOCUMENT_ROOT_ELEMENT_TYPE, Collections.EMPTY_MAP,
+            rootElement = dmt.addDocumentElement("root", DOCUMENT_ROOT_ELEMENT_TYPE, Collections.EMPTY_MAP,
                     0, getDocument().getLength());
-            this.rootElement.setRootElement(true);
             dmt.commit();
         }catch(BadLocationException e) {
             //this is very unlikely that the BLE will be thrown from this code
@@ -525,11 +528,11 @@ public final class DocumentModel {
             //there is a problem with empty elements - if an element is removed its boundaries
             //are the some and the standart getParent/getChildren algorith fails.
             //the root element can be empty however it has to return children (also empty)
-            if(!de.isRootElement() && de.isEmpty()) return Collections.emptyList();
+            if(!isRootElement(de) && de.isEmpty()) return Collections.emptyList();
             
             //if the root element is empty the rest of elements is also empty and
             //has to be returned as children
-            if(de.isRootElement() && de.isEmpty()) {
+            if(isRootElement(de) && de.isEmpty()) {
                 //ommit the root elemnent which is always first
                 if(elements.size() > 1) {
                     return Arrays.asList(elements.subarray(1, elements.size()));
@@ -592,7 +595,7 @@ public final class DocumentModel {
                 throw new IllegalArgumentException("getParent() called for " + de + " which is not in the elements list!");
             }
             
-            if(de.isRootElement()) return null;
+            if(isRootElement(de)) return null;
             
             //get all elements with startOffset <= de.getStartOffset()
             int index = elements.indexof(de);
@@ -766,7 +769,7 @@ public final class DocumentModel {
             if(transactionCancelled) throw new DocumentModelTransactionCancelledException();
             
             //we cannot remove root element
-            if(de.isRootElement()) {
+            if(isRootElement(de)) {
                 if(debug) System.out.println("WARNING: root element cannot be removed!");
                 return ;
             }
@@ -936,7 +939,7 @@ public final class DocumentModel {
             System.out.println("[DTM] removing " + de);
             DocumentElement parent = null;
             //remove the element itself. Do not do so if the element is root element
-            if(de.isRootElement()) return false;
+            if(isRootElement(de)) return false;
             
             //do not try to remove already removed element
             if(!elements.contains(de)) {
@@ -1026,9 +1029,10 @@ public final class DocumentModel {
     private static final Comparator<DocumentElement> ELEMENTS_COMPARATOR = new Comparator<DocumentElement>() {
         public int compare(DocumentElement de1, DocumentElement de2) {
             //fastly handle root element comparing
-            if(de1.isRootElement() && !de2.isRootElement()) return -1;
-            if(!de1.isRootElement() && de2.isRootElement()) return +1;
-            if(de2.isRootElement() && de1.isRootElement()) return 0;
+            DocumentModel model = de1.getDocumentModel();
+            if(model.isRootElement(de1) && !model.isRootElement(de2)) return -1;
+            if(!model.isRootElement(de1) && model.isRootElement(de2)) return +1;
+            if(model.isRootElement(de2) && model.isRootElement(de1)) return 0;
             
             int startOffsetDelta = de1.getStartOffset() - de2.getStartOffset();
             if(startOffsetDelta != 0)
