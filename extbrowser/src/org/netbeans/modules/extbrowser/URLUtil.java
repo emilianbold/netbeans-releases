@@ -119,7 +119,16 @@ public class URLUtil {
             return suitable;
         }
         
-        return makeURLLocal(URLMapper.findURL(fo, URLMapper.NETWORK));
+        URL url = URLMapper.findURL(fo, URLMapper.NETWORK);
+        
+        if (url == null){
+            ErrorManager.getDefault().log(ErrorManager.ERROR,
+                    "URLMapper.findURL() failed for " + fo); //NOI18N
+            
+            return null;
+        }
+        
+        return makeURLLocal(url);
     }
     
     private static URL makeURLLocal(URL input) {
