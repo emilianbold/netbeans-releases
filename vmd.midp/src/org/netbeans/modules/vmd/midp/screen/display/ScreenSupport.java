@@ -22,6 +22,7 @@ package org.netbeans.modules.vmd.midp.screen.display;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.net.URL;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.SourceGroup;
@@ -52,9 +53,9 @@ public final class ScreenSupport {
     
     /**
      * Returns AWT font according to kind, face, style and size
-     * 
+     *
      * @param deviceInfo
-     * @param fontComponent 
+     * @param fontComponent
      * @return font
      */
     public static final Font getFont(ScreenDeviceInfo deviceInfo, DesignComponent fontComponent) {
@@ -66,7 +67,7 @@ public final class ScreenSupport {
         } else if (kindCode == FontCD.VALUE_KIND_INPUT) {
             return deviceInfo.getDeviceTheme().getFont(FontType.INPUT_TEXT);
         }
-
+        
         int faceCode = MidpTypes.getInteger(fontComponent.readProperty(FontCD.PROP_FACE));
         FontFace face = FontFace.SYSTEM;
         if (faceCode == FontCD.VALUE_FACE_MONOSPACE) {
@@ -84,7 +85,7 @@ public final class ScreenSupport {
         } else if (styleCode == FontCD.VALUE_STYLE_UNDERLINED) {
             style = FontStyle.UNDERLINED;
         }
-
+        
         int sizeCode = MidpTypes.getInteger(fontComponent.readProperty(FontCD.PROP_SIZE));
         FontSize size = FontSize.MEDIUM;
         if (sizeCode == FontCD.VALUE_SIZE_SMALL) {
@@ -99,7 +100,7 @@ public final class ScreenSupport {
     /**
      * Wraps given text with html tags to be displayed in swing component,
      * removes all exising tags in the text
-     * 
+     *
      * @param text to be wraped
      * @return text
      */
@@ -119,7 +120,7 @@ public final class ScreenSupport {
     /**
      * Wraps given text with html tags and make a link to be displayed in swing component,
      * removes all exising tags in the text
-     * 
+     *
      * @param text to be wraped
      * @return text
      */
@@ -137,10 +138,10 @@ public final class ScreenSupport {
         str.append("</html>"); // NOI18N
         return str.toString();
     }
-
+    
     /**
      * Loads icon using resourcePath property from given image design component
-     * 
+     *
      * @param imageComponent image design component
      * @return icon
      */
@@ -154,7 +155,7 @@ public final class ScreenSupport {
                 if (context != null) { // document is loading
                     SourceGroup sourceGroup = ProjectUtils.getSourceGroups(context).get(0); // CLDC project has always only one source root
                     String srcPath = sourceGroup.getRootFolder().getPath();
-                    icon = new ImageIcon(srcPath + iconPath);
+                    icon = new ImageIcon("/"+srcPath + iconPath); //NOI18N
                     if (icon == null) {
                         Debug.warning("Resource path property in " + imageComponent + " contains incorrect value");
                     }
@@ -169,5 +170,5 @@ public final class ScreenSupport {
         FontMetrics fm = g.getFontMetrics(f);
         return fm.getHeight();
     }
-
+    
 }

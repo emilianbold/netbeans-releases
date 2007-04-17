@@ -28,7 +28,7 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
  */
 
 public interface DesignPropertyDescriptor {
-
+    //First name of the list is always name which will be return when Property.getName 
     List<String> getPropertyNames();
 
     String getPropertyDisplayName();

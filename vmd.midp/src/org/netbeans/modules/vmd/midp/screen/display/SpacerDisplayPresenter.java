@@ -24,6 +24,7 @@ import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsSupport;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 import org.openide.util.Utilities;
 
 import javax.swing.*;
@@ -59,6 +60,10 @@ public class SpacerDisplayPresenter extends ScreenDisplayPresenter {
 
     public Shape getSelectionShape () {
         return new Rectangle (separator.getSize ());
+    }
+
+    public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {
+        return null;
     }
 
 }

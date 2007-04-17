@@ -19,34 +19,43 @@
 
 package org.netbeans.modules.vmd.api.properties.common;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import javax.swing.JFrame;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyDescriptor;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyEditor;
 import org.netbeans.modules.vmd.api.properties.GroupPropertyEditor;
+import org.netbeans.modules.vmd.api.properties.PropertiesNodesManager;
 import org.netbeans.modules.vmd.api.properties.PropertiesPresenter;
 import org.netbeans.modules.vmd.properties.AdvancedPropertySupport;
 import org.netbeans.modules.vmd.properties.PrimitivePropertySupport;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.explorer.propertysheet.ExPropertyEditor;
+import org.openide.explorer.propertysheet.PropertyPanel;
+import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
+import org.openide.nodes.Node.Property;
+import org.openide.nodes.Node.PropertySet;
 import org.openide.nodes.Sheet;
+import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 
 /**
  *
- * @author devil
+ * @author Karol Harezlak
  */
 public final class PropertiesSupport {
     
-    
     private static Comparator<DesignPropertyDescriptor> compareByDisplayName = new Comparator<DesignPropertyDescriptor>() {
         public int compare(DesignPropertyDescriptor descriptor1, DesignPropertyDescriptor descriptor2) {
-            
             return descriptor1.getPropertyDisplayName().compareTo(descriptor2.getPropertyDisplayName());
         }
     };
-    
     
     public static Sheet createSheet(final DesignComponent component) {
         final Sheet sheet = new Sheet();
@@ -88,6 +97,51 @@ public final class PropertiesSupport {
         });
         
         return sheet;
+    }
+    
+    public static void showPropertyEdiotrForCurrentComponent(String propertyName) {
+        for (AbstractNode node: PropertiesNodesManager.getDefault().getActiveNodes()) {
+            for (PropertySet propertySet : node.getPropertySets()) {
+                for (Property property : propertySet.getProperties()) {
+                    if(propertyName.equals(property.getName())) {
+                        final PropertyPanel propertyPanel = new PropertyPanel(property, PropertyPanel.PREF_CUSTOM_EDITOR);
+                        propertyPanel.setChangeImmediate(false);
+                        
+                        DialogDescriptor dd = new DialogDescriptor(propertyPanel, property.getDisplayName(), true, null); // NOI18N
+                        Object helpID = property.getValue(ExPropertyEditor.PROPERTY_HELP_ID);
+                        if (helpID != null) {
+                            // cteate HelpCtx
+                            assert helpID instanceof String;
+                            HelpCtx helpCtx = new HelpCtx((String)helpID);
+                            dd.setHelpCtx(helpCtx);
+                        }
+                        Object res = DialogDisplayer.getDefault().notify(dd);
+                        
+                        if (res == DialogDescriptor.OK_OPTION) {
+                            ((DesignPropertyEditor) property.getPropertyEditor()).customEditorOKButtonPressed();
+                            try {
+                                property.setValue(property.getPropertyEditor().getValue());
+                            } catch (IllegalAccessException ex) {
+                                Exceptions.printStackTrace(ex);
+                            } catch (IllegalArgumentException ex) {
+                                Exceptions.printStackTrace(ex);
+                            } catch (InvocationTargetException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+/*
+                            DComponentNodeProperty dc = ((DComponentNodeProperty)property);
+                            //Object value = ((EnhancedCustomPropertyEditor)dc.getPropertyEditor()).getPropertyValue();
+                            Object value = dc.getPropertyEditor().getValue();
+                            try {
+                                dc.setValue(value);
+                            } catch (IllegalAccessException e) {
+                            }*/
+                        }
+                        
+                    }
+                }
+            }
+        }
     }
     
     private static Sheet.Set createPropertiesSet(String categoryName) {

@@ -36,64 +36,82 @@ import java.awt.event.KeyEvent;
  * @author David Kaspar
  */
 public class ScreenStringPropertyEditor implements ScreenPropertyEditor {
-
+    
     private String propertyName;
     private int alignment;
-
-    public ScreenStringPropertyEditor (String propertyName) {
-        this (propertyName, JTextField.LEFT);
+    private String refComponentPropertyName;
+    private DesignComponent relatedComponent;
+    
+    public ScreenStringPropertyEditor(String propertyName) {
+        this(propertyName, null, JTextField.LEFT);
     }
-
-    public ScreenStringPropertyEditor (String propertyName, int alignment) {
+    
+    public ScreenStringPropertyEditor(String propertyName,String refComponentPropertyName) {
+        this(propertyName,refComponentPropertyName, JTextField.LEFT);
+    }
+    
+    public ScreenStringPropertyEditor(String propertyName, int alignment) {
+        this(propertyName, null, alignment);
+    }
+    
+    public ScreenStringPropertyEditor(String propertyName,String referencedPropertyName, int alignment) {
         this.alignment = alignment;
         assert propertyName != null;
         this.propertyName = propertyName;
+        this.refComponentPropertyName = referencedPropertyName;
     }
-
-    public JComponent createEditorComponent (ScreenPropertyDescriptor property) {
-        StringTextField editor = new StringTextField (property);
-        editor.setMinimumSize (new Dimension (128, 21));
-
-        PropertyValue value = property.getRelatedComponent ().readProperty (propertyName);
-        String string = MidpTypes.getString (value);
-        editor.setText (string != null ? string : ""); // NOI18N
-
+    
+    public JComponent createEditorComponent(final ScreenPropertyDescriptor property) {
+        if (refComponentPropertyName == null)
+            relatedComponent = property.getRelatedComponent();
+        else
+            relatedComponent = property.getRelatedComponent().readProperty(refComponentPropertyName).getComponent();
+        
+        StringTextField editor = new StringTextField(property);
+        editor.setMinimumSize(new Dimension(128, 21));
+        PropertyValue value = relatedComponent.readProperty(propertyName);
+        String string = MidpTypes.getString(value);
+        editor.setText(string != null ? string : ""); // NOI18N
+        
         return editor;
     }
-
-    public Insets getEditorComponentInsets (JComponent editorComponent) {
-        return editorComponent.getBorder ().getBorderInsets (editorComponent);
+    
+    public Insets getEditorComponentInsets(JComponent editorComponent) {
+        return editorComponent.getBorder().getBorderInsets(editorComponent);
     }
-
+   
+    
     private class StringTextField extends JTextField implements KeyListener {
-
+        
         private ScreenPropertyDescriptor property;
-
-        public StringTextField (ScreenPropertyDescriptor property) {
+        
+        
+        public StringTextField(ScreenPropertyDescriptor property) {
             this.property = property;
-            addKeyListener (this);
-            setHorizontalAlignment (alignment);
+            addKeyListener(this);
+            setHorizontalAlignment(alignment);
         }
-
-        public void keyTyped (KeyEvent e) {
-            if (e.getKeyChar () != KeyEvent.VK_ENTER)
+        
+        public void keyTyped(KeyEvent e) {
+            if (e.getKeyChar() != KeyEvent.VK_ENTER)
                 return;
-            final DesignComponent relatedComponent = property.getRelatedComponent ();
-            relatedComponent.getDocument ().getTransactionManager ().writeAccess (new Runnable() {
-                public void run () {
-                    PropertyValue value = MidpTypes.createStringValue (getText ());
-                    relatedComponent.writeProperty (propertyName, value);
+            property.getRelatedComponent().getDocument().getTransactionManager().writeAccess(new Runnable() {
+                public void run() {
+                    if (relatedComponent == null)
+                        throw new IllegalStateException();
+                    PropertyValue value = MidpTypes.createStringValue(getText());
+                    relatedComponent.writeProperty(propertyName, value);
                 }
             });
-            PopupUtil.hidePopup ();
+            PopupUtil.hidePopup();
         }
-
-        public void keyPressed (KeyEvent e) {
+        
+        public void keyPressed(KeyEvent e) {
         }
-
-        public void keyReleased (KeyEvent e) {
+        
+        public void keyReleased(KeyEvent e) {
         }
-
+        
     }
-
+    
 }

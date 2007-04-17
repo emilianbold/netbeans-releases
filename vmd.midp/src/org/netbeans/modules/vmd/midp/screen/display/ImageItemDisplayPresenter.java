@@ -45,5 +45,7 @@ public class ImageItemDisplayPresenter extends ItemDisplayPresenter {
         DesignComponent imageComponent = getComponent().readProperty(ImageItemCD.PROP_IMAGE).getComponent();
         Icon icon = ScreenSupport.getIconFromImageComponent(imageComponent);
         label.setIcon(icon);
+        label.revalidate();
+        label.repaint();
     }
 }

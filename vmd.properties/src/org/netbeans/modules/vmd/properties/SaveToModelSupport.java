@@ -41,8 +41,8 @@ final class SaveToModelSupport {
         if (component == null || values == null)
             throw new IllegalArgumentException("Null argument exception"); //NOI18N
         
-        if (component.getDocument().getTransactionManager().isAccess())
-            return;
+        //if (component.getDocument().getTransactionManager().isAccess())
+        //    return;
         
         component.getDocument().getTransactionManager().writeAccess(new Runnable() {
             public void run() {

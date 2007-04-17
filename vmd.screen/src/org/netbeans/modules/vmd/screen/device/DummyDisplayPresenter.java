@@ -28,6 +28,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 
 /**
  * @author David Kaspar
@@ -59,6 +60,10 @@ public class DummyDisplayPresenter extends ScreenDisplayPresenter {
 
     public JComponent getView () {
         return panel;
+    }
+
+    public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {
+        return null;
     }
 
 }

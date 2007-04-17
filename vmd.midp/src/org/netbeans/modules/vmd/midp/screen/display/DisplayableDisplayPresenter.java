@@ -25,8 +25,13 @@ import org.openide.util.Utilities;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyEditor;
+import org.netbeans.modules.vmd.midp.screen.display.property.ResourcePropertyEditor;
 
 /**
  * A presenter for Displayable MIDP class. ALl other presenters should
@@ -41,7 +46,7 @@ public class DisplayableDisplayPresenter extends ScreenDisplayPresenter {
     private static final Image SIGNAL = Utilities.loadImage("org/netbeans/modules/vmd/midp/screen/display/resources/signal.png"); // NOI18N
     
     private DisplayableDisplayPanel panel;
-
+    
     public DisplayableDisplayPresenter() {
         panel = new DisplayableDisplayPanel(this);
         panel.getBattery().setIcon(new ImageIcon(BATTERY));
@@ -73,15 +78,24 @@ public class DisplayableDisplayPresenter extends ScreenDisplayPresenter {
         String tickerText = "<ticker not set>"; // NOI18N
         if (ticker != null) {
             tickerText = MidpValueSupport.getHumanReadableString(ticker.readProperty(TickerCD.PROP_STRING));
+            if (tickerText == null || tickerText.equals(""))
+                tickerText = "<empty string ticker>"; //NOI18N
         }
         panel.getTicker().setText(tickerText);
         panel.getTitle().setText(MidpValueSupport.getHumanReadableString(getComponent().readProperty(DisplayableCD.PROP_TITLE)));
     }
-
-    public Collection<ScreenPropertyDescriptor> getPropertyDescriptors () {
-        return Collections.singletonList (
-                new ScreenPropertyDescriptor (getComponent (), panel.getTitle (), new ScreenStringPropertyEditor (DisplayableCD.PROP_TITLE, JTextField.CENTER))
-        );
+    
+    public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {
+        DesignComponent ticker = getComponent().readProperty(DisplayableCD.PROP_TICKER).getComponent();
+        ScreenPropertyEditor tickerEditor;
+        if (ticker == null)
+            tickerEditor = new ResourcePropertyEditor(DisplayableCD.PROP_TICKER, JTextField.CENTER);
+        else
+            tickerEditor = new ScreenStringPropertyEditor(TickerCD.PROP_STRING, DisplayableCD.PROP_TICKER, JTextField.CENTER);
+        return Arrays.asList(
+                new ScreenPropertyDescriptor(getComponent(), panel.getTitle(), new ScreenStringPropertyEditor(DisplayableCD.PROP_TITLE, JTextField.CENTER)),
+                new ScreenPropertyDescriptor(getComponent(), panel.getTicker(), tickerEditor)
+                );
     }
-
+    
 }

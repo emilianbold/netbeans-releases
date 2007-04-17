@@ -335,7 +335,7 @@ public class TopPanel extends JPanel {
         final DesignDocument document = devicePanel.getController ().getDocument ();
         if (document == null)
             return;
-        document.getTransactionManager ().readAccess (new Runnable() {
+        document.getTransactionManager ().writeAccess (new Runnable() {
             public void run () {
                 DesignComponent component = devicePanel.getDesignComponentAt (e.getPoint ());
                 ScreenDisplayPresenter presenter = component != null ? component.getPresenter (ScreenDisplayPresenter.class) : null;
@@ -349,6 +349,8 @@ public class TopPanel extends JPanel {
                     if (shape.contains (new Point (e.getX () - editorOrigin.x, e.getY () - editorOrigin.y))) {
                         Rectangle bounds = shape.getBounds ();
                         JComponent editorView = property.getEditor ().createEditorComponent (property);
+                        if (editorView == null)
+                            return;
                         Insets insets = property.getEditor ().getEditorComponentInsets (editorView);
                         bounds.x -= insets.left;
                         bounds.width += insets.left + insets.right;

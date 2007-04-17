@@ -23,6 +23,7 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsSupport;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
+import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
 import org.netbeans.modules.vmd.midp.components.elements.ChoiceElementCD;
@@ -103,6 +104,10 @@ public class ChoiceElementDisplayPresenter extends ScreenDisplayPresenter {
     
     public Shape getSelectionShape() {
         return new Rectangle(panel.getSize());
+    }
+
+    public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {
+        return null;
     }
 
 }

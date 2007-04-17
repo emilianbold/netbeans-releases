@@ -79,8 +79,8 @@ public abstract class ScreenDisplayPresenter extends Presenter {
      * Returns a collection of all screen property descriptors
      * @return the collection
      */
-    public Collection<ScreenPropertyDescriptor> getPropertyDescriptors () {
-        return Collections.emptySet ();
-    }
+    public abstract Collection<ScreenPropertyDescriptor> getPropertyDescriptors ();// {
+      //  return Collections.emptySet ();
+   // }
 
 }
