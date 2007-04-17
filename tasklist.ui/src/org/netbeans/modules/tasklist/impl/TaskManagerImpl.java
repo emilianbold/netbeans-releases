@@ -236,11 +236,16 @@ public class TaskManagerImpl extends TaskManager {
         }
     }
     
-    private void maybeScanResource( final FileObject rc ) {
+    private void maybeScanResource( final FileObject rc, final boolean clearCache ) {
         RequestProcessor.getDefault().post( new Runnable() {
             public void run() {
                 if( isObserved() && scope.isInScope( rc ) ) {
                     synchronized( TaskManagerImpl.this ) {
+                        if( clearCache ) {
+                            taskCache.clear( rc );
+                            taskList.clear( rc );
+                        }
+                        
                         startWorker();
                         worker.priorityScan( rc );
                     }
@@ -255,35 +260,34 @@ public class TaskManagerImpl extends TaskManager {
             fileListener = new FileChangeListener() {
 
                 public void fileFolderCreated(FileEvent fe) {
-                    maybeScanResource( fe.getFile() );
+                    maybeScanResource( fe.getFile(), false );
                 }
 
                 public void fileDataCreated(FileEvent fe) {
-                    maybeScanResource( fe.getFile() );
+                    maybeScanResource( fe.getFile(), false );
                 }
 
                 public void fileChanged(FileEvent fe) {
                     FileObject rc = fe.getFile();
                     
-                    synchronized( TaskManagerImpl.this ) {
-                        taskCache.clear( rc );
-                        taskList.clear( rc );
-                    }
-                    
-                    maybeScanResource( rc );
+                    maybeScanResource( rc, true );
                 }
 
-                public void fileDeleted(FileEvent fe) {
-                    synchronized( TaskManagerImpl.this ) {
-                        FileObject rc = fe.getFile();
-                        taskCache.clear( rc );
-                        taskList.clear( rc );
-                    }
+                public void fileDeleted(final FileEvent fe) {
+                    RequestProcessor.getDefault().post( new Runnable() {
+                        public void run() {
+                            synchronized( TaskManagerImpl.this ) {
+                                FileObject rc = fe.getFile();
+                                taskCache.clear( rc );
+                                taskList.clear( rc );
+                            }
+                        }
+                    });
                 }
 
                 public void fileRenamed(FileRenameEvent fe) {
                     //TODO rename in current model and in cache instead of rescan??
-                    maybeScanResource( fe.getFile() );
+                    maybeScanResource( fe.getFile(), false );
                 }
 
                 public void fileAttributeChanged(FileAttributeEvent fe) {
