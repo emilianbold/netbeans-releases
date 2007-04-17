@@ -765,10 +765,14 @@ public class CasualDiff {
     }
 
     protected int diffExec(JCExpressionStatement oldT, JCExpressionStatement newT, int[] bounds) {
-        int localPointer = getOldPos(oldT);
-        copyTo(bounds[0], localPointer);
-        localPointer = diffTree(oldT.expr, newT.expr, bounds);
+        int localPointer = bounds[0];
+        // expr
+        int[] exprBounds = getBounds(oldT.expr);
+        copyTo(localPointer, exprBounds[0]);
+        localPointer = diffTree(oldT.expr, newT.expr, exprBounds);
+        
         copyTo(localPointer, bounds[1]);
+        
         return bounds[1];
     }
 
