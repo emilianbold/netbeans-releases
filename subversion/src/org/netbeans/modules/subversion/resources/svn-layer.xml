@@ -139,16 +139,11 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="AnnotationTypes">
             <file name="org-netbeans-modules-subversion-Annotation.xml" url="svn_annotation.xml"/>
         </folder>
-        <folder name="text">
-            <folder name="base">
-                <folder name="UpToDateStatusProvider">
-                    <file name="org-netbeans-modules-subversion-ui-blame-AnnotationMarkInstaller.instance">
-                        <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.blame.AnnotationMarkInstaller"/>
-                    </file>
-                </folder>
-            </folder>
-        </folder>        
-        
+        <folder name="UpToDateStatusProvider">
+            <file name="org-netbeans-modules-subversion-ui-blame-AnnotationMarkInstaller.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.blame.AnnotationMarkInstaller"/>
+            </file>
+        </folder>
     </folder>
 
     <folder name="OptionsDialog">
