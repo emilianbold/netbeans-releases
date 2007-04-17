@@ -61,16 +61,16 @@ public class CaretMarkProvider extends MarkProvider implements CaretListener {
         return new CaretMark(line);
     }
     
-    public synchronized List/*<Mark>*/ getMarks() {
+    public synchronized List<Mark> getMarks() {
         return Collections.singletonList(mark);
     }
 
     public void caretUpdate(CaretEvent e) {
-        final List old = getMarks();
+        final List<Mark> old = getMarks();
         
         mark = createMark();
         
-        final List nue = getMarks();
+        final List<Mark> nue = getMarks();
         
         //Do not fire this event under the document's write lock
         //may deadlock with other providers:

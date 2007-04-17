@@ -21,7 +21,6 @@ package org.netbeans.modules.editor.errorstripe;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,14 +28,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.AnnotationDesc;
 import org.netbeans.editor.AnnotationType;
 import org.netbeans.editor.AnnotationType.Severity;
 import org.netbeans.editor.Annotations;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
 import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
 import org.netbeans.modules.editor.errorstripe.privatespi.MarkProviderCreator;
@@ -44,17 +45,13 @@ import org.netbeans.modules.editor.errorstripe.privatespi.Status;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatus;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatusProvider;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatusProviderFactory;
+import org.netbeans.spi.editor.mimelookup.InstanceProvider;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.FolderLookup;
-import org.openide.util.Lookup;
-import org.openide.util.Lookup.Result;
-import org.openide.util.Lookup.Template;
-import org.openide.util.lookup.ProxyLookup;
 import org.netbeans.modules.editor.errorstripe.apimodule.SPIAccessor;
+import org.netbeans.spi.editor.mimelookup.Class2LayerFolder;
+import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 
 /**
  *
@@ -62,17 +59,20 @@ import org.netbeans.modules.editor.errorstripe.apimodule.SPIAccessor;
  */
 final class AnnotationViewDataImpl implements PropertyChangeListener, AnnotationViewData, Annotations.AnnotationsListener {
     
-    private static final ErrorManager ERR = AnnotationView.ERR;
+    private static final Logger LOG = Logger.getLogger(AnnotationViewDataImpl.class.getName());
+    
+    private static final String UP_TO_DATE_STATUS_PROVIDER_FOLDER_NAME = "UpToDateStatusProvider"; //NOI18N
+    private static final String TEXT_BASE_PATH = "Editors/text/base/"; //NOI18N
     
     private AnnotationView view;
     private JTextComponent pane;
     private BaseDocument document;
     
-    private List/*<MarkProvider>*/ providers = new ArrayList();
-    private List/*<UpToDateStatusProvider>*/ upToDateStatusProviders = new ArrayList();
+    private List<MarkProvider> markProviders = new ArrayList<MarkProvider>();
+    private List<UpToDateStatusProvider> statusProviders = new ArrayList<UpToDateStatusProvider>();
     
-    private List/*<Mark>*/ currentMarks = null;
-    private SortedMap/*<Mark>*/ marksMap = null;
+    private List<Mark> currentMarks = null;
+    private SortedMap<Integer, List<Mark>> marksMap = null;
     
     /** Creates a new instance of AnnotationViewData */
     public AnnotationViewDataImpl(AnnotationView view, JTextComponent pane) {
@@ -107,93 +107,77 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
     
     private void gatherProviders(JTextComponent pane) {
         long start = System.currentTimeMillis();
-        try {
-            BaseKit kit = Utilities.getKit(pane);
-            
-            if (kit == null)
-                return ;
-            
-            String content = kit.getContentType();
-            BaseDocument document = (BaseDocument) pane.getDocument();
-            FileObject baseFolder = Repository.getDefault().getDefaultFileSystem().findResource("Editors/text/base/UpToDateStatusProvider"); // NOI18N
-            FileObject contentFolder = Repository.getDefault().getDefaultFileSystem().findResource("Editors/" + content + "/UpToDateStatusProvider"); // NOI18N
-            
-            if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                ERR.log(ErrorManager.INFORMATIONAL, "baseFolder = " + baseFolder );
-            }
-            
-            DataObject baseDO = baseFolder != null ? DataObject.find(baseFolder) : null;
-            
-            if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                ERR.log(ErrorManager.INFORMATIONAL, "baseDO = " + baseDO );
-            }
-            
-            Lookup baseLookup = baseFolder != null ? new FolderLookup((DataFolder) baseDO).getLookup() : Lookup.EMPTY;
-            
-            if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                ERR.log(ErrorManager.INFORMATIONAL, "contentFolder = " + contentFolder );
-            }
-            
-            DataObject contentDO = contentFolder != null ? DataObject.find(contentFolder) : null;
-            Lookup contentLookup = contentFolder != null ? new FolderLookup((DataFolder) contentDO).getLookup() : Lookup.EMPTY;
-            
-            Lookup lookup = new ProxyLookup(new Lookup[] {baseLookup, contentLookup});
-            
-            Result creators = lookup.lookup(new Template(MarkProviderCreator.class));
-            
-            List markProviders = new ArrayList();
-            
-            for (Iterator i = creators.allInstances().iterator(); i.hasNext(); ) {
-                MarkProviderCreator creator = (MarkProviderCreator) i.next();
-                
-                if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    ERR.log(ErrorManager.INFORMATIONAL, "creator = " + creator );
-                }
-                
-                MarkProvider provider = creator.createMarkProvider(pane);
-                
-                if (provider != null)
-                    markProviders.add(provider);
-            }
-            
-            this.providers = markProviders;
-            
-            Result updsCreators = lookup.lookup(new Template(UpToDateStatusProviderFactory.class));
-            List updsProviders = new ArrayList();
-            
-            for (Iterator i = updsCreators.allInstances().iterator(); i.hasNext(); ) {
-                UpToDateStatusProviderFactory creator = (UpToDateStatusProviderFactory) i.next();
-                
-                if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    ERR.log(ErrorManager.INFORMATIONAL, "creator = " + creator );
-                }
-                
-                UpToDateStatusProvider provider = creator.createUpToDateStatusProvider(pane.getDocument());
-                
-                if (provider != null)
-                    updsProviders.add(provider);
-            }
-            
-            this.upToDateStatusProviders = updsProviders;
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
-        }
+
+        // Legacy mime path (text/base)
+        MimePath legacyMimePath = MimePath.parse("text/base");
+        LegacyCrapProvider legacyCrap = MimeLookup.getLookup(legacyMimePath).lookup(LegacyCrapProvider.class);
+
+        // Collect legacy mark providers
+        List<MarkProvider> markProviders = new ArrayList<MarkProvider>();
+        createMarkProviders(legacyCrap.getMarkProviderCreators(), markProviders, pane);
+        
+        // Collect mark providers
+        String mimeType = pane.getUI().getEditorKit(pane).getContentType();
+        MimePath mimePath = MimePath.parse(mimeType);
+        Collection<? extends MarkProviderCreator> creators = 
+            MimeLookup.getLookup(mimePath).lookupAll(MarkProviderCreator.class);
+        createMarkProviders(creators, markProviders, pane);
+
+        this.markProviders = markProviders;
+
+        
+        // Collect legacy status providers
+        List<UpToDateStatusProvider> statusProviders = new ArrayList<UpToDateStatusProvider>();
+        createStatusProviders(legacyCrap.getUpToDateStatusProviderFactories(), statusProviders, pane);
+        
+        // Collect status providers
+        Collection<? extends UpToDateStatusProviderFactory> factories = 
+            MimeLookup.getLookup(mimePath).lookupAll(UpToDateStatusProviderFactory.class);
+        createStatusProviders(factories, statusProviders, pane);
+
+        this.statusProviders = statusProviders;
+        
         
         long end = System.currentTimeMillis();
-        
         if (AnnotationView.TIMING_ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
             AnnotationView.TIMING_ERR.log(ErrorManager.INFORMATIONAL, "gather providers took: " + (end - start));
         }
     }
+
+    private static void createMarkProviders(Collection<? extends MarkProviderCreator> creators, List<MarkProvider> providers, JTextComponent pane) {
+        for (MarkProviderCreator creator : creators) {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("creator = " + creator);
+            }
+
+            MarkProvider provider = creator.createMarkProvider(pane);
+            if (provider != null) {
+                providers.add(provider);
+            }
+        }
+    }
+
+    private static void createStatusProviders(Collection<? extends UpToDateStatusProviderFactory> factories, List<UpToDateStatusProvider> providers, JTextComponent pane) {
+        for(UpToDateStatusProviderFactory factory : factories) {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("factory = " + factory);
+            }
+
+            UpToDateStatusProvider provider = factory.createUpToDateStatusProvider(pane.getDocument());
+            if (provider != null) {
+                providers.add(provider);
+            }
+        }
+    }
     
     private void addListenersToProviders() {
-        for (Iterator p = upToDateStatusProviders.iterator(); p.hasNext(); ) {
+        for (Iterator p = statusProviders.iterator(); p.hasNext(); ) {
             UpToDateStatusProvider provider = (UpToDateStatusProvider) p.next();
             
             SPIAccessor.getDefault().addPropertyChangeListener(provider, this);
         }
         
-        for (Iterator p = providers.iterator(); p.hasNext(); ) {
+        for (Iterator p = markProviders.iterator(); p.hasNext(); ) {
             MarkProvider provider = (MarkProvider) p.next();
             
             provider.addPropertyChangeListener(this);
@@ -201,46 +185,40 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
     }
 
     private void removeListenersFromProviders() {
-        for (Iterator p = upToDateStatusProviders.iterator(); p.hasNext(); ) {
+        for (Iterator p = statusProviders.iterator(); p.hasNext(); ) {
             UpToDateStatusProvider provider = (UpToDateStatusProvider) p.next();
             
             SPIAccessor.getDefault().removePropertyChangeListener(provider, this);
         }
         
-        for (Iterator p = providers.iterator(); p.hasNext(); ) {
+        for (Iterator p = markProviders.iterator(); p.hasNext(); ) {
             MarkProvider provider = (MarkProvider) p.next();
             
             provider.removePropertyChangeListener(this);
         }
     }
     
-    /*package private*/ static List/*<Mark>*/ createMergedMarks(List/*<MarkProvider>*/ providers) {
-        List result = new ArrayList();
+    /*package private*/ static List<Mark> createMergedMarks(List<MarkProvider> providers) {
+        List<Mark> result = new ArrayList<Mark>();
         
-        for (Iterator p = providers.iterator(); p.hasNext(); ) {
-            MarkProvider provider = (MarkProvider) p.next();
-            
+        for(MarkProvider provider : providers) {
             result.addAll(provider.getMarks());
         }
         
         return result;
     }
     
-    /*package private for tests*/synchronized List/*<Mark>*/ getMergedMarks() {
+    /*package private for tests*/synchronized List<Mark> getMergedMarks() {
         if (currentMarks == null) {
-            currentMarks = createMergedMarks(providers);
+            currentMarks = createMergedMarks(markProviders);
         }
         
         return currentMarks;
     }
     
-    /*package private*/ static List/*<Mark>*/ getStatusesForLineImpl(int line, SortedMap marks) {
-        List inside = (List) marks.get(new Integer(line));
-        
-        if (inside == null)
-            return Collections.EMPTY_LIST;
-        
-        return inside;
+    /*package private*/ static List<Mark> getStatusesForLineImpl(int line, SortedMap<Integer, List<Mark>> marks) {
+        List<Mark> inside = marks.get(line);
+        return inside == null ? Collections.<Mark>emptyList() : inside;
     }
     
     public Mark getMainMarkForBlock(int startLine, int endLine) {
@@ -259,14 +237,12 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
             return m2;
     }
     
-    /*package private*/ static Mark getMainMarkForBlockImpl(int startLine, int endLine, SortedMap marks) {
+    /*package private*/ static Mark getMainMarkForBlockImpl(int startLine, int endLine, SortedMap<Integer, List<Mark>> marks) {
         int current = startLine - 1;
         Mark found = null;
         
         while ((current = findNextUsedLine(current, marks)) != Integer.MAX_VALUE && current <= endLine) {
-            for (Iterator i = getStatusesForLineImpl(/*doc, */current, marks).iterator(); i.hasNext(); ) {
-                Mark newMark = (Mark) i.next();
-                
+            for (Mark newMark : getStatusesForLineImpl(/*doc, */current, marks)) {
                 if (found == null || isMoreImportant(newMark, found)) {
                     found = newMark;
                 }
@@ -342,39 +318,33 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
         return line1 < line2 ? line1 : line2;
     }
     
-    /*package private*/ static int findNextUsedLine(int from, SortedMap/*<Mark>*/ marks) {
-        SortedMap next = marks.tailMap(new Integer(from + 1));
+    /*package private*/ static int findNextUsedLine(int from, SortedMap<Integer, List<Mark>> marks) {
+        SortedMap<Integer, List<Mark>> next = marks.tailMap(from + 1);
         
-        if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-            ERR.log("AnnotationView.findNextUsedLine from: " + from);
-            ERR.log("AnnotationView.findNextUsedLine marks: " + marks);
-            ERR.log("AnnotationView.findNextUsedLine next: " + next);
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("AnnotationView.findNextUsedLine from: " + from + "; marks: " + marks + "; next: " + next); //NOI18N
         }
         
         if (next.isEmpty()) {
             return Integer.MAX_VALUE;
         }
         
-        Integer nextLine = (Integer) next.firstKey();
-        
-        return nextLine.intValue();
+        return next.firstKey().intValue();
     }
     
     private void registerMark(Mark mark) {
         int[] span = mark.getAssignedLines();
         
-        if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-            ERR.log("AnnotationView.registerMark mark: " + mark);
-            ERR.log("AnnotationView.registerMark lines from-to: " + span[0] + "-" + span[1]);
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("AnnotationView.registerMark mark: " + mark + "; from-to: " + span[0] + "-" + span[1]); //NOI18N
         }
         
         for (int line = span[0]; line <= span[1]; line++) {
-            Integer lineInt = new Integer(line);
-            
-            List inside = (List) marksMap.get(lineInt);
+            List<Mark> inside = marksMap.get(line);
             
             if (inside == null) {
-                marksMap.put(lineInt, inside = new ArrayList());
+                inside = new ArrayList<Mark>();
+                marksMap.put(line, inside);
             }
             
             inside.add(mark);
@@ -384,34 +354,29 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
     private void unregisterMark(Mark mark) {
         int[] span = mark.getAssignedLines();
         
-        if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-            ERR.log("AnnotationView.unregisterMark mark: " + mark);
-            ERR.log("AnnotationView.unregisterMark lines from-to: " + span[0] + "-" + span[1]);
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("AnnotationView.unregisterMark mark: " + mark + "; from-to: " + span[0] + "-" + span[1]); //NOI18N
         }
         
         for (int line = span[0]; line <= span[1]; line++) {
-            Integer lineInt = new Integer(line);
-            
-            List inside = (List) marksMap.get(lineInt);
+            List<Mark> inside = marksMap.get(line);
             
             if (inside != null) {
                 inside.remove(mark);
                 
                 if (inside.size() == 0) {
-                    marksMap.remove(lineInt);
+                    marksMap.remove(line);
                 }
             }
         }
     }
     
-    /*package private for tests*/synchronized SortedMap getMarkMap() {
+    /*package private for tests*/synchronized SortedMap<Integer, List<Mark>> getMarkMap() {
         if (marksMap == null) {
-            List/*<Mark>*/ marks = getMergedMarks();
-            marksMap = new TreeMap();
+            List<Mark> marks = getMergedMarks();
+            marksMap = new TreeMap<Integer, List<Mark>>();
             
-            for (Iterator i = marks.iterator(); i.hasNext(); ) {
-                Mark mark = (Mark) i.next();
-                
+            for (Mark mark : marks) {
                 registerMark(mark);
             }
         }
@@ -421,12 +386,10 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
 
     public Status computeTotalStatus() {
         Status targetStatus = Status.STATUS_OK;
-        Collection/*<Mark>*/ marks = getMergedMarks();
+        Collection<Mark> marks = getMergedMarks();
         
-        for (Iterator m = marks.iterator(); m.hasNext(); ) {
-            Mark mark = (Mark) m.next();
+        for(Mark mark : marks) {
             Status s = mark.getStatus();
-            
             targetStatus = Status.getCompoundStatus(s, targetStatus);
         }
 
@@ -461,12 +424,12 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
     }
     
     public UpToDateStatus computeTotalStatusType() {
-        if (upToDateStatusProviders.isEmpty())
+        if (statusProviders.isEmpty())
             return UpToDateStatus.UP_TO_DATE_DIRTY;
         
         UpToDateStatus statusType = UpToDateStatus.UP_TO_DATE_OK;
         
-        for (Iterator p = upToDateStatusProviders.iterator(); p.hasNext(); ) {
+        for (Iterator p = statusProviders.iterator(); p.hasNext(); ) {
             UpToDateStatusProvider provider = (UpToDateStatusProvider) p.next();
             UpToDateStatus newType = provider.getUpToDate();
             
@@ -481,26 +444,28 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
     public void propertyChange(PropertyChangeEvent evt) {
         if ("marks".equals(evt.getPropertyName())) {
             synchronized (this) {
-                Collection nue = (Collection) evt.getNewValue();
-                Collection old = (Collection) evt.getOldValue();
+                @SuppressWarnings("unchecked")
+                Collection<Mark> nue = (Collection<Mark>) evt.getNewValue();
+                @SuppressWarnings("unchecked")
+                Collection<Mark> old = (Collection<Mark>) evt.getOldValue();
                 
                 if (nue == null && evt.getSource() instanceof MarkProvider)
                     nue = ((MarkProvider) evt.getSource()).getMarks();
                 
                 if (old != null && nue != null) {
-                    List added = new ArrayList(nue);
-                    List removed = new ArrayList(old);
+                    List<Mark> added = new ArrayList<Mark>(nue);
+                    List<Mark> removed = new ArrayList<Mark>(old);
                     
                     added.removeAll(old);
                     removed.removeAll(nue);
                     
                     if (marksMap != null) {
-                        for (Iterator i = removed.iterator(); i.hasNext(); ) {
-                            unregisterMark((Mark) i.next());
+                        for(Mark mark : removed) {
+                            unregisterMark(mark);
                         }
                         
-                        for (Iterator i = added.iterator(); i.hasNext(); ) {
-                            registerMark((Mark) i.next());
+                        for(Mark mark : added) {
+                            registerMark(mark);
                         }
                     }
                     
@@ -511,7 +476,7 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
                     
                     view.fullRepaint();
                 } else {
-                    ErrorManager.getDefault().log(ErrorManager.WARNING, "For performance reasons, the providers should fill both old and new value in property changes. Problematic event: " + evt);
+                    LOG.warning("For performance reasons, the providers should fill both old and new value in property changes. Problematic event: " + evt);
                     clear();
                     view.fullRepaint();
                 }
@@ -533,10 +498,9 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
     public int[] computeErrorsAndWarnings() {
         int errors = 0;
         int warnings = 0;
-        Collection/*<Mark>*/ marks = getMergedMarks();
+        Collection<Mark> marks = getMergedMarks();
         
-        for (Iterator m = marks.iterator(); m.hasNext(); ) {
-            Mark mark = (Mark) m.next();
+        for(Mark mark : marks) {
             Status s = mark.getStatus();
             
             errors += s == Status.STATUS_ERROR ? 1 : 0;
@@ -599,4 +563,144 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
     static Status get(AnnotationType ann) {
         return get(ann.getSeverity());
     }
+    
+    public static final class UpToDateStatusProviderFactoriesProvider implements Class2LayerFolder {
+
+        public UpToDateStatusProviderFactoriesProvider() {
+            
+        }
+        
+        public Class getClazz() {
+            return UpToDateStatusProviderFactory.class;
+        }
+
+        public String getLayerFolderName() {
+            return UP_TO_DATE_STATUS_PROVIDER_FOLDER_NAME;
+        }
+
+        public InstanceProvider getInstanceProvider() {
+            return null;
+        }
+    } // End of UpToDateStatusProviderFactoriesProvider class
+
+    public static final class MarkProviderCreatorsProvider implements Class2LayerFolder {
+
+        public MarkProviderCreatorsProvider() {
+            
+        }
+        
+        public Class getClazz() {
+            return MarkProviderCreator.class;
+        }
+
+        public String getLayerFolderName() {
+            return UP_TO_DATE_STATUS_PROVIDER_FOLDER_NAME;
+        }
+
+        public InstanceProvider getInstanceProvider() {
+            return null;
+        }
+    } // End of UpToDateStatusProviderFactoriesProvider class
+    
+    // XXX: This is here to help to deal with legacy code
+    // that registered stuff in text/base. The artificial text/base
+    // mime type is deprecated and should not be used anymore.
+    public static final class LegacyCrapProvider implements Class2LayerFolder, InstanceProvider {
+
+        private final List<FileObject> instanceFiles;
+        private List<MarkProviderCreator> creators;
+        private List<UpToDateStatusProviderFactory> factories;
+        
+        public LegacyCrapProvider() {
+            this(null);
+        }
+
+        public LegacyCrapProvider(List<FileObject> files) {
+            this.instanceFiles = files;
+        }
+        
+        public Collection<? extends MarkProviderCreator> getMarkProviderCreators() {
+            if (creators == null) {
+                computeInstances();
+            }
+            return creators;
+        }
+
+        public Collection<? extends UpToDateStatusProviderFactory> getUpToDateStatusProviderFactories() {
+            if (factories == null) {
+                computeInstances();
+            }
+            return factories;
+        }
+        
+        public Class getClazz(){
+            return LegacyCrapProvider.class;
+        }
+
+        public String getLayerFolderName(){
+            return UP_TO_DATE_STATUS_PROVIDER_FOLDER_NAME;
+        }
+
+        public InstanceProvider getInstanceProvider() {
+            return new LegacyCrapProvider();
+        }
+
+        public Object createInstance(List fileObjectList) {
+            ArrayList<FileObject> textBaseFilesList = new ArrayList<FileObject>();
+
+            for(Object o : fileObjectList) {
+                FileObject fileObject = null;
+
+                if (o instanceof FileObject) {
+                    fileObject = (FileObject) o;
+                } else {
+                    continue;
+                }
+
+                String fullPath = fileObject.getPath();
+                int idx = fullPath.lastIndexOf(UP_TO_DATE_STATUS_PROVIDER_FOLDER_NAME);
+                assert idx != -1 : "Expecting files with '" + UP_TO_DATE_STATUS_PROVIDER_FOLDER_NAME + "' in the path: " + fullPath; //NOI18N
+
+                String path = fullPath.substring(0, idx);
+                if (TEXT_BASE_PATH.equals(path)) {
+                    textBaseFilesList.add(fileObject);
+                    if (LOG.isLoggable(Level.WARNING)) {
+                        LOG.warning("The 'text/base' mime type is deprecated, please move your file to the root. Offending file: " + fullPath); //NOI18N
+                    }
+                }
+            }
+
+            return new LegacyCrapProvider(textBaseFilesList);
+        }
+        
+        private void computeInstances() {
+            ArrayList<MarkProviderCreator> creators = new ArrayList<MarkProviderCreator>();
+            ArrayList<UpToDateStatusProviderFactory> factories = new ArrayList<UpToDateStatusProviderFactory>();
+            
+            for(FileObject f : instanceFiles) {
+                if (!f.isValid() || !f.isData()) {
+                    continue;
+                }
+                
+                try {
+                    DataObject d = DataObject.find(f);
+                    InstanceCookie ic = d.getLookup().lookup(InstanceCookie.class);
+                    if (ic != null) {
+                        if (MarkProviderCreator.class.isAssignableFrom(ic.instanceClass())) {
+                            MarkProviderCreator creator = (MarkProviderCreator) ic.instanceCreate();
+                            creators.add(creator);
+                        } else if (UpToDateStatusProviderFactory.class.isAssignableFrom(ic.instanceClass())) {
+                            UpToDateStatusProviderFactory factory = (UpToDateStatusProviderFactory) ic.instanceCreate();
+                            factories.add(factory);
+                        }
+                    }
+                } catch (Exception e) {
+                    LOG.log(Level.WARNING, null, e);
+                }
+            }
+            
+            this.creators = creators;
+            this.factories = factories;
+        }
+    } // End of LegacyToolbarActionsProvider class
 }

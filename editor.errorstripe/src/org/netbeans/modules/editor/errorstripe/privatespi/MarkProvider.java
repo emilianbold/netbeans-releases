@@ -22,7 +22,6 @@ package org.netbeans.modules.editor.errorstripe.privatespi;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.List;
-import org.netbeans.spi.editor.errorstripe.UpToDateStatus;
 
 /**Provider of list of {@link Mark}. The provider is supposed to report marks
  * found in a document. The provider can also tell whether the current list of marks
@@ -49,7 +48,7 @@ public abstract class MarkProvider {
      *
      * @return list of {@link Mark}s
      */
-    public abstract List/*<Mark>*/ getMarks();
+    public abstract List<Mark> getMarks();
     
     /**Register a {@link PropertyChangeListener}.
      *

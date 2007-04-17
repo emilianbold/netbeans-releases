@@ -28,13 +28,8 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         </folder>
 
-        <folder name="text">
-            <folder name="base">
-                <folder name="UpToDateStatusProvider">
-                    <file name="org-netbeans-modules-editor-errorstripe-caret-CaretMarkProviderCreator.instance">
-                    </file>
-                </folder>
-            </folder>
+        <folder name="UpToDateStatusProvider">
+            <file name="org-netbeans-modules-editor-errorstripe-caret-CaretMarkProviderCreator.instance" />
         </folder>
     </folder>
     
