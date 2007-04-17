@@ -60,7 +60,6 @@ public class OperationWidget extends AbstractTitledWidget {
     private Service service;
     private MethodModel operation;
     
-    private transient Widget contentWidget;
     private transient Widget buttons;
     private transient ImageLabelWidget headerLabelWidget;
 
@@ -102,8 +101,6 @@ public class OperationWidget extends AbstractTitledWidget {
      }
     
     private void createContent() {
-        setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
-
         String typeOfOperation ="";
         Image image = null;
         if(operation.isOneWay()) {
@@ -127,8 +124,7 @@ public class OperationWidget extends AbstractTitledWidget {
 
         getHeaderWidget().addChild(buttons);
 
-        contentWidget = new Widget(getScene());
-        contentWidget.setLayout(LayoutFactory.createCardLayout(contentWidget));
+        getContentWidget().setLayout(LayoutFactory.createCardLayout(getContentWidget()));
 
         listWidget = new Widget(getScene());
         listWidget.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
@@ -147,8 +143,8 @@ public class OperationWidget extends AbstractTitledWidget {
         tabbedWidget.addTab(faultWidget);
         tabbedWidget.addTab(descriptionWidget);
         
-        contentWidget.addChild(listWidget);
-        contentWidget.addChild(tabbedWidget);
+        getContentWidget().addChild(listWidget);
+        getContentWidget().addChild(tabbedWidget);
         viewButton = new ButtonWidget(getScene(),"");
         viewButton.setMargin(new Insets(2, 2, 2, 2));
         viewButton.setAction(new AbstractAction() {
@@ -156,29 +152,21 @@ public class OperationWidget extends AbstractTitledWidget {
                 setTabbedView(!isTabbedView());
             }
         });
-        if(isExpanded()) {
-            expandWidget();
-        } else {
-            collapseWidget();
-        }
+        buttons.addChild(0,viewButton);
         tabbedView = false;
         setTabbedView(!tabbedView);
     }
 
     protected void collapseWidget() {
-        if(contentWidget.getParentWidget()!=null) {
-            removeChild(contentWidget);
-        }
-        if(viewButton.getParentWidget()!=null) {
+        super.collapseWidget();
+        if(viewButton!=null && viewButton.getParentWidget()!=null) {
             viewButton.removeFromParent();
         }
     }
 
     protected void expandWidget() {
-        if(contentWidget.getParentWidget()==null) {
-            addChild(contentWidget);
-        }
-        if(viewButton.getParentWidget()==null) {
+        super.expandWidget();
+        if(viewButton!=null && viewButton.getParentWidget()==null) {
             buttons.addChild(0,viewButton);
         }
     }
@@ -195,10 +183,10 @@ public class OperationWidget extends AbstractTitledWidget {
         if(isTabbedView()!=tabbedView) {
             this.tabbedView = tabbedView;
             if(tabbedView) {
-                LayoutFactory.setActiveCard(contentWidget, tabbedWidget);
+                LayoutFactory.setActiveCard(getContentWidget(), tabbedWidget);
                 viewButton.setImage(IMAGE_LIST);
             } else {
-                LayoutFactory.setActiveCard(contentWidget, listWidget);
+                LayoutFactory.setActiveCard(getContentWidget(), listWidget);
                 viewButton.setImage(IMAGE_TABBED);
             }
         }

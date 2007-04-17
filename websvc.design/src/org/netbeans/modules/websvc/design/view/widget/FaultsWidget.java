@@ -21,6 +21,7 @@ package org.netbeans.modules.websvc.design.view.widget;
 
 import java.awt.Color;
 import java.awt.Image;
+import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
@@ -41,7 +42,6 @@ public class FaultsWidget extends AbstractTitledWidget implements TabWidget {
 
     private MethodModel method;
 
-    private transient Widget contentWidget;
     private transient Widget buttons;
     private transient ImageLabelWidget headerLabelWidget;
     
@@ -62,24 +62,11 @@ public class FaultsWidget extends AbstractTitledWidget implements TabWidget {
     }
     
     private void createContent() {
-        setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
-
-        contentWidget = new Widget(getScene());
-        contentWidget.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
-
-        int noOfParams = 0;
-        if(!method.getFaults().isEmpty()) {
-            noOfParams = method.getFaults().size();
-            model = new FaultsTableModel(method);
-            faultTable = new TableWidget(getScene(),model);
-            contentWidget.addChild(faultTable);
-        } else {
-            contentWidget.addChild(new LabelWidget(getScene(),
-                    NbBundle.getMessage(OperationWidget.class, "LBL_FaultsNone")));
-        }
+        model = new FaultsTableModel(method);
+        populateContentWidget(getContentWidget());
         headerLabelWidget = new ImageLabelWidget(getScene(), IMAGE, 
                 NbBundle.getMessage(OperationWidget.class, "LBL_Faults"), 
-                "("+noOfParams+")");
+                "("+method.getFaults().size()+")");
         getHeaderWidget().addChild(headerLabelWidget);
 
         buttons = new Widget(getScene());
@@ -90,23 +77,15 @@ public class FaultsWidget extends AbstractTitledWidget implements TabWidget {
 
         getHeaderWidget().addChild(buttons);
 
-        if(isExpanded()) {
-            expandWidget();
+    }
+
+    private void populateContentWidget(Widget parentWidget) {
+        if(model.getRowCount()>0) {
+            faultTable = new TableWidget(getScene(),model);
+            parentWidget.addChild(faultTable);
         } else {
-            collapseWidget();
-        }
-    }
-
-    protected void collapseWidget() {
-        if(contentWidget.getParentWidget()!=null) {
-            removeChild(contentWidget);
-            repaint();
-        }
-    }
-
-    protected void expandWidget() {
-        if(contentWidget.getParentWidget()==null) {
-            addChild(contentWidget);
+            parentWidget.addChild(new LabelWidget(getScene(),
+                    NbBundle.getMessage(OperationWidget.class, "LBL_FaultsNone")));
         }
     }
 
@@ -124,12 +103,9 @@ public class FaultsWidget extends AbstractTitledWidget implements TabWidget {
 
     public Widget getComponentWidget() {
         if(tabComponent==null) {
-            if(model!=null) {
-                tabComponent = new TableWidget(getScene(),model); 
-            } else {
-                tabComponent = new LabelWidget(getScene(),
-                    NbBundle.getMessage(OperationWidget.class, "LBL_FaultsNone"));
-            }
+            tabComponent = createContentWidget();
+            tabComponent.setBorder(BorderFactory.createEmptyBorder());
+            populateContentWidget(tabComponent);
         }
         return tabComponent;
     }

@@ -54,7 +54,6 @@ public class OperationsWidget extends AbstractTitledWidget {
     private transient ServiceModel serviceModel;
     private transient Action addAction;
     
-    private transient Widget contentWidget;
     private transient Widget buttons;
     private transient ImageLabelWidget headerLabelWidget;
     
@@ -78,7 +77,7 @@ public class OperationsWidget extends AbstractTitledWidget {
             
             public void operationAdded(MethodModel method) {
                 OperationWidget operationWidget = new OperationWidget(getScene(),service, method);
-                contentWidget.addChild(operationWidget);
+                getContentWidget().addChild(operationWidget);
                 getObjectScene().addObject(method, operationWidget);
                 updateHeaderLabel();
                 getScene().validate();
@@ -88,7 +87,7 @@ public class OperationsWidget extends AbstractTitledWidget {
                 Widget operationWidget = getObjectScene().findWidget(method);
                 if(operationWidget!=null) {
                     getObjectScene().removeObject(method);
-                    contentWidget.removeChild(operationWidget);
+                    getContentWidget().removeChild(operationWidget);
                     updateHeaderLabel();
                     getScene().validate();
                 }
@@ -112,8 +111,6 @@ public class OperationsWidget extends AbstractTitledWidget {
     private void createContent(Service service) {
         if (serviceModel==null) return;
         
-        setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
-        
         headerLabelWidget = new ImageLabelWidget(getScene(), IMAGE,
                 NbBundle.getMessage(OperationWidget.class, "LBL_Operations"));
         getHeaderWidget().addChild(headerLabelWidget);
@@ -130,39 +127,19 @@ public class OperationsWidget extends AbstractTitledWidget {
         
         getHeaderWidget().addChild(buttons);
         
-        contentWidget = new Widget(getScene());
-        contentWidget.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
         
         if(serviceModel.getOperations()!=null) {
             for(MethodModel operation:serviceModel.getOperations()) {
                 OperationWidget operationWidget = new OperationWidget(getScene(),service, operation);
-                contentWidget.addChild(operationWidget);
+                getContentWidget().addChild(operationWidget);
                 getObjectScene().addObject(operation, operationWidget);
             }
-        }
-        if(isExpanded()) {
-            expandWidget();
-        } else {
-            collapseWidget();
         }
     }
     
     private void updateHeaderLabel() {
         int noOfOperations = serviceModel.getOperations()==null?0:serviceModel.getOperations().size();
         headerLabelWidget.setComment("("+noOfOperations+")");
-    }
-    
-    protected void collapseWidget() {
-        if(contentWidget.getParentWidget()!=null) {
-            removeChild(contentWidget);
-            repaint();
-        }
-    }
-    
-    protected void expandWidget() {
-        if(contentWidget.getParentWidget()==null) {
-            addChild(contentWidget);
-        }
     }
     
     public Object hashKey() {

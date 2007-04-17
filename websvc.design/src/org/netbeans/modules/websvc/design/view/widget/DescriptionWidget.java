@@ -44,7 +44,6 @@ public class DescriptionWidget extends AbstractTitledWidget implements TabWidget
     private MethodModel method;
     private transient JavadocModel model;
 
-    private transient Widget contentWidget;
     private transient Widget buttons;
     private transient ImageLabelWidget headerLabelWidget;
     private transient Widget tabComponent;
@@ -61,8 +60,7 @@ public class DescriptionWidget extends AbstractTitledWidget implements TabWidget
     }
     
     private void createContent() {
-        setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
-
+        populateContentWidget(getContentWidget());
         headerLabelWidget = new ImageLabelWidget(getScene(), getIcon(), getTitle());
         getHeaderWidget().addChild(headerLabelWidget);
 
@@ -71,52 +69,12 @@ public class DescriptionWidget extends AbstractTitledWidget implements TabWidget
                 LayoutFactory.SerialAlignment.JUSTIFY, 8));
         buttons.addChild(getExpanderWidget());
         getHeaderWidget().addChild(buttons);
-
-        contentWidget = createContentWidget();
-        if(isExpanded()) {
-            expandWidget();
-        } else {
-            collapseWidget();
-        }
     }
     
-    private Widget createContentWidget() {
-        Widget widget = new Widget(getScene());
-        widget.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
-        
+    private void populateContentWidget(Widget parentWidget) {
         EditorPaneWidget descPaneWidget = new EditorPaneWidget(getScene(),model.getText());
         descPaneWidget.setBorder(BorderFactory.createBevelBorder(false));
-        widget.addChild(descPaneWidget);
-        
-        AbstractAction saveAction = new AbstractAction() {
-            public void actionPerformed(ActionEvent arg0) {
-                // TODO
-            }
-        };
-        saveAction.putValue(AbstractAction.NAME, "Save");
-        ButtonWidget saveButton = new ButtonWidget(getScene(),saveAction);
-        saveButton.setButtonEnabled(false);
-
-        Widget buttons = new Widget(getScene());
-        buttons.setLayout(LayoutFactory.createHorizontalFlowLayout(
-                LayoutFactory.SerialAlignment.JUSTIFY, 8));
-        buttons.addChild(saveButton);
-        widget.addChild(buttons);
-        
-        return widget;
-    }
-
-    protected void collapseWidget() {
-        if(contentWidget.getParentWidget()!=null) {
-            removeChild(contentWidget);
-            repaint();
-        }
-    }
-
-    protected void expandWidget() {
-        if(contentWidget.getParentWidget()==null) {
-            addChild(contentWidget);
-        }
+        parentWidget.addChild(descPaneWidget);
     }
 
     public Object hashKey() {
@@ -134,6 +92,8 @@ public class DescriptionWidget extends AbstractTitledWidget implements TabWidget
     public Widget getComponentWidget() {
         if(tabComponent==null) {
             tabComponent = createContentWidget();
+            tabComponent.setBorder(BorderFactory.createEmptyBorder());
+            populateContentWidget(tabComponent);
         }
         return tabComponent;
     }

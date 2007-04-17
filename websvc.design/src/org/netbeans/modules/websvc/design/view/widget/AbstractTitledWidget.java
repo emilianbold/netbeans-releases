@@ -27,6 +27,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.awt.geom.RoundRectangle2D;
 import org.netbeans.api.visual.border.BorderFactory;
+import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.websvc.design.view.layout.LeftRightLayout;
@@ -34,18 +35,18 @@ import org.netbeans.modules.websvc.design.view.layout.LeftRightLayout;
 /**
  * @author Ajit Bhate
  */
-public abstract class AbstractTitledWidget extends Widget implements ExpandableWidget {
+public abstract class AbstractTitledWidget extends AbstractMouseActionsWidget implements ExpandableWidget {
     
     private static final Color BORDER_COLOR = Color.GRAY;
     private static final int RADIUS = 10;
-    private static final int DEPTH = 3;
-    private static final boolean raised = true;
     
     private Color borderColor = BORDER_COLOR;
     private int radius = RADIUS;
+    private int depth = radius/4;
     
     private boolean expanded;
     private transient HeaderWidget headerWidget;
+    private transient Widget contentWidget;
     private transient ExpanderWidget expander;
     
     /**
@@ -59,16 +60,38 @@ public abstract class AbstractTitledWidget extends Widget implements ExpandableW
         super(scene);
         this.radius = radius;
         this.borderColor = color;
-        setBorder(BorderFactory.createEmptyBorder(radius+(raised?DEPTH:0)));
+        setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 0));
+        depth = radius/4;
+        setBorder(new RoundedBorder3D(radius, depth, 0, 0, color));
         headerWidget = new HeaderWidget(getScene(), this);
+        headerWidget.setBorder(BorderFactory.createEmptyBorder(radius/2));
         headerWidget.setLayout(new LeftRightLayout(32));
         addChild(headerWidget);
         if(isExpandable()) {
+            contentWidget = createContentWidget();
             expanded = ExpanderWidget.isExpanded(this, true);
+            if(expanded) {
+                expandWidget();
+            } else {
+                collapseWidget();
+            }
             expander = new ExpanderWidget(getScene(), this, expanded);
         }
+//        getActions().addAction(ButtonAction.DEFAULT);
     }
     
+    protected Widget getContentWidget() {
+        return contentWidget;
+    }
+    
+    protected final Widget createContentWidget() {
+        Widget widget = new Widget(getScene());
+        widget.setLayout(LayoutFactory.createVerticalFlowLayout(
+                LayoutFactory.SerialAlignment.JUSTIFY, radius));
+        widget.setBorder(BorderFactory.createEmptyBorder(radius/2));
+        return widget;
+    }
+
     protected HeaderWidget getHeaderWidget() {
         return headerWidget;
     }
@@ -78,46 +101,40 @@ public abstract class AbstractTitledWidget extends Widget implements ExpandableW
     }
     
     protected final void paintWidget() {
-        Rectangle bounds = getBounds();
+        Rectangle bounds = getClientArea();
         Graphics2D g = getGraphics();
         Paint oldPaint = g.getPaint();
-        RoundRectangle2D rect = new RoundRectangle2D.Double(
-                bounds.x, bounds.y, bounds.width - (raised?DEPTH:0),
-                bounds.height - (raised?DEPTH:0), radius, radius);
-        if(raised) {
-            g.setPaint(borderColor);
-            RoundRectangle2D outerRect = new RoundRectangle2D.Double(
-                    bounds.x + DEPTH, bounds.y + DEPTH,
-                    bounds.width - DEPTH, bounds.height - DEPTH, radius, radius);
-            Area raisedArea = new Area(outerRect);
-            raisedArea.subtract(new Area(rect));
-            g.fill(raisedArea);
-        }
+        RoundRectangle2D rect = new RoundRectangle2D.Double(bounds.x + 0.75f,
+                bounds.y, bounds.width - 1.5f, bounds.height, radius, radius);
         if(isExpanded()) {
-            int titleHeight = radius + headerWidget.getBounds().height + radius/2;
+            int titleHeight = headerWidget.getBounds().height;
             GradientPaint gp = new GradientPaint(bounds.x, bounds.y, borderColor,
                     bounds.x, bounds.y + titleHeight/2, borderColor.brighter(),true);
             g.setPaint(gp);
             Area titleArea = new Area(rect);
-            titleArea.subtract(new Area(new Rectangle(bounds.x, 
+            titleArea.subtract(new Area(new Rectangle(bounds.x,
                     bounds.y + titleHeight, bounds.width, bounds.height)));
             g.fill(titleArea);
         } else {
             GradientPaint gp = new GradientPaint(bounds.x, bounds.y, borderColor,
-                    bounds.x, (bounds.y + bounds.height - (raised?DEPTH:0))/2,
+                    bounds.x, bounds.y + bounds.height/2,
                     borderColor.brighter(),true);
             g.setPaint(gp);
             g.fill(rect);
         }
-        g.setPaint(borderColor);
-        g.draw(rect);
         g.setPaint(oldPaint);
     }
     
     protected void collapseWidget() {
+        if(getContentWidget().getParentWidget()!=null) {
+            removeChild(getContentWidget());
+        }
     }
     
     protected void expandWidget() {
+        if(getContentWidget().getParentWidget()==null) {
+            addChild(getContentWidget());
+        }
     }
     
     public Object hashKey() {

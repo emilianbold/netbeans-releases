@@ -54,7 +54,6 @@ public class OutputWidget extends AbstractTitledWidget implements TabWidget{
     }
     
     private void createContent() {
-        setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
         getHeaderWidget().setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
 
         headerLabelWidget = new ImageLabelWidget(getScene(), IMAGE, method.isOneWay()?

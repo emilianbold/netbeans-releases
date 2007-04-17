@@ -32,6 +32,7 @@ import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectScene;
+import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
@@ -79,10 +80,19 @@ public class DesignView extends JPanel  {
         
         mMainLayer = new LayerWidget(scene);
         mMainLayer.setPreferredLocation(new Point(0, 0));
-        mMainLayer.setBackground(Color.WHITE);
+        mMainLayer.setLayout(LayoutFactory.createVerticalFlowLayout(
+                LayoutFactory.SerialAlignment.JUSTIFY, 12));
+        String serviceName = service.getName();
+        if (service.getWsdlUrl()!=null)
+            serviceName = service.getServiceName()+"["+service.getPortName()+"]";
+        LabelWidget serviceWidget = new LabelWidget(scene,serviceName);
+        serviceWidget.setBorder(BorderFactory.createOpaqueBorder(12,24,12,0));
+        serviceWidget.setBackground(new Color (180,180,255));
+        serviceWidget.setOpaque(true);
+        mMainLayer.addChild(serviceWidget);
         scene.addChild(mMainLayer);
         contentWidget = new Widget(scene);
-        contentWidget.setBorder(BorderFactory.createEmptyBorder(24, 24, 24, 24));
+        contentWidget.setBorder(BorderFactory.createEmptyBorder(0, 24, 0, 0));
         contentWidget.setLayout(LayoutFactory.createVerticalFlowLayout(
                 LayoutFactory.SerialAlignment.JUSTIFY, 16));
         mMainLayer.addChild(contentWidget);
