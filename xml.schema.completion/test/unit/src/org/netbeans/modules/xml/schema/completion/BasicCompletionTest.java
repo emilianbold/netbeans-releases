@@ -142,4 +142,21 @@ public class BasicCompletionTest extends AbstractTestCase {
             "A:rootA2", "A:rootA3", "A:rootA3", "A:A21", "A:A22"};
         assertResult(items, expectedResult);
     }
+        
+    public void testSchemaFromRuntimeCatalog() throws Exception {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
+        buffer.append("<persistence xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=67
+        buffer.append("  xmlns=\"http://java.sun.com/xml/ns/persistence\"\n"); //offset=49
+        buffer.append("  xsi:schemaLocation=\"http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd\">\n"); //offset=122
+        buffer.append("  <persistence-unit>\n"); //offset=21
+        buffer.append("  <\n"); //offset=06
+        buffer.append("  <persistence-unit>\n"); //offset=21
+        buffer.append("</persistence>");
+        setupCompletion(TEST_INSTANCE_DOCUMENT, buffer);
+        List<CompletionResultItem> items = query(304);
+//        String[] expectedResult = {"C:rootC1", "C:rootC1","B:rootB1", "B:rootB2", "A:rootA1",
+//            "A:rootA2", "A:rootA3", "A:rootA3", "A:A21", "A:A22"};
+//        assertResult(items, expectedResult);
+    }
 }
