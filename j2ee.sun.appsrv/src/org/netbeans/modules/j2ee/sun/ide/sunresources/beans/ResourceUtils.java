@@ -60,6 +60,7 @@ import org.openide.filesystems.FileSystem;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 
 import org.netbeans.modules.j2ee.sun.ide.editors.NameValuePair;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
@@ -74,6 +75,7 @@ import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
 import org.netbeans.modules.j2ee.sun.dd.api.serverresources.*;
 import org.netbeans.modules.j2ee.sun.share.serverresources.SunDatasource;
+import org.netbeans.modules.j2ee.sun.share.serverresources.SunMessageDestination;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.DatabaseUtils;
 
 /*
@@ -1371,6 +1373,49 @@ public class ResourceUtils implements WizardConstants{
         poolValues.put(__DriverClassName, driverClassName);
         
         return poolValues;
+    }
+    
+    public static HashSet getServerDestinations(DeploymentManager dm){
+        HashSet destinations = new HashSet();
+        try {
+            ObjectName configObjName = new ObjectName(WizardConstants.MAP_RESOURCES);
+            SunDeploymentManagerInterface eightDM = (SunDeploymentManagerInterface)dm;
+            ServerInterface mejb = (ServerInterface)eightDM.getManagement();
+            if(eightDM.isRunning()){
+                ObjectName[] resourceObjects = (ObjectName[])  mejb.invoke(configObjName, WizardConstants.__GetAdmObjResource, null, null);
+                for(int i=0; i<resourceObjects.length; i++){
+                    ObjectName objName = resourceObjects[i];
+                    String jndiName = (String)mejb.getAttribute(objName, "jndi-name"); //NOI18N
+                    String type = (String)mejb.getAttribute(objName, "res-type"); //NOI18N
+                    SunMessageDestination sunMessage = null;
+                    if(type.equals(MessageDestination.Type.QUEUE)){
+                        sunMessage = new SunMessageDestination(jndiName, MessageDestination.Type.QUEUE);
+                    } else {
+                        sunMessage = new SunMessageDestination(jndiName, MessageDestination.Type.TOPIC);
+                    }
+                    destinations.add(sunMessage);
+                } // 
+            } else{
+                if(eightDM.isLocal()) {
+                    HashMap aoMap =  eightDM.getAdminObjectResourcesFromXml();
+                    String[] keys = (String[])aoMap.keySet().toArray(new String[aoMap.size()]);
+                    for(int i=0; i<keys.length; i++){
+                        String jndiName = keys[i];
+                        String type = (String)aoMap.get(jndiName);
+                        SunMessageDestination sunMessage = null;
+                        if(type.equals(MessageDestination.Type.QUEUE)){
+                            sunMessage = new SunMessageDestination(jndiName, MessageDestination.Type.QUEUE);
+                        } else {
+                            sunMessage = new SunMessageDestination(jndiName, MessageDestination.Type.TOPIC);
+                        }
+                        destinations.add(sunMessage);
+                    }
+                }   
+            }// Server Running
+        } catch (Exception ex) {
+            //Unable to get server datasources
+        }
+        return destinations;
     }
     
     public static boolean is90Server(ServerInterface mejb){

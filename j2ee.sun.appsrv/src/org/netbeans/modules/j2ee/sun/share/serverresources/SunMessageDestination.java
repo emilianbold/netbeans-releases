@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.j2ee.sun.share.serverresources;
 
+import java.io.File;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 
 /**
@@ -27,6 +28,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 public class SunMessageDestination implements MessageDestination {
     private String name;
     private Type type;
+    private File resourceDir;
     
     public SunMessageDestination(String name, Type type) {
         this.name = name;
@@ -40,5 +42,13 @@ public class SunMessageDestination implements MessageDestination {
     public Type getType() {
         return this.type;
     }
+   
+    public File getResourceDir() {
+        return resourceDir;
+    }
 
+    public void setResourceDir(File resourceDir) {
+        this.resourceDir = resourceDir;
+    }
+    
 }

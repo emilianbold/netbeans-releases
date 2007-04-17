@@ -1386,6 +1386,11 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         return dEditor.getConnPoolsFromXml();
     }
     
+    public HashMap getAdminObjectResourcesFromXml(){
+        DomainEditor dEditor = new DomainEditor(this);
+        return dEditor.getAdminObjectResourcesFromXml();
+    }
+    
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         propertySupport.addPropertyChangeListener(listener);
     }

@@ -103,7 +103,8 @@ public interface SunDeploymentManagerInterface extends Node.Cookie{
    
    HashMap getConnPoolsFromXml();
 
-   
+    HashMap getAdminObjectResourcesFromXml();
+    
        /** Registers new listener. */
     void addPropertyChangeListener(PropertyChangeListener l);
     

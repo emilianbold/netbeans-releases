@@ -49,6 +49,8 @@ public interface ResourceConfiguratorInterface {
     
     public HashSet getServerDataSources();  
     
+    public HashSet getServerDestinations();  
+    
     public HashSet getResources(File dir);   
     
     public HashSet getMessageDestinations(File dir);   

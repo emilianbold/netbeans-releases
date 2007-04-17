@@ -129,7 +129,11 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
             Resources resources = DDProvider.getDefault().getResourcesGraph();
             AdminObjectResource aoresource = resources.newAdminObjectResource();
             aoresource.setJndiName(jndiName);
-            aoresource.setResType(type.name());
+            if (MessageDestination.Type.QUEUE.equals(type)) {
+                aoresource.setResType(WizardConstants.__QUEUE);
+            } else if (MessageDestination.Type.TOPIC.equals(type)) {
+                   aoresource.setResType(WizardConstants.__TOPIC);
+            }
             aoresource.setResAdapter(WizardConstants.__JmsResAdapter);
             aoresource.setEnabled("true"); // NOI18N
             aoresource.setDescription(""); // NOI18N
@@ -1292,7 +1296,19 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
 
         HashSet destinations = new HashSet();
         List jmsResources = getJmsResources(serverresources);
-        
+        for(int i=0; i<jmsResources.size(); i++){
+            AdminObjectResource aoBean = (AdminObjectResource)jmsResources.get(i);
+            String jmsName = aoBean.getJndiName();
+            String type = aoBean.getResType();
+            SunMessageDestination sunMessage = null;
+            if(type.equals(MessageDestination.Type.QUEUE)){
+                sunMessage = new SunMessageDestination(jmsName, MessageDestination.Type.QUEUE);
+            } else {
+                sunMessage = new SunMessageDestination(jmsName, MessageDestination.Type.TOPIC);
+            }
+            sunMessage.setResourceDir(resourceDir);
+            destinations.add(sunMessage);
+        }   
         return destinations;
     }
     
@@ -1307,10 +1323,10 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                     
                     Resources resources = DDProvider.getDefault().getResourcesGraph(in);
                     
-                    // identify JDBC Resources xml
-                    ConnectorResource[] connResources = resources.getConnectorResource();
-                    if(connResources.length != 0){
-                        jmsResources.add(connResources[0]);
+                    // identify AdminObjectResource xml
+                    AdminObjectResource[] adminResources = resources.getAdminObjectResource();
+                    if(adminResources.length != 0){
+                        jmsResources.add(adminResources[0]);
                     }
                 }
             } catch (Exception ex) {
@@ -1318,6 +1334,10 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
             }
         }
         return jmsResources;
+    }
+    
+    public HashSet getServerDestinations() {
+        return ResourceUtils.getServerDestinations(this.currentDM);
     }
     
     private File getResourceFile(String fileName, File dir){

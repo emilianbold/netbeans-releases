@@ -29,7 +29,7 @@ import org.openide.WizardDescriptor;
 
 import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
-
+import org.netbeans.modules.j2ee.deployment.plugins.spi.MessageDestinationDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
@@ -37,6 +37,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.TargetModuleIDResolver;
 import org.netbeans.modules.j2ee.sun.ide.dm.SunDatasourceManager;
 import org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentManager;
+import org.netbeans.modules.j2ee.sun.ide.dm.SunMessageDestinationDeployment;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.jsps.FindJSPServletImpl;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.incrdeploy.DirectoryDeploymentFacade;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.AddDomainWizardIterator;
@@ -83,7 +84,7 @@ public  class OptionalFactory extends OptionalDeploymentManagerFactory {
     public AntDeploymentProvider getAntDeploymentProvider(DeploymentManager dm) {
         return new AntDeploymentProviderImpl(dm);
     }
-    
+
     public DatasourceManager getDatasourceManager(DeploymentManager dm) {
         if (!(dm instanceof SunDeploymentManager))
             throw new IllegalArgumentException("");
@@ -91,4 +92,12 @@ public  class OptionalFactory extends OptionalDeploymentManagerFactory {
         SunDatasourceManager dsMgr = new SunDatasourceManager(dm);
         return dsMgr;
     }
+    
+    public MessageDestinationDeployment getMessageDestinationDeployment(DeploymentManager dm) {
+        if (!(dm instanceof SunDeploymentManager))
+            throw new IllegalArgumentException("");
+        SunMessageDestinationDeployment destMgr = new SunMessageDestinationDeployment(dm);
+        return destMgr;
+    }
+    
 }

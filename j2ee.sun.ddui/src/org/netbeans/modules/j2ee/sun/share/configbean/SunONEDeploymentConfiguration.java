@@ -2098,7 +2098,7 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
         Set destinations = new HashSet();
         ResourceConfiguratorInterface rci = getResourceConfigurator();
         if(resourceDir != null && resourceDir.exists()) {
-           //destinations = rci.getMessageDestinations(resourceDir);
+           destinations = rci.getMessageDestinations(resourceDir);
         }
         return destinations;
     }

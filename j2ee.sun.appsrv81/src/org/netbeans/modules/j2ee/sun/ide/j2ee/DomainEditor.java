@@ -611,7 +611,21 @@ public class DomainEditor {
         
         return saveDomainScriptFile(domainDoc, getDomainLocation());
     }
-        
+       
+    public HashMap getAdminObjectResourcesFromXml(){
+        HashMap aoResources = new HashMap();
+        Document domainDoc = getDomainDocument();
+        NodeList adminObjectNodeList = domainDoc.getElementsByTagName("admin-object-resource");
+        for(int i=0; i<adminObjectNodeList.getLength(); i++){
+            Node aoNode = adminObjectNodeList.item(i);
+            NamedNodeMap aoAttrMap = aoNode.getAttributes();
+            String jndiName = aoAttrMap.getNamedItem("jndi-name").getNodeValue();
+            String type = aoAttrMap.getNamedItem("res-type").getNodeValue();
+            aoResources.put(jndiName, type);
+        }    
+        return aoResources;
+    }
+    
     /**
      * 
      */
