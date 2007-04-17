@@ -230,7 +230,7 @@ public class ShLauncher extends CommonLauncher {
             str.replace("\n","\\n").
                 replace("\t","\\\\t").
                 replace("\r","\\\\r").
-                replaceAll("`","\\`").
+                replace("`","\\`").
                 replaceAll("\"","\\\\\"");
         
     }

@@ -70,6 +70,7 @@ ERROR_EXTRACT_ONLY=6
 ERROR_INPUTOUPUT=7
 ERROR_FREESPACE=8
 ERROR_INTEGRITY=9
+ERROR_MISSING_RESOURCES=10
 
 VERIFY_OK=1
 VERIFY_NOJAVA=2
@@ -80,6 +81,7 @@ MSG_ERROR_USER_ERROR="nlu.jvm.usererror"
 MSG_ERROR_JVM_UNCOMPATIBLE="nlu.jvm.uncompatible"
 MSG_ERROR_INTEGRITY="nlu.integrity"
 MSG_ERROR_FREESPACE="nlu.freespace"
+MSG_ERROP_MISSING_RESOURCE="nlw.missing.external.resource"
 MSG_RUNNING="nlu.running"
 MSG_STARTING="nlu.starting"
 MSG_EXTRACTING="nlu.extracting"
@@ -605,14 +607,19 @@ processJarsClasspath() {
 	while [ $jarsCounter -lt $JARS_NUMBER ] ; do
 		cpFile=`eval echo "$""JAR_PATH_$jarsCounter"`
 		fileType=`eval echo "$""JAR_TYPE_$jarsCounter"`
-		debug "Adding external file [$jarsCounter] with type=$fileType to classpath: $cpFile"
+		debug "Adding file [$jarsCounter] with type=$fileType to classpath: $cpFile"
 		if [ -n "$cpFile" ] ; then			
 			resolvedFile=`resolvePath $fileType "$cpFile"`
-			
-			if [ -z "$JARS_CLASSPATH" ] ; then
-				JARS_CLASSPATH="$resolvedFile"
+			debug "... full path : $resolvedFile"
+			if [ ! -f "$resolvedFile" ] && [ ! -d "$resolvedFile" ] && [ ! -L "$resolvedFile" ] ; then
+					message "$MSG_ERROP_MISSING_RESOURCE" "$resolvedFile"
+					exitProgram $ERROR_MISSING_RESOURCES
 			else
-				JARS_CLASSPATH="$JARS_CLASSPATH":"$resolvedFile"
+				if [ -z "$JARS_CLASSPATH" ] ; then
+					JARS_CLASSPATH="$resolvedFile"
+				else				
+					JARS_CLASSPATH="$JARS_CLASSPATH":"$resolvedFile"
+				fi
 			fi
 			
 			
@@ -665,7 +672,7 @@ extractFile() {
 
 searchJava() {
 	message "$MSG_JVM_SEARCH"
-        if [ ! -f "$TEST_JVM_CLASSPATH" ] && [ ! -h "$TEST_JVM_CLASSPATH" ] && [ ! -d "$TEST_JVM_CLASSPATH" ]; then
+        if [ ! -f "$TEST_JVM_CLASSPATH" ] && [ ! -L "$TEST_JVM_CLASSPATH" ] && [ ! -d "$TEST_JVM_CLASSPATH" ]; then
                 debug "Cannot find file for testing JVM at $TEST_JVM_CLASSPATH"
 		message "$MSG_ERROR_JVM_NOT_FOUND" "$ARG_JAVAHOME"
                 exitProgram $ERROR_TEST_JVM_FILE
@@ -785,7 +792,7 @@ normalizePath() {
 
 resolveSymlink() {  
     pathArg="$1"	
-    while [ -h "$pathArg" ] ; do
+    while [ -L "$pathArg" ] ; do
         ls=`ls -ld "$pathArg"`
         link=`expr "$ls" : '^.*-> \(.*\)$' 2>/dev/null`
     
