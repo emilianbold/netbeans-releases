@@ -15,6 +15,7 @@ pack_component()
 #Initialize basic scructure
 DIRNAME=`dirname $0`
 cd ${DIRNAME}
+TRUNK_NIGHTLY_DIRNAME=`pwd`
 source init.sh
 
 
@@ -188,7 +189,7 @@ fi
 ssh -p 222 $DIST_SERVER mkdir -p $DIST_SERVER_PATH/$DATESTAMP
 scp -P 222 -q -r -v $DIST/* $DIST_SERVER:$DIST_SERVER_PATH/$DATESTAMP > $SCP_LOG 2>&1 &
 
-cd $DIRNAME
+cd $TRUNK_NIGHTLY_DIRNAME
 bash build-nbi.sh
 
 scp -P 222 -q -r -v $DIST/installers $DIST_SERVER:$DIST_SERVER_PATH/$DATESTAMP > $SCP_LOG 2>&1
