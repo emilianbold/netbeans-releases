@@ -24,6 +24,7 @@ import javax.xml.namespace.QName;
 import org.netbeans.modules.soa.ui.axinodes.AxiomUtils;
 import org.netbeans.modules.soa.ui.axinodes.AxiomUtils.PathItem;
 import org.netbeans.modules.xml.axi.AXIComponent;
+import org.netbeans.modules.xml.axi.AXIDocument;
 import org.netbeans.modules.xml.axi.AXIType;
 import org.netbeans.modules.xml.axi.AbstractAttribute;
 import org.netbeans.modules.xml.axi.AbstractElement;
@@ -35,6 +36,7 @@ import org.netbeans.modules.xslt.model.AttributeValueTemplate;
 import org.netbeans.modules.xslt.model.Instruction;
 import org.netbeans.modules.xslt.model.Template;
 import org.netbeans.modules.xslt.model.XslComponent;
+import org.netbeans.modules.xslt.model.XslVisitor;
 import org.netbeans.modules.xslt.model.XslVisitorAdapter;
 
 /**
@@ -109,7 +111,15 @@ public class AXIUtils {
      **/
     public static abstract class ElementVisitor {
         public abstract void visit(AXIComponent component);
-        public void visitSubelements(Element element){
+        public void visitSubelements(AXIComponent axic){
+            if (axic instanceof Element){
+                visitSubelements((Element) axic); 
+            } else if (axic instanceof AXIDocument){
+                visitSubelements((AXIDocument) axic); 
+            }
+        }
+        
+        protected void visitSubelements(Element element){
             for (AbstractAttribute a : element.getAttributes()){
                 if (a instanceof Attribute){
                     visit(a);
@@ -121,30 +131,40 @@ public class AXIUtils {
                     visit(e);
                 }
             }
+        }
+        
+        protected void visitSubelements(AXIDocument doc){
+            
+            for (AbstractElement e : doc.getChildElements()){
+                if (e instanceof Element){
+                    visit(e);
+                }
+            }
             
             
             
         }
         
     }
-
+    
     
     public static List<AXIComponent> getChildTypes(AXIComponent axic)  {
         
         final List<AXIComponent> result = new ArrayList<AXIComponent>();
         
         if (axic != null) {
+            
             new AXIUtils.ElementVisitor(){
                 public void visit(AXIComponent c){
                     result.add(c);
                 }
-            }.visitSubelements((org.netbeans.modules.xml.axi.Element) axic);
+            }.visitSubelements(axic);
         }
         
         return result;
         
     }
-
+    
     /**
      * Prepares XPath for the specified Schema node.
      */
@@ -180,25 +200,15 @@ public class AXIUtils {
         //
         return path;
     }
-
+    
     public static AXIComponent getType(XslComponent xslc, XsltMapper mapper){
         if (xslc == null){
             return null;
         }
         XslComponent xsl_parent = xslc.getParent();
-        if (xsl_parent instanceof Instruction) {
-            return getType(xsl_parent, mapper);
-        } else if (xsl_parent instanceof Template){ //no declaration nodes fond downtree
-            AXIComponent axi_root =
-                    mapper.getContext().getTargetType();
-            if( axi_root == null){
-                return null;
-            }
-            
-            if (AXIUtils.isSameSchemaType(xslc, axi_root)) {
-                return axi_root;
-            }
-        } else if (xsl_parent != null) {
+        
+        if (xslc instanceof org.netbeans.modules.xslt.model.Element ||
+            xslc instanceof org.netbeans.modules.xslt.model.Attribute ) {
             AXIComponent axi_parent = getType(xsl_parent, mapper);
             if (axi_parent != null){
                 for (AXIComponent type: axi_parent.getChildElements()){
@@ -207,6 +217,10 @@ public class AXIUtils {
                     }
                 }
             }
+        } else if (xslc instanceof org.netbeans.modules.xslt.model.Template){ //no declaration nodes fond downtree
+            return mapper.getContext().getTargetType().getModel().getRoot();
+        }  else if (xsl_parent != null) {
+            return getType(xsl_parent, mapper);
         }
         return null;
     }
