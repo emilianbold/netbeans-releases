@@ -21,6 +21,7 @@ package org.netbeans.modules.languages.javascript;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.ListIterator;
@@ -260,13 +261,16 @@ public class JavaScript {
             SyntaxContext syntaxContext = (SyntaxContext) context;
             ASTPath path = ((SyntaxContext) context).getASTPath ();
             Document doc = syntaxContext.getDocument ();
-            Map<String,CompletionItem> result = getMembers (
+            Map<String,CompletionItem> members = getMembers (
                 path,
                 getDocumentName (doc)
             );
+            List<CompletionItem> result = new ArrayList<CompletionItem> ();
+            result.addAll (members.values ());
             FileObject fo = NbEditorUtilities.getFileObject (doc);
-            Index.addGlobalItems (fo, result);
-            return new ArrayList<CompletionItem> (result.values ());
+            //Collection<CompletionItem> globals = Index.getGlobalItems (fo, members.keySet ());
+            //result.addAll (globals);
+            return result;
         }
         
         List result = new ArrayList ();
@@ -532,44 +536,56 @@ public class JavaScript {
             JSItem item =  it.next ();
             if (item instanceof JSVariable) {
                 JSVariable v = (JSVariable) item;
-                CompletionItem.Type type = null;
-                switch (v.getType ()) {
-                case LOCAL:
-                    type = CompletionItem.Type.LOCAL;
-                    break;
-                case PARAMETER:
-                    type = CompletionItem.Type.PARAMETER;
-                    break;
-                case GLOBAL:
-                    type = CompletionItem.Type.FIELD;
-                    break;
-                }
                 result.put (
                     v.getName (),
-                    CompletionItem.create (
-                        v.getName (),
-                        null,
-                        title,
-                        type,
-                        1
-                    )
+                    toCompletionItem (v, title)
                 );
             } else
             if (item instanceof JSFunction) {
                 JSFunction f = (JSFunction) item;
                 result.put (
                     f.getName (),
-                    CompletionItem.create (
-                        f.getName (),
-                        null,
-                        title,
-                        CompletionItem.Type.METHOD,
-                        1
-                    )
+                    toCompletionItem (f, title)
                 );
             }
         }
         return result;
+    }
+    
+    static CompletionItem toCompletionItem (JSItem item, String title) {
+        if (item instanceof JSVariable) {
+            JSVariable v = (JSVariable) item;
+            CompletionItem.Type type = null;
+            switch (v.getType ()) {
+            case LOCAL:
+                type = CompletionItem.Type.LOCAL;
+                break;
+            case PARAMETER:
+                type = CompletionItem.Type.PARAMETER;
+                break;
+            case GLOBAL:
+                type = CompletionItem.Type.FIELD;
+                break;
+            }
+            return CompletionItem.create (
+                v.getName (),
+                null,
+                title,
+                type,
+                1
+            );
+        } else
+        if (item instanceof JSFunction) {
+            JSFunction f = (JSFunction) item;
+            return CompletionItem.create (
+                f.getName (),
+                null,
+                title,
+                CompletionItem.Type.METHOD,
+                1
+            );
+        }
+        return null;
     }
     
     private static String getDocumentName (Document doc) {
