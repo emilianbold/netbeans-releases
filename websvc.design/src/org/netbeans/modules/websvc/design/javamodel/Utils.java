@@ -21,10 +21,8 @@ package org.netbeans.modules.websvc.design.javamodel;
 
 import com.sun.javadoc.Doc;
 import com.sun.javadoc.Tag;
-import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
@@ -512,13 +510,12 @@ public class Utils {
                 for (Tree member:members) {
                     if (Tree.Kind.METHOD==member.getKind()) {
                         MethodTree method = (MethodTree)member;
-                        ModifiersTree modifiers = method.getModifiers();
-                        List<? extends AnnotationTree> annotations = modifiers.getAnnotations();
-                        for (AnnotationTree an:annotations) {
-                            TreePath anPath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), an.getAnnotationType());
-                            TypeMirror anMirror = workingCopy.getTrees().getTypeMirror(anPath);
-                            if (workingCopy.getTypes().isSameType(methodAnotationEl.asType(),anMirror)) {
-                                Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = ((AnnotationMirror)anMirror).getElementValues();
+                        TreePath methodPath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), method);
+                        ExecutableElement methodEl = (ExecutableElement)workingCopy.getTrees().getElement(methodPath);
+                        List<? extends AnnotationMirror> methodAnnotations = methodEl.getAnnotationMirrors();
+                        for (AnnotationMirror anMirror : methodAnnotations) {
+                            if (workingCopy.getTypes().isSameType(methodAnotationEl.asType(), anMirror.getAnnotationType())) {
+                                Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
                                 for(ExecutableElement ex:expressions.keySet()) {
                                     if (ex.getSimpleName().contentEquals("operationName")) { //NOI18N
                                         if (methodModel.getOperationName().equals(expressions.get(ex).getValue())) {
@@ -540,7 +537,8 @@ public class Utils {
                 }
                 if (targetMethod!=null) {
                     Comment comment = Comment.create(Style.JAVADOC, 0,0,0, text);
-                    // Issue in Retouche : the following part couldn't be used for now
+                    
+                    // Issue in Retouche (90302) : the following part couldn't be used for now
                     // MethodTree newMethod = make.addComment(targetMethod, comment , true);
                     // workingCopy.rewrite(targetMethod, newMethod);
                 }
