@@ -52,9 +52,12 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.text.Document;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.form.FormEditorSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
@@ -103,14 +106,26 @@ public class ActionManager {
         return am;
     }
     
+    public static synchronized ActionManager getActionManager(Project project) {
+        Sources srcs = project.getLookup().lookup(Sources.class);
+        SourceGroup groups[] = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if(groups != null && groups.length > 0) {
+            return ActionManager.getActionManager(groups[0].getRootFolder());
+        } else {
+            return null;
+        }
+    }
+    
+    
+    private static void addProject(Project p) {
+        ActionManager am = ActionManager.getActionManager(p);
+        // do the first scan for actions
+        am.rescan();
+    }
     private static void removeProject(Project p) {
         ActionManager am = ams.get(p);
         ams.remove(p);
         reverseams.remove(am);
-    }
-    
-    public static synchronized ActionManager getActionManager(Project project) {
-        return getActionManager(project.getProjectDirectory());
     }
     
     public static ActionManager getEmptyActionManager() {
@@ -118,6 +133,9 @@ public class ActionManager {
     }
     
     public static Set<Project> getKnownProjects() {
+        if(ams == null) {
+            return Collections.emptySet();
+        }
         return Collections.unmodifiableSet(ams.keySet());
     }
     
@@ -129,18 +147,30 @@ public class ActionManager {
      * @return true if any projects were removed, else false
      */
     public static boolean clearClosedProjects(Project[] openProjects) {
+        boolean updated = false;
         Set<Project> known = getKnownProjects();
         known = new HashSet(known);
+        Set<Project> newSet = new HashSet<Project>();
         for(Project p : openProjects) {
+            if(!known.contains(p)) {
+                newSet.add(p);
+            }
             known.remove(p);
         }
         if(known.size() > 0) {
             for(Project p : known) {
                 removeProject(p);
             }
-            return true;
+            updated = true;
         }
-        return false;
+        if(newSet.size() > 0) {
+            for(Project p : newSet) {
+                addProject(p);
+            }
+            updated = true;
+        }
+        
+        return updated;
     }
     
     
