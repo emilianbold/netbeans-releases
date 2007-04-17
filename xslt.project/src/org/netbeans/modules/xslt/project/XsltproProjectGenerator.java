@@ -60,7 +60,7 @@ public class XsltproProjectGenerator {
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
-    public static AntProjectHelper createProject(File dir, String name, String j2eeLevel) throws IOException {
+    public static AntProjectHelper createProject(File dir, String name) throws IOException {
         dir.mkdirs();
         // XXX clumsy way to refresh, but otherwise it doesn't work for new folders
         File rootF = dir;
@@ -74,7 +74,7 @@ public class XsltproProjectGenerator {
         assert fo != null : "No such dir on disk: " + dir;
         assert fo.isFolder() : "Not really a dir: " + dir;
         assert fo.getChildren().length == 0 : "Dir must have been empty: " + dir;
-        AntProjectHelper h = setupProject (fo, name, j2eeLevel);
+        AntProjectHelper h = setupProject (fo, name);
         FileObject srcRoot = fo.createFolder(DEFAULT_SRC_FOLDER); // NOI18N
 // Bing bpelasa        FileObject bpelasaRoot = srcRoot.createFolder(DEFAULT_BPELASA_FOLDER); //NOI18N
         
@@ -118,7 +118,7 @@ public class XsltproProjectGenerator {
         fo = FileUtil.toFileObject (dir);
         assert fo != null : "No such dir on disk: " + dir;
         assert fo.isFolder() : "Not really a dir: " + dir;
-        AntProjectHelper h = setupProject (fo, name, j2eeLevel);
+        AntProjectHelper h = setupProject (fo, name);
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         if (FileUtil.isParentOf (fo, wmFO) || fo.equals (wmFO)) {
             ep.put (SOURCE_ROOT, "."); //NOI18N
@@ -153,7 +153,7 @@ public class XsltproProjectGenerator {
         return child.getPath ().substring (parent.getPath ().length () + 1);
     }
     
-    private static AntProjectHelper setupProject (FileObject dirFO, String name, String j2eeLevel) throws IOException {
+    private static AntProjectHelper setupProject (FileObject dirFO, String name) throws IOException {
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, XsltproProjectType.TYPE);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
@@ -169,14 +169,12 @@ public class XsltproProjectGenerator {
         // ep.setProperty(JAVAC_CLASSPATH, "${libs.j2ee14.classpath}");
         ep.setProperty(DIST_DIR, "dist");
         ep.setProperty(DIST_JAR, "${"+DIST_DIR+"}/" + name + ".zip");
-        ep.setProperty(J2EE_PLATFORM, j2eeLevel);
         ep.setProperty(JAR_NAME, name + ".jar");
         ep.setProperty(JAR_COMPRESS, "false");
 //        ep.setProperty(JAR_CONTENT_ADDITIONAL, "");
         
         Deployment deployment = Deployment.getDefault ();
         String serverInstanceID = deployment.getDefaultServerInstanceID ();
-        ep.setProperty(J2EE_SERVER_TYPE, deployment.getServerID (serverInstanceID));
         ep.setProperty(JAVAC_SOURCE, "1.4");
         ep.setProperty(JAVAC_DEBUG, "true");
         ep.setProperty(JAVAC_DEPRECATION, "false");
@@ -214,7 +212,7 @@ public class XsltproProjectGenerator {
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         
         ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        ep.setProperty(J2EE_SERVER_INSTANCE, serverInstanceID);
+//        ep.setProperty(J2EE_SERVER_INSTANCE, serverInstanceID);
         //============= Start of IcanPro========================================//
         ep.setProperty(JBI_COMPONENT_CONF_FILE, "ComponentInformation.xml"); // NOI18N
         ep.setProperty(JBI_DEPLOYMENT_CONF_FILE, "default.xml"); // NOI18N

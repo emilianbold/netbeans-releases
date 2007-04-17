@@ -36,7 +36,7 @@ public interface XsltproConstants {
 //    String SOURCE_ROOT = "sourceRoot"; //NOI18N
 
     String SET_AS_MAIN = "setAsMain"; //NOI18N
-    String J2EE_LEVEL = "j2eeLevel"; //NOI18N
+//    String J2EE_LEVEL = "j2eeLevel"; //NOI18N
 
     String CONFIG_FILES_FOLDER = "configFilesFolder"; //NOI18N
     String JAVA_ROOT = "javaRoot"; //NOI18N
@@ -52,18 +52,10 @@ public interface XsltproConstants {
 
     String SOURCES_TYPE_ICANPRO = "BIZPRO";
 
-    
-    
-    
-    
-    
     // icanproProjec tProperties constants
-    String J2EE_1_4 = "1.4";
-    String J2EE_1_3 = "1.3";
     // Special properties of the project
     String EJB_PROJECT_NAME = "j2ee.icanpro.name";
     String JAVA_PLATFORM = "platform.active";
-    String J2EE_PLATFORM = "j2ee.platform";
 
     // Properties stored in the PROJECT.PROPERTIES
     /** root of external web module sources (full path), ".." if the sources are within project folder */
@@ -78,8 +70,6 @@ public interface XsltproConstants {
     String JAR_NAME = "jar.name";
     String JAR_COMPRESS = "jar.compress";
 
-    String J2EE_SERVER_INSTANCE = "j2ee.server.instance";
-    String J2EE_SERVER_TYPE = "j2ee.server.type";
     String JAVAC_SOURCE = "javac.source";
     String JAVAC_DEBUG = "javac.debug";
     String JAVAC_DEPRECATION = "javac.deprecation";

@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.xslt.project;
 
-import java.awt.Dialog;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,24 +27,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
-import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.modules.xslt.project.ui.NoSelectedServerWarning;
 import org.netbeans.modules.xslt.project.ui.customizer.VisualClassPathItem;
 import org.netbeans.modules.xslt.project.ui.customizer.XsltproProjectProperties;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
 import org.openide.windows.IOProvider;
@@ -126,31 +118,31 @@ public class XsltproActionProvider implements ActionProvider{
         }
         Properties p = null;
         String[] targetNames = (String[])commands.get(command);
-        //EXECUTION PART    
-        if (command.equals (XsltproConstants.COMMAND_DEPLOY) || command.equals (XsltproConstants.COMMAND_REDEPLOY)) {
-            if (!isSelectedServer ()) {
-                return;
-            }
-            if (isDebugged()) {
-                NotifyDescriptor nd;
-                ProjectInformation pi = (ProjectInformation)project.getLookup().lookup(ProjectInformation.class);
-                String text = pi.getDisplayName();
-                nd = new NotifyDescriptor.Confirmation(
-                            NbBundle.getMessage(XsltproActionProvider.class, "MSG_SessionRunning", text),
-                            NotifyDescriptor.OK_CANCEL_OPTION);
-                Object o = DialogDisplayer.getDefault().notify(nd);
-                if (o.equals(NotifyDescriptor.OK_OPTION)) {
-                    DebuggerManager.getDebuggerManager().getCurrentSession().kill();
-                } else {
-                    return;
-                }
-            }
-        } else {
-            p = null;
-            if (targetNames == null) {
-                throw new IllegalArgumentException(command);
-            }
-        }
+////        //EXECUTION PART    
+////        if (command.equals (XsltproConstants.COMMAND_DEPLOY) || command.equals (XsltproConstants.COMMAND_REDEPLOY)) {
+////            if (!isSelectedServer ()) {
+////                return;
+////            }
+////            if (isDebugged()) {
+////                NotifyDescriptor nd;
+////                ProjectInformation pi = (ProjectInformation)project.getLookup().lookup(ProjectInformation.class);
+////                String text = pi.getDisplayName();
+////                nd = new NotifyDescriptor.Confirmation(
+////                            NbBundle.getMessage(XsltproActionProvider.class, "MSG_SessionRunning", text),
+////                            NotifyDescriptor.OK_CANCEL_OPTION);
+////                Object o = DialogDisplayer.getDefault().notify(nd);
+////                if (o.equals(NotifyDescriptor.OK_OPTION)) {
+////                    DebuggerManager.getDebuggerManager().getCurrentSession().kill();
+////                } else {
+////                    return;
+////                }
+////            }
+////        } else {
+////            p = null;
+////            if (targetNames == null) {
+////                throw new IllegalArgumentException(command);
+////            }
+////        }
 
 
 //        	if build command then build any depedent project
@@ -234,40 +226,40 @@ public class XsltproActionProvider implements ActionProvider{
         return false;
     }
     
-    private boolean isSelectedServer () {
-        String instance = antProjectHelper.getStandardPropertyEvaluator ().getProperty (XsltproConstants.J2EE_SERVER_INSTANCE);
-        boolean selected;
-        if (instance != null) {
-            selected = true;
-        } else {
-            // no selected server => warning
-            String server = antProjectHelper.getStandardPropertyEvaluator ().getProperty (XsltproConstants.J2EE_SERVER_TYPE);
-            NoSelectedServerWarning panel = new NoSelectedServerWarning (server);
-
-            Object[] options = new Object[] {
-                DialogDescriptor.OK_OPTION,
-                DialogDescriptor.CANCEL_OPTION
-            };
-            DialogDescriptor desc = new DialogDescriptor (panel,
-                    NbBundle.getMessage (NoSelectedServerWarning.class, "CTL_NoSelectedServerWarning_Title"), // NOI18N
-                true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
-            Dialog dlg = DialogDisplayer.getDefault().createDialog (desc);
-            dlg.setVisible (true);
-            if (desc.getValue() != options[0]) {
-                selected = false;
-            } else {
-                instance = panel.getSelectedInstance ();
-                selected = instance != null;
-                if (selected) {
-                    XsltproProjectProperties wpp = new XsltproProjectProperties (project, antProjectHelper, refHelper);
-                    wpp.put (XsltproConstants.J2EE_SERVER_INSTANCE, instance);
-                    wpp.store ();
-                }
-            }
-            dlg.dispose();
-        }
-        return selected;
-    }
+//    private boolean isSelectedServer () {
+//        String instance = antProjectHelper.getStandardPropertyEvaluator ().getProperty (XsltproConstants.J2EE_SERVER_INSTANCE);
+//        boolean selected;
+//        if (instance != null) {
+//            selected = true;
+//        } else {
+//            // no selected server => warning
+//            String server = antProjectHelper.getStandardPropertyEvaluator ().getProperty (XsltproConstants.J2EE_SERVER_TYPE);
+//            NoSelectedServerWarning panel = new NoSelectedServerWarning (server);
+//
+//            Object[] options = new Object[] {
+//                DialogDescriptor.OK_OPTION,
+//                DialogDescriptor.CANCEL_OPTION
+//            };
+//            DialogDescriptor desc = new DialogDescriptor (panel,
+//                    NbBundle.getMessage (NoSelectedServerWarning.class, "CTL_NoSelectedServerWarning_Title"), // NOI18N
+//                true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
+//            Dialog dlg = DialogDisplayer.getDefault().createDialog (desc);
+//            dlg.setVisible (true);
+//            if (desc.getValue() != options[0]) {
+//                selected = false;
+//            } else {
+//                instance = panel.getSelectedInstance ();
+//                selected = instance != null;
+//                if (selected) {
+//                    XsltproProjectProperties wpp = new XsltproProjectProperties (project, antProjectHelper, refHelper);
+//                    wpp.put (XsltproConstants.J2EE_SERVER_INSTANCE, instance);
+//                    wpp.store ();
+//                }
+//            }
+//            dlg.dispose();
+//        }
+//        return selected;
+//    }
 
     private void log(String str) {
         OutputWriter out = IOProvider.getDefault().getStdOut();
