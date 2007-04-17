@@ -362,6 +362,7 @@ Microsystems, Inc. All Rights Reserved.
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.javawebstart</friend>
+                <friend>org.netbeans.modules.swingapp</friend>
                 <package>org.netbeans.modules.java.j2seproject.api</package>
             </friend-packages>
         </data>

@@ -396,7 +396,7 @@ final class DesignResourceMap extends ResourceMap {
             PropertiesDataObject dobj = null;
             if (bundle == null) {
                 try {
-                    dobj = ResourceUtils.createPropertiesDataObject(resValue.getSourceFile(), bundleName);
+                    dobj = ResourceUtils.createPropertiesDataObject(getSourceFile(), bundleName);
                     bundle = dobj.getBundleStructure();
                 }
                 catch (IOException ex) { // [can't create properties file, so now what...]

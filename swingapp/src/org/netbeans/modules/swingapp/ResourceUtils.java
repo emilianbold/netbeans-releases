@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.properties.BundleStructure;
 import org.netbeans.modules.properties.PropertiesDataObject;
 import org.openide.ErrorManager;
@@ -94,13 +95,25 @@ class ResourceUtils {
     }
 
     /**
-     * Returns the DesignResourceMap tu be used for given source file. Creates
+     * Returns the DesignResourceMap to be used for given source file. Creates
      * and registers a new one if not created yet.
      * @return DesignResourceMap for given source file
      */
     static DesignResourceMap getDesignResourceMap(FileObject srcFile) {
         DesignResourceMap resMap = resources != null ? resources.get(srcFile) : null;
         return resMap != null ? resMap : createDesignResourceMap(srcFile, null);
+    }
+
+    static DesignResourceMap getAppDesignResourceMap(Project project) {
+        String appClassName = AppFrameworkSupport.getApplicationClassName(project);
+        if (appClassName != null) {
+            String bundleName = getBundleName(appClassName);
+            ClassPath cp = AppFrameworkSupport.getSourcePath(project);
+            FileObject fo = cp.findResource(appClassName.replace('.', '/') + ".java"); // NOI18N
+            return new DesignResourceMap(null, cp.getClassLoader(true), fo,
+                    new String[] { bundleName }, DesignResourceMap.APP_LEVEL);
+        }
+        return null;
     }
 
     /**

@@ -72,4 +72,18 @@ Microsystems, Inc. All Rights Reserved.
             <file name="GlobalActionTable.settings" url="components/GlobalActionTable.settings" />
         </folder>
     </folder>
+
+    <folder name="Projects">
+        <folder name="org-netbeans-modules-java-j2seproject">
+            <folder name="Customizer">
+                <folder name="Application">
+                    <attr name="AppFramework.instance/WebStart.instance" boolvalue="true"/>
+                    <file name="AppFramework.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.swingapp.ProjectCustomizerProvider.create"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+
 </filesystem>
