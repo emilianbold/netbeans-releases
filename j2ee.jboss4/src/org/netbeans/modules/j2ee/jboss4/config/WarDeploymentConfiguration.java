@@ -212,7 +212,10 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
         for (ResourceRef resourceRef : resourceRefs) {
             String rrn = resourceRef.getResRefName();
             if (referenceName.equals(rrn)) {
-                return resourceRef.getJndiName();
+                String jndiName = resourceRef.getJndiName();
+                if (jndiName != null) {
+                    return JBossDatasource.getJndiName(jndiName);
+                }
             }
         }
         

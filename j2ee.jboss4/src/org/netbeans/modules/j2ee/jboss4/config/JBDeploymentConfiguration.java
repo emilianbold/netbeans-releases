@@ -165,14 +165,14 @@ public abstract class JBDeploymentConfiguration
     // ---------------------------- resource generation ----------------------------------------
 
     private abstract class DSResourceModifier {
-        String jndiName;
+        String rawName;
         String url;
         String username;
         String password;
         String driver;
 
         DSResourceModifier(String jndiName, String  url, String username, String password, String driver) {
-            this.jndiName = jndiName;
+            this.rawName = JBossDatasource.getRawName(jndiName);
             this.url = url;
             this.username = username;
             this.password = password;
@@ -212,7 +212,7 @@ public abstract class JBDeploymentConfiguration
                 LocalTxDatasource ltxds[] = datasources.getLocalTxDatasource();
                 for (int i = 0; i < ltxds.length; i++) {
                     String jndiName = ltxds[i].getJndiName();
-                    if (this.jndiName.equals(jndiName)) {
+                    if (rawName.equals(JBossDatasource.getRawName(jndiName))) {
                         //already exists
                         JBossDatasource ds = new JBossDatasource(
                                 jndiName,
@@ -226,7 +226,7 @@ public abstract class JBDeploymentConfiguration
                 }
                 
                 LocalTxDatasource lds = new LocalTxDatasource();
-                lds.setJndiName(jndiName);
+                lds.setJndiName(rawName);
                 lds.setConnectionUrl(url);
                 lds.setDriverClass(driver);
                 lds.setUserName(username);
@@ -237,7 +237,7 @@ public abstract class JBDeploymentConfiguration
 
                 datasources.addLocalTxDatasource(lds);
                 
-                return new JBossDatasource(jndiName, url, username, password, driver);
+                return new JBossDatasource(rawName, url, username, password, driver);
            }
         });
         

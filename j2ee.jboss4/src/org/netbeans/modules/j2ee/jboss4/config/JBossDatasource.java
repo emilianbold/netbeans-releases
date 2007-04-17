@@ -21,6 +21,7 @@ package org.netbeans.modules.j2ee.jboss4.config;
 
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 
 
 /**
@@ -29,7 +30,10 @@ import org.openide.util.NbBundle;
  */
 public final class JBossDatasource implements Datasource {
     
-    private String jndiName;
+    public static final String PREFIX = "java:/";
+    public static final String SHORT_PREFIX = "java:/";
+    
+    private String rawName;
     private String url;
     private String username;
     private String password;
@@ -42,7 +46,7 @@ public final class JBossDatasource implements Datasource {
     private volatile int hash = -1;
     
     public JBossDatasource(String jndiName, String url, String username, String password, String driverClassName) {
-        this.jndiName = jndiName;
+        this.rawName = jndiName;
         this.url = url;
         this.username = username;
         this.password = password;
@@ -50,9 +54,57 @@ public final class JBossDatasource implements Datasource {
     }
 
     public String getJndiName() {
-        return jndiName;
+        return getJndiName(rawName);
     }
 
+    /**
+     * Returns JNDI name in the correct run-time format, i.e. "java:/..."
+     */
+    public static String getJndiName(String rawName) {
+        
+        Parameters.notNull("rawName", rawName);
+        
+        if (rawName.startsWith(PREFIX)) {
+            return rawName;
+        }
+        
+        if (rawName.startsWith(SHORT_PREFIX)) {
+            return PREFIX + rawName.substring(5); // SHORT_PREFIX.length() == 5
+        }
+        
+        if (rawName.startsWith("/")) {
+            return SHORT_PREFIX + rawName;
+        }
+        
+        // TODO check other formats
+        
+        return PREFIX + rawName;
+    }
+    
+    /**
+     * Returns DS name in the 'resource-file' format
+     */
+    public static String getRawName(String jndiName) {
+
+        Parameters.notNull("jndiName", jndiName);
+        
+        if (jndiName.startsWith(PREFIX)) {
+            return jndiName.substring(PREFIX.length());
+        }
+        else
+        if (jndiName.startsWith(SHORT_PREFIX)) {
+            return jndiName.substring(SHORT_PREFIX.length());
+        }
+        else
+        if (jndiName.startsWith("/")) {
+            return jndiName.substring(1);
+        }
+        
+        // TODO check other formats
+
+        return jndiName;
+    }
+    
     public String getUrl() {
         return url;
     }
@@ -96,7 +148,7 @@ public final class JBossDatasource implements Datasource {
             return false;
         
         JBossDatasource ds = (JBossDatasource)obj;
-        if (jndiName == null && ds.getJndiName() != null || jndiName != null && !jndiName.equals(ds.getJndiName()))
+        if (getJndiName() == null && ds.getJndiName() != null || getJndiName() != null && !getJndiName().equals(ds.getJndiName()))
             return false;
         if (url == null && ds.getUrl() != null || url != null && !url.equals(ds.getUrl()))
             return false;
@@ -119,7 +171,7 @@ public final class JBossDatasource implements Datasource {
     public int hashCode() {
         if (hash == -1) {
             int result = 17;
-            result += 37 * result + (jndiName == null ? 0 : jndiName.hashCode());
+            result += 37 * result + (getJndiName() == null ? 0 : getJndiName().hashCode());
             result += 37 * result + (url == null ? 0 : url.hashCode());
             result += 37 * result + (username == null ? 0 : username.hashCode());
             result += 37 * result + (password == null ? 0 : password.hashCode());
@@ -136,7 +188,7 @@ public final class JBossDatasource implements Datasource {
     
     public String toString() {
         return "[ " + // NOI18N
-                NbBundle.getMessage(JBossDatasource.class, "LBL_DS_JNDI") + ": '" + jndiName + "', " + // NOI18N
+                NbBundle.getMessage(JBossDatasource.class, "LBL_DS_JNDI") + ": '" + getJndiName() + "', " + // NOI18N
                 NbBundle.getMessage(JBossDatasource.class, "LBL_DS_URL") + ": '" + url +  "', " + // NOI18N
                 NbBundle.getMessage(JBossDatasource.class, "LBL_DS_USER") + ": '" +  username +  "', " + // NOI18N
                 NbBundle.getMessage(JBossDatasource.class, "LBL_DS_PASS") + ": '" + password +  "', " + // NOI18N
