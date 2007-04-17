@@ -619,19 +619,20 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
 //            throw(new IllegalArgumentException("Null page box."));
 //        }
         
-        if (this.pageBox != null) {
+        if (pageBox != null) {
             pageBox.boxRemoved();
         }
         
         //editor.removeAll();
         pageBox = box;
+        
         updateViewport();
         painted = false;
         
         //editor.revalidate();
         editor.repaint();
         
-        if (box != null) {
+        if (pageBox != null) {
             pageBox.boxAdded();
         }
     }

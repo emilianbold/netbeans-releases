@@ -2162,60 +2162,61 @@ public class SelectionManager {
 //            prevNodes = nodes;
 // </>
         }
-        
-        if(!webform.isGridMode()) {
-            selectTextBetweenSelectedNodes();
-        }
+
+        // XXX #101248 This seems to be needless.
+//        if(!webform.isGridMode()) {
+//            selectTextBetweenSelectedNodes();
+//        }
     }
     
-    private void selectTextBetweenSelectedNodes() {
-//        Position start = null, end = null;
-        DomPosition start = null;
-        DomPosition end = null;
-        
-//        if ((selected != null) && (selected.size() > 0)) {
-////            Iterator it = selected.iterator();
-//            Position startNode, endNode;
-////            while (it.hasNext()) {
-////                FormObject fo = (FormObject)it.next();
-//            for (FormObject fo : selected) {
-//                startNode = Position.create(fo.component.getElement(), false);
-        if (!selectedComponents.isEmpty()) {
-//            Position startNode, endNode;
-            DomPosition startNode;
-            DomPosition endNode;
-            
-            for (SelectedComponent sc : selectedComponents) {
-//                Element sourceElement = WebForm.getDomProviderService().getMarkupDesignBeanForElement(sc.componentRootElement).getElement();
-                Element sourceElement = WebForm.getDomProviderService().getSourceElement(sc.componentRootElement);
-//                startNode = Position.create(sourceElement, false);
-                startNode = webform.createDomPosition(sourceElement, false);
-                
-                if(start == null || startNode.isEarlierThan(start)) {
-                    start = startNode;
-                }
-//                endNode = Position.create(fo.component.getElement(), true);
-//                endNode = Position.create(sourceElement, true);
-                endNode = webform.createDomPosition(sourceElement, true);
-                
-                if(end == null || end.isEarlierThan(endNode)) {
-                    end = endNode;
-                }
-            }
-        } else {
-//            start = Position.NONE;
-//            end   = Position.NONE;
-            start = DomPosition.NONE;
-            end   = DomPosition.NONE;
-        }
-//        if(webform.getPane().getCaret() != null) {
-        if(webform.getPane().hasCaret()) {
-//            webform.getPane().getCaret().setDot(start);
-//            webform.getPane().getCaret().moveDot(end);
-            webform.getPane().setCaretDot(start);
-            webform.getPane().moveCaretDot(end);
-        }
-    }
+//    private void selectTextBetweenSelectedNodes() {
+////        Position start = null, end = null;
+//        DomPosition start = null;
+//        DomPosition end = null;
+//        
+////        if ((selected != null) && (selected.size() > 0)) {
+//////            Iterator it = selected.iterator();
+////            Position startNode, endNode;
+//////            while (it.hasNext()) {
+//////                FormObject fo = (FormObject)it.next();
+////            for (FormObject fo : selected) {
+////                startNode = Position.create(fo.component.getElement(), false);
+//        if (!selectedComponents.isEmpty()) {
+////            Position startNode, endNode;
+//            DomPosition startNode;
+//            DomPosition endNode;
+//            
+//            for (SelectedComponent sc : selectedComponents) {
+////                Element sourceElement = WebForm.getDomProviderService().getMarkupDesignBeanForElement(sc.componentRootElement).getElement();
+//                Element sourceElement = WebForm.getDomProviderService().getSourceElement(sc.componentRootElement);
+////                startNode = Position.create(sourceElement, false);
+//                startNode = webform.createDomPosition(sourceElement, false);
+//                
+//                if(start == null || startNode.isEarlierThan(start)) {
+//                    start = startNode;
+//                }
+////                endNode = Position.create(fo.component.getElement(), true);
+////                endNode = Position.create(sourceElement, true);
+//                endNode = webform.createDomPosition(sourceElement, true);
+//                
+//                if(end == null || end.isEarlierThan(endNode)) {
+//                    end = endNode;
+//                }
+//            }
+//        } else {
+////            start = Position.NONE;
+////            end   = Position.NONE;
+//            start = DomPosition.NONE;
+//            end   = DomPosition.NONE;
+//        }
+////        if(webform.getPane().getCaret() != null) {
+//        if(webform.getPane().hasCaret()) {
+////            webform.getPane().getCaret().setDot(start);
+////            webform.getPane().getCaret().moveDot(end);
+//            webform.getPane().setCaretDot(start);
+//            webform.getPane().moveCaretDot(end);
+//        }
+//    }
 
     /** Return set of currently selected nodes */
     public Node[] getSelectedNodes() {
