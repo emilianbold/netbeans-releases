@@ -678,18 +678,20 @@ public class SymbolClassReader extends JavadocClassReader {
         
         typevars = typevars.dup(currentOwner);
         
+        MethodSymbol method = new MethodSymbol(flags, null, null, currentOwner);
+        
         List<TypeVar> typevarsList = null;
-        int read = r.read();
+        int read = r.read();                
         
         if (read == '<') {
-            typevarsList = readTypeParamsWithName(r, null);
+            typevarsList = readTypeParamsWithName(r, method);
             
             read = r.read();
         }
         
         assert read == 'N' : read;
         
-        Name symbolName = readPlainNameIntoTable(r);
+        method.name = readPlainNameIntoTable(r);
         
         read = r.read();
         
@@ -729,7 +731,7 @@ public class SymbolClassReader extends JavadocClassReader {
             methodType = new ForAll((List<Type>) ((List<?>) typevarsList), methodType);
         }
         
-        MethodSymbol method = new MethodSymbol(flags, symbolName, methodType, currentOwner);
+        method.type = methodType;
         
         method.params = params;
         
