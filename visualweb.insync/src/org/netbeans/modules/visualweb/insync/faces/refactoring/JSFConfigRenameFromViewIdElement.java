@@ -19,49 +19,40 @@
 
 package org.netbeans.modules.visualweb.insync.faces.refactoring;
 
-import org.netbeans.modules.visualweb.insync.faces.ElAttrUpdater;
-import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
-import org.netbeans.modules.visualweb.insync.markup.MarkupVisitor;
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
 import org.openide.util.Lookup;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
+import org.openide.util.lookup.Lookups;
 
-public class RenameElExpressionReferencesRefactoringElement extends MarkupRefactoringElement {
-
-    public RenameElExpressionReferencesRefactoringElement(FileObject fileObject, MarkupUnit markupUnit, String oldName, String newName) {
-        super(fileObject, markupUnit, oldName, newName);
+public class JSFConfigRenameFromViewIdElement extends SimpleRefactoringElementImplementation {
+    private final FacesRefactoringUtils.OccurrenceItem item;
+    
+    JSFConfigRenameFromViewIdElement(FacesRefactoringUtils.OccurrenceItem item){
+        this.item = item;
     }
-
-    protected Element getPositionElement() {
-        return null;
+    
+    public String getText() {
+        return getDisplayText();
     }
-
+    
     public String getDisplayText() {
-        return oldName + " to " + newName;
+        return item.getRenameMessage();
     }
-
-    public Lookup getLookup() {
-        return Lookup.EMPTY;
+    
+    public void performChange() {
+        item.performRename();
     }
-
+           
     public FileObject getParentFile() {
-        return fileObject;
+        return item.getFacesConfig();
     }
-
+    
     public PositionBounds getPosition() {
         return null;
     }
-
-    public String getText() {
-        return oldName + " to " + newName;
-    }
-
-    public void performChange() {
-        Document document = markupUnit.getSourceDom();
-        MarkupVisitor v = new ElAttrUpdater(oldName, newName);
-        v.apply(document);
-        markupUnit.flush();        
+    
+    public Lookup getLookup() {
+        return Lookups.singleton(item.getFacesConfig());
     }
 }

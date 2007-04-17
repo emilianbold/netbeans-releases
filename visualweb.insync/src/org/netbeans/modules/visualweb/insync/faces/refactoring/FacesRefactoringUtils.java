@@ -47,6 +47,10 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
+import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
+import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
+import org.netbeans.modules.xml.xam.dom.DocumentComponent;
+import org.netbeans.modules.xml.xam.dom.DocumentModel;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -249,65 +253,6 @@ final class FacesRefactoringUtils {
         return document;
     }
     
-    /** The constant from XML editor
-     */
-    // The constant are taken from class org.netbeans.modules.xml.text.syntax.XMLTokenIDs
-    protected final static int XML_ELEMENT = 4;
-    protected final static int XML_TEXT = 1;
-    
-    /* Returns offset, where starts the definition of the manage bean
-     **/
-    public static int[] getManagedBeanDefinition(BaseDocument doc, String beanName){
-        try{
-            String text = doc.getText(0, doc.getLength());
-            int offset = text.indexOf(beanName);
-            int start = 0;
-            int end = 0;
-            ExtSyntaxSupport sup = (ExtSyntaxSupport)doc.getSyntaxSupport();
-            TokenItem token;
-            
-            while (offset != -1){
-                token = sup.getTokenChain(offset, offset+1);
-                if (token != null && token.getTokenID().getNumericID() == XML_TEXT){
-                    while (token!=null 
-                            && !(token.getTokenID().getNumericID() == XML_ELEMENT
-                            && !token.getImage().equals(">")))
-                        token = token.getPrevious();
-                    if (token != null && token.getImage().equals("<managed-bean-name")){    //NOI18N
-                        while (token != null
-                                && !(token.getTokenID().getNumericID() ==  XML_ELEMENT
-                                && token.getImage().equals("<managed-bean")))
-                            token = token.getPrevious();
-                        if(token != null && token.getImage().equals("<managed-bean")){
-                            start = token.getOffset();
-                            token = sup.getTokenChain(offset, offset+1);
-                            while (token != null
-                                    && !(token.getTokenID().getNumericID() ==  XML_ELEMENT
-                                    && token.getImage().equals("</managed-bean")))
-                                token = token.getNext();
-                            if (token!=null && token.getImage().equals("</managed-bean")){
-                                while (token != null
-                                        && !(token.getTokenID().getNumericID() ==  XML_ELEMENT
-                                        && token.getImage().equals(">")))
-                                    token = token.getNext();
-                                if (token!=null && token.getImage().equals(">")){
-                                    end = token.getOffset()+1;
-                                    return new int[]{start, end};
-                                }
-                            }
-                            return new int[]{start, text.length()};
-                        }
-                    }
-                }
-                offset = text.indexOf(beanName, offset+beanName.length());
-            }
-        }
-        catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
-        } 
-        return new int []{-1,-1};
-    }
-    
     private static final Logger LOGGER = Logger.getLogger(FacesRefactoringUtils.class.getName());
     
     public static abstract class OccurrenceItem {
@@ -328,10 +273,10 @@ final class FacesRefactoringUtils {
         
         public String getElementText(){
             StringBuffer stringBuffer = new StringBuffer();
-            stringBuffer.append("<font color=\"#0000FF\">");
-            stringBuffer.append("&lt;").append(getXMLElementName()).append("&gt;</font><b>");
-            stringBuffer.append(oldValue).append("</b><font color=\"#0000FF\">&lt;/").append(getXMLElementName());
-            stringBuffer.append("&gt;</font>");
+            stringBuffer.append("<font color=\"#0000FF\">"); // NOI18N
+            stringBuffer.append("&lt;").append(getXMLElementName()).append("&gt;</font><b>");  // NOI18N
+            stringBuffer.append(oldValue).append("</b><font color=\"#0000FF\">&lt;/").append(getXMLElementName()); // NOI18N
+            stringBuffer.append("&gt;</font>"); // NOI18N
             return stringBuffer.toString();
         }
         
@@ -339,31 +284,7 @@ final class FacesRefactoringUtils {
         
         public abstract void performRename();
         public abstract void undoRename();
-        public abstract String getRenameMessage();
-        
-        protected PositionBounds createPosition(int startOffset, int endOffset) {
-            try{
-                DataObject dataObject = DataObject.find(config);
-                    CloneableEditorSupport editor
-                            = FacesRefactoringUtils.findCloneableEditorSupport(dataObject);
-                    if (editor != null){
-                        PositionRef start=editor.createPositionRef(startOffset, Bias.Forward);
-                        PositionRef end=editor.createPositionRef(endOffset, Bias.Backward);
-                        return new PositionBounds(start,end);
-                    }
-            } catch (DataObjectNotFoundException ex) {
-                Exceptions.printStackTrace(ex); // TODO
-            }
-            return null;
-        }
-        
-        public PositionBounds getClassDefinitionPosition() {
-            return createPosition(0, 0);
-        };
-        
-        public PositionBounds getElementDefinitionPosition() {
-            return createPosition(0, 0);
-        };
+        public abstract String getRenameMessage();     
     }
     
     public static class ManagedBeanNameItem extends OccurrenceItem {
@@ -379,11 +300,11 @@ final class FacesRefactoringUtils {
         }
         
         public void performRename(){
-            changeBeanName(newValue);
+            changeBeanName(oldValue, newValue);
         }
         
         public void undoRename(){
-            changeBeanName(oldValue);
+            changeBeanName(newValue, oldValue);
         }        
         
         public String getRenameMessage(){
@@ -391,63 +312,112 @@ final class FacesRefactoringUtils {
                     new Object[] { bean.getManagedBeanName(), getElementText()});
         }
         
-        private void changeBeanName(String beanName){
+        private void changeBeanName(String oldBeanName, String newBeanName){
             FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
             List <ManagedBean> beans = facesConfig.getManagedBeans();
             for (Iterator<ManagedBean> it = beans.iterator(); it.hasNext();) {
                 ManagedBean managedBean = it.next();
-                if (bean.getManagedBeanName().equals(managedBean.getManagedBeanName())){
+                if (oldBeanName.equals(managedBean.getManagedBeanName())){
                     facesConfig.getModel().startTransaction();
-                    managedBean.setManagedBeanName(beanName);
+                    managedBean.setManagedBeanName(newBeanName);
                     facesConfig.getModel().endTransaction();
                     continue;
                 }
-                
             }
         }
-        
-        public PositionBounds getClassDefinitionPosition() {
-            PositionBounds position = null;
-            try{
-                DataObject dataObject = DataObject.find(config);
-                BaseDocument document = FacesRefactoringUtils.getBaseDocument(dataObject);
-                int [] offsets = FacesRefactoringUtils.getManagedBeanDefinition(document, bean.getManagedBeanName());
-                String text = document.getText(offsets);
-                int offset = offsets[0] + text.indexOf(oldValue);
-                position =  createPosition(offset, offset + oldValue.length());
-            } catch (BadLocationException ex) {
-                ErrorManager.getDefault().notify(ex);
-            } catch (DataObjectNotFoundException ex) {
-                java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
-                        ex.getMessage(),
-                        ex);
-            }
-            return position;
-        };
-        
-        public PositionBounds getElementDefinitionPosition() {
-            PositionBounds position = null;
-            try {
-                DataObject dataObject = DataObject.find(config);
-                BaseDocument document = FacesRefactoringUtils.getBaseDocument(dataObject);
-                int [] offsets = FacesRefactoringUtils.getManagedBeanDefinition(document, bean.getManagedBeanName());
-                position =  createPosition(offsets[0], offsets[1]);
-            } catch (DataObjectNotFoundException ex) {
-                java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
-                        ex.getMessage(),
-                        ex);
-            }
-            return position;
-        };
     }
 
-    public static List <OccurrenceItem> getAllOccurrences(WebModule webModule, String oldName, String newName){
+    public static class NavigationFromViewIdItem extends OccurrenceItem {
+        private final NavigationRule navigationRule;
+        
+        public NavigationFromViewIdItem(FileObject config, NavigationRule navigationRule, String newValue){
+            super(config, newValue, navigationRule.getFromViewId());
+            this.navigationRule = navigationRule;
+        }
+        
+        protected String getXMLElementName(){
+            return "from-view-id"; //NOI18N
+        }
+        
+        public void performRename(){
+            changeFromViewId(oldValue, newValue);
+        }
+        
+        public void undoRename(){
+            changeFromViewId(newValue, oldValue);
+        }        
+        
+        public String getRenameMessage(){
+            return NbBundle.getMessage(FacesRefactoringUtils.class, "MSG_NavigationFromViewId_Rename",  //NOI18N
+                    new Object[] { navigationRule.getFromViewId(), getElementText()});
+        }
+        
+        private void changeFromViewId(String oldFromViewId, String newFromViewId){
+            FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
+            List <NavigationRule> beans = facesConfig.getNavigationRules();
+            for (Iterator<NavigationRule> it = beans.iterator(); it.hasNext();) {
+                NavigationRule aNavigationRule = it.next();
+                if (oldFromViewId.equals(aNavigationRule.getFromViewId())){
+                    facesConfig.getModel().startTransaction();
+                    aNavigationRule.setFromViewId(newFromViewId);
+                    facesConfig.getModel().endTransaction();
+                    continue;
+                }
+            }
+        }
+    }
+    
+    public static class NavigationToViewIdItem extends OccurrenceItem {
+        private final NavigationCase navigationCase;
+        
+        public NavigationToViewIdItem(FileObject config, NavigationCase navigationCase, String newValue){
+            super(config, newValue, navigationCase.getToViewId());
+            this.navigationCase = navigationCase;
+        }
+        
+        protected String getXMLElementName(){
+            return "to-view-id"; //NOI18N
+        }
+        
+        public void performRename(){
+            changeToViewId(oldValue, newValue);
+        }
+        
+        public void undoRename(){
+            changeToViewId(newValue, oldValue);
+        }        
+        
+        public String getRenameMessage(){
+            return NbBundle.getMessage(FacesRefactoringUtils.class, "MSG_NavigationToViewId_Rename",  //NOI18N
+                    new Object[] { navigationCase.getToViewId(), getElementText()});
+        }
+        
+        private void changeToViewId(String oldFromViewId, String newFromViewId){
+            FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
+            List <NavigationRule> beans = facesConfig.getNavigationRules();
+            for (Iterator<NavigationRule> it = beans.iterator(); it.hasNext();) {
+                NavigationRule aNavigationRule = it.next();
+                List <NavigationCase> navigationCases = aNavigationRule.getNavigationCases();
+                for (Iterator<NavigationCase> ncit = navigationCases.iterator(); ncit.hasNext();) {
+                    NavigationCase aNavigationCase = ncit.next();
+                    if (oldFromViewId.equals(aNavigationCase.getToViewId())){
+                        facesConfig.getModel().startTransaction();
+                        aNavigationCase.setToViewId(newFromViewId);
+                        facesConfig.getModel().endTransaction();
+                        continue;
+                    }
+                }
+            }
+        }
+    }
+    
+    public static List <OccurrenceItem> getAllBeanNameOccurrences(WebModule webModule, String oldBeanName, String newBeanName){
         List result = new ArrayList();
         assert webModule != null;
-        assert oldName != null;
-        assert newName != null;
+        assert oldBeanName != null;
+        assert newBeanName != null;
         
-        LOGGER.fine("getAllOccurences("+ webModule.getDocumentBase().getPath() + ", " + oldName + ", " + newName + ")");
+        LOGGER.fine("getAllOccurences("+ webModule.getDocumentBase().getPath() + ", " + oldBeanName + ", " + newBeanName + ")"); // NOI18N
         if (webModule != null){
             // find all jsf configuration files in the web module
             FileObject[] configs = ConfigurationUtils.getFacesConfigFiles(webModule);
@@ -458,8 +428,68 @@ final class FacesRefactoringUtils {
                     List<ManagedBean> managedBeans = facesConfig.getManagedBeans();
                     for (Iterator<ManagedBean> it = managedBeans.iterator(); it.hasNext();) {
                         ManagedBean managedBean = it.next();
-                        if (oldName.equals(managedBean.getManagedBeanName())) {
-                            result.add(new ManagedBeanNameItem(configs[i], managedBean, newName));
+                        if (oldBeanName.equals(managedBean.getManagedBeanName())) {
+                            result.add(new ManagedBeanNameItem(configs[i], managedBean, newBeanName));
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+    
+
+    public static List <OccurrenceItem> getAllFromViewIdOccurrences(WebModule webModule, String oldFromViewId, String newFromViewId){
+        List result = new ArrayList();
+        assert webModule != null;
+        assert oldFromViewId != null;
+        assert newFromViewId != null;
+        
+        LOGGER.fine("getAllFromViewOccurrences("+ webModule.getDocumentBase().getPath() + ", " + oldFromViewId + ", " + newFromViewId + ")"); // NOI18N
+        if (webModule != null){
+            // find all jsf configuration files in the web module
+            FileObject[] configs = ConfigurationUtils.getFacesConfigFiles(webModule);
+            
+            if (configs != null){
+                for (int i = 0; i < configs.length; i++) {
+                    FacesConfig facesConfig = ConfigurationUtils.getConfigModel(configs[i], true).getRootComponent();                    
+                    List<NavigationRule> navigationRules = facesConfig.getNavigationRules();
+                    for (Iterator<NavigationRule> it = navigationRules.iterator(); it.hasNext();) {
+                        NavigationRule navigationRule = it.next();
+                        if (oldFromViewId.equals(navigationRule.getFromViewId())) {
+                            result.add(new NavigationFromViewIdItem(configs[i], navigationRule, newFromViewId));
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+    
+
+    public static List <OccurrenceItem> getAllToViewOccurrences(WebModule webModule, String oldToViewId, String newToViewId){
+        List result = new ArrayList();
+        assert webModule != null;
+        assert oldToViewId != null;
+        assert newToViewId != null;
+        
+        LOGGER.fine("getAllToViewOccurrences("+ webModule.getDocumentBase().getPath() + ", " + oldToViewId + ", " + newToViewId + ")"); // NOI18N
+        if (webModule != null){
+            // find all jsf configuration files in the web module
+            FileObject[] configs = ConfigurationUtils.getFacesConfigFiles(webModule);
+            
+            if (configs != null){
+                for (int i = 0; i < configs.length; i++) {
+                    FacesConfig facesConfig = ConfigurationUtils.getConfigModel(configs[i], true).getRootComponent();                    
+                    List<NavigationRule> navigationRules = facesConfig.getNavigationRules();
+                    for (Iterator<NavigationRule> it = navigationRules.iterator(); it.hasNext();) {
+                        NavigationRule navigationRule = it.next();
+                        List<NavigationCase> navigationCases = navigationRule.getNavigationCases();
+                        for (Iterator<NavigationCase> ncit = navigationCases.iterator(); ncit.hasNext();) {
+                            NavigationCase navigationCase = ncit.next();
+                            if (oldToViewId.equals(navigationCase.getToViewId())) {
+                                result.add(new NavigationToViewIdItem(configs[i], navigationCase, newToViewId));
+                            }
                         }
                     }
                 }

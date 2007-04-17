@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.visualweb.insync.faces.refactoring;
 
+import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Logger;
 
 import org.netbeans.api.project.FileOwnerQuery;
@@ -27,14 +29,19 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.visualweb.insync.faces.FacesUnit;
+import org.netbeans.modules.visualweb.insync.faces.refactoring.FacesRefactoringUtils.ManagedBeanNameItem;
+import org.netbeans.modules.visualweb.insync.faces.refactoring.FacesRefactoringUtils.NavigationToViewIdItem;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
+import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
+import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
+import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
+import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.text.PositionBounds;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
@@ -138,18 +145,37 @@ public class FacesJspFileRenameRefactoringPlugin extends FacesRefactoringPlugin 
                         }
                     }
                     
+                    FileObject webFolderFileobject = JsfProjectUtils.getDocumentRoot(project);
+                    FileObject parentObject = refactoringSourcefileObject.getParent();
+                    String parentRelativePath = FileUtil.getRelativePath(webFolderFileobject, parentObject);
+                    String oldRelativePagePath = parentRelativePath +
+                                          (parentRelativePath.length() > 0 ? "/" : "") + // NOI18N
+                                          refactoringSourcefileObject.getNameExt();
+                    String newRelativePagePath = parentRelativePath +
+                                          (parentRelativePath.length() > 0 ? "/" : "") + // NOI18N
+                                          newName + "." +refactoringSourcefileObject.getExt();
+                    
                     // Add a refactoring element to set the start page
-                    if (JsfProjectUtils.isStartPage(refactoringSourcefileObject)) {
-                        FileObject webFolderFileobject = JsfProjectUtils.getDocumentRoot(project);
-                        FileObject parentObject = refactoringSourcefileObject.getParent();
-                        String parentRelativePath = FileUtil.getRelativePath(webFolderFileobject, parentObject);
-                        String oldStartPage = parentRelativePath +
-                                              (parentRelativePath.length() > 0 ? "/" : "") + // NOI18N
-                                              refactoringSourcefileObject.getNameExt();
-                        String newStartPage = parentRelativePath +
-                                              (parentRelativePath.length() > 0 ? "/" : "") + // NOI18N
-                                              newName + "." +refactoringSourcefileObject.getExt();
-                        refactoringElements.addFileChange(getRefactoring(), new SetProjectStartPageRefactoringElement(project, oldStartPage, newStartPage));
+                    if (JsfProjectUtils.isStartPage(refactoringSourcefileObject)) {                        
+                        refactoringElements.addFileChange(getRefactoring(), new SetProjectStartPageRefactoringElement(project, oldRelativePagePath, newRelativePagePath));
+                    }
+                    
+                    // Handle navigation view ids
+                    WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+                    if (webModule != null){
+                        // find all jsf configuration files in the web module
+                        FileObject[] configs = ConfigurationUtils.getFacesConfigFiles(webModule);
+                        
+                        if (configs != null){
+                            List <FacesRefactoringUtils.OccurrenceItem> items = FacesRefactoringUtils.getAllFromViewIdOccurrences(webModule, oldRelativePagePath, newRelativePagePath);
+                            for (FacesRefactoringUtils.OccurrenceItem item : items) {
+                                refactoringElements.add(getRefactoring(), new JSFConfigRenameFromViewIdElement(item));
+                            }
+                            items = FacesRefactoringUtils.getAllToViewOccurrences(webModule, oldRelativePagePath, newRelativePagePath);
+                            for (FacesRefactoringUtils.OccurrenceItem item : items) {
+                                refactoringElements.add(getRefactoring(), new JSFConfigRenameToViewIdElement(item));
+                            }
+                        }
                     }
                 }
             }

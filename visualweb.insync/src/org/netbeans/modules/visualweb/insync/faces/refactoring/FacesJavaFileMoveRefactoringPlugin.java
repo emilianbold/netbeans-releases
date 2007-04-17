@@ -50,7 +50,6 @@ import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.visualweb.insync.Model;
 import org.netbeans.modules.visualweb.insync.faces.ElBindingScanner;
 import org.netbeans.modules.visualweb.insync.faces.FacesUnit;
@@ -66,9 +65,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.text.PositionBounds;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Document;
@@ -259,7 +256,7 @@ public class FacesJavaFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
                                     // Replace #{oldBeanName. ...} with #{newBeanName....} in string literals in all java files of FacesModels (JavaUnits)
                                     JavaSource javaSource = JavaSource.forFileObject(javaFileObject);
                                     ModificationResult modificationResult = javaSource.runModificationTask(
-                                            new StringLiteralTask(refactoringElements, oldValueBindingPrefix, newValueBindingPrefix, StringLiteralTransformer.MatchKind.PREFIX)
+                                            new StringLiteralTask(oldValueBindingPrefix, newValueBindingPrefix, StringLiteralTransformer.MatchKind.PREFIX)
                                             );
                                     refactoringElements.registerTransaction(new RetoucheCommit(Collections.singleton(modificationResult)));
                                     for (FileObject jfo : modificationResult.getModifiedFileObjects()) {
@@ -333,7 +330,7 @@ public class FacesJavaFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
                                                 
                                                 try {
                                                     ModificationResult modificationResult = javaSource.runModificationTask(
-                                                            new StringLiteralTask(refactoringElements, oldBeanName, newBeanName, StringLiteralTransformer.MatchKind.EXACT)
+                                                            new StringLiteralTask(oldBeanName, newBeanName, StringLiteralTransformer.MatchKind.EXACT)
                                                             );
                                                     refactoringElements.registerTransaction(new RetoucheCommit(Collections.singleton(modificationResult)));
                                                     for (FileObject jfo : modificationResult.getModifiedFileObjects()) {
@@ -381,7 +378,7 @@ public class FacesJavaFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
                 // Rename the managed bean name. 
                 WebModule webModule = WebModule.getWebModule(refactoringSourcefileObject);
                 if (webModule != null){
-                    List <FacesRefactoringUtils.OccurrenceItem> items = FacesRefactoringUtils.getAllOccurrences(webModule, oldBeanName, newBeanName);
+                    List <FacesRefactoringUtils.OccurrenceItem> items = FacesRefactoringUtils.getAllBeanNameOccurrences(webModule, oldBeanName, newBeanName);
                     for (FacesRefactoringUtils.OccurrenceItem item : items) {
                         refactoringElements.add(getRefactoring(), new JSFConfigRenameBeanNameElement(item));
                     }
@@ -425,15 +422,12 @@ public class FacesJavaFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
     }
     
     private class StringLiteralTask implements CancellableTask<WorkingCopy> {
-        
-        private final RefactoringElementsBag elements;
         private final String oldString;
         private final String newString;
         private final StringLiteralTransformer.MatchKind matchKind;
         
-        public StringLiteralTask(RefactoringElementsBag elements, String oldString, String newString, StringLiteralTransformer.MatchKind matchKind) {
+        public StringLiteralTask(String oldString, String newString, StringLiteralTransformer.MatchKind matchKind) {
             super();
-            this.elements = elements;
             this.oldString = oldString;
             this.newString = newString;
             this.matchKind = matchKind;
@@ -457,38 +451,6 @@ public class FacesJavaFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
                 ElementGripFactory.getDefault().put(compiler.getFileObject(), tree, compiler);
             }
             fireProgressListenerStep();
-        }
-    }
-    
-    public static class JSFConfigRenameBeanNameElement extends SimpleRefactoringElementImplementation {
-        private final FacesRefactoringUtils.OccurrenceItem item;
-        
-        JSFConfigRenameBeanNameElement(FacesRefactoringUtils.OccurrenceItem item){
-            this.item = item;
-        }
-        
-        public String getText() {
-            return getDisplayText();
-        }
-        
-        public String getDisplayText() {
-            return item.getRenameMessage();
-        }
-        
-        public void performChange() {
-            item.performRename();
-        }
-               
-        public FileObject getParentFile() {
-            return item.getFacesConfig();
-        }
-        
-        public PositionBounds getPosition() {
-            return item.getClassDefinitionPosition();
-        }
-        
-        public Lookup getLookup() {
-            return Lookups.singleton(item.getFacesConfig());
         }
     }
 }
