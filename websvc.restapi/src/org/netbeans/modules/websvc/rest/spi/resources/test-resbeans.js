@@ -259,8 +259,8 @@ function doShowContent(uri, mName, mediaType) {
     document.getElementById('testres').innerHTML = str;
     var req = uri;
     var disp = getDisplayUri(req);
-    var uriLink = "<a id='"+req+"' href=javascript:doShowContent('"+req+"') >"+disp+"</a>";
-    updatepage('request', '<b>Resource:</b> '+uriLink+' (<a href="'+req+'" target="_blank">'+req+'</a>)');
+    var uriLink = "<a id='"+req+"' href=javascript:doShowContent('"+req+"') >"+getDisplayURL(disp, 80)+"</a>";
+    updatepage('request', '<b>MSG_TEST_RESBEANS_Resource</b> '+uriLink+' <br/>(<a href="'+req+'" target="_blank">'+getDisplayURL(req, 90)+'</a>)');
 }
 function getFormRep(req, uri, mName, mediaType) {
     if(mName == null || mName == 'undefined')
@@ -291,10 +291,10 @@ function showBreadCrumbs(uri) {
     }
     if(count == 0) {
         breadCrumbs[breadCrumbs.length+1] = disp;
-        var uriLink = "<a id='"+uri+"' href=javascript:doShowContent('"+uri+"') >"+disp+"</a>";
+        var uriLink = "<a id='"+uri+"' href=javascript:doShowContent('"+uri+"') >"+getDisplayURL(disp, 90)+"</a>";
         if(nav.innerHTML != '') {
             bcCount++;
-            var uriPerLine = 5;
+            var uriPerLine = 1;
             //alert(bcCount);
             //alert(Math.round(bcCount/uriPerLine)+ ' ' + bcCount/uriPerLine);
             if(Math.round(bcCount/uriPerLine) == bcCount/uriPerLine)
@@ -549,36 +549,47 @@ function getContainerTable(xmlStr) {
     return ret;
 }
 function findUri(container) {
-    var str = '';
-    var refs = container.childNodes;
-    var count = 0;
-    for(i=0;i<refs.length;i++) {
-        var refsChild = refs[i];
-        if(refsChild.nodeValue == null) {//DOM Elements only
-            var ref = refsChild;
-            str += "<tr style='font-size: 9px;'>";                
-            var refChilds = ref.childNodes;
-            for(j=0;j<refChilds.length;j++) {
-                var refChild = refChilds[j];
-                if(refChild.nodeValue == null) {//DOM Elements only
-                    var id = refChild;
-                    if(ref.attributes != null && ref.attributes.length > 0 && 
-                            ref.attributes.getNamedItem('uri') != null) {
-                        var uri = ref.attributes.getNamedItem('uri').nodeValue;
-                        str += "<td>"+id.childNodes[0].nodeValue+"</td>";
-                        str += "<td>";
-                        var disp = getDisplayUri(uri);
-                        str += "<a id='"+uri+"' href=javascript:doShowContent('"+uri+"') >"+disp+"</a>";
-                        str += "&nbsp;&nbsp;(<a href='"+uri+"' target='_blank'>"+uri+"</a>)";
-                        str += "</td>";
-                        str += "</tr>";
+    var tcStr = getUri(container);
+    return tcStr;
+}
+function getUri(ref) {
+    var tcStr = '';
+    var refChilds = ref.childNodes;
+    if(refChilds.length == 0)
+        return;
+    //alert(ref.nodeName+' str: '+tcStr);
+    for(i=0;i<refChilds.length;i++) {
+        var refChild = refChilds[i];
+        if(refChild.nodeValue == null) {//DOM Elements only
+            if(refChild.attributes != null && refChild.attributes.length > 0 && 
+                    refChild.attributes.getNamedItem('uri') != null) {
+                    tcStr += createRowForUri(refChild);
+            } else {
+                var subChilds = refChild.childNodes;
+                for(j=0;j<subChilds.length;j++) {
+                    var subChild = subChilds[j];          
+                    if(subChild.nodeValue == null) {//DOM Elements only
+                        if(subChild.attributes != null && subChild.attributes.length > 0 && 
+                            subChild.attributes.getNamedItem('uri') != null) {
+                            tcStr += createRowForUri(subChild);    
+                        }
                     }
-                    //findUri(str, ref);
-                }
+                }            
             }
-            count++;
         }
     }
+    return tcStr;
+}
+function createRowForUri(refChild) {
+    var str = '';
+    var uri = refChild.attributes.getNamedItem('uri').nodeValue;
+    str += "<td>"+refChild.childNodes[0].childNodes[0].nodeValue+"</td>";
+    str += "<td>";
+    var disp = getDisplayUri(uri);
+    str += "<a id='"+uri+"' href=javascript:doShowContent('"+uri+"') >"+getDisplayURL(disp, 70)+"</a>";
+    str += "<br/>(<a href='"+uri+"' target='_blank'>"+getDisplayURL(uri, 70)+"</a>)";
+    str += "</td>";
+    str += "</tr>";
     return str;
 }
 function getDisplayUri(uri) {
@@ -586,6 +597,9 @@ function getDisplayUri(uri) {
     if(disp.length > baseURL.length)
         disp = disp.substring(baseURL.length);
     return disp;
+}
+function getDisplayURL(url, len) {
+    return url.substring(0, len);
 }
 function updatepage(id, str){
     document.getElementById(id).innerHTML = str;
@@ -661,10 +675,15 @@ function listCategories(){
 
 function writeCategory(){
     var uri = baseURL + this.id;
+    if(this.id == 'resources')
+        uri = null;;
     var categoryString = '<span class="category"';
     categoryString += '><img src="cg.gif" id="I1' + this.id + '" onClick="updateTree(\'' + this.id + '\')">';
     categoryString += '<img src="collapse.gif" id="I' + this.id + '">';
-    categoryString += "<a href=javascript:doShowContent('"+uri+"') >"+ this.text + "</a>";
+    if(uri != null)
+        categoryString += "<a href=javascript:doShowContent('"+uri+"') >"+ this.text + "</a>";
+    else
+        categoryString += this.text;
     categoryString += '</span>';
     categoryString += '<span class="item" id="';
     categoryString += this.id + '">';
@@ -701,13 +720,18 @@ function showCategory(category){
     toggleCategory(category);
 }
 
-function updateTree(catId){    
+function updateTree(catId){
+    //alert(catId);
+    if(catId == 'resources') {//return if top level
+        showCategory('resources');
+        return;
+    }
     var myTree = createTree(wadlDoc);
     document.getElementById('leftSidebar').innerHTML = myTree.toString();
     childrenContent = '';
     getChildren(catId);
     currentCategory = catId;
-    setTimeout("alertIt()",700);
+    setTimeout("alertIt()",1000);
 }
 
 function alertIt(){
