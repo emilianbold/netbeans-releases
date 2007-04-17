@@ -76,7 +76,7 @@ public class AddNewXMLDocument extends org.netbeans.performance.test.utilities.P
         
         new EventTool().waitNoEvent(1000);
         location = new NewFileNameLocationStepOperator();
-        location.txtObjectName().setText("XMLDoc_"+(index++));
+        location.txtObjectName().setText("XMLDoc_"+System.currentTimeMillis());
         wizard.next();
     }
     

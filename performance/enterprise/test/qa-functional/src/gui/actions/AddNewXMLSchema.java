@@ -75,7 +75,7 @@ public class AddNewXMLSchema extends org.netbeans.performance.test.utilities.Per
         
         new EventTool().waitNoEvent(1000);
         location = new NewFileNameLocationStepOperator();
-        location.txtObjectName().setText("XMLSchema_"+(index++));
+        location.txtObjectName().setText("XMLSchema_"+System.currentTimeMillis());
     }
     
     public ComponentOperator open(){

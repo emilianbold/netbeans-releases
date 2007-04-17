@@ -75,7 +75,7 @@ public class AddNewBpelProcess extends org.netbeans.performance.test.utilities.P
         
         new EventTool().waitNoEvent(1000);
         location = new NewFileNameLocationStepOperator();
-        location.txtObjectName().setText("BPELProcess_"+(index++));
+        location.txtObjectName().setText("BPELProcess_"+System.currentTimeMillis());
     }
     
     public ComponentOperator open(){

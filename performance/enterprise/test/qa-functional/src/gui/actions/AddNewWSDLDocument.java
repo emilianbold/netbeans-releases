@@ -75,7 +75,7 @@ public class AddNewWSDLDocument extends org.netbeans.performance.test.utilities.
         
         new EventTool().waitNoEvent(1000);
         location = new NewFileNameLocationStepOperator();
-        location.txtObjectName().setText("WSDLDoc_"+(index++));
+        location.txtObjectName().setText("WSDLDoc_"+System.currentTimeMillis());
     }
     
     public ComponentOperator open(){
