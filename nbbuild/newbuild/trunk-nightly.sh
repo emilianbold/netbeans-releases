@@ -17,7 +17,7 @@ init()
    export ANT_OPTS="-Xmx512m"
    export JAVA_HOME=$JDK_HOME
 
-   if [ -z '$CVS_STAMP' ]; then
+   if [ -z ${CVS_STAMP} ]; then
        CVS_STAMP="00:00UTC today"
        export DATESTAMP=`date -u +%Y%m%d0000`
    fi
