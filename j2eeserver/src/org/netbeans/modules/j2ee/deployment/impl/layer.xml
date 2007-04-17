@@ -108,7 +108,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Menu">
         <folder name="Tools">
-            <attr name="JavaPlatformsCustomizerAction.instance/ServerManagerAction.instance" boolvalue="true"/>
+            <attr name="LibrariesCustomizerAction.instance/ServerManagerAction.instance" boolvalue="true"/>
             <file name="ServerManagerAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.impl.ui.actions.ServerManagerAction"/>
             </file>
