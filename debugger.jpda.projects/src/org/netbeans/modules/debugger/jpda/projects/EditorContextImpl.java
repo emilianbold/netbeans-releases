@@ -25,6 +25,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreeScanner;
+
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -53,11 +54,13 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.util.SourcePositions;
+
 import javax.lang.model.util.Elements;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementUtilities;
@@ -65,7 +68,6 @@ import org.netbeans.editor.Coloring;
 import org.netbeans.modules.editor.highlights.spi.Highlight;
 
 import org.openide.ErrorManager;
-
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
@@ -82,10 +84,12 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
+
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 
+import org.netbeans.editor.JumpList;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 
 /**
@@ -149,6 +153,7 @@ public class EditorContextImpl extends EditorContext {
         } else {
             l.show (Line.SHOW_REUSE);
         }
+        addPositionToJumpList(url, l, 0);
         return true;
     }
     
@@ -166,18 +171,30 @@ public class EditorContextImpl extends EditorContext {
                     "Show Source: Have no line for URL = "+url+", line number = "+lineNumber);
             return false;
         }
-        if (fronting != null) {
-            if (fronting.equals ("true"))
-                l.show (Line.SHOW_TOFRONT, column); //FIX 47825
-            else
-                l.show (Line.SHOW_GOTO, column);
-            return true;
-        }
-        if (Utilities.isWindows())
+        if ("true".equalsIgnoreCase(fronting) || Utilities.isWindows()) {
             l.show (Line.SHOW_TOFRONT, column); //FIX 47825
-        else 
+        } else {
             l.show (Line.SHOW_GOTO, column);
+        }
+        addPositionToJumpList(url, l, column);
         return true;
+    }
+    
+    /** Add the line offset into the jump history */
+    private void addPositionToJumpList(String url, Line l, int column) {
+        DataObject dataObject = getDataObject (url);
+        if (dataObject != null) {
+            EditorCookie ec = dataObject.getLookup().lookup(EditorCookie.class);
+            try {
+                StyledDocument doc = ec.openDocument();
+                JEditorPane[] eps = ec.getOpenedPanes();
+                if (eps != null && eps.length > 0) {
+                    JumpList.addEntry(eps[0], NbDocument.findLineOffset(doc, l.getLineNumber()) + column);
+                }
+            } catch (java.io.IOException ioex) {
+                ErrorManager.getDefault().notify(ioex);
+            }
+        }
     }
     
     
