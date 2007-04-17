@@ -45,20 +45,20 @@ AST {
 
 ########### indentation ########################################################
 
-REFORMAT:startTag:"i++"
-REFORMAT:endTag:"--i"
-REFORMAT:simpleTag:"i"
-REFORMAT:etext:"i"
-REFORMAT:text:" "
+#REFORMAT:startTag:"i++"
+#REFORMAT:endTag:"--i"
+#REFORMAT:simpleTag:"i"
+#REFORMAT:etext:"i"
+#REFORMAT:text:" "
 #REFORMAT:element:"i"
-REFORMAT:html_comment:"i"
-REFORMAT:unpairedStartTag:"i"
+#REFORMAT:html_comment:"i"
+#REFORMAT:unpairedStartTag:"i"
 #REFORMAT:html_attribute_name:" "
-REFORMAT:html_operator:""
-REFORMAT:html_attribute_value:""
-REFORMAT:html_element_end:""
-REFORMAT:attributes:">b "
-REFORMAT:attribute:"b"
+#REFORMAT:html_operator:""
+#REFORMAT:html_attribute_value:""
+#REFORMAT:html_element_end:""
+#REFORMAT:attributes:">b "
+#REFORMAT:attribute:"b"
 
 
 ########### colors #############################################################
@@ -146,7 +146,7 @@ COMPLETE "\":\""
 COMPLETE "':'"
 COMPLETE org.netbeans.modules.html.editor.HTML.complete
 
-INDENT org.netbeans.modules.html.editor.HTML.indent
+#INDENT org.netbeans.modules.html.editor.HTML.indent
 
 #HYPERLINK:attribute_value: org.netbeans.modules.html.editor.HTML.hyperlink
 
