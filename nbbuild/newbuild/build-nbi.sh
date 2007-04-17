@@ -10,4 +10,6 @@ cvs -d :pserver:anoncvs@cvs.netbeans.org:/cvs checkout -D "$CVS_STAMP" -PA -d NB
 
 cd NBI
 
+unset LD_PRELOAD
+
 bash build.sh > $INSTALLER_LOG 2>&1 
