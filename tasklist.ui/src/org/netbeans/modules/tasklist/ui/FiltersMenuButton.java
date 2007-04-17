@@ -180,7 +180,7 @@ public class FiltersMenuButton extends MenuToggleButton implements PropertyChang
     }
     
     private void updateState( TaskFilter filter ) {
-        if( TaskFilter.EMPTY.equals( filter ) ) {
+        if( null == filter || TaskFilter.EMPTY.equals( filter ) ) {
             setSelected( false );
             setToolTipText( NbBundle.getMessage( FiltersMenuButton.class, "HINT_SelectFilter" ) ); //NOI18N
             FilterRepository.getDefault().setActive( null );
