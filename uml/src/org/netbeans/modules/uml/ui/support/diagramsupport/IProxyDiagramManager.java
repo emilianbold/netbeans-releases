@@ -40,7 +40,7 @@ public interface IProxyDiagramManager
 	 * @param The name that was suggested.
 	 * @return A valid diagram name.
 	 */
-	public String getValidDiagramName( String sSuggestedDiagramName );
+//	public String getValidDiagramName( String sSuggestedDiagramName );
 
 	/**
 	 * Verifies that the diagram name is unique within the project base 

@@ -93,7 +93,7 @@ public class StubDiagramCreator implements IStubDiagramCreator
 		IProxyDiagramManager pDiaMgr = ProxyDiagramManager.instance();
 		
 		// Get the filename we should use
-		String filename = pDiaMgr.getValidDiagramName(sDiagramName);
+		String filename = sDiagramName; //pDiaMgr.getValidDiagramName(sDiagramName);
 		boolean isCorrect = pDiaMgr.isValidDiagram(filename);
 		String fullFilename = pDiaMgr.createDiagramFilename(pNamespace, filename);
 		if (fullFilename != null && fullFilename.length() > 0)

@@ -2399,7 +2399,7 @@ public class ADDrawingAreaControl extends ApplicationView
       boolean isCorrect = false;
       
       // Let the diagram manager verify this name is ok
-      validDiaName = pDiaMgr.getValidDiagramName(newVal);
+      validDiaName = newVal; //pDiaMgr.getValidDiagramName(newVal);
       
       boolean isSame = true;
       boolean fireEvents = true;

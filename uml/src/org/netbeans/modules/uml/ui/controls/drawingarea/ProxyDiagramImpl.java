@@ -134,7 +134,7 @@ public class ProxyDiagramImpl
    {
       IProxyDiagramManager manager = ProxyDiagramManager.instance();
       
-      String validDaigramName = manager.getValidDiagramName(value);
+      String validDaigramName = value; //manager.getValidDiagramName(value);
       IDiagram diagram        = getDiagram();
       if(diagram != null)
       {

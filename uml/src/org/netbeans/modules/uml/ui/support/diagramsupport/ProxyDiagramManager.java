@@ -91,34 +91,34 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
    /*
     * returns valid diagram name
     */
-    public String getValidDiagramName(String sSuggestedDiagramName)
-    {
-        String newName = sSuggestedDiagramName;
-        boolean isCorrect = false;
-        if (newName != null && newName.length() > 0)
-        {
-            char[] newArr = newName.toCharArray();
-            int count = newName.length();
-            for (int i=0; i<count; i++)
-            {
-                char c = newName.charAt(i);
-                if (!Character.isLetterOrDigit(c))
-                {
-                    if (c == '_' || c == '{' || c == '}' || c == '[' || c == ']' || c == ' ')
-                    {
-                        //these are ok
-                    }
-                    else
-                    {
-                        newArr[i] = '_';
-                        isCorrect = false;
-                    }
-                }
-            }
-            newName = String.valueOf(newArr);
-        }
-        return newName;
-    }
+//    public String getValidDiagramName(String sSuggestedDiagramName)
+//    {
+//        String newName = sSuggestedDiagramName;
+//        boolean isCorrect = false;
+//        if (newName != null && newName.length() > 0)
+//        {
+//            char[] newArr = newName.toCharArray();
+//            int count = newName.length();
+//            for (int i=0; i<count; i++)
+//            {
+//                char c = newName.charAt(i);
+//                if (!Character.isLetterOrDigit(c))
+//                {
+//                    if (c == '_' || c=='(' || c==')' || c == '{' || c == '}' || c == '[' || c == ']' || c == ' ')
+//                    {
+//                        //these are ok
+//                    }
+//                    else
+//                    {
+//                        newArr[i] = '_';
+//                        isCorrect = false;
+//                    }
+//                }
+//            }
+//            newName = String.valueOf(newArr);
+//        }
+//        return newName;
+//    }
     
    /* (non-Javadoc)
     * @see org.netbeans.modules.uml.ui.support.diagramsupport.IProxyDiagramManager#verifyUniqueDiagramName(java.lang.String, java.lang.String)

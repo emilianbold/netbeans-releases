@@ -1174,15 +1174,31 @@ public class Util
         if (diagramName == null || diagramName.trim().length() == 0)
             return false;
         
-        for (String c : IDS_INVALID_CHARS)
+        String name = diagramName.trim();
+        int count = name.length();
+        for (int i=0; i<count; i++)
         {
-            if ( diagramName.indexOf(c) != -1)
-                return false;
+            char c = name.charAt(i);
+            if (!Character.isLetterOrDigit(c))
+            {
+                if (c == '_' || c== '(' || c==')' || c == '{' || c == '}' || 
+                    c == '[' || c == ']' || c == ' ')
+                    continue;
+                else
+                    return false;        
+            }
         }
         return true;
+        
+        //        for (String c : IDS_INVALID_CHARS)
+        //        {
+        //            if ( diagramName.indexOf(c) != -1)
+        //                return false;
+        //        }
+        //        return true;
     }
     
-    public static String[] IDS_INVALID_CHARS = {"\\",  "/",  "*", ":", "?", ".", "&"};
+//    public static String[] IDS_INVALID_CHARS = {"\\",  "/",  "*", ":", "?", ".", "&"};
     
     private static SimpleDateFormat cDateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private static SimpleDateFormat cDateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
