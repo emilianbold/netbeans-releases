@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.wsdlextensions.jms.impl;
 
-import org.netbeans.modules.wsdlextensions.jms.JMSComponent;
 import org.netbeans.modules.wsdlextensions.jms.JMSConstants;
 import org.netbeans.modules.wsdlextensions.jms.JMSQName;
 import org.netbeans.modules.wsdlextensions.jms.JMSOperation;
@@ -141,7 +140,7 @@ public class JMSOperationImpl extends JMSComponentImpl implements JMSOperation {
     public void setDisableMessageID(boolean val) {
         setAttribute(JMSOperation.ATTR_DISABLE_MESSAGE_ID, 
                      JMSAttribute.JMS_OPERATION_DISABLE_MESSAGE_ID,
-                     val?JMSConstants.BOOLEAN_TRUE:JMSConstants.BOOLEAN_TRUE);        
+                     val?JMSConstants.BOOLEAN_TRUE:JMSConstants.BOOLEAN_FALSE);        
     }
 
     public boolean getDisableMessageTimeStamp() {
@@ -152,7 +151,7 @@ public class JMSOperationImpl extends JMSComponentImpl implements JMSOperation {
     public void setDisableMessageTimeStamp(boolean val) {
         setAttribute(JMSOperation.ATTR_DISABLE_MESSAGE_TIMESTAMP, 
                      JMSAttribute.JMS_OPERATION_DISABLE_MESSAGE_TIMESTAMP,
-                     val?JMSConstants.BOOLEAN_TRUE:JMSConstants.BOOLEAN_TRUE);      
+                     val?JMSConstants.BOOLEAN_TRUE:JMSConstants.BOOLEAN_FALSE);      
     }
     
     public long getTimeout() {

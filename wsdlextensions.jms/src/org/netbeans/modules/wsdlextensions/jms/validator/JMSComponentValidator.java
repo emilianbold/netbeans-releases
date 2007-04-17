@@ -518,13 +518,45 @@ public class JMSComponentValidator
                         }             
                         
 
-                        // warn if jndiConnectionFactoryName is used
-                        if (target.getJndiConnectionFactoryName() != null) {
+                        // warn if any of the JNDI related attributes are used
+                        if (target.getConnectionFactoryName() != null) {
                             results.add(new Validator.ResultItem(this,
                                     Validator.ResultType.WARNING,
                                     target,
                                     getMessage("JMSAddress.JNDI_CF_NAME_IN_JMS_ADDRESS_IGNORED",
-                                               new Object[] {aurl, target.getJndiConnectionFactoryName()})));
+                                               new Object[] {aurl, target.getConnectionFactoryName()})));
+                        }
+
+                        if (target.getInitialContextFactory() != null) {
+                            results.add(new Validator.ResultItem(this,
+                                    Validator.ResultType.WARNING,
+                                    target,
+                                    getMessage("JMSAddress.JNDI_INIT_CTX_FACT_IN_JMS_ADDRESS_IGNORED",
+                                               new Object[] {aurl, target.getInitialContextFactory()})));
+                        }
+
+                        if (target.getProviderURL() != null) {
+                            results.add(new Validator.ResultItem(this,
+                                    Validator.ResultType.WARNING,
+                                    target,
+                                    getMessage("JMSAddress.JNDI_PROVIDER_URL_IN_JMS_ADDRESS_IGNORED",
+                                               new Object[] {aurl, target.getProviderURL()})));
+                        }
+
+                        if (target.getSecurityPrincial() != null) {
+                            results.add(new Validator.ResultItem(this,
+                                    Validator.ResultType.WARNING,
+                                    target,
+                                    getMessage("JMSAddress.JNDI_SEC_PRINCIPAL_IN_JMS_ADDRESS_IGNORED",
+                                               new Object[] {aurl, target.getSecurityPrincial()})));
+                        }
+
+                        if (target.getSecurityCredentials() != null) {
+                            results.add(new Validator.ResultItem(this,
+                                    Validator.ResultType.WARNING,
+                                    target,
+                                    getMessage("JMSAddress.JNDI_SEC_CREDENTIALS_IN_JMS_ADDRESS_IGNORED",
+                                               new Object[] {aurl, target.getSecurityCredentials()})));
                         }
                         
                         // warn if jndienv is used
@@ -538,7 +570,7 @@ public class JMSComponentValidator
                         }
                     } else {
                         // check for jndiconnectionfactory name
-                        if (target.getJndiConnectionFactoryName() == null) {
+                        if (target.getConnectionFactoryName() == null) {
                             results.add(new Validator.ResultItem(this,
                                     Validator.ResultType.ERROR,
                                     target,
@@ -546,7 +578,33 @@ public class JMSComponentValidator
                                                new Object[] {aurl})));
                             
                         }
+
+                        // if not using local JNDI (i.e, initial context factory is defined),
+                        // ensure that the provider url is also defined.
+                        if (target.getInitialContextFactory() != null && target.getProviderURL() == null) {                            
+                            results.add(new Validator.ResultItem(this,
+                                    Validator.ResultType.ERROR,
+                                    target,
+                                    getMessage("JMSAddress.JNDI_PROVIDER_URL_UNDEFINED",
+                                               new Object[] {aurl, target.getInitialContextFactory()}))); 
+                        }
+
+                        String jndiSecPrincipal = target.getSecurityPrincial();
+                        if (jndiSecPrincipal != null) {
+                            isAToken(jndiSecPrincipal, target);
+                            String jndiSecCredentials = target.getSecurityCredentials();
+                            if (jndiSecCredentials == null) {
+                                results.add(new Validator.ResultItem(this,
+                                        Validator.ResultType.ERROR,
+                                        target,
+                                        getMessage("JMSAddress.MISSING_JNDI_SECURITY_CREDENTIALS",
+                                                   new Object[] {jndiSecPrincipal})));                
+                            } else {
+                                isAToken(jndiSecCredentials, target);
+                            }
+                        }
                         
+                        // 
                         // check list of jndienv
                         List <JMSJNDIEnv> jndienvs = target.getExtensibilityElements(JMSJNDIEnv.class);
                         if (jndienvs.size() > 1) {
@@ -557,13 +615,7 @@ public class JMSComponentValidator
                                                new Object[] {jndienvs.size()})));
                         } 
 
-                        if (jndienvs.size()==0) {
-                            results.add(new Validator.ResultItem(this,
-                                    Validator.ResultType.ERROR,
-                                    target,
-                                    getMessage("JMSAddress.MISSING_JNDIENV_ELEM_IN_JMS_ADDRESS",
-                                               new Object[] {target.getConnectionURL()})));
-                        } else {
+                        if (jndienvs.size()==1) {
                             // check if no jndienventry(ies) were found
                             List <JMSJNDIEnvEntry> jndienventries = jndienvs.get(0).getExtensibilityElements(JMSJNDIEnvEntry.class);
                             if (jndienventries.size()==0) {

@@ -20,7 +20,7 @@
 package org.netbeans.modules.wsdlextensions.jms.impl;
 
 import org.netbeans.modules.wsdlextensions.jms.JMSAddress;
-import org.netbeans.modules.wsdlextensions.jms.JMSComponent;
+import org.netbeans.modules.wsdlextensions.jms.JMSConstants;
 import org.netbeans.modules.wsdlextensions.jms.JMSQName;
 
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -70,13 +70,53 @@ public class JMSAddressImpl extends JMSComponentImpl implements JMSAddress {
                      val);        
     }
 
-    public String getJndiConnectionFactoryName() {
+    public String getConnectionFactoryName() {
         return getAttribute(JMSAttribute.JMS_ADDRESS_JNDI_CONNECTIONFACTORY_NAME);         
     }
 
-    public void setJndiConnectionFactoryName(String val) {
+    public void setConnectionFactoryName(String val) {
         setAttribute(JMSAddress.ATTR_JNDI_CONNECTION_FACTORY_NAME, 
                      JMSAttribute.JMS_ADDRESS_JNDI_CONNECTIONFACTORY_NAME,
                      val);                
-    }    
+    }
+
+    public String getInitialContextFactory() {
+        return getAttribute(JMSAttribute.JMS_ADDRESS_JNDI_INITIAL_CONTEXT_FACTORY);         
+    }
+
+    public void setInitialContextFactory(String val) {
+        setAttribute(JMSAddress.ATTR_JNDI_INITIAL_CONTEXT_FACTORY, 
+                     JMSAttribute.JMS_ADDRESS_JNDI_INITIAL_CONTEXT_FACTORY,
+                     val);                
+    }
+
+    public String getProviderURL() {
+        return getAttribute(JMSAttribute.JMS_ADDRESS_JNDI_PROVIDER_URL);         
+    }
+
+    public void setProviderURL(String val) {
+        setAttribute(JMSAddress.ATTR_JNDI_PROVIDER_URL, 
+                     JMSAttribute.JMS_ADDRESS_JNDI_PROVIDER_URL,
+                     val);                
+    }
+
+    public String getSecurityPrincial() {
+        return getAttribute(JMSAttribute.JMS_ADDRESS_JNDI_SECURITY_PRINCIPAL);         
+    }
+
+    public void setSecurityPrincipal(String val) {
+        setAttribute(JMSAddress.ATTR_JNDI_SECURITY_PRINCIPAL, 
+                     JMSAttribute.JMS_ADDRESS_JNDI_SECURITY_PRINCIPAL,
+                     val);                
+    }
+
+    public String getSecurityCredentials() {
+        return getAttribute(JMSAttribute.JMS_ADDRESS_JNDI_SECURITY_CREDENTIALS);         
+    }
+
+    public void setSecurityCredentials(String val) {
+        setAttribute(JMSAddress.ATTR_JNDI_SECURITY_CRDENTIALS, 
+                     JMSAttribute.JMS_ADDRESS_JNDI_SECURITY_CREDENTIALS,
+                     val);                
+    }
 }

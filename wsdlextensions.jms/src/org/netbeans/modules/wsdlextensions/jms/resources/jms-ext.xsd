@@ -44,11 +44,41 @@
 
 	<!-- JMS protocol "address" definition -->
 	<xs:element name="address" type="jms:tAddress">
-		<xs:annotation>
-			<xs:documentation>
-	      	"address" indicates a JMS protocol based service address.
-	      </xs:documentation>
-		</xs:annotation>
+                <xs:annotation>
+                    <xs:documentation>
+                    "address" indicates a JMS protocol based service address.
+                    </xs:documentation>
+                  <xs:appinfo>
+                    <prop:ElementProperties  xmlns:prop="http://xml.netbeans.org/schema/wsdlui/property">
+                        <prop:PropertyGroup name="Basic" groupOrder="1" />
+                        <prop:PropertyGroup name="JNDI" groupOrder="2" />
+                        <prop:Property attributeName="connectionURL" groupName="Basic" propertyOrder="1">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="username" groupName="Basic" propertyOrder="2">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="password" groupName="Basic" propertyOrder="3">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="connectionFactoryName" groupName="JNDI" propertyOrder="1">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="initialContextFactory" groupName="JNDI" propertyOrder="2">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="providerURL" groupName="JNDI" propertyOrder="3">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="securityPrincipal" groupName="JNDI" propertyOrder="4">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="securityCredentials" groupName="JNDI" propertyOrder="5">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                    </prop:ElementProperties>
+                </xs:appinfo>	      	      
+            </xs:annotation>
 	</xs:element>
 	<xs:complexType name="tAddress">
 		<xs:complexContent>
@@ -58,7 +88,7 @@
 				</xs:sequence>                            
 				<xs:attribute name="connectionURL" type="xs:string" use="required">
 					<xs:annotation>
-                        <xs:documentation>The connectivity information to connect to a JMS server. Format is protocol://server:port?key1=value1&amp;key2=value2</xs:documentation>
+                                                <xs:documentation>The connectivity information to connect to a JMS server. Format is protocol://server:port?key1=value1&amp;key2=value2. For JNDI based connections, use "jndi://" as the value for connectionURL</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
 				<xs:attribute name="username" type="xs:string" use="optional">
@@ -71,14 +101,34 @@
 						<xs:documentation>The password to use to connect to the JMS server</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
-				<xs:attribute name="jndiConnectionFactoryName" type="xs:string" use="optional">
+				<xs:attribute name="connectionFactoryName" type="xs:string" use="optional">
 					<xs:annotation>
-						<xs:documentation>When JNDI is used to look up the JMS connection factory, this attribute specifies the JNDI name of the connection factory to look up.</xs:documentation>
+						<xs:documentation>When JNDI is used, this attribute specifies the JNDI name of the connection factory to look up</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="initialContextFactory" type="xs:string" use="optional">
+					<xs:annotation>
+						<xs:documentation>When JNDI is used, this attribute specifies the initial context factory to use; see javax.naming.Context.INITIAL_CONTEXT_FACTORY</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="providerURL" type="xs:string" use="optional">
+					<xs:annotation>
+						<xs:documentation>When JNDI is used, this attribute specifies the configuration information for the service provider to use; see javax.naming.Context.PROVIDER_URL</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="securityPrincipal" type="xs:string" use="optional">
+					<xs:annotation>
+						<xs:documentation>When JNDI is used, this attribute specifies the dentity of the principal for authenticating the caller to the service; see javax.naming.Context.SECURITY_PRINCIPAL</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="securityCredentials" type="xs:string" use="optional">
+					<xs:annotation>
+						<xs:documentation>When JNDI is used, this attribute specifies the the credentials of the principal for authenticating the caller to the service; see javax.naming.Context.SECURITY_CREDENTIALS</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
 			</xs:extension>
 		</xs:complexContent>
-	</xs:complexType>        
+	</xs:complexType>
 
 	<!-- JMS protocol "operation" definition -->
 	<xs:element name="operation" type="jms:tOperation">

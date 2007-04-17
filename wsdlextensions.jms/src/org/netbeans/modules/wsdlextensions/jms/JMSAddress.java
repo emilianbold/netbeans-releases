@@ -28,7 +28,11 @@ public interface JMSAddress extends JMSComponent {
     public static final String ATTR_CONNECTION_URL = "connectionURL";
     public static final String ATTR_USERNAME = "username";
     public static final String ATTR_PASSWORD = "password";
-    public static final String ATTR_JNDI_CONNECTION_FACTORY_NAME = "jndiConnectionFactoryName";
+    public static final String ATTR_JNDI_CONNECTION_FACTORY_NAME = "connectionFactoryName";
+    public static final String ATTR_JNDI_INITIAL_CONTEXT_FACTORY = "initialContextFactory";
+    public static final String ATTR_JNDI_PROVIDER_URL            = "providerURL";
+    public static final String ATTR_JNDI_SECURITY_PRINCIPAL      = "securityPrincipal";
+    public static final String ATTR_JNDI_SECURITY_CRDENTIALS     = "securityCredentials";
 
 
     public String getConnectionURL();
@@ -40,5 +44,19 @@ public interface JMSAddress extends JMSComponent {
     public String getPassword();
     public void setPassword(String val);    
     
-    public String getJndiConnectionFactoryName();
-    public void setJndiConnectionFactoryName(String val);    }
+    public String getConnectionFactoryName();
+    public void setConnectionFactoryName(String val);    
+    
+    public String getInitialContextFactory();
+    public void setInitialContextFactory(String val);
+
+    public String getProviderURL();
+    public void setProviderURL(String val);
+
+    public String getSecurityPrincial();
+    public void setSecurityPrincipal(String val);
+
+    public String getSecurityCredentials();
+    public void setSecurityCredentials(String val);
+    
+}
