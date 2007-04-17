@@ -27,6 +27,7 @@ import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.netbeans.modules.visualweb.api.designer.Designer.Box;
 import org.netbeans.modules.visualweb.api.designer.cssengine.StyleData;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
+import org.netbeans.modules.visualweb.designer.jsf.ui.JsfMultiViewElement;
 import org.netbeans.modules.visualweb.insync.Util;
 import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
@@ -192,5 +193,12 @@ public final class JsfSupportUtilities {
 
         return new Point(x, y);
     }
-    
+
+    public static void tcRepaint(Designer designer) {
+        JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);
+        if (jsfMultiViewElement == null) {
+            return;
+        }
+        jsfMultiViewElement.getJsfTopComponent().repaint();
+    }
 }

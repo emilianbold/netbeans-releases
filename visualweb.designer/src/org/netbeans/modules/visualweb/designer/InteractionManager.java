@@ -879,11 +879,13 @@ public class InteractionManager {
         //getPageBox(); // ensure that colors etc. are synced
         webform.getColors().sync();
 
-        if (webform.isVirtualFormsEnabled()) {
-//            VirtualFormSupport.paint(webform, g);
-//            paintVirtualForms(webform, g);
-            webform.paintVirtualForms(g, new RenderContextImpl(webform));
-        }
+//        if (webform.isVirtualFormsEnabled()) {
+////            VirtualFormSupport.paint(webform, g);
+////            paintVirtualForms(webform, g);
+//            webform.paintVirtualForms(g, new RenderContextImpl(webform));
+//        }
+        // XXX Generic support for various designer decorations (for now virtual forms, ajax transactions).
+        webform.paintDesignerDecorations(g);
 
         // Paint both before and after
         webform.getSelection().paintSelection(g);
@@ -3197,44 +3199,44 @@ public class InteractionManager {
 //    }
 
     
-    private static class RenderContextImpl implements /*VirtualFormRenderer*/DomProvider.RenderContext {
-        private final WebForm webForm;
-        
-        public RenderContextImpl(WebForm webForm) {
-            this.webForm = webForm;
-        }
-        
-//        public DesignContext getDesignContext() {
-//            return webForm.getModel().getLiveUnit();
+//    private static class RenderContextImpl implements /*VirtualFormRenderer*/DomProvider.RenderContext {
+//        private final WebForm webForm;
+//        
+//        public RenderContextImpl(WebForm webForm) {
+//            this.webForm = webForm;
 //        }
-//        public DesignBean[] getBeansOfType(Class clazz) {
-//            return webForm.getBeansOfType(clazz);
+//        
+////        public DesignContext getDesignContext() {
+////            return webForm.getModel().getLiveUnit();
+////        }
+////        public DesignBean[] getBeansOfType(Class clazz) {
+////            return webForm.getBeansOfType(clazz);
+////        }
+//
+////        public Project getProject() {
+////            return webForm.getProject();
+////        }
+//        
+//        public Dimension getVieportDimension() {
+//            return webForm.getPane().getPageBox().getViewport().getExtentSize();
 //        }
-
-//        public Project getProject() {
-//            return webForm.getProject();
+//
+//        public Point getViewportPosition() {
+//            return webForm.getPane().getPageBox().getViewport().getViewPosition();
 //        }
-        
-        public Dimension getVieportDimension() {
-            return webForm.getPane().getPageBox().getViewport().getExtentSize();
-        }
-
-        public Point getViewportPosition() {
-            return webForm.getPane().getPageBox().getViewport().getViewPosition();
-        }
-
-        public int getNonTabbedTextWidth(char[] s, int offset, int length, FontMetrics metrics) {
-            return DesignerUtils.getNonTabbedTextWidth(s, offset, length, metrics);
-        }
-
-        public Rectangle getBoundsForComponent(Element componentRootElement) {
-            if (componentRootElement != null) {
-                return ModelViewMapper.getComponentBounds(webForm.getPane().getPageBox(), componentRootElement);
-            } else {
-                return null;
-            }
-        }
-    } // End of RenderContextImpl.
+//
+//        public int getNonTabbedTextWidth(char[] s, int offset, int length, FontMetrics metrics) {
+//            return DesignerUtils.getNonTabbedTextWidth(s, offset, length, metrics);
+//        }
+//
+//        public Rectangle getBoundsForComponent(Element componentRootElement) {
+//            if (componentRootElement != null) {
+//                return ModelViewMapper.getComponentBounds(webForm.getPane().getPageBox(), componentRootElement);
+//            } else {
+//                return null;
+//            }
+//        }
+//    } // End of RenderContextImpl.
 
 
     // XXX Moved from Document.

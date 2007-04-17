@@ -149,7 +149,9 @@ public class JsfForm {
     // XXX For fragments, this represents the assigned context page.
     private JsfForm contextJsfForm;
     
-    /** XXX Ajax transactions support (see also WebForm virtualForms support). */
+    /** XXX Virutal forms support painting. */
+    private boolean virtualFormsSupportEnabled;
+    /** XXX Ajax transactions support painting. */
     private boolean ajaxTransactionsSupportEnabled;
     
 
@@ -2341,13 +2343,40 @@ public class JsfForm {
         
         return node.getOwnerDocument() == getHtmlDom();
     }
+
+    public void setVirtualFormsSupportEnabled(boolean enabled) {
+        virtualFormsSupportEnabled = enabled;
+        
+        // TODO fire model event and in handler repaint the component.
+        tcRepaint();
+    }
+    
+    public boolean isVirtualFormsSupportEnabled() {
+        return virtualFormsSupportEnabled;
+    }
     
     public void setAjaxTransactionsSupportEnabled(boolean enabled) {
         ajaxTransactionsSupportEnabled = enabled;
+        
+        // TODO fire model event and in handler repaint the component.
+        tcRepaint();
     }
     
     public boolean isAjaxTransactionsSupportEnabled() {
         return ajaxTransactionsSupportEnabled;
     }
+
+    public void tcRepaint() {
+        Designer[] designers = findDesigners(this);
+        
+        for (Designer designer : designers) {
+            JsfMultiViewElement jsfMultiViewElement = findJsfMultiViewElementForDesigner(designer);
+            if (jsfMultiViewElement == null) {
+                continue;
+            }
+            jsfMultiViewElement.getJsfTopComponent().repaint();
+        }
+    }
+
 }
 

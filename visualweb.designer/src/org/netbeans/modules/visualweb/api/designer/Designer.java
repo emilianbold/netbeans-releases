@@ -19,7 +19,10 @@
 
 package org.netbeans.modules.visualweb.api.designer;
 
+import java.awt.Dimension;
+import java.awt.FontMetrics;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.io.PrintStream;
@@ -248,4 +251,18 @@ public interface Designer {
         public Designer getDesigner();
         public Box getBox();
     } // End of DesignerEvent.
+    
+    
+    /** XXX Render Context. */
+    public interface RenderContext {
+//        public DesignBean[] getBeansOfType(Class clazz);
+        public Dimension getVieportDimension();
+        public Point getViewportPosition();
+        public int getNonTabbedTextWidth(char[] s, int offset, int length, FontMetrics metrics);
+//        public Rectangle getBoundsForDesignBean(DesignBean designBean);
+        public Rectangle getBoundsForComponent(Element componentRootElement);
+    } // End of RenderContext.
+    
+    public RenderContext createRenderContext();
+    
 }

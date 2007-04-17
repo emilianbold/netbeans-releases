@@ -301,18 +301,18 @@ public interface DomProvider {
 //    // XXX Designer shoudn't know about class names at all.
 //    public String getImageComponentClassName();
 
-    // XXX Suspicous this way, provide better interface.
-    public void paintVirtualForms(Graphics2D g, RenderContext renderContext);
-    
-    /** XXX Render Context. */
-    public interface RenderContext {
-//        public DesignBean[] getBeansOfType(Class clazz);
-        public Dimension getVieportDimension();
-        public Point getViewportPosition();
-        public int getNonTabbedTextWidth(char[] s, int offset, int length, FontMetrics metrics);
-//        public Rectangle getBoundsForDesignBean(DesignBean designBean);
-        public Rectangle getBoundsForComponent(Element componentRootElement);
-    } // End of RenderContext.
+//    // XXX Suspicous this way, provide better interface.
+//    public void paintVirtualForms(Graphics2D g, RenderContext renderContext);
+//    
+//    /** XXX Render Context. */
+//    public interface RenderContext {
+////        public DesignBean[] getBeansOfType(Class clazz);
+//        public Dimension getVieportDimension();
+//        public Point getViewportPosition();
+//        public int getNonTabbedTextWidth(char[] s, int offset, int length, FontMetrics metrics);
+////        public Rectangle getBoundsForDesignBean(DesignBean designBean);
+//        public Rectangle getBoundsForComponent(Element componentRootElement);
+//    } // End of RenderContext.
 
 
     public boolean isFormComponent(Element componentRootElement);
@@ -557,5 +557,7 @@ public interface DomProvider {
     public boolean tcSeenEscape(Designer designer, ActionEvent evt);
     
     public void tcDeleteSelection(Designer designer);
-    
+
+    // XXX
+    public void paintDesignerDecorations(Graphics2D g, Designer designer);
 }

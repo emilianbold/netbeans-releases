@@ -22,7 +22,6 @@ package org.netbeans.modules.visualweb.designer.jsf.virtualforms;
 
 
 import com.sun.rave.designtime.markup.MarkupDesignBean;
-import org.netbeans.modules.visualweb.api.designer.DomProvider;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -45,6 +44,7 @@ import com.sun.rave.designtime.ext.componentgroup.ComponentSubset;
 import com.sun.rave.designtime.ext.componentgroup.impl.ColorWrapperImpl;
 import com.sun.rave.designtime.ext.componentgroup.util.ComponentGroupHelper;
 import javax.faces.component.NamingContainer;
+import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.w3c.dom.Element;
 
 
@@ -90,7 +90,7 @@ public class ComponentGroupSupport {
     /*
      * <p>Paint legends and the colored borders of appropriate components.</p>
      */
-    public static void paint(LiveUnit liveUnit,DomProvider.RenderContext renderContext, Graphics2D g2d) {
+    public static void paint(LiveUnit liveUnit, Designer.RenderContext renderContext, Graphics2D g2d) {
         ComponentGroupHolder[] holders = null;
         Object dcontextData = liveUnit.getContextData(ComponentGroupHolder.CONTEXT_DATA_KEY);
         if (dcontextData instanceof ComponentGroupHolder[]) {        
@@ -243,7 +243,7 @@ public class ComponentGroupSupport {
         }
     }
 
-    private static void paintChildren(DomProvider.RenderContext renderContext,
+    private static void paintChildren(Designer.RenderContext renderContext,
     DesignBean parent, ComponentGroupHolder[] holders, ComponentGroup[][] groupArr, Graphics2D g2d, String precedingIds) {
         DesignBean[] childBeans = parent.getChildBeans();
         if (childBeans == null || childBeans.length == 0) {
@@ -343,7 +343,7 @@ public class ComponentGroupSupport {
         }
     }
 
-    private static void paintHighlight(DomProvider.RenderContext renderContext,
+    private static void paintHighlight(Designer.RenderContext renderContext,
     Graphics2D g2d, DesignBean bean, Color color, boolean paintSolid, boolean paintDashed, int nestingLevel) {
         if (bean != null) {
             Element componentRootElement;

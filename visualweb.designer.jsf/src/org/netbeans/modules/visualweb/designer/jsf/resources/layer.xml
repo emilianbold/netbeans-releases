@@ -27,6 +27,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-visualweb-designer-jsf-action-AlignAction.instance"/>
             <file name="org-netbeans-modules-visualweb-designer-jsf-action-InlineEditAction.instance"/>
             <file name="org-netbeans-modules-visualweb-designer-jsf-action-SelectParentAction.instance"/>
+            <file name="org-netbeans-modules-visualweb-designer-jsf-action-VirtualFormsSupportAction.instance"/>
         </folder>
     </folder>
     
@@ -77,6 +78,12 @@ Microsystems, Inc. All Rights Reserved.
                 
                 <folder name="Toolbars">
                     <folder name="Default">
+                        <attr name="org-netbeans-modules-visualweb-designer-action-RefreshAction.shadow/org-netbeans-modules-visualweb-designer-jsf-action-VirtualFormsSupportAction.shadow" boolvalue="true"/>
+                        <file name="org-netbeans-modules-visualweb-designer-jsf-action-VirtualFormsSupportAction.shadow">
+                            <attr name="originalFile" stringvalue="/Actions/JSFSupport/org-netbeans-modules-visualweb-designer-jsf-action-VirtualFormsSupportAction.instance"/>
+                        </file>
+                        <attr name="org-netbeans-modules-visualweb-designer-jsf-action-VirtualFormsSupportAction.shadow/org-netbeans-modules-visualweb-designer-action-TargetResolutionAction.shadow" boolvalue="true"/>
+                       
                         <attr name="org-netbeans-modules-visualweb-designer-action-DecorationsAction.shadow/org-netbeans-modules-visualweb-designer-jsf-action-AjaxTransactionsSupportAction.shadow" boolvalue="true"/>
                         <file name="org-netbeans-modules-visualweb-designer-jsf-action-AjaxTransactionsSupportAction.shadow">
                             <attr name="originalFile" stringvalue="/Actions/JSFSupport/org-netbeans-modules-visualweb-designer-jsf-action-AjaxTransactionsSupportAction.instance"/>

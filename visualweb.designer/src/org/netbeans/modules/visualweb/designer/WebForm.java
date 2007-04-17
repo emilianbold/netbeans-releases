@@ -39,6 +39,7 @@ import org.netbeans.modules.visualweb.css2.PageBox;
 import org.netbeans.modules.visualweb.designer.ImageCache;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
@@ -128,7 +129,7 @@ public class WebForm implements Designer {
 //    private RaveElement body;
     
 //    private VirtualFormSupport virtualForms;
-    private boolean virtualFormsEnabled;
+//    private boolean virtualFormsEnabled;
     
     private ColorManager colors;
 //    private DesignerActions actions;
@@ -1082,13 +1083,13 @@ public class WebForm implements Designer {
 //        return virtualForms;
 //    }
     
-    public void setVirtualFormsEnabled(boolean virtualFormsEnabled) {
-        this.virtualFormsEnabled = virtualFormsEnabled;
-    }
-    
-    public boolean isVirtualFormsEnabled() {
-        return virtualFormsEnabled;
-    }
+//    public void setVirtualFormsEnabled(boolean virtualFormsEnabled) {
+//        this.virtualFormsEnabled = virtualFormsEnabled;
+//    }
+//    
+//    public boolean isVirtualFormsEnabled() {
+//        return virtualFormsEnabled;
+//    }
 
     /**
      * Return the color manager for the webform which stores
@@ -2083,9 +2084,9 @@ public class WebForm implements Designer {
 //        return domProvider.getImageComponentClassName();
 //    }
 
-    void paintVirtualForms(Graphics2D g,DomProvider.RenderContext renderContext) {
-        domProvider.paintVirtualForms(g, renderContext);
-    }
+//    void paintVirtualForms(Graphics2D g,DomProvider.RenderContext renderContext) {
+//        domProvider.paintVirtualForms(g, renderContext);
+//    }
 
     public boolean isFormComponent(Element componentRootElement) {
         return domProvider.isFormComponent(componentRootElement);
@@ -3127,4 +3128,54 @@ public class WebForm implements Designer {
             // No op.
         }
     } // End of CssBoxDataHandler.
+    
+    
+    void paintDesignerDecorations(Graphics2D g) {
+        domProvider.paintDesignerDecorations(g, this);
+    }
+    
+    public Designer.RenderContext createRenderContext() {
+        return new RenderContextImpl(this);
+    }
+    
+    
+    private static class RenderContextImpl implements Designer.RenderContext {
+        private final WebForm webForm;
+        
+        public RenderContextImpl(WebForm webForm) {
+            this.webForm = webForm;
+        }
+        
+//        public DesignContext getDesignContext() {
+//            return webForm.getModel().getLiveUnit();
+//        }
+//        public DesignBean[] getBeansOfType(Class clazz) {
+//            return webForm.getBeansOfType(clazz);
+//        }
+
+//        public Project getProject() {
+//            return webForm.getProject();
+//        }
+        
+        public Dimension getVieportDimension() {
+            return webForm.getPane().getPageBox().getViewport().getExtentSize();
+        }
+
+        public Point getViewportPosition() {
+            return webForm.getPane().getPageBox().getViewport().getViewPosition();
+        }
+
+        public int getNonTabbedTextWidth(char[] s, int offset, int length, FontMetrics metrics) {
+            return DesignerUtils.getNonTabbedTextWidth(s, offset, length, metrics);
+        }
+
+        public Rectangle getBoundsForComponent(Element componentRootElement) {
+            if (componentRootElement != null) {
+                return ModelViewMapper.getComponentBounds(webForm.getPane().getPageBox(), componentRootElement);
+            } else {
+                return null;
+            }
+        }
+    } // End of RenderContextImpl.
+    
 }

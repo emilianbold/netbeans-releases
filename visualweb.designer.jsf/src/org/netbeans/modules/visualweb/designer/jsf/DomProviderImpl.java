@@ -844,24 +844,6 @@ class DomProviderImpl implements DomProvider {
         return getFacesModel().getLiveUnit() != null;
     }
 
-    public void paintVirtualForms(Graphics2D g2d,DomProvider.RenderContext renderContext) {
-//        DesignContext designContext = renderContext.getDesignContext();
-//        if (!(designContext instanceof LiveUnit)) {
-//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-//                    new IllegalStateException("DesignContext is not of LiveUnit type, designContext=" + designContext)); // NOI18N
-//        }
-//        LiveUnit liveUnit = (LiveUnit)designContext;
-//        Project project = liveUnit.getModel().getProject();
-        Project project = getFacesModel().getProject();
-        LiveUnit liveUnit = getFacesModel().getLiveUnit();
-        if (liveUnit == null) {
-            // XXX Log problem?
-            return;
-        }
-
-        ComponentGroupSupport.paint(liveUnit, renderContext, g2d);
-    }
-    
     public boolean isFormComponent(Element componentRootElement) {
         MarkupDesignBean bean = MarkupUnit.getMarkupDesignBeanForElement(componentRootElement);
         if (bean == null) {
@@ -1347,11 +1329,12 @@ class DomProviderImpl implements DomProvider {
 //    }
 
     public void tcRepaint(Designer designer) {
-        JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);
-        if (jsfMultiViewElement == null) {
-            return;
-        }
-        jsfMultiViewElement.getJsfTopComponent().repaint();
+//        JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);
+//        if (jsfMultiViewElement == null) {
+//            return;
+//        }
+//        jsfMultiViewElement.getJsfTopComponent().repaint();
+        JsfSupportUtilities.tcRepaint(designer);
     }
 
     public boolean tcSeenEscape(Designer designer, ActionEvent evt) {
@@ -1401,4 +1384,34 @@ class DomProviderImpl implements DomProvider {
         return jsfForm.isRenderedNode(node);
     }
 
+    // XXX
+    public void paintDesignerDecorations(Graphics2D g, Designer designer) {
+        // Virtual forms
+        if (jsfForm.isVirtualFormsSupportEnabled()) {
+            paintVirtualForms(g, designer.createRenderContext());
+        }
+        
+        // Ajax transacations
+        if (jsfForm.isAjaxTransactionsSupportEnabled()) {
+            // TODO
+        }
+    }
+
+    private void paintVirtualForms(Graphics2D g2d, Designer.RenderContext renderContext) {
+//        DesignContext designContext = renderContext.getDesignContext();
+//        if (!(designContext instanceof LiveUnit)) {
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+//                    new IllegalStateException("DesignContext is not of LiveUnit type, designContext=" + designContext)); // NOI18N
+//        }
+//        LiveUnit liveUnit = (LiveUnit)designContext;
+//        Project project = liveUnit.getModel().getProject();
+        Project project = getFacesModel().getProject();
+        LiveUnit liveUnit = getFacesModel().getLiveUnit();
+        if (liveUnit == null) {
+            // XXX Log problem?
+            return;
+        }
+
+        ComponentGroupSupport.paint(liveUnit, renderContext, g2d);
+    }
 }

@@ -32,7 +32,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-visualweb-designer-action-SendToBackAction.instance"/>
             <!--<file name="org-netbeans-modules-visualweb-designer-action-SelectParentAction.instance"/>-->
             <file name="org-netbeans-modules-visualweb-designer-action-TargetResolutionAction.instance"/>
-            <file name="org-netbeans-modules-visualweb-designer-action-VirtualFormsSupportAction.instance"/>
+            <!--<file name="org-netbeans-modules-visualweb-designer-action-VirtualFormsSupportAction.instance"/>-->
         </folder>
     </folder>
     
@@ -159,11 +159,13 @@ Microsystems, Inc. All Rights Reserved.
                         <file name="org-netbeans-modules-visualweb-designer-action-RefreshAction.shadow">
                             <attr name="originalFile" stringvalue="/Actions/Designer/org-netbeans-modules-visualweb-designer-action-RefreshAction.instance"/>
                         </file>
+                        <!--
                         <attr name="org-netbeans-modules-visualweb-designer-action-RefreshAction.shadow/org-netbeans-modules-visualweb-designer-action-VirtualFormsSupportAction.shadow" boolvalue="true"/>
                         <file name="org-netbeans-modules-visualweb-designer-action-VirtualFormsSupportAction.shadow">
                             <attr name="originalFile" stringvalue="/Actions/Designer/org-netbeans-modules-visualweb-designer-action-VirtualFormsSupportAction.instance"/>
                         </file>
                         <attr name="org-netbeans-modules-visualweb-designer-action-VirtualFormsSupportAction.shadow/org-netbeans-modules-visualweb-designer-action-TargetResolutionAction.shadow" boolvalue="true"/>
+                        -->
                         <file name="org-netbeans-modules-visualweb-designer-action-TargetResolutionAction.shadow">
                             <attr name="originalFile" stringvalue="/Actions/Designer/org-netbeans-modules-visualweb-designer-action-TargetResolutionAction.instance"/>
                         </file>
