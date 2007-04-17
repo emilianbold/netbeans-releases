@@ -79,8 +79,6 @@ public class ContainerManagedJTAInjectableInWebTest extends EntityManagerGenerat
         options.setReturnType("Object");
         
         FileObject result = generate(FileUtil.toFileObject(testFile), options);
-        // TODO: RETOUCHE there are some issues in the java infrastructure with formatting,
-        // the golden file here is therefore not well formatted
         assertFile(getGoldenFile("testGenerateWithExistingEM.pass"), FileUtil.toFile(result));
     }
 

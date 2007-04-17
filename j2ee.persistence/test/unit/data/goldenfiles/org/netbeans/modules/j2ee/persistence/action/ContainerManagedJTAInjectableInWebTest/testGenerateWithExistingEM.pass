@@ -6,8 +6,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.Resource;
 
 public class Test {
-
-        @Resource
+    @Resource
     private javax.transaction.UserTransaction utx;
 
     private EntityManager myEm;
