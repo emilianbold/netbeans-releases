@@ -21,16 +21,12 @@ package org.netbeans.modules.refactoring.java;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.diff.LineDiff;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
-import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -77,9 +73,10 @@ public class LogTestCase extends NbTestCase {
     /** sets the PrintWriters
      */
     protected void setUp() throws IOException {
+        clearWorkDir();
         MockServices.setServices();
         FileUtil.setMIMEType("java", "text/x-java");
-        File cacheFolder = new File(getDataDir(), "var/cache/index");
+        File cacheFolder = new File(getWorkDir(), "var/cache/index");
         cacheFolder.mkdirs();
         System.setProperty("netbeans.user", cacheFolder.getPath());
         
