@@ -19,8 +19,17 @@
 
 package org.netbeans.modules.uihandler;
 
+import java.awt.HeadlessException;
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.beans.BeanInfo;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.net.URL;
+import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -28,6 +37,7 @@ import junit.framework.TestCase;
 import java.util.logging.LogRecord;
 import org.netbeans.lib.uihandler.LogRecords;
 import org.openide.nodes.Node;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -57,6 +67,28 @@ public class UINodeTest extends TestCase {
         if (!n.getDisplayName().matches(".*Ahoj.*1.*")) {
             fail("wrong display name, shall contain Ahoj and 1: " + n.getDisplayName());
         }
+        assertSerializedWell(n);
+    }
+
+    public void testIconOfTheNode() throws Exception {
+        LogRecord r = new LogRecord(Level.INFO, "icon_msg");
+        r.setResourceBundleName("org.netbeans.modules.uihandler.TestBundle");
+        r.setResourceBundle(ResourceBundle.getBundle("org.netbeans.modules.uihandler.TestBundle"));
+        r.setParameters(new Object[] { new Integer(1), "Ahoj" });
+        
+        Node n = UINode.create(r);
+        assertEquals("Name is taken from the message", "icon_msg", n.getName());
+        
+        if (!n.getDisplayName().matches(".*Ahoj.*")) {
+            fail("wrong display name, shall contain Ahoj: " + n.getDisplayName());
+        }
+        
+        Image img = n.getIcon(BeanInfo.ICON_COLOR_32x32);
+        assertNotNull("Some icon", img);
+        IconInfo imgReal = new IconInfo(img);
+        IconInfo template = new IconInfo(getClass().getResource("testicon.png"));
+        assertEquals("Icon from ICON_BASE used", template, imgReal);
+        
         assertSerializedWell(n);
     }
     
@@ -121,6 +153,8 @@ public class UINodeTest extends TestCase {
             assertEquals("name", n.getName(), newNode.getName());
             assertEquals("displayName", n.getDisplayName(), newNode.getDisplayName());
             assertEquals("htmlName", n.getHtmlDisplayName(), newNode.getHtmlDisplayName());
+            IconInfo old = new IconInfo(n.getIcon(BeanInfo.ICON_COLOR_16x16));
+            assertEquals("16x16", old, new IconInfo(newNode.getIcon(BeanInfo.ICON_COLOR_16x16)));
         }
         class H extends Handler {
             LogRecord one;
@@ -149,6 +183,119 @@ public class UINodeTest extends TestCase {
             assertEquals("name", n.getName(), newNode.getName());
             assertEquals("displayName", n.getDisplayName(), newNode.getDisplayName());
             assertEquals("htmlName", n.getHtmlDisplayName(), newNode.getHtmlDisplayName());
+            
+            IconInfo old = new IconInfo(n.getIcon(BeanInfo.ICON_COLOR_16x16));
+            assertEquals("16x16", old, new IconInfo(newNode.getIcon(BeanInfo.ICON_COLOR_16x16)));
         }
     }
+
+    static final java.awt.image.BufferedImage createBufferedImage(int width, int height) {
+        if (Utilities.isMac()) {
+            return new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB_PRE);
+        }
+
+        ColorModel model = colorModel(java.awt.Transparency.TRANSLUCENT);
+        java.awt.image.BufferedImage buffImage = new java.awt.image.BufferedImage(
+                model, model.createCompatibleWritableRaster(width, height), model.isAlphaPremultiplied(), null
+            );
+
+        return buffImage;
+    }
+    static private ColorModel colorModel(int transparency) {
+        ColorModel model;
+        try {
+            model = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment()
+                .getDefaultScreenDevice().getDefaultConfiguration()
+                .getColorModel(transparency);
+        }
+        catch(HeadlessException he) {
+            model = ColorModel.getRGBdefault();
+        }
+
+        return model;
+    }
+    
+    static final BufferedImage toBufferedImage(Image img) {
+        // load the image
+        new javax.swing.ImageIcon(img, "");
+
+        java.awt.image.BufferedImage rep = createBufferedImage(img.getWidth(null), img.getHeight(null));
+        java.awt.Graphics g = rep.createGraphics();
+        g.drawImage(img, 0, 0, null);
+        g.dispose();
+        img.flush();
+
+        return rep;
+    }
+    
+    private static final class IconInfo implements Comparable<IconInfo> {
+        final int hash;
+        
+        public IconInfo(URL u) throws IOException {
+            this(Toolkit.getDefaultToolkit().getImage(u));
+        }
+        
+        public IconInfo(Image img) throws IOException {
+            BufferedImage image = toBufferedImage(img);
+            
+            int hash;
+            try {
+                int w = image.getWidth();
+                int h = image.getHeight();
+                hash = w * 3 + h * 7;
+                
+                for (int i = 0; i < w; i++) {
+                    for (int j = 0; j < h; j++) {
+                        int rgb = image.getRGB(i, j);
+                        hash += (rgb >> 2);
+                    }
+                }
+            } catch (IndexOutOfBoundsException ex) {
+                fail("Error: " + ex.getMessage());
+                throw new Error();
+            }
+            
+            this.hash = hash;
+        }
+        
+        public IconInfo(String name, String path, int hash) {
+            this.hash = hash;
+        }
+        
+        @Override
+        public int hashCode() {
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            final IconInfo other = (IconInfo) obj;
+
+            if (this.hash != other.hash)
+                return false;
+            return true;
+        }
+    
+        public int compareTo(IconInfo another) {
+            if (hash != another.hash) {
+                return hash - another.hash;
+            }
+            
+            return 0;
+        }
+        
+        public String toString() {
+            String h = Integer.toHexString(hash);
+            if (h.length() < 8) {
+                h = "00000000".substring(h.length()) + h;
+            }
+            
+            return MessageFormat.format("Icon #{0}", h);
+        }
+    } // end of IconInfo
+    
 }
