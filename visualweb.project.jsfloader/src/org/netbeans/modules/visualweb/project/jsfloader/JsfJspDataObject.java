@@ -67,7 +67,6 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
 
     private transient OpenEdit openEdit;
 
-
     /** New instance.
     * @param pf primary file object for this data object
     * @param loader the data loader creating it
@@ -324,7 +323,13 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
     
     /** Handles create from template. Also handles creating from template of corresponding java file. */
     protected DataObject handleCreateFromTemplate(DataFolder df, String name) throws IOException {
-        DataObject result = super.handleCreateFromTemplate(df, name);
+        DataObject result = null;
+        try {
+            JsfJspDataLoader.jspTemplateCreation.set(Boolean.TRUE);
+            result = super.handleCreateFromTemplate(df, name);
+        } finally {
+            JsfJspDataLoader.jspTemplateCreation.set(Boolean.FALSE);
+        }
         
         FileObject backingTargetFileObjectFolder = Utils.findJavaFolderForJsp(result.getPrimaryFile());
         if (backingTargetFileObjectFolder == null) {

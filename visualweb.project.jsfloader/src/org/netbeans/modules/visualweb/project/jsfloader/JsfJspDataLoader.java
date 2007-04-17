@@ -57,7 +57,8 @@ public class JsfJspDataLoader extends UniFileLoader {
 
 
     static final long serialVersionUID =-5809935261731217882L;
-
+    static final ThreadLocal jspTemplateCreation = new ThreadLocal();
+    
     public JsfJspDataLoader() {
         // Use String representation instead of JsfJspDataObject.class.getName() for classloading performance
         super("org.netbeans.modules.visualweb.JsfJspDataObject"); // NOI18N
@@ -94,6 +95,13 @@ public class JsfJspDataLoader extends UniFileLoader {
         if (dataObject instanceof JsfJspDataObject) {
             return fo;
         }
+        
+        // Handle DataObject during template instantiation specially since the
+        // corresponding java file may not have been generated yet
+        if (jspTemplateCreation.get() == Boolean.TRUE) {
+            return primaryFile;
+        }
+        
         // Now do the normal stuff
         FileObject javaFile = Utils.findJavaForJsp(primaryFile);
         if(javaFile == null) {
