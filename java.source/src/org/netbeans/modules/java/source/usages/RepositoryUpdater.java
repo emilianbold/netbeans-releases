@@ -1671,7 +1671,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     }        
     
     public void verifySourceLevel(URL root, String sourceLevel) throws IOException {
-        if (!sourceLevel.equals(getAttribute(root, SOURCE_LEVEL_ROOT, null))) {
+        if (sourceLevel != null && !sourceLevel.equals(getAttribute(root, SOURCE_LEVEL_ROOT, null))) {
             submit(Work.filterChange(Collections.singletonList(root)));
         }
     }
