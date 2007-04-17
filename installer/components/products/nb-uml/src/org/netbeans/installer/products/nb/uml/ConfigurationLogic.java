@@ -174,7 +174,8 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
     private void configureTelelogicDoors(File nbLocation, Progress progress, boolean install) throws IOException {
         try {
             
-            File    location = getProduct().getInstallationLocation();
+            File    location = new File(getProduct().getInstallationLocation(), 
+                    UML_CLUSTER);
             String  doorsBin = new File(location, CONFIG_DOORS_LOCATION).getPath();
             
             ////////////////////////////////////////////////////////////////////
