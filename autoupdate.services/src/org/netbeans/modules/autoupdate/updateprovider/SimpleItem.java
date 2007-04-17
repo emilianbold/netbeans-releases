@@ -46,7 +46,7 @@ import org.w3c.dom.NodeList;
  */
 public abstract class SimpleItem {
     
-    Node declaratingNode;
+    protected Node declaratingNode;
     
     public static final String LICENSE = "license";
     
