@@ -839,7 +839,20 @@ public class FacesModel extends Model {
             return;
         }
         
-        if(file == fo){
+        // The following computaion ensures that we react to a file rename only
+        // after all files of a FacesModel are renamed e.g. .java and .jsp
+        boolean doSync = false;
+        if (markupUnit != null) {
+            if(javaUnit.getFileObject() == fo && markupUnit.getFileObject().getName().equals(fo.getName())) {
+                doSync = true;
+            } else if(file == fo && javaUnit.getFileObject().getName().equals(fo.getName())) {
+                doSync = true;
+            }
+        } else if (file == fo){
+            doSync = true;
+        }
+        
+        if(doSync){
             if (javaUnit != null){
                 javaUnit.setSourceDirty();
             }
