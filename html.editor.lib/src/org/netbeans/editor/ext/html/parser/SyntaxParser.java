@@ -166,6 +166,7 @@ public final class SyntaxParser {
                 if(next_sel != null && (next_sel == sel || next_sel.getElementOffset() <= sel.getElementOffset())) {
                     Logger.getLogger(SyntaxParser.class.getName()).warning(
                             "The SyntaxParser.getElementChain() cycles. Please report this and attach the document content."); //NOI18N
+                    return ;
                 }
                 
                 sel = next_sel;
