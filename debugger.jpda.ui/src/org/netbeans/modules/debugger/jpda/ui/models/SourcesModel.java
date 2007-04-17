@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -22,10 +22,13 @@ package org.netbeans.modules.debugger.jpda.ui.models;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileFilter;
 
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.Properties;
@@ -40,6 +43,7 @@ import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
@@ -64,6 +68,7 @@ NodeActionsProvider {
     private Set                     enabledFilters = new HashSet ();
     private Set                     enabledSourceRoots = new HashSet ();
     private Set                     disabledSourceRoots = new HashSet ();
+    private List                    additionalSourceRoots = new ArrayList();
     private Properties              filterProperties = Properties.
         getDefault ().getProperties ("debugger").getProperties ("sources");
     
@@ -106,9 +111,11 @@ NodeActionsProvider {
             }
             
             // 3) join them
-            Object[] os = new Object [sourceRoots.length + ep.length];
+            Object[] os = new Object [sourceRoots.length + additionalSourceRoots.size() + ep.length];
             System.arraycopy (sourceRoots, 0, os, 0, sourceRoots.length);
-            System.arraycopy (ep, 0, os, sourceRoots.length, ep.length);
+            Object[] addSrcRoots = additionalSourceRoots.toArray();
+            System.arraycopy (addSrcRoots, 0, os, sourceRoots.length, addSrcRoots.length);
+            System.arraycopy (ep, 0, os, sourceRoots.length + addSrcRoots.length, ep.length);
             to = Math.min(os.length, to);
             from = Math.min(os.length, from);
             Object[] fos = new Object [to - from];
@@ -200,15 +207,18 @@ NodeActionsProvider {
     
     public Action[] getActions (Object node) throws UnknownTypeException {
         if (node instanceof String) {
-            if (((String) node).startsWith (DISP_FILTER_PREFIX))
+            if (((String) node).startsWith (DISP_FILTER_PREFIX) || additionalSourceRoots.contains(node)) {
                 return new Action[] {
                     NEW_FILTER_ACTION,
+                    NEW_SOURCE_ROOT_ACTION,
                     DELETE_ACTION
                 };
-            else
+            } else {
                 return new Action[] {
-                    NEW_FILTER_ACTION
+                    NEW_FILTER_ACTION,
+                    NEW_SOURCE_ROOT_ACTION
                 };
+            }
         } else
         throw new UnknownTypeException (node);
     }    
@@ -253,7 +263,7 @@ NodeActionsProvider {
             saveFilters ();
             return;
         } else {
-            Set sourceRoots = new HashSet (Arrays.asList (
+            List sourceRoots = new ArrayList (Arrays.asList (
                 sourcePath.getSourceRoots ()
             ));
             if (enabled) {
@@ -296,6 +306,22 @@ NodeActionsProvider {
                 Collections.EMPTY_SET
             )
         );
+        additionalSourceRoots = new ArrayList(
+            filterProperties.getProperties("additional_source_roots").getCollection(
+                "src_roots",
+                Collections.EMPTY_LIST)
+        );
+        if (additionalSourceRoots.size() > 0) {
+            // Set the new source roots:
+            String[] sourceRoots = sourcePath.getSourceRoots();
+            int l = sourceRoots.length;
+            Object[] addSrc = additionalSourceRoots.toArray();
+            int n = addSrc.length;
+            String[] newSourceRoots = new String[l + n];
+            System.arraycopy(sourceRoots, 0, newSourceRoots, 0, l);
+            System.arraycopy(addSrc, 0, newSourceRoots, l, n);
+            sourcePath.setSourceRoots(newSourceRoots);
+        }
     }
 
     private void saveFilters () {
@@ -307,6 +333,8 @@ NodeActionsProvider {
             ("enabled", enabledSourceRoots);
         filterProperties.getProperties ("source_roots").setCollection 
             ("disabled", disabledSourceRoots);
+        filterProperties.getProperties("additional_source_roots").
+            setCollection("src_roots", additionalSourceRoots);
     }
 
     
@@ -423,6 +451,55 @@ NodeActionsProvider {
         }
     }
     
+    private JFileChooser newSourceFileChooser;
+    
+    private final Action NEW_SOURCE_ROOT_ACTION = new AbstractAction(
+            NbBundle.getMessage(SourcesModel.class, "CTL_SourcesModel_Action_AddSrc")) {
+        public void actionPerformed (ActionEvent e) {
+            if (newSourceFileChooser == null) {
+                newSourceFileChooser = new JFileChooser();
+                newSourceFileChooser.setFileFilter(new FileFilter() {
+
+                    public String getDescription() {
+                        return NbBundle.getMessage(SourcesModel.class, "CTL_SourcesModel_AddSrc_Chooser_Filter_Description");
+                    }
+
+                    public boolean accept(File file) {
+                        return file.isDirectory();
+                    }
+
+                });
+                newSourceFileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            }
+            int state = newSourceFileChooser.showDialog(org.openide.windows.WindowManager.getDefault().getMainWindow(),
+                                      NbBundle.getMessage(SourcesModel.class, "CTL_SourcesModel_AddSrc_Btn"));
+            if (state == JFileChooser.APPROVE_OPTION) {
+                File dir = newSourceFileChooser.getSelectedFile();
+                if (!dir.isDirectory()) {
+                    return ;
+                }
+                try {
+                    String d = dir.getCanonicalPath();
+                    additionalSourceRoots.add(d);
+                    enabledSourceRoots.add(d);
+                    
+                    // Set the new source roots:
+                    String[] sourceRoots = sourcePath.getSourceRoots();
+                    int l = sourceRoots.length;
+                    String[] newSourceRoots = new String[l + 1];
+                    System.arraycopy(sourceRoots, 0, newSourceRoots, 0, l);
+                    newSourceRoots[l] = d;
+                    sourcePath.setSourceRoots(newSourceRoots);
+                    
+                    saveFilters();
+                    fireTreeChanged ();
+                } catch (java.io.IOException ioex) {
+                    ErrorManager.getDefault().notify(ioex);
+                }
+            }
+        }
+    };
+    
     private final Action NEW_FILTER_ACTION = new AbstractAction
         (NbBundle.getBundle (SourcesModel.class).getString 
             ("CTL_SourcesModel_Action_AddFilter")) {
@@ -458,16 +535,33 @@ NodeActionsProvider {
             public void perform (Object[] nodes) {
                 int i, k = nodes.length;
                 for (i = 0; i < k; i++) {
-                    filters.remove (
-                        ((String) nodes [i]).substring (
-                            DISP_FILTER_PREFIX.length ()
-                        )
-                    );
-                    enabledFilters.remove (
-                        ((String) nodes [i]).substring (
-                            DISP_FILTER_PREFIX.length ()
-                        )
-                    );
+                    String node = (String) nodes [i];
+                    if (node.startsWith(DISP_FILTER_PREFIX)) {
+                        node = node.substring(DISP_FILTER_PREFIX.length());
+                        filters.remove (node);
+                        enabledFilters.remove (node);
+                    } else {
+                        additionalSourceRoots.remove(node);
+                        enabledSourceRoots.remove(node);
+                        disabledSourceRoots.remove(node);
+                        
+                        // Set the new source roots:
+                        String[] sourceRoots = sourcePath.getSourceRoots();
+                        int l = sourceRoots.length;
+                        String[] newSourceRoots = new String[l - 1];
+                        int index = -1;
+                        for (int ii = 0; ii < l; ii++) {
+                            if (node.equals(sourceRoots[ii])) {
+                                index = ii;
+                                break;
+                            }
+                        }
+                        if (index >= 0) {
+                            System.arraycopy(sourceRoots, 0, newSourceRoots, 0, index);
+                            System.arraycopy(sourceRoots, index + 1, newSourceRoots, index, l - (index + 1));
+                            sourcePath.setSourceRoots(newSourceRoots);
+                        }
+                    }
                 }
                 saveFilters ();
                 fireTreeChanged ();
