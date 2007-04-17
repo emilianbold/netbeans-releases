@@ -270,7 +270,7 @@ public class ActionManager {
             if (editorCookie != null) {
                 Line.Set lineSet = editorCookie.getLineSet();
                 int line = editorCookie.getDocument().getParagraphElement(0).getParentElement().getElementIndex(position);
-                lineObj = lineSet.getCurrent(line-1);
+                lineObj = lineSet.getCurrent(line);
             }
             if (lineObj == null) {
                 System.out.println("the line is still null"); //log
