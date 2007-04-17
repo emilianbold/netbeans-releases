@@ -30,6 +30,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.apisupport.project.DialogDisplayerImpl;
 import org.netbeans.modules.apisupport.project.InstalledFileLocatorImpl;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.ProjectXMLManagerTest;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
@@ -140,12 +141,17 @@ public class ToDoTest extends TestBase {
         // test subproject
         
         SuiteProject suite = generateSuite("suiteproject");
-        NbModuleProject prj3 = generateSuiteComponent(suite, getWorkDir(), "prjInSuite");
+        NbModuleProject prj3 = generateSuiteComponent(suite, getWorkDir(), "prjInSuite1");
+        NbModuleProject prj4 = generateSuiteComponent(suite, getWorkDir(), "prjInSuite2");
+        
         FileObject fo4 = createSrcFile(prj3,"Main.java",javaFile);
-        OpenProjects.getDefault().open(new Project[]{suite,prj3}, false);
-        OpenProjects.getDefault().setMainProject(suite);
-        tasks = scanMainProjectTasks();        
-        assertEquals("Number of tasks",2,tasks.size());
+        FileObject fo5 = createSrcFile(prj4,"Main.java",javaFile);
+        ProjectXMLManagerTest.addDependecy(prj3, prj4);
+        OpenProjects.getDefault().open(new Project[]{suite,prj3,prj4}, false);
+        OpenProjects.getDefault().setMainProject(prj4);
+        
+        tasks = scanMainProjectTasks();
+        assertEquals("Number of tasks",4,tasks.size());
     }
     
     private void logTasks(List<Task> tasks) {
@@ -153,5 +159,5 @@ public class ToDoTest extends TestBase {
             System.out.println( t );
         }
     }       
-}
+    }
 

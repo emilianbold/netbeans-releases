@@ -46,6 +46,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -584,7 +585,30 @@ public class ProjectXMLManagerTest extends TestBase {
         assertEquals("contains two dependencies now", 2, setUnit.size());
         validate(testingProject, false);
     }
-    
+
+    /** add dependency from newDepProj to testingProject
+     * Used in core/tasklist/.../TodoTest.java
+     */
+    public static void addDependecy(final NbModuleProject testingProject, NbModuleProject newDepPrj) throws IOException, MutexException, Exception {
+        final ProjectXMLManager testingPXM = new ProjectXMLManager(testingProject);
+        ModuleEntry me = testingProject.getModuleList().getEntry(
+                newDepPrj.getCodeNameBase());
+        final ModuleDependency md = new ModuleDependency(me, "1", null, false, true);
+        boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
+            public Boolean run() throws IOException {
+                Element confData = testingProject.getPrimaryConfigurationData();
+                Element moduleDependencies = ProjectXMLManager.findModuleDependencies(confData);
+                ProjectXMLManager.createModuleDependencyElement(moduleDependencies, md, null);
+                ProjectXMLManager.createModuleDependencyElement(moduleDependencies, md, null);
+                testingProject.putPrimaryConfigurationData(confData);
+                return true;
+            }
+        });
+        assertTrue("adding dependencies", result);
+        ProjectManager.getDefault().saveProject(testingProject);
+        validate(testingProject, false); // false - we are not using regular way for adding
+    }
+
     private NbModuleProject generateTestingProject() throws Exception {
         return generateTestingProject("");
     }
