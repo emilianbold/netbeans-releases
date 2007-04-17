@@ -1026,6 +1026,9 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
         if(newMethodName.contains(" ")) {
             return false;
         }
+        if(newMethodName.matches("^\\d.*")) {
+            return false;
+        }
         return true;
     }
     
