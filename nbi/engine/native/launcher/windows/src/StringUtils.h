@@ -60,6 +60,7 @@ extern "C" {
 #define MSG_PROGRESS_TITLE    "nlw.msg.progress.title"
 
 #define EXIT_BUTTON_PROP     "nlw.msg.button.error"    
+#define MAIN_WINDOW_TITLE     "nlw.msg.main.title" 
 
     
 #define FREE(x) { if((x)!=NULL) {free(x); (x)=NULL;}}

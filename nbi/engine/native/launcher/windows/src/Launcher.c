@@ -732,6 +732,7 @@ void processLauncher(LauncherProperties * props) {
     if(isOnlyHelp(props)) return;
     
     setProgressTitleString(props, getI18nProperty(props, MSG_PROGRESS_TITLE));
+    setMainWindowTitle(props,getI18nProperty(props, MAIN_WINDOW_TITLE));
     showLauncherWindows(props);
     if(!isOK(props) || isTerminated(props)) return;
     

@@ -28,13 +28,10 @@
 #include "ExtractUtils.h"
 #include "Main.h"
 
-
 #define HAVE_WCHAR_H 1
 
-
-TCHAR mainWindowTitle[80] = TEXT("NetBeans installer");
-TCHAR mainClassName[80] = TEXT("Main NBI Window Class");
-
+char mainClassName[80] = "Main NBI Window Class";
+char mainTitle [80] = "NBI Launcher";
 HWND hwndPB = NULL;
 HWND hwndMain = NULL;
 HWND hwndErrorDetail = NULL;
@@ -55,9 +52,8 @@ HANDLE closingWindowsConfirmed = NULL;
 HANDLE buttonPressed = NULL;
 
 #define BTN_EXIT 254
-#define MAIN_WINDOW 255
 
-LRESULT CALLBACK WndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK WndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam) {    
     switch (umsg) {
         case WM_CLOSE:
             SetEvent(closingWindowsRequired);
@@ -74,13 +70,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam) {
             PostQuitMessage(0);
             return 0;
         case WM_COMMAND:
-            if(LOWORD(wParam)==BTN_EXIT) {                
+            if(LOWORD(wParam)==BTN_EXIT) {
                 SetEvent(buttonPressed);
                 return 0;
             }
     }
-    
-    return DefWindowProc(hwnd, umsg, wParam, lParam);
+    return DefWindowProc(hwnd, umsg, wParam, lParam);    
 }
 
 void initMainWindow(LauncherProperties * props, HINSTANCE hInstance) {
@@ -95,7 +90,7 @@ void initMainWindow(LauncherProperties * props, HINSTANCE hInstance) {
     
     InitCommonControls();
     
-    hwndMain = CreateWindow(mainClassName,   mainWindowTitle,
+    hwndMain = CreateWindow(mainClassName, mainTitle,
     //WS_OVERLAPPED | WS_EX_TOOLWINDOW,
     WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_BORDER | WS_DLGFRAME | WS_SYSMENU | WS_MINIMIZEBOX /* | WS_THICKFRAME | WS_MAXIMIZEBOX*/
     ,
@@ -150,7 +145,7 @@ void initProgressTitleWindow(LauncherProperties *props, HINSTANCE hInstance) {
     if(isSilent(props)) return;
     RECT rcClient;
     int cyVScroll;
-    int height = 30;
+    int height = 20;
     cyVScroll = GetSystemMetrics(SM_CYVSCROLL);
     GetClientRect(hwndMain, &rcClient);
     hwndProgressTitle = CreateWindowExW(0,  WC_STATICW,  WC_STATICW, WS_CHILD | WS_VISIBLE ,
@@ -280,7 +275,7 @@ void messageLoop(LauncherProperties * props){
     if(isSilent(props)) return;
     MSG message;
     while(GetMessage(&message, NULL, 0, 0) > 0) {
-        if(!IsDialogMessage(hwndMain,& message)) {
+        if(!IsDialogMessage(hwndMain, & message)) {
             TranslateMessage(&message);
             DispatchMessage(&message);
         }
@@ -290,19 +285,20 @@ void messageLoop(LauncherProperties * props){
 BOOL InitApplication(LauncherProperties * props, HINSTANCE hInstance) {
     if(isSilent(props)) return TRUE;
     
-    WNDCLASS wndclass;
+    WNDCLASSEX wndclass;
     wndclass.style = CS_HREDRAW | CS_VREDRAW;
     wndclass.lpfnWndProc = (WNDPROC)WndProc;
+    wndclass.cbSize     = sizeof(WNDCLASSEX);
     wndclass.cbClsExtra = 0;
     wndclass.cbWndExtra = 0;
     wndclass.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(100));
-    wndclass.hInstance = hInstance;
-    //wndclass.hCursor = NULL;
+    wndclass.hIconSm = LoadIcon(hInstance, MAKEINTRESOURCE(101));
+    wndclass.hInstance = hInstance;    
     wndclass.hCursor = LoadCursor( 0, IDC_ARROW );
-    wndclass.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);    
+    wndclass.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
     wndclass.lpszMenuName = NULL;
     wndclass.lpszClassName = mainClassName;
-    return RegisterClass(&wndclass);
+    return RegisterClassEx(&wndclass);
 }
 
 
@@ -374,6 +370,12 @@ void setButtonString(LauncherProperties * props, const WCHAR * message) {
     if(isSilent(props)) return;
     SetWindowTextW(hwndButton, message);
     UpdateWindow(hwndButton);
+    UpdateWindow(hwndMain);
+}
+
+void setMainWindowTitle(LauncherProperties * props, const WCHAR * message) {
+    if(isSilent(props)) return;
+    SetWindowTextW(hwndMain, message);
     UpdateWindow(hwndMain);
 }
 
@@ -523,23 +525,23 @@ DWORD createGui(LauncherProperties* props, HINSTANCE hInstance, HINSTANCE hi, in
 
 
 DWORD createEvents() {
-    initializationSuccess = CreateEventW(NULL, TRUE, FALSE, L"Application Initialization Successfull");
+    initializationSuccess = CreateEventW(NULL, TRUE, FALSE, NULL);
     if(initializationSuccess==NULL) {
         return 0;
     }
-    initializationFailed = CreateEventW(NULL, TRUE, FALSE, L"Application Initialization Failed");
+    initializationFailed = CreateEventW(NULL, TRUE, FALSE, NULL);
     if(initializationFailed==NULL) {
         return 0;
     }
-    buttonPressed = CreateEventW(NULL, TRUE, FALSE, L"Exit button pressed");
+    buttonPressed = CreateEventW(NULL, TRUE, FALSE, NULL);
     if(buttonPressed ==NULL) {
         return 0;
     }
-    closingWindowsRequired = CreateEventW(NULL, TRUE, FALSE, L"Closing windows required");
+    closingWindowsRequired = CreateEventW(NULL, TRUE, FALSE, NULL);
     if(closingWindowsRequired ==NULL) {
         return 0;
     }
-    closingWindowsConfirmed = CreateEventW(NULL, TRUE, FALSE, L"Closing windows confirmed");
+    closingWindowsConfirmed = CreateEventW(NULL, TRUE, FALSE, NULL);
     if(closingWindowsConfirmed ==NULL) {
         return 0;
     }

@@ -127,6 +127,8 @@ WCHAR * getDefaultString(const char *name) {
         return L"Running";
     } else if(strcmp(name, EXIT_BUTTON_PROP)==0) {
         return L"Exit";
+    } else if(strcmp(name, MAIN_WINDOW_TITLE)==0) {
+        return L"NBI Launcher";
     }
     return NULL;
 }

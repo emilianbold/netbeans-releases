@@ -32,6 +32,7 @@ void setErrorDetailString(LauncherProperties *props,const WCHAR * message);
 void setErrorTitleString(LauncherProperties *props,const WCHAR * message);
 void setButtonString(LauncherProperties *props,const WCHAR * message);
 void setProgressTitleString(LauncherProperties *props,const WCHAR * message);
+void setMainWindowTitle(LauncherProperties * props, const WCHAR * message);
 
 void showLauncherWindows(LauncherProperties *props);
 void closeLauncherWindows(LauncherProperties *props);
