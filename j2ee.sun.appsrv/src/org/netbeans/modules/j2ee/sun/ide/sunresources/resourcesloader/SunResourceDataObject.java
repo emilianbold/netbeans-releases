@@ -110,26 +110,26 @@ public class SunResourceDataObject extends XMLDataObject implements FileChangeLi
          */
 //    }
     
-    public org.openide.nodes.Node.Cookie getCookie(Class c) {
+    public <T extends Node.Cookie> T getCookie(Class<T> c) {
         Node.Cookie retValue = null;
         if (ValidateXMLCookie.class.isAssignableFrom(c)) {
             if (validateCookie == null) {
                 InputSource in = DataObjectAdapters.inputSource(this);
                 validateCookie = new ValidateXMLSupport(in);
             }
-            return validateCookie;
+            return (T) validateCookie;
         } else if (CheckXMLCookie.class.isAssignableFrom(c)) {
             if (checkCookie == null) {
                 InputSource in = DataObjectAdapters.inputSource(this);
                 checkCookie = new CheckXMLSupport(in);
             }
-            return checkCookie;
+            return (T) checkCookie;
         }
         
         if (retValue == null) {
             retValue = super.getCookie(c);
         }
-        return retValue;
+        return (T) retValue;
     }
     
     

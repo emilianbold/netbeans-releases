@@ -120,7 +120,7 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
         // will be created and cause bizarre problems.  Real cookie cleanup can wait
         // until we migrate to multiview framework.
         CookieSet.Factory factory = new CookieSet.Factory() {
-            public Node.Cookie createCookie(Class klass) {
+            public <T extends Node.Cookie> T createCookie(Class<T> klass) {
                 return null;
             }
         };
@@ -282,15 +282,15 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
         }
     }
     
-    public org.openide.nodes.Node.Cookie getCookie(Class c) {
+    public <T extends Node.Cookie> T getCookie(Class<T> c) {
         Node.Cookie retValue = null;
         if (OpenCookie.class.isAssignableFrom(c)) {
-            return _getOpenCookie();
+            return (T) _getOpenCookie();
         } else if (EditCookie.class.isAssignableFrom(c) 
                 || EditorCookie.class.isAssignableFrom(c)
                 || CloseCookie.class.isAssignableFrom(c)
                 || PrintCookie.class.isAssignableFrom(c)) {
-            return _getEditCookie();
+            return (T) _getEditCookie();
         } else if (ConfigurationStorage.class.isAssignableFrom(c)) {
             retValue = getStorage();
         } else if (ValidateXMLCookie.class.isAssignableFrom(c)) {
@@ -298,19 +298,19 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
                 InputSource in = DataObjectAdapters.inputSource(this);
                 validateCookie = new ValidateXMLSupport(in);
             }
-            return validateCookie;
+            return (T) validateCookie;
         } else if (CheckXMLCookie.class.isAssignableFrom(c)) {
             if (checkCookie == null) {
                 InputSource in = DataObjectAdapters.inputSource(this);
                 checkCookie = new CheckXMLSupport(in);
             }
-            return checkCookie;
+            return (T) checkCookie;
         }
         
         if (retValue == null) {
             retValue = super.getCookie(c);
         }
-        return retValue;
+        return (T) retValue;
     }
     
     private boolean checkIsEdited() {

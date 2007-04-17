@@ -81,7 +81,7 @@ public class ConfigBeanNode extends AbstractNode implements PropertyChangeListen
         return info.getBeanDescriptor().getDisplayName();
     }
     
-    public Node.Cookie getCookie(Class type) {
+    public <T extends Node.Cookie> T getCookie(Class<T> type) {
         if (SaveCookie.class.isAssignableFrom(type)) {
             return bean.getStorage().getPrimaryDataObject().getCookie(type);
         }

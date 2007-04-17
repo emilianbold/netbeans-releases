@@ -36,6 +36,7 @@ import org.openide.loaders.MultiFileLoader;
 import org.netbeans.modules.j2ee.sun.share.config.ui.ConfigBeanTopComponent;
 import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
 import org.openide.filesystems.FileUtil;
+import org.openide.nodes.Node;
 
 
 /**
@@ -103,11 +104,11 @@ public class SecondaryConfigDataObject extends ConfigDataObject {
         return cdo == null ? null : (OpenCookie) cdo.getCookie(OpenCookie.class);
     }
 
-    public org.openide.nodes.Node.Cookie getCookie(Class c) {
+    public <T extends Node.Cookie> T getCookie(Class<T> c) {
         if (OpenCookie.class.isAssignableFrom(c)) {
-            return _getOpenCookie();
+            return (T) _getOpenCookie();
         } else if (EditCookie.class.isAssignableFrom(c)) {
-            return _getEditCookie();
+            return (T) _getEditCookie();
         }
         return super.getCookie(c);
     }
