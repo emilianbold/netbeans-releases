@@ -52,6 +52,18 @@ public class EditorPaneWidget extends Widget {
         componentListener = new ComponentComponentListener ();
     }
 
+    /**
+     * 
+     * @param flag 
+     */
+    public void setEditable(boolean flag) {
+        pane.setEditable(flag);
+    }
+
+    public boolean isEditable() {
+        return pane.isEditable();
+    }
+
     public String getText() {
         return pane.getText();
     }

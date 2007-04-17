@@ -29,13 +29,16 @@ import java.awt.geom.GeneralPath;
 import java.awt.image.BufferedImage;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.xml.soap.SOAPMessage;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
+import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
+import org.netbeans.modules.websvc.design.view.DesignView;
 import org.netbeans.modules.websvc.design.view.DesignViewPopupProvider;
 import org.netbeans.modules.websvc.design.view.actions.RemoveOperationAction;
 import org.openide.util.NbBundle;
@@ -113,13 +116,35 @@ public class OperationWidget extends AbstractTitledWidget {
             typeOfOperation = NbBundle.getMessage(OperationWidget.class, "LBL_Notification");
             image = IMAGE_NOTIFICATION;
         }
-        headerLabelWidget = new ImageLabelWidget(getScene(), image, operation.getOperationName(), 
-                "("+typeOfOperation+")");
+        headerLabelWidget = new ImageLabelWidget(getScene(), image, operation.getOperationName());
+        headerLabelWidget.setToolTipText(typeOfOperation);
         getHeaderWidget().addChild(headerLabelWidget);
 
         buttons = new Widget(getScene());
         buttons.setLayout(LayoutFactory.createHorizontalFlowLayout(
                 LayoutFactory.SerialAlignment.JUSTIFY, 8));
+        final ButtonWidget inputMessage = new ButtonWidget(getScene(), "Sample Input");
+        inputMessage.setAction(new AbstractAction() {
+            public void actionPerformed(ActionEvent arg0) {
+                Widget messageLayer = ((ObjectScene)getScene()).findWidget(DesignView.messageLayerKey);
+                SampleMessageWidget messageWidget = new SampleMessageWidget(
+                        getScene(),operation.getSoapRequest(), "Sample Input Message");
+                messageWidget.setPreferredLocation(inputMessage.convertLocalToScene(inputMessage.getLocation()));
+                messageLayer.addChild(messageWidget);
+            }
+        });
+        buttons.addChild(inputMessage);
+        final ButtonWidget outputMessage = new ButtonWidget(getScene(), "Sample Output");
+        outputMessage.setAction(new AbstractAction() {
+            public void actionPerformed(ActionEvent arg0) {
+                Widget messageLayer = ((ObjectScene)getScene()).findWidget(DesignView.messageLayerKey);
+                SampleMessageWidget messageWidget = new SampleMessageWidget(
+                        getScene(),operation.getSoapResponse(), "Sample Output Message");
+                messageWidget.setPreferredLocation(outputMessage.convertLocalToScene(outputMessage.getLocation()));
+                messageLayer.addChild(messageWidget);
+            }
+        });
+        buttons.addChild(outputMessage);
         buttons.addChild(getExpanderWidget());
 
         getHeaderWidget().addChild(buttons);

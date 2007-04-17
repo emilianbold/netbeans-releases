@@ -49,6 +49,9 @@ import org.openide.filesystems.FileObject;
  * @author Ajit Bhate
  */
 public class DesignView extends JPanel  {
+    
+    public static final Object messageLayerKey = new Object();
+    
     private FileObject implementationClass;
     private Service service;
     private ServiceModel serviceModel;
@@ -57,8 +60,10 @@ public class DesignView extends JPanel  {
     /** Manages the zoom level. */
     private ZoomManager zoomer;
     private Widget mMainLayer;
+    private Widget messageLayer;
     private Widget contentWidget;
     private OperationsWidget operationsWidget;
+
     /**
      * Creates a new instance of GraphView.
      * @param service 
@@ -91,6 +96,11 @@ public class DesignView extends JPanel  {
         serviceWidget.setOpaque(true);
         mMainLayer.addChild(serviceWidget);
         scene.addChild(mMainLayer);
+        messageLayer = new LayerWidget(scene);
+        messageLayer.setPreferredLocation(new Point(0, 0));
+        scene.addChild(messageLayer);
+        scene.addObject(messageLayerKey, messageLayer);
+        
         contentWidget = new Widget(scene);
         contentWidget.setBorder(BorderFactory.createEmptyBorder(0, 24, 0, 0));
         contentWidget.setLayout(LayoutFactory.createVerticalFlowLayout(

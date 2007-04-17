@@ -25,7 +25,11 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +47,11 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.xml.soap.*;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.Comment;
@@ -555,4 +564,26 @@ public class Utils {
         }
     }
     
+    public static  String getFormatedDocument(SOAPMessage message) {
+        try {
+        TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        transformerFactory.setAttribute("indent-number", new Integer(4));
+        Transformer transformer = transformerFactory.newTransformer();
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+        
+        StreamResult result = new StreamResult(new StringWriter());
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        message.writeTo(bos);
+        String output = bos.toString();
+        InputStream bis = new ByteArrayInputStream(output.getBytes());
+        StreamSource source = new StreamSource(bis);
+        
+        transformer.transform(source, result);
+        
+        return result.getWriter().toString();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
 }
