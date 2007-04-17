@@ -21,6 +21,7 @@ package org.openide.util.actions;
 
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.HelpCtx;
+import org.openide.util.test.MockPropertyChangeListener;
 
 /** Test that boolean actions are in fact toggled.
  * @author Jesse Glick
@@ -38,16 +39,16 @@ public class BooleanStateActionTest extends NbTestCase {
         BooleanStateAction a2 = (BooleanStateAction)SystemAction.get(SimpleBooleanAction2.class);
         assertTrue(a1.getBooleanState());
         assertFalse(a2.getBooleanState());
-        ActionsInfraHid.WaitPCL l = new ActionsInfraHid.WaitPCL(BooleanStateAction.PROP_BOOLEAN_STATE);
+        MockPropertyChangeListener l = new MockPropertyChangeListener();
         a1.addPropertyChangeListener(l);
         a1.actionPerformed(null);
-        assertTrue(l.changed());
+        l.expectEvent(BooleanStateAction.PROP_BOOLEAN_STATE, 1500);
         assertFalse(a1.getBooleanState());
         a1.removePropertyChangeListener(l);
-        l.gotit = 0;
+        l.reset();//l.gotit = 0;
         a2.addPropertyChangeListener(l);
         a2.actionPerformed(null);
-        assertTrue(l.changed());
+        l.expectEvent(BooleanStateAction.PROP_BOOLEAN_STATE, 1500);
         assertTrue(a2.getBooleanState());
         a2.removePropertyChangeListener(l);
     }

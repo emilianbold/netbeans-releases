@@ -19,8 +19,6 @@
 
 package org.openide.util.actions;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -76,38 +74,6 @@ public class ActionsInfraHid implements ContextGlobalProvider {
             setLookups(new Lookup[] {
                 Lookups.singleton(currentMap),
             });
-        }
-    }
-    
-    /** Prop listener that will tell you if it gets a change.
-     */
-    public static final class WaitPCL implements PropertyChangeListener {
-        /** whether a change has been received, and if so count */
-        public int gotit = 0;
-        /** optional property name to filter by (if null, accept any) */
-        private final String prop;
-        public WaitPCL(String p) {
-            prop = p;
-        }
-        public synchronized void propertyChange(PropertyChangeEvent evt) {
-            if (prop == null || prop.equals(evt.getPropertyName())) {
-                gotit++;
-                notifyAll();
-            }
-        }
-        public boolean changed() {
-            return changed(1500);
-        }
-        public synchronized boolean changed(int timeout) {
-            if (gotit > 0) {
-                return true;
-            }
-            try {
-                wait(timeout);
-            } catch (InterruptedException ie) {
-                ie.printStackTrace();
-            }
-            return gotit > 0;
         }
     }
     

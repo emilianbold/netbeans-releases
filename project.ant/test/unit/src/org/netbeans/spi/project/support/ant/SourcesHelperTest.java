@@ -19,7 +19,6 @@
 
 package org.netbeans.spi.project.support.ant;
 
-import java.util.Collections;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -30,6 +29,8 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.test.MockChangeListener;
+import org.openide.util.test.MockPropertyChangeListener;
 
 /**
  * Test functionality of SourcesHelper.
@@ -227,7 +228,7 @@ public final class SourcesHelperTest extends NbTestCase {
     public void testSourceLocationChangesFired() throws Exception {
         Sources s = sh.createSources();
         // Listen to changes.
-        AntBasedTestUtil.TestCL l = new AntBasedTestUtil.TestCL();
+        MockChangeListener l = new MockChangeListener();
         s.addChangeListener(l);
         // Check baseline GENERIC sources.
         SourceGroup[] groups = s.getSourceGroups(Sources.TYPE_GENERIC);
@@ -235,14 +236,14 @@ public final class SourcesHelperTest extends NbTestCase {
         assertEquals("group #1 is src2dir", src2dir, groups[0].getRootFolder());
         assertEquals("group #2 is src3dir", src3dir, groups[1].getRootFolder());
         assertEquals("group #3 is maindir", maindir, groups[2].getRootFolder());
-        assertFalse("no initial changes", l.expect());
+        l.assertNoEvents();
         // Now change one of them to a different dir.
         EditableProperties p = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         p.setProperty("src2.dir", "../../src4");
         p.setProperty("src2a.dir", "nonsense");
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
         ProjectManager.getDefault().saveProject(project);
-        assertTrue("got change in GENERIC sources", l.expect());
+        l.msg("got change in GENERIC sources").assertEvent();
         // Check new values.
         groups = s.getSourceGroups(Sources.TYPE_GENERIC);
         assertEquals("should have maindir plus src4dir plus src3dir", 3, groups.length);
@@ -254,22 +255,22 @@ public final class SourcesHelperTest extends NbTestCase {
         assertEquals("should have src1dir plus src3dir", 2, groups.length);
         assertEquals("group #1 is src1dir", src1dir, groups[0].getRootFolder());
         assertEquals("group #2 is src3dir", src3dir, groups[1].getRootFolder());
-        assertFalse("no additional changes yet", l.expect());
+        l.assertNoEvents();
         p = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         p.setProperty("src1.dir", "does-not-exist");
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
         ProjectManager.getDefault().saveProject(project);
-        assertTrue("got change in java sources", l.expect());
+        l.msg("got change in java sources").assertEvent();
         groups = s.getSourceGroups("java");
         assertEquals("should have just src3dir", 1, groups.length);
         assertEquals("group #2 is src3dir", src3dir, groups[0].getRootFolder());
-        assertFalse("no further changes", l.expect());
+        l.assertNoEvents();
         // #47451: should not fire changes for unrelated properties.
         p = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         p.setProperty("irrelevant", "value");
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
         ProjectManager.getDefault().saveProject(project);
-        assertFalse("no changes fired from an unrelated property", l.expect());
+        l.msg("no changes fired from an unrelated property").assertNoEvents();
     }
     
     public void testExternalRootLocationChanges() throws Exception {
@@ -302,19 +303,19 @@ public final class SourcesHelperTest extends NbTestCase {
         assertEquals("should have src1dir plus src3dir", 2, groups.length);
         assertEquals("group #1 is src1dir", src1dir, groups[0].getRootFolder());
         assertEquals("group #2 is src3dir", src3dir, groups[1].getRootFolder());
-        AntBasedTestUtil.TestCL l = new AntBasedTestUtil.TestCL();
+        MockChangeListener l = new MockChangeListener();
         s.addChangeListener(l);
         src3dir.delete();
-        assertTrue("got a change after src3dir deleted", l.expect());
+        l.msg("got a change after src3dir deleted").assertEvent();
         groups = s.getSourceGroups("java");
         assertEquals("should have just src1dir", 1, groups.length);
         assertEquals("group #1 is src1dir", src1dir, groups[0].getRootFolder());
         src1dir.delete();
-        assertTrue("got a change after src1dir deleted", l.expect());
+        l.msg("got a change after src1dir deleted").assertEvent();
         groups = s.getSourceGroups("java");
         assertEquals("should have no dirs", 0, groups.length);
         FileObject src5dir = scratch.createFolder("nonesuch");
-        assertTrue("got a change after src5dir created", l.expect());
+        l.msg("got a change after src5dir created").assertEvent();
         groups = s.getSourceGroups("java");
         assertEquals("should have src15dir now", 1, groups.length);
         assertEquals("group #1 is src5dir", src5dir, groups[0].getRootFolder());
@@ -488,32 +489,28 @@ public final class SourcesHelperTest extends NbTestCase {
         assertOwner(project, g4, "");
         // </editor-fold>
         // <editor-fold desc="testing change firing">
-        AntBasedTestUtil.TestPCL l = new AntBasedTestUtil.TestPCL();
+        MockPropertyChangeListener l = new MockPropertyChangeListener();
         g2.addPropertyChangeListener(l);
         p = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         p.setProperty("src2.excludes", "**/doc-files/");
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
-        assertEquals(Collections.singleton(SourceGroup.PROP_CONTAINERSHIP), l.changed);
-        l.reset();
+        l.assertEvents(SourceGroup.PROP_CONTAINERSHIP);
         assertExcluded("doc-files still excluded", g2, "javax/swing/doc-files/groupLayout.1.gif");
         assertIncluded("resources now included", g2, "javax/swing/plaf/resources/foo.gif");
         p = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         p.setProperty("src2.includes", "**");
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
-        assertEquals(Collections.singleton(SourceGroup.PROP_CONTAINERSHIP), l.changed);
-        l.reset();
+        l.assertEvents(SourceGroup.PROP_CONTAINERSHIP);
         assertIncluded("may as well be included", g2, "java/lang/Class.java");
         p = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         p.setProperty("src2.includes", "**/swing/");
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
-        assertEquals(Collections.singleton(SourceGroup.PROP_CONTAINERSHIP), l.changed);
-        l.reset();
+        l.assertEvents(SourceGroup.PROP_CONTAINERSHIP);
         assertExcluded("excluded again", g2, "java/lang/Class.java");
         p = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         p.setProperty("irrelevant", "value");
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
-        assertEquals(Collections.emptySet(), l.changed);
-        l.reset();
+        l.assertEvents();
         // </editor-fold>
         // <editor-fold desc="testing misc">
         try {

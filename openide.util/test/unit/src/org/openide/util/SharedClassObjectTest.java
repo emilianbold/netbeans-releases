@@ -19,8 +19,6 @@
 
 package org.openide.util;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
@@ -32,9 +30,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
-import junit.textui.TestRunner;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.SharedClassObject;
+import org.openide.util.test.MockPropertyChangeListener;
 
 /** Test SharedClassObject singletons: esp. initialization semantics.
  * @author Jesse Glick
@@ -46,7 +44,7 @@ public class SharedClassObjectTest extends NbTestCase {
     }
     
     public void testSimpleSCO() throws Exception {
-        Class c = makeClazz("SimpleSCO");
+        Class<? extends SharedClassObject> c = makeClazz("SimpleSCO");
         assertTrue(c != SimpleSCO.class);
         assertNull("No instance created yet", SharedClassObject.findObject(c, false));
         SharedClassObject o = SharedClassObject.findObject(c, true);
@@ -58,7 +56,7 @@ public class SharedClassObjectTest extends NbTestCase {
         assertEquals("has been initialized", 1, o.getClass().getField("initcount").getInt(o));
         assertNull(o.getProperty("bar"));
         assertEquals("has been initialized just once", 1, o.getClass().getField("initcount").getInt(null));
-        Class c2 = makeClazz("SimpleSCO");
+        Class<? extends SharedClassObject> c2 = makeClazz("SimpleSCO");
         assertTrue("Call to makeClazz created a fresh class", c != c2);
         SharedClassObject o2 = SharedClassObject.findObject(c2, true);
         o2.getProperty("baz");
@@ -66,32 +64,32 @@ public class SharedClassObjectTest extends NbTestCase {
     }
     
     public void testClearSharedData() throws Exception {
-        Class c = makeClazz("DontClearSharedDataSCO");
+        Class<? extends SharedClassObject> c = makeClazz("DontClearSharedDataSCO");
         SharedClassObject o = SharedClassObject.findObject(c, true);
-        o.putProperty("inited", Boolean.TRUE);
-        assertEquals("DCSD has been initialized", Boolean.TRUE, o.getProperty("inited"));
-        Reference r = new WeakReference(o);
+        o.putProperty("inited", true);
+        assertEquals("DCSD has been initialized", true, o.getProperty("inited"));
+        Reference<?> r = new WeakReference<Object>(o);
         o = null;
         assertGC("collected SCO instance", r);
         assertNull("findObject(Class,false) gives nothing after running GC + finalization #1", SharedClassObject.findObject(c));
         o = SharedClassObject.findObject(c, true);
-        assertEquals("has still been initialized", Boolean.TRUE, o.getProperty("inited"));
+        assertEquals("has still been initialized", true, o.getProperty("inited"));
         c = makeClazz("ClearSharedDataSCO");
         o = SharedClassObject.findObject(c, true);
-        o.putProperty("inited", Boolean.TRUE);
-        assertEquals("CSD has been initialized", Boolean.TRUE, o.getProperty("inited"));
-        r = new WeakReference(o);
+        o.putProperty("inited", true);
+        assertEquals("CSD has been initialized", true, o.getProperty("inited"));
+        r = new WeakReference<Object>(o);
         o = null;
         assertGC("collected SCO instance", r);
         assertNull("findObject(Class,false) gives nothing after running GC + finalization #2", SharedClassObject.findObject(c));
         o = SharedClassObject.findObject(c, true);
         assertEquals("is no longer initialized", null, o.getProperty("inited"));
-        o.putProperty("inited", Boolean.TRUE);
-        assertEquals("has now been initialized again", Boolean.TRUE, o.getProperty("inited"));
+        o.putProperty("inited", true);
+        assertEquals("has now been initialized again", true, o.getProperty("inited"));
     }
     
     public void testIllegalState() throws Exception {
-        Class c = makeClazz("InitErrorSCO");
+        Class<? extends SharedClassObject> c = makeClazz("InitErrorSCO");
         SharedClassObject o = SharedClassObject.findObject(c, true);
         assertNotNull(o);
         try {
@@ -109,43 +107,35 @@ public class SharedClassObjectTest extends NbTestCase {
     }
     
     public void testPropertyChanges() throws Exception {
-        Class c = makeClazz("PropFirerSCO");
-        Method putprop = c.getMethod("putprop", new Class[] {Object.class, Boolean.TYPE});
-        Method getprop = c.getMethod("getprop", new Class[] {});
+        Class<? extends SharedClassObject> c = makeClazz("PropFirerSCO");
+        Method putprop = c.getMethod("putprop", Object.class, Boolean.TYPE);
+        Method getprop = c.getMethod("getprop");
         Field count = c.getField("addCount");
         SharedClassObject o = SharedClassObject.findObject(c, true);
-        assertNull(getprop.invoke(o, null));
+        assertNull(getprop.invoke(o));
         assertEquals(0, count.getInt(o));
-        class Listener implements PropertyChangeListener {
-            public int count = 0;
-            public void propertyChange(PropertyChangeEvent ev) {
-                if ("key".equals(ev.getPropertyName())) {
-                    count++;
-                }
-            }
-        }
-        Listener l = new Listener();
+        MockPropertyChangeListener l = new MockPropertyChangeListener("key");
         o.addPropertyChangeListener(l);
         assertEquals(1, count.getInt(o));
-        Listener l2 = new Listener();
+        MockPropertyChangeListener l2 = new MockPropertyChangeListener("key");
         o.addPropertyChangeListener(l2);
         assertEquals(1, count.getInt(o));
         o.removePropertyChangeListener(l2);
         assertEquals(1, count.getInt(o));
-        putprop.invoke(o, new Object[] {"something", Boolean.FALSE});
-        assertEquals(0, l.count);
-        assertEquals("something", getprop.invoke(o, null));
-        putprop.invoke(o, new Object[] {"somethingelse", Boolean.TRUE});
-        assertEquals(1, l.count);
-        assertEquals("somethingelse", getprop.invoke(o, null));
+        putprop.invoke(o, "something", false);
+        l.assertEventCount(0);
+        assertEquals("something", getprop.invoke(o));
+        putprop.invoke(o, "somethingelse", true);
+        l.assertEventCount(1);
+        assertEquals("somethingelse", getprop.invoke(o));
         // Check that setting the same val does not fire an additional change (cf. #37769):
-        putprop.invoke(o, new Object[] {"somethingelse", Boolean.TRUE});
-        assertEquals(1, l.count);
-        assertEquals("somethingelse", getprop.invoke(o, null));
+        putprop.invoke(o, "somethingelse", true);
+        l.assertEventCount(0);
+        assertEquals("somethingelse", getprop.invoke(o));
         // Check equals() as well as ==:
-        putprop.invoke(o, new Object[] {new String("somethingelse"), Boolean.TRUE});
-        assertEquals(1, l.count);
-        assertEquals("somethingelse", getprop.invoke(o, null));
+        putprop.invoke(o, new String("somethingelse"), true);
+        l.assertEventCount(0);
+        assertEquals("somethingelse", getprop.invoke(o));
         o.removePropertyChangeListener(l);
         assertEquals(0, count.getInt(o));
         o.addPropertyChangeListener(l);
@@ -155,7 +145,7 @@ public class SharedClassObjectTest extends NbTestCase {
     }
     
     public void testRecursiveInit() throws Exception {
-        Class c = makeClazz("RecursiveInitSCO");
+        Class<? extends SharedClassObject> c = makeClazz("RecursiveInitSCO");
         SharedClassObject o = SharedClassObject.findObject(c, true);
         assertEquals(0, c.getField("count").getInt(null));
         o.getProperty("foo");
@@ -182,8 +172,8 @@ public class SharedClassObjectTest extends NbTestCase {
     /** Create a fresh Class object from one of this test's inner classes.
      * Produces a new classloader so the class is always fresh.
      */
-    private Class makeClazz(String name) throws Exception {
-        return Class.forName("org.openide.util.SharedClassObjectTest$" + name, false, new MaskingURLClassLoader());
+    private Class<? extends SharedClassObject> makeClazz(String name) throws Exception {
+        return Class.forName("org.openide.util.SharedClassObjectTest$" + name, false, new MaskingURLClassLoader()).asSubclass(SharedClassObject.class);
     }
     private static final class MaskingURLClassLoader extends URLClassLoader {
         public MaskingURLClassLoader() {
@@ -272,7 +262,7 @@ public class SharedClassObjectTest extends NbTestCase {
     }
     
     public static class RecursiveInitSCO extends SharedClassObject {
-        public static final RecursiveInitSCO INSTANCE = (RecursiveInitSCO)SharedClassObject.findObject(RecursiveInitSCO.class, true);
+        public static final RecursiveInitSCO INSTANCE = SharedClassObject.findObject(RecursiveInitSCO.class, true);
         public static int count = 0;
         protected void initialize() {
             super.initialize();

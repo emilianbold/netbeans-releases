@@ -20,10 +20,12 @@
 package org.openide.util;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.test.MockChangeListener;
 
 /**
  *
@@ -37,26 +39,8 @@ public class ChangeSupportTest extends NbTestCase {
 
     public void testChangeSupport() {
         final int[] changeCount = { 0 };
-        class Listener implements ChangeListener {
-            private int notified;
-            private ChangeEvent lastEvent;
-            public void stateChanged(ChangeEvent event) {
-                lastEvent = event;
-                notified++;
-            }
-            public int getNotifiedAndReset() {
-                try {
-                    return notified;
-                } finally {
-                    notified = 0;
-                }
-            }
-            public ChangeEvent getLastEvent() {
-                return lastEvent;
-            }
-        }
         ChangeSupport support = new ChangeSupport(this);
-        Listener listener1 = new Listener(), listener2 = new Listener();
+        MockChangeListener listener1 = new MockChangeListener(), listener2 = new MockChangeListener();
 
         support.addChangeListener(null);
         assertFalse(support.hasListeners());
@@ -73,34 +57,35 @@ public class ChangeSupportTest extends NbTestCase {
         assertTrue(listeners.contains(listener2));
 
         support.fireChange();
-        assertEquals(1, listener1.getNotifiedAndReset());
-        assertEquals(1, listener2.getNotifiedAndReset());
-        assertSame(this, listener1.getLastEvent().getSource());
+        List<ChangeEvent> events = listener1.allEvents();
+        assertEquals(1, events.size());
+        listener2.assertEventCount(1);
+        assertSame(this, events.iterator().next().getSource());
 
         support.removeChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
             }
         });
         support.fireChange();
-        assertEquals(1, listener1.getNotifiedAndReset());
-        assertEquals(1, listener2.getNotifiedAndReset());
+        listener1.assertEventCount(1);
+        listener2.assertEventCount(1);
 
         support.removeChangeListener(listener1);
         support.fireChange();
-        assertEquals(0, listener1.getNotifiedAndReset());
-        assertEquals(1, listener2.getNotifiedAndReset());
+        listener1.assertEventCount(0);
+        listener2.assertEventCount(1);
 
         support.addChangeListener(listener2);
         support.fireChange();
-        assertEquals(2, listener2.getNotifiedAndReset());
+        listener2.assertEventCount(2);
 
         support.removeChangeListener(listener2);
         support.fireChange();
-        assertEquals(1, listener2.getNotifiedAndReset());
+        listener2.assertEventCount(1);
 
         support.removeChangeListener(listener2);
         support.fireChange();
-        assertEquals(0, listener2.getNotifiedAndReset());
+        listener2.assertEventCount(0);
         assertFalse(support.hasListeners());
     }
 }

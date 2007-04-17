@@ -41,6 +41,7 @@ import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.CallbackSystemAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.test.MockPropertyChangeListener;
 
 /** Test CallbackSystemAction: changing performer, focus tracking.
  * @author Jesse Glick
@@ -447,13 +448,13 @@ public class CallbackSystemActionTest extends NbTestCase {
         Lookup context = Lookups.singleton(map);
         clone = system.createContextAwareInstance(context);
         
-        CntListener listener = new CntListener();
+        MockPropertyChangeListener listener = new MockPropertyChangeListener();
         clone.addPropertyChangeListener(listener);
         
         assertTrue("Not enabled now", !clone.isEnabled());
         action.setEnabled(true);
         assertTrue("Clone is enabled because the action in ActionMap is", clone.isEnabled());
-        listener.assertCnt("One change expected", 1);
+        listener.assertEventCount(1);
         
         system.setActionPerformer(action);
         clone.actionPerformed(new ActionEvent(this, 0, ""));
@@ -463,26 +464,12 @@ public class CallbackSystemActionTest extends NbTestCase {
         
         action.setEnabled(false);
         assertTrue("Clone is disabled because the action in ActionMap is", !clone.isEnabled());
-        listener.assertCnt("Another change expected", 1);
+        listener.assertEventCount(1);
         
         clone.actionPerformed(new ActionEvent(this, 0, ""));
         assertEquals("MyAction.actionPerformed invoked again", 2, action.actionPerformed);
         assertEquals("MyAction.performAction is not invoked, remains 0", 0, action.performAction);
         
     }
-    
-    private static final class CntListener extends Object
-            implements PropertyChangeListener {
-        private int cnt;
-        
-        public void propertyChange(PropertyChangeEvent evt) {
-            cnt++;
-        }
-        
-        public void assertCnt(String msg, int count) {
-            assertEquals(msg, count, this.cnt);
-            this.cnt = 0;
-        }
-    } // end of CntListener
     
 }

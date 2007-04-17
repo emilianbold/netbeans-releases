@@ -20,11 +20,9 @@
 package org.netbeans.spi.project.support.ant;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import org.netbeans.api.project.Project;
@@ -39,6 +37,8 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
+import org.openide.util.test.MockChangeListener;
+import org.openide.util.test.MockPropertyChangeListener;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -221,7 +221,7 @@ public class AntProjectHelperTest extends NbTestCase {
         assertEquals("correct evaluateString", "value1:value2",
             pev.evaluate("${shared.prop}:${private.prop}"));
         // #44213: try modifying build.properties.
-        AntBasedTestUtil.TestPCL l = new AntBasedTestUtil.TestPCL();
+        MockPropertyChangeListener l = new MockPropertyChangeListener();
         pev.addPropertyChangeListener(l);
         FileObject buildProperties = scratch.getFileObject("userdir/build.properties");
         assertNotNull("have build.properties", buildProperties);
@@ -233,8 +233,7 @@ public class AntProjectHelperTest extends NbTestCase {
         p.store(os, null);
         os.close();
         lock.releaseLock();
-        assertEquals("two properties fired", new HashSet<String>(Arrays.asList(new String[] {"global.prop", "global.prop.2"})), l.changed);
-        l.reset();
+        l.assertEvents("global.prop", "global.prop.2");
         assertEquals("global.prop is correct", "value5a", pev.getProperty("global.prop"));
         assertEquals("global.prop.2 is correct", "globalvalue2", pev.getProperty("global.prop.2"));
         // #42147: try modifying project.properties and private.properties on disk.
@@ -249,8 +248,7 @@ public class AntProjectHelperTest extends NbTestCase {
         p.store(os, null);
         os.close();
         lock.releaseLock();
-        assertEquals("two properties fired", new HashSet<String>(Arrays.asList(new String[] {"shared.prop", "derived.prop"})), l.changed);
-        l.reset();
+        l.assertEvents("shared.prop", "derived.prop");
         assertEquals("shared.prop is correct", "value1a", pev.getProperty("shared.prop"));
         assertEquals("derived.prop correct", "value2:value1a:${undefined.prop}", pev.getProperty("derived.prop"));
         FileObject privateProperties = projdir.getFileObject("nbproject/private/private.properties");
@@ -265,14 +263,12 @@ public class AntProjectHelperTest extends NbTestCase {
         p.store(os, null);
         os.close();
         lock.releaseLock();
-        assertEquals("two properties fired", new HashSet<String>(Arrays.asList(new String[] {"private.prop", "derived.prop"})), l.changed);
-        l.reset();
+        l.assertEvents("private.prop", "derived.prop");
         assertEquals("private.prop is correct", "value2a", pev.getProperty("private.prop"));
         assertEquals("derived.prop correct", "value2a:value1a:${undefined.prop}", pev.getProperty("derived.prop"));
         // Try deleting project.properties and make sure its values are cleared.
         projectProperties.delete();
-        assertEquals("two properties fired", new HashSet<String>(Arrays.asList(new String[] {"shared.prop", "derived.prop"})), l.changed);
-        l.reset();
+        l.assertEvents("shared.prop", "derived.prop");
         assertEquals("shared.prop is gone", null, pev.getProperty("shared.prop"));
         assertEquals("derived.prop is gone", null, pev.getProperty("derived.prop"));
         // Now recreate it.
@@ -284,8 +280,7 @@ public class AntProjectHelperTest extends NbTestCase {
         p.store(os, null);
         os.close();
         lock.releaseLock();
-        assertEquals("one property fired", Collections.singleton("derived.prop"), l.changed);
-        l.reset();
+        l.assertEvents("derived.prop");
         assertEquals("derived.prop is back", "value2a:${shared.prop}:${undefined.prop.2}", pev.getProperty("derived.prop"));
         // #44213 cont'd: change user.properties.file and make sure the new definitions are read
         FileObject buildProperties2 = scratch.getFileObject("userdir").createData("build2.properties");
@@ -307,8 +302,7 @@ public class AntProjectHelperTest extends NbTestCase {
         p.store(os, null);
         os.close();
         lock.releaseLock();
-        assertEquals("two properties fired", new HashSet<String>(Arrays.asList(new String[] {"user.properties.file", "global.prop"})), l.changed);
-        l.reset();
+        l.assertEvents("user.properties.file", "global.prop");
         assertEquals("user.properties.file is correct", "../userdir/build2.properties", pev.getProperty("user.properties.file"));
         assertEquals("global.prop is correct", "value5b", pev.getProperty("global.prop"));
         lock = buildProperties2.lock();
@@ -319,8 +313,7 @@ public class AntProjectHelperTest extends NbTestCase {
         p.store(os, null);
         os.close();
         lock.releaseLock();
-        assertEquals("one property fired", Collections.singleton("global.prop.2"), l.changed);
-        l.reset();
+        l.assertEvents("global.prop.2");
         assertEquals("global.prop.2 is gone", null, pev.getProperty("global.prop.2"));
         // XXX try eval when user.properties.file is not defined (tricky, need to preset netbeans.user)
                 return null;
@@ -711,13 +704,13 @@ public class AntProjectHelperTest extends NbTestCase {
         assertEquals("correct number of defs", 3, defs.size());
         assertEquals("correct value", "value1", defs.get("shared.prop"));
         // Test changes.
-        AntBasedTestUtil.TestCL l = new AntBasedTestUtil.TestCL();
+        MockChangeListener l = new MockChangeListener();
         pp.addChangeListener(l);
         EditableProperties p = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         p.setProperty("foo", "bar");
-        assertFalse("no events from uncommitted changes", l.expect());
+        l.msg("no events from uncommitted changes").assertNoEvents();
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
-        assertTrue("got a change from setting a property", l.expect());
+        l.msg("got a change from setting a property").assertEvent();
         defs = pp.getProperties();
         assertEquals("correct new size", 4, defs.size());
         assertEquals("correct new value", "bar", defs.get("foo"));
@@ -726,10 +719,10 @@ public class AntProjectHelperTest extends NbTestCase {
         p.setProperty("foo", "bar2");
         p.setProperty("foo", "bar");
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
-        assertFalse("no events from no-op changes", l.expect());
+        l.msg("no events from no-op changes").assertNoEvents();
         // Deleting a property file.
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, null);
-        assertTrue("got a change from removing a property file", l.expect());
+        l.msg("got a change from removing a property file").assertEvent();
         assertEquals("now have no definitions", Collections.EMPTY_MAP, pp.getProperties());
         // Start off with no file, then create it.
         String path = "foo.properties";
@@ -741,16 +734,16 @@ public class AntProjectHelperTest extends NbTestCase {
         p.setProperty("one", "1");
         p.setProperty("two", "2");
         h.putProperties(path, p);
-        assertTrue("making the file fired a change", l.expect());
+        l.msg("making the file fired a change").assertEvent();
         defs = pp.getProperties();
         assertEquals("two defs", 2, defs.size());
         assertEquals("right value #1", "1", defs.get("one"));
         assertEquals("right value #2", "2", defs.get("two"));
         assertNull("no file yet saved to disk", h.getProjectDirectory().getFileObject(path));
         p.setProperty("three", "3");
-        assertFalse("no events from uncomm. change", l.expect());
+        l.msg("no events from uncomm. change").assertNoEvents();
         h.putProperties(path, p);
-        assertTrue("now have changed new file", l.expect());
+        l.msg("now have changed new file").assertEvent();
         defs = pp.getProperties();
         assertEquals("three defs", 3, defs.size());
         // XXX test that saving the project fires no additional changes

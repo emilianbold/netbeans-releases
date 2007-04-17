@@ -33,6 +33,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 
 // XXX testChangesFromAntPropertyChanges
+import org.openide.util.test.MockChangeListener;
 
 /**
  * Test functionality of GlobFileBuiltQuery.
@@ -141,55 +142,55 @@ public class GlobFileBuiltQueryTest extends NbTestCase {
     private static final long QUICK_WAIT = 500;
     
     public void testChangeFiring() throws Exception {
-        AntBasedTestUtil.TestCL fooL = new AntBasedTestUtil.TestCL();
+        MockChangeListener fooL = new MockChangeListener();
         fooStatus.addChangeListener(fooL);
-        AntBasedTestUtil.TestCL barL = new AntBasedTestUtil.TestCL();
+        MockChangeListener barL = new MockChangeListener();
         barStatus.addChangeListener(barL);
-        AntBasedTestUtil.TestCL fooTestL = new AntBasedTestUtil.TestCL();
+        MockChangeListener fooTestL = new MockChangeListener();
         fooTestStatus.addChangeListener(fooTestL);
         assertFalse("Foo.java not built", fooStatus.isBuilt());
         FileObject fooClass = TestUtil.createFileFromContent(null, prj, "build/classes/pkg/Foo.class");
-        assertTrue("change in Foo.java", fooL.expect(WAIT));
+        fooL.msg("change in Foo.java").expectEvent(WAIT);
         assertTrue("Foo.java now built", fooStatus.isBuilt());
-        assertFalse("no more changes in Foo.java", fooL.expect(QUICK_WAIT));
+        fooL.msg("no more changes in Foo.java").expectNoEvents(QUICK_WAIT);
         fooClass.delete();
-        assertTrue("change in Foo.java", fooL.expect(WAIT));
+        fooL.msg("change in Foo.java").expectEvent(WAIT);
         assertFalse("Foo.java no longer built", fooStatus.isBuilt());
-        assertFalse("no changes yet in FooTest.java", fooTestL.expect(QUICK_WAIT));
+        fooTestL.msg("no changes yet in FooTest.java").expectNoEvents(QUICK_WAIT);
         assertFalse("FooTest.java not yet built", fooTestStatus.isBuilt());
         FileObject fooTestClass = TestUtil.createFileFromContent(null, prj, "build/test/classes/pkg/FooTest.class");
-        assertTrue("change in FooTest.java", fooTestL.expect(WAIT));
+        fooTestL.msg("change in FooTest.java").expectEvent(WAIT);
         assertTrue("FooTest.java now built", fooTestStatus.isBuilt());
         FileObject buildDir = prj.getFileObject("build");
         assertNotNull("build dir exists", buildDir);
         buildDir.delete();
-        assertFalse("no change in Foo.java (still not built)", fooL.expect(QUICK_WAIT));
+        fooL.msg("no change in Foo.java (still not built)").expectNoEvents(QUICK_WAIT);
         assertFalse("Foo.java not built (build dir gone)", fooStatus.isBuilt());
-        assertTrue("got change in FooTest.java (build dir gone)", fooTestL.expect(WAIT));
+        fooTestL.msg("got change in FooTest.java (build dir gone)").expectEvent(WAIT);
         assertFalse("FooTest.java not built (build dir gone)", fooTestStatus.isBuilt());
-        assertFalse("never got changes in Bar.java (never built)", barL.expect(QUICK_WAIT));
+        barL.msg("never got changes in Bar.java (never built)").expectNoEvents(QUICK_WAIT);
         TestUtil.createFileFromContent(null, prj, "build/classes/pkg/Foo.class");
-        assertTrue("change in Foo.class", fooL.expect(WAIT));
+        fooL.msg("change in Foo.class").expectEvent(WAIT);
         assertTrue("Foo.class created", fooStatus.isBuilt());
         Thread.sleep(PAUSE);
         TestUtil.createFileFromContent(null, prj, "src/pkg/Foo.java");
-        assertTrue("change in Foo.java", fooL.expect(WAIT));
+        fooL.msg("change in Foo.java").expectEvent(WAIT);
         assertFalse("Foo.class out of date", fooStatus.isBuilt());
         TestUtil.createFileFromContent(null, prj, "build/classes/pkg/Foo.class");
-        assertTrue("touched Foo.class", fooL.expect(WAIT));
+        fooL.msg("touched Foo.class").expectEvent(WAIT);
         assertTrue("Foo.class touched", fooStatus.isBuilt());
         DataObject.find(foo).setModified(true);
-        assertTrue("Foo.java modified in memory", fooL.expect(WAIT));
+        fooL.msg("Foo.java modified in memory").expectEvent(WAIT);
         assertFalse("Foo.java modified in memory", fooStatus.isBuilt());
         DataObject.find(foo).setModified(false);
-        assertTrue("Foo.java unmodified in memory", fooL.expect(WAIT));
+        fooL.msg("Foo.java unmodified in memory").expectEvent(WAIT);
         assertTrue("Foo.java unmodified again", fooStatus.isBuilt());
         File buildF = new File(FileUtil.toFile(prj), "build");
         assertTrue("build dir exists", buildF.isDirectory());
         TestUtil.deleteRec(buildF);
         assertFalse(buildF.getAbsolutePath() + " is gone", buildF.exists());
         prj.getFileSystem().refresh(false);
-        assertTrue("build dir deleted", fooL.expect(WAIT));
+        fooL.msg("build dir deleted").expectEvent(WAIT);
         assertFalse("Foo.class gone (no build dir)", fooStatus.isBuilt());
         File pkg = new File(buildF, "classes/pkg".replace('/', File.separatorChar));
         File fooClassF = new File(pkg, "Foo.class");
@@ -199,61 +200,61 @@ public class GlobFileBuiltQueryTest extends NbTestCase {
         OutputStream os = new FileOutputStream(fooClassF);
         os.close();
         prj.getFileSystem().refresh(false);
-        assertTrue(fooClassF.getAbsolutePath() + " created on disk", fooL.expect(WAIT));
+        fooL.msg(fooClassF.getAbsolutePath() + " created on disk").expectEvent(WAIT);
         assertTrue("Foo.class back", fooStatus.isBuilt());
         Thread.sleep(PAUSE);
         TestUtil.createFileFromContent(null, prj, "src/pkg/Foo.java");
-        assertTrue("change in Foo.java", fooL.expect(WAIT));
+        fooL.msg("change in Foo.java").expectEvent(WAIT);
         assertFalse("Foo.class out of date", fooStatus.isBuilt());
         os = new FileOutputStream(fooClassF);
         os.write(69); // force Mac OS X to update timestamp
         os.close();
         prj.getFileSystem().refresh(false);
-        assertTrue("Foo.class recreated on disk", fooL.expect(WAIT));
+        fooL.msg("Foo.class recreated on disk").expectEvent(WAIT);
         assertTrue("Foo.class touched", fooStatus.isBuilt());
     }
     
     public void testExternalSourceRoots() throws Exception {
         // Cf. #43609.
         assertNotNull("have status for Baz.java", bazStatus);
-        AntBasedTestUtil.TestCL bazL = new AntBasedTestUtil.TestCL();
+        MockChangeListener bazL = new MockChangeListener();
         bazStatus.addChangeListener(bazL);
         assertFalse("Baz.java not built", bazStatus.isBuilt());
         FileObject bazClass = TestUtil.createFileFromContent(null, extbuild, "classes/pkg2/Baz.class");
-        assertTrue("got change", bazL.expect(WAIT));
+        bazL.msg("got change").expectEvent(WAIT);
         assertTrue("Baz.java now built", bazStatus.isBuilt());
         Thread.sleep(PAUSE);
         TestUtil.createFileFromContent(null, extsrc, "pkg2/Baz.java");
-        assertTrue("got change", bazL.expect(WAIT));
+        bazL.msg("got change").expectEvent(WAIT);
         assertFalse("Baz.class out of date", bazStatus.isBuilt());
         TestUtil.createFileFromContent(null, extbuild, "classes/pkg2/Baz.class");
-        assertTrue("got change", bazL.expect(WAIT));
+        bazL.msg("got change").expectEvent(WAIT);
         assertTrue("Baz.class rebuilt", bazStatus.isBuilt());
         bazClass.delete();
-        assertTrue("got change", bazL.expect(WAIT));
+        bazL.msg("got change").expectEvent(WAIT);
         assertFalse("Baz.class deleted", bazStatus.isBuilt());
         TestUtil.createFileFromContent(null, extbuild, "classes/pkg2/Baz.class");
-        assertTrue("got change", bazL.expect(WAIT));
+        bazL.msg("got change").expectEvent(WAIT);
         assertTrue("Baz.java built again", bazStatus.isBuilt());
         DataObject.find(baz).setModified(true);
-        assertTrue("got change", bazL.expect(WAIT));
+        bazL.msg("got change").expectEvent(WAIT);
         assertFalse("Baz.java modified", bazStatus.isBuilt());
         DataObject.find(baz).setModified(false);
-        assertTrue("got change", bazL.expect(WAIT));
+        bazL.msg("got change").expectEvent(WAIT);
         assertTrue("Baz.java unmodified again", bazStatus.isBuilt());
         extbuild.delete();
-        assertTrue("got change", bazL.expect(WAIT));
+        bazL.msg("got change").expectEvent(WAIT);
         assertFalse("Baz.java not built (build dir gone)", bazStatus.isBuilt());
     }
     
     public void testFileRenames() throws Exception {
         // Cf. #45694.
         assertNotNull("have status for Foo.java", fooStatus);
-        AntBasedTestUtil.TestCL fooL = new AntBasedTestUtil.TestCL();
+        MockChangeListener fooL = new MockChangeListener();
         fooStatus.addChangeListener(fooL);
         assertFalse("Foo.java not built", fooStatus.isBuilt());
         FileObject fooClass = TestUtil.createFileFromContent(null, prj, "build/classes/pkg/Foo.class");
-        assertTrue("got change", fooL.expect(WAIT));
+        fooL.msg("got change").expectEvent(WAIT);
         assertTrue("Foo.java now built", fooStatus.isBuilt());
         FileLock lock = foo.lock();
         try {
@@ -261,10 +262,10 @@ public class GlobFileBuiltQueryTest extends NbTestCase {
         } finally {
             lock.releaseLock();
         }
-        assertTrue("got change", fooL.expect(WAIT));
+        fooL.msg("got change").expectEvent(WAIT);
         assertFalse("Foo2.java no longer built", fooStatus.isBuilt());
         fooClass = TestUtil.createFileFromContent(null, prj, "build/classes/pkg/Foo2.class");
-        assertTrue("got change", fooL.expect(WAIT));
+        fooL.msg("got change").expectEvent(WAIT);
         assertTrue("Now Foo2.java is built", fooStatus.isBuilt());
     }
     

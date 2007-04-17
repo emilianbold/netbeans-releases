@@ -24,6 +24,7 @@ import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.HashMap;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.test.MockChangeListener;
 
 /**
  * @author Jesse Glick
@@ -37,21 +38,21 @@ public class FilterPropertyProviderTest extends NbTestCase {
     public void testDelegatingPropertyProvider() throws Exception {
         AntBasedTestUtil.TestMutablePropertyProvider mpp = new AntBasedTestUtil.TestMutablePropertyProvider(new HashMap<String,String>());
         DPP dpp = new DPP(mpp);
-        AntBasedTestUtil.TestCL l = new AntBasedTestUtil.TestCL();
+        MockChangeListener l = new MockChangeListener();
         dpp.addChangeListener(l);
         assertEquals("initially empty", Collections.emptyMap(), dpp.getProperties());
         mpp.defs.put("foo", "bar");
         mpp.mutated();
-        assertTrue("got a change", l.expect());
+        l.assertEvent();
         assertEquals("now right contents", Collections.singletonMap("foo", "bar"), dpp.getProperties());
         AntBasedTestUtil.TestMutablePropertyProvider mpp2 = new AntBasedTestUtil.TestMutablePropertyProvider(new HashMap<String,String>());
         mpp2.defs.put("foo", "bar2");
         dpp.setDelegate_(mpp2);
-        assertTrue("got a change from new delegate", l.expect());
+        l.msg("got a change from new delegate").assertEvent();
         assertEquals("right contents from new delegate", Collections.singletonMap("foo", "bar2"), dpp.getProperties());
         mpp2.defs.put("foo", "bar3");
         mpp2.mutated();
-        assertTrue("got a change in new delegate", l.expect());
+        l.msg("got a change in new delegate").assertEvent();
         assertEquals("right contents", Collections.singletonMap("foo", "bar3"), dpp.getProperties());
         Reference<?> r = new WeakReference<Object>(mpp);
         mpp = null;

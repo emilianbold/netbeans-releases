@@ -19,7 +19,6 @@
 
 package org.netbeans.spi.project.support.ant;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileInputStream;
@@ -35,17 +34,13 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.Icon;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.project.Project;
@@ -495,77 +490,6 @@ public class AntBasedTestUtil {
        return count;
     }
     
-    public static final class TestPCL implements PropertyChangeListener {
-        
-        public final Set<String> changed = new HashSet<String>();
-        public final Map<String,String> newvals = new HashMap<String,String>();
-        public final Map<String,String> oldvals = new HashMap<String,String>();
-        
-        public TestPCL() {}
-        
-        public void reset() {
-            changed.clear();
-            newvals.clear();
-            oldvals.clear();
-        }
-        
-        public void propertyChange(PropertyChangeEvent evt) {
-            String prop = evt.getPropertyName();
-            String nue = (String)evt.getNewValue();
-            String old = (String)evt.getOldValue();
-            changed.add(prop);
-            if (prop != null) {
-                newvals.put(prop, nue);
-                oldvals.put(prop, old);
-            } else {
-                assert nue == null : "null prop name -> null new value";
-                assert old == null : "null prop name -> null old value";
-            }
-        }
-        
-    }
-    
-    /**
-     * Change listener that can be polled.
-     * Handles asynchronous changes.
-     */
-    public static final class TestCL implements ChangeListener {
-        
-        private boolean fired;
-        
-        public TestCL() {}
-        
-        public synchronized void stateChanged(ChangeEvent e) {
-            fired = true;
-            notify();
-        }
-        
-        /**
-         * Check whether a change has occurred by now (do not block).
-         * Also resets the flag so the next call will expect a new change.
-         * @return true if a change has occurred
-         */
-        public synchronized boolean expect() {
-            boolean f = fired;
-            fired = false;
-            return f;
-        }
-        
-        /**
-         * Check whether a change has occurred by now or occurs within some time.
-         * Also resets the flag so the next call will expect a new change.
-         * @param timeout a maximum amount of time to wait, in milliseconds
-         * @return true if a change has occurred
-         */
-        public synchronized boolean expect(long timeout) throws InterruptedException {
-            if (!fired) {
-                wait(timeout);
-            }
-            return expect();
-        }
-        
-    }
-
     public static class TestAntArtifact extends AntArtifact {
 
         private URI[] uris;

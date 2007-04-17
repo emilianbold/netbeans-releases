@@ -43,6 +43,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.NbCollections;
 import org.openide.util.Utilities;
+import org.openide.util.test.MockChangeListener;
+import org.openide.util.test.MockPropertyChangeListener;
 
 /**
  * Test functionality of PropertyUtils.
@@ -258,18 +260,18 @@ public class PropertyUtilsTest extends NbTestCase {
         assertEquals("key2 correct from disk", "val2", p2.getProperty("key2"));
         // Test the property provider too.
         PropertyProvider gpp = PropertyUtils.globalPropertyProvider();
-        AntBasedTestUtil.TestCL l = new AntBasedTestUtil.TestCL();
+        MockChangeListener l = new MockChangeListener();
         gpp.addChangeListener(l);
         p = PropertyUtils.getGlobalProperties();
         assertEquals("correct initial definitions", p, gpp.getProperties());
         p.setProperty("key3", "val3");
         assertEquals("still have 2 defs", 2, gpp.getProperties().size());
-        assertFalse("no changes yet", l.expect());
+        l.assertNoEvents();
         PropertyUtils.putGlobalProperties(p);
-        assertTrue("got a change", l.expect());
+        l.assertEvent();
         assertEquals("now have 3 defs", 3, gpp.getProperties().size());
         assertEquals("right val", "val3", gpp.getProperties().get("key3"));
-        assertFalse("no spurious changes", l.expect());
+        l.msg("no spurious changes").assertNoEvents();
         // Test changes made using Filesystems API.
         p.setProperty("key1", "val1a");
         FileObject fo = FileUtil.toFileObject(ubp);
@@ -279,7 +281,7 @@ public class PropertyUtilsTest extends NbTestCase {
         p.store(os);
         os.close();
         lock.releaseLock();
-        assertTrue("got a change from the Filesystems API", l.expect());
+        l.msg("got a change from the Filesystems API").assertEvent();
         assertEquals("still have 3 defs", 3, gpp.getProperties().size());
         assertEquals("right val for key1", "val1a", gpp.getProperties().get("key1"));
         // XXX changes made on disk are not picked up... bad test, or something else?
@@ -325,10 +327,10 @@ public class PropertyUtilsTest extends NbTestCase {
         clearWorkDir();
         final FileObject scratch = FileUtil.toFileObject(getWorkDir());
         PropertyProvider pp = PropertyUtils.propertiesFilePropertyProvider(new File(FileUtil.toFile(scratch), "test.properties"));
-        AntBasedTestUtil.TestCL l = new AntBasedTestUtil.TestCL();
+        MockChangeListener l = new MockChangeListener();
         pp.addChangeListener(l);
         assertEquals("no defs yet (no file)", Collections.EMPTY_MAP, pp.getProperties());
-        assertFalse("no changes yet", l.expect());
+        l.assertNoEvents();
         final FileObject[] testProperties = new FileObject[1];
         scratch.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             public void run() throws IOException {
@@ -349,7 +351,7 @@ public class PropertyUtilsTest extends NbTestCase {
                 }
             }
         });
-        assertTrue("got a change when file was created", l.expect());
+        l.msg("got a change when file was created").assertEvent();
         assertEquals("one key", Collections.singletonMap("a", "aval"), pp.getProperties());
         FileLock lock = testProperties[0].lock();
         try {
@@ -368,10 +370,10 @@ public class PropertyUtilsTest extends NbTestCase {
         Map<String,String> m = new HashMap<String,String>();
         m.put("a", "aval");
         m.put("b", "bval");
-        assertTrue("got a change when file was changed", l.expect());
+        l.msg("got a change when file was changed").assertEvent();
         assertEquals("right properties", m, pp.getProperties());
         testProperties[0].delete();
-        assertTrue("got a change when file was deleted", l.expect());
+        l.msg("got a change when file was deleted").assertEvent();
         assertEquals("no defs again (file deleted)", Collections.emptyMap(), pp.getProperties());
     }
     
@@ -440,7 +442,7 @@ public class PropertyUtilsTest extends NbTestCase {
         defs2.defs.put("n", "nval1=${x}:${b}");
         defs2.defs.put("o", "oval1=${z}");
         PropertyEvaluator eval = PropertyUtils.sequentialPropertyEvaluator(predefs, defs1, defs2);
-        AntBasedTestUtil.TestPCL l = new AntBasedTestUtil.TestPCL();
+        MockPropertyChangeListener l = new MockPropertyChangeListener();
         eval.addPropertyChangeListener(l);
         Map<String,String> result = new HashMap<String,String>();
         result.put("x", "xval1");
@@ -452,7 +454,7 @@ public class PropertyUtilsTest extends NbTestCase {
         result.put("n", "nval1=xval1:bval1=xval1");
         result.put("o", "oval1=${z}");
         assertEquals("correct initial vals", result, eval.getProperties());
-        assertEquals("no changes yet", Collections.emptySet(), l.changed);
+        l.assertEvents();
         // Change predefs.
         predefs.defs.put("x", "xval2");
         predefs.mutated();
@@ -465,11 +467,8 @@ public class PropertyUtilsTest extends NbTestCase {
         newvals.put("b", "bval1=xval2");
         newvals.put("n", "nval1=xval2:bval1=xval2");
         result.putAll(newvals);
-        assertEquals("some changes", newvals.keySet(), l.changed);
-        assertEquals("right old values", oldvals, l.oldvals);
-        assertEquals("right new values", newvals, l.newvals);
+        l.assertEventsAndValues(oldvals, newvals);
         assertEquals("right total values now", result, eval.getProperties());
-        l.reset();
         // Change some other defs.
         defs1.defs.put("z", "zval1");
         defs1.defs.remove("b");
@@ -492,11 +491,8 @@ public class PropertyUtilsTest extends NbTestCase {
         newvals.put("z", "zval1");
         result.putAll(newvals);
         result.remove("b");
-        assertEquals("some changes", newvals.keySet(), l.changed);
-        assertEquals("right old values", oldvals, l.oldvals);
-        assertEquals("right new values", newvals, l.newvals);
+        l.assertEventsAndValues(oldvals, newvals);
         assertEquals("right total values now", result, eval.getProperties());
-        l.reset();
     }
     
     private static final String ILLEGAL_CHARS = " !\"#$%&'()*+,/:;<=>?@[\\]^`{|}~";

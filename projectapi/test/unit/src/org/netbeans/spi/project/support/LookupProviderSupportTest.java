@@ -20,11 +20,9 @@
 package org.netbeans.spi.project.support;
 
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -32,7 +30,6 @@ import javax.swing.JComboBox;
 import javax.swing.JRadioButton;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
@@ -44,6 +41,7 @@ import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.test.MockChangeListener;
 
 /**
  * @author mkleint
@@ -81,7 +79,7 @@ public class LookupProviderSupportTest extends NbTestCase {
         JButton butt = del.lookup(JButton.class);
         assertNotNull(butt);
         assertEquals("CORRECT", butt.getText());
-        assertEquals(1, del.lookup(new Lookup.Template(JButton.class)).allInstances().size());
+        assertEquals(1, del.lookupAll(JButton.class).size());
         assertEquals(1, merger.expectedCount);
         
         pro3.ic.add(new JButton());
@@ -93,7 +91,7 @@ public class LookupProviderSupportTest extends NbTestCase {
         butt = del.lookup(JButton.class);
         assertNotNull(butt);
         assertEquals("CORRECT", butt.getText());
-        assertEquals(1, del.lookup(new Lookup.Template(JButton.class)).allInstances().size());
+        assertEquals(1, del.lookupAll(JButton.class).size());
         assertEquals(2, merger.expectedCount);
         
         pro1.ic.add(new JButton());
@@ -102,7 +100,7 @@ public class LookupProviderSupportTest extends NbTestCase {
         butt = del.lookup(JButton.class);
         assertNotNull(butt);
         assertEquals("CORRECT", butt.getText());
-        assertEquals(1, del.lookup(new Lookup.Template(JButton.class)).allInstances().size());
+        assertEquals(1, del.lookupAll(JButton.class).size());
         assertEquals(3, merger.expectedCount);
         
     }
@@ -160,18 +158,17 @@ public class LookupProviderSupportTest extends NbTestCase {
         
         //lets remove one and listen for changes...
         srcs = del.lookup(Sources.class); 
-        ChangeListenerImpl ch = new ChangeListenerImpl();
+        MockChangeListener ch = new MockChangeListener();
         srcs.addChangeListener(ch);
         provInst.remove(pro1);
         
-        assertTrue(ch.pinged);
+        ch.assertEvent();
         grps = srcs.getSourceGroups("java");
         assertEquals(2, grps.length);
         
-        ch.pinged = false;
         provInst.add(pro2);
         
-        assertTrue(ch.pinged);
+        ch.assertEvent();
         grps = srcs.getSourceGroups("java");
         assertEquals(3, grps.length);
         
@@ -181,13 +178,6 @@ public class LookupProviderSupportTest extends NbTestCase {
         // #87544: don't choke on a nonexistent path! Just leave it empty.
         Lookup l = LookupProviderSupport.createCompositeLookup(Lookup.EMPTY, "nowhere");
         assertEquals(Collections.<Object>emptySet(), new HashSet<Object>(l.lookupAll(Object.class)));
-    }
-    
-    private class ChangeListenerImpl implements ChangeListener {
-        boolean pinged = false;
-        public void stateChanged(ChangeEvent e) {
-            pinged = true;
-        }
     }
     
     private class LookupProviderImpl implements LookupProvider {
@@ -222,9 +212,7 @@ public class LookupProviderSupportTest extends NbTestCase {
         }
 
         public JButton merge(Lookup lookup) {
-            Lookup.Result res = lookup.lookup(new Lookup.Template(JButton.class));
-            int size = res.allInstances().size();
-            expectedCount = size;
+            expectedCount = lookup.lookupAll(JButton.class).size();
             return new JButton("CORRECT");
         }
         
