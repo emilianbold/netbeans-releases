@@ -65,6 +65,7 @@
                     <attr name="SynchronousSample/TravelReservationService" boolvalue="true"/>
 
                     <!-- BluePrints -->
+                    <!--
                     <folder name="BPELBluePrints">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.samples.resources.Bundle"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/bpel/samples/resources/category.html"/>
@@ -109,12 +110,13 @@
                             <attr name="template" boolvalue="true"/>
                         </file>      
 
-                        <!-- sorting -->
+                        <!- - sorting - ->
                         <attr name="BluePrint1/BluePrint2" boolvalue="true"/>
                         <attr name="BluePrint2/BluePrint3" boolvalue="true"/>
                         <attr name="BluePrint3/BluePrint4" boolvalue="true"/>
                         <attr name="BluePrint4/BluePrint5" boolvalue="true"/>
                     </folder>
+                    -->
                 </folder>
             </folder>
         </folder>
