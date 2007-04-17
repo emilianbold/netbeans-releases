@@ -39,7 +39,7 @@
 #  LAUNCHER_TRACKING_SIZE - size of the start of next extracting file
  
 ARG_JAVAHOME="--javahome"
-ARG_DEBUG="--debug"
+ARG_VERBOSE="--verbose"
 ARG_OUTPUT="--output"
 ARG_EXTRACT="--extract"
 ARG_JAVA_ARG_PREFIX="-J"
@@ -85,7 +85,7 @@ MSG_STARTING="nlu.starting"
 MSG_EXTRACTING="nlu.extracting"
 MSG_JVM_SEARCH="nlu.jvm.search"
 MSG_ARG_JAVAHOME="nlu.arg.javahome"
-MSG_ARG_DEBUG="nlu.arg.debug"
+MSG_ARG_VERBOSE="nlu.arg.verbose"
 MSG_ARG_OUTPUT="nlu.arg.output"
 MSG_ARG_EXTRACT="nlu.arg.extract"
 MSG_ARG_TEMPDIR="nlu.arg.tempdir"
@@ -104,7 +104,8 @@ entryPoint() {
 	if [ 1 -eq $SHOW_HELP_ONLY ] ; then
 		showHelp
 	fi
-
+	
+        message "$MSG_STARTING"
         createTempDirectory
 	checkFreeSpace "$TOTAL_BUNDLED_FILES_SIZE" "$LAUNCHER_TEMP"	
 
@@ -127,7 +128,7 @@ parseCommandLineArguments() {
 	while [ $# != 0 ]
 	do
 		case "$1" in
-                $ARG_DEBUG)
+		$ARG_VERBOSE)
                         USE_DEBUG_OUTPUT=1;;
 		$ARG_NOSPACECHECK)
                         PERFORM_FREE_SPACE_CHECK=0;;
@@ -260,8 +261,7 @@ setLauncherLocale() {        index=0
         fi
 
         
-        debug "Final Launcher Locale : $LAUNCHER_LOCALE"
-	message "$MSG_STARTING"
+        debug "Final Launcher Locale : $LAUNCHER_LOCALE"	
 }
 
 ifLess() {
@@ -372,11 +372,11 @@ showHelp() {
 	msg1=`message "$MSG_ARG_JAVAHOME $ARG_JAVAHOME"`
 	msg2=`message "$MSG_ARG_TEMPDIR $ARG_TEMPDIR"`
 	msg3=`message "$MSG_ARG_EXTRACT $ARG_EXTRACT"`
-	msg4=`message "$MSG_ARG_DEBUG $ARG_OUTPUT"`
-	msg5=`message "$MSG_ARG_DEBUG $ARG_DEBUG"`
+	msg4=`message "$MSG_ARG_OUTPUT $ARG_OUTPUT"`
+	msg5=`message "$MSG_ARG_VERBOSE $ARG_VERBOSE"`
 	msg6=`message "$MSG_ARG_CPA $ARG_CLASSPATHA"`
 	msg7=`message "$MSG_ARG_CPP $ARG_CLASSPATHP"`
-	msg8=`message "$MSG_ARG_DISABLE_FREE_SPACE_CHECK"`
+	msg8=`message "$MSG_ARG_DISABLE_FREE_SPACE_CHECK $ARG_NOSPACECHECK"`
 	msg9=`message "$MSG_ARG_HELP $ARG_HELP"`
 	out "$msg0"
 	out "$msg1"
@@ -1126,7 +1126,16 @@ executeMainClass() {
 	if [ -n "$OUTPUT_FILE" ] ; then
 		#redirect all stdout and stderr from the running application to the file
 		eval "$command" >> "$OUTPUT_FILE" 2>&1
+	elif [ 1 -eq $SILENT_MODE ] ; then
+		# on silent mode redirect all out/err to null
+		eval "$command" > /dev/null 2>&1	
+	elif [ 0 -eq $USE_DEBUG_OUTPUT ] ; then
+		# redirect all output to null
+		# do not redirect errors there but show them in the shell output
+		eval "$command" > /dev/null	
 	else
+		# using debug output to the shell
+		# not a silent mode but a verbose one
 		eval "$command"
 	fi
 	exitCode=$?

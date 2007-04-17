@@ -36,12 +36,13 @@ const DWORD NUMBER_OF_HELP_ARGUMENTS = 9;
 
 const WCHAR * outputFileArg       = L"--output";
 const WCHAR * javaArg             = L"--javahome";
-const WCHAR * debugArg            = L"--debug";
+const WCHAR * debugArg            = L"--verbose";
 const WCHAR * tempdirArg          = L"--tempdir";
 const WCHAR * classPathPrepend    = L"--classpath-prepend";
 const WCHAR * classPathAppend     = L"--classpath-append";
 const WCHAR * extractArg          = L"--extract";
 const WCHAR * helpArg             = L"--help";
+const WCHAR * helpOtherArg        = L"/?";
 const WCHAR * silentArg           = L"--silent";
 const WCHAR * nospaceCheckArg     = L"--nospacecheck";
 
@@ -527,9 +528,9 @@ void executeMainClass(LauncherProperties * props) {
         }
         
         char * error = readHandle(hErrorRead);
-        if(getLengthA(error)>1) {
-            WCHAR * errorW = toWCHAR(error);
-            showErrorW(props, JAVA_PROCESS_ERROR_PROP, 1, errorW);
+        if(getLengthA(error)>1) {            
+            WCHAR * errorW = toWCHAR(error);            
+            showMessageW(props, getI18nProperty(props, JAVA_PROCESS_ERROR_PROP), 1, errorW);
             FREE(errorW);
         }
         CloseHandle(hErrorWrite);
@@ -545,20 +546,20 @@ void executeMainClass(LauncherProperties * props) {
 }
 
 DWORD isOnlyHelp(LauncherProperties * props) {
-    if(argumentExists(props, helpArg, 1)) {
+    if(argumentExists(props, helpArg, 1) || argumentExists(props, helpOtherArg, 1)) {
         
         WCHARList * help = newWCHARList(NUMBER_OF_HELP_ARGUMENTS);
         
         int counter = 0;
-        help->items[counter++] = formatMessageW(1, getI18nProperty(props, ARG_JAVA_PROP), javaArg);
-        help->items[counter++] = formatMessageW(1, getI18nProperty(props, ARG_TMP_PROP), tempdirArg);
-        help->items[counter++] = formatMessageW(1, getI18nProperty(props, ARG_EXTRACT_PROP), extractArg);
-        help->items[counter++] = formatMessageW(1, getI18nProperty(props, ARG_OUTPUT_PROPERTY), outputFileArg);
-        help->items[counter++] = formatMessageW(1, getI18nProperty(props, ARG_DEBUG_PROP), debugArg);
-        help->items[counter++] = formatMessageW(1, getI18nProperty(props, ARG_CPA_PROP), classPathAppend);
-        help->items[counter++] = formatMessageW(1, getI18nProperty(props, ARG_CPP_PROP), classPathPrepend);
-        help->items[counter++] = formatMessageW(1, getI18nProperty(props, ARG_DISABLE_SPACE_CHECK), nospaceCheckArg);
-        help->items[counter++] = formatMessageW(1, getI18nProperty(props, ARG_HELP_PROP), helpArg);
+        help->items[counter++] = formatMessageW(getI18nProperty(props, ARG_JAVA_PROP), 1, javaArg);
+        help->items[counter++] = formatMessageW(getI18nProperty(props, ARG_TMP_PROP), 1, tempdirArg);
+        help->items[counter++] = formatMessageW(getI18nProperty(props, ARG_EXTRACT_PROP), 1, extractArg);
+        help->items[counter++] = formatMessageW(getI18nProperty(props, ARG_OUTPUT_PROPERTY), 1, outputFileArg);
+        help->items[counter++] = formatMessageW(getI18nProperty(props, ARG_DEBUG_PROP), 1, debugArg);
+        help->items[counter++] = formatMessageW(getI18nProperty(props, ARG_CPA_PROP), 1, classPathAppend);
+        help->items[counter++] = formatMessageW(getI18nProperty(props, ARG_CPP_PROP), 1, classPathPrepend);
+        help->items[counter++] = formatMessageW(getI18nProperty(props, ARG_DISABLE_SPACE_CHECK), 1, nospaceCheckArg);
+        help->items[counter++] = formatMessageW(getI18nProperty(props, ARG_HELP_PROP), 1, helpArg);
         
         WCHAR * helpString = NULL;
         for(counter=0;counter<NUMBER_OF_HELP_ARGUMENTS;counter++) {

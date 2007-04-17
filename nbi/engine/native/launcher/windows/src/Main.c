@@ -389,6 +389,7 @@ void hideLauncherWindows(LauncherProperties * props) {
     if(isSilent(props)) return;
     if(hwndMain != NULL) {
         ShowWindow(hwndMain, HIDE_WINDOW);
+        UpdateWindow(hwndMain);
     }
 }
 
@@ -398,7 +399,6 @@ void showLauncherWindows(LauncherProperties * props) {
     ShowWindow(hwndMain, iCmdShowGlobal);
     SetForegroundWindow(hwndMain);
     UpdateWindow(hwndMain);
-    
 }
 
 void showMessageW(LauncherProperties * props, const WCHAR* message, const DWORD varArgsNumber, ...) {
@@ -420,7 +420,7 @@ void showMessageW(LauncherProperties * props, const WCHAR* message, const DWORD 
     writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, result, 1);
     if(!isSilent(props)) {
         hideLauncherWindows(props);
-        MessageBoxW(NULL, result, getI18nProperty(props, MSG_MESSAGEBOX_TITLE), MB_OK);
+        MessageBoxW(hwndMain, result, getI18nProperty(props, MSG_MESSAGEBOX_TITLE), MB_OK);
     }
 }
 
@@ -443,7 +443,7 @@ void showMessageA(LauncherProperties * props, const char* message, const DWORD v
     va_end(ap);
     writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, result, 1);
     char * prop = toChar(getI18nProperty(props, MSG_MESSAGEBOX_TITLE));
-    if(!isSilent(props)) MessageBoxA(NULL, result, prop, MB_OK);
+    if(!isSilent(props)) MessageBoxA(hwndMain, result, prop, MB_OK);
     FREE(prop);
 }
 

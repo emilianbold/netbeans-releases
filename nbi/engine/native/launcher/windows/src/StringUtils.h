@@ -42,7 +42,7 @@ extern "C" {
    
 #define  ARG_OUTPUT_PROPERTY          "nlw.arg.output"
 #define  ARG_JAVA_PROP                "nlw.arg.javahome"
-#define  ARG_DEBUG_PROP               "nlw.arg.debug"
+#define  ARG_DEBUG_PROP               "nlw.arg.verbose"
 #define  ARG_TMP_PROP                 "nlw.arg.tempdir"
 #define  ARG_CPA_PROP                 "nlw.arg.classpatha"
 #define  ARG_CPP_PROP                 "nlw.arg.classpathp"
@@ -122,7 +122,7 @@ extern "C" {
     DWORD getLengthW(const WCHAR * message);
     
     WCHAR * getErrorDescription(DWORD dw);
-    WCHAR * formatMessageW(const DWORD varArgsNumber, const WCHAR* message, ...);
+    WCHAR * formatMessageW(const WCHAR* message, const DWORD varArgsNumber, ...);
     
     DWORD isOK(LauncherProperties * props);
 #ifdef	__cplusplus

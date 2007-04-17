@@ -92,13 +92,13 @@ WCHAR * getDefaultString(const char *name) {
     } else if(strcmp(name, OUTPUT_ERROR_PROP)==0) {
         return L"Can`t create file %s.\nError: %s";
     } else if(strcmp(name, JAVA_PROCESS_ERROR_PROP)==0) {
-        return L"Java error %s";
+        return L"Java error:\n%s";
     } else if(strcmp(name, ARG_JAVA_PROP)==0) {
         return L"%s Using specified JVM";
     }  else if(strcmp(name, ARG_OUTPUT_PROPERTY)==0) {
         return L"%s Output all stdout/stderr to the file";
     } else if(strcmp(name, ARG_DEBUG_PROP)==0) {
-        return L"%s Use debug output";
+        return L"%s Use verbose output";
     } else if(strcmp(name, ARG_TMP_PROP)==0) {
         return L"%s Use specified temporary dir for extracting data";
     } else if(strcmp(name, ARG_CPA_PROP)==0) {
@@ -445,10 +445,10 @@ WCHAR * getErrorDescription(DWORD dw) {
     
 }
 
-WCHAR * formatMessageW(const DWORD varArgsNumber, const WCHAR* message, ...) {
+WCHAR * formatMessageW(const WCHAR* message, const DWORD varArgsNumber, ...) {
     DWORD totalLength=getLengthW(message);
     va_list ap;
-    va_start(ap, message);
+    va_start(ap, varArgsNumber);
     DWORD counter=0;
     while((counter++)<varArgsNumber) {
         WCHAR * arg = va_arg( ap, WCHAR * );
@@ -457,7 +457,7 @@ WCHAR * formatMessageW(const DWORD varArgsNumber, const WCHAR* message, ...) {
     va_end(ap);
     
     WCHAR * result = newpWCHAR(totalLength + 1);
-    va_start(ap, message);
+    va_start(ap, varArgsNumber);
     wvsprintfW(result, message, ap);
     va_end(ap);
     return result;
