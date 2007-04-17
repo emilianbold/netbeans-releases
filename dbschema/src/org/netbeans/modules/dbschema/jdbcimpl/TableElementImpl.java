@@ -378,6 +378,8 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
     protected void initKeys(ConnectionProvider cp, int id, String tbl) {
         // id == 1 ... capture PK only
         // id == 2 ... capture FKs only
+        // id == 3 ... capture FKs (and PKs), but don't expect that all related tables are provided. In other words, 
+        // tries to initializes all FKs, but doesn't fail if some table is missing.
         
         if (cp != null)
             try {
@@ -391,8 +393,9 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
                 if (IDEUtil.isIDERunning())
                     bridge = new DDLBridge(cp.getConnection(), cp.getSchema(), cp.getDatabaseMetaData());
                 
+                boolean relatedTablesProvided = id != 3;
                 if (id != 1)
-                    initFKs(cp, bridge, shortTableName);
+                    initFKs(cp, bridge, shortTableName, relatedTablesProvided);
                 if (id != 2)
                     initPK(cp, bridge, shortTableName);
             } catch (Exception exc) {
@@ -401,7 +404,10 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
             }
     }
     
-    private void initFKs(ConnectionProvider cp, DDLBridge bridge, String shortTableName) throws SQLException, DBException {
+    /**
+     * @param expectRelatedTables specifies whether all related tables are expected to be provided.
+     */ 
+    private void initFKs(ConnectionProvider cp, DDLBridge bridge, String shortTableName, boolean expectRelatedTables) throws SQLException, DBException {
         ResultSet rs;
         
         if (bridge != null) {
@@ -460,6 +466,10 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
                 
                 SchemaElement se = ((TableElement) element).getDeclaringSchema();
                 TableElement fte = se.getTable(DBIdentifier.create(pkTableName));
+                // table could not be found since all related tables were not necessarily provided
+                if (fte == null && !expectRelatedTables){
+                    continue;
+                }
                 ColumnElement fce = fte.getColumn(DBIdentifier.create(pkColName));
                 ColumnPairElementImpl cpei = new ColumnPairElementImpl(lce.getName().getFullName() + ";" + fce.getName().getFullName()); //NOI18N
                 cpe = new ColumnPairElement(cpei, lce, fce, (TableElement) element);

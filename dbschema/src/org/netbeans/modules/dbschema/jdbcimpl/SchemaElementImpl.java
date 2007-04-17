@@ -286,7 +286,7 @@ public class SchemaElementImpl extends DBElementImpl implements SchemaElement.Im
                 // the progress is incremented twice (once for the table itself and once for the keys)
                 propertySupport.firePropertyChange("totalCount", null, new Integer(2 * tables.size() + views.size())); //NOI18N
                 
-                initTables(cp, tables);
+                initTables(cp, tables, allTables);
                 initViews(cp, views, bridge);
             } catch (Exception exc) {
                 if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
@@ -385,7 +385,7 @@ public class SchemaElementImpl extends DBElementImpl implements SchemaElement.Im
         return tables;
     }
     
-    private void initTables(ConnectionProvider cp, LinkedList tables) throws DBException {
+    private void initTables(ConnectionProvider cp, LinkedList tables, boolean allTables) throws DBException {
         String name;
         
         for (int i = 0; i < tables.size(); i++) {
@@ -416,7 +416,8 @@ public class SchemaElementImpl extends DBElementImpl implements SchemaElement.Im
             te = getTable(DBIdentifier.create(tableName));
             if (te != null) {
                 propertySupport.firePropertyChange("FKt", null, tableName); //NOI18N
-                ((TableElementImpl) te.getElementImpl()).initKeys(cp, 0, tableName);
+                int fkOption = allTables ? 3 : 0;
+                ((TableElementImpl) te.getElementImpl()).initKeys(cp, fkOption, tableName);
             }
 
             progress++;
@@ -663,7 +664,7 @@ public class SchemaElementImpl extends DBElementImpl implements SchemaElement.Im
                         }
                     }
 
-                    initTables(cp, checkReferences(toCapture, bridge, cp.getSchema()));
+                    initTables(cp, checkReferences(toCapture, bridge, cp.getSchema()), false);
 
                     for (int j = 0; j < fkTables.size(); j++)
                         tei.initKeys(cp, 2, fkTables.get(j).toString());
