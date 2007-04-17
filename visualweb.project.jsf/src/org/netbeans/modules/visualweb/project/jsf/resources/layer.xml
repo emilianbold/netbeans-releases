@@ -67,6 +67,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="Page.java" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/Page.java.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/pageJavaTemplateHelp.html" />
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
             <attr name="Page.java/PageFragment.jspf" boolvalue="true"/>
             <file name="PageFragment.jspf" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/PageFragment.jspf.template">
@@ -81,6 +82,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="PageFragment.java" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/PageFragment.java.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/pageJavaTemplateHelp.html" />
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
 
             <attr name="JSFManagedBean.java/RequestBean.java" boolvalue="true"/>
@@ -90,6 +92,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateCategory" stringvalue="servlet-types"/>
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.visualweb.project.jsf.ui.PageIterator.createBeanIterator"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/requestBeanTemplateHelp.html" />
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
             <attr name="RequestBean.java/SessionBean.java" boolvalue="true"/>
             <file name="SessionBean.java" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/SessionBean.java.template">
@@ -98,6 +101,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateCategory" stringvalue="servlet-types"/>
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.visualweb.project.jsf.ui.PageIterator.createBeanIterator"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/sessionBeanTemplateHelp.html" />
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
             <attr name="SessionBean.java/ApplicationBean.java" boolvalue="true"/>
             <file name="ApplicationBean.java" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/ApplicationBean.java.template">
@@ -106,15 +110,17 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateCategory" stringvalue="servlet-types"/>
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.visualweb.project.jsf.ui.PageIterator.createBeanIterator"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/applicationBeanTemplateHelp.html" />
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
         </folder>
 
         <folder name="Other">
             <file name="stylesheet.css" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/stylesheet.css.template">
-                <attr name="template" boolvalue="true" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/stylesheetTemplateHelp.html" />
+                <attr name="template" boolvalue="true" />
                 <attr name="templateCategory" stringvalue="rave-resources"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/stylesheetTemplateHelp.html" />
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
             <attr name="stylesheet.css/properties.properties" boolvalue="true"/>
         </folder>
@@ -135,6 +141,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="Page.java" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/1_5/Page.java.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/pageJavaTemplateHelp.html" />
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
             <attr name="Page.java/PageFragment.jspf" boolvalue="true"/>
             <file name="PageFragment.jspf" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/1_5/PageFragment.jspf.template">
@@ -149,6 +156,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="PageFragment.java" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/1_5/PageFragment.java.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/pageJavaTemplateHelp.html" />
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
         </folder>  <!-- Jsf12Apps -->
 
@@ -162,6 +170,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="template" boolvalue="true" />
                 <attr name="templateCategory" stringvalue="rave-advanced"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/facesConfigHelp.html" />
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
             <attr name="faces-config.xml/faces-config12.xml" boolvalue="true"/>
             <file name="faces-config12.xml" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/1_5/faces-config.xml.template">
@@ -169,6 +178,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="template" boolvalue="true" />
                 <attr name="templateCategory" stringvalue="rave-advanced_1.5"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/facesConfigHelp.html" />
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
         </folder> <!-- JsfAdvanced -->
     </folder> <!-- Templates -->

@@ -1,10 +1,10 @@
 /*
- * __NAME__.java
+ * ${name}.java
  *
- * Created on __DATE__, __TIME__
- * Copyright __USER__
+ * Created on ${date}, ${time}
+ * Copyright ${user}
  */
-package untitled;
+package ${package};
 
 import com.sun.rave.web.ui.appbase.AbstractPageBean;
 import com.sun.rave.web.ui.component.Body;
@@ -22,7 +22,7 @@ import javax.faces.FacesException;
  * lifecycle methods and event handlers where you may add behavior
  * to respond to incoming events.</p>
  */
-public class __NAME__ extends AbstractPageBean {
+public class ${name} extends AbstractPageBean {
     // <editor-fold defaultstate="collapsed" desc="Managed Component Definition">
     private int __placeholder;
 
@@ -99,7 +99,7 @@ public class __NAME__ extends AbstractPageBean {
     /**
      * <p>Construct a new Page bean instance.</p>
      */
-    public __NAME__() {
+    public ${name}() {
     }
 
     /**
@@ -127,7 +127,7 @@ public class __NAME__ extends AbstractPageBean {
         try {
             _init();
         } catch (Exception e) {
-            log("__NAME__ Initialization Failure", e);
+            log("${name} Initialization Failure", e);
             throw e instanceof FacesException ? (FacesException) e: new FacesException(e);
         }
         
