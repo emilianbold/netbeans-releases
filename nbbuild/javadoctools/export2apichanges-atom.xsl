@@ -29,7 +29,7 @@ Microsystems, Inc. All Rights Reserved.
             <atom:title>NetBeans API Changes</atom:title>
             <atom:author><atom:name>netbeans.org</atom:name></atom:author>
             <atom:link rel="alternate" type="text/html" href="apichanges.html"/>
-            <atom:link rel="self" type="application/xml+atom" href="http://deadlock.nbextras.org/hudson/job/javadoc-nbms/javadoc/apichanges.atom"/>
+            <atom:link rel="self" type="application/xml+atom" href="http://deadlock.netbeans.org/hudson/job/javadoc-nbms/javadoc/apichanges.atom"/>
             <atom:updated><xsl:value-of select="$date"/></atom:updated>
             <xsl:apply-templates select="//change">
                 <xsl:sort data-type="number" order="descending" select="date/@year"/>

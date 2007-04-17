@@ -12,4 +12,4 @@ keystore=$mydir/NBstore
 storepass=`cat $mydir/storepass`
 ant -emacs -Dbuildnum=$BUILD_TAG -Dmoduleconfig=daily-alpha-nbms -Dkeystore=$keystore -Dstorepass=$storepass -f nbbuild/build.xml cvs-clean merge build-nbms || exit
 ant -f $mydir/build-update-descriptor.xml || exit
-ant -f nbbuild/build.xml -Djnlp.codebase=http://deadlock.nbextras.org/hudson/job/javadoc-nbms/lastSuccessfulBuild/artifact/nbbuild/build/jnlp/ -Djnlp.signjar.keystore=$keystore -Djnlp.signjar.alias=nb_ide -Djnlp.signjar.password=$storepass build-jnlp
+ant -f nbbuild/build.xml -Djnlp.codebase=http://deadlock.netbeans.org/hudson/job/javadoc-nbms/lastSuccessfulBuild/artifact/nbbuild/build/jnlp/ -Djnlp.signjar.keystore=$keystore -Djnlp.signjar.alias=nb_ide -Djnlp.signjar.password=$storepass build-jnlp
