@@ -22,10 +22,17 @@ package com.sun.rave.designtime.ext.componentgroup;
 import java.awt.Color;
 
 /**
- *
+ * <p>Wraps a color that is stored in the design context data.</p>
  * @author mbohm
  */
 public interface ColorWrapper {
+    /**
+     * <p>Get the wrapped color.</p>
+     */
     public Color getColor();
+    
+    /**
+     * <p>Get a string containing the RGB information for the wrapped color.</p>
+     */
     public String toString();
 }

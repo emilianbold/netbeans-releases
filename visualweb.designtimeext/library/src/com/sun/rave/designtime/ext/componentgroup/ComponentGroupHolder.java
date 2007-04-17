@@ -22,21 +22,53 @@ package com.sun.rave.designtime.ext.componentgroup;
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignContext;
 import com.sun.rave.designtime.DisplayAction;
-import java.awt.Color;
-import java.util.Map;
 
 /**
- *
+ * <p>Holds Component Groups. For instance, an implemenation exists to hold 
+ * all the Component Groups that represent virtual forms on a page.</p>
  * @author mbohm
  */
 public interface ComponentGroupHolder {
+   /**
+    * <p>The design context data key associated with an array of holders.</p> 
+    */
    String CONTEXT_DATA_KEY = "com.sun.rave.designtime.ext.componentgroup.holders"; //NOI18N
+   
+   /**
+    * <p>Prefix used in context data keys associated with component group colors.</p>
+    */ 
    String COLOR_KEY_PREFIX = "componentGroupColor:"; //NOI81N
+   
+   /**
+    * <p>Legacy prefix used in context data keys associated with virtual form colors.</p>
+    */ 
    String VIRTUAL_FORM_COLOR_KEY_PREFIX = "virtualFormColor:"; // NOI18N
+   
+   /**
+    * <p>Get the name of the holder. This is used in design context data keys 
+    * associated with component group colors.</p>
+    */ 
    String getName();
+   
+   /**
+    * <p>Get all the groups in the holder.</p>
+    */ 
    ComponentGroup[] getComponentGroups(DesignContext dcontext);
-   //Class getAssociatedBeanType();
+   
+   /**
+    * <p>Get the tooltip of the toolbar button associated with the holder.</p>
+    */ 
    String getToolTip();
+   
+   /**
+    * <p>Get the legend label associated with the holder.</p>
+    */ 
    String getLegendLabel();
+   
+   /**
+    * <p>Get the context menu items associated with the holder.</p>
+    * @param dcontext The page's design context.
+    * @param dbeans The design beans that have been selected in the designer.
+    */ 
    DisplayAction[] getDisplayActions(DesignContext dcontext, DesignBean[] dbeans);
 }

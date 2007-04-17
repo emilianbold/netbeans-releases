@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import org.netbeans.modules.visualweb.api.designer.DomProvider;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.api.designtime.idebridge.DesigntimeIdeBridgeProvider;
-import org.netbeans.modules.visualweb.designer.jsf.virtualforms.WoodstockVirtualFormSupport;
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DisplayItem;
 import com.sun.rave.designtime.Result;
@@ -860,13 +859,6 @@ class DomProviderImpl implements DomProvider {
             return;
         }
 
-        // XXX FIXME Needs a generic solution.
-        if (JsfProjectUtils.JAVA_EE_5.equals(JsfProjectUtils.getJ2eePlatformVersion(project))) {
-            // XXX Woodstock.
-            WoodstockVirtualFormSupport.paint(liveUnit, renderContext, g2d);
-        }
-        //Here's your generic solution!
-        //Temporarily do only for braveheart. Convert woodstock soon.
         ComponentGroupSupport.paint(liveUnit, renderContext, g2d);
     }
     

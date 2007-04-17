@@ -25,14 +25,24 @@ import com.sun.rave.designtime.ext.componentgroup.ColorWrapper;
 import java.awt.Color;
 
 /**
- *
+ * <p>Implementation that wraps a color that is stored in the design context data.</p>
  * @author mbohm
  */
 public class ColorWrapperImpl implements ColorWrapper {
+
+    private Color color;
     
+    /**
+     * <p>Constructor that accepts a <code>Color</code>.</p>
+     */ 
     public ColorWrapperImpl(Color color) {
         this.color = color;
     }
+    
+    /**
+     * <p>Constructor that accepts a <code>String</code> 
+     * representing a color.</p>
+     */ 
     public ColorWrapperImpl(String fromString) {
         String[] split = fromString.split(","); // NOI18N
         if (split.length > 2) {
@@ -42,10 +52,17 @@ public class ColorWrapperImpl implements ColorWrapper {
             this.color = new Color(r, g, b);
         }
     }
-    private Color color;
+   
+    /**
+     * <p>Get the wrapped color.</p>
+     */ 
     public Color getColor() {
         return color;
     }
+    
+    /**
+     * <p>Get a string containing the RGB information for the wrapped color.</p>
+     */
     public String toString() {
         if (color != null) {
             return color.getRed() + "," + // NOI18N

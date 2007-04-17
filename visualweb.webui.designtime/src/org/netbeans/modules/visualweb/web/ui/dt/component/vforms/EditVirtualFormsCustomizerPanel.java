@@ -21,8 +21,6 @@ package org.netbeans.modules.visualweb.web.ui.dt.component.vforms;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.ResourceBundle;
@@ -34,12 +32,10 @@ import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
-import javax.swing.border.LineBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 import com.sun.rave.web.ui.component.Form;
-import org.netbeans.modules.visualweb.web.ui.dt.component.vforms.VirtualFormsCustomizerPanel.ColorListRenderer;
 import org.netbeans.modules.visualweb.web.ui.dt.component.FormDesignInfo;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
@@ -54,7 +50,6 @@ import com.sun.rave.designtime.ext.componentgroup.util.ComponentGroupHelper;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import java.util.Iterator;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import javax.swing.table.TableCellEditor;
@@ -62,7 +57,7 @@ import javax.faces.component.UIComponent;
 import javax.faces.component.NamingContainer;
 
 /**
- *
+ * @author mbohm
  * @author  jhoff
  */
 public class EditVirtualFormsCustomizerPanel
@@ -73,7 +68,6 @@ public class EditVirtualFormsCustomizerPanel
         Form.VirtualFormDescriptor[] vforms = (Form.VirtualFormDescriptor[])
         vformsList.toArray(new Form.VirtualFormDescriptor[vformsList.size()]);
         String vfConfig = Form.generateVirtualFormsConfig(vforms);
-        //DesignBean formBean = VirtualFormsHelper.findFormBean(beans);
         DesignProperty vfcProp = formBean.getProperty("virtualFormsConfig"); // NOI18N
         vfcProp.setValue(vfConfig);
 
@@ -306,7 +300,7 @@ public class EditVirtualFormsCustomizerPanel
                     case 0: // virtual form color
                         String vfName = vform.getName();
                         String key = getColorKey(vfName);
-                        return ComponentGroupHelper.getWrappedColor(key, colorMap);
+                        return ComponentGroupHelper.getMappedColor(key, colorMap);
                     case 1: // virtual form name
                         return vform.getName();
                     case 2: // participates
@@ -647,11 +641,6 @@ public class EditVirtualFormsCustomizerPanel
             super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             
             Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            
-            // To make the selection more visual
-            
-            //if( hasFocus ) 
-            //    setBorder( new LineBorder(Color.WHITE) );
             
             if (isSelected) {
                 c.setBackground(SELECTION_BACKGROUND);

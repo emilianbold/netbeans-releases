@@ -70,7 +70,7 @@ public class HtmlFormDesignInfo extends HtmlDesignInfoBase {
         if (! (beanInstance instanceof UIComponent)) {
             return null;
         }
-        if (UIForm.class.isAssignableFrom(beanInstance.getClass())) {
+        if (beanInstance instanceof UIForm) {
             return ID_SEP;
         }
         String compId = bean.getInstanceName();
@@ -81,18 +81,20 @@ public class HtmlFormDesignInfo extends HtmlDesignInfoBase {
         DesignBean currentBean = bean.getBeanParent();
         boolean formEncountered = false;
         while (currentBean != null) {
-            sb.insert(0, ID_SEP);
             Object currentBeanInstance = currentBean.getInstance();
-            if (currentBeanInstance != null && UIForm.class.isAssignableFrom(beanInstance.getClass())) {
-                formEncountered = true;
-                break;
-            }
-            else {
-                String currentCompId = currentBean.getInstanceName();
-                if (currentCompId == null) {
-                    return null;
+            if (currentBeanInstance instanceof UIComponent) {
+                sb.insert(0, ID_SEP);
+                if (currentBeanInstance instanceof UIForm) {
+                    formEncountered = true;
+                    break;
                 }
-                sb.insert(0, currentCompId);
+                else {
+                    String currentCompId = currentBean.getInstanceName();
+                    if (currentCompId == null) {
+                        return null;
+                    }
+                    sb.insert(0, currentCompId);
+                }
             }
             currentBean = currentBean.getBeanParent();
         }

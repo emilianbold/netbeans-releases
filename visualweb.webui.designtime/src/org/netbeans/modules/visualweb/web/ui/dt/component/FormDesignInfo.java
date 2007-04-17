@@ -51,9 +51,21 @@ import org.netbeans.modules.visualweb.web.ui.dt.component.vforms.VirtualFormsHel
  */
 public class FormDesignInfo extends AbstractDesignInfo {
 
+    /**
+     * <p>The name for any <code>ComponentGroupHolder</code> that holds virtual forms.</p>
+     */ 
     public static final String VIRTUAL_FORM_HOLDER_NAME = Form.class.getName();   //NOI18N
+    /**
+     * <p><code>String</code> version of the <code>NamingContainer.SEPARATOR_CHAR</code>, used in qualified ids.</p>
+     */ 
     private static final String ID_SEP = String.valueOf(NamingContainer.SEPARATOR_CHAR);
-    private static final String[] SUBSET_PROPERTY_NAMES = {"participants", "submitters"}; // NOI18N
+    /**
+     * <p>The component subset names in a component group representing a virtual form.</p>
+     */ 
+    private static final String[] SUBSET_NAMES = {"participants", "submitters"}; // NOI18N
+    /**
+     * <p>The line types corresponding to the subset names.</p>
+     */ 
     private static final ComponentSubset.LineType[] SUBSET_LINE_TYPES = {ComponentSubset.LineType.SOLID, ComponentSubset.LineType.DASHED};
     
 
@@ -106,17 +118,20 @@ public class FormDesignInfo extends AbstractDesignInfo {
         DesignBean currentBean = bean.getBeanParent();
         boolean formEncountered = false;
         while (currentBean != null) {
-            sb.insert(0, ID_SEP);
-            if (currentBean.getInstance() instanceof Form) {
-                formEncountered = true;
-                break;
-            }
-            else {
-                String currentCompId = currentBean.getInstanceName();
-                if (currentCompId == null) {
-                    return null;
+            Object currentBeanInstance = currentBean.getInstance();
+            if (currentBeanInstance instanceof UIComponent) {
+                sb.insert(0, ID_SEP);
+                if (currentBeanInstance instanceof Form) {
+                    formEncountered = true;
+                    break;
                 }
-                sb.insert(0, currentCompId);
+                else {
+                    String currentCompId = currentBean.getInstanceName();
+                    if (currentCompId == null) {
+                        return null;
+                    }
+                    sb.insert(0, currentCompId);
+                }
             }
             currentBean = currentBean.getBeanParent();
         }
@@ -128,6 +143,11 @@ public class FormDesignInfo extends AbstractDesignInfo {
         }
     }
     
+    /**
+     * <p>Add to the design context data a <code>ComponentGroupHolder</code> 
+     * representing the virtual forms on the page, if one is not already 
+     * present.</p> 
+     */ 
     private void registerComponentGroupHolderIfNecessary(DesignBean bean) {
         DesignContext dcontext = bean.getDesignContext();
         ComponentGroupHolder[] holders = null;
@@ -159,24 +179,50 @@ public class FormDesignInfo extends AbstractDesignInfo {
         }
     }
     
+    /**
+     * <p>Setup logic when a <code>Form</code> is dragged from the palette.</p>
+     */ 
     public Result beanCreatedSetup(DesignBean bean) {
         registerComponentGroupHolderIfNecessary(bean);
         return Result.SUCCESS;
     }
     
+    /**
+     * <p>Logic invoked when the designer view of the page is activated.</p>
+     */ 
     public void beanContextActivated(DesignBean bean) {
         registerComponentGroupHolderIfNecessary(bean);
     }
     
+    /**
+     * <p>A <code>ComponentGroupHolder</code> implementation representing 
+     * the virtual forms on the page. The registered instance will be used
+     * by the designer when painting component group borders and legends.</p>
+     */ 
     private static class VirtualFormHolder implements ComponentGroupHolder {
        private static ResourceBundle bundle = ResourceBundle.getBundle("org.netbeans.modules.visualweb.web.ui.dt.component.Bundle-DT",
                                Locale.getDefault(),
                                VirtualFormHolder.class.getClassLoader());
        
+       /**
+        * <p>Get the name of the holder.</p>
+        */ 
        public String getName() {
            return VIRTUAL_FORM_HOLDER_NAME;
        }
-        
+
+       /**
+        * <p>Create and return <code>ComponentGroup</code> instances 
+        * representing the virtual forms on the page. First, find all 
+        * <code>Form</code> components on the page and their respective 
+        * virtual form descriptors.
+        * For each descriptor, retrieve the color associated with the virtual
+        * form in question, if one was stored in the context data. Then create
+        * <code>ComponentSubsetImpl</code> instances for the participants and
+        * submitters of the virtual form in question. Finally, use the subset
+        * instances, color, and other information to create a 
+        * <code>ComponentGroup</code> for the virtual form in question.</p>
+        */ 
        public ComponentGroup[] getComponentGroups(DesignContext dcontext) {
            DesignBean[] formBeans = dcontext.getBeansOfType(Form.class);
            if (formBeans == null) {
@@ -260,7 +306,7 @@ public class FormDesignInfo extends AbstractDesignInfo {
                     ComponentSubset[] componentSubsets = new ComponentSubset[subsetArrs.length];
                     for (int s = 0; s < subsetArrs.length; s++) {
                        String[] subsetArr = subsetArrs[s];
-                       componentSubsets[s] = new ComponentSubsetImpl(SUBSET_PROPERTY_NAMES[s], subsetArr, SUBSET_LINE_TYPES[s]);
+                       componentSubsets[s] = new ComponentSubsetImpl(SUBSET_NAMES[s], subsetArr, SUBSET_LINE_TYPES[s]);
                     }
 
                     ComponentGroup group = new VirtualFormGroup(name, color, componentSubsets, vfName);
@@ -270,18 +316,26 @@ public class FormDesignInfo extends AbstractDesignInfo {
            return groupList.toArray(new ComponentGroup[groupList.size()]);
        }
 
+       /**
+        * <p>Get the tooltip for the virtual forms toolbar button in the 
+        * designer.</p>
+        */ 
        public String getToolTip() {
            return bundle.getString("Form.ComponentGroupHolder.tooltip"); //NOI18N
        }
+
+       /**
+        * <p>Get the label for the virtual forms legend.</p>
+        */ 
        public String getLegendLabel() {
            return bundle.getString("Form.ComponentGroupHolder.legendLabel"); //NOI18N
        }
 
-        //public Class getAssociatedBeanType() {
-        //    return AjaxTransaction.class;
-        //}
-
-        public DisplayAction[] getDisplayActions(DesignContext dcontext, DesignBean[] dbeans) {
+       /**
+        * Get the virtual forms context menu item as a <code>DisplayAction[]</code>
+        * with at most one member.</p>
+        */ 
+       public DisplayAction[] getDisplayActions(DesignContext dcontext, DesignBean[] dbeans) {
             DisplayAction virtualFormDisplayAction = null;
             if (dbeans != null && dbeans.length > 0) {
                 virtualFormDisplayAction = VirtualFormsHelper.getContextItem(dbeans);
@@ -296,69 +350,28 @@ public class FormDesignInfo extends AbstractDesignInfo {
         }
     }
     
+    /**
+     * <p>Extends <code>ComponentGroupImpl</code> to override 
+     * <code>getLegendEntryLabel</code>, since the name of a <code>VirtualFormGroup</code>
+     * is <code>formName.vfName</code>, while the legend entry label is simply
+     * the virtual form name.</p>
+     */ 
     private static class VirtualFormGroup extends ComponentGroupImpl {
         private String legendEntryLabel;
+        
+        /**
+         * <p>Constructor that accepts an explicit <code>legendEntryLabel</code>.</p>
+         */ 
         public VirtualFormGroup(String name, Color color, ComponentSubset[] componentSubsets, String legendEntryLabel) {
             super(name, color, componentSubsets);
             this.legendEntryLabel = legendEntryLabel;
         }
+        
+        /**
+         * <p>Get the legend entry label. This will simply be the virtual form name.</p>
+         */ 
         public String getLegendEntryLabel() {
             return this.legendEntryLabel;
         }
     }
-    
-    /*
-    private static class VirtualFormGroup implements ComponentGroup {
-        private String name;
-        private Color color;
-        private ComponentSubset[] componentSubsets;
-        //private DesignBean associatedBean;
-        
-        public VirtualFormGroup(String name, Color color, ComponentSubset[] componentSubsets) {
-            this.name = name;
-            this.color = color;
-            this.componentSubsets = componentSubsets;
-            //this.associatedBean = associatedBean;
-        }
-        
-        public String getName() {
-            return this.name;
-        }
-        public Color getColor() {
-            return this.color;
-        }
-        public ComponentSubset[] getComponentSubsets() {
-            return this.componentSubsets;
-        }
-        //public DesignBean getAssociatedBean() {
-        //    return this.associatedBean;
-        //}
-    }
-    
-    private static class VirtualFormSubset implements ComponentSubset {
-        private String name;
-        private String[] members;
-        private ComponentSubset.LineType lineType;
-        public VirtualFormSubset(String name, String[] members, LineType lineType) {
-            this.name = name;
-            this.members = members;
-            this.lineType = lineType;
-        }
-        
-        //e.g., "participants", "submitters", "inputs", "execute", "render"
-        public String getName() {
-            return this.name;
-        }
-        
-        //e.g., contains participants or submitters in a particular virtual form. contains inputs, executes, or renders of a particular ajax transaction.
-        public String[] getMembers() {
-            return this.members;
-        } 
-
-        //SOLID OR DASHED
-        public LineType getLineType() {
-            return this.lineType;
-        }
-    }
-     * */
 }

@@ -19,18 +19,36 @@
 
 package com.sun.rave.designtime.ext.componentgroup;
 
-import com.sun.rave.designtime.DesignBean;
 import java.awt.Color;
 
 /**
- *
+ * <p>Represents a group of components that are called out visually in the designer.
+ * Models a virtual form, for instance.</p>
  * @author mbohm
  */
 public interface ComponentGroup {
-   String getName();   //e.g., ajax transaction id
+   /**
+    * <p>Get the group's name. This is used in design context data keys associated with component group colors.</p>
+    */
+   String getName();
+   
+   /**
+    * <p>Get the color associated with the group.</p>
+    */ 
    Color getColor();
+   
+   /**
+    * <p>Set the color associated with the group.</p>
+    */ 
    void setColor(Color color);
+   
+   /**
+    * <p>Get the label for the group's legend entry.</p>
+    */ 
    String getLegendEntryLabel();
+   
+   /**
+    * <p>Get the various component subsets in this group. For instance, a virtual form's participants would be one of the subsets.</p>
+    */ 
    ComponentSubset[] getComponentSubsets();
-   //DesignBean getAssociatedBean();   //just a precaution--in case we need to get back to the DesignBean for the Form or AjaxTransaction. Is this a good idea?     
 }

@@ -18,19 +18,14 @@
  */
 package org.netbeans.modules.visualweb.web.ui.dt.component.vforms;
 
-import java.awt.Color;
-import java.util.Map;
 import javax.faces.component.ActionSource;
 import javax.faces.component.EditableValueHolder;
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignContext;
 import com.sun.rave.designtime.DisplayAction;
-import com.sun.rave.designtime.ext.componentgroup.ColorWrapper;
 import com.sun.rave.web.ui.component.Form;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 
 public class VirtualFormsHelper {
 

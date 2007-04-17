@@ -19,15 +19,30 @@
 
 package com.sun.rave.designtime.ext.componentgroup;
 
-import com.sun.rave.designtime.DesignBean;
-
 /**
- *
+ * <p>Represents a subset of components in a Component Group. For instance, 
+ * a virtual form's participants would be one such subset.</p>
  * @author mbohm
  */
 public interface ComponentSubset {
-   String getName();  //e.g., "participants", "submitters", "inputs", "execute", "render"--not really needed, but nice to have there
-   String[] getMembers(); //e.g., contains server-side style ids. participants or submitters in a particular virtual form. inputs, executes, or renders of a particular ajax transaction.
+   /**
+    * <p>Get the name of the subset. For instance, "participants".</p>
+    */ 
+   String getName();
+   
+   /**
+    * <p>Get the server-side style, possibly qualified, ids representing 
+    * components in the subset.</p>
+    */ 
+   String[] getMembers();
+   
+   /**
+    * <p>Represents the line type used to represent a subset in the designer.</p>
+    */ 
    enum LineType {SOLID, DASHED, NONE}
+   
+   /**
+    * <p>Get the line type used to represent the subset in the designer.</p>
+    */ 
    LineType getLineType(); 
 }

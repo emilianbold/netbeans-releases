@@ -21,8 +21,6 @@ package org.netbeans.modules.visualweb.web.ui.dt.component.vforms;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.ResourceBundle;
@@ -126,7 +124,7 @@ public class VirtualFormsCustomizerPanel extends JPanel {
                     case 0: // color
                         String vfName = vform.getName();
                         String key = getColorKey(vfName);
-                        return ComponentGroupHelper.getWrappedColor(key, colorMap);
+                        return ComponentGroupHelper.getMappedColor(key, colorMap);
                     case 1: // virtual form name
                         return vform.getName();
                 }

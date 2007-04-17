@@ -1,31 +1,26 @@
 /*
- * The contents of this file are subject to the terms
- * of the Common Development and Distribution License
- * (the License).  You may not use this file except in
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
- * You can obtain a copy of the license at
- * https://woodstock.dev.java.net/public/CDDLv1.0.html.
- * See the License for the specific language governing
- * permissions and limitations under the License.
- * 
- * When distributing Covered Code, include this CDDL
- * Header Notice in each file and include the License file
- * at https://woodstock.dev.java.net/public/CDDLv1.0.html.
- * If applicable, add the following below the CDDL Header,
- * with the fields enclosed by brackets [] replaced by
- * you own identifying information:
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
- * Copyright 2007 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 package com.sun.rave.designtime.ext.componentgroup.util;
 
 import java.awt.Color;
 import java.util.Map;
-import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignContext;
-import com.sun.rave.designtime.DisplayAction;
 import com.sun.rave.designtime.ext.componentgroup.ColorWrapper;
 import com.sun.rave.designtime.ext.componentgroup.ComponentGroup;
 import com.sun.rave.designtime.ext.componentgroup.ComponentGroupHolder;
@@ -35,20 +30,51 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
+/**
+ * <p>Helper class to paint Component Group colors, etc.</p>
+ * @author mbohm
+ */
 public class ComponentGroupHelper {
     
+    /**
+     * <p>Get a design context data key to store a component group color.</p>
+     */ 
     public static String getComponentGroupColorKey(String holderName, String groupName) {
         return ComponentGroupHolder.COLOR_KEY_PREFIX + holderName + ":" + groupName; //NOI18N
     }
     
+    /**
+     * <p>Populate a two-dimensional array of <code>ComponentGroup</code> based on the supplied 
+     * <code>holders</code>, adding color information if necessary.</p>
+     * @param dcontext The design context.
+     * @param holders The array of existing holders.
+     * @param groupArr The two-dimensional array of <code>ComponentGroup</code> to populate based on <code>holders</code>.
+     */ 
     public static void populateColorGroupArray(DesignContext dcontext, ComponentGroupHolder[] holders, ComponentGroup[][] groupArr) {
         populateColorModels(dcontext, holders, groupArr, null);
     }
     
+    
+    /**
+     * <p>Populate a <code>Map&lt;String,Color&gt;</code> based on the supplied 
+     * <code>holders</code>, adding color information if necessary.</p>
+     * @param dcontext The design context.
+     * @param holders The array of existing holders.
+     * @param groupArr The <code>Map&lt;String,Color&gt;</code> to populate based on <code>holders</code>.
+     */ 
     public static void populateColorMap(DesignContext dcontext, ComponentGroupHolder[] holders, Map<String,Color> colorMap) {
         populateColorModels(dcontext, holders, null, colorMap);
     }
     
+    /**
+     * <p>Populate a two-dimensional array of <code>ComponentGroup</code> and
+     * a <code>Map&lt;String,Color&gt;</code> based on the supplied 
+     * <code>holders</code>, adding color information to both if necessary.</p>
+     * @param dcontext The design context.
+     * @param holders The array of existing holders.
+     * @param groupArr The two-dimensional array of <code>ComponentGroup</code> to populate based on <code>holders</code>.
+     * @param groupArr The <code>Map&lt;String,Color&gt;</code> to populate based on <code>holders</code>.
+     */ 
     public static void populateColorModels(DesignContext dcontext, ComponentGroupHolder[] holders, ComponentGroup[][] groupArr, Map<String,Color> colorMap) {
         if (holders == null || holders.length == 0) {
             return;
@@ -75,6 +101,7 @@ public class ComponentGroupHelper {
                     if (o instanceof ColorWrapper) {
                         color = ((ColorWrapper)o).getColor();
                         if (color != null) {
+                            //color will already be in groups[i]
                             colorMap.put(key, color);
                         }
                     } else if (o instanceof String) {
@@ -82,6 +109,7 @@ public class ComponentGroupHelper {
                         color = cw.getColor();
                         if (color != null) {
                             dcontext.setContextData(key, cw);
+                            //color will already be in groups[i]
                             colorMap.put(key, color);
                         } else {
                             unassignedComponentGroups.add(groups[i]);
@@ -103,6 +131,9 @@ public class ComponentGroupHelper {
         }
     }
     
+    /**
+     * <p>The colors which can be assigned to a Component Group.</p>
+     */ 
     public static Color[] DEFAULT_COLOR_SET = new Color[] {
         Color.blue,
         Color.green,
@@ -147,17 +178,24 @@ public class ComponentGroupHelper {
         new Color(50,205,50),     //lime green
     };
     
-    public static Color getWrappedColor(String groupName, Map colorMap) {
-        Color c = (Color)colorMap.get(groupName);
+    /**
+     * <p>Get the appropriate <code>Color</code> in the supplied 
+     * <code>Map</code>, assigning one if necessary.</p>
+     */ 
+    public static Color getMappedColor(String key, Map colorMap) {
+        Color c = (Color)colorMap.get(key);
         if (c != null) {
             return c;
         }
         c = getLeastUsedColor(colorMap);
-        colorMap.put(groupName, c);
+        colorMap.put(key, c);
         return c;
     }
     
-    //of the colors in the default set, get one that appears least in the colorMap supplied
+    /**
+     * <p>Of the colors in the default set, get one that appears least in the 
+     * supplied <code>colorMap</code>.</p>
+     */
     private static Color getLeastUsedColor(Map colorMap) {
         Map<Color,Integer> timesUsed = new HashMap();
         for (Iterator<Color> iter = colorMap.values().iterator(); iter.hasNext(); ) {

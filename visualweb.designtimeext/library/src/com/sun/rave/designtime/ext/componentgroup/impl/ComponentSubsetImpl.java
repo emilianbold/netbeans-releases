@@ -13,7 +13,8 @@ import com.sun.rave.designtime.ext.componentgroup.ComponentSubset;
 import com.sun.rave.designtime.ext.componentgroup.ComponentSubset.LineType;
 
 /**
- *
+ * <p>Implementation that represents a subset of components in a Component Group. For instance, 
+ * a virtual form's participants would be one such subset.</p>
  * @author mbohm
  */
 public class ComponentSubsetImpl implements ComponentSubset {
@@ -21,23 +22,34 @@ public class ComponentSubsetImpl implements ComponentSubset {
     private String[] members;
     private ComponentSubset.LineType lineType;
     
+    
+    /**
+     *  <p>Constructor.</p>
+     */ 
     public ComponentSubsetImpl(String name, String[] members, LineType lineType) {
         this.name = name;
         this.members = members;
         this.lineType = lineType;
     }
 
-    //e.g., "participants", "submitters", "inputs", "execute", "render"
+   /**
+    * <p>Get the name of the subset. For instance, "participants".</p>
+    */ 
     public String getName() {
         return this.name;
     }
 
-    //e.g., contains participants or submitters in a particular virtual form. contains inputs, executes, or renders of a particular ajax transaction.
+   /**
+    * <p>Get the server-side style, possibly qualified, ids representing 
+    * components in the subset.</p>
+    */ 
     public String[] getMembers() {
         return this.members;
     } 
 
-    //SOLID OR DASHED
+   /**
+    * <p>Get the line type used to represent the subset in the designer.</p>
+    */ 
     public LineType getLineType() {
         return this.lineType;
     }

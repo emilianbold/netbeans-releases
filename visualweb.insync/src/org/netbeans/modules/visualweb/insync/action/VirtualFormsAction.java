@@ -46,55 +46,27 @@ public class VirtualFormsAction extends AbstractDisplayActionAction {
     }
 
     protected DisplayAction[] getDisplayActions(DesignBean[] designBeans) {
-		if (designBeans.length == 0) {
+	if (designBeans == null || designBeans.length == 0) {
             return new DisplayAction[0];
         }
 		
-        DisplayAction virtualFormDisplayAction = null;
-        if (designBeans != null && designBeans.length > 0) {
-            DesignContext designContext = designBeans[0].getDesignContext();
-            if (designContext instanceof LiveUnit) {
-                Project project = ((LiveUnit) designContext).getModel().getProject();
-                if (project != null) {
-                    if (J2eeModule.JAVA_EE_5.equals(JsfProjectUtils.getJ2eePlatformVersion(project))) {
-                        virtualFormDisplayAction = com.sun.webui.jsf.component.vforms.VirtualFormsHelper.getContextItem(designBeans);
-                    } else {
-                        ComponentGroupHolder[] holders = null;
-                        Object dcontextData = designContext.getContextData(ComponentGroupHolder.CONTEXT_DATA_KEY);
-                        if (dcontextData instanceof ComponentGroupHolder[]) {        
-                            holders = (ComponentGroupHolder[])dcontextData;
-                        }
-                        if (holders == null || holders.length == 0) {
-                            return new DisplayAction[0];
-                        }
-                        List<DisplayAction> displayActionList = new ArrayList<DisplayAction>();
-                        for (int h = 0; h < holders.length; h++) {
-                            DisplayAction[] holderDisplayActions = holders[h].getDisplayActions(designContext, designBeans);
-                            for (int d = 0; d < holderDisplayActions.length; d++) {
-                                displayActionList.add(holderDisplayActions[d]);
-                            }
-                        }
-                        return displayActionList.toArray(new DisplayAction[displayActionList.size()]);
-                    }
-
-					if (virtualFormDisplayAction != null) {
-						return new DisplayAction[] {virtualFormDisplayAction};
-					}
-					
-					if (J2eeModule.JAVA_EE_5.equals(JsfProjectUtils.getJ2eePlatformVersion(project))) {
-						virtualFormDisplayAction = com.sun.webui.jsf.component.vforms.VirtualFormsHelper.getContextItem(designContext);
-					}
-					
-					if (virtualFormDisplayAction == null) {
-						return new DisplayAction[0];
-					} else {
-						return new DisplayAction[] {virtualFormDisplayAction};
-					}
-                }
+        DesignContext designContext = designBeans[0].getDesignContext();
+        ComponentGroupHolder[] holders = null;
+        Object dcontextData = designContext.getContextData(ComponentGroupHolder.CONTEXT_DATA_KEY);
+        if (dcontextData instanceof ComponentGroupHolder[]) {        
+            holders = (ComponentGroupHolder[])dcontextData;
+        }
+        if (holders == null || holders.length == 0) {
+            return new DisplayAction[0];
+        }
+        List<DisplayAction> displayActionList = new ArrayList<DisplayAction>();
+        for (int h = 0; h < holders.length; h++) {
+            DisplayAction[] holderDisplayActions = holders[h].getDisplayActions(designContext, designBeans);
+            for (int d = 0; d < holderDisplayActions.length; d++) {
+                displayActionList.add(holderDisplayActions[d]);
             }
         }
-
-		return new DisplayAction[0];
+        return displayActionList.toArray(new DisplayAction[displayActionList.size()]);
     }
 
     protected String getDefaultDisplayName() {

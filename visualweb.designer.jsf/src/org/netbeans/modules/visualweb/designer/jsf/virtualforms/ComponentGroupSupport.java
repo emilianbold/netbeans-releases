@@ -33,21 +33,10 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.awt.Toolkit;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.faces.component.ActionSource;
-import javax.faces.component.EditableValueHolder;
 import javax.faces.component.UIComponent;
-
-import javax.swing.JViewport;
 import javax.swing.UIManager;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.insync.live.LiveUnit;
-
-import org.openide.util.NbBundle;
-
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.ext.componentgroup.ColorWrapper;
 import com.sun.rave.designtime.ext.componentgroup.ComponentGroup;
@@ -55,22 +44,18 @@ import com.sun.rave.designtime.ext.componentgroup.ComponentGroupHolder;
 import com.sun.rave.designtime.ext.componentgroup.ComponentSubset;
 import com.sun.rave.designtime.ext.componentgroup.impl.ColorWrapperImpl;
 import com.sun.rave.designtime.ext.componentgroup.util.ComponentGroupHelper;
-import com.sun.rave.web.ui.component.Form;
-import com.sun.rave.web.ui.component.Form.VirtualFormDescriptor;
 import javax.faces.component.NamingContainer;
 import org.w3c.dom.Element;
 
 
 /**
- * XXX Originally in designer, now separated.
- *
- * This class implements most of the support for Virtual Forms
+ * This class implements most of the support for Component Groups
  * in the designer.
  *
  * @todo App outline
  *
  * @author Tor Norbye
- * @author Matthew Bohm
+ * @author mbohm
  */
 public class ComponentGroupSupport {
     /** Width of the drop shadow (if 0, don't paint one) */
@@ -97,43 +82,17 @@ public class ComponentGroupSupport {
     /** Distance from right side viewport edge to the legend righthand side -
       * ditto for bottom */
     private static final int LEGEND_OFFSET = 5 + DROP_SHADOW_WIDTH;
-//    private WebForm webform;
-//    private boolean enabled;
 
     /** Creates a new instance of VirtualFormSupport */
     private ComponentGroupSupport() {
     }
 
-//    /** Return true iff virtual forms feedback is enabled */
-//    public boolean isEnabled() {
-//        return enabled;
-//    }
-//
-//    /** Set whether virtual forms feedback is enabled */
-//    public void setEnabled(boolean enabled) {
-//        this.enabled = enabled;
-//    }
-
     /*
-     * TODO: painting method - just mess with boxes?, paint legend, assign colors to forms
-     * Do legend first?
-     * Mapping functions: given ids, compute corresponding design beans (or elements?)
-     * Probably doesn't have to be superfast.
-     *  Ah my FORM tag could record where this puppy is, right?
-     * perhaps I store this stuff on the context object... but will it work for
-     * incremental layout?
-     * Another possibility is to special case Form and have it do things like virtual
-     * form analysis. Or how about I only check the isVirtualForm property support
-     * in the designer toolbar?
-     * Code looks for webform.isVirtualFormMode()
-     *   When set -
-     *      extra painting? or done as the same border?  aeh for now just do as the same
+     * <p>Paint legends and the colored borders of appropriate components.</p>
      */
     public static void paint(LiveUnit liveUnit,DomProvider.RenderContext renderContext, Graphics2D g2d) {
         ComponentGroupHolder[] holders = null;
         Object dcontextData = liveUnit.getContextData(ComponentGroupHolder.CONTEXT_DATA_KEY);
-        //System.err.println("dcontextData.getClass().getClassLoader(): " + dcontextData.getClass().getClassLoader());
-        //System.err.println("ComponentGroupHolder.class.getClassLoader(): " + ComponentGroupHolder.class.getClassLoader());
         if (dcontextData instanceof ComponentGroupHolder[]) {        
             holders = (ComponentGroupHolder[])dcontextData;
         }
@@ -144,23 +103,15 @@ public class ComponentGroupSupport {
         
         ComponentGroup[][] groupArr = new ComponentGroup[holders.length][];
 
-//        PageBox pageBox = webform.getPane().getPageBox();
-//        JViewport viewport = pageBox.getViewport();
-//        Dimension d = viewport.getExtentSize();
-//        Point p = viewport.getViewPosition();
         Dimension d = renderContext.getVieportDimension();
         Point p = renderContext.getViewportPosition();
 
         int maxX = (p.x + d.width) - LEGEND_OFFSET;
-        //if (maxXInteger != null) {
-        //   maxX = maxXInteger.intValue();
-        //}
         int maxY = (p.y + d.height) - LEGEND_OFFSET;
         
         DesignBean paintChildrenRootBean = liveUnit.getRootContainer(); //the top bean whose children we will walk when we call paintChildren
         String paintChildrenRootBeanServerId = String.valueOf(NamingContainer.SEPARATOR_CHAR) + paintChildrenRootBean.getInstanceName();
         
-        //Map colorMap = new HashMap(50);
         ComponentGroupHelper.populateColorGroupArray(liveUnit, holders, groupArr);
         
         for (int h = 0; h < holders.length; h++) {
@@ -176,7 +127,6 @@ public class ComponentGroupSupport {
                 continue;
             }
             
-            //paintChildren(renderContext, paintChildrenRootBean, holders, groupArr, colorMap, g2d, paintChildrenRootBeanServerId);
             paintChildren(renderContext, paintChildrenRootBean, holders, groupArr, g2d, paintChildrenRootBeanServerId);
             
             // Paint legend
@@ -196,7 +146,6 @@ public class ComponentGroupSupport {
             for (int i = 0; i < groups.length; i++) {
                 String legendEntryLabel = groups[i].getLegendEntryLabel();
                 char[] s = legendEntryLabel.toCharArray(); // XXX I should make a utility which operates on Strings directly!
-//                int stringWidth = DesignerUtils.getNonTabbedTextWidth(s, 0, s.length, metrics);
                 int stringWidth = renderContext.getNonTabbedTextWidth(s, 0, s.length, metrics);
 
                 if (stringWidth > maxStringWidth) {
@@ -208,7 +157,6 @@ public class ComponentGroupSupport {
 
             String legendText = holder.getLegendLabel();
             char[] s = legendText.toCharArray();
-//            int stringWidth = DesignerUtils.getNonTabbedTextWidth(s, 0, s.length, metrics);
             int stringWidth = renderContext.getNonTabbedTextWidth(s, 0, s.length, metrics);
 
             if (stringWidth > maxStringWidth) {
@@ -391,7 +339,6 @@ public class ComponentGroupSupport {
             }
 
             //this child is all grown up and is now a parent. paint its children.
-            //paintChildren(renderContext, child, holders, groupArr, colorMap, g2d, childFqId);
             paintChildren(renderContext, child, holders, groupArr, g2d, childFqId);
         }
     }
@@ -399,9 +346,6 @@ public class ComponentGroupSupport {
     private static void paintHighlight(DomProvider.RenderContext renderContext,
     Graphics2D g2d, DesignBean bean, Color color, boolean paintSolid, boolean paintDashed, int nestingLevel) {
         if (bean != null) {
-//            ModelViewMapper mapper = webform.getMapper();
-//            Rectangle bounds = mapper.getComponentBounds(bean);
-//            Rectangle bounds = ModelViewMapper.getComponentBounds(webform.getPane().getPageBox(), bean);
             Element componentRootElement;
             if (bean instanceof MarkupDesignBean) {
                 Element sourceElement = ((MarkupDesignBean)bean).getElement();
