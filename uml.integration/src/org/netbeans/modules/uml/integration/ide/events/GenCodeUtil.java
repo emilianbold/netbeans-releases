@@ -140,7 +140,7 @@ public final class GenCodeUtil
 		    rightPart = '>' + rightPart;
 		}
 	    } else {
-		rightPart += "[]";
+		rightPart = "[]"+ rightPart;
 	    }
 	}
 	return leftPart + coreTypeName + rightPart;
