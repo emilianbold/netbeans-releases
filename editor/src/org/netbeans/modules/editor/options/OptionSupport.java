@@ -26,6 +26,7 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.editor.NbEditorSettingsInitializer;
+import org.openide.util.RequestProcessor;
 
 /**
 * Options for the base editor kit
@@ -64,11 +65,16 @@ public class OptionSupport extends SystemOption {
         initializerValuesMap = new HashMap();
         kitClass2Type.put(kitClass, typeName);
         
-        // Hook up the settings initializer
-        Settings.Initializer si = getSettingsInitializer();
-        Settings.removeInitializer(si.getName());
-        Settings.addInitializer(si, Settings.OPTION_LEVEL);
-        Settings.reset();
+        // Hook up the settings initializer. This must not happen before
+        // subclasses finish their initialization.
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                Settings.Initializer si = getSettingsInitializer();
+                Settings.removeInitializer(si.getName());
+                Settings.addInitializer(si, Settings.OPTION_LEVEL);
+                Settings.reset();
+            }
+        }, 10);
     }
 
     public Class getKitClass() {

@@ -252,11 +252,11 @@ public class BaseOptions extends OptionSupport {
     
     public BaseOptions() {
         this(BaseKit.class, BASE);
-        optionsVersion = LATEST_OPTIONS_VERSION;
     }
     
     public BaseOptions(Class kitClass, String typeName) {
         super(kitClass, typeName);
+        optionsVersion = LATEST_OPTIONS_VERSION;
         kitClass2Options.put(kitClass, this);
 //        new Throwable("BaseOptions: " + getClass() + "; kitClass=" + kitClass + "; typeName=" + typeName).printStackTrace();
     }
