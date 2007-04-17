@@ -149,6 +149,9 @@ public class JsfForm {
     // XXX For fragments, this represents the assigned context page.
     private JsfForm contextJsfForm;
     
+    /** XXX Ajax transactions support (see also WebForm virtualForms support). */
+    private boolean ajaxTransactionsSupportEnabled;
+    
 
     /** Creates a new instance of JsfForm */
     private JsfForm(FacesModel facesModel, DataObject dataObject) {
@@ -407,7 +410,7 @@ public class JsfForm {
         return findJsfForm(facesModel);
     }
     
-    /*private*/ static JsfForm findJsfForm(DesignContext designContext) {
+    /*private*/public static JsfForm findJsfForm(DesignContext designContext) {
         if (designContext == null) {
             return null;
         }
@@ -1376,7 +1379,7 @@ public class JsfForm {
 //            allJsfForms = jsfForm2designerSet.keySet();
 //        }
         synchronized (jsfForms) {
-            allJsfForms = new HashSet(jsfForms);
+            allJsfForms = new HashSet<JsfForm>(jsfForms);
         }
         for (JsfForm jsfForm : allJsfForms) {
             if (project == jsfForm.getFacesModel().getProject()
@@ -2337,6 +2340,14 @@ public class JsfForm {
         }
         
         return node.getOwnerDocument() == getHtmlDom();
+    }
+    
+    public void setAjaxTransactionsSupportEnabled(boolean enabled) {
+        ajaxTransactionsSupportEnabled = enabled;
+    }
+    
+    public boolean isAjaxTransactionsSupportEnabled() {
+        return ajaxTransactionsSupportEnabled;
     }
 }
 
