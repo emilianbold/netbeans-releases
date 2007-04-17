@@ -82,7 +82,7 @@ public class Utils {
                             }
                         }
                         if (webServiceAn==null) {
-                            serviceModel.setStatus(ServiceModel.STATUS_NOT_SERVICE);
+                            serviceModel.status = ServiceModel.STATUS_NOT_SERVICE;
                             return;
                         }
                         
@@ -105,9 +105,9 @@ public class Utils {
                                 serviceModel.targetNamespace = (String)expressions.get(ex).getValue();
                                 tnsFound = true;
                             } else if (ex.getSimpleName().contentEquals("endpointInterface")) { //NOI18N
-                                serviceModel.setEndpointInterface((String)expressions.get(ex).getValue());
+                                serviceModel.endpointInterface = (String)expressions.get(ex).getValue();
                             } else if (ex.getSimpleName().contentEquals("wsdlLocation")) { //NOI18N
-                                serviceModel.setWsdlLocation((String)expressions.get(ex).getValue());
+                                serviceModel.wsdlLocation = (String)expressions.get(ex).getValue();
                             }
                         }
                         // set default names
@@ -162,10 +162,10 @@ public class Utils {
                     List<MethodModel> operations = new ArrayList<MethodModel>();
                     if (methods.size()==0) {
                         serviceModel.operations=operations;
-                        serviceModel.setStatus(ServiceModel.STATUS_INCORRECT_SERVICE);
+                        serviceModel.status = ServiceModel.STATUS_INCORRECT_SERVICE;
                         return;
                     }
-                    
+                            
                     for (int i=0;i<methods.size();i++) {
                         MethodModel operation = new MethodModel();
                         operation.setImplementationClass(implClass);

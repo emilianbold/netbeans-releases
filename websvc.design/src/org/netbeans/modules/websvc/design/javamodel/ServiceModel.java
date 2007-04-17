@@ -44,10 +44,10 @@ public class ServiceModel {
     String serviceName;
     String portName;
     String name;
-    private String endpointInterface;
-    private String wsdlLocation;
+    String endpointInterface;
+    String wsdlLocation;
     String targetNamespace;
-    private int status = STATUS_OK;
+    int status = STATUS_OK;
     
     List<MethodModel> operations;    
     
