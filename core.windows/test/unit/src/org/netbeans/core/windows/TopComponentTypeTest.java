@@ -19,8 +19,15 @@
 
 package org.netbeans.core.windows;
 
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import junit.framework.*;
 import org.netbeans.junit.*;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
 
 import org.openide.windows.*;
 
@@ -76,6 +83,58 @@ public class TopComponentTypeTest extends NbTestCase {
         //no mode defined for the topcomponent
         
         assertFalse( WindowManagerImpl.getInstance().isEditorTopComponent( tc ) );
+    }
+     
+    public void testIsEditorTopComponentIsSafeOutsideAWTWhenOpened () throws Exception {
+        final TopComponent tc = new TopComponent ();
+        Mode mode = WindowManagerImpl.getInstance().createMode( "editorMode", Constants.MODE_KIND_EDITOR, Constants.MODE_STATE_JOINED, false, new SplitConstraint[0] );
+        Logger logger = Logger.getLogger( WindowManagerImpl.class.getName() );
+        final MyHandler handler = new MyHandler();
+        logger.addHandler( handler );
+        
+        assertTrue( WindowManagerImpl.getInstance().isEditorMode( mode ) );
+        mode.dockInto( tc );
+        
+        Task t = RequestProcessor.getDefault().post( new Runnable() {
+            public void run() {
+                assertFalse( SwingUtilities.isEventDispatchThread() );
+                WindowManagerImpl.getInstance().isEditorTopComponent( tc );
+            }
+        });
+        t.waitFinished();
+        assertNotNull( handler.latestLogRecord );
+        assertTrue( handler.latestLogRecord.getThrown() instanceof IllegalStateException );
+        assertEquals( Level.WARNING, handler.latestLogRecord.getLevel() );
+        
+        tc.open();
+        assertTrue( tc.isOpened() );
+        handler.latestLogRecord = null;
+        
+        final boolean[] res = new boolean[1]; 
+        t = RequestProcessor.getDefault().post( new Runnable() {
+            public void run() {
+                assertFalse( SwingUtilities.isEventDispatchThread() );
+                res[0] = WindowManagerImpl.getInstance().isEditorTopComponent( tc );
+            }
+        });
+        t.waitFinished();
+        assertNull( handler.latestLogRecord );
+    }
+
+    private class MyHandler extends Handler {
+
+        private LogRecord latestLogRecord;
+        
+        public void publish(LogRecord rec) {
+            this.latestLogRecord = rec;
+        }
+
+        public void flush() {
+        }
+
+        public void close() throws SecurityException {
+        }
+        
     }
 }
 

@@ -1194,7 +1194,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
             ModeImpl mode = (ModeImpl)it.next();
             
             if( mode.containsTopComponent( tc ) ) {
-                return isEditorMode( mode );
+                return mode.getKind() == Constants.MODE_KIND_EDITOR;
             }
         }
 

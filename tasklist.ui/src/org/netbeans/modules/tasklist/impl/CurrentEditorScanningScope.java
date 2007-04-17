@@ -22,11 +22,9 @@ package org.netbeans.modules.tasklist.impl;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import javax.swing.SwingUtilities;
 import org.netbeans.spi.tasklist.TaskScanningScope;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -130,7 +128,7 @@ public class CurrentEditorScanningScope extends TaskScanningScope implements Pro
         TopComponent.Registry registry = TopComponent.getRegistry();
         
         TopComponent activeTc = registry.getActivated();
-        FileObject currentFile = getFileFromTopComponent( activeTc, true );
+        FileObject currentFile = getFileFromTopComponent( activeTc );
         
         ArrayList<FileObject> availableFiles = new ArrayList<FileObject>(3);
         if( null == currentFile ) {
@@ -138,7 +136,7 @@ public class CurrentEditorScanningScope extends TaskScanningScope implements Pro
             for( Iterator i=openedTcs.iterator(); i.hasNext(); ) {
                 TopComponent tc = (TopComponent)i.next();
                 
-                FileObject file = getFileFromTopComponent( tc, true );
+                FileObject file = getFileFromTopComponent( tc );
                 if( null != file ) {
                     availableFiles.add( file );
                 }
@@ -151,29 +149,15 @@ public class CurrentEditorScanningScope extends TaskScanningScope implements Pro
         return currentFile;
     }
     
-    private FileObject getFileFromTopComponent( final TopComponent tc, boolean mustBeShowing ) {
-        if( null == tc || (!tc.isShowing() && mustBeShowing) )
+    private FileObject getFileFromTopComponent( final TopComponent tc ) {
+        if( null == tc || !tc.isShowing() )
             return null;
-        final FileObject[] res = new FileObject[1];
-        Runnable runnable = new Runnable() {
-            public void run() {
-                if( WindowManager.getDefault().isEditorTopComponent( tc ) ) {
-                    DataObject dob = tc.getLookup().lookup( DataObject.class );
-                    if( null != dob ) {
-                        res[0] = dob.getPrimaryFile();
-                    }
-                }
-            }
-        };
-        if( SwingUtilities.isEventDispatchThread() ) {
-            runnable.run();
-        } else {
-            try {
-                SwingUtilities.invokeAndWait( runnable );
-            } catch( InterruptedException e ) {
-            } catch( InvocationTargetException e ) {
+        if( WindowManager.getDefault().isEditorTopComponent( tc ) ) {
+            DataObject dob = tc.getLookup().lookup( DataObject.class );
+            if( null != dob ) {
+                return dob.getPrimaryFile();
             }
         }
-        return res[0];
+        return null;
     }
 }
