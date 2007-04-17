@@ -126,7 +126,7 @@ void initErrorDetailWindow(LauncherProperties *props, HINSTANCE hInstance) {
     cyVScroll = GetSystemMetrics(SM_CYVSCROLL);
     GetClientRect(hwndMain, &rcClient);
     hwndErrorDetail = CreateWindowExW(0,  WC_STATICW,  WC_STATICW, WS_CHILD  ,
-    rcClient.left + 10,  50, rcClient.right - 20, 50,
+    rcClient.left + 10,  50, rcClient.right - 20, 60,
     hwndMain, NULL, hInstance, NULL);
     if (hwndErrorDetail)  {
         LOGFONT lfDetail;

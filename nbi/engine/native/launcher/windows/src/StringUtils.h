@@ -39,6 +39,7 @@ extern "C" {
 #define  INTEGRITY_ERROR_PROP         "nlw.integrity"
 #define  OUTPUT_ERROR_PROP            "nlw.output.error"
 #define  JAVA_PROCESS_ERROR_PROP      "nlw.java.process.error"
+#define  EXTERNAL_RESOURE_LACK_PROP   "nlw.missing.external.resource"
    
 #define  ARG_OUTPUT_PROPERTY          "nlw.arg.output"
 #define  ARG_JAVA_PROP                "nlw.arg.javahome"

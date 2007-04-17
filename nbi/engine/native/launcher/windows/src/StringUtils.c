@@ -129,6 +129,8 @@ WCHAR * getDefaultString(const char *name) {
         return L"Exit";
     } else if(strcmp(name, MAIN_WINDOW_TITLE)==0) {
         return L"NBI Launcher";
+    } else if(strcmp(name, EXTERNAL_RESOURE_LACK_PROP)==0) {
+        return L"Can`t run launcher\nThe following file is missing : %s";
     }
     return NULL;
 }

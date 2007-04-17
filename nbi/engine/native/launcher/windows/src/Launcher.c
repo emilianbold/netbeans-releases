@@ -101,7 +101,7 @@ void setOutputFile(LauncherProperties * props, WCHAR *path) {
         writeErrorA(props, OUTPUT_LEVEL_DEBUG, 1, "[CMD Argument] Can`t create file: ", path, GetLastError());
         WCHAR * err = getErrorDescription(GetLastError());
         showMessageW(props, L"Can`t redirect output to file!\n\nRequested file : %s\n%s", 2, path, err);
-        FREE(err);        
+        FREE(err);
     }
 }
 
@@ -134,7 +134,7 @@ void loadLocalizationStrings(LauncherProperties *props) {
     }
 }
 
-void createTMPDir(LauncherProperties * props) {    
+void createTMPDir(LauncherProperties * props) {
     WCHAR * argTempDir = NULL;;
     DWORD createRndSubDir = 1;
     
@@ -150,7 +150,7 @@ void createTMPDir(LauncherProperties * props) {
     createTempDirectory(props, argTempDir, createRndSubDir);
     if(!isOK(props)) {
         showErrorW(props, CANT_CREATE_TEMP_DIR_PROP, 1, props->tmpDir);
-    }    
+    }
 }
 
 void checkExtractionStatus(LauncherProperties *props) {
@@ -286,7 +286,7 @@ void findSuitableJava(LauncherProperties * props) {
         
         WCHAR * java = NULL;
         
-        if(props->userDefinedJavaHome!=NULL) { // using user-defined JVM via command-line parameter            
+        if(props->userDefinedJavaHome!=NULL) { // using user-defined JVM via command-line parameter
             writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "[CMD Argument] Try to use java from ", 0);
             writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, props->userDefinedJavaHome, 1);
             
@@ -296,7 +296,7 @@ void findSuitableJava(LauncherProperties * props) {
                 JVM_USER_DEFINED_ERROR_PROP :
                     JVM_UNSUPPORTED_VERSION_PROP;
                     showErrorW(props, prop, 1, props->userDefinedJavaHome);
-            }        
+            }
         } else { // no user-specified java argument
             findSystemJava(props);
             if( props->java ==NULL) {
@@ -374,12 +374,19 @@ void setClasspathElements(LauncherProperties * props) {
     
     DWORD i = 0 ;
     for(i=0;i<props->jars->size;i++) {
-        props->classpath = appendStringW(props->classpath, CLASSPATH_SEPARATOR);
+        
         
         resolvePath(props, props->jars->items[i]);
-        
-        props->classpath = appendStringW(props->classpath, props->jars->items[i]->resolved);
-        
+        WCHAR * resolvedCpEntry = props->jars->items[i]->resolved;
+        if(!fileExists(resolvedCpEntry)) {
+            props->status = EXTERNAL_RESOURCE_MISSING;
+            showErrorW(props, EXTERNAL_RESOURE_LACK_PROP, 1, resolvedCpEntry);
+            return;
+        }
+        if (props->classpath != NULL) {
+            props->classpath = appendStringW(props->classpath, CLASSPATH_SEPARATOR);
+        }
+        props->classpath = appendStringW(props->classpath, resolvedCpEntry);
     }
     
     // add some libraries to the end of the classpath
@@ -528,8 +535,8 @@ void executeMainClass(LauncherProperties * props) {
         }
         
         char * error = readHandle(hErrorRead);
-        if(getLengthA(error)>1) {            
-            WCHAR * errorW = toWCHAR(error);            
+        if(getLengthA(error)>1) {
+            WCHAR * errorW = toWCHAR(error);
             showMessageW(props, getI18nProperty(props, JAVA_PROCESS_ERROR_PROP), 1, errorW);
             FREE(errorW);
         }
@@ -721,7 +728,7 @@ void processLauncher(LauncherProperties * props) {
     setOutput(props);
     if(!isOK(props) || isTerminated(props)) return;
     
-    setProgressRange(props, props->launcherSize);    
+    setProgressRange(props, props->launcherSize);
     if(!isOK(props) || isTerminated(props)) return;
     
     skipStub(props);
@@ -733,7 +740,7 @@ void processLauncher(LauncherProperties * props) {
     if(isOnlyHelp(props)) return;
     
     setProgressTitleString(props, getI18nProperty(props, MSG_PROGRESS_TITLE));
-    setMainWindowTitle(props,getI18nProperty(props, MAIN_WINDOW_TITLE));
+    setMainWindowTitle(props, getI18nProperty(props, MAIN_WINDOW_TITLE));
     showLauncherWindows(props);
     if(!isOK(props) || isTerminated(props)) return;
     
@@ -761,10 +768,12 @@ void processLauncher(LauncherProperties * props) {
             checkExtractionStatus(props);
             if (isOK(props) && (props->java!=NULL)  && !isTerminated(props)) {
                 setClasspathElements(props);
-                setAdditionalArguments(props);
-                setLauncherCommand(props);
-                Sleep(500);
-                executeMainClass(props);
+                if(isOK(props) && (props->java!=NULL)  && !isTerminated(props)) {
+                    setAdditionalArguments(props);
+                    setLauncherCommand(props);
+                    Sleep(500);
+                    executeMainClass(props);
+                }
             }
         }
         if(!props->extractOnly && props->bundledNumber>0) {
