@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <definitions xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://www.sun.com/javaone/05/VehicleReservationService" xmlns:ota="http://www.opentravel.org/OTA/2003/05" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:plnk="http://docs.oasis-open.org/wsbpel/2.0/plnktype" targetNamespace="http://www.sun.com/javaone/05/VehicleReservationService">
     <types>
         <xs:schema xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:air="http://www.sun.com/javaone/05/VehicleReservationService" targetNamespace="http://www.sun.com/javaone/05/VehicleReservationService">
@@ -56,7 +57,7 @@
             <input>
                 <soap:body use="literal"/>
             </input>
-        </operation>				
+        </operation>                
     </binding>
     <wsdl:service xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" name="VehicleReservationService">
         <wsdl:port name="VehicleReservationPortTypePort" binding="tns:VehicleReservationSoapBinding">
@@ -70,7 +71,7 @@
         </plnk:role>
         <plnk:role name="VehicleReservationCallbackServiceRole"
      portType="tns:VehicleReservationCallbackPortType" >
-        </plnk:role>		
-    </plnk:partnerLinkType>	    
+        </plnk:role>        
+    </plnk:partnerLinkType>     
     
 </definitions>

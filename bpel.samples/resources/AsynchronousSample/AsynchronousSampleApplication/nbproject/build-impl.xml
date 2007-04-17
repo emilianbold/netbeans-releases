@@ -92,9 +92,9 @@
             <pathelement location="${netbeans.home}/../ide8/modules/org-netbeans-modules-classfile.jar"/>
             <pathelement location="${netbeans.home}/../ide8/modules/org-apache-xml-resolver.jar"/>
             <pathelement location="${netbeans.home}/../soa1/modules/org-netbeans-modules-xml-wsdl-extensions.jar"/>
-            <pathelement location="${netbeans.home}/../java1/modules/ext/jaxws21/api/jaxb-api.jar"/>
-            <pathelement location="${netbeans.home}/../java1/modules/ext/jaxws21/jaxb-impl.jar"/>
-            <pathelement location="${netbeans.home}/../java1/modules/ext/jaxws21/activation.jar"/>
+            <pathelement location="${netbeans.home}/../ide8/modules/ext/jaxws21/api/jaxb-api.jar"/>
+            <pathelement location="${netbeans.home}/../ide8/modules/ext/jaxws21/jaxb-impl.jar"/>
+            <pathelement location="${netbeans.home}/../ide8/modules/ext/jaxws21/activation.jar"/>
         </path>
         <taskdef name="jbi-build-service-assembly" classname="org.netbeans.modules.compapp.projects.jbi.anttasks.BuildServiceAssembly">
             <classpath refid="ant.task.classpath"/>
@@ -251,7 +251,7 @@
         <!-- You can override this target in the ../build.xml file. -->
     </target>
     <target name="clean" depends="init,deps-clean,do-clean,post-clean" description="Clean build products."/>
-    <target name="jbi-clean-config" depends="init,clear-casa,jbi-clean-build" description="Clean project configuration."/>
+    <target name="jbi-clean-config" depends="init,clear-casa,jbi-clean-build" description="Clean application configuration."/>
     <target name="clear-casa">
         <delete file="${source.root}/conf/${org.netbeans.modules.compapp.projects.jbi.descriptor.uuid.assembly-unit}.casa"/>
         <delete file="${src.dir}/${org.netbeans.modules.compapp.projects.jbi.descriptor.uuid.assembly-unit}.wsdl"/>

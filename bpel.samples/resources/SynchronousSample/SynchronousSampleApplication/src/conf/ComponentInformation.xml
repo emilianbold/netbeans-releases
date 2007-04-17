@@ -7,7 +7,7 @@
 <type>Binding</type>
 </component-info>
 <component-info>
-<description>FTP Soap Binding to do FTP operations or send SOAP messages e.g. to and from BPEL service engine.</description>
+<description>FTP Binding</description>
 <name>sun-ftp-binding</name>
 <state>Installed</state>
 <type>Binding</type>
