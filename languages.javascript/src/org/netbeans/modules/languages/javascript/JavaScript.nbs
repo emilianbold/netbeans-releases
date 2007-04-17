@@ -390,22 +390,22 @@ COMPLETION:js_keyword: {
 
 COMPLETION:js_whitespace: {
     text1:org.netbeans.modules.languages.javascript.JavaScript.completionItems;
-    doNotUsePrefix:"true";
+    type:"whitespace";
 }
 
 COMPLETION:js_operator: {
     text1:org.netbeans.modules.languages.javascript.JavaScript.completionItems;
-    doNotUsePrefix:"true";
+    type:"operator";
 }
 
 COMPLETION:js_separator: {
     text1:org.netbeans.modules.languages.javascript.JavaScript.completionItems;
-    doNotUsePrefix:"true";
+    type:"operator";
 }
 
 COMPLETION:js_comment: {
     text1:org.netbeans.modules.languages.javascript.JavaScript.completionItems;
-    doNotUsePrefix:"true";
+    type:"operator";
 }
 
 #STORE:VariableDeclaration: {

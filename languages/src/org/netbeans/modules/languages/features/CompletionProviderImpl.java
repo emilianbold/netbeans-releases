@@ -132,13 +132,15 @@ public class CompletionProviderImpl implements CompletionProvider {
                 int tokenOffset = tokenSequence.offset();
                 String tokenType = token.id ().name ();
                 Feature feature = language.getFeature (Language.COMPLETION, tokenType);
-                boolean doNotUsePrefix = feature != null && "true".equals(feature.getValue("doNotUsePrefix"));
-                if (doNotUsePrefix && tokenOffset + token.length() > offset && 
-                        token.text().toString().trim().length() > 0) {
+                String type = feature == null ? null : (String) feature.getValue ("type");
+                if ("operator".equals (type) && 
+                    offset < tokenOffset + token.length ()
+                ) {
                     resultSet.finish ();
                     return;
                 }
-                String start = doNotUsePrefix ? "" :
+                String start = ("operator".equals (type) || "whitespace".equals (type)) ? 
+                    "" :
                     token.text().toString ().substring (0, offset - tokenOffset).trim ();
                 if (ignoreCase) start = start.toLowerCase ();
 
@@ -192,13 +194,16 @@ public class CompletionProviderImpl implements CompletionProvider {
                     getLanguage (mimeType);
                 String tokenType = token.id ().name ();
                 feature = language.getFeature (Language.COMPLETION, tokenType);
-                boolean doNotUsePrefix = feature != null && "true".equals(feature.getValue("doNotUsePrefix"));
+                String type = feature == null ? null : (String) feature.getValue ("type");
                 int tokenOffset = tokenSequence.offset();
-                if (doNotUsePrefix && tokenOffset + token.length() > offset &&
-                        token.text().toString().trim().length() > 0) {
+                if ("operator".equals (type) && 
+                    offset < tokenOffset + token.length ()
+                ) {
                     return;
                 }
-                start = doNotUsePrefix ? "" : start.substring (0, offset - tokenOffset).trim ();
+                start = ("operator".equals (type) || "whitespace".equals (type)) ? 
+                    "" :
+                    start.substring (0, offset - tokenOffset).trim ();
                 ignoreCase = false;
                 Feature f = language.getFeature ("PROPERTIES");
                 if (f != null)
@@ -259,12 +264,14 @@ public class CompletionProviderImpl implements CompletionProvider {
             String tokenType = token.getType();
             Feature f = lang.getFeature (Language.COMPLETION, tokenType);
             int tokenOffset = token.getOffset();
-            boolean doNotUsePrefix = f != null && "true".equals(f.getValue("doNotUsePrefix"));
-            if (doNotUsePrefix && tokenOffset + token.getLength() > offset &&
-                    token.getIdentifier().length() > 0) {
+            String type = f == null ? null : (String) f.getValue ("type");
+            if ("operator".equals (type) && 
+                offset < tokenOffset + token.getLength ()
+            ) {
                 return;
             }
-            String start = doNotUsePrefix ? "" : 
+            String start = ("operator".equals (type) || "whitespace".equals (type)) ? 
+                "" :
                 token.getIdentifier ().substring (0, offset - tokenOffset).trim ();
             
             //S ystem.out.println("CodeCompletion: (syntax) start=" + start + ": stoken=" + token);
