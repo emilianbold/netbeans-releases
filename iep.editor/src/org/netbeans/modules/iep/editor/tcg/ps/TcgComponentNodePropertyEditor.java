@@ -337,7 +337,8 @@ public abstract class TcgComponentNodePropertyEditor implements PropertyEditor, 
     }
     
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyEditor");   
+        //return new HelpCtx("org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyEditor");   
+        return new HelpCtx("iep_work_iepops");   
     }
 
  }

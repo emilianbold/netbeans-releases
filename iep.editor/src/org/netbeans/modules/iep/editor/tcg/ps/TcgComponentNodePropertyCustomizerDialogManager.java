@@ -29,6 +29,7 @@ import java.awt.event.*;
 import javax.swing.JButton;
 import javax.swing.UIManager;
 import org.openide.explorer.propertysheet.PropertyEnv;
+import org.openide.util.HelpCtx;
 
 
 /**
@@ -109,7 +110,7 @@ public class TcgComponentNodePropertyCustomizerDialogManager {
         DialogDescriptor descriptor = new DialogDescriptor(
                 mCustomizer, mTitle, isModal, mOptions, mDefaultOption,
                 DialogDescriptor.DEFAULT_ALIGN, null, mActionListener);
-        
+        descriptor.setHelpCtx(new HelpCtx("iep_work_iepops"));
         mDialog = org.openide.DialogDisplayer.getDefault().createDialog(descriptor);
         // mDialog closing reactions
         mDialog.addWindowListener(new WindowAdapter() {
