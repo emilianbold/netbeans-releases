@@ -425,7 +425,12 @@ public class GlassFishUtils {
         saveDomainXmlDocument(location, domainName, document);
     }
     
+    @Deprecated
     public static void addJvmOption(File location, String domainName, String option) throws IOException, XMLException {
+        setJvmOption(location, domainName, option);
+    }    
+    
+    public static void setJvmOption(File location, String domainName, String option) throws IOException, XMLException {
         final Document document =
                 getDomainXmlDocument(location, domainName);
         

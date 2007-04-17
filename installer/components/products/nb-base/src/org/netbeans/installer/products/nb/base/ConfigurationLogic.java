@@ -22,12 +22,12 @@ package org.netbeans.installer.products.nb.base;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.ProductConfigurationLogic;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.LogManager;
-import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.applications.NetBeansUtils;
@@ -39,6 +39,7 @@ import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.FilesList;
 import org.netbeans.installer.utils.helper.Shortcut;
 import org.netbeans.installer.utils.helper.ShortcutLocationType;
+import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.wizard.Wizard;
 import org.netbeans.installer.wizard.components.WizardComponent;
@@ -184,6 +185,32 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         } catch (IOException e) {
             throw new InstallationException(
                     getString("CL.install.error.netbeans.conf"),  // NOI18N
+                    e);
+        }
+        
+        /////////////////////////////////////////////////////////////////////////////
+        try {
+            progress.setDetail(getString("CL.install.glassfish.integration")); // NOI18N
+            
+            final List<Product> glassfishes =
+                    Registry.getInstance().getProducts("glassfish");
+            for (Product glassfish: glassfishes) {
+                if (glassfish.getStatus() == Status.INSTALLED) {
+                    final File gfLocation = glassfish.getInstallationLocation();
+                    
+                    if (gfLocation != null) {
+                        NetBeansUtils.setJvmOption(
+                                installLocation,
+                                JVM_OPTION_NAME,
+                                gfLocation.getAbsolutePath(),
+                                true);
+                        break;
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new InstallationException(
+                    getString("CL.install.error.glassfish.integration"),  // NOI18N
                     e);
         }
         
@@ -361,4 +388,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         "Programming", // NOI18N
         "Development" // NOI18N
     };
+    
+    public static final String JVM_OPTION_NAME =
+            "-Dcom.sun.aas.installRoot"; // NOI18N
 }

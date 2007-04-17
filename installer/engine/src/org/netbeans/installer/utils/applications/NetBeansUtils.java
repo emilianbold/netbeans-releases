@@ -27,7 +27,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileUtils;
-import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.helper.FilesList;
@@ -205,87 +204,114 @@ public class NetBeansUtils {
         FileUtils.writeFile(netbeansconf, contents);
     }
     
-    public static void addJvmOption(File nbLocation, String optionName) throws IOException {
-        addJvmOption(nbLocation, optionName, null, false);
+    public static String getJvmOption(File nbLocation, String name) throws IOException {
+        return getJvmOption(nbLocation, name, "=");
     }
     
-    public static void addJvmOption(File nbLocation, String optionName, String optionValue) throws IOException {
-        addJvmOption(nbLocation, optionName, optionValue, false);
-    }
-    
-    public static void addJvmOption(File nbLocation, String optionName, String optionValue, boolean quote) throws IOException {
+    public static String getJvmOption(File nbLocation, String name, String separator) throws IOException {
         final File netbeansconf = new File(nbLocation, NETBEANS_CONF);
         
-        final String correctOptionName = StringUtils.escapeRegExp(optionName);
+        final String pattern = StringUtils.format(
+                NETBEANS_OPTIONS_PATTERN,
+                StringUtils.escapeRegExp(name),
+                StringUtils.escapeRegExp(separator));
         
-        String contents = FileUtils.readFile(netbeansconf);
-        
-        String newOption = "-J" + optionName + (optionValue != null ? "=" + (quote ? "\\\"" : "") + optionValue + (quote ? "\\\"" : "") : "");
-        
-        Matcher matcher = Pattern.compile(
-                NETBEANS_OPTIONS +
-                "\"(.*?)( )?(-J" + correctOptionName + "(?:=.*?(?= |(?<!\\\\)\"))?)( )?(.*)?\"").matcher(contents);
-        
-        if (!matcher.find()) {
-            contents = contents.replace(
-                    NETBEANS_OPTIONS + "\"",
-                    NETBEANS_OPTIONS + "\"" + newOption + " ");
-            contents = contents.replace(newOption + " \"", newOption + "\"");
-        }
-        
-        FileUtils.writeFile(netbeansconf, contents);
-    }
-    
-    public static void setJvmOption(File nbLocation, String optionName) throws IOException {
-        setJvmOption(nbLocation, optionName, null, false);
-    }
-    
-    public static void setJvmOption(File nbLocation, String optionName, String optionValue) throws IOException {
-        setJvmOption(nbLocation, optionName, optionValue, false);
-    }
-    
-    public static void setJvmOption(File nbLocation, String optionName, String optionValue, boolean quote) throws IOException {
-        final File netbeansconf = new File(nbLocation, NETBEANS_CONF);
-        
-        final String correctOptionName = StringUtils.escapeRegExp(optionName);
-        
-        String contents = FileUtils.readFile(netbeansconf);
-        
-        String newOption = "-J" + optionName + (optionValue != null ? "=" + (quote ? "\\\"" : "") + optionValue + (quote ? "\\\"" : "") : "");
-        
-        Matcher matcher = Pattern.compile(NETBEANS_OPTIONS +
-                "\"(.*?)( )?(-J" + correctOptionName + "(?:=.*?(?= |(?<!\\\\)\"))?)( )?(.*)?\"").matcher(contents);
+        final Matcher matcher =
+                Pattern.compile(pattern).matcher(FileUtils.readFile(netbeansconf));
         
         if (matcher.find()) {
-            contents = matcher.replaceAll(
-                    NETBEANS_OPTIONS + "\"$1$2" + StringUtils.escapeRegExp(newOption) + "$4$5\"");
+            String value = matcher.group(4);
+            if (value == null) {
+                value = matcher.group(5);
+            }
+            if (value == null) {
+                value = matcher.group(6);
+            }
+            
+            return value;
+        } else {
+            return null;
+        }
+    }
+    
+    @Deprecated
+    public static void addJvmOption(File nbLocation, String name) throws IOException {
+        setJvmOption(nbLocation, name, null);
+    }
+    
+    @Deprecated
+    public static void addJvmOption(File nbLocation, String name, String value) throws IOException {
+        setJvmOption(nbLocation, name, value);
+    }
+    
+    @Deprecated
+    public static void addJvmOption(File nbLocation, String name, String value, boolean quote) throws IOException {
+        setJvmOption(nbLocation, name, value, quote);
+    }
+    
+    @Deprecated
+    public static void addJvmOption(File nbLocation, String name, String value, boolean quote, String separator) throws IOException {
+        setJvmOption(nbLocation, name, value, quote, separator);
+    }
+    
+    public static void setJvmOption(File nbLocation, String name) throws IOException {
+        setJvmOption(nbLocation, name, null, false);
+    }
+    
+    public static void setJvmOption(File nbLocation, String name, String value) throws IOException {
+        setJvmOption(nbLocation, name, value, false);
+    }
+    
+    public static void setJvmOption(File nbLocation, String name, String value, boolean quote) throws IOException {
+        setJvmOption(nbLocation, name, value, quote, "=");
+    }
+    
+    public static void setJvmOption(File nbLocation, String name, String value, boolean quote, String separator) throws IOException {
+        final File netbeansconf = new File(nbLocation, NETBEANS_CONF);
+        final String option = "-J" + name + (value != null ?
+            separator + (quote ? "\\\"" : "") + value + (quote ? "\\\"" : "") : "");
+        
+        final String pattern = StringUtils.format(
+                NETBEANS_OPTIONS_PATTERN,
+                StringUtils.escapeRegExp(name),
+                StringUtils.escapeRegExp(separator));
+        
+        String contents = FileUtils.readFile(netbeansconf);
+        final Matcher matcher =
+                Pattern.compile(pattern).matcher(contents);
+        
+        if (matcher.find()) {
+            contents = contents.replace(matcher.group(3), option);
         } else {
             contents = contents.replace(
                     NETBEANS_OPTIONS + "\"",
-                    NETBEANS_OPTIONS + "\"" + newOption + " ");
-            contents = contents.replace(newOption + " \"", newOption + "\"");
+                    NETBEANS_OPTIONS + "\"" + option + " ");
         }
         
         FileUtils.writeFile(netbeansconf, contents);
     }
     
-    public static void removeJvmOption(File nbLocation, String optionName) throws IOException {
-        File netbeansconf = new File(nbLocation, NETBEANS_CONF);
+    public static void removeJvmOption(File nbLocation, String name) throws IOException {
+        removeJvmOption(nbLocation, name, "=");
+    }
+    
+    public static void removeJvmOption(File nbLocation, String name, String separator) throws IOException {
+        final File netbeansconf = new File(nbLocation, NETBEANS_CONF);
         
         String contents = FileUtils.readFile(netbeansconf);
         
-        String correctOptionName = StringUtils.escapeRegExp(optionName);
+        final String pattern = StringUtils.format(
+                NETBEANS_OPTIONS_PATTERN,
+                StringUtils.escapeRegExp(name),
+                StringUtils.escapeRegExp(separator));
         
-        Matcher matcher = Pattern.compile(NETBEANS_OPTIONS +
-                "\"(?:.*?)(?: )?(-J" + correctOptionName + "(?:=.*?(?= |(?<!\\\\)\"))?)(?: )?(?:.*)?\"").matcher(contents);
+        final Matcher matcher =
+                Pattern.compile(pattern).matcher(contents);
         
         if (matcher.find()) {
-            matcher.reset();
-            while (matcher.find()) {
-                contents = contents.replace(" " + matcher.group(1), "");
-                contents = contents.replace(matcher.group(1) + " ", "");
-                contents = contents.replace(matcher.group(1), "");
-            }
+            contents = contents.replace(" " + matcher.group(3), "");
+            contents = contents.replace(matcher.group(3) + " ", "");
+            contents = contents.replace(matcher.group(3), "");
         }
         
         FileUtils.writeFile(netbeansconf, contents);
@@ -304,17 +330,13 @@ public class NetBeansUtils {
      *         If there is no such option then return 0;
      */
     public static long getJvmMemorySize(File nbLocation, String memoryType) throws IOException {
-        File netbeansconf = new File(nbLocation, NETBEANS_CONF);
-        String contents =  FileUtils.readFile(netbeansconf);
+        final String size = getJvmOption(nbLocation, memoryType, "");
         
-        Matcher memoryMatcher = Pattern.compile(
-                StringUtils.NEW_LINE_PATTERN +
-                NETBEANS_OPTIONS +
-                "\"(.*?)-J" +
-                memoryType +
-                "(" + DIGITS_PATTERN + MEMORY_SUFFIX_PATTERN + ")" +
-                "(.*?)\"").matcher(contents);
-        return (memoryMatcher.find()) ? getJavaMemorySize(memoryMatcher.group(2)) : 0;
+        if (size != null) {
+            return getJavaMemorySize(size);
+        } else {
+            return 0;
+        }
     }
     
     /**
@@ -328,45 +350,8 @@ public class NetBeansUtils {
      *          </ul>
      * @param value Size of memory to be set
      */
-    public static void setJvmMemorySize(File nbLocation, String memoryType, long value) throws IOException {
-        File netbeansconf = new File(nbLocation, NETBEANS_CONF);
-        String contents = FileUtils.readFile(netbeansconf);
-        
-        Matcher matcher = Pattern.compile(
-                "(\r\n|\n|\r)" +
-                NETBEANS_OPTIONS +
-                "\"(.*?)-J" +
-                memoryType +
-                "(" + DIGITS_PATTERN + MEMORY_SUFFIX_PATTERN + ")" +
-                "(.*?)\"").matcher(contents);
-        if(matcher.find()) {
-            
-            contents = matcher.replaceAll(
-                    "$1" +
-                    NETBEANS_OPTIONS +
-                    "\""+
-                    "$2" +
-                    formatJavaMemoryString(memoryType, value) + "$4\"");
-            
-        }  else {
-            matcher = Pattern.compile(
-                    "(\r\n|\n|\r)" +
-                    NETBEANS_OPTIONS +
-                    "\""+
-                    "(.*?)").matcher(contents);
-            if(matcher.find()) {
-                contents = matcher.replaceAll(
-                        "$1" +
-                        NETBEANS_OPTIONS +
-                        "\"" +
-                        formatJavaMemoryString(memoryType, value) + " $2");
-            }
-        }
-        contents = contents.replace(
-                NETBEANS_OPTIONS + "\" ",
-                NETBEANS_OPTIONS + "\"");
-        FileUtils.writeFile(netbeansconf, contents);
-        
+    public static void setJvmMemorySize(File nbLocation, String memoryType, long size) throws IOException {
+        setJvmOption(nbLocation, memoryType, formatJavaMemoryString(size), false, "");
     }
     
     public static File getNbCluster(File nbLocation) {
@@ -451,21 +436,26 @@ public class NetBeansUtils {
      */
     public static boolean warnNetbeansRunning(File nbLocation) {
         try {
-            boolean isRun = isNbRunning(nbLocation);
-            if(isRun) {
-                String warning = StringUtils.format(
-                        ResourceUtils.getString(NetBeansUtils.class,
-                        "NU.warning.running"),// NOI18N
+            boolean isRunning = isNbRunning(nbLocation);
+            if (isRunning) {
+                final String message = ResourceUtils.getString(
+                        NetBeansUtils.class,
+                        "NU.warning.running"); // NOI18N
+                final String warning = StringUtils.format(
+                        message,
                         nbLocation,
                         NetBeansUtils.getLockFile(nbLocation));
+                
                 ErrorManager.notifyWarning(warning);
             }
-            return isRun;
-        } catch (IOException ex) {
-            LogManager.log("Can`t say for sure if NetBeans is running or not");
-            LogManager.log(ex);
-            return false;
+            return isRunning;
+        } catch (IOException e) {
+            ErrorManager.notifyDebug(
+                    "Can`t say for sure if NetBeans is running or not",
+                    e);
         }
+        
+        return false;
     }
     
     public static void updateNetBeansHome(final File nbLocation) throws IOException {
@@ -476,30 +466,24 @@ public class NetBeansUtils {
     }
     
     // private //////////////////////////////////////////////////////////////////////
-    private static long getJavaMemorySize(String sizeString) {
-        String suffix = sizeString.substring(sizeString.length()-1);
+    private static long getJavaMemorySize(String string) {
+        String suffix = string.substring(string.length() - 1);
         
         if(!suffix.matches(DIGITS_PATTERN)) {
-            long value = new Long(sizeString.substring(0, sizeString.length()-1)).longValue();
+            long value = Long.parseLong(string.substring(0, string.length() - 1));
             if(suffix.equalsIgnoreCase("k")) {
-                value*=K;
+                value *= K;
             } else if(suffix.equalsIgnoreCase("m")) {
-                value*=M;
+                value *= M;
             } else if(suffix.equalsIgnoreCase("g")) {
-                value*=G;
+                value *= G;
             } else if(suffix.equalsIgnoreCase("t")) {
-                value*=T;
+                value *= T;
             }
             return value;
         } else {
-            return new Long(sizeString).longValue() * M; // default - megabytes
+            return new Long(string).longValue() * M; // default - megabytes
         }
-    }
-    
-    private static String formatJavaMemoryString(String type, long size) {
-        return (size > 0) ?
-            "-J" + type + formatJavaMemoryString(size) :
-            StringUtils.EMPTY_STRING;
     }
     
     private static String formatJavaMemoryString(long size) {
@@ -557,6 +541,9 @@ public class NetBeansUtils {
             "netbeans_jdkhome="; // NOI18N
     public static final String NETBEANS_OPTIONS =
             "netbeans_default_options="; // NOI18N
+    
+    public static final String NETBEANS_OPTIONS_PATTERN =
+            NETBEANS_OPTIONS + "\"(.*?)( ?)(-J{0}(?:{1}\\\\\\\"(.*?)\\\\\\\"|{1}(.*?)|())(?= |\"))( ?)(.*)?\"";
     
     public static final String NB_IDE_ID =
             "NB"; // NOI18N

@@ -60,7 +60,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     }
     
     // configuration logic implementation ///////////////////////////////////////////
-    public void install(Progress progress) throws InstallationException {
+    public void install(final Progress progress)
+            throws InstallationException {
         final File directory = getProduct().getInstallationLocation();
         
         final String username  = getProperty(GlassFishPanel.USERNAME_PROPERTY);
@@ -293,7 +294,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         
         /////////////////////////////////////////////////////////////////////////////
         try {
-            progress.setDetail(getString("CL.install.create.domain")); // NOI18N
+            progress.setDetail(getString("CL.install.extra.files")); // NOI18N
             
             list.add(new File(directory, DOMAINS_SUBDIR));
             list.add(new File(directory, DERBY_LOG));
@@ -307,10 +308,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         try {
             progress.setDetail(getString("CL.install.ide.integration")); // NOI18N
             
-            List<Product> ides = Registry.getInstance().getProducts("nb-base");
+            final List<Product> ides =
+                    Registry.getInstance().getProducts("nb-base");
             for (Product ide: ides) {
                 if (ide.getStatus() == Status.INSTALLED) {
-                    File nbLocation = ide.getInstallationLocation();
+                    final File nbLocation = ide.getInstallationLocation();
                     
                     if (nbLocation != null) {
                         NetBeansUtils.setJvmOption(
@@ -331,14 +333,45 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         progress.setPercentage(Progress.COMPLETE);
     }
     
-    public void uninstall(Progress progress) throws UninstallationException {
-        File installLocation = getProduct().getInstallationLocation();
+    public void uninstall(final Progress progress)
+            throws UninstallationException {
+        File directory = getProduct().getInstallationLocation();
+        
+        /////////////////////////////////////////////////////////////////////////////
+        try {
+            progress.setDetail(getString("CL.uninstall.ide.integration")); // NOI18N
+            
+            final List<Product> ides =
+                    Registry.getInstance().getProducts("nb-base");
+            for (Product ide: ides) {
+                if (ide.getStatus() == Status.INSTALLED) {
+                    final File nbLocation = ide.getInstallationLocation();
+                    
+                    if (nbLocation != null) {
+                        final String value = NetBeansUtils.getJvmOption(
+                                nbLocation,
+                                JVM_OPTION_NAME);
+                        
+                        if ((value != null) && 
+                                (value.equals(directory.getAbsolutePath()))) {
+                            NetBeansUtils.removeJvmOption(
+                                    nbLocation,
+                                    JVM_OPTION_NAME);
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new UninstallationException(
+                    getString("CL.uninstall.error.ide.integration"), // NOI18N
+                    e);
+        }
         
         /////////////////////////////////////////////////////////////////////////////
         try {
             progress.setDetail(getString("CL.uninstall.delete.domain")); // NOI18N
             
-            GlassFishUtils.deleteDomain(installLocation, DOMAIN_NAME);
+            GlassFishUtils.deleteDomain(directory, DOMAIN_NAME);
         } catch (IOException e) {
             throw new UninstallationException(
                     getString("CL.uninstall.error.delete.domain"), // NOI18N
@@ -350,40 +383,40 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             progress.setDetail(getString("CL.uninstall.extra.files")); // NOI18N
             
             if (SystemUtils.isWindows()) {
-                FileUtils.deleteFile(new File(installLocation, ASENV_BAT));
-                FileUtils.deleteFile(new File(installLocation, ASADMIN_BAT));
-                FileUtils.deleteFile(new File(installLocation, ASANT_BAT));
-                FileUtils.deleteFile(new File(installLocation, APPCLIENT_BAT));
-                FileUtils.deleteFile(new File(installLocation, JSPC_BAT));
-                FileUtils.deleteFile(new File(installLocation, PACKAGE_APPCLIENT_BAT));
-                FileUtils.deleteFile(new File(installLocation, VERIFIER_BAT));
-                FileUtils.deleteFile(new File(installLocation, ASUPGRADE_BAT));
-                FileUtils.deleteFile(new File(installLocation, CAPTURE_SCHEMA_BAT));
-                FileUtils.deleteFile(new File(installLocation, WSIMPORT_BAT));
-                FileUtils.deleteFile(new File(installLocation, WSGEN_BAT));
-                FileUtils.deleteFile(new File(installLocation, SCHEMAGEN_BAT));
-                FileUtils.deleteFile(new File(installLocation, XJC_BAT));
-                FileUtils.deleteFile(new File(installLocation, ASAPT_BAT));
-                FileUtils.deleteFile(new File(installLocation, WSCOMPILE_BAT));
-                FileUtils.deleteFile(new File(installLocation, WSDEPLOY_BAT));
+                FileUtils.deleteFile(new File(directory, ASENV_BAT));
+                FileUtils.deleteFile(new File(directory, ASADMIN_BAT));
+                FileUtils.deleteFile(new File(directory, ASANT_BAT));
+                FileUtils.deleteFile(new File(directory, APPCLIENT_BAT));
+                FileUtils.deleteFile(new File(directory, JSPC_BAT));
+                FileUtils.deleteFile(new File(directory, PACKAGE_APPCLIENT_BAT));
+                FileUtils.deleteFile(new File(directory, VERIFIER_BAT));
+                FileUtils.deleteFile(new File(directory, ASUPGRADE_BAT));
+                FileUtils.deleteFile(new File(directory, CAPTURE_SCHEMA_BAT));
+                FileUtils.deleteFile(new File(directory, WSIMPORT_BAT));
+                FileUtils.deleteFile(new File(directory, WSGEN_BAT));
+                FileUtils.deleteFile(new File(directory, SCHEMAGEN_BAT));
+                FileUtils.deleteFile(new File(directory, XJC_BAT));
+                FileUtils.deleteFile(new File(directory, ASAPT_BAT));
+                FileUtils.deleteFile(new File(directory, WSCOMPILE_BAT));
+                FileUtils.deleteFile(new File(directory, WSDEPLOY_BAT));
             } else {
-                FileUtils.deleteFile(new File(installLocation, ASENV_CONF));
-                FileUtils.deleteFile(new File(installLocation, UNINSTALL));
-                FileUtils.deleteFile(new File(installLocation, ASADMIN));
-                FileUtils.deleteFile(new File(installLocation, ASANT));
-                FileUtils.deleteFile(new File(installLocation, APPCLIENT));
-                FileUtils.deleteFile(new File(installLocation, JSPC));
-                FileUtils.deleteFile(new File(installLocation, PACKAGE_APPCLIENT));
-                FileUtils.deleteFile(new File(installLocation, VERIFIER));
-                FileUtils.deleteFile(new File(installLocation, ASUPGRADE));
-                FileUtils.deleteFile(new File(installLocation, CAPTURE_SCHEMA));
-                FileUtils.deleteFile(new File(installLocation, WSIMPORT));
-                FileUtils.deleteFile(new File(installLocation, WSGEN));
-                FileUtils.deleteFile(new File(installLocation, XJC));
-                FileUtils.deleteFile(new File(installLocation, SCHEMAGEN));
-                FileUtils.deleteFile(new File(installLocation, ASAPT));
-                FileUtils.deleteFile(new File(installLocation, WSCOMPILE));
-                FileUtils.deleteFile(new File(installLocation, WSDEPLOY));
+                FileUtils.deleteFile(new File(directory, ASENV_CONF));
+                FileUtils.deleteFile(new File(directory, UNINSTALL));
+                FileUtils.deleteFile(new File(directory, ASADMIN));
+                FileUtils.deleteFile(new File(directory, ASANT));
+                FileUtils.deleteFile(new File(directory, APPCLIENT));
+                FileUtils.deleteFile(new File(directory, JSPC));
+                FileUtils.deleteFile(new File(directory, PACKAGE_APPCLIENT));
+                FileUtils.deleteFile(new File(directory, VERIFIER));
+                FileUtils.deleteFile(new File(directory, ASUPGRADE));
+                FileUtils.deleteFile(new File(directory, CAPTURE_SCHEMA));
+                FileUtils.deleteFile(new File(directory, WSIMPORT));
+                FileUtils.deleteFile(new File(directory, WSGEN));
+                FileUtils.deleteFile(new File(directory, XJC));
+                FileUtils.deleteFile(new File(directory, SCHEMAGEN));
+                FileUtils.deleteFile(new File(directory, ASAPT));
+                FileUtils.deleteFile(new File(directory, WSCOMPILE));
+                FileUtils.deleteFile(new File(directory, WSDEPLOY));
             }
         } catch (IOException e) {
             throw new UninstallationException(
@@ -492,10 +525,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             "lib/install/templates/asenv.conf.template"; // NOI18N
     public static final String ASENV_CONF =
             "config/asenv.conf"; // NOI18N
-    public static final String ASADMINENV_CONF =
-            "config/asadminenv.conf"; // NOI18N
+    
     public static final String ASADMINENV_CONF_TEMPLATE =
             "lib/install/templates/asadminenv.conf"; // NOI18N
+    public static final String ASADMINENV_CONF =
+            "config/asadminenv.conf"; // NOI18N
     
     public static final String UNINSTALL_TEMPLATE =
             "lib/install/templates/uninstall.template"; // NOI18N
@@ -623,12 +657,12 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             "%HTTP_PORT%"; //NOI18N
     public static final String ADMIN_PORT_TOKEN =
             "%ADMIN_PORT%"; //NOI18N
-    public static final String AS_ADMIN_PORT_TOKEN = 
+    public static final String AS_ADMIN_PORT_TOKEN =
             "%AS_ADMIN_PORT%"; //NOI18N
     public static final String AS_ADMIN_PROFILE_TOKEN =
-            "%AS_ADMIN_PROFILE%";//NOI18N
+            "%AS_ADMIN_PROFILE%"; //NOI18N
     public static final String AS_ADMIN_SECURE_TOKEN =
-            "%AS_ADMIN_SECURE%";//NOI18N
+            "%AS_ADMIN_SECURE%"; //NOI18N
     
     public static final String UC_INSTALL_HOME_TOKEN =
             "@INSTALL_HOME@";
@@ -658,9 +692,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public static final String UC_EXT_LIB =
             "lib/appserv-admin.jar"; //NOI18N
     public static final String AS_ADMIN_PROFILE =
-            "developer";//NOI18N
+            "developer"; //NOI18N
     public static final String AS_ADMIN_SECURE =
-            "false";//NOI18N
+            "false"; //NOI18N
     public static final String BIN_SUBDIR =
             "bin"; // NOI18N
     
@@ -680,7 +714,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     
     public static final String DOMAINS_DOMAIN1_IMQ_SUBDIR =
             "domains/" + DOMAIN_NAME + "/imq"; // NOI18N
-
+    
     public static final String IMQENV_CONF_ADDITION =
             "        set IMQ_DEFAULT_JAVAHOME={0}\n" + // NOI18N
             "        set IMQ_DEFAULT_VARHOME={1}\n"; // NOI18N
