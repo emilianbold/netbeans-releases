@@ -85,6 +85,8 @@ public class UpdateUnitProviderPanel extends javax.swing.JPanel {
                             isOk = false;
                         } catch (URISyntaxException x) {
                             isOk = false;
+                        } catch (IllegalArgumentException x) {
+                            isOk = false;
                         }
                     }
                     return isOk;
