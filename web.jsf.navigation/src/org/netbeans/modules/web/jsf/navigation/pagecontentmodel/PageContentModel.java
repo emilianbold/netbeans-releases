@@ -13,10 +13,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.openide.util.actions.SystemAction;
-
 /**
  *
  * @author joelle lam
@@ -42,7 +41,7 @@ public abstract class PageContentModel {
      * retrive all actions specific to this ndoe 
      * @return actions
      */
-    public abstract SystemAction[] getActions();
+    public abstract Action[] getActions();
     
     private Set<? extends PageContentItem> pageContentItems = new HashSet<PageContentItem>();
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);

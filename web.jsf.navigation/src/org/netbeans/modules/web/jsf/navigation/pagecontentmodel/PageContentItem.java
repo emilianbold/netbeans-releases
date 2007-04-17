@@ -34,8 +34,8 @@ public class PageContentItem {
      *
      * @return
      */
-    public List<Action> getActions() {
-        return actions;
+    public Action[] getActions() {
+        return new Action[]{};
     }
     
     /**

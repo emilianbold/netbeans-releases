@@ -43,6 +43,7 @@ import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.TopComponent;
 import javax.swing.Action;
+import org.netbeans.modules.web.jsf.navigation.PinNode;
 
 /**
  *
@@ -90,7 +91,7 @@ public class PageFlowPopupProvider implements PopupMenuProvider {
             if( obj instanceof PageFlowNode ) {
                 PageFlowNode pageNode = (PageFlowNode)obj;
                 Action[] actions;
-                Action[] pageNodeActions = pageNode.getActions();
+                Action[] pageNodeActions = pageNode.getActions(true);
                 Action[] fileSystemActions = SystemFileSystemSupport.getActions(PATH_PAGEFLOW_NODE_ACTIONS);
                 if( pageNodeActions == null || pageNodeActions.length == 0 ){
                     actions = fileSystemActions;
@@ -101,6 +102,10 @@ public class PageFlowPopupProvider implements PopupMenuProvider {
                     System.arraycopy(fileSystemActions, 0, actions, 0, fileSystemActions.length);
                     System.arraycopy(pageNodeActions, 0, actions, fileSystemActions.length, pageNodeActions.length);                    
                 }
+                return Utilities.actionsToPopup(actions, tc.getLookup());
+            } else if ( obj instanceof PinNode ){
+                PinNode pinNode = (PinNode)obj;
+                Action[] actions = pinNode.getActions();
                 return Utilities.actionsToPopup(actions, tc.getLookup());
             }
             return Utilities.actionsToPopup(
