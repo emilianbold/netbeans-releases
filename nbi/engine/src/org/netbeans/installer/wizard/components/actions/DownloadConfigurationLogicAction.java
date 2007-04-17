@@ -27,6 +27,7 @@ import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.exceptions.InstallationException;
@@ -44,6 +45,25 @@ public class DownloadConfigurationLogicAction extends WizardAction {
             ResourceUtils.getString(DownloadConfigurationLogicAction.class,
             "DCLA.description"); // NOI18N
     
+    
+    public static final String DEFAULT_PROGRESS_TITLE_LOCAL =
+            ResourceUtils.getString(DownloadConfigurationLogicAction.class,
+            "DCLA.progress.local.title"); //NOI18N    
+    public static final String PROGRESS_TITLE_LOCAL_PROPERTY =
+            "progress.title.local";//NOI18N
+    
+    public static final String DEFAULT_PROGRESS_TITLE_REMOTE =
+            ResourceUtils.getString(DownloadConfigurationLogicAction.class,
+            "DCLA.progress.remote.title"); //NOI18N
+    public static final String PROGRESS_TITLE_REMOTE_PROPERTY =
+            "progress.title.remote";//NOI18N      
+    
+    public static final String DEFAULT_DOWNLOAD_FAILED_EXCEPTION =
+            ResourceUtils.getString(DownloadConfigurationLogicAction.class,
+            "DCLA.failed"); //NOI18N
+    public static final String DOWNLOAD_FAILED_EXCEPTION_PROPERTY =
+            "download.failed";//NOI18N      
+    
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     private CompositeProgress overallProgress;
@@ -52,6 +72,9 @@ public class DownloadConfigurationLogicAction extends WizardAction {
     public DownloadConfigurationLogicAction() {
         setProperty(TITLE_PROPERTY, DEFAULT_TITLE);
         setProperty(DESCRIPTION_PROPERTY, DEFAULT_DESCRIPTION);
+        setProperty(PROGRESS_TITLE_LOCAL_PROPERTY, DEFAULT_PROGRESS_TITLE_LOCAL);
+        setProperty(PROGRESS_TITLE_REMOTE_PROPERTY, DEFAULT_PROGRESS_TITLE_REMOTE);
+        setProperty(DOWNLOAD_FAILED_EXCEPTION_PROPERTY, DEFAULT_DOWNLOAD_FAILED_EXCEPTION);
     }
     
     public boolean canExecuteForward() {
@@ -84,11 +107,13 @@ public class DownloadConfigurationLogicAction extends WizardAction {
             
             overallProgress.addChild(currentProgress, percentageChunk);
             try {
-                if (product.getRegistryType() == RegistryType.REMOTE) {
-                    overallProgress.setTitle("Downloading configuration logic for " + product.getDisplayName());
-                } else {
-                    overallProgress.setTitle("Extracting configuration logic for " + product.getDisplayName());
-                }
+                String prop = product.getRegistryType() == RegistryType.REMOTE ?
+                    PROGRESS_TITLE_REMOTE_PROPERTY :
+                    PROGRESS_TITLE_LOCAL_PROPERTY;
+                String overallProgressTitle = StringUtils.format(
+                            getProperty(prop), product.getDisplayName());
+                
+                overallProgress.setTitle(overallProgressTitle);
                 
                 product.downloadLogic(currentProgress);
                 
@@ -105,8 +130,9 @@ public class DownloadConfigurationLogicAction extends WizardAction {
             } catch (DownloadException e) {
                 // wrap the download exception with a more user-friendly one
                 final InstallationException error = new InstallationException(
-                        "Failed to download installation logic for " + product.getDisplayName(),
-                        e);
+                        StringUtils.format(
+                        getProperty(DOWNLOAD_FAILED_EXCEPTION_PROPERTY),
+                        product.getDisplayName()), e);
                 
                 // adjust the product's status and save this error - it will
                 // be reused later at the PostInstallSummary
