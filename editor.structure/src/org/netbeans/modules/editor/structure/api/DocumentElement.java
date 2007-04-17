@@ -20,6 +20,7 @@
 
 package org.netbeans.modules.editor.structure.api;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -27,6 +28,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -69,7 +71,7 @@ public final class DocumentElement {
     DocumentElementListener deListener = null;
     HashSet<DocumentElementListener> deListeners = null;
     
-    private static final Attributes EMPTY_ATTRIBUTES = new Attributes(null, Collections.EMPTY_MAP);
+    private static final Attributes EMPTY_ATTRIBUTES = new Attributes();
     
     DocumentElement(String name, String type, Map<String,String> attrsMap,
             int startOffset, int endOffset, DocumentModel model) throws BadLocationException {
@@ -89,7 +91,7 @@ public final class DocumentElement {
         
         //lazy attributes initialization when attrs are empty
         if(!attrsMap.isEmpty()) {
-            this.attributes = new Attributes(this, attrsMap);
+            this.attributes = new Attributes(model, attrsMap);
         } else {
             this.attributes = EMPTY_ATTRIBUTES;
         }
@@ -237,7 +239,7 @@ public final class DocumentElement {
     
     //called by the model when an element's attributes has changed
     void setAttributes(Map attrs) {
-        this.attributes = new Attributes(this, attrs);
+        this.attributes = new Attributes(model, attrs);
     }
     
     
@@ -408,20 +410,49 @@ public final class DocumentElement {
     /** AttributeSet implementation. */
     
     static final class Attributes implements AttributeSet {
-        private Map attrs;
-        private DocumentElement de;
         
-        Attributes(DocumentElement element, Map<String,String> m) {
-            de = element;
-            attrs = m;
+        private String[] attr_keys, attr_vals;
+                
+        Attributes() {
+            attr_keys = null;
+            attr_vals = null;
         }
         
+        Attributes(DocumentModel model, Map<String,String> m) {
+            attr_keys = new String[m.size()];
+            attr_vals = new String[m.size()];
+            initAttrs(model, m);
+        }
+        
+        private void initAttrs(DocumentModel model, Map<String, String> m) {
+            int i = 0;
+            for(String k : m.keySet()) {
+                if(!model.elementsAttrNamesCache.containsKey(k)) {
+                    model.elementsAttrNamesCache.put(k, k);
+                }
+                attr_keys[i] = model.elementsAttrNamesCache.get(k);
+                String v = m.get(k);
+                if(!model.elementsAttrValueCache.containsKey(v)) {
+                    model.elementsAttrValueCache.put(v, v);
+                }
+                attr_vals[i++] = model.elementsAttrValueCache.get(v);
+            }
+        }
+        
+        private List keys() {
+            if(attr_keys == null) {
+                return Collections.EMPTY_LIST;
+            } else {
+                return Arrays.asList(attr_keys);
+            }
+        }
+         
         public int getAttributeCount() {
-            return attrs.size();
+            return attr_keys == null ? 0 : attr_keys.length;
         }
         
         public boolean isDefined(Object attrName) {
-            return attrs.containsKey(attrName);
+            return keys().contains(attrName);
         }
         
         public boolean isEqual(AttributeSet attr) {
@@ -430,17 +461,23 @@ public final class DocumentElement {
         }
         
         public AttributeSet copyAttributes() {
-            HashMap clone = new HashMap(getAttributeCount());
-            clone.putAll(attrs);
-            return new Attributes(de, clone);
+            return this; //we are immutable
         }
         
         public Object getAttribute(Object key) {
-            return attrs.get(key);
+            if(attr_keys == null) {
+                return null;
+            }
+            for(int i = 0; i < attr_keys.length; i++) {
+                if(attr_keys[i].equals(key)) {
+                    return attr_vals[i];
+                }
+            }
+            return null;
         }
         
         public Enumeration<?> getAttributeNames() {
-            return Collections.enumeration(attrs.keySet());
+            return Collections.enumeration(keys());
         }
         
         public boolean containsAttribute(Object name, Object value) {
@@ -472,7 +509,7 @@ public final class DocumentElement {
         }
         
         public AttributeSet getResolveParent() {
-            return de.getParentElement() != null ? de.getParentElement().getAttributes() : null;
+            return null;
         }
         
         public int compareTo(AttributeSet as) {

@@ -151,6 +151,8 @@ public final class DocumentModel {
 
     final Map<String,String> elementsNamesCache = new WeakHashMap<String,String>();
     final Map<String,String> elementsTypesCache = new WeakHashMap<String,String>();
+    final Map<String,String> elementsAttrNamesCache = new WeakHashMap<String,String>();
+    final Map<String,String> elementsAttrValueCache = new WeakHashMap<String,String>();
     
     
     DocumentModel(Document doc, DocumentModelProvider provider) throws DocumentModelException {
