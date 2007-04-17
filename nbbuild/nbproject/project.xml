@@ -169,6 +169,7 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- To update, run: ant -f nbbuild/build.xml check-module-configs -->
                 <project>../ant</project>
                 <project>../ant/browsetask</project>
+                <project>../ant/debugger</project>
                 <project>../ant/freeform</project>
                 <project>../ant/grammar</project>
                 <project>../ant/project</project>
