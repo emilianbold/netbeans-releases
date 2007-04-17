@@ -26,9 +26,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.usages.IndexUtil;
+import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
@@ -56,14 +56,13 @@ public abstract class SourceTestSupport extends NbTestCase {
         super(testName);
     }
     
-    
     protected void setUp() throws Exception {
-//        MockServices.setServices(FakeJavaDataLoaderPool.class, RepositoryImpl.class, ClassPathProviderImpl.class);
         clearWorkDir();
         ClassPathProviderImpl classPathProvider = new ClassPathProviderImpl(new FileObject[]{FileUtil.toFileObject(getWorkDir())});
         setLookups(
                 classPathProvider,
-                new FakeJavaDataLoaderPool()
+                new FakeJavaDataLoaderPool(),
+                new TestSourceLevelQueryImplementation()
                 );
         initTemplates();
         setCacheFolder();
@@ -152,4 +151,11 @@ public abstract class SourceTestSupport extends NbTestCase {
         }
     }
     
+    public static final class TestSourceLevelQueryImplementation implements SourceLevelQueryImplementation {
+        
+        public String getSourceLevel(FileObject javaFile) {
+            return "1.5";
+        }
+        
+    }
 }
