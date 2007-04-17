@@ -21,17 +21,15 @@
 package org.netbeans.installer.utils.applications;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
+import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
-import org.netbeans.installer.utils.SystemUtils;
-import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.FilesList;
 
 /**
@@ -447,10 +445,33 @@ public class NetBeansUtils {
         return new File(getNetBeansUserDirFile(nbLocation), "lock");
     }
     
+    /**
+     *  Test for running NetBeans IDE.<br>
+     *  If the lock file exist - issue a warning but do not throw an exception
+     */
+    public static boolean warnNetbeansRunning(File nbLocation) {
+        try {
+            boolean isRun = isNbRunning(nbLocation);
+            if(isRun) {
+                String warning = StringUtils.format(
+                        ResourceUtils.getString(NetBeansUtils.class,
+                        "NU.warning.running"),// NOI18N
+                        nbLocation,
+                        NetBeansUtils.getLockFile(nbLocation));
+                ErrorManager.notifyWarning(warning);
+            }
+            return isRun;
+        } catch (IOException ex) {
+            LogManager.log("Can`t say for sure if NetBeans is running or not");
+            LogManager.log(ex);
+            return false;
+        }
+    }
+    
     public static void updateNetBeansHome(final File nbLocation) throws IOException {
         FileUtils.modifyFile(
-                new File(nbLocation, NETBEANS_CONF), 
-                NETBEANS_HOME_TOKEN, 
+                new File(nbLocation, NETBEANS_CONF),
+                NETBEANS_HOME_TOKEN,
                 nbLocation.getAbsolutePath());
     }
     

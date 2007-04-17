@@ -111,6 +111,8 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
     
     @Override
     public void uninstall(Progress progress) throws UninstallationException {
+        super.uninstall(progress);
+        
         final File soaLocation = getProduct().getInstallationLocation();
         
         // get the list of suitable netbeans ide installations
@@ -133,9 +135,7 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
                     getString("CL.uninstall.error.netbeans.conf.am"), // NOI18N
                     e);
         }
-        
-        /////////////////////////////////////////////////////////////////////////////
-        super.uninstall(progress);
+                
     }
     
     /////////////////////////////////////////////////////////////////////////////////

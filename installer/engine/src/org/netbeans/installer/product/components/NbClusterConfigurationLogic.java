@@ -181,8 +181,9 @@ public abstract class NbClusterConfigurationLogic extends ProductConfigurationLo
         
     }
     
-    public void uninstall(
-            final Progress progress) throws UninstallationException {
+    public void uninstall(final Progress progress) throws UninstallationException {
+        checkNetbeansRunning();
+        
         final File installLocation = getProduct().getInstallationLocation();
         
         // get the list of suitable netbeans ide installations
@@ -237,9 +238,19 @@ public abstract class NbClusterConfigurationLogic extends ProductConfigurationLo
     public boolean registerInSystem() {
         return false;
     }
-
+    
     @Override
     public RemovalMode getRemovalMode() {
         return RemovalMode.LIST;
+    }
+    protected void checkNetbeansRunning() {
+        List<Dependency> dependencies =
+                getProduct().getDependencyByUid(BASE_IDE_UID);
+        List<Product> sources =
+                Registry.getInstance().getProducts(dependencies.get(0));
+        
+        // pick the first one and integrate with it
+        final File nbLocation = sources.get(0).getInstallationLocation();
+        NetBeansUtils.warnNetbeansRunning(sources.get(0).getInstallationLocation());
     }
 }

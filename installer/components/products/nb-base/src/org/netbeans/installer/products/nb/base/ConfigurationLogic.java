@@ -195,21 +195,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         final Product product = getProduct();
         final File installLocation = product.getInstallationLocation();
         
-        // test for lock file existance, if something suspicious exists - issue a
-        // warning but do not cancel the uninstallation
-        try {
-            if(NetBeansUtils.isNbRunning(installLocation)) {
-                String warning = StringUtils.format(
-                        getString("CL.uninstall.warning.running"),// NOI18N
-                        NetBeansUtils.getLockFile(installLocation));
-                ErrorManager.notifyWarning(warning);
-            }
-        } catch (IOException ex) {
-            LogManager.log(ErrorLevel.MESSAGE,
-                    getString("CL.uninstall.warning.check.running.failed"));
-            LogManager.log(ErrorLevel.MESSAGE, ex);
-        }
-        
+        NetBeansUtils.warnNetbeansRunning(installLocation);
         /////////////////////////////////////////////////////////////////////////////
         try {
             progress.setDetail(getString("CL.uninstall.start.menu")); // NOI18N

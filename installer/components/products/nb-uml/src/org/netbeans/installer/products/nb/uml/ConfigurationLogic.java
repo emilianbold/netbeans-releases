@@ -133,7 +133,7 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
     }
     
     public void uninstall(final Progress progress) throws UninstallationException {
-        
+        super.uninstall(progress);
         // get the list of suitable netbeans ide installations
         List<Dependency> dependencies =
                 getProduct().getDependencyByUid(BASE_IDE_UID);
@@ -169,9 +169,6 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
                 LogManager.unindent();
             }
         }
-        
-        /////////////////////////////////////////////////////////////////////////////
-        super.uninstall(progress);
     }
     
     private void configureTelelogicDoors(File nbLocation, Progress progress, boolean install) throws IOException {
