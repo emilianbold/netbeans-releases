@@ -11,14 +11,13 @@
 <body>
 <h2>Using the Table Output Operator Property Editor </h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>The Table Output operator provides a definition of relational tables for  output data.</p>
+<p>The Table Output operator provides a static output in the form of relational tables. </p>
 <p><strong>To create a Table Output operator:</strong></p>
 <ol>
   <li>Drag a Table Output operator from the palette to the Design view.</li>
   <li>Click the Table Output operator icon. The Property Window opens.</li>
-  <li>Select the isGlobal parameter if you want to share the table related to the Table Output with other IEP processes or other applications. When you select IsGlobal, the table related to the Table Output is created is created if it does not exist. Only columns specified by the schema are inserted into this table. <br>
-    <br>
-  Upon undeploy  of the IEP process associated with the table , the table is not deleted. Upon redploy of the IEP processe associated with the table, the table is not recreated.</li>
+  <li>Select the isGlobal parameter if you want to share the table related to the Table Output with other IEP processes or other applications. When you select IsGlobal, the table related to the Table Output is created  if it does not exist and the table remains after the undeployment or redeployment of the IEP process that contains it. IEP generates an additional column for every table that is output
+  . </li>
 </ol>
 <dl>
 <dt><a name="seealso">See Also</a></dt>

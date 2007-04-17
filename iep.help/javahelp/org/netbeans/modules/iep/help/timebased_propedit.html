@@ -9,13 +9,17 @@
 <title>Using the Time Based AggregatorProperty Editor</title>
 </head>
 <body>
-<h2>Using the Time Based Aggregator Property Editor </h2>
+<h2>Using the Time Based Aggregator Operator Property Editor </h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>The Time Based Aggregator operator performs statistical analysis within a specified amount of time which you provide as an increment. You can  do simple or complex SQL manipulation within the time frame you specify, by using the Select, From and Where clauses, as indicated in the property editor. </p>
+<p>The Time Based Aggregator operator performs statistical analysis within a specified amount of time which you provide as a size, which is period of time over which you can perform a calculation,or the time slot. Increment specifies the frequency of the calculation: how often you calculate the aggregation.</p>
+<p>For example, if you want to calculate a stock price's 20 day moving average, the size is 20, and the increment is how often you perform that calculation, for example, one day. </p>
+<p>Statistics you can compute via SQL statements within the Property Editor of the Tuple Based Aggregator include:</p>
 <ul>
-  <li>Take existing attributes and add  additional attributes.</li>
-  <li>Join a static table to an existing set of events to obtain additional attributes or the result. For example, you have information relating to an existing stock and its price, but you want to join a static securities table to provide CEO and company size information. </li>
-  <li>Add or remove dimensions to an event; that is, provide filtering capability on attributes to add or remove attributes. For example, you have input information on a company that includes stock symbol and price but you want to filter out the price. </li>
+  <li>Sum</li>
+  <li>Average</li>
+  <li>Minimum</li>
+  <li>Maximum</li>
+  <li>COUNT</li>
 </ul>
 <p><strong>To create a Time Based Aggregator operator:</strong></p>
 <ol>
