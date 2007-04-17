@@ -30,6 +30,7 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.Writer;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -1238,9 +1239,31 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         
     private final SaveCookie saveCookie = new SaveCookie() {
         public void save() throws java.io.IOException {
-            DataObject dobj = getDataObject();
-            dobj.getCookie(FormEditorSupport.class).saveDocument();
-            dobj.setModified(false);
+            if (EventQueue.isDispatchThread()) {
+                doSave();
+            } else {
+                try {
+                    EventQueue.invokeAndWait(new Runnable() {
+                        public void run() {
+                            doSave();
+                        }
+                    });
+                } catch (InterruptedException iex) {
+                    iex.printStackTrace();
+                } catch (InvocationTargetException itex) {
+                    itex.printStackTrace();
+                }
+            }
+        }
+        
+        private void doSave() {
+            try {
+                DataObject dobj = getDataObject();
+                dobj.getCookie(FormEditorSupport.class).saveDocument();
+                dobj.setModified(false);
+            } catch (IOException ioex) {
+                ioex.printStackTrace();
+            }
         }
     };
 
