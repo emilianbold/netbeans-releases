@@ -29,6 +29,7 @@ import java.util.EnumMap;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Queue;
@@ -41,6 +42,8 @@ import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
@@ -247,7 +250,7 @@ public final class LogRecords {
                     r.setResourceBundleName(catalog);
                     if (!"<null>".equals(catalog)) { // NOI18N
                         try {
-                            ResourceBundle b = ResourceBundle.getBundle(catalog);
+                            ResourceBundle b = NbBundle.getBundle(catalog);
                             b.getObject(key);
                             // ok, the key is there
                             r.setResourceBundle(b);
