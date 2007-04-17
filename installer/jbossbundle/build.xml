@@ -15,7 +15,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -288,7 +288,8 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="run-pack" depends="compile-pack" description="Pack jars">
         <java classname="org.netbeans.installer.PackJars" fork="true" failonerror="true">
-            <jvmarg value="-Xmx256m" />
+            <jvmarg value="-Xmx512m" />
+            <jvmarg value="-XX:MaxPermSize=128m" />
             <arg value="${nb.dir.tmp}" />
             <arg value="${basedir}/build/netbeans/_uninst/packedjars.xml" />
             <classpath>
