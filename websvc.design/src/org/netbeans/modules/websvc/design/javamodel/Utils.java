@@ -512,6 +512,7 @@ public class Utils {
                         MethodTree method = (MethodTree)member;
                         TreePath methodPath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), method);
                         ExecutableElement methodEl = (ExecutableElement)workingCopy.getTrees().getElement(methodPath);
+                        // browse annotations to find target method
                         List<? extends AnnotationMirror> methodAnnotations = methodEl.getAnnotationMirrors();
                         for (AnnotationMirror anMirror : methodAnnotations) {
                             if (workingCopy.getTypes().isSameType(methodAnotationEl.asType(), anMirror.getAnnotationType())) {
@@ -527,6 +528,7 @@ public class Utils {
                                 break;
                             }
                         }
+                        // if annotation not found check method name
                         if (targetMethod!=null) break;
                         else if (method.getName().contentEquals(methodModel.getOperationName())) {
                             targetMethod = method;
@@ -536,8 +538,7 @@ public class Utils {
                     
                 }
                 if (targetMethod!=null) {
-                    Comment comment = Comment.create(Style.JAVADOC, 0,0,0, text);
-                    
+                    Comment comment = Comment.create(Style.JAVADOC, 0,0,0, text);                   
                     // Issue in Retouche (90302) : the following part couldn't be used for now
                     // MethodTree newMethod = make.addComment(targetMethod, comment , true);
                     // workingCopy.rewrite(targetMethod, newMethod);
