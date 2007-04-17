@@ -489,7 +489,6 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
                 }
             }
             if(buf.length() == 0) {
-                System.out.println("using EMPTY_STRING");
                 textContent = EMPTY_STRING;
             } else {
                 textContent = buf.toString();
