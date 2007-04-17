@@ -155,10 +155,10 @@ public abstract class UndeployAction extends NodeAction {
             result.add(forceShutdownMenuItem);
             
             //result.add(new JMenuItem(this));
-            Action forceUninstallAction = SystemAction.get(UninstallAction.Force.class);
-            JMenuItem forceUninstallMenuItem = new JMenuItem();
-            Actions.connect(forceUninstallMenuItem, forceUninstallAction, false);
-            result.add(forceUninstallMenuItem);
+            Action forceUndeployAction = SystemAction.get(UndeployAction.Force.class);
+            JMenuItem forceUndeployMenuItem = new JMenuItem();
+            Actions.connect(forceUndeployMenuItem, forceUndeployAction, false);
+            result.add(forceUndeployMenuItem);
             
             return result;
         }        
