@@ -17,19 +17,19 @@ init()
    export ANT_OPTS="-Xmx512m"
    export JAVA_HOME=$JDK_HOME
 
-   DATESTAMP=`date -u +%Y%m%d%H%M`
-   BUILDNUM=trunk-nightly-$DATESTAMP
-
-   if [ -z $CVS_STAMP ]; then
+   if [ -z '$CVS_STAMP' ]; then
        CVS_STAMP="00:00UTC today"
+       export DATESTAMP=`date -u +%Y%m%d0000`
    fi
+
+   BUILDNUM=trunk-nightly-$DATESTAMP
    
    if [ -z $BASE_DIR ]; then
        echo BASE_DIR variable not defined, using the default one: /space/NB-IDE
        echo if you want to use another base dir for the whole build feel free
        echo to define a BASE_DIR variable in your environment
 
-       BASE_DIR=/space/NB-IDE
+       export BASE_DIR=/space/NB-IDE
    fi
 
    if [ -z $DIST_SERVER ]; then
@@ -64,6 +64,7 @@ init()
    UML_BUILD_LOG=$LOGS/$BASENAME-build-uml.log
    SOA_BUILD_LOG=$LOGS/$BASENAME-build-soa.log
    RUBY_BUILD_LOG=$LOGS/$BASENAME-build-ruby.log
+   SCP_LOG=$LOGS/$BASENAME-scp.log
 }
 
 #Initialize basic scructure
@@ -237,4 +238,8 @@ if [ -z $DIST_SERVER ]; then
 fi
 
 ssh -p 222 $DIST_SERVER mkdir -p $DIST_SERVER_PATH/$DATESTAMP
-scp -P 222 -q -r $DIST/* $DIST_SERVER:$DIST_SERVER_PATH/$DATESTAMP
+scp -P 222 -q -r -v $DIST/* $DIST_SERVER:$DIST_SERVER_PATH/$DATESTAMP > $SCP_LOG 2>&1 &
+
+bash build-nbi.sh
+
+scp -P 222 -q -r -v $DIST/installers $DIST_SERVER:$DIST_SERVER_PATH/$DATESTAMP > $SCP_LOG 2>&1
