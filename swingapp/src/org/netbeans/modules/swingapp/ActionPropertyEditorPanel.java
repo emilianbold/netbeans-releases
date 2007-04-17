@@ -789,17 +789,22 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
         }
     }
     
+    private String getSelectedClassname() {
+        if(mode == Mode.NewActionForm) {
+            ProxyAction.Scope scope = (Scope) scopeCombo.getSelectedItem();
+            return scopeClasses.get(scope);
+        }
+        if(mode == Mode.NewActionGlobal) {
+            return classLabel.getText();
+        }
+        return null;
+    }
+    
     ProxyAction getNewAction() {
         //ProxyAction act = new ProxyAction(classField.getText(), methodField.getText());
         ProxyAction act = newAction;
         //act.setClassname(classField.getText());
-        if(mode == Mode.NewActionForm) {
-            ProxyAction.Scope scope = (Scope) scopeCombo.getSelectedItem();
-            act.setClassname(scopeClasses.get(scope));
-        }
-        if(mode == Mode.NewActionGlobal) {
-            act.setClassname(classLabel.getText());
-        }
+        act.setClassname(getSelectedClassname());
         //act.setMethodname(methodField.getText());
         act.setId(methodField.getText());
         act.putValue(Action.NAME,textField.getText());
@@ -1029,6 +1034,11 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
         if(newMethodName.matches("^\\d.*")) {
             return false;
         }
+        
+        String classname = getSelectedClassname();
+        if(classname == null) { return false; }
+        if(classname.trim().equals("")) { return false; }
+        
         return true;
     }
     
