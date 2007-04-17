@@ -23,6 +23,18 @@ Microsystems, Inc. All Rights Reserved.
 <apidef name="uihandler">UI Handler Library</apidef>
 </apidefs>
 <changes>
+    <change id="LogRecords.scan.gzip">
+      <api name="uihandler"/>
+      <summary>LogRecords.scan is able to recognize and read GZIP</summary>
+      <version major="1" minor="10"/>
+      <date day="17" month="4" year="2007"/>
+      <author login="jtulach"/>
+      <compatibility addition="yes" modification="no" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no"/>
+      <description>
+          LogRecords.scan is now able to consume also gzipped streams.
+      </description>
+      <class package="org.netbeans.lib.uihandler" name="LogRecords"/>
+    </change>    
     <change id="LogRecords.read">
       <api name="uihandler"/>
       <summary>LogRecords.read removed</summary>

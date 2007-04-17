@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -35,6 +36,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.zip.GZIPOutputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import junit.framework.Test;
@@ -123,15 +125,18 @@ public class LogRecordsTest extends NbTestCase {
     }
     
     public void testWriteAndRead() throws Exception {
-        doWriteAndReadTest(System.currentTimeMillis());
+        doWriteAndReadTest(System.currentTimeMillis(), false);
     }
     
     public void testNewFailureOn1165572711706() throws Exception {
-        doWriteAndReadTest(1165572711706L);
+        doWriteAndReadTest(1165572711706L, false);
     }
     
     public void testFailureOn1159804485342() throws Exception {
-        doWriteAndReadTest(1159804485342L);
+        doWriteAndReadTest(1159804485342L, false);
+    }
+    public void testWriteGZIPAndRead() throws Exception {
+        doWriteAndReadTest(System.currentTimeMillis(), true);
     }
     
     public void testMakeSureItIsReadable() throws Exception {
@@ -465,13 +470,16 @@ public class LogRecordsTest extends NbTestCase {
         assertNotNull("Parsed", d);
     }
     
-    private void doWriteAndReadTest(long seed) throws Exception {
+    private void doWriteAndReadTest(long seed, boolean gzip) throws Exception {
         Logger.getAnonymousLogger().info("seed is: " + seed);
         
         File file = new File(getWorkDir(), "feed.txt");
         Random r = new Random(seed);
-        DataOutputStream out = new DataOutputStream(new FileOutputStream(file));
-        
+        OutputStream os = new FileOutputStream(file);
+        if (gzip) {
+            os = new GZIPOutputStream(os);
+        }        
+        DataOutputStream out = new DataOutputStream(os);
         
         int cnt = r.nextInt(500);
         final LogRecord[] arr = new LogRecord[cnt];

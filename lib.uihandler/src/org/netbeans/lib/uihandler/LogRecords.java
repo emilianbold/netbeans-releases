@@ -39,6 +39,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.zip.GZIPInputStream;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -76,6 +77,14 @@ public final class LogRecords {
             return;
         }
         wrap.unread(arr, 0, len);
+        if (arr[0] == 0x1f && arr[1] == -117) {
+            wrap = new PushbackInputStream(new GZIPInputStream(wrap), 32);
+            len = wrap.read(arr);
+            if (len == -1) {
+                return;
+            }
+            wrap.unread(arr, 0, len);
+        }
         
         if (arr[0] == '<' &&
             arr[1] == '?' &&
