@@ -21,6 +21,7 @@ package org.netbeans.modules.diff.builtin.visualizer.editable;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.editor.*;
 import org.netbeans.editor.Utilities;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.spi.editor.highlighting.HighlightsContainer;
 import org.netbeans.spi.diff.DiffProvider;
 import org.openide.util.Lookup;
@@ -311,8 +312,9 @@ class DiffViewManager implements ChangeListener {
 
     private void computeDecorations() {
         
-        BaseDocument document = (BaseDocument) master.getEditorPane2().getEditorPane().getDocument();
+        Document document = master.getEditorPane2().getEditorPane().getDocument();
         EditorUI editorUI = org.netbeans.editor.Utilities.getEditorUI(rightContentPanel.getEditorPane());
+        if (editorUI == null) return;
         int lineHeight = editorUI.getLineHeight();
         
         Difference [] diffs = master.getDifferences();
@@ -342,8 +344,9 @@ class DiffViewManager implements ChangeListener {
         }
     }
 
-    private boolean canRollback(BaseDocument document, Difference diff) {
-        if (!(document instanceof GuardedDocument)) return true;
+    private boolean canRollback(Document doc, Difference diff) {
+        if (!(doc instanceof GuardedDocument)) return true;
+        GuardedDocument document = (GuardedDocument) doc;
         int start, end;
         if (diff.getType() == Difference.DELETE) {
             start = end = Utilities.getRowStartFromLineOffset(document, diff.getSecondStart());
@@ -440,7 +443,7 @@ class DiffViewManager implements ChangeListener {
         return new DifferencePosition(candidate.getDiff(), matchStart);
     }
 
-    private double getScrollFactor() {
+    double getScrollFactor() {
         BoundedRangeModel m1 = leftContentPanel.getScrollPane().getVerticalScrollBar().getModel();
         BoundedRangeModel m2 = rightContentPanel.getScrollPane().getVerticalScrollBar().getModel();
         return ((double) m1.getMaximum() - m1.getExtent()) / (m2.getMaximum() - m2.getExtent());
@@ -591,11 +594,13 @@ class DiffViewManager implements ChangeListener {
 
             int rightViewportHeight = rightPane.getScrollPane().getViewport().getViewRect().height; 
             int rightHeight = rightPane.getEditorPane().getSize().height;
-        
-            EditorUI editorUI = org.netbeans.editor.Utilities.getEditorUI(leftContentPanel.getEditorPane());
-            int lineHeight = editorUI.getLineHeight();
-        
+
             int [] scrollMap = new int[rightHeight];
+
+            EditorUI editorUI = org.netbeans.editor.Utilities.getEditorUI(leftContentPanel.getEditorPane());
+            if (editorUI == null) return scrollMap;
+            int lineHeight = editorUI.getLineHeight();
+
             int lastOffset = 0;
             for (int rightOffset = 0; rightOffset < rightHeight; rightOffset++) {
                 DifferencePosition dpos = findDifferenceToMatch(rightOffset, rightViewportHeight);

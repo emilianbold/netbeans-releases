@@ -23,7 +23,6 @@ import java.awt.Component;
 import java.awt.event.*;
 import java.awt.*;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeEvent;
 import java.util.*;
 import java.util.List;
@@ -47,6 +46,7 @@ import org.netbeans.api.editor.fold.FoldHierarchyEvent;
 import org.netbeans.modules.diff.NestableDiffView;
 import org.netbeans.modules.diff.builtin.visualizer.GraphicalDiffVisualizer;
 import org.netbeans.modules.diff.builtin.visualizer.SourceTranslatorAction;
+import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
 import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
 
 import org.openide.util.Lookup;
@@ -62,8 +62,10 @@ import org.openide.loaders.DataObject;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.diff.DiffView;
+import org.netbeans.api.diff.DiffController;
 import org.netbeans.spi.diff.DiffProvider;
 import org.netbeans.spi.diff.DiffVisualizer;
+import org.netbeans.spi.diff.DiffControllerImpl;
 import org.openide.text.NbDocument;
 
 /**
@@ -72,7 +74,7 @@ import org.openide.text.NbDocument;
  * 
  * @author Maros Sandor
  */
-public class EditableDiffView implements DiffView, NestableDiffView, DocumentListener, AncestorListener, PropertyChangeListener {
+public class EditableDiffView extends DiffControllerImpl implements DiffView, NestableDiffView, DocumentListener, AncestorListener, PropertyChangeListener {
 
     private Stroke boldStroke = new BasicStroke(3);
     
@@ -109,7 +111,6 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
     private int diffSerial;
     private Difference[] diffs = NO_DIFFERENCES;
    
-    private int currentDiffIndex = -1;
     private boolean isSetCurrentDifferenceContext = false;
     
     private int totalHeight = 0;
@@ -205,7 +206,7 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
                     }
 
                     int bgRGB = jEditorPane2.getEditorPane().getBackground().getRGB() & 0xFFFFFF;
-                    if (jEditorPane2.getEditorPane().isEditable() && bgRGB == 0xFFFFFF) {
+                    if (jEditorPane2.getEditorPane().isEditable() && bgRGB == 0xFFFFFF && System.getProperty("netbeans.experimental.diff.ReadonlyBg") == null) {
                         jEditorPane1.getEditorPane().setBackground(COLOR_READONLY_BG);
                     }
                     if (bgRGB == 0) {
@@ -240,6 +241,62 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
         
         manager = new DiffViewManager(this);
         manager.init();
+    }
+
+    public void setLocation(DiffController.DiffPane pane, DiffController.LocationType type, int location) {
+        if (type == DiffController.LocationType.DifferenceIndex) {
+            setDifferenceImpl(location);
+        } else {
+            if (pane == DiffController.DiffPane.Base) {
+                setBaseLineNumberImpl(location);
+            } else {
+                setModifiedLineNumberImpl(location);
+            }
+        }
+    }
+
+    private void setModifiedLineNumberImpl(int line) {
+        
+    }
+
+    private void setBaseLineNumberImpl(int line) {
+        int off1, off2;
+        initGlobalSizes(); // The window might be resized in the mean time.
+        try {
+            off1 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane1.getEditorPane().getDocument(), line);
+            off2 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane2.getEditorPane().getDocument(), line);
+
+            jEditorPane1.getEditorPane().setCaretPosition(off1);
+            jEditorPane2.getEditorPane().setCaretPosition(off2);
+
+            JScrollBar leftScrollBar = jEditorPane1.getScrollPane().getVerticalScrollBar();
+            JScrollBar rightScrollBar = jEditorPane2.getScrollPane().getVerticalScrollBar();
+            int value = leftScrollBar.getValue();
+            rightScrollBar.setValue((int) (value / manager.getScrollFactor()));
+            
+            updateCurrentDifference();
+        } catch (IndexOutOfBoundsException ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
+    }
+
+    private void setDifferenceImpl(int location) {
+        if (location < -1 || location >= diffs.length) throw new IllegalArgumentException("Illegal difference number: " + location); // NOI18N
+        if (location == -1) {
+        } else {
+            if (getDifferenceIndex() == location) return;
+            try {
+                isSetCurrentDifferenceContext = true;
+                setDifferenceIndex(location);
+                showCurrentDifference();
+            } finally {
+                isSetCurrentDifferenceContext = false;
+            }
+        }
+    }
+
+    public JComponent getJComponent() {
+        return jSplitPane1;
     }
 
     /**
@@ -429,24 +486,11 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
     }
 
     public void setCurrentDifference(int diffNo) throws UnsupportedOperationException {
-        if (diffNo < -1 || diffNo >= diffs.length) throw new IllegalArgumentException("Illegal difference number: " + diffNo); // NOI18N
-        if (diffNo == -1) {
-        } else {
-            if (currentDiffIndex == diffNo) return;
-            try {
-                isSetCurrentDifferenceContext = true;
-                int old = currentDiffIndex;
-                currentDiffIndex = diffNo;
-                showCurrentDifference();
-                support.firePropertyChange(DiffView.PROP_DIFF_COUNT, old, currentDiffIndex);
-            } finally {
-                isSetCurrentDifferenceContext = false;
-            }
-        }
+        setLocation(null, DiffController.LocationType.DifferenceIndex, diffNo);
     }
 
     public int getCurrentDifference() {
-        return currentDiffIndex;
+        return getDifferenceIndex();
     }
 
     private int computeCurrentDifference() {
@@ -470,13 +514,10 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
      * 2) If user touches the scrollbar, 'current difference' changes accordingly 
      */
     void updateCurrentDifference() {
+        assert SwingUtilities.isEventDispatchThread();
         if (isSetCurrentDifferenceContext) return;
         int cd = computeCurrentDifference();
-        if (cd != currentDiffIndex) {
-            int old = currentDiffIndex;
-            currentDiffIndex = cd;
-            support.firePropertyChange(DiffView.PROP_DIFF_COUNT, old, currentDiffIndex);
-        }
+        setDifferenceIndex(cd);
     }
     
     public JToolBar getToolBar() {
@@ -484,7 +525,7 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
     }
 
     private void showCurrentDifference() {
-        Difference diff = diffs[currentDiffIndex];
+        Difference diff = diffs[getDifferenceIndex()];
         
         int off1, off2;
         initGlobalSizes(); // The window might be resized in the mean time.
@@ -495,7 +536,7 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
             jEditorPane1.getEditorPane().setCaretPosition(off1);
             jEditorPane2.getEditorPane().setCaretPosition(off2);
             
-            DiffViewManager.DecoratedDifference ddiff = manager.getDecorations()[currentDiffIndex];
+            DiffViewManager.DecoratedDifference ddiff = manager.getDecorations()[getDifferenceIndex()];
             int offset;
             if (ddiff.getDiff().getType() == Difference.DELETE) {
                 offset = jEditorPane2.getScrollPane().getViewport().getViewRect().height / 2 + 1;
@@ -927,9 +968,9 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
         public void run() {
             synchronized(EditableDiffView.this) {
                 computeDiff();
-                if (currentDiffIndex >= diffs.length) updateCurrentDifference();
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
+                        if (getDifferenceIndex() >= diffs.length) updateCurrentDifference();
                         jEditorPane1.setCurrentDiff(diffs);
                         jEditorPane2.setCurrentDiff(diffs);
                         jSplitPane1.repaint();
@@ -944,7 +985,7 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
                 diffs = NO_DIFFERENCES;
                 return;
             }
-            
+
             Reader first = null;
             Reader second = null;
             try {
@@ -956,8 +997,7 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
 
             DiffProvider diff = Lookup.getDefault().lookup(DiffProvider.class);
             if (diff == null) {
-                diffs = NO_DIFFERENCES;
-                return;
+                diff = new BuiltInDiffProvider();
             }
             try {
                 diffs = diff.computeDiff(first, second);
@@ -998,16 +1038,6 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
         return colorLines;
     }
 
-    private PropertyChangeSupport support = new PropertyChangeSupport(this);
-
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        support.addPropertyChangeListener(l);
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-        support.removePropertyChangeListener(l);
-    }
-    
     /**
      * Integration provider for the error stripe.
      */
