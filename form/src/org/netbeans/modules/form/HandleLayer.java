@@ -745,7 +745,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 formDesigner.getMenuEditLayer().hideMenuLayer();
             }
         }
-        if(metacomp.getBeanClass().getName().equals(javax.swing.JMenu.class.getName())) {
+        if(metacomp != null && metacomp.getBeanClass().getName().equals(javax.swing.JMenu.class.getName())) {
             formDesigner.openMenu(metacomp);
         }
         // this clause may be dead now
