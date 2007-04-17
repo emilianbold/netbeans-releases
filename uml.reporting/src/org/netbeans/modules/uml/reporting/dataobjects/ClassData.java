@@ -535,7 +535,8 @@ public class ClassData extends ElementDataObject
                 for (int i=0; i<infs.length; i++)
                 {
                     IInterface inf = infs[i];
-                    out.write("<A HREF=\"" + getLinkTo(inf) + "\" title=\"interface in " + inf.getOwningPackage().getFullyQualifiedName(false) + "\">" + inf.getName() + "</A>");
+                    if (inf != null)
+                        out.write("<A HREF=\"" + getLinkTo(inf) + "\" title=\"interface in " + inf.getOwningPackage().getFullyQualifiedName(false) + "\">" + inf.getName() + "</A>");
                     if (i < infs.length-1)
                         out.write(", ");
                 }
@@ -595,7 +596,8 @@ public class ClassData extends ElementDataObject
                 for (int i=0; i<infs.length; i++)
                 {
                     IClassifier classifier = infs[i];
-                    out.write("<A HREF=\"" + getLinkTo(classifier) + "\" title=\"interface in " + classifier.getOwningPackage().getFullyQualifiedName(false) + "\">" + classifier.getName() + "</A>");
+                    if (classifier != null)
+                        out.write("<A HREF=\"" + getLinkTo(classifier) + "\" title=\"interface in " + classifier.getOwningPackage().getFullyQualifiedName(false) + "\">" + classifier.getName() + "</A>");
                     if (i < infs.length-1)
                         out.write(", ");
                 }
