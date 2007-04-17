@@ -19,7 +19,6 @@
 package org.netbeans.modules.java.source.save;
 
 import java.util.*;
-
 import com.sun.source.tree.*;
 import static com.sun.source.tree.Tree.*;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -467,7 +466,17 @@ public class CasualDiff {
     }
 
     protected int diffVarDef(JCVariableDecl oldT, JCVariableDecl newT, int[] bounds) {
-       int localPointer = bounds[0];
+        int localPointer = bounds[0];
+        // check that it is not enum constant. If so, match it in special way
+        if ((oldT.mods.flags & Flags.ENUM) != 0) {
+            if (nameChanged(oldT.name, newT.name)) {
+                copyTo(localPointer, oldT.pos);
+                printer.print(newT.name);
+                diffInfo.put(oldT.pos, "Rename enum constant " + oldT.name);
+                localPointer = oldT.pos + oldT.name.length();
+            }
+            return localPointer;
+        }
         if (!matchModifiers(oldT.mods, newT.mods)) {
             // if new tree has modifiers, print them
             if (hasModifiers(newT.mods)) {
@@ -1219,7 +1228,16 @@ public class CasualDiff {
     protected void diffErroneous(JCErroneous oldT, JCErroneous newT) {
         diffList(oldT.errs, newT.errs, LineInsertionType.BEFORE, Query.NOPOS);
     }
-
+    
+    protected int diffFieldGroup(FieldGroupTree oldT, FieldGroupTree newT, int[] bounds) {
+        if (!listsMatch(oldT.getVariables(), newT.getVariables())) {
+            copyTo(bounds[0], oldT.getStartPosition());
+            return diffParameterList(oldT.getVariables(), newT.getVariables(), oldT.getStartPosition());
+        } else {
+            return oldT.endPos();
+        }
+    }
+    
     protected boolean listContains(List<? extends JCTree> list, JCTree tree) {
         for (JCTree t : list)
             if (treesMatch(t, tree))
@@ -1463,15 +1481,13 @@ public class CasualDiff {
         if (oldList == newList)
             return localPointer;
         assert oldList != null && newList != null;
-        int lastOldPos = Query.NOPOS;
         Iterator<? extends JCTree> oldIter = oldList.iterator();
         Iterator<? extends JCTree> newIter = newList.iterator();
         while (oldIter.hasNext() && newIter.hasNext()) {
             JCTree oldT = oldIter.next();
-            copyTo(localPointer, localPointer = getOldPos(oldT));
-            localPointer = diffTree(oldT, newIter.next(), new int[] { localPointer, endPos(oldT) });
-            if (oldTopLevel != null)
-                lastOldPos = endPos(oldT);
+            int[] bounds = getBounds(oldT);
+            copyTo(localPointer, bounds[0]);
+            localPointer = diffTree(oldT, newIter.next(), bounds);
         }
         while (oldIter.hasNext()) {
             JCTree oldT = oldIter.next();
@@ -1823,7 +1839,7 @@ public class CasualDiff {
     
     private List<JCTree> filterHidden(List<JCTree> list) {
         List<JCTree> result = new ArrayList<JCTree>(); // todo (#pf): capacity?
-        List<VariableTree> fieldGroup = new ArrayList<VariableTree>();
+        List<JCVariableDecl> fieldGroup = new ArrayList<JCVariableDecl>();
         for (JCTree tree : list) {
             if (Kind.METHOD == tree.getKind()) {
                 // filter syntetic constructors, i.e. constructors which are in
@@ -1844,10 +1860,6 @@ public class CasualDiff {
             }
             if (!fieldGroup.isEmpty()) {
                 result.add(new FieldGroupTree(fieldGroup, this));
-                System.err.println("Group:");
-                for (VariableTree vt : fieldGroup) {
-                    System.err.println(vt);
-                }
                 fieldGroup = new ArrayList();
             }
             result.add(tree);
@@ -2352,6 +2364,13 @@ public class CasualDiff {
               diffErroneous((JCErroneous)oldT, (JCErroneous)newT);
               break;
           default:
+              // handle special cases like field groups and enum constants
+              if (oldT.getKind() == Kind.OTHER) {
+                  if (oldT instanceof FieldGroupTree) {
+                      return diffFieldGroup((FieldGroupTree) oldT, (FieldGroupTree) newT, elementBounds);
+                  }
+                  break;
+              }
               String msg = "Diff not implemented: " +
                   ((com.sun.source.tree.Tree)oldT).getKind().toString() +
                   " " + oldT.getClass().getName();
@@ -2413,7 +2432,7 @@ public class CasualDiff {
         Kind.BITWISE_COMPLEMENT,
         Kind.LOGICAL_COMPLEMENT
     );
-
+    
     protected boolean listsMatch(List<? extends JCTree> oldList, List<? extends JCTree> newList) {
         if (oldList == newList)
             return true;
@@ -2594,7 +2613,7 @@ public class CasualDiff {
         if (JavaTokenId.COMMA == tokenSequence.token().id()) {
             return true;
         }
-        if (oldT.getInitializer() != null) {
+        if (oldT.getInitializer() != null && (oldT.mods.flags & Flags.ENUM) == 0) {
             tokenSequence.move(endPos(oldT.getInitializer()));
         } else {
             tokenSequence.move(oldT.pos);
@@ -2630,21 +2649,21 @@ public class CasualDiff {
     
     protected static class FieldGroupTree extends JCTree implements Tree {
         
-        List<VariableTree> vars;
+        List<JCVariableDecl> vars;
         CasualDiff diff;
         
-        public FieldGroupTree(List<VariableTree> vars, CasualDiff diff) {
+        public FieldGroupTree(List<JCVariableDecl> vars, CasualDiff diff) {
             super(0);
             this.vars = vars;
             this.diff = diff;
-            pos = diff.getOldPos((JCVariableDecl) vars.get(0));
+            pos = diff.getOldPos(vars.get(0));
         }
         
         public Kind getKind() {
             return Kind.OTHER;
         }
 
-        public List<VariableTree> getVariables() {
+        public List<JCVariableDecl> getVariables() {
             return vars;
         }
 

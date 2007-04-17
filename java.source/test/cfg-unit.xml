@@ -51,7 +51,6 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="org/netbeans/api/java/source/gen/VarArgsTest.class"/>
                 <exclude name="org/netbeans/api/java/source/gen/FeatureAddingTest.class"/>
                 <exclude name="org/netbeans/api/java/source/gen/ClashingImportsTest.class"/>
-                <exclude name="org/netbeans/api/java/source/gen/EnumTest.class"/>
                 <exclude name="org/netbeans/modules/java/source/usages/LucenePerformanceTest.class"/>
 		<!--requires test source:-->
 		<exclude name="org/netbeans/api/java/source/UiUtilsTest.class" />
@@ -101,6 +100,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/api/java/source/gen/TopLevelTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/BrokenSourceTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/SyntetickejTest.class"/>
+                <include name="org/netbeans/api/java/source/gen/EnumTest.class"/>
                 
                 <!--
                 Makes many operation on field declaration.

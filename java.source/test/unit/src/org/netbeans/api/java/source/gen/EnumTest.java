@@ -13,24 +13,16 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.api.java.source.gen;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
-import java.io.File;
-import java.io.IOException;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.*;
-import org.netbeans.api.java.source.TestUtilities;
-import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.WorkingCopy;
+import java.io.*;
+import com.sun.source.tree.*;
+import org.netbeans.api.java.source.*;
 import org.netbeans.junit.NbTestSuite;
+import static org.netbeans.api.java.source.JavaSource.*;
 
 /**
  * Test enum modifications.
@@ -120,11 +112,4 @@ public class EnumTest extends GeneratorTest {
         return "";
     }
     
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        // TODO code application logic here
-    }
-
 }
