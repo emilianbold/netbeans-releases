@@ -65,7 +65,7 @@
              basedir="${jxrpc.base}/build" />
         
         <delete dir="${jxrpc.base}/build"/>
-<!--        <delete dir="${jxrpc.base}/src"/> -->
+        <delete dir="${jxrpc.base}/src"/>
         
         <!-- create wrapper proxy client and the corresponding design time jar file -->
         <mkdir dir="${jxrpc.base}/dt/build"/>
@@ -92,7 +92,7 @@
             </fileset>
         </jar>
         
- <!--       <delete dir="${jxrpc.base}/dt"/>    -->
+       <delete dir="${jxrpc.base}/dt"/>
     </target>
     
     <target name="-init-wsimport" depends="-init-user">
@@ -133,7 +133,7 @@
              basedir="${jaxws.base}/build" />
         
         <delete dir="${jaxws.base}/build"/>
-        <!-- <delete dir="${jaxws.base}/src"/> -->
+        <delete dir="${jaxws.base}/src"/>
         
         <!-- Create the wrapper proxy client and the corresponding design time --> 
  
@@ -159,5 +159,6 @@
                 <patternset includes="**/*.java"/>
             </fileset>                 
         </jar>
+        <delete dir="${jaxws.base}/dt"/>
     </target>
 </project>
