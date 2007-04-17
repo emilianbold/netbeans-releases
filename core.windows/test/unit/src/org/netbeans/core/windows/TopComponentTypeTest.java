@@ -88,11 +88,13 @@ public class TopComponentTypeTest extends NbTestCase {
     public void testIsEditorTopComponentIsSafeOutsideAWTWhenOpened () throws Exception {
         final TopComponent tc = new TopComponent ();
         Mode mode = WindowManagerImpl.getInstance().createMode( "editorMode", Constants.MODE_KIND_EDITOR, Constants.MODE_STATE_JOINED, false, new SplitConstraint[0] );
+        Mode otherEditorMode = WindowManagerImpl.getInstance().createMode( "otherEditorMode", Constants.MODE_KIND_EDITOR, Constants.MODE_STATE_JOINED, false, new SplitConstraint[0] );
         Logger logger = Logger.getLogger( WindowManagerImpl.class.getName() );
         final MyHandler handler = new MyHandler();
         logger.addHandler( handler );
         
         assertTrue( WindowManagerImpl.getInstance().isEditorMode( mode ) );
+        assertTrue( WindowManagerImpl.getInstance().isEditorMode( otherEditorMode ) );
         mode.dockInto( tc );
         
         Task t = RequestProcessor.getDefault().post( new Runnable() {
