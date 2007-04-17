@@ -18,16 +18,7 @@
 package org.netbeans.lib.uihandlerserver;
 
 import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -35,7 +26,6 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.uihandler.InputGesture;
-import org.netbeans.lib.uihandler.LogRecords;
 import org.netbeans.lib.uihandler.TestHandler;
 
 /**
