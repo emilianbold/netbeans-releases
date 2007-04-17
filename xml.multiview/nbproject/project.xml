@@ -118,37 +118,38 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-          <test-dependencies>
-              <test-type>
-                  <name>unit</name>
-                  <test-dependency>
-                      <code-name-base>org.netbeans.modules.xml.multiview</code-name-base>
-                      <recursive/>
-                      <compile-dependency/>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.netbeans.modules.schema2beans</code-name-base>
-                      <compile-dependency/>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.netbeans.api.xml</code-name-base>
-                      <compile-dependency/>
-                  </test-dependency>
-              </test-type>
-              <test-type>
-                  <name>qa-functional</name>
-              </test-type>
+            <test-dependencies>
+                <test-type>
+                    <name>unit</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.xml.multiview</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.schema2beans</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.api.xml</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                </test-type>
+                <test-type>
+                    <name>qa-functional</name>
+                </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.identity.profile.ui</friend>
-                <friend>org.netbeans.modules.websvc.wsitconf</friend>
-                <friend>org.netbeans.modules.visualweb.project.navigationloader</friend>
+                <friend>de.genomatix.graphmlsupport</friend>
+                <friend>de.genomatix.jasperreporteditor</friend>
                 <friend>org.netbeans.modules.e2e.end2end</friend>
                 <friend>org.netbeans.modules.e2e.jsr172</friend>
-                <friend>org.netbeans.modules.j2ee.persistence</friend>
+                <friend>org.netbeans.modules.identity.profile.ui</friend>
                 <friend>org.netbeans.modules.j2ee.ddloaders</friend>
-                <friend>de.genomatix.jasperreporteditor</friend>
-                <friend>de.genomatix.graphmlsupport</friend>
+                <friend>org.netbeans.modules.j2ee.persistence</friend>
+                <friend>org.netbeans.modules.j2ee.sun.ddloaders</friend>
+                <friend>org.netbeans.modules.visualweb.project.navigationloader</friend>
+                <friend>org.netbeans.modules.websvc.wsitconf</friend>
                 <package>org.netbeans.modules.xml.multiview</package>
                 <package>org.netbeans.modules.xml.multiview.cookies</package>
                 <package>org.netbeans.modules.xml.multiview.ui</package>
