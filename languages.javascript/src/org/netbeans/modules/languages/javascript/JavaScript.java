@@ -21,6 +21,7 @@ package org.netbeans.modules.languages.javascript;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.ListIterator;
 import java.util.ListIterator;
@@ -76,6 +77,7 @@ import org.netbeans.api.languages.CompletionItem;
 import org.netbeans.modules.languages.javascript.api.JSParser;
 import org.netbeans.modules.languages.javascript.api.JSVariable;
 import org.openide.cookies.LineCookie;
+import org.openide.filesystems.FileObject;
 
 
 /**
@@ -254,18 +256,20 @@ public class JavaScript {
     // code completion .........................................................
     
     public static List completionItems (Context context) {
-        List result = new ArrayList ();
         if (context instanceof SyntaxContext) {
             SyntaxContext syntaxContext = (SyntaxContext) context;
             ASTPath path = ((SyntaxContext) context).getASTPath ();
             Document doc = syntaxContext.getDocument ();
-            result.addAll (getMembers (
+            Map<String,CompletionItem> result = getMembers (
                 path,
                 getDocumentName (doc)
-            ));
-            return result;
+            );
+            FileObject fo = NbEditorUtilities.getFileObject (doc);
+            Index.addGlobalItems (fo, result);
+            return new ArrayList<CompletionItem> (result.values ());
         }
         
+        List result = new ArrayList ();
         TokenSequence ts = context.getTokenSequence ();
         Token token = ts.token ();
         String tokenText = token.text ().toString ();
@@ -519,8 +523,8 @@ public class JavaScript {
         return root.getItem (token.getIdentifier (), token.getOffset ());
     }
     
-    private static List<CompletionItem> getMembers (ASTPath path, String title) {
-        List<CompletionItem> result = new ArrayList<CompletionItem> ();
+    private static Map<String,CompletionItem> getMembers (ASTPath path, String title) {
+        Map<String,CompletionItem> result = new HashMap<String,CompletionItem> ();
         JSRoot root = getRoot ((ASTNode) path.get (0));
         Collection<JSItem> c = root.getItems (path.getLeaf ().getOffset ());
         Iterator<JSItem> it = c.iterator ();
@@ -540,23 +544,29 @@ public class JavaScript {
                     type = CompletionItem.Type.FIELD;
                     break;
                 }
-                result.add (CompletionItem.create (
+                result.put (
                     v.getName (),
-                    null,
-                    title,
-                    type,
-                    1
-                ));
+                    CompletionItem.create (
+                        v.getName (),
+                        null,
+                        title,
+                        type,
+                        1
+                    )
+                );
             } else
             if (item instanceof JSFunction) {
                 JSFunction f = (JSFunction) item;
-                result.add (CompletionItem.create (
+                result.put (
                     f.getName (),
-                    null,
-                    title,
-                    CompletionItem.Type.METHOD,
-                    1
-                ));
+                    CompletionItem.create (
+                        f.getName (),
+                        null,
+                        title,
+                        CompletionItem.Type.METHOD,
+                        1
+                    )
+                );
             }
         }
         return result;
