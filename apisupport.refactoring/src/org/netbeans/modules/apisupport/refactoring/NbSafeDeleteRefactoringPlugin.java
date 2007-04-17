@@ -26,19 +26,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.jmi.javamodel.Constructor;
-import org.netbeans.jmi.javamodel.Element;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.modules.apisupport.project.EditableManifest;
-import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
-import org.netbeans.modules.javacore.api.JavaModel;
-import org.netbeans.modules.javacore.internalapi.ExternalChange;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
@@ -48,6 +41,8 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -88,28 +83,40 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
         try {
             SafeDeleteRefactoring delete = (SafeDeleteRefactoring)refactoring;
             Problem problem = null;
-            Element[] elements = delete.getElementsToDelete();
-            for (int i = 0 ; i < elements.length; i++) {
-                if (elements[i] instanceof JavaClass) {
-                    JavaClass clzz = (JavaClass)elements[i];
-                    Resource res = clzz.getResource();
-                    FileObject fo = JavaModel.getFileObject(res);
-                    Project project = FileOwnerQuery.getOwner(fo);
-                    if (project != null && project instanceof NbModuleProject) {
-                        checkMetaInfServices(project, clzz, refactoringElements);
-                        checkManifest((NbModuleProject)project, clzz, refactoringElements);
-                        checkLayer((NbModuleProject)project, clzz, refactoringElements);
-                    }
-                }
+            Lookup lkp = delete.getRefactoringSource();
+            InfoHolder infoholder = examineLookup(lkp);
+            final TreePathHandle handle = lkp.lookup(TreePathHandle.class);
+            
+            Project project = FileOwnerQuery.getOwner(handle.getFileObject());
+            if (project.getLookup().lookup(NbModuleProvider.class) == null) {
+                // take just netbeans module development into account..
+                return null;
             }
+            
+            if (infoholder.isClass) {
+                checkManifest(project, infoholder.fullName, refactoringElements);
+                checkMetaInfServices(project, infoholder.fullName, refactoringElements);
+                checkLayer(project, infoholder.fullName, refactoringElements);
+            }
+            if (infoholder.isMethod) {
+                checkMethodLayer(infoholder, handle.getFileObject(), refactoringElements);
+            }
+            if (infoholder.isConstructor) {
+                checkConstructorLayer(infoholder, handle.getFileObject(), refactoringElements);
+            }
+            
             err.log("Gonna return problem: " + problem);
             return problem;
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
         } finally {
             semafor.set(null);
         }
     }
     
-    protected RefactoringElementImplementation createManifestRefactoring(JavaClass clazz,
+    protected RefactoringElementImplementation createManifestRefactoring(
+            String fqname,
             FileObject manifestFile,
             String attributeKey,
             String attributeValue,
@@ -118,38 +125,35 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
                 attributeKey, section);
     }
     
-    protected RefactoringElementImplementation createMetaInfServicesRefactoring(JavaClass clazz, FileObject serviceFile, int line) {
+    protected RefactoringElementImplementation createMetaInfServicesRefactoring(String clazz, FileObject serviceFile, int line) {
         return new ServicesSafeDeleteRefactoringElement(clazz, serviceFile);
     }
 
-    protected RefactoringElementImplementation createLayerRefactoring(
-            Constructor constructor,
+    protected RefactoringElementImplementation createConstructorLayerRefactoring(String constructor, String fqname,
             LayerUtils.LayerHandle handle,
             FileObject layerFileObject,
             String layerAttribute) {
-        return new LayerSafeDeleteRefactoringElement(constructor.getName(), handle, layerFileObject);
+        return new LayerSafeDeleteRefactoringElement(constructor, handle, layerFileObject);
             
     }
 
-    protected RefactoringElementImplementation createLayerRefactoring(
-            JavaClass clazz, 
-            LayerUtils.LayerHandle handle, 
-            FileObject layerFileObject, 
+    protected RefactoringElementImplementation createLayerRefactoring(String fqname,
+            LayerUtils.LayerHandle handle,
+            FileObject layerFileObject,
             String layerAttribute) {
-        return new LayerSafeDeleteRefactoringElement(clazz.getSimpleName(), handle, layerFileObject, layerAttribute);
+        return new LayerSafeDeleteRefactoringElement(fqname, handle, layerFileObject, layerAttribute);
     
     }
 
-    protected RefactoringElementImplementation createLayerRefactoring(
-            Method method, 
-            LayerUtils.LayerHandle handle, 
-            FileObject layerFileObject, 
+    protected RefactoringElementImplementation createMethodLayerRefactoring(String method, String fqname,
+            LayerUtils.LayerHandle handle,
+            FileObject layerFileObject,
             String layerAttribute) {
-        return new LayerSafeDeleteRefactoringElement(method.getName(), handle, layerFileObject);
+        return new LayerSafeDeleteRefactoringElement(method, handle, layerFileObject);
     }
     
     
-    public final class ManifestSafeDeleteRefactoringElement extends AbstractRefactoringElement implements ExternalChange {
+    public final class ManifestSafeDeleteRefactoringElement extends AbstractRefactoringElement {
         
         private String attrName;
         private String sectionName = null;
@@ -179,10 +183,6 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
         }
         
         public void performChange() {
-            JavaMetamodel.getManager().registerExtChange(this);
-        }
-        
-        public void performExternalChange() {
             FileLock lock = null;
             OutputStream stream = null;
             InputStream instream = null;
@@ -227,7 +227,7 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
             }
         }
         
-        public void undoExternalChange() {
+        public void undoChange() {
             if (oldContent != null) {
                 Utility.writeFileFromString(parentFile, oldContent);
             }
@@ -235,7 +235,7 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
         
     }
     
-    public final class ServicesSafeDeleteRefactoringElement extends AbstractRefactoringElement implements ExternalChange {
+    public final class ServicesSafeDeleteRefactoringElement extends AbstractRefactoringElement  {
         
         private String oldName;
         private String oldContent;
@@ -243,10 +243,10 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
         /**
          * Creates a new instance of ServicesRenameRefactoringElement
          */
-        public ServicesSafeDeleteRefactoringElement(JavaClass clazz, FileObject file) {
-            this.name = clazz.getSimpleName();
+        public ServicesSafeDeleteRefactoringElement(String fqname, FileObject file) {
+            this.name = fqname.substring(fqname.lastIndexOf('.'));
             parentFile = file;
-            oldName = clazz.getName();
+            oldName = fqname;
             // read old content here. in the unprobable case when 2 classes are to be removed
             // and both are placed in same services file, we need the true original content
             oldContent = Utility.readFileIntoString(parentFile);
@@ -261,10 +261,6 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
         }
         
         public void performChange() {
-            JavaMetamodel.getManager().registerExtChange(this);
-        }
-        
-        public void performExternalChange() {
             String content = Utility.readFileIntoString(parentFile);
             if (content != null) {
                 String longName = oldName;
@@ -292,7 +288,7 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
             }
         }
         
-        public void undoExternalChange() {
+        public void undoChange() {
             try {
                 if (oldContent != null) {
                     if (!parent.exists()) {
@@ -307,10 +303,9 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
                 err.notify(exc);
             }
         }
-        
     }
     
-    public final class LayerSafeDeleteRefactoringElement extends AbstractRefactoringElement  implements ExternalChange {
+    public final class LayerSafeDeleteRefactoringElement extends AbstractRefactoringElement  {
         
         private FileObject layerFO;
         private LayerUtils.LayerHandle handle;
@@ -339,10 +334,6 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
         }
         
         public void performChange() {
-            JavaMetamodel.getManager().registerExtChange(this);
-        }
-        
-        public void performExternalChange() {
             boolean on = handle.isAutosave();
             if (!on) {
                 //TODO is this a hack or not?
@@ -378,9 +369,10 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
             }
         }
         
-        public void undoExternalChange() {
+        public void undoChange() {
+            //TODO
         }
-        
+
     }
 
 }

@@ -20,19 +20,15 @@
 package org.netbeans.modules.apisupport.refactoring;
 
 import java.io.IOException;
-import javax.jmi.reflect.RefObject;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.jmi.javamodel.Constructor;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.JavaPackage;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.Resource;
-import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
-import org.netbeans.modules.javacore.api.JavaModel;
-import org.netbeans.modules.javacore.internalapi.ExternalChange;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
@@ -41,6 +37,9 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -81,63 +80,79 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
         semafor.set(new Object());
         try {
             rename = (RenameRefactoring)refactoring;
+            
             Problem problem = null;
-            RefObject refObject = (RefObject) rename.getRefactoredObject();
-            if (refObject instanceof JavaClass) {
-                JavaClass clzz = (JavaClass)refObject;
-                Resource res = clzz.getResource();
-                FileObject fo = JavaModel.getFileObject(res);
-                Project project = FileOwnerQuery.getOwner(fo);
-                if (project != null && project instanceof NbModuleProject) {
-                    checkMetaInfServices(project, clzz, refactoringElements);
-                    checkManifest((NbModuleProject)project, clzz, refactoringElements);
-                    checkLayer((NbModuleProject)project, clzz, refactoringElements);
+            Lookup lkp = rename.getRefactoringSource();
+            
+            TreePathHandle handle = lkp.lookup(TreePathHandle.class);
+            if (handle != null) {
+                InfoHolder infoholder = examineLookup(lkp);
+                Project project = FileOwnerQuery.getOwner(handle.getFileObject());
+                if (project.getLookup().lookup(NbModuleProvider.class) == null) {
+                    // take just netbeans module development into account..
+                    return null;
+                }
+                
+                if (infoholder.isClass) {
+                    checkManifest(project, infoholder.fullName, refactoringElements);
+                    checkMetaInfServices(project, infoholder.fullName, refactoringElements);
+                    checkLayer(project, infoholder.fullName, refactoringElements);
+                }
+                if (infoholder.isMethod) {
+                    checkMethodLayer(infoholder, handle.getFileObject(), refactoringElements);
                 }
             }
-            if (refObject instanceof JavaPackage) {
-                JavaPackage pack = (JavaPackage)refObject;
-                Resource res = pack.getResource();
-                FileObject fo = JavaModel.getFileObject(res);
-                if (fo != null) {
-                    //#62636 for some reason in refactoring tests, fileobject is null.
-                    Project project = FileOwnerQuery.getOwner(fo);
-                    if (project != null && project instanceof NbModuleProject) {
-                        checkMetaInfServices(project, pack, refactoringElements);
+            NonRecursiveFolder nrf = lkp.lookup(NonRecursiveFolder.class);
+            if (nrf != null) {
+                Project project = FileOwnerQuery.getOwner(nrf.getFolder());
+                if (project.getLookup().lookup(NbModuleProvider.class) == null) {
+                    // take just netbeans module development into account..
+                    return null;
+                }
+                Sources srcs = org.netbeans.api.project.ProjectUtils.getSources(project);
+                SourceGroup[] grps = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+                for (SourceGroup gr : grps) {
+                    if (FileUtil.isParentOf(gr.getRootFolder(), nrf.getFolder())) {
+                        String relPath = FileUtil.getRelativePath(gr.getRootFolder(), nrf.getFolder());
+                        relPath.replace('/', '.');
+                        checkPackageMetaInfServices(project, relPath, refactoringElements);
+                        //TODO probably aslo manifest or layers.
+                        //TODO how to distinguish single package from recursive folder?
                     }
                 }
-            }
-            if (refObject instanceof Method) {
-                Method method = (Method)refObject;
-                problem = checkLayer(method, refactoringElements);
             }
             
             err.log("Gonna return problem: " + problem);
             return problem;
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
         } finally {
             semafor.set(null);
         }
     }
    
-    protected RefactoringElementImplementation createManifestRefactoring(JavaClass clazz,
+    protected RefactoringElementImplementation createManifestRefactoring(
+            String fqname,
             FileObject manifestFile,
             String attributeKey,
             String attributeValue,
             String section) {
-        return new ManifestRenameRefactoringElement(clazz, manifestFile, attributeValue,
+        return new ManifestRenameRefactoringElement(fqname, manifestFile, attributeValue,
                 attributeKey, section);
     }
     
-    protected RefactoringElementImplementation createMetaInfServicesRefactoring(JavaClass clazz, FileObject serviceFile, int line) {
+    protected RefactoringElementImplementation createMetaInfServicesRefactoring(String clazz, FileObject serviceFile, int line) {
         return new ServicesRenameRefactoringElement(clazz, serviceFile);
     }
 
-    protected final void checkMetaInfServices(Project project, JavaPackage pack, RefactoringElementsBag refactoringElements) {
+    protected final void checkPackageMetaInfServices(Project project, String pack, RefactoringElementsBag refactoringElements) {
         FileObject services = Utility.findMetaInfServices(project);
         if (services == null) {
             return;
         }
         
-        String name = pack.getName();
+        String name = pack;
         // Easiest to check them all; otherwise would need to find all interfaces and superclasses:
         FileObject[] files = services.getChildren();
         for (int i = 0; i < files.length; i++) {
@@ -152,7 +167,7 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
         }
     }
     
-    protected RefactoringElementImplementation createLayerRefactoring(Constructor constructor,
+    protected RefactoringElementImplementation createConstructorLayerRefactoring(String constructor, String fqname,
             LayerUtils.LayerHandle handle,
             FileObject layerFileObject,
             String layerAttribute) {
@@ -160,21 +175,21 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
         return null;
     }
     
-    protected RefactoringElementImplementation createLayerRefactoring(JavaClass clazz,
+    protected RefactoringElementImplementation createLayerRefactoring(String fqname,
             LayerUtils.LayerHandle handle,
             FileObject layerFileObject,
             String layerAttribute) {
-        return new LayerClassRefactoringElement(clazz, handle, layerFileObject,layerAttribute);
+        return new LayerClassRefactoringElement(fqname, handle, layerFileObject,layerAttribute);
     }
     
-    protected RefactoringElementImplementation createLayerRefactoring(Method method,
+    protected RefactoringElementImplementation createMethodLayerRefactoring(String method, String fqname,
             LayerUtils.LayerHandle handle,
             FileObject layerFileObject,
             String layerAttribute) {
         return new LayerMethodRefactoringElement(method, handle, layerFileObject, layerAttribute);
     }
     
-    public abstract class LayerAbstractRefactoringElement extends AbstractRefactoringElement implements ExternalChange {
+    public abstract class LayerAbstractRefactoringElement extends AbstractRefactoringElement {
         
         protected FileObject layerFile;
         protected LayerUtils.LayerHandle handle;
@@ -209,10 +224,6 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
                     }
                 }
             }
-        }
-        
-        public void performChange() {
-            JavaMetamodel.getManager().registerExtChange(this);
         }
         
         protected void doAttributeValueChange(String newOne, String type) {
@@ -277,14 +288,14 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
     public final class LayerMethodRefactoringElement extends LayerAbstractRefactoringElement {
         
         private String newAttrValue;
+        private String method;
         
-        public LayerMethodRefactoringElement(Method method,
+        public LayerMethodRefactoringElement(String method,
                 LayerUtils.LayerHandle handle,
                 FileObject layerFile,
                 String attributeName) {
             super(handle, layerFile, attributeName);
-            // for methods the change can only be in the attribute value;
-            newAttrValue = oldAttrValue.replaceAll("\\." + method.getName() + "$", "." + rename.getNewName());
+            this.method = method;
         }
         
         
@@ -296,44 +307,31 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
         }
         
         
-        public void performExternalChange() {
+        public void performChange() {
+            // for methods the change can only be in the attribute value;
+            newAttrValue = oldAttrValue.replaceAll("\\." + method + "$", "." + rename.getNewName());
             doAttributeValueChange(newAttrValue, valueType);
         }
         
-        public void undoExternalChange() {
+        public void undoChange() {
             doAttributeValueChange(oldAttrValue, valueType);
         }
+    
     }
     
     public final class LayerClassRefactoringElement extends LayerAbstractRefactoringElement {
         
-        private JavaClass clazz;
+        private String fqname;
         private String newAttrName;
         private String newAttrValue;
         private String newFileName;
         
-        public LayerClassRefactoringElement(JavaClass clzz,
+        public LayerClassRefactoringElement(String fqname,
                 LayerUtils.LayerHandle handle,
                 FileObject layerFile,
                 String attributeName) {
             super(handle, layerFile, attributeName);
-            this.clazz = clzz;
-            // for classes the change can be anywhere;
-            if (oldAttrName == null) {
-                // no attribute -> it's a filename change. eg. org-milos-kleint-MyInstance.instance
-                newFileName = oldFileName.replaceAll("\\-" + clazz.getSimpleName() + "$", "-" + rename.getNewName());
-            } else {
-                if (oldAttrName.indexOf(clazz.getName().replace('.','-') + ".instance") > 0) {
-                    //replacing the ordering attribute..
-                    newAttrName = oldAttrName.replaceAll("-" + clazz.getSimpleName() + "\\.", "-" + rename.getNewName() + ".");
-                } else {
-                    //replacing attr value probably in instanceCreate and similar
-                    if (oldAttrValue != null) {
-                        String toReplacePattern = clazz.getSimpleName();
-                        newAttrValue = oldAttrValue.replaceAll(toReplacePattern, rename.getNewName());
-                    }
-                }
-            }
+            this.fqname = fqname;
         }
         
         
@@ -348,7 +346,26 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
         }
         
         
-        public void performExternalChange() {
+        public void performChange() {
+            // for classes the change can be anywhere;
+            String nm = fqname.substring(fqname.lastIndexOf('.'));
+
+            if (oldAttrName == null) {
+                // no attribute -> it's a filename change. eg. org-milos-kleint-MyInstance.instance
+                newFileName = oldFileName.replaceAll("\\-" + nm + "$", "-" + rename.getNewName());
+            } else {
+                if (oldAttrName.indexOf(fqname.replace('.','-') + ".instance") > 0) {
+                    //replacing the ordering attribute..
+                    newAttrName = oldAttrName.replaceAll("-" + nm + "\\.", "-" + rename.getNewName() + ".");
+                } else {
+                    //replacing attr value probably in instanceCreate and similar
+                    if (oldAttrValue != null) {
+                        String toReplacePattern = nm;
+                        newAttrValue = oldAttrValue.replaceAll(toReplacePattern, rename.getNewName());
+                    }
+                }
+            }
+            
             if (newAttrValue != null) {
                 doAttributeValueChange(newAttrValue, valueType);
             }
@@ -360,7 +377,7 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
             }
         }
         
-        public void undoExternalChange() {
+        public void undoChange() {
             if (newAttrValue != null) {
                 doAttributeValueChange(oldAttrValue, valueType);
             }
@@ -375,23 +392,21 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
     }
     
     
-    public final class ManifestRenameRefactoringElement extends AbstractRefactoringElement implements ExternalChange {
+    public final class ManifestRenameRefactoringElement extends AbstractRefactoringElement  {
         
-        private JavaClass clazz;
         private String attrName;
         private String sectionName = null;
         private String oldName;
         private String oldContent;
         private String newName;
-        public ManifestRenameRefactoringElement(JavaClass clazz, FileObject parentFile, String attributeValue, String attributeName) {
+        public ManifestRenameRefactoringElement(String fqname, FileObject parentFile, String attributeValue, String attributeName) {
             this.name = attributeValue;
-            this.clazz = clazz;
             this.parentFile = parentFile;
             attrName = attributeName;
-            oldName = clazz.getName();
+            oldName = fqname;
         }
-        public ManifestRenameRefactoringElement(JavaClass clazz, FileObject parentFile, String attributeValue, String attributeName, String secName) {
-            this(clazz, parentFile, attributeValue, attributeName);
+        public ManifestRenameRefactoringElement(String fqname, FileObject parentFile, String attributeValue, String attributeName, String secName) {
+            this(fqname, parentFile, attributeValue, attributeName);
             sectionName = secName;
         }
         
@@ -407,18 +422,14 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
         }
         
         public void performChange() {
-            JavaMetamodel.getManager().registerExtChange(this);
-        }
-        
-        public void performExternalChange() {
             String content = Utility.readFileIntoString(parentFile);
             oldContent = content;
             if (content != null) {
                 String longName = oldName;
                 if (newName == null) {
-                    newName = clazz.getName();
+                    System.out.println("new name=" + rename.getNewName());
+                    newName = rename.getNewName();
                     newName = newName.replace('.', '/') + ".class"; //NOI18N
-                    clazz = null;
                 }
                 longName = longName.replace('.', '/') + ".class"; //NOI18N
                 content = content.replaceAll(longName, newName);
@@ -426,27 +437,25 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
             }
         }
         
-        public void undoExternalChange() {
+        public void undoChange() {
             if (oldContent != null) {
                 Utility.writeFileFromString(parentFile, oldContent);
             }
         }
     }
     
-    public final class ServicesRenameRefactoringElement extends AbstractRefactoringElement implements ExternalChange {
+    public final class ServicesRenameRefactoringElement extends AbstractRefactoringElement {
         
-        private JavaClass clazz;
         private String oldName;
         private String oldContent;
         private String newName;
         /**
          * Creates a new instance of ServicesRenameRefactoringElement
          */
-        public ServicesRenameRefactoringElement(JavaClass clazz, FileObject file) {
-            this.name = clazz.getSimpleName();
+        public ServicesRenameRefactoringElement(String fqname , FileObject file) {
+            this.name = fqname.substring(fqname.lastIndexOf('.'));
             parentFile = file;
-            this.clazz = clazz;
-            oldName = clazz.getName();
+            oldName = fqname;
         }
         
         /** Returns text describing the refactoring formatted for display (using HTML tags).
@@ -457,17 +466,13 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
         }
         
         public void performChange() {
-            JavaMetamodel.getManager().registerExtChange(this);
-        }
-        
-        public void performExternalChange() {
             String content = Utility.readFileIntoString(parentFile);
             oldContent = content;
             if (content != null) {
                 String longName = oldName;
                 if (newName == null) {
-                    newName = clazz.getName();
-                    clazz = null;
+                    System.out.println("new name=" + rename.getNewName());
+                    newName = rename.getNewName();
                 }
                 longName = longName.replaceAll("[.]", "\\."); // NOI18N
                 content = content.replaceAll("^" + longName + "[ \\\r\\\n]*", newName + System.getProperty("line.separator")); // NOI18N
@@ -475,7 +480,7 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
             }
         }
         
-        public void undoExternalChange() {
+        public void undoChange() {
             if (oldContent != null) {
                 Utility.writeFileFromString(parentFile, oldContent);
             }
@@ -485,16 +490,16 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
     
     public final class ServicesPackageRenameRefactoringElement extends AbstractRefactoringElement {
         
-        private JavaPackage pack;
+        private String pack;
         private String oldName;
         /**
          * Creates a new instance of ServicesRenameRefactoringElement
          */
-        public ServicesPackageRenameRefactoringElement(JavaPackage pack, FileObject file) {
-            this.name = pack.getName();
+        public ServicesPackageRenameRefactoringElement(String pack, FileObject file) {
+            this.name = pack;
             parentFile = file;
             this.pack = pack;
-            oldName = pack.getName();
+            oldName = pack;
         }
         
         /** Returns text describing the refactoring formatted for display (using HTML tags).
@@ -508,12 +513,17 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
             String content = Utility.readFileIntoString(parentFile);
             if (content != null) {
                 String longName = oldName;
-                String newName = pack.getName();
+                String newName = rename.getNewName();
                 longName = longName.replaceAll("[.]", "\\."); // NOI18N
                 content = content.replaceAll("^" + longName, newName); // NOI18N
                 Utility.writeFileFromString(parentFile, content);
             }
         }
+        
+        public void undoChange() {
+            //TODO
+        }
+        
     }
 
 }

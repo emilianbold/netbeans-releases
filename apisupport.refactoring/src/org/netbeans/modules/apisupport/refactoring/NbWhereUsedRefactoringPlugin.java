@@ -21,19 +21,14 @@ package org.netbeans.modules.apisupport.refactoring;
 
 import java.io.IOException;
 import java.io.StringReader;
-import javax.jmi.reflect.RefObject;
 import javax.swing.text.Document;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.jmi.javamodel.Constructor;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.Resource;
-import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
-import org.netbeans.modules.javacore.api.JavaModel;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
@@ -43,6 +38,8 @@ import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.xml.EntityCatalog;
 import org.xml.sax.Attributes;
@@ -91,73 +88,79 @@ public class NbWhereUsedRefactoringPlugin extends AbstractRefactoringPlugin {
         try {
             WhereUsedQuery whereUsedRefactor = ((WhereUsedQuery)refactoring);
             
-            if (!whereUsedRefactor.isFindUsages()) {
+            if (!whereUsedRefactor.getBooleanValue(WhereUsedQuery.FIND_REFERENCES)) {
                 return null;
             }
             
             Problem problem = null;
-            RefObject refObject = (RefObject) whereUsedRefactor.getRefactoredObject();
-            if (refObject instanceof JavaClass) {
-                JavaClass clzz = (JavaClass)refObject;
-                Resource res = clzz.getResource();
-                FileObject fo = JavaModel.getFileObject(res);
-                Project project = FileOwnerQuery.getOwner(fo);
-                if (project != null && project instanceof NbModuleProject) {
-                    checkMetaInfServices(project, clzz, refactoringElements);
-                    checkManifest((NbModuleProject)project, clzz, refactoringElements);
-                    checkLayer((NbModuleProject)project, clzz, refactoringElements);
-                }
+            Lookup lkp = whereUsedRefactor.getRefactoringSource();
+            InfoHolder infoholder = examineLookup(lkp);
+            final TreePathHandle handle = lkp.lookup(TreePathHandle.class);
+            
+            Project project = FileOwnerQuery.getOwner(handle.getFileObject());
+            if (project.getLookup().lookup(NbModuleProvider.class) == null) {
+                // take just netbeans module development into account..
+                return null;
             }
-            if (refObject instanceof Method) {
-                Method method = (Method)refObject;
-                problem = checkLayer(method, refactoringElements);
+            
+            if (infoholder.isClass) {
+                checkManifest(project, infoholder.fullName, refactoringElements);
+                checkMetaInfServices(project, infoholder.fullName, refactoringElements);
+                checkLayer(project, infoholder.fullName, refactoringElements);
             }
-            if (refObject instanceof Constructor) {
-                Constructor constructor = (Constructor)refObject;
-                problem = checkLayer(constructor, refactoringElements);
+            if (infoholder.isMethod) {
+                checkMethodLayer(infoholder, handle.getFileObject(), refactoringElements);
+            }
+            if (infoholder.isConstructor) {
+                checkConstructorLayer(infoholder, handle.getFileObject(), refactoringElements);
             }
             err.log("Gonna return problem: " + problem);
             return problem;
-        } finally {
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
+        finally {
             semafor.set(null);
         }
     }
 
-    protected RefactoringElementImplementation createManifestRefactoring(JavaClass clazz, 
-                                                                         FileObject manifestFile, 
-                                                                         String attributeKey, 
-                                                                         String attributeValue, 
-                                                                         String section) 
-    {
-        return new ManifestWhereUsedRefactoringElement(attributeValue, manifestFile, 
-                                                       attributeKey, section);
+    protected RefactoringElementImplementation createManifestRefactoring(
+            String fqname,
+            FileObject manifestFile,
+            String attributeKey,
+            String attributeValue,
+            String section) {
+        return new ManifestWhereUsedRefactoringElement(attributeValue, manifestFile,
+                attributeKey, section);
     }
 
-    protected RefactoringElementImplementation createMetaInfServicesRefactoring(JavaClass clazz, FileObject serviceFile, int line) {
-        return new ServicesWhereUsedRefactoringElement(clazz.getSimpleName(), serviceFile, line);
+    protected RefactoringElementImplementation createMetaInfServicesRefactoring(String fqname, FileObject serviceFile, int line) {
+        return new ServicesWhereUsedRefactoringElement(fqname, serviceFile, line);
     }
     
-    protected RefactoringElementImplementation createLayerRefactoring(JavaClass clazz,
+    
+    protected RefactoringElementImplementation createLayerRefactoring(String fqname,
             LayerUtils.LayerHandle handle,
             FileObject layerFileObject,
             String layerAttribute) {
         return new LayerWhereUsedRefactoringElement(handle.getLayerFile(), layerFileObject, layerAttribute);
     }
     
-    protected RefactoringElementImplementation createLayerRefactoring(Method method,
+    protected RefactoringElementImplementation createMethodLayerRefactoring(String method, String fqname,
             LayerUtils.LayerHandle handle,
             FileObject layerFileObject,
             String layerAttribute) {
         return new LayerWhereUsedRefactoringElement(handle.getLayerFile(), layerFileObject, layerAttribute);
     }
     
-    protected RefactoringElementImplementation createLayerRefactoring(Constructor constructor,
+    protected RefactoringElementImplementation createConstructorLayerRefactoring(String constructor, String fqname,
             LayerUtils.LayerHandle handle,
             FileObject layerFileObject,
             String layerAttribute) {
         return new LayerWhereUsedRefactoringElement(handle.getLayerFile(), layerFileObject, layerAttribute);
     }
-    
+        
     public final class LayerWhereUsedRefactoringElement extends AbstractRefactoringElement {
         private String attr;
         private String path;
@@ -298,7 +301,7 @@ public class NbWhereUsedRefactoringPlugin extends AbstractRefactoringPlugin {
             }
         }
     }
-    
+
     
     public final class ManifestWhereUsedRefactoringElement extends AbstractRefactoringElement {
         
@@ -387,6 +390,6 @@ public class NbWhereUsedRefactoringPlugin extends AbstractRefactoringPlugin {
             }
         }
         
+        
     }
-    
 }

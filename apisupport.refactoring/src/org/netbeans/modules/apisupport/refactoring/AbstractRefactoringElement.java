@@ -20,21 +20,21 @@
 package org.netbeans.modules.apisupport.refactoring;
 
 import javax.swing.text.Position;
-import org.netbeans.jmi.javamodel.Element;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
-import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Milos Kleint
  */
-public abstract class AbstractRefactoringElement extends SimpleRefactoringElementImpl implements RefactoringElementImplementation {
+public abstract class AbstractRefactoringElement extends SimpleRefactoringElementImplementation implements RefactoringElementImplementation {
     
     private int status = RefactoringElementImplementation.NORMAL;
 
@@ -55,10 +55,6 @@ public abstract class AbstractRefactoringElement extends SimpleRefactoringElemen
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
-    }
-
-    public Element getJavaElement() {
-        return null;
     }
 
     public FileObject getParentFile() {
@@ -105,5 +101,11 @@ public abstract class AbstractRefactoringElement extends SimpleRefactoringElemen
     }
 
     public void performChange() { }
+    
+    public void undoChange() { }
+    
+    public Lookup getLookup() {
+        return Lookup.EMPTY;
+    }
     
 }

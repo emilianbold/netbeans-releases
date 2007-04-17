@@ -19,13 +19,18 @@
 
 package org.netbeans.modules.apisupport.refactoring;
 
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-import org.netbeans.modules.refactoring.api.MoveClassRefactoring;
+//import org.netbeans.modules.refactoring.api.MoveClassRefactoring;
+import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
  * netbeans related support for refactoring
@@ -47,16 +52,33 @@ ould operate on.
      * the passed refactoring.
      */
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
+        Lookup look = refactoring.getRefactoringSource();
+        FileObject file = look.lookup(FileObject.class);
+        NonRecursiveFolder folder = look.lookup(NonRecursiveFolder.class);
+        TreePathHandle handle = look.lookup(TreePathHandle.class);
         
         if (refactoring instanceof WhereUsedQuery) {
-            return new NbWhereUsedRefactoringPlugin(refactoring);
+            if (handle != null) {
+                return new NbWhereUsedRefactoringPlugin(refactoring);
+            }
         }
-        
+        System.out.println("halde=" + handle);
+        System.out.println("fle=" + file);
         if (refactoring instanceof RenameRefactoring) {
-            return new NbRenameRefactoringPlugin(refactoring); 
-        }
-        if (refactoring instanceof MoveClassRefactoring) {
-            return new NbMoveRefactoringPlugin(refactoring);
+            if (handle!=null || ((file!=null) && RetoucheUtils.isJavaFile(file))) {
+                //rename java file, class, method etc..
+                return new NbRenameRefactoringPlugin((RenameRefactoring)refactoring);
+            } else if (file!=null && RetoucheUtils.isOnSourceClasspath(file) && file.isFolder()) {
+                //rename folder
+//TODO                return new NbMoveRefactoringPlugin((RenameRefactoring)refactoring);
+            } else if (folder!=null && RetoucheUtils.isOnSourceClasspath(folder.getFolder())) {
+                //rename package
+//TODO                return new NbMoveRefactoringPlugin((RenameRefactoring)refactoring);
+            }
+        }    
+            
+        if (refactoring instanceof MoveRefactoring) {
+//TODO            return new NbMoveRefactoringPlugin((MoveRefactoring)refactoring);
         }
         if (refactoring instanceof SafeDeleteRefactoring) {
             return new NbSafeDeleteRefactoringPlugin(refactoring);

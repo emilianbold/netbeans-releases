@@ -19,32 +19,50 @@
 
 package org.netbeans.modules.apisupport.refactoring;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ClassIndex;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Resource;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.apisupport.project.EditableManifest;
-import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.javacore.api.JavaModel;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-import org.netbeans.modules.refactoring.api.MoveClassRefactoring;
+import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
@@ -53,35 +71,56 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Milos Kleint
  */
-public class NbMoveRefactoringPlugin implements RefactoringPlugin {
+public class NbMoveRefactoringPlugin extends AbstractRefactoringPlugin {
     protected static ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.modules.apisupport.refactoring");   // NOI18N
     
     /** This one is important creature - makes sure that cycles between plugins won't appear */
     private static ThreadLocal semafor = new ThreadLocal();
     
     
-    private MoveClassRefactoring refactoring;
     private Collection manifestRefactorings;
     private boolean firstManifestRefactoring = true;
     
     private HashMap oldManifests; /** <NBModuleProject, EditableManifest> */
     private EditableManifest targetManifest;
     
+    
+    private Map packagePostfix = new HashMap();
+    ArrayList<FileObject> filesToMove = new ArrayList();    
+    HashMap<FileObject,ElementHandle> classes;
+    
     /**
      * Creates a new instance of NbRenameRefactoringPlugin
      */
-    public NbMoveRefactoringPlugin(AbstractRefactoring refactoring) {
-        this.refactoring = (MoveClassRefactoring)refactoring;
+    public NbMoveRefactoringPlugin(MoveRefactoring move) {
+        super(move);
         
         manifestRefactorings = new ArrayList();
         oldManifests = new HashMap();
+        setup(move.getRefactoringSource().lookupAll(FileObject.class), "", true);
     }
+    
+    
+    public NbMoveRefactoringPlugin(RenameRefactoring rename) {
+        super(rename);
+        FileObject fo = rename.getRefactoringSource().lookup(FileObject.class);
+        if (fo!=null) {
+            setup(Collections.singletonList(fo), "", true);
+        } else {
+            setup(Collections.singletonList(((NonRecursiveFolder)rename.getRefactoringSource().lookup(NonRecursiveFolder.class)).getFolder()), "", false);
+        }
+    }  
+    
+    
+    
     
     /** Checks pre-conditions of the refactoring and returns problems.
      * @return Problems found or null (if no problems were identified)
@@ -117,141 +156,173 @@ public class NbMoveRefactoringPlugin implements RefactoringPlugin {
             return null;
         }
         semafor.set(new Object());
+        Problem problem = null;
         try {
-            Problem problem = null;
-            Collection col = refactoring.getResources();
-            Project targetProject = FileOwnerQuery.getOwner(refactoring.getTargetClassPathRoot());
-            if (targetProject == null || ! (targetProject instanceof NbModuleProject)) {
-                return problem;
-            }
-            NbModuleProject cachedProject = null;
+            initClasses();
+            Project cachedProject = null;
             String[] cachedServices = null;
             FileObject[] cachedServicesFiles = null;
             Manifest cachedManifest = null;
-            Iterator it = col.iterator();
-            while (it.hasNext()) {
-                Resource res = (Resource)it.next();
-                FileObject fo = JavaModel.getFileObject(res);
-                Project project = FileOwnerQuery.getOwner(fo);
-                if (project != null && project instanceof NbModuleProject) {
-                    if (cachedProject == null || cachedProject != project) {
-                        cachedProject = (NbModuleProject)project;
-                        cachedServices = loadMetaInfServices(cachedProject);
-                        cachedManifest = cachedProject.getManifest();
-                        FileObject services = Utility.findMetaInfServices(cachedProject);
-                        if (services == null) {
-                            cachedServicesFiles = new FileObject[0];
-                        } else {
-                            cachedServicesFiles = services.getChildren();
-                        }
-                    }
-                    String name = res.getName();
-                    String clazzName = name.replaceAll("\\.java$", ".class"); //NOI18N
-                    String serviceName = name.replaceAll("\\.java$", "").replace('/', '.'); //NOI18N
-                    JavaClass clazz = findClazz(res, serviceName);
-                    //check services for this one
-                    for (int i = 0; i < cachedServices.length; i++) {
-                        serviceName = serviceName.replaceAll("[.]", "\\."); //NOI18N
-			// #65343 somehow the reading of individual services files can happen.
-                        if (cachedServices[i] != null) {
-                            if (cachedServices[i].matches("^" + serviceName + "[ \\\n]?")) { //NOI18N
-                                RefactoringElementImplementation elem =
-                                        new ServicesMoveRefactoringElement(clazz, cachedServicesFiles[i], cachedProject);
-                                refactoringElements.add(refactoring, elem);
-                            }
-                        } else {
-                            //huh? reading the service file failed for some reason, report or silently ignore?
-			    ErrorManager.getDefault().log(ErrorManager.WARNING, "Error loading one of the files in folder " + cachedServices);
-                        }
-                    }
-                    // check main attributes..
-                    Attributes attrs = cachedManifest.getMainAttributes();
-                    Iterator itx = attrs.entrySet().iterator();
-                    while (itx.hasNext()) {
-                        Map.Entry entry = (Map.Entry)itx.next();
-                        String val = (String)entry.getValue();
-                        if (val.indexOf(clazzName) != -1 || val.indexOf(clazzName) != -1) {
-                            RefactoringElementImplementation elem =
-                                    createManifestRefactoring(clazz, cachedProject.getManifestFile(),
-                                    ((Attributes.Name)entry.getKey()).toString(), val, null, cachedProject);
-                            refactoringElements.add(refactoring, elem);
-                            manifestRefactorings.add(elem);
-                        }
-                    }
-                    // check section attributes
-                    Map entries = cachedManifest.getEntries();
-                    if (entries != null) {
-                        Iterator itf = entries.entrySet().iterator();
-                        while (itf.hasNext()) {
-                            Map.Entry secEnt = (Map.Entry)itf.next();
-                            attrs = (Attributes)secEnt.getValue();
-                            String val = (String)secEnt.getKey();
-                            if (val.indexOf(clazzName) != -1) {
-                                String section = attrs.getValue("OpenIDE-Module-Class"); //NOI18N
-                                RefactoringElementImplementation elem =
-                                        createManifestRefactoring(clazz, cachedProject.getManifestFile(), null, val, section, cachedProject);
-                                refactoringElements.add(refactoring, elem);
-                                manifestRefactorings.add(elem);
-                            }
-                        }
-                    }
+            
+            Lookup lkp = refactoring.getRefactoringSource();
+            TreePathHandle handle = lkp.lookup(TreePathHandle.class);
+            
+            if (handle != null) {
+                InfoHolder infoholder = examineLookup(lkp);
+                Project project = FileOwnerQuery.getOwner(handle.getFileObject());
+                if (project.getLookup().lookup(NbModuleProvider.class) == null) {
+                    // take just netbeans module development into account..
+                    return null;
+                }
+                
+                if (infoholder.isClass) {
+                    checkManifest(project, infoholder.fullName, refactoringElements);
+                    checkMetaInfServices(project, infoholder.fullName, refactoringElements);
+                    checkLayer(project, infoholder.fullName, refactoringElements);
+                }
+                if (infoholder.isMethod) {
+                    checkMethodLayer(infoholder, handle.getFileObject(), refactoringElements);
                 }
             }
-            // now check layer.xml and bundle file in manifest
+        } catch (IOException e) {
+            Exceptions.printStackTrace(e);
             
-            Iterator itd = refactoring.getOtherDataObjects().iterator();
-            while (itd.hasNext()) {
-                DataObject dobj = (DataObject)itd.next();
-                Project project = FileOwnerQuery.getOwner(dobj.getPrimaryFile());
-                if (project != null && project instanceof NbModuleProject) {
-                    if (cachedProject == null || cachedProject != project) {
-                        cachedProject = (NbModuleProject)project;
-                        cachedServices = loadMetaInfServices(cachedProject);
-                        cachedManifest = cachedProject.getManifest();
-                    }
-                }
-                String packageName = findPackageName(cachedProject, dobj.getPrimaryFile());
-                if (packageName != null) {
-                    Iterator itf = cachedManifest.getMainAttributes().entrySet().iterator();
-                    while (itf.hasNext()) {
-                        Map.Entry ent = (Map.Entry)itf.next();
-                        String val = (String)ent.getValue();
-                        if (packageName.equals(val)) {
-                            RefactoringElementImplementation elem = new ManifestMoveRefactoringElement(cachedProject.getManifestFile(), val,
-                                    ((Attributes.Name)ent.getKey()).toString(), cachedProject, dobj.getPrimaryFile());
-                            refactoringElements.add(refactoring, elem);
-                            manifestRefactorings.add(elem);
-                        }
-                    }
-                }
-            }
+            //TODO
             
-            return problem;
+            
+//            Iterator it = col.iterator();
+//            while (it.hasNext()) {
+//                Resource res = (Resource)it.next();
+//                FileObject fo = JavaModel.getFileObject(res);
+//                Project project = FileOwnerQuery.getOwner(fo);
+//                if (project != null && project instanceof NbModuleProject) {
+//                    if (cachedProject == null || cachedProject != project) {
+//                        cachedProject = (NbModuleProject)project;
+//                        cachedServices = loadMetaInfServices(cachedProject);
+//                        cachedManifest = cachedProject.getManifest();
+//                        FileObject services = Utility.findMetaInfServices(cachedProject);
+//                        if (services == null) {
+//                            cachedServicesFiles = new FileObject[0];
+//                        } else {
+//                            cachedServicesFiles = services.getChildren();
+//                        }
+//                    }
+//                    String name = res.getName();
+//                    String clazzName = name.replaceAll("\\.java$", ".class"); //NOI18N
+//                    String serviceName = name.replaceAll("\\.java$", "").replace('/', '.'); //NOI18N
+//                    JavaClass clazz = findClazz(res, serviceName);
+//                    //check services for this one
+//                    for (int i = 0; i < cachedServices.length; i++) {
+//                        serviceName = serviceName.replaceAll("[.]", "\\."); //NOI18N
+//			// #65343 somehow the reading of individual services files can happen.
+//                        if (cachedServices[i] != null) {
+//                            if (cachedServices[i].matches("^" + serviceName + "[ \\\n]?")) { //NOI18N
+//                                RefactoringElementImplementation elem =
+//                                        new ServicesMoveRefactoringElement(clazz, cachedServicesFiles[i], cachedProject);
+//                                refactoringElements.add(refactoring, elem);
+//                            }
+//                        } else {
+//                            //huh? reading the service file failed for some reason, report or silently ignore?
+//			    ErrorManager.getDefault().log(ErrorManager.WARNING, "Error loading one of the files in folder " + cachedServices);
+//                        }
+//                    }
+//                    // check main attributes..
+//                    Attributes attrs = cachedManifest.getMainAttributes();
+//                    Iterator itx = attrs.entrySet().iterator();
+//                    while (itx.hasNext()) {
+//                        Map.Entry entry = (Map.Entry)itx.next();
+//                        String val = (String)entry.getValue();
+//                        if (val.indexOf(clazzName) != -1 || val.indexOf(clazzName) != -1) {
+//                            RefactoringElementImplementation elem =
+//                                    createManifestRefactoring(clazz, cachedProject.getManifestFile(),
+//                                    ((Attributes.Name)entry.getKey()).toString(), val, null, cachedProject);
+//                            refactoringElements.add(refactoring, elem);
+//                            manifestRefactorings.add(elem);
+//                        }
+//                    }
+//                    // check section attributes
+//                    Map entries = cachedManifest.getEntries();
+//                    if (entries != null) {
+//                        Iterator itf = entries.entrySet().iterator();
+//                        while (itf.hasNext()) {
+//                            Map.Entry secEnt = (Map.Entry)itf.next();
+//                            attrs = (Attributes)secEnt.getValue();
+//                            String val = (String)secEnt.getKey();
+//                            if (val.indexOf(clazzName) != -1) {
+//                                String section = attrs.getValue("OpenIDE-Module-Class"); //NOI18N
+//                                RefactoringElementImplementation elem =
+//                                        createManifestRefactoring(clazz, cachedProject.getManifestFile(), null, val, section, cachedProject);
+//                                refactoringElements.add(refactoring, elem);
+//                                manifestRefactorings.add(elem);
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//            // now check layer.xml and bundle file in manifest
+//            
+//            Iterator itd = refactoring.getOtherDataObjects().iterator();
+//            while (itd.hasNext()) {
+//                DataObject dobj = (DataObject)itd.next();
+//                Project project = FileOwnerQuery.getOwner(dobj.getPrimaryFile());
+//                if (project != null && project instanceof NbModuleProject) {
+//                    if (cachedProject == null || cachedProject != project) {
+//                        cachedProject = (NbModuleProject)project;
+//                        cachedServices = loadMetaInfServices(cachedProject);
+//                        cachedManifest = cachedProject.getManifest();
+//                    }
+//                }
+//                String packageName = findPackageName(cachedProject, dobj.getPrimaryFile());
+//                if (packageName != null) {
+//                    Iterator itf = cachedManifest.getMainAttributes().entrySet().iterator();
+//                    while (itf.hasNext()) {
+//                        Map.Entry ent = (Map.Entry)itf.next();
+//                        String val = (String)ent.getValue();
+//                        if (packageName.equals(val)) {
+//                            RefactoringElementImplementation elem = new ManifestMoveRefactoringElement(cachedProject.getManifestFile(), val,
+//                                    ((Attributes.Name)ent.getKey()).toString(), cachedProject, dobj.getPrimaryFile());
+//                            refactoringElements.add(refactoring, elem);
+//                            manifestRefactorings.add(elem);
+//                        }
+//                    }
+//                }
+//            }
+            
         } finally {
             semafor.set(null);
         }
+        return problem;
     }
+    protected RefactoringElementImplementation createMetaInfServicesRefactoring(String fqclazz,
+                                                                                FileObject serviceFile,
+                                                                                int line) {
+        return null;
+//TODO        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
     
-    protected RefactoringElementImplementation createManifestRefactoring(JavaClass clazz,
+    protected RefactoringElementImplementation createManifestRefactoring(
+            String fqname,
             FileObject manifestFile,
             String attributeKey,
             String attributeValue,
-            String section, NbModuleProject proj) {
-        return new ManifestMoveRefactoringElement(clazz, manifestFile, attributeValue,
-                attributeKey, section, proj);
+            String section) {
+       return null;
+//TODO        return new ManifestMoveRefactoringElement(fqname, manifestFile, attributeValue,
+//                attributeKey, section);
     }
     
-    private JavaClass findClazz(Resource res, String name) {
-        Iterator itx = res.getClassifiers().iterator();
-        while (itx.hasNext()) {
-            JavaClass clzz = (JavaClass)itx.next();
-            if (clzz.getName().equals(name)) {
-                return clzz;
-            }
-        }
-        //what to do now.. we should match always something, better to return wrong, than nothing?
-        return (JavaClass)res.getClassifiers().iterator().next();
-    }
+//    private JavaClass findClazz(Resource res, String name) {
+//        Iterator itx = res.getClassifiers().iterator();
+//        while (itx.hasNext()) {
+//            JavaClass clzz = (JavaClass)itx.next();
+//            if (clzz.getName().equals(name)) {
+//                return clzz;
+//            }
+//        }
+//        //what to do now.. we should match always something, better to return wrong, than nothing?
+//        return (JavaClass)res.getClassifiers().iterator().next();
+//    }
     
     protected final String[] loadMetaInfServices(Project project) {
         FileObject services = Utility.findMetaInfServices(project);
@@ -267,7 +338,7 @@ public class NbMoveRefactoringPlugin implements RefactoringPlugin {
         return ret;
     }
     
-    private static String findPackageName(NbModuleProject project, FileObject fo) {
+    private static String findPackageName(Project project, FileObject fo) {
         Sources srcs = ProjectUtils.getSources(project);
         SourceGroup[] grps = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         for (int i = 0; i < grps.length; i++) {
@@ -281,34 +352,29 @@ public class NbMoveRefactoringPlugin implements RefactoringPlugin {
     
     public final class ManifestMoveRefactoringElement extends AbstractRefactoringElement {
         
-        private JavaClass clazz;
+        private String clazz;
         private String attrName;
         private String sectionName = null;
-        private NbModuleProject project;
         private FileObject movedFile = null;
-        public ManifestMoveRefactoringElement(JavaClass clazz, FileObject parentFile,
-                String attributeValue, String attributeName,
-                NbModuleProject project) {
+        public ManifestMoveRefactoringElement(String clazz, FileObject parentFile,
+                String attributeValue, String attributeName) {
             this.name = attributeValue;
             this.clazz = clazz;
             this.parentFile = parentFile;
-            this.project = project;
             attrName = attributeName;
         }
-        public ManifestMoveRefactoringElement(JavaClass clazz, FileObject parentFile,
-                String attributeValue, String attributeName, String secName,
-                NbModuleProject project) {
-            this(clazz, parentFile, attributeValue, attributeName, project);
+        public ManifestMoveRefactoringElement(String clazz, FileObject parentFile,
+                String attributeValue, String attributeName, String secName) {
+            this(clazz, parentFile, attributeValue, attributeName);
             sectionName = secName;
         }
         
         //for data objects that are not classes
         public ManifestMoveRefactoringElement(FileObject parentFile,
-                String attributeValue, String attributeName, NbModuleProject project, FileObject movedFile) {
+                String attributeValue, String attributeName, FileObject movedFile) {
             this.name = attributeValue;
             this.parentFile = parentFile;
             attrName = attributeName;
-            this.project = project;
             this.movedFile = movedFile;
         }
         
@@ -325,87 +391,87 @@ public class NbMoveRefactoringPlugin implements RefactoringPlugin {
         }
         
         public void performChange() {
-            NbModuleProject targetProject = (NbModuleProject)FileOwnerQuery.getOwner(refactoring.getTargetClassPathRoot());
-            if (firstManifestRefactoring) {
-                // if this is the first manifest refactoring, check the list for non-enable ones and remove them
-                Iterator it = manifestRefactorings.iterator();
-                while (it.hasNext()) {
-                    ManifestMoveRefactoringElement el = (ManifestMoveRefactoringElement)it.next();
-                    if (!el.isEnabled()) {
-                        it.remove();
-                    }
-                }
-                FileObject fo = targetProject.getManifestFile();
-                targetManifest = readManifest(fo);
-                firstManifestRefactoring = false;
-            }
-            
-            NbModuleProject sourceProject = project;
-            EditableManifest sourceManifest = null;
-            if (sourceProject == targetProject) {
-                sourceManifest = targetManifest;
-            } else {
-                sourceManifest = (EditableManifest)oldManifests.get(sourceProject);
-                if (sourceManifest == null) {
-                    sourceManifest = readManifest(sourceProject.getManifestFile());
-                    oldManifests.put(sourceProject, sourceManifest);
-                }
-            }
-            // update section info
-            if (sectionName != null) {
-                String newSectionName = clazz.getName().replace('.', '/') + ".class"; //NOI18N
-                targetManifest.addSection(newSectionName);
-                Iterator it = sourceManifest.getAttributeNames(name).iterator();
-                while (it.hasNext()) {
-                    String secattrname = (String)it.next();
-                    targetManifest.setAttribute(secattrname, sourceManifest.getAttribute(secattrname, name), newSectionName);
-                }
-                sourceManifest.removeSection(name);
-            } else {
-                // update regular attributes
-                if (sourceManifest != targetManifest) {
-                    sourceManifest.removeAttribute(attrName, null);
-                }
-                if (clazz != null) {
-                    String newClassname = clazz.getName().replace('.','/') + ".class"; //NOI18N
-                    targetManifest.setAttribute(attrName, newClassname, null);
-                } else {
-                    // mkleint - afaik this will get called only on folder rename.
-                    String newPath = refactoring.getTargetPackageName(movedFile).replace('.','/') + "/" + movedFile.getNameExt(); //NOI18N
-                    targetManifest.setAttribute(attrName, newPath, null);
-                }
-            }
-            manifestRefactorings.remove(this);
-            if (manifestRefactorings.isEmpty()) {
-                // now write all the manifests that were edited.
-                writeManifest(targetProject.getManifestFile(), targetManifest);
-                Iterator it = oldManifests.entrySet().iterator();
-                while (it.hasNext()) {
-                    Map.Entry entry = (Map.Entry)it.next();
-                    EditableManifest man = (EditableManifest)entry.getValue();
-                    NbModuleProject proj = (NbModuleProject)entry.getKey();
-                    if (man == targetManifest) {
-                        continue;
-                    }
-                    writeManifest(proj.getManifestFile(), man);
-                }
-            }
+//            NbModuleProject targetProject = (NbModuleProject)FileOwnerQuery.getOwner(refactoring.getTargetClassPathRoot());
+//            if (firstManifestRefactoring) {
+//                // if this is the first manifest refactoring, check the list for non-enable ones and remove them
+//                Iterator it = manifestRefactorings.iterator();
+//                while (it.hasNext()) {
+//                    ManifestMoveRefactoringElement el = (ManifestMoveRefactoringElement)it.next();
+//                    if (!el.isEnabled()) {
+//                        it.remove();
+//                    }
+//                }
+//                FileObject fo = targetProject.getManifestFile();
+//                targetManifest = readManifest(fo);
+//                firstManifestRefactoring = false;
+//            }
+//            
+//            NbModuleProject sourceProject = project;
+//            EditableManifest sourceManifest = null;
+//            if (sourceProject == targetProject) {
+//                sourceManifest = targetManifest;
+//            } else {
+//                sourceManifest = (EditableManifest)oldManifests.get(sourceProject);
+//                if (sourceManifest == null) {
+//                    sourceManifest = readManifest(sourceProject.getManifestFile());
+//                    oldManifests.put(sourceProject, sourceManifest);
+//                }
+//            }
+//            // update section info
+//            if (sectionName != null) {
+//                String newSectionName = clazz.getName().replace('.', '/') + ".class"; //NOI18N
+//                targetManifest.addSection(newSectionName);
+//                Iterator it = sourceManifest.getAttributeNames(name).iterator();
+//                while (it.hasNext()) {
+//                    String secattrname = (String)it.next();
+//                    targetManifest.setAttribute(secattrname, sourceManifest.getAttribute(secattrname, name), newSectionName);
+//                }
+//                sourceManifest.removeSection(name);
+//            } else {
+//                // update regular attributes
+//                if (sourceManifest != targetManifest) {
+//                    sourceManifest.removeAttribute(attrName, null);
+//                }
+//                if (clazz != null) {
+//                    String newClassname = clazz.getName().replace('.','/') + ".class"; //NOI18N
+//                    targetManifest.setAttribute(attrName, newClassname, null);
+//                } else {
+//                    // mkleint - afaik this will get called only on folder rename.
+//                    String newPath = refactoring.getTargetPackageName(movedFile).replace('.','/') + "/" + movedFile.getNameExt(); //NOI18N
+//                    targetManifest.setAttribute(attrName, newPath, null);
+//                }
+//            }
+//            manifestRefactorings.remove(this);
+//            if (manifestRefactorings.isEmpty()) {
+//                // now write all the manifests that were edited.
+//                writeManifest(targetProject.getManifestFile(), targetManifest);
+//                Iterator it = oldManifests.entrySet().iterator();
+//                while (it.hasNext()) {
+//                    Map.Entry entry = (Map.Entry)it.next();
+//                    EditableManifest man = (EditableManifest)entry.getValue();
+//                    NbModuleProject proj = (NbModuleProject)entry.getKey();
+//                    if (man == targetManifest) {
+//                        continue;
+//                    }
+//                    writeManifest(proj.getManifestFile(), man);
+//                }
+//            }
         }
     }
     
     public final class ServicesMoveRefactoringElement extends AbstractRefactoringElement {
         
-        private JavaClass clazz;
+        private String clazz;
         private String oldName;
-        private NbModuleProject project;
+        private Project project;
         /**
          * Creates a new instance of ServicesRenameRefactoringElement
          */
-        public ServicesMoveRefactoringElement(JavaClass clazz, FileObject file, NbModuleProject proj) {
-            this.name = clazz.getSimpleName();
+        public ServicesMoveRefactoringElement(String clazz, FileObject file, Project proj) {
+//            this.name = clazz.getSimpleName();
             parentFile = file;
             this.clazz = clazz;
-            oldName = clazz.getName();
+            oldName = clazz;
             project = proj;
         }
         
@@ -417,66 +483,69 @@ public class NbMoveRefactoringPlugin implements RefactoringPlugin {
         }
         
         public void performChange() {
-            MoveClassRefactoring move = (MoveClassRefactoring)refactoring;
-            NbModuleProject newproject = (NbModuleProject)FileOwnerQuery.getOwner(move.getTargetClassPathRoot());
-            FileObject newFile = parentFile;
-            if (newproject != project) {
-                FileObject services = Utility.findMetaInfServices(newproject);
-                try {
-                    if (services == null) {
-                        services = createMetaInf(newproject);
-                    }
-                    newFile = services.getFileObject(parentFile.getNameExt());
-                    if (newFile == null) {
-                        newFile = services.createData(parentFile.getNameExt());
-                    }
-                } catch (IOException ex) {
-                    err.notify(ex);
-                }
-            }
-            String oldcontent = Utility.readFileIntoString(parentFile);
-            String longName = oldName;
-            String newName = clazz.getName();
-            if (oldcontent != null) {
-                longName = longName.replaceAll("[.]", "\\."); //NOI18N
-                if (newFile == parentFile) {
-                    // same file, just replace
-                    oldcontent = oldcontent.replaceAll("^" + longName, newName); //NOI18N
-                    Utility.writeFileFromString(parentFile, oldcontent);
-                } else {
-                    // moving to a different file.
-                    oldcontent = oldcontent.replaceAll("^" + longName + "[ \\\n]?", ""); //NOI18N
-                    String newcontent = Utility.readFileIntoString(newFile);
-                    newcontent = newName + "\n" + newcontent; // NOI18N
-                    Utility.writeFileFromString(newFile, newcontent);
-                    //check if we want to delete the old file or just update it.
-                    StringTokenizer tok = new StringTokenizer(oldcontent, "\n"); //NOI18N
-                    boolean hasMoreThanComments = false;
-                    while (tok.hasMoreTokens()) {
-                        String token = tok.nextToken().trim();
-                        if (token.length() > 0 && (! Pattern.matches("^[#].*", token))) { //NOI18N
-                            hasMoreThanComments = true;
-                            break;
-                        }
-                    }
-                    if (hasMoreThanComments) {
-                        Utility.writeFileFromString(parentFile, oldcontent);
-                    } else {
-                        try {
-                            parentFile.delete();
-                        } catch (IOException exc) {
-                            err.notify(exc);
-                        }
-                    }
-                    
-                }
-            }
+//            MoveClassRefactoring move = (MoveClassRefactoring)refactoring;
+//            NbModuleProject newproject = (NbModuleProject)FileOwnerQuery.getOwner(move.getTargetClassPathRoot());
+//            FileObject newFile = parentFile;
+//            if (newproject != project) {
+//                FileObject services = Utility.findMetaInfServices(newproject);
+//                try {
+//                    if (services == null) {
+//                        services = createMetaInf(newproject);
+//                    }
+//                    newFile = services.getFileObject(parentFile.getNameExt());
+//                    if (newFile == null) {
+//                        newFile = services.createData(parentFile.getNameExt());
+//                    }
+//                } catch (IOException ex) {
+//                    err.notify(ex);
+//                }
+//            }
+//            String oldcontent = Utility.readFileIntoString(parentFile);
+//            String longName = oldName;
+//            String newName = clazz.getName();
+//            if (oldcontent != null) {
+//                longName = longName.replaceAll("[.]", "\\."); //NOI18N
+//                if (newFile == parentFile) {
+//                    // same file, just replace
+//                    oldcontent = oldcontent.replaceAll("^" + longName, newName); //NOI18N
+//                    Utility.writeFileFromString(parentFile, oldcontent);
+//                } else {
+//                    // moving to a different file.
+//                    oldcontent = oldcontent.replaceAll("^" + longName + "[ \\\n]?", ""); //NOI18N
+//                    String newcontent = Utility.readFileIntoString(newFile);
+//                    newcontent = newName + "\n" + newcontent; // NOI18N
+//                    Utility.writeFileFromString(newFile, newcontent);
+//                    //check if we want to delete the old file or just update it.
+//                    StringTokenizer tok = new StringTokenizer(oldcontent, "\n"); //NOI18N
+//                    boolean hasMoreThanComments = false;
+//                    while (tok.hasMoreTokens()) {
+//                        String token = tok.nextToken().trim();
+//                        if (token.length() > 0 && (! Pattern.matches("^[#].*", token))) { //NOI18N
+//                            hasMoreThanComments = true;
+//                            break;
+//                        }
+//                    }
+//                    if (hasMoreThanComments) {
+//                        Utility.writeFileFromString(parentFile, oldcontent);
+//                    } else {
+//                        try {
+//                            parentFile.delete();
+//                        } catch (IOException exc) {
+//                            err.notify(exc);
+//                        }
+//                    }
+//                    
+//                }
+//            }
         }
     }
     
-    private static FileObject createMetaInf(NbModuleProject project) throws IOException {
+    private static FileObject createMetaInf(Project project) throws IOException {
         Sources srcs = ProjectUtils.getSources(project);
-        SourceGroup[] grps = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        SourceGroup[] grps = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
+        if (grps == null) {
+            grps = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        }
         for (int i = 0; i < grps.length; i++) {
             FileObject fo = grps[i].getRootFolder().getFileObject("META-INF"); //NOI18N
             if (fo != null) {
@@ -529,4 +598,107 @@ public class NbMoveRefactoringPlugin implements RefactoringPlugin {
         }
     }
     
+    
+    
+    ///------- copied from MoveRefactoringPlugin
+    
+    private void setup(Collection fileObjects, String postfix, boolean recursively) {
+        for (Iterator i = fileObjects.iterator(); i.hasNext(); ) {
+            FileObject fo = (FileObject) i.next();
+            if (RetoucheUtils.isJavaFile(fo)) {
+                packagePostfix.put(fo, postfix.replace('/', '.'));
+                filesToMove.add(fo);
+            } else if (!(fo.isFolder())) {
+                packagePostfix.put(fo, postfix.replace('/', '.'));
+            } else if (VisibilityQuery.getDefault().isVisible(fo)) {
+                //o instanceof DataFolder
+                //CVS folders are ignored
+                boolean addDot = !"".equals(postfix);
+                Collection col = new ArrayList();
+                for (FileObject fo2: fo.getChildren()) {
+                    col.add(fo2);
+                }
+                if (recursively)
+                    setup(col, postfix +(addDot?".":"") +fo.getName(), true); // NOI18N
+            }
+        }
+    }   
+    
+   String getNewPackageName() {
+        if (refactoring instanceof MoveRefactoring) {
+            return RetoucheUtils.getPackageName(((MoveRefactoring) refactoring).getTarget().lookup(URL.class));        
+        } else {
+            return ((RenameRefactoring) refactoring).getNewName();
+        }
+    }
+    
+    String getTargetPackageName(FileObject fo) {
+        if (refactoring instanceof RenameRefactoring) {
+            if (refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class) !=null)
+                //package rename
+                return getNewPackageName();
+            else {
+                //folder rename
+                FileObject folder = refactoring.getRefactoringSource().lookup(FileObject.class);
+                ClassPath cp = ClassPath.getClassPath(folder, ClassPath.SOURCE);
+                FileObject root = cp.findOwnerRoot(folder);
+                String prefix = FileUtil.getRelativePath(root, folder.getParent()).replace('/','.');
+                String postfix = FileUtil.getRelativePath(folder, fo.getParent()).replace('/', '.');
+                String t = concat(prefix, getNewPackageName(), postfix);
+                return t;
+            }
+        } else if (packagePostfix != null) {
+            String postfix = (String) packagePostfix.get(fo);
+            String packageName = concat(null, getNewPackageName(), postfix);
+            return packageName;
+        } else
+            return getNewPackageName();
+    }   
+    
+   private String concat(String s1, String s2, String s3) {
+        String result = "";
+        if (s1 != null && !"".equals(s1)) {
+            result += s1 + "."; // NOI18N
+        }
+        result +=s2;
+        if (s3 != null && !"".equals(s3)) {
+            result += ("".equals(result)? "" : ".") + s3; // NOI18N
+        }
+        return result;
+    }  
+   
+   private void initClasses() {
+        classes = new HashMap();
+        for (int i=0;i<filesToMove.size();i++) {
+            final int j = i;
+            try {
+                JavaSource source = JavaSource.forFileObject(filesToMove.get(i));
+                
+                source.runUserActionTask(new CancellableTask<CompilationController>() {
+                    
+                    public void cancel() {
+                        throw new UnsupportedOperationException("Not supported yet.");
+                    }
+                    
+                    public void run(final CompilationController parameter) throws Exception {
+                        parameter.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                        List<? extends Tree> trees= parameter.getCompilationUnit().getTypeDecls();
+                        for (Tree t: trees) {
+                            if (t.getKind() == Tree.Kind.CLASS) {
+                                if (((ClassTree) t).getSimpleName().toString().equals(filesToMove.get(j).getName())) {
+                                    classes.put(filesToMove.get(j), ElementHandle.create(parameter.getTrees().getElement(TreePath.getPath(parameter.getCompilationUnit(), t))));
+                                    return ;
+                                }
+                            }
+                        }
+                              
+                    }
+                }, true);
+            } catch (IOException ex) {
+                java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE, ex.getMessage(), ex);
+            };
+            
+        }
+    }  
+   
 }
