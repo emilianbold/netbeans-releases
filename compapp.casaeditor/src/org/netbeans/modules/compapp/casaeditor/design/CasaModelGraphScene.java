@@ -40,6 +40,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.visual.action.RectangularSelectDecorator;
 import org.netbeans.api.visual.router.RouterFactory;
 import org.netbeans.modules.compapp.casaeditor.CasaDataEditorSupport;
@@ -72,6 +74,7 @@ import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNodeFactory;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -84,6 +87,8 @@ public class CasaModelGraphScene
 extends CasaGraphAbstractScene<CasaComponent, CasaComponent, CasaComponent>
 implements PropertyChangeListener {
 
+    private static final Logger LOGGER = Logger.getLogger(CasaModelGraphScene.class.getName());
+    
     private LayerWidget mMainLayer       = new LayerWidget(this);
     private LayerWidget mConnectionLayer = new LayerWidget(this);
     private LayerWidget mGlassLayer      = new LayerWidget(this);
@@ -192,16 +197,27 @@ implements PropertyChangeListener {
     }
     
     private void finalizeModelPositions() {
+        boolean anyBadPositions = false;
         for (CasaComponent component : getNodes()) {
             CasaNodeWidget nodeWidget = (CasaNodeWidget) findWidget(component);
             if (nodeWidget != null) {
-                CasaModelGraphUtilities.updateModelPosition(
-                        this,
-                        component, 
-                        nodeWidget.getPreferredLocation());
+                Point preferredLocation = nodeWidget.getPreferredLocation();
+                if (preferredLocation != null) {
+                    CasaModelGraphUtilities.updateModelPosition(
+                            this,
+                            component, 
+                            preferredLocation);
+                } else {
+                    anyBadPositions = true;
+                }
             }
         }
-        mIsModelPositionsFinalized = true;
+        
+        if (anyBadPositions) {
+            LOGGER.log(Level.WARNING, NbBundle.getMessage(getClass(), "Warning_Null_Position"));
+        } else {
+            mIsModelPositionsFinalized = true;
+        }
     }
     
     public void setIsAdjusting(boolean isAdjusting) {
