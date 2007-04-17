@@ -22,6 +22,8 @@ package org.netbeans.modules.editor.impl;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.spi.editor.mimelookup.Class2LayerFolder;
@@ -35,6 +37,8 @@ import org.openide.loaders.DataObject;
  */
 public final class ToolbarActionsProvider extends ActionsList implements Class2LayerFolder, InstanceProvider {
 
+    private static final Logger LOG = Logger.getLogger(ToolbarActionsProvider.class.getName());
+    
     private static final String TOOLBAR_ACTIONS_FOLDER_NAME = "Toolbars/Default"; //NOI18N
     private static final String TEXT_BASE_PATH = "Editors/text/base/"; //NOI18N
     
@@ -119,6 +123,9 @@ public final class ToolbarActionsProvider extends ActionsList implements Class2L
                 String path = fullPath.substring(0, idx);
                 if (TEXT_BASE_PATH.equals(path)) {
                     textBaseFilesList.add(fileObject);
+                    if (LOG.isLoggable(Level.WARNING)) {
+                        LOG.warning("The 'text/base' mime type is deprecated, please move your file to the root. Offending file: " + fullPath); //NOI18N
+                    }
                 }
             }
 
