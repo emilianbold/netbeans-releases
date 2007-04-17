@@ -13,6 +13,12 @@
 //                    return new java.math.BigDecimal(org.netbeans.modules.j2ee.sun.dd.api.app.SunApplication.VERSION_1_4_0);
                     return new java.math.BigDecimal("1.4");
                 }
+                public org.xml.sax.SAXParseException getError() {
+                    return null;
+                }
+                public int getStatus() {
+                    return STATE_VALID;
+                }
                 </user-code>
 	</meta-element>
 	<meta-element>

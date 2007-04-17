@@ -13,6 +13,12 @@
 //                    return new java.math.BigDecimal(org.netbeans.modules.j2ee.sun.dd.api.ejb.SunEjbJar.VERSION_2_1_1);
                     return new java.math.BigDecimal("2.11");
                 }
+                public org.xml.sax.SAXParseException getError() {
+                    return null;
+                }
+                public int getStatus() {
+                    return STATE_VALID;
+                }
                 </user-code>
 	</meta-element>
 	<meta-element>

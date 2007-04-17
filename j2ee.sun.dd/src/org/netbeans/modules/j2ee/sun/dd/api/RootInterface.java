@@ -22,26 +22,34 @@ package org.netbeans.modules.j2ee.sun.dd.api;
 /**
  * Interface representing the root of interfaces bean tree structure.
  *
-*
+ *
  */
 public interface RootInterface extends CommonDDBean {    
     
-    public static final String PROPERTY_STATUS="dd_status";
-    public static final String PROPERTY_VERSION="dd_version";
-    public static final int STATE_INVALID_PARSABLE=1;
-    public static final int STATE_INVALID_UNPARSABLE=2;
-    public static final int STATE_VALID=0;
+    public static final String PROPERTY_STATUS = "dd_status";
+    public static final String PROPERTY_VERSION = "dd_version";
+    public static final int STATE_INVALID_PARSABLE = 1;
+    public static final int STATE_INVALID_UNPARSABLE = 2;
+    public static final int STATE_VALID = 0;
     
  
-    /** Setter for version property.
-     * Warning : Only the upgrade from lower to higher version is supported.
+    /** Changes current DOCTYPE to match version specified.
+     *  Warning : Only the upgrade from lower to higher version is supported.
+     * 
      * @param version 
      */
     public void setVersion(java.math.BigDecimal version);
     
-    /** Getter for version property.
-     * @return property value
+    /** Version property as defined by the DOCTYPE, if known.
+     * 
+     * @return current version
      */
     public java.math.BigDecimal getVersion();
+    
+    /** Current parsing status
+     * 
+     * @return status value
+     */
+    public int getStatus();
         
 }

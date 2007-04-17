@@ -18,72 +18,63 @@
  */
 
 package org.netbeans.modules.j2ee.sun.dd.api;
+
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.text.MessageFormat;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.ResourceBundle;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.netbeans.modules.j2ee.sun.dd.api.app.SunApplication;
+import org.netbeans.modules.j2ee.sun.dd.api.client.SunApplicationClient;
+import org.netbeans.modules.j2ee.sun.dd.api.cmp.SunCmpMappings;
+import org.netbeans.modules.j2ee.sun.dd.api.ejb.SunEjbJar;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.Resources;
+import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
+import org.netbeans.modules.j2ee.sun.dd.impl.DTDRegistry;
+import org.netbeans.modules.j2ee.sun.dd.impl.RootInterfaceImpl;
+import org.netbeans.modules.j2ee.sun.dd.impl.app.SunApplicationProxy;
+import org.netbeans.modules.j2ee.sun.dd.impl.client.SunApplicationClientProxy;
+import org.netbeans.modules.j2ee.sun.dd.impl.cmp.SunCmpMappingsProxy;
+import org.netbeans.modules.j2ee.sun.dd.impl.common.DDProviderDataObject;
 import org.netbeans.modules.j2ee.sun.dd.impl.common.SunBaseBean;
+import org.netbeans.modules.j2ee.sun.dd.impl.ejb.SunEjbJarProxy;
+import org.netbeans.modules.j2ee.sun.dd.impl.serverresources.ResourcesProxy;
+import org.netbeans.modules.j2ee.sun.dd.impl.web.SunWebAppProxy;
 import org.netbeans.modules.schema2beans.Common;
-import org.xml.sax.*;
-import java.util.Map;
+import org.netbeans.modules.schema2beans.Schema2BeansException;
+import org.netbeans.modules.schema2beans.Schema2BeansRuntimeException;
+import org.netbeans.modules.xml.api.EncodingUtil;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
-import java.util.ResourceBundle;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
-import org.netbeans.modules.j2ee.sun.dd.api.ejb.SunEjbJar;
-import org.netbeans.modules.j2ee.sun.dd.impl.ejb.SunEjbJarProxy;
-
-import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
-import org.netbeans.modules.j2ee.sun.dd.impl.web.SunWebAppProxy;
-
-import org.netbeans.modules.j2ee.sun.dd.api.app.SunApplication;
-import org.netbeans.modules.j2ee.sun.dd.impl.app.SunApplicationProxy;
-
-import org.netbeans.modules.j2ee.sun.dd.api.serverresources.Resources;
-import org.netbeans.modules.j2ee.sun.dd.impl.serverresources.ResourcesProxy;
-        
-import org.netbeans.modules.j2ee.sun.dd.api.client.SunApplicationClient;
-import org.netbeans.modules.j2ee.sun.dd.impl.client.SunApplicationClientProxy;
-
-import org.netbeans.modules.j2ee.sun.dd.impl.DTDRegistry;
 
 /**
  * Provides access to Deployment Descriptor root objects.
  *
- * @author  Milan Kuchtiak
+ * @author Peter Williams, Nitya Doraisamy
  */
-
 public final class DDProvider {
-    // !PW FIXME refer to DTDRegistry file directly, or at least map to it, rather than redeclaring.
-    private static final String EJB_30_90_DOCTYPE = "-//Sun Microsystems, Inc.//DTD Application Server 9.0 EJB 3.0//EN"; //NOI18N     "sun-ejb-jar_3_0-0.dtd"
-    private static final String EJB_21_81_DOCTYPE = "-//Sun Microsystems, Inc.//DTD Application Server 8.1 EJB 2.1//EN"; //NOI18N
-    private static final String EJB_21_80_DOCTYPE = "-//Sun Microsystems, Inc.//DTD Application Server 8.0 EJB 2.1//EN"; //NOI18N
-    private static final String EJB_20_70_DOCTYPE_SUNONE = "-//Sun Microsystems, Inc.//DTD Sun ONE Application Server 7.0 EJB 2.0//EN"; //NOI18N   "sun-ejb-jar_2_0-0.dtd" ,
-    private static final String EJB_21_80_DOCTYPE_SUNONE = "-//Sun Microsystems, Inc.//DTD Sun ONE Application Server 8.0 EJB 2.1//EN"; //NOI18N    "sun-ejb-jar_2_1-0.dtd" , ///[THIS IS DEPRECATED]
-
-    private static final String WEB_25_90_DOCTYPE = "-//Sun Microsystems, Inc.//DTD Application Server 9.0 Servlet 2.5//EN"; //NOI18N  "sun-web-app_2_5-0"
-    private static final String WEB_21_81_DOCTYPE = "-//Sun Microsystems, Inc.//DTD Application Server 8.1 Servlet 2.4//EN"; //NOI18N
-    private static final String WEB_21_80_DOCTYPE = "-//Sun Microsystems, Inc.//DTD Application Server 8.0 Servlet 2.4//EN"; //NOI18N
-    private static final String WEB_20_70_DOCTYPE_SUNONE =  "-//Sun Microsystems, Inc.//DTD Sun ONE Application Server 7.0 Servlet 2.3//EN" ; //NOI18N   "sun-web-app_2_3-0.dtd" ,
-    private static final String WEB_21_80_DOCTYPE_SUNONE =  "-//Sun Microsystems, Inc.//DTD Sun ONE Application Server 8.0 Servlet 2.4//EN"; //NOI18N    "sun-web-app_2_4-0.dtd" , ///[THIS IS DEPRECATED]
-    
-    private static final String APP_50_90_DOCTYPE = "-//Sun Microsystems, Inc.//DTD Application Server 9.0 Java EE Application 5.0//EN"; //NOI18N     "sun-application_5_0-0.dtd" 
-    private static final String APP_14_81_DOCTYPE =  "-//Sun Microsystems, Inc.//DTD Application Server 8.1 J2EE Application 1.4//EN"; //NOI18N     "sun-application_1_4-0.dtd" 
-    private static final String APP_14_80_DOCTYPE = "-//Sun Microsystems, Inc.//DTD Application Server 8.0 J2EE Application 1.4//EN"; //NOI18N      "sun-application_1_4-0.dtd" 
-    private static final String APP_13_70_DOCTYPE_SUNONE   =  "-//Sun Microsystems, Inc.//DTD Sun ONE Application Server 7.0 J2EE Application 1.3//EN"; //NOI18N  "sun-application_1_3-0.dtd" 
-    private static final String APP_14_80_DOCTYPE_SUNONE = "-//Sun Microsystems, Inc.//DTD Sun ONE Application Server 8.0 J2EE Application 1.4//EN"; //NOI18N    "sun-application_1_4-0.dtd"  ///[THIS IS DEPRECATED]
-    
-    private static final String APPCLIENT_50_90_DOCTYPE = "-//Sun Microsystems, Inc.//DTD Application Server 9.0 Application Client 5.0//EN"; //NOI18N  "sun-application-client_5_0-0.dtd"
-    private static final String APPCLIENT_14_81_DOCTYPE = "-//Sun Microsystems, Inc.//DTD Application Server 8.1 Application Client 1.4//EN"; //NOI18N  "sun-application-client_1_4-1.dtd" 
-    private static final String APPCLIENT_14_80_DOCTYPE = "-//Sun Microsystems, Inc.//DTD Application Server 8.0 Application Client 1.4//EN"; //NOI18N  "sun-application-client_1_4-0.dtd" 
-    private static final String APPCLIENT_14_80_DOCTYPE_SUNONE = "-//Sun Microsystems, Inc.//DTD Sun ONE Application Server 8.0 Application Client 1.4//EN"; //NOI18N "sun-application-client_1_4-0.dtd"  [THIS IS DEPRECATED]
-    private static final String APPCLIENT_13_70_DOCTYPE = "-//Sun Microsystems, Inc.//DTD Sun ONE Application Server 7.0 Application Client 1.3//EN"; //NOI18N  "sun-application-client_1_3-0.dtd" 
    
 //    private static final String    =      "-//Sun Microsystems, Inc.//DTD Sun ONE Application Server 7.0 Connector 1.0//EN"               , "sun-connector_1_0-0.dtd" ,
 //    private static final String    =      "-//Sun Microsystems, Inc.//DTD Sun ONE Application Server 7.0 Application Client Container 1.0//EN" 	, "sun-application-client-container_1_0.dtd" ,
@@ -93,52 +84,41 @@ public final class DDProvider {
 //    private static final String    =      "-//Sun Microsystems, Inc.//DTD Application Server 8.0 Application Client Container //EN" 	, "sun-application-client-container_1_0.dtd" ,
 //    private static final String    =      "-//Sun Microsystems, Inc.//DTD Application Server 8.1 Application Client Container //EN" 	, "sun-application-client-container_1_1.dtd" ,
     
-    
-    
-    
-    
-    
-    
     private static final DDProvider ddProvider = new DDProvider();
-    private Map ddMap;
     
-    /** Creates a new instance of DDProvider */
     private DDProvider() {
-        //ddMap=new java.util.WeakHashMap(5);
-        ddMap = new java.util.HashMap(5);
     }
     
     /**
-    * Accessor method for DDProvider singleton
-    * @return DDProvider object
-    */
+     * Accessor method for DDProvider singleton
+     * @return DDProvider object
+     */
     public static DDProvider getDefault() {
         return ddProvider;
     }
     
      /**
-     * Returns the root of deployment descriptor bean graph for java.io.File object.
-     *
-     * @param is source representing the sun-ejb-jar.xml file
-     * @return Ejb object - root of the deployment descriptor bean graph
-     */    
+      * Returns the root of deployment descriptor bean graph for java.io.File object.
+      *
+      * @param is source representing the sun-ejb-jar.xml file
+      * @return Ejb object - root of the deployment descriptor bean graph
+      */    
     public SunEjbJar getEjbDDRoot(InputSource is) throws IOException, SAXException {
-        DDParse parse = parseDD(is);
+        DDParse parse = new DDParse(is);
         SunEjbJar ejbRoot = createEjbJar(parse);
         SunEjbJarProxy proxy = new SunEjbJarProxy(ejbRoot, ejbRoot.getVersion().toString());
-        setEjbProxyErrorStatus(proxy, parse);
+        setErrorStatus(proxy, parse);
         return proxy;
     }
     
     /**
-     * Returns the root of deployment descriptor bean graph for java.io.File object.
-     *
-     * @param is source representing the sun-web.xml file
-     * @return Web object - root of the deployment descriptor bean graph
-     */    
+      * Returns the root of deployment descriptor bean graph for java.io.File object.
+      *
+      * @param is source representing the sun-web.xml file
+      * @return Web object - root of the deployment descriptor bean graph
+      */    
     public SunWebApp getWebDDRoot(InputSource is) throws IOException, SAXException, DDException {
-        DDParse parse = parseDD(is);
-        return processWebAppParseTree(parse);
+        return processWebAppParseTree(new DDParse(is));
     }
 
     /**
@@ -148,8 +128,7 @@ public final class DDProvider {
      * @return Web object - root of the deployment descriptor bean graph
      */    
     public SunWebApp getWebDDRoot(InputStream is) throws IOException, SAXException, DDException {
-        DDParse parse = parseDD(is);
-        return processWebAppParseTree(parse);
+        return processWebAppParseTree(new DDParse(is));
     }
     
     /**
@@ -158,15 +137,14 @@ public final class DDProvider {
      * @param doc XML document representing the sun-web.xml file
      * @return Web object - root of the deployment descriptor bean graph
      */    
-    public SunWebApp getWebDDRoot(org.w3c.dom.Document doc) throws DDException {
-        DDParse parse = new DDParse(doc, null);
-        return processWebAppParseTree(parse);
+    public SunWebApp getWebDDRoot(Document doc) throws DDException {
+        return processWebAppParseTree(new DDParse(doc, null));
     }
     
     private SunWebApp processWebAppParseTree(DDParse parse) throws DDException {
         SunWebApp webRoot = createWebApp(parse);
         SunWebAppProxy proxy = new SunWebAppProxy(webRoot, webRoot.getVersion().toString());
-        setWebProxyErrorStatus(proxy, parse);
+        setErrorStatus(proxy, parse);
         return proxy;
     }    
     
@@ -177,10 +155,10 @@ public final class DDProvider {
      * @return Application object - root of the deployment descriptor bean graph
      */    
     public SunApplication getAppDDRoot(InputSource is) throws IOException, SAXException {
-        DDParse parse = parseDD(is);
+        DDParse parse = new DDParse(is);
         SunApplication appRoot = createApplication(parse);
         SunApplicationProxy proxy = new SunApplicationProxy(appRoot, appRoot.getVersion().toString());
-        setAppProxyErrorStatus(proxy, parse);
+        setErrorStatus(proxy, parse);
         return proxy;
     }
     
@@ -191,59 +169,113 @@ public final class DDProvider {
      * @return Application object - root of the deployment descriptor bean graph
      */    
     public SunApplicationClient getAppClientDDRoot(InputSource is) throws IOException, SAXException {
-        DDParse parse = parseDD(is);
+        DDParse parse = new DDParse(is);
         SunApplicationClient appClientRoot = createApplicationClient(parse);
         SunApplicationClientProxy proxy = new SunApplicationClientProxy(appClientRoot, appClientRoot.getVersion().toString());
-        setAppClientProxyErrorStatus(proxy, parse);
+        setErrorStatus(proxy, parse);
         return proxy;
     }
         
-    // PENDING j2eeserver needs BaseBean - this is a temporary workaround to avoid dependency of web project on DD impl
-    /**  Convenient method for getting the BaseBean object from CommonDDBean object
-     *
-     */
-    public org.netbeans.modules.schema2beans.BaseBean getBaseBean(org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean bean) {
-        if (bean instanceof org.netbeans.modules.schema2beans.BaseBean) 
-            return (org.netbeans.modules.schema2beans.BaseBean)bean;
-        else if (bean instanceof SunEjbJarProxy) 
-            return (org.netbeans.modules.schema2beans.BaseBean) ((SunEjbJarProxy)bean).getOriginal();
-        else if (bean instanceof SunWebAppProxy) 
-            return (org.netbeans.modules.schema2beans.BaseBean) ((SunWebAppProxy)bean).getOriginal();
-        else if (bean instanceof SunApplicationProxy) 
-            return (org.netbeans.modules.schema2beans.BaseBean) ((SunApplicationProxy)bean).getOriginal();
-        else if (bean instanceof SunApplicationClientProxy) 
-            return (org.netbeans.modules.schema2beans.BaseBean) ((SunApplicationClientProxy)bean).getOriginal();
-        return null;
+    private static void setErrorStatus(RootInterfaceImpl rootProxy, DDParse parse) {
+        SAXParseException error = parse.getWarning();
+        rootProxy.setError(error);
+        if (error!=null) {
+            rootProxy.setStatus(RootInterface.STATE_INVALID_PARSABLE);
+        } else {
+            rootProxy.setStatus(RootInterface.STATE_VALID);
+        }
+    }
+    
+    private Map<Object, RootInterface> ddMap = new HashMap<Object, RootInterface>();
+
+    public RootInterface getDDRoot(FileObject fo) throws IOException {
+        if (fo == null) {
+            return null;
+        }
+
+        try {
+            DataObject dataObject = DataObject.find(fo);
+            if(dataObject instanceof DDProviderDataObject){
+                return getDDRoot0((DDProviderDataObject) dataObject);
+            }
+        } catch (DataObjectNotFoundException e) {
+            return null; // should not occur
+        }
+
+        RootInterface rootProxy = null;
+        synchronized (ddMap) {
+            rootProxy = ddMap.get(fo);
+            if(rootProxy != null) {
+                return rootProxy;
+            }
+        }
+
+        // XXX Where should this listener be removed?  Isn't removed anywhere presently.
+        fo.addFileChangeListener(new SunDDFileChangeListener());
+
+        InputStream is = null;
+        try {
+            is = fo.getInputStream();
+            DDParse parse = new DDParse(is);
+            RootInterface tmpRootProxy = parse.createProxy();
+            
+            synchronized (ddMap) {
+                rootProxy = ddMap.get(fo);
+                if(rootProxy == null) {
+                    rootProxy = tmpRootProxy;
+                    ddMap.put(fo, rootProxy);
+                }
+            }   
+        } catch(Schema2BeansException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        } catch(Schema2BeansRuntimeException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        } catch(SAXException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        } catch(IOException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        } finally {
+            if(is != null) {
+                try { is.close(); } catch(IOException ex) {}
+            }
+        }
+        
+        return rootProxy;
     }
 
-    private static void setEjbProxyErrorStatus(SunEjbJarProxy ejbJarProxy, DDParse parse) {
-        SAXParseException error = parse.getWarning();
-        ejbJarProxy.setError(error);
-        /*if (error!=null) {
-            ejbJarProxy.setStatus(SunEjbJar.STATE_INVALID_PARSABLE);
-        } else {
-            ejbJarProxy.setStatus(SunEjbJar.STATE_VALID);
-        }*/
+    private synchronized RootInterface getDDRoot0(final DDProviderDataObject ddProviderDataObject) throws IOException {
+        RootInterface rootProxy = null;
+        synchronized (ddMap) {
+            rootProxy = ddMap.get(ddProviderDataObject);
+            if (rootProxy == null) {
+                try {
+                    rootProxy = getDDRoot(ddProviderDataObject.createReader());
+                    assert rootProxy != null;
+                    ddMap.put(ddProviderDataObject, rootProxy);
+                } catch(Schema2BeansException ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                } catch(Schema2BeansRuntimeException ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                } catch(SAXException ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                } catch(IOException ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                }
+            }
+        }
+
+        return rootProxy;
+    }
+
+    public RootInterface getDDRoot(Reader reader) throws IOException, SAXException, Schema2BeansException {
+        return getDDRoot(new InputSource(reader));
     }
     
-    private static void setAppProxyErrorStatus(SunApplicationProxy appProxy, DDParse parse) {
-        SAXParseException error = parse.getWarning();
-        appProxy.setError(error);
-        /*if (error!=null) {
-            appProxy.setStatus(SunApplication.STATE_INVALID_PARSABLE);
-        } else {
-            appProxy.setStatus(SunApplication.STATE_VALID);
-        }*/
-    }
-    
-    private static void setWebProxyErrorStatus(SunWebAppProxy webProxy, DDParse parse) {
-        SAXParseException error = parse.getWarning();
-        webProxy.setError(error);
-        /*if (error!=null) {
-            appProxy.setStatus(SunApplication.STATE_INVALID_PARSABLE);
-        } else {
-            appProxy.setStatus(SunApplication.STATE_VALID);
-        }*/
+    public RootInterface getDDRoot(InputSource inputSource) throws IOException, SAXException, Schema2BeansException {
+        // TODO j2ee providers can have a proxy here w/ bogus impl that stores the SAX
+        // Exception.  Do we need to do that, or can we throw it direct to the caller?
+        DDParse parse = new DDParse(inputSource);
+        return parse.createProxy();
     }
 
     private static class VersionInfo {
@@ -276,11 +308,11 @@ public final class DDProvider {
         }
     }
     
-    private static HashMap apiToVersionMap = new HashMap(11);
-    private static HashMap sunWebAppVersionMap = new HashMap(11);
-    private static HashMap sunEjbJarVersionMap = new HashMap(11);
-    private static HashMap sunApplicationVersionMap = new HashMap(11);
-    private static HashMap sunAppClientVersionMap = new HashMap(11);
+    private static Map<Class, Map<String, VersionInfo>> apiToVersionMap = new HashMap<Class, Map<String, VersionInfo>>(11);
+    private static Map<String, VersionInfo> sunWebAppVersionMap = new HashMap<String, VersionInfo>(11);
+    private static Map<String, VersionInfo> sunEjbJarVersionMap = new HashMap<String, VersionInfo>(11);
+    private static Map<String, VersionInfo> sunApplicationVersionMap = new HashMap<String, VersionInfo>(11);
+    private static Map<String, VersionInfo> sunAppClientVersionMap = new HashMap<String, VersionInfo>(11);
     
     static {
         sunWebAppVersionMap.put(SunWebApp.VERSION_2_3_0, new VersionInfo(
@@ -353,14 +385,15 @@ public final class DDProvider {
         apiToVersionMap.put(org.netbeans.modules.j2ee.sun.dd.api.client.SunApplicationClient.class, sunAppClientVersionMap);
     }
     
+    @SuppressWarnings("unchecked")
     public RootInterface newGraph(Class rootType, String version) {
         RootInterface result = null;
         SunBaseBean graphRoot = null;
         Class graphRootClass = null;
         
-        Map versionMap = (Map) apiToVersionMap.get(rootType);
+        Map<String, VersionInfo> versionMap = apiToVersionMap.get(rootType);
         if(versionMap != null) {
-            VersionInfo vInfo = (VersionInfo) versionMap.get(version);
+            VersionInfo vInfo = versionMap.get(version);
             if(vInfo != null) {
                 try {
                     // Formerly invoked static 'createGraph()' method, but that is merely a wrapper 
@@ -395,47 +428,21 @@ public final class DDProvider {
         return result;
     }
     
-    private static void setAppClientProxyErrorStatus(SunApplicationClientProxy appClientProxy, DDParse parse) {
-        SAXParseException error = parse.getWarning();
-        appClientProxy.setError(error);
-        /*if (error!=null) {
-            appProxy.setStatus(SunApplication.STATE_INVALID_PARSABLE);
-        } else {
-            appProxy.setStatus(SunApplication.STATE_VALID);
-        }*/
-    }
-    
-    /** @deprecated use the version that specifies the graph version you want.
-     */
-    public RootInterface newGraph(Class rootType) {
-        if(org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp.class.equals(rootType)) {
-            return newGraph(rootType, SunWebApp.VERSION_2_4_1);
-        } else if(org.netbeans.modules.j2ee.sun.dd.api.ejb.SunEjbJar.class.equals(rootType)) {
-            return newGraph(rootType, SunEjbJar.VERSION_2_1_1);
-        } else if(org.netbeans.modules.j2ee.sun.dd.api.app.SunApplication.class.equals(rootType)) {
-            return newGraph(rootType, SunApplication.VERSION_1_4_0);
-        } else if(org.netbeans.modules.j2ee.sun.dd.api.client.SunApplicationClient.class.equals(rootType)) {
-            return newGraph(rootType, SunApplicationClient.VERSION_1_4_1);
-        }
-        
-        return null;
-    }
-    
     private static SunEjbJar createEjbJar(DDParse parse) {        
           SunEjbJar jar = null;
           String version = parse.getVersion();
           if (SunEjbJar.VERSION_3_0_0.equals(version)) {
-              return new org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_0_0.SunEjbJar(parse.getDocument(),  Common.NO_DEFAULT_VALUES); 
+              return new org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_0_0.SunEjbJar(parse.getDocument(), Common.NO_DEFAULT_VALUES); 
           } else if (SunEjbJar.VERSION_2_1_1.equals(version)) {
-              return new org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_2_1_1.SunEjbJar(parse.getDocument(),  Common.NO_DEFAULT_VALUES); 
+              return new org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_2_1_1.SunEjbJar(parse.getDocument(), Common.NO_DEFAULT_VALUES); 
           } else if (SunEjbJar.VERSION_2_1_0.equals(version)) {//ludo fix that!!!2.1.0 below
-              return new org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_2_1_0.SunEjbJar(parse.getDocument(),  Common.NO_DEFAULT_VALUES);
+              return new org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_2_1_0.SunEjbJar(parse.getDocument(), Common.NO_DEFAULT_VALUES);
           } else if (SunEjbJar.VERSION_2_0_0.equals(version)) {//ludo fix that!!!2.1.0 below
-              return new org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_2_0_0.SunEjbJar(parse.getDocument(),  Common.NO_DEFAULT_VALUES);
+              return new org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_2_0_0.SunEjbJar(parse.getDocument(), Common.NO_DEFAULT_VALUES);
           } //LUDO CHANGE LATER!!!
           else{
               //What should we do there? ludo throws somethig or try with 3.0.0? FIXTIT
-              return new org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_0_0.SunEjbJar(parse.getDocument(),  Common.NO_DEFAULT_VALUES);
+              return new org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_0_0.SunEjbJar(parse.getDocument(), Common.NO_DEFAULT_VALUES);
           }
           
         //  return jar;
@@ -445,13 +452,13 @@ public final class DDProvider {
         SunWebApp webRoot = null;
         String version = parse.getVersion();
         if (SunWebApp.VERSION_2_5_0.equals(version)) {
-            return new org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_5_0.SunWebApp(parse.getDocument(),  Common.NO_DEFAULT_VALUES); 
+            return new org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_5_0.SunWebApp(parse.getDocument(), Common.NO_DEFAULT_VALUES); 
         } else if (SunWebApp.VERSION_2_4_1.equals(version)) {
-            return new org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_4_1.SunWebApp(parse.getDocument(),  Common.NO_DEFAULT_VALUES); 
+            return new org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_4_1.SunWebApp(parse.getDocument(), Common.NO_DEFAULT_VALUES); 
         } else if (SunWebApp.VERSION_2_4_0.equals(version)){ //ludo fix that!!!2_4_0 below
-            return new org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_4_0.SunWebApp(parse.getDocument(),  Common.NO_DEFAULT_VALUES); 
+            return new org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_4_0.SunWebApp(parse.getDocument(), Common.NO_DEFAULT_VALUES); 
         } else if (SunWebApp.VERSION_2_3_0.equals(version)){ 
-            return new org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_3_0.SunWebApp(parse.getDocument(),  Common.NO_DEFAULT_VALUES); 
+            return new org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_3_0.SunWebApp(parse.getDocument(), Common.NO_DEFAULT_VALUES); 
         }else
             throw new DDException(
                     MessageFormat.format(ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/dd/api/Bundle").getString("MSG_UnknownWebXml"),new Object[]  {version} ));
@@ -459,7 +466,7 @@ public final class DDProvider {
     }
   
     private static SunApplication createApplication(DDParse parse) {        
-          SunApplication jar = null;
+          SunApplication app = null;
           String version = parse.getVersion();
           if (SunApplication.VERSION_5_0_0.equals(version)) {
               return new org.netbeans.modules.j2ee.sun.dd.impl.app.model_5_0_0.SunApplication(parse.getDocument(),  Common.NO_DEFAULT_VALUES);
@@ -469,11 +476,11 @@ public final class DDProvider {
               return new org.netbeans.modules.j2ee.sun.dd.impl.app.model_1_3_0.SunApplication(parse.getDocument(),  Common.NO_DEFAULT_VALUES);
           }
           
-          return jar;
+          return app;
     }
     
     private static SunApplicationClient createApplicationClient(DDParse parse) {        
-          SunApplicationClient jar = null;
+          SunApplicationClient appClient = null;
           String version = parse.getVersion();
           if (SunApplicationClient.VERSION_5_0_0.equals(version)) {
               return new org.netbeans.modules.j2ee.sun.dd.impl.client.model_5_0_0.SunApplicationClient(parse.getDocument(),  Common.NO_DEFAULT_VALUES);
@@ -485,7 +492,7 @@ public final class DDProvider {
               return new org.netbeans.modules.j2ee.sun.dd.impl.client.model_1_3_0.SunApplicationClient(parse.getDocument(),  Common.NO_DEFAULT_VALUES);
           }
           
-          return jar;
+          return appClient;
     }
     
     /**
@@ -510,131 +517,207 @@ public final class DDProvider {
         return proxy;
     }
     
-    
-    private static class DDResolver implements EntityResolver {
-        static DDResolver resolver;
-        static synchronized DDResolver getInstance() {
-            if (resolver==null) {
-                resolver=new DDResolver();
+    private class SunDDFileChangeListener extends FileChangeAdapter {
+        public void fileChanged(FileEvent evt) {
+            FileObject fo = evt.getFile();
+            try {
+                synchronized (ddMap) {
+                    RootInterface rootProxy = ddMap.get(fo);
+                    if(rootProxy != null) {
+                        InputStream inputStream = null;
+                        try {
+                            inputStream = fo.getInputStream();
+                            String encoding = EncodingUtil.detectEncoding(new BufferedInputStream(inputStream));
+                            if (encoding == null) {
+                                encoding = "UTF8";
+                            }
+                            merge(rootProxy, new InputStreamReader(inputStream, encoding));
+//                            merge(rootProxy, fo);
+                        } finally {
+                            if(inputStream != null) {
+                                try { inputStream.close(); } catch(IOException ex) {}
+                            }
+                        }
+                    }
+                }
+            } catch(IOException ex) {
+                ErrorManager.getDefault().notify(ex);
             }
-            return resolver;
-        }
-        public InputSource resolveEntity(String publicId, String systemId) {
-            String resource = null;
-            if (EJB_30_90_DOCTYPE.equals(publicId)) {
-                //return ejb30
-                resource = ("/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-ejb-jar_3_0-0.dtd"); //NOI18N
-            }else if (EJB_21_81_DOCTYPE.equals(publicId)) {
-                resource = ("/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-ejb-jar_2_1-1.dtd"); //NOI18N
-            } else if (EJB_21_80_DOCTYPE.equals(publicId)) {
-                resource = ("/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-ejb-jar_2_1-0.dtd"); //NOI18N
-            } else if (EJB_21_80_DOCTYPE_SUNONE.equals(publicId)) {
-                resource = ("/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-ejb-jar_2_1-0.dtd"); //NOI18N
-            } else if (EJB_20_70_DOCTYPE_SUNONE.equals(publicId)) {////LUDO this 2.0.0 is missing FIXIT
-                resource = ("/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-ejb-jar_2_0-0.dtd"); //NOI18N
-            } else if (WEB_25_90_DOCTYPE.equals(publicId)) {
-                resource = ("/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-web-app_2_5-0.dtd"); //NOI18N
-            }else if (WEB_21_81_DOCTYPE.equals(publicId)) {
-                resource = ("/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-web-app_2_4-1.dtd"); //NOI18N
-            } else if (WEB_21_80_DOCTYPE.equals(publicId)) {
-                resource ="/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-web-app_2_4-0.dtd"; //NOI18N
-            } else if (WEB_21_80_DOCTYPE_SUNONE.equals(publicId)) {
-                resource = ("/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-web-app_2_4-0.dtd"); //NOI18N
-            } else if (WEB_20_70_DOCTYPE_SUNONE.equals(publicId)) {//LUDO this 2.3.0 is missing FIXIT
-                resource = ("/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-web-app_2_3-0.dtd"); //NOI18N
-            } else if (APP_50_90_DOCTYPE.equals(publicId)) {
-                resource = ("/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application_5_0-0.dtd"); //NOI18N
-            }else if (APP_14_80_DOCTYPE.equals(publicId) || APP_14_81_DOCTYPE.equals(publicId) || APP_14_80_DOCTYPE_SUNONE.equals(publicId) ) {
-                resource = ("/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application_1_4-0.dtd"); //NOI18N
-            } else if(APP_13_70_DOCTYPE_SUNONE.equals(publicId)){
-                resource = ("/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application_1_3-0.dtd"); //NOI18N
-            } else if(APPCLIENT_50_90_DOCTYPE.equals(publicId)) {
-                resource = ("/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application-client_5_0-0.dtd"); //NOI18N
-            } else if (APPCLIENT_14_81_DOCTYPE.equals(publicId)) {
-                resource = ("/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application-client_1_4-1.dtd"); //NOI18N
-            } else if (APPCLIENT_14_80_DOCTYPE.equals(publicId)) {
-                resource = ("/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application-client_1_4-0.dtd"); //NOI18N
-            } else if (APPCLIENT_14_80_DOCTYPE_SUNONE.equals(publicId)) {
-                resource = ("/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application-client_1_4-0.dtd"); //NOI18N
-            } else if (APPCLIENT_13_70_DOCTYPE.equals(publicId)) {
-                resource = ("/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application-client_1_3-0.dtd"); //NOI18N
-            }
-            java.net.URL url = this.getClass().getResource(resource);
-            return new InputSource(url.toString());
         }
     }
     
-    private static class ErrorHandler implements org.xml.sax.ErrorHandler {
-        private int errorType=-1;
+    // TODO this method will get refactored as I find new requirements...
+    
+    // TODO this method will get refactored as I find new requirements...
+    // TODO RootInterfaceImpl not being related to RootInterface makes this code
+    // rather messy.  Maybe we can fix that somehow?
+    public void merge(RootInterface rootProxy, Reader reader) {
+        RootInterfaceImpl rootProxyImpl = (RootInterfaceImpl) rootProxy;
+        try {
+            RootInterface newRootProxy = getDDRoot(reader);
+            RootInterfaceImpl newRootProxyImpl = (RootInterfaceImpl) newRootProxy;
+            
+            // If we can't parse, keep the old tree, but migrate the new parse state.
+            if(newRootProxy.getStatus() == RootInterface.STATE_INVALID_UNPARSABLE) {
+                rootProxyImpl.setStatus(RootInterface.STATE_INVALID_UNPARSABLE);
+                rootProxyImpl.setError(newRootProxyImpl.getError());
+            } else {
+                // If doctype changed, just use the new tree.
+                // TODO do we need a special event for this?
+                
+                // Otherwise, try to merge the new tree with the old one.
+                rootProxy.merge(newRootProxy, RootInterface.MERGE_UPDATE);
+                rootProxyImpl.setStatus(newRootProxy.getStatus());
+                rootProxyImpl.setError(newRootProxyImpl.getError());
+            }
+        } catch(DOMException ex) {
+            // Received when DOCTYPE is changing through illegal states.
+            rootProxyImpl.setStatus(RootInterface.STATE_INVALID_UNPARSABLE);
+            rootProxyImpl.setError(new SAXParseException(null, null, ex));
+        } catch(SAXParseException ex) {
+            rootProxyImpl.setStatus(RootInterface.STATE_INVALID_UNPARSABLE);
+            rootProxyImpl.setError(ex);
+        } catch(SAXException ex) {
+            rootProxyImpl.setStatus(RootInterface.STATE_INVALID_UNPARSABLE);
+            if(ex.getException() instanceof SAXParseException) {
+                rootProxyImpl.setError((SAXParseException) ex.getException());
+            } else {
+                rootProxyImpl.setError(new SAXParseException(null, null, ex));
+            }
+        } catch(IOException ex) {
+            rootProxyImpl.setStatus(RootInterface.STATE_INVALID_UNPARSABLE);
+            // cbw if the state of the xml file transitions from parsable to
+            // unparsable this could be due to a user change or cvs change.  
+            // We would like to still receive events when the file is restored
+            // to normal so lets not set the original to null here but wait
+            // until the file becomes parsable again to do a merge.
+            // rootProxyImpl.setOriginal(null);
+        } catch(Schema2BeansException ex) {
+            rootProxyImpl.setStatus(RootInterface.STATE_INVALID_UNPARSABLE);
+            rootProxyImpl.setError(new SAXParseException(null, null, ex));
+//        } catch(Schema2BeansRuntimeException ex){ // see #70286    
+//            rootProxyImpl.setStatus(RootInterface.STATE_INVALID_UNPARSABLE);
+//            rootProxyImpl.setError(new SAXParseException(null, null, ex));
+        }
+    }
+    
+    
+    private static class SunDDResolver implements EntityResolver {
+        
+        static volatile SunDDResolver resolver;
+        
+        static SunDDResolver getInstance() {
+            if(resolver == null) {
+                synchronized(SunDDResolver.class) {
+                    if(resolver == null) {
+                        resolver = new SunDDResolver();
+                    }
+                }
+            }
+            return resolver;
+        }
+        
+        public InputSource resolveEntity(String publicId, String systemId) {
+            InputSource source = null;
+            
+            DocTypeInfo info = publicIdToInfoMap.get(publicId);
+            if(info != null) {
+                String resource = info.getResourceDtd();
+                java.net.URL url = this.getClass().getResource(resource);
+                source = new InputSource(url.toString());
+            } 
+            
+            return source;
+        }
+    }
+    
+    private static class SunDDErrorHandler implements ErrorHandler {
+        
+        private int errorType = -1;
         SAXParseException error;
 
-        public void warning(org.xml.sax.SAXParseException sAXParseException) throws org.xml.sax.SAXException {
-            if (errorType<0) {
-                errorType=0;
-                error=sAXParseException;
+        public void warning(SAXParseException sAXParseException) throws SAXException {
+            if (errorType < 0) {
+                errorType = 0;
+                error = sAXParseException;
             }
             //throw sAXParseException;
         }
-        public void error(org.xml.sax.SAXParseException sAXParseException) throws org.xml.sax.SAXException {
-            if (errorType<1) {
-                errorType=1;
-                error=sAXParseException;
+        
+        public void error(SAXParseException sAXParseException) throws SAXException {
+            if (errorType < 1) {
+                errorType = 1;
+                error = sAXParseException;
             }
             //throw sAXParseException;
-        }        
-        public void fatalError(org.xml.sax.SAXParseException sAXParseException) throws org.xml.sax.SAXException {
-            errorType=2;
+        }    
+        
+        public void fatalError(SAXParseException sAXParseException) throws SAXException {
+            errorType = 2;
             throw sAXParseException;
         }
         
         public int getErrorType() {
             return errorType;
         }
+        
         public SAXParseException getError() {
             return error;
         }        
     }
-   
-    private DDParse parseDD (InputStream is) 
-    throws SAXException, java.io.IOException {
-        return parseDD(new InputSource(is));
-    }
-    
-    private DDParse parseDD(InputSource is)  throws SAXException, java.io.IOException {
-        
-        DDProvider.ErrorHandler errorHandler = new DDProvider.ErrorHandler();
-        DocumentBuilder parser = createParser(errorHandler);
-        parser.setEntityResolver(DDResolver.getInstance());
-        Document document = parser.parse(is);
-        SAXParseException error = errorHandler.getError();
-        return new DDParse(document, error);
-    }
 
-    private static DocumentBuilder createParser(ErrorHandler errorHandler) throws SAXException {
-        DocumentBuilder parser=null;
-        try {
-            DocumentBuilderFactory fact = DocumentBuilderFactory.newInstance();
-            parser = fact.newDocumentBuilder();
-        } catch (ParserConfigurationException ex) {
-            throw new SAXException(ex.getMessage());
-        }
-        parser.setErrorHandler(errorHandler);
-        return parser;
-    }
-
-  
-    /**
-     * This class represents one parse of the deployment descriptor
+    /** Parsed SJSAS deployment descriptor file including errors and/or version thereof.
      */
     private static class DDParse {
+    
         private Document document;
         private SAXParseException saxException;
         private String version;
+        private DocTypeInfo documentInfo;
+        
+        public DDParse(InputStream is) throws SAXException, IOException {
+            this(new InputSource(is));
+        }
+        
+        public DDParse(Reader reader) throws SAXException, IOException {
+            this(new InputSource(reader));
+        }
+        
+        public DDParse(InputSource is) throws SAXException, IOException {
+            try {
+                SunDDErrorHandler errorHandler = new SunDDErrorHandler();
+                DocumentBuilderFactory parserFactory = DocumentBuilderFactory.newInstance();
+                DocumentBuilder parser = parserFactory.newDocumentBuilder();
+                parser.setErrorHandler(errorHandler);
+                parser.setEntityResolver(SunDDResolver.getInstance());
+                Document d = parser.parse(is);
+                initialize(d, errorHandler.getError());
+            } catch(ParserConfigurationException ex) {
+                throw new SAXException(ex.getMessage());
+            }
+        }
+        
         public DDParse(Document d, SAXParseException saxEx) {
+            initialize(d, saxEx);
+        }
+        
+        private void initialize(Document d, SAXParseException saxEx) {
             document = d;
             saxException = saxEx;
-            extractVersion();
+            documentInfo = null;
+            // TODO Handle default version better.
+            version = "unknown"; // NOI18N
+            
+            // first check the doc type to see if there is one
+            DocumentType dt = document.getDoctype();
+            if(dt != null) {
+                documentInfo = publicIdToInfoMap.get(dt.getPublicId());
+                if(documentInfo != null) {
+                    version = documentInfo.getVersion();
+                }
+            }
         }
+
         
         /**
          * @return document from last parse
@@ -642,54 +725,60 @@ public final class DDProvider {
         public Document getDocument() {
             return document;
         }
-        
+
         /**
-         * @return version of deployment descriptor. 
+         * @return proxy object for parsed bean tree.
          */
-        private void extractVersion () {
-            // first check the doc type to see if there is one
-            DocumentType dt = document.getDoctype();
-            // This is the default version
-            version = SunEjbJar.VERSION_3_0_0;
-            if (dt != null) {
-                if (EJB_21_81_DOCTYPE.equals(dt.getPublicId())) {
-                    version = SunEjbJar.VERSION_2_1_1;
-                }else if (EJB_21_80_DOCTYPE.equals(dt.getPublicId())) {
-                    version = SunEjbJar.VERSION_2_1_0;
-                }else if (EJB_30_90_DOCTYPE.equals(dt.getPublicId())) {
-                    version = SunEjbJar.VERSION_3_0_0;
-                }else if(EJB_21_80_DOCTYPE_SUNONE.equals(dt.getPublicId())) {
-                    version = SunEjbJar.VERSION_2_1_0;
-                }else if(EJB_20_70_DOCTYPE_SUNONE.equals(dt.getPublicId())) {
-                    version = SunEjbJar.VERSION_2_0_0;
-                }else if(WEB_25_90_DOCTYPE.equals(dt.getPublicId())){
-                    version = SunWebApp.VERSION_2_5_0;
-                }else if(WEB_21_81_DOCTYPE.equals(dt.getPublicId())){
-                    version = SunWebApp.VERSION_2_4_1;
-                }else if(WEB_21_80_DOCTYPE.equals(dt.getPublicId())){
-                    version = SunWebApp.VERSION_2_4_0;
-                }else if(WEB_21_80_DOCTYPE_SUNONE.equals(dt.getPublicId())){
-                    version = SunWebApp.VERSION_2_4_0;
-                }else if(WEB_20_70_DOCTYPE_SUNONE.equals(dt.getPublicId())){
-                    version = SunWebApp.VERSION_2_3_0;
-                }else if(APP_50_90_DOCTYPE.equals(dt.getPublicId())){
-                    version = SunApplication.VERSION_5_0_0;
-                }else if(APP_14_80_DOCTYPE.equals(dt.getPublicId()) || APP_14_81_DOCTYPE.equals(dt.getPublicId()) || APP_14_80_DOCTYPE_SUNONE.equals(dt.getPublicId())){
-                    version = SunApplication.VERSION_1_4_0;
-                }else if(APP_13_70_DOCTYPE_SUNONE.equals(dt.getPublicId())) {
-                    version = SunApplication.VERSION_1_3_0;
-                }else if (APPCLIENT_50_90_DOCTYPE.equals(dt.getPublicId())){
-                    version = SunApplicationClient.VERSION_5_0_0;
-                }else if (APPCLIENT_14_81_DOCTYPE.equals(dt.getPublicId())){
-                    version = SunApplicationClient.VERSION_1_4_1;
-                }else if(APPCLIENT_14_80_DOCTYPE.equals(dt.getPublicId()) || APPCLIENT_14_80_DOCTYPE_SUNONE.equals(dt.getPublicId())){
-                    version = SunApplicationClient.VERSION_1_4_0;
-                }else if(APPCLIENT_13_70_DOCTYPE.equals(dt.getPublicId())){
-                    version = SunApplicationClient.VERSION_1_3_0;  
-                }      
+        public RootInterface createProxy() throws Schema2BeansException, Schema2BeansRuntimeException {
+            RootInterface result = null;
+            
+            if(documentInfo != null) {
+                try {
+                    RootInterface implDD = documentInfo.createImplementation(document);
+                    RootInterfaceImpl proxyDD = documentInfo.createProxy(implDD);
+                    proxyDD.setError(saxException);
+                    proxyDD.setStatus(saxException != null ? RootInterface.STATE_INVALID_PARSABLE : RootInterface.STATE_VALID);
+                    result = proxyDD.getRootInterface();
+                } catch (InstantiationException ex) {
+                    // These five exceptions must be caught and logged by a higher caller.
+                    // They all represent some type of coding error on our part and should not
+                    // occur under normal conditions (unless there is a bug).
+                    throw new RuntimeException(ex.getMessage(), ex); // Programmer error
+                } catch (IllegalAccessException ex) {
+                    throw new RuntimeException(ex.getMessage(), ex); // Programmer error
+                } catch (IllegalArgumentException ex) {
+                    throw new RuntimeException(ex.getMessage(), ex); // Programmer error
+                } catch (InvocationTargetException ex) {
+                    // If the document is parsable (well-formed XML), but not valid
+                    // then the constructor will throw a schema2beans exception because
+                    // the document does not match the schema2beans graph.  This arrives
+                    // here as an InvocationTargetException because of our use of reflection
+                    // to construct the schema2beans graphs.
+                    Throwable cause = ex;
+                    while(cause.getCause() != null) {
+                        cause = cause.getCause();
+                    }
+                    
+                    if(cause instanceof Schema2BeansException) {
+                        throw (Schema2BeansException) cause;
+                    }
+
+                    if(cause instanceof Schema2BeansRuntimeException) {
+                        throw (Schema2BeansRuntimeException) cause;
+                    }
+
+                    throw new RuntimeException(ex.getMessage(), ex);
+                } catch (NoSuchMethodException ex) {
+                    throw new RuntimeException(ex.getMessage(), ex); // Programmer error
+                }
             }
+            
+            return result;
         }
         
+        /**
+         * @return version string.
+         */
         public String getVersion() {
             return version;
         }
@@ -702,4 +791,146 @@ public final class DDProvider {
         }
     }
     
+    private static class DocTypeInfo {
+        
+        private final String version;
+        private final Class proxyClass;
+        private final Class interfaceClass;
+        private final Class implClass;
+        private final String resourceDtd;
+        
+        public DocTypeInfo(final String version, final Class proxyClass, 
+                final Class interfaceClass, final Class implClass, final String resourceDtd) {
+            this.version = version;
+            this.proxyClass = proxyClass;
+            this.interfaceClass = interfaceClass;
+            this.implClass = implClass;
+            this.resourceDtd = resourceDtd;
+        }
+
+        public String getVersion() {
+            return version;
+        }
+
+        public String getResourceDtd() {
+            return resourceDtd;
+        }
+        
+        public RootInterface createImplementation(Document doc) 
+                throws InstantiationException, IllegalAccessException, IllegalArgumentException, 
+                InvocationTargetException, NoSuchMethodException {
+            Constructor implCtor = implClass.getConstructor(org.w3c.dom.Node.class, int.class);
+            return (RootInterface) implCtor.newInstance(doc, Common.NO_DEFAULT_VALUES);
+        }
+        
+        public RootInterfaceImpl createProxy(RootInterface original)
+                throws InstantiationException, IllegalAccessException, IllegalArgumentException, 
+                InvocationTargetException, NoSuchMethodException {
+            Constructor proxyCtor = proxyClass.getConstructor(interfaceClass, String.class);
+            return (RootInterfaceImpl) proxyCtor.newInstance(interfaceClass.cast(original), version);
+        }
+    }
+    
+    /* Maps DOCTYPE to { version, proxy class, impl class, dtd path } info.
+     */
+    
+    /* Maps DOCTYPE to { version, proxy class, impl class, dtd path } info.
+     */
+    private static Map<String, DocTypeInfo> publicIdToInfoMap = new HashMap<String, DocTypeInfo>(37);
+    
+    static {
+        publicIdToInfoMap.put(DTDRegistry.SUN_EJBJAR_211_DTD_PUBLIC_ID, new DocTypeInfo(
+                SunEjbJar.VERSION_2_1_1, SunEjbJarProxy.class, SunEjbJar.class, 
+                org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_2_1_1.SunEjbJar.class,
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-ejb-jar_2_1-1.dtd")); // NOI18N
+        publicIdToInfoMap.put(DTDRegistry.SUN_EJBJAR_210_DTD_PUBLIC_ID, new DocTypeInfo(
+                SunEjbJar.VERSION_2_1_0, SunEjbJarProxy.class, SunEjbJar.class,
+                org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_2_1_0.SunEjbJar.class,
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-ejb-jar_2_1-0.dtd")); // NOI18N
+        publicIdToInfoMap.put(DTDRegistry.SUN_EJBJAR_300_DTD_PUBLIC_ID, new DocTypeInfo(
+                SunEjbJar.VERSION_3_0_0, SunEjbJarProxy.class, SunEjbJar.class,
+                org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_0_0.SunEjbJar.class,
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-ejb-jar_3_0-0.dtd")); // NOI18N
+        publicIdToInfoMap.put(DTDRegistry.SUN_EJBJAR_210beta_DTD_PUBLIC_ID, new DocTypeInfo(
+                SunEjbJar.VERSION_2_1_0, SunEjbJarProxy.class, SunEjbJar.class,
+                org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_2_1_0.SunEjbJar.class,
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-ejb-jar_2_1-0.dtd")); // NOI18N
+        publicIdToInfoMap.put(DTDRegistry.SUN_EJBJAR_200_DTD_PUBLIC_ID, new DocTypeInfo(
+                SunEjbJar.VERSION_2_0_0, SunEjbJarProxy.class, SunEjbJar.class,
+                org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_2_0_0.SunEjbJar.class,
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-ejb-jar_2_0-0.dtd")); // NOI18N
+        publicIdToInfoMap.put(DTDRegistry.SUN_WEBAPP_250_DTD_PUBLIC_ID, new DocTypeInfo(
+                SunWebApp.VERSION_2_5_0, SunWebAppProxy.class, SunWebApp.class,
+                org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_5_0.SunWebApp.class,
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-web-app_2_5-0.dtd")); // NOI18N
+        publicIdToInfoMap.put(DTDRegistry.SUN_WEBAPP_241_DTD_PUBLIC_ID, new DocTypeInfo(
+                SunWebApp.VERSION_2_4_1, SunWebAppProxy.class, SunWebApp.class,
+                org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_4_1.SunWebApp.class,
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-web-app_2_4-1.dtd")); // NOI18N
+        publicIdToInfoMap.put(DTDRegistry.SUN_WEBAPP_240_DTD_PUBLIC_ID, new DocTypeInfo(
+                SunWebApp.VERSION_2_4_0, SunWebAppProxy.class, SunWebApp.class,
+                org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_4_0.SunWebApp.class,
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-web-app_2_4-0.dtd")); // NOI18N
+        publicIdToInfoMap.put(DTDRegistry.SUN_WEBAPP_240beta_DTD_PUBLIC_ID, new DocTypeInfo(
+                SunWebApp.VERSION_2_4_0, SunWebAppProxy.class, SunWebApp.class,
+                org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_4_0.SunWebApp.class,
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-web-app_2_4-0.dtd")); // NOI18N
+        publicIdToInfoMap.put(DTDRegistry.SUN_WEBAPP_230_DTD_PUBLIC_ID, new DocTypeInfo(
+                SunWebApp.VERSION_2_3_0, SunWebAppProxy.class, SunWebApp.class,
+                org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_3_0.SunWebApp.class,
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-web-app_2_3-0.dtd")); // NOI18N
+        publicIdToInfoMap.put(DTDRegistry.SUN_APPLICATION_50_DTD_PUBLIC_ID, new DocTypeInfo(
+                SunApplication.VERSION_5_0_0, SunApplicationProxy.class, SunApplication.class,
+                org.netbeans.modules.j2ee.sun.dd.impl.app.model_5_0_0.SunApplication.class,
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application_5_0-0.dtd")); // NOI18N
+//        publicIdToInfoMap.put(DTDRegistry.SUN_APPLICATION_141_DTD_PUBLIC_ID, new DocTypeInfo(
+//                SunApplication.VERSION_1_4_0, SunApplicationProxy.class, SunApplication.class,
+//                org.netbeans.modules.j2ee.sun.dd.impl.app.model_1_4_0.SunApplication.class,
+//                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application_1_4-0.dtd")); // NOI18N
+        publicIdToInfoMap.put(DTDRegistry.SUN_APPLICATION_140_DTD_PUBLIC_ID, new DocTypeInfo(
+                SunApplication.VERSION_1_4_0, SunApplicationProxy.class, SunApplication.class,
+                org.netbeans.modules.j2ee.sun.dd.impl.app.model_1_4_0.SunApplication.class,
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application_1_4-0.dtd")); // NOI18N
+        publicIdToInfoMap.put(DTDRegistry.SUN_APPLICATION_140beta_DTD_PUBLIC_ID, new DocTypeInfo(
+                SunApplication.VERSION_1_4_0, SunApplicationProxy.class, SunApplication.class,
+                org.netbeans.modules.j2ee.sun.dd.impl.app.model_1_4_0.SunApplication.class,
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application_1_4-0.dtd")); // NOI18N
+        publicIdToInfoMap.put(DTDRegistry.SUN_APPLICATION_130_DTD_PUBLIC_ID, new DocTypeInfo(
+                SunApplication.VERSION_1_3_0, SunApplicationProxy.class, SunApplication.class,
+                org.netbeans.modules.j2ee.sun.dd.impl.app.model_1_3_0.SunApplication.class,
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application_1_3-0.dtd")); // NOI18N
+        publicIdToInfoMap.put(DTDRegistry.SUN_APPCLIENT_50_DTD_PUBLIC_ID, new DocTypeInfo(
+                SunApplicationClient.VERSION_5_0_0, SunApplicationClientProxy.class, SunApplicationClient.class,
+                org.netbeans.modules.j2ee.sun.dd.impl.client.model_5_0_0.SunApplicationClient.class,
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application-client_5_0-0.dtd")); // NOI18N
+        publicIdToInfoMap.put(DTDRegistry.SUN_APPCLIENT_141_DTD_PUBLIC_ID, new DocTypeInfo(
+                SunApplicationClient.VERSION_1_4_1, SunApplicationClientProxy.class, SunApplicationClient.class,
+                org.netbeans.modules.j2ee.sun.dd.impl.client.model_1_4_1.SunApplicationClient.class,
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application-client_1_4-1.dtd")); // NOI18N
+        publicIdToInfoMap.put(DTDRegistry.SUN_APPCLIENT_140_DTD_PUBLIC_ID, new DocTypeInfo(
+                SunApplicationClient.VERSION_1_4_0, SunApplicationClientProxy.class, SunApplicationClient.class,
+                org.netbeans.modules.j2ee.sun.dd.impl.client.model_1_4_0.SunApplicationClient.class,
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application-client_1_4-0.dtd")); // NOI18N
+        publicIdToInfoMap.put(DTDRegistry.SUN_APPCLIENT_140beta_DTD_PUBLIC_ID, new DocTypeInfo(
+                SunApplicationClient.VERSION_1_4_0, SunApplicationClientProxy.class, SunApplicationClient.class,
+                org.netbeans.modules.j2ee.sun.dd.impl.client.model_1_4_0.SunApplicationClient.class,
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application-client_1_4-0.dtd")); // NOI18N
+        publicIdToInfoMap.put(DTDRegistry.SUN_APPCLIENT_130_DTD_PUBLIC_ID, new DocTypeInfo(
+                SunApplicationClient.VERSION_1_3_0, SunApplicationClientProxy.class, SunApplicationClient.class,
+                org.netbeans.modules.j2ee.sun.dd.impl.client.model_1_3_0.SunApplicationClient.class,
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application-client_1_3-0.dtd")); // NOI18N
+        publicIdToInfoMap.put(DTDRegistry.SUN_CMP_MAPPING_810_DTD_PUBLIC_ID, new DocTypeInfo(
+                SunCmpMappings.VERSION_1_2, SunCmpMappingsProxy.class, SunCmpMappings.class,
+                org.netbeans.modules.j2ee.sun.dd.impl.cmp.model_1_2.SunCmpMappings.class,
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-cmp-mapping_1_2.dtd")); // NOI18N
+        publicIdToInfoMap.put(DTDRegistry.SUN_CMP_MAPPING_800_DTD_PUBLIC_ID, new DocTypeInfo(
+                SunCmpMappings.VERSION_1_1, SunCmpMappingsProxy.class, SunCmpMappings.class,
+                org.netbeans.modules.j2ee.sun.dd.impl.cmp.model_1_1.SunCmpMappings.class,
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-cmp-mapping_1_1.dtd")); // NOI18N
+        publicIdToInfoMap.put(DTDRegistry.SUN_CMP_MAPPING_700_DTD_PUBLIC_ID, new DocTypeInfo(
+                SunCmpMappings.VERSION_1_0, SunCmpMappingsProxy.class, SunCmpMappings.class,
+                org.netbeans.modules.j2ee.sun.dd.impl.cmp.model_1_0.SunCmpMappings.class,
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-cmp-mapping_1_0.dtd")); // NOI18N
+        
+    }
 }

@@ -16,40 +16,43 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * SunApplicationProxy.java
- *
- * Created on February 7, 2005, 9:14 PM
- */
-
 package org.netbeans.modules.j2ee.sun.dd.impl.app;
 
-import org.netbeans.modules.j2ee.sun.dd.api.DDException;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
+import org.netbeans.modules.j2ee.sun.dd.api.RootInterface;
 import org.netbeans.modules.j2ee.sun.dd.api.app.SunApplication;
 import org.netbeans.modules.j2ee.sun.dd.impl.DTDRegistry;
-
+import org.netbeans.modules.j2ee.sun.dd.impl.RootInterfaceImpl;
 import org.w3c.dom.Document;
+import org.xml.sax.SAXParseException;
+
+
 /**
  *
  * @author Nitya Doraisamy
+ * @author Peter Williams
  */
-public class SunApplicationProxy implements SunApplication {
+public class SunApplicationProxy implements SunApplication, RootInterfaceImpl {
 
     private SunApplication appRoot;
     private String version;
     private OutputProvider outputProvider;
     private int ddStatus;
-    private org.xml.sax.SAXParseException error;    
-    private java.util.List listeners; 
+    private SAXParseException error;    
+    private List<PropertyChangeListener> listeners; 
     
-    /** Creates a new instance of SunApplicationProxy */
+
     public SunApplicationProxy(SunApplication appRoot, String version) {
         this.appRoot = appRoot;
         this.version = version;
+        this.listeners = new ArrayList<PropertyChangeListener>();
     }
 
-    public void addPropertyChangeListener(java.beans.PropertyChangeListener pcl) {
+    public void addPropertyChangeListener(PropertyChangeListener pcl) {
         if (appRoot != null) 
             appRoot.addPropertyChangeListener(pcl);
         listeners.add(pcl);
@@ -111,7 +114,7 @@ public class SunApplicationProxy implements SunApplication {
         return appRoot==null?null:appRoot.newWeb();
     }
 
-    public void removePropertyChangeListener(java.beans.PropertyChangeListener pcl) {
+    public void removePropertyChangeListener(PropertyChangeListener pcl) {
         if (appRoot != null) 
             appRoot.removePropertyChangeListener(pcl);
         listeners.remove(pcl);
@@ -215,17 +218,47 @@ public class SunApplicationProxy implements SunApplication {
         }
     }
  
+    public void setOriginal(SunApplication appRoot) {
+        if (this.appRoot != appRoot) {
+            for (int i=0;i<listeners.size();i++) {
+                PropertyChangeListener pcl = listeners.get(i);
+                if (this.appRoot != null) {
+                    this.appRoot.removePropertyChangeListener(pcl);
+                }
+                if (appRoot != null) {
+                    appRoot.addPropertyChangeListener(pcl);
+                }
+            }
+            this.appRoot = appRoot;
+            if (appRoot != null) {
+                setProxyVersion(appRoot.getVersion().toString());
+            }
+        }
+    }
+     
     public SunApplication getOriginal() {
         return appRoot;
     }
     
-    public org.xml.sax.SAXParseException getError() {
+    public SAXParseException getError() {
         return error;
     }
-    public void setError(org.xml.sax.SAXParseException error) {
+    
+    public void setError(SAXParseException error) {
         this.error = error;
     }  
 
+    public void setProxyVersion(java.lang.String value) {
+        if ((version==null && value!=null) || !version.equals(value)) {
+            PropertyChangeEvent evt = new PropertyChangeEvent(
+                    this, PROPERTY_VERSION, version, value); 
+            version=value;
+            for (int i=0;i<listeners.size();i++) {
+                listeners.get(i).propertyChange(evt);
+            }
+        }
+    }
+    
     public void setValue(String name, Object[] value) {
         if (appRoot!=null) appRoot.setValue(name, value);
     }
@@ -322,6 +355,32 @@ public class SunApplicationProxy implements SunApplication {
         return appRoot == null ? null : appRoot.cloneVersion(version);
     }
    
+    public int getStatus() {
+        return ddStatus;
+    }
+    
+    public void setStatus(int value) {
+        if (ddStatus!=value) {
+            PropertyChangeEvent evt = new PropertyChangeEvent(
+                    this, PROPERTY_STATUS, new Integer(ddStatus), new Integer(value));
+            ddStatus=value;
+            for (int i=0;i<listeners.size();i++) {
+                listeners.get(i).propertyChange(evt);
+            }
+        }
+    }
+    
+    public RootInterface getRootInterface() {
+        return this;
+    }
+
+    public boolean hasOriginal() {
+        return getOriginal() != null;
+    }
+    
+    /** Contract between friend modules that enables 
+    * a specific handling of write(FileObject) method for targeted FileObject
+    */
     public static interface OutputProvider {
         public void write(SunApplication appRoot) throws java.io.IOException;
     }

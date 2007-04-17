@@ -19,6 +19,12 @@
 //                        return new java.math.BigDecimal(org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp.VERSION_2_4_0);
                         return new java.math.BigDecimal("2.40");
                     }
+                    public org.xml.sax.SAXParseException getError() {
+                        return null;
+                    }
+                    public int getStatus() {
+                        return STATE_VALID;
+                    }
                     // needed for 2_1-1
                     public void setErrorUrl(java.lang.String value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
                          throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunWebApp.VERSION_2_4_0);

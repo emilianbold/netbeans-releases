@@ -16,40 +16,42 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * SunEjbJarProxy.java
- *
- * Created on February 7, 2005, 12:13 PM
- */
-
 package org.netbeans.modules.j2ee.sun.dd.impl.ejb;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.j2ee.sun.dd.api.DDException;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
+import org.netbeans.modules.j2ee.sun.dd.api.RootInterface;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.SunEjbJar;
 import org.netbeans.modules.j2ee.sun.dd.impl.DDTreeWalker;
 import org.netbeans.modules.j2ee.sun.dd.impl.DTDRegistry;
-
+import org.netbeans.modules.j2ee.sun.dd.impl.RootInterfaceImpl;
 import org.w3c.dom.Document;
+import org.xml.sax.SAXParseException;
 
 
 /**
  *
  * @author Nitya Doraisamy
+ * @author Peter Williams
  */
-public class SunEjbJarProxy implements SunEjbJar {
+public class SunEjbJarProxy implements SunEjbJar, RootInterfaceImpl {
 
     private SunEjbJar ejbJarRoot;
     private String version;
     private OutputProvider outputProvider;
     private int ddStatus;
-    private org.xml.sax.SAXParseException error;    
-    private java.util.List listeners; 
+    private SAXParseException error;    
+    private List<PropertyChangeListener> listeners; 
         
-    /** Creates a new instance of SunEjbJarProxy */
+
     public SunEjbJarProxy(SunEjbJar ejbJarRoot, String version) {
         this.ejbJarRoot = ejbJarRoot;
         this.version = version;
+        this.listeners = new ArrayList<PropertyChangeListener>();
     }
 
     public int addSecurityRoleMapping(org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping securityRoleMapping) {
@@ -95,13 +97,13 @@ public class SunEjbJarProxy implements SunEjbJar {
          return ejbJarRoot==null?-1:ejbJarRoot.sizeSecurityRoleMapping();
     }
 
-    public void removePropertyChangeListener(java.beans.PropertyChangeListener pcl) {
+    public void removePropertyChangeListener(PropertyChangeListener pcl) {
         if (ejbJarRoot != null) 
             ejbJarRoot.removePropertyChangeListener(pcl);
         listeners.remove(pcl);
     }
 
-    public void addPropertyChangeListener(java.beans.PropertyChangeListener pcl) {
+    public void addPropertyChangeListener(PropertyChangeListener pcl) {
          if (ejbJarRoot != null) 
             ejbJarRoot.addPropertyChangeListener(pcl);
         listeners.add(pcl);
@@ -215,20 +217,21 @@ public class SunEjbJarProxy implements SunEjbJar {
         return new java.math.BigDecimal(version);
     }
     
-     public void setOriginal(SunEjbJar ejbJarRoot) {
+    public void setOriginal(SunEjbJar ejbJarRoot) {
         if (this.ejbJarRoot != ejbJarRoot) {
             for (int i=0;i<listeners.size();i++) {
-                java.beans.PropertyChangeListener pcl = 
-                    (java.beans.PropertyChangeListener)listeners.get(i);
-                if (this.ejbJarRoot != null) 
+                PropertyChangeListener pcl = listeners.get(i);
+                if (this.ejbJarRoot != null) {
                     this.ejbJarRoot.removePropertyChangeListener(pcl);
-                if (ejbJarRoot != null) 
+                }
+                if (ejbJarRoot != null) {
                     ejbJarRoot.addPropertyChangeListener(pcl);
-                
+                }
             }
             this.ejbJarRoot = ejbJarRoot;
-            if (ejbJarRoot != null) 
+            if (ejbJarRoot != null) {
                 setProxyVersion(ejbJarRoot.getVersion().toString());
+            }
         }
     }
     
@@ -236,20 +239,21 @@ public class SunEjbJarProxy implements SunEjbJar {
         return ejbJarRoot;
     }
     
-    public org.xml.sax.SAXParseException getError() {
+    public SAXParseException getError() {
         return error;
     }
-    public void setError(org.xml.sax.SAXParseException error) {
+    
+    public void setError(SAXParseException error) {
         this.error=error;
     }    
     
     public void setProxyVersion(java.lang.String value) {
         if ((version==null && value!=null) || !version.equals(value)) {
-            java.beans.PropertyChangeEvent evt = 
-                new java.beans.PropertyChangeEvent(this, PROPERTY_VERSION, version, value); 
+            PropertyChangeEvent evt = new PropertyChangeEvent(
+                    this, PROPERTY_VERSION, version, value); 
             version=value;
             for (int i=0;i<listeners.size();i++) {
-                ((java.beans.PropertyChangeListener)listeners.get(i)).propertyChange(evt);
+                listeners.get(i).propertyChange(evt);
             }
         }
     }
@@ -367,6 +371,30 @@ public class SunEjbJarProxy implements SunEjbJar {
         return ejbJarRoot == null ? null : ejbJarRoot.cloneVersion(version);
     }
    
+    public int getStatus() {
+        return ddStatus;
+    }
+    
+    public void setStatus(int value) {
+        if (ddStatus!=value) {
+            PropertyChangeEvent evt = new PropertyChangeEvent(
+                    this, PROPERTY_STATUS, new Integer(ddStatus), new Integer(value));
+            ddStatus=value;
+            for (int i=0;i<listeners.size();i++) {
+                listeners.get(i).propertyChange(evt);
+            }
+        }
+    }
+    
+    public RootInterface getRootInterface() {
+        return this;
+    }
+    
+    public boolean hasOriginal() {
+        return getOriginal() != null;
+    }
+    
+    
     /** Contract between friend modules that enables 
     * a specific handling of write(FileObject) method for targeted FileObject
     */

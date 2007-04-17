@@ -12,6 +12,12 @@
                     public java.math.BigDecimal getVersion() {
                         return new java.math.BigDecimal("1.30");
                     }
+                    public org.xml.sax.SAXParseException getError() {
+                        return null;
+                    }
+                    public int getStatus() {
+                        return STATE_VALID;
+                    }
                     public void setRealm(String value) {
                     }
                     public String getRealm() {

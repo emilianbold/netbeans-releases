@@ -35,6 +35,8 @@ import org.netbeans.modules.j2ee.sun.dd.api.serverresources.Resources;
 public class ResourcesProxy implements Resources {
     
     private Resources resourcesRoot;
+// !PW If this class is ever ported to derive from RootInterface instead of CommonDDBean, it'll need these.    
+//    private int ddStatus;
     private java.util.List listeners; 
     
     /** Creates a new instance of ResourcesProxy */
@@ -526,4 +528,19 @@ public class ResourcesProxy implements Resources {
         if (resourcesRoot!=null) resourcesRoot.write(f);
     }
     
+// !PW If this class is ever ported to derive from RootInterface instead of CommonDDBean, it'll need these.    
+//    public int getStatus() {
+//        return ddStatus;
+//    }
+//    
+//    public void setStatus(int value) {
+//        if (ddStatus!=value) {
+//            java.beans.PropertyChangeEvent evt =
+//                new java.beans.PropertyChangeEvent(this, PROPERTY_STATUS, new Integer(ddStatus), new Integer(value));
+//            ddStatus=value;
+//            for (int i=0;i<listeners.size();i++) {
+//                ((java.beans.PropertyChangeListener)listeners.get(i)).propertyChange(evt);
+//            }
+//        }
+//    }
 }

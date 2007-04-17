@@ -16,22 +16,19 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * SunApplicationClientProxy.java
- *
- * Created on February 10, 2006, 11:49 AM
- *
- */
-
 package org.netbeans.modules.j2ee.sun.dd.impl.client;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.DDException;
+import org.netbeans.modules.j2ee.sun.dd.api.RootInterface;
 import org.netbeans.modules.j2ee.sun.dd.api.client.JavaWebStartAccess;
 import org.netbeans.modules.j2ee.sun.dd.api.client.SunApplicationClient;
 import org.netbeans.modules.j2ee.sun.dd.api.common.EjbRef;
@@ -41,28 +38,32 @@ import org.netbeans.modules.j2ee.sun.dd.api.common.ResourceEnvRef;
 import org.netbeans.modules.j2ee.sun.dd.api.common.ResourceRef;
 import org.netbeans.modules.j2ee.sun.dd.api.common.ServiceRef;
 import org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException;
-
-import org.w3c.dom.Document;
 import org.netbeans.modules.j2ee.sun.dd.impl.DTDRegistry;
 import org.netbeans.modules.j2ee.sun.dd.impl.DDTreeWalker;
+import org.netbeans.modules.j2ee.sun.dd.impl.RootInterfaceImpl;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXParseException;
+
 
 /**
  *
  * @author Nitya Doraisamy
+ * @author Peter Williams
  */
-public class SunApplicationClientProxy implements SunApplicationClient {
+public class SunApplicationClientProxy implements SunApplicationClient, RootInterfaceImpl {
     
     private SunApplicationClient appClientRoot;
     private String version;
     private OutputProvider outputProvider;
     private int ddStatus;
-    private org.xml.sax.SAXParseException error;    
-    private java.util.List listeners; 
+    private SAXParseException error;    
+    private List<PropertyChangeListener> listeners; 
     
-    /** Creates a new instance of SunApplicationProxy */
+
     public SunApplicationClientProxy(SunApplicationClient appClientRoot, String version) {
         this.appClientRoot = appClientRoot;
         this.version = version;
+        this.listeners = new ArrayList<PropertyChangeListener>();
     }
 
     public void setEjbRef(int index, EjbRef value) {
@@ -406,6 +407,24 @@ public class SunApplicationClientProxy implements SunApplicationClient {
         return appClientRoot == null ? null : appClientRoot.cloneVersion(version);
     }
    
+    public void setOriginal(SunApplicationClient appClientRoot) {
+        if (this.appClientRoot != appClientRoot) {
+            for (int i=0;i<listeners.size();i++) {
+                PropertyChangeListener pcl = listeners.get(i);
+                if (this.appClientRoot != null) {
+                    this.appClientRoot.removePropertyChangeListener(pcl);
+                }
+                if (appClientRoot != null) {
+                    appClientRoot.addPropertyChangeListener(pcl);
+                }
+            }
+            this.appClientRoot = appClientRoot;
+            if (appClientRoot != null) {
+                setProxyVersion(appClientRoot.getVersion().toString());
+            }
+        }
+    }
+    
     public SunApplicationClient getOriginal() {
         return appClientRoot;
     }
@@ -519,21 +538,56 @@ public class SunApplicationClientProxy implements SunApplicationClient {
         return proxy;
     }
     
-    public org.xml.sax.SAXParseException getError() {
+    public SAXParseException getError() {
         return error;
     }
-    public void setError(org.xml.sax.SAXParseException error) {
+    
+    public void setError(SAXParseException error) {
         this.error=error;
     }
 
+    public void setProxyVersion(java.lang.String value) {
+        if ((version==null && value!=null) || !version.equals(value)) {
+            PropertyChangeEvent evt = new PropertyChangeEvent(
+                    this, PROPERTY_VERSION, version, value); 
+            version=value;
+            for (int i=0;i<listeners.size();i++) {
+                listeners.get(i).propertyChange(evt);
+            }
+        }
+    }
+    
     public int size(String name) {
         return appClientRoot == null?-1:appClientRoot.size(name);
     }
+    
+    public int getStatus() {
+        return ddStatus;
+    }
+    
+    public void setStatus(int value) {
+        if (ddStatus!=value) {
+            PropertyChangeEvent evt = new PropertyChangeEvent(
+                    this, PROPERTY_STATUS, new Integer(ddStatus), new Integer(value));
+            ddStatus=value;
+            for (int i=0;i<listeners.size();i++) {
+                listeners.get(i).propertyChange(evt);
+            }
+        }
+    }
+    
+    public RootInterface getRootInterface() {
+        return this;
+    }
+    
+    public boolean hasOriginal() {
+        return getOriginal() != null;
+    }
+    
     /** Contract between friend modules that enables 
     * a specific handling of write(FileObject) method for targeted FileObject
     */
     public static interface OutputProvider {
         public void write(SunApplicationClient appClientRoot) throws java.io.IOException;
     }
-    
 }

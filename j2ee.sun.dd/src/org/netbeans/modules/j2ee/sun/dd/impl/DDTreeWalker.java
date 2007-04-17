@@ -26,9 +26,11 @@
 package org.netbeans.modules.j2ee.sun.dd.impl;
 
 import org.netbeans.modules.j2ee.sun.dd.impl.transform.*;
-import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
-import org.netbeans.modules.j2ee.sun.dd.api.ejb.SunEjbJar;
+import org.netbeans.modules.j2ee.sun.dd.api.app.SunApplication;
 import org.netbeans.modules.j2ee.sun.dd.api.client.SunApplicationClient;
+import org.netbeans.modules.j2ee.sun.dd.api.cmp.SunCmpMappings;
+import org.netbeans.modules.j2ee.sun.dd.api.ejb.SunEjbJar;
+import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
 
 import java.util.Vector;
 import java.util.Arrays;
@@ -72,7 +74,7 @@ public class DDTreeWalker {
     public void downgradeSunWebAppDocument(){
         this.transInfo = getTransformInfo();
         if(transInfo != null) {
-            Vector modElementsList = new Vector();
+            Vector<ModElement> modElementsList = new Vector<ModElement>();
             Xmltype type = null;
             if(currentVersion.equals(SunWebApp.VERSION_2_5_0)){
                 type = getXmlType(transInfo, "sunWebApp41");
@@ -93,7 +95,7 @@ public class DDTreeWalker {
     public void downgradeSunEjbJarDocument(){
         this.transInfo = getTransformInfo();
         if(transInfo != null) {
-            Vector modElementsList = new Vector();
+            Vector<ModElement> modElementsList = new Vector<ModElement>();
             Xmltype type = null;
             if(currentVersion.equals(SunEjbJar.VERSION_3_0_0)){
                 type = getXmlType(transInfo, "sunEjb211");
@@ -111,10 +113,12 @@ public class DDTreeWalker {
         }
     }
     
+    // No need for downgradeSunApplicationDocument due to nature of it's DTD history.
+    
     public void downgradeSunClientDocument(){
         this.transInfo = getTransformInfo();
         if(transInfo != null) {
-            Vector modElementsList = new Vector();
+            Vector<ModElement> modElementsList = new Vector<ModElement>();
             Xmltype type = null;
             if(currentVersion.equals(SunApplicationClient.VERSION_5_0_0)){
                 type = getXmlType(transInfo, "sunClient41");
@@ -132,20 +136,43 @@ public class DDTreeWalker {
         }
     }
     
-    private Vector updateModElementsList(Vector modElementsList, Xmltype type){
+    // TODO add entries to transform.xml to support these two methods.    
+    public void downgradeSunCmpMappingsDocument(){
+        throw new UnsupportedOperationException();
+//        this.transInfo = getTransformInfo();
+//        if(transInfo != null) {
+//            Vector modElementsList = new Vector();
+//            Xmltype type = null;
+//            if(currentVersion.equals(SunCmpMappings.VERSION_1_2)){
+//                type = getXmlType(transInfo, "sunCmpMappings12");
+//                modElementsList = updateModElementsList(modElementsList, type);
+//            }
+//            if(this.downgradeVersion.equals(SunCmpMappings.VERSION_1_1)){
+//                type = getXmlType(transInfo, "sunCmpMappings11");
+//                modElementsList = updateModElementsList(modElementsList, type);
+//            }
+//            if(this.downgradeVersion.equals(SunCmpMappings.VERSION_1_0)){
+//                type = getXmlType(transInfo, "sunCmpMappings10");
+//                modElementsList = updateModElementsList(modElementsList, type);
+//            }
+//            processDocument(modElementsList);
+//        }
+    }
+            
+    private Vector<ModElement> updateModElementsList(Vector<ModElement> modElementsList, Xmltype type){
         if(type != null){
             ModElement[] elementsList = type.getModElement();
-            modElementsList.addAll(new HashSet(Arrays.asList(elementsList)));
+            modElementsList.addAll(new HashSet<ModElement>(Arrays.asList(elementsList)));
         } 
         return modElementsList;
     } 
     
-    private void processDocument(Vector elements){
+    private void processDocument(Vector<ModElement> elements){
         Element element = document.getDocumentElement();
         visitElement(element, elements);
     }
     
-    private void visitElement(Element element, Vector elements) {
+    private void visitElement(Element element, Vector<ModElement> elements) {
         walkElement(element, elements);
         NodeList nodes = element.getChildNodes();
         for (int i = 0; i < nodes.getLength(); i++) {
@@ -161,10 +188,10 @@ public class DDTreeWalker {
         }
     }
     
-    private void walkElement(Element element, Vector elements){
-        Object[] elementsList = elements.toArray();
+    private void walkElement(Element element, Vector<ModElement> elements){
+        ModElement [] elementsList = elements.toArray(new ModElement [elements.size()]);
         for(int i=0; i<elementsList.length; i++){
-            ModElement eachElement = (ModElement)elementsList[i];
+            ModElement eachElement = elementsList[i];
             if ((element != null) && element.getTagName().equals(eachElement.getName())) {
                 ModAttribute[] attrList = eachElement.getModAttribute();
                 for(int j=0; j<attrList.length; j++){
@@ -204,10 +231,10 @@ public class DDTreeWalker {
         }//for
     }
     
-    public Xmltype getXmlType(Transform transformInfo, String webAppVersion) {
+    public Xmltype getXmlType(Transform transformInfo, String moduleVersion) {
         Xmltype[] types = transformInfo.getXmltype();
         for (int i = 0; i < types.length; i++) {
-            if (types[i].getName().equals(webAppVersion)){
+            if (types[i].getName().equals(moduleVersion)){
                 return types[i];
             }    
         }

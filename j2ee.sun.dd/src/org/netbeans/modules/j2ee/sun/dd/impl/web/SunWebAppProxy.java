@@ -16,43 +16,42 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * SunWebAppProxy.java
- *
- * Created on February 7, 2005, 7:33 PM
- */
-
 package org.netbeans.modules.j2ee.sun.dd.impl.web;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.DDException;
+import org.netbeans.modules.j2ee.sun.dd.api.RootInterface;
 import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
-
-import org.netbeans.modules.j2ee.sun.dd.impl.DTDRegistry;
 import org.netbeans.modules.j2ee.sun.dd.impl.DDTreeWalker;
-
-import org.w3c.dom.*;
-import java.io.*;
+import org.netbeans.modules.j2ee.sun.dd.impl.DTDRegistry;
+import org.netbeans.modules.j2ee.sun.dd.impl.RootInterfaceImpl;
 import org.w3c.dom.Document;
+import org.xml.sax.SAXParseException;
+
 
 /**
  *
  * @author Nitya Doraisamy
+ * @author Peter Williams
  */
-public class SunWebAppProxy implements SunWebApp {
+public class SunWebAppProxy implements SunWebApp, RootInterfaceImpl {
     
     private SunWebApp webRoot;
     private String version;
     private OutputProvider outputProvider;
     private int ddStatus;
-    private org.xml.sax.SAXParseException error;    
-    private java.util.List listeners; 
+    private SAXParseException error;    
+    private List<PropertyChangeListener> listeners; 
         
     
-    /** Creates a new instance of SunWebAppProxy */
     public SunWebAppProxy(SunWebApp webRoot, String version) {
         this.webRoot = webRoot;
         this.version = version;
+        this.listeners = new ArrayList<PropertyChangeListener>();
     }
 
     public int addEjbRef(org.netbeans.modules.j2ee.sun.dd.api.common.EjbRef ejbRef) {
@@ -515,28 +514,58 @@ public class SunWebAppProxy implements SunWebApp {
         return webRoot==null?-1:webRoot.sizeWebserviceDescription();
     }
     
-    public void removePropertyChangeListener(java.beans.PropertyChangeListener pcl) {
+    public void removePropertyChangeListener(PropertyChangeListener pcl) {
         if (webRoot != null) 
             webRoot.removePropertyChangeListener(pcl);
         listeners.remove(pcl);
     }
 
-    public void addPropertyChangeListener(java.beans.PropertyChangeListener pcl) {
+    public void addPropertyChangeListener(PropertyChangeListener pcl) {
          if (webRoot != null) 
             webRoot.addPropertyChangeListener(pcl);
         listeners.add(pcl);
     }
 
+    public void setOriginal(SunWebApp webRoot) {
+        if (this.webRoot != webRoot) {
+            for (int i=0;i<listeners.size();i++) {
+                PropertyChangeListener pcl = listeners.get(i);
+                if (this.webRoot != null) {
+                    this.webRoot.removePropertyChangeListener(pcl);
+                }
+                if (webRoot != null) {
+                    webRoot.addPropertyChangeListener(pcl);
+                }
+            }
+            this.webRoot = webRoot;
+            if (webRoot != null) {
+                setProxyVersion(webRoot.getVersion().toString());
+            }
+        }
+    }
+     
     public SunWebApp getOriginal() {
         return webRoot;
     }
     
-    public org.xml.sax.SAXParseException getError() {
+    public SAXParseException getError() {
         return error;
     }
-    public void setError(org.xml.sax.SAXParseException error) {
+    
+    public void setError(SAXParseException error) {
         this.error = error;
     }  
+    
+    public void setProxyVersion(java.lang.String value) {
+        if ((version==null && value!=null) || !version.equals(value)) {
+            PropertyChangeEvent evt = new PropertyChangeEvent(
+                    this, PROPERTY_VERSION, version, value); 
+            version=value;
+            for (int i=0;i<listeners.size();i++) {
+                listeners.get(i).propertyChange(evt);
+            }
+        }
+    }
     
     public void setVersion(java.math.BigDecimal version) {
         String newVersion = version.toString();
@@ -791,11 +820,33 @@ public class SunWebAppProxy implements SunWebApp {
         return webRoot==null?null:webRoot.getMessageDestinationRef();
     }
 
+    public int getStatus() {
+        return ddStatus;
+    }
+    
+    public void setStatus(int value) {
+        if (ddStatus!=value) {
+            PropertyChangeEvent evt = new PropertyChangeEvent(
+                    this, PROPERTY_STATUS, new Integer(ddStatus), new Integer(value));
+            ddStatus=value;
+            for (int i=0;i<listeners.size();i++) {
+                listeners.get(i).propertyChange(evt);
+            }
+        }
+    }
+    
+    public RootInterface getRootInterface() {
+        return this;
+    }
+
+    public boolean hasOriginal() {
+        return getOriginal() != null;
+    }
+    
     /** Contract between friend modules that enables 
     * a specific handling of write(FileObject) method for targeted FileObject
     */
     public static interface OutputProvider {
         public void write(SunWebApp webApp) throws java.io.IOException;
     }
-    
 }

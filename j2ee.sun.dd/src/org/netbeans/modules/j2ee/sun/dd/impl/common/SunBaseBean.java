@@ -18,13 +18,9 @@
  */
 package org.netbeans.modules.j2ee.sun.dd.impl.common;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Vector;
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.netbeans.modules.schema2beans.BeanProp;
@@ -238,7 +234,7 @@ public abstract class SunBaseBean extends BaseBean implements CommonDDBean {
         String oldName = this.getClass().getName();
         String className = oldName.substring(oldName.lastIndexOf('.')+1);
         String key = version + className;
-        String modelPostfix = (String) commonBeanModelMap.get(key);
+        String modelPostfix = commonBeanModelMap.get(key);
         
         StringBuffer buf = new StringBuffer(128);
         if(modelPostfix != null) {
@@ -267,7 +263,7 @@ public abstract class SunBaseBean extends BaseBean implements CommonDDBean {
      *
      *  Key format: "[spec version][BeanClassName]" -> "#_#_#" for model postfix string
      */
-    private static Map commonBeanModelMap = new HashMap(471);
+    private static Map<String, String> commonBeanModelMap = new HashMap<String, String>(471);
     
     static {
         // App client 1.3

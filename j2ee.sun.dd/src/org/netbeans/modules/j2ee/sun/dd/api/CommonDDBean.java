@@ -37,16 +37,18 @@ public interface CommonDDBean {
         
     public void merge(CommonDDBean root, int mode); 
     
-    /**
-     * Adds property change listener to particular CommonDDBean object (WebApp object).
+    /** Adds property change listener to particular CommonDDBean object (WebApp object).
+     * 
      * @param pcl property change listener
      */
     public void addPropertyChangeListener(java.beans.PropertyChangeListener pcl);
-    /**
-     * Removes property change listener from CommonDDBean object.
+    
+    /** Removes property change listener from CommonDDBean object.
+     * 
      * @param pcl property change listener
      */
     public void removePropertyChangeListener(java.beans.PropertyChangeListener pcl);
+    
     /**
      * Returns the CommonDDBean object or array of CommonDDBean object for given property.<br>
      * E.g. for retrieving the servlet-class value on Servlet object he <b>getValue("ServletClass");</b> can be used.
