@@ -436,13 +436,18 @@ public class JDBCWizardTablePanel extends JPanel {
             }
         }
 
-        ColumnDialog columnDisplayDialog = new ColumnDialog(new JDialog(), true);
+        ColumnDialog columnDisplayDialog = null;
 
         protected String title = "Columns";
         
         RowDataWrapper takes;
         public ColumnAction(final RowDataWrapper takes) {
         	this.takes = takes;
+        	columnDisplayDialog = new ColumnDialog(new JDialog(), true);
+        	this.columnDisplayDialog.setAlwaysOnTop(true);
+            this.columnDisplayDialog.setResizable(false);
+            this.columnDisplayDialog.setEnabled(true);
+            this.columnDisplayDialog.setFocusable(true);
         }
 
         // this is the default action when the button corresponding to the
@@ -520,11 +525,7 @@ public class JDBCWizardTablePanel extends JPanel {
             this.centerWindowOnScreen(this.columnDisplayDialog);
             this.columnDisplayDialog.setSize(new Dimension(400, 300));
             this.columnDisplayDialog.setVisible(true);
-            this.columnDisplayDialog.setAlwaysOnTop(true);
-            this.columnDisplayDialog.setResizable(false);
-            this.columnDisplayDialog.setEnabled(true);
-            this.columnDisplayDialog.setFocusable(true);
-        }
+         }
 
         /**
          * 
@@ -537,10 +538,12 @@ public class JDBCWizardTablePanel extends JPanel {
                 cnt++;
             }
             this.columnDisplayDialog.dispose();
+            this.title = "Columns";
         }
 
         public void okAction() {
             this.columnDisplayDialog.dispose();
+            this.title = "Columns";
         }
         
         public void selectAllAction(int index){
