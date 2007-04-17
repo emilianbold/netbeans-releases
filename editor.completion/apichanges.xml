@@ -93,7 +93,7 @@ is the proper place.
             <p>
             Adds few <a href="@org-openide-util@/org/openide/util/doc-files/logging.html">structured logging</a> 
             <a href="@TOP@/architecture-summary.html#logger-org.netbeans.ui.editor.completion">triggers</a> 
-            to cooperate with <a href="@org-netbeans-modules-uihandler@/overview-summary.html">UI Gestures Collector</a>.
+            to cooperate with the <!-- XXX @org-netbeans-modules-uihandler@/overview-summary.html link forbidden from stable -> dev module --> UI Gestures Collector.
             </p>
             </description>
         </change>
