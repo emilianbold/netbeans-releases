@@ -1,3 +1,54 @@
+netbeans5.5 (5.5-1) feisty; urgency=low
+
+  * Resolved licensing issue ("installer" no longer necessary)
+  * Corrected license reference for Swing Layout Extensions to LGPL 2.1
+    (for both the platform and IDE packages)
+  * Updated netbeans.desktop (added TryExec, removed duplicate Categories)
+  * Remove empty upstream build target files
+
+ -- Tom Marble <tom.marble@sun.com>  Tue, 17 Apr 2007 12:43:22 -0500
+
+netbeans5.5 (5.5-0.59) feisty; urgency=low
+
+  * Updated netbeans5.5.prerm to remove certain directories appropriately
+
+ -- Tom Marble <tom.marble@sun.com>  Thu, 15 Mar 2007 14:09:31 -0500
+
+netbeans5.5 (5.5-0.58) feisty; urgency=low
+
+  * Change rules to not clean debian/copyright even though it is generated
+
+ -- Tom Marble <tom.marble@sun.com>  Thu, 15 Mar 2007 08:47:57 -0500
+
+netbeans5.5 (5.5-0.57) feisty; urgency=low
+
+  * Removed md5sum comment from control
+  * Used Debian GPL reference in copyright for NetBeans platform third 
+    party code instead of the full GPL
+  * Removed lintian overrides for common-license-file-for-gpl
+  * Added netbeans5.5.prerm to remove files created by the installer
+    such that package removal is successful
+  * Added IDE HTML documents to debian/nb-docs so that doc-base will work
+    as expected
+  
+ -- Tom Marble <tom.marble@sun.com>  Thu, 15 Mar 2007 08:41:19 -0500
+
+netbeans5.5 (5.5-0.56) feisty; urgency=low
+
+  * Insure netbeans.conf.orig is added in rules (so that
+    upon removal this file is appropriately deleted)
+  * Added defensive tests to netbeans5.5.postinst
+  
+ -- Tom Marble <tom.marble@sun.com>  Mon, 12 Mar 2007 00:49:41 -0500
+
+netbeans5.5 (5.5-0.55) feisty; urgency=low
+
+  * Due to licensing concerns changed the IDE package "netbeans5.5"
+    to be just an installer package (requires the user to pre-download
+    the IDE tarball from the website).
+
+ -- Tom Marble <tom.marble@sun.com>  Tue,  6 Mar 2007 21:48:43 -0600
+
 netbeans5.5 (5.5-0.54) feisty; urgency=low
 
   * Some deleted zip files cannot be deleted as they contain API doc. Fixed.

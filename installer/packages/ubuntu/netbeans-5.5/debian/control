@@ -9,7 +9,7 @@ Package: netbeans5.5-platform
 Architecture: all
 Section: libs
 Depends: sun-java5-jre | sun-java6-jre
-Suggests: netbeans5.5-platform-ja | netbeans5.5-platform-pt | netbeans5.5-platform-zh
+Suggests: netbeans5.5-platform-ja, netbeans5.5-platform-pt, netbeans5.5-platform-zh
 Description: NetBeans Platform for building rich desktop applications in Java
  NetBeans Platform is the framework for building rich desktop applications
  in Java.  It is the core of the NetBeans IDE.
@@ -55,7 +55,7 @@ Description: NetBeans Platform (Chinese Localization)
 Package: netbeans5.5
 Architecture: all
 Depends: sun-java5-jdk | sun-java6-jdk, netbeans5.5-platform
-Suggests: sun-java5-source, sun-java6-source, netbeans5.5-doc, netbeans5.5-ja | netbeans5.5-pt | netbeans5.5-zh
+Suggests: sun-java5-source, sun-java6-source, netbeans5.5-doc
 Description: NetBeans IDE for development of applications in Java
  NetBeans is a modern IDE which supports development of applications in the
  Java programming language.  The distinctive feature of this IDE is it tries
