@@ -100,18 +100,14 @@ public class WSITModelSupport {
         Service service = (Service)node.getLookup().lookup(Service.class);
 
         if (client != null) { //it is a client
-            return getModelForClient(node, client, create, createdFiles);
+            FileObject srcRoot = (FileObject) node.getLookup().lookup(FileObject.class);
+            Project p = FileOwnerQuery.getOwner(srcRoot);
+            return getModelForClient(p, client, create, createdFiles);
         } else if (service != null) {  //it is a service
-            try {
-                String wsdlUrl = service.getWsdlUrl();
-                if (wsdlUrl == null) { // WS from Java
-                    model = getModelForServiceFromJava(node, jaxWsModel, create, createdFiles);
-                } else {
-                    model = getModelForServiceFromWsdl(jaxWsModel, service);
-                }
-            } catch (IOException e) {
-                logger.log(Level.INFO, null, e);
-            }            
+            FileObject implClass = (FileObject)node.getLookup().lookup(FileObject.class);
+            if (jaxWsModel == null) return null;
+            Project p = FileOwnerQuery.getOwner(jaxWsModel.getJaxWsFile());
+            return getModelForService(service, implClass, p, create, createdFiles);
         } else { //neither a client nor a service, get out of here
             logger.log(Level.INFO, "Unable to identify node type: " + node);
         }
@@ -123,8 +119,28 @@ public class WSITModelSupport {
         }
         return model;
     }
-
-    private static WSDLModel getModelFromFO(FileObject wsdlFO, boolean editable) {
+   
+    public static WSDLModel getModelForService(Service service, FileObject implClass, Project p, boolean create, Collection createdFiles) {
+        try {
+            String wsdlUrl = service.getWsdlUrl();
+            if (wsdlUrl == null) { // WS from Java
+                if (implClass == null) return null;
+                JAXWSSupport supp = JAXWSSupport.getJAXWSSupport(implClass);
+                return getModelForServiceFromJava(implClass, supp, create, createdFiles);
+            } else {
+                if (p == null) return null;
+                JAXWSSupport supp = JAXWSSupport.getJAXWSSupport(p.getProjectDirectory());
+                return getModelForServiceFromWsdl(supp, service);
+            }
+        } catch (IOException ex) {
+            logger.log(Level.INFO, null, ex);
+        } catch (Exception e) {
+            logger.log(Level.INFO, null, e);
+        }
+        return null;
+    }
+    
+    protected static WSDLModel getModelFromFO(FileObject wsdlFO, boolean editable) {
         WSDLModel model = null;
         ModelSource ms = org.netbeans.modules.xml.retriever.catalog.Utilities.getModelSource(wsdlFO, editable);
         try {
@@ -140,15 +156,10 @@ public class WSITModelSupport {
         
     /* Retrieves WSDL model for a WS client - always has a wsdl
      */ 
-    public static WSDLModel getModelForClient(Node node, Client client, boolean create, Collection createdFiles) throws IOException {
+    public static WSDLModel getModelForClient(Project p, Client client, boolean create, Collection createdFiles) throws IOException {
     
         WSDLModel model = null;
-
-        FileObject srcRoot = (FileObject) node.getLookup().lookup(FileObject.class);
-        Project p = FileOwnerQuery.getOwner(srcRoot);
-
         FileObject srcFolder = WSITEditor.getClientConfigFolder(p);
-
         FileObject catalogfo = Utilities.getProjectCatalogFileObject(p);
         ModelSource catalogms = Utilities.getModelSource(catalogfo, false);
 
@@ -315,25 +326,10 @@ public class WSITModelSupport {
     
     /* Retrieves WSDL model for a WS from Java - if config file exists, reuses that one, otherwise generates new one
      */ 
-    private static WSDLModel getModelForServiceFromWsdl(JaxWsModel jaxWsModel, Service service) throws IOException, Exception {
-        
-        if (jaxWsModel == null) return null;
-        FileObject wsdlFO = null;
-        
-        Project p = FileOwnerQuery.getOwner(jaxWsModel.getJaxWsFile());
-        JAXWSSupport supp = JAXWSSupport.getJAXWSSupport(p.getProjectDirectory());
+    private static WSDLModel getModelForServiceFromWsdl(JAXWSSupport supp, Service service) throws IOException, Exception {        
         String wsdlLocation = supp.getWsdlLocation(service.getName());
-
-        wsdlFO = getWsdlFO(supp.getWsdlFolder(false), wsdlLocation);
+        FileObject wsdlFO = getWsdlFO(supp.getWsdlFolder(false), wsdlLocation);
         return getModelFromFO(wsdlFO, true);
-    }
-
-    private static WSDLModel getModelForServiceFromJava(Node node, JaxWsModel jaxWsModel, boolean create, Collection createdFiles) throws IOException, Exception {
-        if ((jaxWsModel == null) || (node == null)) return null;
-        FileObject fo = (FileObject)node.getLookup().lookup(FileObject.class);
-        Project p = FileOwnerQuery.getOwner(jaxWsModel.getJaxWsFile());
-        JAXWSSupport supp = JAXWSSupport.getJAXWSSupport(p.getProjectDirectory());
-        return getModelForServiceFromJava(fo, supp, create, createdFiles);
     }
 
     /* Retrieves WSDL model for a WS from Java - if config file exists, reuses that one, otherwise generates new one

@@ -33,8 +33,6 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
-import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
-import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfileRegistry;
 import org.netbeans.modules.websvc.wsitconf.ui.ErrorTopComponent;
 import org.netbeans.modules.websvc.wsitconf.ui.service.ServiceTopComponent;
 import org.netbeans.modules.websvc.wsitconf.ui.client.ClientTopComponent;
@@ -47,7 +45,6 @@ import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -81,9 +78,7 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
     /**
      * Creates a new instance of WSITEditor
      */
-    public WSITEditor() { 
-        populateProfileRegistry();
-    }
+    public WSITEditor() { }
 
     public String getTitle() {
         return NbBundle.getMessage(WSITEditor.class, "EDITOR_TITLE"); //NOI18N
@@ -427,20 +422,6 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
 
     public void setUndoManager(UndoManager undoManager) {
         this.undoManager = undoManager;
-    }
-
-    private SecurityProfileRegistry populateProfileRegistry() {
-        SecurityProfileRegistry registry = SecurityProfileRegistry.getDefault();
-        if (registry.getSecurityProfiles().isEmpty()) {
-            Lookup.Result results = Lookup.getDefault().
-                    lookup(new Lookup.Template(SecurityProfile.class));
-            Collection<SecurityProfile> profiles = results.allInstances();
-            for (SecurityProfile p : profiles) {
-                registry.register(p); 
-            }
-        }
-        
-        return registry;
     }
 
 }

@@ -19,12 +19,14 @@
 
 package org.netbeans.modules.websvc.wsitconf.spi;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -48,6 +50,7 @@ public class SecurityProfileRegistry {
     public static SecurityProfileRegistry getDefault(){
         if (instance == null) {
             instance = new SecurityProfileRegistry();
+            instance.populateRegistry();
         }
         return instance;
     }
@@ -90,6 +93,19 @@ public class SecurityProfileRegistry {
         });
         set.addAll(profiles.values());
         return Collections.synchronizedSortedSet(set);
+    }
+    
+    private final SecurityProfileRegistry populateRegistry() {
+        SecurityProfileRegistry registry = SecurityProfileRegistry.getDefault();
+        if (registry.getSecurityProfiles().isEmpty()) {
+            Lookup.Result results = Lookup.getDefault().
+                    lookup(new Lookup.Template(SecurityProfile.class));
+            Collection<SecurityProfile> profiles = results.allInstances();
+            for (SecurityProfile p : profiles) {
+                registry.register(p); 
+            }
+        }
+        return registry;
     }
     
 }
