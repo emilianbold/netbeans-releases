@@ -614,7 +614,7 @@ class WebActionProvider implements ActionProvider {
         try {
             FileObject testFO = rs.generateTestClient(testdir);
             p.setProperty(RestSupport.PROP_RESTBEANS_TEST_URL, testFO.getURL().toString());
-            p.setProperty(RestSupport.PROP_RESTBEANS_TEST_FILE, testFO.getPath());
+            p.setProperty(RestSupport.PROP_RESTBEANS_TEST_FILE, FileUtil.toFile(testFO).getAbsolutePath());
         } catch(Exception ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
