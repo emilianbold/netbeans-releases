@@ -58,10 +58,12 @@ public class GaugeDisplayPresenter extends ItemDisplayPresenter {
         panel.setOpaque(false);
         panel.setPreferredSize(new Dimension(200, 40)); // TODO compute it from fontSize
         setContentComponent(panel);
+        panel.repaint();
+        panel.revalidate();
     }
     
-    
     private void paintGauge(Graphics g) {
+        size = panel.getSize();
         if (size == null) { // did not realoaded yet
             return;
         }

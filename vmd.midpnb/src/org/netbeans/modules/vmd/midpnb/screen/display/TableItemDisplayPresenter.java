@@ -26,15 +26,21 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
+import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.netbeans.modules.vmd.midp.components.items.ItemCD;
 import org.netbeans.modules.vmd.midp.screen.display.ItemDisplayPresenter;
 import org.netbeans.modules.vmd.midp.screen.display.ScreenSupport;
+import org.netbeans.modules.vmd.midp.screen.display.property.ScreenStringPropertyEditor;
 import org.netbeans.modules.vmd.midpnb.components.items.TableItemCD;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleTableModelCD;
 
@@ -155,8 +161,7 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
     
     public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
-        
-        
+
         DesignComponent tableModelComponent = getComponent().readProperty(TableItemCD.PROP_MODEL).getComponent();
         hasModel = tableModelComponent != null;
         
@@ -224,5 +229,12 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
         }
         
         return colWidths;
+    }
+    
+     public Collection<ScreenPropertyDescriptor> getPropertyDescriptors () {
+        return Arrays.asList(
+                new ScreenPropertyDescriptor (getComponent (), label, new ScreenStringPropertyEditor (ItemCD.PROP_LABEL))
+                //new ScreenPropertyDescriptor (getComponent (), panel, new ScreenStringPropertyEditor (ItemCD.PROP_LABEL))
+        );
     }
 }

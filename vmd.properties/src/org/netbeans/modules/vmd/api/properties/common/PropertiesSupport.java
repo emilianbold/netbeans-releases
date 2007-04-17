@@ -21,10 +21,10 @@ package org.netbeans.modules.vmd.api.properties.common;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import javax.swing.JFrame;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyDescriptor;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyEditor;
@@ -56,7 +56,7 @@ public final class PropertiesSupport {
             return descriptor1.getPropertyDisplayName().compareTo(descriptor2.getPropertyDisplayName());
         }
     };
-    
+     
     public static Sheet createSheet(final DesignComponent component) {
         final Sheet sheet = new Sheet();
         
@@ -67,7 +67,7 @@ public final class PropertiesSupport {
                 designerPropertyDescriptors = new ArrayList<DesignPropertyDescriptor>();
                 categories = new ArrayList<String>();
                 for (PropertiesPresenter propertiesPresenter : component.getPresenters(PropertiesPresenter.class)) {
-                    designerPropertyDescriptors.addAll(propertiesPresenter.getDesignerPropertyDescriptors());
+                    designerPropertyDescriptors.addAll(propertiesPresenter.getDesignPropertyDescriptors());
                     categories.addAll(propertiesPresenter.getPropertiesCategories());
                 }
                 if (designerPropertyDescriptors != null)
@@ -85,8 +85,7 @@ public final class PropertiesSupport {
                     else if (designerPropertyDescriptor.getPropertyNames().size() <= 1)
                         property = new PrimitivePropertySupport(designerPropertyDescriptor, designerPropertyDescriptor.getPropertyEditorType());
                     else {
-                        throw new IllegalArgumentException("Defualt PropertyEditor: "+ designerPropertyDescriptor.getPropertyDisplayName() + " " +
-                                designerPropertyDescriptor.getPropertyEditorType() + " cant be maped one to many with DesignComponent property: use DefaultPropertyEditorSupport");
+                        throw new IllegalArgumentException();
                     }
                     if (propertyEditor != null && (! propertyEditor.canEditAsText()) )
                         property.setValue("canEditAsText", false);
@@ -98,46 +97,37 @@ public final class PropertiesSupport {
         
         return sheet;
     }
-    
+    //multi selection not supported
     public static void showPropertyEdiotrForCurrentComponent(String propertyName) {
-        for (AbstractNode node: PropertiesNodesManager.getDefault().getActiveNodes()) {
-            for (PropertySet propertySet : node.getPropertySets()) {
-                for (Property property : propertySet.getProperties()) {
-                    if(propertyName.equals(property.getName())) {
-                        final PropertyPanel propertyPanel = new PropertyPanel(property, PropertyPanel.PREF_CUSTOM_EDITOR);
-                        propertyPanel.setChangeImmediate(false);
-                        
-                        DialogDescriptor dd = new DialogDescriptor(propertyPanel, property.getDisplayName(), true, null); // NOI18N
-                        Object helpID = property.getValue(ExPropertyEditor.PROPERTY_HELP_ID);
-                        if (helpID != null) {
-                            // cteate HelpCtx
-                            assert helpID instanceof String;
-                            HelpCtx helpCtx = new HelpCtx((String)helpID);
-                            dd.setHelpCtx(helpCtx);
+        AbstractNode[] nodes = PropertiesNodesManager.getDefault().getActiveNodes();
+        if (nodes.length > 1)
+            return;
+        AbstractNode node = nodes[0];
+        for (PropertySet propertySet : node.getPropertySets()) {
+            for (Property property : propertySet.getProperties()) {
+                if(propertyName.equals(property.getName())) {
+                    final PropertyPanel propertyPanel = new PropertyPanel(property, PropertyPanel.PREF_CUSTOM_EDITOR);
+                    propertyPanel.setChangeImmediate(false);    
+                    DialogDescriptor dd = new DialogDescriptor(propertyPanel, property.getDisplayName(), true, null); // NOI18N
+                    Object helpID = property.getValue(ExPropertyEditor.PROPERTY_HELP_ID);
+                    if (helpID != null) {
+                        assert helpID instanceof String;
+                        HelpCtx helpCtx = new HelpCtx((String)helpID);
+                        dd.setHelpCtx(helpCtx);
+                    }
+                    Object res = DialogDisplayer.getDefault().notify(dd);
+                    
+                    if (res == DialogDescriptor.OK_OPTION) {
+                        ((DesignPropertyEditor) property.getPropertyEditor()).customEditorOKButtonPressed();
+                        try {
+                            property.setValue(property.getPropertyEditor().getValue());
+                        } catch (IllegalAccessException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } catch (IllegalArgumentException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } catch (InvocationTargetException ex) {
+                            Exceptions.printStackTrace(ex);
                         }
-                        Object res = DialogDisplayer.getDefault().notify(dd);
-                        
-                        if (res == DialogDescriptor.OK_OPTION) {
-                            ((DesignPropertyEditor) property.getPropertyEditor()).customEditorOKButtonPressed();
-                            try {
-                                property.setValue(property.getPropertyEditor().getValue());
-                            } catch (IllegalAccessException ex) {
-                                Exceptions.printStackTrace(ex);
-                            } catch (IllegalArgumentException ex) {
-                                Exceptions.printStackTrace(ex);
-                            } catch (InvocationTargetException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-/*
-                            DComponentNodeProperty dc = ((DComponentNodeProperty)property);
-                            //Object value = ((EnhancedCustomPropertyEditor)dc.getPropertyEditor()).getPropertyValue();
-                            Object value = dc.getPropertyEditor().getValue();
-                            try {
-                                dc.setValue(value);
-                            } catch (IllegalAccessException e) {
-                            }*/
-                        }
-                        
                     }
                 }
             }
@@ -157,5 +147,7 @@ public final class PropertiesSupport {
             sheet.put(createPropertiesSet(propertyCategory));
         }
     }
+    
+    
     
 }

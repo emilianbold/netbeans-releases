@@ -55,7 +55,7 @@ public class PropertiesNode extends AbstractNode{
             return super.getDisplayName();
         component.get().getDocument().getTransactionManager().readAccess(new Runnable() {
             public void run() {
-                if (component.get().getParentComponent() == null)
+                if (component.get().getParentComponent() == null && component.get().getDocument().getRootComponent() != component.get())
                     return;
                 displayName = InfoPresenter.getDisplayName(component.get());
             }

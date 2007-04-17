@@ -30,6 +30,8 @@ import java.awt.event.MouseListener;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyEditor;
 import org.netbeans.modules.vmd.midp.screen.display.property.ResourcePropertyEditor;
 
@@ -74,12 +76,16 @@ public class DisplayableDisplayPresenter extends ScreenDisplayPresenter {
     }
     
     public void reload(ScreenDeviceInfo deviceInfo) {
-        DesignComponent ticker = getComponent().readProperty(DisplayableCD.PROP_TICKER).getComponent();
         String tickerText = "<ticker not set>"; // NOI18N
-        if (ticker != null) {
-            tickerText = MidpValueSupport.getHumanReadableString(ticker.readProperty(TickerCD.PROP_STRING));
-            if (tickerText == null || tickerText.equals(""))
-                tickerText = "<empty string ticker>"; //NOI18N
+        if (getComponent().readProperty(DisplayableCD.PROP_TICKER).getKind() == PropertyValue.Kind.USERCODE)
+            tickerText = "<user code>"; //NOI18N
+        else {
+            DesignComponent ticker = getComponent().readProperty(DisplayableCD.PROP_TICKER).getComponent();
+            if (ticker != null) {
+                tickerText = MidpValueSupport.getHumanReadableString(ticker.readProperty(TickerCD.PROP_STRING));
+                if (tickerText == null || tickerText.equals(""))
+                    tickerText = "<empty ticker string>"; //NOI18N
+            }
         }
         panel.getTicker().setText(tickerText);
         panel.getTitle().setText(MidpValueSupport.getHumanReadableString(getComponent().readProperty(DisplayableCD.PROP_TITLE)));

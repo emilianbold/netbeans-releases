@@ -39,6 +39,10 @@ import org.netbeans.modules.vmd.midp.screen.display.SpacerDisplayPresenter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.properties.DesignPropertyDescriptor;
+import org.netbeans.modules.vmd.api.properties.PropertiesPresenter;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorDefaultCommand;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorLayout;
 
 /**
  *
@@ -64,29 +68,48 @@ public class SpacerCD extends ComponentDescriptor {
     
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList(
-                new PropertyDescriptor(PROP_MIN_HEIGHT, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue (1), false, true, MidpVersionable.MIDP_2),
-                new PropertyDescriptor(PROP_MIN_WIDTH, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue (16), false, true, MidpVersionable.MIDP_2)
-        );
+                new PropertyDescriptor(PROP_MIN_HEIGHT, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue(1), false, true, MidpVersionable.MIDP_2),
+                new PropertyDescriptor(PROP_MIN_WIDTH, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue(16), false, true, MidpVersionable.MIDP_2)
+                );
     }
     
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
-//            .removeProperty(ItemCD.PROP_DEFAULT_COMMAND);
-                  .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
-                    .addProperty("Minmum size", new PropertyEditorArrayInteger(), PROP_MIN_WIDTH, PROP_MIN_HEIGHT);
-  }
-
+                .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
+                .addProperty("Layout", PropertyEditorLayout.createInstance(), ItemCD.PROP_LAYOUT)
+                .addProperty("Preferred Size", PropertyEditorArrayInteger.create(), ItemCD.PROP_PREFERRED_WIDTH, ItemCD.PROP_PREFERRED_HEIGHT)
+                .addProperty("Minmum size", new PropertyEditorArrayInteger(), PROP_MIN_WIDTH, PROP_MIN_HEIGHT);
+    }
+   
     private static Presenter createSetterPresenter() {
         return new CodeSetterPresenter()
+                .addParameters(MidpParameter.create(ItemCD.PROP_LABEL, ItemCD.PROP_PREFERRED_WIDTH, ItemCD.PROP_PREFERRED_HEIGHT))
+                .addParameters (ItemCode.createCommandParameter ())
+                .addParameters (ItemCode.createItemCommandListenerParameter ())
+                .addParameters (ItemCode.createItemLayoutParameter ())
+                .addParameters (ItemCode.createDefaultCommandParameter ())
+                .addSetters(MidpSetter.createSetter("setItemCommandListener", MidpVersionable.MIDP_2).addParameters(ItemCode.PARAM_ITEM_COMMAND_LISTENER))
+                .addSetters(MidpSetter.createSetter("setLayout", MidpVersionable.MIDP_2).addParameters(ItemCode.PARAM_LAYOUT))
+                .addSetters(MidpSetter.createSetter("setPreferredSize", MidpVersionable.MIDP_2).addParameters(ItemCD.PROP_PREFERRED_WIDTH, ItemCD.PROP_PREFERRED_HEIGHT))
                 .addParameters(MidpParameter.create(PROP_MIN_WIDTH, PROP_MIN_HEIGHT))
                 .addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP_2).addParameters(PROP_MIN_WIDTH, PROP_MIN_HEIGHT))
                 .addSetters(MidpSetter.createSetter("setSetMinimumSize", MidpVersionable.MIDP_2).addParameters(PROP_MIN_WIDTH, PROP_MIN_HEIGHT));
     }
     
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
-        DocumentSupport.removePresentersOfClass (presenters, InspectorFolderPresenter.class);
-        DocumentSupport.removePresentersOfClass (presenters, ActionsPresenter.class);
-        DocumentSupport.removePresentersOfClass (presenters, ScreenDisplayPresenter.class);
+        Presenter[] pa = presenters.toArray(new Presenter[presenters.size()]);
+        for (Presenter presenter : pa) {
+            if (presenter instanceof PropertiesPresenter) {
+                for (DesignPropertyDescriptor pd : ((PropertiesPresenter)presenter).getDesignPropertyDescriptors()) {
+                    if (pd.getPropertyDisplayName().equalsIgnoreCase("Label"))
+                        presenters.remove(presenter);
+                }
+            }
+        }
+        DocumentSupport.removePresentersOfClass(presenters, CodeSetterPresenter.class);
+        DocumentSupport.removePresentersOfClass(presenters, InspectorFolderPresenter.class);
+        DocumentSupport.removePresentersOfClass(presenters, ActionsPresenter.class);
+        DocumentSupport.removePresentersOfClass(presenters, ScreenDisplayPresenter.class);
         MidpActionsSupport.addCommonActionsPresenters(presenters, true, true, true, true, true);
         super.gatherPresenters(presenters);
     }
@@ -99,10 +122,7 @@ public class SpacerCD extends ComponentDescriptor {
                 createSetterPresenter(),
                 InspectorFolderPresenter.create(true),
                 // screen
-                new SpacerDisplayPresenter ()
-        );
-    }
-
-    
-
+                new SpacerDisplayPresenter()
+                );
+    }     
 }

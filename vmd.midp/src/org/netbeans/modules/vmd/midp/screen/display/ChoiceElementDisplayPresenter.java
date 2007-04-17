@@ -35,6 +35,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.modules.vmd.midp.screen.display.property.ScreenStringPropertyEditor;
 
 /**
  *
@@ -107,7 +108,7 @@ public class ChoiceElementDisplayPresenter extends ScreenDisplayPresenter {
     }
 
     public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {
-        return null;
+        return Collections.singleton(new ScreenPropertyDescriptor(getComponent(), label, new ScreenStringPropertyEditor(ChoiceElementCD.PROP_STRING, JTextField.CENTER)));
     }
 
 }

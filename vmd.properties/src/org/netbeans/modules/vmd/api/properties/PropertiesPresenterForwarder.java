@@ -53,7 +53,7 @@ public class PropertiesPresenterForwarder extends PropertiesPresenter {
         this.propertyNames = propertyNames;
     }
     
-    public List<DesignPropertyDescriptor> getDesignerPropertyDescriptors() {
+    public List<DesignPropertyDescriptor> getDesignPropertyDescriptors() {
         DesignComponent component = getComponent().readProperty(propertyName).getComponent();
         
         if (component == null) 
@@ -65,7 +65,7 @@ public class PropertiesPresenterForwarder extends PropertiesPresenter {
             return Collections.EMPTY_LIST; 
                 
         for (PropertiesPresenter presenter : propertiesPresenters) {
-            descriptors.addAll(filterDescriptors(presenter.getDesignerPropertyDescriptors()));
+            descriptors.addAll(filterDescriptors(presenter.getDesignPropertyDescriptors()));
         }
         
         return descriptors;

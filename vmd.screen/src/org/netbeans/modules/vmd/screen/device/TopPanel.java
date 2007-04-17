@@ -231,6 +231,8 @@ public class TopPanel extends JPanel {
                     DesignComponent component = devicePanel.getDesignComponentAt (lastHoverPoint);
                     ScreenDisplayPresenter presenter = component != null ? component.getPresenter (ScreenDisplayPresenter.class) : null;
                     Collection<ScreenPropertyDescriptor> properties = presenter != null ? presenter.getPropertyDescriptors () : Collections.<ScreenPropertyDescriptor>emptySet ();
+                    if (properties == null)
+                        return;
                     for (ScreenPropertyDescriptor property : properties) {
                         Point editorOrigin = devicePanel.calculateTranslation (property.getRelatedView ());
                         Shape shape = property.getSelectionShape ();
@@ -342,6 +344,8 @@ public class TopPanel extends JPanel {
                 if (presenter == null)
                     return;
                 Collection<ScreenPropertyDescriptor> properties = presenter.getPropertyDescriptors ();
+                if (properties == null)
+                    return;
                 for (ScreenPropertyDescriptor property : properties) {
                     JComponent relatedView = property.getRelatedView ();
                     Shape shape = property.getSelectionShape ();

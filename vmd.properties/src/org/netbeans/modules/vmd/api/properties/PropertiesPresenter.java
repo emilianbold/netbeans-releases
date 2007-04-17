@@ -29,7 +29,7 @@ import org.netbeans.modules.vmd.api.properties.DesignPropertyDescriptor;
  */
 public abstract class PropertiesPresenter extends DynamicPresenter {
 
-    public abstract List<DesignPropertyDescriptor> getDesignerPropertyDescriptors();
+    public abstract List<DesignPropertyDescriptor> getDesignPropertyDescriptors();
 
     public abstract List<String> getPropertiesCategories();
 

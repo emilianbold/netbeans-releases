@@ -146,7 +146,7 @@ public final class DefaultPropertiesPresenter extends PropertiesPresenter {
         return this;
     }
     
-    public List<DesignPropertyDescriptor> getDesignerPropertyDescriptors() {
+    public List<DesignPropertyDescriptor> getDesignPropertyDescriptors() {
         return descriptors;
     }
     
@@ -155,7 +155,7 @@ public final class DefaultPropertiesPresenter extends PropertiesPresenter {
     }
     
     protected void notifyAttached(DesignComponent component) {
-        for (DesignPropertyDescriptor designerPropertyDescriptor : getDesignerPropertyDescriptors()) {
+        for (DesignPropertyDescriptor designerPropertyDescriptor : getDesignPropertyDescriptors()) {
             if (designerPropertyDescriptor.getPropertyEditor() != null) 
                 designerPropertyDescriptor.getPropertyEditor().init(component);
 
@@ -175,7 +175,7 @@ public final class DefaultPropertiesPresenter extends PropertiesPresenter {
     }
     
     protected void designChanged(DesignEvent event) {
-        for (DesignPropertyDescriptor designerPropertyDescriptor : getDesignerPropertyDescriptors()) {
+        for (DesignPropertyDescriptor designerPropertyDescriptor : getDesignPropertyDescriptors()) {
            DesignPropertyEditor propertyEditor =  designerPropertyDescriptor.getPropertyEditor();
            if (designerPropertyDescriptor.getPropertyEditor() != null)
                propertyEditor.notifyDesignChanged(event);
