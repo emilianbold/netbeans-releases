@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -93,7 +93,10 @@ public class PackJars {
         scan.init();
         totalOriginalSize = 0L;
         totalPackedSize = 0L;
+        //long startTime = System.currentTimeMillis();
         scan.scanDir(inputDir);
+        //long endTime = System.currentTimeMillis();
+        //System.out.println("Time: " + (endTime - startTime) + "ms");
         sb.append("</catalog>\n");
         //Insert at beginning
         sb.insert(0,"  <summary total-original-size=\"" + totalOriginalSize
@@ -130,12 +133,13 @@ public class PackJars {
     /** Recursive method. */
     private void scanDir (File dir) {
         File [] arr = dir.listFiles();
+        boolean useExt = false;
         for (int i = 0; i < arr.length; i++) {
             if (arr[i].isDirectory()) {
                 scanDir(arr[i]);
             } else {
                 if (arr[i].getName().endsWith(".jar")) {
-                    //System.out.println("arr[" + i + "]:" + arr[i]);
+                    long lastModified = arr[i].lastModified();
                     String s = arr[i].getAbsolutePath();
                     s = s.substring(inputDirLength + 1, s.length());
                     //Check if jar is signed
@@ -145,13 +149,22 @@ public class PackJars {
                         System.out.println("Packing: " + s);
                         sb.append("  ");
                         sb.append("<jar name=\"" + s + "\"");
-                        sb.append(" time=\"" + arr[i].lastModified() + "\"");
+                        sb.append(" time=\"" + lastModified + "\"");
                         sb.append(" original-size=\"" + arr[i].length() + "\"");
                         totalOriginalSize += arr[i].length();
-                        File f = packFile(arr[i]);
-                        unpackFile(f);
-                        String md5 = generateKey(arr[i]);
-                        f = packFile(arr[i]);
+                        File f;
+                        String md5;
+                        if (useExt) {
+                            f = packFileExt(arr[i]);
+                            unpackFileExt(f);
+                            md5 = generateKey(arr[i]);
+                            f = packFileExt(arr[i]);
+                        } else {
+                            f = packFile(arr[i]);
+                            unpackFile(f);
+                            md5 = generateKey(arr[i]);
+                            f = packFile(arr[i]);
+                        }
                         sb.append(" packed-size=\"" + f.length() + "\"");
                         sb.append(" md5=\"" + md5 + "\"");
                         totalPackedSize += f.length();
@@ -181,6 +194,58 @@ public class PackJars {
             System.exit(1);
         }
         return false;
+    }
+    
+    private File packFileExt (File file) {
+        RunCommand r = new RunCommand();
+        String javaHome = System.getProperty("java.home");
+        String [] cmd = new String[6];
+        cmd[0] = javaHome + "/bin/pack200";
+        cmd[1] = "--segment-limit=-1";
+        cmd[2] = "--effort=5";
+        cmd[3] = "--no-gzip";
+        cmd[4] = file.getAbsolutePath() + ".pack";
+        cmd[5] = file.getAbsolutePath();
+        r.execute(cmd);
+        r.waitFor();
+        int ret = r.getReturnStatus();
+        if (ret != 0) {
+            System.exit(ret);
+        }
+        return new File(file.getAbsolutePath() + ".pack");
+    }
+    
+    private void unpackFileExt (File file) {
+        RunCommand r = new RunCommand();
+        File outFile = 
+        new File(file.getAbsolutePath().substring(0, file.getAbsolutePath().length() - ".pack".length()));
+        String javaHome = System.getProperty("java.home");
+        String [] cmd = new String[3];
+        cmd[0] = javaHome + "/bin/unpack200";
+        cmd[1] = file.getAbsolutePath();
+        cmd[2] = outFile.getAbsolutePath();
+        r.execute(cmd);
+        r.waitFor();
+        int ret = r.getReturnStatus();
+        if (ret != 0) {
+            System.exit(ret);
+        }
+    }
+    
+    private void repackFileExt (File file) {
+        RunCommand r = new RunCommand();
+        String javaHome = System.getProperty("java.home");
+        String [] cmd = new String[4];
+        cmd[0] = javaHome + "/bin/pack200";
+        cmd[1] = "--segment-limit=-1";
+        cmd[2] = "--repack";
+        cmd[3] = file.getAbsolutePath();
+        r.execute(cmd);
+        r.waitFor();
+        int ret = r.getReturnStatus();
+        if (ret != 0) {
+            System.exit(ret);
+        }
     }
     
     private File packFile (File file) {
