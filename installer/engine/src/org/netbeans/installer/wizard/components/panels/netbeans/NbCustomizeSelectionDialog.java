@@ -58,6 +58,7 @@ import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.RegistryNode;
 import org.netbeans.installer.product.components.Group;
 import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.helper.Dependency;
 import org.netbeans.installer.utils.helper.DependencyType;
 import org.netbeans.installer.utils.helper.Status;
@@ -197,7 +198,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         descriptionScrollPane.setVerticalScrollBarPolicy(
                 NbiScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         descriptionScrollPane.setBorder(
-                new TitledBorder("Feature Description"));
+                new TitledBorder(FEATURE_DESCRIPTION_TITLE));
         
         // sizesLabel ///////////////////////////////////////////////////////////////
         sizesLabel = new NbiLabel();
@@ -736,4 +737,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
     // Constants
     public static final String KEYBOARD_TOGGLE_ACTION_NAME =
             "checkbox.update"; // NOI18N
+    public static final String FEATURE_DESCRIPTION_TITLE = 
+             ResourceUtils.getString(NbCustomizeSelectionDialog.class,
+            "NCSD.feature.description.title"); // NOI18N
 }
