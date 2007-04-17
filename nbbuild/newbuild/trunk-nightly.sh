@@ -12,63 +12,11 @@ pack_component()
     gtar cvjf $dist/tarbz2/$base_name-$component.tar.bz2 $filter
 }
 
-init()
-{
-   export ANT_OPTS="-Xmx512m"
-   export JAVA_HOME=$JDK_HOME
-
-   if [ -z ${CVS_STAMP} ]; then
-       CVS_STAMP="00:00UTC today"
-       export DATESTAMP=`date -u +%Y%m%d0000`
-   fi
-
-   BUILDNUM=trunk-nightly-$DATESTAMP
-   
-   if [ -z $BASE_DIR ]; then
-       echo BASE_DIR variable not defined, using the default one: /space/NB-IDE
-       echo if you want to use another base dir for the whole build feel free
-       echo to define a BASE_DIR variable in your environment
-
-       export BASE_DIR=/space/NB-IDE
-   fi
-
-   if [ -z $DIST_SERVER ]; then
-       echo DIST_SERVER not defined: Upload will no work
-   fi
-
-   if [ -z $DIST_SERVER_PATH ]; then
-       echo DIST_SERVER_PATH not defined using default
-       DIST_SERVER_PATH=/releng/www/netbeans/6.0/nightly
-   fi
-
-   NB_ALL=$BASE_DIR/nb-all
-   
-   mkdir -p $NB_ALL
-
-   DIST=$BASE_DIR/dist
-   LOGS=$DIST/logs
-   BASENAME=netbeans-$BUILDNUM
-
-   mkdir -p $DIST/zip
-   mkdir -p $DIST/targz
-   mkdir -p $DIST/tarbz2
-   mkdir -p $LOGS
-
-   echo "To be written" > $DIST/INSTALL.txt
-   
-   #LOGS
-   CVS_CHECKOUT_LOG=$LOGS/$BASENAME-cvs-checkout.log
-   IDE_BUILD_LOG=$LOGS/$BASENAME-build-ide.log
-   MOBILITY_BUILD_LOG=$LOGS/$BASENAME-build-mobility.log
-   VISUALWEB_BUILD_LOG=$LOGS/$BASENAME-build-visualweb.log
-   UML_BUILD_LOG=$LOGS/$BASENAME-build-uml.log
-   SOA_BUILD_LOG=$LOGS/$BASENAME-build-soa.log
-   RUBY_BUILD_LOG=$LOGS/$BASENAME-build-ruby.log
-   SCP_LOG=$LOGS/$BASENAME-scp.log
-}
-
 #Initialize basic scructure
-init
+DIRNAME=`dirname $0`
+cd ${DIRNAME}
+source init.sh
+
 
 #Clean destination dirs
 if [ -d $DIST ]; then
@@ -240,6 +188,7 @@ fi
 ssh -p 222 $DIST_SERVER mkdir -p $DIST_SERVER_PATH/$DATESTAMP
 scp -P 222 -q -r -v $DIST/* $DIST_SERVER:$DIST_SERVER_PATH/$DATESTAMP > $SCP_LOG 2>&1 &
 
+cd $DIRNAME
 bash build-nbi.sh
 
 scp -P 222 -q -r -v $DIST/installers $DIST_SERVER:$DIST_SERVER_PATH/$DATESTAMP > $SCP_LOG 2>&1
