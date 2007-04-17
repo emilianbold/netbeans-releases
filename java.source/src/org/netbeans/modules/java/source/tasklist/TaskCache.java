@@ -329,6 +329,12 @@ public class TaskCache {
                 }
                 
                 FileObject root = cp.findOwnerRoot(file);
+                
+                if (root == null) {
+                    LOG.log(Level.FINE, "file={0} does not have a root on its own source classpath", file);
+                    return false;
+                }
+                
                 String resourceName = cp.getResourceName(file, File.separatorChar, false);
                 File cacheRoot = Index.getClassFolder(root.getURL(), true);
                 
