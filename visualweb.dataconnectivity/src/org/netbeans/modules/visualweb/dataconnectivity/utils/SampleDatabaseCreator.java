@@ -73,10 +73,7 @@ public class SampleDatabaseCreator  {
                 }
                 // if userdir is deleted and sample databases exist then resurrect the connections
                 else
-                    sample.registerDatabase(database, username, schema.toUpperCase(), password, rememberPassword, server, port);
-
-                // copy the derby JDBC driver to the location recognized by VWP
-                setupDriver();
+                    sample.registerDatabase(database, username, schema.toUpperCase(), password, rememberPassword, server, port);              
             }
             // if Java DB server isn't registered, do nothing. Once Java EE 5 server is registered then Java DB will be automatically registered
         } catch(IOException ioe) {
@@ -159,36 +156,5 @@ public class SampleDatabaseCreator  {
         } finally {
             is.close();
         }
-    }
-    
-    // Copy the Derby JDBC driver to the jdbc-drivers folder
-    private static void setupDriver() throws IOException {
-        String userDir = System.getProperty("netbeans.user"); // NOI18N
-        String destinationPath = userDir + File.separator + "jdbc-drivers" + File.separator + "derbyclient.jar";        
-        File testFile = new File(destinationPath + File.separator + "derbyclient.jar");
-        
-        if (!testFile.exists()) {
-            File src, dest, propFile;
-            InputStream in = null;
-            OutputStream out = null;
-            
-            // set up files to copy
-            src = new File( DerbySupport.getLocation() + File.separator + "lib" + File.separator + "derbyclient.jar");
-            dest =  new File(destinationPath);
-            in = new FileInputStream(src);
-            out = new FileOutputStream(dest);
-            
-            // Transfer bytes from in to out
-            byte[] buf = new byte[1024];
-            int len;
-            while ((len = in.read(buf)) > 0) {
-                out.write(buf, 0, len);
-            }
-            
-            in.close();
-            out.close();
-        }
-    }
-    
-    
+    }               
 }

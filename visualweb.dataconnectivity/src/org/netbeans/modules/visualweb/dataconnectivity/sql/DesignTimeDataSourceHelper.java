@@ -43,8 +43,12 @@ import org.netbeans.modules.visualweb.api.j2ee.common.RequestedJdbcResource;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject;
 import org.netbeans.modules.visualweb.dataconnectivity.model.DataSourceInfo;
 import org.netbeans.modules.visualweb.dataconnectivity.model.ProjectDataSourceManager;
+import org.netbeans.modules.visualweb.dataconnectivity.naming.DatabaseSettingsImporter;
 import org.netbeans.modules.visualweb.dataconnectivity.naming.ProjectContextManager;
 import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourceTracker;
+import org.netbeans.modules.visualweb.project.jsf.services.DesignTimeDataSourceService;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.SAXException;
@@ -505,21 +509,46 @@ public class DesignTimeDataSourceHelper {
                 
                 if (jdbcResource != null)
                     jdbcResources.add(jdbcResource);
-            }                                     
-           
-            // Check if datasource exists in the context.  If it doesn't exist then bind the datasource .
-            Iterator it = jdbcResources.iterator();
-            boolean found = false;
+            }
             
-            while (it.hasNext()) {
-
-                jdbcResource = (RequestedJdbcResource) it.next();
-                String name = ((String)jdbcResource.getResourceName());
-                name = name.substring(name.indexOf("/")+1);
-                found = false; 
-                if (!found)
-                    binding.put(DS_SUBCTX + "/" + name, new DesignTimeDataSource(null, false, jdbcResource.getDriverClassName(),
-                            jdbcResource.getUrl(), null, jdbcResource.getUsername(), jdbcResource.getPassword()));
+            // Support for fixing "broken data sources"
+            if (jdbcResource == null && dynamicDataSources.length > 0) {
+                RequestedJdbcResource[] resources = null;
+                ArrayList <DataSourceInfo> dataSourcesInfo = DatabaseSettingsImporter.getInstance().getDataSourcesInfo();
+                Iterator it = dataSourcesInfo.iterator();
+                DataSourceInfo dsInfo = null;
+                DesignTimeDataSourceService dataSourceService = null;
+                
+                for (String name : dynamicDataSources) {
+                    while (it.hasNext()) {
+                        dsInfo = (DataSourceInfo)it.next();
+                        if (name.equals(DS_SUBCTX + "/" + dsInfo.getName())) {
+                            binding.put(name, new DesignTimeDataSource(null, false, dsInfo.getDriverClassName(),
+                                    dsInfo.getUrl(), null, dsInfo.getUsername(), dsInfo.getPassword())) ;
+                            
+                            dataSourceService = (DesignTimeDataSourceService)Lookup.getDefault().lookup(DesignTimeDataSourceService.class);
+                            dataSourceService.updateProjectDataSource(currentProj, new RequestedJdbcResource("jdbc/" + //NOI18N
+                                    dsInfo.getName(),
+                                    dsInfo.getDriverClassName(), dsInfo.getUrl(), null, dsInfo.getUsername(),
+                                    dsInfo.getPassword(), null));
+                        }
+                    }                                        
+                }
+            } else {                
+                // Check if datasource exists in the context.  If it doesn't exist then bind the datasource .
+                Iterator it = jdbcResources.iterator();
+                boolean found = false;
+                
+                while (it.hasNext()) {
+                    
+                    jdbcResource = (RequestedJdbcResource) it.next();
+                    String name = ((String)jdbcResource.getResourceName());
+                    name = name.substring(name.indexOf("/")+1);
+                    found = false;
+                    if (!found)
+                        binding.put(DS_SUBCTX + "/" + name, new DesignTimeDataSource(null, false, jdbcResource.getDriverClassName(),
+                                jdbcResource.getUrl(), null, jdbcResource.getUsername(), jdbcResource.getPassword()));
+                }
             }
         }
         

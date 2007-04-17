@@ -75,6 +75,7 @@ public class DatabaseSettingsImporter {
     private String       ctxPathName;
     private File         userCtxFile;
     private ArrayList    dataSources;
+    ArrayList <DataSourceInfo> dataSourcesInfo;
     private boolean      initMode;   /* used only by initial context ctor, signals not to
                                       * call saveContext during InitialContext construction
                                       */
@@ -85,6 +86,7 @@ public class DatabaseSettingsImporter {
     /** Creates a new instance of DatabaseImporter */
     private DatabaseSettingsImporter() {
         dataSources = new ArrayList();
+        dataSourcesInfo = new ArrayList();
     }
     
     /**
@@ -230,7 +232,7 @@ public class DatabaseSettingsImporter {
     }
     
     private void registerConnections(File contextFile) {
-        ArrayList <DataSourceInfo> dataSourcesInfo = createDataSourceInfoFromCtx(contextFile);
+        dataSourcesInfo = createDataSourceInfoFromCtx(contextFile);
         
         try {           
             Iterator it = dataSourcesInfo.iterator();
@@ -250,10 +252,12 @@ public class DatabaseSettingsImporter {
             }
             
             // Cleanup
-            if (contextFile.exists()) {
-                contextFile.delete();
-                contextFile.getParentFile().delete();
-            }
+//            if (contextFile.exists()) {
+//                contextFile.delete();
+//                contextFile.getParentFile().delete();
+//            }
+                        
+//            dataSources = null;
         } catch (DatabaseException de) {
             de.printStackTrace();
         }
@@ -411,4 +415,16 @@ public class DatabaseSettingsImporter {
                 }
             });           
      }            
+     
+//     public void removeFromDSInfo(int index) {
+//         dataSourcesInfo.remove(index);
+//     }
+//     
+//     public void clearDSInfo() {
+//         dataSourcesInfo = null;         
+//     }
+     
+     public ArrayList <DataSourceInfo> getDataSourcesInfo() {
+         return dataSourcesInfo;
+     }
 }
