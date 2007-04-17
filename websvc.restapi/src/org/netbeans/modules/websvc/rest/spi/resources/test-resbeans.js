@@ -393,6 +393,8 @@ function createIFrame(currentValidUrl) {
     return c;
 }
 function showTableView(flag) {
+    if(flag == 'false') //This step is needed for Firefox to show content as xml
+    	updatepage('rawContent', createIFrame(currentValidUrl));
     var tableNode = document.getElementById('tableContent').style;
     var rawNode = document.getElementById('rawContent').style;
     var tabs1 = document.getElementById('tabs1').style;
