@@ -72,7 +72,7 @@ public class BpelproProjectGenerator {
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
-    public static AntProjectHelper createProject(File dir, String name, String j2eeLevel) throws IOException {
+    public static AntProjectHelper createProject(File dir, String name) throws IOException {
         dir.mkdirs();
         // XXX clumsy way to refresh, but otherwise it doesn't work for new folders
         File rootF = dir;
@@ -86,7 +86,7 @@ public class BpelproProjectGenerator {
         assert fo != null : "No such dir on disk: " + dir;
         assert fo.isFolder() : "Not really a dir: " + dir;
         assert fo.getChildren().length == 0 : "Dir must have been empty: " + dir;
-        AntProjectHelper h = setupProject(fo, name, j2eeLevel);
+        AntProjectHelper h = setupProject(fo, name);
         FileObject srcRoot = fo.createFolder(DEFAULT_SRC_FOLDER); // NOI18N
 // Bing bpelasa        FileObject bpelasaRoot = srcRoot.createFolder(DEFAULT_BPELASA_FOLDER); //NOI18N
         FileObject bpelasaRoot = srcRoot;
@@ -118,7 +118,7 @@ public class BpelproProjectGenerator {
         fo = FileUtil.toFileObject(dir);
         assert fo != null : "No such dir on disk: " + dir;
         assert fo.isFolder() : "Not really a dir: " + dir;
-        AntProjectHelper h = setupProject(fo, name, j2eeLevel);
+        AntProjectHelper h = setupProject(fo, name);
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         if (FileUtil.isParentOf(fo, wmFO) || fo.equals(wmFO)) {
             ep.put(IcanproProjectProperties.SOURCE_ROOT, "."); //NOI18N
@@ -153,7 +153,7 @@ public class BpelproProjectGenerator {
         return child.getPath().substring(parent.getPath().length() + 1);
     }
 
-    private static AntProjectHelper setupProject(FileObject dirFO, String name, String j2eeLevel) throws IOException {
+    private static AntProjectHelper setupProject(FileObject dirFO, String name) throws IOException {
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, BpelproProjectType.TYPE);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
@@ -169,14 +169,11 @@ public class BpelproProjectGenerator {
         // ep.setProperty(IcanproProjectProperties.JAVAC_CLASSPATH, "${libs.j2ee14.classpath}");
         ep.setProperty(IcanproProjectProperties.DIST_DIR, "dist");
         ep.setProperty(IcanproProjectProperties.DIST_JAR, "${"+IcanproProjectProperties.DIST_DIR+"}/" + name + ".zip");
-        ep.setProperty(IcanproProjectProperties.J2EE_PLATFORM, j2eeLevel);
         ep.setProperty(IcanproProjectProperties.JAR_NAME, name + ".jar");
         ep.setProperty(IcanproProjectProperties.JAR_COMPRESS, "false");
 //        ep.setProperty(IcanproProjectProperties.JAR_CONTENT_ADDITIONAL, "");
 
         Deployment deployment = Deployment.getDefault();
-        String serverInstanceID = deployment.getDefaultServerInstanceID();
-        ep.setProperty(IcanproProjectProperties.J2EE_SERVER_TYPE, deployment.getServerID(serverInstanceID));
         ep.setProperty(IcanproProjectProperties.JAVAC_SOURCE, "1.4");
         ep.setProperty(IcanproProjectProperties.JAVAC_DEBUG, "true");
         ep.setProperty(IcanproProjectProperties.JAVAC_DEPRECATION, "false");
@@ -211,7 +208,6 @@ public class BpelproProjectGenerator {
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
 
         ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        ep.setProperty(IcanproProjectProperties.J2EE_SERVER_INSTANCE, serverInstanceID);
         //============= Start of IcanPro========================================//
         ep.setProperty(IcanproProjectProperties.JBI_COMPONENT_CONF_FILE, "ComponentInformation.xml"); // NOI18N
         ep.setProperty(IcanproProjectProperties.JBI_DEPLOYMENT_CONF_FILE, "default.xml"); // NOI18N

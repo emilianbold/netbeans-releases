@@ -19,15 +19,10 @@
 
 package org.netbeans.modules.bpel.project.wizards;
 
-import java.awt.event.ItemEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.text.MessageFormat;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import org.netbeans.modules.bpel.project.ui.customizer.IcanproProjectProperties;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
@@ -36,7 +31,6 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
 //    private static boolean lastMainClassCheck = false; // XXX Store somewhere
     
     private PanelConfigureProject panel;
-    private String j2eeLevel = IcanproProjectProperties.J2EE_1_4;
 //    private boolean valid;
     
     /** Creates new form PanelOptionsVisual */
@@ -103,7 +97,6 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     
     void store(WizardDescriptor d) {
         d.putProperty(WizardProperties.SET_AS_MAIN, setAsMainCheckBox.isSelected() ? Boolean.TRUE : Boolean.FALSE );
-        d.putProperty(WizardProperties.J2EE_LEVEL, j2eeLevel);
     }
     
     void read(WizardDescriptor d) {

@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.bpel.project;
 
-import java.awt.Dialog;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,12 +28,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
@@ -42,17 +39,14 @@ import org.openide.windows.IOProvider;
 import org.openide.windows.OutputWriter;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.api.debugger.*;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.modules.bpel.project.ui.customizer.IcanproProjectProperties;
 import org.netbeans.modules.bpel.project.ui.customizer.VisualClassPathItem;
 
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.*;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
-import org.netbeans.modules.bpel.project.ui.NoSelectedServerWarning;
 
 import org.netbeans.modules.bpel.project.IcanproConstants;
 
@@ -143,30 +137,30 @@ class BpelproActionProvider implements ActionProvider {
         Properties p = null;
         String[] targetNames = (String[])commands.get(command);
         //EXECUTION PART    
-        if (command.equals (IcanproConstants.COMMAND_DEPLOY) || command.equals (IcanproConstants.COMMAND_REDEPLOY)) {
-            if (!isSelectedServer ()) {
-                return;
-            }
-            if (isDebugged()) {
-                NotifyDescriptor nd;
-                ProjectInformation pi = (ProjectInformation)project.getLookup().lookup(ProjectInformation.class);
-                String text = pi.getDisplayName();
-                nd = new NotifyDescriptor.Confirmation(
-                            NbBundle.getMessage(BpelproActionProvider.class, "MSG_SessionRunning", text),
-                            NotifyDescriptor.OK_CANCEL_OPTION);
-                Object o = DialogDisplayer.getDefault().notify(nd);
-                if (o.equals(NotifyDescriptor.OK_OPTION)) {
-                    DebuggerManager.getDebuggerManager().getCurrentSession().kill();
-                } else {
-                    return;
-                }
-            }
-        } else {
-            p = null;
-            if (targetNames == null) {
-                throw new IllegalArgumentException(command);
-            }
-        }
+////        if (command.equals (IcanproConstants.COMMAND_DEPLOY) || command.equals (IcanproConstants.COMMAND_REDEPLOY)) {
+////            if (!isSelectedServer ()) {
+////                return;
+////            }
+////            if (isDebugged()) {
+////                NotifyDescriptor nd;
+////                ProjectInformation pi = (ProjectInformation)project.getLookup().lookup(ProjectInformation.class);
+////                String text = pi.getDisplayName();
+////                nd = new NotifyDescriptor.Confirmation(
+////                            NbBundle.getMessage(BpelproActionProvider.class, "MSG_SessionRunning", text),
+////                            NotifyDescriptor.OK_CANCEL_OPTION);
+////                Object o = DialogDisplayer.getDefault().notify(nd);
+////                if (o.equals(NotifyDescriptor.OK_OPTION)) {
+////                    DebuggerManager.getDebuggerManager().getCurrentSession().kill();
+////                } else {
+////                    return;
+////                }
+////            }
+////        } else {
+////            p = null;
+////            if (targetNames == null) {
+////                throw new IllegalArgumentException(command);
+////            }
+////        }
 
 
 //        	if build command then build any depedent project
@@ -243,42 +237,6 @@ class BpelproActionProvider implements ActionProvider {
 
     private boolean isDebugged() {
         return false;
-    }
-
-
-    private boolean isSelectedServer () {
-        String instance = antProjectHelper.getStandardPropertyEvaluator ().getProperty (IcanproProjectProperties.J2EE_SERVER_INSTANCE);
-        boolean selected;
-        if (instance != null) {
-            selected = true;
-        } else {
-            // no selected server => warning
-            String server = antProjectHelper.getStandardPropertyEvaluator ().getProperty (IcanproProjectProperties.J2EE_SERVER_TYPE);
-            NoSelectedServerWarning panel = new NoSelectedServerWarning (server);
-
-            Object[] options = new Object[] {
-                DialogDescriptor.OK_OPTION,
-                DialogDescriptor.CANCEL_OPTION
-            };
-            DialogDescriptor desc = new DialogDescriptor (panel,
-                    NbBundle.getMessage (NoSelectedServerWarning.class, "CTL_NoSelectedServerWarning_Title"), // NOI18N
-                true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
-            Dialog dlg = DialogDisplayer.getDefault ().createDialog (desc);
-            dlg.setVisible (true);
-            if (desc.getValue() != options[0]) {
-                selected = false;
-            } else {
-                instance = panel.getSelectedInstance ();
-                selected = instance != null;
-                if (selected) {
-                    IcanproProjectProperties wpp = new IcanproProjectProperties (project, antProjectHelper, refHelper);
-                    wpp.put (IcanproProjectProperties.J2EE_SERVER_INSTANCE, instance);
-                    wpp.store ();
-                }
-            }
-            dlg.dispose();
-        }
-        return selected;
     }
 
     private void log(String str) {

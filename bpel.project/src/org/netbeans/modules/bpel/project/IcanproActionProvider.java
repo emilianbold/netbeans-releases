@@ -20,18 +20,14 @@
 
 package org.netbeans.modules.bpel.project;
 
-import java.awt.Dialog;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
-import org.netbeans.modules.bpel.project.ui.NoSelectedServerWarning;
-import org.netbeans.modules.bpel.project.ui.customizer.IcanproProjectProperties;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.*;
@@ -93,16 +89,16 @@ class IcanproActionProvider implements ActionProvider {
             BpelProjectRetriever bpRetriever = new BpelProjectRetriever(antProjectHelper.getProjectDirectory());
         }
         //EXECUTION PART
-        if (command.equals (IcanproConstants.COMMAND_DEPLOY) || command.equals (IcanproConstants.COMMAND_REDEPLOY)) {
-            if (!isSelectedServer ()) {
-                return;
-            }
-        } else {
-            p = null;
-            if (targetNames == null) {
-                throw new IllegalArgumentException(command);
-            }
-        }
+////        if (command.equals (IcanproConstants.COMMAND_DEPLOY) || command.equals (IcanproConstants.COMMAND_REDEPLOY)) {
+////            if (!isSelectedServer ()) {
+////                return;
+////            }
+////        } else {
+////            p = null;
+////            if (targetNames == null) {
+////                throw new IllegalArgumentException(command);
+////            }
+////        }
 
         try {
             ActionUtils.runTarget(findBuildXml(), targetNames, p);
@@ -126,41 +122,4 @@ class IcanproActionProvider implements ActionProvider {
     private boolean isDebugged() {
         return false;
     }
-    
-
-    private boolean isSelectedServer () {
-        String instance = antProjectHelper.getStandardPropertyEvaluator ().getProperty (IcanproProjectProperties.J2EE_SERVER_INSTANCE);
-        boolean selected;
-        if (instance != null) {
-            selected = true;
-        } else {
-            // no selected server => warning
-            String server = antProjectHelper.getStandardPropertyEvaluator ().getProperty (IcanproProjectProperties.J2EE_SERVER_TYPE);
-            NoSelectedServerWarning panel = new NoSelectedServerWarning (server);
-
-            Object[] options = new Object[] {
-                DialogDescriptor.OK_OPTION,
-                DialogDescriptor.CANCEL_OPTION
-            };
-            DialogDescriptor desc = new DialogDescriptor (panel,
-                    NbBundle.getMessage (NoSelectedServerWarning.class, "CTL_NoSelectedServerWarning_Title"), // NOI18N
-                true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
-            Dialog dlg = DialogDisplayer.getDefault ().createDialog (desc);
-            dlg.setVisible (true);
-            if (desc.getValue() != options[0]) {
-                selected = false;
-            } else {
-                instance = panel.getSelectedInstance ();
-                selected = instance != null;
-                if (selected) {
-                    IcanproProjectProperties wpp = new IcanproProjectProperties (project, antProjectHelper, refHelper);
-                    wpp.put (IcanproProjectProperties.J2EE_SERVER_INSTANCE, instance);
-                    wpp.store ();
-                }
-            }
-            dlg.dispose();            
-        }
-        return selected;
-    }
-    
 }

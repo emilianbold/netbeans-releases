@@ -39,7 +39,6 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.modules.bpel.project.BpelproProjectGenerator;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.ErrorManager;
 
 /**
  * Wizard to create a new Web project.
@@ -81,10 +80,9 @@ public class NewBpelproProjectWizardIterator
         Set resultSet = new HashSet();
         File dirF = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
         String name = (String) wiz.getProperty(WizardProperties.NAME);
-        String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
                  
 //        AntProjectHelper h = createProject(dirF, name, j2eeLevel); // REFACTOR ME
-        AntProjectHelper h = BpelproProjectGenerator.createProject(dirF, name, j2eeLevel);
+        AntProjectHelper h = BpelproProjectGenerator.createProject(dirF, name);
                 
         FileObject dir = FileUtil.toFileObject(dirF);
         
