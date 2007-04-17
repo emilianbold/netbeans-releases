@@ -64,10 +64,10 @@ public final class ParametersPanel extends javax.swing.JPanel {
     };
     
     private final ParamsTableModel tableModel;
-
+    
     private List<ReferenceableSchemaComponent> schemaTypes;
     private WSDLModel wsdlModel;
-
+    
     public ParametersPanel() {
         initComponents();
         tableModel = new ParamsTableModel();
@@ -112,9 +112,27 @@ public final class ParametersPanel extends javax.swing.JPanel {
         } catch (CatalogModelException ex) {
             ex.printStackTrace();
         }
-
+        
     }
- 
+    
+    public void refreshSchemaTypes(){
+        try {
+            schemaTypes = getSchemaTypes();
+            String[] refTypes = new String[schemaTypes.size()];
+            int i=0;
+            for (ReferenceableSchemaComponent schemaType:schemaTypes) {
+                refTypes[i++]=Utils.getDisplayName(schemaType);
+                System.out.println("schema ref = "+schemaType.getName());
+            }
+            TableColumn col = table.getColumnModel().getColumn(COL_TYPE_INDEX);
+            col.setPreferredWidth(300);
+            col.setCellEditor(new MyComboBoxEditor(refTypes));
+            col.setCellRenderer(new MyComboBoxRenderer(refTypes));
+        } catch (CatalogModelException ex) {
+            ex.printStackTrace();
+        }
+    }
+    
     private List<ReferenceableSchemaComponent> getSchemaTypes() throws CatalogModelException {
         Definitions definitions = wsdlModel.getDefinitions();
         Types types = definitions.getTypes();
@@ -155,9 +173,9 @@ public final class ParametersPanel extends javax.swing.JPanel {
             schemaTypes.add(type);
         }
         
-     }
+    }
     
-     private boolean isUsedInOperation(WSDLModel wsdlModel, GlobalElement element) {
+    private boolean isUsedInOperation(WSDLModel wsdlModel, GlobalElement element) {
         Collection<Message> messages = wsdlModel.getDefinitions().getMessages();
         for (Message message:messages) {
             Collection<Part> parts = message.getParts();
@@ -165,7 +183,7 @@ public final class ParametersPanel extends javax.swing.JPanel {
                 if (element.equals(part.getElement().get())) {
                     return true;
                 }
-            } 
+            }
         }
         return false;
     }
@@ -173,7 +191,7 @@ public final class ParametersPanel extends javax.swing.JPanel {
     public List<ParamModel> getParameters() {
         return tableModel.getParameters();
     }
-
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -254,7 +272,7 @@ public final class ParametersPanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
-
+    
 private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
     int selectedRow = table.getSelectedRow();
     if (selectedRow > -1) {
@@ -269,12 +287,12 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 
 private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
     int index = tableModel.addParameter();
-//    System.out.println("### INDEX: " + index + " from " + table.getRowCount());
+    //    System.out.println("### INDEX: " + index + " from " + table.getRowCount());
     table.getSelectionModel().setSelectionInterval(index, index);
     updateButtons();
 }//GEN-LAST:event_addButtonActionPerformed
-    
-    
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JButton downButton;
@@ -305,21 +323,21 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         }
         
         public int addParameter() {
-              String name = generateUniqueName("param"); //NOI18N
-              ParamModel parameter = new ParamModel(name);
-              int index = parameters.size();
-              parameters.add(parameter);
-              if (schemaTypes.size()>0) {
-                 ReferenceableSchemaComponent ref = schemaTypes.get(0); 
-                 String value = ref.getName();
-                 //TODO: need a better way to detect primitive types
-                 if(ref instanceof GlobalType){
-                     value = Utils.getDisplayName(ref);
-                 }
-                 setValueAt(value, index, 1);
-              }
-              fireTableRowsInserted(index, index);
-              return index;
+            String name = generateUniqueName("param"); //NOI18N
+            ParamModel parameter = new ParamModel(name);
+            int index = parameters.size();
+            parameters.add(parameter);
+            if (schemaTypes.size()>0) {
+                ReferenceableSchemaComponent ref = schemaTypes.get(0);
+                String value = ref.getName();
+                //TODO: need a better way to detect primitive types
+                if(ref instanceof GlobalType){
+                    value = Utils.getDisplayName(ref);
+                }
+                setValueAt(value, index, 1);
+            }
+            fireTableRowsInserted(index, index);
+            return index;
         }
         
         public void removeParameter(int index) {
@@ -342,8 +360,8 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             if (parameter != null) {
                 System.out.println("param = "+parameter.getParamName());
                 switch (column) {
-                    case COL_NAME_INDEX: result = parameter.getParamName(); break;
-                    case COL_TYPE_INDEX: result = parameter.getDisplayName(); break;
+                case COL_NAME_INDEX: result = parameter.getParamName(); break;
+                case COL_TYPE_INDEX: result = parameter.getDisplayName(); break;
                 }
             }
             return result;
@@ -359,13 +377,12 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         
         public void setValueAt(Object aValue, int row, int column) {
             ParamModel parameter = parameters.get(row);
-            ParamModel changedParameter = new ParamModel ();
+            ParamModel changedParameter = new ParamModel();
             System.out.println("setVallueAt "+aValue);
             if (column==COL_NAME_INDEX) {
                 changedParameter.setParamName((String) aValue);
                 changedParameter.setParamType(parameter.getParamType());
-            }
-            else if (column==COL_TYPE_INDEX) {
+            } else if (column==COL_TYPE_INDEX) {
                 for (ReferenceableSchemaComponent schemaType: schemaTypes) {
                     if (aValue!=null && Utils.getDisplayName(schemaType).equals(aValue)) {
                         changedParameter.setParamType(schemaType);
@@ -382,10 +399,10 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         // If we didn't implement this method, then the last column would contain
         // text ("true"/"false"), rather than a check box.
         
-//        public Class getColumnClass(int c) {
-//            //if ()
-//            return getValueAt(0, c).getClass();
-//        }
+        //        public Class getColumnClass(int c) {
+        //            //if ()
+        //            return getValueAt(0, c).getClass();
+        //        }
         
         private String generateUniqueName(String name) {
             List<Integer> numberSuffixes = new ArrayList<Integer>();
@@ -411,10 +428,10 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         private boolean isNumber(String value) {
             for (char character : value.toCharArray()) {
                 if (!Character.isDigit(character)) {
-                  return false;
+                    return false;
                 }
             }
-          return true;//!value.trim().equals("");
+            return true;//!value.trim().equals("");
         }
         
     }
@@ -433,7 +450,7 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                 setForeground(table.getForeground());
                 setBackground(table.getBackground());
             }
-    
+            
             // Select the current value
             setSelectedItem(value);
             return this;

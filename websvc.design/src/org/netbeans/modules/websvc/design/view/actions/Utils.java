@@ -79,6 +79,20 @@ public class Utils {
         return primitives;
     }
     
+    public static List<Schema> getImportedSchemas(WSDLModel wsdlModel){
+        List<Schema> importedSchemas = new ArrayList<Schema>();
+        Definitions definitions = wsdlModel.getDefinitions();
+        Types types = definitions.getTypes();
+        Collection<Schema> schemas = types.getSchemas();
+        for(Schema schema : schemas){
+            Collection<Import> imports = schema.getImports();
+            for(Import imported : imports){
+                importedSchemas.add(imported.getModel().getSchema());
+            }
+        }
+        return importedSchemas;
+    }
+    
     public static List<ReferenceableSchemaComponent> getSchemaTypes(WSDLModel wsdlModel) throws CatalogModelException {
         Definitions definitions = wsdlModel.getDefinitions();
         Types types = definitions.getTypes();
