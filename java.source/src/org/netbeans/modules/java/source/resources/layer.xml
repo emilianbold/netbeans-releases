@@ -117,8 +117,6 @@ Microsystems, Inc. All Rights Reserved.
      <attr name="View/Navigation" boolvalue="true" />
         
      <folder name="GoTo">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.source.Bundle"/>
-
         <attr name="core-windows-SeparatorAfterRecentList.instance/org-netbeans-modules-java-actions-GoToType.shadow" boolvalue="true"/>
                     
         <file name="org-netbeans-modules-java-actions-GoToType.shadow">
