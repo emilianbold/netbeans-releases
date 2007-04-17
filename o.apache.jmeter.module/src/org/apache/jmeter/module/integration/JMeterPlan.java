@@ -17,28 +17,36 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.apache.jmeter.module.nodes;
+package org.apache.jmeter.module.integration;
 
-import javax.swing.Action;
-import org.apache.jmeter.module.actions.ManageJMeterProcessAction;
-import org.apache.jmeter.module.cookies.JMeterProcessCookie;
-import org.apache.jmeter.module.loadgenerator.spi.impl.ProcessDescriptor;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
+import org.apache.jmeter.testelement.TestPlan;
+import org.apache.jorphan.collections.HashTree;
 
 /**
  *
  * @author Jaroslav Bachorik
  */
-public class ProcessNode extends AbstractNode {
+public class JMeterPlan {
+  final private TestPlan rootElement;
+  final private HashTree planTree;
+  final private String pathToPlan;
   
-  /** Creates a new instance of ProcessNode */
-  public ProcessNode(final ProcessDescriptor descriptor) {
-    super(Children.LEAF);
-    getCookieSet().add(new JMeterProcessCookie(descriptor));
+  /** Creates a new instance of JMeterPlan */
+  public JMeterPlan(String path, HashTree plan, TestPlan root) {
+    rootElement = root;
+    planTree = plan;
+    pathToPlan = path;
   }
-
-  public Action[] getActions(boolean b) {
-    return new Action[] {ManageJMeterProcessAction.findObject(ManageJMeterProcessAction.class, true)};
+  
+  public TestPlan getRoot() {
+    return rootElement;
+  }
+  
+  public HashTree getTree() {
+    return planTree;
+  }
+  
+  public String getPath() {
+    return pathToPlan;
   }
 }

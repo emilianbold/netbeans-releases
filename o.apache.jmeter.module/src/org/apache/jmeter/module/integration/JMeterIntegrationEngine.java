@@ -22,8 +22,10 @@ package org.apache.jmeter.module.integration;
 import java.awt.Component;
 import java.awt.Image;
 import java.io.BufferedInputStream;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -165,15 +167,15 @@ public class JMeterIntegrationEngine {
     return children;
   }
   
-  public TestElement getRoot(final String testPlan) {
+  public JMeterPlan getPlan(final String testPlan) {
     HashTree planTree = getPlanTree(testPlan, false);
     
-    return (TestElement)planTree.getArray()[0];
+    return new JMeterPlan(testPlan, planTree, (TestPlan)planTree.getArray()[0]);
   }
   
   public ProcessDescriptor runTestPlan(final String testPlan) {
     HashTree planTree = getPlanTree(testPlan, true);
-    TestElement root = getRoot(testPlan);
+    TestElement root = (TestElement)planTree.getArray()[0];
     
     JMeterEngine engine = new StandardJMeterEngine();
     
@@ -214,7 +216,7 @@ public class JMeterIntegrationEngine {
   
   public ProcessDescriptor prepareTest(final String testPlan) {
     HashTree planTree = getPlanTree(testPlan, true);
-    TestElement root = getRoot(testPlan);
+    TestElement root = (TestElement)planTree.getArray()[0];
     
     JMeterEngine engine = new StandardJMeterEngine();
     
@@ -313,6 +315,17 @@ public class JMeterIntegrationEngine {
     }
     
     return planTree;
+  }
+  
+  public boolean savePlan(final JMeterPlan plan) {
+    try {
+      BufferedWriter writer = new BufferedWriter(new FileWriter(plan.getPath()));
+      SaveService.saveTree(plan.getTree(), writer);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return false;
+    }
+    return true;
   }
   
   public Process externalEdit(final String scriptPath) throws IOException {

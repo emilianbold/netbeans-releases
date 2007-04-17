@@ -23,10 +23,7 @@ import java.awt.Component;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import javax.swing.Action;
 import org.apache.jmeter.gui.JMeterGUIComponent;
 import org.apache.jmeter.module.cookies.JMeterCookie;
 import org.apache.jmeter.module.cookies.JMeterVisualizerCookie;
@@ -36,7 +33,6 @@ import org.apache.jmeter.reporters.ResultCollector;
 import org.apache.jmeter.testelement.TestElement;
 import org.apache.jorphan.collections.HashTree;
 import org.openide.nodes.AbstractNode;
-import org.openide.util.actions.SystemAction;
 
 /**
  *

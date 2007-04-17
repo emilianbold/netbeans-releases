@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Collection;
 import org.netbeans.modules.loadgenerator.api.EngineManager;
 import org.netbeans.modules.loadgenerator.spi.Engine;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -67,15 +68,15 @@ public final class JMeterRunAction extends CookieAction {
     if (node == null || node[0] == null)
       return retValue;
     
-    DataObject c = (DataObject) node[0].getCookie(DataObject.class);
-    
+    DataObject c = (DataObject) node[0].getCookie(DataObject.class);    
+    FileObject primaryFile = c != null ? c.getPrimaryFile() : null;
     /* according to http://www.netbeans.org/issues/show_bug.cgi?id=94823 
      * using "c" without checking for NULL causes NPE randomly; this check should prevent NPE
      */
-    if (c == null || c.getPrimaryFile() == null) return false; 
+    if (primaryFile == null) return false;
     
     try {
-      File script = FileUtil.toFile(c.getPrimaryFile());
+      File script = FileUtil.toFile(primaryFile);
 //      JMeterIntegrationEngine.getDefault().runTestPlan(script.getCanonicalPath());
       final String path = script.getCanonicalPath();
       

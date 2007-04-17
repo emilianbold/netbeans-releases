@@ -1,13 +1,37 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
 package org.apache.jmeter.module;
 
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.ResourceBundle;
 import javax.swing.Action;
+import org.apache.jmeter.config.Argument;
+import org.apache.jmeter.config.Arguments;
+import org.apache.jmeter.module.exceptions.InitializationException;
 import org.apache.jmeter.module.integration.JMeterIntegrationEngine;
+import org.apache.jmeter.module.integration.JMeterPlan;
+import org.apache.jmeter.save.SaveService;
 import org.apache.jmeter.testelement.TestPlan;
 import org.apache.jmeter.util.JMeterUtils;
 import org.openide.filesystems.FileUtil;
@@ -34,7 +58,13 @@ public class JMXTypeDataNode extends DataNode {
     }
     
     public void setValue(Object value) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+      Object oldValue = getValue();
       vars.put(getName(), value != null ? value.toString() : null);
+      if (oldValue == null || value == null || !oldValue.equals(value)) {
+        if (!firePropertyChanged(getName(), oldValue, value)) {
+          vars.put(getName(), oldValue != null ? oldValue.toString() : oldValue);
+        }
+      }
     }
     
     public Object getValue() throws IllegalAccessException, InvocationTargetException {
@@ -48,6 +78,9 @@ public class JMXTypeDataNode extends DataNode {
       return result;
     }
   }
+  
+  private JMeterPlan associatedPlan;
+  private JMeterIntegrationEngine engine;
   
   public JMXTypeDataNode(JMXTypeDataObject obj) {
     super(obj, Children.LEAF);
@@ -83,10 +116,9 @@ public class JMXTypeDataNode extends DataNode {
     
     Sheet.Set expert = null;
     try {
-      JMeterIntegrationEngine engine = JMeterIntegrationEngine.getDefault();
       final String path = FileUtil.toFile(getDataObject().getPrimaryFile()).getCanonicalPath();
-      TestPlan root = (TestPlan)engine.getRoot(path);
-      final Map vars = root.getUserDefinedVariables();
+      associatedPlan = getEngine().getPlan(path);
+      final Map vars = associatedPlan.getRoot().getUserDefinedVariables();
       
       if (vars.containsKey(NB_ENABLED)) {
         expert = Sheet.createExpertSet();
@@ -110,11 +142,32 @@ public class JMXTypeDataNode extends DataNode {
         System.out.println("Property changed; the sheet");
       }
     });
+    
     if (expert != null) {
       retValue.put(expert);
     }
     return retValue;
   }
   
+  private synchronized JMeterIntegrationEngine getEngine() {
+    if (engine == null) {
+      try {
+        engine = JMeterIntegrationEngine.getDefault();
+      } catch (InitializationException e) {
+        
+      }
+    }
+    return engine;
+  }
   
+  private boolean firePropertyChanged(final String name, final Object oldValue, final Object newValue) {
+    Arguments args = (Arguments)associatedPlan.getRoot().getProperty(TestPlan.USER_DEFINED_VARIABLES).getObjectValue();
+    for(int i=0;i<args.getArgumentCount();i++) {
+      Argument arg = args.getArgument(i);
+      if (arg.getName().equals(name)) {
+        arg.setValue(newValue != null ? newValue.toString() : null);
+      }
+    }
+    return getEngine().savePlan(associatedPlan);
+  }
 }
