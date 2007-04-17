@@ -189,8 +189,6 @@ final class DefaultDataObject extends MultiDataObject implements OpenCookie {
             ||
             c.isAssignableFrom(CloseCookie.class)
             ||
-            c.isAssignableFrom(SaveAsCapable.class)
-            ||
             c == DefaultES.class
         ) {
             try {

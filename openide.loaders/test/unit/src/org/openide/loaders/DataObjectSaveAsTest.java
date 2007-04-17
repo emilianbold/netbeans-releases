@@ -24,6 +24,8 @@ import org.openide.util.Lookup;
 import java.io.IOException;
 import java.util.*;
 import org.netbeans.junit.*;
+import org.openide.cookies.EditCookie;
+import org.openide.cookies.OpenCookie;
 
 /** 
  * Ensure that SaveAs functionality works as expected for DataObjects
@@ -166,6 +168,9 @@ public class DataObjectSaveAsTest extends NbTestCase {
         DataObject obj = DataObject.find(fs.findResource("someFile.unknownExtension"));
         assertEquals(DefaultDataObject.class, obj.getClass());
         
+        //this is ok because save as works for opened editors only so when the dataobject
+        //is opened its editor support with saveas impl will be initialized already by then
+        assertNotNull( obj.getLookup().lookup(EditCookie.class) );
         assertNotNull( obj.getLookup().lookup(SaveAsCapable.class) );
         
         sfs.clear();
