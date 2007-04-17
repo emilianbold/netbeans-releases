@@ -22,10 +22,10 @@
 <filesystem>
     <folder name="Toolbars">
         <folder name="File">
+            <!-- # 100900
             <file name="org-netbeans-modules-bpel-search-impl-action-SearchAction.instance"/>
-
-            <!-- sorting -->
             <attr name="org-netbeans-modules-print-impl-action-PreviewAction.instance/org-netbeans-modules-bpel-search-impl-action-SearchAction.instance" boolvalue="true"/>
+            -->
         </folder>
     </folder>
 

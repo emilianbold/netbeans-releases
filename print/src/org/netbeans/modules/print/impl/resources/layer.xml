@@ -22,10 +22,10 @@
 <filesystem>
     <folder name="Toolbars">
         <folder name="File">
+            <!-- # 100900
             <file name="org-netbeans-modules-print-impl-action-PreviewAction.instance"/>
-
-            <!-- sorting -->
             <attr name="org-openide-actions-SaveAllAction.instance/org-netbeans-modules-print-impl-action-PreviewAction.instance" boolvalue="true"/>
+            -->
         </folder>
     </folder>
 
