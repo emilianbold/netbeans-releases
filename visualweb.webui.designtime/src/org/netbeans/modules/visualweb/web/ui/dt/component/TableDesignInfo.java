@@ -24,6 +24,7 @@ import com.sun.data.provider.impl.CachedRowSetDataProvider;
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignProperty;
 import com.sun.rave.designtime.DisplayAction;
+import com.sun.rave.designtime.DisplayActionSet;
 import com.sun.rave.designtime.Result;
 import com.sun.rave.designtime.faces.FacesDesignContext;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
@@ -31,6 +32,7 @@ import com.sun.rave.designtime.markup.MarkupTableDesignInfo;
 import com.sun.rave.web.ui.component.StaticText;
 import com.sun.rave.web.ui.component.Table;
 import com.sun.rave.web.ui.component.TableRowGroup;
+import java.awt.Image;
 import org.netbeans.modules.visualweb.web.ui.dt.AbstractDesignInfo;
 import org.netbeans.modules.visualweb.web.ui.dt.component.customizers.TableBindToDataAction;
 import org.netbeans.modules.visualweb.web.ui.dt.component.customizers.TableCustomizerAction;
@@ -39,6 +41,7 @@ import org.netbeans.modules.visualweb.web.ui.dt.component.util.DesignMessageUtil
 import org.netbeans.modules.visualweb.web.ui.dt.component.table.TableDesignState;
 import com.sun.rave.web.ui.model.DefaultTableDataProvider;
 import java.io.StringWriter;
+import javax.swing.ImageIcon;
 import org.w3c.dom.Element;
 
 /**
@@ -50,27 +53,74 @@ import org.w3c.dom.Element;
  *
  * @author Winston Prakash
  */
-public class TableDesignInfo extends AbstractDesignInfo implements MarkupTableDesignInfo{
-
+public class TableDesignInfo extends AbstractDesignInfo implements MarkupTableDesignInfo {
+    
     //private static final String TITLE_FACET = "title"; //NOI18N
     //private static final String TITLE_FACET_TEXT_PROPERTY = "text"; //NOI18N
     private static final String SOURCE_DATA_PROPERTY = "sourceData"; //NOI18N
     private static final String TITLE_PROPERTY = "title"; //NOI18N
     private static final String AUGMENT_TITLE_PROPERTY = "augmentTitle"; //NOI18N
     private static final String WIDTH_PROPERTY = "width"; //NOI18N
-
+    
     public TableDesignInfo() {
         super(Table.class);
     }
-
+    
+    public DisplayActionSet getContextItemsExt(final DesignBean bean) {
+        
+        return new DisplayActionSet() {
+            
+            public DisplayAction[] getDisplayActions() {
+                return new DisplayAction[] {
+                    new TableCustomizerAction(bean),
+                    new TableBindToDataAction(bean)
+                };
+            }
+            
+            public boolean isPopup() {
+                return true;
+            }
+            
+            public boolean isEnabled() {
+                return true;
+            }
+            
+            public Result invoke() {
+                throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+            }
+            
+            public String getDisplayName() {
+                return "";
+            }
+            
+            public String getDescription() {
+                return "";
+            }
+            
+            public Image getLargeIcon() {
+                return new ImageIcon(getClass().getResource(AbstractDesignInfo.DECORATION_ICON)).getImage();
+            }
+            
+            public Image getSmallIcon() {
+                return new ImageIcon(getClass().getResource(AbstractDesignInfo.DECORATION_ICON)).getImage();
+            }
+            
+            public String getHelpKey() {
+                throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+            }
+            
+            
+        };
+    }
+    
     /** {@inheritDoc} */
     public DisplayAction[] getContextItems(DesignBean bean) {
         return new DisplayAction[] {
             new TableCustomizerAction(bean),
-                    new TableBindToDataAction(bean)
+            new TableBindToDataAction(bean)
         };
     }
-
+    
     /**
      * {@inheritDoc}
      * Accept only TableRowGroup as Child
@@ -78,7 +128,7 @@ public class TableDesignInfo extends AbstractDesignInfo implements MarkupTableDe
     public boolean acceptChild(DesignBean parentBean, DesignBean childBean, Class childClass) {
         return childClass.isAssignableFrom(TableRowGroup.class) || childClass.isAssignableFrom(StaticText.class);
     }
-
+    
     /**
      * Create TableDesignState with the table bean and a TableRowGroup and save it as source bean and
      * then save the state of TableDesignState which in turn would fill the TableRowRroup with default
@@ -94,7 +144,7 @@ public class TableDesignInfo extends AbstractDesignInfo implements MarkupTableDe
         // By default do not augment the title with row information
         DesignProperty augmentTitleProperty = tableBean.getProperty(AUGMENT_TITLE_PROPERTY); //NOI18N
         augmentTitleProperty.setValue(new Boolean(false));
-
+        
         DesignBean tableGroupBean = fcontext.createBean(TableRowGroup.class.getName(), tableBean, null);
         TableDesignState ts = new TableDesignState(tableBean);
         // Create the Default Table Model. It will be used by TableRowGroup to populate itself
@@ -154,7 +204,7 @@ public class TableDesignInfo extends AbstractDesignInfo implements MarkupTableDe
             // After dropping a CachedRowsetDataProvider, a dialog pops up if
             // already a CachedRowset exists in the session bean. If the user
             // Cancels this dialog, then the rowset is not set and the data provider
-            // is deleted. 
+            // is deleted.
             if (sourceBean.getInstance() instanceof CachedRowSetDataProvider){
                 CachedRowSetDataProvider cachedRowSetDataProvider = (CachedRowSetDataProvider)sourceBean.getInstance();
                 if(cachedRowSetDataProvider.getCachedRowSet() == null){
@@ -165,7 +215,7 @@ public class TableDesignInfo extends AbstractDesignInfo implements MarkupTableDe
             TableDataProvider tdp = (TableDataProvider) sourceBean.getInstance();
             FieldKey[] columns = tdp.getFieldKeys();
             if((columns == null) || (columns.length == 0)){
-              return Result.FAILURE;
+                return Result.FAILURE;
             }
             
             TableDesignState ts = new TableDesignState(targetBean);
@@ -183,7 +233,7 @@ public class TableDesignInfo extends AbstractDesignInfo implements MarkupTableDe
         return Result.SUCCESS;
     }
     
-// ------ Implements MarkupTableDesignInfo ------------------------
+    // ------ Implements MarkupTableDesignInfo ------------------------
     
     public int testResizeRow(MarkupDesignBean mdBean, int row, int column, int height) {
         return -1;

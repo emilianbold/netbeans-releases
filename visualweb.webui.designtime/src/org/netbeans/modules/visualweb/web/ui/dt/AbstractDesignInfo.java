@@ -25,12 +25,15 @@ import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignInfo;
 import com.sun.rave.designtime.DesignEvent;
 import com.sun.rave.designtime.DesignProperty;
+import com.sun.rave.designtime.ext.DesignInfoExt;
 import com.sun.rave.designtime.faces.ResolveResult;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
 import com.sun.rave.designtime.Result;
 import com.sun.rave.designtime.faces.FacesDesignContext;
 import com.sun.data.provider.FieldKey;
+import com.sun.rave.designtime.DisplayActionSet;
 import com.sun.rave.designtime.faces.FacesDesignProperty;
+import java.awt.Image;
 import org.netbeans.modules.visualweb.web.ui.dt.component.FormDesignInfo;
 
 import com.sun.rave.web.ui.component.Alert;
@@ -85,7 +88,10 @@ import org.w3c.dom.Element;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.ImageIcon;
 import org.netbeans.modules.visualweb.propertyeditors.binding.data.DataBindingHelper;
+
+ 
 
 /**
  * <p>Convenience base class for <code>DesignInfo</code> implementations
@@ -94,12 +100,13 @@ import org.netbeans.modules.visualweb.propertyeditors.binding.data.DataBindingHe
  * will receive the default behavior described for each method, unless that
  * method is overridden.</p>
  */
-public abstract class AbstractDesignInfo implements DesignInfo {
-
-
+public abstract class AbstractDesignInfo implements DesignInfo, DesignInfoExt {
+    public static final String DECORATION_ICON =
+            "/org/netbeans/modules/visualweb/web/ui/dt/resources/Decoration.gif";
+    
     // ------------------------------------------------------------- Constructor
-
-
+    
+    
     /**
      * <p>Construct a <code>DesignInfo</code> instance for the specified
      * JavaBean class.</p>
@@ -109,28 +116,28 @@ public abstract class AbstractDesignInfo implements DesignInfo {
     public AbstractDesignInfo(Class clazz) {
         this.beanClass = clazz;
     }
-
-
+    
+    
     // ------------------------------------------------------ Instance Variables
-
-
+    
+    
     /**
      * <p>The JavaBean class this <code>DesignInfo</code> instance is
      * designed to wrap.</p>
      */
     private Class beanClass = null;
-
-
+    
+    
     // ------------------------------------------------------ DesignInfo Methods
-
-
+    
+    
     /**
      * Returns the class type of the JavaBean that was passed to our constructor.
      */
     public Class getBeanClass() {
         return this.beanClass;
     }
-
+    
     /**
      * By default, components are allowed to nest, one with another, unless any
      * of the following conditions apply:
@@ -141,13 +148,13 @@ public abstract class AbstractDesignInfo implements DesignInfo {
      * </ul>
      */
     public boolean acceptParent(DesignBean parentBean, DesignBean childBean, Class childClass) {
-        if(parentBean == null || parentBean.getInstance() == null) 
+        if(parentBean == null || parentBean.getInstance() == null)
             return false;
         
         Class parentClass = parentBean.getInstance().getClass();
         return acceptFiliation(parentBean, parentClass, childBean, childClass);
     }
-
+    
     public boolean acceptChild(DesignBean parentBean, DesignBean childBean, Class childClass) {
         if(parentBean == null || parentBean.getInstance() == null)
             return false;
@@ -155,7 +162,7 @@ public abstract class AbstractDesignInfo implements DesignInfo {
         Class parentClass = parentBean.getInstance().getClass();
         return acceptFiliation(parentBean, parentClass, childBean, childClass);
     }
-
+    
     /**
      * Returns true is the design bean specified is on a Braveheart page or a
      * page fragment.
@@ -175,7 +182,7 @@ public abstract class AbstractDesignInfo implements DesignInfo {
         }
         return false;
     }
-
+    
     private static boolean acceptFiliation(DesignBean parentBean, Class parentClass,
             DesignBean childBean, Class childClass) {
         if (parentClass.equals(childClass))
@@ -204,7 +211,7 @@ public abstract class AbstractDesignInfo implements DesignInfo {
         }
         return true;
     }
-
+    
     /**
      * <p>Take no action by default.  Return <code>Result.SUCCESS</code>.</p>
      *
@@ -215,7 +222,7 @@ public abstract class AbstractDesignInfo implements DesignInfo {
     }
     
     /**
-     * Find the containing Form component and remove the id of the bean that is 
+     * Find the containing Form component and remove the id of the bean that is
      * about to be deleted from the virtual form configuration. Also, if this
      * component implements {@link javax.faces.component.ValueHolder}, search
      * for any components that reference it (ie. that have a <code>for</code>
@@ -226,7 +233,7 @@ public abstract class AbstractDesignInfo implements DesignInfo {
      * @param oldInstanceName The prior instance name of the bean.
      */
     public Result beanDeletedCleanup(DesignBean bean) {
-        modifyVirtualFormsOnBeanDeletedCleanup(bean);        
+        modifyVirtualFormsOnBeanDeletedCleanup(bean);
         if (ValueHolder.class.isAssignableFrom(bean.getInstance().getClass())) {
             DesignContext context = bean.getDesignContext();
             DesignBean[] designBeans = context.getBeans();
@@ -243,8 +250,8 @@ public abstract class AbstractDesignInfo implements DesignInfo {
     
     /** Find the containing form, if it exists. */
     /*
-     * Be sure to keep this method in sync with the version in 
-     * <code>javax.faces.component.html.HtmlDesignInfoBase</code> 
+     * Be sure to keep this method in sync with the version in
+     * <code>javax.faces.component.html.HtmlDesignInfoBase</code>
      * (in jsfcl).</p>
      */
     private DesignBean findFormBean(DesignBean bean) {
@@ -265,8 +272,8 @@ public abstract class AbstractDesignInfo implements DesignInfo {
     }
     
     /*
-     * Be sure to keep this method in sync with the version in 
-     * <code>javax.faces.component.html.HtmlDesignInfoBase</code> 
+     * Be sure to keep this method in sync with the version in
+     * <code>javax.faces.component.html.HtmlDesignInfoBase</code>
      * (in jsfcl).</p>
      */
     private void modifyVirtualFormsOnBeanDeletedCleanup(DesignBean bean) {
@@ -293,24 +300,24 @@ public abstract class AbstractDesignInfo implements DesignInfo {
             }
         }
     }
-
+    
     /*
-     * Be sure to keep this method in sync with the version in 
-     * <code>javax.faces.component.html.HtmlDesignInfoBase</code> 
+     * Be sure to keep this method in sync with the version in
+     * <code>javax.faces.component.html.HtmlDesignInfoBase</code>
      * (in jsfcl).</p>
      */
     private boolean removeIdFromVirtualFormDescriptors(Form.VirtualFormDescriptor[] descriptors, String idToRemove) {
         boolean modified = false;
         for (int d = 0; descriptors != null && d < descriptors.length; d++) {
             Form.VirtualFormDescriptor vfd = descriptors[d];
-
+            
             String[] pids = vfd.getParticipatingIds();
             String[] newPids = removeIdFromArray(pids, idToRemove);
             if (pids != null && newPids != null && pids.length != newPids.length) {
                 modified = true;
             }
             vfd.setParticipatingIds(newPids);
-
+            
             String[] sids = vfd.getSubmittingIds();
             String[] newSids = removeIdFromArray(sids, idToRemove);
             if (sids != null && newSids != null && sids.length != newSids.length) {
@@ -320,10 +327,10 @@ public abstract class AbstractDesignInfo implements DesignInfo {
         }
         return modified;
     }
-
+    
     /*
-     * Be sure to keep this method in sync with the version in 
-     * <code>javax.faces.component.html.HtmlDesignInfoBase</code> 
+     * Be sure to keep this method in sync with the version in
+     * <code>javax.faces.component.html.HtmlDesignInfoBase</code>
      * (in jsfcl).</p>
      */
     private String[] removeIdFromArray(String[] ids, String idToRemove) {
@@ -331,15 +338,15 @@ public abstract class AbstractDesignInfo implements DesignInfo {
         List list = new ArrayList();
         for (int i = 0; i < ids.length; i++) {
             String id = ids[i]; //might be namespaced
-            if (id != null && 
-                    id.length() > 0 && 
+            if (id != null &&
+                    id.length() > 0 &&
                     !Form.fullyQualifiedIdMatchesPattern(idToRemove, id)) {  //id in array does not represent fqId being removed
                 list.add(id);
             }
         }
         return (String[])list.toArray(new String[list.size()]);
     }
-
+    
     /**
      * <p>Take no action by default.  Return <code>Result.SUCCESS</code>.</p>
      *
@@ -348,7 +355,69 @@ public abstract class AbstractDesignInfo implements DesignInfo {
     public Result beanPastedSetup(DesignBean bean) {
         return Result.SUCCESS;
     }
-
+    
+    public DisplayActionSet getContextItemsExt(DesignBean bean) {
+        DesignProperty property = getDefaultBindingProperty(bean);
+        if (property == null) {
+            return null;
+        }
+        final List displayActions = new ArrayList();
+        if (EditableValueHolder.class.isAssignableFrom(beanClass))
+            displayActions.add(new AutoSubmitOnChangeAction(bean));
+        Class beanClass = bean.getInstance().getClass();
+        Class bindingPanelClass = null;
+        if (Selector.class.isAssignableFrom(beanClass)) {
+            if (RbCbSelector.class.isAssignableFrom(beanClass))
+                bindingPanelClass = DataBindingHelper.BIND_VALUE_TO_DATAPROVIDER;
+            else
+                bindingPanelClass = DataBindingHelper.BIND_OPTIONS_TO_DATAPROVIDER;
+        } else {
+            bindingPanelClass = DataBindingHelper.BIND_VALUE_TO_DATAPROVIDER;
+        }
+        displayActions.add(
+                DataBindingHelper.getDataBindingAction(bean,
+                property.getPropertyDescriptor().getName(),
+                new Class[] {bindingPanelClass, DataBindingHelper.BIND_VALUE_TO_OBJECT}));
+        return new DisplayActionSet() {
+            
+            public DisplayAction[] getDisplayActions() {
+                return (DisplayAction[]) displayActions.toArray(new DisplayAction[displayActions.size()]);
+            }
+            
+            public boolean isPopup() {
+                return true;
+            }
+            
+            public boolean isEnabled() {
+                return true;
+            }
+            
+            public Result invoke() {
+                throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+            }
+            
+            public String getDisplayName() {
+                return "";
+            }
+            
+            public String getDescription() {
+                return "";
+            }
+            
+            public Image getLargeIcon() {
+                return new ImageIcon(getClass().getResource(DECORATION_ICON)).getImage();
+            }
+            
+            public Image getSmallIcon() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+            
+            public String getHelpKey() {
+                throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+            }
+        }; 
+    }
+    
     /**
      * <p>Return <code>null</code>, indicating that no context menu items
      * will be provided.</p>
@@ -374,25 +443,25 @@ public abstract class AbstractDesignInfo implements DesignInfo {
             bindingPanelClass = DataBindingHelper.BIND_VALUE_TO_DATAPROVIDER;
         }
         displayActions.add(
-            DataBindingHelper.getDataBindingAction(bean,
+                DataBindingHelper.getDataBindingAction(bean,
                 property.getPropertyDescriptor().getName(),
                 new Class[] {bindingPanelClass, DataBindingHelper.BIND_VALUE_TO_OBJECT}));
-
+        
         if (Selector.class.isAssignableFrom(beanClass)) {
             DesignProperty itemsProperty = bean.getProperty("items");
             if (itemsProperty instanceof FacesDesignProperty && ((FacesDesignProperty) itemsProperty).isBound()) {
                 String expression = ((FacesDesignProperty) itemsProperty).getValueBinding().getExpressionString();
-                ResolveResult resolveResult = 
+                ResolveResult resolveResult =
                         ((FacesDesignContext)bean.getDesignContext()).resolveBindingExprToBean(expression);
                 if (resolveResult != null && resolveResult.getDesignBean() != null &&
                         resolveResult.getDesignBean().getInstance() instanceof DefaultOptionsList)
                     displayActions.add(new OptionsListCustomizerAction(bean));
             }
         }
-                
+        
         return (DisplayAction[]) displayActions.toArray(new DisplayAction[displayActions.size()]);
     }
-
+    
     // FIXME - HtmlDesignInfoBase returns true if target is-a ValueHolder
     // and source is-a ResultSet
     /**
@@ -426,13 +495,13 @@ public abstract class AbstractDesignInfo implements DesignInfo {
      */
     public boolean acceptLink(DesignBean targetBean, DesignBean sourceBean,
             Class sourceClass) {
-
+        
         Class targetClass = targetBean.getInstance().getClass();
         if (Converter.class.isAssignableFrom(sourceClass) &&
-            ValueHolder.class.isAssignableFrom(targetClass)) {
+                ValueHolder.class.isAssignableFrom(targetClass)) {
             return true;
         } else if (Validator.class.isAssignableFrom(sourceClass) &&
-            EditableValueHolder.class.isAssignableFrom(targetClass)) {
+                EditableValueHolder.class.isAssignableFrom(targetClass)) {
             return true;
         } else if (DataProvider.class.isAssignableFrom(sourceClass)) {
             if (this.getDefaultBindingProperty(targetBean) != null)
@@ -440,8 +509,8 @@ public abstract class AbstractDesignInfo implements DesignInfo {
         }
         return false;
     }
-
-
+    
+    
     // FIXME - HtmlDesignInfoBase does ResultSet and RowSetDataModel too
     /**
      * <p>For the cases where the default <code>acceptLink()</code>
@@ -457,12 +526,12 @@ public abstract class AbstractDesignInfo implements DesignInfo {
      * @see #acceptLink
      */
     public Result linkBeans(DesignBean targetBean, DesignBean sourceBean) {
-
+        
         Class sourceClass = sourceBean.getInstance().getClass();
         Class targetClass = targetBean.getInstance().getClass();
         if (!acceptLink(targetBean, sourceBean, sourceClass))
             return Result.FAILURE;
-
+        
         if (Converter.class.isAssignableFrom(sourceClass)) {
             DesignProperty property = targetBean.getProperty("converter"); //NOI18N
             property.setValue(sourceBean.getInstance());
@@ -492,7 +561,7 @@ public abstract class AbstractDesignInfo implements DesignInfo {
         }
         return Result.SUCCESS;
     }
-
+    
     /**
      * Returns a property descriptor for the property which should be bound to
      * a data source by default (e.g. whan a data source is linked to the component).
@@ -511,11 +580,11 @@ public abstract class AbstractDesignInfo implements DesignInfo {
             property = targetBean.getProperty("text"); //NOI18N
         }
         if (property == null){
-                property = targetBean.getProperty("value"); //NOI18N
+            property = targetBean.getProperty("value"); //NOI18N
         }
         return property;
     }
-
+    
     public Result linkDataProviderToSingleton(FacesDesignProperty property, DesignBean dataBean) {
         FacesDesignContext fdc = (FacesDesignContext)property.getDesignBean().getDesignContext();
         DataProvider provider = (DataProvider)dataBean.getInstance();
@@ -543,31 +612,31 @@ public abstract class AbstractDesignInfo implements DesignInfo {
         }
         return Result.FAILURE;
     }
-
+    
     public Result linkDataProviderToListSelector(FacesDesignProperty property, DesignBean dataBean) {
         FacesDesignContext fdc = (FacesDesignContext)property.getDesignBean().getDesignContext();
         DataProvider provider = (DataProvider)dataBean.getInstance();
         FieldKey[] fieldKeys = provider.getFieldKeys();
-
+        
         if (fieldKeys != null && fieldKeys.length > 0) {
             String valueField = null;
             String displayField = null;
             Class valueFieldType = null;
             for(int i=0; i< fieldKeys.length; i++){
-               if ((valueField == null) && isTypeOf(Integer.class, "int", provider.getType(fieldKeys[i]))){
-                   valueField = fieldKeys[i].getFieldId();
-                   valueFieldType = provider.getType(fieldKeys[i]);
-               }
-               if ((displayField == null) && provider.getType(fieldKeys[i]).isAssignableFrom(String.class)){
-                   displayField = fieldKeys[i].getFieldId();
-               }
+                if ((valueField == null) && isTypeOf(Integer.class, "int", provider.getType(fieldKeys[i]))){
+                    valueField = fieldKeys[i].getFieldId();
+                    valueFieldType = provider.getType(fieldKeys[i]);
+                }
+                if ((displayField == null) && provider.getType(fieldKeys[i]).isAssignableFrom(String.class)){
+                    displayField = fieldKeys[i].getFieldId();
+                }
             }
             if(valueField == null){
-               valueField = fieldKeys[0].getFieldId();
-               valueFieldType = provider.getType(fieldKeys[0]);
+                valueField = fieldKeys[0].getFieldId();
+                valueFieldType = provider.getType(fieldKeys[0]);
             }
             if(displayField == null){
-               displayField = fieldKeys[0].getFieldId();
+                displayField = fieldKeys[0].getFieldId();
             }
             StringBuffer expr = new StringBuffer();
             expr.append("#{");
@@ -585,7 +654,7 @@ public abstract class AbstractDesignInfo implements DesignInfo {
         }
         return Result.FAILURE;
     }
-
+    
     public Result linkDataProviderToStringListSelector(FacesDesignProperty property, DesignBean dataBean) {
         FacesDesignContext fdc = (FacesDesignContext)property.getDesignBean().getDesignContext();
         DataProvider provider = (DataProvider)dataBean.getInstance();
@@ -612,9 +681,9 @@ public abstract class AbstractDesignInfo implements DesignInfo {
         }
         return Result.FAILURE;
     }
-
+    
     public static Class getConverterClass(Class type) {
-
+        
         if(isTypeOf(Integer.class, "int", type)){
             return javax.faces.convert.IntegerConverter.class;
         }else if(isTypeOf(Byte.class, "byte", type)){
@@ -638,13 +707,13 @@ public abstract class AbstractDesignInfo implements DesignInfo {
         }else if(type.isAssignableFrom(Calendar.class)) {
             return com.sun.rave.faces.converter.CalendarConverter.class;
         }
-
+        
         return null;
     }
-
+    
     // ---------------------------------------------- DesignBeanListener Methods
-
-
+    
+    
     /**
      * <p>Take no action by default.</p>
      *
@@ -653,8 +722,8 @@ public abstract class AbstractDesignInfo implements DesignInfo {
     public void beanContextActivated(DesignBean bean) {
         ;
     }
-
-
+    
+    
     /**
      * <p>Take no action by default.</p>
      *
@@ -663,8 +732,8 @@ public abstract class AbstractDesignInfo implements DesignInfo {
     public void beanContextDeactivated(DesignBean bean) {
         ;
     }
-
-
+    
+    
     /**
      * If this component implements {@link javax.faces.component.ValueHolder},
      * search for any components that reference it (ie. that have a <code>for</code>
@@ -686,7 +755,7 @@ public abstract class AbstractDesignInfo implements DesignInfo {
             }
         }
     }
-
+    
     /**
      * <p>Take no action by default.</p>
      *
@@ -695,8 +764,8 @@ public abstract class AbstractDesignInfo implements DesignInfo {
     public void beanChanged(DesignBean bean) {
         ;
     }
-
-
+    
+    
     /**
      * <p>Take no action by default.</p>
      *
@@ -705,8 +774,8 @@ public abstract class AbstractDesignInfo implements DesignInfo {
     public void eventChanged(DesignEvent event) {
         ;
     }
-
-
+    
+    
     /**
      * <p>By default, if the id property changed, modify the virtual forms
      * configuration and any autosubmit scripting to reflect the change.</p>
@@ -726,7 +795,7 @@ public abstract class AbstractDesignInfo implements DesignInfo {
     
     /**
      * Create, modify or delete converters as needed
-     * based on the type of the Field Key bound to the 
+     * based on the type of the Field Key bound to the
      * property.
      */
     public void modifyConverter(DesignProperty property){
@@ -748,7 +817,7 @@ public abstract class AbstractDesignInfo implements DesignInfo {
                     return;
                 FieldKey valueKey = dataProvider.getFieldKey(matcher.group(1));
                 Class converterClass = getConverterClass(dataProvider.getType(valueKey));
-   
+                
                 if(converterProp.isModified()){
                     DesignBean oldConverterBean = getConverterBean(designBean);
                     if (oldConverterBean != null) {
@@ -784,7 +853,7 @@ public abstract class AbstractDesignInfo implements DesignInfo {
                 }
             }
             if (referenceCount == 0) designBean.getDesignContext().deleteBean(converter);
-        }  
+        }
     }
     
     /**
@@ -793,7 +862,7 @@ public abstract class AbstractDesignInfo implements DesignInfo {
     protected static String getConverterName(DesignBean designBean) {
         return designBean.getInstanceName() + "Converter"; //NOI18N
     }
-       
+    
     /**
      * If the selector component for the bean specified is bound to a converter,
      * returns the design bean for the converter. Otherwise returns null.
@@ -819,7 +888,7 @@ public abstract class AbstractDesignInfo implements DesignInfo {
     
     private static boolean isTypeOf( Class ofType, String primitiveType, Class tobecheckType ) {
         if( tobecheckType.isAssignableFrom( ofType ) ||
-            (tobecheckType.isPrimitive() && tobecheckType.getName().equals( primitiveType ) ) )
+                (tobecheckType.isPrimitive() && tobecheckType.getName().equals( primitiveType ) ) )
             return true;
         else
             return false;
@@ -847,8 +916,8 @@ public abstract class AbstractDesignInfo implements DesignInfo {
     }
     
     /*
-     * Be sure to keep this method in sync with the version in 
-     * <code>javax.faces.component.html.HtmlDesignInfoBase</code> 
+     * Be sure to keep this method in sync with the version in
+     * <code>javax.faces.component.html.HtmlDesignInfoBase</code>
      * (in jsfcl).</p>
      */
     private void modifyVirtualFormsOnPropertyChanged(DesignProperty property, Object oldValue) {
@@ -866,8 +935,7 @@ public abstract class AbstractDesignInfo implements DesignInfo {
                     if (replacementIdObj instanceof String) {
                         replacementId = (String)replacementIdObj;
                     }
-                }
-                else if (replacementId.startsWith(String.valueOf(NamingContainer.SEPARATOR_CHAR)) && replacementId.length() > 1) {
+                } else if (replacementId.startsWith(String.valueOf(NamingContainer.SEPARATOR_CHAR)) && replacementId.length() > 1) {
                     //fully qualified replacementId (starting with ":") could look intimidating to users. so just chop off leading ":"
                     replacementId = replacementId.substring(1, replacementId.length());
                 }
@@ -914,8 +982,8 @@ public abstract class AbstractDesignInfo implements DesignInfo {
     }
     
     /*
-     * Be sure to keep this method in sync with the version in 
-     * <code>javax.faces.component.html.HtmlDesignInfoBase</code> 
+     * Be sure to keep this method in sync with the version in
+     * <code>javax.faces.component.html.HtmlDesignInfoBase</code>
      * (in jsfcl).</p>
      */
     private boolean modifyIdArray(String[] ids, String oldFqId, String replacementId) {
@@ -931,14 +999,14 @@ public abstract class AbstractDesignInfo implements DesignInfo {
         }
         return modified;
     }
-
-
+    
+    
     // ------------------------------------------------------- Protected Methods
-
-
+    
+    
     // FIXME - deal with component bundle and associated utility class
-
-
+    
+    
     /**
      * <p>Return the <code>BeanDescriptor</code> for the class this
      * <code>DesignInfo</code> is designed to wrap, if possible;
@@ -951,8 +1019,8 @@ public abstract class AbstractDesignInfo implements DesignInfo {
             return null;
         }
     }
-
-
+    
+    
     /**
      * <p>Return the <code>BeanInfo</code> for the class this
      * <code>DesignInfo</code> is designed to wrap.</p>
@@ -962,8 +1030,8 @@ public abstract class AbstractDesignInfo implements DesignInfo {
     protected BeanInfo getBeanInfo() throws IntrospectionException {
         return Introspector.getBeanInfo(getBeanClass());
     }
-
-
+    
+    
     /**
      * <p>Return the <code>PropertyDescriptor</code> for the specified
      * property of the class this <code>DesignInfo</code> is designed
@@ -975,12 +1043,12 @@ public abstract class AbstractDesignInfo implements DesignInfo {
         if (map != null) {
             return (PropertyDescriptor) map.get(name);
         } else {
-
+            
             return null;
         }
     }
-
-
+    
+    
     /**
      * <p>Return an array of <code>PropertyDescriptor</code>s for the class
      * this <code>DesignInfo</code> is designed to wrap, if possible;
@@ -993,27 +1061,27 @@ public abstract class AbstractDesignInfo implements DesignInfo {
             return null;
         }
     }
-
-
+    
+    
     // --------------------------------------------------------- Private Methods
-
-
+    
+    
     /**
      * <p>Cache key for the property descriptor map, cached in the
      * <code>BeanDescriptor</code> on first access.</p>
      */
     private static final String PROPERTY_DESCRIPTOR_MAP =
-      "com.sun.rave.designtime.PROPERTY_DESCRIPTOR_MAP"; //NOI18N
-
-
+            "com.sun.rave.designtime.PROPERTY_DESCRIPTOR_MAP"; //NOI18N
+    
+    
     /**
      * <p>Method signature for a <code>Validator.validate()</code> method.</p>
      */
     private static final Class[] VALIDATE_PARAMS = {
         FacesContext.class, UIComponent.class, Object.class
     };
-
-
+    
+    
     /**
      * <p>Return the <code>Map</code> of <code>PropertyDescriptor</code>s for
      * the class this <code>DesignInfo</code> is designed to wrap, if
@@ -1037,7 +1105,7 @@ public abstract class AbstractDesignInfo implements DesignInfo {
             bd.setValue(PROPERTY_DESCRIPTOR_MAP, map);
         }
         return map;
-     }
-
-
+    }
+    
+    
 }

@@ -23,11 +23,14 @@ import com.sun.data.provider.impl.CachedRowSetDataProvider;
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignProperty;
 import com.sun.rave.designtime.DisplayAction;
+import com.sun.rave.designtime.DisplayActionSet;
 import com.sun.rave.designtime.Result;
 import com.sun.rave.designtime.faces.FacesDesignContext;
 import com.sun.rave.web.ui.component.Table;
 import com.sun.rave.web.ui.component.TableColumn;
 import com.sun.rave.web.ui.component.TableRowGroup;
+import java.awt.Image;
+import javax.swing.ImageIcon;
 import org.netbeans.modules.visualweb.web.ui.dt.AbstractDesignInfo;
 import org.netbeans.modules.visualweb.web.ui.dt.component.customizers.TableBindToDataAction;
 import org.netbeans.modules.visualweb.web.ui.dt.component.customizers.TableCustomizerAction;
@@ -49,6 +52,54 @@ public class TableRowGroupDesignInfo extends AbstractDesignInfo {
 
     public TableRowGroupDesignInfo() {
         super(TableRowGroup.class);
+    }
+    
+    
+    public DisplayActionSet getContextItemsExt(final DesignBean bean) {
+        
+        return new DisplayActionSet() {
+            
+            public DisplayAction[] getDisplayActions() {
+                return new DisplayAction[] {
+                    new TableCustomizerAction(bean),
+                    new TableBindToDataAction(bean)
+                };
+            }
+            
+            public boolean isPopup() {
+                return true;
+            }
+            
+            public boolean isEnabled() {
+                return true;
+            }
+            
+            public Result invoke() {
+                throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+            }
+            
+            public String getDisplayName() {
+                return "";
+            }
+            
+            public String getDescription() {
+                return "";
+            }
+            
+            public Image getLargeIcon() {
+                return new ImageIcon(getClass().getResource(AbstractDesignInfo.DECORATION_ICON)).getImage();
+            }
+            
+            public Image getSmallIcon() {
+                return new ImageIcon(getClass().getResource(AbstractDesignInfo.DECORATION_ICON)).getImage();
+            }
+            
+            public String getHelpKey() {
+                throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+            }
+            
+            
+        };
     }
 
     /** {@inheritDoc} */
