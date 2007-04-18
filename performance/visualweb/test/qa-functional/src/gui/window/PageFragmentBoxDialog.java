@@ -19,12 +19,13 @@
 
 package gui.window;
 
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.PaletteOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
-import org.netbeans.jemmy.TimeoutExpiredException;
 
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
 /**
@@ -66,7 +67,7 @@ public class PageFragmentBoxDialog extends org.netbeans.performance.test.utiliti
     
     public ComponentOperator open() {
         log("::menu cmd = "+menuCmd);
-        surface.pushPopupMenu(menuCmd, 60, 60);
+        surface.pushPopupMenu(menuCmd, 55, 55);
         
         return new NbDialogOperator(dlgName);
     }
@@ -74,8 +75,8 @@ public class PageFragmentBoxDialog extends org.netbeans.performance.test.utiliti
     protected void initialize() {
         log("::initialize");
         
-        dlgName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.xhtml.Bundle", "fragmentCustTitle"); //Select Page Fragment
-        menuCmd = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.xhtml.Bundle", "fragmentCustTitleEllipse"); // Select Page Fragment...
+        dlgName = Bundle.getString("org.netbeans.modules.visualweb.xhtml.Bundle", "fragmentCustTitle"); //Select Page Fragment
+        menuCmd = Bundle.getString("org.netbeans.modules.visualweb.xhtml.Bundle", "fragmentCustTitleEllipse"); // Select Page Fragment...
         
         PaletteOperator.invoke();
 
@@ -103,7 +104,7 @@ public class PageFragmentBoxDialog extends org.netbeans.performance.test.utiliti
         log("::shutdown");
         surface.closeDiscard();
         try {
-            new TopComponentOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.ravehelp.dynamichelp.Bundle", "MSG_DynamicHelpTab_name")).close();            
+            new TopComponentOperator(Bundle.getString("org.netbeans.modules.visualweb.ravehelp.dynamichelp.Bundle", "MSG_DynamicHelpTab_name")).close();            
             new PropertySheetOperator("Page1").close();   
         } catch (TimeoutExpiredException timeoutExpiredException) {
             //do nothing...can be not opened properties and help tabs
