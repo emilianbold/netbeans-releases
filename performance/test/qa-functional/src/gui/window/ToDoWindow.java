@@ -19,6 +19,7 @@
 
 package gui.window;
 
+import gui.Utilities;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.TopComponentOperator;
@@ -49,8 +50,8 @@ public class ToDoWindow extends org.netbeans.performance.test.utilities.Performa
     }
     
     public void initialize() {
-        MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Window") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.tasklist.docscan.Bundle","BK0001");
-        TITLE = Bundle.getStringTrimmed("org.netbeans.modules.tasklist.docscan.Bundle","win-title");
+        MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Window") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.tasklist.ui.Bundle","CTL_TaskListAction");
+        TITLE = Bundle.getStringTrimmed("org.netbeans.modules.tasklist.ui.Bundle",":CTL_TaskListTopComponent");
         gui.Utilities.workarroundMainMenuRolledUp();
     }    
     
