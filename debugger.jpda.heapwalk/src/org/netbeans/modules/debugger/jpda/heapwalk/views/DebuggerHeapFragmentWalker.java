@@ -46,7 +46,7 @@ public class DebuggerHeapFragmentWalker extends HeapFragmentWalker {
     }
 
     public void switchToClassesView() {
-        openComponent("classesCounts", true);
+        openComponent("classes", true);
     }
 
     public void switchToInstancesView() {
