@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -59,10 +60,12 @@ import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.Sequence;
 import org.netbeans.modules.xml.wsdl.model.Binding;
+import org.netbeans.modules.xml.wsdl.model.BindingFault;
 import org.netbeans.modules.xml.wsdl.model.BindingInput;
 import org.netbeans.modules.xml.wsdl.model.BindingOperation;
 import org.netbeans.modules.xml.wsdl.model.BindingOutput;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
+import org.netbeans.modules.xml.wsdl.model.Fault;
 import org.netbeans.modules.xml.wsdl.model.Input;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Operation;
@@ -76,6 +79,7 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding.Style;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBody;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPFault;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPMessageBase;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPOperation;
 import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
@@ -134,15 +138,24 @@ public class OperationGeneratorHelper {
             Message inputMessage=null;
             GlobalElement paramElement=null;
             GlobalElement returnElement = null;
+            List<GlobalElement> faultElements = new ArrayList<GlobalElement>();
+            List<Message> faultMessages = new ArrayList<Message>();
             
             WSDLSchema wsdlSchema = null;
             SchemaModel schemaModel = null;
             Schema schema = null;
             
+            Collection<Schema> schemas = types.getSchemas();
+            Iterator<Schema> it = schemas.iterator();
+            if (it.hasNext()) {
+                schema = it.next();
+                schemaModel = it.next().getModel();
+            }
+            
             if(parameterTypes.size() > 0){  //if there are parameters
                 
                 if (parameterTypes.size() > 1 || (parameterTypes.size() == 1 && isPrimitiveType(parameterTypes.get(0)))) {
-                    if(wsdlSchema == null){
+                    if(schemaModel == null){
                         wsdlSchema = factory.createWSDLSchema();
                         types.addExtensibilityElement(wsdlSchema);
                         schemaModel = wsdlSchema.getSchemaModel();
@@ -196,11 +209,33 @@ public class OperationGeneratorHelper {
                     operation.setInput(input);
                 }
             }
+                           
+            // create schema elements for faults
+            for(ParamModel faultModel : faultTypes) {
+                ReferenceableSchemaComponent faultType = faultModel.getParamType();
+                if (faultType instanceof GlobalType) {   
+                    if(schemaModel == null){
+                        wsdlSchema = factory.createWSDLSchema();
+                        types.addExtensibilityElement(wsdlSchema);
+                        schemaModel = wsdlSchema.getSchemaModel();
+                        schema = schemaModel.getSchema();
+                        schema.setTargetNamespace(definitions.getTargetNamespace());
+                    }
+                    GlobalElement faultElement = schemaModel.getFactory().createGlobalElement();
+                    NamedComponentReference<GlobalType> typeRef = schemaModel.getSchema().createReferenceTo((GlobalType)faultType, GlobalType.class);
+                    faultElement.setName(getUniqueGlobalElementName(schema,faultModel.getParamName()));
+                    faultElement.setType(typeRef);
+                    schema.addElement(faultElement);
+                    faultElements.add(faultElement);
+                } else if (faultType instanceof GlobalElement) {
+                    faultElements.add((GlobalElement)faultType);
+                }
+            }
             
             Message outputMessage=null;
             if(returnType != null){  //if the operation returns something
                 if(isPrimitiveType(returnType)){
-                    if(wsdlSchema == null){
+                    if(schemaModel == null){
                     wsdlSchema = factory.createWSDLSchema();
                     types.addExtensibilityElement(wsdlSchema);
                     schemaModel = wsdlSchema.getSchemaModel();
@@ -247,6 +282,29 @@ public class OperationGeneratorHelper {
                     output.setMessage(outputRef);
                     operation.setOutput(output);
                 }
+            }
+            
+            // faults
+            for (GlobalElement faultElement:faultElements) {
+                Message faultMessage = factory.createMessage();
+                faultMessage.setName(faultElement.getName());
+                definitions.addMessage(faultMessage);
+                
+                Part part = factory.createPart();
+                part.setName("fault"); //NOI18N
+                NamedComponentReference<GlobalElement> ref = part.createSchemaReference(faultElement, GlobalElement.class);
+                part.setElement(ref);
+                
+                faultMessage.addPart(part); 
+                faultMessages.add(faultMessage);
+            }
+            
+            for (Message faultMessage:faultMessages) {
+                Fault fault = factory.createFault();
+                NamedComponentReference<Message> ref = fault.createReferenceTo(faultMessage, Message.class);
+                fault.setName(faultMessage.getName());
+                fault.setMessage(ref);
+                operation.addFault(fault);
             }
             
             Collection<PortType> portTypes = definitions.getPortTypes();
@@ -313,6 +371,16 @@ public class OperationGeneratorHelper {
                             soapBody.setUse(SOAPMessageBase.Use.LITERAL);
                             bindingOutput.addExtensibilityElement(soapBody);
                             bOp.setBindingOutput(bindingOutput);
+                        }
+                        //create fault binding to SOAP
+                        for (Message faultMessage:faultMessages) {
+                            BindingFault bindingFault = factory.createBindingFault();
+                            bindingFault.setName(faultMessage.getName());
+                            SOAPFault soapFault = factory.createSOAPFault();
+                            soapFault.setName(faultMessage.getName());
+                            soapFault.setUse(SOAPMessageBase.Use.LITERAL);
+                            bindingFault.addExtensibilityElement(soapFault);
+                            bOp.addBindingFault(bindingFault);
                         }
                         binding.addBindingOperation(bOp);
                         //TODO: Need to handle faults!!!
