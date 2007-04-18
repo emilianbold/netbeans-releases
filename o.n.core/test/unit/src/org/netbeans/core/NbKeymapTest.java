@@ -28,12 +28,7 @@ import javax.swing.Action;
 import javax.swing.KeyStroke;
 import javax.swing.text.Keymap;
 import org.netbeans.junit.*;
-import junit.textui.TestRunner;
-import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.*;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.InstanceDataObject;
 
 /** Test NbKeymap.
  * @author Jesse Glick
@@ -148,7 +143,7 @@ public class NbKeymapTest extends NbTestCase {
         Action a3 = new DummyAction("a3");
         KeyStroke k1 = KeyStroke.getKeyStroke("X");
         KeyStroke k2 = KeyStroke.getKeyStroke("Y");
-        Map m = new HashMap();
+        Map<KeyStroke,Action> m = new HashMap<KeyStroke,Action>();
         m.put(k1, a1);
         m.put(k2, a2);
         km.addActionForKeyStrokeMap(m);

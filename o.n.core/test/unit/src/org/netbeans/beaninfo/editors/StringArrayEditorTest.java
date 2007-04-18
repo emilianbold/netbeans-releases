@@ -64,26 +64,26 @@ public class StringArrayEditorTest extends TestCase {
         }
     }
     
-    class NP extends Node.Property {
+    class NP extends Node.Property<String[]> {
         public String[] value;
         
         public NP () {
             super (String[].class);
         }
 
-        public void setValue (Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-            value = (String[])val;
+        public @Override void setValue(String[] val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+            value = val;
         }
 
-        public Object getValue () throws IllegalAccessException, InvocationTargetException {
+        public @Override String[] getValue() throws IllegalAccessException, InvocationTargetException {
             return value;
         }
 
-        public boolean canWrite () {
+        public @Override boolean canWrite() {
             return true;
         }
 
-        public boolean canRead () {
+        public @Override boolean canRead() {
             return true;
         }
         

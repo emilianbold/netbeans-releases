@@ -23,25 +23,23 @@ import java.io.*;
 import java.util.*;
 import java.net.URL;
 import org.xml.sax.*;
-import org.openide.cookies.InstanceCookie;
 import org.openide.loaders.*;
 import org.openide.filesystems.*;
-import org.openide.filesystems.FileSystem; // override java.io.FileSystem
 import org.openide.util.*;
 import org.openide.util.lookup.*;
 import org.openide.xml.*;
 import org.openide.*;
-//import junit.framework.*;
 import org.netbeans.junit.*;
 
 public class MIMEResolverImplTest extends NbTestCase {
-    List resolvers;
+    List<MIMEResolver> resolvers;
     FileObject root;
            
     public MIMEResolverImplTest(String testName) {
         super(testName);
     }
     
+    @SuppressWarnings("deprecation")
     protected void setUp() throws Exception {
 /*
         URL u = getClass().getProtectionDomain().getCodeSource().getLocation();
@@ -54,7 +52,7 @@ public class MIMEResolverImplTest extends NbTestCase {
         coderoot.refresh();
         
         FileObject fos[] = coderoot.getChildren();
-        resolvers = new ArrayList();
+        resolvers = new ArrayList<MIMEResolver>();
         for (int i = 0; i<fos.length; i++) {
             resolvers.add(createResolver(fos[i]));
         }

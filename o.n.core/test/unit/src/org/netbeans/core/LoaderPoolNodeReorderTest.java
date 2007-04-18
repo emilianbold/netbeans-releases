@@ -21,19 +21,21 @@ package org.netbeans.core;
 
 import java.io.*;
 import java.util.*;
+import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.*;
 import org.openide.actions.*;
 import org.openide.loaders.DataLoader;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.UniFileLoader;
 import org.openide.nodes.Index;
 import org.openide.nodes.Node;
 import org.openide.util.actions.SystemAction;
-
 
 /**
  *
  * @author Jaroslav Tulach
  */
-public class LoaderPoolNodeReorderTest extends org.netbeans.junit.NbTestCase {
+public class LoaderPoolNodeReorderTest extends NbTestCase {
     private OldStyleLoader oldL;
     private NewStyleLoader newL;
 
@@ -41,17 +43,17 @@ public class LoaderPoolNodeReorderTest extends org.netbeans.junit.NbTestCase {
         super (testName);
     }
 
-    protected void setUp () throws java.lang.Exception {
+    protected @Override void setUp() throws Exception {
         LoaderPoolNode.installationFinished();
 
-        oldL = (OldStyleLoader)OldStyleLoader.getLoader (OldStyleLoader.class);
-        newL = (NewStyleLoader)NewStyleLoader.getLoader (NewStyleLoader.class);
+        oldL = DataLoader.getLoader(OldStyleLoader.class);
+        newL = DataLoader.getLoader(NewStyleLoader.class);
         LoaderPoolNode.doAdd (oldL, null);
         LoaderPoolNode.doAdd (newL, null);
         LoaderPoolNode.waitFinished();
     }
 
-    protected void tearDown () throws java.lang.Exception {
+    protected @Override void tearDown() throws Exception {
         for (Enumeration en = LoaderPoolNode.getNbLoaderPool().loaders(); en.hasMoreElements(); ) {
             DataLoader l = (DataLoader)en.nextElement();
 
@@ -95,25 +97,25 @@ public class LoaderPoolNodeReorderTest extends org.netbeans.junit.NbTestCase {
 
 
     private static Node[] extractFixed(Node[] arr) {
-        ArrayList all = new ArrayList();
-        for (int i = 0; i < arr.length; i++) {
-            if (!arr[i].getDisplayName().contains("fixed")) {
-                all.add(arr[i]);
+        List<Node> all = new ArrayList<Node>();
+        for (Node n : arr) {
+            if (!n.getDisplayName().contains("fixed")) {
+                all.add(n);
             }
         }
-        return (Node[])all.toArray(new Node[0]);
+        return all.toArray(new Node[0]);
     }
     
-    public static class OldStyleLoader extends org.openide.loaders.UniFileLoader {
+    public static class OldStyleLoader extends UniFileLoader {
         boolean defaultActionsCalled;
         
         public OldStyleLoader () {
-            super (org.openide.loaders.MultiDataObject.class);
+            super(MultiDataObject.class.getName());
 
             setDisplayName(getClass().getName());
         }
 
-        protected org.openide.loaders.MultiDataObject createMultiObject (FileObject fo) throws IOException {
+        protected MultiDataObject createMultiObject(FileObject fo) throws IOException {
             throw new IOException ("Not implemented");
         }
 

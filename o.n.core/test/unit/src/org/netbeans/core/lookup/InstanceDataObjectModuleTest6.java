@@ -38,7 +38,7 @@ public class InstanceDataObjectModuleTest6 extends InstanceDataObjectModuleTestH
         ERR.log("Ok twidle enable");
         try {
             ClassLoader l1 = m2.getClassLoader();
-            Class c1 = l1.loadClass("test2.SomeAction");
+            Class<?> c1 = l1.loadClass("test2.SomeAction");
             assertEquals("Correct loader", l1, c1.getClassLoader());
             Lookup.Result r = Lookup.getDefault().lookupResult(c1);
             assertTrue("SomeAction<1> instance found after module installation",

@@ -23,6 +23,9 @@ import java.io.*;
 import java.util.*;
 import org.openide.filesystems.*;
 import org.openide.actions.*;
+import org.openide.loaders.DataLoader;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.UniFileLoader;
 import org.openide.util.actions.SystemAction;
 
 
@@ -41,8 +44,8 @@ public class LoaderPoolNodeTest extends org.netbeans.junit.NbTestCase {
     protected void setUp () throws java.lang.Exception {
         LoaderPoolNode.installationFinished();
 
-        oldL = (OldStyleLoader)OldStyleLoader.getLoader (OldStyleLoader.class);
-        newL = (NewStyleLoader)NewStyleLoader.getLoader (NewStyleLoader.class);
+        oldL = DataLoader.getLoader(OldStyleLoader.class);
+        newL = DataLoader.getLoader(NewStyleLoader.class);
         LoaderPoolNode.doAdd (oldL, null);
         LoaderPoolNode.doAdd (newL, null);
         LoaderPoolNode.waitFinished();
@@ -60,10 +63,10 @@ public class LoaderPoolNodeTest extends org.netbeans.junit.NbTestCase {
         assertTrue ("Default actions called", oldL.defaultActionsCalled);
         assertFalse ("Still not modified", LoaderPoolNode.isModified (oldL));
         
-        ArrayList list = new ArrayList ();
-        list.add (OpenAction.get (OpenAction.class));
-        list.add (NewAction.get (NewAction.class));
-        oldL.setActions ((SystemAction[])list.toArray (new SystemAction[0]));
+        List<SystemAction> list = new ArrayList<SystemAction>();
+        list.add(SystemAction.get(OpenAction.class));
+        list.add(SystemAction.get(NewAction.class));
+        oldL.setActions(list.toArray(new SystemAction[0]));
         
         assertTrue ("Now it is modified", LoaderPoolNode.isModified (oldL));
         List l = Arrays.asList (oldL.getActions ());
@@ -77,24 +80,24 @@ public class LoaderPoolNodeTest extends org.netbeans.junit.NbTestCase {
         assertTrue ("Default actions called", newL.defaultActionsCalled);
         assertFalse ("Still not modified", LoaderPoolNode.isModified (newL));
         
-        ArrayList list = new ArrayList ();
-        list.add (OpenAction.get (OpenAction.class));
-        list.add (NewAction.get (NewAction.class));
-        newL.setActions ((SystemAction[])list.toArray (new SystemAction[0]));
+        List<SystemAction> list = new ArrayList<SystemAction>();
+        list.add(SystemAction.get(OpenAction.class));
+        list.add(SystemAction.get(NewAction.class));
+        newL.setActions(list.toArray(new SystemAction[0]));
         
         assertFalse ("Even if we changed actions, it is not modified", LoaderPoolNode.isModified (newL));
         List l = Arrays.asList (newL.getActions ());
         assertEquals ("But actions are changed", list, l);        
     }
     
-    public static class OldStyleLoader extends org.openide.loaders.UniFileLoader {
+    public static class OldStyleLoader extends UniFileLoader {
         boolean defaultActionsCalled;
         
         public OldStyleLoader () {
-            super (org.openide.loaders.MultiDataObject.class);
+            super(MultiDataObject.class.getName());
         }
         
-        protected org.openide.loaders.MultiDataObject createMultiObject (FileObject fo) throws IOException {
+        protected MultiDataObject createMultiObject(FileObject fo) throws IOException {
             throw new IOException ("Not implemented");
         }
 

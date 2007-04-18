@@ -31,6 +31,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.Environment;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -104,14 +105,14 @@ public class FileEntityResolverDeadlock54971Test extends TestCase {
     }
     
     
-    private static class ComplexPair extends org.openide.util.lookup.AbstractLookup.Pair {
+    private static class ComplexPair extends AbstractLookup.Pair<ComplexPair> {
         public static ComplexPair IC;
         public static DataObject obj;
         
         public ComplexPair () {
         }
 
-        protected boolean instanceOf(Class c) {
+        protected boolean instanceOf(Class<?> c) {
             if (c == getClass ()) {
                 if (IC == null) {
                     assertNull ("Just one instance allowed", IC);
@@ -120,9 +121,7 @@ public class FileEntityResolverDeadlock54971Test extends TestCase {
                 assertEquals (IC, this);
                 
                 // this used to print strange warnings from FileEntityResolver
-                Class ask = org.openide.cookies.InstanceCookie.class;
-                Object ic = obj.getCookie (ask);
-                assertNotNull ("Obj: " + obj + " Must have the InstanceCookie", ic);
+                assertNotNull ("Obj: " + obj + " Must have the InstanceCookie", obj.getCookie(InstanceCookie.class));
             }
             return c.isAssignableFrom(getType ());
         }
@@ -139,11 +138,11 @@ public class FileEntityResolverDeadlock54971Test extends TestCase {
             return getType ().getName();
         }
 
-        public Object getInstance() {
+        public ComplexPair getInstance() {
             return this;
         }
 
-        public Class getType() {
+        public Class<? extends ComplexPair> getType() {
             return getClass ();
         }
     }

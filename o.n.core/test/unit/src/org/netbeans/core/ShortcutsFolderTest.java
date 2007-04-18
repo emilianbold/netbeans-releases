@@ -22,6 +22,7 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,6 +34,7 @@ import javax.swing.text.Keymap;
 import org.netbeans.core.startup.Main;
 import org.netbeans.junit.*;
 import org.openide.ErrorManager;
+import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -75,7 +77,7 @@ public class ShortcutsFolderTest extends NbTestCase {
         TestAction action = new TestAction ();
         inst.setAttribute ("instanceCreate", action);
         
-        WeakReference ref = new WeakReference (inst);
+        Reference<?> ref = new WeakReference<Object>(inst);
         inst = null;
         assertGC ("File can disappear", ref);
 
@@ -131,7 +133,7 @@ public class ShortcutsFolderTest extends NbTestCase {
         
         DataObject obj = DataObject.find (inst);
         assertEquals ("XML Data object", org.openide.loaders.XMLDataObject.class, obj.getClass());
-        org.openide.cookies.InstanceCookie ic = (org.openide.cookies.InstanceCookie)obj.getCookie(org.openide.cookies.InstanceCookie.class);
+        InstanceCookie ic = obj.getCookie(InstanceCookie.class);
         assertNotNull ("Has cookie", ic);
 
         final KeyStroke stroke = KeyStroke.getKeyStroke(KeyEvent.VK_F11, KeyEvent.CTRL_MASK);
