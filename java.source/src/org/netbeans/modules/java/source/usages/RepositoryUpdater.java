@@ -102,6 +102,7 @@ import org.netbeans.modules.java.source.classpath.GlobalSourcePath;
 import org.netbeans.modules.java.source.parsing.*;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
+import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.netbeans.modules.java.source.tasklist.ErrorAnnotator;
 import org.netbeans.modules.java.source.tasklist.JavaTaskProvider;
 import org.netbeans.modules.java.source.tasklist.RebuildOraculum;
@@ -141,6 +142,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     static final String CONTAINS_TASKLIST_DEPENDENCY_DATA = "containsTasklistDependencyData"; //NOI18N
     static final String DIRTY_ROOT = "dirty"; //NOI18N
     static final String SOURCE_LEVEL_ROOT = "sourceLevel"; //NOI18N
+    static final String EXTRA_COMPILER_OPTIONS = "extraCompilerOptions"; //NOI18N
     
     //non-final, non-private for tests...
     static int DELAY = Utilities.isWindows() ? 2000 : 1000;
@@ -1199,6 +1201,14 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 
                 clean |= ensureAttributeValue(root, SOURCE_LEVEL_ROOT, sourceLevel, true);
                 
+                String extraCompilerOptions = CompilerSettings.getCommandLine();
+                
+                if (extraCompilerOptions.length() == 0) {
+                    extraCompilerOptions = null;
+                }
+                
+                clean |= ensureAttributeValue(root, EXTRA_COMPILER_OPTIONS, extraCompilerOptions, true);
+                
                 if (TasklistSettings.isTasklistEnabled() && TasklistSettings.isDependencyTrackingEnabled()) {
                     clean |= ensureAttributeValue(root, CONTAINS_TASKLIST_DATA, "true", true);
                     clean |= ensureAttributeValue(root, CONTAINS_TASKLIST_DEPENDENCY_DATA, "true", true);
@@ -1673,6 +1683,14 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     public void verifySourceLevel(URL root, String sourceLevel) throws IOException {
         if (sourceLevel != null && !sourceLevel.equals(getAttribute(root, SOURCE_LEVEL_ROOT, null))) {
             submit(Work.filterChange(Collections.singletonList(root)));
+            return ;
+        }
+        
+        String extraCompilerOptions = CompilerSettings.getCommandLine();
+        
+        if (!extraCompilerOptions.equals(getAttribute(root, EXTRA_COMPILER_OPTIONS, ""))) {
+            submit(Work.filterChange(Collections.singletonList(root)));
+            return ;
         }
     }
     

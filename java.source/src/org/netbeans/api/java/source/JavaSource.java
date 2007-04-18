@@ -97,6 +97,7 @@ import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.ParamNameResolver;
 import org.netbeans.modules.java.source.builder.UndoListService;
+import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
@@ -815,9 +816,10 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
     
     private static JavacTaskImpl createJavacTask(final ClasspathInfo cpInfo, final DiagnosticListener<? super JavaFileObject> diagnosticListener, final String sourceLevel, final boolean backgroundCompilation) {
         ArrayList<String> options = new ArrayList<String>();
-        if (Boolean.getBoolean("org.netbeans.api.java.source.JavaSource.USE_COMPILER_LINT")) { // XXX temp workaround for #76702
-            options.add("-Xlint");
-            options.add("-Xlint:-serial");
+        String lintOptions = CompilerSettings.getCommandLine();
+        
+        if (lintOptions.length() > 0) {
+            options.addAll(Arrays.asList(lintOptions.split(" ")));
         }
         if (!backgroundCompilation) {
             options.add("-Xjcov"); //NOI18N, Make the compiler store end positions
