@@ -52,7 +52,9 @@ public class ServiceTopComponent extends TopComponent {
     private UndoManager undoManager;
     private Node node;
     private Service service;
+    private boolean serviceOnly;
     private JaxWsModel jaxWsModel;
+    private FileObject implClass;
     private Collection<Binding> bindings;
     
     public ServiceTopComponent(Service service, 
@@ -72,6 +74,17 @@ public class ServiceTopComponent extends TopComponent {
         this.undoManager = undoManager;
         this.bindings = bindings;
         this.initialized = false;
+    }
+
+    public ServiceTopComponent(Service service, JaxWsModel jaxWsModel, WSDLModel wsdlModel, FileObject implClass, UndoManager undoManager, boolean serviceOnly) {
+        setLayout(new BorderLayout());
+        this.wsdlModel = wsdlModel;
+        this.undoManager = undoManager;
+        this.initialized = false;
+        this.service = service;
+        this.jaxWsModel = jaxWsModel;
+        this.implClass = implClass;
+        this.serviceOnly = serviceOnly;
     }
     
     @Override
@@ -93,7 +106,7 @@ public class ServiceTopComponent extends TopComponent {
         FileObject fo = org.netbeans.modules.xml.retriever.catalog.Utilities.getFileObject(ms);
         Project p = (fo != null) ? FileOwnerQuery.getOwner(fo) : null;
         InnerPanelFactory panelFactory = new ServicePanelFactory(tb, node, undoManager, p, jaxWsModel);
-        ServiceView mview = new ServiceView(panelFactory, wsdlModel, node, service, bindings);
+        ServiceView mview = new ServiceView(panelFactory, wsdlModel, node, implClass, service, bindings, serviceOnly);
         tb.setContentView(mview);
         add(tb);
         setFocusable(true);

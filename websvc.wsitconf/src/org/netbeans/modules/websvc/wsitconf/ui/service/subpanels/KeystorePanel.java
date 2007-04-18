@@ -140,7 +140,7 @@ public class KeystorePanel extends JPanel {
         if (keystoreLocation != null) {
             setKeystorePath(keystoreLocation);
         } else if (jsr109) {
-            setKeystorePath(getServerStoreLocation());
+            setKeystorePath(Util.getServerStoreLocation(project, false));
         }
 
         String keystoreType = ProprietarySecurityPolicyModelHelper.getStoreType(comp, false);
@@ -173,7 +173,7 @@ public class KeystorePanel extends JPanel {
         
         boolean storeLocKnown = false;
         
-        String storeLoc = getServerStoreLocation();
+        String storeLoc = Util.getServerStoreLocation(project, false);
         if ((storeLoc != null) && !(storeLoc.equals(""))) {
             storeLocKnown = true;
         }
@@ -182,27 +182,6 @@ public class KeystorePanel extends JPanel {
 //        keystoreLocationButton.setEnabled(!jsr109 || !storeLocKnown);
 //        keystoreLocationLabel.setEnabled(!jsr109 || !storeLocKnown);
 //        keystoreLocationTextField.setEnabled(!jsr109 || !storeLocKnown);
-    }
-    
-    private String getServerStoreLocation() {
-        String keystoreLocation = null;
-        J2eeModuleProvider mp = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
-        if (mp != null) {
-            String sID = mp.getServerInstanceID();
-            
-            InstanceProperties ip = mp.getInstanceProperties();
-            if ("".equals(ip.getProperty("LOCATION"))) {
-                return "";
-            }
-            
-            J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(sID);
-            File[] keyLocs = null;
-            keyLocs = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_KEYSTORE);
-            if ((keyLocs != null) && (keyLocs.length > 0)) {
-                keystoreLocation = keyLocs[0].getAbsolutePath();
-            }
-        }
-        return keystoreLocation;
     }
     
     public void storeState() {

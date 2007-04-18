@@ -60,6 +60,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
@@ -320,6 +321,28 @@ public class Util {
         return wsmodules;
     }
 
+    public static String getServerStoreLocation(Project project, boolean trust) {
+        String storeLocation = null;
+        J2eeModuleProvider mp = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
+        if (mp != null) {
+            String sID = mp.getServerInstanceID();
+
+            InstanceProperties ip = mp.getInstanceProperties();
+            if ("".equals(ip.getProperty("LOCATION"))) {    //NOI18N
+                return null;
+            }
+            
+            J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(sID);
+            File[] keyLocs = null;
+            keyLocs = trust ? j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_TRUSTSTORE_CLIENT) :
+                              j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_KEYSTORE_CLIENT);
+            if ((keyLocs != null) && (keyLocs.length > 0)) {
+                storeLocation = keyLocs[0].getAbsolutePath();
+            }
+        }
+        return storeLocation;
+    }
+    
     public static Enumeration<String> getAliases(String storePath, char[] password, String type) throws IOException {
         if ((storePath == null) || (type == null)) return null;
         FileInputStream iStream;

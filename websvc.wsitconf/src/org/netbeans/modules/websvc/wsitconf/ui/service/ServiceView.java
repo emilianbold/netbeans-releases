@@ -58,14 +58,25 @@ public class ServiceView extends SectionView {
     private WSDLModel model;
        
     ServiceView(InnerPanelFactory factory, WSDLModel model, Node node, Service s) {
-        this(factory,  model, node,  s, null);
+        this(factory,  model, node,  null, s, null, false);
     }
-    
-    ServiceView(InnerPanelFactory factory, WSDLModel model, Node node, Service s, Collection<Binding> bs) {
+  
+    ServiceView(InnerPanelFactory factory, WSDLModel model, Node node, FileObject implClass, Service s, Collection<Binding> bs, boolean serviceOnly) {
         super(factory);
         this.model = model;
 
         if (model == null) return;
+
+        if ((implClass == null) && (node == null)) {
+            return;
+        }
+        
+        if ((implClass == null) && (s != null)) {
+            String wsdlUrl = s.getWsdlUrl();
+            if (wsdlUrl == null) { // WS from Java
+                implClass = (FileObject)node.getLookup().lookup(FileObject.class);
+            }
+        }
         
         Collection<Binding> bindings = bs;
         if (bindings == null) {
@@ -76,15 +87,7 @@ public class ServiceView extends SectionView {
         //add binding section
         Node[] bindingNodes = new Node[bindings.size()];
         Children rootChildren = new Children.Array();
-       
-        FileObject jc = null;
-        if (s != null) {
-            String wsdlUrl = s.getWsdlUrl();
-            if (wsdlUrl == null) { // WS from Java
-                jc = (FileObject)node.getLookup().lookup(FileObject.class);
-            }
-        }
-                
+                      
         // if there's only one binding, make the dialog simpler
         if (bindingNodes.length > 1) {
             Node root = new AbstractNode(rootChildren);
@@ -93,8 +96,8 @@ public class ServiceView extends SectionView {
 
             for (Binding binding : bindings) {
 
-                if (jc != null) {
-                    Util.refreshOperations(binding, jc);
+                if (implClass != null) {
+                    Util.refreshOperations(binding, implClass);
                 }
                 
                 // main node container for a specific binding
@@ -111,13 +114,76 @@ public class ServiceView extends SectionView {
                 SectionPanel servicePanel = new SectionPanel(this, serviceNode, binding, true);
                 bindingCont.addSection(servicePanel, false);
 
-                Collection<BindingOperation> operations = binding.getBindingOperations();
+                if (!serviceOnly) {
+                    Collection<BindingOperation> operations = binding.getBindingOperations();
+                    for (BindingOperation op : operations) {
+                        Children opChildren = new Children.Array();
+                        Node opNodeContainer = new OperationContainerServiceNode(opChildren);
+                        SectionContainer opCont = new SectionContainer(this, opNodeContainer, op.getName() + " Operation"); //NOI18N
+                        bindingCont.addSection(opCont, false);
+
+                        ArrayList subNodes = new ArrayList();
+
+                        Node opNode = new OperationNode(this, op);
+                        subNodes.add(opNode);
+                        SectionPanel opPanel = new SectionPanel(this, opNode, op, false);
+                        opCont.addSection(opPanel, false);
+
+                        BindingInput bi = op.getBindingInput();
+                        if (bi != null) {
+                            Node biNode = new BindingInputNode(this, bi);
+                            subNodes.add(biNode);
+                            SectionPanel biPanel = new SectionPanel(this, biNode, bi, false);
+                            opCont.addSection(biPanel, false);
+                        }
+                        BindingOutput bo = op.getBindingOutput();
+                        if (bo != null) {
+                            Node boNode = new BindingOutputNode(this, bo);
+                            subNodes.add(boNode);
+                            SectionPanel boPanel = new SectionPanel(this, boNode, bo, false);
+                            opCont.addSection(boPanel, false);
+                        }
+                        Collection<BindingFault> bfs = op.getBindingFaults();
+                        for (BindingFault bf : bfs) {
+                            Node bfNode = new BindingFaultNode(this, bf);
+                            subNodes.add(bfNode);
+                            SectionPanel bfPanel = new SectionPanel(this, bfNode, bf, false);
+                            opCont.addSection(bfPanel, false);
+                        }
+                        opChildren.add((Node[]) subNodes.toArray(new Node[subNodes.size()]));
+                        nodes.add(opNodeContainer);
+                    }
+                }
+
+                bindingChildren.add((Node[]) nodes.toArray(new Node[nodes.size()]));
+
+                bindingNodes[i++] = bindingNodeContainer;
+            }
+            rootChildren.add(bindingNodes);
+        } else {
+            Binding b = (Binding) bindings.toArray()[0];
+            if (implClass != null) {
+                Util.refreshOperations(b, implClass);
+            }
+            Node root = new AbstractNode(rootChildren);
+            setRoot(root);
+
+            Node serviceNode = new ServiceNode(this, b);
+            ArrayList nodes = new ArrayList();
+            nodes.add(serviceNode);
+            
+            SectionPanel servicePanel = new SectionPanel(this, serviceNode, b, true);
+            addSection(servicePanel, false);
+
+            if (!serviceOnly) {
+                Collection<BindingOperation> operations = b.getBindingOperations();
                 for (BindingOperation op : operations) {
+
                     Children opChildren = new Children.Array();
                     Node opNodeContainer = new OperationContainerServiceNode(opChildren);
                     SectionContainer opCont = new SectionContainer(this, opNodeContainer, op.getName() + " Operation"); //NOI18N
-                    bindingCont.addSection(opCont, false);
-                    
+                    addSection(opCont, false);
+
                     ArrayList subNodes = new ArrayList();
 
                     Node opNode = new OperationNode(this, op);
@@ -149,71 +215,12 @@ public class ServiceView extends SectionView {
                     opChildren.add((Node[]) subNodes.toArray(new Node[subNodes.size()]));
                     nodes.add(opNodeContainer);
                 }
-
-                bindingChildren.add((Node[]) nodes.toArray(new Node[nodes.size()]));
-
-                bindingNodes[i++] = bindingNodeContainer;
-            }
-            rootChildren.add(bindingNodes);
-        } else {
-            Binding b = (Binding) bindings.toArray()[0];
-            if (jc != null) {
-                Util.refreshOperations(b, jc);
-            }
-            Node root = new AbstractNode(rootChildren);
-            setRoot(root);
-
-            Node serviceNode = new ServiceNode(this, b);
-            ArrayList nodes = new ArrayList();
-            nodes.add(serviceNode);
-            
-            SectionPanel servicePanel = new SectionPanel(this, serviceNode, b, true);
-            addSection(servicePanel, false);
-
-            Collection<BindingOperation> operations = b.getBindingOperations();
-            for (BindingOperation op : operations) {
-
-                Children opChildren = new Children.Array();
-                Node opNodeContainer = new OperationContainerServiceNode(opChildren);
-                SectionContainer opCont = new SectionContainer(this, opNodeContainer, op.getName() + " Operation"); //NOI18N
-                addSection(opCont, false);
-
-                ArrayList subNodes = new ArrayList();
-
-                Node opNode = new OperationNode(this, op);
-                subNodes.add(opNode);
-                SectionPanel opPanel = new SectionPanel(this, opNode, op, false);
-                opCont.addSection(opPanel, false);
-
-                BindingInput bi = op.getBindingInput();
-                if (bi != null) {
-                    Node biNode = new BindingInputNode(this, bi);
-                    subNodes.add(biNode);
-                    SectionPanel biPanel = new SectionPanel(this, biNode, bi, false);
-                    opCont.addSection(biPanel, false);
-                }
-                BindingOutput bo = op.getBindingOutput();
-                if (bo != null) {
-                    Node boNode = new BindingOutputNode(this, bo);
-                    subNodes.add(boNode);
-                    SectionPanel boPanel = new SectionPanel(this, boNode, bo, false);
-                    opCont.addSection(boPanel, false);
-                }
-                Collection<BindingFault> bfs = op.getBindingFaults();
-                for (BindingFault bf : bfs) {
-                    Node bfNode = new BindingFaultNode(this, bf);
-                    subNodes.add(bfNode);
-                    SectionPanel bfPanel = new SectionPanel(this, bfNode, bf, false);
-                    opCont.addSection(bfPanel, false);
-                }
-                opChildren.add((Node[]) subNodes.toArray(new Node[subNodes.size()]));
-                nodes.add(opNodeContainer);
             }
             rootChildren.add((Node[]) nodes.toArray(new Node[nodes.size()]));            
             servicePanel.open();
         }
     }
-
+        
     private final RequestProcessor.Task refreshTask = RequestProcessor.getDefault().create(new Runnable() {
         public void run() {
             getRootNode().refreshSubtree();
