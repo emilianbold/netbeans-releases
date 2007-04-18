@@ -367,6 +367,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
                 <friend>org.netbeans.modules.wsdlextensions.jms</friend>
                 <friend>org.netbeans.modules.wsdlextensions.mq</friend>
                 <friend>org.netbeans.modules.wsdlextensions.msmq</friend>
+                <friend>org.netbeans.modules.wsdlextensions.dcom</friend>
                 <friend>org.netbeans.modules.wsdlextensions.sag</friend>
                 <friend>org.netbeans.modules.wsdlextensions.sap</friend>
                 <friend>org.netbeans.modules.wsdlextensions.smtp</friend>
