@@ -46,6 +46,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLayeredPane;
 import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -761,4 +762,24 @@ public class MenuEditLayer extends JPanel {
         return getTopLevelMenu(currentMenuRAD.getParentContainer());
     }
     
+    
+    //returns true if this array contains a menu component
+    public static boolean containsMenuTypeComponent(RADVisualComponent[] comps) {
+        if(comps == null) return false;
+        if(comps.length < 1) return false;
+        for(RADVisualComponent c : comps) {
+            if(JMenuItem.class.isAssignableFrom(c.getBeanClass())) return true;
+            if(JMenuBar.class.isAssignableFrom(c.getBeanClass())) return true;
+            if(JMenu.class.isAssignableFrom(c.getBeanClass())) return true;
+        }
+        return false;
+    }
+    
+    // returns true if this container is a menubar or menu, else false
+    public static boolean isValidMenuContainer(RADVisualContainer cont) {
+        if(cont == null) return false;
+        if(JMenuBar.class.isAssignableFrom(cont.getBeanClass())) return true;
+        if(JMenu.class.isAssignableFrom(cont.getBeanClass())) return true;
+        return false;
+    }
 }

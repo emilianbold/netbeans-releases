@@ -48,6 +48,7 @@ import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.layoutdesign.*;
+import org.netbeans.modules.form.menu.MenuEditLayer;
 import org.openide.util.Lookup;
 
 /**
@@ -2257,6 +2258,14 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             formDesigner.getMenuEditLayer().clearRollover();
             
             RADVisualContainer originalCont = getSourceContainer();
+            // fail if trying to move a menu component to a non-menu container
+            if(MenuEditLayer.containsMenuTypeComponent(movingComponents)) {
+                if(!MenuEditLayer.isValidMenuContainer(targetContainer)) {
+                    formDesigner.getLayoutDesigner().endMoving(false);
+                    formDesigner.updateContainerLayout(originalCont);
+                    return true;
+                }
+            }
             if (p != null) {
                 if (targetContainer == null || targetContainer.getLayoutSupport() != null) {
                     // dropped in old layout support, or on non-visual area
