@@ -27,7 +27,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import javax.swing.JLabel;
 
-import org.netbeans.api.languages.DatabaseManager;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Settings;
@@ -50,7 +49,6 @@ import org.netbeans.modules.languages.features.BraceCompletionDeleteAction;
 import org.netbeans.modules.languages.features.BraceCompletionInsertAction;
 import org.netbeans.modules.languages.features.BraceHighlighting;
 import org.netbeans.modules.languages.features.CollapseFoldTypeAction;
-import org.netbeans.modules.languages.features.DatabaseManagerImpl;
 import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.languages.features.AnnotationManager;
 import org.netbeans.modules.languages.features.ExpandFoldTypeAction;
@@ -223,7 +221,6 @@ public class LanguagesEditorKit extends NbEditorKit {
             1500
         );
         new AnnotationManager (doc);
-        ((DatabaseManagerImpl) DatabaseManager.getDefault ()).new Listener (doc);
     }
     
 //    public Syntax createSyntax (Document doc) {
