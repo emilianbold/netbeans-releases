@@ -128,6 +128,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
     /** Define end event - measured time will end by this event */
     protected int MY_END_EVENT = MY_EVENT_NOT_AVAILABLE;
     
+    /** Not set event - default for START/END events */
     protected static final int MY_EVENT_NOT_AVAILABLE = -10;
 
     /** tracker for UI activities */

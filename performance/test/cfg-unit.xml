@@ -15,7 +15,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -26,7 +26,7 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="all or startup" prio="1" executor="execute_startup" name="Startup time">
 	<testset dir="unit/src">
 	    <patternset>
-		<include name="startup/MeasureIDEStartupTime.class/testStartIDE"/>
+		<include name="startup/OutOfTheBoxStartup.class"/>
 	    </patternset>
 	</testset>
     </testbag>
@@ -42,7 +42,7 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="all or startup_complex" prio="11" executor="execute_complex_startup" name="Startup time - Complex">
 	<testset dir="unit/src">
 	    <patternset>
-		<include name="startup/MeasureIDEStartupTime.class/testStartIDEWithOpenedFiles"/>
+		<include name="startup/ComplexJavaProjectStartup.class"/>
 	    </patternset>
 	</testset>
     </testbag>
@@ -58,7 +58,7 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="all or startup_complex_nb_project" prio="21" executor="execute_complex_startup_nb_project" name="Startup time - Complex NB project">
 	<testset dir="unit/src">
 	    <patternset>
-		<include name="startup/MeasureIDEStartupTime.class/testStartIDEWithOpenedFilesNBproject"/>
+		<include name="startup/ComplexNBProjectStartup.class"/>
 	    </patternset>
 	</testset>
     </testbag>
@@ -66,7 +66,7 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="all or warmup" prio="30" executor="execute_warmup" name="Warm Up">
 	<testset dir="unit/src">
 	    <patternset>
-		<include name="startup/MeasureWarmUp.class/testWarmUp"/>		
+		<include name="startup/MeasureWarmUp.class"/>		
 	    </patternset>
 	</testset>
     </testbag>

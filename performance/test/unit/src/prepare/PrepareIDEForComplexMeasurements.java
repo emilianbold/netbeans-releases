@@ -44,6 +44,8 @@ import junit.framework.Test;
 
 import org.netbeans.junit.NbTestSuite;
 
+import org.netbeans.performance.test.utilities.MeasureStartupTimeTestCase;
+
 
 /**
  * Prepare user directory for complex measurements (startup time and memory consumption) of IDE with opened project and 10 files.
@@ -53,9 +55,6 @@ import org.netbeans.junit.NbTestSuite;
  * @author Marian.Mirilovic@sun.com
  */
 public class PrepareIDEForComplexMeasurements extends JellyTestCase {
-    
-    /** Number of copies of the Main20kB.java */
-    protected static int numberCopies = 10;
     
     /** Error output from the test. */
     protected static PrintStream err;
@@ -233,7 +232,7 @@ public class PrepareIDEForComplexMeasurements extends JellyTestCase {
      */
     public void saveStatus() throws IOException{
         if(test_failed)
-            new StatusFile().createNewFile();
+            MeasureStartupTimeTestCase.createStatusFile();
     }
     
 }

@@ -26,7 +26,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  *
  * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
-public class WebProjectWorkflow extends MemoryFootprintTestCase {
+public class WebProjectWorkflow extends org.netbeans.performance.test.utilities.MemoryFootprintTestCase {
 
     private String webproject;
 

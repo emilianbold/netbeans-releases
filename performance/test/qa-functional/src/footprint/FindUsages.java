@@ -36,7 +36,7 @@ import org.netbeans.junit.ide.ProjectSupport;
  *
  * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
-public class FindUsages extends MemoryFootprintTestCase {
+public class FindUsages extends org.netbeans.performance.test.utilities.MemoryFootprintTestCase {
     
     /**
      * Creates a new instance of FindUsages

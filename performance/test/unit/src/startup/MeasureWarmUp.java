@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -26,8 +26,6 @@ import java.io.IOException;
 
 import java.util.Hashtable;
 
-import startup.MeasureIDEStartupTime.ThreadReader;
-
 /**
  * Measure warm up time by org.netbeans.core.perftool.StartLog.
  * Number of starts with new userdir is defined by property
@@ -37,7 +35,7 @@ import startup.MeasureIDEStartupTime.ThreadReader;
  *
  * @author Marian.Mirilovic@sun.com
  */
-public class MeasureWarmUp extends MeasureIDEStartupTime {
+public class MeasureWarmUp extends  org.netbeans.performance.test.utilities.MeasureStartupTimeTestCase {
     
     protected static final String warmup = "Warmup running ";
     protected static final String warmup_started = "Warmup started";

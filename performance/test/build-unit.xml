@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -25,10 +25,10 @@ Microsystems, Inc. All Rights Reserved.
     <property name="nbextra.dir" location="../../../nbextra"/>
     
     <!-- Import defaults for Unit tests -->
-    <import file="../../nbbuild/templates/xtest-unit.xml"/>
+    <import file="${nball.dir}/nbbuild/templates/xtest-unit.xml"/>
     
     <!-- Import defaults for Performance testing.  -->
-    <import file="../performancetestutilities/dist/build-performance-tests.xml"/>
+    <import file="${nball.dir}/performance/performancetestutilities/dist/build-performance-tests.xml"/>
     
     <!-- ========= -->
     <!-- Compilers -->
@@ -95,10 +95,14 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Executor for Measure Startup Time with empty userdir -->
     <target name="runcodetest_measure_startup" depends="make_netbeans_executable">
         <!-- copy xsl transformator file for ActionTracker log into appropriate directory -->
-        <copy file="../performancetestutilities/dist/ActionTracker.xsl" tofile="${xtest.results.testrun.dir}/ActionTracker.xsl" />
+        <copy file="${nball.dir}/performancetestutilities/dist/ActionTracker.xsl" tofile="${xtest.results.testrun.dir}/ActionTracker.xsl" />
         
         <antcall target="copy_released_ide_cfg_file"/>
         <executeTests pluginName="jvm">
+            <classpath>
+                <pathelement location="${performance.testutilities.dist.jar}"/>
+            </classpath>
+            
             <property name="xtest.userdata|netbeans.dest.dir" value="${netbeans.dest.dir}"/>
             <property name="xtest.userdata|performance.testutilities.dist.jar" value="${performance.testutilities.dist.jar}"/>
             <property name="xtest.userdata|xtest.perf.commandline.suffix" value="${xtest.perf.commandline.suffix}"/>
@@ -116,10 +120,14 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Executor for Measure Complex Startup Time -->
     <target name="runcodetest_measure_complex_startup" depends="make_netbeans_executable">
         <!-- copy xsl transformator file for ActionTracker log into appropriate directory -->
-        <copy file="../performancetestutilities/dist/ActionTracker.xsl" tofile="${xtest.results.testrun.dir}/ActionTracker.xsl" />
+        <copy file="${nball.dir}/performancetestutilities/dist/ActionTracker.xsl" tofile="${xtest.results.testrun.dir}/ActionTracker.xsl" />
         
         <antcall target="copy_released_ide_cfg_file"/>
         <executeTests pluginName="jvm">
+            <classpath>
+                <pathelement location="${performance.testutilities.dist.jar}"/>
+            </classpath>
+            
             <property name="xtest.enable.assertions" value="false" /> 
             <property name="xtest.ide.reuse.userdir" value="true"/>
             <property name="xtest.userdata|netbeans.dest.dir" value="${netbeans.dest.dir}"/>
@@ -141,10 +149,15 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Executor for Measure Complex NB Project Startup Time -->
     <target name="runcodetest_measure_complex_startup_nb_project" depends="make_netbeans_executable">
         <!-- copy xsl transformator file for ActionTracker log into appropriate directory -->
-        <copy file="../performancetestutilities/dist/ActionTracker.xsl" tofile="${xtest.results.testrun.dir}/ActionTracker.xsl" />
+        <copy file="${nball.dir}/performancetestutilities/dist/ActionTracker.xsl" tofile="${xtest.results.testrun.dir}/ActionTracker.xsl" />
         
         <antcall target="copy_released_ide_cfg_file"/>
+        
         <executeTests pluginName="jvm">
+            <classpath>
+                <pathelement location="${performance.testutilities.dist.jar}"/>
+            </classpath>
+            
             <property name="xtest.enable.assertions" value="false" /> 
             <property name="xtest.ide.reuse.userdir" value="true"/>
             <property name="xtest.userdata|netbeans.dest.dir" value="${netbeans.dest.dir}"/>
@@ -166,7 +179,12 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Executor for Measure Warm Up -->
     <target name="runcodetest_measure_warmup" depends="make_netbeans_executable">
         <antcall target="copy_released_ide_cfg_file"/>
+
         <executeTests pluginName="jvm">
+            <classpath>
+                <pathelement location="${performance.testutilities.dist.jar}"/>
+            </classpath>
+            
             <property name="xtest.userdata|netbeans.dest.dir" value="${netbeans.dest.dir}"/>
             <property name="xtest.userdata|performance.testutilities.dist.jar" value="${performance.testutilities.dist.jar}"/>
             <property name="xtest.userdata|xtest.perf.commandline.suffix" value="${xtest.perf.commandline.suffix}"/>

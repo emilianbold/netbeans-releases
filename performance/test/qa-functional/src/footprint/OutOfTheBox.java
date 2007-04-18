@@ -27,7 +27,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  *
  * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
-public class OutOfTheBox extends MemoryFootprintTestCase {
+public class OutOfTheBox extends org.netbeans.performance.test.utilities.MemoryFootprintTestCase {
 
     /**
      * Creates a new instance of OutOfTheBox

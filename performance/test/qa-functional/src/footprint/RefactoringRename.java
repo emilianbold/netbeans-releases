@@ -40,7 +40,7 @@ import org.netbeans.junit.ide.ProjectSupport;
  *
  * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
-public class RefactoringRename extends MemoryFootprintTestCase {
+public class RefactoringRename extends org.netbeans.performance.test.utilities.MemoryFootprintTestCase {
     
     private static final String rename = "jEdit";
     

@@ -64,13 +64,12 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${openide/util.dir}/lib/org-openide-util.jar"/>
         
         <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor.jar"/>
-        <pathelement location="${editor.dir}/modules/org-netbeans-modules-java-editor.jar"/>
         <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-lib.jar"/>
         <pathelement location="${editor/plain.dir}/modules/org-netbeans-modules-editor-plain.jar"/>
         
         <pathelement location="${projects/projectui.dir}/modules/org-netbeans-modules-projectui.jar"/>
         
-        <pathelement location="${java.dir}/modules/org-netbeans-modules-java.jar"/>
+        <pathelement location="${java/editor.dir}/modules/org-netbeans-modules-java-editor.jar"/>
         
         <pathelement location="${web/jspsyntax.dir}/modules/org-netbeans-modules-web-core-syntax.jar"/>
         
@@ -83,6 +82,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${nball.dir}/jemmy/builds/jemmy.jar"/>
         <pathelement location="${nball.dir}/jellytools/builds/jelly2-nb.jar"/>
     </path>
-    
+<!--
+-->
         
 </project>

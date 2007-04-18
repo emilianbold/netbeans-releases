@@ -26,7 +26,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  *
  * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
-public class J2SEProjectWorkflow extends MemoryFootprintTestCase {
+public class J2SEProjectWorkflow extends org.netbeans.performance.test.utilities.MemoryFootprintTestCase {
 
     private String j2seproject;
 

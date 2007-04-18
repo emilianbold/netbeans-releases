@@ -687,7 +687,7 @@ public class ActionTracker {
     
     /**
      * Set location for ActionTracker.xsl file
-     * @param dir where the ActionTracker.xsl file is going to be placed
+     * @param xslLocation where the ActionTracker.xsl file is going to be placed
      */
     public void setXslLocation(String xslLocation){
         this.actionTrackerXslLocation = xslLocation;
