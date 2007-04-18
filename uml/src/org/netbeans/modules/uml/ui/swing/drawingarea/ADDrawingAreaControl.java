@@ -1312,7 +1312,7 @@ public class ADDrawingAreaControl extends ApplicationView
               if (graph != null && window != null)
               {
                   graph.setBoundsUpdatingEnabled(true);
-                  graph.updateBounds();
+//                  graph.updateBounds();
                   window.setZoomLevel(m_nZoomLevelFromArchive, false);
                   if (m_CenterFromArchive != null)
                   {

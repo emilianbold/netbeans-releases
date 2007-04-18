@@ -271,11 +271,11 @@ public class ETElementManager implements IGraphEventKind
          }
 
          // Make sure the scroll bars are updated
-         TSEGraph editor = m_Parent.getCurrentGraph();
-         if (editor != null)
-         {
-            editor.updateBounds();
-         }
+//         TSEGraph editor = m_Parent.getCurrentGraph();
+//         if (editor != null)
+//         {
+//            editor.updateBounds();
+//         }
       }
    }
 
