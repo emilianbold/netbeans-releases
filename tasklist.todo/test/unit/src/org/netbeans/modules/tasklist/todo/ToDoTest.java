@@ -177,13 +177,14 @@ public class ToDoTest extends TestBase {
         
         registry.setOpened(Collections.singleton(tc));
         tasks = scanCurrentEditorTasks();
+        assertEquals("Document with todo",2,tasks.size());
         
         tc = createTopComponent(fo2);
         registry.setActivated(tc);
         
         registry.setOpened(Collections.singleton(tc));
         tasks = scanCurrentEditorTasks();
-        assertEquals("No document opened",0,tasks.size());
+        assertEquals("Document with no todo",0,tasks.size());
     }
     private void logTasks(List<Task> tasks) {
         for (Task t : tasks) {
