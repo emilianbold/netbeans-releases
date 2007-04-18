@@ -25,6 +25,7 @@ import java.awt.Insets;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import javax.swing.Icon;
@@ -160,13 +161,16 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             
             final StringBuilder text = new StringBuilder();
             long installationSize = 0;
-            long downloadSize     = 0;
+            long downloadSize = 0;
             
+            final List<Product> dependentOnNb = new LinkedList<Product>();
+            final List<Product> dependentOnGf = new LinkedList<Product>();
             for (Product product: registry.getProductsToInstall()) {
                 installationSize += product.getRequiredDiskSpace();
                 downloadSize += product.getDownloadSize();
                 
                 try {
+                    
                     if (product.getLogic().registerInSystem()) {
                         text.append(StringUtils.format(
                                 panel.getProperty(INSTALLATION_FOLDER_PROPERTY),
@@ -174,12 +178,29 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                         text.append(StringUtils.LF);
                         text.append("    " + product.getInstallationLocation());
                         text.append(StringUtils.LF);
+                    } else {
+                        if (product.getUid().startsWith("nb-")) {
+                            dependentOnNb.add(product);
+                        } else {
+                            dependentOnGf.add(product);
+                        }
                     }
                 } catch (InitializationException e) {
                     ErrorManager.notifyError(
                             "Could not access product's configuration logic",
                             e);
                 }
+            }
+            
+            if (dependentOnNb.size() > 0) {
+                text.append(StringUtils.LF);
+                text.append(StringUtils.asString(dependentOnNb) + " will be installed to the NetBeans IDE directory.");
+                text.append(StringUtils.LF);
+            }
+            if (dependentOnGf.size() > 0) {
+                text.append(StringUtils.LF);
+                text.append(StringUtils.asString(dependentOnGf) + " will be installed to the GlassFish directory.");
+                text.append(StringUtils.LF);
             }
             
             locationsPane.setText(text);
