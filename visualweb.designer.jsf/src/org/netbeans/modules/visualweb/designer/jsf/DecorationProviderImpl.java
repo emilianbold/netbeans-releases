@@ -22,9 +22,11 @@ package org.netbeans.modules.visualweb.designer.jsf;
 
 
 import com.sun.rave.designtime.DesignBean;
+import com.sun.rave.designtime.DesignContext;
 import com.sun.rave.designtime.DesignInfo;
 import com.sun.rave.designtime.DisplayAction;
 import com.sun.rave.designtime.DisplayActionSet;
+import com.sun.rave.designtime.Result;
 import com.sun.rave.designtime.ext.DesignInfoExt;
 import java.awt.Image;
 import java.util.ArrayList;
@@ -32,8 +34,12 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.visualweb.api.designtime.idebridge.DesigntimeIdeBridgeProvider;
+import org.netbeans.modules.visualweb.insync.ResultHandler;
+import org.netbeans.modules.visualweb.insync.UndoEvent;
 import org.netbeans.modules.visualweb.insync.action.AbstractDisplayActionAction;
+import org.netbeans.modules.visualweb.insync.live.LiveUnit;
 import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
+import org.netbeans.modules.visualweb.insync.models.FacesModel;
 import org.netbeans.modules.visualweb.spi.designer.Decoration;
 import org.netbeans.modules.visualweb.spi.designer.DecorationProvider;
 import org.openide.nodes.Node;
@@ -123,7 +129,7 @@ public class DecorationProviderImpl implements DecorationProvider {
     
     private static class DisplayActionWrapperAction extends AbstractDisplayActionAction {
 
-        private DisplayAction displayAction;
+        private final DisplayAction displayAction;
         
         
         public DisplayActionWrapperAction(DisplayAction displayAction) {
@@ -131,6 +137,9 @@ public class DecorationProviderImpl implements DecorationProvider {
         }
         
         protected DisplayAction[] getDisplayActions(DesignBean[] designBeans) {
+            if (displayAction == null) {
+                return new DisplayAction[0];
+            }
             if (displayAction instanceof DisplayActionSet) {
                 return ((DisplayActionSet)displayAction).getDisplayActions();
             } else {
@@ -139,8 +148,28 @@ public class DecorationProviderImpl implements DecorationProvider {
         }
 
         protected String getDefaultDisplayName() {
+            if (displayAction == null) {
+                return null;
+            }
             return displayAction.getDisplayName();
         }
         
     } // End of DisplayActionWrapperAction
+    
+    private static void invokeDisplayAction(DisplayAction displayAction, DesignBean designBean) {
+        DesignContext context = designBean.getDesignContext();
+        // XXX Retrieving the model this way (casting to LiveUnit) smells incorrect architecture.
+        FacesModel facesModel = ((LiveUnit)context).getModel();
+//        webform.getDocument().writeLock("\"" + displayAction.getLabel() + "\""); // NOI18N
+        UndoEvent undoEvent = facesModel.writeLock("\"" + displayAction.getDisplayName() + "\""); // NOI18N
+        try {
+            Result result = displayAction.invoke();
+        // XXX FIXME Postprocessing the action invocation makes the API unusable for other clients.
+            ResultHandler.handleResult(result, facesModel);
+        } finally {
+//            webform.getDocument().writeUnlock();
+            facesModel.writeUnlock(undoEvent);
+        }
+    }
+    
 }
