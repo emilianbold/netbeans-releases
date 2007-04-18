@@ -375,9 +375,12 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
             
             while( children.hasMoreElements() ) {
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode) children.nextElement();
-                Item item = (Item) node.getUserObject();
-                if ( item.items == null || item.items.length == 0 ) {
-                    result.add( item );
+                Object o = node.getUserObject();
+                if (o instanceof Item) {
+                    Item item = (Item) o;
+                    if ( item.items == null || item.items.length == 0 ) {
+                        result.add( item );
+                    }
                 }
             }
             
