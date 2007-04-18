@@ -53,7 +53,7 @@ public class GetFile extends HttpServlet {
                 output.close();
             }
         } catch (ManagerException e) {
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             e.printStackTrace();
             e.printStackTrace(response.getWriter());
         }

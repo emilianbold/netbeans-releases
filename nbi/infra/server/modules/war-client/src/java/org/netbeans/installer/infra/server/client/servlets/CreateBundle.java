@@ -124,7 +124,7 @@ public class CreateBundle extends HttpServlet {
             out.println("    </body>");
             out.println("</html>");
         } catch (ManagerException e) {
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             e.printStackTrace(out);
         }
         
