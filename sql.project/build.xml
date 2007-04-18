@@ -30,8 +30,6 @@
     </target>
 
     <target name="ant-extra" depends="init">
-      <echo message="hellloooooo------------------------------------------"/>
-
       <mkdir dir="build/antclasses"/>
       <javac srcdir="antsrc" destdir="build/antclasses" source="1.5" debug="true" deprecation="true" includes="**">
         <classpath>
