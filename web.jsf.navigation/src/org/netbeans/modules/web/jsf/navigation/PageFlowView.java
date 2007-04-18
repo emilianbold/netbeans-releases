@@ -397,6 +397,11 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     }
     
     public void resetNodeWidget( PageFlowNode pageNode , boolean contentItemsChanged ){
+        
+        if( pageNode == null ){
+            throw new RuntimeException("PageFlowEditor: Cannot set node to null");
+        }
+        
         //Reset the Node Name
         VMDNodeWidget nodeWidget = (VMDNodeWidget)scene.findWidget(pageNode);
         //Do this because sometimes the node display name is the object display name.

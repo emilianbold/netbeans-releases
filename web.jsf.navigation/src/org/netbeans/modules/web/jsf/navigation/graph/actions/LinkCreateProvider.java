@@ -33,6 +33,7 @@ import org.netbeans.api.visual.action.ConnectorState;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
+import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
 import org.netbeans.modules.web.jsf.navigation.NavigationCaseNode;
 import org.netbeans.modules.web.jsf.navigation.PageFlowController;
 import org.netbeans.modules.web.jsf.navigation.PageFlowNode;
@@ -110,6 +111,12 @@ public class LinkCreateProvider implements ConnectProvider {
         if ( pfc != null && sourceWidget != null && targetWidget != null ) {
             
             NavigationCase caseNode = pfc.createLink(source, target, pinNode);
+            assert caseNode != null;
+            assert caseNode.getToViewId() != null;
+            assert caseNode.getFromOutcome() != null;
+            NavigationRule navRule = (NavigationRule)(caseNode.getParent());
+//            assert caseNode.getParent()
+            
             graphScene.validate();
         }
 //            addEdge (edge);

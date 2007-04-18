@@ -33,6 +33,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
@@ -76,7 +77,7 @@ public class PageFlowController {
     /**
      * Temporarily Make Public for Work Around.
      */
-    public HashMap<String,PageFlowNode> pageName2Node = new HashMap<String,PageFlowNode>();  //Should this be synchronized.
+    private final HashMap<String,PageFlowNode> pageName2Node = new HashMap<String,PageFlowNode>();  //Should this be synchronized.
     
     private static final String DEFAULT_DOC_BASE_FOLDER = "web"; //NOI18NF
     
@@ -99,7 +100,6 @@ public class PageFlowController {
         webFolder = project.getProjectDirectory().getFileObject(DEFAULT_DOC_BASE_FOLDER);
         webFiles = getAllProjectRelevantFilesObjects();
         
-        
     }
     
     
@@ -115,7 +115,7 @@ public class PageFlowController {
         }
         FileObject webFolder = getWebFolder();
         if( fcl == null ){
-            fcl = new WebFolderListener();
+            fcl = new WebFolderListener(this);
             if( webFolder != null ){
                 try             {
                     webFolder.getFileSystem().addFileChangeListener(fcl);
@@ -263,7 +263,7 @@ public class PageFlowController {
         return webFiles;
     }
     
-    private boolean isKnownFile(FileObject file) {
+    public final boolean isKnownFile(FileObject file) {
         if( file.getMIMEType().equals("text/x-jsp")) {
             return true;
         } else if ( file.getMIMEType().equals("text/html") ){
@@ -272,7 +272,7 @@ public class PageFlowController {
         return false;
     }
     
-    private boolean isKnownFolder( FileObject folder ){
+    public final boolean isKnownFolder( FileObject folder ){
         
         if( !folder.getPath().contains("WEB-INF") && !folder.getPath().contains("META-INF") ) {
             return true;
@@ -293,7 +293,8 @@ public class PageFlowController {
         
         view.saveLocations();
         view.clearGraph();
-        pageName2Node.clear();
+        //        pageName2Node.clear();
+        clearPageName2Node();
         case2Node.clear();
         navRule2String.clear();
         
@@ -340,10 +341,12 @@ public class PageFlowController {
         String fromPage = caseNode.getFromViewId();
         
         if( toPage != null && fromPage != null ) {
-            assert pageName2Node.get(fromPage) != null;
-            assert pageName2Node.get(toPage) != null;
+            //            assert pageName2Node.get(fromPage) != null;
+            //            assert pageName2Node.get(toPage) != null;
+            assert getPageName2Node(fromPage) != null;
+            assert getPageName2Node(toPage) != null;
             
-            view.createEdge(caseNode, pageName2Node.get(fromPage), pageName2Node.get(toPage));
+            view.createEdge(caseNode, getPageName2Node(fromPage), getPageName2Node(toPage));
         }
     }
     
@@ -396,7 +399,7 @@ public class PageFlowController {
             if( pageName != null ){
                 Node tmpNode = new AbstractNode(Children.LEAF);
                 tmpNode.setName(pageName);
-//                PageFlowNode node = new PageFlowNode(this,tmpNode);
+                //                PageFlowNode node = new PageFlowNode(this,tmpNode);
                 PageFlowNode node = createPageFlowNode(tmpNode);
                 view.createNode(node, null, null);
             }
@@ -437,7 +440,7 @@ public class PageFlowController {
                         donfe.printStackTrace();
                     }
                 }
-//                PageFlowNode node = new PageFlowNode(this, wrapNode);
+                //                PageFlowNode node = new PageFlowNode(this, wrapNode);
                 PageFlowNode node = createPageFlowNode(wrapNode);
                 view.createNode(node, null, null);
             }
@@ -474,7 +477,7 @@ public class PageFlowController {
                         PageFlowNode pageNode = pageName2Node.get(toPage);
                         if( pageNode != null && !isPageInFacesConfig(toPage)){
                             if( !pageNode.isDataNode() || PageFlowUtilities.getInstance().getCurrentScope() == PageFlowUtilities.LBL_SCOPE_FACESCONFIG){
-                                pageName2Node.remove(pageNode);
+                                removePageName2Node(pageNode);
                                 view.removeNodeWithEdges(pageNode);
                                 view.validateGraph();
                                 //                                node.destroy(); //only okay because it is an abstract node.
@@ -496,7 +499,7 @@ public class PageFlowController {
                         PageFlowNode pageNode = pageName2Node.get(fromPage);
                         if( pageNode != null && !isPageInFacesConfig(fromPage)){
                             if( !pageNode.isDataNode() || PageFlowUtilities.getInstance().getCurrentScope() == PageFlowUtilities.LBL_SCOPE_FACESCONFIG){
-                                pageName2Node.remove(pageNode);
+                                removePageName2Node(pageNode);
                                 view.removeNodeWithEdges(pageNode);
                                 view.validateGraph();
                                 //                                node.destroy(); //only okay because it is an abstract node.
@@ -543,9 +546,54 @@ public class PageFlowController {
                 setupGraph();
                 //                }
             } else {
-//                System.out.println("Did not catch this event.: " + ev.getPropertyName());
+                //                System.out.println("Did not catch this event.: " + ev.getPropertyName());
                 setupGraph();
             }
+        }
+    }
+    
+    public void removePageName2Node(PageFlowNode pageNode ){
+        printThreadInfo();
+        synchronized ( pageName2Node ) {
+            pageName2Node.remove(pageNode);
+        }
+    }
+    public void removePageName2Node( String displayName ) {
+        PageFlowNode node = getPageName2Node(displayName);
+        if (node != null ){
+            removePageName2Node(node);
+        }
+    }
+    
+    public void clearPageName2Node(){
+        printThreadInfo();
+        synchronized ( pageName2Node ) {
+            pageName2Node.clear();
+        }
+    }
+    
+    public void putPageName2Node(String displayName, PageFlowNode pageNode){
+        printThreadInfo();
+        if( pageNode == null ){
+            throw new RuntimeException("PageFlowEditor: Trying to add Page [" + displayName + "] but it is null.");
+        }
+        synchronized ( pageName2Node ) {
+            pageName2Node.put(displayName, pageNode);
+        }
+    }
+    
+    public PageFlowNode getPageName2Node(String displayName){
+        printThreadInfo();
+        synchronized ( pageName2Node ) {
+            return pageName2Node.get(displayName);
+        }
+    }
+    
+    private Thread t = null;
+    public void printThreadInfo() {
+        if( !SwingUtilities.isEventDispatchThread() ){
+            Thread.dumpStack();
+            throw new RuntimeException("Not a Dispatched Thread");
         }
     }
     
@@ -659,193 +707,6 @@ public class PageFlowController {
         view.resetNodeWidget(oldNode, false);
     }
     
-    private class WebFolderListener extends FileChangeAdapter{
-        
-        
-        private boolean isKnownFileEvent(FileObject potentialChild ) {
-            if ( FileUtil.isParentOf(getWebFolder(), potentialChild) ) {
-                if( potentialChild.isFolder() ){
-                    return isKnownFolder(potentialChild);
-                } else {
-                    return isKnownFile(potentialChild);
-                }
-            }
-            return false;
-        }
-        
-        public void fileDataCreated(FileEvent fe) {
-            FileObject fileObj = fe.getFile();
-            if( !isKnownFileEvent(fileObj) ){
-                return;
-            }
-            
-            try         {
-                if( isKnownFile(fileObj)){
-                    webFiles.add(fileObj);
-                    DataObject dataObj = DataObject.find(fileObj);
-                    Node dataNode = dataObj.getNodeDelegate();
-                    //                    PageFlowNode pageNode = pageName2Node.get(dataNode.getDisplayName());
-                    //DISPLAYNAME:
-                    PageFlowNode pageNode = pageName2Node.get(PageFlowNode.getFolderDisplayName(getWebFolder(), fileObj));
-                    if( pageNode != null  ) {
-                        pageNode.replaceWrappedNode(dataNode);
-                        view.resetNodeWidget(pageNode, false);
-                        view.validateGraph();
-                    } else if ( PageFlowUtilities.getInstance().getCurrentScope() == PageFlowUtilities.LBL_SCOPE_PROJECT ){
-                        PageFlowNode node = createPageFlowNode(dataNode);
-                        view.createNode(node, null, null);
-                        view.validateGraph();
-                    }
-                }
-            } catch (DataObjectNotFoundException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        
-        public void fileChanged(FileEvent fe) {
-            //            System.out.println("File Changed Event: " + fe);
-        }
-        
-        public void fileDeleted(FileEvent fe) {
-            FileObject fileObj = fe.getFile();
-            if ( !webFiles.remove(fileObj) ) {
-                return;
-            }
-            //            if( fileObj.isFolder() ){
-            //                return;
-            //            }
-            
-            //DISPLAYNAME:
-            String pageDisplayName = PageFlowNode.getFolderDisplayName(getWebFolder(), fileObj);
-            
-            PageFlowNode oldNode = pageName2Node.get(pageDisplayName);
-            if( oldNode != null ) {
-                if( isPageInFacesConfig(oldNode.getDisplayName()) ) {
-                    Node tmpNode = new AbstractNode(Children.LEAF);
-                    tmpNode.setName(pageDisplayName);
-                    oldNode.replaceWrappedNode(tmpNode);
-                    view.resetNodeWidget(oldNode, false);  /* If I add a listener to PageFlowNode, then I won't have to do this*/
-                } else {
-                    pageName2Node.remove(oldNode);
-                    view.removeNodeWithEdges(oldNode);
-                }
-                view.validateGraph();   //Either action validate graph
-            }
-            
-            
-        }
-        
-        String oldFolderName;
-        String newFolderName;
-        public void fileRenamed(FileRenameEvent fe) {
-            /* fileRenamed should not modify the faces-config because it should
-             * be up to refactoring to do this. If that is the case, FacesModelPropertyChangeListener
-             * should reload it.
-             * WARNING: Will get setup twice.*/
-            FileObject fileObj = fe.getFile();
-            if( !webFiles.contains(fileObj) && !isKnownFolder(fileObj) ){
-                return;
-            }
-            
-            if( fileObj.isFolder() ){
-                //I may still need to modify display names.
-                
-                if( fe.getName().equals(oldFolderName) && fileObj.getName().equals(newFolderName) ){
-                    //Folder rename triggers two listeners.  Only pay attention to the first one.
-                    return;
-                }
-                oldFolderName = fe.getName();
-                newFolderName = fileObj.getName();
-                folderRename( fileObj, oldFolderName, newFolderName);
-                
-            } else {
-                //DISPLAYNAME:
-                String newDisplayName  = PageFlowNode.getFolderDisplayName(getWebFolder(), fileObj);
-                String path = fileObj.getPath().replace(fileObj.getNameExt(), "");
-                String oldDisplayName = PageFlowNode.getFolderDisplayName(getWebFolder(), path, fe.getName() + "." + fe.getExt());
-                
-                fileRename(fileObj, oldDisplayName, newDisplayName);
-            }
-            view.validateGraph();
-            
-        }
-        
-        private void folderRename( FileObject folderObject, String oldFolderName, String newFolderName ){
-            FileObject[] fileObjs = folderObject.getChildren();
-            for( FileObject file : fileObjs) {
-                
-                if( file.isFolder() ){
-                    folderRename( file, oldFolderName, newFolderName);
-                } else {
-                    String newDisplayName = PageFlowNode.getFolderDisplayName(getWebFolder(), file);
-                    String oldDisplayName = newDisplayName.replaceFirst(newFolderName, oldFolderName);
-                    fileRename(file, oldDisplayName, newDisplayName);
-                }
-            }
-        }
-        
-        
-        private void fileRename(FileObject fileObj, String oldDisplayName, String newDisplayName ){
-            
-            PageFlowNode oldNode = pageName2Node.get(oldDisplayName);
-            
-            if ( oldNode.isRenaming()){
-                return;
-            }
-            
-            PageFlowNode abstractNode = pageName2Node.get(newDisplayName);
-            Node newNodeDelegate = null;
-            try {
-                newNodeDelegate = (DataObject.find(fileObj)).getNodeDelegate();
-            } catch ( DataObjectNotFoundException donfe ){
-                Exceptions.printStackTrace(donfe);
-            }
-            
-            //If we are in project view scope
-            if( PageFlowUtilities.getInstance().getCurrentScope() == PageFlowUtilities.LBL_SCOPE_PROJECT ){
-                assert oldNode != null;
-            }
-            
-            //If new node has an abstract node representation already.
-            //  True:  Replace the abstract node with the new data node file.
-            //             * if( oldNode in facesConfig ) -> turn old node into abstract
-            //             * else -> remove old node altogether.
-            //             * make abstract node represent file node.
-            // False:
-            //             * if( oldNode in facesConfig ) -> make abstract node and create new datanode
-            //             * else -> reset node.
-            if( abstractNode != null ){
-                assert !abstractNode.isDataNode();  //Never should this have already been a file node.
-                //Figure out what to do with old node.
-                if (isPageInFacesConfig(oldDisplayName)){
-                    changeToAbstractNode(oldNode, oldDisplayName);
-                } else if ( oldNode != null ){
-                    view.removeNodeWithEdges(oldNode);
-                }
-                abstractNode.replaceWrappedNode(newNodeDelegate);
-                view.resetNodeWidget(abstractNode, false);
-            } else if ( oldNode != null ){
-                if( isPageInFacesConfig(oldDisplayName) ){
-                    changeToAbstractNode(oldNode, oldDisplayName);
-                    if( PageFlowUtilities.getInstance().getCurrentScope() == PageFlowUtilities.LBL_SCOPE_PROJECT ) {
-                        PageFlowNode newNode = createPageFlowNode(newNodeDelegate);
-                        view.createNode(newNode, null, null);
-                    }
-                } else {
-                    view.resetNodeWidget(oldNode, false);
-                }
-            }
-            view.validateGraph();
-            
-        }
-        
-        
-        public void fileFolderCreated(FileEvent fe) {
-            //            fe.getFile().addFileChangeListener( fcl);
-        }
-        
-        
-    }
     
     public DataObject getConfigDataObject() {
         return configDataObj;
@@ -855,4 +716,19 @@ public class PageFlowController {
         view.saveLocation(node, newDisplayName);
     }
     
+    public final boolean removeWebFile(FileObject fileObj ) {
+        return webFiles.remove(fileObj);
+    }
+    
+    public final boolean addWebFile( FileObject fileObj ) {
+        return webFiles.add(fileObj);
+    }
+    
+    public final boolean containsWebFile(FileObject fileObj){
+        return webFiles.contains(fileObj);
+    }
+    
+    public PageFlowView getView() {
+        return view;
+    }
 }
