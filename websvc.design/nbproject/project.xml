@@ -277,6 +277,7 @@
             <friend-packages>
                 <friend>org.netbeans.modules.websvc.wsitconf</friend>
                 <package>org.netbeans.modules.websvc.design.configuration</package>
+                <package>org.netbeans.modules.websvc.design.javamodel</package>
             </friend-packages>
         </data>
     </configuration>
