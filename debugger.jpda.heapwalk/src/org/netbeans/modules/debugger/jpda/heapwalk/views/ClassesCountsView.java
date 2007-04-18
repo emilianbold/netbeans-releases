@@ -167,6 +167,7 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
                 remove(content);
                 content = null;
                 hfw = null;
+                clc = null;
             }
             if (listener != null) {
                 listener.stop();
@@ -245,6 +246,10 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
             JPDADebugger debugger = lastDebugger.get();
             if (debugger != null) {
                 debugger.removePropertyChangeListener(JPDADebugger.PROP_STATE, this);
+            }
+            if (refreshTask != null) {
+                refreshTask.cancel();
+                refreshTask = null;
             }
         }
         
