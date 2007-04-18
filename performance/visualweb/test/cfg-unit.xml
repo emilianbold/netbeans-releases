@@ -35,7 +35,7 @@ Microsystems, Inc. All Rights Reserved.
              executor="execute_complex_startup_web_project" name="IDE complex startup time - Web Pack project">
         <testset dir="unit/src">
             <patternset>
-                <include name="startup/MeasureIDEStartupTime.class/testStartIDEWithOpenedFilesWebProject"/>
+                <include name="startup/ComplexVisualWebProjectStartup.class"/>
             </patternset>                                          
         </testset>
     </testbag>
