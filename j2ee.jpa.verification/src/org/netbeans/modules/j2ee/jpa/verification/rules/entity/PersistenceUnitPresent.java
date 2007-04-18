@@ -43,6 +43,12 @@ public class PersistenceUnitPresent extends JPAClassRule  {
     
     @Override public ErrorDescription[] apply(TypeElement subject, ProblemContext ctx){
         Project project = FileOwnerQuery.getOwner(ctx.getFileObject());
+        
+        if (project == null){
+            // Can't perform this check for a file that does not belong to a project
+            return null;
+        }
+        
         PersistenceScope[] scopes = PersistenceUtils.getPersistenceScopes(project);
         
         for (PersistenceScope scope : scopes){
