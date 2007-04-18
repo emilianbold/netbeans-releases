@@ -40,11 +40,7 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
-import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
@@ -270,7 +266,7 @@ public final class ExtractInterfaceRefactoringPlugin extends RetoucheRefactoring
      * @return type parameters to extract
      */
     private static List<TypeMirror> findUsedGenericTypes(ExtractInterfaceRefactoring refactoring, CompilationInfo javac, TypeElement javaClass) {
-        List<TypeMirror> typeArgs = resolveTypeParamsAsTypes(javaClass.getTypeParameters());
+        List<TypeMirror> typeArgs = RetoucheUtils.resolveTypeParamsAsTypes(javaClass.getTypeParameters());
         if (typeArgs.isEmpty())
             return typeArgs;
         
@@ -284,92 +280,22 @@ public final class ExtractInterfaceRefactoringPlugin extends RetoucheRefactoring
             ElementHandle<ExecutableElement> handle = methodIter.next();
             ExecutableElement elm = handle.resolve(javac);
             
-            findUsedGenericTypes(typeUtils, typeArgs, result, elm.getReturnType());
+            RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, result, elm.getReturnType());
             
             for (Iterator<? extends VariableElement> paramIter = elm.getParameters().iterator(); paramIter.hasNext() && !typeArgs.isEmpty();) {
                 VariableElement param = paramIter.next();
-                findUsedGenericTypes(typeUtils, typeArgs, result, param.asType());
+                RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, result, param.asType());
             }
         }
         
-        // check implents
+        // check implements
         for (Iterator<TypeMirrorHandle<TypeMirror>> it = refactoring.getImplements().iterator(); it.hasNext() && !typeArgs.isEmpty();) {
             TypeMirrorHandle<TypeMirror> handle = it.next();
             TypeMirror implemetz = handle.resolve(javac);
-            findUsedGenericTypes(typeUtils, typeArgs, result, implemetz);
+            RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, result, implemetz);
         }
 
         return result;
-    }
-    
-    /**
-     * Finds type parameters from <code>typeArgs</code> list that are referenced
-     * by <code>tm</code> type.
-     * @param utils compilation type utils
-     * @param typeArgs modifiable list of type parameters to search; found types will be removed (performance reasons).
-     * @param result modifiable list that will contain found type parameters
-     * @param tm type where to search
-     */
-    private static void findUsedGenericTypes(Types utils, List<TypeMirror> typeArgs, List<TypeMirror> result, TypeMirror tm) {
-        if (typeArgs.isEmpty()) {
-            return;
-        } else if (tm.getKind() == TypeKind.TYPEVAR) {
-            TypeVariable type = (TypeVariable) tm;
-            TypeMirror low = type.getLowerBound();
-            if (low != null && low.getKind() != TypeKind.NULL) {
-                findUsedGenericTypes(utils, typeArgs, result, low);
-            }
-            TypeMirror up = type.getUpperBound();
-            if (up != null) {
-                findUsedGenericTypes(utils, typeArgs, result, up);
-            }
-            int index = findTypeIndex(utils, typeArgs, type);
-            if (index >= 0) {
-                result.add(typeArgs.remove(index));
-            }
-        } else if (tm.getKind() == TypeKind.DECLARED) {
-            DeclaredType type = (DeclaredType) tm;
-            for (TypeMirror tp : type.getTypeArguments()) {
-                findUsedGenericTypes(utils, typeArgs, result, tp);
-            }
-        } else if (tm.getKind() == TypeKind.WILDCARD) {
-            WildcardType type = (WildcardType) tm;
-            TypeMirror ex = type.getExtendsBound();
-            if (ex != null) {
-                findUsedGenericTypes(utils, typeArgs, result, ex);
-            }
-            TypeMirror su = type.getSuperBound();
-            if (su != null) {
-                findUsedGenericTypes(utils, typeArgs, result, su);
-            }
-        }
-    }
-    
-    private static int findTypeIndex(Types utils, List<TypeMirror> typeArgs, TypeMirror type) {
-        int i = -1;
-        for (TypeMirror typeArg : typeArgs) {
-            i++;
-            if (utils.isSameType(type, typeArg)) {
-                return i;
-            }
-        }
-        return -1;
-    }
-    
-    /**
-     * translates list of elements to list of types
-     * @param typeParams elements
-     * @return types
-     */
-    private static List<TypeMirror> resolveTypeParamsAsTypes(List<? extends TypeParameterElement> typeParams) {
-        if (typeParams.isEmpty()) {
-            return Collections.<TypeMirror>emptyList();
-        }
-        List<TypeMirror> typeArgs = new ArrayList<TypeMirror>(typeParams.size());
-        for (TypeParameterElement elm : typeParams) {
-            typeArgs.add(elm.asType());
-        }
-        return typeArgs;
     }
 
     // --- REFACTORING ELEMENTS ------------------------------------------------
@@ -534,17 +460,15 @@ public final class ExtractInterfaceRefactoringPlugin extends RetoucheRefactoring
     private final static class UpdateClassTask implements CancellableTask<WorkingCopy> {
         private final ExtractInterfaceRefactoring refactoring;
         private final ElementHandle<TypeElement> sourceType;
-        private final List typeParams;
         
-        private UpdateClassTask(ExtractInterfaceRefactoring refactoring, ElementHandle<TypeElement> sourceType, List typeParams) {
+        private UpdateClassTask(ExtractInterfaceRefactoring refactoring, ElementHandle<TypeElement> sourceType) {
             this.sourceType = sourceType;
             this.refactoring = refactoring;
-            this.typeParams = typeParams;
         }
         
         public static void create(RefactoringElementsBag bag, FileObject fo, ExtractInterfaceRefactoring refactoring, ElementHandle<TypeElement> sourceType) throws IOException {
             JavaSource js = JavaSource.forFileObject(fo);
-            ModificationResult modification = js.runModificationTask(new UpdateClassTask(refactoring, sourceType, Collections.emptyList()));
+            ModificationResult modification = js.runModificationTask(new UpdateClassTask(refactoring, sourceType));
             List<? extends ModificationResult.Difference> diffs = modification.getDifferences(fo);
             for (ModificationResult.Difference diff : diffs) {
                 bag.add(refactoring, DiffElement.create(diff, fo, modification));

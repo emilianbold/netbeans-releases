@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -26,9 +26,11 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 import javax.lang.model.element.Element;
@@ -38,7 +40,10 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Types;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -68,7 +73,6 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -478,6 +482,76 @@ public class RetoucheUtils {
     
     public static ClasspathInfo getClasspathInfoFor(TreePathHandle handle) {
         return getClasspathInfoFor(getFileObject(handle));
+    }
+    
+/**
+     * Finds type parameters from <code>typeArgs</code> list that are referenced
+     * by <code>tm</code> type.
+     * @param utils compilation type utils
+     * @param typeArgs modifiable list of type parameters to search; found types will be removed (performance reasons).
+     * @param result modifiable list that will contain referenced type parameters
+     * @param tm parametrized type to analyze
+     */
+    public static void findUsedGenericTypes(Types utils, List<TypeMirror> typeArgs, List<TypeMirror> result, TypeMirror tm) {
+        if (typeArgs.isEmpty()) {
+            return;
+        } else if (tm.getKind() == TypeKind.TYPEVAR) {
+            TypeVariable type = (TypeVariable) tm;
+            TypeMirror low = type.getLowerBound();
+            if (low != null && low.getKind() != TypeKind.NULL) {
+                findUsedGenericTypes(utils, typeArgs, result, low);
+            }
+            TypeMirror up = type.getUpperBound();
+            if (up != null) {
+                findUsedGenericTypes(utils, typeArgs, result, up);
+            }
+            int index = findTypeIndex(utils, typeArgs, type);
+            if (index >= 0) {
+                result.add(typeArgs.remove(index));
+            }
+        } else if (tm.getKind() == TypeKind.DECLARED) {
+            DeclaredType type = (DeclaredType) tm;
+            for (TypeMirror tp : type.getTypeArguments()) {
+                findUsedGenericTypes(utils, typeArgs, result, tp);
+            }
+        } else if (tm.getKind() == TypeKind.WILDCARD) {
+            WildcardType type = (WildcardType) tm;
+            TypeMirror ex = type.getExtendsBound();
+            if (ex != null) {
+                findUsedGenericTypes(utils, typeArgs, result, ex);
+            }
+            TypeMirror su = type.getSuperBound();
+            if (su != null) {
+                findUsedGenericTypes(utils, typeArgs, result, su);
+            }
+        }
+    }
+    
+    private static int findTypeIndex(Types utils, List<TypeMirror> typeArgs, TypeMirror type) {
+        int i = -1;
+        for (TypeMirror typeArg : typeArgs) {
+            i++;
+            if (utils.isSameType(type, typeArg)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    
+    /**
+     * translates list of elements to list of types
+     * @param typeParams elements
+     * @return types
+     */
+    public static List<TypeMirror> resolveTypeParamsAsTypes(List<? extends Element> typeParams) {
+        if (typeParams.isEmpty()) {
+            return Collections.<TypeMirror>emptyList();
+        }
+        List<TypeMirror> typeArgs = new ArrayList<TypeMirror>(typeParams.size());
+        for (Element elm : typeParams) {
+            typeArgs.add(elm.asType());
+        }
+        return typeArgs;
     }
     
     private static class CompilerTask implements CancellableTask<CompilationController> {
