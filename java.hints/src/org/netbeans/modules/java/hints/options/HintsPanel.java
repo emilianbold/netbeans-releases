@@ -60,6 +60,8 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         model.addElement( NbBundle.getMessage(HintsPanel.class, "CTL_WarningOnCurrentLine"));      
         severityComboBox.setModel(model);
         
+        toProblemCheckBox.setVisible(false);
+        
         update();
           
         errorTree.setModel( RulesManager.getInstance().getHintsTreeModel() );       
