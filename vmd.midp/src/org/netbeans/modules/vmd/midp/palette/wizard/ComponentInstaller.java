@@ -137,7 +137,10 @@ public final class ComponentInstaller {
         if (element.getKind () != ElementKind.CLASS)
             return false;
 
-        String fqn = element.getQualifiedName ().toString ();
+        Name tempQualifiedName = element.getQualifiedName ();
+        if (tempQualifiedName == null)
+            return false;
+        String fqn = tempQualifiedName.toString ();
 
         ComponentDescriptor descriptor = registry.get (fqn);
         if (descriptor != null)
