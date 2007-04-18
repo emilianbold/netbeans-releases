@@ -59,7 +59,6 @@ import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
 import org.netbeans.spi.navigator.NavigatorLookupHint;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.ErrorManager;
-import org.openide.awt.StatusDisplayer;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -1098,7 +1097,8 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 
         showing = false;
 
-        StatusDisplayer.getDefault().setStatusText("");
+        // Now redundant, see the StatusDisplayer.setStatusText javadoc.
+//        StatusDisplayer.getDefault().setStatusText("");
 
         // <TEMP>
         // Just workaround: #5015428
@@ -1110,7 +1110,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
             }
         });*/
         // </TEMP>
-        selectNavigatorWindow();
+//        selectNavigatorWindow();
     }
 
     public CloseOperationState canCloseElement() {
@@ -1904,17 +1904,17 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         designer.updateSelectedNodes();
     }
 
-    /** Selects the navigator window. */
-    private static void selectNavigatorWindow() {
-        TopComponent navigator = WindowManager.getDefault().findTopComponent("navigatorTC"); // NOI18N
-
-        if (navigator != null) {
-            // XXX #6392131 -> NB #62329.
-            if (!Boolean.TRUE.equals(navigator.getClientProperty("isSliding"))) { // NOI18N
-                navigator.requestVisible();
-            }
-        }
-    }
+//    /** Selects the navigator window. */
+//    private static void selectNavigatorWindow() {
+//        TopComponent navigator = WindowManager.getDefault().findTopComponent("navigatorTC"); // NOI18N
+//
+//        if (navigator != null) {
+//            // XXX #6392131 -> NB #62329.
+//            if (!Boolean.TRUE.equals(navigator.getClientProperty("isSliding"))) { // NOI18N
+//                navigator.requestVisible();
+//            }
+//        }
+//    }
 
     /** Weak reference to the lookup. */
     private WeakReference<Lookup> lookupWRef = new WeakReference<Lookup>(null);
