@@ -94,7 +94,7 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 
 #UML component
-ant -f uml/build.xml build > $UML_BUILD_LOG 2>&1
+ant -f nbbuild/entpack/build.xml uml > $UML_BUILD_LOG 2>&1
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
