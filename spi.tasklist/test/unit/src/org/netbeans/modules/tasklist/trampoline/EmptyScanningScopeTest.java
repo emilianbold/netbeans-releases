@@ -19,18 +19,14 @@
 
 package org.netbeans.modules.tasklist.trampoline;
 
-import java.awt.Image;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import junit.framework.*;
 import org.netbeans.junit.*;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 
 
 
@@ -40,6 +36,10 @@ import org.openide.util.lookup.Lookups;
  * @author S. Aubrecht
  */
 public class EmptyScanningScopeTest extends NbTestCase {
+    
+    static {
+        IDEInitializer.setup(new String[0],new Object[0]);
+    }
 
     public EmptyScanningScopeTest (String name) {
         super (name);
@@ -86,7 +86,6 @@ public class EmptyScanningScopeTest extends NbTestCase {
 
     public void testIsInScope() throws IOException {
         EmptyScanningScope scope = new EmptyScanningScope();
-        
         FileObject fo = Repository.getDefault().getDefaultFileSystem().getRoot();
         assertNotNull( fo );
         assertFalse( scope.isInScope( fo ) );

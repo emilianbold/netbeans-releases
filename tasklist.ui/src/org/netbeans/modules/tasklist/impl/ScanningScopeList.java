@@ -21,18 +21,9 @@ package org.netbeans.modules.tasklist.impl;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.spi.tasklist.TaskScanningScope;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.FolderLookup;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -52,7 +43,6 @@ public final class ScanningScopeList {
     
     private PropertyChangeSupport propertySupport = new PropertyChangeSupport( this );
     
-    private FolderLookup folderLookup;
     private Lookup.Result<TaskScanningScope> lookupRes;
     
     /** Creates a new instance of ScanningScopeList */
@@ -97,28 +87,10 @@ public final class ScanningScopeList {
     }
     
     private Lookup.Result<TaskScanningScope> initLookup() {
-        DataObject.Container folder = getScopeListFolder();
-        Lookup lkp = null;
-        if( null != folder ) {
-            folderLookup = new FolderLookup( folder );
-            lkp = folderLookup.getLookup();
-        } else {
-            lkp = Lookups.fixed( new Object[] { CurrentEditorScanningScope.create() } );
-        }
+        Lookup lkp = Lookups.forPath( SCOPE_LIST_PATH );
         Lookup.Template<TaskScanningScope> template = new Lookup.Template<TaskScanningScope>( TaskScanningScope.class );
         Lookup.Result<TaskScanningScope> res = lkp.lookup( template );
         return res;
-    }
-    
-    private DataObject.Container getScopeListFolder() {
-        FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
-        try {
-            FileObject folder = FileUtil.createFolder( root, SCOPE_LIST_PATH );
-            return DataFolder.findContainer( folder );
-        } catch( IOException ioE ) {
-            Logger.getLogger( ScanningScopeList.class.getName() ).log( Level.INFO, ioE.getMessage(), ioE );
-        };
-        return null;
     }
     
     private void fireScopeListChange() {

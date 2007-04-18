@@ -20,25 +20,17 @@
 package org.netbeans.modules.tasklist.trampoline;
 
 import java.awt.Image;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.FolderLookup;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Factory to create new instances of a TaskGroup.
@@ -57,7 +49,6 @@ public final class TaskGroupFactory {
     
     private static TaskGroupFactory theInstance;
     
-    private FolderLookup folderLookup;
     private Lookup.Result<TaskGroup> lookupRes;
     
     private Map<String, TaskGroup> name2group;
@@ -168,27 +159,9 @@ public final class TaskGroupFactory {
     }
     
     private Lookup.Result<TaskGroup> initLookup() {
-        DataObject.Container folder = getGroupListFolder();
-        Lookup lkp = null;
-        if( null != folder ) {
-            folderLookup = new FolderLookup( folder );
-            lkp = folderLookup.getLookup();
-        } else {
-            lkp = Lookup.EMPTY;
-        }
+        Lookup lkp = Lookups.forPath( GROUP_LIST_PATH );
         Lookup.Template<TaskGroup> template = new Lookup.Template<TaskGroup>( TaskGroup.class );
         Lookup.Result<TaskGroup> res = lkp.lookup( template );
         return res;
-    }
-    
-    private DataObject.Container getGroupListFolder() {
-        FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
-        try {
-            FileObject folder = FileUtil.createFolder( root, GROUP_LIST_PATH );
-            return DataFolder.findContainer( folder );
-        } catch( IOException ioE ) {
-            Logger.getLogger( TaskGroupFactory.class.getName() ).log( Level.INFO, ioE.getMessage(), ioE );
-        };
-        return null;
     }
 }

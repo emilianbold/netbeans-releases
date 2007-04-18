@@ -19,14 +19,10 @@
 
 package org.netbeans.modules.tasklist.trampoline;
 
-import java.awt.Image;
-import java.awt.image.BufferedImage;
 import java.util.List;
 import junit.framework.*;
 import org.netbeans.junit.*;
 import org.netbeans.modules.tasklist.trampoline.TaskGroupFactory;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
 
 
 

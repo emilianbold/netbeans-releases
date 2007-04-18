@@ -21,22 +21,14 @@ package org.netbeans.modules.tasklist.impl;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.spi.tasklist.FileTaskScanner;
 import org.netbeans.spi.tasklist.PushTaskScanner;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.FolderLookup;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -53,7 +45,6 @@ public final class ScannerList <T>  {
     
     private PropertyChangeSupport propertySupport;
     
-    private FolderLookup folderLookup;
     private Lookup.Result<T> lkpResult;
     
     private List<T> scanners;
@@ -120,28 +111,10 @@ public final class ScannerList <T>  {
     }
 
     private Lookup.Result<T> initLookup() {
-        DataObject.Container folder = getProviderListFolder();
-        Lookup lkp = null;
-        if( null != folder ) {
-            folderLookup = new FolderLookup( folder );
-            lkp = folderLookup.getLookup();
-        } else {
-            lkp = Lookup.EMPTY;
-        }
+        Lookup lkp = Lookups.forPath( SCANNER_LIST_PATH );
         
         Lookup.Template<T> template = new Lookup.Template<T>( clazz );
         Lookup.Result<T> res = lkp.lookup( template );
         return res;
-    }
-    
-    private DataObject.Container getProviderListFolder() {
-        FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
-        try {
-            FileObject folder = FileUtil.createFolder( root, SCANNER_LIST_PATH );
-            return DataFolder.findContainer( folder );
-        } catch( IOException ioE ) {
-            Logger.getLogger( ScannerList.class.getName() ).log( Level.INFO, ioE.getMessage(), ioE ); //NOI18N
-        };
-        return null;
     }
 }
