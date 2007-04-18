@@ -50,6 +50,7 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.cookies.EditorCookie;
+import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -309,10 +310,11 @@ public class JaxWsServiceCreator implements ServiceCreator {
         if ( jaxWsModel!= null) {
             ClassPath classPath = ClassPath.getClassPath(createdFile, ClassPath.SOURCE);
             String serviceImplPath = classPath.getResourceName(createdFile, '.', false);
-            jaxWsModel.addService(wsName, serviceImplPath);
+            Service service = jaxWsModel.addService(wsName, serviceImplPath);
             jaxWsModel.write();
+            JaxWsUtils.openFileInEditor(dobj, service);
         }    
-        openFileInEditor(dobj);
+        
         return createdFile;
     }
     
@@ -332,15 +334,6 @@ public class JaxWsServiceCreator implements ServiceCreator {
             truename = origName + String.valueOf(++uniquifier);
         }
         return truename;
-    }
-    
-    private void openFileInEditor(DataObject dobj){
-        final EditorCookie ec = (EditorCookie)dobj.getCookie(EditorCookie.class);
-        RequestProcessor.getDefault().post(new Runnable(){
-            public void run(){
-                ec.open();
-            }
-        }, 1000);
     }
     
     private void addJaxws20Library(Project project) throws Exception {

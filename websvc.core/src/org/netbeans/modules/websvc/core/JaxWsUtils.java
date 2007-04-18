@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -50,11 +51,14 @@ import org.netbeans.modules.j2ee.common.source.GenerationUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlParameter;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
+import org.netbeans.modules.websvc.core.MultiViewCookie;
+import org.netbeans.modules.websvc.core.MultiViewCookie;
 import org.netbeans.modules.websvc.core.dev.wizard.ProjectInfo;
 import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsModel;
 import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsModelFactory;
@@ -67,8 +71,10 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.cookies.EditorCookie;
+import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import java.util.Iterator;
@@ -302,8 +308,16 @@ public class JaxWsUtils {
         };
         targetSource.runModificationTask(task).commit();
         //open in editor
+        
         DataObject dobj = DataObject.find(implClassFo);
-        openFileInEditor(dobj);
+        List<Service> services = jaxWsSupport.getServices();
+        if (serviceID!=null) {
+            for (Service serv:services) {
+                if (serviceID.equals(serv.getName())) {
+                    openFileInEditor(dobj, serv);
+                }
+            }
+        }
         
 // Retouche        
 //        JavaClass javaClass = null;
@@ -402,7 +416,7 @@ public class JaxWsUtils {
 //        
 //        //handle.finish();
     }
-    
+    /*
     private static void openFileInEditor(DataObject dobj){
         final EditorCookie ec = (EditorCookie)dobj.getCookie(EditorCookie.class);
         RequestProcessor.getDefault().post(new Runnable(){
@@ -410,6 +424,25 @@ public class JaxWsUtils {
                 ec.open();
             }
         }, 1000);
+    }
+    */
+    public static void openFileInEditor(DataObject dobj, Service service){
+
+        final OpenCookie openCookie = getMultiViewCookie(service,dobj);
+        if (openCookie!=null) {
+            RequestProcessor.getDefault().post(new Runnable(){
+                public void run(){
+                    openCookie.open();
+                }
+            }, 1000);
+        } else {
+            final EditorCookie ec = (EditorCookie)dobj.getCookie(EditorCookie.class);
+            RequestProcessor.getDefault().post(new Runnable(){
+                public void run(){
+                    ec.open();
+                }
+            }, 1000);
+        }
     }
 
 // Retouche
@@ -636,5 +669,22 @@ public class JaxWsUtils {
                 }
         }
         return false;
+    }
+    
+    private static final Lookup.Result<MultiViewCookieProvider> multiviewCookieProviders =
+        Lookup.getDefault().lookup(new Lookup.Template<MultiViewCookieProvider>(MultiViewCookieProvider.class));
+    
+    /** 
+     * Find MultiViewCookie for given this node
+     */
+    public static MultiViewCookie getMultiViewCookie(Service service, DataObject dataObject) {
+        Collection<? extends MultiViewCookieProvider> instances = multiviewCookieProviders.allInstances();
+        for (MultiViewCookieProvider impl: instances) {
+            MultiViewCookie cookie = impl.getMultiViewCookie(service, dataObject);
+            if (cookie != null) {
+                return cookie;
+            }
+        }
+        return null;
     }
 }
