@@ -108,7 +108,7 @@ public class FmtAlignmentBraces extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        bracesPlacementPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(FmtAlignmentBraces.class, "LBL_ab_placementBorder"))); // NOI18N
+        bracesPlacementPanel.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(FmtAlignmentBraces.class, "LBL_ab_placementBorder")), javax.swing.BorderFactory.createEmptyBorder(4, 8, 4, 8))); // NOI18N
         bracesPlacementPanel.setLayout(new java.awt.GridBagLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(classDeclLabel, org.openide.util.NbBundle.getMessage(FmtAlignmentBraces.class, "LBL_bp_ClassDecl")); // NOI18N
@@ -171,7 +171,7 @@ public class FmtAlignmentBraces extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         add(bracesPlacementPanel, gridBagConstraints);
 
-        bracesGenerationPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(FmtAlignmentBraces.class, "LBL_ab_generationBorder"))); // NOI18N
+        bracesGenerationPanel.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(FmtAlignmentBraces.class, "LBL_ab_generationBorder")), javax.swing.BorderFactory.createEmptyBorder(4, 8, 4, 8))); // NOI18N
         bracesGenerationPanel.setLayout(new java.awt.GridBagLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(ifBracesLabel, org.openide.util.NbBundle.getMessage(FmtAlignmentBraces.class, "LBL_bg_If")); // NOI18N
@@ -254,7 +254,7 @@ public class FmtAlignmentBraces extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         add(bracesGenerationPanel, gridBagConstraints);
 
-        newLinesPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(FmtAlignmentBraces.class, "LBL_ab_newLinesBorder"))); // NOI18N
+        newLinesPanel.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(FmtAlignmentBraces.class, "LBL_ab_newLinesBorder")), javax.swing.BorderFactory.createEmptyBorder(4, 8, 4, 8))); // NOI18N
         newLinesPanel.setLayout(new java.awt.GridBagLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(nlElseCheckBox, org.openide.util.NbBundle.getMessage(FmtAlignmentBraces.class, "LBL_nl_Else")); // NOI18N
@@ -303,7 +303,7 @@ public class FmtAlignmentBraces extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         add(newLinesPanel, gridBagConstraints);
 
-        multilineAlignmentPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(FmtAlignmentBraces.class, "LBL_ab_multilineAlignmentBodrer"))); // NOI18N
+        multilineAlignmentPanel.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(FmtAlignmentBraces.class, "LBL_ab_multilineAlignmentBodrer")), javax.swing.BorderFactory.createEmptyBorder(4, 8, 4, 8))); // NOI18N
         multilineAlignmentPanel.setLayout(new java.awt.GridBagLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(amMethodParamsCheckBox, org.openide.util.NbBundle.getMessage(FmtAlignmentBraces.class, "LBL_am_MethodParams")); // NOI18N
