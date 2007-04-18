@@ -13,281 +13,50 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.web.core.syntax;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.StyledDocument;
 import org.netbeans.api.languages.ASTItem;
-import org.netbeans.api.languages.CharInput;
-import org.netbeans.api.languages.CompletionItem;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.api.languages.Context;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTToken;
-import org.netbeans.api.languages.LibrarySupport;
-import org.openide.ErrorManager;
-import org.openide.text.NbDocument;
 
 
 /**
+ * Various Schliemanns callbacks from JSP.nbs file
  *
- * @author Jan Jancura
+ * @author Marek Fukala
  */
 public class JSP {
     
-//    private static final String HTML40DOC = "modules/ext/html40.zip";
-    private static final String HTML401 = "org/netbeans/modules/html/editor/resources/HTML401.xml";
-    
-    
-    public static Object[] readJavaScript (CharInput input) {
-        while (!input.eof ()) {
-            while (input.next () != '<' && !input.eof ())
-                input.read ();
-            int start = input.getIndex ();
-            input.read ();
-            if (input.next () != '/') continue;
-            input.read ();
-            if (Character.toLowerCase (input.next ()) != 's') continue;
-            input.read ();
-            if (Character.toLowerCase (input.next ()) != 'c') continue;
-            input.read ();
-            if (Character.toLowerCase (input.next ()) != 'r') continue;
-            input.read ();
-            if (Character.toLowerCase (input.next ()) != 'i') continue;
-            input.read ();
-            if (Character.toLowerCase (input.next ()) != 'p') continue;
-            input.read ();
-            if (Character.toLowerCase (input.next ()) != 't') continue;
-            input.read ();
-            while (Character.isWhitespace (input.next ()))
-                input.read ();
-            if (input.next () != '>') continue;
-            input.read ();
-            input.setIndex (start);
-            break;
-        }
-        return new Object[] {
-            ASTToken.create ("text/html", "javascript", "", 0),
-            "DEFAULT"
-        };
-    }
-    
-    public static Object[] readCSS (CharInput input) {
-        while (!input.eof ()) {
-            while (input.next () != '<' && !input.eof ())
-                input.read ();
-            int start = input.getIndex ();
-            input.read ();
-            if (input.next () != '/') continue;
-            input.read ();
-            if (Character.toLowerCase (input.next ()) != 's') continue;
-            input.read ();
-            if (Character.toLowerCase (input.next ()) != 't') continue;
-            input.read ();
-            if (Character.toLowerCase (input.next ()) != 'y') continue;
-            input.read ();
-            if (Character.toLowerCase (input.next ()) != 'l') continue;
-            input.read ();
-            if (Character.toLowerCase (input.next ()) != 'e') continue;
-            input.read ();
-            while (Character.isWhitespace (input.next ()))
-                input.read ();
-            if (input.next () != '>') continue;
-            input.read ();
-            input.setIndex (start);
-            break;
-        }
-        return new Object[] {
-            ASTToken.create ("text/html", "css", "", 0),
-            "DEFAULT"
-        };
-    }
-
-    
-    // tag completion ..........................................................
-    
-    public static String complete (Context context) {
-        TokenSequence ts = context.getTokenSequence ();
-        ts.moveNext ();
-        Token t = ts.token ();
-        if (t == null) return null;
-        String identifier = t.text ().toString ();
-        if (!identifier.equals (">")) return null;
-        do {
-            if (!ts.movePrevious ()) return null;
-        } while (!t.id ().name ().equals ("html_element_name"));
-        String et = getLibrary ().getProperty ("TAG", identifier, "endTag");
-        if (!ts.movePrevious ()) return null;
-        if (!ts.token ().text ().toString ().equals ("<")) return null;
-        return "</" + identifier + ">";
-    }
-    
-    
-    // indent ..................................................................
-    
-    public static void indent (Context context) {
-        TokenSequence ts = context.getTokenSequence ();
-        Document doc = context.getDocument ();
-        int indent;
-        Token t;
-        do {
-            ts.movePrevious ();
-            t = ts.token ();
-        } while (t.text ().toString ().trim ().length () == 0);
-        String text = t.text ().toString ();
-        String type = t.id ().name ();
-        int ln = NbDocument.findLineNumber ((StyledDocument) doc, ts.offset ());
-        int start = NbDocument.findLineOffset ((StyledDocument) doc, ln);
-        if (text.equals (">") || text.equals ("/>")) {
-            do {
-                if (!ts.movePrevious ()) break;
-                t = ts.token ();
-            } while (!t.text ().toString ().equals ("<"));
-            indent = getIndent (ts, doc);
-        } else
-        if (type.equals ("html_attribute_value") || 
-            type.equals ("html_attribute_name") ||
-            type.equals ("html_element_name") ||
-            type.equals ("html_operator")
-        ) {
-            do {
-                if (!ts.movePrevious ()) break;
-                t = ts.token ();
-            } while (
-                !t.text ().toString ().equals ("<") &&
-                ts.offset () > start
-            );
-            if (t.text ().toString ().equals ("<"))
-                indent = getIndent (ts, doc) + 4;
-            else {
-                ts.moveNext ();
-                indent = getIndent (ts, doc);
+    public static String navigatorDisplayName(SyntaxContext context) {
+        ASTItem item = context.getASTPath().getLeaf();
+        if(item instanceof ASTNode) {
+            ASTNode node = (ASTNode)item;
+            String type = node.getNT();
+            String name = null;
+            if("simpleTag".equals(type) || "unpairedStartTag".equals(type)) {
+                name = node.getTokenTypeIdentifier("TAG");
+            } else if("unpairedEndTag".equals(type)) {
+                name = node.getTokenTypeIdentifier("ENDTAG");
+            } else if("tag".equals(type)) {
+                name = node.getNode("startTag").getTokenTypeIdentifier("TAG");
             }
-        } else
-        if (text.equals ("<")) {
-            indent = getIndent (ts, doc) + 4;
-        } else
-            indent = getIndent (ts, doc);
-        indent (doc, context.getJTextComponent ().getCaret ().getDot (), indent);
-    }
-    
-    private static int getIndent (TokenSequence ts, Document doc) {
-        int ln = NbDocument.findLineNumber ((StyledDocument) doc, ts.offset ());
-        int start = NbDocument.findLineOffset ((StyledDocument) doc, ln);
-        ts.move (start);
-        ts.moveNext ();
-        if (ts.token ().text ().toString ().trim ().length () == 0)
-            ts.moveNext ();
-        return ts.offset () - start;
-    }
-    
-    private static void indent (Document doc, int offset, int i) {
-        StringBuilder sb = new StringBuilder ();
-        while (i > 0) {
-            sb.append (' ');i--;
+            if(name != null) {
+                if(name.charAt(name.length() - 1) != '>') {
+                    name += ">"; //add ending '>' if necessary
+                }
+                return name;
+            }
         }
-        try {
-            doc.insertString (offset, sb.toString (), null);
-        } catch (BadLocationException ex) {
-            ErrorManager.getDefault ().notify (ex);
-        }
-    }
-    
-//    public static Runnable hyperlink (PTPath path) {
-//        ASTToken t = (ASTToken) path.getLeaf ();
-//        String s = t.getIdentifier ();
-//        s = s.substring (1, s.length () - 1).trim ();
-//        if (!s.endsWith (")")) return null;
-//        s = s.substring (0, s.length () - 1).trim ();
-//        if (!s.endsWith ("(")) return null;
-//        s = s.substring (0, s.length () - 1).trim ();
-//        final Line l = (Line) DatabaseManager.get (s);
-//        if (l != null)
-//            return new Runnable () {
-//                public void run () {
-//                    l.show (l.SHOW_SHOW);
-//                }
-//            };
-//        return null;
-//    }
-
-    
-    // completion ..............................................................
-    
-    public static List tags (Context context) {
-        if (context instanceof SyntaxContext) return Collections.EMPTY_LIST;
-        List tags = getLibrary ().getItems ("TAG");
-        List items = new ArrayList (tags.size ());
-        Iterator it = tags.iterator ();
-        while (it.hasNext ()) {
-            String tag = (String) it.next ();
-            String description = getLibrary ().getProperty 
-                ("TAG", tag, "description");
-            items.add (CompletionItem.create (tag.toUpperCase ()));
-        }
-        return items;
-    }
-
-    public static List attributes (Context context) {
-        if (context instanceof SyntaxContext) return Collections.EMPTY_LIST;
-        String tagName = tagName (context.getTokenSequence ());
-        if (tagName == null) return Collections.EMPTY_LIST;
-        List r = getLibrary ().getItems (tagName);
-        if (r == null) return Collections.EMPTY_LIST;
-        //S ystem.out.println("attributes " + r);
-        List items = new ArrayList (r.size ());
-        Iterator it = r.iterator ();
-        while (it.hasNext ()) {
-            String tag = (String) it.next ();
-            String description = getLibrary ().getProperty 
-                (tagName, tag, "description");
-            items.add (CompletionItem.create (tag.toUpperCase ()));
-        }
-        //S ystem.out.println("attributeDescriptions " + attributeDescriptions);
-        return items;
-    }
-    
-
-    // marks ...................................................................
-    
-    public static boolean isDeprecatedAttribute (Context context) {
-        Token t = context.getTokenSequence ().token ();
-        if (t == null) return false;
-        String attribName = t.text ().toString ().toLowerCase ();
-        String tagName = tagName (context.getTokenSequence ());
-        if (tagName == null) return false;
-        return "true".equals (getLibrary ().getProperty (tagName, attribName, "deprecated"));
-    }
-
-    public static boolean isDeprecatedTag (Context context) {
-        Token t = context.getTokenSequence ().token ();
-        if (t == null) return false;
-        String tagName = t.text ().toString ().toLowerCase ();
-        return "true".equals (getLibrary ().getProperty ("TAG", tagName, "deprecated"));
-    }
-
-    public static boolean isEndTagRequired (Context context) {
-        Token t = context.getTokenSequence ().token ();
-        if (t == null) return false;
-        return isEndTagRequired (t.id ().name ().toLowerCase ());
-    }
-
-    static boolean isEndTagRequired (String tagName) {
-        String v = getLibrary ().getProperty ("TAG", tagName, "endTag");
-        return !"O".equals (v) && !"F".equals (v);
+        return item.toString();
     }
     
     public static ASTNode process (SyntaxContext context) {
@@ -297,24 +66,7 @@ public class JSP {
         return ASTNode.create (n.getMimeType (), n.getNT (), l, n.getOffset ());
     }
     
-    
     // private methods .........................................................
-
-    private static String tagName (TokenSequence ts) {
-        while (!ts.token ().id ().name ().equals ("html_element_name"))
-            if (!ts.movePrevious ()) break;
-        if (!ts.token ().id ().name ().equals ("html_element_name")) 
-            return null;
-        return ts.token ().text ().toString ().toLowerCase ();
-    }
-    
-    private static LibrarySupport library;
-    
-    private static LibrarySupport getLibrary () {
-        if (library == null)
-            library = LibrarySupport.create (HTML401);
-        return library;
-    }
     
     private static ASTNode clone (String mimeType, String nt, int offset, List children) {
         Iterator it = children.iterator ();
@@ -368,18 +120,24 @@ public class JSP {
             }
             ASTNode node = (ASTNode) item;
             if (node.getNT ().equals ("startTag")) {
-                ASTToken tagCloseSymbolToken = node.getTokenType ("TAG_CLOSE_SYMBOL");
+                ASTToken tagCloseSymbolToken = node.getTokenType ("SYMBOL");
                 if (tagCloseSymbolToken != null && "/>".equals(tagCloseSymbolToken.getIdentifier())) {
                     l.add (clone (node, "simpleTag"));
                 } else {
-                    String name = node.getTokenTypeIdentifier ("TAG_OPEN");
+                    String name = node.getTokenTypeIdentifier ("TAG");
                     if (name == null) 
                         name = "";
-                    else
-                        name = name.toLowerCase ();
+                    else {
+                        //cut off the leading '<' char
+                        name = name.toLowerCase ().substring(1); 
+                        //the open tag can have the closing > symbol as a part of the TAG token :-|
+                        if(name.endsWith(">")) {
+                            name = name.substring(0, name.length() -1 ); 
+                        }
+                    }
                     s.add (name);
                     s.add (new Integer (l.size ()));
-                    if (findUnpairedTags && isEndTagRequired (name))
+                    if (findUnpairedTags)
                         l.add (clone (node, "unpairedStartTag"));
                     else
                         l.add (clone (node, "startTag"));
@@ -387,11 +145,11 @@ public class JSP {
                 continue;
             } else
             if (node.getNT ().equals ("endTag")) {
-                String name = node.getTokenTypeIdentifier ("TAG_CLOSE");
+                String name = node.getTokenTypeIdentifier ("ENDTAG");
                 if (name == null) 
                     name = "";
                 else
-                    name = name.toLowerCase ();
+                    name = name.toLowerCase ().substring(2); //cut off the leading '</' chars;
                 int indexS = s.lastIndexOf (name); //find last 'name' element in the stack
                 if (indexS >= 0) {
                     int indexL = ((Integer) s.get (indexS + 1)).intValue (); //gets an index to ll for the indexS

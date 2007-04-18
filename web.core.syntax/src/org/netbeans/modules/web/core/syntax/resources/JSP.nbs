@@ -56,13 +56,25 @@ COLOR:ENDTAG: {
 ########### navigator ##########################################################
 
 NAVIGATOR:tag: {
-    display_name: "$startTag.TAG$";
+    display_name: org.netbeans.modules.web.core.syntax.JSP.navigatorDisplayName;
     tooltip: "$$";
     icon: "/org/netbeans/modules/html/editor/resources/htmlTag.png";
 }
 
-NAVIGATOR:simpletag: {
-    display_name: "$startTag.TAG$";
+NAVIGATOR:simpleTag: {
+    display_name: org.netbeans.modules.web.core.syntax.JSP.navigatorDisplayName;
+    tooltip: "$$";
+    icon: "/org/netbeans/modules/html/editor/resources/htmlTag.png";
+}
+
+NAVIGATOR:unpairedStartTag: {
+    display_name: org.netbeans.modules.web.core.syntax.JSP.navigatorDisplayName;
+    tooltip: "$$";
+    icon: "/org/netbeans/modules/html/editor/resources/htmlTag.png";
+}
+
+NAVIGATOR:unpairedEndTag: {
+    display_name: org.netbeans.modules.web.core.syntax.JSP.navigatorDisplayName;
     tooltip: "$$";
     icon: "/org/netbeans/modules/html/editor/resources/htmlTag.png";
 }
@@ -74,7 +86,7 @@ NAVIGATOR:directive: {
 }
 
 NAVIGATOR:scriptlet: {
-    display_name: "<% $SCRIPTLET$ %>";
+    display_name: "<% $S$ %>";
     tooltip: "$$";
     icon: "/org/netbeans/modules/languages/resources/class.gif";
 }
