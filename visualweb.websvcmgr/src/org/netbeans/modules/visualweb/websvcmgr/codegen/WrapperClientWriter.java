@@ -19,6 +19,9 @@
 
 package org.netbeans.modules.visualweb.websvcmgr.codegen;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -72,6 +75,7 @@ public class WrapperClientWriter extends java.io.PrintWriter {
     private Set imports = new HashSet();
     private WsdlPort port;
     private String className;
+    private WebServiceData wsData;
     
     private Set constructorStatements = new HashSet();
     
@@ -82,11 +86,12 @@ public class WrapperClientWriter extends java.io.PrintWriter {
     boolean isJaxRpc = false;
     
     /** Creates a new instance of JavaWriter */
-    public WrapperClientWriter(Writer writer, boolean isJaxRpc, List<java.lang.reflect.Method> sortedMethods){
+    public WrapperClientWriter(Writer writer, WebServiceData wsData, boolean isJaxRpc, List<java.lang.reflect.Method> sortedMethods){
         super(writer);
         
         this.sortedMethods = sortedMethods;
         this.isJaxRpc = isJaxRpc;
+        this.wsData = wsData;
         // Always implements java.io.Seriazable
         interfaces.add( "java.io.Serializable" );
     }
@@ -123,7 +128,7 @@ public class WrapperClientWriter extends java.io.PrintWriter {
         this.port = inPort;
     }
    
-    public void writeClass() {
+    public void writeClass() throws IOException {
         /**
          * Write the package statement
          */
@@ -178,9 +183,9 @@ public class WrapperClientWriter extends java.io.PrintWriter {
         
         // write a variable for the service implementation.
         if (isJaxRpc) {
-            println("  private " + serviceName + " " + serviceVariable + " = " + "new " + serviceName + "_Impl();");
+            println("  private " + serviceName + " " + serviceVariable + ";");
         }else {
-            println("  private " + serviceName + " " + serviceVariable + " = " + "new " + serviceName + "();");
+            println("  private " + serviceName + " " + serviceVariable + ";");
         }
         
         // write a variable for the port
@@ -210,11 +215,12 @@ public class WrapperClientWriter extends java.io.PrintWriter {
         
         // Variable to indicate whehther it is in test mode or ot
         println("  private boolean testMode = false;");
-            
+
         // Write the constructor
         if (isJaxRpc) {
             println("  public " + className + "() {");
             println("    try {");
+            println("      " + serviceName + " " + serviceVariable + " = " + "new " + serviceName + "_Impl();");
             println("      " + portInterfaceVariable + " = " + serviceVariable + ".get" +portImplName +"();");
             println("    } catch (ServiceException se) {");
             println("      se.printStackTrace();" );
@@ -223,7 +229,26 @@ public class WrapperClientWriter extends java.io.PrintWriter {
             println("  }");
             println();
         }else {
+            // Instantiate the Service class, specifying the wsdl URL kept in the
+            // web service jar
+            URL url = new File(wsData.getURL()).toURL();
+            String urlPath = url.getPath();
+            int start;
+            if (url.getProtocol().toLowerCase().startsWith("file")) { // NOI18N
+                start = urlPath.lastIndexOf(System.getProperty("path.separator"));
+                start = (start < 0) ? urlPath.lastIndexOf("/"): start;
+            }else {
+                start = urlPath.lastIndexOf("/");
+            }
+            start = (start < 0 || start >= urlPath.length()-1) ? 0 : start + 1;
+            
+            String wsdlFileName = urlPath.substring(start);
+            String namespace = wsData.getWsdlService().getNamespaceURI();
+            String qname = wsData.getWsdlService().getName();
+            
             println("  public " + className + "() {");
+            println("    " + "java.net.URL wsdl = this.getClass().getResource(\"" + wsdlFileName + "\");");
+            println("    " + serviceName + " " + serviceVariable + " = " + "new " + serviceName + "(wsdl, new javax.xml.namespace.QName(\"" + namespace + "\", \"" + qname + "\"));");
             println("    " + portInterfaceVariable + " = " + serviceVariable + ".get" +portImplName +"();");
             println("  }");
             println();

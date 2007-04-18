@@ -116,6 +116,11 @@
     </target>
     
     <target name="client-dt-wsimport" depends="-init-wsimport">
+        <!-- Add the .wsdl file to the web service. The wsimport tool uses an
+             absolute path for the wsdl, which does not work for file-based wsdl files -->
+        <copy file="${wsdlFileName}" todir="${jaxws.base}/src/${packageDir}"/>
+        <copy file="${wsdlFileName}" todir="${jaxws.base}/build/${packageDir}"/>
+
         <jar jarfile="${jaxws.base}/${serviceName}-src.jar">
             <fileset dir="${jaxws.base}/src">
                 <patternset includes="**/*.java"/>
