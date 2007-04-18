@@ -48,7 +48,7 @@ public class DownloadConfigurationLogicAction extends WizardAction {
     
     public static final String DEFAULT_PROGRESS_TITLE_LOCAL =
             ResourceUtils.getString(DownloadConfigurationLogicAction.class,
-            "DCLA.progress.local.title"); //NOI18N    
+            "DCLA.progress.local.title"); //NOI18N
     public static final String PROGRESS_TITLE_LOCAL_PROPERTY =
             "progress.title.local";//NOI18N
     
@@ -56,13 +56,20 @@ public class DownloadConfigurationLogicAction extends WizardAction {
             ResourceUtils.getString(DownloadConfigurationLogicAction.class,
             "DCLA.progress.remote.title"); //NOI18N
     public static final String PROGRESS_TITLE_REMOTE_PROPERTY =
-            "progress.title.remote";//NOI18N      
+            "progress.title.remote";//NOI18N
     
     public static final String DEFAULT_DOWNLOAD_FAILED_EXCEPTION =
             ResourceUtils.getString(DownloadConfigurationLogicAction.class,
             "DCLA.failed"); //NOI18N
     public static final String DOWNLOAD_FAILED_EXCEPTION_PROPERTY =
-            "download.failed";//NOI18N      
+            "download.failed";//NOI18N
+    
+    public static final String DEFAULT_DEPENDENT_FAILED_EXCEPTION =
+            ResourceUtils.getString(DownloadConfigurationLogicAction.class,
+            "DCLA.dependent.failed"); //NOI18N
+    
+    public static final String DEPENDENT_FAILED_EXCEPTION_PROPERTY =
+            "download.dependent.failed"; //NOI18N
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
@@ -75,6 +82,7 @@ public class DownloadConfigurationLogicAction extends WizardAction {
         setProperty(PROGRESS_TITLE_LOCAL_PROPERTY, DEFAULT_PROGRESS_TITLE_LOCAL);
         setProperty(PROGRESS_TITLE_REMOTE_PROPERTY, DEFAULT_PROGRESS_TITLE_REMOTE);
         setProperty(DOWNLOAD_FAILED_EXCEPTION_PROPERTY, DEFAULT_DOWNLOAD_FAILED_EXCEPTION);
+        setProperty(DEPENDENT_FAILED_EXCEPTION_PROPERTY, DEFAULT_DEPENDENT_FAILED_EXCEPTION);
     }
     
     public boolean canExecuteForward() {
@@ -111,7 +119,7 @@ public class DownloadConfigurationLogicAction extends WizardAction {
                     PROGRESS_TITLE_REMOTE_PROPERTY :
                     PROGRESS_TITLE_LOCAL_PROPERTY;
                 String overallProgressTitle = StringUtils.format(
-                            getProperty(prop), product.getDisplayName());
+                        getProperty(prop), product.getDisplayName());
                 
                 overallProgress.setTitle(overallProgressTitle);
                 
@@ -145,7 +153,13 @@ public class DownloadConfigurationLogicAction extends WizardAction {
                 for(Product dependent: registry.getProducts()) {
                     if ((dependent.getStatus()  == Status.TO_BE_INSTALLED) &&
                             registry.satisfiesRequirement(product, dependent)) {
-                        final InstallationException dependentError = new InstallationException("Could not install " + dependent.getDisplayName() + ", since the installation of " + product.getDisplayName() + "failed", error);
+                        String exString = StringUtils.format(
+                                getProperty(DEPENDENT_FAILED_EXCEPTION_PROPERTY),
+                                dependent.getDisplayName(),
+                                product.getDisplayName());
+                        
+                        final InstallationException dependentError =
+                                new InstallationException(exString, error);
                         
                         dependent.setStatus(Status.NOT_INSTALLED);
                         dependent.setInstallationError(dependentError);
