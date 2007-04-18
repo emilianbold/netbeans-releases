@@ -22,7 +22,9 @@ package org.netbeans.installer.utils.applications;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.installer.utils.ErrorManager;
@@ -437,7 +439,8 @@ public class NetBeansUtils {
     public static boolean warnNetbeansRunning(File nbLocation) {
         try {
             boolean isRunning = isNbRunning(nbLocation);
-            if (isRunning) {
+            if (isRunning && !checkedAndRunning.contains(nbLocation)) {
+                checkedAndRunning.add(nbLocation);
                 final String message = ResourceUtils.getString(
                         NetBeansUtils.class,
                         "NU.warning.running"); // NOI18N
@@ -568,6 +571,8 @@ public class NetBeansUtils {
             M * K;
     public static final long T =
             G * K;
+    // one set for the whole installer
+    private static Set <File> checkedAndRunning = new HashSet <File> ();
     
     private static final String MEMORY_SUFFIX_PATTERN =
             "[kKmMgGtT]?"; // NOI18N
