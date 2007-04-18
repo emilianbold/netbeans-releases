@@ -31,7 +31,6 @@ import java.util.Enumeration;
 import java.util.Set;
 import java.util.WeakHashMap;
 import javax.swing.JEditorPane;
-import javax.swing.JLabel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
@@ -39,9 +38,10 @@ import javax.swing.text.StyledDocument;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
-import org.openide.DialogDisplayer;
+import org.netbeans.modules.properties.PropertiesEncoding.PropCharset;
+import org.netbeans.modules.properties.PropertiesEncoding.PropCharsetDecoder;
+import org.netbeans.modules.properties.PropertiesEncoding.PropCharsetEncoder;
 import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.UndoRedo;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditCookie;
@@ -81,19 +81,11 @@ public class PropertiesEditorSupport extends CloneableEditorSupport
 implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serializable {
     
     /** */
-    static final String PROP_NON_ASCII_CHAR_READ = "org.netbeans.modules.properties.nonAsciiPresent";   //NOI18N
-    /** New lines in this file was delimited by '\n'. */
-    private static final byte NEW_LINE_N = 0;
-    /** New lines in this file was delimited by '\r'. */
-    private static final byte NEW_LINE_R = 1;
-    /** New lines in this file was delimited by '\r\n'. */
-    private static final byte NEW_LINE_RN = 2;
-    
-    /** */
     private FileStatusListener fsStatusListener;
     
-    /** The type of new lines. Default is <code>NEW_LINE_N</code>. */
-    private byte newLineType = NEW_LINE_N;
+    /** The type of new lines. */
+    private PropertiesEncoding.NewLineType newLineType
+            = PropertiesEncoding.getDefaultNewLineType();
     
     /** Visible view of underlying file entry */
     transient PropertiesFileEntry myEntry;
@@ -238,16 +230,16 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
      */
     protected void loadFromStreamToKit(StyledDocument document, InputStream inputStream, EditorKit editorKit)
     throws IOException, BadLocationException {
-        NewLineReader newLineReader = new NewLineReader(inputStream);
+        final PropCharsetDecoder decoder
+                = new PropCharsetDecoder(new PropCharset());
+        final Reader reader
+                = new BufferedReader(new InputStreamReader(inputStream, decoder));
         
         try {
-            editorKit.read(newLineReader, document, 0);
-            newLineType = newLineReader.getNewLineType();
-            if (newLineReader.wasNonAsciiCharacterRead()) {
-                document.putProperty(PROP_NON_ASCII_CHAR_READ, Boolean.TRUE);
-            }
+            editorKit.read(reader, document, 0);
+            newLineType = decoder.getNewLineType();
         } finally {
-            newLineReader.close();
+            reader.close();
         }
     }
 
@@ -263,7 +255,10 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
      */
     protected void saveFromKitToStream(StyledDocument document, EditorKit editorKit, OutputStream outputStream)
     throws IOException, BadLocationException {
-        Writer writer = new NewLineWriter(outputStream, newLineType);
+        final PropCharsetEncoder encoder
+                = new PropCharsetEncoder(new PropCharset(), newLineType);
+        final Writer writer
+                = new BufferedWriter(new OutputStreamWriter(outputStream, encoder));
         
         try {
             editorKit.write(writer, document, 0, document.getLength());
@@ -476,12 +471,6 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
      */
     void forceNotifyClosed() {
         super.notifyClosed();
-    }
-    
-    /** Helper method. 
-     * @return <code>newLineType</code>.*/
-    byte getNewLineType() {
-        return newLineType;
     }
     
     /** Helper method. Saves this entry. */
@@ -887,17 +876,13 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
 
     
     /** Cloneable top component to hold the editor kit. */
-    public static class PropertiesEditor extends CloneableEditor
-                                         implements Runnable {
+    public static class PropertiesEditor extends CloneableEditor {
         
         /** Holds the file being edited. */
         protected transient PropertiesFileEntry entry;
         
         /** Listener for entry's save cookie changes. */
         private transient PropertyChangeListener saveCookieLNode;
-        
-        /** */
-        private transient boolean hasBeenActivated = false;
         
         /** Generated serial version UID. */
         static final long serialVersionUID =-2702087884943509637L;
@@ -935,49 +920,6 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
             this.entry.addPropertyChangeListener(
             WeakListeners.propertyChange(saveCookieLNode, this.entry));
         }
-        
-        /**
-         */
-        protected void componentActivated() {
-            super.componentActivated();
-            if (!hasBeenActivated) {
-                hasBeenActivated = true;
-                if (Boolean.TRUE.equals(getEditorPane().getDocument().getProperty(
-                                                       PROP_NON_ASCII_CHAR_READ))) {
-                    EventQueue.invokeLater(this);
-                }
-            }
-        }
-        
-        /**
-         */
-        public void run() {
-            String msg = NbBundle.getMessage(getClass(),
-                                             "MSG_OnlyLatin1Supported");//NOI18N
-            Object msgObject;
-            int nlIndex = msg.indexOf('\n');
-            if (nlIndex == -1) {
-                msgObject = msg;
-            } else {
-                StringBuilder buf = new StringBuilder(msg.length() + 40);
-                buf.append("<html>");                                   //NOI18N
-
-                int lastNlIndex = -1;
-                do {
-                    buf.append(msg.substring(lastNlIndex + 1, nlIndex));
-                    buf.append("<br>");                                 //NOI18N
-                    lastNlIndex = nlIndex;
-                    nlIndex = msg.indexOf('\n', lastNlIndex + 1);
-                } while (nlIndex != -1);
-                buf.append(msg.substring(lastNlIndex + 1));
-                msgObject = new JLabel(buf.toString());
-            }
-            
-            DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(
-                            msgObject,
-                            NotifyDescriptor.WARNING_MESSAGE));
-        }
 
         /**
          * Overrides superclass method. 
@@ -1005,145 +947,6 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
     } // End of nested class PropertiesEditor.
     
 
-    /** This stream is able to filter various new line delimiters and replace them by \n. */
-    static class NewLineReader extends BufferedReader {
-        
-        /** The count of types new line delimiters used in the file */
-        int[] newLineTypes;
-        /** */
-        private boolean nonAsciiCharacterRead = false;
-        
-        
-        /** Creates new stream.
-         * @param is encapsulated input stream.
-         * @param justFilter The flag determining if this stream should
-         *        store the guarded block information. True means just filter,
-         *        false means store the information.
-         */
-        public NewLineReader(InputStream is) throws IOException {
-            super(new InputStreamReader(is, "8859_1")); // NOI18N
-            
-            newLineTypes = new int[] { 0, 0, 0 };
-        }
-
-        
-        /** Overrides superclass method. Reads one character.
-         * @return next char or -1 if the end of file was reached.
-         * @exception IOException if any problem occured.
-         */
-        public int read() throws IOException {
-            int nextToRead = super.read();
-            
-            if (nextToRead == -1)
-                return -1;
-            
-            if (nextToRead == '\r') {
-                nextToRead = super.read();
-                
-                while (nextToRead == '\r')
-                    nextToRead = super.read();
-                if (nextToRead == '\n') {
-                    nextToRead = super.read();
-                    newLineTypes[NEW_LINE_RN]++;
-                    return '\n';
-                } else {
-                    newLineTypes[NEW_LINE_R]++;
-                    return '\n';
-                }
-            }
-            if (nextToRead == '\n') {
-                nextToRead = super.read();
-                newLineTypes[NEW_LINE_N]++;
-                return '\n';
-            }
-            if (nextToRead > 0x7e) {
-                nonAsciiCharacterRead = true;
-            }
-            
-            return nextToRead;
-        }
-
-        /**
-         * {@inheritdoc}
-         */
-        public int read(char cbuf[], int off, int len) throws IOException {
-            int charsCount = super.read(cbuf, off, len);
-            if (!nonAsciiCharacterRead && (charsCount > 0)) {
-                final int upperLimit = off + len;
-                for (int i = off; i < upperLimit; i++) {
-                    if (cbuf[i] > 0x7e) {
-                        nonAsciiCharacterRead = true;
-                        break;
-                    }
-                }
-            }
-            return charsCount;
-        }
-        
-        /** Gets new line type. */
-        public byte getNewLineType() {
-            if (newLineTypes[0] > newLineTypes[1]) {
-                return (newLineTypes[0] > newLineTypes[2]) ? NEW_LINE_N : NEW_LINE_RN;
-            } else {
-                return (newLineTypes[1] > newLineTypes[2]) ? NEW_LINE_R : NEW_LINE_RN;
-            }
-        }
-        
-        /**
-         */
-        public boolean wasNonAsciiCharacterRead() {
-            return nonAsciiCharacterRead;
-        }
-        
-    } // End of nested class NewLineReader.
-    
-    
-    /** This stream is used for changing the new line delimiters.
-     * Replaces the '\n' by '\n', '\r' or "\r\n". */
-    static class NewLineWriter extends BufferedWriter {
-        
-        /** The type of new line delimiter */
-        byte newLineType;
-
-        
-        /** Creates new stream.
-         * @param stream Underlaying stream
-         * @param newLineType The type of new line delimiter
-         */
-        public NewLineWriter(OutputStream stream, byte newLineType) throws UnsupportedEncodingException {
-            super(new OutputStreamWriter(stream, "8859_1"));
-            
-            this.newLineType = newLineType;
-        }
-        
-        
-        /** Write one character. New line char replaces according the <code>newLineType</code> character.
-         * @param character character to write.
-         */
-        public void write(int character) throws IOException {
-            if(character == '\r')
-                // Do nothing.
-                return;
-            if(character == '\n') {
-                if(newLineType == NEW_LINE_R) {
-                    // Replace new line by \r.
-                    super.write('\r');
-                } else if(newLineType == NEW_LINE_N) {
-                    // Replace new line by \n.
-                    super.write('\n');
-                } else if(newLineType == NEW_LINE_RN) {
-                    // Replace new line by \r\n.
-                    super.write('\r');
-                    super.write('\n');
-                }
-            } else {
-                super.write(character);
-            }
-        }
-        
-    } // End of nested class NewLineWriter.
-    
-    
     /** Inner class. UndoRedo manager which saves a StampFlag
      * for each UndoAbleEdit.
      */

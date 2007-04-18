@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -22,6 +22,8 @@ package org.netbeans.modules.properties;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.ExtensionList;
 import org.openide.loaders.MultiDataObject;
@@ -51,6 +53,9 @@ public final class PropertiesDataLoader extends MultiFileLoader {
     /** name of property with extensions */
     public static final String PROP_EXTENSIONS = "extensions"; // NOI18N
     
+    /** */
+    private Reference<PropertiesEncoding> encodingRef;
+    
     /** Creates new PropertiesDataLoader. */
     public PropertiesDataLoader() {
         super("org.netbeans.modules.properties.PropertiesDataObject"); // NOI18N
@@ -67,6 +72,16 @@ public final class PropertiesDataLoader extends MultiFileLoader {
         setExtensions(extList);
     }
 
+    /**
+     */
+    PropertiesEncoding getEncoding() {
+        PropertiesEncoding encoding;
+        if ((encodingRef == null) || ((encoding = encodingRef.get()) == null)) {
+            encoding = new PropertiesEncoding();
+            encodingRef = new SoftReference<PropertiesEncoding>(encoding);
+        }
+        return encoding;
+    }
     
     /** */
     protected String defaultDisplayName() {

@@ -35,7 +35,10 @@ import org.openide.loaders.*;
 import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 
 /**
@@ -61,6 +64,9 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
     // Hack due having lock on secondaries, can't override handleCopy, handleMove at all.
     /** Suffix used by copying/moving dataObject. */
     private transient String pasteSuffix;
+    
+    /** */
+    private Lookup lookup;
 
 
     /**
@@ -74,13 +80,36 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
      *              for the specified file
      */
     public PropertiesDataObject(final FileObject primaryFile,
-                                final MultiFileLoader loader)
+                                final PropertiesDataLoader loader)
             throws DataObjectExistsException {
         super(primaryFile, loader);
         // use editor support
         initialize();
     }
 
+    /**
+     */
+    PropertiesEncoding getEncoding() {
+        return ((PropertiesDataLoader) getLoader()).getEncoding();
+    }
+    
+    private Lookup getSuperLookup() {
+        return super.getLookup();
+    }
+    
+    public Lookup getLookup() {
+        if (lookup == null) {
+            lookup = new ProxyLookup(
+                    Lookups.singleton(getEncoding()),
+                    Lookups.proxy(
+                            new Lookup.Provider() {
+                                    public Lookup getLookup() {
+                                        return getSuperLookup();
+                                    }
+                    }));
+        }
+        return lookup;
+    }
     
     /** Initializes the object. Used by construction and deserialized. */
     private void initialize() {
