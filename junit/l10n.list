@@ -1,4 +1,3 @@
 junit/src/**/Bundle*.properties
 junit/src/**/*.html
 junit/src/**/*.gif
-junit/src/**/*.template
