@@ -400,7 +400,8 @@ class InPlaceEditLayer extends JPanel
             //don't set this value if it's really a toplevel jmenu
             if (editedComp instanceof JMenuItem && 
                     editedComp.getParent() != null && !(editedComp.getParent() instanceof JMenuBar)) {
-                editedIns.left += 14;
+                //commented out because it's breaking other things when the editing session ends
+                //editedIns.left += 14;
             }
         } else if (editedComp instanceof JTabbedPane) {
             JTabbedPane tabbedPane = (JTabbedPane)editedComp;
