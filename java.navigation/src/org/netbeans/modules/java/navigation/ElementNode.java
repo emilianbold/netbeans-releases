@@ -38,6 +38,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /** Node representing an Element
@@ -352,7 +353,7 @@ public class ElementNode extends AbstractNode {
 
         @java.lang.Override
         public java.lang.String getDisplayName() {
-            return "Please Wait...";
+            return NbBundle.getMessage(ElementNode.class, "LBL_WaitNode"); // NOI18N
         }
         
     }
