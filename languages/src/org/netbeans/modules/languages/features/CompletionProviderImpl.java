@@ -224,9 +224,10 @@ public class CompletionProviderImpl implements CompletionProvider {
                 parserManager.addListener (new ParserManagerListener () {
                     public void parsed (State state, ASTNode ast) {
                         //S ystem.out.println("CodeCompletion: parsed " + state);
+                        if (resultSet.isFinished ()) return;
+                        parserManager.removeListener (this);
                         addParserTags (ast, resultSet);
                         resultSet.finish ();
-                        parserManager.removeListener (this);
                     }
                 });
             } else {
@@ -361,6 +362,7 @@ public class CompletionProviderImpl implements CompletionProvider {
     private static interface Result {
         void addItem (CompletionItem item);
         void finish ();
+        boolean isFinished ();
     }
     
     private static class CompletionResult implements Result {
@@ -376,6 +378,10 @@ public class CompletionProviderImpl implements CompletionProvider {
         
         public void finish () {
             resultSet.finish ();
+        }
+        
+        public boolean isFinished () {
+            return resultSet.isFinished ();
         }
     }
     
@@ -393,6 +399,10 @@ public class CompletionProviderImpl implements CompletionProvider {
             synchronized (LOCK) {
                 LOCK.notify ();
             }
+        }
+        
+        public boolean isFinished () {
+            return finished;
         }
         
         void waitFinished () {
