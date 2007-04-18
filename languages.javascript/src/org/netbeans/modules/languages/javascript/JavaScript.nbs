@@ -321,6 +321,7 @@ COLOR:js_identifier: {
 COLOR:js_identifier: {
     color_name: "localVariable";
     default_coloring: "default";
+    font_type: "bold";
     condition:org.netbeans.modules.languages.javascript.JavaScript.isLocalVariable;
     foreground_color: "0x098618";
 }
@@ -436,7 +437,7 @@ INDENT "{:}"
 INDENT "[:]"
 INDENT "\\s*(((if|while)\\s*\\(|else\\s*|else\\s+if\\s*\\(|for\\s*\\(.*\\))[^{;]*)"
 
-FORMAT:Statement: "NewLine"
+#FORMAT:Statement: "NewLine"
 
 PROPERTIES {
     #traceSteps:"true";

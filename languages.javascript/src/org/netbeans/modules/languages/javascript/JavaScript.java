@@ -490,11 +490,11 @@ public class JavaScript {
     }
     
     public static boolean isFunctionParameter (Context context) {
-        return isVariable (context, JSVariable.Type.LOCAL);
+        return isVariable (context, JSVariable.Type.PARAMETER);
     }
     
     public static boolean isLocalVariable(Context context) {
-        return isVariable (context, JSVariable.Type.PARAMETER);
+        return isVariable (context, JSVariable.Type.LOCAL);
     }
 
     
