@@ -35,21 +35,35 @@ import org.openide.util.WeakListeners;
  *
  * @author Vita Stejskal
  */
-public final class NavigationHistoryForwardAction extends BaseAction implements PropertyChangeListener {
+public final class NavigationHistoryLastEditAction extends BaseAction implements PropertyChangeListener {
     
-    private static final Logger LOG = Logger.getLogger(NavigationHistoryForwardAction.class.getName());
+    private static final Logger LOG = Logger.getLogger(NavigationHistoryLastEditAction.class.getName());
     
-    public NavigationHistoryForwardAction() {
-        super(BaseKit.jumpListNextAction);
-        putValue(ICON_RESOURCE_PROPERTY, "org/netbeans/modules/editor/resources/navigate_forward.png"); // NOI18N
+    public NavigationHistoryLastEditAction() {
+        super("jump-list-last-edit"); //NOI18N
+        putValue(ICON_RESOURCE_PROPERTY, "org/netbeans/modules/editor/resources/navigate_last_edit.png"); // NOI18N
 
         update();
-        NavigationHistory nav = NavigationHistory.getNavigations();
+        NavigationHistory nav = NavigationHistory.getEdits();
         nav.addPropertyChangeListener(WeakListeners.propertyChange(this, nav));
     }
     
     public void actionPerformed(ActionEvent evt, JTextComponent target) {
-        NavigationHistory.Waypoint wpt = NavigationHistory.getNavigations().navigateForward();
+        NavigationHistory nav = NavigationHistory.getEdits();
+        
+        NavigationHistory.Waypoint wpt = nav.getCurrentWaypoint();
+        if (wpt != null) {
+            if (isStandingThere(target, wpt)) {
+                wpt = nav.navigateBack();
+            } else {
+                wpt = null;
+            }
+        }
+        
+        if (wpt == null) {
+            wpt = nav.navigateLast();
+        }
+        
         if (wpt != null) {
             NavigationHistoryBackAction.show(wpt);
         }
@@ -60,22 +74,13 @@ public final class NavigationHistoryForwardAction extends BaseAction implements 
     }
     
     private void update() {
-        List<NavigationHistory.Waypoint> waypoints = NavigationHistory.getNavigations().getNextWaypoints();
-        if (!waypoints.isEmpty()) {
-            NavigationHistory.Waypoint wpt = waypoints.get(0);
-            String fileName = NavigationHistoryBackAction.getWaypointName(wpt);
-            if (fileName != null) {
-                putValue(SHORT_DESCRIPTION, NbBundle.getMessage(NavigationHistoryForwardAction.class, 
-                    "NavigationHistoryForwardAction_Tooltip", fileName));
-            } else {
-                putValue(SHORT_DESCRIPTION, NbBundle.getMessage(NavigationHistoryForwardAction.class, 
-                    "NavigationHistoryForwardAction_Tooltip_simple"));
-            }
-            setEnabled(true);
-        } else {
-            putValue(SHORT_DESCRIPTION, NbBundle.getMessage(NavigationHistoryForwardAction.class, 
-                "NavigationHistoryForwardAction_Tooltip_simple"));
-            setEnabled(false);
-        }
+        NavigationHistory nav = NavigationHistory.getEdits();
+        putValue(SHORT_DESCRIPTION, NbBundle.getMessage(NavigationHistoryLastEditAction.class, 
+            "NavigationHistoryLastEditAction_Tooltip_simple"));
+        setEnabled(nav.hasNextWaypoints() || nav.hasPreviousWaypoints() || null != nav.getCurrentWaypoint());
+    }
+ 
+    private boolean isStandingThere(JTextComponent target, NavigationHistory.Waypoint wpt) {
+        return target == wpt.getComponent() && target.getCaret().getDot() == wpt.getOffset();
     }
 }

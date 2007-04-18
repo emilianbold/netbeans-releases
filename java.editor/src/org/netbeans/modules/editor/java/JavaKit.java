@@ -605,7 +605,6 @@ public class JavaKit extends NbEditorKit {
         public JavaFixImports() {
             super(fixImportsAction,
                   ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET
-                  | SAVE_POSITION
                  );
             putValue(TRIMMED_TEXT, NbBundle.getBundle(JavaKit.class).getString("fix-imports-trimmed"));
             putValue(SHORT_DESCRIPTION, NbBundle.getBundle(JavaKit.class).getString("desc-fix-imports")); // NOI18N

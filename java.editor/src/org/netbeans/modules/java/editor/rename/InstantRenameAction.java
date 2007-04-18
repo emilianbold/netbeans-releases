@@ -64,8 +64,7 @@ public class InstantRenameAction extends BaseAction {
     
     /** Creates a new instance of InstantRenameAction */
     public InstantRenameAction() {
-        super("in-place-refactoring", ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET
-        | SAVE_POSITION);
+        super("in-place-refactoring", ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
     }
     
     public void actionPerformed(ActionEvent evt, final JTextComponent target) {

@@ -55,19 +55,19 @@ public final class NavigationHistoryBackAction extends BaseAction implements Pro
     
     public NavigationHistoryBackAction() {
         super(BaseKit.jumpListPrevAction);
-        putValue(ICON_RESOURCE_PROPERTY, "org/netbeans/modules/editor/resources/edit_previous.png"); // NOI18N
+        putValue(ICON_RESOURCE_PROPERTY, "org/netbeans/modules/editor/resources/navigate_back.png"); // NOI18N
 
         update();
-        NavigationHistory.getDefault().addPropertyChangeListener(
-            WeakListeners.propertyChange(this, NavigationHistory.getDefault()));
+        NavigationHistory nav = NavigationHistory.getNavigations();
+        nav.addPropertyChangeListener(WeakListeners.propertyChange(this, nav));
     }
     
     public void actionPerformed(ActionEvent evt, JTextComponent target) {
-        NavigationHistory history = NavigationHistory.getDefault();
+        NavigationHistory history = NavigationHistory.getNavigations();
         if (null == history.getCurrentWaypoint()) {
             // Haven't navigated back yet
             try {
-                history.markWaypoint(target, target.getCaret().getDot(), true);
+                history.markWaypoint(target, target.getCaret().getDot(), true, false);
             } catch (BadLocationException ble) {
                 LOG.log(Level.WARNING, "Can't mark current position", ble);
             }
@@ -84,7 +84,7 @@ public final class NavigationHistoryBackAction extends BaseAction implements Pro
     }
     
     private void update() {
-        List<NavigationHistory.Waypoint> waypoints = NavigationHistory.getDefault().getPreviousWaypoints();
+        List<NavigationHistory.Waypoint> waypoints = NavigationHistory.getNavigations().getPreviousWaypoints();
         if (!waypoints.isEmpty()) {
             NavigationHistory.Waypoint wpt = waypoints.get(waypoints.size() - 1);
             String fileName = getWaypointName(wpt);
