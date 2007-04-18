@@ -163,7 +163,8 @@ public class JavaClassImpl implements JavaClass {
     }
     
     public List<JavaClass> getSubClasses() {
-        return null;
+        // TODO
+        return Collections.EMPTY_LIST;
     }
 
 }
