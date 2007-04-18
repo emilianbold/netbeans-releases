@@ -243,8 +243,14 @@ public class CasualDiff {
             origClassName = oldT.name;
         } else {
             insertHint += oldT.name.length();
+            copyTo(localPointer, localPointer = insertHint);
         }
-        localPointer = diffParameterList(oldT.typarams, newT.typarams, localPointer);
+        if (oldT.typarams.nonEmpty() && newT.typarams.nonEmpty()) {
+            copyTo(localPointer, localPointer = oldT.typarams.head.pos);
+        }
+        localPointer = diffParameterList(oldT.typarams, newT.typarams, 
+                oldT.typarams.isEmpty() && newT.typarams.nonEmpty(), 
+                localPointer, printer);
         if (oldT.typarams.nonEmpty()) {
             // if type parameters exists, compute correct end of type parameters.
             // ! specifies the offset for insertHint var.
@@ -840,7 +846,7 @@ public class CasualDiff {
 
     protected int diffApply(JCMethodInvocation oldT, JCMethodInvocation newT, int[] bounds) {
         int localPointer = bounds[0];
-        diffParameterList(oldT.typeargs, newT.typeargs, localPointer);
+        diffParameterList(oldT.typeargs, newT.typeargs, false, localPointer, printer);
         int[] methBounds = getBounds(oldT.meth);
         localPointer = diffTree(oldT.meth, newT.meth, methBounds);
         if (!listsMatch(oldT.args, newT.args)) {
@@ -865,11 +871,14 @@ public class CasualDiff {
             int[] enclBounds = getBounds(oldT.encl);
             localPointer = diffTree(oldT.encl, newT.encl, enclBounds);
         }
-        diffParameterList(oldT.typeargs, newT.typeargs, localPointer);
+        diffParameterList(oldT.typeargs, newT.typeargs, false, localPointer, printer);
         int[] clazzBounds = getBounds(oldT.clazz);
         copyTo(localPointer, clazzBounds[0]);
-        localPointer = diffTree(oldT.clazz, newT.clazz, clazzBounds );
-        localPointer = diffParameterList(oldT.args, newT.args, localPointer);
+        localPointer = diffTree(oldT.clazz, newT.clazz, clazzBounds);
+        if (oldT.args.nonEmpty()) {
+            copyTo(localPointer, localPointer = oldT.args.head.pos);
+        }
+        localPointer = diffParameterList(oldT.args, newT.args, false, localPointer, printer);
         // let diffClassDef() method notified that anonymous class is printed.
         if (oldT.def != null) {
             copyTo(localPointer, getOldPos(oldT.def));
@@ -896,7 +905,7 @@ public class CasualDiff {
 //        diffParameterList(oldT.dims, newT.dims, endPos(oldT.dims));
         if (oldT.elems != null && oldT.elems.head != null) {
             copyTo(localPointer, getOldPos(oldT.elems.head));
-            localPointer = diffParameterList(oldT.elems, newT.elems, getOldPos(oldT.elems.head));
+            localPointer = diffParameterList(oldT.elems, newT.elems, false, getOldPos(oldT.elems.head), printer);
         }
         copyTo(localPointer, bounds[1]);
         return bounds[1];
@@ -1174,7 +1183,7 @@ public class CasualDiff {
         int[] annotationBounds = getBounds(oldT.annotationType);
         copyTo(localPointer,annotationBounds[0]);
         localPointer = diffTree(oldT.annotationType, newT.annotationType, annotationBounds);
-        diffParameterList(oldT.args, newT.args, -1);
+        diffParameterList(oldT.args, newT.args, false, -1, printer);
         copyTo(localPointer, bounds[1]);
         
         return bounds[1];
@@ -1232,7 +1241,7 @@ public class CasualDiff {
     protected int diffFieldGroup(FieldGroupTree oldT, FieldGroupTree newT, int[] bounds) {
         if (!listsMatch(oldT.getVariables(), newT.getVariables())) {
             copyTo(bounds[0], oldT.getStartPosition());
-            return diffParameterList(oldT.getVariables(), newT.getVariables(), oldT.getStartPosition());
+            return diffParameterList(oldT.getVariables(), newT.getVariables(), false, oldT.getStartPosition(), printer);
         } else {
             return oldT.endPos();
         }
@@ -1475,33 +1484,6 @@ public class CasualDiff {
         return iter.hasNext() ? iter.next() : null;
     }
 
-    // XXX: this method should be removed later when all call will be
-    // refactored and will use new list matching
-    protected int diffParameterList(List<? extends JCTree> oldList, List<? extends JCTree> newList, int localPointer) {
-        if (oldList == newList)
-            return localPointer;
-        assert oldList != null && newList != null;
-        Iterator<? extends JCTree> oldIter = oldList.iterator();
-        Iterator<? extends JCTree> newIter = newList.iterator();
-        while (oldIter.hasNext() && newIter.hasNext()) {
-            JCTree oldT = oldIter.next();
-            int[] bounds = getBounds(oldT);
-            copyTo(localPointer, bounds[0]);
-            localPointer = diffTree(oldT, newIter.next(), bounds);
-        }
-        while (oldIter.hasNext()) {
-            JCTree oldT = oldIter.next();
-            append(Diff.delete(getOldPos(oldT), endPos(oldT)));
-        }
-        while (newIter.hasNext()) {
-            // append(Diff.insert(newIter.next(), lastOldPos, LineInsertionType.BEFORE));
-        }
-        return localPointer;
-    }
-    
-    /**
-     * Diff a ordered list for differences.
-     */
     protected int diffList2(
         List<? extends JCTree> oldList, List<? extends JCTree> newList,
         int initialPos, PositionEstimator estimator) 
@@ -1629,10 +1611,10 @@ public class CasualDiff {
             int pos,
             VeryPretty buf)
     {
-        if (oldList == newList || (oldList.isEmpty() && newList.isEmpty()))
+        assert oldList != null && newList != null;
+        if (oldList == newList || oldList.equals(newList))
             return pos; // they match perfectly or no need to do anything
         
-        assert oldList != null && newList != null;
         
         if (newList.isEmpty()) {
             int endPos = endPos(oldList);
