@@ -951,6 +951,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
             }
         }
         cleanupTreeElements();
+        PreviewManager.getDefault().clean(this);
         //super.closeNotify();
     }
     

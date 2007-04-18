@@ -20,19 +20,11 @@
 package org.netbeans.modules.refactoring.spi;
 
 import java.awt.Container;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringReader;
 import javax.swing.JEditorPane;
-import org.netbeans.api.diff.Diff;
-import org.netbeans.api.diff.DiffView;
-import org.netbeans.api.diff.StreamSource;
 import org.netbeans.modules.refactoring.spi.impl.ParametersPanel;
-import org.netbeans.modules.refactoring.spi.ui.UI;
+import org.netbeans.modules.refactoring.spi.impl.PreviewManager;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
 import org.openide.text.PositionRef;
@@ -99,29 +91,8 @@ public abstract class SimpleRefactoringElementImplementation implements Refactor
     }
     
     public void showPreview() {
-        try {
-            Reader r2 = getReader();
-            if (r2!=null) {
-                DiffView diffView = null;
-                Reader r1 = getFirstReader();
-                FileObject f = getParentFile();
-                diffView = Diff.getDefault().createDiff(
-                        StreamSource.createSource(f.getName(), f.getNameExt(), getMimeType(), r1),
-                        StreamSource.createSource("Proposed refactoring", "Refactored " + f.getNameExt(), getMimeType(), r2));
-                UI.setComponentForRefactoringPreview(diffView.getComponent());
-            } else {
-                UI.setComponentForRefactoringPreview(null);
-            }
-        } catch (IOException ioe) {
-            throw (RuntimeException) new RuntimeException().initCause(ioe);
-        }
-    }
-    
-    private Reader getReader() {
-        String newText = getNewFileContent();
-        if (newText==null)
-            return null;
-        return new StringReader(newText);
+        PreviewManager manager = PreviewManager.getDefault();
+        manager.refresh(this);
     }
     
     /**
@@ -132,16 +103,6 @@ public abstract class SimpleRefactoringElementImplementation implements Refactor
      */ 
     protected String getNewFileContent() {
         return null;
-    }
-    
-    private Reader getFirstReader() throws IOException {
-        PositionRef beginPos=getPosition().getBegin();
-        CloneableEditorSupport editSupp=beginPos.getCloneableEditorSupport();
-        return new InputStreamReader(editSupp.getInputStream());
-    }
-    
-    private String getMimeType() {
-        return getParentFile().getMIMEType();
     }
 
     private static final TopComponent getTopComponent(Container temp) {

@@ -46,6 +46,8 @@ final class AccessorImpl extends SPIAccessor {
     public ArrayList<RefactoringElementImplementation> getFileChanges(RefactoringElementsBag bag) {
         return bag.fileChanges;
     }
-
     
+    public String getNewFileContent(SimpleRefactoringElementImplementation impl) {
+        return impl.getNewFileContent();
+    }
 }

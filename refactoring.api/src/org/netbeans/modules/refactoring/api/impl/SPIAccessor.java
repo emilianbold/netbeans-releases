@@ -24,6 +24,7 @@ import java.util.List;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.Transaction;
 
 /**
@@ -46,6 +47,7 @@ public abstract class SPIAccessor {
     public abstract Collection getReadOnlyFiles(RefactoringElementsBag bag);
     public abstract ArrayList<Transaction> getCommits(RefactoringElementsBag bag);
     public abstract ArrayList<RefactoringElementImplementation> getFileChanges(RefactoringElementsBag bag);
+    public abstract String getNewFileContent(SimpleRefactoringElementImplementation impl);
 
     
     
