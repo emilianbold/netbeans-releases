@@ -34,6 +34,9 @@ public class FmtWrapping extends javax.swing.JPanel {
     public FmtWrapping() {
         initComponents();
         
+        scrollPane.getViewport().setBackground(java.awt.SystemColor.controlLtHighlight);
+        
+        
         extendsImplementsKeywordCombo.putClientProperty(OPTION_ID, wrapExtendsImplementsKeyword);
         extendsImplementsListCombo.putClientProperty(OPTION_ID, wrapExtendsImplementsList);
         methodParamsCombo.putClientProperty(OPTION_ID, wrapMethodParams);
@@ -69,6 +72,7 @@ public class FmtWrapping extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        scrollPane = new javax.swing.JScrollPane();
         panel1 = new javax.swing.JPanel();
         extendsImplemetsKeywordLabel = new javax.swing.JLabel();
         extendsImplementsKeywordCombo = new javax.swing.JComboBox();
@@ -92,8 +96,6 @@ public class FmtWrapping extends javax.swing.JPanel {
         forCombo = new javax.swing.JComboBox();
         forStatementLabel = new javax.swing.JLabel();
         forStatementCombo = new javax.swing.JComboBox();
-        spacerPanel1 = new javax.swing.JPanel();
-        panel2 = new javax.swing.JPanel();
         ifStatementLabel = new javax.swing.JLabel();
         ifStatementCombo = new javax.swing.JComboBox();
         whileStatementLabel = new javax.swing.JLabel();
@@ -112,17 +114,20 @@ public class FmtWrapping extends javax.swing.JPanel {
         ternaryOpsCombo = new javax.swing.JComboBox();
         assignOpsLabel = new javax.swing.JLabel();
         assignOpsCombo = new javax.swing.JComboBox();
-        spacerPanel2 = new javax.swing.JPanel();
+        spacerPanel1 = new javax.swing.JPanel();
 
-        setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.LINE_AXIS));
+        setLayout(new java.awt.BorderLayout());
 
-        panel1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 4));
+        scrollPane.setBackground(java.awt.SystemColor.controlLtHighlight);
+
+        panel1.setOpaque(false);
         panel1.setLayout(new java.awt.GridBagLayout());
 
+        extendsImplemetsKeywordLabel.setLabelFor(extendsImplementsKeywordCombo);
         org.openide.awt.Mnemonics.setLocalizedText(extendsImplemetsKeywordLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_extendsImplementsKeyword")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        gridBagConstraints.insets = new java.awt.Insets(8, 8, 4, 0);
         panel1.add(extendsImplemetsKeywordLabel, gridBagConstraints);
 
         extendsImplementsKeywordCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
@@ -130,130 +135,140 @@ public class FmtWrapping extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 0);
+        gridBagConstraints.insets = new java.awt.Insets(8, 6, 4, 8);
         panel1.add(extendsImplementsKeywordCombo, gridBagConstraints);
 
+        extendsImplementsListLabel.setLabelFor(extendsImplementsListCombo);
         org.openide.awt.Mnemonics.setLocalizedText(extendsImplementsListLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_extendsImplementsList")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
         panel1.add(extendsImplementsListLabel, gridBagConstraints);
 
         extendsImplementsListCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
         panel1.add(extendsImplementsListCombo, gridBagConstraints);
 
+        methodParamsLabel.setLabelFor(methodParamsCombo);
         org.openide.awt.Mnemonics.setLocalizedText(methodParamsLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_methodParameters")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
         panel1.add(methodParamsLabel, gridBagConstraints);
 
         methodParamsCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
         panel1.add(methodParamsCombo, gridBagConstraints);
 
+        methodCallArgsLabel.setLabelFor(methodCallArgsCombo);
         org.openide.awt.Mnemonics.setLocalizedText(methodCallArgsLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_methodCallArgs")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
         panel1.add(methodCallArgsLabel, gridBagConstraints);
 
         methodCallArgsCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
         panel1.add(methodCallArgsCombo, gridBagConstraints);
 
+        chainedMethodCallsLabel.setLabelFor(chainedMethodCallsCombo);
         org.openide.awt.Mnemonics.setLocalizedText(chainedMethodCallsLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_chainedMethodCalls")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
         panel1.add(chainedMethodCallsLabel, gridBagConstraints);
 
         chainedMethodCallsCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
         panel1.add(chainedMethodCallsCombo, gridBagConstraints);
 
+        throwsKeywordLabel.setLabelFor(throwsKeywordCombo);
         org.openide.awt.Mnemonics.setLocalizedText(throwsKeywordLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_throwsKeyword")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
         panel1.add(throwsKeywordLabel, gridBagConstraints);
 
         throwsKeywordCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
         panel1.add(throwsKeywordCombo, gridBagConstraints);
 
+        throwsListLabel.setLabelFor(throwsListCombo);
         org.openide.awt.Mnemonics.setLocalizedText(throwsListLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_throwsList")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
         panel1.add(throwsListLabel, gridBagConstraints);
 
         throwsListCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
         panel1.add(throwsListCombo, gridBagConstraints);
 
+        modifiersLabel.setLabelFor(modifiersCombo);
         org.openide.awt.Mnemonics.setLocalizedText(modifiersLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_modifiers")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
         panel1.add(modifiersLabel, gridBagConstraints);
 
         modifiersCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
         panel1.add(modifiersCombo, gridBagConstraints);
 
+        arrayInitLabel.setLabelFor(arrayInitCombo);
         org.openide.awt.Mnemonics.setLocalizedText(arrayInitLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_arrayInit")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
         panel1.add(arrayInitLabel, gridBagConstraints);
 
         arrayInitCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
         panel1.add(arrayInitCombo, gridBagConstraints);
 
+        forLabel.setLabelFor(forCombo);
         org.openide.awt.Mnemonics.setLocalizedText(forLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_for")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
         panel1.add(forLabel, gridBagConstraints);
 
         forCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
         panel1.add(forCombo, gridBagConstraints);
 
+        forStatementLabel.setLabelFor(forStatementCombo);
         org.openide.awt.Mnemonics.setLocalizedText(forStatementLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_forStatement")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
         panel1.add(forStatementLabel, gridBagConstraints);
 
         forStatementCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
@@ -261,142 +276,144 @@ public class FmtWrapping extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
         panel1.add(forStatementCombo, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.weighty = 1.0;
-        panel1.add(spacerPanel1, gridBagConstraints);
 
-        add(panel1);
-
-        panel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 4, 0, 0));
-        panel2.setLayout(new java.awt.GridBagLayout());
-
+        ifStatementLabel.setLabelFor(ifStatementCombo);
         org.openide.awt.Mnemonics.setLocalizedText(ifStatementLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_ifStatement")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
-        panel2.add(ifStatementLabel, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
+        panel1.add(ifStatementLabel, gridBagConstraints);
 
         ifStatementCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 0);
-        panel2.add(ifStatementCombo, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
+        panel1.add(ifStatementCombo, gridBagConstraints);
 
+        whileStatementLabel.setLabelFor(whileStatementComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(whileStatementLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_whileStatement")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
-        panel2.add(whileStatementLabel, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
+        panel1.add(whileStatementLabel, gridBagConstraints);
 
         whileStatementComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 0);
-        panel2.add(whileStatementComboBox, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
+        panel1.add(whileStatementComboBox, gridBagConstraints);
 
+        doWhileStatementLabel.setLabelFor(doWhileStatementCombo);
         org.openide.awt.Mnemonics.setLocalizedText(doWhileStatementLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_doWhileStatement")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
-        panel2.add(doWhileStatementLabel, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
+        panel1.add(doWhileStatementLabel, gridBagConstraints);
 
         doWhileStatementCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 0);
-        panel2.add(doWhileStatementCombo, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
+        panel1.add(doWhileStatementCombo, gridBagConstraints);
 
+        assertLabel.setLabelFor(assertCombo);
         org.openide.awt.Mnemonics.setLocalizedText(assertLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_assert")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
-        panel2.add(assertLabel, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
+        panel1.add(assertLabel, gridBagConstraints);
 
         assertCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 0);
-        panel2.add(assertCombo, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
+        panel1.add(assertCombo, gridBagConstraints);
 
+        enumConstantsLabel.setLabelFor(enumConstantsCombo);
         org.openide.awt.Mnemonics.setLocalizedText(enumConstantsLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_enumConstants")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
-        panel2.add(enumConstantsLabel, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
+        panel1.add(enumConstantsLabel, gridBagConstraints);
 
         enumConstantsCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 0);
-        panel2.add(enumConstantsCombo, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
+        panel1.add(enumConstantsCombo, gridBagConstraints);
 
+        annotationsLabel.setLabelFor(annotationsCombo);
         org.openide.awt.Mnemonics.setLocalizedText(annotationsLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_annotations")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
-        panel2.add(annotationsLabel, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
+        panel1.add(annotationsLabel, gridBagConstraints);
 
         annotationsCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 0);
-        panel2.add(annotationsCombo, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
+        panel1.add(annotationsCombo, gridBagConstraints);
 
+        binaryOpsLabel.setLabelFor(binaryOpsCombo);
         org.openide.awt.Mnemonics.setLocalizedText(binaryOpsLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_binaryOps")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
-        panel2.add(binaryOpsLabel, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
+        panel1.add(binaryOpsLabel, gridBagConstraints);
 
         binaryOpsCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 0);
-        panel2.add(binaryOpsCombo, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
+        panel1.add(binaryOpsCombo, gridBagConstraints);
 
+        ternaryOpsLabel.setLabelFor(ternaryOpsCombo);
         org.openide.awt.Mnemonics.setLocalizedText(ternaryOpsLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_ternaryOps")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
-        panel2.add(ternaryOpsLabel, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
+        panel1.add(ternaryOpsLabel, gridBagConstraints);
 
         ternaryOpsCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 0);
-        panel2.add(ternaryOpsCombo, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
+        panel1.add(ternaryOpsCombo, gridBagConstraints);
 
+        assignOpsLabel.setLabelFor(assignOpsCombo);
         org.openide.awt.Mnemonics.setLocalizedText(assignOpsLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_assignOps")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
-        panel2.add(assignOpsLabel, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
+        panel1.add(assignOpsLabel, gridBagConstraints);
 
         assignOpsCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 0);
-        panel2.add(assignOpsCombo, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
+        panel1.add(assignOpsCombo, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.weighty = 1.0;
-        panel2.add(spacerPanel2, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 8, 8);
+        panel1.add(spacerPanel1, gridBagConstraints);
 
-        add(panel2);
+        scrollPane.setViewportView(panel1);
+
+        add(scrollPane, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -433,9 +450,8 @@ public class FmtWrapping extends javax.swing.JPanel {
     private javax.swing.JComboBox modifiersCombo;
     private javax.swing.JLabel modifiersLabel;
     private javax.swing.JPanel panel1;
-    private javax.swing.JPanel panel2;
+    private javax.swing.JScrollPane scrollPane;
     private javax.swing.JPanel spacerPanel1;
-    private javax.swing.JPanel spacerPanel2;
     private javax.swing.JComboBox ternaryOpsCombo;
     private javax.swing.JLabel ternaryOpsLabel;
     private javax.swing.JComboBox throwsKeywordCombo;

@@ -82,46 +82,57 @@ public class FmtBlankLines extends javax.swing.JPanel {
         aMethodsLabel = new javax.swing.JLabel();
         aMethodsField = new javax.swing.JTextField();
 
+        bPackageLabel.setLabelFor(bPackageField);
         org.openide.awt.Mnemonics.setLocalizedText(bPackageLabel, org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "LBL_blBeforePackage")); // NOI18N
 
         bPackageField.setColumns(5);
 
+        aPackageLabel.setLabelFor(aPackageField);
         org.openide.awt.Mnemonics.setLocalizedText(aPackageLabel, org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "LBL_blAfterPackage")); // NOI18N
 
         aPackageField.setColumns(5);
 
+        bImportsLabel.setLabelFor(bImportsField);
         org.openide.awt.Mnemonics.setLocalizedText(bImportsLabel, org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "LBL_blBeforeImports")); // NOI18N
 
         bImportsField.setColumns(5);
 
+        aImports.setLabelFor(aImportsField);
         org.openide.awt.Mnemonics.setLocalizedText(aImports, org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "LBL_blAfterImports")); // NOI18N
 
         aImportsField.setColumns(5);
 
+        bClassLabel.setLabelFor(bClassField);
         org.openide.awt.Mnemonics.setLocalizedText(bClassLabel, org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "LBL_blBeforeClass")); // NOI18N
 
         bClassField.setColumns(5);
 
+        aClassLabel.setLabelFor(aClassField);
         org.openide.awt.Mnemonics.setLocalizedText(aClassLabel, org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "LBL_blAfterClass")); // NOI18N
 
         aClassField.setColumns(5);
 
+        aClassHeaderLabel.setLabelFor(aClassHeaderField);
         org.openide.awt.Mnemonics.setLocalizedText(aClassHeaderLabel, org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "LBL_blAfterClassHeader")); // NOI18N
 
         aClassHeaderField.setColumns(5);
 
+        bFieldsLabel.setLabelFor(bFieldsField);
         org.openide.awt.Mnemonics.setLocalizedText(bFieldsLabel, org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "LBL_blBeforeFields")); // NOI18N
 
         bFieldsField.setColumns(5);
 
+        aFieldsLabel.setLabelFor(aFieldsField);
         org.openide.awt.Mnemonics.setLocalizedText(aFieldsLabel, org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "LBL_blAfterFields")); // NOI18N
 
         aFieldsField.setColumns(5);
 
+        bMethodsLabel.setLabelFor(bMethodsField);
         org.openide.awt.Mnemonics.setLocalizedText(bMethodsLabel, org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "LBL_blBeforeMethods")); // NOI18N
 
         bMethodsField.setColumns(5);
 
+        aMethodsLabel.setLabelFor(aMethodsField);
         org.openide.awt.Mnemonics.setLocalizedText(aMethodsLabel, org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "LBL_blAfterMethods")); // NOI18N
 
         aMethodsField.setColumns(5);

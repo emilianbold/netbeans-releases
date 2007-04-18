@@ -111,6 +111,7 @@ public class FmtAlignmentBraces extends javax.swing.JPanel {
         bracesPlacementPanel.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(FmtAlignmentBraces.class, "LBL_ab_placementBorder")), javax.swing.BorderFactory.createEmptyBorder(4, 8, 4, 8))); // NOI18N
         bracesPlacementPanel.setLayout(new java.awt.GridBagLayout());
 
+        classDeclLabel.setLabelFor(classDeclCombo);
         org.openide.awt.Mnemonics.setLocalizedText(classDeclLabel, org.openide.util.NbBundle.getMessage(FmtAlignmentBraces.class, "LBL_bp_ClassDecl")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -125,6 +126,7 @@ public class FmtAlignmentBraces extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 0);
         bracesPlacementPanel.add(classDeclCombo, gridBagConstraints);
 
+        methodDeclLabel.setLabelFor(methodDeclCombo);
         org.openide.awt.Mnemonics.setLocalizedText(methodDeclLabel, org.openide.util.NbBundle.getMessage(FmtAlignmentBraces.class, "LBL_bp_MethodDecl")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -143,6 +145,7 @@ public class FmtAlignmentBraces extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 0);
         bracesPlacementPanel.add(methodDeclCombo, gridBagConstraints);
 
+        otherLabel.setLabelFor(otherCombo);
         org.openide.awt.Mnemonics.setLocalizedText(otherLabel, org.openide.util.NbBundle.getMessage(FmtAlignmentBraces.class, "LBL_bp_Other")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -174,6 +177,7 @@ public class FmtAlignmentBraces extends javax.swing.JPanel {
         bracesGenerationPanel.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(FmtAlignmentBraces.class, "LBL_ab_generationBorder")), javax.swing.BorderFactory.createEmptyBorder(4, 8, 4, 8))); // NOI18N
         bracesGenerationPanel.setLayout(new java.awt.GridBagLayout());
 
+        ifBracesLabel.setLabelFor(ifBracesCombo);
         org.openide.awt.Mnemonics.setLocalizedText(ifBracesLabel, org.openide.util.NbBundle.getMessage(FmtAlignmentBraces.class, "LBL_bg_If")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -188,6 +192,7 @@ public class FmtAlignmentBraces extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 0);
         bracesGenerationPanel.add(ifBracesCombo, gridBagConstraints);
 
+        forBracesLabel.setLabelFor(forBracesCombo);
         org.openide.awt.Mnemonics.setLocalizedText(forBracesLabel, org.openide.util.NbBundle.getMessage(FmtAlignmentBraces.class, "LBL_bg_For")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -202,6 +207,7 @@ public class FmtAlignmentBraces extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 0);
         bracesGenerationPanel.add(forBracesCombo, gridBagConstraints);
 
+        whileBracesLabel.setLabelFor(whileBracesCombo);
         org.openide.awt.Mnemonics.setLocalizedText(whileBracesLabel, org.openide.util.NbBundle.getMessage(FmtAlignmentBraces.class, "LBL_bg_While")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -216,6 +222,7 @@ public class FmtAlignmentBraces extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 0);
         bracesGenerationPanel.add(whileBracesCombo, gridBagConstraints);
 
+        doWhileBracesLabel.setLabelFor(doWhileBracesCombo);
         org.openide.awt.Mnemonics.setLocalizedText(doWhileBracesLabel, org.openide.util.NbBundle.getMessage(FmtAlignmentBraces.class, "LBL_bg_DoWhile")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
