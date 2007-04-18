@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.j2ee.weblogic9;
@@ -47,6 +47,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * Plugin Properties Singleton class
@@ -56,6 +57,8 @@ public class WLPluginProperties {
     
     private static final boolean verboseRegistration =
             System.getProperty("netbeans.weblogic.registration") != null;
+    
+    private static final String CONFIG_XML = "config/config.xml";
     
     // additional properties that are stored in the InstancePropeties object
     public static final String SERVER_ROOT_ATTR = "serverRoot";        // NOI18N
@@ -247,7 +250,7 @@ public class WLPluginProperties {
                 String level = releaseNodeAttributes.getNamedItem("level").getNodeValue(); // NOI18N
                 String installDir = releaseNodeAttributes.getNamedItem("InstallDir").getNodeValue(); // NOI18N
                 String installDirCanonical = new File(installDir).getCanonicalPath();
-                if (level != null && level.startsWith("9.") && installDirCanonical.equals(serverRoot.getCanonicalPath())) {
+                if (level != null && (level.startsWith("9.") || level.startsWith("9.")) && installDirCanonical.equals(serverRoot.getCanonicalPath())) {
                     return true;
                 }
             }
@@ -263,6 +266,32 @@ public class WLPluginProperties {
         
     }
     
+    public static String getWeblogicDomainVersion(String domainRoot) {
+        // Domain config file
+        File config = new File(domainRoot, CONFIG_XML);
+        
+        // Check if the file exists
+        if (!config.exists())
+            return null;
+        
+        try {
+            InputSource source = new InputSource(new FileInputStream(config));
+            Document d = XMLUtil.parse(source, false, false, null, null);
+            
+            // Retrieve domain version
+            return d.getElementsByTagName("domain-version").item(0).getTextContent();
+            
+        } catch(FileNotFoundException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        } catch(IOException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        } catch(SAXException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        }
+        
+        return null;
+    }
+ 
     private static List<String> findBeaHomes() {
         List<String> beaHomesList = new LinkedList<String>();
         String dir = "";

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.j2ee.weblogic9.j2ee;
@@ -63,10 +63,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 //            MODULE_TYPES.add(J2eeModule.CLIENT);
         }
 
-        private static final Set SPEC_VERSIONS = new HashSet();
-        static {
-            SPEC_VERSIONS.add(J2eeModule.J2EE_14);
-        }
+        private final Set SPEC_VERSIONS = new HashSet();
         
 //        private String platformRoot = WLPluginProperties.getInstance().getInstallLocation();
         private String platformRoot;
@@ -87,6 +84,16 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         
         public J2eePlatformImplImpl(WLDeploymentManager dm) {
             this.dm = dm;
+            
+            // Allow J2EE 1.4 Projects
+            SPEC_VERSIONS.add(J2eeModule.J2EE_14);
+            
+            // Check for WebLogic Server 10x to allow Java EE 5 Projects
+            String version = WLPluginProperties.getWeblogicDomainVersion(dm.getInstanceProperties().getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR));
+            
+            if (version != null && version.contains("10"))
+                SPEC_VERSIONS.add(J2eeModule.JAVA_EE_5);
+     
         }
         
         public boolean isToolSupported(String toolName) {
@@ -150,7 +157,8 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             // add the required jars to the library
             try {
                 List list = new ArrayList();
-                list.add(fileToUrl(new File(getPlatformRoot(), "server/lib/weblogic.jar"))); // NOI18N
+                list.add(fileToUrl(new File(getPlatformRoot(), "server/lib/weblogic.jar")));    // NOI18N
+                list.add(fileToUrl(new File(getPlatformRoot(), "server/lib/api.jar")));         // NOI18N
                 
                 library.setContent(J2eeLibraryTypeProvider.
                         VOLUME_TYPE_CLASSPATH, list);
