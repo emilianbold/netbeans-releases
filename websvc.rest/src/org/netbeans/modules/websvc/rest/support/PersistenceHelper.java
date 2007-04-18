@@ -72,7 +72,7 @@ public class PersistenceHelper {
             }
         }
         
-        return DEFAULT_PU;
+        return null;
     }
     
     public static void addEntityClasses(Project project, List<JavaSource> entityClasses) {

@@ -235,12 +235,6 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel {
         }
     }
     
-    boolean valid(WizardDescriptor wizard) {
-        Project project = Templates.getProject(wizard);
-        List availableEntities = JavaSourceHelper.getEntityClasses(project);
-        return availableEntities != null && availableEntities.size() > 0;
-    }
-    
     void read(WizardDescriptor settings) {
         project = Templates.getProject(settings);
         availableEntities = JavaSourceHelper.getEntityClasses(project);
@@ -260,8 +254,6 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel {
         if (model instanceof EntityListModel) {
             EntityListModel elm = (EntityListModel) model;
             settings.putProperty(WizardProperties.ENTITY_CLASSES, elm.getEntityClasses());
-            settings.putProperty(WizardProperties.PERSISTENCE_UNIT_NAME,
-                    PersistenceHelper.getPersistenceUnitName(project));
         }
     }
     

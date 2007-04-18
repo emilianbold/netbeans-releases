@@ -23,14 +23,16 @@ import java.awt.Component;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
+import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
+import org.netbeans.modules.websvc.rest.support.PersistenceHelper;
 import org.netbeans.spi.project.ui.templates.support.Templates;
-
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -70,23 +72,36 @@ public final class EntitySelectionPanel implements WizardDescriptor.Panel, Wizar
     }
     
     public boolean isValid() {
-        boolean status = true;
         Project project = Templates.getProject(wizardDescriptor);
         RestSupport support = project.getLookup().lookup(RestSupport.class);
         if(support == null) {
             setErrorMessage("MSG_EntitySelectionPanel_NotWebProject");
-            status = false;
+            return false;
         } else {
             if(!support.hasSwdpLibrary()) {
                 setErrorMessage("MSG_EntitySelectionPanel_NoSWDP");
-                status = false;
+                return false;
             }
-            if(!component.valid(wizardDescriptor)){
+            List availableEntities = JavaSourceHelper.getEntityClasses(project);
+            if (availableEntities == null || availableEntities.size() == 0) {
                 setErrorMessage("MSG_EntitySelectionPanel_NoEntities");
-                status = false;
+                return false;
+            }
+            if (getPersistenceUnitName(project) == null) {
+                setErrorMessage("MSG_EntitySelectionPanel_NoPersistenceUnit");
+                return false;
             }
         }
-        return status;
+        return true;
+    }
+    
+    String getPersistenceUnitName(Project project) {
+        String puName = (String) wizardDescriptor.getProperty(WizardProperties.PERSISTENCE_UNIT_NAME);
+        if (puName == null || puName.trim().length() == 0) {
+            puName = PersistenceHelper.getPersistenceUnitName(project);
+            wizardDescriptor.putProperty(WizardProperties.PERSISTENCE_UNIT_NAME, puName);
+        }
+        return puName;
     }
     
     private void setErrorMessage(String key) {
