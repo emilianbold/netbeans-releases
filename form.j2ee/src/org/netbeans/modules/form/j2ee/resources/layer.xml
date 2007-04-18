@@ -1,0 +1,54 @@
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+
+    <folder name="FormDesignerPalette">
+        <folder name="J2EEComponents">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.j2ee.resources.Bundle"/>
+            <file name="EntityManager.palette_item" url="EntityManager.palette_item" />
+            <file name="Query.palette_item" url="Query.palette_item" />
+            <file name="QueryListResult.palette_item" url="QueryListResult.palette_item" />
+            <attr name="EntityManager.palette_item/Query.palette_item" boolvalue="true" />
+            <attr name="Query.palette_item/QueryListResult.palette_item" boolvalue="true" />
+        </folder>
+        <attr name="Beans/J2EEComponents" boolvalue="true" />
+    </folder>
+
+    <folder name="Templates">
+        <folder name="GUIForms">
+            <folder name="Dialogs"> <!-- PENDING move on some reasonable place -->
+                <file name="MasterDetailForm.java" url="templates/MasterDetailForm_java">
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="templateCategory" stringvalue="java-forms"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.j2ee.wizard.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/j2ee/resources/QueryListResult.png"/>
+                    <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/org/netbeans/modules/form/j2ee/resources/QueryListResult32.png"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.form.j2ee.wizard.MasterDetailWizard.create"/>
+                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/j2ee/resources/MasterDetail.html"/>
+                </file>
+                <file name="MasterDetailForm.form" url="templates/MasterDetailForm_form">
+                    <attr name="template" boolvalue="true"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+
+</filesystem>

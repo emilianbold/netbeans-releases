@@ -246,6 +246,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../editor/util</project>
                 <project>../extbrowser</project>
                 <project>../form</project>
+                <project>../form/j2ee</project>
                 <project>../form/swingapp</project>
                 <project>../graph/lib</project>
                 <project>../html</project>
