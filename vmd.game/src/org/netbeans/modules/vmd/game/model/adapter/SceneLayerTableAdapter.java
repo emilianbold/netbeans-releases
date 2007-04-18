@@ -30,6 +30,7 @@ import org.netbeans.modules.vmd.game.model.Layer;
 import org.netbeans.modules.vmd.game.model.Scene;
 import org.netbeans.modules.vmd.game.model.SceneListener;
 import org.netbeans.modules.vmd.game.model.Scene.LayerInfo;
+import org.netbeans.modules.vmd.game.model.Sprite;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 
@@ -39,14 +40,15 @@ public class SceneLayerTableAdapter implements TableModel, SceneListener, Proper
 	
 	public static final boolean DEBUG = false;
 
-	private final static int COLS = 6;
+	private final static int COLS = 7;
 	
-	public final static int COL_INDEX_LAYER_INDEX = 0;
-	public final static int COL_INDEX_LAYER_VISIBILITY_INDICATOR = 1;
-	public final static int COL_INDEX_LAYER_LOCK_INDICATOR = 2;
-	public final static int COL_INDEX_LAYER_NAME = 3;
-	public final static int COL_INDEX_LAYER_POS_X = 4;
-	public final static int COL_INDEX_LAYER_POS_Y = 5;
+	public final static int COL_INDEX_LAYER_TYPE = 0;
+	public final static int COL_INDEX_LAYER_INDEX = 1;
+	public final static int COL_INDEX_LAYER_VISIBILITY_INDICATOR = 2;
+	public final static int COL_INDEX_LAYER_LOCK_INDICATOR = 3;
+	public final static int COL_INDEX_LAYER_NAME = 4;
+	public final static int COL_INDEX_LAYER_POS_X = 5;
+	public final static int COL_INDEX_LAYER_POS_Y = 6;
 	
 	private Scene scene;
 	
@@ -69,6 +71,9 @@ public class SceneLayerTableAdapter implements TableModel, SceneListener, Proper
 		//cannot manually edit layer position (Z) - this is done only by using DnD
 		if (columnIndex == COL_INDEX_LAYER_INDEX)
 			return false;
+		//cannot edit layer type
+		if (columnIndex == COL_INDEX_LAYER_TYPE)
+			return false;
 		//if the layer is locked then disable editing of layer location (X, Y)
 		if (columnIndex == COL_INDEX_LAYER_POS_X || columnIndex == COL_INDEX_LAYER_POS_Y) {
 			if (this.scene.isLayerLocked(this.scene.getLayerAt(rowIndex))) {
@@ -79,6 +84,8 @@ public class SceneLayerTableAdapter implements TableModel, SceneListener, Proper
 	}
 
 	public Class getColumnClass(int columnIndex) {
+		if (columnIndex == COL_INDEX_LAYER_TYPE)
+			return Layer.class;
 		if (columnIndex == COL_INDEX_LAYER_INDEX)
 			return Integer.class;
 		if (columnIndex == COL_INDEX_LAYER_VISIBILITY_INDICATOR)
@@ -99,6 +106,8 @@ public class SceneLayerTableAdapter implements TableModel, SceneListener, Proper
 			return null;
 		Layer layer = this.scene.getLayerAt(rowIndex);
 		switch (columnIndex) {
+			case COL_INDEX_LAYER_TYPE:
+				return layer;
 			case COL_INDEX_LAYER_INDEX:
 				return new Integer(this.scene.indexOf(layer));
 			case COL_INDEX_LAYER_VISIBILITY_INDICATOR:
@@ -122,7 +131,7 @@ public class SceneLayerTableAdapter implements TableModel, SceneListener, Proper
 		}
 		Layer layer = this.scene.getLayerAt(rowIndex);
 		switch (columnIndex) {
-			//XXX this has not been tested - this cell is not editable for now
+			//XXX this case has not been tested - this cell is not editable for now
 			case COL_INDEX_LAYER_INDEX:
 				Integer indexVal = (Integer) aValue;
 				int newIndex = indexVal.intValue();
@@ -164,6 +173,8 @@ public class SceneLayerTableAdapter implements TableModel, SceneListener, Proper
 
 	public String getColumnName(int columnIndex) {
 		switch (columnIndex) {
+			case COL_INDEX_LAYER_TYPE:
+				return "Type";
 			case COL_INDEX_LAYER_INDEX:
 				return "Z";
 			case COL_INDEX_LAYER_VISIBILITY_INDICATOR:
@@ -177,7 +188,7 @@ public class SceneLayerTableAdapter implements TableModel, SceneListener, Proper
 			case COL_INDEX_LAYER_POS_Y:
 				return "Y";
 			default:
-				return "";
+				return "???";
 		}
 	}
 

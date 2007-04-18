@@ -117,7 +117,7 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
                 .addContainerGap()
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(textFieldName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 102, Short.MAX_VALUE))
+                .add(textFieldName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 175, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -153,7 +153,9 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
         panelAnimatedTiles.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         panelAnimatedTiles.setLayout(new java.awt.BorderLayout());
 
-        buttonAddAnimatedTile.setText("New AnimatedTile");
+        buttonAddAnimatedTile.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/vmd/game/editor/tiledlayer/res/new_animated_tile_16.png"))); // NOI18N
+        buttonAddAnimatedTile.setText("New Animated Tile");
+        buttonAddAnimatedTile.setToolTipText("Create new Animated Tile");
         panelAnimatedTiles.add(buttonAddAnimatedTile, java.awt.BorderLayout.NORTH);
 
         jSplitPane1.setRightComponent(panelAnimatedTiles);
@@ -172,7 +174,7 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
                 .add(jLabel3)
                 .add(6, 6, 6)
                 .add(textFieldCols, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-            .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
+            .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 456, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)

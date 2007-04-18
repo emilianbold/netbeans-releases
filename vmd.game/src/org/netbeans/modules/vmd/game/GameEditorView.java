@@ -165,7 +165,8 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
             tool.add(comboGlobal);
             tool.addSeparator();
 
-            JButton buttonCreateScene = new JButton("New scene");
+            JButton buttonCreateScene = new JButton(new ImageIcon(this.getClass().getResource("res/new_scene_16.png")));
+			buttonCreateScene.setToolTipText("Create new Scene");
             buttonCreateScene.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     NewSceneDialog dialog = new NewSceneDialog(gameDesign);
@@ -178,7 +179,8 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
                 }
             });
 
-            JButton buttonCreateTiledLayer = new JButton("New TiledLayer");
+            JButton buttonCreateTiledLayer = new JButton(new ImageIcon(this.getClass().getResource("res/new_tiled_layer_16.png")));
+			buttonCreateTiledLayer.setToolTipText("Create new TiledLayer");
             buttonCreateTiledLayer.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     TiledLayerDialog nld = new TiledLayerDialog(gameDesign);
@@ -191,7 +193,8 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
                 }
             });
 
-            JButton buttonCreateSprite = new JButton("New Sprite");
+            JButton buttonCreateSprite = new JButton(new ImageIcon(this.getClass().getResource("res/new_sprite_16.png")));
+			buttonCreateSprite.setToolTipText("Create new Sprite");
             buttonCreateSprite.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     SpriteDialog nld = new SpriteDialog(gameDesign);

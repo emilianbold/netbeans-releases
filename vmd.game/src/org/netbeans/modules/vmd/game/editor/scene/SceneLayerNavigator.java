@@ -77,11 +77,16 @@ public class SceneLayerNavigator extends JTable {
 		this.setRowHeight(IMG_PREVIEW_HEIGHT);
 		int width = IMG_PREVIEW_WIDTH /* + 2*PAD_X */ + this.getColumnModel().getColumnMargin();
 		
+		TableColumn typeColumn = this.getColumnModel().getColumn(SceneLayerTableAdapter.COL_INDEX_LAYER_TYPE);
+		typeColumn.setPreferredWidth(width);
+		typeColumn.setMaxWidth(width);
+		typeColumn.setMinWidth(width);
+		
+		
 		TableColumn indexColumn = this.getColumnModel().getColumn(SceneLayerTableAdapter.COL_INDEX_LAYER_INDEX);
 		indexColumn.setPreferredWidth(width);
 		indexColumn.setMaxWidth(width);
 		indexColumn.setMinWidth(width);
-		
 		
 		TableColumn visibilityColumn = this.getColumnModel().getColumn(SceneLayerTableAdapter.COL_INDEX_LAYER_VISIBILITY_INDICATOR);
 		visibilityColumn.setPreferredWidth(width);
@@ -96,6 +101,8 @@ public class SceneLayerNavigator extends JTable {
 		this.setDefaultEditor(Boolean.class, new BooleanTableCellRenderer(PAD_X, PAD_Y));
 		this.setDefaultRenderer(Boolean.class, new BooleanTableCellRenderer(PAD_X, PAD_Y));
 		
+		this.setDefaultRenderer(Layer.class, new LayerTableCellRenderer());
+
 		this.setDefaultRenderer(Integer.class, new DefaultTableCellRenderer() {
 			public Component getTableCellRendererComponent(JTable table, Object value,
 					boolean isSelected, boolean hasFocus, int row, int column) {

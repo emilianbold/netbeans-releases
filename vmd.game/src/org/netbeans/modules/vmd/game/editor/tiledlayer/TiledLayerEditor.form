@@ -2,7 +2,9 @@
 
 <Form version="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
@@ -23,7 +25,7 @@
               <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
               <Component id="textFieldCols" min="-2" pref="41" max="-2" attributes="0"/>
           </Group>
-          <Component id="jSplitPane1" alignment="0" pref="383" max="32767" attributes="0"/>
+          <Component id="jSplitPane1" alignment="0" pref="456" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -54,7 +56,7 @@
                   <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="textFieldName" pref="102" max="32767" attributes="0"/>
+                  <Component id="textFieldName" pref="175" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -171,7 +173,11 @@
           <SubComponents>
             <Component class="javax.swing.JButton" name="buttonAddAnimatedTile">
               <Properties>
-                <Property name="text" type="java.lang.String" value="New AnimatedTile"/>
+                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/org/netbeans/modules/vmd/game/editor/tiledlayer/res/new_animated_tile_16.png"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="New Animated Tile"/>
+                <Property name="toolTipText" type="java.lang.String" value="Create new Animated Tile"/>
               </Properties>
               <Constraints>
                 <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
