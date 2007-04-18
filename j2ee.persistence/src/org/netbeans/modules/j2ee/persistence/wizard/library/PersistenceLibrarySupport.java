@@ -28,11 +28,13 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
@@ -194,11 +196,11 @@ public class PersistenceLibrarySupport  {
     }
     
     /**
-     *@return true if the given library contains a class with the given name.
+     *@return true if the given classpath contains a class with the given name.
      */ 
-    public static boolean containsClass(Library library, String className) {
+    private static boolean containsClass(ClassPath cp, String className) {
         String classRelativePath = className.replace('.', '/') + ".class"; //NOI18N
-        return containsPath(library.getContent("classpath"), classRelativePath); //NOI18N
+        return cp.findResource(classRelativePath) != null;
     }
     
     /**
@@ -226,16 +228,13 @@ public class PersistenceLibrarySupport  {
     }
     
     private static boolean containsPath(List<URL> roots, String relativePath) {
-        for (URL each :roots){
-            FileObject root = URLMapper.findFileObject(each);
-            if (root != null && "jar".equals(each.getProtocol())) {  //NOI18N
-                FileObject archiveRoot = FileUtil.getArchiveRoot(FileUtil.getArchiveFile(root));
-                if (archiveRoot.getFileObject(relativePath) != null) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        ClassPath cp = ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()]));
+        return cp.findResource(relativePath) != null;
+    }
+    
+    private static ClassPath getLibraryClassPath(Library library) {
+        List<URL> urls = library.getContent("classpath");
+        return ClassPathSupport.createClassPath(urls.toArray(new URL[urls.size()]));
     }
     
     /**
@@ -253,7 +252,8 @@ public class PersistenceLibrarySupport  {
     public static Library getLibrary(Provider provider){
         List<Library> libraries = createLibraries();
         for (Library each : libraries){
-            if (provider.getProviderClass().equals(extractProvider(each))) {
+            ClassPath cp = getLibraryClassPath(each);
+            if (provider.equals(extractProvider(cp))) {
                 return each;
             }
         }
@@ -263,7 +263,8 @@ public class PersistenceLibrarySupport  {
     private static List<Library> createLibraries() {
         List<Library> providerLibs = new ArrayList<Library>();
         for (Library each : LibraryManager.getDefault().getLibraries()){
-            if (PersistenceLibrarySupport.containsClass(each, "javax.persistence.EntityManager") && extractProvider(each) != null) {
+            ClassPath cp = getLibraryClassPath(each);
+            if (PersistenceLibrarySupport.containsClass(cp, "javax.persistence.EntityManager") && extractProvider(cp) != null) {
                 providerLibs.add(each);
             }
         }
@@ -288,8 +289,9 @@ public class PersistenceLibrarySupport  {
         List<Provider> providerLibs = new ArrayList<Provider>();
         Library[] libs = LibraryManager.getDefault().getLibraries();
         for (Library each : libs){
-            Provider provider = extractProvider(each);
-            if (PersistenceLibrarySupport.containsClass(each, "javax.persistence.EntityManager") && provider != null) {
+            ClassPath cp = getLibraryClassPath(each);
+            Provider provider = extractProvider(cp);
+            if (provider != null && PersistenceLibrarySupport.containsClass(cp, "javax.persistence.EntityManager")) {
                 providerLibs.add(provider);
             }
         }
@@ -317,9 +319,9 @@ public class PersistenceLibrarySupport  {
     }
     
     
-    private static Provider extractProvider(Library library) {
+    private static Provider extractProvider(ClassPath cp) {
         for (Provider each : ProviderUtil.getAllProviders()){
-            if (PersistenceLibrarySupport.containsClass(library, each.getProviderClass())){
+            if (PersistenceLibrarySupport.containsClass(cp, each.getProviderClass())){
                 return each;
             }
         }
