@@ -140,29 +140,11 @@ function createTree(wadlDoc) {
             var cName = path.nodeValue;
             if(cName != null && cName.indexOf('/') != -1)
                 cName = cName.substring(1);
-            var start = new category(path.nodeValue, cName);
-            var methods = r.getElementsByTagName('method');
-            for(j=0;j<methods.length;j++) {
-                var m = methods[j];                            
-                var mName = m.attributes.getNamedItem("name").nodeValue;
-                var response = m.getElementsByTagName('response');
-                var mediaType = getMediaType(response);
-                if(mediaType != null)
-                    mName = mName + '(' + mediaType + ')';
-                var methodst = createItem(mName,'showContent(\''+app.nodeName+'/'+rs.nodeName+'/'+r.nodeName+'\', '+i+', '+j+')');
-                start.add(methodst);
-                treeHook = start;
-            }
+            var start = new category(path.nodeValue, cName, i);
             resources.add(start);
         }
     }
     return myTree;
-}
-function createCategory(id, name) {
-    return new category(id, name);
-}
-function createItem(name, uri) {
-    return new item(name, uri);
 }
 function getMediaType(response) {
     var mediaType = null;                
@@ -185,6 +167,7 @@ function setvisibility(id, state) {
 }
 function changeMethod()
 {
+    var resource = currentResource;
     var methodNode = document.getElementById("methodSel");
     var method = methodNode.options[methodNode.selectedIndex].value;
     var formSubmittal = document.getElementById("formSubmittal");
@@ -197,8 +180,15 @@ function changeMethod()
         }
     }
     document.getElementById("method").value = method;
-    var paramRep = getParamRep(null, method);
+    var request = null;
+    if(resource != null) {
+        var m = resource.getElementsByTagName("method")[methodNode.selectedIndex];
+        request = m.getElementsByTagName("request");
+    }
+    var paramRep = getParamRep(request, method);
     document.getElementById("paramHook").innerHTML = paramRep;
+    if(method != 'GET' || method != 'DELETE')
+        document.getElementById("mimeType").value = getDefaultMime();
     //alert(formSubmittal.innerHTML);
     updatepage('result', '');
     updatepage('resultheaders', '');
@@ -209,21 +199,28 @@ function changeMimeType()
     var mime = mimeNode.options[mimeNode.selectedIndex].value;
     document.getElementById("mimeType").value = mime;
 };
-function showContent(path, ri, mi) {
-    var app1 = wadlDoc.documentElement;
-    var rs = app1.getElementsByTagName('resources')[0];
-    var r = rs.getElementsByTagName('resource')[ri];
-    var m = r.getElementsByTagName('method')[mi];
-    var mName = m.attributes.getNamedItem("name").nodeValue;
-    var qmName = mName;
-    //var req = m.getElementsByTagName('request');
-    var response = m.getElementsByTagName('response');
-    var mediaType = getMediaType(response);
-    var uri = r.attributes.getNamedItem('path').nodeValue;
-    doShowContent(uri, mName, mediaType);     
+function getMethodMimeTypeCombo(resource) {
+    var methods = resource.getElementsByTagName('method');
+    var str = "<b>Method: </b>";
+    str += "<select id='methodSel' name='methodSel' onchange='javascript:changeMethod();'>";
+    for(j=0;j<methods.length;j++) {
+        var m = methods[j];                            
+        var mName = m.attributes.getNamedItem("name").nodeValue;
+        var request = m.getElementsByTagName('request');
+        var mediaType = getMediaType(request);
+        mName = getMethodNameForDisplay(mName, mediaType);
+        str += "  <option selected value='"+mName+"'>"+mName+"</option>";
+    }   
+    str += "</select>";
+    return str;
 }
-function doShowContent(uri) {
-    doShowContent(uri, getDefaultMethod(), getDefaultMime());
+function getMethodNameForDisplay(mName, mediaType) {
+    var m = mName;
+    if(mediaType == null && (mName == 'PUT' || mName == 'POST'))
+        mediaType = getDefaultMime();
+    if(mediaType != null)
+        m += '(' + mediaType + ')';    
+    return m;
 }
 function getDefaultMime() {
     return "application/xml";
@@ -231,7 +228,38 @@ function getDefaultMime() {
 function getDefaultMethod() {
     return "GET";
 }
-function doShowContent(uri, mName, mediaType) {
+function showContent(path, ri, mi) {
+    var app1 = wadlDoc.documentElement;
+    var rs = app1.getElementsByTagName('resources')[0];
+    var r = rs.getElementsByTagName('resource')[ri];
+    var m = r.getElementsByTagName('method')[mi];
+    var mName = m.attributes.getNamedItem("name").nodeValue;
+    var qmName = mName;
+    var request = m.getElementsByTagName('request');
+    var response = m.getElementsByTagName('response');
+    var reqMediaTypes = getMediaType(request);
+    var uri = r.attributes.getNamedItem('path').nodeValue;
+    //alert(r.getElementsByTagName('method')[0].name);
+    doShowContent2(uri, r);      
+}
+function doShowContent(uri) {
+    var ndx = uri.indexOf('~');
+    if(ndx != -1) {
+        var actualUri = uri.substring(0, ndx);
+        var ri = uri.substring(ndx+1);
+        var app1 = wadlDoc.documentElement;
+        var rs = app1.getElementsByTagName('resources')[0];
+        var r = rs.getElementsByTagName('resource')[ri];
+        currentResource = r;
+        doShowContent2(actualUri, r);
+    } else {
+        currentResource = null;
+        doShowContent1(uri, getDefaultMethod(), getDefaultMime());
+    }
+
+
+}
+function doShowContent1(uri, mName, mediaType) {
     updatepage('result', '');
     updatepage('resultheaders', '');
     var qmName = '';
@@ -243,17 +271,17 @@ function doShowContent(uri, mName, mediaType) {
     var str = "<b>Method: </b>";
     str += "<select id='methodSel' name='methodSel' onchange='javascript:changeMethod();'>";
     str += "  <option selected value='GET'>GET</option>";
-    str += "  <option value='PUT'>PUT</option>";
-    str += "  <option value='POST'>POST</option>";
+    str += "  <option value='PUT'>PUT (application/xml)</option>";
+    str += "  <option value='POST'>POST (application/xml)</option>";
     str += "  <option value='DELETE'>DELETE</option>";
     str += "</select>";
-    str += "&nbsp;&nbsp;<b>MIME: </b>";
+    /*str += "&nbsp;&nbsp;<b>MIME: </b>";
     str += "<select id='mimeSel' name='mimeSel' onchange='javascript:changeMimeType();'>";
     str += "  <option value='application/xml'>application/xml</option>";
     str += "  <option value='text/xml'>text/xml</option>";
     str += "  <option value='text/plain'>text/plain</option>";
     str += "  <option value='text/html'>text/html</option>";    
-    str += "</select>";
+    str += "</select>";*/
     str += "<br/><br/>";
     str += getFormRep(null, uri, mName, mediaType);
     document.getElementById('testres').innerHTML = str;
@@ -261,6 +289,21 @@ function doShowContent(uri, mName, mediaType) {
     var disp = getDisplayUri(req);
     var uriLink = "<a id='"+req+"' href=javascript:doShowContent('"+req+"') >"+getDisplayURL(disp, 80)+"</a>";
     updatepage('request', '<b>MSG_TEST_RESBEANS_Resource</b> '+uriLink+' <br/>(<a href="'+req+'" target="_blank">'+getDisplayURL(req, 90)+'</a>)');
+}
+function doShowContent2(uri, r) {
+    updatepage('result', '');
+    updatepage('resultheaders', '');
+    showBreadCrumbs(uri);
+    var mName = getDefaultMethod();
+    var mediaType = getDefaultMime();    
+    var str = getMethodMimeTypeCombo(r);
+    str += "<br/><br/>";
+    str += getFormRep(null, uri, mName, mediaType);
+    document.getElementById('testres').innerHTML = str;
+    var req = uri;
+    var disp = getDisplayUri(req);
+    var uriLink = "<a id='"+req+"' href=javascript:doShowContent('"+req+"') >"+getDisplayURL(disp, 80)+"</a>";
+    updatepage('request', '<b>Resource:</b> '+uriLink+' <br/>(<a href="'+req+'" target="_blank">'+getDisplayURL(req, 90)+'</a>)');
 }
 function getFormRep(req, uri, mName, mediaType) {
     if(mName == null || mName == 'undefined')
@@ -275,7 +318,7 @@ function getFormRep(req, uri, mName, mediaType) {
     str += "<input name='path' value='"+uri+"' type='hidden'>";
     str += "<input id='method' name='method' value='"+mName+"' type='hidden'>";
     str += "<input id='mimeType' name='mimeType' value='"+mediaType+"' type='hidden'>";
-    str += "<br/><input value='Test...' type='button' onclick='testResource()'>";
+    str += "<br/><input value='MSG_TEST_RESBEANS_TestButton' type='button' onclick='testResource()'>";
     str += "</form>";
     str += "</div>";
     return str;
@@ -308,17 +351,17 @@ function showBreadCrumbs(uri) {
 var bcCount = 0;
 function getParamRep(req, mName) {
     var str = "";
-    if(mName == 'PUT' || mName == 'POST')
-        str = "<textarea id='blobParam' name='params' rows='8' cols='70'></textarea><br/>";
-    else if(mName == 'GET') {
-        if(req != null && req.length > 0) {                    
+    if(mName == 'GET') {
+        if(req != null && req.length > 0) {       
+            //alert(req.length);             
             for(i=0;i<req.length;i++) {
                 var params = req[i].getElementsByTagName('param');
                 if(params != null) {
+                    //alert(params.length);
                     for(j=0;j<params.length;j++) {
                         var pname = params[j].attributes.getNamedItem('name').nodeValue;
                         var num = j+1;
-                        str += "<b>MSG_TEST_RESBEANS_Param"+num+":</b>"+"<input id='params' name='"+pname+"' type='text' value='"+pname+"'>"+"<br><br>";
+                        str += "<b>"+pname+":</b>"+"<input id='params' name='"+pname+"' type='text' value='"+pname+"'>"+"<br><br>";
                     }
                 }
             }
@@ -328,12 +371,14 @@ function getParamRep(req, mName) {
     }
     else if(mName == 'DELETE')
         str = "";
+    else
+        str = "<textarea id='blobParam' name='params' rows='8' cols='70'></textarea><br/>";        
     if(str != "")
         str = "<b>MSG_TEST_RESBEANS_ResourceInputs</b><br><br><div style='margin-left:20px'>"+str+"</div><br/>";
     return str;
 }
 function testResource() {
-    updatepage('result', '');
+    updatepage('result', 'MSG_TEST_RESBEANS_Loading');
     var mimetype = getRep();
     var method = getMethod();
     //alert('method: '+method+'mimetype: '+mimetype);
@@ -644,9 +689,10 @@ function tree(){
     this.getCategories = listCategories;
 }
 
-function category(id, text){
+function category(id, text, ndx){
     this.id = id;
     this.text = text;
+    this.ndx = ndx;
     this.write = writeCategory;
     this.add = addItem;
     this.items = new Array();
@@ -683,7 +729,7 @@ function writeCategory(){
     categoryString += '><img src="cg.gif" id="I1' + this.id + '" onClick="updateTree(\'' + this.id + '\')">';
     categoryString += '<img src="collapse.gif" id="I' + this.id + '">';
     if(uri != null)
-        categoryString += "<a href=javascript:doShowContent('"+uri+"') >"+ this.text + "</a>";
+        categoryString += "<a href=javascript:doShowContent('"+uri+"~"+this.ndx+"') >"+ this.text + "</a>";
     else
         categoryString += this.text;
     categoryString += '</span>';
