@@ -262,6 +262,10 @@ public class CompletionProviderImpl implements CompletionProvider {
                 lang = LanguagesManager.getDefault ().getLanguage (token.getMimeType());
             } catch (ParseException e) {
             }
+            if(lang == null) {
+                //we do not have a language definition for the mimeType
+                return ;
+            }
             String tokenType = token.getType();
             Feature f = lang.getFeature (Language.COMPLETION, tokenType);
             int tokenOffset = token.getOffset();
