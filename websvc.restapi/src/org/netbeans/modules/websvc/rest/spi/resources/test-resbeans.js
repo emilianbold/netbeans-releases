@@ -140,7 +140,7 @@ function createTree(wadlDoc) {
             var cName = path.nodeValue;
             if(cName != null && cName.indexOf('/') != -1)
                 cName = cName.substring(1);
-            var start = new category(path.nodeValue, cName, i);
+            var start = new item(path.nodeValue, cName, i);
             resources.add(start);
         }
     }
@@ -699,9 +699,10 @@ function category(id, text, ndx){
     this.getItems = listItems;
 }
 
-function item(text, link){
+function item(id, text, ndx){    
+    this.id = id;
     this.text = text;
-    this.link = link;
+    this.ndx = ndx;
     this.write = writeItem;
 }
 
@@ -727,11 +728,11 @@ function writeCategory(){
         uri = null;;
     var categoryString = '<span class="category"';
     categoryString += '><img src="cg.gif" id="I1' + this.id + '" onClick="updateTree(\'' + this.id + '\')">';
-    categoryString += '<img src="collapse.gif" id="I' + this.id + '">';
+    categoryString += '<img src="app.gif" id="I' + this.id + '">';
     if(uri != null)
-        categoryString += "<a href=javascript:doShowContent('"+uri+"~"+this.ndx+"') >"+ this.text + "</a>";
+        categoryString += "<div class='item2'><a href=javascript:doShowContent('"+uri+"~"+this.ndx+"') >"+ this.text + "</a></div>";
     else
-        categoryString += this.text;
+        categoryString += "<div class='item2'>"+this.text+"</div>";
     categoryString += '</span>';
     categoryString += '<span class="item" id="';
     categoryString += this.id + '">';
@@ -751,11 +752,14 @@ function listItems(){
 }
 
 function writeItem(){
+    var uri = baseURL + this.id;
     var itemString = '<img src="cc.gif" border="0">';
-    itemString += '<a href="#" onClick="' + this.link + '">';
     itemString += '<img src="item.gif" border="0">';
-    itemString += this.text;
-    itemString += '</a><br>';
+    if(uri != null)
+        itemString += "<a href=javascript:doShowContent('"+uri+"~"+this.ndx+"') >"+ this.text + "</a>";
+    else
+        itemString += this.text;
+    itemString += '<br>';
     return itemString;
 }
 
@@ -873,11 +877,11 @@ function getItemString(name, uri){
 function toggleCategory(img){
     ImageNode = document.getElementById('I' + img);
     ImageNode1 = document.getElementById('I1' + img);
-    if(ImageNode.src.indexOf('collapse.gif')>-1) {
-        ImageNode.src = expand.src;
+    if(ImageNode1.src.indexOf('cg.gif')>-1) {
+        //ImageNode.src = expand.src;
         ImageNode1.src = og.src;
     } else {
-        ImageNode.src = collapse.src;
+        //ImageNode.src = collapse.src;
         ImageNode1.src = cg.src;
     }
 }
