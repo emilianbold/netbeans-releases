@@ -24,9 +24,13 @@ import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.game.dialog.NewSceneDialog;
 import org.netbeans.modules.vmd.game.model.Editable;
 import org.netbeans.modules.vmd.game.model.EditorManagerListener;
+import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.adapter.GlobalRepositoryComboBoxModel;
+import org.netbeans.modules.vmd.game.nbdialog.SpriteDialog;
+import org.netbeans.modules.vmd.game.nbdialog.TiledLayerDialog;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -34,10 +38,6 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
-
-import org.netbeans.modules.vmd.game.model.GlobalRepository;
-import org.netbeans.modules.vmd.game.nbdialog.SpriteDialog;
-import org.netbeans.modules.vmd.game.nbdialog.TiledLayerDialog;
 
 /**
  *
@@ -127,6 +127,7 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
     public JComponent getToolbarRepresentation() {
         if (this.toolBarRepresentation == null) {
             JToolBar tool = new JToolBar();
+            tool.setRollover (true);
 			
             tool.addSeparator();
 			
@@ -166,7 +167,10 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
             tool.addSeparator();
 
             JButton buttonCreateScene = new JButton(new ImageIcon(this.getClass().getResource("res/new_scene_16.png")));
-			buttonCreateScene.setToolTipText("Create new Scene");
+            buttonCreateScene.setToolTipText("Create new Scene");
+            buttonCreateScene.setBorderPainted (false);
+            buttonCreateScene.setRolloverEnabled (true);
+            buttonCreateScene.setSize (14, 14);
             buttonCreateScene.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     NewSceneDialog dialog = new NewSceneDialog(gameDesign);
@@ -181,6 +185,9 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
 
             JButton buttonCreateTiledLayer = new JButton(new ImageIcon(this.getClass().getResource("res/new_tiled_layer_16.png")));
 			buttonCreateTiledLayer.setToolTipText("Create new TiledLayer");
+            buttonCreateTiledLayer.setBorderPainted (false);
+            buttonCreateTiledLayer.setRolloverEnabled (true);
+            buttonCreateTiledLayer.setSize (14, 14);
             buttonCreateTiledLayer.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     TiledLayerDialog nld = new TiledLayerDialog(gameDesign);
@@ -195,6 +202,9 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
 
             JButton buttonCreateSprite = new JButton(new ImageIcon(this.getClass().getResource("res/new_sprite_16.png")));
 			buttonCreateSprite.setToolTipText("Create new Sprite");
+            buttonCreateSprite.setBorderPainted (false);
+            buttonCreateSprite.setRolloverEnabled (true);
+            buttonCreateSprite.setSize (14, 14);
             buttonCreateSprite.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     SpriteDialog nld = new SpriteDialog(gameDesign);
