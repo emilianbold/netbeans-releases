@@ -55,5 +55,15 @@ public interface WSConfiguration {
      * @return  title for this WSConfiguration.
      */
     String getDisplayName();
+    
+    /**
+     *  Called to apply changes made by the user 
+     */ 
+    void set();
+    
+    /**
+     *  Called to cancel changes made by the user
+     */
+    void unset();
 
 }
