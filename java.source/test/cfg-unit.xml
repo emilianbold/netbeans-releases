@@ -54,8 +54,6 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="org/netbeans/modules/java/source/usages/LucenePerformanceTest.class"/>
 		<!--requires test source:-->
 		<exclude name="org/netbeans/api/java/source/UiUtilsTest.class" />
-                <!--98953:-->
-                <exclude name="org/netbeans/api/java/source/gen/NewClassTreeTest.class/testAddArguments"/>
 		
 		<!--classes without any uncommented tests:-->
 		<exclude name="org/netbeans/modules/java/source/parsing/CachingFolderArchiveTest.class" />
@@ -102,6 +100,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/api/java/source/gen/SyntetickejTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/EnumTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/FormatingTest.class"/>
+                <include name="org/netbeans/api/java/source/gen/NewClassTreeTest.class"/>
                 
                 <!--
                 Makes many operation on field declaration.
