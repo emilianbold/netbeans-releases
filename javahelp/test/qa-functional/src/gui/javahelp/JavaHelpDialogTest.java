@@ -19,14 +19,15 @@
 
 package gui.javahelp;
 
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.HelpOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jellytools.actions.HelpAction;
-import org.netbeans.jemmy.operators.JButtonOperator;
 
+import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
@@ -83,16 +84,16 @@ public class JavaHelpDialogTest extends JellyTestCase {
     }
     
     public void testHelpCoreFromMenu(){
-        String helpMenu = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Help"); // Help
-        String helpSetsMenu = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.javahelp.resources.Bundle", "Menu/Help/HelpShortcuts");  // Help Sets
-        String coreIDEHelpMenu = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.usersguide.Bundle", "Actions/Help/org-netbeans-modules-usersguide-mainpage.xml"); // Core IDE Help
+        String helpMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Help"); // Help
+        String helpSetsMenu = Bundle.getStringTrimmed("org.netbeans.modules.javahelp.resources.Bundle", "Menu/Help/HelpShortcuts");  // Help Sets
+        String coreIDEHelpMenu = Bundle.getString("org.netbeans.modules.usersguide.Bundle", "Actions/Help/org-netbeans-modules-usersguide-mainpage.xml"); // Core IDE Help
         
         MainWindowOperator.getDefault().menuBar().pushMenu( helpMenu+"|"+helpSetsMenu+"|"+coreIDEHelpMenu, "|");
         helpWindow = new HelpOperator();
     }
     
     public void testHelpByButtonNonModal(){
-        OptionsOperator.invoke();  //new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock("Tools|Options","|"); // NOI18N
+        OptionsOperator.invoke();
         OptionsOperator options = new OptionsOperator();
         options.help();
         helpWindow = new HelpOperator();
@@ -100,27 +101,24 @@ public class JavaHelpDialogTest extends JellyTestCase {
     }
     
     public void testHelpByButtonModal(){
-        String toolsMenu = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Tools"); // Tools
-        //String setupWizardMenu = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.actions.Bundle", "LBL_SetupWizard"); // Setup Wizard
-        String javaPlatformMenu = "Java Platform Manager";
+        String toolsMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Tools"); // Tools
+        String javaPlatformMenu = Bundle.getStringTrimmed("org.netbeans.modules.java.platform.ui.Bundle", "CTL_PlatformManager"); // Java Platforms
         
         new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(toolsMenu+"|"+javaPlatformMenu,"|");
-        //new NbDialogOperator(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.ui.Bundle", "CTL_SetupWizardTitle")).help();    // Setup Wizard
-        new NbDialogOperator("Java Platform Manager").help();    // Java Platform Manager
+        new NbDialogOperator(Bundle.getStringTrimmed("org.netbeans.api.java.platform.Bundle", "TXT_PlatformsManager")).help();    // Java Platform Manager
         helpWindow = new HelpOperator();
     }
     
     public void testHelpByButtonNestedModal(){
-        String toolsMenu = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Tools"); // Tools
-        //String setupWizardMenu = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.actions.Bundle", "LBL_SetupWizard"); // Setup Wizard
-        String javaPlatformMenu = "Java Platform Manager";
+        String toolsMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Tools"); // Tools
+        String javaPlatformMenu = Bundle.getStringTrimmed("org.netbeans.modules.java.platform.ui.Bundle", "CTL_PlatformManager"); // Java Platforms
         
         new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(toolsMenu+"|"+javaPlatformMenu,"|");
-        //new NbDialogOperator(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.ui.Bundle", "CTL_SetupWizardTitle")).help();    // Setup Wizard
-        NbDialogOperator javaPlatformManager = new NbDialogOperator("Java Platform Manager");// Java Platform Manager
+        //new NbDialogOperator(Bundle.getStringTrimmed("org.netbeans.core.ui.Bundle", "CTL_SetupWizardTitle")).help();    // Setup Wizard
+        NbDialogOperator javaPlatformManager = new NbDialogOperator(Bundle.getStringTrimmed("org.netbeans.api.java.platform.Bundle", "TXT_PlatformsManager"));// Java Platform Manager
         
-        new JButtonOperator(javaPlatformManager, "Add Platform...").pushNoBlock();
-        NbDialogOperator addJavaPlatform = new NbDialogOperator("Add Java Platform");// Add Java Platform dialog
+        new JButtonOperator(javaPlatformManager, Bundle.getStringTrimmed("org.netbeans.modules.java.platform.ui.Bundle", "CTL_AddPlatform")).pushNoBlock(); // Add Platform...
+        NbDialogOperator addJavaPlatform = new NbDialogOperator(Bundle.getStringTrimmed("org.netbeans.modules.java.platform.ui.Bundle", "CTL_AddPlatformTitle"));// Add Java Platform
         addJavaPlatform.help();
         helpWindow = new HelpOperator();
         
