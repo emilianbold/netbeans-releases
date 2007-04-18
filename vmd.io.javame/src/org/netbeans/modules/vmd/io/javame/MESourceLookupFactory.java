@@ -25,11 +25,12 @@ import org.netbeans.modules.vmd.api.io.DataEditorView;
 import org.netbeans.modules.vmd.api.io.DataEditorViewLookupFactory;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.model.Debug;
+import org.openide.util.Lookup;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import org.openide.util.Lookup;
 
 /**
  * @author David Kaspar
@@ -39,12 +40,11 @@ public final class MESourceLookupFactory implements DataEditorViewLookupFactory 
     public Collection<? extends Object> getLookupObjects(DataObjectContext context, DataEditorView view) {
         try {
             if (view instanceof MESourceEditorView  &&  view.getKind() == DataEditorView.Kind.CODE)
-                return Collections.singleton(SnippetsPaletteSupport.getPaletteController());
+                return Arrays.asList (SnippetsPaletteSupport.getPaletteController(), context.getDataObject ());
         } catch (IOException e) {
             Debug.warning(e);
         }
-        
-        return null;
+        return Collections.singleton(context.getDataObject ());
     }
     
     public Collection<? extends Lookup> getLookups(DataObjectContext context, DataEditorView view) {
