@@ -2054,7 +2054,7 @@ public class CasualDiff {
                 }
             }
             else {
-                append(Diff.insert(lastPos, LineInsertionType.BEFORE, oldT, newT, newC, trailing));
+                append(Diff.insert(lastPos, oldT, newT, newC, trailing));
                 newC = safeNext(newIter);
             }
         }
@@ -2063,7 +2063,7 @@ public class CasualDiff {
             oldC = safeNext(oldIter);
         }
         while (newC != null) {
-            append(Diff.insert(lastPos, LineInsertionType.BEFORE, oldT, newT, newC, trailing));
+            append(Diff.insert(lastPos, oldT, newT, newC, trailing));
             lastPos += newC.endPos() - newC.pos();
             newC = safeNext(oldIter);
         }
@@ -2735,14 +2735,8 @@ public class CasualDiff {
          * The comment was deleted; which means that it exists in the
          * old parent tree, but not the new one.
          */
-        DELETE_COMMENT("delete_comment"),
+        DELETE_COMMENT("delete_comment");
 
-        /**
-         * Offset
-         */
-        INSERT_OFFSET("insert_offset"),
-        DELETE_OFFSET("delete_offset");
-        
         DiffTypes(String name) {
             this.name = name;
         }
@@ -2756,62 +2750,50 @@ public class CasualDiff {
     public static class Diff {
         protected DiffTypes type;
         int pos;
+        int endOffset;
         protected JCTree oldTree;
         protected JCTree newTree;
-        protected LineInsertionType newLine;
         protected Comment oldComment;
         protected Comment newComment;
-        protected boolean trailing;
-        protected Name owningClassName;
+        private String text;
+        boolean trailing;
 
         static Diff delete(JCTree oldTree, JCTree newTree, Comment oldC) {
-            return new Diff(DiffTypes.DELETE_COMMENT, oldC.pos(), oldTree, newTree, LineInsertionType.BEFORE, oldC, null, false, null);
+            return new Diff(DiffTypes.DELETE_COMMENT, oldC.pos(), oldTree, newTree, oldC, null, false);
         }
 
-        static Diff insert(int pos, LineInsertionType newLine, JCTree oldTree, JCTree newTree, Comment newC, boolean trailing) {
-            return new Diff(DiffTypes.INSERT_COMMENT, pos, oldTree, newTree, newLine, null, newC, trailing, null);
+        static Diff insert(int pos, JCTree oldTree, JCTree newTree, Comment newC, boolean trailing) {
+            return new Diff(DiffTypes.INSERT_COMMENT, pos, oldTree, newTree, null, newC, trailing);
         }
 
         static Diff modify(JCTree oldTree, JCTree newTree, Comment oldC, Comment newC) {
-            return new Diff(DiffTypes.MODIFY_COMMENT, oldC.pos(), oldTree, newTree, LineInsertionType.NONE, oldC, newC, false, null);
+            return new Diff(DiffTypes.MODIFY_COMMENT, oldC.pos(), oldTree, newTree, oldC, newC, false);
         }
         
-        static Diff insert(int pos, String head, JCTree newTree, String tail, LineInsertionType type, Name owningClassName) {
-            return new OffsetDiff(DiffTypes.INSERT_OFFSET, pos, Position.NOPOS /* does not matter */, head, newTree, tail, type, owningClassName);
-        }
-        
-        static Diff insert(int pos, String head, JCTree newTree, String tail, LineInsertionType type) {
-            return new OffsetDiff(DiffTypes.INSERT_OFFSET, pos, Position.NOPOS /* does not matter */, head, newTree, tail, type, null);
+        static Diff insert(int pos, String text) {
+            return new Diff(DiffTypes.INSERT, pos, Position.NOPOS /* does not matter */, text);
         }
         
         static Diff delete(int startOffset, int endOffset) {
-            return new OffsetDiff(DiffTypes.DELETE_OFFSET, startOffset, endOffset, null, null, null, LineInsertionType.NONE, null);
+            return new Diff(DiffTypes.DELETE, startOffset, endOffset, null);
         }
         
-        Diff(DiffTypes type, int pos) {
-            this(type, pos, null, null);
-        }
-
-        Diff(DiffTypes type, int pos, JCTree oldTree, JCTree newTree) {
-            this(type, pos, oldTree, newTree, LineInsertionType.NONE, null, null, false, null);
-        }
-
-        Diff(DiffTypes type, int pos, JCTree oldTree, JCTree newTree, LineInsertionType newLine) {
-            this(type, pos, oldTree, newTree, newLine, null, null, false, null);
-        }
-
-        Diff(DiffTypes tape, int pos, JCTree oldTree, JCTree newTree, LineInsertionType newLine,
-             Comment oldComment, Comment newComment, boolean trailing, Name owningClassName) {
-            assert pos >= 0 : "invalid source offset";
-            this.type = tape;
+        Diff(DiffTypes type, int pos, int endOffset, String text) {
+            this.type = type;
             this.pos = pos;
+            this.endOffset = endOffset;
+            this.text = text;
+        }
+        
+        Diff(DiffTypes type, int pos, JCTree oldTree, JCTree newTree,
+             Comment oldComment, Comment newComment, boolean trailing) {
+            this(type, pos, -1, null);
+            assert pos >= 0 : "invalid source offset";
             this.oldTree = oldTree;
             this.newTree = newTree;
-            this.newLine = newLine;
             this.oldComment = oldComment;
             this.newComment = newComment;
             this.trailing = trailing;
-            this.owningClassName = owningClassName;
         }
 
         public JCTree getOld() {
@@ -2822,14 +2804,17 @@ public class CasualDiff {
             return newTree;
         }
         
-        public LineInsertionType needsNewLine() {
-            return newLine;
-        }
-        
         public int getPos() {
             return pos;
         }
+
+        public int getEnd() {
+            return endOffset;
+        }
         
+        public String getText() {
+            return text;
+        }
         public Comment getOldComment() {
             return oldComment;
         }
@@ -2850,7 +2835,6 @@ public class CasualDiff {
                    pos != d2.pos && 
                    oldTree != d2.oldTree &&
                    newTree != d2.newTree && 
-                   newLine != d2.newLine && 
                    oldComment != d2.oldComment && 
                    newComment != d2.newComment &&
                    trailing != d2.trailing;
@@ -2860,7 +2844,6 @@ public class CasualDiff {
             return type.hashCode() + pos + 
                    (oldTree != null ? oldTree.hashCode() : 0) +
                    (newTree != null ? newTree.hashCode() : 0) +
-                   newLine.hashCode() +
                    (oldComment != null ? oldComment.hashCode() : 0) +
                    (newComment != null ? newComment.hashCode() : 0) +
                    Boolean.valueOf(trailing).hashCode();
@@ -2895,28 +2878,6 @@ public class CasualDiff {
                 sb.append('\n');
             }
         }
-    }
-    
-    public static class OffsetDiff extends Diff {
-        private final String head;
-        private final String tail;
-        private final int endOffset;
-        
-        // todo (#pf): ins type should be removed after all things will be
-        // rewritten to new line separator policy
-        OffsetDiff(DiffTypes type, int startOffset, int endOffset, String head, JCTree newTree, String tail, LineInsertionType insType, Name owningClassName) {
-            super(type, startOffset, null, newTree, insType);
-            this.endOffset = endOffset;
-            this.head = head;
-            this.tail = tail;
-            this.owningClassName = owningClassName;
-        }
-        
-        public int getStartOffset() { return getPos(); }
-        public int getEndOffset()   { return endOffset; }
-        
-        public String getHead() { return head; }
-        String getTail() { return tail; }
     }
     ////////////////////////////////////////////////////////////////////////////
     
@@ -3006,7 +2967,7 @@ public class CasualDiff {
                 append(Diff.insert(delEnd == Difference.NONE ? 
                         delStart < lines1.length ? lines1[delStart].start : lines1[lines1.length-1].end
                         : lines1[delEnd].end,
-                        builder.toString(), null, "", LineInsertionType.NONE));
+                        builder.toString()));
             }
 
             // deletion
@@ -3087,7 +3048,7 @@ public class CasualDiff {
                 append(Diff.insert(currentPos + (delEnd == Difference.NONE ?
                         delStart < lines1.length ? lines1[delStart].start : lines1[lines1.length-1].end
                         : lines1[delEnd].end),
-                        builder.toString(), null, "", LineInsertionType.NONE));
+                        builder.toString()));
             }
             
             // deletion
@@ -3107,7 +3068,7 @@ public class CasualDiff {
                     builder.append(lines2[i].data);
                 }
                 append(Diff.insert(currentPos + (delEnd == Difference.NONE ? lines1[delStart].start : lines1[delEnd].end),
-                        builder.toString(), null, "", LineInsertionType.NONE));
+                        builder.toString()));
             }
                     
         }
