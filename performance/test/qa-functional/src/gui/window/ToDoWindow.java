@@ -19,7 +19,6 @@
 
 package gui.window;
 
-import gui.Utilities;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.TopComponentOperator;

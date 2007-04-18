@@ -83,7 +83,7 @@ public class ProfilerWindows extends org.netbeans.performance.test.utilities.Per
     
     public void testProfilerLiveResults() {
         commandName = Bundle.getStringTrimmed("org.netbeans.modules.profiler.actions.Bundle", "LBL_ShowLiveResultsWindowAction");
-        windowName = Bundle.getStringTrimmed("org.netbeans.modules.profiler.Bundle", "LiveResultsWindow_LiveResultsTabName");
+        windowName = Bundle.getStringTrimmed("org.netbeans.modules.profiler.Bundle", "LAB_ResultsWindowName");
         doMeasurement();
     }
     
