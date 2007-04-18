@@ -359,6 +359,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../serverplugins/sun/appsrv</project>
                 <project>../serverplugins/sun/appsrv81</project>
                 <project>../serverplugins/sun/sunddapi</project>
+                <!-- Unprojectized: serverplugins/sun/sunddloaders -->
                 <project>../serverplugins/sun/sunddui</project>
                 <project>../serverplugins/weblogic9</project>
                 <project>../subversion/client</project>
