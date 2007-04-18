@@ -129,7 +129,9 @@ public class SQLproProjectGenerator {
         
         Deployment deployment = Deployment.getDefault ();
         String serverInstanceID = deployment.getDefaultServerInstanceID ();
-        ep.setProperty(IcanproProjectProperties.J2EE_SERVER_TYPE, deployment.getServerID (serverInstanceID));
+		if(serverInstanceID != null) {
+			ep.setProperty(IcanproProjectProperties.J2EE_SERVER_TYPE, deployment.getServerID (serverInstanceID));
+		}
         ep.setProperty(IcanproProjectProperties.JAVAC_SOURCE, "1.4");
         ep.setProperty(IcanproProjectProperties.JAVAC_DEBUG, "true");
         ep.setProperty(IcanproProjectProperties.JAVAC_DEPRECATION, "false");
@@ -160,7 +162,9 @@ public class SQLproProjectGenerator {
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         
         ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        ep.setProperty(IcanproProjectProperties.J2EE_SERVER_INSTANCE, serverInstanceID);
+		if(serverInstanceID != null) {
+			ep.setProperty(IcanproProjectProperties.J2EE_SERVER_INSTANCE, serverInstanceID);
+		}
         //============= Start of IcanPro========================================//
         ep.setProperty(IcanproProjectProperties.JBI_COMPONENT_CONF_FILE, "ComponentInformation.xml"); // NOI18N
         ep.setProperty(IcanproProjectProperties.JBI_DEPLOYMENT_CONF_FILE, "default.xml"); // NOI18N
