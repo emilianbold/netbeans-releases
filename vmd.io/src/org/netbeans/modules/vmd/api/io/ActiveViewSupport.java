@@ -18,10 +18,7 @@
  */
 package org.netbeans.modules.vmd.api.io;
 
-import org.openide.util.WeakSet;
-import org.openide.util.Lookup;
-import org.openide.util.LookupListener;
-import org.openide.util.LookupEvent;
+import org.openide.util.*;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.windows.Mode;
@@ -134,6 +131,7 @@ public final class ActiveViewSupport {
         public void propertyChange (PropertyChangeEvent evt) {
             if (! TopComponent.Registry.PROP_ACTIVATED.equals (evt.getPropertyName ()))
                 return;
+//            System.out.println ("!! Global Context Lookup Result = " + Utilities.actionsGlobalContext ().lookupAll (Object.class));
             Mode m = findEditorMode ();
             TopComponent component = m != null ? m.getSelectedTopComponent () : null;
             if (result != null)
