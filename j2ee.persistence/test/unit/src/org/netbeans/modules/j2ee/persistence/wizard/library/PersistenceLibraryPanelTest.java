@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.j2ee.persistence.wizard.library;
 
-import java.awt.Image;
 import junit.framework.TestCase;
 import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibraryPanel;
 import org.openide.util.Utilities;
@@ -43,7 +42,7 @@ public class PersistenceLibraryPanelTest extends TestCase {
         assertNotNull("Could not find an image in path " + warning, Utilities.loadImage(warning));
 
         String error = PersistenceLibraryPanel.ERROR_GIF;
-        assertNotNull("Could not find an image in path " + warning, Utilities.loadImage(error));
+        assertNotNull("Could not find an image in path " + error, Utilities.loadImage(error));
         
     }
     
