@@ -55,7 +55,7 @@ public class DisplayableDisplayPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.BorderLayout());
 
-        headerPanel.setBackground(new java.awt.Color(182, 182, 170));
+        headerPanel.setBackground(new java.awt.Color(235, 235, 231));
         headerPanel.setLayout(new java.awt.GridBagLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;

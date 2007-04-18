@@ -36,7 +36,7 @@ import java.util.Map;
  */
 public class ResourcePanel extends JPanel {
 
-    public static final Color BACKGROUND_COLOR = new Color (0xFCFAF5);
+    public static final Color BACKGROUND_COLOR = new Color (0xFBF9F3);
     private ScreenAccessController controller;
     private JPanel fillPanel;
 

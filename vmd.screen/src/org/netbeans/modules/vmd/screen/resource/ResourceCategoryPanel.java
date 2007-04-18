@@ -32,9 +32,11 @@ import java.util.ArrayList;
  * @author David Kaspar
  */
 public class ResourceCategoryPanel extends JPanel {
-    
+
+    private static final Color FOREGROUND_COLOR = new Color (0x868686);
+
     private JPanel componentPanel;
-    
+
     // this class will need to have a listener to document changes
     // the interest is in components added/removed and
     // also in the name changes of the individual components
@@ -43,15 +45,20 @@ public class ResourceCategoryPanel extends JPanel {
         setLayout(new BorderLayout());
         setBackground(ResourcePanel.BACKGROUND_COLOR);
         
-        Image image = category.getIcon();
-        JLabel label = new JLabel(category.getTitle(), image != null ? new ImageIcon(image) : null, SwingConstants.LEFT);
+//        Image image = category.getIcon();
+        JLabel label = new JLabel(category.getTitle(), /*image != null ? new ImageIcon(image) : null, */SwingConstants.LEFT);
         label.setFont(getFont().deriveFont(Font.BOLD));
         label.setToolTipText(category.getToolTip());
+        label.setForeground (FOREGROUND_COLOR);
         add(label, BorderLayout.NORTH);
         
         componentPanel = new JPanel(new GridBagLayout());
         componentPanel.setBackground(ResourcePanel.BACKGROUND_COLOR);
         add(componentPanel, BorderLayout.CENTER);
+
+        JPanel panel = new JPanel ();
+        panel.setMinimumSize (new Dimension (20, 100));
+        add (panel, BorderLayout.SOUTH);
     }
     
     public void reload(ArrayList<ScreenResourceItemPresenter> list) {

@@ -20,36 +20,40 @@
 
 package org.netbeans.modules.vmd.screen.resource;
 
+import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsSupport;
+import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceItemPresenter;
 import org.netbeans.modules.vmd.screen.ScreenViewController;
+import org.netbeans.modules.vmd.screen.MainPanel;
 import org.openide.util.Utilities;
 
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Collection;
-import org.netbeans.modules.vmd.api.model.Debug;
-import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceItemPresenter;
-import org.netbeans.modules.vmd.screen.GradientBorder;
 
 /**
  * @author breh
  */
 public class ResourceItemPanel extends JLabel implements MouseListener {
     
-    private static Border SELECTED_RESOURCE_BORDER = new GradientBorder(true);
-    private static Border RESOURCE_BORDER = new GradientBorder(false);
-    
+    private static Border SELECTED_RESOURCE_BORDER = new LineBorder (MainPanel.SELECT_COLOR, 2, false);
+    private static Border RESOURCE_BORDER = new EmptyBorder (2, 2, 2, 2);
+
     private DesignComponent component;
     
     public ResourceItemPanel(DesignComponent component) {
         this.component = component;
+        setOpaque (true);
+        setBackground (Color.WHITE);
         addMouseListener(this);
     }
     

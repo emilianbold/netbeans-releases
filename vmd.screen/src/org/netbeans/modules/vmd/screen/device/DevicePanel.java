@@ -33,8 +33,7 @@ import java.awt.*;
  */
 public class DevicePanel extends JPanel {
 
-    private static final Color BACKGROUND_COLOR = new Color (0xFCFAF5);
-    //private static final Color BACKGROUND_COLOR = Color.RED; // just for test
+    private static final Color BACKGROUND_COLOR = new Color (0xFBF9F3);
 
     private final ScreenDisplayPresenter dummyPresenter = new DummyDisplayPresenter ();
 

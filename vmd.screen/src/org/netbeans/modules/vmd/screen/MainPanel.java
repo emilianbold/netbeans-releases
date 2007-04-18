@@ -20,20 +20,16 @@
 
 package org.netbeans.modules.vmd.screen;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.netbeans.modules.vmd.screen.device.DevicePanel;
+import org.netbeans.modules.vmd.screen.resource.ResourcePanel;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Collections;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.DesignDocument;
-import org.netbeans.modules.vmd.screen.resource.ResourcePanel;
-import org.netbeans.modules.vmd.screen.device.DevicePanel;
 
 
 /**
@@ -41,9 +37,12 @@ import org.netbeans.modules.vmd.screen.device.DevicePanel;
  * @author David Kaspar
  */
 public class MainPanel extends JPanel {
+
+    public static final Color SELECT_COLOR = new Color (0xFF8500);
+    public static final Color HOVER_COLOR = new Color (0x5B67B0);
     
     private static final Font LABEL_FONT = new Font("Dialog", Font.PLAIN, 20);
-    private static final Color LABEL_COLOR = ResourcePanel.BACKGROUND_COLOR.darker();
+    private static final Color LABEL_COLOR = new Color (0x88A3CF);
     
     private DevicePanel devicePanel;
     

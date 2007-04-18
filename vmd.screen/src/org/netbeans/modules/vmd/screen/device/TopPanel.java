@@ -31,6 +31,7 @@ import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 import org.netbeans.modules.vmd.api.screen.display.injector.ScreenInjectorPresenter;
 import org.netbeans.modules.vmd.screen.ScreenAccessController;
 import org.netbeans.modules.vmd.screen.ScreenViewController;
+import org.netbeans.modules.vmd.screen.MainPanel;
 import org.openide.util.Utilities;
 
 import javax.swing.*;
@@ -51,11 +52,13 @@ import java.util.List;
  */
 public class TopPanel extends JPanel {
 
-    private static final Color COLOR_SELECTION_FILL = new Color (0x74, 0x8C, 0xC0, 128);
-    private static final Color COLOR_SELECTION_DRAW = Color.BLACK;
+    private static final Color COLOR_SELECTION_FILL = new Color (235, 235, 231, 64);
+    private static final Color COLOR_SELECTION_DRAW = MainPanel.SELECT_COLOR;
 
-    private static final Color COLOR_HOVER_FILL = new Color (0xB9, 0xDF, 0xC0, 128);
-    private static final Color COLOR_HOVER_DRAW = Color.BLACK;
+//    private static final Color COLOR_HOVER_FILL = new Color (0xB9, 0xDF, 0xC0, 128);
+    private static final Color COLOR_HOVER_DRAW = MainPanel.HOVER_COLOR;
+
+    private static final Stroke STROKE = new BasicStroke (2.0f);
 
     private static final Image IMAGE_INJECT = Utilities.loadImage ("org/netbeans/modules/vmd/screen/resources/inject.png"); // NOI18N
 
@@ -157,6 +160,9 @@ public class TopPanel extends JPanel {
         super.paintComponent (g);
         Graphics2D gr = (Graphics2D) g;
 
+        Stroke previousStroke = gr.getStroke ();
+        gr.setStroke (STROKE);
+
         for (SelectionShape shape : selectionShapes) {
             gr.translate (shape.x, shape.y);
             gr.setColor (COLOR_SELECTION_FILL);
@@ -168,12 +174,14 @@ public class TopPanel extends JPanel {
 
         if (hoverShape != null) {
             gr.translate (hoverShape.x, hoverShape.y);
-            gr.setColor (COLOR_HOVER_FILL);
-            gr.fill (hoverShape.shape);
+//            gr.setColor (COLOR_HOVER_FILL);
+//            gr.fill (hoverShape.shape);
             gr.setColor (COLOR_HOVER_DRAW);
             gr.draw (hoverShape.shape);
             gr.translate (- hoverShape.x, - hoverShape.y);
         }
+
+        gr.setStroke (previousStroke);
 
         for (SelectionShape shape : selectionShapes) {
             if (shape.enableInjector) {
