@@ -389,6 +389,7 @@ public abstract class Complib {
      * @return the help prefix. Null means no prefix attribute found.
      */
     public String getHelpPrefix() {
+        // TODO Not used. Remove.
         return compLibManifest.getHelpPrefix();
     }
 

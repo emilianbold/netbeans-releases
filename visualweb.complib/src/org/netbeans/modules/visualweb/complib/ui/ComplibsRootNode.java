@@ -35,9 +35,16 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.visualweb.api.complib.ComplibEvent;
+import org.netbeans.modules.visualweb.api.complib.ComplibListener;
+import org.netbeans.modules.visualweb.complib.ComplibServiceProvider;
+import org.netbeans.modules.visualweb.complib.ExtensionComplib;
+import org.netbeans.modules.visualweb.complib.IdeUtil;
+import org.netbeans.modules.visualweb.complib.ComplibServiceProvider.RelatedComplibs;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -47,16 +54,9 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
 
-import org.netbeans.modules.visualweb.api.complib.ComplibEvent;
-import org.netbeans.modules.visualweb.api.complib.ComplibListener;
-import org.netbeans.modules.visualweb.complib.ComplibServiceProvider;
-import org.netbeans.modules.visualweb.complib.ExtensionComplib;
-import org.netbeans.modules.visualweb.complib.IdeUtil;
-import org.netbeans.modules.visualweb.complib.ComplibServiceProvider.RelatedComplibs;
-
 /**
  * ComplibsRootNode displays a list of embedded complibs for a project.
- *
+ * 
  * @author Edwin Goei
  */
 public class ComplibsRootNode extends AbstractNode {
@@ -210,19 +210,20 @@ public class ComplibsRootNode extends AbstractNode {
         }
 
         public void actionPerformed(ActionEvent e) {
-            String addMsg = NbBundle.getMessage(ComplibsRootNode.class,
-                    "ComplibsRootNode.addComplib");
-            Object[] options = new Object[] { new JButton(addMsg),
+            JButton addBtn = new JButton();
+            String addBtnMsg = NbBundle.getMessage(ComplibsRootNode.class,
+                    "ComplibsRootNode.addComplibBtn");
+            Mnemonics.setLocalizedText(addBtn, addBtnMsg);
+            addBtn.getAccessibleContext().setAccessibleDescription(addBtnMsg);
+            addBtn.setEnabled(false);
+            Object[] options = new Object[] { addBtn,
                     DialogDescriptor.CANCEL_OPTION };
-            ((JButton) options[0]).setEnabled(false);
-            ((JButton) options[0]).getAccessibleContext()
-                    .setAccessibleDescription(addMsg);
-
-            ComplibChooser panel = new ComplibChooser((JButton) options[0],
-                    project);
-            DialogDescriptor desc = new DialogDescriptor(panel, addMsg, true,
-                    options, options[0], DialogDescriptor.DEFAULT_ALIGN, null,
-                    null);
+            ComplibChooser panel = new ComplibChooser(addBtn, project);
+            String dialogTitle = NbBundle.getMessage(ComplibsRootNode.class,
+                    "ComplibsRootNode.addComplibTitle");
+            DialogDescriptor desc = new DialogDescriptor(panel, dialogTitle,
+                    true, options, options[0], DialogDescriptor.DEFAULT_ALIGN,
+                    null, null);
 
             desc.setHelpCtx(new HelpCtx(
                     "projrave_ui_elements_dialogs_add_complib")); // NOI18N
@@ -230,12 +231,17 @@ public class ComplibsRootNode extends AbstractNode {
             Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);
             dlg.setVisible(true);
             if (desc.getValue() == options[0]) {
-                ExtensionComplib newComplib = panel.getSelectedComplib();
-                try {
-                    csp.addProjectComplib(project, newComplib);
-                } catch (Exception ex) {
-                    IdeUtil.logError(
-                            "Unable to embedded a complib into project", ex);
+                ArrayList<ExtensionComplib> newComplibs = panel
+                        .getSelectedComplibs();
+                for (ExtensionComplib complib : newComplibs) {
+                    try {
+                        csp.addProjectComplib(project, complib);
+                    } catch (Exception ex) {
+                        IdeUtil
+                                .logError(
+                                        "Unable to embedded a complib into project",
+                                        ex);
+                    }
                 }
             }
             dlg.dispose();

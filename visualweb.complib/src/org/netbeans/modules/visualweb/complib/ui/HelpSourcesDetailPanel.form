@@ -42,13 +42,13 @@
         </Constraint>
       </Constraints>
     </Component>
-    <Component class="javax.swing.JLabel" name="lblHelpPrefix">
+    <Component class="javax.swing.JLabel" name="lblHelpSetFile">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="txtHelpPrefix"/>
+          <ComponentRef name="txtHelpSetFile"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/visualweb/complib/ui/Bundle.properties" key="manager.HelpPrefixLabel" replaceFormat="org.openide.util.NbBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/visualweb/complib/ui/Bundle.properties" key="manager.HelpSetFileLabel" replaceFormat="org.openide.util.NbBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <AuxValues>
@@ -60,7 +60,7 @@
         </Constraint>
       </Constraints>
     </Component>
-    <Component class="javax.swing.JTextField" name="txtHelpPrefix">
+    <Component class="javax.swing.JTextField" name="txtHelpSetFile">
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
         <Property name="text" type="java.lang.String" value="chelp"/>

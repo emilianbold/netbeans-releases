@@ -22,6 +22,7 @@ package org.netbeans.modules.visualweb.complib.ui;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.AbstractListModel;
@@ -34,13 +35,12 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.netbeans.api.project.Project;
-import org.openide.util.HelpCtx;
-import org.openide.util.Utilities;
-import org.openide.util.WeakListeners;
-
 import org.netbeans.modules.visualweb.complib.Complib;
 import org.netbeans.modules.visualweb.complib.ComplibServiceProvider;
 import org.netbeans.modules.visualweb.complib.ExtensionComplib;
+import org.openide.util.HelpCtx;
+import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 
 /**
  * Derived from NetBeans LibrariesChooser
@@ -59,7 +59,8 @@ class ComplibChooser extends javax.swing.JPanel implements HelpCtx.Provider {
         initComponents();
 
         jList1.setPrototypeCellValue("0123456789012345678901234"); // NOI18N
-        jList1.setModel(new ComplibListModel(project));
+        ComplibListModel complibListModel = new ComplibListModel(project);
+        jList1.setModel(complibListModel);
         jList1.setCellRenderer(new ComplibRenderer());
         jList1.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
@@ -70,14 +71,26 @@ class ComplibChooser extends javax.swing.JPanel implements HelpCtx.Provider {
                         .setEnabled(jList1.getSelectedIndices().length != 0);
             }
         });
+        
+        // If there are items in the list, select the first one
+        if (complibListModel.getSize() > 0) {
+            jList1.setSelectedIndex(0);
+        }
     }
 
     public HelpCtx getHelpCtx() {
         return new HelpCtx(ComplibChooser.class);
     }
 
-    public ExtensionComplib getSelectedComplib() {
-        return (ExtensionComplib) jList1.getSelectedValue();
+    public ArrayList<ExtensionComplib> getSelectedComplibs() {
+        ArrayList<ExtensionComplib> retVal = new ArrayList<ExtensionComplib>();
+        Object[] selectedValues = jList1.getSelectedValues();
+        for (Object val : selectedValues) {
+            if (val instanceof ExtensionComplib) {
+                retVal.add((ExtensionComplib) val);
+            }
+        }
+        return retVal;
     }
 
     /** This method is called from within the constructor to
@@ -109,7 +122,6 @@ class ComplibChooser extends javax.swing.JPanel implements HelpCtx.Provider {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         add(jLabel1, gridBagConstraints);
 
-        jList1.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane1.setViewportView(jList1);
         jList1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(ComplibChooser.class).getString("ComplibChooser.scrollpane.AD"));
 

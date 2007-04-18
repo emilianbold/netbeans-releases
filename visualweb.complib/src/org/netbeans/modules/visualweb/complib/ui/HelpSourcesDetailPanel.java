@@ -42,8 +42,7 @@ public class HelpSourcesDetailPanel extends javax.swing.JPanel {
 
         PathListModel plm = new PathListModel(compLib.getHelpPath());
         lstHelpSources.setModel(plm);
-        // TODO what if there is no help prefix
-        txtHelpPrefix.setText(compLib.getHelpPrefix());
+        txtHelpSetFile.setText(compLib.getHelpSetFile());
     }
 
     /**
@@ -59,8 +58,8 @@ public class HelpSourcesDetailPanel extends javax.swing.JPanel {
         scrollHelpSources = new javax.swing.JScrollPane();
         lstHelpSources = new javax.swing.JList();
         lblHelpSources = new javax.swing.JLabel();
-        lblHelpPrefix = new javax.swing.JLabel();
-        txtHelpPrefix = new javax.swing.JTextField();
+        lblHelpSetFile = new javax.swing.JLabel();
+        txtHelpSetFile = new javax.swing.JTextField();
         tpnlDescription = new javax.swing.JTextPane();
 
         setLayout(new java.awt.GridBagLayout());
@@ -89,18 +88,18 @@ public class HelpSourcesDetailPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(10, 10, 0, 0);
         add(lblHelpSources, gridBagConstraints);
 
-        lblHelpPrefix.setLabelFor(txtHelpPrefix);
-        org.openide.awt.Mnemonics.setLocalizedText(lblHelpPrefix, org.openide.util.NbBundle.getBundle("org/netbeans/modules/visualweb/complib/ui/Bundle").getString("manager.HelpPrefixLabel"));
+        lblHelpSetFile.setLabelFor(txtHelpSetFile);
+        org.openide.awt.Mnemonics.setLocalizedText(lblHelpSetFile, org.openide.util.NbBundle.getBundle("org/netbeans/modules/visualweb/complib/ui/Bundle").getString("manager.HelpSetFileLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 10, 10, 0);
-        add(lblHelpPrefix, gridBagConstraints);
+        add(lblHelpSetFile, gridBagConstraints);
 
-        txtHelpPrefix.setEditable(false);
-        txtHelpPrefix.setText("chelp");
-        txtHelpPrefix.setPreferredSize(new java.awt.Dimension(100, 20));
+        txtHelpSetFile.setEditable(false);
+        txtHelpSetFile.setText("chelp");
+        txtHelpSetFile.setPreferredSize(new java.awt.Dimension(100, 20));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 7;
@@ -108,7 +107,7 @@ public class HelpSourcesDetailPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 10, 10, 10);
-        add(txtHelpPrefix, gridBagConstraints);
+        add(txtHelpSetFile, gridBagConstraints);
 
         tpnlDescription.setBackground(javax.swing.UIManager.getDefaults().getColor("Button.background"));
         tpnlDescription.setEditable(false);
@@ -124,12 +123,12 @@ public class HelpSourcesDetailPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel lblHelpPrefix;
+    private javax.swing.JLabel lblHelpSetFile;
     private javax.swing.JLabel lblHelpSources;
     private javax.swing.JList lstHelpSources;
     private javax.swing.JScrollPane scrollHelpSources;
     private javax.swing.JTextPane tpnlDescription;
-    private javax.swing.JTextField txtHelpPrefix;
+    private javax.swing.JTextField txtHelpSetFile;
     // End of variables declaration//GEN-END:variables
 
 }
