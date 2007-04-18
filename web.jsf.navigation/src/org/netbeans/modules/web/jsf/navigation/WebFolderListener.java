@@ -112,7 +112,7 @@ public class WebFolderListener extends FileChangeAdapter{
                 Node tmpNode = new AbstractNode(Children.LEAF);
                 tmpNode.setName(pageDisplayName);
                 oldNode.replaceWrappedNode(tmpNode);
-                view.resetNodeWidget(oldNode, false);  /* If I add a listener to PageFlowNode, then I won't have to do this*/
+                view.resetNodeWidget(oldNode, false);  /* If I add a listener to PageFlowNode, then I won't have to do this*/ 
             } else {
                 pfc.removePageName2Node(oldNode);
                 view.removeNodeWithEdges(oldNode);

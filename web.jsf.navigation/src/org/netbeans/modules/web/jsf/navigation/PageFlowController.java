@@ -319,6 +319,9 @@ public class PageFlowController {
         createAllEdges(rules);
         //view.layoutGraph();
         view.validateGraph();
+        
+        System.out.println(pageName2Node);
+        
         //        view.layoutSceneImmediately();
         return true;
         
@@ -447,8 +450,6 @@ public class PageFlowController {
     }
     
     
-    
-    
     public PageFlowNode removePageName2Node(PageFlowNode pageNode ){
         printThreadInfo();
         synchronized ( pageName2Node ) {
@@ -458,6 +459,17 @@ public class PageFlowController {
     public void removePageName2Node( String displayName ) {
         synchronized ( pageName2Node ) {
             pageName2Node.remove(displayName);
+        }
+    }
+    
+    public void replacePageName2Node(PageFlowNode node, String newName, String oldName ){
+        printThreadInfo();
+        synchronized ( pageName2Node ) {
+            PageFlowNode node2 = pageName2Node.remove(oldName);
+            if( node == null || node2 == null ){
+                System.err.println("PageFlowEditor: Trying to add Page [" + oldName + "] but it is null.");                
+            } 
+            pageName2Node.put(newName, node);
         }
     }
     

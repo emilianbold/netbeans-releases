@@ -204,6 +204,10 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
      */
     public void validateGraph() {
         //        scene.layoutScene();
+        System.out.println("Validating Graph: ");
+        System.out.println("Nodes: " + scene.getNodes());
+        System.out.println("Edges: "+ scene.getEdges());
+        System.out.println("Pins: " + scene.getPins());
         scene.validate();
     }
     
@@ -264,11 +268,11 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
      * @param fromPageNode
      * @param toPageNode
      */
-    protected void createEdge( NavigationCaseNode navCaseNode, PageFlowNode fromPageNode, PageFlowNode toPageNode  ) {     
+    protected void createEdge( NavigationCaseNode navCaseNode, PageFlowNode fromPageNode, PageFlowNode toPageNode  ) {
         assert fromPageNode.getDisplayName() != null;
         assert toPageNode.getDisplayName() != null;
         
-        ConnectionWidget widget = (ConnectionWidget)scene.addEdge(navCaseNode);     
+        ConnectionWidget widget = (ConnectionWidget)scene.addEdge(navCaseNode);
         setEdgeSourcePin( navCaseNode, fromPageNode );
         setEdgeTargePin( navCaseNode, toPageNode );
     }
@@ -290,7 +294,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         scene.setEdgeSource(navCaseNode,  sourcePin );
     }
     
-    private void setEdgeTargePin( NavigationCaseNode navCaseNode, PageFlowNode toPageNode ){        
+    private void setEdgeTargePin( NavigationCaseNode navCaseNode, PageFlowNode toPageNode ){
         PinNode targetPin = scene.getDefaultPin(toPageNode);
         //I need to remove extension so it matches the DataNode's pins.
         scene.setEdgeTarget(navCaseNode,  targetPin);
@@ -383,14 +387,16 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
      * @param node
      */
     public void removeEdge( NavigationCaseNode node ){
-        scene.removeEdge(node);
+        if( scene.getEdges().contains(node)) {
+            scene.removeEdge(node);
+        }
     }
     
     public void removeNodeWithEdges( PageFlowNode node ){
         //        scene.removeNode(node);
         if ( scene.getNodes().contains(node) ){
-            /* In some cases the node will already be deleted by a side effect of deleting another node.  
-             * This is primarily in the FacesConfig view or an abstract Node in the project view. 
+            /* In some cases the node will already be deleted by a side effect of deleting another node.
+             * This is primarily in the FacesConfig view or an abstract Node in the project view.
              */
             scene.removeNodeWithEdges(node);
         }
@@ -422,24 +428,21 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     }
     
     private void redrawPinsAndEdges(PageFlowNode pageNode ) {
-                /* Gather the Edges */
+        /* Gather the Edges */
         Collection<NavigationCaseNode> redrawCaseNodes = new ArrayList<NavigationCaseNode>();
         Collection<PinNode> pinNodes = new ArrayList<PinNode>( scene.getPins() );
         for( PinNode pinNode : pinNodes ){
             if( pinNode.getPageFlowNode() == pageNode ){
+                assert pinNode.getPageFlowNode().getDisplayName().equals(pageNode.getDisplayName());
+                
                 Collection<NavigationCaseNode> caseNodes = scene.findPinEdges(pinNode, true, false);
                 redrawCaseNodes.addAll(caseNodes);
-//                for( NavigationCaseNode caseNode : caseNodes ){
-//                    redrawCaseNodes.add(caseNode);
-//                    scene.setEdgeSource(caseNode, scene.getDefaultPin(pageNode));
-//                }
                 if( !pinNode.isDefault()) {
                     scene.removePin(pinNode);
                 }
-//                scene.removePinWithEdges(pinNode);
             }
         }
-//        validateGraph();
+        //        validateGraph();  Called by whoever calls resetNode.
         
         //This will re-add the pins.
         setupPinsInNode(pageNode);

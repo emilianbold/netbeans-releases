@@ -112,17 +112,19 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
         }
         if ( myOldCase != null ){
             NavigationCaseNode caseNode = pfc.removeCase2Node(myOldCase);
-            view.removeEdge(caseNode);
-            
-            String toPage = caseNode.getToViewId();
-            if( toPage != null ) {
-                PageFlowNode pageNode = pfc.getPageName2Node(toPage);
-                if( pageNode != null && !pfc.isPageInFacesConfig(toPage)){
-                    if( !pageNode.isDataNode() || PageFlowUtilities.getInstance().getCurrentScope() == PageFlowUtilities.LBL_SCOPE_FACESCONFIG){
-                        pfc.removePageName2Node(pageNode);
-                        view.removeNodeWithEdges(pageNode);
-                        view.validateGraph();
-                        //                                node.destroy(); //only okay because it is an abstract node.
+            if( caseNode != null ) {
+                view.removeEdge(caseNode);
+                
+                String toPage = caseNode.getToViewId();
+                if( toPage != null ) {
+                    PageFlowNode pageNode = pfc.getPageName2Node(toPage);
+                    if( pageNode != null && !pfc.isPageInFacesConfig(toPage)){
+                        if( !pageNode.isDataNode() || PageFlowUtilities.getInstance().getCurrentScope() == PageFlowUtilities.LBL_SCOPE_FACESCONFIG){
+                            pfc.removePageName2Node(pageNode);
+                            view.removeNodeWithEdges(pageNode);
+                            view.validateGraph();
+                            //                                node.destroy(); //only okay because it is an abstract node.
+                        }
                     }
                 }
             }
@@ -154,10 +156,10 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
     }
     
     private final void setupGraphInAWTThread() {
-            EventQueue.invokeLater(new Runnable() {
-                public void run() {
-                    pfc.setupGraph();
-                }
-            });
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                pfc.setupGraph();
+            }
+        });
     }
 }
