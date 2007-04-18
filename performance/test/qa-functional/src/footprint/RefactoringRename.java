@@ -109,7 +109,7 @@ public class RefactoringRename extends org.netbeans.performance.test.utilities.M
         Node filenode = new Node(packagenode, rename_from);
         filenode.callPopup().pushMenuNoBlock("Refactor|Rename..."); // NOI18N
         
-        NbDialogOperator renamedialog = new NbDialogOperator("Rename  " + rename); // NOI18N
+        NbDialogOperator renamedialog = new NbDialogOperator("Rename Class " + rename); // NOI18N
         
         JTextFieldOperator txtfNewName = new JTextFieldOperator(renamedialog);
         JButtonOperator btnRefactor = new JButtonOperator(renamedialog,"Refactor"); // NOI18N
