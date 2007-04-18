@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -133,8 +132,7 @@ public final class NbErrorManager extends Handler {
         
         if (recursively) {
             ArrayList<LogRecord> al = new ArrayList<LogRecord>();
-            for (Iterator<LogRecord> i = l.iterator(); i.hasNext(); ) {
-                LogRecord ano = i.next();
+            for (LogRecord ano : l) {
                 Throwable t1 = ano.getThrown();
                 if ((t1 != null) && (! alreadyVisited.contains(t1))) {
                     alreadyVisited.add(t1);
@@ -281,9 +279,7 @@ public final class NbErrorManager extends Handler {
                 // Unlocalized log message - this is for developers of NB, not users
                 Logger l = Logger.getAnonymousLogger();
                 l.warning("WARNING - ErrorManager detected cyclic exception nesting:"); // NOI18N
-                Iterator it = nestingCheck.iterator();
-                while (it.hasNext()) {
-                    Throwable t = (Throwable)it.next();
+                for (Throwable t : nestingCheck) {
                     l.warning("\t" + t); // NOI18N
                     LogRecord[] anns = findAnnotations(t, null);
                     if (anns != null) {
@@ -312,13 +308,13 @@ public final class NbErrorManager extends Handler {
             pw.println ();
              */
             /*Annotations */
-            for (int i = 0; i < arr.length; i++) {
-                if (arr[i] == null) continue;
+            for (LogRecord rec : arr) {
+                if (rec == null) continue;
                 
-                Throwable thr = arr[i].getThrown();
-                String annotation = NbErrorManager.getLocalizedMessage(arr[i]);
+                Throwable thr = rec.getThrown();
+                String annotation = NbErrorManager.getLocalizedMessage(rec);
                 
-                if (annotation == null) annotation = arr[i].getMessage();
+                if (annotation == null) annotation = rec.getMessage();
                 /*
                 if (annotation == null && thr != null) annotation = thr.getLocalizedMessage();
                 if (annotation == null && thr != null) annotation = thr.getMessage();
