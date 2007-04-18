@@ -312,11 +312,10 @@ public final class MidpCustomCodePresenterSupport {
 
         public void generateParameterCode (DesignComponent component, MultiGuardedSection section, int index) {
             List<PropertyValue> elements = component.readProperty (SVGMenuCD.PROP_ELEMENTS).getArray ();
-            for (PropertyValue value : elements) {
-                DesignComponent element = value.getComponent ();
-                PropertyValue string = element.readProperty (SVGMenuElementEventSourceCD.PROP_STRING);
-                MidpCodeSupport.generateCodeForPropertyValue (section.getWriter (), string);
-            }
+            PropertyValue value = elements.get (index);
+            DesignComponent element = value.getComponent ();
+            PropertyValue string = element.readProperty (SVGMenuElementEventSourceCD.PROP_STRING);
+            MidpCodeSupport.generateCodeForPropertyValue (section.getWriter (), string);
         }
 
         public boolean isRequiredToBeSet (DesignComponent component) {
