@@ -121,9 +121,10 @@ public final class JavadocHintProvider extends AbstractHint {
     private boolean cancel = false;
     
     private static Access access;
+    private boolean createJavadocKind;
     
-    /** Creates a new instance of JavadocHintProvider */
-    public JavadocHintProvider() {
+    private JavadocHintProvider(boolean createJavadocKind) {
+        this.createJavadocKind = createJavadocKind;
     }
     
     public synchronized void cancel() {
@@ -181,7 +182,7 @@ public final class JavadocHintProvider extends AbstractHint {
         
         Tree leaf = path.getLeaf();
         int caret = CaretAwareJavaSourceTaskFactory.getLastPosition(javac.getFileObject());
-        Analyzer a = new Analyzer(javac, doc, severity, hintSeverity);
+        Analyzer a = new Analyzer(javac, doc, path, severity, hintSeverity);
         switch (leaf.getKind()) {
         case CLASS:
             if (access.isAccessible(((ClassTree) leaf).getModifiers().getFlags()) &&
@@ -324,7 +325,7 @@ public final class JavadocHintProvider extends AbstractHint {
         
     }
     
-    private final class Analyzer extends TreePathScanner<Void, List<ErrorDescription>> {
+    private final class Analyzer {
         
         private final CompilationInfo javac;
         private final SourceVersion spec;
@@ -333,11 +334,13 @@ public final class JavadocHintProvider extends AbstractHint {
         private final FileObject file;
         private final Severity severity;
         private final HintSeverity hintSeverity;
+        private final TreePath currentPath;
         
-        Analyzer(CompilationInfo javac, Document doc, Severity severity, HintSeverity hintSeverity) {
+        Analyzer(CompilationInfo javac, Document doc, TreePath currentPath, Severity severity, HintSeverity hintSeverity) {
             this.javac = javac;
             this.doc = doc;
             this.file = javac.getFileObject();
+            this.currentPath = currentPath;
             this.severity = severity;
             this.hintSeverity = hintSeverity;
             this.spec = resolveSourceVersion(javac.getFileObject());
@@ -390,6 +393,8 @@ public final class JavadocHintProvider extends AbstractHint {
                 if (JavadocUtilities.hasInheritedDoc(javac, elm)) {
                     return;
                 }
+                if (!createJavadocKind)
+                    return ;
                 
                 try {
                     Position[] positions = createSignaturePositions(node);
@@ -402,6 +407,8 @@ public final class JavadocHintProvider extends AbstractHint {
                     Logger.getLogger(JavadocHintProvider.class.getName()).log(Level.INFO, ex.getMessage(), ex);
                 }
             } else {
+                if (createJavadocKind)
+                    return ;
                 try {
                     Doc jDoc = javac.getElementUtilities().javaDocFor(elm);
                     if (jDoc.isMethod() || jDoc.isConstructor()) {
@@ -563,7 +570,7 @@ public final class JavadocHintProvider extends AbstractHint {
             int index = 0;
             for (ExpressionTree throwTree : throwz) {
                 ++index;
-                TreePath path = new TreePath(getCurrentPath(), throwTree);
+                TreePath path = new TreePath(currentPath, throwTree);
                 Element el = javac.getTrees().getElement(path);
                 TypeElement tel = (TypeElement) el;
                 boolean exists = tagNames.remove(tel.getQualifiedName().toString()) != null;
@@ -775,12 +782,12 @@ public final class JavadocHintProvider extends AbstractHint {
                     try {
                         TokenSequence<JavaTokenId> tseq = null;
                         if (t.getKind() == Tree.Kind.METHOD) { // method + constructor
-                            tseq = JavadocUtilities.findMethodNameToken(javac, (ClassTree) getCurrentPath().getParentPath().getLeaf(), (MethodTree) t);
+                            tseq = JavadocUtilities.findMethodNameToken(javac, (ClassTree) currentPath.getParentPath().getLeaf(), (MethodTree) t);
                         } else if (t.getKind() == Tree.Kind.CLASS) {
                             tseq = JavadocUtilities.findClassNameToken(javac, (ClassTree) t);
                         } else if (Tree.Kind.VARIABLE == t.getKind()) {
                             tseq = JavadocUtilities.findVariableNameToken(javac, (VariableTree) t,
-                                    javac.getTreeUtilities().isEnum((ClassTree) getCurrentPath().getParentPath().getLeaf()));
+                                    javac.getTreeUtilities().isEnum((ClassTree) currentPath.getParentPath().getLeaf()));
                         }
                         
                         if (tseq != null) {
@@ -1535,19 +1542,27 @@ public final class JavadocHintProvider extends AbstractHint {
     }
 
     public String getDisplayName() {
-        return "Javadoc hints";
+        return NbBundle.getMessage(JavadocHintProvider.class, createJavadocKind ? "DN_CREATE_JAVADOC_HINT" : "DN_ERROR_IN_JAVADOC_HINT");
     }
 
     public String getDescription() {
-        return "Javadoc hints";
+        return NbBundle.getMessage(JavadocHintProvider.class, createJavadocKind ? "DESC_CREATE_JAVADOC_HINT" : "DESC_ERROR_IN_JAVADOC_HINT");
+    }
+    
+    private HintSeverity getDefaultHintSeverity() {
+        return createJavadocKind ? AbstractHint.HintSeverity.CURRENT_LINE_WARNING : AbstractHint.HintSeverity.WARNING;
+    }
+    
+    private String getSettingsName() {
+        return createJavadocKind ? "create-javadoc" : "error-in-javadoc";
     }
     
     @Override
     public Preferences getPreferences() {
-        Preferences p = NbPreferences.forModule(JavadocHintProvider.class).node("javadoc-hint");
+        Preferences p = NbPreferences.forModule(JavadocHintProvider.class).node(getSettingsName());
         
         if (!p.getBoolean(INITIALIZED, false)) {
-            p.putInt(AbstractHint.SEVERITY_KEY, AbstractHint.HintSeverity.CURRENT_LINE_WARNING.ordinal());
+            p.putInt(AbstractHint.SEVERITY_KEY, getDefaultHintSeverity().ordinal());
             p.putBoolean(INITIALIZED, true);
         }
         
@@ -1555,5 +1570,13 @@ public final class JavadocHintProvider extends AbstractHint {
     }
     
     private static final String INITIALIZED = "javadoc-hint-initialized";
+    
+    public static JavadocHintProvider createCreateJavadoc() {
+        return new JavadocHintProvider(true);
+    }
+    
+    public static JavadocHintProvider createErrorInJavadoc() {
+        return new JavadocHintProvider(false);
+    }
     
 }
