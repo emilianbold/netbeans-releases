@@ -877,6 +877,10 @@ public class CasualDiff {
         localPointer = diffTree(oldT.clazz, newT.clazz, clazzBounds);
         if (oldT.args.nonEmpty()) {
             copyTo(localPointer, localPointer = oldT.args.head.pos);
+        } else {
+            TokenUtilities.moveFwdToToken(tokenSequence, oldT.pos, JavaTokenId.LPAREN);
+            tokenSequence.moveNext();
+            copyTo(localPointer, localPointer = tokenSequence.offset());
         }
         localPointer = diffParameterList(oldT.args, newT.args, false, localPointer, printer);
         // let diffClassDef() method notified that anonymous class is printed.
