@@ -408,7 +408,13 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         
         pageNode.updateNode_HACK();
         //        nodeWidget.setNodeName(node.getDisplayName());
-        nodeWidget.setNodeProperties(pageNode.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16), pageNode.getDisplayName(), null, null );
+        if( nodeWidget !=  null ) {
+            nodeWidget.setNodeProperties(pageNode.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16), pageNode.getDisplayName(), null, null );
+        } else  {
+            System.err.println("Node Widget is null in scene for: " + pageNode.getDisplayName());
+            System.err.println("Here are the scene nodes: " + scene.getNodes());
+            Thread.dumpStack();
+        }
         
         if( contentItemsChanged ){
             redrawPinsAndEdges(pageNode);
