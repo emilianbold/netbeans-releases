@@ -564,11 +564,14 @@ public class MenuEditLayer extends JPanel {
                 FormModelEvent fme = formDesigner.getFormModel().fireComponentRemoved(payloadRad, payloadParentRad, index, false);
 
                 p("=== inserting ===");
-                int index2 = targetParentRad.getIndexOf(targetRad);
-                targetParentRad.add(payloadRad, index2);
-                targetParentRad.getLayoutSupport().addComponents(new RADVisualComponent[] { payloadRad }, 
-                        null, index2);
-                FormModelEvent fme2 = formDesigner.getFormModel().fireComponentAdded(payloadRad, false);
+                // insert if target exists, else the item was removed by dragging out of the menu
+                if(targetParentRad != null) {
+                    int index2 = targetParentRad.getIndexOf(targetRad);
+                    targetParentRad.add(payloadRad, index2);
+                    targetParentRad.getLayoutSupport().addComponents(new RADVisualComponent[] { payloadRad }, 
+                            null, index2);
+                    FormModelEvent fme2 = formDesigner.getFormModel().fireComponentAdded(payloadRad, false);
+                }
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
