@@ -412,7 +412,7 @@ public final class JavaSource {
         assert a = true;        
         if (a && javax.swing.SwingUtilities.isEventDispatchThread()) {
             StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-            LOGGER.warning("JavaSource.runUserActionTask called in AWT event thread by: " + stackTrace[stackTrace.length-2]);       //NOI18N
+            LOGGER.warning("JavaSource.runUserActionTask called in AWT event thread by: " + stackTrace[2]);       //NOI18N
         }
         
         if (this.files.size()<=1) {                        
@@ -557,7 +557,7 @@ public final class JavaSource {
         assert a = true;        
         if (a && javax.swing.SwingUtilities.isEventDispatchThread()) {
             StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-            LOGGER.warning("JavaSource.runModificationTask called in AWT event thread by: " + stackTrace[stackTrace.length-2]);     //NOI18N
+            LOGGER.warning("JavaSource.runModificationTask called in AWT event thread by: " + stackTrace[2]);     //NOI18N
         }
         
         ModificationResult result = new ModificationResult(this);
