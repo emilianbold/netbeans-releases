@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -49,7 +49,7 @@ public class WebProjectGenerator {
     private WebProjectGenerator() {}
 
     /**
-     * @param soruces list of pairs[relative path, display name]
+     * @param sources list of pairs[relative path, display name]
      */
     public static void putWebSourceFolder(AntProjectHelper helper, List/*<String>*/ sources) {
         Element data = Util.getPrimaryConfigurationData(helper);
@@ -125,7 +125,89 @@ public class WebProjectGenerator {
         }
         Util.putPrimaryConfigurationData(helper, data);
     }
-    
+
+    /**
+     * @param sources list of pairs[relative path, display name]
+     */
+    public static void putWebInfFolder(AntProjectHelper helper, List/*<String>*/ sources) {
+        Element data = Util.getPrimaryConfigurationData(helper);
+        Document doc = data.getOwnerDocument();
+        Element foldersEl = Util.findElement(data, "folders", Util.NAMESPACE); // NOI18N
+        if (foldersEl == null) {
+            foldersEl = doc.createElementNS(Util.NAMESPACE, "folders"); // NOI18N
+            Util.appendChildElement(data, foldersEl, rootElementsOrder);
+        } else {
+            List l = Util.findSubElements(foldersEl);
+            for (int i = 0; i < l.size(); i++) {
+                Element e = (Element) l.get(i);
+                Element te = Util.findElement(e, "type", Util.NAMESPACE);
+                if (te != null && Util.findText(te).equals("web_inf")) {
+                    foldersEl.removeChild(e);
+                    break;
+                }
+            }        
+        }
+        
+        Element viewEl = Util.findElement(data, "view", Util.NAMESPACE); // NOI18N
+        if (viewEl == null) {
+            viewEl = doc.createElementNS(Util.NAMESPACE, "view"); // NOI18N
+            Util.appendChildElement(data, viewEl, rootElementsOrder);
+        }
+        Element itemsEl = Util.findElement(viewEl, "items", Util.NAMESPACE); // NOI18N
+        if (itemsEl == null) {
+            itemsEl = doc.createElementNS(Util.NAMESPACE, "items"); // NOI18N
+            Util.appendChildElement(viewEl, itemsEl, viewElementsOrder);
+        } else {
+            List l = Util.findSubElements(itemsEl);
+            for (int i = 0; i < l.size(); i++) {
+                Element e = (Element) l.get(i);
+                if (e.hasAttribute("style")) {
+                    if (e.getAttribute("style").equals("tree")) {
+//                        itemsEl.removeChild(e);
+                        break;
+                    }
+                }
+            }
+        }
+        
+        Iterator it1 = sources.iterator();
+        while (it1.hasNext()) {
+            String path = (String)it1.next();
+            assert it1.hasNext();
+            String dispname = (String)it1.next();
+            Element sourceFolderEl = doc.createElementNS(Util.NAMESPACE, "source-folder"); // NOI18N
+            Element el = doc.createElementNS(Util.NAMESPACE, "label"); // NOI18N
+            el.appendChild(doc.createTextNode(dispname));
+            sourceFolderEl.appendChild(el);
+            el = doc.createElementNS(Util.NAMESPACE, "type"); // NOI18N
+            el.appendChild(doc.createTextNode(WebProjectConstants.TYPE_WEB_INF));
+            sourceFolderEl.appendChild(el);
+            el = doc.createElementNS(Util.NAMESPACE, "location"); // NOI18N
+            el.appendChild(doc.createTextNode(path));
+            sourceFolderEl.appendChild(el);
+            Util.appendChildElement(foldersEl, sourceFolderEl, folderElementsOrder);
+            
+            sourceFolderEl = doc.createElementNS(Util.NAMESPACE, "source-folder"); // NOI18N
+            sourceFolderEl.setAttribute("style", "tree"); // NOI18N
+            el = doc.createElementNS(Util.NAMESPACE, "label"); // NOI18N
+            el.appendChild(doc.createTextNode(NbBundle.getMessage(WebProjectGenerator.class, "LBL_WebInf")));
+            sourceFolderEl.appendChild(el);
+            el = doc.createElementNS(Util.NAMESPACE, "location"); // NOI18N
+            el.appendChild(doc.createTextNode(path)); // NOI18N
+            sourceFolderEl.appendChild(el);
+            Node firstNode = itemsEl.getFirstChild();
+            if (firstNode != null) {
+                Node secondNode = firstNode.getNextSibling();
+                if (secondNode != null)
+                    itemsEl.insertBefore(sourceFolderEl, secondNode);
+                else
+                    Util.appendChildElement(itemsEl, sourceFolderEl, viewItemElementsOrder);
+            } else {
+                Util.appendChildElement(itemsEl, sourceFolderEl, viewItemElementsOrder);
+            }
+        }
+        Util.putPrimaryConfigurationData(helper, data);
+    }
     
     /**
      * Read web modules from the project.
@@ -160,6 +242,10 @@ public class WebProjectGenerator {
                 }
                 if (el.getLocalName().equals("j2ee-spec-level")) { // NOI18N
                     wm.j2eeSpecLevel = Util.findText(el);
+                    continue;
+                }
+                if (el.getLocalName().equals("web-inf")) { // NOI18N
+                    wm.webInf = Util.findText(el);
                 }
             }
             list.add(wm);
@@ -215,6 +301,11 @@ public class WebProjectGenerator {
                 el.appendChild(doc.createTextNode(wm.j2eeSpecLevel));
                 wmEl.appendChild(el);
             }
+            if (wm.webInf != null) {
+                el = doc.createElementNS(WebProjectNature.NS_WEB, "web-inf"); // NOI18N
+                el.appendChild(doc.createTextNode(wm.webInf));
+                wmEl.appendChild(el);
+            }
         }
         aux.putConfigurationFragment(data, true);
     }
@@ -228,6 +319,7 @@ public class WebProjectGenerator {
         public String classpath;
         public String contextPath;
         public String j2eeSpecLevel;
+        public String webInf;
     }
 
 }

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -133,7 +133,12 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
             Element classpathEl = Util.findElement (webModulesEl, "classpath", WebProjectNature.NS_WEB);
             FileObject [] sources = getSources ();
             ClassPath cp = classpathEl == null ? null : createClasspath (classpathEl, sources);
-            modules.add (new FFWebModule (docRootFO, j2eeSpec, contextPath, sources, cp));
+            Element webInfEl = Util.findElement (webModulesEl, "web-inf", WebProjectNature.NS_WEB);
+            FileObject webInf = null;
+            if (webInfEl != null) {
+                webInf = getFile (webModulesEl, "web-inf"); //NOI18N
+            }
+            modules.add (new FFWebModule (docRootFO, j2eeSpec, contextPath, sources, cp, webInf));
         }
     }
     
@@ -242,13 +247,15 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
         private ClassPath composedClassPath = null;
         private String j2eeSpec;
         private String contextPath;
+        private FileObject webInf;
         
-        FFWebModule (FileObject docRootFO, String j2eeSpec, String contextPath, FileObject sourcesFOs[], ClassPath classPath) {
+        FFWebModule (FileObject docRootFO, String j2eeSpec, String contextPath, FileObject sourcesFOs[], ClassPath classPath, FileObject webInf) {
             this.docRootFO = docRootFO;
             this.j2eeSpec = j2eeSpec;
             this.contextPath = (contextPath == null ? "" : contextPath);
             this.sourcesFOs = sourcesFOs;
             this.webClassPath = (classPath ==  null ? ClassPathSupport.createClassPath(Collections.EMPTY_LIST) : classPath);
+            this.webInf = webInf;
             javaSourcesClassPath = (sourcesFOs == null ? ClassPathSupport.createClassPath(Collections.EMPTY_LIST): ClassPathSupport.createClassPath(sourcesFOs)); 
         }
         
@@ -330,7 +337,11 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
         }
         
         public FileObject getWebInf () {
-            return getDocumentBase ().getFileObject (FOLDER_WEB_INF);
+            //NetBeans 5.x and older projects (WEB-INF is placed under Web Pages)
+            if (webInf == null)
+                webInf = getDocumentBase ().getFileObject(FOLDER_WEB_INF);
+            
+            return webInf;
         }
         
         public FileObject[] getJavaSources() {

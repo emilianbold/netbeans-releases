@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -58,6 +58,7 @@ public class NewWebFreeformProjectWizardIterator implements WizardDescriptor.Ins
     // web sources
     public static final String PROP_WEB_WEBMODULES = "webModules"; // <List> NOI18N
     public static final String PROP_WEB_SOURCE_FOLDERS = "webSourceFolders"; // <List> NOI18N
+    public static final String PROP_WEB_INF_FOLDER = "webInfFolder"; // <List> NOI18N
     
     protected static final String PROP_WEB_CLASSPATH = "webClasspath"; // <String> NOI18N
     
@@ -93,8 +94,10 @@ public class NewWebFreeformProjectWizardIterator implements WizardDescriptor.Ins
                     NewJavaFreeformProjectSupport.instantiateJavaPanels(helper, wiz);
                     
                     List webSources = (List)wiz.getProperty(PROP_WEB_SOURCE_FOLDERS);
+                    List webInf = (List)wiz.getProperty(PROP_WEB_INF_FOLDER);
                     AuxiliaryConfiguration aux = Util.getAuxiliaryConfiguration(helper);
                     WebProjectGenerator.putWebSourceFolder(helper, webSources);
+                    WebProjectGenerator.putWebInfFolder(helper, webInf);
         
                     List webModules = (List) wiz.getProperty(PROP_WEB_WEBMODULES);
                     if (webModules != null) {
@@ -172,6 +175,7 @@ public class NewWebFreeformProjectWizardIterator implements WizardDescriptor.Ins
         NewFreeformProjectSupport.uninitializeTargetMappingWizardPanel(wiz);
         NewJavaFreeformProjectSupport.uninitializeJavaPanels(wiz);
         wiz.putProperty(PROP_WEB_SOURCE_FOLDERS, null);
+        wiz.putProperty(PROP_WEB_INF_FOLDER, null);
         wiz.putProperty(PROP_WEB_WEBMODULES, null);
         this.wiz = null;
         panels = null;

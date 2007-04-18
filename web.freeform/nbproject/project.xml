@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project xmlns="http://www.netbeans.org/ns/project/1">
@@ -23,6 +23,15 @@ Microsystems, Inc. All Rights Reserved.
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.web.freeform</code-name-base>
             <module-dependencies>
+                <dependency>
+                    <code-name-base>org.jdesktop.layout</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.4</specification-version>
+                    </run-dependency>
+                </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.api.java</code-name-base>
                     <build-prerequisite/>
@@ -225,7 +234,7 @@ Microsystems, Inc. All Rights Reserved.
                         <code-name-base>org.openide.options</code-name-base>
                     </test-dependency>
                     <test-dependency>
-                      <code-name-base>org.netbeans.libs.freemarker</code-name-base>
+                        <code-name-base>org.netbeans.libs.freemarker</code-name-base>
                     </test-dependency>
                 </test-type>
                 <test-type>

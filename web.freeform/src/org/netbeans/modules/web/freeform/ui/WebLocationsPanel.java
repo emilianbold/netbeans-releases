@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -39,7 +39,6 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-
 
 /**
  *
@@ -82,8 +81,15 @@ public class WebLocationsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         if (l != null) {
             WebProjectGenerator.WebModule wm = (WebProjectGenerator.WebModule)l.get(0);
             String docroot = getLocationDisplayName(projectEvaluator, nbProjectFolder, wm.docRoot);
+            String webInf;
+            if (wm.webInf != null)
+                webInf = getLocationDisplayName(projectEvaluator, nbProjectFolder, wm.webInf);
+            else
+                ////NetBeans 5.x and older projects (WEB-INF is placed under Web Pages)
+                webInf = docroot + "/WEB-INF"; //NOI18N
             classpath = wm.classpath;
             jTextFieldWeb.setText(docroot);
+            jTextFieldWebInf.setText(webInf);
             
             jTextFieldContextPath.setText(wm.contextPath);
             if (wm.j2eeSpecLevel.equals(J2EE_SPEC_5))
@@ -123,99 +129,107 @@ public class WebLocationsPanel extends javax.swing.JPanel implements HelpCtx.Pro
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jTextFieldWeb = new javax.swing.JTextField();
         jButtonWeb = new javax.swing.JButton();
+        jLabelWebInf = new javax.swing.JLabel();
+        jTextFieldWebInf = new javax.swing.JTextField();
+        jButtonWebInf = new javax.swing.JButton();
         jLabel4 = new javax.swing.JLabel();
         jTextFieldContextPath = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
         jComboBoxJ2eeLevel = new javax.swing.JComboBox();
 
-        setLayout(new java.awt.GridBagLayout());
-
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(WebLocationsPanel.class, "LBL_WebPagesPanel_Description"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
-        add(jLabel1, gridBagConstraints);
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(WebLocationsPanel.class, "LBL_WebPagesPanel_Description")); // NOI18N
 
         jLabel2.setLabelFor(jTextFieldWeb);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(WebLocationsPanel.class, "LBL_WebPagesPanel_WebPagesLocation_Label"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 11);
-        add(jLabel2, gridBagConstraints);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(WebLocationsPanel.class, "LBL_WebPagesPanel_WebPagesLocation_Label")); // NOI18N
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 11);
-        add(jTextFieldWeb, gridBagConstraints);
-        jTextFieldWeb.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WebLocationsPanel.class, "ACS_LBL_WebPagesPanel_WebPagesLocation_A11YDesc"));
-
-        org.openide.awt.Mnemonics.setLocalizedText(jButtonWeb, org.openide.util.NbBundle.getMessage(WebLocationsPanel.class, "BTN_BasicProjectInfoPanel_browseAntScript"));
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonWeb, org.openide.util.NbBundle.getMessage(WebLocationsPanel.class, "BTN_BasicProjectInfoPanel_browseAntScript")); // NOI18N
         jButtonWeb.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonWebActionPerformed(evt);
             }
         });
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
-        add(jButtonWeb, gridBagConstraints);
-        jButtonWeb.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WebLocationsPanel.class, "ACS_LBL_WebPagesPanel_WebPagesLocationBrowse_A11YDesc"));
+        jLabelWebInf.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/freeform/ui/Bundle").getString("MNE_DeploymentDescriptorFolder").charAt(0));
+        jLabelWebInf.setText(org.openide.util.NbBundle.getMessage(WebLocationsPanel.class, "LBL_DeploymentDescriptorFolder_Label")); // NOI18N
+
+        jButtonWebInf.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/freeform/ui/Bundle").getString("MNE_BrowseWebInfLocation").charAt(0));
+        jButtonWebInf.setText(org.openide.util.NbBundle.getMessage(WebLocationsPanel.class, "LBL_DeploymentDescriptorBrowse_Label")); // NOI18N
+        jButtonWebInf.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonWebInfActionPerformed(evt);
+            }
+        });
 
         jLabel4.setLabelFor(jTextFieldContextPath);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(WebLocationsPanel.class, "LBL_WebPagesPanel_ContextPath_Label"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 11);
-        add(jLabel4, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
-        add(jTextFieldContextPath, gridBagConstraints);
-        jTextFieldContextPath.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WebLocationsPanel.class, "ACS_LBL_WebPagesPanel_ContextPath_A11YDesc"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(WebLocationsPanel.class, "LBL_WebPagesPanel_ContextPath_Label")); // NOI18N
 
         jLabel5.setLabelFor(jComboBoxJ2eeLevel);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(WebLocationsPanel.class, "LBL_WebPagesPanel_J2EESpecLevel_Label"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 0, 0, 11);
-        add(jLabel5, gridBagConstraints);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(WebLocationsPanel.class, "LBL_WebPagesPanel_J2EESpecLevel_Label")); // NOI18N
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weighty = 1.0;
-        add(jComboBoxJ2eeLevel, gridBagConstraints);
-        jComboBoxJ2eeLevel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WebLocationsPanel.class, "ACS_LBL_WebPagesPanel_J2EESpecLevel_A11YDesc"));
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jLabel1)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabel2)
+                    .add(jLabel4)
+                    .add(jLabel5)
+                    .add(jLabelWebInf))
+                .add(11, 11, 11)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jTextFieldContextPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 284, Short.MAX_VALUE)
+                    .add(jTextFieldWeb, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 284, Short.MAX_VALUE)
+                    .add(jComboBoxJ2eeLevel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jTextFieldWebInf, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 284, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                    .add(jButtonWebInf, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(jButtonWeb, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 101, Short.MAX_VALUE)))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(jLabel1)
+                .add(9, 9, 9)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jButtonWeb)
+                    .add(jLabel2)
+                    .add(jTextFieldWeb, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jButtonWebInf)
+                    .add(jTextFieldWebInf, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabelWebInf))
+                .add(10, 10, 10)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel4)
+                    .add(jTextFieldContextPath, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jComboBoxJ2eeLevel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel5))
+                .add(22, 22, 22))
+        );
 
+        jTextFieldWeb.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WebLocationsPanel.class, "ACS_LBL_WebPagesPanel_WebPagesLocation_A11YDesc")); // NOI18N
+        jButtonWeb.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WebLocationsPanel.class, "ACS_LBL_WebPagesPanel_WebPagesLocationBrowse_A11YDesc")); // NOI18N
+        jTextFieldContextPath.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WebLocationsPanel.class, "ACS_LBL_WebPagesPanel_ContextPath_A11YDesc")); // NOI18N
+        jComboBoxJ2eeLevel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WebLocationsPanel.class, "ACS_LBL_WebPagesPanel_J2EESpecLevel_A11YDesc")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
+
+private void jButtonWebInfActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonWebInfActionPerformed
+        JFileChooser chooser = createChooser(getWebInfLocation(), wizardDescriptor);
+        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
+            setWebInf(chooser.getSelectedFile());
+        }
+}//GEN-LAST:event_jButtonWebInfActionPerformed
 
     private void jButtonWebActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonWebActionPerformed
         JFileChooser chooser = createChooser(getWebPagesLocation(), wizardDescriptor);
@@ -226,13 +240,16 @@ public class WebLocationsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButtonWeb;
+    private javax.swing.JButton jButtonWebInf;
     private javax.swing.JComboBox jComboBoxJ2eeLevel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabelWebInf;
     private javax.swing.JTextField jTextFieldContextPath;
     private javax.swing.JTextField jTextFieldWeb;
+    private javax.swing.JTextField jTextFieldWebInf;
     // End of variables declaration//GEN-END:variables
     
     private static JFileChooser createChooser(File webPagesLoc, WizardDescriptor wizardDescriptor) {
@@ -273,6 +290,7 @@ public class WebLocationsPanel extends javax.swing.JPanel implements HelpCtx.Pro
 
         WebProjectGenerator.WebModule wm = new WebProjectGenerator.WebModule ();
         wm.docRoot = getRelativeLocation(getWebPagesLocation());
+        wm.webInf = getRelativeLocation(getWebInfLocation());
         wm.contextPath = jTextFieldContextPath.getText().trim();
         
         String j2eeLevel = (String) jComboBoxJ2eeLevel.getSelectedItem();
@@ -307,6 +325,17 @@ public class WebLocationsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         return l;
     }
 
+    /**
+     * @return list of pairs [relative path, display name]
+     */
+    protected List getWebInfFolder() {
+        ArrayList l = new ArrayList();
+        final File webInfLocation = getWebInfLocation();
+        l.add(getRelativeLocation(webInfLocation));
+        l.add(webInfLocation.getName());
+        return l;
+    }
+
     private File getAsFile(String filename) {
         return PropertyUtils.resolveFile(nbProjectFolder, filename);
     }
@@ -324,6 +353,10 @@ public class WebLocationsPanel extends javax.swing.JPanel implements HelpCtx.Pro
     protected void setWebPages(String path) {
         jTextFieldWeb.setText(path);
     }
+    
+    protected void setWebInf(String path) {
+        jTextFieldWebInf.setText(path);
+    }
 
     protected void setSrcPackages(String path) {
         setSrcPackages(getAsFile(path));
@@ -332,10 +365,17 @@ public class WebLocationsPanel extends javax.swing.JPanel implements HelpCtx.Pro
     private void setWebPages(final File file) {
         setWebPages(relativizeFile(file));
     }
+    
+    private void setWebInf(final File file) {
+        setWebInf(relativizeFile(file));
+    }
 
     protected File getWebPagesLocation() {
         return getAsFile(jTextFieldWeb.getText()).getAbsoluteFile();
-
+    }
+    
+    protected File getWebInfLocation() {
+        return getAsFile(jTextFieldWebInf.getText()).getAbsoluteFile();
     }
 
     private void setSrcPackages(final File file) {
@@ -365,6 +405,7 @@ public class WebLocationsPanel extends javax.swing.JPanel implements HelpCtx.Pro
             public void actionPerformed(ActionEvent arg0) {
                 AuxiliaryConfiguration aux = Util.getAuxiliaryConfiguration(projectHelper);
                 WebProjectGenerator.putWebSourceFolder(projectHelper, getWebSrcFolder());
+                WebProjectGenerator.putWebInfFolder(projectHelper, getWebInfFolder());
                 WebProjectGenerator.putWebModules(projectHelper, aux, getWebModules());
             }
         };

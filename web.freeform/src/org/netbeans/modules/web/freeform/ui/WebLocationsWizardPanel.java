@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -99,23 +99,28 @@ public class WebLocationsWizardPanel implements WizardDescriptor.Panel {
         File baseFolder = (File)wizardDescriptor.getProperty(NewFreeformProjectSupport.PROP_PROJECT_LOCATION);
         File nbProjectFolder = (File)wizardDescriptor.getProperty(NewFreeformProjectSupport.PROP_PROJECT_FOLDER);
         final String webPages;
+        final String webInf;
         final String srcPackages;
         if(baseFolder.equals(this.baseFolder)) {
             webPages = component.getWebPagesLocation().getAbsolutePath();
+            webInf = component.getWebInfLocation().getAbsolutePath();
             srcPackages = component.getSrcPackagesLocation().getAbsolutePath();
         } else {
             this.baseFolder = baseFolder;
             FileObject fo = FileUtil.toFileObject(baseFolder);
             if (fo != null) {
                 webPages = guessDocBase(fo);
+                webInf = ""; //guess
                 srcPackages = guessJavaRoot(fo);
             } else {
                 webPages = ""; // NOI18N
+                webInf = ""; //NOI18N
                 srcPackages = ""; // NOI18N
             }
         }
         component.setFolders(baseFolder, nbProjectFolder);
         component.setWebPages(webPages);
+        component.setWebInf(webInf);
         component.setSrcPackages(srcPackages);
     }
 
@@ -127,6 +132,7 @@ public class WebLocationsWizardPanel implements WizardDescriptor.Panel {
         wizardDescriptor.putProperty(NewJavaFreeformProjectSupport.PROP_EXTRA_JAVA_SOURCE_FOLDERS, l);
         
         wizardDescriptor.putProperty(NewWebFreeformProjectWizardIterator.PROP_WEB_SOURCE_FOLDERS, component.getWebSrcFolder());
+        wizardDescriptor.putProperty(NewWebFreeformProjectWizardIterator.PROP_WEB_INF_FOLDER, component.getWebInfFolder());
         wizardDescriptor.putProperty("NewProjectWizard_Title", null); // NOI18N
     }
 
