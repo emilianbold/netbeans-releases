@@ -41,6 +41,7 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import java.awt.event.MouseAdapter;
+import java.beans.PropertyVetoException;
 import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
@@ -482,7 +483,7 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
     
     private void editSelectedAction() {
         
-        ProxyAction act = getSelectedAction();
+        final ProxyAction act = getSelectedAction();
         if(act == null) { return; }
         String defClassName = act.getClassname();
         ActionEditor editor = new ActionEditor(actionManager.getFileForClass(defClassName));
@@ -496,10 +497,13 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         // only update things if the user clicked okay
         if(dd.getValue().equals(DialogDescriptor.OK_OPTION)) {
             try {
-                editor.confirmChanges(); // this updates
+                PropertyChangeEvent evt = new PropertyChangeEvent(this,"action",act,editor.getValue());
+                editor.confirmChanges(evt); // this updates
                 reloadTable();
             } catch (IllegalArgumentException ex) {
                 ErrorManager.getDefault().notify(ex);
+            } catch (PropertyVetoException vex) {
+                ErrorManager.getDefault().notify(vex);
             }
         }
     }

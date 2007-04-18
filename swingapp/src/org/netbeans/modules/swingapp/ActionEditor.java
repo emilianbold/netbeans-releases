@@ -350,19 +350,19 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
         
         if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName())) {
             try {
-                confirmChanges();
+                confirmChanges(evt);
             } catch (IllegalArgumentException ex) {
                 throw new PropertyVetoException(ex.getMessage(), evt);
             }
         }
     }
 
-    void confirmChanges() {
+    void confirmChanges(PropertyChangeEvent evt) throws PropertyVetoException {
 
         // if the user created a new action and assigned it to this component
         if(panel.isNewActionCreated()) {
             if(!panel.canCreateNewAction()) {
-                throw new IllegalArgumentException("Method Name cannot be empty");
+                throw new PropertyVetoException("Method Name cannot be empty",evt);
             }
             ProxyAction act = createNewAction();
             panel.setMode(ActionPropertyEditorPanel.Mode.Form);

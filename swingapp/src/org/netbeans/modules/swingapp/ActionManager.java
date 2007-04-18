@@ -44,6 +44,7 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.awt.Toolkit;
+import java.beans.PropertyVetoException;
 import java.io.IOException;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
