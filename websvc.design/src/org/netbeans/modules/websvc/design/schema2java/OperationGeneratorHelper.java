@@ -105,7 +105,7 @@ public class OperationGeneratorHelper {
             String operationName,
             List<ParamModel> parameterTypes,
             ReferenceableSchemaComponent returnType,
-            List<ReferenceableSchemaComponent> faultTypes) {
+            List<ParamModel> faultTypes) {
         
         WSDLComponentFactory factory = wsdlModel.getFactory();
         Definitions definitions = wsdlModel.getDefinitions();
