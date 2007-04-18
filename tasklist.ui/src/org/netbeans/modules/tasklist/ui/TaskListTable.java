@@ -21,7 +21,9 @@ package org.netbeans.modules.tasklist.ui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.FontMetrics;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
@@ -152,6 +154,8 @@ class TaskListTable extends JTable {
             // Create new columns from the data model info
             for( int i=0; i<m.getColumnCount(); i++ ) {
                 TableColumn newColumn = new MyTableColumn(i);
+                if( i == TaskListModel.COL_LOCATION )
+                    newColumn.setCellRenderer( new LeftDotRenderer() );
                 addColumn(newColumn);
             }
         }
@@ -561,8 +565,41 @@ class TaskListTable extends JTable {
                 Settings.getDefault().setPreferredColumnWidth( getModelIndex(), isFoldingModel(), ratio );
             }
         }
-}
+    }
 
+    private static class LeftDotRenderer extends DefaultTableCellRenderer {
+        public Component getTableCellRendererComponent( JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column ) {
+                
+            super.getTableCellRendererComponent( table, value, isSelected, hasFocus, row, column );
+
+            int availableWidth = table.getColumnModel().getColumn( column ).getWidth();
+            availableWidth -= table.getIntercellSpacing().getWidth();
+            Insets borderInsets = getBorder().getBorderInsets( (Component)this );
+            availableWidth -= (borderInsets.left + borderInsets.right);
+            String cellText = getText();
+            FontMetrics fm = getFontMetrics( getFont() );
+
+            if( fm.stringWidth(cellText) > availableWidth ) {
+                setToolTipText( value.toString() );
+                String dots = "..."; //NOI18N
+                int textWidth = fm.stringWidth( dots );
+                int nChars = cellText.length() - 1;
+                for( ; nChars > 0; nChars-- ) {
+                    textWidth += fm.charWidth( cellText.charAt( nChars ) );
+
+                    if( textWidth > availableWidth ) {
+                        break;
+                    }
+                }
+
+                setText( dots + cellText.substring(nChars + 1) );
+            } else {
+                setToolTipText( null );
+            }
+
+            return this;
+        }
+    }
     
     private class SortingHeaderRenderer implements TableCellRenderer, UIResource {
         
@@ -604,7 +641,7 @@ class TaskListTable extends JTable {
     
     private class PopupAction extends AbstractAction {
         public PopupAction() {
-            super( "Popup" );
+            super( "Popup" ); //NOI18N
         }
     
         public void actionPerformed( ActionEvent e ) {

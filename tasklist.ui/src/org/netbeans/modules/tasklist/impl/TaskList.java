@@ -379,19 +379,22 @@ public class TaskList {
     }
     
     private void fireTasksAdded( List<Task> tasks ) {
-        for( Iterator<Listener> i=listeners.iterator(); i.hasNext(); ) {
+        ArrayList<Listener> tmp = new ArrayList<TaskList.Listener>( listeners );
+        for( Iterator<Listener> i=tmp.iterator(); i.hasNext(); ) {
             i.next().tasksAdded( tasks );
         }
     }
     
     private void fireTasksRemoved( List<Task> tasks ) {
-        for( Iterator<Listener> i=listeners.iterator(); i.hasNext(); ) {
+        ArrayList<Listener> tmp = new ArrayList<TaskList.Listener>( listeners );
+        for( Iterator<Listener> i=tmp.iterator(); i.hasNext(); ) {
             i.next().tasksRemoved( tasks );
         }
     }
     
     private void fireCleared() {
-        for( Iterator<Listener> i=listeners.iterator(); i.hasNext(); ) {
+        ArrayList<Listener> tmp = new ArrayList<TaskList.Listener>( listeners );
+        for( Iterator<Listener> i=tmp.iterator(); i.hasNext(); ) {
             i.next().cleared();
         }
     }
