@@ -77,22 +77,20 @@ public final class UseDatabaseGenerator {
             _RetoucheUtil.generateAnnotatedField(fileObject, className, "javax.annotation.Resource", fieldName, 
                     "javax.sql.DataSource", Collections.singletonMap("name", jndiName), isStatic);
         } else {
-            String jndiName = generateJNDILookup(datasource.getJndiName(), erc, 
+            String jndiName = generateJNDILookup(datasourceReferenceName, erc, 
                     fileObject, className, datasource.getUrl(), createServerResources);
             if (jndiName != null) {
-                generateLookupMethod(fileObject, className, jndiName, serviceLocatorStrategy);
+                generateLookupMethod(fileObject, className, datasourceReferenceName, serviceLocatorStrategy);
             }
         }
         
-if (System.getProperties().getProperty("resource-api-redesign") != null) {
-    J2eeModule module = j2eeModuleProvider.getJ2eeModule();
-    if (isWebModule(module)) {
-        bindDataSourceReference(j2eeModuleProvider, datasourceReferenceName, datasource);
-    }
-    else if (isEjbModule(module)) {
-        bindDataSourceReferenceForEjb(j2eeModuleProvider, datasourceReferenceName, datasource, fileObject, elementHandle);
-    }
-}
+        J2eeModule module = j2eeModuleProvider.getJ2eeModule();
+        if (isWebModule(module)) {
+            bindDataSourceReference(j2eeModuleProvider, datasourceReferenceName, datasource);
+        }
+        else if (isEjbModule(module)) {
+            bindDataSourceReferenceForEjb(j2eeModuleProvider, datasourceReferenceName, datasource, fileObject, elementHandle);
+        }
         
         if (serviceLocator != null) {
             erc.setServiceLocatorName(serviceLocator);
@@ -184,7 +182,7 @@ if (System.getProperties().getProperty("resource-api-redesign") != null) {
         return type;
     }
     
-    private String generateJNDILookup(String jndiName, EnterpriseReferenceContainer enterpriseReferenceContainer, 
+    private String generateJNDILookup(String datasourceReferenceName, EnterpriseReferenceContainer enterpriseReferenceContainer, 
             FileObject fileObject, String className, String nodeName, boolean createServerResources) throws IOException {
         String result = null;
         ResourceRef ref = enterpriseReferenceContainer.createResourceRef(className);
@@ -192,7 +190,7 @@ if (System.getProperties().getProperty("resource-api-redesign") != null) {
             if (createServerResources) {
                 ref.setDescription(nodeName);
             }
-            ref.setResRefName(jndiName);
+            ref.setResRefName(datasourceReferenceName);
             ref.setResAuth(org.netbeans.modules.j2ee.dd.api.common.ResourceRef.RES_AUTH_CONTAINER);
             ref.setResSharingScope(org.netbeans.modules.j2ee.dd.api.common.ResourceRef.RES_SHARING_SCOPE_SHAREABLE);
             ref.setResType(javax.sql.DataSource.class.getName());
@@ -201,15 +199,15 @@ if (System.getProperties().getProperty("resource-api-redesign") != null) {
         return result;
     }
     
-    private void generateLookupMethod(FileObject fileObject, final String className, final String jndiName, 
+    private void generateLookupMethod(FileObject fileObject, final String className, final String datasourceReferenceName, 
             final ServiceLocatorStrategy slStrategy) throws IOException {
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
-        final String body = slStrategy == null ? getLookupCode(jndiName) : getLookupCode(jndiName, slStrategy, fileObject, className);
+        final String body = slStrategy == null ? getLookupCode(datasourceReferenceName) : getLookupCode(datasourceReferenceName, slStrategy, fileObject, className);
         javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = workingCopy.getElements().getTypeElement(className);
-                String methodName = "get" + Utils.jndiNameToCamelCase(jndiName, false, null); //NO18N
+                String methodName = "get" + Utils.jndiNameToCamelCase(datasourceReferenceName, false, null); //NO18N
                 MethodModel methodModel = MethodModel.create(
                         methodName,
                         javax.sql.DataSource.class.getName(),

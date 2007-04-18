@@ -100,7 +100,7 @@ final class DatasourceComboBoxCustomizer extends javax.swing.JPanel {
     public boolean showDialog() {
         
         descriptor = new DialogDescriptor
-            (this, NbBundle.getMessage(DatasourceComboBoxCustomizer.class, "LBL_DatasourceCustomizer"), true,
+            (this, NbBundle.getMessage(DatasourceComboBoxCustomizer.class, "LBL_DatasourceCustomizer"), true, // NOI18N
              DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
              DialogDescriptor.DEFAULT_ALIGN,
              new HelpCtx("DatasourceUIHelper_DatasourceCustomizer"), // NOI18N
@@ -141,7 +141,7 @@ final class DatasourceComboBoxCustomizer extends javax.swing.JPanel {
         }
         if (conn.getPassword() == null) {
             //user did not provide the password
-            errorLabel.setText(NbBundle.getMessage(DatasourceComboBoxCustomizer.class, "ERR_NoPassword"));
+            errorLabel.setText(NbBundle.getMessage(DatasourceComboBoxCustomizer.class, "ERR_NoPassword")); // NOI18N
             return false;
         }
         url = conn.getDatabaseURL();
@@ -167,12 +167,12 @@ final class DatasourceComboBoxCustomizer extends javax.swing.JPanel {
         
         String jndiName = jndiNameField.getText().trim();
         if (jndiName.length() == 0) {
-            errorLabel.setText(NbBundle.getMessage(DatasourceComboBoxCustomizer.class, "ERR_JNDI_NAME_EMPTY"));
+            errorLabel.setText(NbBundle.getMessage(DatasourceComboBoxCustomizer.class, "ERR_JNDI_NAME_EMPTY")); // NOI18N
             valid = false;
         }
         else
         if (datasourceAlreadyExists(jndiName)) {
-            errorLabel.setText(NbBundle.getMessage(DatasourceComboBoxCustomizer.class, "ERR_DS_EXISTS"));
+            errorLabel.setText(NbBundle.getMessage(DatasourceComboBoxCustomizer.class, "ERR_DS_EXISTS")); // NOI18N
             valid = false;
         }
         else {
@@ -189,7 +189,7 @@ final class DatasourceComboBoxCustomizer extends javax.swing.JPanel {
         boolean valid = true;
         
         if (!(connCombo.getSelectedItem() instanceof DatabaseConnection)) {
-            errorLabel.setText(NbBundle.getMessage(DatasourceComboBoxCustomizer.class, "ERR_NO_CONN_SELECTED"));
+            errorLabel.setText(NbBundle.getMessage(DatasourceComboBoxCustomizer.class, "ERR_NO_CONN_SELECTED")); // NOI18N
             valid = false;
         }
         else {
@@ -232,22 +232,19 @@ final class DatasourceComboBoxCustomizer extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jndiNameField = new javax.swing.JTextField();
         errorLabel = new javax.swing.JLabel();
         connCombo = new javax.swing.JComboBox();
-        warningLabel = new javax.swing.JLabel();
 
         setForeground(new java.awt.Color(255, 0, 0));
+
         jLabel1.setLabelFor(jndiNameField);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(DatasourceComboBoxCustomizer.class, "LBL_DSC_JndiName"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(DatasourceComboBoxCustomizer.class, "LBL_DSC_JndiName")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(DatasourceComboBoxCustomizer.class, "LBL_DSC_DbConn"));
-
-        org.openide.awt.Mnemonics.setLocalizedText(warningLabel, org.openide.util.NbBundle.getMessage(DatasourceComboBoxCustomizer.class, "LBL_DSC_Warning"));
-        warningLabel.setEnabled(false);
-        warningLabel.setFocusable(false);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(DatasourceComboBoxCustomizer.class, "LBL_DSC_DbConn")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -258,36 +255,30 @@ final class DatasourceComboBoxCustomizer extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel1)
-                            .add(jLabel2))
+                            .add(jLabel2)
+                            .add(jLabel1))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(jndiNameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 359, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
-                            .add(connCombo, 0, 359, Short.MAX_VALUE)))
-                    .add(errorLabel)
-                    .add(warningLabel))
-                .addContainerGap())
+                            .add(jndiNameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 337, Short.MAX_VALUE)
+                            .add(connCombo, 0, 337, Short.MAX_VALUE))
+                        .addContainerGap())
+                    .add(layout.createSequentialGroup()
+                        .add(errorLabel)
+                        .addContainerGap(497, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
                     .add(jndiNameField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel2)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 33, Short.MAX_VALUE)
-                        .add(warningLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(errorLabel))
-                    .add(layout.createSequentialGroup()
-                        .add(connCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel2)
+                    .add(connCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(27, 27, 27)
+                .add(errorLabel))
         );
     }// </editor-fold>//GEN-END:initComponents
     
@@ -298,7 +289,6 @@ final class DatasourceComboBoxCustomizer extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JTextField jndiNameField;
-    private javax.swing.JLabel warningLabel;
     // End of variables declaration//GEN-END:variables
     
 }

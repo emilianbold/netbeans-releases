@@ -22,8 +22,12 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
@@ -34,6 +38,10 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
+import org.netbeans.modules.j2ee.common.DatasourceUIHelper;
+import org.netbeans.modules.j2ee.common.EventRequestProcessor;
+import org.netbeans.modules.j2ee.common.EventRequestProcessor.AsynchronousAction;
+import org.netbeans.modules.j2ee.common.EventRequestProcessor.Context;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
@@ -81,13 +89,22 @@ public class UseDatabaseAction extends NodeAction {
     private boolean generate(FileObject fileObject, ElementHandle<TypeElement> elementHandle) throws IOException {
         Project project = FileOwnerQuery.getOwner(fileObject);
         //make sure configuration is ready
-        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
         j2eeModuleProvider.getConfigSupport().ensureConfigurationReady();
         EnterpriseReferenceContainer enterpriseReferenceContainer = project.getLookup().lookup(EnterpriseReferenceContainer.class);
-        SelectDatabasePanel selectDatabasePanel = new SelectDatabasePanel(j2eeModuleProvider, enterpriseReferenceContainer.getServiceLocatorName()); //NOI18N
+
+        // get all the resources
+        ResourcesHolder holder = getResources(j2eeModuleProvider, fileObject);
+        
+        SelectDatabasePanel selectDatabasePanel = new SelectDatabasePanel(
+                j2eeModuleProvider,
+                enterpriseReferenceContainer.getServiceLocatorName(),
+                holder.getReferences(),
+                holder.getModuleDataSources(),
+                holder.getServerDataSources());
         final DialogDescriptor dialogDescriptor = new DialogDescriptor(
                 selectDatabasePanel,
-                NbBundle.getMessage(UseDatabaseAction.class, "LBL_ChooseDatabase"),
+                NbBundle.getMessage(UseDatabaseAction.class, "LBL_ChooseDatabase"), //NOI18N
                 true,
                 DialogDescriptor.OK_CANCEL_OPTION,
                 DialogDescriptor.OK_OPTION,
@@ -107,20 +124,11 @@ public class UseDatabaseAction extends NodeAction {
                 }
             }
         });
-        selectDatabasePanel.checkDatasource();
-        
-if (System.getProperties().getProperty("resource-api-redesign") != null) {
-    try {            
-        Map<String, Datasource> refs = getDataSourceReferences(j2eeModuleProvider, fileObject);
-    }
-    catch (ConfigurationException ce) {
-        //TODO notify user
-    }
-}
-String refName = "NameOfSelectedReference";
+        selectDatabasePanel.checkDatasourceReference();
         
         Object option = DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (option == NotifyDescriptor.OK_OPTION) {
+            String refName = selectDatabasePanel.getDatasourceReference();
             
             UseDatabaseGenerator generator = new UseDatabaseGenerator();
             try {
@@ -140,20 +148,50 @@ String refName = "NameOfSelectedReference";
         }
         return false;
     }
+    
+    /** Get references, module- and server datasources. */
+    private ResourcesHolder getResources(final J2eeModuleProvider j2eeModuleProvider, final FileObject fileObject) {
+        
+        final ResourcesHolder holder = new ResourcesHolder();
+        
+        // fetch references & datasources asynchronously
+        Collection<EventRequestProcessor.Action> asyncActions = new ArrayList<EventRequestProcessor.Action>(1);
+        asyncActions.add(new AsynchronousAction() {
 
-    private Map<String, Datasource> getDataSourceReferences(J2eeModuleProvider j2eeModuleProvider, FileObject fileObject) 
-    throws ConfigurationException {
+            public void run(Context actionContext) {
+                String msg = NbBundle.getMessage(DatasourceUIHelper.class, "MSG_retrievingDS"); //NOI18N
+                actionContext.getProgress().progress(msg);
+                try {
+                    populateDataSourceReferences(holder, j2eeModuleProvider, fileObject);
+                } catch (ConfigurationException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                }
+            }
+        });
+        
+        EventRequestProcessor erp = new EventRequestProcessor();
+        erp.invoke(asyncActions);
+        
+        return holder;
+    }
+    
+    // this method has to called asynchronously!
+    private void populateDataSourceReferences(final ResourcesHolder holder, final J2eeModuleProvider j2eeModuleProvider,
+            final FileObject fileObject) throws ConfigurationException {
         
         HashMap<String, Datasource> references = new HashMap<String, Datasource>();
+        holder.setReferences(references);
+        holder.setModuleDataSources(j2eeModuleProvider.getModuleDatasources());
+        holder.setServerDataSources(j2eeModuleProvider.getServerDatasources());
         
         if (j2eeModuleProvider.getJ2eeModule().getModuleType().equals(J2eeModule.EJB)) {
             EjbJar dd = findEjbDDRoot(fileObject);
             if (dd == null) {
-                return references;
+                return;
             }
             EnterpriseBeans beans = dd.getEnterpriseBeans();
             if (beans == null) {
-                return references;
+                return;
             }
             
             Ejb[] ejbs = beans.getEjbs();
@@ -161,10 +199,9 @@ String refName = "NameOfSelectedReference";
                 ResourceRef[] refs = ejb.getResourceRef();
                 for (ResourceRef ref : refs) {
                     String refName = ref.getResRefName();
-                    Datasource ds = findDatasourceForReferenceForEjb(j2eeModuleProvider, refName, ejb.getEjbName());
+                    Datasource ds = findDatasourceForReferenceForEjb(holder, j2eeModuleProvider, refName, ejb.getEjbName());
                     if (ds != null) {
                         references.put(refName, ds);
-                        System.out.println(refName + " ~ " + ds.getUrl());
                     }
                 }
             }
@@ -173,36 +210,55 @@ String refName = "NameOfSelectedReference";
         if (j2eeModuleProvider.getJ2eeModule().getModuleType().equals(J2eeModule.WAR)) {
             WebApp dd = findWebDDRoot(fileObject);
             if (dd == null) {
-                return references;
+                return;
             }
             ResourceRef[] refs = dd.getResourceRef();
             for (ResourceRef ref : refs) {
                 String refName = ref.getResRefName();
-                Datasource ds = findDatasourceForReference(j2eeModuleProvider, refName);
+                Datasource ds = findDatasourceForReference(holder, j2eeModuleProvider, refName);
                 if (ds != null) {
                     references.put(refName, ds);
-                    System.out.println(refName + " ~ " + ds.getUrl());
                 }
             }
         }
-        
-        return references;
     }
 
-    private Datasource findDatasourceForReference(J2eeModuleProvider j2eeModuleProvider, String referenceName) throws ConfigurationException {
+    private Datasource findDatasourceForReference(final ResourcesHolder holder, J2eeModuleProvider j2eeModuleProvider, String referenceName) throws ConfigurationException {
         String jndiName = j2eeModuleProvider.getConfigSupport().findDatasourceJndiName(referenceName);
         if (jndiName == null) {
             return null;
         }
-        return j2eeModuleProvider.getConfigSupport().findDatasource(jndiName);
+        return findDataSource(holder, jndiName);
     }
     
-    public Datasource findDatasourceForReferenceForEjb(J2eeModuleProvider j2eeModuleProvider, String referenceName, String ejbName) throws ConfigurationException {
+    public Datasource findDatasourceForReferenceForEjb(final ResourcesHolder holder, J2eeModuleProvider j2eeModuleProvider, String referenceName, String ejbName) throws ConfigurationException {
         String jndiName = j2eeModuleProvider.getConfigSupport().findDatasourceJndiNameForEjb(ejbName, referenceName);
         if (jndiName == null) {
             return null;
         }
-        return j2eeModuleProvider.getConfigSupport().findDatasource(jndiName);
+        return findDataSource(holder, jndiName);
+    }
+    
+    // this is faster implementation than in API (@see ConfigSupportImpl#findDatasource())
+    // TODO this method (as well as API method) should not use <code>equals()</code>
+    private Datasource findDataSource(ResourcesHolder holder, String jndiName) {
+        
+        assert holder != null;
+        assert jndiName != null;
+        
+        // project ds
+        for (Datasource ds : holder.getModuleDataSources()) {
+            if (jndiName.equals(ds.getJndiName())) {
+                return ds;
+            }
+        }
+        for (Datasource ds : holder.getServerDataSources()) {
+            if (jndiName.equals(ds.getJndiName())) {
+                return ds;
+            }
+        }
+        
+        return null;
     }
     
     private EjbJar findEjbDDRoot(FileObject fileObject) throws ConfigurationException {
@@ -262,7 +318,7 @@ String refName = "NameOfSelectedReference";
     }
     
     public String getName() {
-        return NbBundle.getMessage(UseDatabaseAction.class, "LBL_UseDbAction");
+        return NbBundle.getMessage(UseDatabaseAction.class, "LBL_UseDbAction"); // NOI18N
     }
     
     public HelpCtx getHelpCtx() {
@@ -275,6 +331,52 @@ String refName = "NameOfSelectedReference";
     
     protected void initialize() {
         super.initialize();
-        putProperty(Action.SHORT_DESCRIPTION, NbBundle.getMessage(UseDatabaseAction.class, "HINT_UseDbAction"));
+        putProperty(Action.SHORT_DESCRIPTION, NbBundle.getMessage(UseDatabaseAction.class, "HINT_UseDbAction")); // NOI18N
+    }
+    
+    /**
+     * Just holder for few properties.
+     */
+    private static final class ResourcesHolder {
+        private Map<String, Datasource> references;
+        private Set<Datasource> moduleDataSources;
+        private Set<Datasource> serverDataSources;
+        
+        public ResourcesHolder() {
+        }
+
+        public void setReferences(final Map<String, Datasource> references) {
+            this.references = references;
+        }
+
+        public void setModuleDataSources(final Set<Datasource> moduleDataSources) {
+            this.moduleDataSources = moduleDataSources;
+        }
+
+        public void setServerDataSources(final Set<Datasource> serverDataSources) {
+            this.serverDataSources = serverDataSources;
+        }
+
+        public Map<String, Datasource> getReferences() {
+            if (references == null) {
+                references = new HashMap<String, Datasource>();
+            }
+            return references;
+        }
+
+        public Set<Datasource> getModuleDataSources() {
+            if (moduleDataSources == null) {
+                moduleDataSources = new HashSet<Datasource>();
+            }
+            return moduleDataSources;
+        }
+
+        public Set<Datasource> getServerDataSources() {
+            if (moduleDataSources == null) {
+                moduleDataSources = new HashSet<Datasource>();
+            }
+            return serverDataSources;
+        }
+        
     }
 }

@@ -141,6 +141,15 @@ public final class DatasourceUIHelper {
         
     }
     
+    /**
+     * Get data source list cell renderer.
+     * @return data source list cell renderer instance.
+     * @since 1.16
+     */
+    public static DatasourceListCellRenderer createDatasourceListCellRenderer() {
+        return new DatasourceListCellRenderer();
+    }
+    
     private static class DatasourceListCellRenderer extends DefaultListCellRenderer {
 
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -170,6 +179,15 @@ public final class DatasourceUIHelper {
             return this;
         }
 
+    }
+    
+    /**
+     * Get data source comparator.
+     * @return data source comparator instance.
+     * @since 1.16
+     */
+    public static Comparator<Datasource> createDatasourceComparator() {
+        return new DatasourceComparator();
     }
     
     private static class DatasourceComparator implements Comparator<Datasource> {
@@ -280,7 +298,8 @@ public final class DatasourceUIHelper {
      * Entry point for the combobox initialization. It connects combobox with its content and 
      * add items for the combobox content management.
      *
-     * @param combo combobox to manage
+     * @param provider Java EE module provider.
+     * @param combo combobox to manage.
      */
     public static void connect(J2eeModuleProvider provider, JComboBox combo) {
         connect(provider, combo, null);
