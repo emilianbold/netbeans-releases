@@ -439,18 +439,23 @@ public class NetBeansUtils {
     public static boolean warnNetbeansRunning(File nbLocation) {
         try {
             boolean isRunning = isNbRunning(nbLocation);
-            if (isRunning && !checkedAndRunning.contains(nbLocation)) {
-                checkedAndRunning.add(nbLocation);
-                final String message = ResourceUtils.getString(
-                        NetBeansUtils.class,
-                        "NU.warning.running"); // NOI18N
-                final String warning = StringUtils.format(
-                        message,
-                        nbLocation,
-                        NetBeansUtils.getLockFile(nbLocation));
-                
-                ErrorManager.notifyWarning(warning);
+            if (isRunning) {
+                if(!checkedAndRunning.contains(nbLocation)) {
+                    checkedAndRunning.add(nbLocation);
+                    final String message = ResourceUtils.getString(
+                            NetBeansUtils.class,
+                            "NU.warning.running"); // NOI18N
+                    final String warning = StringUtils.format(
+                            message,
+                            nbLocation,
+                            NetBeansUtils.getLockFile(nbLocation));
+                    
+                    ErrorManager.notifyWarning(warning);
+                }
+            } else {
+                checkedAndRunning.remove(nbLocation);
             }
+            
             return isRunning;
         } catch (IOException e) {
             ErrorManager.notifyDebug(
