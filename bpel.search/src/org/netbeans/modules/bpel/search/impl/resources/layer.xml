@@ -37,13 +37,11 @@
     
     <folder name="Menu">
         <folder name="Edit">
-            <!--
             <file name="org-netbeans-modules-bpel-search-impl-action-SearchAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-bpel-search-impl-action-SearchAction.instance"/>
             </file>
             <attr name="WhereUsedAction.instance/org-netbeans-modules-bpel-search-impl-action-SearchAction.shadow" boolvalue="true"/>
             <attr name="org-netbeans-modules-bpel-search-impl-action-SearchAction.shadow/org-netbeans-modules-search-project-ProjectsSearchAction.instance" boolvalue="true"/>
-            -->
         </folder>
     </folder>
 
