@@ -171,7 +171,7 @@ public class HostPropertyCustomEditor extends javax.swing.JPanel
      * @return the help context for this action
      */
     public HelpCtx getHelpCtx() {
-        String helpid = HttpServerNode.class.getName()+"_properties"; //NOI18N
+        String helpid = HostPropertyCustomEditor.class.getName()+"_properties"; //NOI18N
         return new HelpCtx(helpid);
     }        
 

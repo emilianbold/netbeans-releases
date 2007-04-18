@@ -21,23 +21,6 @@ Microsystems, Inc. All Rights Reserved.
 
 <filesystem>
 
-  <folder name="HTTPServer_DUMMY"/>
+    <folder name="HTTPServer_DUMMY"/>
 
-  <folder name="UI">
-    <folder name="Runtime">
-      <file name="org-netbeans-modules-httpserver-HttpServerSettings.instance">
-        <attr name="instanceClass" stringvalue="org.netbeans.modules.httpserver.HttpServerNode"/>
-      </file>
-    </folder> <!-- Runtime -->
-    <folder name="Services">
-      <folder name="IDEConfiguration">
-        <folder name="ServerAndExternalToolSettings">
-          <file name="org-netbeans-modules-httpserver-HttpServerSettingsNode.instance">
-              <attr name="instanceCreate" methodvalue="org.netbeans.modules.httpserver.HttpServerSettings.createViewNode"/>
-          </file>                    
-        </folder> <!-- ServerAndExternalToolSettings -->
-      </folder> <!-- IDEConfiguration -->
-    </folder> <!-- Services -->
-  </folder> <!-- UI -->
-  
 </filesystem>

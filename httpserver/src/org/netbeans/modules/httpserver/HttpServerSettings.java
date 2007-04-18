@@ -121,11 +121,6 @@ public class HttpServerSettings {
         return INSTANCE;
     }
     
-    /** human presentable name */
-    public String displayName() {
-        return NbBundle.getMessage(HttpServerSettings.class, "CTL_HTTP_settings");
-    }
-
     /** getter for running status */
     public boolean isRunning() {
         if (inited) {
@@ -558,15 +553,4 @@ public class HttpServerSettings {
         }
         
     }
-    static synchronized BeanNode createViewNode() {
-        if (view == null) {
-            try {
-                view = new BeanNode<HttpServerSettings>(HttpServerSettings.getDefault());
-            }
-            catch (IntrospectionException ex) {
-                Logger.getLogger(HttpServerSettings.class.getName()).log(Level.INFO, null, ex);
-            }
-        }
-        return view;
-    }                 
 }
