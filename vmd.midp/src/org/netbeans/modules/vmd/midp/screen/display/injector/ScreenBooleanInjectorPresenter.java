@@ -46,6 +46,10 @@ public class ScreenBooleanInjectorPresenter extends ScreenInjectorPresenter {
         this.displayName = displayName;
     }
 
+    public boolean isEnabled () {
+        return true;
+    }
+
     public JComponent getViewComponent () {
         InjectorCheckBox checkBox = new InjectorCheckBox (displayName);
         PropertyValue propertyValue = getComponent ().readProperty (propertyName);

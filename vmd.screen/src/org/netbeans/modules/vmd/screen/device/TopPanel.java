@@ -202,7 +202,14 @@ public class TopPanel extends JPanel {
             Shape shape = presenter.getSelectionShape ();
             if (shape != null) {
                 Point point = devicePanel.calculateTranslation (presenter.getView ());
-                newSelectionShapes.add (new SelectionShape (point.x, point.y, shape, component.getComponentID (), ! component.getPresenters (ScreenInjectorPresenter.class).isEmpty ()));
+                boolean containsInjector = false;
+                for (ScreenInjectorPresenter injector : component.getPresenters (ScreenInjectorPresenter.class)) {
+                    if (injector.isEnabled ()) {
+                        containsInjector = true;
+                        break;
+                    }
+                }
+                newSelectionShapes.add (new SelectionShape (point.x, point.y, shape, component.getComponentID (), containsInjector));
             }
         }
         for (DesignComponent child : presenter.getChildren ())
@@ -313,6 +320,8 @@ public class TopPanel extends JPanel {
                 ArrayList<ScreenInjectorPresenter> list = new ArrayList<ScreenInjectorPresenter> (component.getPresenters (ScreenInjectorPresenter.class));
                 DocumentSupport.sortPresentersByOrder (list);
                 for (ScreenInjectorPresenter presenter : list) {
+                    if (! presenter.isEnabled ())
+                        continue;
                     JComponent view = presenter.getViewComponent ();
                     if (view == null)
                         continue;

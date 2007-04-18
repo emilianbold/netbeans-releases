@@ -23,6 +23,8 @@ import javax.swing.*;
  */
 public abstract class ScreenInjectorPresenter extends Presenter implements OrderablePresenter {
 
+    public abstract boolean isEnabled ();
+
     /**
      * Gets view of the injector. Please make note this view can be aggregated
      * together with other injectors into a single view using grid bag layout.
