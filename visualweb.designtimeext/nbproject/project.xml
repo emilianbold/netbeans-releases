@@ -41,6 +41,7 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.visualweb.j2ee15classloaderprovider</friend>
                 <friend>org.netbeans.modules.visualweb.webui.designtime</friend>
                 <friend>org.netbeans.modules.visualweb.woodstock.webui.jsf</friend>
+                <package>com.sun.rave.designtime.ext</package>
                 <package>com.sun.rave.designtime.ext.componentgroup</package>
                 <package>com.sun.rave.designtime.ext.componentgroup.impl</package>
                 <package>com.sun.rave.designtime.ext.componentgroup.util</package>
