@@ -19,12 +19,6 @@
 
 package org.netbeans.modules.vmd.midp.screen.display;
 
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.net.URL;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
@@ -40,6 +34,9 @@ import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo.DeviceTheme.
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.resources.FontCD;
 import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
+
+import javax.swing.*;
+import java.awt.*;
 
 /**
  *
@@ -59,6 +56,8 @@ public final class ScreenSupport {
      * @return font
      */
     public static final Font getFont(ScreenDeviceInfo deviceInfo, DesignComponent fontComponent) {
+        if (fontComponent == null)
+            return deviceInfo.getDeviceTheme().getFont(FontType.DEFAULT);
         int kindCode = MidpTypes.getInteger(fontComponent.readProperty(FontCD.PROP_FONT_KIND));
         if (kindCode == FontCD.VALUE_KIND_DEFAULT) {
             return deviceInfo.getDeviceTheme().getFont(FontType.DEFAULT);

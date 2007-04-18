@@ -38,10 +38,12 @@ import java.util.Collections;
  */
 public class MainPanel extends JPanel {
 
+    public static final Color BACKGROUND_COLOR = new Color (0xFBF9F3);
+
     public static final Color SELECT_COLOR = new Color (0xFF8500);
     public static final Color HOVER_COLOR = new Color (0x5B67B0);
     
-    private static final Font LABEL_FONT = new Font("Dialog", Font.PLAIN, 20);
+    private static final Font LABEL_FONT = new Font("Dialog", Font.BOLD, 16);
     private static final Color LABEL_COLOR = new Color (0x88A3CF);
     
     private DevicePanel devicePanel;
@@ -51,7 +53,7 @@ public class MainPanel extends JPanel {
         addMouseListener(new SelectionListener());
         
         setLayout(new GridBagLayout());
-        setBackground(ResourcePanel.BACKGROUND_COLOR);
+        setBackground(BACKGROUND_COLOR);
         
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.weightx = 0.0;
@@ -69,7 +71,7 @@ public class MainPanel extends JPanel {
         
         constraints.insets = new Insets(6, 12, 12, 6);
         constraints.gridy = 1;
-        constraints.weighty = 1.0;
+        constraints.weighty = 0.0;
         add(devicePanel, constraints);
         
         constraints.gridx = 1;
@@ -84,9 +86,17 @@ public class MainPanel extends JPanel {
         
         constraints.gridy = 1;
         constraints.insets = new Insets(6, 6, 12, 12);
+        constraints.weightx = 0.0;
+        constraints.weighty = 0.0;
+        add(resourcePanel, constraints);
+
+        constraints.gridx = 2;
+        constraints.gridy = 2;
         constraints.weightx = 1.0;
         constraints.weighty = 1.0;
-        add(resourcePanel, constraints);
+        JPanel filler = new JPanel ();
+        filler.setBackground (BACKGROUND_COLOR);
+        add(filler, constraints);
     }
     
     private class SelectionListener extends MouseAdapter implements Runnable {

@@ -73,7 +73,7 @@ public class DisplayableDisplayPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         headerPanel.add(lTicker, gridBagConstraints);
 
-        lTitle.setFont(new java.awt.Font("Tahoma", 1, 11));
+        lTitle.setFont(new java.awt.Font("Dialog", 1, 11));
         lTitle.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

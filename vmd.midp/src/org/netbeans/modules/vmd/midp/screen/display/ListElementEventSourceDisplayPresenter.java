@@ -101,9 +101,7 @@ public class ListElementEventSourceDisplayPresenter extends ScreenDisplayPresent
         label.setText(ScreenSupport.wrapWithHtml(text));
         
         DesignComponent font = getComponent().readProperty(ListElementEventSourceCD.PROP_FONT).getComponent();
-        if (font != null)
-            label.setFont(ScreenSupport.getFont(deviceInfo, font));
-        // TODO - else, set default label font
+        label.setFont(ScreenSupport.getFont(deviceInfo, font));
     }
     
     public Shape getSelectionShape() {

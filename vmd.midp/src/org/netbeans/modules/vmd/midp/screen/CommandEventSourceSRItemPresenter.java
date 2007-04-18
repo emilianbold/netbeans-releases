@@ -22,10 +22,11 @@ package org.netbeans.modules.vmd.midp.screen;
 
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
-import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter.NameType;
 import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceCategoryDescriptor;
 import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceItemPresenter;
 import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
 
 /**
  * @author breh
@@ -43,7 +44,13 @@ public class CommandEventSourceSRItemPresenter extends ScreenResourceItemPresent
     @Override
     public boolean isActiveFor (DesignComponent component) {
         DesignComponent thisComponent = getComponent ();
-        return thisComponent != null  &&  component != null  &&  thisComponent.readProperty (CommandEventSourceCD.PROP_DISPLAYABLE).getComponent () == component;
+        if (thisComponent != null  &&  component != null) {
+            if (thisComponent.readProperty (CommandEventSourceCD.PROP_DISPLAYABLE).getComponent () == component) {
+                DesignComponent command = thisComponent.readProperty (CommandEventSourceCD.PROP_COMMAND).getComponent ();
+                return command == null  ||  MidpTypes.getBoolean (command.readProperty (CommandCD.PROP_ORDINARY));
+            }
+        }
+        return false;
     }
 
     public InfoPresenter.NameType getNameType() {

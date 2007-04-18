@@ -22,9 +22,11 @@ package org.netbeans.modules.vmd.midp.screen;
 
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
-import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter.NameType;
 import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceCategoryDescriptor;
 import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceItemPresenter;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
+import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
 
 /**
  * @author Karol Harezlak
@@ -45,12 +47,15 @@ public class ItemCommandSRItemPresenter extends ScreenResourceItemPresenter {
         
         if (thisComponent == null || component == null)
             return false;
-        
-        for (DesignComponent c : component.getComponents()) {
+
+        DesignComponent command = thisComponent.readProperty (CommandEventSourceCD.PROP_COMMAND).getComponent ();
+        if (command != null  &&  ! MidpTypes.getBoolean (command.readProperty (CommandCD.PROP_ORDINARY)))
+            return false;
+
+        for (DesignComponent c : component.getComponents())
             if (thisComponent.getParentComponent() == c)
                 return true;
-        }
-        
+
         return false;
     }
     

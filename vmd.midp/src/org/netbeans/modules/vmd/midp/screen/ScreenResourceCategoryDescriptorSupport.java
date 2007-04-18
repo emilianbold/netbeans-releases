@@ -21,7 +21,6 @@ package org.netbeans.modules.vmd.midp.screen;
 import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceCategoryDescriptor;
 import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceOrderingController;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
-import org.netbeans.modules.vmd.midp.components.displayables.FormCD;
 import org.openide.util.Utilities;
 
 /**

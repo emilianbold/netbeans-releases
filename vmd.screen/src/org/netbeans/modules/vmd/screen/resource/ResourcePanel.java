@@ -24,6 +24,7 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceCategoryDescriptor;
 import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceItemPresenter;
 import org.netbeans.modules.vmd.screen.ScreenAccessController;
+import org.netbeans.modules.vmd.screen.MainPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -36,16 +37,15 @@ import java.util.Map;
  */
 public class ResourcePanel extends JPanel {
 
-    public static final Color BACKGROUND_COLOR = new Color (0xFBF9F3);
     private ScreenAccessController controller;
     private JPanel fillPanel;
 
     public ResourcePanel (ScreenAccessController controller) {
         this.controller = controller;
-        setBackground (BACKGROUND_COLOR);
+        setBackground (MainPanel.BACKGROUND_COLOR);
         setLayout (new GridBagLayout ());
         fillPanel = new JPanel ();
-        fillPanel.setBackground (BACKGROUND_COLOR);
+        fillPanel.setBackground (MainPanel.BACKGROUND_COLOR);
     }
     
     // called in AWT and document transation

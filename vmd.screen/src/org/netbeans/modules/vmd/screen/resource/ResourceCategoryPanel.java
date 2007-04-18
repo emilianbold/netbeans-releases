@@ -22,6 +22,7 @@ package org.netbeans.modules.vmd.screen.resource;
 
 import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceCategoryDescriptor;
 import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceItemPresenter;
+import org.netbeans.modules.vmd.screen.MainPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -43,7 +44,7 @@ public class ResourceCategoryPanel extends JPanel {
     
     public ResourceCategoryPanel(ScreenResourceCategoryDescriptor category) {
         setLayout(new BorderLayout());
-        setBackground(ResourcePanel.BACKGROUND_COLOR);
+        setBackground(MainPanel.BACKGROUND_COLOR);
         
 //        Image image = category.getIcon();
         JLabel label = new JLabel(category.getTitle(), /*image != null ? new ImageIcon(image) : null, */SwingConstants.LEFT);
@@ -53,10 +54,11 @@ public class ResourceCategoryPanel extends JPanel {
         add(label, BorderLayout.NORTH);
         
         componentPanel = new JPanel(new GridBagLayout());
-        componentPanel.setBackground(ResourcePanel.BACKGROUND_COLOR);
+        componentPanel.setBackground(MainPanel.BACKGROUND_COLOR);
         add(componentPanel, BorderLayout.CENTER);
 
         JPanel panel = new JPanel ();
+        panel.setBackground (MainPanel.BACKGROUND_COLOR);
         panel.setMinimumSize (new Dimension (20, 100));
         add (panel, BorderLayout.SOUTH);
     }
