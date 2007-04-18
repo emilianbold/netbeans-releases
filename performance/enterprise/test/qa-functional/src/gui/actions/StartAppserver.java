@@ -27,6 +27,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.jemmy.EventTool;
 
 import org.netbeans.progress.module.Controller;
 import org.netbeans.progress.spi.InternalHandle;
@@ -76,6 +77,7 @@ public class StartAppserver extends org.netbeans.performance.test.utilities.Perf
         
         asNode = new Node(rto.tree(),path);
         asNode.select();
+        new EventTool().waitNoEvent(5000);
     }
     
     public ComponentOperator open() {
