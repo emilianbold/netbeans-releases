@@ -19,6 +19,7 @@
 
 package gui.window;
 
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -27,7 +28,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 
 /**
  *
- * @author mkhramov@netbeans.org
+ * @author mkhramov@netbeans.org, mmirilovic@netbeans.org
  */
 public class AddComponentLibraryDialog extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
@@ -54,7 +55,7 @@ public class AddComponentLibraryDialog extends org.netbeans.performance.test.uti
         } catch (org.netbeans.jemmy.TimeoutExpiredException ex) {
             fail("Cannot find and select project root node");
         }
-        String nodePath = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.complib.ui.Bundle", "ComplibsRootNode.displayName");
+        String nodePath = Bundle.getString("org.netbeans.modules.visualweb.complib.ui.Bundle", "ComplibsRootNode.displayName");
         log("Node path = "+nodePath);
         openNode = new Node(projectRoot,nodePath);
     }
@@ -65,8 +66,8 @@ public class AddComponentLibraryDialog extends org.netbeans.performance.test.uti
 
     public ComponentOperator open() {
         log(":: open");
-        openNode.callPopup().pushMenu(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.complib.ui.Bundle", "ComplibsRootNode.addComplibAction"));
-        return new NbDialogOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.complib.ui.Bundle", "ComplibsRootNode.addComplib"));
+        openNode.callPopup().pushMenu(Bundle.getString("org.netbeans.modules.visualweb.complib.ui.Bundle", "ComplibsRootNode.addComplibAction"));
+        return new NbDialogOperator(Bundle.getString("org.netbeans.modules.visualweb.complib.ui.Bundle", "ComplibsRootNode.addComplibTitle"));
     }
 
     public void close() {
