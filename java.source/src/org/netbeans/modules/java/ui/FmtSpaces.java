@@ -336,6 +336,11 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
             update();
         }
 
+        @Override
+        protected void addListeners() {
+            // Should not do anything
+        }
+
         
         @Override
         public void update() {

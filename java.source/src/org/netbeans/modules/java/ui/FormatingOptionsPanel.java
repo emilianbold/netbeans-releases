@@ -86,6 +86,11 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
             category.applyChanges();
         }
         FmtOptions.flush();
+        FmtOptions.lastValues = null;
+    }
+    
+    void cancel() {
+        FmtOptions.lastValues = null;
     }
     
     /** This method is called from within the constructor to
@@ -241,15 +246,16 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
         
         Preferences p = new PreviewPreferences();
         
+        
         for (Category category : categories) {
             category.storeTo(p);
         }
         
-        CodeStyle codeStyle = FmtOptions.createCodeStyle(p); 
-        
-        Category category = (Category)categoryCombo.getSelectedItem();
-        
+        CodeStyle codeStyle = FmtOptions.createCodeStyle(p);         
+        Category category = (Category)categoryCombo.getSelectedItem();        
         category.refreshPreview(previewPane, codeStyle);
+        
+        FmtOptions.lastValues = p;
         
     }
     

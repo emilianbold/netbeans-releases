@@ -41,7 +41,7 @@ final class FormatingOptionsPanelController extends OptionsPanelController {
     }
     
     public void cancel() {
-	// need not do anything special, if no changes have been persisted yet
+	panel.cancel();
     }
     
     public boolean isValid() {

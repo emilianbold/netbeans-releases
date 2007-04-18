@@ -208,6 +208,8 @@ public class FmtOptions {
     
     public static CodeStyleProducer codeStyleProducer;
         
+    public static Preferences lastValues;
+    
     private static final String DEFAULT_PROFILE = "default"; // NOI18N
     
     private FmtOptions() {}
@@ -245,7 +247,10 @@ public class FmtOptions {
         }
     }
     
-    
+    public static String getLastValue(String optionID) {
+        Preferences p = lastValues == null ? getPreferences(getCurrentProfileId()) : lastValues;
+        return p.get(optionID, defaults.get(optionID));
+    }
  
     // Private section ---------------------------------------------------------
     
@@ -629,14 +634,13 @@ public class FmtOptions {
                 
                 String text = field.getText();
                 
-//                if ( FmtOptions.isInteger() ) {
-//                    try {
-//                        int i = Integer.parseInt(text);                        
-//                    } catch (NumberFormatException e) {
-//                        text = FmtOptions.getLastValue();
-//                    }
-//
-//                }
+                if ( isInteger(optionID) ) {
+                    try {
+                        int i = Integer.parseInt(text);                        
+                    } catch (NumberFormatException e) {
+                        text = getLastValue(optionID);
+                    }
+                }
                 
                 
                 // XXX test for numbers
