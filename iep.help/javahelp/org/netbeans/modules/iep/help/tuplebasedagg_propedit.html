@@ -11,7 +11,8 @@
 <body>
 <h2>Using the Tuple Based Aggregator Operator Property Window </h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>The Tuple Based Aggregator performs statistical analysis for a specified number of records, for every increment you specify The Time Based Aggregator operator performs statistical analysis for a specified number of records that you  provide as a size, and for an increment that indicates how often you want the operation performed. For example, provided a stream of stock transactions, the operator can compute a new stream that holds the minimum, average, and maximum of the stock price of every 10 transactions.</p>
+<p> The Tuple Based Aggregator operator performs statistical analysis for a specified number of records that you  provide as a Size, and for an Increment that indicates how often you want the operation performed.</p>
+<p> For example, provided a stream of stock transactions, the Tuple Based Aggregator operator  computes a new stream that holds the minimum, average, and maximum of the stock price of every 10 transactions, in which the Size is 10.</p>
 <p>Statistics you can compute via SQL statements within the Property Editor of the Tuple Based Aggregator include:</p>
 <ul><li>Sum</li>
   <li>Average</li>
@@ -21,7 +22,7 @@
 </ul>
 <p><strong>To create a Tuple Based Aggregator operator:</strong></p>
 <ol>
-  <li>Drag a Tuple Based Aggregation operator from the Palette to the Design area.</li>
+  <li>Drag a Tuple Based Aggregation operator from the Palette to the Design view.</li>
   <li>Click the Tuple Based Aggregation operator icon.The Property Editor opens. </li>
   <li>In the Start field, enter  the record in which you want the operator calculations to begin.</li>
   <li>In the Increment field, enter how often you want the analysis performed.</li>

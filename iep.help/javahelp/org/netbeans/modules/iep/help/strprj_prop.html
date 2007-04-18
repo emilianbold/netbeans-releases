@@ -6,26 +6,33 @@
 <html>
 <head>
 <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
-<title>Using the Stream Projection and  Filter Operator Property Window</title>
+<title>Using the Stream Projection and  Filter Operator Property Editor</title>
 </head>
 <body>
-<h2>Using the Stream  Projection and Filter Operator Property Window </h2>
+<h2>Using the Stream  Projection and Filter Operator Property Editor</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>The Stream and Project Filter operator enables you to obtain a stream and for each event in the input stream, make the event bigger by adding new attributes, or make the events smaller by eliminating attributes, or rename attributes. You can also join an existing set of events with one or more static tables, in which case the output stream can have a different schema than the input stream's schema.  For example, you have information relating to an existing stock and its price, but you want to join a static SEC table to provide CEO and company size information--you are, in effect, adding a new dimension to the set of events in the input stream</p>
-<p>When you add or remove dimensions to an event; you are using the operator to provide a filtering capability on attributes to add or remove attributes.For example, you have information on a company that includes stock symbol and price but you want to filter out one of these.To do, you can use the Stream Projection and Filter Operator. </p>
+<p>The Stream  Projection and Filter operator enables you to obtain a stream and for each event in the input stream:</p>
+<ul>
+  <li>Make that event bigger by adding new attributes, or </li>
+  <li>Make  events smaller by eliminating attributes, or rename attributes.</li>
+</ul>
+<p>When you add or remove dimensions to an event; you are using the operator to provide a filtering capability on attributes to add or remove attributes.</p>
+<p>For example, you have information on a company that includes stock symbol and price but you want to filter out one of these.To do, you can use the Stream Projection and Filter Operator.</p>
+<p>You can also join an existing set of events with one or more static tables, in which case the output stream can have a different schema than the input stream's schema.  </p>
+<p>For example, you have information relating to an existing stock and its price, but you want to join a static SEC table to provide CEO and company size information--you are, in effect, adding a new dimension to the set of events in the input stream</p>
 <p><strong>To create a Stream Projection and Filter operator:</strong></p>
 <ol>
-  <li>Drag a Stream and Project Filter  operator from the Palette to the Design area.</li>
-  <li>Click the Stream and Project Filter operator icon.The Property Editor opens. </li>
+  <li>Drag a Stream  Projection and Filter  operator from the Palette to the Design view..</li>
+  <li>Click the Stream Projection and Filter operator icon.The Property Editor opens. </li>
   <li>In the Expression box, enter the expression for the SQL Select statement which is used to specify the value of each output attribute.Add attribute names, data types. and sizes, as applicable. </li>
   <li>In the From box, define the input on which to perform the selection which table-- </li>
-  <li>In the Where clause box, provide filtering criteria on records and specify condition of a join if you are doing a join</li>
+  <li>In the Where clause box, provide filtering criteria on records and specify condition of a join if you are performing a join.</li>
   <li>Click OK. </li>
 </ol>
 <dl>
 <dt><a name="seealso">See Also</a></dt>
 <dd>&nbsp;</dd>
-<dd><a href="aboutpalettecan.html">Using the Relation Map Property Window </a></dd>
+<dd><a href="re">Using the Relation Map Property Window </a></dd>
 </dl>
 <hr>
 <small><a href="credits.html">Legal Notices</a></small>
