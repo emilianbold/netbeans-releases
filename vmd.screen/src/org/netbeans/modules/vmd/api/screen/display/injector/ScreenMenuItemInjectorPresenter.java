@@ -18,13 +18,10 @@
  *
  */
 
-package org.netbeans.modules.vmd.midp.screen.display.injector;
+package org.netbeans.modules.vmd.api.screen.display.injector;
 
-import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.PropertyValue;
-import org.netbeans.modules.vmd.api.screen.display.injector.ScreenInjectorPresenter;
 import org.netbeans.modules.vmd.api.io.PopupUtil;
-import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -33,53 +30,47 @@ import java.awt.event.ActionListener;
 /**
  * @author David Kaspar
  */
-public class ScreenBooleanInjectorPresenter extends ScreenInjectorPresenter {
+public abstract class ScreenMenuItemInjectorPresenter extends ScreenInjectorPresenter {
 
-    private String propertyName;
     private String displayName;
     private int order;
 
-    public ScreenBooleanInjectorPresenter (String propertyName, String displayName, int order) {
-        assert propertyName != null &&  displayName != null;
-        this.propertyName = propertyName;
+    public ScreenMenuItemInjectorPresenter (String displayName, int order) {
+        assert displayName != null;
         this.displayName = displayName;
         this.order = order;
     }
 
-    public boolean isEnabled () {
-        return true;
-    }
-
     public JComponent getViewComponent () {
-        InjectorCheckBox checkBox = new InjectorCheckBox (displayName);
-        PropertyValue propertyValue = getComponent ().readProperty (propertyName);
-        if (propertyValue.getKind () == PropertyValue.Kind.VALUE)
-            checkBox.setSelected (MidpTypes.getBoolean (propertyValue));
-        else
-            checkBox.setEnabled (false);
-        return checkBox;
+        return new InjectorMenuItem (displayName);
     }
 
     public Integer getOrder () {
         return order;
     }
 
-    private class InjectorCheckBox extends JCheckBox implements ActionListener {
+    protected abstract void actionPerformed ();
 
-        public InjectorCheckBox (String text) {
-            super (text);
+
+    private class InjectorMenuItem extends JMenuItem implements ActionListener {
+
+        public InjectorMenuItem (String displayName) {
+            super (displayName);
+            // TODO - implement active aiming
+            setRolloverEnabled (true);
             addActionListener (this);
         }
 
         public void actionPerformed (ActionEvent e) {
-            final DesignComponent comp = ScreenBooleanInjectorPresenter.this.getComponent ();
-            comp.getDocument ().getTransactionManager ().writeAccess (new Runnable () {
+            DesignComponent component = ScreenMenuItemInjectorPresenter.this.getComponent ();
+            component.getDocument ().getTransactionManager ().writeAccess (new Runnable () {
                 public void run () {
-                    comp.writeProperty (propertyName, MidpTypes.createBooleanValue (InjectorCheckBox.this.isSelected ()));
+                    ScreenMenuItemInjectorPresenter.this.actionPerformed ();
                 }
             });
             PopupUtil.hidePopup ();
         }
+
     }
 
 }

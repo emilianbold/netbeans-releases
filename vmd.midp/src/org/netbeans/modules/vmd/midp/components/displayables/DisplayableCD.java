@@ -30,10 +30,7 @@ import org.netbeans.modules.vmd.api.screen.actions.EditDependencyPresenter;
 import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
-import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
-import org.netbeans.modules.vmd.midp.components.MidpTypes;
-import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
-import org.netbeans.modules.vmd.midp.components.MidpVersionable;
+import org.netbeans.modules.vmd.midp.components.*;
 import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.components.general.RootCode;
@@ -49,9 +46,9 @@ import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComb
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
 import org.netbeans.modules.vmd.midp.screen.DisplayableResourceCategoriesPresenter;
 import org.netbeans.modules.vmd.midp.screen.display.DisplayableDisplayPresenter;
+import org.netbeans.modules.vmd.midp.screen.display.injector.TickerInjectorPresenter;
 
 import java.util.*;
-import org.netbeans.modules.vmd.midp.components.MidpResourcesAcceptTypePresenter;
 
 /**
  * @author David Kaspar
@@ -158,7 +155,8 @@ public final class DisplayableCD extends ComponentDescriptor {
             DeleteDependencyPresenter.createNullableComponentReferencePresenter (PROP_COMMAND_LISTENER),
             // screen
             new DisplayableDisplayPresenter(),
-            new DisplayableResourceCategoriesPresenter()
+            new DisplayableResourceCategoriesPresenter(),
+            new TickerInjectorPresenter ()
         );
     }
     

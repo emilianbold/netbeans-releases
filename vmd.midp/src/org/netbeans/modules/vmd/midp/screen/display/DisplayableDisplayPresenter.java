@@ -14,12 +14,15 @@
 package org.netbeans.modules.vmd.midp.screen.display;
 
 import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
+import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyEditor;
 import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.netbeans.modules.vmd.midp.components.resources.TickerCD;
+import org.netbeans.modules.vmd.midp.screen.display.property.ResourcePropertyEditor;
 import org.netbeans.modules.vmd.midp.screen.display.property.ScreenStringPropertyEditor;
 import org.openide.util.Utilities;
 
@@ -28,9 +31,6 @@ import java.awt.*;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import org.netbeans.modules.vmd.api.model.PropertyValue;
-import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyEditor;
-import org.netbeans.modules.vmd.midp.screen.display.property.ResourcePropertyEditor;
 
 /**
  * A presenter for Displayable MIDP class. ALl other presenters should
@@ -73,9 +73,9 @@ public class DisplayableDisplayPresenter extends ScreenDisplayPresenter {
     }
     
     public void reload(ScreenDeviceInfo deviceInfo) {
-        String tickerText = "<ticker not set>"; // NOI18N
+        String tickerText = null;
         if (getComponent().readProperty(DisplayableCD.PROP_TICKER).getKind() == PropertyValue.Kind.USERCODE)
-            tickerText = "<user code>"; //NOI18N
+            tickerText = "<user code>";
         else {
             DesignComponent ticker = getComponent().readProperty(DisplayableCD.PROP_TICKER).getComponent();
             if (ticker != null) {
@@ -84,7 +84,7 @@ public class DisplayableDisplayPresenter extends ScreenDisplayPresenter {
                     tickerText = "<ticker string user code>"; //NOI18N
                 else {
                     tickerText = MidpValueSupport.getHumanReadableString(value);
-                    if (tickerText == null || tickerText.equals(""))
+                    if (tickerText == null || "".equals (tickerText))
                         tickerText = "<empty ticker string>"; //NOI18N
                 }
             }
