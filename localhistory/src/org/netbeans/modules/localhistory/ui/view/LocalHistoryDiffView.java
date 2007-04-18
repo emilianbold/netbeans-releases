@@ -37,6 +37,8 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.explorer.ExplorerManager;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -210,12 +212,25 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
         }
 
         public boolean isEditable() {
+            FileObject fo = FileUtil.toFileObject(file);
+            return isPrimary(fo);
+        }
+        
+        private boolean isPrimary(FileObject fo) {            
+            if (fo != null) {
+                try {
+                    DataObject dao = DataObject.find(fo);
+                    return fo.equals(dao.getPrimaryFile());
+                } catch (DataObjectNotFoundException e) {
+                    // no dataobject, never mind
+                }
+            }
             return true;
         }
-
+    
         public Lookup getLookup() {
             FileObject fo = FileUtil.toFileObject(file);
-            if (fo != null) {
+            if (fo != null && isPrimary(fo)) {
                 return Lookups.fixed(fo);                 
             } else {
                 return Lookups.fixed(); 
