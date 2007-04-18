@@ -19,7 +19,7 @@
 -->
 <project name="org.netbeans.modules.bpel" default="netbeans" basedir=".">
 
-    <import file="nbproject/build-impl.xml"/>
+    <import file="../../../nbbuild/templates/projectized.xml"/>
 
 </project>
 

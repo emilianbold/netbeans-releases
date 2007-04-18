@@ -1,0 +1,3 @@
+org.netbeans.modules.bpel.debugger.ui.breakpoint.BpelLineBreakpointView
+org.netbeans.modules.bpel.debugger.ui.breakpoint.BpelFaultBreakpointView
+#org.netbeans.modules.bpel.debugger.ui.breakpoint.BpelActivityBreakpointView

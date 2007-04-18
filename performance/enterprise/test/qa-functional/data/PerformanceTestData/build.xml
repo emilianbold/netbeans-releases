@@ -24,7 +24,7 @@
 <!-- (If you delete it and reopen the project it will be recreated.) -->
 <project name="PerformanceTestData" default="default" basedir=".">
     <description>Builds, tests, and runs the project PerformanceTestData.</description>
-    <import file="nbproject/build-impl.xml"/>
+    <import file="../../../../../../nbbuild/templates/projectized.xml"/>
 
     <target name="pre-init">
         <echo message="called before initialization of project properties"/>

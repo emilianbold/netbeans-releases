@@ -1,0 +1,3 @@
+org.netbeans.modules.bpel.debugger.ui.source.SourcesModel$DefaultSourcesColumn
+org.netbeans.modules.bpel.debugger.ui.source.SourcesModel$SourcesUsedColumn
+org.netbeans.modules.bpel.debugger.ui.source.SourcesModel$SourcesQNameColumn

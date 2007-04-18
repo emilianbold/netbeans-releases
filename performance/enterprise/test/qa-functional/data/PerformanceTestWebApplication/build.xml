@@ -24,7 +24,7 @@
 <!-- (If you delete it and reopen the project it will be recreated.) -->
 <project name="PerformanceTestWebApplication" default="default" basedir=".">
     <description>Builds, tests, and runs the project PerformanceTestWebApplication.</description>
-    <import file="nbproject/build-impl.xml"/>
+    <import file="../../../../../../nbbuild/templates/projectized.xml"/>
     <!--
 
     There exist several targets which are by default empty and which can be 

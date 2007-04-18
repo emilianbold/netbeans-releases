@@ -22,12 +22,12 @@
 <!-- If you delete this file and reopen the project it will be recreated. -->
 <project name="org.netbeans.modules.jdbcwizard" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project org.netbeans.modules.jdbcwizard</description>
-    <import file="nbproject/build-impl.xml"/>	 
-	 <target name="init" depends="harness.init">
+    <import file="../../../nbbuild/templates/projectized.xml"/>	 
+    <target name="init" depends="projectized.init">
         <mkdir dir="${cluster}/modules/ext/sql/"/>
-       <echo message="my classpath to ant ${harness.dir}/../java1/ant/lib"/>
-		<copy todir="${cluster}/modules/ext/sql">
-           <fileset dir="${harness.dir}/../java1/ant/lib">
+        <echo message="my classpath to ant ${netbeans.dest.dir}/${nb.cluster.java.dir}/ant/lib"/>
+        <copy todir="${cluster}/modules/ext/sql">
+            <fileset dir="${netbeans.dest.dir}/${nb.cluster.java.dir}/ant/lib">
                 <include name="ant.jar"/>
             </fileset>
         </copy>

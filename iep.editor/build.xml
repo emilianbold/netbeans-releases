@@ -24,7 +24,7 @@
 <!-- If you delete this file and reopen the project it will be recreated. -->
 <project name="org.netbeans.modules.iep.editor" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project org.netbeans.modules.iep.editor.</description>
-    <import file="nbproject/build-impl.xml"/>
+    <import file="../../../nbbuild/templates/projectized.xml"/>
     <target name="release" depends="init">
         <mkdir dir="${cluster}/modules/ext/iep/editor/"/>
         <copy todir="${cluster}/modules/ext/iep/editor">

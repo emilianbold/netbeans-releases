@@ -19,5 +19,5 @@
 -->
 <project name="org.netbeans.modules.xslt.mapper" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project org.netbeans.modules.xslt.mapper.</description>
-    <import file="nbproject/build-impl.xml"/>
+    <import file="../../../nbbuild/templates/projectized.xml"/>
 </project>
