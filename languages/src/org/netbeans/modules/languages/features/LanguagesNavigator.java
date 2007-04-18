@@ -33,17 +33,16 @@ import org.netbeans.modules.languages.ParserManagerImpl;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
-import org.openide.nodes.Node;
+import org.openide.loaders.DataObject;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.Utilities;
 import org.openide.loaders.DataObject;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
-import org.openide.windows.TopComponent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.TreeModelListener;
@@ -72,17 +71,14 @@ import javax.swing.tree.TreePath;
 public class LanguagesNavigator implements NavigatorPanel {
 
     /** holds UI of this panel */
-    private JComponent panelUI;
-    private JTree tree;
-    private Lookup navigLookup;
-    private InstanceContent lookupContent;
-    private Node currentNode;
+    private JComponent          panelUI;
+    private JTree               tree;
+    private NbEditorDocument    lastDocument;
+    private JEditorPane         lastEditor;
+    private DocumentListener    parserListener;
+    private DataObject          dataObject;
+    private MyLookupListener    lookupListener;
     
-    /** Creates a new instance of LanguagesNavigator */
-    public LanguagesNavigator () {
-        lookupContent = new InstanceContent();
-        navigLookup = new AbstractLookup(lookupContent);
-    }
 
     public String getDisplayHint () {
         return "This is Navigator";
@@ -131,44 +127,42 @@ public class LanguagesNavigator implements NavigatorPanel {
         return panelUI;
     }
 
-    private PropertyChangeListener topComponentListener;
-    
     public void panelActivated (Lookup context) {
-        if (topComponentListener == null) {
-            topComponentListener = new PropertyChangeListener () {
-                public void propertyChange (PropertyChangeEvent evt) {
-                    if (TopComponent.Registry.PROP_ACTIVATED_NODES.equals
-                            (evt.getPropertyName ())
-                    )
-                        refresh ();
-                }
-            };
-            TopComponent.getRegistry ().addPropertyChangeListener (topComponentListener);
-        }
+        Result<DataObject> result = context.<DataObject>lookupResult (DataObject.class);
+        if (lookupListener != null)
+            lookupListener.remove ();
+        lookupListener = new MyLookupListener (result);
+        dataObject = result.allInstances ().iterator ().next ();
         refresh ();
     }
+
+    public void panelDeactivated () {
+        if (lastEditor != null)
+            lastEditor.removeCaretListener (parserListener);
+        lastEditor = null;
+        if (lastDocument != null) {
+            ParserManager lastPM = ParserManagerImpl.get (lastDocument);
+            lastPM.removeListener (parserListener);
+            lastDocument = null;
+        }
+        dataObject = null;
+        if (lookupListener != null)
+            lookupListener.remove ();
+    }
     
-    private NbEditorDocument    lastDocument = null;
-    private JEditorPane         lastEditor = null;
-    private DocumentListener    parserListener = null;
+    public Lookup getLookup () {
+        return null;
+    }
     
+    
+    // other methods ...........................................................
+        
     private void refresh () {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                // lookup context and listen to result to get notified about context changes
-                Node[] nodes = TopComponent.getRegistry ().getActivatedNodes ();
-                if (nodes == null || nodes.length == 0) return;
-                if (currentNode != null) {
-                    lookupContent.remove(currentNode);
-                }
-                currentNode = nodes[0];
-                lookupContent.add(currentNode);
-                DataObject dob = (DataObject) nodes [0].
-                    getLookup ().lookup (DataObject.class);
-                if (dob == null) return;
-                EditorCookie ec = (EditorCookie) dob.getCookie (EditorCookie.class);
+        SwingUtilities.invokeLater (new Runnable () {
+            public void run () {
+                EditorCookie ec = (EditorCookie) dataObject.getCookie (EditorCookie.class);
                 if (ec == null) return;
-                LineCookie lc = (LineCookie) dob.getCookie (LineCookie.class);
+                LineCookie lc = (LineCookie) dataObject.getCookie (LineCookie.class);
                 try {
                     NbEditorDocument document = (NbEditorDocument) ec.openDocument ();
                     ASTNode ast = null;
@@ -237,22 +231,6 @@ public class LanguagesNavigator implements NavigatorPanel {
         });
     }
 
-    public void panelDeactivated() {
-        TopComponent.getRegistry ().removePropertyChangeListener (topComponentListener);
-        topComponentListener = null;
-        if (currentNode != null) {
-            lookupContent.remove(currentNode);
-            currentNode = null;
-        }
-    }
-    
-    public Lookup getLookup () {
-        return navigLookup;
-    }
-    
-    
-    // other methods ...........................................................
-    
     private static NavigatorNode createNavigatorNode (
         ASTItem         item,
         List<ASTItem>   path,
@@ -610,6 +588,27 @@ public class LanguagesNavigator implements NavigatorPanel {
 
         public void caretUpdate (CaretEvent e) {
             markSelected (e.getDot ());
+        }
+    }
+    
+    class MyLookupListener implements LookupListener {
+        
+        private Result<DataObject> result;
+
+        MyLookupListener (Result<DataObject> result) {
+            this.result = result;
+            result.addLookupListener (this);
+        }
+        
+        void remove () {
+            result.removeLookupListener (this);
+        }
+        
+        public void resultChanged (LookupEvent ev) {
+            Iterator<? extends DataObject> it = result.allInstances ().iterator ();
+            if (!it.hasNext ()) return;
+            dataObject = it.next ();
+            refresh ();
         }
     }
 }
