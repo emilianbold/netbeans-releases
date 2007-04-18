@@ -70,6 +70,14 @@ public class MtomConfiguration  implements WSConfiguration{
         return "WSIT Configuration";
     }
   
+    public boolean isSet() {
+        Binding binding = getBinding();
+        if (binding != null) {
+            return TransportModelHelper.isMtomEnabled(binding);
+        }
+        return false;
+    }
+    
     public void set() {
         Binding binding = getBinding();
         if (binding == null) return;

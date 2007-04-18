@@ -27,6 +27,8 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.design.configuration.WSConfiguration;
+import org.netbeans.modules.websvc.design.javamodel.ServiceChangeListener;
+import org.netbeans.modules.websvc.design.javamodel.ServiceModel;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
@@ -48,6 +50,8 @@ public class SecurityConfiguration  implements WSConfiguration {
     private FileObject implementationFile;
     private Project project;
     
+    private ServiceModel serviceModel;
+    private ServiceChangeListener scl;
     private Collection<FileObject> createdFiles = new LinkedList();
     
     /** Creates a new instance of WSITWsConfiguration */
@@ -56,8 +60,9 @@ public class SecurityConfiguration  implements WSConfiguration {
         this.service = service;
         this.implementationFile = implementationFile;
         this.project = FileOwnerQuery.getOwner(implementationFile);
+        this.serviceModel = ServiceModel.getServiceModel(implementationFile);
     }
-    
+
     public Component getComponent() {
         return null;
     }
@@ -74,8 +79,20 @@ public class SecurityConfiguration  implements WSConfiguration {
         return "WSIT Configuration";
     }
   
+    public boolean isSet() {
+        Binding binding = getBinding();
+        if (binding != null) {
+            return SecurityPolicyModelHelper.isSecurityEnabled(binding);
+        }
+        return false;
+    }
+        
     public void set() {
         Binding binding = getBinding();
+
+        scl = new  WsitServiceChangeListener(binding);
+        serviceModel.addServiceChangeListener(scl);
+        
         if (binding == null) return;
         if (!(SecurityPolicyModelHelper.isSecurityEnabled(binding))) {
             
@@ -98,6 +115,8 @@ public class SecurityConfiguration  implements WSConfiguration {
     }
 
     public void unset() {
+        serviceModel.removeServiceChangeListener(scl);
+        
         Binding binding = getBinding();
         if (binding == null) return;
         if (SecurityPolicyModelHelper.isSecurityEnabled(binding)) {
@@ -117,5 +136,5 @@ public class SecurityConfiguration  implements WSConfiguration {
         return null;
     }    
 
-
 }
+

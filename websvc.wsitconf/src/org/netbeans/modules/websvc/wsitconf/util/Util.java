@@ -442,15 +442,80 @@ public class Util {
             return operations;
         }
         
+        PortType pt = getPortType(binding);
+        
+        // create operations and add them to the binding element
+        List<String> bindingOperationNames = JavaWsdlMapper.getOperationNames(jc);
+        for (String name : bindingOperationNames) {
+            if (!isOperationInList(name, operations)) {
+                generateOperation(binding, pt, name, jc);
+            }
+        }
+        
+        return binding.getBindingOperations();
+    }
+
+    public static BindingOperation generateOperation(Binding binding, PortType portType, String operationName, FileObject implClass) {
         WSDLModel model = binding.getModel();
+        WSDLComponentFactory wcf = model.getFactory();
+        Definitions d = (Definitions) binding.getParent();
+
+        BindingOperation bindingOperation;
+        
         boolean isTransaction = model.isIntransaction();
         if (!isTransaction) {
             model.startTransaction();
         }
+
+        try {
+            bindingOperation = wcf.createBindingOperation();
+            bindingOperation.setName(operationName);
+            binding.addBindingOperation(bindingOperation);
+
+            // add input/output messages
+            org.netbeans.modules.xml.wsdl.model.Message inputMsg = wcf.createMessage();
+            inputMsg.setName(operationName);
+            d.addMessage(inputMsg);
+
+            org.netbeans.modules.xml.wsdl.model.Message outMsg = wcf.createMessage();
+            outMsg.setName(operationName + "Response");                  //NOI18N
+            d.addMessage(outMsg);
+
+            org.netbeans.modules.xml.wsdl.model.RequestResponseOperation oper = wcf.createRequestResponseOperation();
+            oper.setName(operationName);
+            portType.addOperation(oper);
+
+            org.netbeans.modules.xml.wsdl.model.Input input = wcf.createInput();
+            oper.setInput(input);
+            input.setMessage(input.createReferenceTo(inputMsg, org.netbeans.modules.xml.wsdl.model.Message.class));
+
+            org.netbeans.modules.xml.wsdl.model.Output out = wcf.createOutput();
+            oper.setOutput(out);
+            out.setMessage(out.createReferenceTo(outMsg, org.netbeans.modules.xml.wsdl.model.Message.class));
+
+            org.netbeans.modules.xml.wsdl.model.BindingOutput bindingOutput = wcf.createBindingOutput();
+            bindingOperation.setBindingOutput(bindingOutput);
+            org.netbeans.modules.xml.wsdl.model.BindingInput bindingInput = wcf.createBindingInput();
+            bindingOperation.setBindingInput(bindingInput);
+
+            //add faults
+            List<String> operationFaults = JavaWsdlMapper.getOperationFaults(implClass, operationName);
+            for (String fault : operationFaults) {
+                org.netbeans.modules.xml.wsdl.model.BindingFault bindingFault = wcf.createBindingFault();
+                bindingOperation.addBindingFault(bindingFault);
+            }
+        } finally {
+            if (!isTransaction) {
+                model.endTransaction();
+            }
+        }
         
-        WSDLComponentFactory wcf = model.getFactory();
+        return bindingOperation;
+    }
+
+    public static PortType getPortType(Binding binding) {
         Definitions d = (Definitions) binding.getParent();
-                
+
         QName portTypeQName = binding.getType().getQName();
         PortType portType = null;
         
@@ -465,56 +530,9 @@ public class Util {
                 }
             }
         }
-        // create operations and add them to the binding element
-        List<String> bindingOperationNames = JavaWsdlMapper.getOperationNames(jc);
-        for (String name : bindingOperationNames) {
-            if (!isOperationInList(name, operations)) {
-                org.netbeans.modules.xml.wsdl.model.BindingOperation bindingOperation = wcf.createBindingOperation();
-                bindingOperation.setName(name);
-                binding.addBindingOperation(bindingOperation);
-
-                // add input/output messages
-                org.netbeans.modules.xml.wsdl.model.Message inputMsg = wcf.createMessage();
-                inputMsg.setName(name);
-                d.addMessage(inputMsg);
-
-                org.netbeans.modules.xml.wsdl.model.Message outMsg = wcf.createMessage();
-                outMsg.setName(name + "Response");                  //NOI18N
-                d.addMessage(outMsg);
-
-                org.netbeans.modules.xml.wsdl.model.RequestResponseOperation oper = wcf.createRequestResponseOperation();
-                oper.setName(name);
-                portType.addOperation(oper);
-
-                org.netbeans.modules.xml.wsdl.model.Input input = wcf.createInput();
-                oper.setInput(input);
-                input.setMessage(input.createReferenceTo(inputMsg, org.netbeans.modules.xml.wsdl.model.Message.class));
-
-                org.netbeans.modules.xml.wsdl.model.Output out = wcf.createOutput();
-                oper.setOutput(out);
-                out.setMessage(out.createReferenceTo(outMsg, org.netbeans.modules.xml.wsdl.model.Message.class));
-
-                org.netbeans.modules.xml.wsdl.model.BindingOutput bindingOutput = wcf.createBindingOutput();
-                bindingOperation.setBindingOutput(bindingOutput);
-                org.netbeans.modules.xml.wsdl.model.BindingInput bindingInput = wcf.createBindingInput();
-                bindingOperation.setBindingInput(bindingInput);
-
-                //add faults
-                List<String> operationFaults = JavaWsdlMapper.getOperationFaults(jc, name);
-                for (String fault : operationFaults) {
-                    org.netbeans.modules.xml.wsdl.model.BindingFault bindingFault = wcf.createBindingFault();
-                    bindingOperation.addBindingFault(bindingFault);
-                }
-            }
-        }
-        
-        if (!isTransaction) {
-            model.endTransaction();
-        }
-        
-        return binding.getBindingOperations();
+        return portType;
     }
-
+    
     public static FileObject getFOForModel(WSDLModel model) {
         if (model == null) return null;
         ModelSource ms = model.getModelSource();

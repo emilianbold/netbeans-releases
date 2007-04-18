@@ -70,6 +70,14 @@ public class RMConfiguration  implements WSConfiguration {
         return "WSIT Configuration";
     }
   
+    public boolean isSet() {
+        Binding binding = getBinding();
+        if (binding != null) {
+            return RMModelHelper.isRMEnabled(binding);
+        }
+        return false;
+    }
+        
     public void set() {
         Binding binding = getBinding();
         if (binding == null) return;
