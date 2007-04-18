@@ -255,7 +255,7 @@ final class FacesRefactoringUtils {
     
     private static final Logger LOGGER = Logger.getLogger(FacesRefactoringUtils.class.getName());
     
-    public static abstract class OccurrenceItem {
+    static abstract class OccurrenceItem {
         // the faces configuration file
         protected FileObject config;
         protected String newValue;
@@ -287,7 +287,7 @@ final class FacesRefactoringUtils {
         public abstract String getRenameMessage();     
     }
     
-    public static class ManagedBeanNameItem extends OccurrenceItem {
+    static class ManagedBeanNameItem extends OccurrenceItem {
         private final ManagedBean bean;
         
         public ManagedBeanNameItem(FileObject config, ManagedBean bean, String newValue){
@@ -327,7 +327,47 @@ final class FacesRefactoringUtils {
         }
     }
 
-    public static class NavigationFromViewIdItem extends OccurrenceItem {
+    static class ManagedBeanClassItem extends OccurrenceItem {
+        private final ManagedBean bean;
+        
+        public ManagedBeanClassItem(FileObject config, ManagedBean bean, String newValue){
+            super(config, newValue, bean.getManagedBeanClass());
+            this.bean = bean;
+        }
+        
+        protected String getXMLElementName(){
+            return "managed-bean-class"; //NOI18N
+        }
+        
+        public void performRename(){
+            changeBeanName(oldValue, newValue);
+        }
+        
+        public void undoRename(){
+            changeBeanName(newValue, oldValue);
+        }        
+        
+        public String getRenameMessage(){
+            return NbBundle.getMessage(FacesRefactoringUtils.class, "MSG_ManagedBeanClass_Rename",  //NOI18N
+                    new Object[] { bean.getManagedBeanClass(), getElementText()});
+        }
+        
+        private void changeBeanName(String oldBeanClass, String newBeanClass){
+            FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
+            List <ManagedBean> beans = facesConfig.getManagedBeans();
+            for (Iterator<ManagedBean> it = beans.iterator(); it.hasNext();) {
+                ManagedBean managedBean = it.next();
+                if (oldBeanClass.equals(managedBean.getManagedBeanClass())){
+                    facesConfig.getModel().startTransaction();
+                    managedBean.setManagedBeanClass(newBeanClass);
+                    facesConfig.getModel().endTransaction();
+                    continue;
+                }
+            }
+        }
+    }   
+    
+    static class NavigationFromViewIdItem extends OccurrenceItem {
         private final NavigationRule navigationRule;
         
         public NavigationFromViewIdItem(FileObject config, NavigationRule navigationRule, String newValue){
@@ -367,7 +407,7 @@ final class FacesRefactoringUtils {
         }
     }
     
-    public static class NavigationToViewIdItem extends OccurrenceItem {
+    static class NavigationToViewIdItem extends OccurrenceItem {
         private final NavigationCase navigationCase;
         
         public NavigationToViewIdItem(FileObject config, NavigationCase navigationCase, String newValue){
@@ -411,7 +451,7 @@ final class FacesRefactoringUtils {
         }
     }
     
-    public static List <OccurrenceItem> getAllBeanNameOccurrences(WebModule webModule, String oldBeanName, String newBeanName){
+    static List <OccurrenceItem> getAllBeanNameOccurrences(WebModule webModule, String oldBeanName, String newBeanName){
         List result = new ArrayList();
         assert webModule != null;
         assert oldBeanName != null;
@@ -438,8 +478,34 @@ final class FacesRefactoringUtils {
         return result;
     }
     
+    static List <OccurrenceItem> getAllBeanClassOccurrences(WebModule webModule, String oldBeanClass, String newBeanClass){
+        List result = new ArrayList();
+        assert webModule != null;
+        assert oldBeanClass != null;
+        assert newBeanClass != null;
+        
+        LOGGER.fine("getAllOccurences("+ webModule.getDocumentBase().getPath() + ", " + oldBeanClass + ", " + newBeanClass + ")"); // NOI18N
+        if (webModule != null){
+            // find all jsf configuration files in the web module
+            FileObject[] configs = ConfigurationUtils.getFacesConfigFiles(webModule);
+            
+            if (configs != null){
+                for (int i = 0; i < configs.length; i++) {
+                    FacesConfig facesConfig = ConfigurationUtils.getConfigModel(configs[i], true).getRootComponent();                    
+                    List<ManagedBean> managedBeans = facesConfig.getManagedBeans();
+                    for (Iterator<ManagedBean> it = managedBeans.iterator(); it.hasNext();) {
+                        ManagedBean managedBean = it.next();
+                        if (oldBeanClass.equals(managedBean.getManagedBeanClass())) {
+                            result.add(new ManagedBeanClassItem(configs[i], managedBean, newBeanClass));
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }    
 
-    public static List <OccurrenceItem> getAllFromViewIdOccurrences(WebModule webModule, String oldFromViewId, String newFromViewId){
+    static List <OccurrenceItem> getAllFromViewIdOccurrences(WebModule webModule, String oldFromViewId, String newFromViewId){
         List result = new ArrayList();
         assert webModule != null;
         assert oldFromViewId != null;
@@ -467,7 +533,7 @@ final class FacesRefactoringUtils {
     }
     
 
-    public static List <OccurrenceItem> getAllToViewOccurrences(WebModule webModule, String oldToViewId, String newToViewId){
+    static List <OccurrenceItem> getAllToViewOccurrences(WebModule webModule, String oldToViewId, String newToViewId){
         List result = new ArrayList();
         assert webModule != null;
         assert oldToViewId != null;
@@ -510,7 +576,7 @@ final class FacesRefactoringUtils {
     //
     
     // !EAT TODO: Cloned from com.sun.rave.xhtml.FragmentPanel
-    public static String computePathFromTo(FileObject fromFile, FileObject toFile) {
+    static String computePathFromTo(FileObject fromFile, FileObject toFile) {
         ArrayList fromPathList = getPathList(fromFile);
         ArrayList toPathList = getPathList(toFile);
         StringBuffer stringBuffer = new StringBuffer(computePathFromTo(fromPathList, toPathList));
@@ -522,7 +588,7 @@ final class FacesRefactoringUtils {
     
     // !EAT TODO: Cloned from com.sun.rave.xhtml.FragmentPanel
     // this assume toPathList is for a directory
-    public static String computePathFromTo(ArrayList fromPathList, ArrayList toPathList) {
+    static String computePathFromTo(ArrayList fromPathList, ArrayList toPathList) {
         int index = 0;
         // find the first non matching sub dir
         for (; index < fromPathList.size() && index < toPathList.size();
@@ -545,7 +611,7 @@ final class FacesRefactoringUtils {
     }
 
     // !EAT TODO: Cloned from com.sun.rave.xhtml.FragmentPanel
-    public static ArrayList getPathList(FileObject file) {
+    static ArrayList getPathList(FileObject file) {
         if (!file.isFolder()) {
             file = file.getParent();
         }
@@ -559,7 +625,7 @@ final class FacesRefactoringUtils {
     }
     
     // 
-    public static ArrayList getPathList(String fileName) {
+    static ArrayList getPathList(String fileName) {
         if (fileName.length() == 0) {
             return new ArrayList();
         }

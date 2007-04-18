@@ -220,12 +220,25 @@ public class FacesJavaFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
                     + oldName;
                 String newBeanName = targetRelativePathWithDollars
                     + (targetRelativePathWithDollars.length() == 0 ? "" : "$") // NOI18N TODO compute target folder relative path
-                    + oldName;
+                    + oldName;                
                 // Fix up
                 newBeanName = FacesUnit.fixPossiblyImplicitBeanName(newBeanName);
                 
                 String oldValueBindingPrefix = "#{" + oldBeanName + ".";
                 String newValueBindingPrefix = "#{" + newBeanName + ".";
+                
+                FileObject oldSrcRoot = JsfProjectUtils.getSourceRoot(project);
+                FileObject oldPageBeanRoot = JsfProjectUtils.getPageBeanRoot(project);
+                String oldDefaultPackage = FileUtil.getRelativePath(oldSrcRoot, oldPageBeanRoot).replace('/', '.');
+                String oldBeanClass = oldDefaultPackage + "." + oldBeanName.replace('$', '.');
+                FileObject newSrcRoot = JsfProjectUtils.getSourceRoot(targetFileObjectProject);
+                FileObject newPageBeanRoot = JsfProjectUtils.getPageBeanRoot(project);
+                String newDefaultPackage = FileUtil.getRelativePath(newSrcRoot, newPageBeanRoot).replace('/', '.');
+                String newBeanClass = newDefaultPackage + "." + newBeanName.replace('$', '.');
+                
+//              String oldBeanClass = JsfProjectUtils.get
+//              String oldBeanClass = JsfPr
+
                 
                 FacesModelSet facesModelSet = FacesModelSet.getInstance(refactoringSourcefileObject);
                 
@@ -378,9 +391,16 @@ public class FacesJavaFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
                 // Rename the managed bean name. 
                 WebModule webModule = WebModule.getWebModule(refactoringSourcefileObject);
                 if (webModule != null){
-                    List <FacesRefactoringUtils.OccurrenceItem> items = FacesRefactoringUtils.getAllBeanNameOccurrences(webModule, oldBeanName, newBeanName);
+                    // For now also rename the bean class name as we/jsf refcatoring is not doing it
+                    List <FacesRefactoringUtils.OccurrenceItem> items =
+                        FacesRefactoringUtils.getAllBeanNameOccurrences(webModule, oldBeanName, newBeanName);
                     for (FacesRefactoringUtils.OccurrenceItem item : items) {
                         refactoringElements.add(getRefactoring(), new JSFConfigRenameBeanNameElement(item));
+                    }
+
+                    items = FacesRefactoringUtils.getAllBeanClassOccurrences(webModule, oldBeanClass, newBeanClass);
+                    for (FacesRefactoringUtils.OccurrenceItem item : items) {
+                        refactoringElements.add(getRefactoring(), new JSFConfigRenameBeanClassElement(item));
                     }
                 }
                 
