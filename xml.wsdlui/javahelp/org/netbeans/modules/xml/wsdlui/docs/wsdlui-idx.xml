@@ -15,9 +15,7 @@
 	<indexitem text="partner link types" target="wsdlui_partner" />
 	<indexitem text="property aliases" target="wsdlui_prop" />
 
-	<indexitem text="refactoring">
-		<indexitem text="WSDL components" target="wsdlui_refactoring" />
-	</indexitem>
+	<indexitem text="refactoring, WSDL components" target="wsdlui_refactoring" />
 
 	<indexitem text="validating">
 		<indexitem text="WSDL files" target="wsdlui_validation" />
