@@ -185,6 +185,7 @@ public class OperationGeneratorHelper {
                     if(ref instanceof GlobalElement){
                         paramElement = (GlobalElement)ref;
                     }
+                    //TODO: if it is a global type, wrap in global element
                 }
                 
                 
@@ -209,11 +210,11 @@ public class OperationGeneratorHelper {
                     operation.setInput(input);
                 }
             }
-                           
+            
             // create schema elements for faults
             for(ParamModel faultModel : faultTypes) {
                 ReferenceableSchemaComponent faultType = faultModel.getParamType();
-                if (faultType instanceof GlobalType) {   
+                if (faultType instanceof GlobalType) {
                     if(schemaModel == null){
                         wsdlSchema = factory.createWSDLSchema();
                         types.addExtensibilityElement(wsdlSchema);
@@ -236,12 +237,12 @@ public class OperationGeneratorHelper {
             if(returnType != null){  //if the operation returns something
                 if(isPrimitiveType(returnType)){
                     if(schemaModel == null){
-                    wsdlSchema = factory.createWSDLSchema();
-                    types.addExtensibilityElement(wsdlSchema);
-                    schemaModel = wsdlSchema.getSchemaModel();
-                    schema = schemaModel.getSchema();
-                    schema.setTargetNamespace(definitions.getTargetNamespace());
-                }
+                        wsdlSchema = factory.createWSDLSchema();
+                        types.addExtensibilityElement(wsdlSchema);
+                        schemaModel = wsdlSchema.getSchemaModel();
+                        schema = schemaModel.getSchema();
+                        schema.setTargetNamespace(definitions.getTargetNamespace());
+                    }
                     GlobalComplexType responseComplexType = schemaModel.getFactory().createGlobalComplexType();
                     responseComplexType.setName(responseTypeName); //NOI18N
                     Sequence seq1 = schemaModel.getFactory().createSequence();
@@ -263,7 +264,7 @@ public class OperationGeneratorHelper {
                         returnElement = (GlobalElement)returnType;
                     }
                 }
-
+                
                 if (returnElement!=null) {
                     outputMessage = factory.createMessage();
                     outputMessage.setName(responseMessageName);
@@ -295,7 +296,7 @@ public class OperationGeneratorHelper {
                 NamedComponentReference<GlobalElement> ref = part.createSchemaReference(faultElement, GlobalElement.class);
                 part.setElement(ref);
                 
-                faultMessage.addPart(part); 
+                faultMessage.addPart(part);
                 faultMessages.add(faultMessage);
             }
             

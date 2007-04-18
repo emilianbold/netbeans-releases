@@ -24,13 +24,9 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
@@ -38,7 +34,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.design.util.Util;
 import org.netbeans.modules.websvc.design.view.panels.ImportedSchemasPanel;
-import org.netbeans.modules.websvc.design.view.panels.SelectSchemaPanel;
 import org.netbeans.modules.xml.schema.model.Import;
 import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
 import org.netbeans.modules.xml.schema.model.Schema;
@@ -57,8 +52,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 /**
@@ -67,7 +60,8 @@ import org.openide.util.NbBundle;
  */
 public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
     private File wsdlFile;
-    private List<Schema> importedSchemas;
+    private List<Schema> importedSchemas; //current imported Schemas
+    private Set<Schema> newSchemas;  //new schemas to be retrieved
     private WSDLModel wsdlModel;
     private FaultsPanel faultsPanel;
     
@@ -86,7 +80,7 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
         }catch(CatalogModelException e){
             ErrorManager.getDefault().notify(e);
         }
-        
+        newSchemas = new HashSet<Schema>();
         SchemaPanelListCellRenderer renderer = new SchemaPanelListCellRenderer();
         returnCombo.setRenderer(renderer);
     }
@@ -125,6 +119,9 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
         return faultsPanel.getFaults();
     }
     
+    public Set<Schema> getNewSchemas(){
+        return newSchemas;
+    }
     private void populate()throws CatalogModelException {
         populateWithTypes(getWSDLModel());
     }
@@ -294,7 +291,7 @@ class ImportSchemaListener implements ActionListener{
         this.panel = panel;
     }
     public void actionPerformed(ActionEvent evt) {
-        Set<Schema> newSchemas = new HashSet<Schema>();
+       newSchemas.clear();
         if(evt.getSource() == NotifyDescriptor.OK_OPTION) {
             Set<Schema> schemasFromPanel = panel.getSchemas();
             for(Schema schemaFromPanel : schemasFromPanel){
@@ -342,6 +339,7 @@ class ImportSchemaListener implements ActionListener{
         }
     }
 }
+
 
 private Project getProject(){
     FileObject wsdlFO = FileUtil.toFileObject(this.getWsdlFile());
