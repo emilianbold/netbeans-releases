@@ -84,7 +84,12 @@ public class InstanceImpl implements Instance {
     }
 
     public JavaClass getJavaClass() {
-        return new JavaClassImpl(var.getClassType());
+        JPDAClassType type = var.getClassType();
+        if (type != null) {
+            return new JavaClassImpl(type);
+        } else {
+            return new JavaClassImpl(var.getType());
+        }
     }
 
     public long getInstanceId() {

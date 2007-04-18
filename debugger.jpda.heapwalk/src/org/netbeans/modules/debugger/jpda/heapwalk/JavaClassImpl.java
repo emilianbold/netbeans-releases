@@ -41,6 +41,7 @@ public class JavaClassImpl implements JavaClass {
     
     private JPDAClassType classType;
     private long instanceCount = -1L;
+    private String className;
     
     /** Creates a new instance of JavaClassImpl */
     public JavaClassImpl(JPDAClassType classType) {
@@ -48,6 +49,11 @@ public class JavaClassImpl implements JavaClass {
             throw new NullPointerException("classType == null");
         }
         this.classType = classType;
+    }
+    
+    /** For the case where the class type is not loaded yet. */
+    public JavaClassImpl(String className) {
+        this.className = className;
     }
 
     public JavaClassImpl(JPDAClassType classType, long instanceCount) {
@@ -57,20 +63,29 @@ public class JavaClassImpl implements JavaClass {
 
     public long getJavaClassId() {
         // TODO ??
-        return classType.hashCode();
+        if (classType != null) {
+            return classType.hashCode();
+        } else {
+            return className.hashCode();
+        }
     }
 
     public Instance getClassLoader() {
-        return InstanceImpl.createInstance(classType.getClassLoader(), -1);
-    }
-
-    public JavaClass getSuperClass() {
-        Super superClass = classType.getSuperClass();
-        if (superClass != null) {
-            return new JavaClassImpl(superClass.getClassType());
+        if (classType != null) {
+            return InstanceImpl.createInstance(classType.getClassLoader(), -1);
         } else {
             return null;
         }
+    }
+
+    public JavaClass getSuperClass() {
+        if (classType != null) {
+            Super superClass = classType.getSuperClass();
+            if (superClass != null) {
+                return new JavaClassImpl(superClass.getClassType());
+            }
+        }
+        return null;
     }
 
     public int getInstanceSize() {
@@ -93,6 +108,9 @@ public class JavaClassImpl implements JavaClass {
     }
 
     public List<FieldValue> getStaticFieldValues() {
+        if (classType == null) {
+            return Collections.EMPTY_LIST;
+        }
         List<org.netbeans.api.debugger.jpda.Field> refFields = classType.staticFields();
         List<FieldValue> fields = new ArrayList<FieldValue>(refFields.size());
         for (org.netbeans.api.debugger.jpda.Field field : refFields) {
@@ -108,6 +126,9 @@ public class JavaClassImpl implements JavaClass {
     }
 
     public List<Instance> getInstances() {
+        if (classType == null) {
+            return Collections.EMPTY_LIST;
+        }
         List<ObjectVariable> typeInstances = classType.getInstances(0);
         List<Instance> instances = new ArrayList<Instance>(typeInstances.size());
         int i = 1;
@@ -123,11 +144,18 @@ public class JavaClassImpl implements JavaClass {
             return (int) instanceCount;
         }
         //return (int) Java6Methods.instanceCounts(refType.virtualMachine(), Collections.singletonList(refType))[0];
+        if (classType == null) {
+            return 0;
+        }
         return (int) classType.getInstanceCount();
     }
 
     public String getName() {
-        return classType.getName();
+        if (classType != null) {
+            return classType.getName();
+        } else {
+            return className;
+        }
     }
 
     public boolean isArray() {
