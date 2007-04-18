@@ -31,7 +31,7 @@ import org.openide.util.Parameters;
 public final class JBossDatasource implements Datasource {
     
     public static final String PREFIX = "java:/";
-    public static final String SHORT_PREFIX = "java:/";
+    public static final String SHORT_PREFIX = "java:";
     
     private String rawName;
     private String url;
