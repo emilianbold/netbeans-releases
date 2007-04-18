@@ -109,7 +109,7 @@
             </patternset>
         </testset>
     </testbag>
-    
+-->    
     <!-- Scan Classpath test bag -->    
     <testbag testattribs="all or classpath_scan" prio="100"
              executor="ide_performance_scan" name="Classpath Scan" >
