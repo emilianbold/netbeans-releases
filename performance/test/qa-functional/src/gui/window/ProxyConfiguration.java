@@ -57,16 +57,13 @@ public class ProxyConfiguration extends UpdateCenter {
         
         TAB = Bundle.getStringTrimmed(BUNDLE2,"SettingsTab_displayName");
         BUTTON = Bundle.getStringTrimmed(BUNDLE2,"SettingsTab.bProxy.text");
-        
-        wizard = (WizardOperator) super.open();
-        
-        new JTabbedPaneOperator(wizard, 0).selectPage(TAB);
-        
-        openProxyButton = new JButtonOperator(wizard, BUTTON);
     }
     
     public void prepare(){
-        // do nothing
+        wizard = (WizardOperator) super.open();
+        new JTabbedPaneOperator(wizard, 0).selectPage(TAB);
+        
+        openProxyButton = new JButtonOperator(wizard, BUTTON);
     }
     
     public ComponentOperator open(){
@@ -77,12 +74,13 @@ public class ProxyConfiguration extends UpdateCenter {
 
     @Override
     public void close() {
-        ((OptionsOperator) testedComponentOperator).close();
+        if(testedComponentOperator!=null && testedComponentOperator.isShowing())
+            ((OptionsOperator) testedComponentOperator).close();
+        if(wizard!=null && wizard.isShowing())
+            wizard.close();
     }
     
     public void shutdown() {
-        if(wizard!=null && wizard.isShowing())
-            wizard.close();
     }
     
     /** Test could be executed internaly in IDE without XTest
