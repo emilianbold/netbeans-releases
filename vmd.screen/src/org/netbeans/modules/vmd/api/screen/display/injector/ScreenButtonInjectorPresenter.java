@@ -22,6 +22,7 @@ package org.netbeans.modules.vmd.api.screen.display.injector;
 
 import org.openide.util.Utilities;
 import org.netbeans.modules.vmd.api.io.PopupUtil;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
 
 import javax.swing.*;
 import java.awt.*;
@@ -57,7 +58,12 @@ public abstract class ScreenButtonInjectorPresenter extends ScreenInjectorPresen
         }
 
         public void actionPerformed (ActionEvent e) {
-            ScreenButtonInjectorPresenter.this.actionPerformed ();
+            DesignComponent component = ScreenButtonInjectorPresenter.this.getComponent ();
+            component.getDocument ().getTransactionManager ().writeAccess (new Runnable () {
+                public void run () {
+                    ScreenButtonInjectorPresenter.this.actionPerformed ();
+                }
+            });
             PopupUtil.hidePopup ();
         }
 
