@@ -157,8 +157,8 @@ public class PrepareIDEForWebPackComplexMeasurements  extends org.netbeans.jelly
         
         try {
             String[][] nodes_path = {
-                {"Web Pages","Page1.jsp", "Page1", OPEN},
-                {"Web Pages|resources","stylesheet.css", null, OPEN},
+                {"Web Pages","Page1.jsp", "Page1", OPEN}
+// TODO - NPE rises for CSS see IZ 101567                ,{"Web Pages|resources","stylesheet.css", null, OPEN},
             };
             
             ArrayList<Node> openFileNodes = new ArrayList<Node>();
