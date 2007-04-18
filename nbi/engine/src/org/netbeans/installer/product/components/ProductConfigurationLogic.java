@@ -131,6 +131,10 @@ public abstract class ProductConfigurationLogic {
         return product.getDisplayName();
     }
     
+    public boolean allowModifyMode() {
+        return true;
+    }
+    
     public boolean wrapForMacOs() {
         return false;
     }

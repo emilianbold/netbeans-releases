@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -76,19 +76,29 @@ public class CreateBundleAction extends WizardAction {
     }
     
     public void execute() {
-        LogManager.log("Creating bundle ... ");
         long started = System.currentTimeMillis();
-        LogManager.log("    ... initializing registry and required products");
+        
+        LogManager.log("creating bundle");
+        LogManager.log("    initializing registry and required products");
         final Registry registry = Registry.getInstance();
         final RegistryFilter filter =
                 new SubTreeFilter(registry.getProductsToInstall());
         final List<Product> products = registry.queryProducts(filter);
         final List<Group> groups = registry.queryGroups(filter);
         
-        final int percentageChunk =
-                Progress.COMPLETE / (products.size() + groups.size());
-        final int percentageLeak =
-                Progress.COMPLETE % (products.size() + groups.size());
+        LogManager.log("        products to install: " + StringUtils.asString(registry.getProductsToInstall()));
+        LogManager.log("        selected products: " + StringUtils.asString(products));
+        LogManager.log("        selected groups: " + StringUtils.asString(groups));
+        
+        int percentageChunk = Progress.START;
+        int percentageLeak = Progress.COMPLETE;
+        
+        if (products.size() + groups.size() > 0) {
+            percentageChunk =
+                    Progress.COMPLETE / (products.size() + groups.size());
+            percentageLeak =
+                    Progress.COMPLETE % (products.size() + groups.size());
+        }
         
         final String targetPath =
                 System.getProperty(Registry.CREATE_BUNDLE_PATH_PROPERTY);
@@ -349,8 +359,8 @@ public class CreateBundleAction extends WizardAction {
                     ErrorManager.notifyDebug("Failed to close the stream", e);
                 }
             }
-            long seconds = System.currentTimeMillis() - started;  
-            LogManager.log("... generating bundle finished");                           
+            long seconds = System.currentTimeMillis() - started;
+            LogManager.log("... generating bundle finished");
             LogManager.log("[bundle] Time : " + (seconds/1000) + "." + (seconds%1000) + " seconds");
             LogManager.unindent();
         }

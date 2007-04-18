@@ -70,22 +70,22 @@ public abstract class NativeUtils {
     
     public static synchronized NativeUtils getInstance() {
         switch (SystemUtils.getCurrentPlatform()) {
-            case WINDOWS:
-                instance = new WindowsNativeUtils();
-                break;
-            case LINUX:
-                instance = new LinuxNativeUtils();
-                break;
-            case SOLARIS_X86:
-                instance = new SolarisX86NativeUtils();
-                break;
-            case SOLARIS_SPARC:
-                instance = new SolarisSparcNativeUtils();
-                break;
-            case MACOS_X_PPC:
-            case MACOS_X_X86:
-                instance = new MacOsNativeUtils();
-                break;
+        case WINDOWS:
+            instance = new WindowsNativeUtils();
+            break;
+        case LINUX:
+            instance = new LinuxNativeUtils();
+            break;
+        case SOLARIS_X86:
+            instance = new SolarisX86NativeUtils();
+            break;
+        case SOLARIS_SPARC:
+            instance = new SolarisSparcNativeUtils();
+            break;
+        case MACOS_X_PPC:
+        case MACOS_X_X86:
+            instance = new MacOsNativeUtils();
+            break;
         }
         
         return instance;
@@ -114,23 +114,32 @@ public abstract class NativeUtils {
     
     public abstract void removeShortcut(Shortcut shortcut, ShortcutLocationType locationType, boolean deleteEmptyParents) throws NativeException;
     
-    protected Launcher createUninstaller(ApplicationDescriptor descriptor, boolean useUninstallCommand, Progress progress) throws IOException {
-        LogManager.log(ErrorLevel.DEBUG, "Creating uninstaller...");
-        LauncherProperties props = new LauncherProperties();
-        props.addJVM(new LauncherResource(false, SystemUtils.getCurrentJavaHome()));
-        File engine = new File(System.getProperty(EngineResources.LOCAL_ENGINE_PATH_PROPERTY));
-        props.addJar(new LauncherResource(false, engine));
-        props.setJvmArguments(new String [] { "-Xmx256m", "-Xms64m" });
-        props.setAppArguments(
-                (useUninstallCommand) ?
-                    descriptor.getUninstallCommand() :
-                    descriptor.getModifyCommand());
+    protected Launcher createUninstaller(ApplicationDescriptor descriptor, boolean uninstall, Progress progress) throws IOException {
+        LogManager.log("creating uninstaller...");
         
-        props.setOutput(
-                new File(descriptor.getInstallPath(),
-                "uninstall"),
-                true);
+        final File engine = new File(System.getProperty(
+                EngineResources.LOCAL_ENGINE_PATH_PROPERTY));
+        final LauncherProperties props = new LauncherProperties();
+        
+        props.addJVM(new LauncherResource(false, SystemUtils.getCurrentJavaHome()));
+        props.addJar(new LauncherResource(false, engine));
+        props.setJvmArguments(new String[]{
+            "-Xmx256m",
+            "-Xms64m"});
         props.setMainClass(Installer.class.getName());
+        
+        if (uninstall) {
+            props.setAppArguments(descriptor.getUninstallCommand());
+            props.setOutput(
+                    new File(descriptor.getInstallPath(), "uninstall"), 
+                    true);
+        } else {
+            props.setAppArguments(descriptor.getModifyCommand());
+            props.setOutput(
+                    new File(descriptor.getInstallPath(), "modify-install"), 
+                    true);
+        }
+        
         return SystemUtils.createLauncher(props, progress);
     }
     

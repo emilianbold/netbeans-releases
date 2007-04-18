@@ -42,13 +42,13 @@ import org.netbeans.installer.utils.helper.ApplicationDescriptor;
 import org.netbeans.installer.utils.system.windows.SystemApplication;
 import org.netbeans.installer.utils.system.windows.FileExtension;
 import org.netbeans.installer.utils.system.windows.WindowsRegistry;
-import static org.netbeans.installer.utils.StringUtils.*;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.helper.FilesList;
 import org.netbeans.installer.utils.system.launchers.Launcher;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.utils.system.cleaner.OnExitCleanerHandler;
 import org.netbeans.installer.utils.system.cleaner.ProcessOnExitCleanerHandler;
+import static org.netbeans.installer.utils.StringUtils.*;
 import static org.netbeans.installer.utils.system.windows.WindowsRegistry.*;
 
 /**
@@ -295,37 +295,37 @@ public class WindowsNativeUtils extends NativeUtils {
         final String allUsersRootPath = SystemUtils.getEnvironmentVariable("allusersprofile");
         
         switch (locationType) {
-            case CURRENT_USER_DESKTOP:
-                String userDesktop = registry.getStringValue(HKCU, SHELL_FOLDERS_KEY, "Desktop", false);
-                if (userDesktop == null) {
-                    userDesktop = SystemUtils.getUserHomeDirectory() + File.separator + "Desktop";
-                }
-                
-                return new File(userDesktop, fileName);
-                
-            case ALL_USERS_DESKTOP:
-                String commonDesktop = registry.getStringValue(HKLM, SHELL_FOLDERS_KEY, "Common Desktop", false);
-                if (commonDesktop == null) {
-                    commonDesktop = allUsersRootPath + File.separator + "Desktop";
-                }
-                
-                return new File(commonDesktop, fileName);
-                
-            case CURRENT_USER_START_MENU:
-                String userStartMenu = registry.getStringValue(HKCU, SHELL_FOLDERS_KEY, "Programs", false);
-                if (userStartMenu == null) {
-                    userStartMenu = SystemUtils.getUserHomeDirectory() + File.separator + "Start Menu" + File.separator + "Programs";
-                }
-                
-                return new File(userStartMenu, path + File.separator + fileName);
-                
-            case ALL_USERS_START_MENU:
-                String commonStartMenu = registry.getStringValue(HKLM, SHELL_FOLDERS_KEY, "Common Programs", false);
-                if (commonStartMenu == null) {
-                    commonStartMenu = SystemUtils.getUserHomeDirectory() + File.separator + "Start Menu" + File.separator + "Programs";
-                }
-                
-                return new File(commonStartMenu, path + File.separator + fileName);
+        case CURRENT_USER_DESKTOP:
+            String userDesktop = registry.getStringValue(HKCU, SHELL_FOLDERS_KEY, "Desktop", false);
+            if (userDesktop == null) {
+                userDesktop = SystemUtils.getUserHomeDirectory() + File.separator + "Desktop";
+            }
+            
+            return new File(userDesktop, fileName);
+            
+        case ALL_USERS_DESKTOP:
+            String commonDesktop = registry.getStringValue(HKLM, SHELL_FOLDERS_KEY, "Common Desktop", false);
+            if (commonDesktop == null) {
+                commonDesktop = allUsersRootPath + File.separator + "Desktop";
+            }
+            
+            return new File(commonDesktop, fileName);
+            
+        case CURRENT_USER_START_MENU:
+            String userStartMenu = registry.getStringValue(HKCU, SHELL_FOLDERS_KEY, "Programs", false);
+            if (userStartMenu == null) {
+                userStartMenu = SystemUtils.getUserHomeDirectory() + File.separator + "Start Menu" + File.separator + "Programs";
+            }
+            
+            return new File(userStartMenu, path + File.separator + fileName);
+            
+        case ALL_USERS_START_MENU:
+            String commonStartMenu = registry.getStringValue(HKLM, SHELL_FOLDERS_KEY, "Common Programs", false);
+            if (commonStartMenu == null) {
+                commonStartMenu = SystemUtils.getUserHomeDirectory() + File.separator + "Start Menu" + File.separator + "Programs";
+            }
+            
+            return new File(commonStartMenu, path + File.separator + fileName);
         }
         
         return null;
@@ -349,12 +349,12 @@ public class WindowsNativeUtils extends NativeUtils {
             
             if (cleanupParents) {
                 switch (locationType) {
-                    case CURRENT_USER_START_MENU:
-                    case ALL_USERS_START_MENU:
-                        FileUtils.deleteEmptyParents(shortcutFile);
-                        break;
-                    default:
-                        break;
+                case CURRENT_USER_START_MENU:
+                case ALL_USERS_START_MENU:
+                    FileUtils.deleteEmptyParents(shortcutFile);
+                    break;
+                default:
+                    break;
                 }
             }
         } catch (IOException e) {
@@ -363,7 +363,7 @@ public class WindowsNativeUtils extends NativeUtils {
     }
     
     public FilesList addComponentToSystemInstallManager(ApplicationDescriptor descriptor) throws NativeException {
-        FilesList list = new FilesList();
+        final FilesList list = new FilesList();
         LogManager.log("adding new Add or Remove Programs entry with id [" + descriptor.getUid() + "]");
         
         final String uid = getVacantUninstallUid(descriptor.getUid());
@@ -387,53 +387,41 @@ public class WindowsNativeUtils extends NativeUtils {
             registry.setStringValue(uninstallSection, key, INSTALL_LOCATION, descriptor.getInstallPath(), false);
         }
         
-        String [] execCommand;
-        try {
-            Launcher launcher = createUninstaller(descriptor, false, new Progress());
-            execCommand = launcher.getExecutionCommand();
-            list.add(launcher.getOutputFile());
-        }  catch (IOException ex) {
-            String exString = "Can`t create uninstaller";
-            LogManager.log(ErrorLevel.WARNING, exString);
-            LogManager.log(ErrorLevel.WARNING, ex);
-            throw new NativeException(exString, ex);
-        }
-        String modifyCommand = StringUtils.EMPTY_STRING;
-        for(String s : execCommand) {
-            modifyCommand += StringUtils.SPACE +
-                    (s.contains(StringUtils.SPACE) ? (StringUtils.QUOTE + s + StringUtils.QUOTE) : s);
-        }
-        modifyCommand = modifyCommand.trim();
-        
         if (descriptor.getModifyCommand() != null) {
-            LogManager.log("Set '" + NO_REPAIR + "' = [" + 1 + "]");
-            
-            registry.set32BitValue(uninstallSection, key, NO_REPAIR, 1);
-            
-            LogManager.log("Set '" + MODIFY_STRING + "' = [" + modifyCommand + "]");
-            
-            registry.setStringValue(uninstallSection, key, MODIFY_STRING, modifyCommand, false);
+            try {
+                final Launcher launcher = createUninstaller(descriptor, false, new Progress());
+                list.add(launcher.getOutputFile());
+                
+                LogManager.log("Set '" + NO_REPAIR + "' = [" + 1 + "]");
+                registry.set32BitValue(uninstallSection, key, NO_REPAIR, 1);
+                
+                final String command = 
+                        QUOTE + 
+                        asString(launcher.getExecutionCommand(), QUOTE + SPACE + QUOTE) + 
+                        QUOTE;
+                
+                LogManager.log("Set '" + MODIFY_STRING + "' = [" + command + "]");
+                registry.setStringValue(uninstallSection, key, MODIFY_STRING, command, false);
+            } catch (IOException e) {
+                throw new NativeException("Can`t create uninstaller", e);
+            }
         }
         
         if (descriptor.getUninstallCommand() != null) {
-            String uninstallString = modifyCommand;
-            for(String s : descriptor.getUninstallCommand()) {
-                boolean add = true;
-                for(String sm : descriptor.getModifyCommand()) {
-                    if(s.equals(sm)) {
-                        add = false;
-                        continue ;
-                    }
-                }
-                if(add) {
-                    uninstallString += StringUtils.SPACE +
-                            (s.contains(StringUtils.SPACE) ? (StringUtils.QUOTE + s + StringUtils.QUOTE) : s);
-                }
+            try {
+                final Launcher launcher = createUninstaller(descriptor, true, new Progress());
+                list.add(launcher.getOutputFile());
+                
+                final String command = 
+                        QUOTE + 
+                        asString(launcher.getExecutionCommand(), QUOTE + SPACE + QUOTE) + 
+                        QUOTE;
+                
+                LogManager.log("Set '" + UNINSTALL_STRING + "' = [" + command + "]");
+                registry.setStringValue(uninstallSection, key, UNINSTALL_STRING, command, false);
+            } catch (IOException e) {
+                throw new NativeException("Can`t create uninstaller", e);
             }
-            uninstallString = uninstallString.trim();
-            LogManager.log("Set '" + UNINSTALL_STRING + "' = [" + uninstallString + "]");
-            
-            registry.setStringValue(uninstallSection, key, UNINSTALL_STRING, uninstallString, false);
         }
         
         registry.setAdditionalValues(uninstallSection, key, descriptor.getParameters());
@@ -583,7 +571,7 @@ public class WindowsNativeUtils extends NativeUtils {
         return Arrays.asList(File.listRoots());
     }
     
-// windows-specific operations //////////////////////////////////////////////////
+    // windows-specific operations //////////////////////////////////////////////////
     public WindowsRegistry getWindowsRegistry() {
         return registry;
     }
@@ -611,7 +599,7 @@ public class WindowsNativeUtils extends NativeUtils {
         }
     }
     
-// private //////////////////////////////////////////////////////////////////////
+    // private //////////////////////////////////////////////////////////////////////
     private String getVacantUninstallUid(final String baseUid) throws NativeException {
         String vacantUid = baseUid;
         
@@ -1145,10 +1133,10 @@ public class WindowsNativeUtils extends NativeUtils {
         public WindowsProcessOnExitCleanerHandler(String cleanerDefaultFileName) {
             super(cleanerDefaultFileName);
         }
-        protected void writeCleaner(File cleanerFile) throws IOException {            
+        protected void writeCleaner(File cleanerFile) throws IOException {
             InputStream is = ResourceUtils.getResource(CLEANER_RESOURCE);
             FileUtils.writeFile(cleanerFile, is);
-            is.close();              
+            is.close();
         }
         
         protected void writeCleaningFileList(File listFile, List<String> files) throws IOException {
@@ -1190,7 +1178,7 @@ public class WindowsNativeUtils extends NativeUtils {
         props.setProperty(EXTENSION_VALUE_NAME + name + DOT + prop, value);
     }
     
-// native declarations //////////////////////////////////////////////////////////
+    // native declarations //////////////////////////////////////////////////////////
     private native boolean isCurrentUserAdmin0();
     
     private native long getFreeSpace0(String string);

@@ -148,7 +148,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         });
         componentsList.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(MouseEvent event) {
+            public void mouseReleased(MouseEvent event) {
                 int index = componentsList.locationToIndex(event.getPoint());
                 if (index != -1) {
                     final MouseEvent newEvent = new MouseEvent(
@@ -563,10 +563,8 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
                 Product product = (Product) registryNodes.get(index);
                 switch (product.getStatus()) {
                 case INSTALLED:
-                    product.setStatus(Status.TO_BE_UNINSTALLED);
                     break;
                 case TO_BE_UNINSTALLED:
-                    product.setStatus(Status.INSTALLED);
                     break;
                 case NOT_INSTALLED:
                     product.setStatus(Status.TO_BE_INSTALLED);
@@ -632,7 +630,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
             panel.setOpaque(false);
             panel.addMouseListener(new MouseAdapter() {
                 @Override
-                public void mouseClicked(MouseEvent event) {
+                public void mouseReleased(MouseEvent event) {
                     if (checkBox.isVisible() &&
                             checkBox.getBounds().contains(event.getPoint())) {
                         ComponentsListModel model =
@@ -704,11 +702,17 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
                 checkBox.setVisible(true);
                 checkBox.setToolTipText(tooltip);
                 
-                if ((product.getStatus() == Status.INSTALLED) ||
-                        (product.getStatus() == Status.TO_BE_INSTALLED)) {
+                if (product.getStatus() == Status.INSTALLED) {
+                    titleLabel.setText(titleLabel.getText() + " (Already Installed)");
+                    
                     checkBox.setSelected(true);
+                    checkBox.setEnabled(false);
+                } else if (product.getStatus() == Status.TO_BE_INSTALLED) {
+                    checkBox.setSelected(true);
+                    checkBox.setEnabled(true);
                 } else {
                     checkBox.setSelected(false);
+                    checkBox.setEnabled(true);
                 }
             } else if (value instanceof Group) {
                 final Group group = (Group) value;

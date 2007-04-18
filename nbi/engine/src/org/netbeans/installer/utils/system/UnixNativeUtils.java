@@ -384,17 +384,28 @@ public abstract class UnixNativeUtils extends NativeUtils {
     }
     
     public FilesList addComponentToSystemInstallManager(ApplicationDescriptor descriptor) throws NativeException {
-        FilesList list = new FilesList();
-        try {
-            Launcher launcher = createUninstaller(descriptor, true, new Progress());
-            correctFilesPermissions(launcher.getOutputFile());
-            list.add(launcher.getOutputFile());
-        }  catch (IOException ex) {
-            String exString = "Can`t create uninstaller";
-            LogManager.log(ErrorLevel.WARNING, exString);
-            LogManager.log(ErrorLevel.WARNING, ex);
-            throw new NativeException(exString, ex);
+        final FilesList list = new FilesList();
+        
+        if (descriptor.getModifyCommand() != null) {
+            try {
+                final Launcher launcher = createUninstaller(descriptor, false, new Progress());
+                correctFilesPermissions(launcher.getOutputFile());
+                list.add(launcher.getOutputFile());
+            } catch (IOException e) {
+                throw new NativeException("Can't create uninstaller", e);
+            }
         }
+        
+        if (descriptor.getUninstallCommand() != null) {
+            try {
+                final Launcher launcher = createUninstaller(descriptor, true, new Progress());
+                correctFilesPermissions(launcher.getOutputFile());
+                list.add(launcher.getOutputFile());
+            } catch (IOException e) {
+                throw new NativeException("Can't create uninstaller", e);
+            }
+        }
+        
         return list;
     }
     

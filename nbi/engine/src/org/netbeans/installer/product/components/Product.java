@@ -907,20 +907,29 @@ public final class Product extends RegistryNode {
         
         final String installLocation = getInstallationLocation().getAbsolutePath();
         
-        final String [] modifyCommand = new String [] {
+        final String[] modifyCommand = new String[] {
             "--target", uid, version.toString()};
         
-        final String [] uninstallCommand = new String [] {
+        final String[] uninstallCommand = new String[] {
             "--target", uid, version.toString(), "--force-uninstall"};
         
-        
-        return new ApplicationDescriptor(
-                key,
-                displayName,
-                icon,
-                installLocation,
-                uninstallCommand,
-                modifyCommand);
+        if (configurationLogic.allowModifyMode()) {
+            return new ApplicationDescriptor(
+                    key,
+                    displayName,
+                    icon,
+                    installLocation,
+                    uninstallCommand,
+                    modifyCommand);
+        } else {
+            return new ApplicationDescriptor(
+                    key,
+                    displayName,
+                    icon,
+                    installLocation,
+                    uninstallCommand,
+                    null);
+        }
     }
     
     // miscellanea //////////////////////////////////////////////////////////////////

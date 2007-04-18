@@ -791,7 +791,7 @@ public class Registry {
         
         queue.offer(registryRoot);
         while (queue.peek() != null) {
-            RegistryNode node = queue.poll();
+            final RegistryNode node = queue.poll();
             
             if (filter.accept(node)) {
                 matches.add(node);

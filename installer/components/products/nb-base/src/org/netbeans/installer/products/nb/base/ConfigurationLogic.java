@@ -25,17 +25,13 @@ import java.util.List;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.ProductConfigurationLogic;
 import org.netbeans.installer.product.components.Product;
-import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileProxy;
-import org.netbeans.installer.utils.LogManager;
-import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.applications.NetBeansUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.exceptions.UninstallationException;
-import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.FilesList;
 import org.netbeans.installer.utils.helper.Shortcut;
 import org.netbeans.installer.utils.helper.ShortcutLocationType;
@@ -264,6 +260,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     @Override
     public String getSystemDisplayName() {
         return getString("CL.system.display.name");
+    }
+    
+    @Override
+    public boolean allowModifyMode() {
+        return false;
     }
     
     @Override

@@ -24,11 +24,8 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.netbeans.installer.Installer;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.RegistryNode;
@@ -42,14 +39,12 @@ import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
-import org.netbeans.installer.utils.UiUtils;
+import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.NativeException;
-import org.netbeans.installer.utils.helper.NbiThread;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
-import org.netbeans.installer.wizard.components.WizardPanel;
 import org.netbeans.installer.wizard.components.panels.ErrorMessagePanel;
 import org.netbeans.installer.wizard.components.panels.ErrorMessagePanel.ErrorMessagePanelSwingUi;
 import org.netbeans.installer.wizard.components.panels.ErrorMessagePanel.ErrorMessagePanelUi;
@@ -150,6 +145,49 @@ public class NbWelcomePanel extends ErrorMessagePanel {
     @Override
     public boolean canExecuteBackward() {
         return canExecute();
+    }
+    
+    @Override
+    public void initialize() {
+        super.initialize();
+        
+        // we need to apply additional filters to the components tree - filter out
+        // the components which are not present in the bundled registry (if it is
+        // available of course)
+        try {
+            final Registry defaultRegistry = Registry.getInstance();
+            final Registry bundledRegistry = new Registry();
+            
+            final String bundledRegistryUri = System.getProperty(
+                    Registry.BUNDLED_PRODUCT_REGISTRY_URI_PROPERTY);
+            if (bundledRegistryUri != null) {
+                bundledRegistry.loadProductRegistry(bundledRegistryUri);
+            } else {
+                bundledRegistry.loadProductRegistry(
+                        Registry.DEFAULT_BUNDLED_PRODUCT_REGISTRY_URI);
+            }
+            
+            // if the bundled registry contains only one element - registry root, 
+            // this means that we're running without any bundle, hence not filtering 
+            // is required
+            if (bundledRegistry.getNodes().size() == 1) {
+                return;
+            }
+            
+            for (Product product: defaultRegistry.getProducts()) {
+                if (bundledRegistry.getProduct(
+                        product.getUid(), 
+                        product.getVersion()) == null) {
+                    product.setVisible(false);
+                    
+                    if (product.getStatus() == Status.TO_BE_INSTALLED) {
+                        product.setStatus(Status.NOT_INSTALLED);
+                    }
+                }
+            }
+        } catch (InitializationException e) {
+            ErrorManager.notifyError("Cannot load bundled registry", e);
+        }
     }
     
     public boolean isThereAnythingVisibleToInstall() {
@@ -412,6 +450,10 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         
         private void populateList(List<RegistryNode> list, RegistryNode parent) {
             for (RegistryNode node: parent.getChildren()) {
+                if (!node.isVisible()) {
+                    continue;
+                }
+                
                 if (node instanceof Product) {
                     if (!((Product) node).getPlatforms().contains(
                             SystemUtils.getCurrentPlatform())) {
@@ -585,6 +627,6 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.error.not.enough.space.to.extract"); // NOI18N
     
-    public static final long REQUIRED_SPACE_ADDITION = 
+    public static final long REQUIRED_SPACE_ADDITION =
             10L * 1024L * 1024L; // 10MB
 }
