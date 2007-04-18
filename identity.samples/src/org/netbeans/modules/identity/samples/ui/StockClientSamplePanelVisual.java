@@ -31,6 +31,6 @@ public class StockClientSamplePanelVisual extends SampleWizardPanelVisual{
     }
 
     protected String getDefaultProjectName() {
-        return "StockClient"; // NOI18N
+        return "StockQuoteClient"; // NOI18N
     }
 }

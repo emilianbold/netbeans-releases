@@ -32,8 +32,8 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                 <folder name="Identity">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.identity.samples.resources.Bundle"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/identity/samples/resources/category.html"/>
-                    <!-- Stock Client Sample -->
-                    <file name="StockClientSampleProject" url="StockClient.zip">
+                    <!-- StockQuoteClient Sample -->
+                    <file name="StockQuoteClientSampleProject" url="StockQuoteClient.zip">
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/identity/samples/resources/projectIcon.gif"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.identity.samples.resources.Bundle"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.identity.samples.ui.StockClientSampleWizardIterator.createIterator"/>
@@ -41,31 +41,31 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                         <attr name="template" boolvalue="true"/>
                     </file>
                     
-                    <!-- Stock Service Sample -->
-                    <file name="StockServerSampleProject" url="StockService.zip">
+                    <!-- StockQuoteService Sample -->
+                    <file name="StockQuoteServiceSampleProject" url="StockQuoteService.zip">
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/identity/samples/resources/projectIcon.gif"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.identity.samples.resources.Bundle"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.identity.samples.ui.StockServerSampleWizardIterator.createIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/identity/samples/resources/StockSampleDescription.html"/>
                         <attr name="template" boolvalue="true"/>
                     </file>
-                    <!-- Calendar Client Sample -->
+                    <!-- Calendar Client Sample 
                     <file name="CalendarClientSampleProject" url="CalendarClient.zip">
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/identity/samples/resources/projectIcon.gif"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.identity.samples.resources.Bundle"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.identity.samples.ui.CalendarClientSampleWizardIterator.createIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/identity/samples/resources/CalendarSampleDescription.html"/>
                         <attr name="template" boolvalue="true"/>
-                    </file>
+                    </file-->
                     
-                    <!-- Calendar Service Sample -->
+                    <!-- Calendar Service Sample 
                     <file name="CalendarServerSampleProject" url="CalendarService.zip">
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/identity/samples/resources/projectIcon.gif"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.identity.samples.resources.Bundle"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.identity.samples.ui.CalendarServerSampleWizardIterator.createIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/identity/samples/resources/CalendarSampleDescription.html"/>
                         <attr name="template" boolvalue="true"/>
-                    </file>
+                    </file-->
                 </folder>
             </folder>
         </folder>

@@ -37,6 +37,8 @@ public class SoaSampleProjectProperties {
     
     public static final String WEB_PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/web-project/3";   //NOI18N
     
+    public static final String EAR_PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2ee-earproject/2";    //NOI18N
+    
     public static final String APPSERVER_RT_REF = "file.reference.appserv-rt.jar"; // NOI18N
     
     public ArrayList privateProperties;

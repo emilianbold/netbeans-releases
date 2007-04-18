@@ -59,6 +59,7 @@ public class SampleWizardIterator  implements WizardDescriptor.InstantiatingIter
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
     public transient WizardDescriptor wiz;
+    private String projectConfigNamespace = SoaSampleProjectProperties.WEB_PROJECT_CONFIGURATION_NAMESPACE;
  
     public SampleWizardIterator() {}
         
@@ -82,6 +83,10 @@ public class SampleWizardIterator  implements WizardDescriptor.InstantiatingIter
         return myProject;
     }
     
+    public void setProjectConfigNamespace(String namespace) {
+        this.projectConfigNamespace = namespace;
+    }
+    
     public Set/*<FileObject>*/ instantiate() throws IOException {
         Set resultSet = new LinkedHashSet();
         File dirF = FileUtil.normalizeFile((File) wiz.getProperty(PROJDIR));
@@ -99,9 +104,8 @@ public class SampleWizardIterator  implements WizardDescriptor.InstantiatingIter
         
         SoaSampleUtils.unZipFile(template.getInputStream(), dir);
         
-        SoaSampleUtils.setProjectName(dir, 
-                SoaSampleProjectProperties.WEB_PROJECT_CONFIGURATION_NAMESPACE, name);
-        
+        SoaSampleUtils.setProjectName(dir, projectConfigNamespace, name);
+ 
         Project p = ProjectManager.getDefault().findProject(dir);
         myProject = p;
         

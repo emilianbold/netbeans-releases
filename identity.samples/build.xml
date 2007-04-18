@@ -42,8 +42,6 @@
     -->
     <target name="jar" depends="zip-identity-stock-client,
                                 zip-identity-stock-server,
-                                zip-identity-calendar-client,
-                                zip-identity-calendar-server,
                                 projectized-common.jar"/>
 
     <!-- initialize necessary properties for Identity sample targets-->
@@ -55,19 +53,19 @@
 
     <!-- Target for Stock Client sample -->
     <target name="zip-identity-stock-client" depends="init-zip-samples">
-        <property name="identity.samples.stockclient" value="src/${identity.samples}/StockClient"/>
-        <zip destfile="${identity.samples.resources}/StockClient.zip"
+        <property name="identity.samples.stockclient" value="src/${identity.samples}/JavaOneHOL/StockQuoteClient"/>
+        <zip destfile="${identity.samples.resources}/StockQuoteClient.zip"
             update="true">
-        <zipfileset dir="StockClient"/>
+        <zipfileset dir="JavaOneHOL/StockQuoteClient"/>
         </zip>
     </target>
     
     <!-- Target for Stock Service sample -->
     <target name="zip-identity-stock-server" depends="init-zip-samples">
-        <property name="identity.samples.stockserver" value="src/${identity.samples}/StockService"/>
-        <zip destfile="${identity.samples.resources}/StockService.zip"
+        <property name="identity.samples.stockserver" value="src/${identity.samples}/JavaOneHOL/StockQuoteService"/>
+        <zip destfile="${identity.samples.resources}/StockQuoteService.zip"
             update="true">
-        <zipfileset dir="StockService"/>
+        <zipfileset dir="JavaOneHOL/StockQuoteService"/>
         </zip>
     </target>
 

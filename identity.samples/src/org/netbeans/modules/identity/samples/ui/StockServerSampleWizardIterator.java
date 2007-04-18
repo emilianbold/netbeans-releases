@@ -22,6 +22,7 @@ package org.netbeans.modules.identity.samples.ui;
 import java.io.File;
 import java.io.IOException;
 import java.util.Set;
+import org.netbeans.modules.identity.samples.util.SoaSampleProjectProperties;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -56,7 +57,9 @@ public class StockServerSampleWizardIterator extends SampleWizardIterator {
     }
     
     public Set instantiate() throws IOException {
+        setProjectConfigNamespace(SoaSampleProjectProperties.EAR_PROJECT_CONFIGURATION_NAMESPACE);
         Set resultSet = super.instantiate();
+        
         FileObject dirParent = null;
         
         if( getProject()!= null && getProject().getProjectDirectory()!=null)
