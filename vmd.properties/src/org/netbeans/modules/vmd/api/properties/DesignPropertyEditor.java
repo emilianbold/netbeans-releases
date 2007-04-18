@@ -62,8 +62,8 @@ public abstract class DesignPropertyEditor extends PropertyEditorSupport impleme
      * that a editor should allow the user to type their own text into the combo box.
      * @return the state of property in-place editor in the advanced property sheet
      */
-    public boolean canEditAsText() {
-        return true;
+    public Boolean canEditAsText() {
+        return Boolean.TRUE;
     }
     /**
      * Test whether the property is writable.
@@ -183,6 +183,7 @@ public abstract class DesignPropertyEditor extends PropertyEditorSupport impleme
         this.component = component;
         this.propertyNames = propertyNames;
         this.tempValue = value;
+        super.setValue(value);
         this.propertySupport = propertySupport;
         this.inplaceEditor = inplaceEditor;
         this.propertyDisplayName = propertyDisplayName;

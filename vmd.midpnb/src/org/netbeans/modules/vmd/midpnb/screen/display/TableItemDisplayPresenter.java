@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.vmd.midpnb.screen.display;
 
-import com.sun.corba.se.spi.orb.StringPair;
 import java.awt.BasicStroke;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -27,25 +26,19 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyEditor;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
-import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
-import org.netbeans.modules.vmd.midp.components.items.ItemCD;
 import org.netbeans.modules.vmd.midp.screen.display.ItemDisplayPresenter;
 import org.netbeans.modules.vmd.midp.screen.display.ScreenSupport;
 import org.netbeans.modules.vmd.midp.screen.display.property.ResourcePropertyEditor;
-import org.netbeans.modules.vmd.midp.screen.display.property.ScreenStringPropertyEditor;
 import org.netbeans.modules.vmd.midpnb.components.items.TableItemCD;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleTableModelCD;
 

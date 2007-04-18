@@ -29,11 +29,11 @@ import org.netbeans.modules.vmd.api.properties.GroupValue;
  * @author Karol Harezlak
  */
 public final class AdvancedPropertySupport extends DefaultPropertySupport {
-
+    
     private DesignPropertyDescriptor designerPropertyDescriptor;
     private String displayName;
     private GroupValue value;
-
+    
     public AdvancedPropertySupport(final DesignPropertyDescriptor designerPropertyDescriptor, Class type) {
         super(designerPropertyDescriptor, type);
         
@@ -47,13 +47,13 @@ public final class AdvancedPropertySupport extends DefaultPropertySupport {
         
         if (getPropertyEditor() instanceof DesignPropertyEditor) {
             ((DesignPropertyEditor)getPropertyEditor()).resolve(
-                designerPropertyDescriptor.getComponent(),
-                designerPropertyDescriptor.getPropertyNames(),
-                this.value,
-                this,
-                ((DesignPropertyEditor) getPropertyEditor()).getInplaceEditor(),
-                designerPropertyDescriptor.getPropertyDisplayName()
-                );
+                    designerPropertyDescriptor.getComponent(),
+                    designerPropertyDescriptor.getPropertyNames(),
+                    this.value,
+                    this,
+                    ((DesignPropertyEditor) getPropertyEditor()).getInplaceEditor(),
+                    designerPropertyDescriptor.getPropertyDisplayName()
+                    );
         }
         if (getPropertyEditor() instanceof DesignPropertyEditor) {
             String title = ((DesignPropertyEditor) getPropertyEditor()).getCustomEditorTitle();
@@ -67,6 +67,11 @@ public final class AdvancedPropertySupport extends DefaultPropertySupport {
     }
     
     public void setValue(final Object value) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        if (getPropertyEditor() instanceof DesignPropertyEditor) {
+            DesignPropertyEditor propertyEditor = (DesignPropertyEditor) getPropertyEditor();
+            if (propertyEditor.canEditAsText() != null)
+                setValue("canEditAsText", propertyEditor.canEditAsText());
+        }
         if (value instanceof GroupValue) {
             this.value = (GroupValue) value;
             if (getPropertyEditor() instanceof DesignPropertyEditor)

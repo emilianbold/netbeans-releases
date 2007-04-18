@@ -84,8 +84,8 @@ public final class PropertiesSupport {
                     else {
                         throw new IllegalArgumentException();
                     }
-                    if (propertyEditor != null && (! propertyEditor.canEditAsText()) )
-                        property.setValue("canEditAsText", false);
+                    if (propertyEditor != null &&  propertyEditor.canEditAsText() != null) 
+                        property.setValue("canEditAsText", propertyEditor.canEditAsText());
                     property.setValue("changeImmediate", false); // NOI18
                     sheet.get(designerPropertyDescriptor.getPropertyCategory()).put(property);
                 }

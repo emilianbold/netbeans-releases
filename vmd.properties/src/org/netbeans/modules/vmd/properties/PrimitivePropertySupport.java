@@ -30,7 +30,7 @@ import org.netbeans.modules.vmd.api.properties.DesignPropertyDescriptor;
  * @author Karol Harezlak
  */
 public final class PrimitivePropertySupport extends DefaultPropertySupport {
-
+    
     private DesignPropertyDescriptor designerPropertyDescriptor;
     private String displayName;
     private Object value;
@@ -41,21 +41,21 @@ public final class PrimitivePropertySupport extends DefaultPropertySupport {
         this.designerPropertyDescriptor = designerPropertyDescriptor;
         if (designerPropertyDescriptor.getPropertyNames() !=null &&! designerPropertyDescriptor.getPropertyNames().isEmpty()) {
             if (designerPropertyDescriptor.getPropertyEditorType().equals(Boolean.class) ||
-                designerPropertyDescriptor.getPropertyEditorType().equals(Integer.class)) {
-                this.value = readPropertyValue(designerPropertyDescriptor.getComponent(), designerPropertyDescriptor.getPropertyNames().iterator().next()).getPrimitiveValue ();
+                    designerPropertyDescriptor.getPropertyEditorType().equals(Integer.class)) {
+                this.value = readPropertyValue(designerPropertyDescriptor.getComponent(), designerPropertyDescriptor.getPropertyNames().iterator().next()).getPrimitiveValue();
             } else
                 this.value = readPropertyValue(designerPropertyDescriptor.getComponent(), designerPropertyDescriptor.getPropertyNames().iterator().next());
         }
         
         if (getPropertyEditor() instanceof DesignPropertyEditor) {
             ((DesignPropertyEditor)getPropertyEditor()).resolve(
-                designerPropertyDescriptor.getComponent(),
-                designerPropertyDescriptor.getPropertyNames(),
-                this.value,
-                this,
-                ((DesignPropertyEditor) getPropertyEditor()).getInplaceEditor(),
-                designerPropertyDescriptor.getPropertyDisplayName()
-                );
+                    designerPropertyDescriptor.getComponent(),
+                    designerPropertyDescriptor.getPropertyNames(),
+                    this.value,
+                    this,
+                    ((DesignPropertyEditor) getPropertyEditor()).getInplaceEditor(),
+                    designerPropertyDescriptor.getPropertyDisplayName()
+                    );
         }
         if (getPropertyEditor() instanceof DesignPropertyEditor) {
             String title = ((DesignPropertyEditor) getPropertyEditor()).getCustomEditorTitle();
@@ -69,6 +69,11 @@ public final class PrimitivePropertySupport extends DefaultPropertySupport {
     }
     
     public void setValue(final Object value) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        if (getPropertyEditor() instanceof DesignPropertyEditor) {
+            DesignPropertyEditor propertyEditor = (DesignPropertyEditor) getPropertyEditor();
+            if (propertyEditor.canEditAsText() != null)
+                setValue("canEditAsText", propertyEditor.canEditAsText());
+        }
         String propertyName = designerPropertyDescriptor.getPropertyNames().iterator().next();
         final GroupValue tempValue = new GroupValue(Collections.singletonList(propertyName));
         tempValue.putValue(propertyName, value);

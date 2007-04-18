@@ -164,7 +164,7 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
         }
     }
     
-    public boolean canEditAsText() {
+    public Boolean canEditAsText() {
         if (!isCurrentValueAUserCodeType()) {
             PropertyValue value = (PropertyValue) super.getValue();
             if (value == null) {

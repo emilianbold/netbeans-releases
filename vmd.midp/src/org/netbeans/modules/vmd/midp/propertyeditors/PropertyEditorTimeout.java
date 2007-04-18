@@ -145,7 +145,7 @@ public final class PropertyEditorTimeout extends PropertyEditorUserCode implemen
         }
     }
     
-    public boolean canEditAsText() {
+    public Boolean canEditAsText() {
         if (!isCurrentValueAUserCodeType()) {
             PropertyValue value = (PropertyValue) super.getValue();
             if (value == null) {

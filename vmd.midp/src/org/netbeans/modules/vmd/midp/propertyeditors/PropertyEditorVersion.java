@@ -60,7 +60,7 @@ public class PropertyEditorVersion extends DesignPropertyEditor {
         return false;
     }
     
-    public boolean canEditAsText() {
+    public Boolean canEditAsText() {
         return false;
     }
     

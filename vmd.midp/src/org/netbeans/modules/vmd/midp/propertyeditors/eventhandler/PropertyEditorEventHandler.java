@@ -112,7 +112,7 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
         return customEditor;
     }
     
-    public boolean canEditAsText() {
+    public Boolean canEditAsText() {
         return false;
     }
     

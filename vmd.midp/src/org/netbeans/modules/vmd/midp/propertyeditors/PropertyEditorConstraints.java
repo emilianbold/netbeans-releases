@@ -124,7 +124,7 @@ public class PropertyEditorConstraints extends PropertyEditorUserCode implements
         }
     }
     
-    public boolean canEditAsText() {
+    public Boolean canEditAsText() {
         return false;
     }
     

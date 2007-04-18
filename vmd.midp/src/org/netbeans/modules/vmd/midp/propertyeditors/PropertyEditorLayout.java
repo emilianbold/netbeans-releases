@@ -124,7 +124,7 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
         }
     }
     
-    public boolean canEditAsText() {
+    public Boolean canEditAsText() {
         return false;
     }
     

@@ -87,7 +87,7 @@ public class PropertyEditorArrayInteger extends GroupPropertyEditor implements E
         return text;
     }
     
-   public boolean canEditAsText() {
+   public Boolean canEditAsText() {
         return true;
    }
     
