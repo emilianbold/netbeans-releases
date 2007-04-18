@@ -571,8 +571,29 @@ public class ComplibServiceProvider implements ComplibService {
                     Set<ExtensionComplib> projectComplibs = scope.getComplibs();
                     ensureProjectComplibsAreInstalled(projectComplibs);
 
-                    // Init library defs and refs for each complib
+                    // Init library refs for each complib
                     for (ExtensionComplib projectComplib : projectComplibs) {
+
+                        /*
+                         * For migration to NB 6. Attempt to clean up any
+                         * legacy, pre-NB6 Library Defs and Refs.
+                         */
+                        try {
+                            removeLegacyLibraryRefsAndDef(project,
+                                    projectComplib);
+                        } catch (IOException e) {
+                            IdeUtil
+                                    .logWarning(
+                                            "Unable to remove legacy library reference and definition. Use Project Properties to remove manually",
+                                            e);
+                        }
+
+                        /*
+                         * Add Lib Ref if needed. Defs are created at install
+                         * time.
+                         * 
+                         * @since NB 6.
+                         */
                         ExtensionComplib userComplib = userScope
                                 .getExistingComplib(projectComplib);
                         if (userComplib != null) {
@@ -580,7 +601,9 @@ public class ComplibServiceProvider implements ComplibService {
                         }
                     }
                 } catch (IOException e) {
-                    IdeUtil.logError(e);
+                    IdeUtil.logError(
+                            "Unable to initialize component libraries for project: "
+                                    + project.getProjectDirectory(), e);
                 }
             }
         }
@@ -638,6 +661,43 @@ public class ComplibServiceProvider implements ComplibService {
     }
 
     /**
+     * Remove existing Library Refs and Library Def to an embedded complib for a
+     * particular project.
+     * 
+     * @param project
+     * @param projectComplib
+     *            complib within project
+     * @throws IOException
+     */
+    /**
+     * @param project
+     * @param projectComplib
+     * @throws IOException
+     */
+    private void removeLegacyLibraryRefsAndDef(Project project,
+        ExtensionComplib projectComplib) throws IOException {
+        // Compute legacy Lib Def name
+        String projectName = project.getProjectDirectory().getName();
+        String libName = IdeUtil.removeWhiteSpace(projectName + "_"
+                + projectComplib.getDirectoryBaseName());
+
+        Library libDef = LibraryManager.getDefault().getLibrary(libName);
+        if (libDef != null) {
+            // Existing definition so first remove any existing references
+            if (JsfProjectUtils.hasLibraryReference(project, libDef)) {
+                JsfProjectUtils.removeLibraryReferences(project,
+                        new Library[] { libDef });
+            }
+
+            // Remove the Lib Def
+            JsfProjectUtils.removeLibrary(libName);
+
+            // Cleanup bundle
+            LibraryLocalizationBundle.remove(libName);
+        }
+    }
+
+    /**
      * ResourceBundle used to localize NetBeans libraries. Note this must be
      * public so that NetBeans can access it.
      */
@@ -661,7 +721,7 @@ public class ComplibServiceProvider implements ComplibService {
     }
 
     /**
-     * Add a Library Ref to a user scoped complib for a project.
+     * Add a Library Ref to a user scoped complib for a project, if needed.
      * 
      * @param project
      * @param userComplib
@@ -673,6 +733,7 @@ public class ComplibServiceProvider implements ComplibService {
         Library libDef = LibraryManager.getDefault().getLibrary(libName);
         if (libDef == null) {
             // assert false;
+            // Library Defs are created at install time. @since NB 6.
             IdeUtil
                     .logError("Cannot add Library Ref, unable to find Library Definition: "
                             + libName);
