@@ -77,12 +77,14 @@ public class J2EEProjectWorkflow extends org.netbeans.performance.test.utilities
         j2eeproject_ejb = j2eeproject + "-ejb";
         j2eeproject_war = j2eeproject + "-war";
         j2eeproject_app = j2eeproject + "-app-client";
-        EPFootprintUtilities.openFile(new Node(new ProjectsTabOperator().getProjectRootNode(j2eeproject_war), EPFootprintUtilities.WEB_PAGES + "|index.jsp"),"index.jsp", true);
-        EPFootprintUtilities.insertToFile("index.jsp", 23, "Hello World", true);
+        
+// TODO temporary disabled - no index.jsp is created in War project        
+//        EPFootprintUtilities.openFile(new Node(new ProjectsTabOperator().getProjectRootNode(j2eeproject_war), EPFootprintUtilities.WEB_PAGES + "|index.jsp"),"index.jsp", true);
+//        EPFootprintUtilities.insertToFile("index.jsp", 23, "Hello World", true);
         
         new OpenAction().perform(new Node(new ProjectsTabOperator().getProjectRootNode(j2eeproject_war), "Configuration Files|sun-web.xml")); // NOI18N
         TopComponentOperator xmlEditor = new TopComponentOperator("sun-web.xml");
-        new JButtonOperator(xmlEditor, "New...", 0).push();
+        new JButtonOperator(xmlEditor, "New...", 0).push(); //NOI18N
         
         NbDialogOperator dialog = new NbDialogOperator("JSP Configuration Property"); // NOI18N
         JComboBoxOperator combo = new JComboBoxOperator(dialog, 0);
