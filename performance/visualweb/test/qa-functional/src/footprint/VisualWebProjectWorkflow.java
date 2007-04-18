@@ -33,7 +33,7 @@ import org.netbeans.junit.ide.ProjectSupport;
  *
  * @author mkhramov@netbeans.org, mmirilovic@netbeans.org
  */
-public class VisualWebProjectWorkflow extends MemoryFootprintTestCase {
+public class VisualWebProjectWorkflow extends org.netbeans.performance.test.utilities.MemoryFootprintTestCase {
     
     private String webproject;
     

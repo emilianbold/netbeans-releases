@@ -93,54 +93,6 @@ Microsystems, Inc. All Rights Reserved.
         <antcall target="copy_original_ide_cfg_file"/>
     </target>
     
-    <!-- Executor for Measure Startup Time with empty userdir -->
-    <target name="runcodetest_measure_startup" depends="make_netbeans_executable,check-appserver">
-        <!-- copy xsl transformator file for ActionTracker log into appropriate directory -->
-        <copy file="${nball.dir}/performance/performancetestutilities/dist/ActionTracker.xsl" tofile="${xtest.results.testrun.dir}/ActionTracker.xsl" />
-        
-        <antcall target="copy_released_ide_cfg_file"/>
-        <executeTests pluginName="jvm">
-            <property name="xtest.userdata|netbeans.dest.dir" value="${netbeans.dest.dir}"/>
-            <property name="xtest.userdata|performance.testutilities.dist.jar" value="${performance.testutilities.dist.jar}"/>
-            <property name="xtest.userdata|xtest.perf.commandline.suffix" value="${xtest.perf.commandline.suffix}"/>
-            <property name="xtest.userdata|com.sun.aas.installRoot" value="${j2ee.appserver.path}"/>
-            
-            <property name="xtest.enable.assertions" value="false" /> 
-            
-            <!-- Property for repeatedly used New Userdirs and Userdirs used on old Userdirs -->
-            <property name="xtest.userdata|org.netbeans.performance.repeat.with.new.userdir" value="5"/>
-            <property name="xtest.userdata|org.netbeans.performance.repeat" value="4"/>
-            
-        </executeTests>
-        <antcall target="copy_original_ide_cfg_file"/>
-    </target>
-    
-    <!-- Executor for Measure Complex Startup Time -->
-    <target name="runcodetest_measure_complex_startup" depends="make_netbeans_executable">
-        <!-- copy xsl transformator file for ActionTracker log into appropriate directory -->
-        <copy file="${nball.dir}/performance/performancetestutilities/dist/ActionTracker.xsl" tofile="${xtest.results.testrun.dir}/ActionTracker.xsl" />
-        
-        <antcall target="copy_released_ide_cfg_file"/>
-        <executeTests pluginName="jvm">
-            <property name="xtest.enable.assertions" value="false" /> 
-            <property name="xtest.ide.reuse.userdir" value="true"/>
-            <property name="xtest.userdata|netbeans.dest.dir" value="${netbeans.dest.dir}"/>
-            <property name="xtest.userdata|userdir.prepared" value="${xtest.workdir}"/>
-            <property name="xtest.userdata|performance.testutilities.dist.jar" value="${performance.testutilities.dist.jar}"/>
-            <property name="xtest.userdata|xtest.perf.commandline.suffix" value="${xtest.perf.commandline.suffix}"/>
-            
-            <!-- Property for repeatedly used userdir with opened files -->
-            <property name="xtest.userdata|org.netbeans.performance.repeat" value="5"/>
-
-        </executeTests>
-        
-        <copy todir="${xtest.sketchpad}">
-            <fileset dir="${xtest.workdir}/sys/ide/var/log"/>
-        </copy>
-        
-        <antcall target="copy_original_ide_cfg_file"/>
-    </target>
-    
     <!-- Executor for Measure Complex Web Project Startup Time -->
     <target name="runcodetest_measure_complex_startup_web_project" depends="make_netbeans_executable">
         <!-- copy xsl transformator file for ActionTracker log into appropriate directory -->
@@ -148,6 +100,10 @@ Microsystems, Inc. All Rights Reserved.
         
         <antcall target="copy_released_ide_cfg_file"/>
         <executeTests pluginName="jvm">
+            <classpath>
+                <path location="${performance.testutilities.dist.jar}"/>
+            </classpath>
+            
             <property name="xtest.enable.assertions" value="false" /> 
             <property name="xtest.ide.reuse.userdir" value="true"/>
             <property name="xtest.userdata|netbeans.dest.dir" value="${netbeans.dest.dir}"/>
@@ -168,23 +124,6 @@ Microsystems, Inc. All Rights Reserved.
         <antcall target="copy_original_ide_cfg_file"/>
     </target>
 
-    <!-- Executor for Measure Warm Up -->
-    <target name="runcodetest_measure_warmup" depends="make_netbeans_executable">
-        <antcall target="copy_released_ide_cfg_file"/>
-        <executeTests pluginName="jvm">
-            <property name="xtest.userdata|netbeans.dest.dir" value="${netbeans.dest.dir}"/>
-            <property name="xtest.userdata|performance.testutilities.dist.jar" value="${performance.testutilities.dist.jar}"/>
-            <property name="xtest.userdata|xtest.perf.commandline.suffix" value="${xtest.perf.commandline.suffix}"/>
-            
-            <property name="xtest.enable.assertions" value="false" /> 
-            
-            <!-- Property for repeatedly used New Userdirs and Userdirs used on old Userdirs -->
-            <property name="xtest.userdata|org.netbeans.performance.repeat" value="1"/>
-            
-        </executeTests>
-        <antcall target="copy_original_ide_cfg_file"/>
-    </target>
-    
     <!-- ========= -->
     <!-- Utils     -->
     <!-- ========= -->

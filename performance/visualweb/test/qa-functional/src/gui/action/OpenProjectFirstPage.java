@@ -20,8 +20,8 @@
 package gui.action;
 
 import gui.window.WebFormDesignerOperator;
-import org.netbeans.jellytools.EditorOperator;
 
+import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 

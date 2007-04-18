@@ -36,7 +36,7 @@ import org.netbeans.jemmy.operators.JComboBoxOperator;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class J2EEProjectWorkflow extends MemoryFootprintTestCase {
+public class J2EEProjectWorkflow extends org.netbeans.performance.test.utilities.MemoryFootprintTestCase {
     
     private String j2eeproject, j2eeproject_ejb, j2eeproject_war, j2eeproject_app;
     

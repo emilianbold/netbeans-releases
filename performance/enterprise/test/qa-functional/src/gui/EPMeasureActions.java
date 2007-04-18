@@ -52,12 +52,12 @@ public class EPMeasureActions  {
         suite.addTest(new SchemaNavigatorSchemaView("measureTime", "Schema Navigator Schema View"));
         suite.addTest(new NavigatorSchemaViewMode("measureTime","Schema Navigator Schema View mode"));
         
-        suite.addTest(new ValidateSchema("measureTime","Validate Schema" ));
-//TODO there is an password dialog solve before enable to run again        suite.addTest(new DeployProject("measureTime","Deploy Project" ));
-         suite.addTest(new OpenComplexDiagram("measureTime","OpenComplexDiagram" ));         
-//TODO this opens project that is already opened, need to create another testing project         suite.addTest(new OpenBPELproject("measureTime","OpenBPELproject" ));
+        suite.addTest(new ValidateSchema("measureTime","Validate Schema"));
+//TODO there is an password dialog solve before enable to run again        suite.addTest(new DeployProject("measureTime","Deploy Project"));
+         suite.addTest(new OpenComplexDiagram("measureTime","Open Complex Diagram"));         
+         suite.addTest(new OpenBPELproject("measureTime","OpenBPELproject"));
 
-        suite.addTest(new StartAppserver("measureTime","Start Appserver" ));
+        suite.addTest(new StartAppserver("measureTime","Start Appserver"));
         return suite;
     }
     

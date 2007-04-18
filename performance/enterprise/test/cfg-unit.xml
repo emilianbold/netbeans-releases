@@ -23,46 +23,25 @@
 <mconfig name="Performance unit tests config">
 
 
-    <testbag testattribs="all or startup" prio="1" executor="execute_startup" name="IDE startup time">
+    <testbag testattribs="all or startup or complex_startup" prio="1" executor="prepare_ide" name="Prepare IDE for complex startup time measurement">
 	<testset dir="unit/src">
 	    <patternset>
-		<include name="startup/MeasureIDEStartupTime.class/testStartIDE"/>
-	    </patternset>
-	</testset>
-    </testbag>
-
-    <testbag testattribs="all or startup or complex_startup" prio="10" executor="prepare_ide" name="Prepare IDE for complex startup time measurement">
-	<testset dir="unit/src">
-	    <patternset>
-		<include name="prepare/PrepareIDEForComplexMeasurements.class"/>
+		<include name="prepare/PrepareIDEForEnterpriseComplexMeasurements.class"/>
 	    </patternset>
 	</testset>
     </testbag>
     
-    <testbag testattribs="all or startup or complex_startup" prio="11" executor="execute_complex_startup" name="IDE complex startup time">
+    <testbag testattribs="all or startup or complex_startup" prio="2" executor="execute_complex_startup" name="IDE complex startup time">
 	<testset dir="unit/src">
 	    <patternset>
-		<include name="startup/MeasureIDEStartupTime.class/testStartIDEWithOpenedFiles"/>
+		<include name="startup/ComplexEnterpriseProjectStartup.class"/>
 	    </patternset>
 	</testset>
     </testbag>
 
-    <testbag testattribs="all or warmup" prio="30" executor="execute_warmup" name="Warm Up">
-	<testset dir="unit/src">
-	    <patternset>
-		<include name="startup/MeasureWarmUp.class/testWarmUp"/>		
-	    </patternset>
-	</testset>
-    </testbag>
-
-<!-- Executors for Startup and Warmup testing -->
-    
+<!-- Executors for Startup testing -->
     <executor name="prepare_ide" antfile="build-unit.xml" target="prepare_ide_for_complex_measurements"/>
-    
-    <executor name="execute_startup" antfile="build-unit.xml" target="runcodetest_measure_startup"/>
     <executor name="execute_complex_startup" antfile="build-unit.xml" target="runcodetest_measure_complex_startup"/>
-    
-    <executor name="execute_warmup" antfile="build-unit.xml" target="runcodetest_measure_warmup"/>
     
     <compiler name="unit-compiler" antfile="build-unit.xml" target="unit-compiler" default="true"/>
     

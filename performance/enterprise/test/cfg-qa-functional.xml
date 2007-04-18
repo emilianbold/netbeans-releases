@@ -23,11 +23,11 @@
 <mconfig name="enterprise pack qa-performance test config">
 
     <!-- testbag common for all suites to setup usedir -->
-    <testbag testattribs="all or menus or dialogs or actions or setup or editor_related or java_related or apisupport_related or temp" prio="1"
+    <testbag testattribs="all or menus or dialogs or actions" prio="1"
              executor="ide_perf_setup" name="UI responsiveness - setup">
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="gui/MeasuringSetup.class"/>
+                <include name="gui/EPMeasuringSetup.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -37,15 +37,15 @@
              executor="ide_performance" name="UI responsiveness - Actions" >
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="gui/MeasureActions.class"/>
+                <include name="gui/EPMeasureActions.class"/>
             </patternset>
         </testset>
     </testbag>
-    <testbag testattribs="all or dialogs" prio="3"
+<!-- no enteprise specific menus/dialogs tests so far    <testbag testattribs="all or dialogs" prio="3"
              executor="ide_performance" name="UI responsiveness - Dialogs" >
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="gui/MeasureDialogs.class"/>
+                <include name="gui/EPMeasureDialogs.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -53,25 +53,25 @@
              executor="ide_performance" name="UI responsiveness - Menus" >
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="gui/MeasureMenus.class"/>
+                <include name="gui/EPMeasureMenus.class"/>
             </patternset>
         </testset>
     </testbag>
-    
+-->    
     <!-- 2nd round -->    
     <testbag testattribs="(all or actions) and NOT once" prio="5"
              executor="ide_performance" name="UI responsiveness - Actions" >
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="gui/MeasureActions.class"/>
+                <include name="gui/EPMeasureActions.class"/>
             </patternset>
         </testset>
     </testbag>
-    <testbag testattribs="(all or dialogs) and NOT once" prio="6"
+<!-- no enteprise specific menus/dialogs tests so far     <testbag testattribs="(all or dialogs) and NOT once" prio="6"
              executor="ide_performance" name="UI responsiveness - Dialogs" >
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="gui/MeasureDialogs.class"/>
+                <include name="gui/EPMeasureDialogs.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -79,25 +79,25 @@
              executor="ide_performance" name="UI responsiveness - Menus" >
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="gui/MeasureMenus.class"/>
+                <include name="gui/EPMeasureMenus.class"/>
             </patternset>
         </testset>
     </testbag>
-    
+-->        
     <!-- 3rd round -->    
     <testbag testattribs="(all or actions) and NOT once" prio="8"
              executor="ide_performance" name="UI responsiveness - Actions" >
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="gui/MeasureActions.class"/>
+                <include name="gui/EPMeasureActions.class"/>
             </patternset>
         </testset>
     </testbag>
-    <testbag testattribs="(all or dialogs) and NOT once" prio="9"
+<!-- no enteprise specific menus/dialogs tests so far     <testbag testattribs="(all or dialogs) and NOT once" prio="9"
              executor="ide_performance" name="UI responsiveness - Dialogs" >
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="gui/MeasureDialogs.class"/>
+                <include name="gui/EPMeasureDialogs.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -105,7 +105,7 @@
              executor="ide_performance" name="UI responsiveness - Menus" >
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="gui/MeasureMenus.class"/>
+                <include name="gui/EPMeasureMenus.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -115,131 +115,38 @@
              executor="ide_performance_scan" name="Classpath Scan" >
         <testset dir="qa-functional/src">
             <patternset>
-                
-                <include name="gui/scanclasspath/EntScanClasspath.class"/>
+                <include name="gui/scanclasspath/EPScanClasspath.class"/>
             </patternset>
         </testset>
     </testbag>
-   
-    <!-- Temp -->    
-    <testbag testattribs="temp" prio="100"
-             executor="ide_performance" name="Temp" >
-	<testset dir="qa-functional/src">
-	    <patternset>
-		<include name="gui/MeasureTemp.class"/>
-	    </patternset>
-	</testset>
-    </testbag>
 
+    
 <!-- Memory Footprint Testbags -->
-    <!-- Out Of The Box -->
-    <testbag testattribs="footprint_all or out_of_the_box_startup" prio="300"
-             executor="ide_footprint" name="Footprint - Out Of The Box Startup" >
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="footprint/EPFootprintTests.class/testOutOfTheBoxStartup"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="(footprint_all or out_of_the_box_startup) and NOT once" prio="301"
-             executor="ide_footprint" name="Footprint - Out Of The Box Startup" >
-        <testset dir="footprint/src">
-            <patternset>
-                <include name="footprint/EPFootprintTests.class/testOutOfTheBoxStartup"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="(footprint_all or out_of_the_box_startup) and NOT once" prio="302"
-             executor="ide_footprint" name="Footprint - Out Of The Box Startup" >
-        <testset dir="footprint/src">
-            <patternset>
-                <include name="footprint/EPFootprintTests.class/testOutOfTheBoxStartup"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <!-- J2SE Project workflow -->
-    <testbag testattribs="footprint_all or j2se_project" prio="310"
-             executor="ide_footprint" name="Footprint - J2SE project workflow" >
-        <testset dir="footprint/src">
-            <patternset>
-                <include name="footprint/EPFootprintTests.class/testJ2SEProjectWorkflow"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="(footprint_all or j2se_project) and NOT once" prio="311"
-             executor="ide_footprint" name="Footprint - J2SE project workflow" >
-        <testset dir="footprint/src">
-            <patternset>
-                <include name="footprint/EPFootprintTests.class/testJ2SEProjectWorkflow"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="(footprint_all or j2se_project) and NOT once" prio="312"
-             executor="ide_footprint" name="Footprint - J2SE project workflow" >
-        <testset dir="footprint/src">
-            <patternset>
-                <include name="footprint/EPFootprintTests.class/testJ2SEProjectWorkflow"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <!-- Web Project workflow -->
-<!-- TODO no tomcat - see issue 101104                 <testbag testattribs="footprint_all or web_project" prio="320"
-             executor="ide_footprint" name="Footprint - Web project workflow" >
-        <testset dir="footprint/src">
-            <patternset>
-                <include name="footprint/EPFootprintTests.class/testWebProjectWorkflow"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="(footprint_all or web_project) and NOT once" prio="321"
-             executor="ide_footprint" name="Footprint - Web project workflow" >
-        <testset dir="footprint/src">
-            <patternset>
-                <include name="footprint/EPFootprintTests.class/testWebProjectWorkflow"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="(footprint_all or web_project) and NOT once" prio="322"
-             executor="ide_footprint" name="Footprint - Web project workflow" >
-        <testset dir="footprint/src">
-            <patternset>
-                <include name="footprint/EPFootprintTests.class/testWebProjectWorkflow"/>
-            </patternset>
-        </testset>
-    </testbag>
--->    
+
     <!-- J2EE Project workflow -->
-    <testbag testattribs="all or j2ee_project or j2ee_project_once" prio="330"
+    <testbag testattribs="all or footprint_EntepriseProject" prio="330"
              executor="ide_footprint" name="Footprint - J2EE project workflow" >
 	<testset dir="footprint/src">
 	    <patternset>
-		<include name="footprint/EPFootprintTests.class/testJ2EEProjectWorkflow"/>
+		<include name="footprint/J2EEProjectWorkflow.class"/>
 	    </patternset>
 	</testset>
     </testbag>
 
-    <testbag testattribs="all or j2ee_project" prio="331"
+    <testbag testattribs="(all or footprint_EntepriseProject) and NOT once" prio="331"
              executor="ide_footprint" name="Footprint - J2EE project workflow" >
 	<testset dir="footprint/src">
 	    <patternset>
-		<include name="footprint/EPFootprintTests.class/testJ2EEProjectWorkflow"/>
+		<include name="footprint/J2EEProjectWorkflow.class"/>
 	    </patternset>
 	</testset>
     </testbag>
 
-    <testbag testattribs="all or j2ee_project" prio="332"
+    <testbag testattribs="(all or footprint_EntepriseProject) and NOT once" prio="332"
              executor="ide_footprint" name="Footprint - J2EE project workflow" >
 	<testset dir="footprint/src">
 	    <patternset>
-		<include name="footprint/EPFootprintTests.class/testJ2EEProjectWorkflow"/>
+		<include name="footprint//J2EEProjectWorkflow.class"/>
 	    </patternset>
 	</testset>
     </testbag>

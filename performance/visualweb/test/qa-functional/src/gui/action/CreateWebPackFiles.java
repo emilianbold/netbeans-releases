@@ -45,7 +45,6 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
     private String doccategory, doctype, docname, docfolder, suffix, projectfolder, buildedname;
     private NewFileNameLocationStepOperator location;
     
-    private int index;
     private static final String project_name = "VisualWebProject";
     
     /**
