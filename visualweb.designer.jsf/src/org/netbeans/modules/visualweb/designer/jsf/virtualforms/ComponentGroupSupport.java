@@ -90,7 +90,8 @@ public class ComponentGroupSupport {
     /*
      * <p>Paint legends and the colored borders of appropriate components.</p>
      */
-    public static void paint(LiveUnit liveUnit, Designer.RenderContext renderContext, Graphics2D g2d) {
+    public static void paint(LiveUnit liveUnit, Designer.RenderContext renderContext, Graphics2D g2d,
+    boolean showVirtualForms, boolean showAjaxTransactions) {
         ComponentGroupHolder[] holders = null;
         Object dcontextData = liveUnit.getContextData(ComponentGroupHolder.CONTEXT_DATA_KEY);
         if (dcontextData instanceof ComponentGroupHolder[]) {        

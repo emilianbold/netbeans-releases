@@ -1385,33 +1385,26 @@ class DomProviderImpl implements DomProvider {
     }
 
     // XXX
-    public void paintDesignerDecorations(Graphics2D g, Designer designer) {
-        // Virtual forms
-        if (jsfForm.isVirtualFormsSupportEnabled()) {
-            paintVirtualForms(g, designer.createRenderContext());
-        }
+    public void paintDesignerDecorations(Graphics2D g2d, Designer designer) {
+        boolean showVirtualForms = jsfForm.isVirtualFormsSupportEnabled();
+        boolean showAjaxTransactions = jsfForm.isAjaxTransactionsSupportEnabled();
         
-        // Ajax transacations
-        if (jsfForm.isAjaxTransactionsSupportEnabled()) {
-            // TODO
-        }
-    }
+        if (showVirtualForms || showAjaxTransactions) {
+    //        DesignContext designContext = renderContext.getDesignContext();
+    //        if (!(designContext instanceof LiveUnit)) {
+    //            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+    //                    new IllegalStateException("DesignContext is not of LiveUnit type, designContext=" + designContext)); // NOI18N
+    //        }
+    //        LiveUnit liveUnit = (LiveUnit)designContext;
+    //        Project project = liveUnit.getModel().getProject();
+            Project project = getFacesModel().getProject();
+            LiveUnit liveUnit = getFacesModel().getLiveUnit();
+            if (liveUnit == null) {
+                // XXX Log problem?
+                return;
+            }
 
-    private void paintVirtualForms(Graphics2D g2d, Designer.RenderContext renderContext) {
-//        DesignContext designContext = renderContext.getDesignContext();
-//        if (!(designContext instanceof LiveUnit)) {
-//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-//                    new IllegalStateException("DesignContext is not of LiveUnit type, designContext=" + designContext)); // NOI18N
-//        }
-//        LiveUnit liveUnit = (LiveUnit)designContext;
-//        Project project = liveUnit.getModel().getProject();
-        Project project = getFacesModel().getProject();
-        LiveUnit liveUnit = getFacesModel().getLiveUnit();
-        if (liveUnit == null) {
-            // XXX Log problem?
-            return;
+            ComponentGroupSupport.paint(liveUnit, designer.createRenderContext(), g2d, showVirtualForms, showAjaxTransactions);
         }
-
-        ComponentGroupSupport.paint(liveUnit, renderContext, g2d);
     }
 }
