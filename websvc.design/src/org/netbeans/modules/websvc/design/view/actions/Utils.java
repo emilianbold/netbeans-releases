@@ -152,7 +152,7 @@ public class Utils {
         return false;
     }
     
-    private static GlobalSimpleType getPrimitiveType(String typeName){
+    public static GlobalSimpleType getPrimitiveType(String typeName){
         SchemaModel primitiveModel = SchemaModelFactory.getDefault().getPrimitiveTypesModel();
         Collection<GlobalSimpleType> primitives = primitiveModel.getSchema().getSimpleTypes();
         for(GlobalSimpleType ptype: primitives) {

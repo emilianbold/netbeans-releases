@@ -43,6 +43,7 @@ import org.netbeans.modules.xml.schema.model.Import;
 import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Types;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -310,18 +311,21 @@ class ImportSchemaListener implements ActionListener{
                 try{
                     wsdlModel.startTransaction();
                     WSDLComponentFactory factory = wsdlModel.getFactory();
-                    Types types = wsdlModel.getDefinitions().getTypes();
+                    Definitions definitions = wsdlModel.getDefinitions();
+                    Types types = definitions.getTypes();
                     for(Schema newSchema : newSchemas){
                         WSDLSchema wsdlSchema = factory.createWSDLSchema();
                         types.addExtensibilityElement(wsdlSchema);
                         SchemaModel schemaModel = wsdlSchema.getSchemaModel();
+                        Schema schema = schemaModel.getSchema();
+                        schema.setTargetNamespace(definitions.getTargetNamespace());
                         Import importedSchema = schemaModel.getFactory().createImport();
                         importedSchema.setNamespace(newSchema.getTargetNamespace());
                         ModelSource ms = newSchema.getModel().getModelSource();
                         FileObject fo = ms.getLookup().lookup(FileObject.class);
 
                         importedSchema.setSchemaLocation(fo.getURL().toString());
-                        schemaModel.getSchema().addExternalReference(importedSchema);
+                        schema.addExternalReference(importedSchema);
                     }
                     
                 }catch(FileStateInvalidException e){

@@ -45,9 +45,9 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelerFactory;
-import org.netbeans.modules.websvc.design.javamodel.Utils;
 import org.netbeans.modules.websvc.design.util.SourceUtils;
 import org.netbeans.modules.websvc.design.view.actions.ParamModel;
+import org.netbeans.modules.websvc.design.view.actions.Utils;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.xml.schema.model.ElementReference;
 import org.netbeans.modules.xml.schema.model.GlobalComplexType;
@@ -78,6 +78,7 @@ import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding.Style;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBody;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPMessageBase;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPOperation;
+import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.openide.ErrorManager;
 import org.openide.execution.ExecutorTask;
@@ -134,94 +135,118 @@ public class OperationGeneratorHelper {
             GlobalElement paramElement=null;
             GlobalElement returnElement = null;
             
-            Collection<Schema> schemas = types.getSchemas();
-            Iterator<Schema> it = schemas.iterator();
-            if (it.hasNext()) {
-                Schema schema = it.next();
-                SchemaModel schemaModel = schema.getModel();
-                GlobalComplexType complexType = schemaModel.getFactory().createGlobalComplexType();
-                complexType.setName(paramTypeName);
-                Sequence seq = schemaModel.getFactory().createSequence();
-                complexType.setDefinition(seq);
-                schema.addComplexType(complexType);
+            WSDLSchema wsdlSchema = null;
+            SchemaModel schemaModel = null;
+            Schema schema = null;
+            
+            if(parameterTypes.size() > 0){  //if there are parameters
                 
-                for(ParamModel param : parameterTypes) {
-                    addElementToSequence(seq, schemaModel, param);
+                if (parameterTypes.size() > 1 || (parameterTypes.size() == 1 && isPrimitiveType(parameterTypes.get(0)))) {
+                    if(wsdlSchema == null){
+                        wsdlSchema = factory.createWSDLSchema();
+                        types.addExtensibilityElement(wsdlSchema);
+                        schemaModel = wsdlSchema.getSchemaModel();
+                        schema = schemaModel.getSchema();
+                        schema.setTargetNamespace(definitions.getTargetNamespace());
+                    }
+                    
+                    //wrap the parameters in a global element
+                    GlobalComplexType complexType = schemaModel.getFactory().createGlobalComplexType();
+                    complexType.setName(paramTypeName);
+                    Sequence seq = schemaModel.getFactory().createSequence();
+                    complexType.setDefinition(seq);
+                    schema.addComplexType(complexType);
+                    
+                    for(ParamModel param : parameterTypes) {
+                        addElementToSequence(seq, schemaModel, param);
+                    }
+                    
+                    paramElement = schemaModel.getFactory().createGlobalElement();
+                    paramElement.setName(getUniqueGlobalElementName(schema, operationName)); //NOI18N
+                    NamedComponentReference<GlobalType> complexTypeRef = schema.createReferenceTo((GlobalType)complexType, GlobalType.class);
+                    paramElement.setType(complexTypeRef);
+                    schema.addElement(paramElement);
+                }else{ //there is only one parameter and it is not primitive
+                    ParamModel paramModel = parameterTypes.get(0);
+                    ReferenceableSchemaComponent ref = paramModel.getParamType();
+                    if(ref instanceof GlobalElement){
+                        paramElement = (GlobalElement)ref;
+                    }
                 }
                 
-                paramElement = schemaModel.getFactory().createGlobalElement();
-                paramElement.setName(getUniqueGlobalElementName(schema, operationName)); //NOI18N
-                NamedComponentReference<GlobalType> complexTypeRef = schema.createReferenceTo((GlobalType)complexType, GlobalType.class);
-                paramElement.setType(complexTypeRef);
-                schema.addElement(paramElement);
                 
-                if(returnType != null){
+                if (paramElement!=null) {
+                    if(inputMessage == null){
+                        inputMessage = factory.createMessage();
+                        inputMessage.setName(messageName);
+                        definitions.addMessage(inputMessage);
+                    }
+                    Part part = factory.createPart();
+                    part.setName(partName);
+                    NamedComponentReference<GlobalElement> ref = part.createSchemaReference(paramElement, GlobalElement.class);
+                    part.setElement(ref);
+                    inputMessage.addPart(part);
+                }
+                
+                if (inputMessage!=null) {
+                    Input input = factory.createInput();
+                    NamedComponentReference<Message> inputRef = input.createReferenceTo(inputMessage, Message.class);
+                    input.setName(operationName);
+                    input.setMessage(inputRef);
+                    operation.setInput(input);
+                }
+            }
+            
+            Message outputMessage=null;
+            if(returnType != null){  //if the operation returns something
+                if(isPrimitiveType(returnType)){
+                    if(wsdlSchema == null){
+                    wsdlSchema = factory.createWSDLSchema();
+                    types.addExtensibilityElement(wsdlSchema);
+                    schemaModel = wsdlSchema.getSchemaModel();
+                    schema = schemaModel.getSchema();
+                    schema.setTargetNamespace(definitions.getTargetNamespace());
+                }
                     GlobalComplexType responseComplexType = schemaModel.getFactory().createGlobalComplexType();
                     responseComplexType.setName(responseTypeName); //NOI18N
                     Sequence seq1 = schemaModel.getFactory().createSequence();
                     responseComplexType.setDefinition(seq1);
                     schema.addComplexType(responseComplexType);
-                    
-                    if (returnType instanceof GlobalType) {
-                        LocalElement el = schemaModel.getFactory().createLocalElement();
-                        NamedComponentReference<GlobalType> typeRef = schema.createReferenceTo((GlobalType)returnType, GlobalType.class);
-                        el.setName("result"); //NOI18N
-                        el.setType(typeRef);
-                        seq1.appendContent(el);
-                    } else if (returnType instanceof GlobalElement) {
-                        ElementReference el = schemaModel.getFactory().createElementReference();
-                        NamedComponentReference<GlobalElement> typeRef = schema.createReferenceTo((GlobalElement)returnType, GlobalElement.class);
-                        el.setRef(typeRef);
-                        seq1.appendContent(el);
-                    }
+                    LocalElement el = schemaModel.getFactory().createLocalElement();
+                    NamedComponentReference<GlobalType> typeRef = schema.createReferenceTo((GlobalType)returnType, GlobalType.class);
+                    el.setName("result"); //NOI18N
+                    el.setType(typeRef);
+                    seq1.appendContent(el);
                     
                     returnElement = schemaModel.getFactory().createGlobalElement();
                     returnElement.setName(this.getUniqueGlobalElementName(schema, responseElementName));
                     NamedComponentReference<GlobalType> responseTypeRef = schema.createReferenceTo((GlobalType)responseComplexType, GlobalType.class);
                     returnElement.setType(responseTypeRef);
                     schema.addElement(returnElement);
+                } else{
+                    if(returnType instanceof GlobalElement){
+                        returnElement = (GlobalElement)returnType;
+                    }
                 }
-            }
-            
-            if (paramElement!=null) {
-                if(inputMessage == null){
-                    inputMessage = factory.createMessage();
-                    inputMessage.setName(messageName);
-                    definitions.addMessage(inputMessage);
+
+                if (returnElement!=null) {
+                    outputMessage = factory.createMessage();
+                    outputMessage.setName(responseMessageName);
+                    Part outpart = factory.createPart();
+                    outpart.setName(responsePartName);
+                    NamedComponentReference<GlobalElement> outref = outpart.createSchemaReference(returnElement, GlobalElement.class);
+                    outpart.setElement(outref);
+                    outputMessage.addPart(outpart);
+                    definitions.addMessage(outputMessage);
                 }
-                Part part = factory.createPart();
-                part.setName(partName);
-                NamedComponentReference<GlobalElement> ref = part.createSchemaReference(paramElement, GlobalElement.class);
-                part.setElement(ref);
-                inputMessage.addPart(part);
-            }
-            
-            if (inputMessage!=null) {
-                Input input = factory.createInput();
-                NamedComponentReference<Message> inputRef = input.createReferenceTo(inputMessage, Message.class);
-                input.setName(operationName);
-                input.setMessage(inputRef);
-                operation.setInput(input);
-            }
-            
-            Message outputMessage=null;
-            if (returnElement!=null) {
-                outputMessage = factory.createMessage();
-                outputMessage.setName(responseMessageName);
-                Part outpart = factory.createPart();
-                outpart.setName(responsePartName);
-                NamedComponentReference<GlobalElement> outref = outpart.createSchemaReference(returnElement, GlobalElement.class);
-                outpart.setElement(outref);
-                outputMessage.addPart(outpart);
-                definitions.addMessage(outputMessage);
-            }
-            
-            if (outputMessage!=null) {
-                Output output = factory.createOutput();
-                NamedComponentReference<Message> outputRef = output.createReferenceTo(outputMessage, Message.class);
-                output.setName(responseElementName);
-                output.setMessage(outputRef);
-                operation.setOutput(output);
+                
+                if (outputMessage!=null) {
+                    Output output = factory.createOutput();
+                    NamedComponentReference<Message> outputRef = output.createReferenceTo(outputMessage, Message.class);
+                    output.setName(responseElementName);
+                    output.setMessage(outputRef);
+                    operation.setOutput(output);
+                }
             }
             
             Collection<PortType> portTypes = definitions.getPortTypes();
@@ -301,6 +326,14 @@ public class OperationGeneratorHelper {
         } finally {
             wsdlModel.endTransaction();
         }
+    }
+    
+    private boolean isPrimitiveType(ParamModel parameterType){
+        return (Utils.getPrimitiveType(parameterType.getParamType().getName()) != null);
+    }
+    
+    private boolean isPrimitiveType(ReferenceableSchemaComponent comp){
+        return (Utils.getPrimitiveType(comp.getName()) !=  null);
     }
     
     private void addElementToSequence(Sequence sequence, SchemaModel schemaModel, ParamModel param) {

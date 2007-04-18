@@ -59,6 +59,7 @@ public class ImportedSchemasPanel extends javax.swing.JPanel {
         importedSchemasList.setModel(listModel);
         importedSchemasList.setCellRenderer(new ImportedSchemasPanelListCellRenderer());
         populateSchemas();
+        removeBtn.setEnabled(false);
     }
     
     private void populateSchemas(){
