@@ -42,6 +42,9 @@ public class PersistenceLibraryPanel extends javax.swing.JPanel {
     private Color nbErrorForeground;
     private Color nbWarningForeground;
     
+    static final String ERROR_GIF = "org/netbeans/modules/dialogs/error.gif"; //NOI18N
+    static final String WARNING_GIF = "org/netbeans/modules/dialogs/warning.gif"; //NOI18N
+    
     public PersistenceLibraryPanel(LibraryImplementation libImpl) {
         initComponents();
         this.libImpl = libImpl;
@@ -124,10 +127,10 @@ public class PersistenceLibraryPanel extends javax.swing.JPanel {
         errorMessage.setForeground(nbErrorForeground);
         if (msg != null && msg.trim().length() > 0 && canContinue != null) {
             if (canContinue.booleanValue()) {
-                errorMessage.setIcon(new ImageIcon(Utilities.loadImage("org/openide/resources/warning.gif"))); // NOI18N
+                errorMessage.setIcon(new ImageIcon(Utilities.loadImage(WARNING_GIF)));
                 errorMessage.setForeground(nbWarningForeground);
             } else {
-                errorMessage.setIcon(new ImageIcon(Utilities.loadImage("org/openide/resources/error.gif"))); // NOI18N
+                errorMessage.setIcon(new ImageIcon(Utilities.loadImage(ERROR_GIF)));
             }
             errorMessage.setToolTipText(msg);
         } else {
