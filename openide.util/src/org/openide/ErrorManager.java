@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -174,7 +174,7 @@ import org.openide.util.WeakSet;
  * <dd>
  * <pre>
  * IOException all = null;
- * for (int i = 0; i < things.length; i++) {
+ * for (int i = 0; i &lt; things.length; i++) {
  *     try {
  *          things[i].process();
  *     } catch (ThingProcessingException e) {
@@ -521,9 +521,9 @@ public abstract class ErrorManager extends Object {
         private String name = null;
 
         /**
-         * The set of instances we delegate to. Elements type is ErrorManager.
+         * The set of instances we delegate to.
          */
-        private Set delegates = new HashSet();
+        private Set<ErrorManager> delegates = new HashSet<ErrorManager>();
         
         /** fallback logger to send messages to */
         private Logger logger;
@@ -574,8 +574,7 @@ public abstract class ErrorManager extends Object {
 
         /** Calls all delegates. */
         public Throwable attachAnnotations(Throwable t, Annotation[] arr) {
-            for (Iterator i = delegates.iterator(); i.hasNext();) {
-                ErrorManager em = (ErrorManager) i.next();
+            for (ErrorManager em : delegates) {
                 em.attachAnnotations(t, arr);
             }
 
@@ -584,8 +583,7 @@ public abstract class ErrorManager extends Object {
 
         /** Calls all delegates. */
         public Annotation[] findAnnotations(Throwable t) {
-            for (Iterator i = delegates.iterator(); i.hasNext();) {
-                ErrorManager em = (ErrorManager) i.next();
+            for (ErrorManager em : delegates) {
                 Annotation[] res = em.findAnnotations(t);
 
                 if ((res != null) && (res.length > 0)) {
@@ -633,8 +631,7 @@ public abstract class ErrorManager extends Object {
                 return t;
             }
             
-            for (Iterator i = delegates.iterator(); i.hasNext();) {
-                ErrorManager em = (ErrorManager) i.next();
+            for (ErrorManager em : delegates) {
                 em.annotate(t, severity, message, localizedMessage, stackTrace, date);
             }
 
@@ -658,8 +655,7 @@ public abstract class ErrorManager extends Object {
             }
 
             try {
-                for (Iterator i = delegates.iterator(); i.hasNext();) {
-                    ErrorManager em = (ErrorManager) i.next();
+                for (ErrorManager em : delegates) {
                     em.notify(severity, t);
                 }
             } catch (RuntimeException e) {
@@ -690,8 +686,7 @@ public abstract class ErrorManager extends Object {
                 return;
             }
 
-            for (Iterator i = delegates.iterator(); i.hasNext();) {
-                ErrorManager em = (ErrorManager) i.next();
+            for (ErrorManager em : delegates) {
                 em.log(severity, s);
             }
         }
@@ -723,9 +718,7 @@ public abstract class ErrorManager extends Object {
                 return logger().isLoggable(convertSeverity(severity, false, null));
             }
 
-            for (Iterator i = delegates.iterator(); i.hasNext();) {
-                ErrorManager em = (ErrorManager) i.next();
-
+            for (ErrorManager em : delegates) {
                 if (em.isLoggable(severity)) {
                     return true;
                 }
@@ -744,9 +737,7 @@ public abstract class ErrorManager extends Object {
                 return logger().isLoggable(convertSeverity(severity, true, null));
             }
 
-            for (Iterator i = delegates.iterator(); i.hasNext();) {
-                ErrorManager em = (ErrorManager) i.next();
-
+            for (ErrorManager em : delegates) {
                 if (em.isNotifiable(severity)) {
                     return true;
                 }
@@ -760,12 +751,9 @@ public abstract class ErrorManager extends Object {
          * by ourselves.
          */
         public synchronized void setDelegates(Collection<? extends ErrorManager> newDelegates) {
-            java.util.LinkedHashSet<ErrorManager> d;
-            d = new java.util.LinkedHashSet<ErrorManager>(newDelegates);
-            delegates = d;
+            delegates = new LinkedHashSet<ErrorManager>(newDelegates);
 
-            for (Iterator i = createdByMe.iterator(); i.hasNext();) {
-                DelegatingErrorManager dem = (DelegatingErrorManager) i.next();
+            for (DelegatingErrorManager dem : createdByMe) {
                 attachNewDelegates(dem, dem.getName());
             }
         }
@@ -783,8 +771,7 @@ public abstract class ErrorManager extends Object {
         private void attachNewDelegates(DelegatingErrorManager dem, String name) {
             Set<ErrorManager> newDelegatesForDem = new HashSet<ErrorManager>();
 
-            for (Iterator j = delegates.iterator(); j.hasNext();) {
-                ErrorManager e = (ErrorManager) j.next();
+            for (ErrorManager e : delegates) {
                 newDelegatesForDem.add(e.getInstance(name));
             }
 
@@ -795,7 +782,7 @@ public abstract class ErrorManager extends Object {
          * delegates and adds a listener.
          */
         public void initialize() {
-            r = Lookup.getDefault().lookup(new Lookup.Template<ErrorManager>(ErrorManager.class));
+            r = Lookup.getDefault().lookupResult(ErrorManager.class);
             setDelegates(r.allInstances());
         }
 
