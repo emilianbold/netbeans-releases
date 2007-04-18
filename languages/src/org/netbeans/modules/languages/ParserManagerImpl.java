@@ -390,7 +390,7 @@ public class ParserManagerImpl extends ParserManager {
         return tokens;
     }
     
-    private Language getLanguage(String mimeType) throws LanguageDefinitionNotFoundException {
+    private Language getLanguage(String mimeType) {
         // [PENDING] workaround for internal mime type set by options for coloring preview
         if (mimeType.startsWith("test")) { // NOI18N
             int length = mimeType.length();
@@ -405,7 +405,11 @@ public class ParserManagerImpl extends ParserManager {
             } // for
         } // if
         // end of workaround
-        return LanguagesManager.getDefault().getLanguage(mimeType);
+        try {
+            return LanguagesManager.getDefault().getLanguage(mimeType);
+        } catch (LanguageDefinitionNotFoundException ex) {
+            return new Language (mimeType);
+        }
     }
     
     // innerclasses ............................................................
