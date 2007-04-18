@@ -21,13 +21,17 @@
 
 package gui.debuggercore;
 
+import java.awt.event.KeyEvent;
 import java.io.File;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.util.PNGEncoder;
 import org.netbeans.junit.NbTestSuite;
@@ -45,9 +49,15 @@ public class Views extends JellyTestCase {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
+        String vers = System.getProperty("java.version");
+        
         suite.addTest(new Views("testViewsDefaultOpen"));
         suite.addTest(new Views("testViewsCallStack"));
-        suite.addTest(new Views("testViewsClasses"));
+        if ("1.6.0".compareTo(vers) >= 0) {  //heapwalker
+            suite.addTest(new Views("testViewsHeapWalker1"));
+        } else { // old classes view
+            suite.addTest(new Views("testViewsClasses"));
+        }
         suite.addTest(new Views("testViewsThreads"));
         suite.addTest(new Views("testViewsSessions"));
         suite.addTest(new Views("testViewsSources"));
@@ -120,6 +130,53 @@ public class Views extends JellyTestCase {
             for (int i = 0; i < entries.length; i++) {
                 assertTrue("Node " + entries[i] + " not displayed in Classes view", entries[i].equals(Utilities.removeTags(treeTableOperator.getValueAt(i, 0).toString())));
             }
+        } catch (Throwable th) {
+            try {
+                // capture screen before cleanup in finally clause is completed
+                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
+            } catch (Exception e1) {
+                // ignore it
+            }
+            throw th;
+        }
+    }
+    
+    public void testViewsHeapWalker1() throws Throwable {
+        try {
+            Utilities.showDebuggerView(Utilities.classesViewTitle);
+            
+            TopComponentOperator tco = new TopComponentOperator(Utilities.classesViewTitle);
+            JTableOperator jTableOperator = new JTableOperator(tco);
+            JComboBoxOperator filter = new JComboBoxOperator(tco);
+            filter.clearText();
+            filter.enterText("example");
+            filter.pushKey(KeyEvent.VK_ENTER);
+            new EventTool().waitNoEvent(500);
+            assertEquals("MemoryView class is not in classes", "examples.advanced.MemoryView", Utilities.removeTags(jTableOperator.getValueAt(0,0).toString()));
+            assertEquals("Instances number is wrong", "1 (0%)", Utilities.removeTags(jTableOperator.getValueAt(0,2).toString()));
+        } catch (Throwable th) {
+            try {
+                // capture screen before cleanup in finally clause is completed
+                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
+            } catch (Exception e1) {
+                // ignore it
+            }
+            throw th;
+        }
+    }
+    
+    public void testViewsHeapWalker2() throws Throwable {
+        try {
+            Utilities.showDebuggerView(Utilities.classesViewTitle);
+            
+            TopComponentOperator tco = new TopComponentOperator(Utilities.classesViewTitle);
+            JTableOperator jTableOperator = new JTableOperator(tco);
+            JComboBoxOperator filter = new JComboBoxOperator(tco);
+            JPopupMenuOperator popup = new JPopupMenuOperator(jTableOperator.callPopupOnCell(0, 0));
+            popup.pushMenuNoBlock("Show in Instances View");
+            filter.clearText();
+            filter.pushKey(KeyEvent.VK_ENTER);
+            new EventTool().waitNoEvent(500);
         } catch (Throwable th) {
             try {
                 // capture screen before cleanup in finally clause is completed
