@@ -404,11 +404,13 @@ public class FmtWrapping extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
         panel1.add(assignOpsCombo, gridBagConstraints);
+
+        spacerPanel1.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 8, 8, 8);
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 8);
         panel1.add(spacerPanel1, gridBagConstraints);
 
         scrollPane.setViewportView(panel1);
