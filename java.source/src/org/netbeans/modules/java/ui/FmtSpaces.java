@@ -48,7 +48,7 @@ import static org.netbeans.modules.java.ui.FmtOptions.*;
 public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener, KeyListener {
     
     private static Controller controller;
-    
+        
     private DefaultTreeModel model;
   
     private DefaultTreeCellRenderer dr = new DefaultTreeCellRenderer();    
@@ -331,7 +331,7 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
         FmtSpaces panel;
         
         public Controller() {
-            super("LBL_Spaces", new FmtSpaces());
+            super("LBL_Spaces", new FmtSpaces(), null);
             this.panel = (FmtSpaces) getComponent(null); 
             update();
         }
@@ -355,16 +355,18 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
 
         @Override
         public void applyChanges() {
+            storeTo(getPreferences(getCurrentProfileId()));            
+        }
+
+        @Override
+        public void storeTo(Preferences preferences) {
             DefaultMutableTreeNode root = (DefaultMutableTreeNode) panel.model.getRoot();
             List<Item> items = getAllItems();
             
-            Preferences node = getPreferences(getCurrentProfileId());
-            
             for (Item item : items) {
-                node.putBoolean(item.id, item.value);
+                preferences.putBoolean(item.id, item.value);
             }
         }
-        
         
         private List<Item> getAllItems() {
             List<Item> result = new LinkedList<FmtSpaces.Item>();

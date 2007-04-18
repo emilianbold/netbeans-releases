@@ -36,7 +36,7 @@ public class FmtImports extends javax.swing.JPanel {
     }
     
     public static FormatingOptionsPanel.Category getController() {
-        return new CategorySupport("LBL_Imports", new FmtImports()); // NOI18N
+        return new CategorySupport("LBL_Imports", new FmtImports(), null); // NOI18N
     }
     
     /** This method is called from within the constructor to

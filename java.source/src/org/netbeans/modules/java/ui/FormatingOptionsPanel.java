@@ -24,9 +24,16 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.prefs.AbstractPreferences;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JEditorPane;
 import javax.swing.JPanel;
+import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
 
@@ -37,13 +44,21 @@ import org.openide.util.NbBundle;
 public class FormatingOptionsPanel extends JPanel implements ActionListener, PropertyChangeListener {
     
     private FormatingOptionsPanelController fopControler;
-    private List<Category> categories = new ArrayList<FormatingOptionsPanel.Category>();
+    private List<FormatingOptionsPanel.Category> categories = new ArrayList<FormatingOptionsPanel.Category>();
+    
+    private boolean isLoaded = false;
     
     /** Creates new form FormatingOptionsPanel */
     public FormatingOptionsPanel( FormatingOptionsPanelController fopControler ) {
         this.fopControler = fopControler;
         
         initComponents();
+        previewPane.setContentType("text/x-java"); // NOI18N
+        // Don't highlight caret row 
+        previewPane.putClientProperty(
+            "HighlightsLayerExcludes", // NOI18N
+            "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$" // NOI18N
+        );
         
         createCategories();
         
@@ -52,6 +67,8 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
             model.addElement(category);
         }
         categoryCombo.setModel(model);
+        
+    
         categoryCombo.addActionListener(this);
         actionPerformed(new ActionEvent(model, 0, null));
     }
@@ -60,6 +77,8 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
         for (Category category : categories) {
             category.update();
         }
+        isLoaded = true;
+        repaintPreview();        
     }
     
     void store() {
@@ -85,7 +104,7 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
         categoryPanel = new javax.swing.JPanel();
         previewPanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        previewPane = new javax.swing.JTextPane();
+        previewPane = new javax.swing.JEditorPane();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -123,6 +142,7 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
         previewPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
         previewPanel.setLayout(new java.awt.GridBagLayout());
 
+        previewPane.setEditable(false);
         jScrollPane1.setViewportView(previewPane);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -149,7 +169,7 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JPanel optionsPanel;
-    private javax.swing.JTextPane previewPane;
+    private javax.swing.JEditorPane previewPane;
     private javax.swing.JPanel previewPanel;
     // End of variables declaration//GEN-END:variables
  
@@ -176,7 +196,7 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
         categoryPanel.setVisible(false);
         categoryPanel.removeAll();
         categoryPanel.add(category.getComponent(null), BorderLayout.CENTER);
-        categoryPanel.setVisible(true);
+        categoryPanel.setVisible(true);        
     }
         
     public static abstract class Category extends OptionsPanelController {
@@ -187,6 +207,10 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
             this.displayName = NbBundle.getMessage( FormatingOptionsPanel.class, displayNameKey );
         }
 
+        public abstract void storeTo(Preferences preferences);
+        
+        public abstract void refreshPreview(JEditorPane pane, CodeStyle codeStyle);
+        
         @Override
         public String toString() {
             return displayName;
@@ -197,6 +221,11 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
 
     // Change in some of the subpanels
     public void propertyChange(PropertyChangeEvent evt) {
+        
+        if ( !isLoaded ) {
+            return;
+        }
+                
         // Notify the main controler that the page has changed
         fopControler.changed();
         
@@ -206,15 +235,69 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
 
     // XXX Only temporary
     
-    private static String[] previews = new String[] {
-        "Sprostarna c. 1", "Sprostarna c. 2", "Sprostarna c. 3", "Sprostarna c. 4"
-    };
     
-    static int i = 0;
+    private void repaintPreview() { 
+        
+        
+        Preferences p = new PreviewPreferences();
+        
+        for (Category category : categories) {
+            category.storeTo(p);
+        }
+        
+        CodeStyle codeStyle = FmtOptions.createCodeStyle(p); 
+        
+        Category category = (Category)categoryCombo.getSelectedItem();
+        
+        category.refreshPreview(previewPane, codeStyle);
+        
+    }
     
-    private void repaintPreview() {        
-        i = i == 3 ? 0 : i + 1;        
-        previewPane.setText(previews[i]);
+    public static class PreviewPreferences extends AbstractPreferences {
+        
+        private Map<String,Object> map = new HashMap<String, Object>();
+
+        public PreviewPreferences() {
+            super(null, ""); // NOI18N
+        }
+        
+        protected void putSpi(String key, String value) {
+            map.put(key, value);            
+        }
+
+        protected String getSpi(String key) {
+            return (String)map.get(key);                    
+        }
+
+        protected void removeSpi(String key) {
+            map.remove(key);
+        }
+
+        protected void removeNodeSpi() throws BackingStoreException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        protected String[] keysSpi() throws BackingStoreException {
+            String array[] = new String[map.keySet().size()];
+            return map.keySet().toArray( array );
+        }
+
+        protected String[] childrenNamesSpi() throws BackingStoreException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        protected AbstractPreferences childSpi(String name) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        protected void syncSpi() throws BackingStoreException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        protected void flushSpi() throws BackingStoreException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        
     }
     
 }

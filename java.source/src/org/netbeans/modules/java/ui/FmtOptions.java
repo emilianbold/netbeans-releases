@@ -17,14 +17,21 @@
  */
 package org.netbeans.modules.java.ui;
 
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.tools.javac.api.JavacTaskImpl;
+import com.sun.tools.javac.tree.JCTree;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.IOException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.ComboBoxModel;
@@ -32,9 +39,19 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.modules.java.source.JavaSourceAccessor;
+import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.api.java.source.CodeStyle;
+import org.netbeans.modules.java.source.pretty.VeryPretty;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.Exceptions;
 
@@ -189,6 +206,8 @@ public class FmtOptions {
     public static final String packagesForStarImport = "packagesForStarImport"; //NOI18N
     public static final String importsOrder = "importsOrder"; //NOI18N
     
+    public static CodeStyleProducer codeStyleProducer;
+        
     private static final String DEFAULT_PROFILE = "default"; // NOI18N
     
     private FmtOptions() {}
@@ -209,6 +228,24 @@ public class FmtOptions {
     public static String getCurrentProfileId() {
         return DEFAULT_PROFILE;
     }
+    
+    public static CodeStyle createCodeStyle(Preferences p) {
+        CodeStyle.getDefault(null);
+        return codeStyleProducer.create(p);
+    }
+    
+    public static boolean isInteger(String optionID) {
+        String value = defaults.get(optionID);
+        
+        try {
+            Integer.parseInt(value);
+            return true;            
+        } catch (NumberFormatException numberFormatException) {
+            return false;
+        }
+    }
+    
+    
  
     // Private section ---------------------------------------------------------
     
@@ -387,7 +424,7 @@ public class FmtOptions {
     
     // Support section ---------------------------------------------------------
       
-    public static class CategorySupport extends FormatingOptionsPanel.Category implements ActionListener {
+    public static class CategorySupport extends FormatingOptionsPanel.Category implements ActionListener, DocumentListener {
 
         public static final String OPTION_ID = "org.netbeans.modules.java.ui.FormatingOptions.ID";
                 
@@ -414,28 +451,65 @@ public class FmtOptions {
             };
         
         
+        private String previewText = 
+                "public class ClassA extends Object implements InterfaceA, InterfaceB, IntefaceC {" +
+                "public int number = 1;" +
+                "private String text =\"A\";" +
+                "public ClassA() {" +
+                "}" +
+                "public void method(String text, int number) {" +
+                "} }";
+        
         private boolean changed = false;
         private JPanel panel;
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     
-        public CategorySupport(String nameKey, JPanel panel) {
+        public CategorySupport(String nameKey, JPanel panel, String previewText) {
             super(nameKey);
-            this.panel = panel;
+            this.panel = panel;            
+            this.previewText = previewText == null ? this.previewText : previewText;
             addListeners();
         }
         
         protected void addListeners() {
-            scan(panel, ADD_LISTENERS);
+            scan(panel, ADD_LISTENERS, null);
         }
         
         public void update() {
-            scan(panel, LOAD);
+            scan(panel, LOAD, null);
         }
 
         public void applyChanges() {
-            scan(panel, STORE);
+            scan(panel, STORE, null);
         }
 
+        public void storeTo(Preferences preferences) {
+            scan(panel, STORE, preferences);
+        }
+
+        public void refreshPreview(JEditorPane pane, CodeStyle codeStyle) {
+            
+            ClassPath empty = ClassPathSupport.createClassPath(new URL[0]);
+            
+            ClasspathInfo cpInfo = ClasspathInfo.create(
+                    JavaPlatform.getDefault().getBootstrapLibraries(), empty, empty);
+            
+            JavacTaskImpl javacTask = JavaSourceAccessor.INSTANCE.createJavacTask(cpInfo, null, null);
+            
+            try {
+                CompilationUnitTree tree = javacTask.parse(FileObjects.memoryFileObject(previewText, "ClassA")).iterator().next();
+                
+                VeryPretty vp = new VeryPretty(javacTask.getContext(), codeStyle);
+                vp.print((JCTree)tree);
+                
+                pane.setText(vp.toString());
+                
+            } catch (IOException ioException) {
+                Exceptions.printStackTrace(ioException);
+            }
+
+        }
+        
         public void cancel() {
             // Usually does not need to do anything
         }
@@ -471,15 +545,30 @@ public class FmtOptions {
             }
             pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
         }
+
+        // ActionListener implementation ---------------------------------------
         
         public void actionPerformed(ActionEvent e) {
-            System.out.println("Changed " + this.toString());
+            changed();
+        }
+        
+        // DocumentListener implementation -------------------------------------
+        
+        public void insertUpdate(DocumentEvent e) {
+            changed();
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+            changed();
+        }
+
+        public void changedUpdate(DocumentEvent e) {
             changed();
         }
                 
         // Private methods -----------------------------------------------------
         
-        private void scan( Container container, int what ) {
+        private void scan( Container container, int what, Preferences p ) {
             for (Component c : container.getComponents() ) {
                 if (c instanceof JComponent ) {
                     JComponent jc = (JComponent)c;
@@ -490,7 +579,7 @@ public class FmtOptions {
                             loadData( jc, (String)o );
                             break;
                         case STORE:
-                            storeData( jc, (String)o );
+                            storeData( jc, (String)o, p );
                             break;
                         case ADD_LISTENERS:
                             addListener( jc );
@@ -499,7 +588,7 @@ public class FmtOptions {
                     }                    
                 }
                 if ( c instanceof Container ) {
-                    scan((Container)c, what);
+                    scan((Container)c, what, p);
                 }
             }
 
@@ -531,14 +620,27 @@ public class FmtOptions {
             
         }
         
-        private void storeData( JComponent jc, String optionID ) {
+        private void storeData( JComponent jc, String optionID, Preferences p ) {
             
-            Preferences node = getPreferences(getCurrentProfileId());
+            Preferences node = p == null ? getPreferences(getCurrentProfileId()) : p;
             
             if ( jc instanceof JTextField ) {
                 JTextField field = (JTextField)jc;
+                
+                String text = field.getText();
+                
+//                if ( FmtOptions.isInteger() ) {
+//                    try {
+//                        int i = Integer.parseInt(text);                        
+//                    } catch (NumberFormatException e) {
+//                        text = FmtOptions.getLastValue();
+//                    }
+//
+//                }
+                
+                
                 // XXX test for numbers
-                node.put(optionID, field.getText());                
+                node.put(optionID, text);                
             }
             else if ( jc instanceof JCheckBox ) {
                 JCheckBox checkBox = (JCheckBox)jc;
@@ -546,6 +648,7 @@ public class FmtOptions {
             } 
             else if ( jc instanceof JComboBox) {
                 JComboBox cb  = (JComboBox)jc;
+                // Logger.global.info( cb.getSelectedItem() + " " + optionID);
                 node.put(optionID, ((ComboItem)cb.getSelectedItem()).value);
             }         
         }
@@ -554,6 +657,7 @@ public class FmtOptions {
             if ( jc instanceof JTextField ) {
                 JTextField field = (JTextField)jc;
                 field.addActionListener(this);
+                field.getDocument().addDocumentListener(this);
             }
             else if ( jc instanceof JCheckBox ) {
                 JCheckBox checkBox = (JCheckBox)jc;
@@ -619,8 +723,14 @@ public class FmtOptions {
             }
             
         }
-
         
+     
+    }
+   
+    public static interface CodeStyleProducer {
+        
+        public CodeStyle create( Preferences preferences );
+    
     }
     
 }

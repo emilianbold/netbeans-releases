@@ -59,7 +59,7 @@ public class FmtAlignmentBraces extends javax.swing.JPanel {
     }
     
     public static FormatingOptionsPanel.Category getController() {
-        return new CategorySupport("LBL_AlignmentAndBraces", new FmtAlignmentBraces()); // NOI18N
+        return new CategorySupport("LBL_AlignmentAndBraces", new FmtAlignmentBraces(), null); // NOI18N
     }
     
     /** This method is called from within the constructor to
