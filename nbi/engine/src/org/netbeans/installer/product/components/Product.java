@@ -262,7 +262,7 @@ public final class Product extends RegistryNode {
         progress.setDetail("Running custom configuration logic");
         configurationLogic.install(logicProgress);
         logicProgress.setPercentage(Progress.COMPLETE);
-
+        
         // check for cancel status
         if (progress.isCanceled()) return;
         
@@ -330,53 +330,53 @@ public final class Product extends RegistryNode {
         // fall through all these cases, as they should be executed exactly in this
         // order and the only unclear point is where to start
         switch (installationPhase) {
-        case COMPLETE:
-        case FINALIZATION:
-            try {
-                FileUtils.deleteFile(getInstalledFilesList());
-            } catch (IOException e) {
-                ErrorManager.notifyWarning("Cannot delete installed files list", e);
-            }
-            
-            if (configurationLogic.registerInSystem()) {
+            case COMPLETE:
+            case FINALIZATION:
                 try {
-                    SystemUtils.removeComponentFromSystemInstallManager(getApplicationDescriptor());
-                } catch (NativeException e) {
-                    ErrorManager.notifyWarning("Cannot remove component from system registry", e);
-                }
-            }
-            
-        case CUSTOM_LOGIC:
-            configurationLogic.uninstall(logicProgress);
-            
-        case EXTRACTION:
-            logicProgress.setPercentage(Progress.COMPLETE);
-            
-            // remove installation files
-            int total   = installedFiles.getSize();
-            int current = 0;
-            
-            for (FileEntry entry: installedFiles) {
-                current++;
-                
-                File file = entry.getFile();
-                
-                eraseProgress.setDetail("Deleting " + file);
-                eraseProgress.setPercentage(Progress.COMPLETE * current / total);
-                
-                try {
-                    FileUtils.deleteFile(file);
+                    FileUtils.deleteFile(getInstalledFilesList());
                 } catch (IOException e) {
-                    ErrorManager.notifyWarning("Cannot delete file", e);
+                    ErrorManager.notifyWarning("Cannot delete installed files list", e);
                 }
-            }
-            
-        case INITIALIZATION:
-            eraseProgress.setPercentage(Progress.COMPLETE);
-            // for initialization we don't need to do anything
-            
-        default:
-            // default, nothing should be done here
+                
+                if (configurationLogic.registerInSystem()) {
+                    try {
+                        SystemUtils.removeComponentFromSystemInstallManager(getApplicationDescriptor());
+                    } catch (NativeException e) {
+                        ErrorManager.notifyWarning("Cannot remove component from system registry", e);
+                    }
+                }
+                
+            case CUSTOM_LOGIC:
+                configurationLogic.uninstall(logicProgress);
+                
+            case EXTRACTION:
+                logicProgress.setPercentage(Progress.COMPLETE);
+                
+                // remove installation files
+                int total   = installedFiles.getSize();
+                int current = 0;
+                
+                for (FileEntry entry: installedFiles) {
+                    current++;
+                    
+                    File file = entry.getFile();
+                    
+                    eraseProgress.setDetail("Deleting " + file);
+                    eraseProgress.setPercentage(Progress.COMPLETE * current / total);
+                    
+                    try {
+                        FileUtils.deleteFile(file);
+                    } catch (IOException e) {
+                        ErrorManager.notifyWarning("Cannot delete file", e);
+                    }
+                }
+                
+            case INITIALIZATION:
+                eraseProgress.setPercentage(Progress.COMPLETE);
+                // for initialization we don't need to do anything
+                
+            default:
+                // default, nothing should be done here
         }
     }
     
@@ -421,11 +421,18 @@ public final class Product extends RegistryNode {
         
         // files deletion phase /////////////////////////////////////////////////////
         progress.setTitle("Uninstalling " + getDisplayName());
-        
+                
         // remove installation files
         if (configurationLogic.getRemovalMode() == RemovalMode.ALL) {
             try {
-                FileUtils.deleteFile(getInstallationLocation(), true);
+                File startPoint = getInstallationLocation();
+                if(SystemUtils.isMacOS() && configurationLogic.wrapForMacOs()) {
+                    startPoint = startPoint.
+                            getParentFile().
+                            getParentFile().
+                            getParentFile();
+                }
+                FileUtils.deleteFile(startPoint, true);                
             } catch (IOException e) {
                 addUninstallationWarning(new UninstallationException(
                         "Cannot delete the file",
@@ -460,7 +467,7 @@ public final class Product extends RegistryNode {
             } catch (NativeException e) {
                 addUninstallationWarning(new UninstallationException("Cannot remove component from the native install manager", e));
             }
-        }
+        }        
         
         // remove the files list
         try {
@@ -662,23 +669,23 @@ public final class Product extends RegistryNode {
     
     public boolean satisfies(final Dependency dependency) {
         switch (dependency.getType()) {
-        case REQUIREMENT:
-            if (dependency.getVersionResolved() != null) {
+            case REQUIREMENT:
+                if (dependency.getVersionResolved() != null) {
+                    return uid.equals(dependency.getUid()) &&
+                            version.equals(dependency.getVersionResolved());
+                }
+                // if the requirement is not resolved, we fall through to validation
+                // for a conflict - it's identical to what we need
+            case CONFLICT:
                 return uid.equals(dependency.getUid()) &&
-                        version.equals(dependency.getVersionResolved());
-            }
-            // if the requirement is not resolved, we fall through to validation
-            // for a conflict - it's identical to what we need
-        case CONFLICT:
-            return uid.equals(dependency.getUid()) &&
-                    version.newerOrEquals(dependency.getVersionLower()) &&
-                    version.olderOrEquals(dependency.getVersionUpper());
-            
-        case INSTALL_AFTER:
-            return uid.equals(dependency.getUid());
-            
-        default:
-            ErrorManager.notifyCritical("Unrecognized dependency type: " + dependency.getType());
+                        version.newerOrEquals(dependency.getVersionLower()) &&
+                        version.olderOrEquals(dependency.getVersionUpper());
+                
+            case INSTALL_AFTER:
+                return uid.equals(dependency.getUid());
+                
+            default:
+                ErrorManager.notifyCritical("Unrecognized dependency type: " + dependency.getType());
         }
         
         // the only way for us to reach this spot is to get to 'default:' in the
