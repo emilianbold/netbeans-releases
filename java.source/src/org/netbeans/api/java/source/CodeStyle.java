@@ -22,6 +22,7 @@ package org.netbeans.api.java.source;
 import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.ui.FmtOptions;
+
 import static org.netbeans.modules.java.ui.FmtOptions.*;
 
 /** 
@@ -36,6 +37,10 @@ public final class CodeStyle {
     
     private static CodeStyle INSTANCE;
 
+    static {
+        FmtOptions.codeStyleProducer = new Producer();
+    }
+    
     private Preferences preferences;
     
     private CodeStyle(Preferences preferences) {
@@ -43,6 +48,11 @@ public final class CodeStyle {
     }
     
     public synchronized static CodeStyle getDefault(Project project) {
+        
+        if ( FmtOptions.codeStyleProducer == null ) {
+            FmtOptions.codeStyleProducer = new Producer();
+        }
+        
         if (INSTANCE == null)
             INSTANCE = create();
         return INSTANCE;
@@ -635,4 +645,13 @@ public final class CodeStyle {
     }
     
     // Communication with non public packages ----------------------------------
+    
+    private static class Producer implements FmtOptions.CodeStyleProducer {
+
+        public CodeStyle create(Preferences preferences) {
+            return new CodeStyle(preferences);
+        }
+        
+    } 
+    
 }
