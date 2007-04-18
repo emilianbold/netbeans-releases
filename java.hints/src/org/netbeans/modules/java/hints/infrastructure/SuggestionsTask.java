@@ -40,6 +40,8 @@ public class SuggestionsTask extends ScanningCancellableTask<CompilationInfo> {
     }
     
     public void run(CompilationInfo info) throws Exception {
+        resume();
+        
         Map<Kind, List<TreeRule>> suggestions = RulesManager.getInstance().getSuggestions();
         
         if (suggestions.isEmpty()) {

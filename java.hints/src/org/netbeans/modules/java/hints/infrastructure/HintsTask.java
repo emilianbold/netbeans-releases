@@ -42,6 +42,8 @@ public class HintsTask extends ScanningCancellableTask<CompilationInfo> {
     }
     
     public void run(CompilationInfo info) throws Exception {
+        resume();
+        
         Map<Kind, List<TreeRule>> hints = RulesManager.getInstance().getHints();
         
         if (hints.isEmpty()) {
