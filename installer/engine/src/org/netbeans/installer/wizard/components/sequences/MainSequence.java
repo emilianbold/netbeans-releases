@@ -28,6 +28,7 @@ import org.netbeans.installer.wizard.components.panels.netbeans.NbPreInstallSumm
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.helper.ExecutionMode;
 import org.netbeans.installer.wizard.components.WizardSequence;
 import org.netbeans.installer.wizard.components.actions.CreateBundleAction;
@@ -46,6 +47,8 @@ import org.netbeans.installer.wizard.components.sequences.ProductWizardSequence;
  * @author Kirill Sorokin
  */
 public class MainSequence extends WizardSequence {
+    /////////////////////////////////////////////////////////////////////////////////
+    // Instance
     private DownloadConfigurationLogicAction downloadConfigurationLogicAction;
     private LicensesPanel licensesPanel;
     private NbPreInstallSummaryPanel nbPreInstallSummaryPanel;
@@ -74,6 +77,11 @@ public class MainSequence extends WizardSequence {
         postCreateBundleSummaryPanel = new PostCreateBundleSummaryPanel();
         
         productSequences = new HashMap<Product, ProductWizardSequence>();
+        
+        installAction.setProperty(InstallAction.TITLE_PROPERTY, 
+                DEFAULT_IA_TITLE);
+        installAction.setProperty(InstallAction.DESCRIPTION_PROPERTY, 
+                DEFAULT_IA_DESCRIPTION);
     }
     
     public void executeForward() {
@@ -141,4 +149,15 @@ public class MainSequence extends WizardSequence {
     public boolean canExecuteForward() {
         return true;
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final String DEFAULT_IA_TITLE = 
+            ResourceUtils.getString(
+            MainSequence.class, 
+            "MS.IA.title"); // NOI18N
+    public static final String DEFAULT_IA_DESCRIPTION = 
+            ResourceUtils.getString(
+            MainSequence.class, 
+            "MS.IA.description"); // NOI18N
 }
