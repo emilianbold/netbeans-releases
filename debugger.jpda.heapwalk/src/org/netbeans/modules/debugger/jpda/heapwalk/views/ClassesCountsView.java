@@ -111,6 +111,15 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
         setContent();
     }
     
+    private synchronized void tearDown() {
+        if (content != null) {
+            remove(content);
+            content = null;
+            hfw = null;
+            clc = null;
+        }
+    }
+    
     private void setContent() {
         assert javax.swing.SwingUtilities.isEventDispatchThread();
         JPDADebugger debugger = null;
@@ -125,10 +134,13 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
         if (debugger != null && debugger.canGetInstanceInfo()) {
             Heap heap = new HeapImpl(debugger);
             setLayout (new BorderLayout ());
-            hfw = new DebuggerHeapFragmentWalker(heap);
-            ClassesController cc = hfw.getClassesController();
-            content = cc.getPanel();
-            clc = cc.getClassesListController();
+            ClassesController cc;
+            synchronized (this) {
+                hfw = new DebuggerHeapFragmentWalker(heap);
+                cc = hfw.getClassesController();
+                content = cc.getPanel();
+                clc = cc.getClassesListController();
+            }
             cc.getClassesListController().setColumnVisibility(3, false);
             add(content, "Center");
         }
@@ -163,12 +175,7 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
         if (IS_JDK15) {
             componentHidden_15();
         } else {
-            if (content != null) {
-                remove(content);
-                content = null;
-                hfw = null;
-                clc = null;
-            }
+            tearDown();
             if (listener != null) {
                 listener.stop();
                 listener = null;
@@ -251,6 +258,7 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
                 refreshTask.cancel();
                 refreshTask = null;
             }
+            tearDown();
         }
         
         public void propertyChange (PropertyChangeEvent e) {
