@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -27,6 +27,7 @@ import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.exceptions.InstallationException;
@@ -44,6 +45,30 @@ public class DownloadInstallationDataAction extends WizardAction {
             ResourceUtils.getString(DownloadInstallationDataAction.class,
             "DIDA.description"); // NOI18N
     
+    public static final String DEFAULT_PROGRESS_TITLE_LOCAL =
+            ResourceUtils.getString(DownloadInstallationDataAction.class,
+            "DIDA.progress.local.title"); //NOI18N
+    public static final String PROGRESS_TITLE_LOCAL_PROPERTY =
+            "progress.title.local";//NOI18N
+    
+    public static final String DEFAULT_PROGRESS_TITLE_REMOTE =
+            ResourceUtils.getString(DownloadInstallationDataAction.class,
+            "DIDA.progress.remote.title"); //NOI18N
+    public static final String PROGRESS_TITLE_REMOTE_PROPERTY =
+            "progress.title.remote";//NOI18N
+    
+    public static final String DEFAULT_DOWNLOAD_FAILED_EXCEPTION =
+            ResourceUtils.getString(DownloadInstallationDataAction.class,
+            "DIDA.failed"); //NOI18N
+    public static final String DOWNLOAD_FAILED_EXCEPTION_PROPERTY =
+            "download.failed";//NOI18N
+    
+    public static final String DEFAULT_DEPENDENT_FAILED_EXCEPTION =
+            ResourceUtils.getString(DownloadInstallationDataAction.class,
+            "DIDA.dependent.failed"); //NOI18N    
+    public static final String DEPENDENT_FAILED_EXCEPTION_PROPERTY =
+            "download.dependent.failed"; //NOI18N
+    
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     private CompositeProgress overallProgress;
@@ -52,6 +77,10 @@ public class DownloadInstallationDataAction extends WizardAction {
     public DownloadInstallationDataAction() {
         setProperty(TITLE_PROPERTY, DEFAULT_TITLE);
         setProperty(DESCRIPTION_PROPERTY, DEFAULT_DESCRIPTION);
+        setProperty(PROGRESS_TITLE_LOCAL_PROPERTY, DEFAULT_PROGRESS_TITLE_LOCAL);
+        setProperty(PROGRESS_TITLE_REMOTE_PROPERTY, DEFAULT_PROGRESS_TITLE_REMOTE);
+        setProperty(DOWNLOAD_FAILED_EXCEPTION_PROPERTY, DEFAULT_DOWNLOAD_FAILED_EXCEPTION);
+        setProperty(DEPENDENT_FAILED_EXCEPTION_PROPERTY, DEFAULT_DEPENDENT_FAILED_EXCEPTION);
     }
     
     public void execute() {
@@ -74,11 +103,12 @@ public class DownloadInstallationDataAction extends WizardAction {
             
             overallProgress.addChild(currentProgress, percentageChunk);
             try {
-                if (product.getRegistryType() == RegistryType.REMOTE) {
-                    overallProgress.setTitle("Downloading installation data for " + product.getDisplayName());
-                } else {
-                    overallProgress.setTitle("Extracting installation data for " + product.getDisplayName());
-                }
+                String prop = product.getRegistryType() == RegistryType.REMOTE ?
+                    PROGRESS_TITLE_REMOTE_PROPERTY :
+                    PROGRESS_TITLE_LOCAL_PROPERTY;
+                String overallProgressTitle = StringUtils.format(
+                        getProperty(prop), product.getDisplayName());
+                overallProgress.setTitle(overallProgressTitle);
                 
                 product.downloadData(currentProgress);
                 
@@ -90,7 +120,10 @@ public class DownloadInstallationDataAction extends WizardAction {
                 SystemUtils.sleep(200);
             }  catch (DownloadException e) {
                 // wrap the download exception with a more user-friendly one
-                InstallationException error = new InstallationException("Failed to download installation data for " + product.getDisplayName(), e);
+                InstallationException error = new InstallationException(
+                         StringUtils.format(
+                        getProperty(DOWNLOAD_FAILED_EXCEPTION_PROPERTY),
+                        product.getDisplayName()), e);
                 
                 // adjust the product's status and save this error - it will
                 // be reused later at the PostInstallSummary
@@ -103,7 +136,13 @@ public class DownloadInstallationDataAction extends WizardAction {
                 for(Product dependent: registry.getProducts()) {
                     if ((dependent.getStatus()  == Status.TO_BE_INSTALLED) &&
                             registry.satisfiesRequirement(product, dependent)) {
-                        final InstallationException dependentError = new InstallationException("Could not install " + dependent.getDisplayName() + ", since the installation of " + product.getDisplayName() + "failed", error);
+                       String exString = StringUtils.format(
+                                getProperty(DEPENDENT_FAILED_EXCEPTION_PROPERTY),
+                                dependent.getDisplayName(),
+                                product.getDisplayName());
+                        
+                        final InstallationException dependentError =
+                                new InstallationException(exString, error);
                         
                         dependent.setStatus(Status.NOT_INSTALLED);
                         dependent.setInstallationError(dependentError);
