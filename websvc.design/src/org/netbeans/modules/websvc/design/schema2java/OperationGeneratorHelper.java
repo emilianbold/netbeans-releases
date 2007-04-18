@@ -148,7 +148,8 @@ public class OperationGeneratorHelper {
             Collection<Schema> schemas = types.getSchemas();
             Iterator<Schema> it = schemas.iterator();
             if (it.hasNext()) {
-                schemaModel = it.next().getModel();
+                schema = it.next();
+                schemaModel = schema.getModel();
             }
             
             if(parameterTypes.size() > 0){  //if there are parameters
