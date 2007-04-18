@@ -69,11 +69,14 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
     private File wsdlFile;
     private List<Schema> importedSchemas;
     private WSDLModel wsdlModel;
+    private FaultsPanel faultsPanel;
     
     /** Creates new form NewJPanel */
     public AddOperationFromSchemaPanel(File wsdlFile) {
         this.wsdlFile=wsdlFile;
         initComponents();
+        faultsPanel = new FaultsPanel(getWsdlModel());
+        jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(AddOperationFromSchemaPanel.class, "TTL_faultsPanel"), faultsPanel); 
         opNameTxt.setText(NbBundle.getMessage(AddOperationFromSchemaPanel.class, "TXT_DefaultOperationName"));
         wsdlTextField.setText(NbBundle.getMessage(AddOperationFromSchemaPanel.class, "TXT_DefaultSchmas", wsdlFile.getName()));
         importSchemaBtn.setEnabled(true);
@@ -118,8 +121,8 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
         }
     }
     
-    public List<ReferenceableSchemaComponent> getFaultTypes() {
-        return null;
+    public List<ParamModel> getFaultTypes() {
+        return faultsPanel.getFaults();
     }
     
     private void populate()throws CatalogModelException {
@@ -168,7 +171,6 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
         jLabel6 = new javax.swing.JLabel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         parametersPanel = new org.netbeans.modules.websvc.design.view.actions.ParametersPanel(getWsdlModel());
-        parametersPanel1 = new org.netbeans.modules.websvc.design.view.actions.ParametersPanel();
         jPanel1 = new javax.swing.JPanel();
         jRadioButton1 = new javax.swing.JRadioButton();
         jRadioButton2 = new javax.swing.JRadioButton();
@@ -196,7 +198,6 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
         jLabel6.setText(org.openide.util.NbBundle.getMessage(AddOperationFromSchemaPanel.class, "LBL_BindingStyle")); // NOI18N
 
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(AddOperationFromSchemaPanel.class, "AddOperationFromSchemaPanel.parametersPanel.TabConstraints.tabTitle"), parametersPanel); // NOI18N
-        jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(AddOperationFromSchemaPanel.class, "AddOperationFromSchemaPanel.parametersPanel1.TabConstraints.tabTitle"), parametersPanel1); // NOI18N
 
         jPanel1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 20, 10));
 
@@ -225,7 +226,7 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 842, Short.MAX_VALUE)
+                    .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 934, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(nameLabel)
@@ -234,13 +235,13 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
                             .add(returnLabel))
                         .add(14, 14, 14)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(returnCombo, 0, 746, Short.MAX_VALUE)
+                            .add(returnCombo, 0, 816, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 389, Short.MAX_VALUE)
                                 .add(importSchemaBtn))
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, opNameTxt, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 746, Short.MAX_VALUE)
-                            .add(wsdlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 746, Short.MAX_VALUE))))
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, opNameTxt, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 816, Short.MAX_VALUE)
+                            .add(wsdlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 816, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -378,7 +379,6 @@ private WSDLModel getWsdlModel() {
     private javax.swing.JLabel nameLabel;
     private javax.swing.JTextField opNameTxt;
     private org.netbeans.modules.websvc.design.view.actions.ParametersPanel parametersPanel;
-    private org.netbeans.modules.websvc.design.view.actions.ParametersPanel parametersPanel1;
     private javax.swing.JComboBox returnCombo;
     private javax.swing.JLabel returnLabel;
     private javax.swing.JLabel wsdlLabel;

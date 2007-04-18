@@ -161,7 +161,7 @@ public class AddOperationAction extends AbstractAction {
         String operationName = panel.getOperationName();
         List<ParamModel> parameterTypes = panel.getParameterTypes();
         ReferenceableSchemaComponent returnType = panel.getReturnType();
-        List<ReferenceableSchemaComponent> faultTypes = panel.getFaultTypes();
+        List<ParamModel> faultTypes = panel.getFaultTypes();
         Operation operation = generatorHelper.addWsOperation(wsdlModel, generatorHelper.getPortTypeName(implementationClass),
                 operationName, parameterTypes, returnType, faultTypes);
         generatorHelper.generateJavaArtifacts(service.getName(), implementationClass, operationName, false);

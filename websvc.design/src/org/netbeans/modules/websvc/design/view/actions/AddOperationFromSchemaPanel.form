@@ -20,7 +20,7 @@
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="jTabbedPane1" alignment="1" pref="842" max="32767" attributes="0"/>
+                  <Component id="jTabbedPane1" alignment="1" pref="934" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="nameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -30,14 +30,14 @@
                       </Group>
                       <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="returnCombo" alignment="0" pref="746" max="32767" attributes="0"/>
+                          <Component id="returnCombo" alignment="0" pref="816" max="32767" attributes="0"/>
                           <Group type="102" alignment="1" attributes="0">
                               <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
                               <EmptySpace pref="389" max="32767" attributes="0"/>
                               <Component id="importSchemaBtn" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="opNameTxt" alignment="1" pref="746" max="32767" attributes="0"/>
-                          <Component id="wsdlTextField" alignment="0" pref="746" max="32767" attributes="0"/>
+                          <Component id="opNameTxt" alignment="1" pref="816" max="32767" attributes="0"/>
+                          <Component id="wsdlTextField" alignment="0" pref="816" max="32767" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
@@ -164,17 +164,6 @@
               <JTabbedPaneConstraints tabName="Parameters">
                 <Property name="tabTitle" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/websvc/design/view/actions/Bundle.properties" key="AddOperationFromSchemaPanel.parametersPanel.TabConstraints.tabTitle" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
-              </JTabbedPaneConstraints>
-            </Constraint>
-          </Constraints>
-        </Component>
-        <Component class="org.netbeans.modules.websvc.design.view.actions.ParametersPanel" name="parametersPanel1">
-          <Constraints>
-            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-              <JTabbedPaneConstraints tabName="Faults">
-                <Property name="tabTitle" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/websvc/design/view/actions/Bundle.properties" key="AddOperationFromSchemaPanel.parametersPanel1.TabConstraints.tabTitle" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </JTabbedPaneConstraints>
             </Constraint>
