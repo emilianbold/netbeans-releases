@@ -28,18 +28,15 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import org.netbeans.modules.xslt.project.prjwizard.FoldersListSettings;
+import org.netbeans.modules.xslt.project.wizard.FoldersListSettings;
 import org.openide.util.NbBundle;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 
 import java.net.URISyntaxException;
-    import java.awt.BorderLayout;
-
-import java.net.URL;
+import java.awt.BorderLayout;
 
 import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Transformer;
@@ -47,29 +44,18 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.dom.DOMSource;
 
-import java.util.logging.ErrorManager;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.text.MessageFormat;
 
 import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.xml.retriever.Retriever;
-
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
-import org.openide.util.Lookup;
-
-
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.xam.ModelSource;
-import org.netbeans.modules.xml.retriever.catalog.Utilities;
-import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
-import org.netbeans.modules.xml.wsdl.model.Types;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xml.xam.locator.CatalogModelFactory;

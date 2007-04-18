@@ -34,7 +34,7 @@ import org.netbeans.modules.xml.catalogsupport.ProjectConstants;
 
 import static org.netbeans.modules.xslt.project.XsltproConstants.*;
 import org.netbeans.modules.xml.catalogsupport.DefaultProjectCatalogSupport;
-import org.netbeans.modules.xslt.project.prjwizard.IcanproLogicalViewProvider;
+import org.netbeans.modules.xslt.project.wizard.IcanproLogicalViewProvider;
 import org.netbeans.modules.xslt.project.ui.customizer.XsltProjectCustomizerProvider;
 import org.netbeans.modules.xslt.project.ui.customizer.XsltproProjectProperties;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
