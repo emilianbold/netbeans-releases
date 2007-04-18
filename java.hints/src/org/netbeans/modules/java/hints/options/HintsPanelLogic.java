@@ -261,7 +261,16 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     // ActionListener implementation -------------------------------------------
     
     public void actionPerformed(ActionEvent e) {
-        // System.out.println("Item selected " + severityComboBox.getSelectedIndex() );
+        Object o = getUserObject(errorTree.getSelectionPath());
+        
+        customizerPanel.setVisible(false);
+        
+        if ( o instanceof AbstractHint ) {
+            AbstractHint hint = (AbstractHint) o;
+            Preferences p = getPreferences4Modification(hint);
+            
+            p.putInt(AbstractHint.SEVERITY_KEY, severityComboBox.getSelectedIndex());
+        }
     }
 
    

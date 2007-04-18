@@ -21,12 +21,17 @@ package org.netbeans.modules.java.hints.infrastructure;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.modules.java.editor.semantic.ScanningCancellableTask;
 import org.netbeans.modules.java.hints.spi.TreeRule;
+import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.HintsController;
 
@@ -42,9 +47,27 @@ public class SuggestionsTask extends ScanningCancellableTask<CompilationInfo> {
     public void run(CompilationInfo info) throws Exception {
         resume();
         
-        Map<Kind, List<TreeRule>> suggestions = RulesManager.getInstance().getSuggestions();
+        Map<Kind, List<TreeRule>> suggestions = new HashMap<Kind, List<TreeRule>>();
+        
+        suggestions.putAll(RulesManager.getInstance().getHints(true));
+        
+        for (Entry<Kind, List<TreeRule>> e : RulesManager.getInstance().getSuggestions().entrySet()) {
+            List<TreeRule> rules = suggestions.get(e.getKey());
+            
+            if (rules != null) {
+                List<TreeRule> res = new LinkedList<TreeRule>();
+                
+                res.addAll(rules);
+                res.addAll(e.getValue());
+                
+                suggestions.put(e.getKey(), res);
+            } else {
+                suggestions.put(e.getKey(), e.getValue());
+            }
+        }
         
         if (suggestions.isEmpty()) {
+            HintsController.setErrors(info.getFileObject(), SuggestionsTask.class.getName(), Collections.<ErrorDescription>emptyList());
             return ;
         }
         

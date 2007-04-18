@@ -23,6 +23,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -44,9 +45,10 @@ public class HintsTask extends ScanningCancellableTask<CompilationInfo> {
     public void run(CompilationInfo info) throws Exception {
         resume();
         
-        Map<Kind, List<TreeRule>> hints = RulesManager.getInstance().getHints();
+        Map<Kind, List<TreeRule>> hints = RulesManager.getInstance().getHints(false);
         
         if (hints.isEmpty()) {
+            HintsController.setErrors(info.getFileObject(), HintsTask.class.getName(), Collections.<ErrorDescription>emptyList());
             return ;
         }
         

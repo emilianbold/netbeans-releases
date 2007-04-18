@@ -27,9 +27,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -37,6 +39,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import org.netbeans.modules.java.hints.Pair;
+import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.hints.spi.Rule;
 import org.netbeans.modules.java.hints.spi.TreeRule;
@@ -98,6 +101,46 @@ public class RulesManager {
         return hints;
     }
 
+    public Map<Tree.Kind,List<TreeRule>> getHints(boolean onLine) {
+        Map<Tree.Kind, List<TreeRule>> result = new HashMap<Tree.Kind, List<TreeRule>>();
+        
+        for (Entry<Tree.Kind, List<TreeRule>> e : getHints().entrySet()) {
+            List<TreeRule> nueRules = new LinkedList<TreeRule>();
+            
+            for (TreeRule r : e.getValue()) {
+                if (!(r instanceof AbstractHint)) {
+                    if (!onLine)
+                        nueRules.add(r);
+                    continue;
+                }
+                
+                AbstractHint ah = (AbstractHint) r;
+                
+                Preferences p = ah.getPreferences();
+                
+                if (p == null) {
+                    if (!onLine)
+                        nueRules.add(r);
+                    continue;
+                }
+                
+                if (p.getInt(AbstractHint.SEVERITY_KEY, AbstractHint.SEVERITY_DEFAULT.ordinal()) == AbstractHint.HintSeverity.CURRENT_LINE_WARNING.ordinal()) {
+                    if (onLine)
+                        nueRules.add(r);
+                } else {
+                    if (!onLine)
+                        nueRules.add(r);
+                }
+            }
+            
+            if (!nueRules.isEmpty()) {
+                result.put(e.getKey(), nueRules);
+            }
+        }
+        
+        return result;
+    }
+    
     public Map<Tree.Kind,List<TreeRule>> getSuggestions() {
         return suggestions;
     }
