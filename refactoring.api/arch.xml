@@ -323,10 +323,10 @@ TreeElement is then displayed in refactoring preview panel.
 <br></br>Other usecases are docummented in javadoc.
 <ul>
     <li>Module wants to add common Refactoring Action into popup. <br></br>
-        See <a href="org/netbeans/modules/refactoring/api/ui/RefactoringActionsFactory.html">RefactoringActionsFactory</a>
+        See <a href="@org-netbeans-modules-refactoring-api@/org/netbeans/modules/refactoring/api/ui/RefactoringActionsFactory.html">RefactoringActionsFactory</a>
     </li>
     <li>
-       <a href="http://wiki.netbeans.org/wiki/view/RefactoringFAQ">RefactoringFAQ</a>
+       http://wiki.netbeans.org/wiki/view/RefactoringFAQ
     </li>
 </ul>
 
@@ -395,7 +395,9 @@ Refactoring module allows developer to do high level code transformations aka re
        AbstractRefactoring and it's sublcasses understands following types in its Lookup
     <ul>
     <li>
-       <api name="FilesystemsAPI" type="import" group="property" category="official">FileObject</api>
+       <api name="FilesystemsAPI" type="import" url="@org-openide-filesystems@/org/openide/filesystems/doc-files/api.html" category="official" group="java">FileObject</api>
+    </li>
+    <li>
        <api name="JavaSourceAPI" type="import" group="property" category="devel">TreePathHandle</api>
     </li>
     </ul>
