@@ -40,7 +40,6 @@ import com.sun.tools.javac.util.Position;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.modules.java.source.engine.JavaFormatOptions;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
 import org.netbeans.modules.java.source.save.ListMatcher;
@@ -74,7 +73,7 @@ public class CasualDiff {
         this.tokenSequence = workingCopy.getTokenHierarchy().tokenSequence();
         this.origText = workingCopy.getText();
         this.context = context;
-        printer = new VeryPretty(context, JavaFormatOptions.getDefault());
+        printer = new VeryPretty(context);
     }
     
     public com.sun.tools.javac.util.List<Diff> getDiffs() {
@@ -174,10 +173,7 @@ public class CasualDiff {
                 
             // package statement is new, print the keyword and semicolon
             case INSERT:
-                printer.print("package ");
-                printer.print(newT.pid);
-                printer.print(";");
-                printer.newline();
+                printer.printPackage(newT.pid);
                 break;
                 
             // package statement was deleted.    
@@ -524,7 +520,7 @@ public class CasualDiff {
         int localPointer = blockBounds[0];
 //        if (oldT.flags != newT.flags)
 //            append(Diff.flags(oldT.pos, endPos(oldT), oldT.flags, newT.flags));
-        VeryPretty bodyPrinter = new VeryPretty(context, JavaFormatOptions.getDefault());
+        VeryPretty bodyPrinter = new VeryPretty(context);
         int oldIndent = printer.indent();
         bodyPrinter.reset(oldIndent);
         bodyPrinter.indent();
@@ -658,7 +654,7 @@ public class CasualDiff {
         }
         int pos = oldT.stats.head.pos;
         PositionEstimator est = EstimatorFactory.deprecated(oldT.getStatements(), newT.getStatements(), workingCopy);
-        VeryPretty localPrinter = new VeryPretty(context, JavaFormatOptions.getDefault());
+        VeryPretty localPrinter = new VeryPretty(context);
         int[] stmtPos = diffList(oldT.stats, newT.stats, pos, est, Measure.DEFAULT, localPrinter);
         if (localPointer < stmtPos[0]) copyTo(localPointer, stmtPos[0]);
         printer.print(localPrinter.toString());
@@ -1772,7 +1768,7 @@ public class CasualDiff {
                                 found = true;
                                 VeryPretty oldPrinter = this.printer;
                                 int old = oldPrinter.indent();
-                                this.printer = new VeryPretty(context, JavaFormatOptions.getDefault());
+                                this.printer = new VeryPretty(context);
                                 this.printer.reset(old);
                                 int index = oldList.indexOf(oldT);
                                 int[] poss = estimator.getPositions(index);
@@ -1790,7 +1786,7 @@ public class CasualDiff {
                         if (lastdel != null && treesMatch(item.element, lastdel, false)) {
                             VeryPretty oldPrinter = this.printer;
                             int old = oldPrinter.indent();
-                            this.printer = new VeryPretty(context, JavaFormatOptions.getDefault());
+                            this.printer = new VeryPretty(context);
                             this.printer.reset(old);
                             int index = oldList.indexOf(lastdel);
                             int[] poss = estimator.getPositions(index);
@@ -1953,7 +1949,7 @@ public class CasualDiff {
                                 found = true;
                                 VeryPretty oldPrinter = this.printer;
                                 int old = oldPrinter.indent();
-                                this.printer = new VeryPretty(context, JavaFormatOptions.getDefault());
+                                this.printer = new VeryPretty(context);
                                 this.printer.reset(old);
                                 int index = oldList.indexOf(oldT);
                                 int[] poss = estimator.getPositions(index);
@@ -1969,7 +1965,7 @@ public class CasualDiff {
                         if (lastdel != null && treesMatch(item.element, lastdel, false)) {
                             VeryPretty oldPrinter = this.printer;
                             int old = oldPrinter.indent();
-                            this.printer = new VeryPretty(context, JavaFormatOptions.getDefault());
+                            this.printer = new VeryPretty(context);
                             this.printer.reset(old);
                             int index = oldList.indexOf(lastdel);
                             int[] poss = estimator.getPositions(index);
@@ -1979,7 +1975,6 @@ public class CasualDiff {
                             this.printer.undent(old);
                             break;
                         }
-                        printer.enclClassName = printer.enclClassName;
                         if (LineInsertionType.BEFORE == estimator.lineInsertType()) printer.newline();
                         printer.print(item.element);
                         if (LineInsertionType.AFTER == estimator.lineInsertType()) printer.newline();

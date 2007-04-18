@@ -215,12 +215,13 @@ public final class CharBuffer {
 	    append('\n');
 	}
     }
-    public void blankline() {
+    public void blanklines(int n) {
 	if(hasMargin())
 	    needSpace();
 	else {
 	    nlTerm();
-	    append('\n');
+            while(n-- > 0)
+	        append('\n');
 	}
     }
 }

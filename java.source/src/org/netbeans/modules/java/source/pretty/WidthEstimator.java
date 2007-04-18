@@ -59,11 +59,6 @@ public class WidthEstimator extends Visitor {
     private void width(String n) { width += n.length(); }
     private void width(JCTree n) { if(width<maxwidth) n.accept(this); }
     private void width(JCTree n, Type t) { if(t==null) width(n); else width(t); }
-    private ImportAnalysis imports;
-    public void setImports(ImportAnalysis i) {
-	imports = i;
-    }
-    public ImportAnalysis getImports() { return imports; }
     private void width(Type ty) {
 	    while(ty instanceof Type.ArrayType) {
 		ty = ((Type.ArrayType)ty).elemtype;
@@ -84,7 +79,7 @@ public class WidthEstimator extends Visitor {
     public void widthQ(Symbol t) {
 	if (t.owner != null && t.owner != symbols.rootPackage && t.owner != symbols.unnamedPackage
 	        && !(t.type instanceof Type.TypeVar)
-		&& (imports == null || !imports.imported(t)) && !(t.owner instanceof MethodSymbol)) {
+		&& !(t.owner instanceof MethodSymbol)) {
 	    width++;
 	    widthQ(t.owner);
 	}

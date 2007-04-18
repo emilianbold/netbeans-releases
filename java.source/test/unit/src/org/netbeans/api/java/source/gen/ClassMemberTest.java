@@ -438,7 +438,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
         String golden =
             "package hierbas.del.litoral;\n\n" +
             "public interface Test {\n\n" +
-            "    public void newlyCreatedMethod(int a, float b) throws java.io.IOException ;\n" +
+            "    public void newlyCreatedMethod(int a, float b) throws java.io.IOException;\n" +
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
@@ -487,7 +487,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
                 );
         String golden =
                 "package hierbas.del.litoral;\n\n" +
-                "public class Test {\n" +
+                "public class Test {\n\n" +
                 "    public class X {\n" +
                 "        private int i;\n\n" +
                 "        public void newlyCreatedMethod(int a, float b) throws java.io.IOException {\n" +
@@ -670,7 +670,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
             );
         String golden =
             "package hierbas.del.litoral;\n\n" +
-            "public class Test {\n" +
+            "public class Test {\n\n" +
             "    interface Honza {\n" +
             "    }\n" +
             "}\n";
@@ -714,7 +714,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
             );
         String golden =
             "package hierbas.del.litoral;\n\n" +
-            "public class Test {\n" +
+            "public class Test {\n\n" +
             "    public @interface Honza {\n" +
             "    }\n" +
             "}\n";
@@ -756,7 +756,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
             );
         String golden =
             "package hierbas.del.litoral;\n\n" +
-            "public class Test {\n" +
+            "public class Test {\n\n" +
             "    protected enum Honza {\n" +
             "    }\n" +
             "}\n";

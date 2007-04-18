@@ -232,7 +232,7 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
             "\n" +
             "public class Test {\n" +
             "    public Test() {\n" +
-            "System.err.println(null);\n" +
+            "        System.err.println(null);\n" +
             "    }\n" +
             "    \n" +
             "    public Object method() {\n" +
@@ -371,7 +371,7 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "    \n" +
             "    public Object method() {\n" +
-            "return new Integer(5);\n" +
+            "        return new Integer(5);\n" +
             "    }\n" +
             "}\n";
                  
@@ -429,7 +429,7 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "    \n" +
             "    public float method() {\n" +
-            "return 0.0F;\n" +
+            "        return 0.0F;\n" +
             "    }\n" +
             "}\n";
                  

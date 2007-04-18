@@ -99,10 +99,10 @@ public class FmtOptions {
     public static final String placeCatchOnNewLine = "placeCatchOnNewLine"; //NOI18N
     public static final String placeFinallyOnNewLine = "placeFinallyOnNewLine"; //NOI18N
     
-    public static final String wrapExtendsImplementsKeyword = "wrapExtendsImplementsKyword"; //NOI18N
+    public static final String wrapExtendsImplementsKeyword = "wrapExtendsImplementsKeyword"; //NOI18N
     public static final String wrapExtendsImplementsList = "wrapExtendsImplementsList"; //NOI18N
     public static final String wrapMethodParams = "wrapMethodParams"; //NOI18N
-    public static final String wrapThrowsKeyword = "wrapThrowsKyword"; //NOI18N
+    public static final String wrapThrowsKeyword = "wrapThrowsKeyword"; //NOI18N
     public static final String wrapThrowsList = "wrapThrowsList"; //NOI18N
     public static final String wrapMethodCallArgs = "wrapMethodCallArgs"; //NOI18N
     public static final String wrapChainedMethodCalls = "wrapChainedMethodCalls"; //NOI18N
@@ -366,7 +366,7 @@ public class FmtOptions {
             { spaceAfterComma, TRUE}, //NOI18N
             { spaceBeforeSemi, FALSE}, //NOI18N
             { spaceAfterSemi, TRUE}, //NOI18N
-            { spaceAfterTypeCast, FALSE}, //NOI18N
+            { spaceAfterTypeCast, TRUE}, //NOI18N
 
             { useSingleClassImport, TRUE}, //NOI18N
             { useFQNs, FALSE}, //NOI18N

@@ -212,10 +212,10 @@ public class TwoModificationsTest extends GeneratorTest {
             "    }\n" +
             "    \n" +
             "    public void setText() {" +
-            "System.out.println(\"Test\");\n" +
-            "System.out.println(\"Text\");\n" +
-            "    System.out.println(\"Test\");\n" +
-            "}\n" +
+            "        System.out.println(\"Test\");\n" +
+            "        System.out.println(\"Text\");\n" +
+            "        System.out.println(\"Test\");\n" +
+            "    }\n" +
             "    \n" +
             "    public Object method2(Class o) {\n" +
             "    }\n" +

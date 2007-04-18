@@ -110,8 +110,8 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "public class Test {\n" +
             "    public void taragui() {\n" +
             "        ;\n" +
-            "    System.err.println(null);\n" + 
-            "}\n" +
+            "        System.err.println(null);\n" + 
+            "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
         CancellableTask task = new CancellableTask<WorkingCopy>() {
@@ -171,8 +171,8 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "public class Test {\n" +
             "    public void taragui() {\n" +
             "        ;\n" +
-            "    System.err.println(true);\n" + 
-            "}\n" +
+            "        System.err.println(true);\n" + 
+            "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
         CancellableTask task = new CancellableTask<WorkingCopy>() {
@@ -2072,7 +2072,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "            case 0: {\n" +
             "                System.err.println(ycko);\n" +
             "            }" +
-            "case 1:\n" +
+            "            case 1:\n" +
             "                ycko = 12;\n" +
             "            default:\n" +
             "                ycko += 7;\n" +
@@ -2185,8 +2185,8 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "public class Test {\n" +
             "    public Object method(Class o) {\n" +
             "        method(new Test());\n" +
-            "    System.out.println(\"Test\");\n" +
-            "}\n" +
+            "        System.out.println(\"Test\");\n" +
+            "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
         CancellableTask task = new CancellableTask<WorkingCopy>() {

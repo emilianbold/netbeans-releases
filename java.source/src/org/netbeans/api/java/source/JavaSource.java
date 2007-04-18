@@ -789,7 +789,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             
             FileObject root = getClasspathInfo().getClassPath(PathKind.SOURCE).findOwnerRoot(file);
             
-            if (root != null) {
+            if (root != null && sourceLevel != null) {
                 try {
                     RepositoryUpdater.getDefault().verifySourceLevel(root.getURL(), sourceLevel);
                 } catch (IOException ex) {

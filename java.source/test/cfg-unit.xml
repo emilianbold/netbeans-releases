@@ -101,6 +101,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/api/java/source/gen/BrokenSourceTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/SyntetickejTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/EnumTest.class"/>
+                <include name="org/netbeans/api/java/source/gen/FormatingTest.class"/>
                 
                 <!--
                 Makes many operation on field declaration.

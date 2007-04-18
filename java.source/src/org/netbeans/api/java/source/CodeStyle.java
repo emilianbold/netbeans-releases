@@ -22,8 +22,6 @@ package org.netbeans.api.java.source;
 import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.ui.FmtOptions;
-import org.openide.util.NbPreferences;
-
 import static org.netbeans.modules.java.ui.FmtOptions.*;
 
 /** 
@@ -44,7 +42,7 @@ public final class CodeStyle {
         this.preferences = preferences;
     }
     
-    public synchronized static CodeStyle getDefault( Project project ) {
+    public synchronized static CodeStyle getDefault(Project project) {
         if (INSTANCE == null)
             INSTANCE = create();
         return INSTANCE;
@@ -590,7 +588,7 @@ public final class CodeStyle {
     }
 
     public boolean spaceAfterTypeCast() {
-        return preferences.getBoolean(spaceAfterTypeCast, false);
+        return preferences.getBoolean(spaceAfterTypeCast, true);
     }
 
     // Imports -----------------------------------------------------------------

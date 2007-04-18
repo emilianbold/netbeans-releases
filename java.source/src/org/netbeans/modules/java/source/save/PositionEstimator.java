@@ -1224,11 +1224,11 @@ public abstract class PositionEstimator {
                     int index = 0;
                     while (index < c.length) {
                         if (c[index++] == '\n') {
-                            while (index < c.length)
-                                if (c[index] != ' ' && c[index] != '\t')
-                                    break;
-                                else
-                                    ++index;
+//                            while (index < c.length)
+//                                if (c[index] != ' ' && c[index] != '\t')
+//                                    break;
+//                                else
+//                                    ++index;
                             return base + index;
                         }
                     }

@@ -158,7 +158,7 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
         categories.add(FmtTabsIndents.getController());
         // categories.add(FmtCodeGeneration.getController());
         categories.add(FmtAlignmentBraces.getController());
-        // categories.add(FmtWrapping.getController());
+        categories.add(FmtWrapping.getController());
         categories.add(FmtBlankLines.getController());
         categories.add(FmtSpaces.getController());
         // categories.add(FmtImports.getController()); // XXX
