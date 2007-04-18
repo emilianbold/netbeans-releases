@@ -25,6 +25,7 @@ import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyEditor;
 
 import javax.swing.*;
 import java.awt.*;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.properties.common.PropertiesSupport;
 
 /**
@@ -33,25 +34,21 @@ import org.netbeans.modules.vmd.api.properties.common.PropertiesSupport;
 public class ResourcePropertyEditor implements ScreenPropertyEditor {
 
     private String propertyName;
-    private int alignment;
+    private DesignComponent propertyComponent;
 
-    public ResourcePropertyEditor (String propertyName) {
-        this (propertyName, JTextField.LEFT);
-    }
-
-    public ResourcePropertyEditor (String propertyName, int alignment) {
-        this.alignment = alignment;
+    public ResourcePropertyEditor (String propertyName, DesignComponent propertyComponent) {
         assert propertyName != null;
         this.propertyName = propertyName;
+        this.propertyComponent = propertyComponent;
     }
 
     public JComponent createEditorComponent (ScreenPropertyDescriptor property) {
-        PropertiesSupport.showPropertyEdiotrForCurrentComponent(propertyName);
+        PropertiesSupport.showPropertyEdiotrForCurrentComponent(propertyName, propertyComponent);
         return null;
     }
 
     public Insets getEditorComponentInsets (JComponent editorComponent) {
-        return editorComponent.getBorder ().getBorderInsets (editorComponent);
+        return null;
     }
 
 }

@@ -44,6 +44,11 @@ public class PropertiesNode extends AbstractNode{
         this.component = new WeakReference<DesignComponent>(component);
     }
     
+    public PropertiesNode(DesignComponent component) {
+        super(Children.LEAF);
+        this.component = new WeakReference<DesignComponent>(component);
+    }
+    
     public Sheet createSheet() {
         if(component.get() == null)
             super.createSheet();        

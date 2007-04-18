@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.vmd.midpnb.screen.display;
 
+import com.sun.corba.se.spi.orb.StringPair;
 import java.awt.BasicStroke;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -32,14 +33,18 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
+import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyEditor;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.netbeans.modules.vmd.midp.components.items.ItemCD;
 import org.netbeans.modules.vmd.midp.screen.display.ItemDisplayPresenter;
 import org.netbeans.modules.vmd.midp.screen.display.ScreenSupport;
+import org.netbeans.modules.vmd.midp.screen.display.property.ResourcePropertyEditor;
 import org.netbeans.modules.vmd.midp.screen.display.property.ScreenStringPropertyEditor;
 import org.netbeans.modules.vmd.midpnb.components.items.TableItemCD;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleTableModelCD;
@@ -232,9 +237,16 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
     }
     
      public Collection<ScreenPropertyDescriptor> getPropertyDescriptors () {
-        return Arrays.asList(
-                new ScreenPropertyDescriptor (getComponent (), label, new ScreenStringPropertyEditor (ItemCD.PROP_LABEL))
-                //new ScreenPropertyDescriptor (getComponent (), panel, new ScreenStringPropertyEditor (ItemCD.PROP_LABEL))
-        );
+        List<ScreenPropertyDescriptor> descriptors = new ArrayList<ScreenPropertyDescriptor>(super.getPropertyDescriptors());  
+        DesignComponent tableModel = getComponent().readProperty(TableItemCD.PROP_MODEL).getComponent();
+        ScreenPropertyEditor tableModelDescriptor = null;
+        if (tableModel == null)
+            tableModelDescriptor =  new ResourcePropertyEditor(TableItemCD.PROP_MODEL, getComponent());
+        else
+            tableModelDescriptor = new ResourcePropertyEditor(SimpleTableModelCD.PROP_VALUES, tableModel);
+        descriptors.add(new ScreenPropertyDescriptor(getComponent(), panel, tableModelDescriptor));
+        return descriptors;
+        
     }
+     
 }

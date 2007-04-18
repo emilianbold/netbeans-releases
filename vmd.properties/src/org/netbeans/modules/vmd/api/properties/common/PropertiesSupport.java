@@ -21,7 +21,6 @@ package org.netbeans.modules.vmd.api.properties.common;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -29,7 +28,6 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyDescriptor;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyEditor;
 import org.netbeans.modules.vmd.api.properties.GroupPropertyEditor;
-import org.netbeans.modules.vmd.api.properties.PropertiesNodesManager;
 import org.netbeans.modules.vmd.api.properties.PropertiesPresenter;
 import org.netbeans.modules.vmd.properties.AdvancedPropertySupport;
 import org.netbeans.modules.vmd.properties.PrimitivePropertySupport;
@@ -37,7 +35,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyPanel;
-import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
 import org.openide.nodes.Node.PropertySet;
@@ -98,12 +95,9 @@ public final class PropertiesSupport {
         return sheet;
     }
     //multi selection not supported
-    public static void showPropertyEdiotrForCurrentComponent(String propertyName) {
-        AbstractNode[] nodes = PropertiesNodesManager.getDefault().getActiveNodes();
-        if (nodes.length > 1)
-            return;
-        AbstractNode node = nodes[0];
-        for (PropertySet propertySet : node.getPropertySets()) {
+    public static void showPropertyEdiotrForCurrentComponent(String propertyName, DesignComponent component) {
+        Sheet sheet = createSheet(component);
+        for (PropertySet propertySet : sheet.toArray()) {
             for (Property property : propertySet.getProperties()) {
                 if(propertyName.equals(property.getName())) {
                     final PropertyPanel propertyPanel = new PropertyPanel(property, PropertyPanel.PREF_CUSTOM_EDITOR);

@@ -25,13 +25,10 @@ import org.openide.util.Utilities;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
-import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyEditor;
 import org.netbeans.modules.vmd.midp.screen.display.property.ResourcePropertyEditor;
 
@@ -82,9 +79,14 @@ public class DisplayableDisplayPresenter extends ScreenDisplayPresenter {
         else {
             DesignComponent ticker = getComponent().readProperty(DisplayableCD.PROP_TICKER).getComponent();
             if (ticker != null) {
-                tickerText = MidpValueSupport.getHumanReadableString(ticker.readProperty(TickerCD.PROP_STRING));
-                if (tickerText == null || tickerText.equals(""))
-                    tickerText = "<empty ticker string>"; //NOI18N
+                PropertyValue value = ticker.readProperty(TickerCD.PROP_STRING);
+                if (value.getKind() == PropertyValue.Kind.USERCODE) 
+                    tickerText = "<ticker string user code>"; //NOI18N
+                else {
+                    tickerText = MidpValueSupport.getHumanReadableString(value);
+                    if (tickerText == null || tickerText.equals(""))
+                        tickerText = "<empty ticker string>"; //NOI18N
+                }
             }
         }
         panel.getTicker().setText(tickerText);
@@ -95,7 +97,7 @@ public class DisplayableDisplayPresenter extends ScreenDisplayPresenter {
         DesignComponent ticker = getComponent().readProperty(DisplayableCD.PROP_TICKER).getComponent();
         ScreenPropertyEditor tickerEditor;
         if (ticker == null)
-            tickerEditor = new ResourcePropertyEditor(DisplayableCD.PROP_TICKER, JTextField.CENTER);
+            tickerEditor = new ResourcePropertyEditor(DisplayableCD.PROP_TICKER, getComponent());
         else
             tickerEditor = new ScreenStringPropertyEditor(TickerCD.PROP_STRING, DisplayableCD.PROP_TICKER, JTextField.CENTER);
         return Arrays.asList(

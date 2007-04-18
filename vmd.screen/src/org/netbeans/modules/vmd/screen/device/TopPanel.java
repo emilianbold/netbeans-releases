@@ -243,6 +243,8 @@ public class TopPanel extends JPanel {
                     for (ScreenPropertyDescriptor property : properties) {
                         Point editorOrigin = devicePanel.calculateTranslation (property.getRelatedView ());
                         Shape shape = property.getSelectionShape ();
+                        if (editorOrigin == null)
+                            System.out.println();
                         if (shape.contains (new Point (e.getX () - editorOrigin.x, e.getY () - editorOrigin.y))) {
                             hoverShape = new SelectionShape (editorOrigin.x, editorOrigin.y, shape, Long.MIN_VALUE, false);
                             return;

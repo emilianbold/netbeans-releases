@@ -63,7 +63,7 @@ public class SpacerDisplayPresenter extends ScreenDisplayPresenter {
     }
 
     public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {
-        return null;
+        return Collections.emptySet();
     }
 
 }
