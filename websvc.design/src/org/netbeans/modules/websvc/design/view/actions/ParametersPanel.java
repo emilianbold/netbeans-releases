@@ -91,7 +91,6 @@ public final class ParametersPanel extends javax.swing.JPanel {
         
         tableModel.addTableModelListener(new TableModelListener() {
             public void tableChanged(TableModelEvent tableModelEvent) {
-                System.out.println("### tableModelEvent " + tableModelEvent.getType());
                 updateButtons();
             }
         });
@@ -103,7 +102,6 @@ public final class ParametersPanel extends javax.swing.JPanel {
             int i=0;
             for (ReferenceableSchemaComponent schemaType:schemaTypes) {
                 refTypes[i++]=Utils.getDisplayName(schemaType);
-                System.out.println("schema ref = "+schemaType.getName());
             }
             TableColumn col = table.getColumnModel().getColumn(COL_TYPE_INDEX);
             col.setPreferredWidth(300);
@@ -122,7 +120,6 @@ public final class ParametersPanel extends javax.swing.JPanel {
             int i=0;
             for (ReferenceableSchemaComponent schemaType:schemaTypes) {
                 refTypes[i++]=Utils.getDisplayName(schemaType);
-                System.out.println("schema ref = "+schemaType.getName());
             }
             TableColumn col = table.getColumnModel().getColumn(COL_TYPE_INDEX);
             col.setPreferredWidth(300);
@@ -287,7 +284,6 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 
 private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
     int index = tableModel.addParameter();
-    //    System.out.println("### INDEX: " + index + " from " + table.getRowCount());
     table.getSelectionModel().setSelectionInterval(index, index);
     updateButtons();
 }//GEN-LAST:event_addButtonActionPerformed
@@ -323,7 +319,7 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         }
         
         public int addParameter() {
-            String name = generateUniqueName("param"); //NOI18N
+            String name = generateUniqueName("arg"); //NOI18N
             ParamModel parameter = new ParamModel(name);
             int index = parameters.size();
             parameters.add(parameter);
@@ -356,9 +352,7 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         public Object getValueAt(int row, int column) {
             Object result = null;
             ParamModel parameter = parameters.get(row);
-            System.out.println("getValueAt() "+parameter);
             if (parameter != null) {
-                System.out.println("param = "+parameter.getParamName());
                 switch (column) {
                 case COL_NAME_INDEX: result = parameter.getParamName(); break;
                 case COL_TYPE_INDEX: result = parameter.getDisplayName(); break;
@@ -378,7 +372,6 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         public void setValueAt(Object aValue, int row, int column) {
             ParamModel parameter = parameters.get(row);
             ParamModel changedParameter = new ParamModel();
-            System.out.println("setVallueAt "+aValue);
             if (column==COL_NAME_INDEX) {
                 changedParameter.setParamName((String) aValue);
                 changedParameter.setParamType(parameter.getParamType());
