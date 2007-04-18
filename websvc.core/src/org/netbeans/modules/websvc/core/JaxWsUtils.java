@@ -416,16 +416,7 @@ public class JaxWsUtils {
 //        
 //        //handle.finish();
     }
-    /*
-    private static void openFileInEditor(DataObject dobj){
-        final EditorCookie ec = (EditorCookie)dobj.getCookie(EditorCookie.class);
-        RequestProcessor.getDefault().post(new Runnable(){
-            public void run(){
-                ec.open();
-            }
-        }, 1000);
-    }
-    */
+
     public static void openFileInEditor(DataObject dobj, Service service){
 
         final OpenCookie openCookie = getMultiViewCookie(service,dobj);
