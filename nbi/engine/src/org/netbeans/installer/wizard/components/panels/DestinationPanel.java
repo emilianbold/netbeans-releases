@@ -38,6 +38,7 @@ import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiTextField;
 import org.netbeans.installer.wizard.ui.SwingUi;
@@ -82,6 +83,8 @@ public class DestinationPanel extends ErrorMessagePanel {
                 DEFAULT_ERROR_NOT_EMPTY);
         setProperty(ERROR_NOT_ENDS_WITH_APP_PROPERTY,
                 DEFAULT_ERROR_NOT_ENDS_WITH_APP);
+        setProperty(ERROR_NOT_ENOUGH_SPACE_PROPERTY, 
+                DEFAULT_ERROR_NOT_ENOUGH_SPACE);
     }
     
     @Override
@@ -283,8 +286,21 @@ public class DestinationPanel extends ErrorMessagePanel {
                             component.getProperty(ERROR_NOT_ENDS_WITH_APP_PROPERTY),
                             file.getAbsolutePath());
                 }
+                
+                final long requiredSize = 
+                        product.getRequiredDiskSpace() + REQUIRED_SPACE_ADDITION;
+                final long availableSize = 
+                        SystemUtils.getFreeSpace(file);
+                if (availableSize < requiredSize) {
+                    return StringUtils.format(
+                            component.getProperty(ERROR_NOT_ENOUGH_SPACE_PROPERTY),
+                            file,
+                            StringUtils.formatSize(requiredSize - availableSize));
+                }
             } catch (InitializationException e) {
-                ErrorManager.notifyError("Cannot obtain confguration logic", e);
+                ErrorManager.notifyError("Cannot obtain configuration logic", e);
+            } catch (NativeException e) {
+                ErrorManager.notifyError("Cannot calculate free disk space", e);
             }
             
             return null;
@@ -432,6 +448,8 @@ public class DestinationPanel extends ErrorMessagePanel {
             "error.not.empty"; // NOI18N
     public static final String ERROR_NOT_ENDS_WITH_APP_PROPERTY =
             "error.not.ends.with.app"; // NOI18N
+    public static final String ERROR_NOT_ENOUGH_SPACE_PROPERTY =
+            "error.not.enough.space"; // NOI18N
     
     public static final String DEFAULT_ERROR_NULL =
             ResourceUtils.getString(DestinationPanel.class,
@@ -463,6 +481,9 @@ public class DestinationPanel extends ErrorMessagePanel {
     public static final String DEFAULT_ERROR_NOT_ENDS_WITH_APP =
             ResourceUtils.getString(DestinationPanel.class,
             "DP.error.not.ends.with.app"); // NOI18N
+    public static final String DEFAULT_ERROR_NOT_ENOUGH_SPACE =
+            ResourceUtils.getString(DestinationPanel.class,
+            "DP.error.not.enough.space"); // NOI18N
     
     public static final String DEFAULT_DESTINATION =
             ResourceUtils.getString(DestinationPanel.class,
@@ -470,4 +491,7 @@ public class DestinationPanel extends ErrorMessagePanel {
     
     public static final String APP_SUFFIX =
             ".app"; // NOI18N
+    
+    public static final long REQUIRED_SPACE_ADDITION = 
+            10L * 1024L * 1024L; // 10MB
 }

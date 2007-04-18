@@ -23,6 +23,7 @@ package org.netbeans.installer.utils.system;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -576,6 +577,10 @@ public class WindowsNativeUtils extends NativeUtils {
     
     public void correctFilesPermissions(File parent) {
         // does nothing, as there is no such thing as execute permissions
+    }
+    
+    public List<File> getFileSystemRoots() throws IOException {
+        return Arrays.asList(File.listRoots());
     }
     
 // windows-specific operations //////////////////////////////////////////////////

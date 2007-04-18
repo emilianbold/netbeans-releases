@@ -22,18 +22,31 @@ package org.netbeans.installer.wizard.components.panels.netbeans;
 
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.RegistryNode;
 import org.netbeans.installer.product.RegistryType;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
+import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
+import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
 import org.netbeans.installer.wizard.components.WizardPanel;
+import org.netbeans.installer.wizard.components.panels.ErrorMessagePanel;
+import org.netbeans.installer.wizard.components.panels.ErrorMessagePanel.ErrorMessagePanelSwingUi;
+import org.netbeans.installer.wizard.components.panels.ErrorMessagePanel.ErrorMessagePanelUi;
 import org.netbeans.installer.wizard.containers.SwingContainer;
 import org.netbeans.installer.wizard.ui.SwingUi;
 import org.netbeans.installer.wizard.ui.WizardUi;
@@ -42,19 +55,29 @@ import org.netbeans.installer.wizard.ui.WizardUi;
  *
  * @author Kirill Sorokin
  */
-public class NbPreInstallSummaryPanel extends WizardPanel {
+public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     public NbPreInstallSummaryPanel() {
-        setProperty(TITLE_PROPERTY, DEFAULT_TITLE);
-        setProperty(DESCRIPTION_PROPERTY, DEFAULT_DESCRIPTION);
+        setProperty(TITLE_PROPERTY,
+                DEFAULT_TITLE);
+        setProperty(DESCRIPTION_PROPERTY,
+                DEFAULT_DESCRIPTION);
         
-        setProperty(INSTALLATION_FOLDER_PROPERTY, DEFAULT_INSTALLATION_FOLDER);
-        setProperty(UNINSTALL_LIST_LABEL_TEXT_PROPERTY, DEFAULT_UNINSTALL_LIST_LABEL_TEXT);
-        setProperty(INSTALLATION_SIZE_PROPERTY, DEFAULT_INSTALLATION_SIZE);
-        setProperty(DOWNLOAD_SIZE_PROPERTY, DEFAULT_DOWNLOAD_SIZE);
+        setProperty(INSTALLATION_FOLDER_PROPERTY,
+                DEFAULT_INSTALLATION_FOLDER);
+        setProperty(UNINSTALL_LIST_LABEL_TEXT_PROPERTY,
+                DEFAULT_UNINSTALL_LIST_LABEL_TEXT);
+        setProperty(INSTALLATION_SIZE_PROPERTY,
+                DEFAULT_INSTALLATION_SIZE);
+        setProperty(DOWNLOAD_SIZE_PROPERTY,
+                DEFAULT_DOWNLOAD_SIZE);
         
-        setProperty(NEXT_BUTTON_TEXT_PROPERTY, DEFAULT_NEXT_BUTTON_TEXT);
+        setProperty(NEXT_BUTTON_TEXT_PROPERTY,
+                DEFAULT_NEXT_BUTTON_TEXT);
+        
+        setProperty(ERROR_NOT_ENOUGH_SPACE_PROPERTY, 
+                DEFAULT_ERROR_NOT_ENOUGH_SPACE);
     }
     
     @Override
@@ -79,7 +102,7 @@ public class NbPreInstallSummaryPanel extends WizardPanel {
     
     /////////////////////////////////////////////////////////////////////////////////
     // Inner Classes
-    public static class NbPreInstallSummaryPanelUi extends WizardPanelUi {
+    public static class NbPreInstallSummaryPanelUi extends ErrorMessagePanelUi {
         protected NbPreInstallSummaryPanel component;
         
         public NbPreInstallSummaryPanelUi(NbPreInstallSummaryPanel component) {
@@ -98,21 +121,21 @@ public class NbPreInstallSummaryPanel extends WizardPanel {
         }
     }
     
-    public static class NbPreInstallSummaryPanelSwingUi extends WizardPanelSwingUi {
+    public static class NbPreInstallSummaryPanelSwingUi extends ErrorMessagePanelSwingUi {
         protected NbPreInstallSummaryPanel component;
         
         private NbiTextPane locationsPane;
         
-        private NbiLabel    uninstallListLabel;
+        private NbiLabel uninstallListLabel;
         private NbiTextPane uninstallListPane;
         
-        private NbiLabel    installationSizeLabel;
-        private NbiLabel    installationSizeValue;
+        private NbiLabel installationSizeLabel;
+        private NbiLabel installationSizeValue;
         
-        private NbiLabel    downloadSizeLabel;
-        private NbiLabel    downloadSizeValue;
+        private NbiLabel downloadSizeLabel;
+        private NbiLabel downloadSizeValue;
         
-        private NbiPanel    spacer;
+        private NbiPanel spacer;
         
         public NbPreInstallSummaryPanelSwingUi(
                 final NbPreInstallSummaryPanel component,
@@ -129,7 +152,7 @@ public class NbPreInstallSummaryPanel extends WizardPanel {
             super.initializeContainer();
             
             container.getNextButton().setText(
-                    component.getProperty(NEXT_BUTTON_TEXT_PROPERTY));
+                    panel.getProperty(NEXT_BUTTON_TEXT_PROPERTY));
         }
         
         protected void initialize() {
@@ -146,7 +169,7 @@ public class NbPreInstallSummaryPanel extends WizardPanel {
                 try {
                     if (product.getLogic().registerInSystem()) {
                         text.append(StringUtils.format(
-                                component.getProperty(INSTALLATION_FOLDER_PROPERTY),
+                                panel.getProperty(INSTALLATION_FOLDER_PROPERTY),
                                 product.getDisplayName()));
                         text.append(StringUtils.LF);
                         text.append("    " + product.getInstallationLocation());
@@ -161,17 +184,18 @@ public class NbPreInstallSummaryPanel extends WizardPanel {
             
             locationsPane.setText(text);
             
-            uninstallListLabel.setText(component.getProperty(UNINSTALL_LIST_LABEL_TEXT_PROPERTY));
+            uninstallListLabel.setText(
+                    panel.getProperty(UNINSTALL_LIST_LABEL_TEXT_PROPERTY));
             uninstallListPane.setText(
                     StringUtils.asString(registry.getProductsToUninstall()));
             
             installationSizeLabel.setText(
-                    component.getProperty(INSTALLATION_SIZE_PROPERTY));
+                    panel.getProperty(INSTALLATION_SIZE_PROPERTY));
             installationSizeValue.setText(StringUtils.formatSize(
                     installationSize));
             
             downloadSizeLabel.setText(
-                    component.getProperty(DOWNLOAD_SIZE_PROPERTY));
+                    panel.getProperty(DOWNLOAD_SIZE_PROPERTY));
             downloadSizeValue.setText(StringUtils.formatSize(
                     downloadSize));
             
@@ -201,6 +225,63 @@ public class NbPreInstallSummaryPanel extends WizardPanel {
                     downloadSizeValue.setVisible(true);
                 }
             }
+            
+            super.initialize();
+        }
+        
+        @Override
+        protected String validateInput() {
+            try {
+                final List<File> roots = 
+                        SystemUtils.getFileSystemRoots();
+                final List<Product> products = 
+                        Registry.getInstance().getProductsToInstall();
+                final Map<File, Long> spaceMap = 
+                        new HashMap<File, Long>();
+                
+                for (Product product: products) {
+                    for (File root: roots) {
+                        if (FileUtils.isParent(
+                                root, product.getInstallationLocation())) {
+                            Long size = spaceMap.get(root);
+                            if (size != null) {
+                                size = Long.valueOf(size.longValue() + 
+                                        product.getRequiredDiskSpace());
+                            } else {
+                                size = Long.valueOf(product.getRequiredDiskSpace());
+                            }
+                            
+                            spaceMap.put(root, size);
+                        }
+                    }
+                }
+                
+                for (File root: spaceMap.keySet()) {
+                    try {
+                        final long availableSpace = 
+                                SystemUtils.getFreeSpace(root);
+                        final long requiredSpace = 
+                                spaceMap.get(root) + REQUIRED_SPACE_ADDITION;
+                        
+                        if (availableSpace < requiredSpace) {
+                            return StringUtils.format(
+                                    panel.getProperty(ERROR_NOT_ENOUGH_SPACE_PROPERTY),
+                                    root,
+                                    StringUtils.formatSize(requiredSpace - availableSpace));
+                        }
+                    } catch (NativeException e) {
+                        ErrorManager.notifyError(
+                                "Cannot check the free disk space", 
+                                e);
+                    }
+                }
+            } catch (IOException e) {
+                ErrorManager.notifyError(
+                        "Cannot get the list of file system roots", 
+                        e);
+            }
+            
+            return null;
         }
         
         // private //////////////////////////////////////////////////////////////////
@@ -295,9 +376,9 @@ public class NbPreInstallSummaryPanel extends WizardPanel {
                     0, 25,                            // x, y
                     1, 1,                             // width, height
                     1.0, 1.0,                         // weight-x, weight-y
-                    GridBagConstraints.LINE_START,    // anchor
-                    GridBagConstraints.HORIZONTAL,    // fill
-                    new Insets(0, 11, 11, 11),        // padding
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(0, 11, 0, 11),         // padding
                     0, 0));                           // padx, pady - ???
         }
     }
@@ -312,6 +393,9 @@ public class NbPreInstallSummaryPanel extends WizardPanel {
             "installation.size"; // NOI18N
     public static final String DOWNLOAD_SIZE_PROPERTY =
             "download.size"; // NOI18N
+    
+    public static final String ERROR_NOT_ENOUGH_SPACE_PROPERTY =
+            "error.not.enough.space"; // NOI18N
     
     public static final String DEFAULT_TITLE =
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
@@ -342,4 +426,11 @@ public class NbPreInstallSummaryPanel extends WizardPanel {
     public static final String DEFAULT_NEXT_BUTTON_TEXT_UNINSTALL =
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
             "NPrISP.next.button.text.uninstall"); // NOI18N
+    
+    public static final String DEFAULT_ERROR_NOT_ENOUGH_SPACE =
+            ResourceUtils.getString(NbPreInstallSummaryPanel.class,
+            "NPrISP.error.not.enough.space"); // NOI18N
+    
+    public static final long REQUIRED_SPACE_ADDITION = 
+            10L * 1024L * 1024L; // 10MB
 }

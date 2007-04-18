@@ -563,6 +563,10 @@ public class Installer implements FinishHandler {
         LogManager.log("... finished parsing command line arguments");
     }
     
+    public File getLocalDirectory() {
+        return localDirectory;
+    }
+    
     private void setLocalDirectory() {
         LogManager.log("initializing the local directory");
         LogManager.indent();

@@ -25,7 +25,6 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.UiUtils;
 import org.netbeans.installer.utils.helper.NbiThread;
@@ -220,18 +219,15 @@ public class ErrorMessagePanel extends WizardPanel {
         // Inner Classes
         public static class ValidatingThread extends NbiThread {
             /////////////////////////////////////////////////////////////////////////
-            // Constants
-            public static final long VALIDATION_DELAY = 10000;
-            
-            /////////////////////////////////////////////////////////////////////////
             // Instance
             private ErrorMessagePanelSwingUi swingUi;
-            private boolean paused = false;
+            private boolean paused;
             
-            public ValidatingThread(ErrorMessagePanelSwingUi swingUi) {
+            public ValidatingThread(final ErrorMessagePanelSwingUi swingUi) {
                 super();
                 
                 this.swingUi = swingUi;
+                this.paused = false;
             }
             
             public void run() {
@@ -243,7 +239,7 @@ public class ErrorMessagePanel extends WizardPanel {
                     try {
                         sleep(VALIDATION_DELAY);
                     } catch (InterruptedException e) {
-                        ErrorManager.notify(ErrorLevel.DEBUG, e);
+                        ErrorManager.notifyDebug("Interrupted", e);
                     }
                 }
             }
@@ -255,6 +251,10 @@ public class ErrorMessagePanel extends WizardPanel {
             public void play() {
                 paused = false;
             }
+            
+            /////////////////////////////////////////////////////////////////////////
+            // Constants
+            public static final long VALIDATION_DELAY = 2000;
         }
         
         public static class ValidatingDocumentListener implements DocumentListener {

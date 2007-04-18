@@ -24,20 +24,35 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import org.netbeans.installer.Installer;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.RegistryNode;
+import org.netbeans.installer.product.RegistryType;
 import org.netbeans.installer.product.components.Group;
 import org.netbeans.installer.product.components.Product;
+import org.netbeans.installer.product.filters.OrFilter;
+import org.netbeans.installer.product.filters.ProductFilter;
+import org.netbeans.installer.product.filters.RegistryFilter;
+import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.UiUtils;
+import org.netbeans.installer.utils.exceptions.NativeException;
+import org.netbeans.installer.utils.helper.NbiThread;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
 import org.netbeans.installer.wizard.components.WizardPanel;
+import org.netbeans.installer.wizard.components.panels.ErrorMessagePanel;
+import org.netbeans.installer.wizard.components.panels.ErrorMessagePanel.ErrorMessagePanelSwingUi;
+import org.netbeans.installer.wizard.components.panels.ErrorMessagePanel.ErrorMessagePanelUi;
 import org.netbeans.installer.wizard.containers.SwingContainer;
 import org.netbeans.installer.wizard.ui.SwingUi;
 import org.netbeans.installer.wizard.ui.WizardUi;
@@ -46,7 +61,7 @@ import org.netbeans.installer.wizard.ui.WizardUi;
  *
  * @author Kirill Sorokin
  */
-public class NbWelcomePanel extends WizardPanel {
+public class NbWelcomePanel extends ErrorMessagePanel {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     public NbWelcomePanel() {
@@ -61,8 +76,10 @@ public class NbWelcomePanel extends WizardPanel {
                 DEFAULT_WELCOME_TEXT_HEADER);
         setProperty(WELCOME_TEXT_GROUP_TEMPLATE_PROPERTY,
                 DEFAULT_WELCOME_TEXT_GROUP_TEMPLATE);
-        setProperty(WELCOME_TEXT_PRODUCT_TEMPLATE_PROPERTY,
-                DEFAULT_WELCOME_TEXT_PRODUCT_TEMPLATE);
+        setProperty(WELCOME_TEXT_PRODUCT_INSTALLED_TEMPLATE_PROPERTY,
+                DEFAULT_WELCOME_TEXT_PRODUCT_INSTALLED_TEMPLATE);
+        setProperty(WELCOME_TEXT_PRODUCT_NOT_INSTALLED_TEMPLATE_PROPERTY,
+                DEFAULT_WELCOME_TEXT_PRODUCT_NOT_INSTALLED_TEMPLATE);
         setProperty(WELCOME_TEXT_FOOTER_PROPERTY,
                 DEFAULT_WELCOME_TEXT_FOOTER);
         setProperty(CUSTOMIZE_BUTTON_TEXT_PROPERTY,
@@ -95,7 +112,7 @@ public class NbWelcomePanel extends WizardPanel {
                 DEFAULT_OK_BUTTON_TEXT);
         setProperty(CANCEL_BUTTON_TEXT_PROPERTY,
                 DEFAULT_CANCEL_BUTTON_TEXT);
-        setProperty(DEFAULT_COMPONENT_DESCRIPTION_PROPERTY, 
+        setProperty(DEFAULT_COMPONENT_DESCRIPTION_PROPERTY,
                 DEFAULT_DEFAULT_COMPONENT_DESCRIPTION);
         
         setProperty(ERROR_NO_CHANGES_PROPERTY,
@@ -110,6 +127,10 @@ public class NbWelcomePanel extends WizardPanel {
                 DEFAULT_ERROR_CONFLICT_INSTALL);
         setProperty(ERROR_REQUIREMENT_UNINSTALL_PROPERTY,
                 DEFAULT_ERROR_REQUIREMENT_UNINSTALL);
+        setProperty(ERROR_NO_ENOUGH_SPACE_TO_DOWNLOAD_PROPERTY,
+                DEFAULT_ERROR_NO_ENOUGH_SPACE_TO_DOWNLOAD);
+        setProperty(ERROR_NO_ENOUGH_SPACE_TO_EXTRACT_PROPERTY,
+                DEFAULT_ERROR_NO_ENOUGH_SPACE_TO_EXTRACT);
     }
     
     @Override
@@ -173,7 +194,7 @@ public class NbWelcomePanel extends WizardPanel {
     
     /////////////////////////////////////////////////////////////////////////////////
     // Inner Classes
-    public static class NbWelcomePanelUi extends WizardPanelUi {
+    public static class NbWelcomePanelUi extends ErrorMessagePanelUi {
         protected NbWelcomePanel component;
         
         public NbWelcomePanelUi(NbWelcomePanel component) {
@@ -192,7 +213,7 @@ public class NbWelcomePanel extends WizardPanel {
         }
     }
     
-    public static class NbWelcomePanelSwingUi extends WizardPanelSwingUi {
+    public static class NbWelcomePanelSwingUi extends ErrorMessagePanelSwingUi {
         protected NbWelcomePanel component;
         
         private NbiTextPane textPane;
@@ -203,6 +224,8 @@ public class NbWelcomePanel extends WizardPanel {
         
         private List<RegistryNode> registryNodes;
         
+        ValidatingThread validatingThread;
+        
         public NbWelcomePanelSwingUi(
                 final NbWelcomePanel component,
                 final SwingContainer container) {
@@ -211,18 +234,18 @@ public class NbWelcomePanel extends WizardPanel {
             this.component = component;
             
             registryNodes = new LinkedList<RegistryNode>();
-            populateNodesList(
+            populateList(
                     registryNodes,
                     Registry.getInstance().getRegistryRoot());
             
             initComponents();
         }
-
+        
         @Override
         public String getTitle() {
             return null; // the welcome page does not have a title
         }
-
+        
         // protected ////////////////////////////////////////////////////////////////
         @Override
         protected void initializeContainer() {
@@ -234,34 +257,96 @@ public class NbWelcomePanel extends WizardPanel {
         @Override
         protected void initialize() {
             final StringBuilder welcomeText = new StringBuilder();
-            welcomeText.append(component.getProperty(WELCOME_TEXT_HEADER_PROPERTY));
+            welcomeText.append(panel.getProperty(WELCOME_TEXT_HEADER_PROPERTY));
             
+            boolean isThereSomethingToInstall = false;
             for (RegistryNode node: registryNodes) {
                 if (node instanceof Product) {
-                    if (((Product) node).getStatus() != Status.TO_BE_INSTALLED) {
+                    final Product product = (Product) node;
+                    
+                    if (product.getStatus() == Status.INSTALLED) {
+                        welcomeText.append(StringUtils.format(
+                                panel.getProperty(WELCOME_TEXT_PRODUCT_INSTALLED_TEMPLATE_PROPERTY),
+                                node.getDisplayName()));
+                    } else if (product.getStatus() == Status.TO_BE_INSTALLED) {
+                        welcomeText.append(StringUtils.format(
+                                panel.getProperty(WELCOME_TEXT_PRODUCT_NOT_INSTALLED_TEMPLATE_PROPERTY),
+                                node.getDisplayName()));
+                    } else {
                         continue;
                     }
-                    
-                    welcomeText.append(StringUtils.format(
-                            component.getProperty(WELCOME_TEXT_PRODUCT_TEMPLATE_PROPERTY),
-                            node.getDisplayName()));
                 } else if (node instanceof Group) {
-                    welcomeText.append(StringUtils.format(
-                            component.getProperty(WELCOME_TEXT_GROUP_TEMPLATE_PROPERTY),
-                            node.getDisplayName()));
+                    final RegistryFilter filter = new OrFilter(
+                            new ProductFilter(Status.TO_BE_INSTALLED),
+                            new ProductFilter(Status.INSTALLED));
+                    
+                    if (((Group) node).hasChildren(filter)) {
+                        welcomeText.append(StringUtils.format(
+                                panel.getProperty(WELCOME_TEXT_GROUP_TEMPLATE_PROPERTY),
+                                node.getDisplayName()));
+                    }
                 }
             }
             
-            welcomeText.append(component.getProperty(WELCOME_TEXT_FOOTER_PROPERTY));
+            welcomeText.append(panel.getProperty(WELCOME_TEXT_FOOTER_PROPERTY));
             
             textPane.setContentType(
-                    component.getProperty(TEXT_PANE_CONTENT_TYPE_PROPERTY));
+                    panel.getProperty(TEXT_PANE_CONTENT_TYPE_PROPERTY));
             textPane.setText(welcomeText);
             
             customizeButton.setText(
-                    component.getProperty(CUSTOMIZE_BUTTON_TEXT_PROPERTY));
+                    panel.getProperty(CUSTOMIZE_BUTTON_TEXT_PROPERTY));
             
-            updateInstallationSize();
+            long installationSize = 0;
+            for (Product product: Registry.getInstance().getProductsToInstall()) {
+                installationSize += product.getRequiredDiskSpace();
+            }
+            
+            installationSizeLabel.setText(StringUtils.format(
+                    panel.getProperty(INSTALLATION_SIZE_LABEL_TEXT_PROPERTY),
+                    StringUtils.formatSize(installationSize)));
+            
+            super.initialize();
+        }
+        
+        @Override
+        protected String validateInput() {
+            final List<Product> products =
+                    Registry.getInstance().getProductsToInstall();
+            
+            String template = panel.getProperty(
+                    ERROR_NO_ENOUGH_SPACE_TO_EXTRACT_PROPERTY);
+            for (Product product: products) {
+                if (product.getRegistryType() == RegistryType.REMOTE) {
+                    template = panel.getProperty(
+                            ERROR_NO_ENOUGH_SPACE_TO_DOWNLOAD_PROPERTY);
+                    break;
+                }
+            }
+            
+            try {
+                final long availableSize = SystemUtils.getFreeSpace(
+                        Installer.getInstance().getLocalDirectory());
+                
+                long requiredSize = 0;
+                for (Product product: products) {
+                    requiredSize += product.getDownloadSize();
+                }
+                requiredSize += REQUIRED_SPACE_ADDITION;
+                
+                if (availableSize < requiredSize) {
+                    return StringUtils.format(
+                            template,
+                            Installer.getInstance().getLocalDirectory(),
+                            StringUtils.formatSize(requiredSize - availableSize));
+                }
+            } catch (NativeException e) {
+                ErrorManager.notifyError(
+                        "Cannot check the free disk space",
+                        e);
+            }
+            
+            return null;
         }
         
         // private //////////////////////////////////////////////////////////////////
@@ -303,19 +388,8 @@ public class NbWelcomePanel extends WizardPanel {
                     0.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.CENTER,        // anchor
                     GridBagConstraints.HORIZONTAL,    // fill
-                    new Insets(7, 11, 11, 11),        // padding
+                    new Insets(7, 11, 0, 11),         // padding
                     0, 0));                           // padx, pady - ???
-        }
-        
-        private void updateInstallationSize() {
-            long installationSize = 0;
-            for (Product product: Registry.getInstance().getProductsToInstall()) {
-                installationSize += product.getRequiredDiskSpace();
-            }
-            
-            installationSizeLabel.setText(StringUtils.format(
-                    component.getProperty(INSTALLATION_SIZE_LABEL_TEXT_PROPERTY),
-                    StringUtils.formatSize(installationSize)));
         }
         
         private void customizeButtonPressed() {
@@ -336,7 +410,7 @@ public class NbWelcomePanel extends WizardPanel {
             customizeDialog.requestFocus();
         }
         
-        private void populateNodesList(List<RegistryNode> list, RegistryNode parent) {
+        private void populateList(List<RegistryNode> list, RegistryNode parent) {
             for (RegistryNode node: parent.getChildren()) {
                 if (node instanceof Product) {
                     if (!((Product) node).getPlatforms().contains(
@@ -346,7 +420,7 @@ public class NbWelcomePanel extends WizardPanel {
                 }
                 
                 list.add(node);
-                populateNodesList(list, node);
+                populateList(list, node);
             }
         }
     }
@@ -366,8 +440,10 @@ public class NbWelcomePanel extends WizardPanel {
             "welcome.text.header"; // NOI18N
     public static final String WELCOME_TEXT_GROUP_TEMPLATE_PROPERTY =
             "welcome.text.group.template"; // NOI18N
-    public static final String WELCOME_TEXT_PRODUCT_TEMPLATE_PROPERTY =
-            "welcome.text.product.template"; // NOI18N
+    public static final String WELCOME_TEXT_PRODUCT_INSTALLED_TEMPLATE_PROPERTY =
+            "welcome.text.product.installed.template"; // NOI18N
+    public static final String WELCOME_TEXT_PRODUCT_NOT_INSTALLED_TEMPLATE_PROPERTY =
+            "welcome.text.product.not.installed.template"; // NOI18N
     public static final String WELCOME_TEXT_FOOTER_PROPERTY =
             "welcome.text.footer"; // NOI18N
     public static final String CUSTOMIZE_BUTTON_TEXT_PROPERTY =
@@ -384,9 +460,12 @@ public class NbWelcomePanel extends WizardPanel {
     public static final String DEFAULT_WELCOME_TEXT_GROUP_TEMPLATE =
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.welcome.text.group.template"); // NOI18N
-    public static final String DEFAULT_WELCOME_TEXT_PRODUCT_TEMPLATE =
+    public static final String DEFAULT_WELCOME_TEXT_PRODUCT_INSTALLED_TEMPLATE =
             ResourceUtils.getString(NbWelcomePanel.class,
-            "NWP.welcome.text.product.template"); // NOI18N
+            "NWP.welcome.text.product.installed.template"); // NOI18N
+    public static final String DEFAULT_WELCOME_TEXT_PRODUCT_NOT_INSTALLED_TEMPLATE =
+            ResourceUtils.getString(NbWelcomePanel.class,
+            "NWP.welcome.text.product.not.installed.template"); // NOI18N
     public static final String DEFAULT_WELCOME_TEXT_FOOTER =
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.welcome.text.footer"); // NOI18N
@@ -421,7 +500,7 @@ public class NbWelcomePanel extends WizardPanel {
             "ok.button.text"; // NOI18N
     public static final String CANCEL_BUTTON_TEXT_PROPERTY =
             "cancel.button.text"; // NOI18N
-    public static final String DEFAULT_COMPONENT_DESCRIPTION_PROPERTY = 
+    public static final String DEFAULT_COMPONENT_DESCRIPTION_PROPERTY =
             "default.component.description";
     
     public static final String DEFAULT_CUSTOMIZE_TITLE =
@@ -460,7 +539,7 @@ public class NbWelcomePanel extends WizardPanel {
     public static final String DEFAULT_CANCEL_BUTTON_TEXT =
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.cancel.button.text"); // NOI18N
-    public static final String DEFAULT_DEFAULT_COMPONENT_DESCRIPTION = 
+    public static final String DEFAULT_DEFAULT_COMPONENT_DESCRIPTION =
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.default.component.description"); // NOI18N
     
@@ -476,6 +555,10 @@ public class NbWelcomePanel extends WizardPanel {
             "error.conflict.install"; // NOI18N
     public static final String ERROR_REQUIREMENT_UNINSTALL_PROPERTY =
             "error.requirement.uninstall"; // NOI18N
+    public static final String ERROR_NO_ENOUGH_SPACE_TO_DOWNLOAD_PROPERTY =
+            "error.not.enough.space.to.download"; // NOI18N
+    public static final String ERROR_NO_ENOUGH_SPACE_TO_EXTRACT_PROPERTY =
+            "error.not.enough.space.to.extract"; // NOI18N
     
     public static final String DEFAULT_ERROR_NO_CHANGES =
             ResourceUtils.getString(NbWelcomePanel.class,
@@ -495,4 +578,13 @@ public class NbWelcomePanel extends WizardPanel {
     public static final String DEFAULT_ERROR_REQUIREMENT_UNINSTALL =
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.error.requirement.uninstall"); // NOI18N
+    public static final String DEFAULT_ERROR_NO_ENOUGH_SPACE_TO_DOWNLOAD =
+            ResourceUtils.getString(NbWelcomePanel.class,
+            "NWP.error.not.enough.space.to.download"); // NOI18N
+    public static final String DEFAULT_ERROR_NO_ENOUGH_SPACE_TO_EXTRACT =
+            ResourceUtils.getString(NbWelcomePanel.class,
+            "NWP.error.not.enough.space.to.extract"); // NOI18N
+    
+    public static final long REQUIRED_SPACE_ADDITION = 
+            10L * 1024L * 1024L; // 10MB
 }

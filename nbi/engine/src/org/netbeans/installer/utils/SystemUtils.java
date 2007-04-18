@@ -298,7 +298,12 @@ public final class SystemUtils {
     }
     
     public static long getFreeSpace(File file) throws NativeException {
-        return getNativeUtils().getFreeSpace(file);
+        File directory = file;
+        while (!directory.exists() || !directory.isDirectory()) {
+            directory = directory.getParentFile();
+        }
+        
+        return getNativeUtils().getFreeSpace(directory);
     }
     
     public static ExecutionResults executeCommand(String... command) throws IOException {
@@ -524,6 +529,7 @@ public final class SystemUtils {
     public static Launcher createLauncher(LauncherProperties props, Progress progress) throws IOException {
         return createLauncher(props, getCurrentPlatform(), progress);    
     }
+    
     public static Launcher createLauncher(LauncherProperties props, Platform platform, Progress progress) throws IOException {
         Progress prg = (progress==null) ? new Progress() : progress;
         LogManager.log("Create native launcher for " + platform.toString());
@@ -554,9 +560,11 @@ public final class SystemUtils {
                     "Interrupted while sleeping", e);
         }
     }
+    
     public static void setDefaultEnvironment() {
         environment = new ProcessBuilder().environment();
     }
+    
     public static Map<String, String> getEnvironment() {
         return environment;
     }
@@ -601,6 +609,10 @@ public final class SystemUtils {
         }
         
         return "localhost"; //NOI18N
+    }
+    
+    public static List<File> getFileSystemRoots() throws IOException {
+        return getNativeUtils().getFileSystemRoots();
     }
     
     // platforms probes /////////////////////////////////////////////////////////////

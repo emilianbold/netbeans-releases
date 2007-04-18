@@ -177,8 +177,9 @@ public abstract class NativeUtils {
         
     }
     
+    public abstract List<File> getFileSystemRoots() throws IOException;
     
-// protected ////////////////////////////////////////////////////////////////////
+    // protected ////////////////////////////////////////////////////////////////////
     protected void loadNativeLibrary(String libraryPath) {
         if (libraryPath != null) {
             InputStream input = null;
@@ -218,9 +219,8 @@ public abstract class NativeUtils {
             }
         }
     }
+    
     public boolean isDeletingAllowed(File file) {
         return !(forbiddenDeletingFiles.contains(file));
     }
-    
-    
 }

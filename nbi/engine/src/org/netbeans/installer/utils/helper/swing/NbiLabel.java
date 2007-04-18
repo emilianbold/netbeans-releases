@@ -61,11 +61,13 @@ public class NbiLabel extends JLabel {
             
             super.setText(DEFAULT_TEXT);
             super.setDisplayedMnemonic(DEFAULT_MNEMONIC_CHAR);
+            super.setToolTipText(DEFAULT_TOOLTIP_TEXT);
         } else {
             this.text = text;
             
             super.setText(StringUtils.stripMnemonic(this.text));
             super.setDisplayedMnemonic(StringUtils.fetchMnemonic(this.text));
+            super.setToolTipText(StringUtils.stripMnemonic(this.text));
         }
     }
     
@@ -113,6 +115,8 @@ public class NbiLabel extends JLabel {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
     public static final String DEFAULT_TEXT =
+            " "; // NOI18N
+    public static final String DEFAULT_TOOLTIP_TEXT =
             " "; // NOI18N
     public static final char DEFAULT_MNEMONIC_CHAR =
             '\u0000'; // NOI18N

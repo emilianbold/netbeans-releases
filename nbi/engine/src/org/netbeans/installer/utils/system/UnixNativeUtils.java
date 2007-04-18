@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.helper.EnvironmentScope;
@@ -150,16 +151,16 @@ public abstract class UnixNativeUtils extends NativeUtils {
         }
         
         switch (locationType) {
-            case CURRENT_USER_DESKTOP:
-                return new File(SystemUtils.getUserHomeDirectory(), "Desktop/" + fileName);
-            case ALL_USERS_DESKTOP:
-                return new File(SystemUtils.getUserHomeDirectory(), "Desktop/" + fileName);
-            case CURRENT_USER_START_MENU:
-                return new File(currentUserLocation, "applications/" + fileName);
-            case ALL_USERS_START_MENU:
-                return new File(allUsersLocation, "applications/" + fileName);
-            default:
-                return null;
+        case CURRENT_USER_DESKTOP:
+            return new File(SystemUtils.getUserHomeDirectory(), "Desktop/" + fileName);
+        case ALL_USERS_DESKTOP:
+            return new File(SystemUtils.getUserHomeDirectory(), "Desktop/" + fileName);
+        case CURRENT_USER_START_MENU:
+            return new File(currentUserLocation, "applications/" + fileName);
+        case ALL_USERS_START_MENU:
+            return new File(allUsersLocation, "applications/" + fileName);
+        default:
+            return null;
         }
     }
     
@@ -310,7 +311,7 @@ public abstract class UnixNativeUtils extends NativeUtils {
         }
     }
     
-// other ... //////////////////////////
+    // other ... //////////////////////////
     
     public String getEnvironmentVariable(String name, EnvironmentScope scope, boolean flag) {
         return System.getenv(name);
@@ -425,19 +426,39 @@ public abstract class UnixNativeUtils extends NativeUtils {
         return list;
     }
     
-// native declarations //////////////////////////////////////////////////////////
+    public List<File> getFileSystemRoots() throws IOException {
+        final String stdout = SystemUtils.executeCommand("df", "-h").getStdOut();
+        final String[] lines = stdout.split(StringUtils.NEW_LINE_PATTERN);
+        final int index = lines[0].indexOf("Mounted on");
+        
+        final List<File> roots = new LinkedList<File>();
+        for (int i = 1; i < lines.length; i++) {
+            if (lines[i].length() > index) {
+                final String path = lines[i].substring(index);
+                final File file = new File(path);
+                
+                if (path.startsWith("/") && !roots.contains(file)) {
+                    roots.add(file);
+                }
+            }
+        }
+        
+        return roots;
+    }
+    
+    // native declarations //////////////////////////////////////////////////////////
     private native long getFreeSpace0(String s);
     
-    private class UnixProcessOnExitCleanerHandler extends ProcessOnExitCleanerHandler {        
+    private class UnixProcessOnExitCleanerHandler extends ProcessOnExitCleanerHandler {
         public UnixProcessOnExitCleanerHandler(String cleanerFileName) {
             super(cleanerFileName);
         }
-        protected void writeCleaner(File cleanerFile) throws IOException {            
+        protected void writeCleaner(File cleanerFile) throws IOException {
             InputStream is = ResourceUtils.getResource(CLEANER_RESOURCE);
             CharSequence cs = StreamUtils.readStream(is);
             is.close();
             String [] lines = cs.toString().split(StringUtils.NEW_LINE_PATTERN);
-            FileUtils.writeFile(cleanerFile, StringUtils.asString(lines, SystemUtils.getLineSeparator()));            
+            FileUtils.writeFile(cleanerFile, StringUtils.asString(lines, SystemUtils.getLineSeparator()));
         }
         
         protected void writeCleaningFileList(File listFile, List<String> files) throws IOException {
