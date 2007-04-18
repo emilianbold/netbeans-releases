@@ -69,7 +69,7 @@ public class PageFlowController {
     private Collection<FileObject> webFiles;
     private DataObject configDataObj;
     
-    private HashMap<NavigationCase,NavigationCaseNode> case2Node = new HashMap<NavigationCase,NavigationCaseNode>();
+    private final HashMap<NavigationCase,NavigationCaseNode> case2Node = new HashMap<NavigationCase,NavigationCaseNode>();
     
     //This should always match what is inside the scene.
     private HashMap<NavigationRule,String> navRule2String = new HashMap<NavigationRule,String>();
@@ -108,7 +108,7 @@ public class PageFlowController {
     
     public void registerListeners() {
         if( pcl == null ) {
-            pcl = new FacesModelPropertyChangeListener(view);
+            pcl = new FacesModelPropertyChangeListener(this);
             if( configModel != null ) {
                 configModel.addPropertyChangeListener(pcl);
             }
@@ -336,16 +336,15 @@ public class PageFlowController {
         }
     }
     
-    private void createEdge(NavigationCaseNode caseNode ){
-        String toPage = caseNode.getToViewId();
+    public void createEdge(NavigationCaseNode caseNode ){
         String fromPage = caseNode.getFromViewId();
-        
-        if( toPage != null && fromPage != null ) {
-            //            assert pageName2Node.get(fromPage) != null;
-            //            assert pageName2Node.get(toPage) != null;
-            assert getPageName2Node(fromPage) != null;
-            assert getPageName2Node(toPage) != null;
-            
+        String toPage = caseNode.getToViewId();
+        if( getPageName2Node(fromPage) == null || getPageName2Node(toPage) == null ){
+            System.err.println("Why is this node null? CaseNode: " + caseNode );
+            System.err.println("FromPage: " + fromPage );
+            System.err.println("ToPage: " + toPage );
+            Thread.dumpStack();
+        } else {
             view.createEdge(caseNode, getPageName2Node(fromPage), getPageName2Node(toPage));
         }
     }
@@ -448,120 +447,17 @@ public class PageFlowController {
     }
     
     
-    private  class FacesModelPropertyChangeListener implements PropertyChangeListener {
-        public FacesModelPropertyChangeListener( PageFlowView view ){
-            
-        }
-        
-        public void propertyChange(PropertyChangeEvent ev) {
-            if( ev.getOldValue() == State.NOT_WELL_FORMED ){
-                view.removeUserMalFormedFacesConfig();  // Does clear graph take care of this?
-                setupGraph();
-            }
-            
-            if ( ev.getPropertyName() == "navigation-case"){
-                
-                NavigationCase myNewCase = (NavigationCase)ev.getNewValue();  //Should also check if the old one is null.
-                NavigationCase myOldCase = (NavigationCase)ev.getOldValue();
-                if( myNewCase != null ){
-                    NavigationCaseNode node = new NavigationCaseNode(view.getPageFlowController(), myNewCase);
-                    case2Node.put(myNewCase, node);
-                    createEdge(node);
-                }
-                if ( myOldCase != null ){
-                    NavigationCaseNode caseNode = case2Node.remove(myOldCase);
-                    view.removeEdge(caseNode);
-                    
-                    String toPage = caseNode.getToViewId();
-                    if( toPage != null ) {
-                        PageFlowNode pageNode = pageName2Node.get(toPage);
-                        if( pageNode != null && !isPageInFacesConfig(toPage)){
-                            if( !pageNode.isDataNode() || PageFlowUtilities.getInstance().getCurrentScope() == PageFlowUtilities.LBL_SCOPE_FACESCONFIG){
-                                removePageName2Node(pageNode);
-                                view.removeNodeWithEdges(pageNode);
-                                view.validateGraph();
-                                //                                node.destroy(); //only okay because it is an abstract node.
-                            }
-                        }
-                    }
-                }
-                view.validateGraph();
-            } else if (ev.getPropertyName() == "navigation-rule" ) {
-                //You can actually do nothing.
-                NavigationRule myNewRule = (NavigationRule) ev.getNewValue();
-                NavigationRule myOldRule = (NavigationRule) ev.getOldValue();
-                //This has side effects in PageFlowNode destroy.
-                //Because it does not consistantly work, I can't account for reactions.
-                if( myOldRule != null ){
-                    String fromPage = navRule2String.remove(myOldRule);
-                    
-                    if( fromPage != null ){
-                        PageFlowNode pageNode = pageName2Node.get(fromPage);
-                        if( pageNode != null && !isPageInFacesConfig(fromPage)){
-                            if( !pageNode.isDataNode() || PageFlowUtilities.getInstance().getCurrentScope() == PageFlowUtilities.LBL_SCOPE_FACESCONFIG){
-                                removePageName2Node(pageNode);
-                                view.removeNodeWithEdges(pageNode);
-                                view.validateGraph();
-                                //                                node.destroy(); //only okay because it is an abstract node.
-                            }
-                        }
-                    }
-                }
-                if( myNewRule != null ){
-                    navRule2String.put(myNewRule, myNewRule.getFromViewId());
-                }
-            } else if ( ev.getNewValue() == State.NOT_SYNCED ) {
-                // Do nothing.
-            } else if (ev.getNewValue() == State.NOT_WELL_FORMED ){
-                view.clearGraph();
-                view.warnUserMalFormedFacesConfig();
-            } else if (ev.getPropertyName() == "textContent" ){
-                setupGraph();
-            } else if ( ev.getPropertyName() == "from-view-id"  || ev.getPropertyName() == "to-view-id"){
-                /* Going to have to do this another day. */
-                //                String oldName = (String) ev.getOldValue();
-                //                String newName = (String) ev.getNewValue();
-                //                PageFlowNode oldPageNode = pageName2Node.get(oldName);
-                //                PageFlowNode newPageNode = pageName2Node.get(oldName);
-                //                boolean isNewPageLinked = false;
-                //                if( newPageNode != null && view.getNodeEdges(newPageNode).size() > 0 ){
-                //                    isNewPageLinked = true;
-                //                }
-                //
-                //                if ( oldPageNode != null && !isPageInFacesConfig(oldName) && !isNewPageLinked ) {
-                //                    FileObject fileObj = getWebFolder().getFileObject(newName);
-                //                    if ( fileObj != null && webFiles.contains(fileObj) ){
-                //                        try                 {
-                //                            Node delegate = DataObject.find(fileObj).getNodeDelegate();
-                //                            oldPageNode.replaceWrappedNode(createPageFlowNode(delegate));
-                //                            view.resetNodeWidget(oldPageNode);
-                //                            view.validateGraph();
-                //                        } catch (DataObjectNotFoundException ex) {
-                //                            Exceptions.printStackTrace(ex);
-                //                        }
-                //                    } else {
-                //                        changeToAbstractNode(oldPageNode, newName);
-                //                    }
-                //                } else {
-                setupGraph();
-                //                }
-            } else {
-                //                System.out.println("Did not catch this event.: " + ev.getPropertyName());
-                setupGraph();
-            }
-        }
-    }
     
-    public void removePageName2Node(PageFlowNode pageNode ){
+    
+    public PageFlowNode removePageName2Node(PageFlowNode pageNode ){
         printThreadInfo();
         synchronized ( pageName2Node ) {
-            pageName2Node.remove(pageNode);
+            return pageName2Node.remove(pageNode.getDisplayName());
         }
     }
     public void removePageName2Node( String displayName ) {
-        PageFlowNode node = getPageName2Node(displayName);
-        if (node != null ){
-            removePageName2Node(node);
+        synchronized ( pageName2Node ) {
+            pageName2Node.remove(displayName);
         }
     }
     
@@ -716,6 +612,7 @@ public class PageFlowController {
         view.saveLocation(node, newDisplayName);
     }
     
+    // WebFiles Wrappers
     public final boolean removeWebFile(FileObject fileObj ) {
         return webFiles.remove(fileObj);
     }
@@ -726,6 +623,24 @@ public class PageFlowController {
     
     public final boolean containsWebFile(FileObject fileObj){
         return webFiles.contains(fileObj);
+    }
+    
+    // case2Node Wrappers
+    public final void putCase2Node(NavigationCase navCase, NavigationCaseNode navCaseNode ){
+        case2Node.put(navCase, navCaseNode);
+    }
+    
+    public final NavigationCaseNode removeCase2Node(NavigationCase navCase ){
+        return case2Node.remove(navCase);
+    }
+    
+    //NavRule2String wrappers
+    public final String removeNavRule2String( NavigationRule navRule ) {
+        return navRule2String.remove(navRule);
+    }
+    
+    public final String putNavRule2String( NavigationRule navRule, String navRuleName ){
+        return navRule2String.put(navRule, navRuleName);
     }
     
     public PageFlowView getView() {

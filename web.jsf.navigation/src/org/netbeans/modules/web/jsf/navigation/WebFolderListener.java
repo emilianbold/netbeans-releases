@@ -198,7 +198,7 @@ public class WebFolderListener extends FileChangeAdapter{
         
         PageFlowNode oldNode = pfc.getPageName2Node(oldDisplayName);
         
-        if ( oldNode.isRenaming()){
+        if ( oldNode == null || oldNode.isRenaming()){
             return;
         }
         
@@ -216,7 +216,13 @@ public class WebFolderListener extends FileChangeAdapter{
         }
         
         if( abstractNode != null ){
-            assert !abstractNode.isDataNode();  //Never should this have already been a file node.
+//            assert !abstractNode.isDataNode();  //Never should this have already been a file node.
+            if( abstractNode.isDataNode()) {
+                System.err.println("So Called Abstract Node: " + abstractNode);
+                Thread.dumpStack();
+            }
+            
+            
             //Figure out what to do with old node.
             if (pfc.isPageInFacesConfig(oldDisplayName)){
                 pfc.changeToAbstractNode(oldNode, oldDisplayName);
