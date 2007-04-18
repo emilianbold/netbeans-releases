@@ -14,19 +14,19 @@ package org.netbeans.modules.tasklist.todo;
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.junit.MockServices;
 import org.netbeans.modules.apisupport.project.DialogDisplayerImpl;
 import org.netbeans.modules.apisupport.project.InstalledFileLocatorImpl;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -34,11 +34,21 @@ import org.netbeans.modules.apisupport.project.ProjectXMLManagerTest;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.netbeans.modules.tasklist.impl.CurrentEditorScanningScope;
 import org.netbeans.modules.tasklist.projectint.MainProjectScanningScope;
 import org.netbeans.modules.tasklist.projectint.OpenedProjectsScanningScope;
 import org.netbeans.spi.tasklist.Task;
+import org.netbeans.spi.tasklist.TaskScanningScope;
 import org.openide.DialogDescriptor;
+import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  * Tests ToDo scanner.
@@ -50,7 +60,7 @@ public class ToDoTest extends TestBase {
     static {
         // #65461: do not try to load ModuleInfo instances from ant module
         System.setProperty("org.netbeans.core.startup.ModuleSystem.CULPRIT", "true");
-        LayerTestBase.Lkp.setLookup(new Object[0]);
+        LayerTestBase.Lkp.setLookup(new Object[]{new WindowManagerMock(),new TopComponentRegistryMock()});
         DialogDisplayerImpl.returnFromNotify(DialogDescriptor.NO_OPTION);
     }
     
@@ -59,6 +69,7 @@ public class ToDoTest extends TestBase {
     }
     
     protected void setUp() throws Exception {
+        MockServices.setServices(TopComponentRegistryMock.class,WindowManagerMock.class);
         clearWorkDir();
         noDataDir = true;
         
@@ -66,12 +77,14 @@ public class ToDoTest extends TestBase {
         InstalledFileLocatorImpl.registerDestDir(destDirF);
     }
     
-    String javaFile = "public class Main1 {\n" +
+    private static final String javaFile = "public class Main1 {\n" +
             "/** TODO \n" +
             " * TODO \n" +
             "*/\n" +
             "}";
 
+    private static final String noToDoFile = "public class NoTodo {\n" +
+            "}";
     
     static FileObject createSrcFile(NbModuleProject prj,String path,String content ) throws IOException {
         FileObject fo = prj.getSourceDirectory().createData(path);
@@ -82,11 +95,12 @@ public class ToDoTest extends TestBase {
     }
     
     private List<Task> scanOpenProjectsTasks() {
+        return scanTasks(OpenedProjectsScanningScope.create());
+    }
+    
+    private List<Task> scanTasks(TaskScanningScope scope) {
+         List<Task> tasks = new ArrayList<Task>();
         TodoTaskScanner tts = TodoTaskScanner.create();
-        OpenedProjectsScanningScope scope = OpenedProjectsScanningScope.create();
-        List<Task> tasks = new ArrayList<Task>();
-        
-        
         for (FileObject jfo : scope) {
             List<? extends Task> filTasks = tts.scan(jfo);
             if (filTasks != null) {
@@ -96,18 +110,12 @@ public class ToDoTest extends TestBase {
         return tasks;
     }
     private List<Task> scanMainProjectTasks() {
-        TodoTaskScanner tts = TodoTaskScanner.create();
-        MainProjectScanningScope scope = MainProjectScanningScope.create();
-        List<Task> tasks = new ArrayList<Task>();
-        
-        for (FileObject jfo : scope) {
-            List<? extends Task> filTasks = tts.scan(jfo);
-            if (filTasks != null) {
-                tasks.addAll(filTasks);
-            }
-        }
-        return tasks;
+       return scanTasks(MainProjectScanningScope.create());
     }
+    private List<Task> scanCurrentEditorTasks() { 
+        return scanTasks(CurrentEditorScanningScope.create());
+    }
+    
     public void testProject1() throws IOException {
         NbModuleProject prj1 = generateStandaloneModule(getWorkDir(), "prj1");
         NbModuleProject prj2 = generateStandaloneModule(getWorkDir(), "prj2");
@@ -154,10 +162,42 @@ public class ToDoTest extends TestBase {
         assertEquals("Number of tasks",4,tasks.size());
     }
     
+    public void testCurrentEditorScanningScope() throws IOException, InterruptedException {
+        MockServices.setServices(TopComponentRegistryMock.class,WindowManagerMock.class);
+        NbModuleProject prj1 = generateStandaloneModule(getWorkDir(), "prj1");
+        FileObject fo = createSrcFile(prj1,"Main.java",javaFile);
+        FileObject fo2 = createSrcFile(prj1,"NoTo.java",noToDoFile);
+        
+        List<Task> tasks = scanCurrentEditorTasks();
+        assertEquals("No document opened",0,tasks.size());
+        
+        TopComponent tc = createTopComponent(fo);
+        TopComponentRegistryMock registry =  (TopComponentRegistryMock) org.openide.windows.TopComponent.getRegistry();
+        registry.setActivated(tc);
+        
+        registry.setOpened(Collections.singleton(tc));
+        tasks = scanCurrentEditorTasks();
+        
+        tc = createTopComponent(fo2);
+        registry.setActivated(tc);
+        
+        registry.setOpened(Collections.singleton(tc));
+        tasks = scanCurrentEditorTasks();
+        assertEquals("No document opened",0,tasks.size());
+    }
     private void logTasks(List<Task> tasks) {
         for (Task t : tasks) {
             System.out.println( t );
         }
     }       
+    private TopComponent createTopComponent(FileObject fo) throws DataObjectNotFoundException {
+        DataObject dobj = DataObject.find(fo);
+        Lookup lookup = Lookups.fixed(dobj);
+        return  new TopComponent(lookup) {
+          public boolean isShowing() {
+              return true;
+          }  
+        };
     }
+}
 
