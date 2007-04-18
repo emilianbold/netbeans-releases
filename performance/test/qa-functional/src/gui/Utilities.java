@@ -50,11 +50,12 @@ import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 
 import org.netbeans.jemmy.QueueTool;
-import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JMenuItemOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.jemmy.operators.Operator.StringComparator;
 
 import org.netbeans.junit.ide.ProjectSupport;
 
@@ -279,7 +280,7 @@ public class Utilities {
             wizard_location.txtProjectName().typeText(pname);
         }
         wizard.finish();
-
+        
         // wait 10 seconds
         waitForProjectCreation(10000, wait);
         
@@ -316,7 +317,7 @@ public class Utilities {
     
     public static void deleteProject(String project, boolean waitStatus) {
         new DeleteAction().performAPI(ProjectsTabOperator.invoke().getProjectRootNode(project));
-
+        
         //delete project
         NbDialogOperator deleteProject = new NbDialogOperator("Delete Project"); // NOI18N
         JCheckBoxOperator delete_sources = new JCheckBoxOperator(deleteProject);
@@ -330,7 +331,7 @@ public class Utilities {
         
         if(waitStatus)
             MainWindowOperator.getDefault().waitStatusText("Finished building "+project+" (clean)"); // NOI18N
-
+        
         try {
             //sometimes dialog rises
             new NbDialogOperator("Question").yes(); // NOI18N
@@ -446,18 +447,22 @@ public class Utilities {
     public static void performApplicationServerStartup(RuntimeTabOperator rto) {
         TreePath path = null;
         
+        // create exactly (full match) and case sensitively comparing comparator
+        Operator.DefaultStringComparator comparator = new Operator.DefaultStringComparator(false, false);
+        StringComparator previousComparator = rto.tree().getComparator();
+        rto.setComparator(comparator);
+        
         try {
             path = rto.tree().findPath("Servers|Sun Java System Application Server"); // NOI18N
-        } catch (TimeoutExpiredException exc) {
+        } catch (Exception exc) {
             exc.printStackTrace(System.err);
             throw new Error("Cannot find Application Server Node");
         }
+        rto.setComparator(previousComparator);
         
         Node asNode = new Node(rto.tree(),path);
         String serverIDEName = asNode.getText();
         asNode.select();
-        
-        
         
         JPopupMenuOperator popup = asNode.callPopup();
         if (popup == null) {
