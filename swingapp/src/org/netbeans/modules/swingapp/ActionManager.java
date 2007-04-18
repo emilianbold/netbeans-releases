@@ -121,12 +121,16 @@ public class ActionManager {
     private static void addProject(Project p) {
         ActionManager am = ActionManager.getActionManager(p);
         // do the first scan for actions
-        am.rescan();
+        if(am != null) {
+            am.rescan();
+        }
     }
     private static void removeProject(Project p) {
-        ActionManager am = ams.get(p);
-        ams.remove(p);
-        reverseams.remove(am);
+        if(ams != null) {
+            ActionManager am = ams.get(p);
+            ams.remove(p);
+            reverseams.remove(am);
+        }
     }
     
     public static ActionManager getEmptyActionManager() {
