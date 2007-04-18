@@ -135,7 +135,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     // XXX
 //    private JComponent html;
     
-    private JScrollPane scroller = null;
+//    private JScrollPane scroller = null;
     private boolean showing = false;
 
     // <multiview>
@@ -924,11 +924,11 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         //html.setDragEnabled(true);
         //html.setContentType(DesignerPane.MIME_TYPE);
         //html.setEditable(true);
-        scroller = new JScrollPane();
+        JScrollPane scrollPane = new JScrollPane();
 
-        JViewport vp = scroller.getViewport();
+        JViewport vp = scrollPane.getViewport();
         vp.add(html);
-        add(scroller, BorderLayout.CENTER);
+        add(scrollPane, BorderLayout.CENTER);
 //        html.updateViewport();
         designer.updatePaneViewPort();
     }
