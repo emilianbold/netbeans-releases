@@ -112,14 +112,14 @@ public class JavaActionsImplementationProvider {
     /**
      * @return true if provider can handle copy
      */
-    public boolean canExtractSuperClass(Lookup lookup) {
+    public boolean canExtractSuperclass(Lookup lookup) {
         return false;
     }
 
     /**
      * @return implementation of Copy Action
      */
-    public void doExtractSuperClass(Lookup lookup) {
+    public void doExtractSuperclass(Lookup lookup) {
         new UnsupportedOperationException("Not implemented");
     }    
     /**

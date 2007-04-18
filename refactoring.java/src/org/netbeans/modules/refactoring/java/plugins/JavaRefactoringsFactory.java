@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,6 +24,7 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.java.api.ExtractInterfaceRefactoring;
+import org.netbeans.modules.refactoring.java.api.ExtractSuperclassRefactoring;
 import org.netbeans.modules.refactoring.java.api.PullUpRefactoring;
 import org.netbeans.modules.refactoring.java.api.PushDownRefactoring;
 import org.netbeans.modules.refactoring.java.api.UseSuperTypeRefactoring;
@@ -68,6 +69,8 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
             return new CopyClassRefactoringPlugin((SingleCopyRefactoring) refactoring);
         } else if (refactoring instanceof ExtractInterfaceRefactoring) {
             return new ExtractInterfaceRefactoringPlugin((ExtractInterfaceRefactoring) refactoring);
+        } else if (refactoring instanceof ExtractSuperclassRefactoring) {
+            return new ExtractSuperclassRefactoringPlugin((ExtractSuperclassRefactoring) refactoring);
         } else if (refactoring instanceof PullUpRefactoring) {
             return new PullUpRefactoringPlugin((PullUpRefactoring)refactoring);
         } else if (refactoring instanceof PushDownRefactoring) {

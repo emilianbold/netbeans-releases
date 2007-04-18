@@ -82,6 +82,45 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         }
         return false;
     }
+
+    @Override
+    public void doExtractSuperclass(Lookup lookup) {
+        EditorCookie ec = lookup.lookup(EditorCookie.class);
+        if (RefactoringActionsProvider.isFromEditor(ec)) {
+            new RefactoringActionsProvider.TextComponentRunnable(ec) {
+                @Override
+                protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
+                    return new ExtractSuperclassRefactoringUI(selectedElement, info);
+                }
+            }.run();
+        } else {
+            new NodeToFileObject(lookup.lookupAll(Node.class)) {
+                @Override
+                protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
+                    TreePathHandle tph = handles.iterator().next();
+                    return new ExtractSuperclassRefactoringUI(tph, cinfo.get());
+                }
+            }.run();
+        }
+    }
+
+    @Override
+    public boolean canExtractSuperclass(Lookup lookup) {
+        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
+        if (nodes.size() != 1) {
+            return false;
+        }
+        Node n = nodes.iterator().next();
+        DataObject dob = n.getCookie(DataObject.class);
+        if (dob==null) {
+            return false;
+        }
+        FileObject fo = dob.getPrimaryFile();
+        if (RetoucheUtils.isRefactorable(fo)) { //NOI18N
+            return true;
+        }
+        return false;
+    }
     
     @Override
     public void doPushDown(final Lookup lookup) {

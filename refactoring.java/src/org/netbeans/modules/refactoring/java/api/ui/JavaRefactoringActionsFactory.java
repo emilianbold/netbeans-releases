@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,6 +21,7 @@ package org.netbeans.modules.refactoring.java.api.ui;
 
 import org.netbeans.modules.refactoring.java.ui.ChangeParametersAction;
 import org.netbeans.modules.refactoring.java.ui.ExtractInterfaceAction;
+import org.netbeans.modules.refactoring.java.ui.ExtractSuperclassAction;
 import org.netbeans.modules.refactoring.java.ui.InnerToOuterAction;
 import org.netbeans.modules.refactoring.java.ui.PullUpAction;
 import org.netbeans.modules.refactoring.java.ui.PushDownAction;
@@ -98,7 +99,7 @@ public final class JavaRefactoringActionsFactory {
     }
     
     public static ContextAwareAction extractSuperclassAction() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return ExtractSuperclassAction.findObject(ExtractSuperclassAction.class, true);
     }
     
     public static ContextAwareAction extractInterfaceAction() {

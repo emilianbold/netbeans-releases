@@ -85,18 +85,18 @@ public final class JavaActionsImplementationFactory {
         }
     }
     
-    public static void doExtractSuperClass(Lookup lookup) {
+    public static void doExtractSuperclass(Lookup lookup) {
         for (JavaActionsImplementationProvider rafi: implementations.allInstances()) {
-            if (rafi.canExtractSuperClass(lookup)) {
-                rafi.doExtractSuperClass(lookup);
+            if (rafi.canExtractSuperclass(lookup)) {
+                rafi.doExtractSuperclass(lookup);
                 return;
             }
         }
     }
     
-    public static boolean canExtractSuperClass(Lookup lookup) {
+    public static boolean canExtractSuperclass(Lookup lookup) {
         for (JavaActionsImplementationProvider rafi: implementations.allInstances()) {
-            if (rafi.canExtractSuperClass(lookup)) {
+            if (rafi.canExtractSuperclass(lookup)) {
                 return true;
             }
         }

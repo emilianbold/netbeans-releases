@@ -25,6 +25,10 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-refactoring-java-api-ui-ExtractInterfaceAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.extractInterfaceAction"/>
             </file>
+            <attr name="org-netbeans-modules-refactoring-java-api-ui-ExtractSuperclassAction.instance/LastSeparator.instance" boolvalue="true"/>
+            <file name="org-netbeans-modules-refactoring-java-api-ui-ExtractSuperclassAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.extractSuperclassAction"/>
+            </file>
              <attr name="org-netbeans-modules-refactoring-java-api-ui-PushDownAction.instance/LastSeparator.instance" boolvalue="true"/>
              <file name="org-netbeans-modules-refactoring-java-api-ui-PushDownAction.instance">
              <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.pushDownAction"/>
