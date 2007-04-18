@@ -21,7 +21,7 @@
 <project name="Performance Tests" basedir="." default="all">
 
     <!-- Name of tested module -->
-    <property name="xtest.module" value="enterprise/perfoprmancetests"/>
+    <property name="xtest.module" value="mobility/performancetests"/>
 
     <!-- Root folders -->
     <property name="nball.dir" location="../../.."/>
@@ -31,7 +31,7 @@
 
     <!-- default testtypes, attributes used when no value is supplied from command line -->
     <property name="xtest.testtype" value="unit"/>
-    <property name="xtest.attribs" value="measure_ide"/>
+    <property name="xtest.attribs" value="startup"/>
 
     <target name="compare" description="Compares test results from various testruns">
         <taskdef name="compare" classname="org.netbeans.performance.results.AnalyzeResultsTask" classpath="reports/dist/reports.jar"/>

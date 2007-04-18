@@ -34,7 +34,7 @@
     <testbag testattribs="all or startup or complex_startup" prio="2" executor="prepare_ide" name="Prepare IDE for complex startup time measurement">
 	<testset dir="unit/src">
 	    <patternset>
-		<include name="prepare/PrepareIDEForEnterpriseComplexMeasurements.class"/>
+		<include name="prepare/PrepareIDEForMobilityComplexMeasurements.class"/>
 	    </patternset>
 	</testset>
     </testbag>
@@ -42,7 +42,7 @@
     <testbag testattribs="all or startup or complex_startup" prio="3" executor="execute_complex_startup" name="IDE complex startup time">
 	<testset dir="unit/src">
 	    <patternset>
-		<include name="startup/ComplexEnterpriseProjectStartup.class"/>
+		<include name="startup/ComplexMobilityProjectStartup.class"/>
 	    </patternset>
 	</testset>
     </testbag>
