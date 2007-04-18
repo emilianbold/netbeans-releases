@@ -266,7 +266,6 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
         actionMap.put(ProxyAction.Scope.Application, appActions);
         actionMap.put(ProxyAction.Scope.Form, formActions);
         appActions.add(null);
-        formActions.add(null);
         actionNames.clear();
         actionNames.add("null"); // NOI18N
         
