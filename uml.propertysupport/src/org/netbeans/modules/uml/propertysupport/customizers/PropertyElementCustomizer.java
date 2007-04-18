@@ -389,7 +389,6 @@ public class PropertyElementCustomizer extends JPanel implements EnhancedCustomP
         return;
     }
     
-    
     ///////////////////////////////////////////////////////////////////////////
     // Helper Classes
     
@@ -597,7 +596,11 @@ public class PropertyElementCustomizer extends JPanel implements EnhancedCustomP
             IPropertyElement element = getPropertyElement(row, col);
             if((element != null) && (aValue instanceof String)) 
             {
-                element.setValue((String)aValue);
+                if(col == 2)
+                {
+                    String value = PropertyDataFormatter.translateToFullyQualifiedName((String)aValue);
+                    element.setValue(value);
+                }
             }          
         }
         
@@ -732,7 +735,9 @@ public class PropertyElementCustomizer extends JPanel implements EnhancedCustomP
             {
                 IPropertyElement element = (IPropertyElement) value;
                 String cellValue = element.getValue();
-                setText(cellValue == null ? "" : cellValue);
+                
+                String transValue = cellValue == null ? "" : cellValue;
+                setText(PropertyDataFormatter.translateFullyQualifiedName(transValue));
             }
         }
     }

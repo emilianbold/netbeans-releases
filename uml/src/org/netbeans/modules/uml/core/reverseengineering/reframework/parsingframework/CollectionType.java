@@ -137,6 +137,11 @@ public class CollectionType
         return name;
     }
     
+    public String getFullName()
+    {
+        return getPackageName().replace(".", "::") + "::" + getName();
+    }
+    
     /**
      * Test if two types are the same.  If a String is passed in it tries to 
      * determine if the package and name equals the string value.

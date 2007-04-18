@@ -60,7 +60,7 @@ public class ListCellEditor extends DefaultCellEditor
       box.setEditable(true);
       delegate = new PropertyElementListDelegate(delegate);
    }
-   
+
    class PropertyElementListDelegate extends DefaultCellEditor.EditorDelegate
    {
       private DefaultCellEditor.EditorDelegate mEditorDelegate = null;
@@ -78,7 +78,6 @@ public class ListCellEditor extends DefaultCellEditor
        public Object getCellEditorValue()
        {
           Object retVal = mEditorDelegate.getCellEditorValue();
-          //System.out.println("getCellEditorValue() = " + retVal);
           return retVal;
        }
        
@@ -87,7 +86,9 @@ public class ListCellEditor extends DefaultCellEditor
          if((mElement != null) && (mInitializing == false))
          {
             String value = (String)getCellEditorValue();
-            mElement.setValue(value);
+            
+            
+            mElement.setValue(PropertyDataFormatter.translateToFullyQualifiedName(value));
             mElement = null;
          }
          
@@ -107,17 +108,27 @@ public class ListCellEditor extends DefaultCellEditor
          {
             mElement = (IPropertyElement)value;
             transValue = mElement.getValue();
-            
             initializeList();
+//            mEditorDelegate.setValue(translateFullyQualifiedName((String)transValue));
          }
          mInitializing = true;
-         mEditorDelegate.setValue(transValue);
+         
+         if(transValue instanceof String)
+         {
+             transValue = PropertyDataFormatter.translateFullyQualifiedName((String)transValue);
+             mEditorDelegate.setValue(transValue);
+         }
+         else
+         {
+             mEditorDelegate.setValue(transValue);
+         }
       }
       
       protected void initializeList()
       {
          if((mIsInitialized == false) && (mElement != null))
          {
+            mInitializing = true;
             JComboBox box = (JComboBox)getComponent();
             
             // The valid values can not be retrieved until we have a property
@@ -133,6 +144,7 @@ public class ListCellEditor extends DefaultCellEditor
                ValidValues values = builder.retrieveValidValues(def, mElement);
                if(values != null)
                {
+                  String value = mElement.getValue();
                   Vector < String > strVec = new Vector < String > ();
                   int size = box.getItemCount ();
                   for (int i = 0; i < size; i++) {
@@ -143,12 +155,21 @@ public class ListCellEditor extends DefaultCellEditor
                   {
                       
                      if (!strVec.contains(curStr)){
-                         strVec.add (curStr);
-                         box.addItem(curStr);
+                         String translated = PropertyDataFormatter.translateFullyQualifiedName(curStr);
+                         strVec.add (translated);
+                         box.addItem(translated);
                      }
+                  }
+                  
+                  int index = strVec.indexOf(PropertyDataFormatter.translateFullyQualifiedName(value));
+                  if(index > 0)
+                  {
+                      box.setSelectedIndex(index);
+                      delegate.setValue(PropertyDataFormatter.translateFullyQualifiedName(value));
                   }
                }
             }
+            mInitializing = false;
             mIsInitialized = true;
          }
       }

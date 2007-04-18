@@ -27,7 +27,6 @@ package org.netbeans.modules.uml.propertysupport.customizers;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Dialog;
-import java.util.EventObject;
 import javax.swing.JButton;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
@@ -37,7 +36,6 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
-import javax.swing.event.CellEditorListener;
 import javax.swing.table.TableModel;
 import javax.swing.table.DefaultTableModel;
 
@@ -49,12 +47,11 @@ import org.netbeans.modules.uml.propertysupport.DefinitionPropertyBuilder.ValidV
 import java.awt.Color;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import org.netbeans.modules.uml.core.configstringframework.ConfigStringHelper;
-import org.netbeans.modules.uml.core.configstringframework.ConfigStringTranslator;
 import org.netbeans.modules.uml.core.configstringframework.IConfigStringTranslator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -112,7 +109,7 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
         });
         
         // create mutiplicty table and its data model
-        Vector tableHeaders = new Vector(2);
+        Vector tableHeaders = new Vector(3);
         tableHeaders.add(bundle.getString("LOWER"));
         tableHeaders.add(bundle.getString("UPPER"));
         
@@ -121,6 +118,8 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
         tableHeaders.add(colName);
         TableModel tableModel = new  MultiplicityTableModel(tableHeaders);
         multiplicityTable = new JTable(tableModel);
+        
+        multiplicityTable.setAutoResizeMode(JTable.AUTO_RESIZE_NEXT_COLUMN);
         tableScrollPane.setViewportView(multiplicityTable);
         
         // set foreground color for messageArea
@@ -130,6 +129,49 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
         }
         messageArea.setForeground(c);
         messageArea.setFont(this.getFont());
+    }
+    
+    /*
+     * This method picks good column sizes.
+     * If all column heads are wider than the column's cells'
+     * contents, then you can just use column.sizeWidthToFit().
+     */
+    private void initColumnSizes(final JTable table) {
+        
+        SwingUtilities.invokeLater(new Runnable()
+        {
+            public void run()
+            {
+                MultiplicityTableModel model = (MultiplicityTableModel)table.getModel();
+                TableColumn column = null;
+                Component comp = null;
+                int headerWidth = 0;
+                int cellWidth = 0;
+        //        Object[] longValues = model.longValues;
+                TableCellRenderer headerRenderer =
+                    table.getTableHeader().getDefaultRenderer();
+
+                for (int i = 0; i < 2; i++) {
+                    column = table.getColumnModel().getColumn(i);
+
+                    comp = headerRenderer.getTableCellRendererComponent(
+                                         null, column.getHeaderValue(),
+                                         false, false, 0, 0);
+                    headerWidth = comp.getPreferredSize().width;
+
+        //            comp = table.getDefaultRenderer(model.getColumnClass(i)).
+        //                             getTableCellRendererComponent(
+        //                                 table, longValues[i],
+        //                                 false, false, 0, i);
+        //            cellWidth = comp.getPreferredSize().width;
+
+        //            column.setPreferredWidth(Math.max(headerWidth, cellWidth));
+                    System.out.println("Max Width = " + headerWidth);
+                    column.setPreferredWidth(headerWidth + 10);
+        //            column.setMaxWidth(headerWidth + 10);
+                }
+            }
+        });
     }
     
     public void setRootProp(IPropertyElement element, IPropertyDefinition def) {
@@ -734,6 +776,8 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
                 TableColumn column = multiplicityTable.getColumnModel().getColumn(2);
                 column.setCellEditor(new CollectionTypeEditor());
                 column.setCellRenderer(new CollectionTypeRender());
+                
+                initColumnSizes(multiplicityTable);
             }
         }
     }
@@ -984,6 +1028,11 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
         public Vector <ElementData> getRemovedMultiElemVec() {
             return removedMultiElemVec;
         }
+
+        @Override
+        public String getColumnName(int arg0) {
+            return super.getColumnName(arg0);
+        }
         
         public void setDataVector(Vector <ElementData> dataRows) {
             rowsData = dataRows;
@@ -1026,7 +1075,9 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
                 if (rowCells != null) {
                     //System.out.println(rowCells.toString());
                     IPropertyElement col = (IPropertyElement) rowCells.elementAt(columnIndex);
-                    col.setValue((String) value);
+                    
+                    String s = PropertyDataFormatter.translateToFullyQualifiedName((String)value);
+                    col.setValue(s);
                 }
             }
             super.setValueAt(value, rowIndex, columnIndex);
@@ -1102,9 +1153,12 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
                 ElementData data = (ElementData)value;
                 for(String curType : data.getValidCollectionTypes())
                 {
-                    retVal.addItem(curType);
+                    String s = PropertyDataFormatter.translateFullyQualifiedName(curType);
+                    retVal.addItem(s);
                 }
-                retVal.setSelectedItem(data.getCollectionType());
+                
+                String t = PropertyDataFormatter.translateFullyQualifiedName(data.getCollectionType());
+                retVal.setSelectedItem(t);
             }
             
             return retVal;
@@ -1124,7 +1178,14 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
             {
                 ElementData data = (ElementData)value;
                 realValue = data.getCollectionType();
+                
+                if(realValue instanceof String)
+                {
+                    String s = (String)realValue;
+                    realValue = PropertyDataFormatter.translateFullyQualifiedName(s);
+                }
             }
+            
             
             super.setValue(realValue);
         }

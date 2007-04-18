@@ -2307,7 +2307,7 @@ public class Element extends BaseElement implements IElement
             {
                 retVal.append("|");
             }
-            retVal.append(type.getName());
+            retVal.append(type.getFullName());
         }
 
         return retVal.toString();
