@@ -30,6 +30,8 @@
 -->            
             <file name="UriResolver.java" url="nbres:/org/netbeans/modules/websvc/rest/codegen/resources/UriResolver.template"/>
             <file name="PersistenceService.java" url="nbres:/org/netbeans/modules/websvc/rest/codegen/resources/PersistenceService.template"/>
+            <file name="GoogleMapResource" url="nbres:/org/netbeans/modules/websvc/rest/codegen/resources/GoogleMapResource.template"/>
+            <file name="GoogleMapRefConverter" url="nbres:/org/netbeans/modules/websvc/rest/codegen/resources/GoogleMapRefConverter.template"/>
         </folder>
     </folder>
     

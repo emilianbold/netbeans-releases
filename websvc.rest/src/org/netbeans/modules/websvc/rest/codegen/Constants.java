@@ -1,10 +1,20 @@
 /*
- * Constants.java
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
  *
- * Created on March 22, 2007, 1:04 AM
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
  *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.websvc.rest.codegen;
@@ -90,6 +100,8 @@ class Constants {
     public static final String XML_TRANSIENT_ANNOTATION = "XmlTransient"; //NOI18N
     
     public static final String XML_MIME_TYPE = "application/xml";       //NOI18N
+    
+    public static final String HTML_MIME_TYPE = "text/html";       //NOI18N
     
     public static final String HTTP_GET_METHOD = "GET";             //NOI18N
     
