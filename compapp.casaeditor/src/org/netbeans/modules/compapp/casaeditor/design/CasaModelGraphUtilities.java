@@ -24,6 +24,7 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.visual.action.WidgetAction;
+import org.netbeans.api.visual.action.WidgetAction.Chain;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDragEvent;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDropEvent;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetEvent;
@@ -62,22 +63,17 @@ public class CasaModelGraphUtilities {
     
     public static void renderModel(final CasaWrapperModel model, final CasaModelGraphScene scene)
     {
-        final boolean isAdjusting = scene.isAdjusting();
-        scene.getPriorActions().addAction(0, DISABLER);
+        setSceneEnabled(scene, false);
         scene.setIsAdjusting(true);
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    safeRenderModel(model, scene);
-                } catch (final Throwable t) {
-                    scene.autoLayout(false);
-                    ErrorManager.getDefault().notify(t);
-                } finally {
-                    scene.setIsAdjusting(isAdjusting);
-                    scene.getPriorActions().removeAction(DISABLER);
-                }
-            }
-        });
+        try {
+            safeRenderModel(model, scene);
+        } catch (final Throwable t) {
+            scene.autoLayout(false);
+            ErrorManager.getDefault().notify(t);
+        } finally {
+            scene.setIsAdjusting(false);
+            setSceneEnabled(scene, scene.canEdit());
+        }
     }
     
     private static void safeRenderModel(CasaWrapperModel model, CasaModelGraphScene scene)
@@ -418,6 +414,17 @@ public class CasaModelGraphUtilities {
         }
         if (region.getWidth() != bounds.width) {
             scene.getModel().setCasaRegionWidth(region, bounds.width);
+        }
+    }
+    
+    public static void setSceneEnabled(CasaModelGraphScene scene, boolean isEnabled) {
+        Chain priorActions = scene.getPriorActions();
+        if (isEnabled) {
+            priorActions.removeAction(DISABLER);
+        } else {
+            if (!priorActions.getActions().contains(DISABLER)) {
+                priorActions.addAction(0, DISABLER);
+            }
         }
     }
     

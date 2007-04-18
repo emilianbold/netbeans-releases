@@ -748,4 +748,8 @@ implements PropertyChangeListener {
     public boolean isModified() {
         return mDataObject.isModified();
     }
+    
+    public boolean canEdit() {
+        return !mDataObject.isBuilding();
+    }
 }

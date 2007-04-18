@@ -30,6 +30,9 @@ import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphUtilities;
+import org.netbeans.modules.compapp.projects.jbi.api.JbiBuildListener;
 import org.netbeans.modules.print.spi.PrintProvider;
 import org.netbeans.modules.print.spi.PrintProviderCookie;
 import org.openide.cookies.SaveCookie;
@@ -51,6 +54,9 @@ public class CasaDataObject extends MultiDataObject {
     
     private transient CasaDataEditorSupport editorSupport;
     
+    private transient Node.Cookie mBuildCookie = new JbiBuildCookie();
+    private transient boolean mIsBuilding;
+    
     private transient AtomicReference<Lookup> myLookup =
             new AtomicReference<Lookup>();
     private transient AtomicReference<InstanceContent> myServices =
@@ -67,8 +73,8 @@ public class CasaDataObject extends MultiDataObject {
         
         CookieSet set = getCookieSet();
         set.add(editorSupport);
-        getCookieSet().add(getPrintProviderCookie());        
-        
+        getCookieSet().add(getPrintProviderCookie());
+        getCookieSet().add(mBuildCookie);
     }
            
     public CasaDataEditorSupport getEditorSupport() {
@@ -159,4 +165,24 @@ public class CasaDataObject extends MultiDataObject {
         };
     }
     
+    public boolean isBuilding() {
+        return mIsBuilding;
+    }
+    
+    
+    private class JbiBuildCookie implements Node.Cookie, JbiBuildListener {
+        public void buildStarted() {
+            mIsBuilding = true;
+            if (editorSupport != null && editorSupport.getScene() != null) {
+                // Immediately disable edits to the scene.
+                CasaModelGraphUtilities.setSceneEnabled(editorSupport.getScene(), false);
+            }
+        }
+        public void buildCompleted() {
+            mIsBuilding = false;
+            // Do not set the scene enabled at this point, because the build
+            // is still processing the model. We simply set the scene enabled
+            // at render time, which is a safe time to allow editability.
+        }
+    }
 }
