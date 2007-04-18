@@ -148,7 +148,6 @@ public class OperationGeneratorHelper {
             Collection<Schema> schemas = types.getSchemas();
             Iterator<Schema> it = schemas.iterator();
             if (it.hasNext()) {
-                schema = it.next();
                 schemaModel = it.next().getModel();
             }
             
