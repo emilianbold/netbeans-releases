@@ -1080,11 +1080,11 @@ public class FormUtils
         
     }
 
-    public static List/*RADComponent*/ getSelectedLayoutComponents(Node[] nodes) {
+    public static List<RADComponent> getSelectedLayoutComponents(Node[] nodes) {
         if ((nodes == null) || (nodes.length < 1))
             return null;
 
-        List components = new ArrayList();
+        List<RADComponent> components = new ArrayList<RADComponent>();
         for (int i=0; i<nodes.length; i++) {
             RADComponentCookie radCookie =
                 (RADComponentCookie) nodes[i].getCookie(RADComponentCookie.class);

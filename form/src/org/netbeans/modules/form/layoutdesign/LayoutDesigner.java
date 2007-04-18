@@ -926,9 +926,9 @@ public class LayoutDesigner implements LayoutConstants {
                         iter.next(); // skip the component
                         LayoutInterval group = (LayoutInterval)iter.next();
                         iter.next(); iter.next(); // skip alignment and index
-                        while (group.getSubIntervalCount() == 1) {
+                        LayoutInterval parent = group.getParent();
+                        while (group.getSubIntervalCount() == 1 && parent != null) {
                             LayoutInterval sub = group.getSubInterval(0);
-                            LayoutInterval parent = group.getParent();
                             layoutModel.removeInterval(sub);
                             int alignment = group.getAlignment();
                             int index = layoutModel.removeInterval(group);
@@ -1463,7 +1463,7 @@ public class LayoutDesigner implements LayoutConstants {
                 String targetId = entry.getValue();
                 LayoutComponent targetLC = layoutModel.getLayoutComponent(targetId);
                 if (targetLC == null) {
-                    targetLC = new LayoutComponent(targetId, sourceLC.isLayoutContainer());
+                    targetLC = new LayoutComponent(targetId, false);
                 } else if (targetLC.getParent() == targetContainer) {
                     throw new IllegalArgumentException("The component is already placed in the target layout container"); // NOI18N
                 }
@@ -1568,6 +1568,314 @@ public class LayoutDesigner implements LayoutConstants {
             addToEmpty(components, targetContainer, addingInts);
         }
         visualStateUpToDate = false;
+    }
+
+    public void duplicateLayout(String[] sourceIds, String[] targetIds) {
+        LayoutComponent[] sourceComps = new LayoutComponent[sourceIds.length];
+        LayoutInterval[][] sourceIntervals = new LayoutInterval[DIM_COUNT][sourceIds.length];
+        LayoutComponent[] targetComps = new LayoutComponent[targetIds.length];
+        Map<LayoutComponent, LayoutComponent> compMap = new HashMap<LayoutComponent, LayoutComponent>();
+//        Map<LayoutInterval, LayoutInterval>[] intervalMaps = new Map[DIM_COUNT];
+//        for (int dim=0; dim < DIM_COUNT; dim++) {
+//            intervalMaps[dim] = new HashMap<LayoutInterval, LayoutInterval>();
+//        }
+        LayoutComponent container = null;
+        for (int i=0; i < sourceComps.length; i++) {
+            LayoutComponent sourceLC = layoutModel.getLayoutComponent(sourceIds[i]);
+            LayoutComponent parent = sourceLC.getParent();
+            if (i == 0) {
+                container = parent;
+            } else if (parent != container) {
+                throw new IllegalArgumentException("Duplicated components must be in the same container."); // NOI18N
+            }
+            sourceComps[i] = sourceLC;
+
+            LayoutComponent targetLC = layoutModel.getLayoutComponent(targetIds[i]);
+            if (targetLC == null) {
+                targetLC = new LayoutComponent(targetIds[i], false);
+            } else if (targetLC.getParent() != null) {
+                throw new IllegalArgumentException("Target component already exists and is placed in the layout"); // NOI18N
+            }
+            layoutModel.addComponent(targetLC, container, -1);
+            compMap.put(sourceLC, targetLC);
+            targetComps[i] = targetLC;
+            for (int dim=0; dim < DIM_COUNT; dim++) {
+                LayoutInterval li = sourceLC.getLayoutInterval(dim);
+                sourceIntervals[dim][i] = li;
+//                intervalMaps[dim].put(li, targetLC.getLayoutInterval(dim));
+            }
+        }
+
+        int seqDim = getSeqDuplicatingDimension(sourceComps);
+        int seqDir = getSeqDuplicatingDirection(sourceComps, seqDim);
+        int parDim = seqDim ^ 1;
+        try {
+            modelListener.deactivate(); // do not react on model changes during adding
+
+            duplicateSequentially(sourceIntervals[seqDim], compMap, seqDim, seqDir);
+            duplicateInParallel(sourceIntervals[parDim], compMap, parDim);
+
+            visualStateUpToDate = false;
+            optimizeStructure = true;
+            updateDesignModifications(container);
+        } finally {
+            if (!modelListener.isActive()) {
+                modelListener.activate();
+            }
+        }
+    }
+
+    private static int getSeqDuplicatingDimension(LayoutComponent[] components) {
+        return VERTICAL;
+    }
+
+    private static int getSeqDuplicatingDirection(LayoutComponent[] components, int dimension) {
+        return TRAILING;
+    }
+
+    private void duplicateSequentially(LayoutInterval[] intervals,
+            Map<LayoutComponent, LayoutComponent> componentMap,
+            int dimension, int direction) {
+        // get the root groups/components to duplicate, prepare parent sequences
+        Set<LayoutInterval> dupRoots = new HashSet<LayoutInterval>();
+        Set<LayoutInterval> dupParents = new HashSet<LayoutInterval>();
+        for (LayoutInterval li : intervals) {
+            LayoutInterval parent = li.getParent();
+            while (parent != null) {
+                if (dupRoots.contains(parent)) {
+                    break;
+                } else {
+                    parent = parent.getParent();
+                }
+            }
+            if (parent == null) { // interval not known yet
+                parent = li.getParent();
+                while (parent != null) {
+                    if (shouldDuplicateWholeGroup(parent, li, intervals)) {
+                        li = parent;
+                        parent = li.getParent();
+                    } else {
+                        dupRoots.add(li);
+                        LayoutInterval targetSeq;
+                        if (li.isSequential()) {
+                            targetSeq = li;
+                        } else if (parent.isSequential()) {
+                            targetSeq = parent;
+                        } else {
+                            LayoutInterval seq = new LayoutInterval(SEQUENTIAL);
+                            layoutModel.addInterval(seq, parent, layoutModel.removeInterval(li));
+                            layoutModel.addInterval(li, seq, -1);
+                            targetSeq = seq;
+                        }
+                        dupParents.add(targetSeq);
+                        break;
+                    }
+                }
+                if (parent == null) { // the root duplicated
+                    parent = li;
+                    LayoutInterval group = new LayoutInterval(PARALLEL);
+                    group.setGroupAlignment(parent.getGroupAlignment());
+                    while (parent.getSubIntervalCount() > 0) {
+                        layoutModel.addInterval(layoutModel.removeInterval(parent, 0), group, -1);
+                    }
+                    LayoutInterval seq = new LayoutInterval(SEQUENTIAL);
+                    layoutModel.addInterval(seq, parent, -1);
+                    layoutModel.addInterval(group, seq, -1);
+                    dupParents.add(seq);
+                }
+            }
+        }
+
+        // duplicate...
+        for (LayoutInterval seq : dupParents) {
+            int start = -1;
+            boolean wholeSeq = dupRoots.contains(seq);
+            LayoutRegion space = seq.getParent().getCurrentSpace();
+            for (int i=0; i < seq.getSubIntervalCount(); i++) {
+                LayoutInterval sub = seq.getSubInterval(i);
+                boolean duplicate = !sub.isEmptySpace() && (wholeSeq || dupRoots.contains(sub));
+                boolean last = (i+1 == seq.getSubIntervalCount());
+                if (duplicate && start < 0) {
+                    start = i;
+                }
+                if (start >= 0 && ((!duplicate && !sub.isEmptySpace()) || last)) {
+                    int count = i - start;
+                    if (last) {
+                        if (!sub.isEmptySpace()) {
+                            count++;
+                        }
+                    } else if (seq.getSubInterval(i-1).isEmptySpace()) {
+                        count--;
+                    }
+                    if (count > 0) { // copy the continuous section within the sequence
+                        for (int j=start; j < start+count; j++) {
+                            LayoutInterval li = seq.getSubInterval(j);
+                            LayoutInterval copy = restrictedCopy(li, componentMap, space, dimension, null);
+                            if (direction == LEADING) {
+                                layoutModel.addInterval(copy, seq, start);
+                                start++;  i++;  j++;
+                            } else { // TRAILING
+                                layoutModel.addInterval(copy, seq, j+count);
+                                i++;
+                            }
+                        }
+                        // need a gap between the original and duplicated section
+                        int gapIndex;
+                        LayoutInterval gap = null;
+                        if (direction == LEADING) {
+                            gapIndex = start + count; // here should be the original gap to use
+                            if (gapIndex < seq.getSubIntervalCount()) {
+                                gap = seq.getSubInterval(gapIndex);
+                            }
+                            gapIndex = start; // here it should be placed
+                        } else { // TRAILING
+                            gapIndex = start - 1; // here should be the original gap to use
+                            if (gapIndex >= 0) {
+                                gap = seq.getSubInterval(gapIndex);
+                            }
+                            gapIndex = start + count; // here it should be placed
+                        }
+                        LayoutInterval newGap = new LayoutInterval(SINGLE);
+                        if (gap != null && gap.isEmptySpace()) {
+                            LayoutInterval.cloneInterval(gap, newGap);
+                        }
+                        layoutModel.addInterval(newGap, seq, gapIndex);
+                        i++;
+                    }
+                    start = -1;
+                }
+            }
+        }
+    }
+
+    private static boolean shouldDuplicateWholeGroup(LayoutInterval group, LayoutInterval knownSub, LayoutInterval[] dupIntervals) {
+        assert group.isGroup();
+        Iterator it = group.getSubIntervals();
+        while (it.hasNext()) {
+            LayoutInterval sub = (LayoutInterval) it.next();
+            if (sub == knownSub || sub.isEmptySpace()) {
+                continue;
+            }
+            boolean included;
+            if (sub.isGroup()) {
+                included = shouldDuplicateWholeGroup(sub, null, dupIntervals);
+            } else {
+                assert sub.isComponent();
+                included = false;
+                for (LayoutInterval li : dupIntervals) {
+                    if (li == sub) {
+                        included = true;
+                        break;
+                    }
+                }
+            }
+            if (included && group.isParallel()) {
+                return true; // one is enough in parallel group
+            }
+            if (!included && group.isSequential()) {
+                return false; // all required in a sequence
+            }
+        }
+        return group.isSequential();
+    }
+
+    private void duplicateInParallel(LayoutInterval[] intervals, Map<LayoutComponent, LayoutComponent> componentMap, int dimension) {
+        Map<LayoutInterval, LayoutInterval> intMap = new HashMap<LayoutInterval, LayoutInterval>();
+        for (LayoutInterval li : intervals) {
+            intMap.put(li, componentMap.get(li.getComponent()).getLayoutInterval(dimension));
+        }
+        for (LayoutInterval li : intervals) {
+            LayoutInterval copy = intMap.get(li);
+            if (copy == null) {
+                continue;
+            }
+            LayoutInterval parent = li.getParent();
+            if (parent.isParallel()) {
+                LayoutInterval.cloneInterval(li, copy);
+                layoutModel.setIntervalAlignment(copy, li.getRawAlignment());
+                layoutModel.addInterval(copy, parent, -1);
+            } else { // in sequence
+                int index = parent.indexOf(li);
+                int start = getDuplicationBoundary(parent, index, intMap.keySet(), LEADING);
+                int end = getDuplicationBoundary(parent, index, intMap.keySet(), TRAILING);
+                int gapStart = LayoutUtils.getVisualPosition(parent.getSubInterval(start), dimension, LEADING);
+                LayoutInterval normalGap = null;
+                boolean substGap = false;
+                LayoutInterval parSeq = new LayoutInterval(SEQUENTIAL);
+                for (int i=start; i <= end; i++) {
+                    LayoutInterval sub = parent.getSubInterval(i);
+                    copy = intMap.remove(sub);
+                    if (copy != null) {
+                        LayoutInterval.cloneInterval(sub, copy);
+                        if (normalGap != null) {
+                            LayoutInterval copyGap = new LayoutInterval(SINGLE);
+                            LayoutInterval.cloneInterval(normalGap, copyGap);
+                            layoutModel.addInterval(copyGap, parSeq, -1);
+                            normalGap = null;
+                        } else if (substGap) {
+                            LayoutInterval gap = new LayoutInterval(SINGLE);
+                            int gapEnd = sub.getCurrentSpace().positions[dimension][LEADING];
+                            gap.setSize(gapEnd - gapStart);
+                            layoutModel.addInterval(gap, parSeq, -1);
+                            substGap = false;
+                        }
+                        layoutModel.addInterval(copy, parSeq, -1);
+                        gapStart = sub.getCurrentSpace().positions[dimension][TRAILING];
+                    } else if (!sub.isEmptySpace()) { // skipped component
+                        normalGap = null;
+                        substGap = true;
+                    } else if (!substGap) { // normal gap
+                        normalGap = sub;
+                    }
+                }
+                if (normalGap != null) {
+                    LayoutInterval copyGap = new LayoutInterval(SINGLE);
+                    LayoutInterval.cloneInterval(normalGap, copyGap);
+                    layoutModel.addInterval(copyGap, parSeq, -1);
+                } else if (substGap) {
+                    LayoutInterval gap = new LayoutInterval(SINGLE);
+                    int gapEnd = LayoutUtils.getVisualPosition(parent.getSubInterval(end), dimension, TRAILING);
+                    gap.setSize(gapEnd - gapStart);
+                    layoutModel.addInterval(gap, parSeq, -1);
+                }
+                operations.addParallelWithSequence(parSeq, parent, start, end, dimension);
+            }
+        }
+    }
+
+    private static int getDuplicationBoundary(LayoutInterval seq, int index, Set<LayoutInterval> dupIntervals, int direction) {
+        assert seq.isSequential();
+        int d = (direction == LEADING ? -1 : 1);
+//        int lastDup = index;
+        index += d;
+        while (index >= 0 && index < seq.getSubIntervalCount()) {
+            LayoutInterval sub = seq.getSubInterval(index);
+            if (sub.isParallel()) {
+                break; // [This forces enclosing the component in a closed group
+                // which might be unnecessary (at least in horizontal dimension, in
+                // vertical it is most probably ok). Maybe we should parallelize with
+                // parallel members if they don't contain another duplicated component.]
+//            } else if (sub.isComponent() && dupIntervals.contains(sub)) {
+//                lastDup = index;
+////                boolean dup = false;
+////                for (LayoutInterval li : dupIntervals) {
+////                    if (li == sub) {
+////                        dup = true;
+////                        break;
+////                    }
+////                }
+////                if (dup) {
+////                    break;
+////                }
+            }
+            index += d;
+        }
+//        if (index < 0) {
+//            index = 0;
+//        } else if (index >= seq.getSubIntervalCount()) {
+//            index = seq.getSubIntervalCount() - 1;
+//        }
+        return index - d;
     }
 
     /**

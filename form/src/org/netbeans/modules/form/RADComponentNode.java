@@ -214,6 +214,7 @@ public class RADComponentNode extends FormNode
                     actions.add(SystemAction.get(PasteAction.class));
                 }
                 if (component != topComp) {
+                    actions.add(SystemAction.get(DuplicateAction.class));
                     actions.add(SystemAction.get(DeleteAction.class));
                 }
                 
