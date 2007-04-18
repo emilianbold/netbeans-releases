@@ -18,7 +18,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
   Microsystems, Inc. All Rights Reserved.
 -->
 <project name="org.netbeans.modules.uml" default="netbeans" basedir=".">
-    <import file="nbproject/build-impl.xml"/>
+    <import file="../../nbbuild/templates/projectized.xml"/>
 
     <!-- below hardcoded property values should be fixed -->
     <property name="nb.modules.dir" value="modules"/>
@@ -48,7 +48,9 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
         <antcall target="copy-drawingLibrary-jar"/>
 
         <!-- Add our cluster name in etc/netbeans.clusters -->
+        <!--
         <echo file="../../nbbuild/netbeans/etc/netbeans.clusters" message="${cluster.dir.name}${line.separator}" append="true"/>
+        -->
     </target>
 
     <target name="copy-drawingLibrary-jar">

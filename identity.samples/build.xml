@@ -14,12 +14,12 @@
   "Portions Copyrighted [year] [name of copyright owner]"
 
   The Original Software is NetBeans. The Initial Developer of the Original
-  Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+  Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
   Microsystems, Inc. All Rights Reserved.
 -->
 <project name="org.netbeans.modules.identity.samples" default="netbeans" basedir=".">
 
-    <import file="nbproject/build-impl.xml"/>
+    <import file="../../nbbuild/templates/projectized.xml"/>
     <!-- import file="../../nbbuild/default.xml"/ -->
     <!--import file="../../nbbuild/templates/projectized.xml"/>
 

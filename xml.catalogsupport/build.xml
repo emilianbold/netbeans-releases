@@ -20,5 +20,5 @@
 -->
 <project basedir="." default="netbeans" name="xml/catalogsupport">
     <description>Builds, tests, and runs the project org.netbeans.modules.xml.catalogsupport</description>
-    <import file="nbproject/build-impl.xml"/>
+    <import file="../../nbbuild/templates/projectized.xml"/>
 </project>
