@@ -33,59 +33,64 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.core.api.multiview.MultiViewHandler;
+import org.netbeans.core.api.multiview.MultiViewPerspective;
+import org.netbeans.core.api.multiview.MultiViews;
+import org.openide.util.Lookup;
+import org.openide.windows.TopComponent;
 
 /**
  * @author David Kaspar
  */
 public final class ProjectUtils {
-
-    private ProjectUtils () {
+    
+    private ProjectUtils() {
     }
-
+    
     /**
      * Returns a project id for a project.
      * @param project the project
      * @return the project id
      * @throws NullPointerException when the project parameter is null
      */
-    public static String getProjectID (Project project) {
-        return FileUtil.toFile (project.getProjectDirectory ()).toURI ().toString ();
+    public static String getProjectID(Project project) {
+        return FileUtil.toFile(project.getProjectDirectory()).toURI().toString();
     }
-
+    
     /**
      * Returns a project instance for a project id.
      * @param projectID the project id
      * @return the project; null if not exists
      * @throws RuntimeException when project id has invalid format
      */
-    public static Project getProject (String projectID) {
+    public static Project getProject(String projectID) {
         try {
-            return FileOwnerQuery.getOwner (new URI (projectID));
+            return FileOwnerQuery.getOwner(new URI(projectID));
         } catch (URISyntaxException e) {
-            throw Debug.error (e);
+            throw Debug.error(e);
         }
     }
-
+    
     /**
      * Returns a project instance for a context.
      * @param context the context
      * @return the project
      * @throws NullPointerException when the context parameter is null
      */
-    public static Project getProject (DataObjectContext context) {
-        return getProject (context.getDataObject ());
+    public static Project getProject(DataObjectContext context) {
+        return getProject(context.getDataObject());
     }
-
+    
     /**
      * Returns a project instance for a data object.
      * @param dataObject the data object
      * @return the project
      * @throws NullPointerException when the dataObject parameter is null
      */
-    public static Project getProject (DataObject dataObject) {
-        return FileOwnerQuery.getOwner (dataObject.getPrimaryFile ());
+    public static Project getProject(DataObject dataObject) {
+        return FileOwnerQuery.getOwner(dataObject.getPrimaryFile());
     }
-
+    
     /**
      * Returns a DataObjectContext for a specific document.
      * It founds a context only for those documents that are active and currently assigned to the context.
@@ -93,10 +98,10 @@ public final class ProjectUtils {
      * @param document the document
      * @return the context; null if no context found
      */
-    public static DataObjectContext getDataObjectContextForDocument (DesignDocument document) {
-        return IOSupport.getDataObjectForDocument (document);
+    public static DataObjectContext getDataObjectContextForDocument(DesignDocument document) {
+        return IOSupport.getDataObjectForDocument(document);
     }
-
+    
     /**
      * Returns a list of SourceGroups for a specific data object context.
      *
@@ -111,7 +116,7 @@ public final class ProjectUtils {
         SourceGroup[] sg = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         return Arrays.asList(sg);
     }
-
+    
     /**
      * Returns a list of SourceGroups for a specific projectID.
      *
@@ -126,5 +131,27 @@ public final class ProjectUtils {
         SourceGroup[] sg = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         return Arrays.asList(sg);
     }
-
+    /**
+     *  RequestVisibity for TopComponent
+     *
+     * @param projectID the ID of prject
+     */
+    public static void requestVisibility(String topComponentDisplayName) {
+        for (TopComponent tc : TopComponent.getRegistry().getOpened()) {
+            Lookup.Result devs = tc.getLookup().lookupResult(DataEditorView.class);
+            if (devs.allInstances().size() == 0)
+                continue;
+            DataEditorView dev = (DataEditorView) devs.allInstances().iterator().next();
+            if (dev.getContext() != ActiveViewSupport.getDefault().getActiveView().getContext())
+                continue;
+            MultiViewHandler handler = MultiViews.findMultiViewHandler(tc);
+            for (MultiViewPerspective perspective : handler.getPerspectives()) {
+                if (perspective.getDisplayName().equals(topComponentDisplayName)) {
+                    handler.requestVisible(perspective);
+                    break;
+                }
+            }
+        }
+    }
+    
 }

@@ -21,21 +21,15 @@ package org.netbeans.modules.vmd.api.screen.actions;
 
 import java.awt.event.ActionEvent;
 import javax.swing.SwingUtilities;
-import org.netbeans.core.api.multiview.MultiViewHandler;
-import org.netbeans.core.api.multiview.MultiViewPerspective;
-import org.netbeans.core.api.multiview.MultiViews;
-import org.netbeans.modules.vmd.api.io.ActiveViewSupport;
-import org.netbeans.modules.vmd.api.io.DataEditorView;
+import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.api.screen.editor.EditedScreenSupport;
 import org.netbeans.modules.vmd.screen.ScreenEditorView;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup.Result;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
-import org.openide.windows.TopComponent;
 
 /**
  *
@@ -46,22 +40,8 @@ public class DesignerEditAction extends SystemAction  {
     private boolean enabled;
     
     public void actionPerformed(ActionEvent e) {
-        for (TopComponent tc : TopComponent.getRegistry().getOpened()) {
-            Result devs = tc.getLookup().lookupResult(DataEditorView.class);
-            if (devs.allInstances().size() == 0)
-                continue;
-            DataEditorView dev = (DataEditorView) devs.allInstances().iterator().next();
-            if (dev.getContext() != ActiveViewSupport.getDefault().getActiveView().getContext())
-                continue;
-            MultiViewHandler handler = MultiViews.findMultiViewHandler(tc);
-            for (MultiViewPerspective perspective : handler.getPerspectives()) {
-                if (perspective.getDisplayName().equals(ScreenEditorView.SCREEN_EDITOR_VIEW_DISPLAY_NAME)) {
-                    handler.requestVisible(perspective);
-                    requestComponentVisibility();
-                    break;
-                }
-            }
-        }
+        ProjectUtils.requestVisibility(ScreenEditorView.SCREEN_EDITOR_VIEW_DISPLAY_NAME);
+        requestComponentVisibility();
     }
     
     public String getName() {
