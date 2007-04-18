@@ -77,6 +77,7 @@ public class WindowsNativeUtils extends NativeUtils {
     public static final String DISPLAY_ICON     = "DisplayIcon";
     public static final String UNINSTALL_STRING = "UninstallString";
     public static final String MODIFY_STRING    = "ModifyPath";
+    public static final String NO_MODIFY        = "NoModify";
     public static final String NO_REPAIR        = "NoRepair";
     public static final String INSTALL_LOCATION = "InstallLocation";
     
@@ -405,6 +406,9 @@ public class WindowsNativeUtils extends NativeUtils {
             } catch (IOException e) {
                 throw new NativeException("Can`t create uninstaller", e);
             }
+        } else {
+            LogManager.log("Set '" + NO_MODIFY + "' = [" + 1 + "]");
+            registry.set32BitValue(uninstallSection, key, NO_MODIFY, 1);
         }
         
         if (descriptor.getUninstallCommand() != null) {
