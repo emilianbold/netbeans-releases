@@ -40,6 +40,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.visualweb.api.j2ee.common.RequestedJdbcResource;
+import org.netbeans.modules.visualweb.api.j2ee.common.RequestedResource;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject;
 import org.netbeans.modules.visualweb.dataconnectivity.model.DataSourceInfo;
 import org.netbeans.modules.visualweb.dataconnectivity.model.ProjectDataSourceManager;
@@ -488,7 +489,7 @@ public class DesignTimeDataSourceHelper {
         // Get the data sources in the project then bind them to the project's context
         String[] dynamicDataSources = ProjectDataSourceTracker.getDynamicDataSources(currentProj);
         String[] hardCodedDataSources = ProjectDataSourceTracker.getHardcodedDataSources(currentProj);
-        ArrayList <RequestedJdbcResource> jdbcResources = new ArrayList();
+        ArrayList <RequestedResource> jdbcResources = new ArrayList();
         RequestedJdbcResource jdbcResource = null;
         ArrayList <DesignTimeDataSource> ds = null;
         Map binding = new HashMap();
@@ -511,7 +512,10 @@ public class DesignTimeDataSourceHelper {
                     jdbcResources.add(jdbcResource);
             }
             
-            // Support for fixing "broken data sources"
+            // Add resource reference to web.xml. If already added then resource is not added.           
+            DatabaseSettingsImporter.getInstance().updateWebXml(currentProj, jdbcResources);
+            
+            // Support for Creator 2 projects and a hack - serverplugin not detecting datasources in project
             if (jdbcResource == null && dynamicDataSources.length > 0) {
                 RequestedJdbcResource[] resources = null;
                 ArrayList <DataSourceInfo> dataSourcesInfo = DatabaseSettingsImporter.getInstance().getDataSourcesInfo();
@@ -522,7 +526,7 @@ public class DesignTimeDataSourceHelper {
                 for (String name : dynamicDataSources) {
                     while (it.hasNext()) {
                         dsInfo = (DataSourceInfo)it.next();
-                        if (name.equals(DS_SUBCTX + "/" + dsInfo.getName())) {
+                        if (name.equals(DS_SUBCTX + "/" + dsInfo.getName())) { // NOI18N
                             binding.put(name, new DesignTimeDataSource(null, false, dsInfo.getDriverClassName(),
                                     dsInfo.getUrl(), null, dsInfo.getUsername(), dsInfo.getPassword())) ;
                             
@@ -533,7 +537,7 @@ public class DesignTimeDataSourceHelper {
                                     dsInfo.getPassword(), null));
                         }
                     }                                        
-                }
+                }                                        
             } else {                
                 // Check if datasource exists in the context.  If it doesn't exist then bind the datasource .
                 Iterator it = jdbcResources.iterator();

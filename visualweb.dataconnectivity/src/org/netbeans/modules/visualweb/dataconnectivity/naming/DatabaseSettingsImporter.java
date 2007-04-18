@@ -27,7 +27,10 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
+import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeMap;
@@ -44,9 +47,21 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException;
+import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
+import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.visualweb.api.j2ee.common.RequestedJdbcResource;
+import org.netbeans.modules.visualweb.api.j2ee.common.RequestedResource;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.DataSourceResolver;
 import org.netbeans.modules.visualweb.dataconnectivity.model.DataSourceInfo;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.ErrorManager;
+import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -76,12 +91,15 @@ public class DatabaseSettingsImporter {
     private File         userCtxFile;
     private ArrayList    dataSources;
     ArrayList <DataSourceInfo> dataSourcesInfo;
+    private Properties installProps = null;
     private boolean      initMode;   /* used only by initial context ctor, signals not to
                                       * call saveContext during InitialContext construction
                                       */
     
      private static ResourceBundle rb = ResourceBundle.getBundle("org.netbeans.modules.visualweb.dataconnectivity.naming.Bundle", // NOI18N
         Locale.getDefault());
+     
+     private static final String HACK_WELCOME_FILE = "JSCreator_index.jsp"; // NOI18N
      
     /** Creates a new instance of DatabaseImporter */
     private DatabaseSettingsImporter() {
@@ -426,5 +444,121 @@ public class DatabaseSettingsImporter {
      
      public ArrayList <DataSourceInfo> getDataSourcesInfo() {
          return dataSourcesInfo;
+     }
+     
+     private WebApp getWebApp(FileObject f) {
+         WebApp webApp = null;
+         
+         if (f != null) {
+             // Make sure, we see any user/editor changes.
+             try {
+                 DataObject deployDescDO = DataObject.find(f);
+                 SaveCookie saveCookie = (SaveCookie)deployDescDO.getCookie(SaveCookie.class);
+                 
+                 if (saveCookie != null) {
+                     try {
+                         saveCookie.save();
+                     } catch (IOException e) {
+                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                     }
+                 }
+             } catch (DataObjectNotFoundException e) {
+                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+             }
+             
+             try {
+                 webApp = DDProvider.getDefault().getDDRoot(f);
+             } catch (Exception e) {
+                 // Ok do nothing for now.
+                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+             }
+         }
+         
+         return webApp;
+     }      
+     
+     /**
+      * updateWebXml updates the resource reference with the datasources used in the project
+      * @param project
+      * @param ress
+      *
+      */
+     public void updateWebXml(Project project, ArrayList <RequestedResource> ress) {
+         WebModule wmod = WebModule.getWebModule(project.getProjectDirectory());
+         FileObject deployDescFO = wmod.getDeploymentDescriptor();
+         WebApp webApp = getWebApp(deployDescFO);
+         boolean needWrite = false;
+         
+         ResourceRef[] rscRefs = webApp.getResourceRef();
+         List reqList = new LinkedList();
+         Iterator itRess = ress.iterator();
+         while (itRess.hasNext()) {
+             reqList.add((RequestedResource)itRess.next());
+         }
+         
+         // Resource Refs
+         if (rscRefs == null) {
+             rscRefs = new ResourceRef[0];
+         } // end of if (refs == null)
+         
+         for (int i = 0; i < rscRefs.length; i++) {
+             boolean found = false;
+             Iterator it = reqList.iterator();
+             
+             while (it.hasNext()) {
+                 RequestedResource r = (RequestedResource)it.next();
+                 
+                 if (rscRefs[i].getResRefName().equals(r.getResourceName())) {
+                     found = true;
+                     it.remove();
+                     
+                     break;
+                 } // end of if (refs[i].getResRefName().
+                 //    equals(r.getResourceName()))
+             } // end of while (it.hasNext())
+         } // end of for (int i = 0; i < refs.length; i++)
+         
+         // Add the refs to the deployment descriptor
+         Iterator it = reqList.iterator();
+         while (it.hasNext()) {
+             RequestedResource r = (RequestedResource)it.next();
+             
+             if (r instanceof RequestedJdbcResource) {
+                 RequestedJdbcResource jr = (RequestedJdbcResource)r;
+                 
+                 try {
+                     webApp.addBean("ResourceRef", // NOI18N
+                             new String[] {
+                         "ResRefName", // NOI18N
+                         "Description", // NOI18N
+                         "ResType", // NOI18N
+                         "ResAuth" }, // NOI18N
+                         new Object[] {
+                         jr.getResourceName(),
+                         "Creator generated DataSource Reference", // NOI18N
+                         "javax.sql.DataSource", // NOI18N
+                         "Container" }, // NOI18N
+                         "ResRefName"); // NOI18N
+                 } catch (ClassNotFoundException e) {
+                     // This should really not happen
+                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                 } // end of try-catch
+                 catch (NameAlreadyUsedException ne) {
+                     // Why did the code above not find it?
+                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ne);
+                 } // end of catch
+                 
+                 needWrite = true;
+             } // end of if (r instanceof RequestedJdbcResource)
+         } // end of while (it.hasNext())
+         
+         if (needWrite) {
+             try {
+                 webApp.write(deployDescFO);
+             } catch (IOException e) {
+                 // Do nothing for now.
+                 e.printStackTrace();
+             }
+         }
      }
 }
