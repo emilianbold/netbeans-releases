@@ -164,9 +164,9 @@ Microsystems, Inc. All Rights Reserved.
   
   <folder name="org.netbeans.modules.java.source">
       <folder name="options">
-<!--          <file name="Formating.instance">
+          <file name="Formating.instance">
               <attr name="instanceClass" stringvalue="org.netbeans.modules.java.ui.FormatingAdvancedOption"/>
-          </file>-->
+          </file>
           <file name="Tasklist.instance">
               <attr name="instanceClass" stringvalue="org.netbeans.modules.java.source.tasklist.TasklistOptions"/>
           </file>
