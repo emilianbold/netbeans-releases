@@ -123,28 +123,22 @@ public class OperationWidget extends AbstractTitledWidget {
         buttons = new Widget(getScene());
         buttons.setLayout(LayoutFactory.createHorizontalFlowLayout(
                 LayoutFactory.SerialAlignment.JUSTIFY, 8));
-        final ButtonWidget inputMessage = new ButtonWidget(getScene(), "Sample Input");
-        inputMessage.setAction(new AbstractAction() {
-            public void actionPerformed(ActionEvent arg0) {
-                Widget messageLayer = ((ObjectScene)getScene()).findWidget(DesignView.messageLayerKey);
-                SampleMessageWidget messageWidget = new SampleMessageWidget(
-                        getScene(),operation.getSoapRequest(), "Sample Input Message");
-                messageWidget.setPreferredLocation(inputMessage.convertLocalToScene(inputMessage.getLocation()));
-                messageLayer.addChild(messageWidget);
-            }
-        });
-        buttons.addChild(inputMessage);
-        final ButtonWidget outputMessage = new ButtonWidget(getScene(), "Sample Output");
-        outputMessage.setAction(new AbstractAction() {
-            public void actionPerformed(ActionEvent arg0) {
-                Widget messageLayer = ((ObjectScene)getScene()).findWidget(DesignView.messageLayerKey);
-                SampleMessageWidget messageWidget = new SampleMessageWidget(
-                        getScene(),operation.getSoapResponse(), "Sample Output Message");
-                messageWidget.setPreferredLocation(outputMessage.convertLocalToScene(outputMessage.getLocation()));
-                messageLayer.addChild(messageWidget);
-            }
-        });
-        buttons.addChild(outputMessage);
+        for(final SampleMessageWidget.Type type:SampleMessageWidget.Type.values()) {
+            final ButtonWidget sampleButton = new ButtonWidget(getScene(), type.getIcon());
+            sampleButton.setAction(new AbstractAction() {
+                public void actionPerformed(ActionEvent arg0) {
+                    Widget messageLayer = ((ObjectScene)getScene()).findWidget(DesignView.messageLayerKey);
+                    messageLayer.removeChildren();
+                    SampleMessageWidget messageWidget = new SampleMessageWidget(
+                            getScene(), operation, type);
+                    messageWidget.setPreferredLocation(getScene().convertSceneToView(
+                            sampleButton.convertLocalToScene(sampleButton.getLocation())));
+                    messageLayer.addChild(messageWidget);
+                }
+            });
+            sampleButton.setToolTipText(type.getDescription());
+            buttons.addChild(sampleButton);
+        }
         buttons.addChild(getExpanderWidget());
 
         getHeaderWidget().addChild(buttons);
@@ -184,15 +178,19 @@ public class OperationWidget extends AbstractTitledWidget {
 
     protected void collapseWidget() {
         super.collapseWidget();
-        if(viewButton!=null && viewButton.getParentWidget()!=null) {
-            viewButton.removeFromParent();
+        if(buttons!=null && buttons.getParentWidget()!=null) {
+            getHeaderWidget().removeChild(buttons);
+            buttons.removeChild(getExpanderWidget());
+            getHeaderWidget().addChild(getExpanderWidget());
         }
     }
 
     protected void expandWidget() {
         super.expandWidget();
-        if(viewButton!=null && viewButton.getParentWidget()==null) {
-            buttons.addChild(0,viewButton);
+        if(buttons!=null && buttons.getParentWidget()==null) {
+            getHeaderWidget().removeChild(getExpanderWidget());
+            buttons.addChild(getExpanderWidget());
+            getHeaderWidget().addChild(buttons);
         }
     }
 

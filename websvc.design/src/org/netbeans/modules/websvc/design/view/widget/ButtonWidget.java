@@ -166,6 +166,11 @@ public class ButtonWidget extends AbstractMouseActionsWidget {
      */
     public void setButtonEnabled(boolean v) {
         getButton().setEnabled(v);
+        getButton().setPaintAsDisabled(!v);
+        Border border = getBorder();
+        if(border instanceof ButtonBorder) {
+            ((ButtonBorder)border).setEnabled(v);
+        }
         revalidate();
         repaint();
     }
@@ -186,7 +191,7 @@ public class ButtonWidget extends AbstractMouseActionsWidget {
      */
     public void mouseClicked() {
         //simply delegate to swing action
-        if(action!=null) {
+        if(isButtonEnabled() && action!=null) {
             action.actionPerformed(new ActionEvent(this,0, 
                     (String)action.getValue(Action.ACTION_COMMAND_KEY)));
             //validate scene as called from ActionListeners
@@ -276,6 +281,10 @@ public class ButtonWidget extends AbstractMouseActionsWidget {
         public void mouseClicked() {
         }
 
+        void setEnabled(boolean flag) {
+            enabled = flag;
+        };
+        
     }    
     
     

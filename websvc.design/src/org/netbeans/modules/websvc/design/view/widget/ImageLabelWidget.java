@@ -66,26 +66,36 @@ public class ImageLabelWidget extends Widget {
                 SerialAlignment.CENTER, hgap));
         
         Font font = scene.getDefaultFont();
-        
-        if(image!=null) {
-            imageWidget = new ImageWidget(scene, image);
-            addChild(imageWidget);
-        }
-        
-        if(label!=null) {
-            labelWidget = new LabelWidget(scene, label);
-            labelWidget.setFont(font);
-            addChild(labelWidget);
-        }
-        
-        if (comment != null) {
-            commentWidget = new LabelWidget(scene, comment);
-            commentWidget.setFont(font);
-            commentWidget.setForeground(COMMENT_COLOR);
-            addChild(commentWidget);
-        }
+        setImage(image);
+        setLabel(label);
+        setComment(comment);
     }
     
+    public boolean isPaintAsDisabled() {
+        if(labelWidget!=null) {
+            return labelWidget.isPaintAsDisabled();
+        }
+        if(imageWidget!=null) {
+            return imageWidget.isPaintAsDisabled();
+        }
+        return false;
+    }
+
+    public void setPaintAsDisabled(boolean flag) {
+        if(labelWidget!=null) {
+            labelWidget.setPaintAsDisabled(flag);
+        }
+        if(imageWidget!=null) {
+            imageWidget.setPaintAsDisabled(flag);
+        }
+    }
+
+    public void setLabelForeground(Color forground) {
+        if(labelWidget!=null) {
+            labelWidget.setForeground(forground);
+        }
+    }
+
     public void setLabel(String label) {
         if(label==null) {
             if (labelWidget!=null) {
@@ -135,7 +145,7 @@ public class ImageLabelWidget extends Widget {
             if(commentWidget==null) {
                 commentWidget = new LabelWidget(getScene(),comment);
                 commentWidget.setFont(getScene().getFont());
-                commentWidget.setForeground(COMMENT_COLOR);
+                commentWidget.setPaintAsDisabled(true);
             } else {
                 commentWidget.setLabel(comment);
             }
