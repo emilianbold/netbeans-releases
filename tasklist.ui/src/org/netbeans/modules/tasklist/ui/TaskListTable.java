@@ -156,6 +156,8 @@ class TaskListTable extends JTable {
                 TableColumn newColumn = new MyTableColumn(i);
                 if( i == TaskListModel.COL_LOCATION )
                     newColumn.setCellRenderer( new LeftDotRenderer() );
+                else if( i != TaskListModel.COL_GROUP )
+                    newColumn.setCellRenderer( new TooltipRenderer() );
                 addColumn(newColumn);
             }
         }
@@ -593,6 +595,30 @@ class TaskListTable extends JTable {
                 }
 
                 setText( dots + cellText.substring(nChars + 1) );
+            } else {
+                setToolTipText( null );
+            }
+
+            return this;
+        }
+    }
+    
+
+    private static class TooltipRenderer extends DefaultTableCellRenderer {
+        public Component getTableCellRendererComponent( JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column ) {
+                
+            super.getTableCellRendererComponent( table, value, isSelected, hasFocus, row, column );
+
+            int availableWidth = table.getColumnModel().getColumn( column ).getWidth();
+            availableWidth -= table.getIntercellSpacing().getWidth();
+            Insets borderInsets = getBorder().getBorderInsets( (Component)this );
+            availableWidth -= (borderInsets.left + borderInsets.right);
+            String cellText = getText();
+            FontMetrics fm = getFontMetrics( getFont() );
+
+            if( fm.stringWidth(cellText) > availableWidth ) {
+                setToolTipText( cellText );
+
             } else {
                 setToolTipText( null );
             }
