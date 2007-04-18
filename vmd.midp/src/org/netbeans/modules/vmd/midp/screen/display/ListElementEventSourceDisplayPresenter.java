@@ -20,28 +20,49 @@
 package org.netbeans.modules.vmd.midp.screen.display;
 
 import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
+import org.netbeans.modules.vmd.midp.components.elements.ChoiceElementCD;
+import org.netbeans.modules.vmd.midp.components.displayables.ListCD;
+import org.netbeans.modules.vmd.midp.components.items.ChoiceCD;
 import org.netbeans.modules.vmd.midp.components.sources.ListElementEventSourceCD;
 import org.netbeans.modules.vmd.midp.screen.display.property.ScreenStringPropertyEditor;
+import org.netbeans.modules.vmd.midp.screen.display.property.ScreenBooleanPropertyEditor;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Arrays;
 
 /**
  *
  * @author Anton Chechel
  */
 public class ListElementEventSourceDisplayPresenter extends ScreenDisplayPresenter {
-    
+
+    private JPanel view;
+    private JLabel state;
+    private JLabel image;
     private JLabel label;
     
     public ListElementEventSourceDisplayPresenter() {
+        view = new JPanel ();
+        view.setLayout(new BoxLayout(view, BoxLayout.X_AXIS));
+        view.setOpaque (false);
+
+        state = new JLabel ();
+        view.add (state);
+        image = new JLabel ();
+        view.add (image);
         label = new JLabel();
+        view.add (label);
+
+        view.add(Box.createHorizontalGlue());
     }
     
     public boolean isTopLevelDisplay() {
@@ -53,26 +74,46 @@ public class ListElementEventSourceDisplayPresenter extends ScreenDisplayPresent
     }
     
     public JComponent getView() {
-        return label;
+        return view;
     }
     
     public void reload(ScreenDeviceInfo deviceInfo) {
+        int type = (Integer) getComponent ().getParentComponent ().readProperty (ListCD.PROP_LIST_TYPE).getPrimitiveValue ();
+        PropertyValue selectedValue = getComponent ().readProperty (ListElementEventSourceCD.PROP_SELECTED);
+        boolean selected = selectedValue.getKind () == PropertyValue.Kind.VALUE  &&  MidpTypes.getBoolean (selectedValue);
+        switch (type) {
+            case ChoiceCD.VALUE_EXCLUSIVE:
+                state.setIcon (selected ? ChoiceElementDisplayPresenter.ICON_RADIOBUTTON : ChoiceElementDisplayPresenter.ICON_EMPTY_RADIOBUTTON);
+                break;
+            case ChoiceCD.VALUE_MULTIPLE:
+                state.setIcon (selected ? ChoiceElementDisplayPresenter.ICON_CHECKBOX : ChoiceElementDisplayPresenter.ICON_EMPTY_CHECKBOX);
+                break;
+            default:
+                state.setIcon (null);
+                break;
+        }
+
+        PropertyValue imageValue = getComponent ().readProperty (ListElementEventSourceCD.PROP_IMAGE);
+        Icon imageIcon = ScreenSupport.getIconFromImageComponent (imageValue.getComponent ());
+        image.setIcon (imageIcon);
+
         String text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(ListElementEventSourceCD.PROP_STRING));
         label.setText(ScreenSupport.wrapWithHtml(text));
         
         DesignComponent font = getComponent().readProperty(ListElementEventSourceCD.PROP_FONT).getComponent();
-        if (font != null) {
+        if (font != null)
             label.setFont(ScreenSupport.getFont(deviceInfo, font));
-        }
+        // TODO - else, set default label font
     }
     
     public Shape getSelectionShape() {
-        return new Rectangle(label.getSize());
+        return new Rectangle(view.getSize());
     }
 
     public Collection<ScreenPropertyDescriptor> getPropertyDescriptors () {
-        return Collections.singleton (
-                new ScreenPropertyDescriptor (getComponent (), label, new ScreenStringPropertyEditor (ListElementEventSourceCD.PROP_STRING))
+        return Arrays.asList (
+                new ScreenPropertyDescriptor (getComponent (), state, new ScreenBooleanPropertyEditor (ChoiceElementCD.PROP_SELECTED)),
+                new ScreenPropertyDescriptor(getComponent(), label, new ScreenStringPropertyEditor(ChoiceElementCD.PROP_STRING))
         );
     }
 
