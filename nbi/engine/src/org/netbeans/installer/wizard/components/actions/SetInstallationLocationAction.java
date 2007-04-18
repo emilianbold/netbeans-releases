@@ -61,13 +61,15 @@ public class SetInstallationLocationAction extends WizardAction {
         
         File sourceLocation = null;
         try {
-            if (SystemUtils.isMacOS() && source.getLogic().wrapForMacOs()) {
+            final File location = source.getInstallationLocation();
+            if (SystemUtils.isMacOS() && source.getLogic().wrapForMacOs() && 
+                    location.getName().endsWith(".app")) {
                 sourceLocation = new File(
-                        source.getInstallationLocation(), 
+                        location, 
                         "Contents/Resources/" + 
-                        source.getInstallationLocation().getName().replaceAll("\\.app$",""));
+                        location.getName().replaceAll("\\.app$",""));
             } else {
-                sourceLocation = source.getInstallationLocation();
+                sourceLocation = location;
             }
         } catch (InitializationException e) {
             ErrorManager.notifyError("Could not access configuration logic", e);
