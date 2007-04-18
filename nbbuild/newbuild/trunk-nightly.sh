@@ -24,14 +24,20 @@ if [ -d $DIST ]; then
     find $DIST -type f -exec rm {} \;
 fi
     
+if [ -d $NB_ALL ]; then
+    rm -r $NB_ALL
+fi
+
+mkdir -p $NB_ALL
+
 cd  $NB_ALL
 
 #Clean the leftovers from the last build.
 #For more info about "cvspurge" take a look 
 #at http://www.red-bean.com/cvsutils/
-for i in `ls | grep -v "CVS"`; do
-    cvspurge $i;
-done
+#for i in `ls | grep -v "CVS"`; do
+#    cvspurge $i;
+#done
 
 
 ###################################################################
