@@ -440,6 +440,7 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.visualweb.project.importpage</friend>
                 <friend>org.netbeans.modules.web.jsf.navigation</friend>
                 <package>org.netbeans.modules.visualweb.insync</package>
+                <package>org.netbeans.modules.visualweb.insync.action</package>
                 <package>org.netbeans.modules.visualweb.insync.beans</package>
                 <package>org.netbeans.modules.visualweb.insync.faces</package>
                 <package>org.netbeans.modules.visualweb.insync.faces.config</package>

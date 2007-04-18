@@ -51,6 +51,9 @@ import org.openide.util.Lookup;
 
 
 /**
+ * XXX This should be ideally out of insync, in the designtime/idebridge.
+ * But it has a big architectural flaw, that it needs insync ResultHandler to process tha action.
+ * 
  * Abstract support action encapsulating <code>DisplayAction</code>s
  * and providing inline presenters for menu and popup.
  * Subclasses need to implement the <code>getDisplayActions</code>.
@@ -66,7 +69,7 @@ import org.openide.util.Lookup;
  * @author Peter Zavadsky
  * @author Tor Norbye (old functionality implementation -> invokeDisplayAction impl)
  */
-abstract class AbstractDisplayActionAction extends AbstractDesignBeanAction {
+public abstract class AbstractDisplayActionAction extends AbstractDesignBeanAction {
 
     /** Creates a new instance of DisplayActionAction */
     public AbstractDisplayActionAction() {
