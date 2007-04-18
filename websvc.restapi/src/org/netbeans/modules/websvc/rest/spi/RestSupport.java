@@ -219,10 +219,6 @@ public abstract class RestSupport {
             return;
         }
 
-        if (! needsSwdpLibrary(project)) {
-            return;
-        }
-        
         // leave it here in case we decide to have SWDP library through download
         Library swdpLibrary = LibraryManager.getDefault().getLibrary(SWDP_LIBRARY);
         if (swdpLibrary == null) {
@@ -249,6 +245,9 @@ public abstract class RestSupport {
         return FileOwnerQuery.getOwner(helper.getProjectDirectory());
     }
 
+    /**
+     * Should be overridden by sub-classes
+     */
     public boolean hasSwdpLibrary() {
         return ! needsSwdpLibrary(getProject());
     }
@@ -256,7 +255,7 @@ public abstract class RestSupport {
     /**
      * A quick check if swdp is already part of classpath.
      */
-    public static boolean needsSwdpLibrary(Project restEnableProject) {
+    private static boolean needsSwdpLibrary(Project restEnableProject) {
         // check if swdp is already part of classpath
         SourceGroup[] sgs = ProjectUtils.getSources(restEnableProject).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         if (sgs.length < 1) {
@@ -264,6 +263,7 @@ public abstract class RestSupport {
         }
         FileObject sourceRoot = sgs[0].getRootFolder();
         ClassPath classPath = ClassPath.getClassPath(sourceRoot, ClassPath.COMPILE);
+        //this package name will change when open source, should just rely on subclass to use file names
         FileObject restClass = classPath.findResource("com/sun/ws/rest/api/UriTemplate.class"); // NOI18N
         if (restClass != null) {
             return false;
