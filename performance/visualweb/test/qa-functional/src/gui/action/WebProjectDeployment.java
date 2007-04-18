@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -28,6 +28,7 @@ import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
+
 import footprint.VWPFootprintUtilities;
 
 /**
@@ -45,13 +46,13 @@ public class WebProjectDeployment extends org.netbeans.performance.test.utilitie
     public WebProjectDeployment(String testName) {
         super(testName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=60000;            
+        WAIT_AFTER_OPEN=60000;
     }
     
     public WebProjectDeployment(String testName, String performanceDataName) {
         super(testName,performanceDataName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=60000;            
+        WAIT_AFTER_OPEN=60000;
     }
     
     public void testDeploySmallProject() {
@@ -63,27 +64,22 @@ public class WebProjectDeployment extends org.netbeans.performance.test.utilitie
         targetProject = "HugeApp";
         doMeasurement();
     }
+    
     public void initialize() {
-        
-        
         RuntimeTabOperator rto = new RuntimeTabOperator().invoke();
         
-        gui.Utilities.performApplicationServerStartup(rto);
-
+        VWPUtilities.performApplicationServerStartup(rto);
         
         new ProjectsTabOperator().invoke();
         VWPFootprintUtilities.buildproject(targetProject);
     }
     
-    // Experimental 
+    // Experimental
     private void waitForAppServerStartedAPI() {
-        gui.VWPUtilities.waitForPendingBackgroundTasks(5);
+        VWPUtilities.waitForPendingBackgroundTasks(5);
     }
     
-
-    
     public void prepare() {
-        
         proj = null;
         try {
             proj = new ProjectsTabOperator().getProjectRootNode(targetProject);
@@ -92,21 +88,19 @@ public class WebProjectDeployment extends org.netbeans.performance.test.utilitie
         } catch (org.netbeans.jemmy.TimeoutExpiredException ex) {
             fail("Cannot find and select project root node");
         }
-        
-        
         projectMenu = proj.callPopup();
     }
-
-    public ComponentOperator open() {        
+    
+    public ComponentOperator open() {
         projectMenu.pushMenu(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "LBL_RedeployAction_Name"));
-
+        
         VWPUtilities.waitForPendingBackgroundTasks();
         MainWindowOperator.getDefault().waitStatusText("Finished building " + targetProject + " (run-deploy)"); // NOI18N
-
+        
         return null;
     }
     
     public void close() {
-       //Undeploy?  
+        //Undeploy?
     }
 }
