@@ -127,7 +127,7 @@ public class AddWsOperationHelper {
     private void addOperation(final MethodModel methodModel, FileObject implClassFo) {
         final JavaSource targetSource = JavaSource.forFileObject(implClassFo);
         final ProgressHandle handle = ProgressHandleFactory.createHandle("Adding operation"); 
-        handle.progress(10);
+        handle.start(100);
         final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
