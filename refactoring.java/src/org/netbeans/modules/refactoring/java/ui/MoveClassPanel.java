@@ -60,6 +60,7 @@ public class MoveClassPanel extends JPanel implements ActionListener, DocumentLi
     private ChangeListener parent;
     private FileObject fo;
     private SourceGroup[] groups;
+    private String startPackage;
     
     public MoveClassPanel(final ChangeListener parent, String startPackage, String headLine, FileObject f) {
         this.fo = f;
@@ -81,7 +82,8 @@ public class MoveClassPanel extends JPanel implements ActionListener, DocumentLi
         }
         
         project = fo != null ? FileOwnerQuery.getOwner(fo):OpenProjects.getDefault().getOpenProjects()[0];
-        initValues(startPackage);
+        this.startPackage = startPackage;
+        
     }
     
     private boolean initialized = false;
@@ -89,6 +91,7 @@ public class MoveClassPanel extends JPanel implements ActionListener, DocumentLi
         if (initialized)
             return ;
         //put initialization code here
+        initValues(startPackage);
         initialized = true;
     }
     

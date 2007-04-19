@@ -399,6 +399,21 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             new TextComponentRunnable(ec) {
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
+                    Element e = selectedElement.resolveElement(info);
+                    if ((e.getKind().isClass() || e.getKind().isInterface()) &&
+                            SourceUtils.getOutermostEnclosingTypeElement(e)==e) {
+                        try {
+                            FileObject fo = SourceUtils.getFile(e, info.getClasspathInfo());
+                            if (fo!=null) {
+                                DataObject d = DataObject.find(SourceUtils.getFile(e, info.getClasspathInfo()));
+                                if (d.getName().equals(e.getSimpleName().toString())) {
+                                    return new MoveClassUI(d);
+                                }
+                            }
+                        } catch (DataObjectNotFoundException ex) {
+                            throw (RuntimeException) new RuntimeException().initCause(ex);
+                        }
+                    }
                     if (selectedElement.resolve(info).getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
                         try {
                             return new MoveClassUI(DataObject.find(info.getFileObject()));

@@ -36,6 +36,7 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
 
@@ -61,7 +62,13 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
     }
     
     public Problem preCheck() {
-        return null;
+        Problem preCheckProblem = null;
+        for (FileObject file:filesToMove) {
+            if (!RetoucheUtils.isElementInOpenProject(file)) {
+                preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ProjectNotOpened"));
+            }
+        }
+        return preCheckProblem;
     }
 
     public Problem checkParameters() {

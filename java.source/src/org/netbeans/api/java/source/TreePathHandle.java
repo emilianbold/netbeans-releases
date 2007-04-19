@@ -109,9 +109,9 @@ public final class TreePathHandle {
                 tp = compilationInfo.getTreeUtilities().pathFor(startPath, position.getOffset()+1);
             }                                                                                                                                                                                                                  
         }                                                                                                                                                                                                                      
-        if (tp == null) {                                                                                                                                                                                                      
-            tp = compilationInfo.getTreeUtilities().pathFor(position.getOffset()+1);                                                                                                                                             
-        }                                                                                                                                                                                                                      
+        if (tp!=null && new KindPath(tp).equals(kindPath))                                                                                                                                                                                 
+            return tp;                                                                                                                                                                                                         
+        tp = compilationInfo.getTreeUtilities().pathFor(position.getOffset()+1);
         if (new KindPath(tp).equals(kindPath))                                                                                                                                                                                 
             return tp;                                                                                                                                                                                                         
         else                                                                                                                                                                                                                   
