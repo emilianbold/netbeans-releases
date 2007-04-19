@@ -3,10 +3,11 @@
 <filesystem>
     <folder name="Templates">
         <attr name="Classes/RESTServices" boolvalue="true"/>      
-        <folder name="RESTServices">
+        <folder name="WebServices">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.wizard.Bundle"/>
             <file name="RESTServicesFromEntities">         
                 <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="web-types"/>
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.websvc.rest.wizard.RESTServicesFromEntitiesIterator" />
                 <!--attr name="templateCategory" stringvalue="web-services"/-->
                 <attr name="templateWizardURL"
