@@ -23,7 +23,9 @@ package org.netbeans.modules.vmd.midp.screen.display.property;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyEditor;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.openide.util.RequestProcessor;
 
 import javax.swing.*;
 import java.awt.*;
@@ -39,11 +41,20 @@ public class ScreenBooleanPropertyEditor implements ScreenPropertyEditor {
         this.propertyName = propertyName;
     }
 
-    public JComponent createEditorComponent (ScreenPropertyDescriptor property) {
-        PropertyValue propertyValue = property.getRelatedComponent ().readProperty (propertyName);
-        boolean state = propertyValue.getKind () == PropertyValue.Kind.VALUE  &&  MidpTypes.getBoolean (propertyValue);
-        state = ! state;
-        property.getRelatedComponent ().writeProperty (propertyName, MidpTypes.createBooleanValue (state));
+    public JComponent createEditorComponent (final ScreenPropertyDescriptor property) {
+        RequestProcessor.getDefault ().post (new Runnable () {
+            public void run () {
+                final DesignComponent relatedComponent = property.getRelatedComponent ();
+                relatedComponent.getDocument ().getTransactionManager ().writeAccess (new Runnable() {
+                    public void run () {
+                        PropertyValue propertyValue = relatedComponent.readProperty (propertyName);
+                        boolean state = propertyValue.getKind () == PropertyValue.Kind.VALUE  &&  MidpTypes.getBoolean (propertyValue);
+                        state = ! state;
+                        relatedComponent.writeProperty (propertyName, MidpTypes.createBooleanValue (state));
+                    }
+                });
+            }
+        });
         return null;
     }
 

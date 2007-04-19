@@ -356,7 +356,7 @@ public class TopPanel extends JPanel {
         final DesignDocument document = devicePanel.getController ().getDocument ();
         if (document == null)
             return;
-        document.getTransactionManager ().writeAccess (new Runnable() {
+        document.getTransactionManager ().readAccess (new Runnable() {
             public void run () {
                 DesignComponent component = devicePanel.getDesignComponentAt (e.getPoint ());
                 ScreenDisplayPresenter presenter = component != null ? component.getPresenter (ScreenDisplayPresenter.class) : null;
