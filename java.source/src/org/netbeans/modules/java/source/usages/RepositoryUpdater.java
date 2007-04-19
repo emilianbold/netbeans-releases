@@ -1593,7 +1593,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 Set<File> compiledFiles = new HashSet<File>();
                 Map<String, List<File>> resources = new HashMap<String, List<File>>();
                 File rootFile = FileUtil.toFile(rootFO);
-                String rootName = rootFile.getAbsolutePath();
+                String rootName = cacheRoot.getAbsolutePath();
                 int len = rootName.length();
                 if (rootName.charAt(len-1)!=File.separatorChar) {
                     len++;
@@ -1614,7 +1614,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     LOGGER.log(Level.FINE, "f={0}, exists={1}", new Object[] {f.getAbsolutePath(), f.exists()});
                     
                     if (f.exists()) {
-                        gatherResources(rootFile, f, len, resources);
+                        gatherResources(cacheRoot, f, len, resources);
                         continue;
                     }
                     
@@ -1623,7 +1623,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     LOGGER.log(Level.FINE, "f={0}, exists={1}", new Object[] {f.getAbsolutePath(), f.exists()});
                     
                     if (f.exists()) {
-                        gatherResources(rootFile, f, len, resources);
+                        gatherResources(cacheRoot, f, len, resources);
                         
                         File folder = f.getParentFile();
                         File[] children = folder.listFiles();
@@ -1637,7 +1637,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         
                         for (File child : children) {
                             if (child.getName().startsWith(prefix)) {
-                                gatherResources(rootFile, child, len, resources);
+                                gatherResources(cacheRoot, child, len, resources);
                             }
                         }
                     }
@@ -1647,7 +1647,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     LOGGER.log(Level.FINE, "resources={0}", resources);
                 }
                 
-                parseFiles(root, false, files, false, handle, filter, resources, compiledFiles);
+                parseFiles(root, false, files, true, handle, filter, resources, compiledFiles);
                 
                 files.removeAll(compiledFiles);
                 
