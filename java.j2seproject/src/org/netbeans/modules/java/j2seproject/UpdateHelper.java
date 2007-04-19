@@ -271,9 +271,9 @@ public class UpdateHelper {
                     Element newRoot = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"data"); //NOI18N
                     copyDocument (doc, oldRoot, newRoot);
                     cachedElement = updateMinAntVersion (newRoot, doc);
+                    }
                 }
             }
-        }
         return cachedElement;
     }
     

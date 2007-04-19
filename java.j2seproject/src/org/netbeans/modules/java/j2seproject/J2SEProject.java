@@ -19,12 +19,15 @@
 
 package org.netbeans.modules.java.j2seproject;
 
+import org.netbeans.spi.project.ant.AntBuildExtenderImplementation;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
@@ -36,6 +39,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.java.j2seproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.java.j2seproject.classpath.J2SEProjectClassPathExtender;
@@ -65,6 +69,8 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.LookupProviderSupport;
+import org.netbeans.spi.project.ant.AntBuildExtenderImplementation;
+import org.netbeans.spi.project.support.ant.AntBuildExtenderSupport;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
@@ -124,13 +130,16 @@ public final class J2SEProject implements Project, AntProjectListener {
     private JaxWsModel jaxWsModel;
     private JaxWsListener jaxWsListener;
     private FileObject jaxWsFo;
+    private AntBuildExtender buildExtender;
 
     J2SEProject(AntProjectHelper helper) throws IOException {
         this.helper = helper;
         eval = createEvaluator();
         aux = helper.createAuxiliaryConfiguration();
         refHelper = new ReferenceHelper(helper, aux, eval);
-        genFilesHelper = new GeneratedFilesHelper(helper);
+        buildExtender = AntBuildExtenderSupport.createAntExtender(new J2SEExtenderImplementation());
+    /// TODO replace this GeneratedFilesHelper with the default one when fixing #101710
+        genFilesHelper = new GeneratedFilesHelper(helper, buildExtender);
         this.updateHelper = new UpdateHelper (this, this.helper, this.aux, this.genFilesHelper,
             UpdateHelper.createDefaultNotifier());
         j2seProjectWebServicesClientSupport = new J2SEProjectWebServicesClientSupport(this, helper, refHelper);
@@ -226,6 +235,7 @@ public final class J2SEProject implements Project, AntProjectListener {
         assert jaxWsModel != null;
         ClassPathProviderImpl cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()); //Does not use APH to get/put properties/cfgdata
         Lookup base = Lookups.fixed(new Object[] {
+            J2SEProject.this,
             new Info(),
             aux,
             helper.createCacheDirectoryProvider(),
@@ -247,6 +257,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             new J2SEFileBuiltQuery (this.helper, evaluator(),getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             new RecommendedTemplatesImpl (this.updateHelper),
             new J2SEProjectClassPathExtender(cpMod),
+            buildExtender,
             cpMod,
             this, // never cast an externally obtained Project to J2SEProject - use lookup instead
             new J2SEProjectOperations(this),
@@ -279,7 +290,7 @@ public final class J2SEProject implements Project, AntProjectListener {
     }
     
     // Package private methods -------------------------------------------------
-
+    
     /**
      * Returns the source roots of this project
      * @return project's source roots
@@ -336,7 +347,7 @@ public final class J2SEProject implements Project, AntProjectListener {
 
 
     // Private innerclasses ----------------------------------------------------
-    
+ 
     private final class Info implements ProjectInformation {
         
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
@@ -660,7 +671,7 @@ public final class J2SEProject implements Project, AntProjectListener {
                 else
                     jaxWsModel = JaxWsModelProvider.getDefault().getJaxWsModel(fo);
             } catch (IOException ex) {
-                
+    
             }
         return jaxWsModel;
     }
@@ -684,6 +695,21 @@ public final class J2SEProject implements Project, AntProjectListener {
                 
             } catch (IOException ex) {}
         }
+    }
+
+    private class J2SEExtenderImplementation implements AntBuildExtenderImplementation {
+        //add targets here as required by the external plugins..
+        public List<String> getExtensibleTargets() {
+            String[] targets = new String[] {
+                "-do-init", "-init-check", "-post-clean", "jar", "-pre-pre-compile","-do-compile","-do-compile-single"
+            };
+            return Arrays.asList(targets);
+        }
+
+        public Project getOwningProject() {
+            return J2SEProject.this;
+        }
+
     }
 
 }

@@ -27,12 +27,16 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 import javax.xml.transform.Transformer;
@@ -44,7 +48,9 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 //import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.api.project.ant.AntBuildExtender;
 //import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.api.project.ant.AntBuildExtender.Extension;
 import org.netbeans.modules.websvc.jaxwsmodel.project.UserQuestionHandler;
 import org.netbeans.modules.websvc.api.jaxws.project.JAXWSVersionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -55,15 +61,29 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.openide.util.UserQuestionException;
 import org.openide.util.Utilities;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * Helps a project type (re-)generate, and manage the state and versioning of,
  * <code>build.xml</code> and <code>build-impl.xml</code>.
+ * 
+ * TODO: remove this class when fixing #101710
+
  * @author Jesse Glick
  */
 public final class GeneratedFilesHelper {
@@ -183,6 +203,8 @@ public final class GeneratedFilesHelper {
     /** Project directory. */
     private final FileObject dir;
     
+    private AntBuildExtender extender;
+    
     /**
      * Create a helper based on the supplied project helper handle.
      * @param h an Ant-based project helper supplied to the project type provider
@@ -191,6 +213,19 @@ public final class GeneratedFilesHelper {
         this.h = h;
         dir = h.getProjectDirectory();
     }
+
+    /**
+     * Create a helper based on the supplied project helper handle. The created
+     * instance is capable of extending the generated files with 3rd party content.
+     * @param h an Ant-based project helper supplied to the project type provider
+     * @param ex build extensibility support
+     * 
+     */
+    public GeneratedFilesHelper(AntProjectHelper h, AntBuildExtender ex) {
+        this(h);
+        extender = ex;
+    }
+    
     
     /**
      * Create a helper based only on a project directory.
@@ -292,7 +327,11 @@ public final class GeneratedFilesHelper {
                                         new ByteArrayInputStream(projectXmlData), projectXmlF.toURI().toString());
                                 ByteArrayOutputStream result = new ByteArrayOutputStream();
                                 t.transform(projectXmlSource, new StreamResult(result));
-                                resultData = result.toByteArray();
+                                if (BUILD_IMPL_XML_PATH.equals(path)) {
+                                    resultData = applyBuildExtensions(result.toByteArray(), extender);
+                                } else {
+                                    resultData = result.toByteArray();
+                                }
                             } catch (TransformerException e) {
                                 throw (IOException)new IOException(e.toString()).initCause(e);
                             } catch (URISyntaxException e) {
@@ -430,6 +469,132 @@ public final class GeneratedFilesHelper {
         }
         return false;
     }
+
+    ///----------------------- HACK remove when fixing #101710
+    
+    private byte[] applyBuildExtensions(byte[] resultData, AntBuildExtender ext) {
+        if (ext == null) {
+            return resultData;
+        }
+        try {
+            ByteArrayInputStream in2 = new ByteArrayInputStream(resultData);
+            InputSource is = new InputSource(in2);
+
+            Document doc = XMLUtil.parse(is, false, true, null, null);
+            Element el = doc.getDocumentElement();
+            Node firstSubnode = el.getFirstChild();
+            //TODO check if first one is text and use it as indentation..
+            for (Extension extension : getExtensionsByReflection(ext)) {
+                Text after = doc.createTextNode("\n");
+                el.insertBefore(after, firstSubnode);
+                Element imp = createImportElement(getPathByReflection(extension), doc);
+                el.insertBefore(imp, after);
+                Text before = doc.createTextNode("    ");
+                el.insertBefore(before, imp);
+                firstSubnode = before;
+                NodeList nl = el.getElementsByTagName("target"); //NOI18N
+                Map<String, Collection<String>> deps  = getDependenciesByReflection(extension);
+                for (String targetName : deps.keySet()) {
+                    Element targetEl = null;
+                    for (int i = 0; i < nl.getLength(); i++) {
+                        Element elem = (Element)nl.item(i);
+                        String at = elem.getAttribute("name"); //NOI18N
+                        if (at != null && at.equals(targetName)) {
+                            targetEl = elem;
+                            break;
+                        }
+                    }
+//                    System.out.println("target name=" + targetName);
+//                    System.out.println("target elem=" + targetEl);
+                    if (targetEl != null) {
+                        Attr depend = targetEl.getAttributeNode("depends"); //NOI18N
+                        if (depend == null) {
+                            depend = doc.createAttribute("depends"); //NOI18N
+                            depend.setValue("");
+                            targetEl.setAttributeNode(depend);
+                        }
+                        String oldVal = depend.getValue();
+                        for (String targ : deps.get(targetName)) {
+                            oldVal = oldVal + "," + targ; //NOI18N
+                        }
+                        if (oldVal.startsWith(",")) { //NOI18N
+                            oldVal = oldVal.substring(1);
+                        }
+                        depend.setValue(oldVal);
+                    } else {
+                        //TODO log??
+                    }
+                }
+            }
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            XMLUtil.write(doc, out, "UTF-8"); //NOI18N
+            return out.toByteArray();
+        }
+        catch (IOException ex) {
+            ex.printStackTrace();
+            Exceptions.printStackTrace(ex);
+            return resultData;
+        }
+        catch (SAXException ex) {
+            ex.printStackTrace();
+            Exceptions.printStackTrace(ex);
+            return resultData;
+        }
+    }
+
+    private Element createImportElement(String path, Document doc) {
+        Element el = doc.createElement("import"); //NOI18N
+        el.setAttribute("file", path);
+        return el;
+    }
+
+    
+    private Set<AntBuildExtender.Extension> getExtensionsByReflection(AntBuildExtender ext) {
+        try     {
+            ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
+            Class clzz = loader.loadClass("org.netbeans.modules.project.ant.AntBuildExtenderAccessor");
+            Field fld = clzz.getField("DEFAULT");
+            Object acc = fld.get(null);
+            Method meth = clzz.getMethod("getExtensions", AntBuildExtender.class);
+            return (Set<AntBuildExtender.Extension>)meth.invoke(acc, ext);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        assert false;
+        return null;
+    }
+    
+    private String getPathByReflection(AntBuildExtender.Extension ext) {
+        try     {
+            ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
+            Class clzz = loader.loadClass("org.netbeans.modules.project.ant.AntBuildExtenderAccessor");
+            Field fld = clzz.getField("DEFAULT");
+            Object acc = fld.get(null);
+            Method meth = clzz.getMethod("getPath", AntBuildExtender.Extension.class);
+            return (String)meth.invoke(acc, ext);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        assert false;
+        return null;
+    }
+    
+    private Map<String, Collection<String>> getDependenciesByReflection(AntBuildExtender.Extension ext) {
+        try     {
+            ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
+            Class clzz = loader.loadClass("org.netbeans.modules.project.ant.AntBuildExtenderAccessor");
+            Field fld = clzz.getField("DEFAULT");
+            Object acc = fld.get(null);
+            Method meth = clzz.getMethod("getDependencies", AntBuildExtender.Extension.class);
+            return (Map<String, Collection<String>>)meth.invoke(acc, ext);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        assert false;
+        return null;
+    }
+    ///----------------------- HACK-END remove when fixing #101710
     
     /**
      * Load data from a stream into a buffer.
