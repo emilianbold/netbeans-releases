@@ -216,7 +216,11 @@ public final class JavaMembersModel extends DefaultTreeModel {
             this.elementKind = element.getKind();
             this.modifiers = element.getModifiers();
 
-            setName(element.getSimpleName().toString());
+            if (element.getKind() == ElementKind.CONSTRUCTOR) {                
+                setName(element.getEnclosingElement().getSimpleName().toString());
+            } else {
+                setName(element.getSimpleName().toString());
+            }
             setIcon(UiUtils.getElementIcon(element.getKind(),
                     element.getModifiers()));
             setLabel(Utils.format(element));
