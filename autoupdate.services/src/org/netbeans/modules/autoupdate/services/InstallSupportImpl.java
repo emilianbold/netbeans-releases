@@ -159,7 +159,11 @@ public class InstallSupportImpl {
         } catch(InterruptedException iex) {
             Exceptions.printStackTrace(iex);
         } catch(ExecutionException iex) {
-            Exceptions.printStackTrace(iex);
+            if (! (iex.getCause() instanceof OperationException)) {
+                Exceptions.printStackTrace(iex);
+            } else {
+                throw (OperationException) iex.getCause ();
+            }
         }
         return retval;
     }
@@ -407,7 +411,7 @@ public class InstallSupportImpl {
             c = copy (source, dest, progress, toUpdateImpl.getDownloadSize (), aggregateDownload, totalSize, label);
         } catch (IOException x) {
             err.log (Level.INFO, x.getMessage (), x);
-            throw new OperationException (OperationException.ERROR_TYPE.PROXY, x);
+            throw new OperationException (OperationException.ERROR_TYPE.PROXY, source.toString ());
         }
         
         return c;

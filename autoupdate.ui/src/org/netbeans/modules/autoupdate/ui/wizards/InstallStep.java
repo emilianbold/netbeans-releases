@@ -142,7 +142,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                 } catch (OperationException ex) {
                     assert OperationException.ERROR_TYPE.PROXY.equals (ex.getErrorType ());
                     log.log (Level.INFO, ex.getMessage (), ex);
-                    NetworkProblemPanel.showNetworkProblemDialog ();
+                    NetworkProblemPanel.showNetworkProblemDialog (model.getCancelButton (wd), ex);
                 }
             }
         };

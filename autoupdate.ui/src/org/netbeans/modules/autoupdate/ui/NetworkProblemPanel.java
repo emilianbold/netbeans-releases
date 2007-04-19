@@ -25,6 +25,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.UIManager;
+import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -39,9 +40,13 @@ import org.openide.util.RequestProcessor;
  */
 public class NetworkProblemPanel extends javax.swing.JPanel {
     private static Runnable doAgain = null;
+    private static JButton continueButton = null;
+    
+    private OperationException problem;
 
     /** Creates new form NetworkProblemPanel */
-    public NetworkProblemPanel () {
+    public NetworkProblemPanel (OperationException ex) {
+        this.problem = ex;
         initComponents ();
         postInitComponents ();
     }
@@ -53,6 +58,10 @@ public class NetworkProblemPanel extends javax.swing.JPanel {
         c = new Color (c.getRGB ());
         taMessage.setBackground (c);
         taTitle.setBackground (c);
+        if (problem != null && problem.getMessage () != null) {
+            taTitle.setText (NbBundle.getMessage (NetworkProblemPanel.class, "NetworkProblemPanel_taTitleWithUrl_Text", problem.getMessage ()));
+            taTitle.setToolTipText (NbBundle.getMessage (NetworkProblemPanel.class, "NetworkProblemPanel_taTitleWithUrl_Text", problem.getMessage ()));
+        }
     }
         
     /** This method is called from within the constructor to
@@ -80,6 +89,7 @@ public class NetworkProblemPanel extends javax.swing.JPanel {
 
         spMessage.setBorder(null);
 
+        taMessage.setEditable(false);
         taMessage.setLineWrap(true);
         taMessage.setRows(3);
         taMessage.setText(org.openide.util.NbBundle.getMessage(NetworkProblemPanel.class, "NetworkProblemPanel_taMessage_Text")); // NOI18N
@@ -97,10 +107,10 @@ public class NetworkProblemPanel extends javax.swing.JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(spTitle, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(spTitle, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 36, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(spMessage, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(spMessage)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
     
@@ -113,7 +123,15 @@ public class NetworkProblemPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
     
     public static void showNetworkProblemDialog () {
-        DialogDisplayer.getDefault ().createDialog (getDialogDescriptor ()).setVisible (true);
+        showNetworkProblemDialog (null, null);
+    }
+    
+    public static void showNetworkProblemDialog (JButton cancel, OperationException ex) {
+        DialogDescriptor dd = getDialogDescriptor (cancel, ex);
+        DialogDisplayer.getDefault ().createDialog (dd).setVisible (true);
+        if (! continueButton.equals (dd.getValue ())) {
+            if (cancel != null) cancel.doClick ();
+        }
     }
     
     public static void setPerformAgain (Runnable performAgain) {
@@ -124,8 +142,8 @@ public class NetworkProblemPanel extends javax.swing.JPanel {
         return doAgain;
     }
     
-    private static DialogDescriptor getDialogDescriptor () {
-        final JButton continueButton = new JButton ();
+    private static DialogDescriptor getDialogDescriptor (JButton cancel, OperationException ex) {
+        continueButton = new JButton ();
         continueButton.setEnabled (true);
         continueButton.addActionListener (new ActionListener () {
             public void actionPerformed (ActionEvent evt) {
@@ -135,14 +153,14 @@ public class NetworkProblemPanel extends javax.swing.JPanel {
         Mnemonics.setLocalizedText (continueButton, getBundle ("CTL_Error_Continue"));
         continueButton.getAccessibleContext().setAccessibleDescription(getBundle ("ACSD_Error_Continue"));
 
-        final JButton cancelButton = new JButton(getBundle ("CTL_Error_Cancel"));
+        final JButton cancelButton = cancel == null ? new JButton(getBundle ("CTL_Error_Cancel")) : cancel;
         cancelButton.getAccessibleContext().setAccessibleDescription(getBundle ("ACSD_Error_Cancel"));
 
         JButton showProxyOptions = new JButton ();
         Mnemonics.setLocalizedText (showProxyOptions, getBundle ("CTL_ShowProxyOptions"));
 
         DialogDescriptor descriptor = new DialogDescriptor(
-             new NetworkProblemPanel (),
+             new NetworkProblemPanel (ex),
              getBundle ("CTL_Error"),
              true,                                  // Modal
              new Object [] {continueButton, cancelButton}, // Option list
