@@ -37,7 +37,6 @@ import com.sun.rave.designtime.markup.MarkupPosition;
 import java.awt.EventQueue;
 import java.awt.datatransfer.Transferable;
 import org.netbeans.modules.visualweb.designer.jsf.text.DomDocumentImpl;
-//NB60 import org.netbeans.modules.visualweb.insync.faces.refactoring.MdrInSyncSynchronizer;
 import org.netbeans.modules.visualweb.insync.live.LiveUnit;
 import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
@@ -54,12 +53,8 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
-import javax.swing.event.EventListenerList;
 import org.netbeans.api.project.Project;
 import org.netbeans.core.spi.multiview.MultiViewElement;
-import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
-import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
-import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.api.designtime.idebridge.DesigntimeIdeBridgeProvider;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
@@ -268,20 +263,25 @@ public class JsfForm {
         return jsfForm == null ? new Designer[0] : jsfForm.getDesigners();
     }
     
-    /*private*/ static Designer createDesigner(JsfForm jsfForm) {
-        // TODO There should be always created new designer.
-        Designer designer;
-//        synchronized (jsfForm2designerSet) {
-//            Set<Designer> designerSet = jsfForm2designerSet.get(jsfForm);
-//            if (designerSet == null) {
-//                designerSet = new WeakSet<Designer>();
-//            }
-            
-            designer = DesignerFactory.createDesigner(jsfForm.getDomProvider());
-//            designerSet.add(designer);
-//            jsfForm2designerSet.put(jsfForm, designerSet);
-            jsfForm.addDesigner(designer);
-//        }
+//    private static Designer createDesigner(JsfForm jsfForm) {
+//        // TODO There should be always created new designer.
+//        Designer designer;
+////        synchronized (jsfForm2designerSet) {
+////            Set<Designer> designerSet = jsfForm2designerSet.get(jsfForm);
+////            if (designerSet == null) {
+////                designerSet = new WeakSet<Designer>();
+////            }
+//            
+//            designer = DesignerFactory.createDesigner(jsfForm.getDomProvider());
+////            designerSet.add(designer);
+////            jsfForm2designerSet.put(jsfForm, designerSet);
+//            jsfForm.addDesigner(designer);
+////        }
+//        return designer;
+//    }
+    Designer createDesigner() {
+        Designer designer = DesignerFactory.createDesigner(domProvider);
+        addDesigner(designer);
         return designer;
     }
     
@@ -347,9 +347,13 @@ public class JsfForm {
     }
     
     static Designer[] getDesigners(JsfForm jsfForm) {
+        if (jsfForm == null) {
+            return new Designer[0];
+        }
         Designer[] designers = findDesigners(jsfForm);
         if (designers.length == 0) {
-            Designer designer = createDesigner(jsfForm);
+//            Designer designer = createDesigner(jsfForm);
+            Designer designer = jsfForm.createDesigner();
             return new Designer[] {designer};
         }
         return designers;
@@ -462,9 +466,9 @@ public class JsfForm {
     }
 
     
-    DomProvider getDomProvider() {
-        return domProvider;
-    }
+//    DomProvider getDomProvider() {
+//        return domProvider;
+//    }
 
 //    static boolean hasDomProvider(DataObject dataObject) {
 //        if (dataObject == null) {

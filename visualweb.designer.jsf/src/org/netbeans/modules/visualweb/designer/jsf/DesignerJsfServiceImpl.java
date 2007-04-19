@@ -20,10 +20,10 @@
 package org.netbeans.modules.visualweb.designer.jsf;
 
 import org.netbeans.modules.visualweb.api.designer.Designer;
-import org.netbeans.modules.visualweb.designer.jsf.ui.JsfMultiViewElement;
 import org.netbeans.modules.visualweb.designer.jsf.ui.NotAvailableMultiViewElement;
 import org.netbeans.modules.visualweb.spi.designer.jsf.DesignerJsfService;
 import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.openide.ErrorManager;
 import org.openide.loaders.DataObject;
 
 /**
@@ -46,7 +46,18 @@ public class DesignerJsfServiceImpl implements DesignerJsfService {
     public MultiViewElement createDesignerMultiViewElement(DataObject jsfJspDataObject) {
 //        Designer designer = JsfForm.createDesigner(jsfJspDataObject);
         JsfForm jsfForm = JsfForm.getJsfForm(jsfJspDataObject);
-        Designer designer = JsfForm.createDesigner(jsfForm);
+        if (jsfForm == null) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                    new NullPointerException("Can not create JsfForm for JSF data Object, jsfJspDataObject=" + jsfJspDataObject)); // NOI18N
+            return new NotAvailableMultiViewElement();
+        }
+//        Designer designer = JsfForm.createDesigner(jsfForm);
+        Designer designer = jsfForm.createDesigner();
+        if (designer == null) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                    new NullPointerException("Can not create Designer for JsfForm, jsfForm=" + jsfForm)); // NOI18N
+            return new NotAvailableMultiViewElement();
+        }
 //        return designer == null ? new NotAvailableMultiViewElement() : new JsfMultiViewElement(jsfForm, designer);
         return JsfForm.createMultiViewElement(jsfForm, designer);
     }
