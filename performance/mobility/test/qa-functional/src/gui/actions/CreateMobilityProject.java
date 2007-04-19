@@ -13,13 +13,12 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package gui.actions;
 
-import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
@@ -33,7 +32,7 @@ import org.netbeans.junit.ide.ProjectSupport;
 /**
  * Test create CreateMobilityProject
  *
- * @author  rashid@netbeans.org
+ * @author  rashid@netbeans.org, mmirilovic@netbeans.org
  */
 public class CreateMobilityProject extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
@@ -65,14 +64,20 @@ public class CreateMobilityProject extends org.netbeans.performance.test.utiliti
     }
     
     public void testCreateMobilityProject(){
-        category = "Mobility";
-        project = "Mobile Application";
+        category = "Mobility"; // NOI18N
+        project = "Mobile Application"; // NOI18N
         project_type="MobileApp";
         index=1;
         doMeasurement();
     }
     
-  
+      public void testCreateMobilityLibrary(){
+        category = "Mobility"; // NOI18N
+        project = "Mobile Class Library"; // NOI18N
+        project_type="MobileLib";
+        index=1;
+        doMeasurement();
+    }
     
     public void initialize(){
     }
@@ -84,7 +89,7 @@ public class CreateMobilityProject extends org.netbeans.performance.test.utiliti
         wizard.next();
         wizard_location = new NewProjectNameLocationStepOperator();
         
-        String directory = System.getProperty("xtest.tmpdir")+"/"+"createdProjects";
+        String directory = System.getProperty("xtest.tmpdir") + java.io.File.separator + "createdProjects";
         log("================= Destination directory={"+directory+"}");
       //  wizard_location.txtProjectLocation().setText("");
         new EventTool().waitNoEvent(1000);

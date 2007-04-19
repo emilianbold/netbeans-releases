@@ -35,7 +35,7 @@ public class MPMeasureActions  {
 
         // TODO add some test cases
         suite.addTest(new CreateMobilityProject("testCreateMobilityProject", "Create Mobile Application"));  
-        suite.addTest(new CreateMobilityLibrary("testCreateMobilityLibrary", "Create Mobile Class Library"));
+        suite.addTest(new CreateMobilityProject("testCreateMobilityLibrary", "Create Mobile Class Library"));
       
         return suite;
     }
