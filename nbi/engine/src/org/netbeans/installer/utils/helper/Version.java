@@ -82,7 +82,7 @@ public class Version {
                 } else if (micro == version.getMicro()) {
                     if (update > version.getUpdate()) {
                         return true;
-                    } else if (update == version.getBuild()) {
+                    } else if (update == version.getUpdate()) {
                         if (build > version.getBuild()) {
                             return true;
                         }
