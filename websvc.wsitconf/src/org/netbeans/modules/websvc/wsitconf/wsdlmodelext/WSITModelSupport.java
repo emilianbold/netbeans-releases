@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -74,7 +74,7 @@ import org.openide.util.NbBundle;
  * @author MartinG
  */
 public class WSITModelSupport {
-
+    
     /* prefix for config wsdls */
     public static final String CONFIG_WSDL_CLIENT_PREFIX = "wsit-client";       //NOI18N
     public static final String CONFIG_WSDL_SERVICE_PREFIX = "wsit-";            //NOI18N
@@ -82,23 +82,23 @@ public class WSITModelSupport {
     /* extensions for config wsdls */
     public static final String MAIN_CONFIG_EXTENSION = "xml";                   //NOI18N
     public static final String CONFIG_WSDL_EXTENSION = "xml";                   //NOI18N
-
+    
     private static final Logger logger = Logger.getLogger(WSITModelSupport.class.getName());
     
     /** Creates a new instance of WSITModelSupport */
     public WSITModelSupport() {
     }
- 
+    
     public static WSDLModel getModel(Node node, JaxWsModel jaxWsModel, UndoManagerHolder umHolder, boolean create, Collection createdFiles) throws MalformedURLException, Exception {
-                        
+        
         WSDLModel model = null;
         
         //is it a client node?
         Client client = (Client)node.getLookup().lookup(Client.class);
-
+        
         //is it a service node?
         Service service = (Service)node.getLookup().lookup(Service.class);
-
+        
         if (client != null) { //it is a client
             FileObject srcRoot = (FileObject) node.getLookup().lookup(FileObject.class);
             Project p = FileOwnerQuery.getOwner(srcRoot);
@@ -119,7 +119,28 @@ public class WSITModelSupport {
         }
         return model;
     }
-   
+    
+    public static WSDLModel getModelForService(Service service, FileObject implClass, 
+            Project p, boolean create, Collection createdFiles, boolean useLocal) {
+        try {
+            String wsdlUrl = service.getWsdlUrl();
+            if (wsdlUrl == null) { // WS from Java
+                if (implClass == null) return null;
+                JAXWSSupport supp = JAXWSSupport.getJAXWSSupport(implClass);
+                return getModelForServiceFromJava(implClass, supp, create, createdFiles);
+            } else {
+                if (p == null) return null;
+                JAXWSSupport supp = JAXWSSupport.getJAXWSSupport(p.getProjectDirectory());
+                return getModelForServiceFromWsdl(supp, service, useLocal);
+            }
+        } catch (IOException ex) {
+            logger.log(Level.INFO, null, ex);
+        } catch (Exception e) {
+            logger.log(Level.INFO, null, e);
+        }
+        return null;
+    }
+    
     public static WSDLModel getModelForService(Service service, FileObject implClass, Project p, boolean create, Collection createdFiles) {
         try {
             String wsdlUrl = service.getWsdlUrl();
@@ -153,46 +174,46 @@ public class WSITModelSupport {
         }
         return model;
     }
-        
-    /* Retrieves WSDL model for a WS client - always has a wsdl
-     */ 
-    public static WSDLModel getModelForClient(Project p, Client client, boolean create, Collection createdFiles) throws IOException {
     
+    /* Retrieves WSDL model for a WS client - always has a wsdl
+     */
+    public static WSDLModel getModelForClient(Project p, Client client, boolean create, Collection createdFiles) throws IOException {
+        
         WSDLModel model = null;
         FileObject srcFolder = WSITEditor.getClientConfigFolder(p);
         FileObject catalogfo = Utilities.getProjectCatalogFileObject(p);
         ModelSource catalogms = Utilities.getModelSource(catalogfo, false);
-
+        
         try {
             CatalogModel cm = Utilities.getCatalogModel(catalogms);
             ModelSource originalms = cm.getModelSource(URI.create(client.getWsdlUrl()));
             FileObject originalWsdlFO = Utilities.getFileObject(originalms);
             WSDLModel originalwsdlmodel = getModelFromFO(originalWsdlFO, true);
-
+            
             // check whether config file already exists
             FileObject configFO = srcFolder.getFileObject(originalWsdlFO.getNameExt());
             if ((configFO != null) && (configFO.isValid())) {
-                return getModelFromFO(configFO, true); 
+                return getModelFromFO(configFO, true);
             }
-  
+            
             if (create) {
                 // check whether main config file exists
                 FileObject mainConfigFO = srcFolder.getFileObject(CONFIG_WSDL_CLIENT_PREFIX, MAIN_CONFIG_EXTENSION);
                 if (mainConfigFO == null) {
                     mainConfigFO = createMainConfig(srcFolder, createdFiles);
                 }
-               
+                
                 copyImports(originalwsdlmodel, srcFolder, createdFiles);
-
+                
                 // import the model from client model
                 WSDLModel mainModel = getModelFromFO(mainConfigFO, true);
                 mainModel.startTransaction();
                 try {
                     WSDLComponentFactory wcf = mainModel.getFactory();
-
+                    
                     FileObject configName = Utilities.getFileObject(originalwsdlmodel.getModelSource());
                     configFO = srcFolder.getFileObject(configName.getName(), CONFIG_WSDL_EXTENSION);
-
+                    
                     boolean importFound = false;
                     Collection<Import> imports = mainModel.getDefinitions().getImports();
                     for (Import i : imports) {
@@ -222,7 +243,7 @@ public class WSITModelSupport {
                     }
                     mainConfigDO.setModified(false);
                 }
-
+                
                 DataObject configDO = DataObject.find(configFO);
                 if ((configDO != null) && (configDO.isModified())) {
                     SaveCookie wsdlSaveCookie = (SaveCookie)configDO.getCookie(SaveCookie.class);
@@ -236,14 +257,14 @@ public class WSITModelSupport {
         } catch (CatalogModelException ex) {
             logger.log(Level.INFO, null, ex);
         }
-                 
+        
         return model;
     }
-
+    
     private static void copyImports(final WSDLModel model, final FileObject srcFolder, Collection createdFiles) throws CatalogModelException {
         
         FileObject modelFO = Utilities.getFileObject(model.getModelSource());
-
+        
         try {
             FileObject configFO = FileUtil.copyFile(modelFO, srcFolder, modelFO.getName(), CONFIG_WSDL_EXTENSION);
             if (createdFiles != null) {
@@ -271,9 +292,9 @@ public class WSITModelSupport {
             }
         } catch (IOException e) {
             // ignore - this happens when files are imported recursively
-        }        
+        }
     }
-
+    
     /** Creates new empty main client configuration file
      *
      */
@@ -295,7 +316,7 @@ public class WSITModelSupport {
         }
         return mainConfig;
     }
-
+    
     public static WSDLModel getMainClientModel(FileObject folder) {
         WSDLModel model = null;
         if (folder != null) {
@@ -311,49 +332,66 @@ public class WSITModelSupport {
         String relativePath = wsdlLocation.substring(wsdlLocation.indexOf("/wsdl/") + 6);
         return folder.getFileObject(relativePath);
     }
-
+    
+    private static FileObject getLocalWsdlFO(FileObject localWSDLFolder, String wsdlName){
+        return localWSDLFolder.getFileObject(wsdlName);
+    }
+    
     /* Retrieves WSDL model for a WS from Java - if config file exists, reuses that one, otherwise generates new one
-     */ 
-    public static WSDLModel getServiceModelForClient(JAXWSClientSupport supp, Client client) throws IOException, Exception {     
+     */
+    public static WSDLModel getServiceModelForClient(JAXWSClientSupport supp, Client client) throws IOException, Exception {
         FileObject originalWsdlFolder = supp.getLocalWsdlFolderForClient(client.getName(), false);
         FileObject originalWsdlFO = originalWsdlFolder.getFileObject(client.getLocalWsdlFile());
         
         if ((originalWsdlFO != null) && (originalWsdlFO.isValid())) {   //NOI18N
-            return getModelFromFO(originalWsdlFO, false); 
+            return getModelFromFO(originalWsdlFO, false);
         }
         return null;
     }
     
+    private static WSDLModel getModelForServiceFromWsdl(JAXWSSupport supp, Service service, boolean useLocal) throws IOException, Exception {
+        if(useLocal){
+            String wsdlLocation = supp.getWsdlLocation(service.getName());
+             FileObject wsdlFO = getLocalWsdlFO(supp.getLocalWsdlFolderForService(service.getName(),false), getWSDLFileName(wsdlLocation));
+            return getModelFromFO(wsdlFO, true);
+        }
+        return getModelForServiceFromWsdl(supp, service);
+    }
+    
+    private static String getWSDLFileName(String wsdlLocation){
+        return wsdlLocation.substring(wsdlLocation.lastIndexOf("/") + 1);
+    }
+    
     /* Retrieves WSDL model for a WS from Java - if config file exists, reuses that one, otherwise generates new one
-     */ 
-    private static WSDLModel getModelForServiceFromWsdl(JAXWSSupport supp, Service service) throws IOException, Exception {        
+     */
+    private static WSDLModel getModelForServiceFromWsdl(JAXWSSupport supp, Service service) throws IOException, Exception {
         String wsdlLocation = supp.getWsdlLocation(service.getName());
         FileObject wsdlFO = getWsdlFO(supp.getWsdlFolder(false), wsdlLocation);
         return getModelFromFO(wsdlFO, true);
     }
-
+    
     /* Retrieves WSDL model for a WS from Java - if config file exists, reuses that one, otherwise generates new one
-     */ 
+     */
     public static WSDLModel getModelForServiceFromJava(FileObject jc, JAXWSSupport supp, boolean create, Collection createdFiles) throws IOException {
         
         WSDLModel model = null;
         String configWsdlName = CONFIG_WSDL_SERVICE_PREFIX;
-                
+        
         try {
             if (jc == null) return null;
             final java.lang.String[] result = new java.lang.String[1];
             
             JavaSource js = JavaSource.forFileObject(jc);
             js.runUserActionTask(new AbstractTask<CompilationController>() {
-                 public void run(CompilationController controller) throws java.io.IOException {
-                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                     SourceUtils sourceUtils = SourceUtils.newInstance(controller);
-                     result[0] = sourceUtils.getTypeElement().getQualifiedName().toString();
-                 }
-             }, true);
-             
-             configWsdlName += result[0];
-             
+                public void run(CompilationController controller) throws java.io.IOException {
+                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    SourceUtils sourceUtils = SourceUtils.newInstance(controller);
+                    result[0] = sourceUtils.getTypeElement().getQualifiedName().toString();
+                }
+            }, true);
+            
+            configWsdlName += result[0];
+            
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -362,10 +400,10 @@ public class WSITModelSupport {
         if (supp.getWsdlFolder(false) != null) {
             FileObject wsdlFO = supp.getWsdlFolder(false).getParent().getFileObject(configWsdlName, CONFIG_WSDL_EXTENSION);  //NOI18N
             if ((wsdlFO != null) && (wsdlFO.isValid())) {   //NOI18N
-                return getModelFromFO(wsdlFO, true); 
+                return getModelFromFO(wsdlFO, true);
             }
         }
-
+        
         if (create) {
             // config file doesn't exist - generate empty file
             FileObject wsdlFolder = supp.getWsdlFolder(true).getParent();
@@ -380,12 +418,12 @@ public class WSITModelSupport {
                 fw.close();
                 wsdlFO.refresh(true);
             }
-
+            
             // and fill it with values
             model = createModelFromFO(wsdlFO, jc);
             wsdlFO.refresh(true);
         }
-
+        
         return model;
     }
     
@@ -404,15 +442,15 @@ public class WSITModelSupport {
                         QName serviceQName = JavaWsdlMapper.getServiceName(jc);
                         String serviceLocalName = serviceQName.getLocalPart();
                         String serviceTargetNamespace = serviceQName.getNamespaceURI();
-
+                        
                         d.setName(serviceLocalName);
                         d.setTargetNamespace(serviceTargetNamespace);
-
+                        
                         // create service element and add it to definitions
                         org.netbeans.modules.xml.wsdl.model.Service s = wcf.createService();
                         s.setName(serviceLocalName);
                         d.addService(s);
-
+                        
                         // create port and add it to the service element
                         org.netbeans.modules.xml.wsdl.model.Port port = wcf.createPort();
                         QName portName = JavaWsdlMapper.getPortName(jc, serviceTargetNamespace);
@@ -420,67 +458,67 @@ public class WSITModelSupport {
                             port.setName(portName.getLocalPart());
                         }
                         s.addPort(port);
-
+                        
                         // create binding and add it to the service element
                         org.netbeans.modules.xml.wsdl.model.Binding binding = wcf.createBinding();
                         String bindingName = JavaWsdlMapper.getBindingName(jc, serviceTargetNamespace);
                         binding.setName(bindingName);
                         d.addBinding(binding);
-
+                        
                         // attach binding to the port
                         port.setBinding(binding.createReferenceTo(binding, org.netbeans.modules.xml.wsdl.model.Binding.class));
-
+                        
                         // create portType and add it to the definitions element
                         org.netbeans.modules.xml.wsdl.model.PortType portType = wcf.createPortType();
                         QName portTypeName = JavaWsdlMapper.getPortTypeName(jc);
                         portType.setName(portTypeName.getLocalPart());
                         d.addPortType(portType);
-
+                        
                         // create operations and add them to the binding element
                         List<String> bindingOperationNames = JavaWsdlMapper.getOperationNames(jc);
                         for (String name : bindingOperationNames) {
-
+                            
                             org.netbeans.modules.xml.wsdl.model.BindingOperation bindingOperation = wcf.createBindingOperation();
                             bindingOperation.setName(name);
                             binding.addBindingOperation(bindingOperation);
-
+                            
                             org.netbeans.modules.xml.wsdl.model.Message inputMsg = wcf.createMessage();
                             inputMsg.setName(name);
                             d.addMessage(inputMsg);
-
+                            
                             org.netbeans.modules.xml.wsdl.model.Message outMsg = wcf.createMessage();
                             outMsg.setName(name + "Response");                  //NOI18N
                             d.addMessage(outMsg);
-
+                            
                             org.netbeans.modules.xml.wsdl.model.RequestResponseOperation oper = wcf.createRequestResponseOperation();
                             oper.setName(name);
                             portType.addOperation(oper);
-
+                            
                             List<String> faults = JavaWsdlMapper.getOperationFaults(jc, name);
                             for (String faultstr : faults) {
                                 org.netbeans.modules.xml.wsdl.model.Message fMsg = wcf.createMessage();
                                 fMsg.setName(faultstr);
                                 d.addMessage(fMsg);
-
+                                
                                 org.netbeans.modules.xml.wsdl.model.Fault fault = wcf.createFault();
                                 fault.setName(faultstr);
                                 oper.addFault(fault);
                                 fault.setMessage(fault.createReferenceTo(fMsg, org.netbeans.modules.xml.wsdl.model.Message.class));
                             }
-
+                            
                             org.netbeans.modules.xml.wsdl.model.Input input = wcf.createInput();
                             oper.setInput(input);
                             input.setMessage(input.createReferenceTo(inputMsg, org.netbeans.modules.xml.wsdl.model.Message.class));
-
+                            
                             org.netbeans.modules.xml.wsdl.model.Output out = wcf.createOutput();
                             oper.setOutput(out);
                             out.setMessage(out.createReferenceTo(outMsg, org.netbeans.modules.xml.wsdl.model.Message.class));
-
+                            
                             org.netbeans.modules.xml.wsdl.model.BindingOutput bindingOutput = wcf.createBindingOutput();
                             bindingOperation.setBindingOutput(bindingOutput);
                             org.netbeans.modules.xml.wsdl.model.BindingInput bindingInput = wcf.createBindingInput();
                             bindingOperation.setBindingInput(bindingInput);
-
+                            
                             //add faults
                             List<String> operationFaults = JavaWsdlMapper.getOperationFaults(jc, name);
                             for (String fault : operationFaults) {
@@ -489,13 +527,13 @@ public class WSITModelSupport {
                                 bindingOperation.addBindingFault(bindingFault);
                             }
                         }
-
+                        
                         // attach portType to the binding
                         binding.setType(binding.createReferenceTo(portType, org.netbeans.modules.xml.wsdl.model.PortType.class));
-                    } finally {                    
+                    } finally {
                         model.endTransaction();
                     }
-
+                    
                     DataObject dO = DataObject.find(wsdlFO);
                     SaveCookie sc = (SaveCookie) dO.getCookie(SaveCookie.class);
                     sc.save();
@@ -529,7 +567,7 @@ public class WSITModelSupport {
             model.endTransaction();
         }
     }
-
+    
     public static boolean isServiceFromWsdl(Node node) {
         Service service = (Service)node.getLookup().lookup(Service.class);
         if (service != null) { //it is a service
@@ -555,7 +593,7 @@ public class WSITModelSupport {
         for (WSDLComponent ch : children) {
             removePolicyElements(ch);
         }
-    }    
+    }
     
     public static void fillImportedBindings(final WSDLModel model, Collection<Binding> bindings, HashSet<FileObject> traversedModels) {
         FileObject modelFO = Util.getFOForModel(model);

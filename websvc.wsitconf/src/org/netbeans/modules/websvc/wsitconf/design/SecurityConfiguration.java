@@ -20,6 +20,7 @@
 package org.netbeans.modules.websvc.wsitconf.design;
 
 import java.awt.Component;
+import java.awt.Image;
 import java.util.Collection;
 import java.util.LinkedList;
 import javax.swing.Icon;
@@ -39,6 +40,7 @@ import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -68,15 +70,15 @@ public class SecurityConfiguration  implements WSConfiguration {
     }
 
     public String getDescription() {
-        return "WSIT Configuration";
+        return "Security";
     }
 
-    public Icon getIcon() {
-        return new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/websvc/wsitconf/resources/designer-security.gif"));
+    public Image getIcon() {
+        return Utilities.loadImage("org/netbeans/modules/websvc/wsitconf/resources/designer-security.gif");
     }
 
     public String getDisplayName() {
-        return "WSIT Configuration";
+        return "Security";
     }
   
     public boolean isSet() {
@@ -127,7 +129,7 @@ public class SecurityConfiguration  implements WSConfiguration {
     //TODO: Need a way to determine binding that the user wants
     //For now just get the first one (if there is one)
     private Binding getBinding() {
-        WSDLModel model = WSITModelSupport.getModelForService(service, implementationFile, project, true, createdFiles);
+        WSDLModel model = WSITModelSupport.getModelForService(service, implementationFile, project, true, createdFiles, true);
         Definitions definitions = model.getDefinitions();
         Collection<Binding> bindings = definitions.getBindings();
         if(bindings.size() > 0){

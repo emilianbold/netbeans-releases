@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.websvc.design.configuration;
 
-import javax.swing.Icon;
+import java.awt.Image;
 
 /**
  *
@@ -47,7 +47,7 @@ public interface WSConfiguration {
      *
      * @return  icon for this WSConfiguration.
      */
-    Icon getIcon();
+    Image getIcon();
 
     /**
      * Returns the display name of this WSConfiguration.
@@ -65,5 +65,11 @@ public interface WSConfiguration {
      *  Called to cancel changes made by the user
      */
     void unset();
+    
+    
+    /**
+     * Used to determine if a functionality is active.
+     */ 
+    boolean isSet();
 
 }

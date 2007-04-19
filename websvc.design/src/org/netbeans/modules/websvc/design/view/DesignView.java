@@ -21,10 +21,10 @@ package org.netbeans.modules.websvc.design.view;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.Image;
 import java.awt.Point;
+import java.awt.event.ActionEvent;
 import java.util.Set;
+import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -37,6 +37,7 @@ import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
+import org.netbeans.modules.websvc.design.configuration.WSConfiguration;
 import org.netbeans.modules.websvc.design.configuration.WSConfigurationProvider;
 import org.netbeans.modules.websvc.design.configuration.WSConfigurationProviderRegistry;
 import org.netbeans.modules.websvc.design.javamodel.ServiceModel;
@@ -44,7 +45,6 @@ import org.netbeans.modules.websvc.design.view.widget.ButtonAction;
 import org.netbeans.modules.websvc.design.view.widget.OperationsWidget;
 import org.netbeans.modules.websvc.design.view.widget.ToggleButtonWidget;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Utilities;
 
 /**
  * WebService Designer
@@ -66,11 +66,11 @@ public class DesignView extends JPanel  {
     private Widget messageLayer;
     private Widget contentWidget;
     private OperationsWidget operationsWidget;
-
+    
     /**
      * Creates a new instance of GraphView.
-     * @param service 
-     * @param implementationClass 
+     * @param service
+     * @param implementationClass
      */
     public DesignView(Service service, FileObject implementationClass) {
         super(new BorderLayout());
@@ -98,11 +98,15 @@ public class DesignView extends JPanel  {
         headerWidget.setLayout(LayoutFactory.createHorizontalFlowLayout(
                 LayoutFactory.SerialAlignment.JUSTIFY, 12));
         headerWidget.setBorder(BorderFactory.createOpaqueBorder(12,24,12,0));
-        headerWidget.setBackground(new Color (180,180,255));
+        headerWidget.setBackground(new Color(180,180,255));
         headerWidget.setOpaque(true);
         headerWidget.addChild(serviceWidget);
         
-        headerWidget.addChild(createWSITWidget());
+        //if there are Configuration Providers, add their buttons
+        Set<WSConfigurationProvider> providers = getConfigProviders();
+        if(providers.size() > 0){
+            headerWidget.addChild(createConfigWidget(providers));
+        }
         
         mMainLayer.addChild(headerWidget);
         scene.addChild(mMainLayer);
@@ -127,31 +131,10 @@ public class DesignView extends JPanel  {
         panel.setBorder(null);
         add(panel, BorderLayout.CENTER);
         
-        //addConfigurationPanel();
     }
     
-    private Widget createWSITWidget() {
-        Widget wsitButtons = new Widget(scene);
-        wsitButtons.setLayout(LayoutFactory.createHorizontalFlowLayout(
-                LayoutFactory.SerialAlignment.JUSTIFY, 8));
-        Image INPUT_IMAGE  = Utilities.loadImage
-                ("org/netbeans/modules/websvc/design/view/resources/input.png"); // NOI18N   
-        Image OUTPUT_IMAGE  = Utilities.loadImage
-                ("org/netbeans/modules/websvc/design/view/resources/output.png"); // NOI18N   
-        ToggleButtonWidget button1 = new ToggleButtonWidget(scene,INPUT_IMAGE,null);
-        // set the awt action. Mouseclick on togglebutton calls actionPerformed.
-        // If the toggle button is selected by user the action command passed to
-        // action event is ACTION_COMMAND_SELECTED, otherwise ACTION_COMMAND_DESELECTED
-        button1.setAction(null);
-        button1.setToolTipText("wsit button 1");
-        wsitButtons.addChild(button1);
-        ToggleButtonWidget button2 = new ToggleButtonWidget(scene,OUTPUT_IMAGE,null/* text */);
-        button2.setAction(null);
-        button2.setToolTipText("wsit button 2");
-        wsitButtons.addChild(button2);
-        return wsitButtons;
-    }
-
+    
+    
     /**
      * Adds the graph actions to the given toolbar.
      *
@@ -186,21 +169,39 @@ public class DesignView extends JPanel  {
         return scene.getView().requestFocusInWindow();
     }
     
-    private void addConfigurationPanel(){
-        //if there is configuration, add configuration panel for each Configuration provider
-        Set<WSConfigurationProvider> providers = WSConfigurationProviderRegistry.getDefault()
-                .getWSConfigurationProviders();
-        if(providers.size() > 0){
-            JPanel configPanel = new JPanel();
-            JScrollPane pane = new JScrollPane(configPanel);
-            for(WSConfigurationProvider provider : providers){
-                Component c = provider.getWSConfiguration(service, implementationClass).getComponent();
-                if(c != null){
-                    configPanel.add(c);
-                }
-            }
-            add(pane, BorderLayout.SOUTH);
+    class ConfigWidgetAction extends AbstractAction{
+        WSConfiguration config;
+        public ConfigWidgetAction(WSConfiguration config){
+            this.config = config;
         }
+        public void actionPerformed(ActionEvent event) {
+            if(event.getActionCommand().equals(ToggleButtonWidget.ACTION_COMMAND_SELECTED)){
+                config.set();
+            }else{
+                config.unset();
+            }
+        }
+    }
+    
+    private Widget createConfigWidget(Set<WSConfigurationProvider> providers){
+        Widget configWidget = new Widget(scene);
+        configWidget.setLayout(LayoutFactory.createHorizontalFlowLayout(
+                LayoutFactory.SerialAlignment.JUSTIFY, 8));
+        for(WSConfigurationProvider provider : providers){
+            WSConfiguration config = provider.getWSConfiguration(service, implementationClass);
+            if(config != null){
+                ToggleButtonWidget button = new ToggleButtonWidget(scene,config.getIcon(),null);
+                button.setAction(new ConfigWidgetAction(config));
+                button.setToolTipText(config.getDescription());
+                button.setSelected(config.isSet()); //TODO: need to refresh the widget to reflect state
+                configWidget.addChild(button);
+            }
+        }
+        return configWidget;
+    }
+    
+    private Set<WSConfigurationProvider> getConfigProviders(){
+        return WSConfigurationProviderRegistry.getDefault().getWSConfigurationProviders();
     }
     
 }
