@@ -30,6 +30,7 @@ public final class CharBuffer {
     int rightMargin = 72;
     int leftMargin = 0;
     int hardRightMargin = UNLIMITED;
+    int lastBlankLines = 0;
     public final int length() { return used; }
     public void setLength(int l) { if (l < used) used = l < 0 ? 0 : l; }
     public CharBuffer() { chars = new char[10]; }
@@ -95,6 +96,7 @@ public final class CharBuffer {
     }
     private void append0(char c) {
         chars[used++] = c;
+        if (c > ' ') lastBlankLines = 0;
         if (c < ' ') ctlChar();
         else if (++col > hardRightMargin) columnOverflowCheck();
     }
@@ -216,6 +218,7 @@ public final class CharBuffer {
 	}
     }
     public void blanklines(int n) {
+        int numBlankLines = n = Math.max(lastBlankLines, n);
 	if(hasMargin())
 	    needSpace();
 	else {
@@ -223,5 +226,6 @@ public final class CharBuffer {
             while(n-- > 0)
 	        append('\n');
 	}
+        lastBlankLines = numBlankLines;
     }
 }
