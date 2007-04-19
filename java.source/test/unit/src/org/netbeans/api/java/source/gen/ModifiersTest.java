@@ -602,6 +602,9 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 "\n" +
                 "import java.io.*;\n" +
                 "\n" +
+                "/**\n" +
+                " *aa\n" +
+                " */\n" +
                 "@Annotation(val = 2)\n" +
                 "public class Test {\n" +
                 "}\n"
@@ -611,6 +614,9 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 "\n" +
                 "import java.io.*;\n" +
                 "\n" +
+                "/**\n" +
+                " *aa\n" +
+                " */\n" +
                 "@Annotation(value = 2)\n" +
                 "public class Test {\n" +
                 "}\n";
