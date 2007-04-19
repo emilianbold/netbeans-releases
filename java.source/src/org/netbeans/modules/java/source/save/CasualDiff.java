@@ -524,12 +524,10 @@ public class CasualDiff {
 
     protected int diffBlock(JCBlock oldT, JCBlock newT, int[] blockBounds) {
         int localPointer = blockBounds[0];
-//        if (oldT.flags != newT.flags)
-//            append(Diff.flags(oldT.pos, endPos(oldT), oldT.flags, newT.flags));
-        VeryPretty bodyPrinter = new VeryPretty(context);
-        int oldIndent = printer.indent();
-        bodyPrinter.reset(oldIndent);
-        bodyPrinter.indent();
+        if (oldT.flags != newT.flags) {
+            // TODO: Missing implementation
+            // used for changing from/to static initializer
+        }
         // syntetic super() found, skip it
         if (oldT.stats.head != null && oldT.stats.head.pos == oldT.pos) {
             oldT.stats = oldT.stats.tail;
@@ -537,17 +535,21 @@ public class CasualDiff {
         if (newT.stats.head != null && newT.stats.head.pos == oldT.pos) {
             newT.stats = newT.stats.tail;
         }
-        PositionEstimator est = EstimatorFactory.deprecated(((BlockTree) oldT).getStatements(), ((BlockTree) newT).getStatements(), workingCopy); 
-        int[] pos = diffList(oldT.stats, newT.stats, oldT.pos + 1, est, Measure.DEFAULT, bodyPrinter); // hint after open brace
-        if (localPointer < pos[0]) {
-            copyTo(localPointer, pos[0]);
-        }
-        localPointer = pos[1];
-        printer.print(bodyPrinter.toString());
+        PositionEstimator est = EstimatorFactory.statements(
+                ((BlockTree) oldT).getStatements(),
+                ((BlockTree) newT).getStatements(),
+                workingCopy
+        );
+        copyTo(localPointer, oldT.pos + 1);
+        int old = printer.indent();
+        Name oldEnclosing = printer.enclClassName;
+        printer.enclClassName = null;
+        localPointer = diffListImports(oldT.stats, newT.stats, oldT.pos + 1, est, Measure.DEFAULT, printer);
         if (localPointer < endPos(oldT)) {
             copyTo(localPointer, localPointer = endPos(oldT));
         }
-        printer.undent(oldIndent);
+        printer.enclClassName = oldEnclosing;
+        printer.undent(old);
         return localPointer;
     }
 

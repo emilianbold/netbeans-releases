@@ -54,6 +54,13 @@ final class EstimatorFactory {
         return new PositionEstimator.ExtendsEstimator(oldL, newL, copy);
     }
     
+    static PositionEstimator statements(List<? extends Tree> oldL, 
+                                     List<? extends Tree> newL,
+                                     WorkingCopy copy)
+    {
+        return new PositionEstimator.MembersEstimator(oldL, newL, copy);
+    }
+    
     static PositionEstimator deprecated(List<? extends Tree> oldL, 
                                      List<? extends Tree> newL,
                                      WorkingCopy copy)
