@@ -151,6 +151,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         cbVerify.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/project/jsf/framework/Bundle").getString("MNE_cbVerify").charAt(0));
         cbVerify.setText(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "CB_Verify_Objects"));
         cbVerify.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        cbVerify.setEnabled(false);
         cbVerify.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -334,7 +335,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     public void enableComponents(boolean enable){
         cbPackageJars.setEnabled(enable);
         cbValidate.setEnabled(enable);
-        cbVerify.setEnabled(enable);
+        // cbVerify.setEnabled(enable);
         beanPackageLabel.setEnabled(enable);
         beanPackageTextField.setEnabled(enable);
         lServletName.setEnabled(enable);
