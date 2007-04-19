@@ -17,6 +17,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.refactoring.java.ui;
+import java.awt.datatransfer.Transferable;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -32,6 +33,8 @@ import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUIBypass;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.PasteType;
@@ -121,6 +124,13 @@ public class CopyClassRefactoringUI implements RefactoringUI, RefactoringUIBypas
         return !panel.isUpdateReferences();
     }
     public void doRefactoringBypass() throws IOException {
-        paste.paste();
+        //Transferable t = paste.paste();
+        FileObject source = refactoring.getRefactoringSource().lookup(FileObject.class);
+        FileObject target = RetoucheUtils.getOrCreateFolder(refactoring.getTarget().lookup(URL.class));
+        if (source!=null) {
+            DataObject sourceDo = DataObject.find(source);
+            DataFolder targetFolder = DataFolder.findFolder(target);
+            sourceDo.copy(targetFolder).rename(panel.getNewName());
+        }
     }
 }

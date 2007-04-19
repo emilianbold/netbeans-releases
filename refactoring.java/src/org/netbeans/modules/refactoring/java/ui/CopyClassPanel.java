@@ -299,6 +299,7 @@ public class CopyClassPanel extends JPanel implements ActionListener, DocumentLi
         packageComboBox.setEnabled(enabled);
         rootComboBox.setEnabled(enabled);
         projectsComboBox.setEnabled(enabled);
+        isUpdateReferences.setVisible(!enabled);
     }
     
     void setThisClassVisible(boolean visible) {
