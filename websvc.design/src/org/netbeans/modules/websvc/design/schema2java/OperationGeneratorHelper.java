@@ -141,7 +141,6 @@ public class OperationGeneratorHelper {
             List<GlobalElement> faultElements = new ArrayList<GlobalElement>();
             List<Message> faultMessages = new ArrayList<Message>();
             
-            WSDLSchema wsdlSchema = null;
             SchemaModel schemaModel = null;
             Schema schema = null;
             
@@ -153,12 +152,9 @@ public class OperationGeneratorHelper {
             }
                 
             if (parameterTypes.size()==0 || parameterTypes.size() > 1 || (parameterTypes.size() == 1 && isPrimitiveType(parameterTypes.get(0)))) {
-                if(schemaModel == null){
-                    wsdlSchema = factory.createWSDLSchema();
-                    types.addExtensibilityElement(wsdlSchema);
-                    schemaModel = wsdlSchema.getSchemaModel();
+                if(schemaModel == null) {
+                    schemaModel = createSchemaModel(factory, definitions, types);
                     schema = schemaModel.getSchema();
-                    schema.setTargetNamespace(definitions.getTargetNamespace());
                 }
 
                 //wrap the parameters in a global element
@@ -180,10 +176,19 @@ public class OperationGeneratorHelper {
             } else{ //there is only one parameter and it is not primitive
                 ParamModel paramModel = parameterTypes.get(0);
                 ReferenceableSchemaComponent ref = paramModel.getParamType();
-                if(ref instanceof GlobalElement){
+                if (ref instanceof GlobalElement){
                     paramElement = (GlobalElement)ref;
+                } else if (ref instanceof GlobalType) {
+                    if(schemaModel == null){
+                        schemaModel = createSchemaModel(factory, definitions, types);
+                        schema = schemaModel.getSchema();
+                    }
+                    paramElement = schemaModel.getFactory().createGlobalElement();
+                    paramElement.setName(getUniqueGlobalElementName(schema, operationName)); //NOI18N
+                    NamedComponentReference<GlobalType> typeRef = schema.createReferenceTo((GlobalType)ref, GlobalType.class);
+                    paramElement.setType(typeRef);
+                    schema.addElement(paramElement);
                 }
-                //TODO: if it is a global type, wrap in global element
             }
 
             if (paramElement!=null) {
@@ -212,11 +217,8 @@ public class OperationGeneratorHelper {
                 ReferenceableSchemaComponent faultType = faultModel.getParamType();
                 if (faultType instanceof GlobalType) {
                     if(schemaModel == null){
-                        wsdlSchema = factory.createWSDLSchema();
-                        types.addExtensibilityElement(wsdlSchema);
-                        schemaModel = wsdlSchema.getSchemaModel();
+                        schemaModel = createSchemaModel(factory, definitions, types);
                         schema = schemaModel.getSchema();
-                        schema.setTargetNamespace(definitions.getTargetNamespace());
                     }
                     GlobalElement faultElement = schemaModel.getFactory().createGlobalElement();
                     NamedComponentReference<GlobalType> typeRef = schemaModel.getSchema().createReferenceTo((GlobalType)faultType, GlobalType.class);
@@ -233,11 +235,8 @@ public class OperationGeneratorHelper {
             if(returnType != null) {  //if the operation returns something
                 if (isPrimitiveType(returnType)){
                     if(schemaModel == null){
-                        wsdlSchema = factory.createWSDLSchema();
-                        types.addExtensibilityElement(wsdlSchema);
-                        schemaModel = wsdlSchema.getSchemaModel();
+                        schemaModel = createSchemaModel(factory, definitions, types);
                         schema = schemaModel.getSchema();
-                        schema.setTargetNamespace(definitions.getTargetNamespace());
                     }
                     GlobalComplexType responseComplexType = schemaModel.getFactory().createGlobalComplexType();
                     responseComplexType.setName(responseTypeName); //NOI18N
@@ -263,11 +262,8 @@ public class OperationGeneratorHelper {
             } else {
                 // return type == null
                 if(schemaModel == null){
-                    wsdlSchema = factory.createWSDLSchema();
-                    types.addExtensibilityElement(wsdlSchema);
-                    schemaModel = wsdlSchema.getSchemaModel();
-                    schema = schemaModel.getSchema();
-                    schema.setTargetNamespace(definitions.getTargetNamespace());
+                        schemaModel = createSchemaModel(factory, definitions, types);
+                        schema = schemaModel.getSchema();
                 }
                 GlobalComplexType responseComplexType = schemaModel.getFactory().createGlobalComplexType();
                 responseComplexType.setName(responseTypeName); //NOI18N
@@ -638,6 +634,14 @@ public class OperationGeneratorHelper {
             }
         }
         return bName;
+    }
+    
+    private SchemaModel createSchemaModel(WSDLComponentFactory factory, Definitions definitions, Types types) {
+        WSDLSchema wsdlSchema = factory.createWSDLSchema();
+        types.addExtensibilityElement(wsdlSchema);
+        SchemaModel schemaModel = wsdlSchema.getSchemaModel();
+        schemaModel.getSchema().setTargetNamespace(definitions.getTargetNamespace());
+        return schemaModel;
     }
 }
 
