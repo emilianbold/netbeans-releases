@@ -18,301 +18,153 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project xmlns="http://www.netbeans.org/ns/project/1">
-
     <type>org.netbeans.modules.ant.freeform</type>
-
     <configuration>
-
         <general-data xmlns="http://www.netbeans.org/ns/freeform-project/1">
-
             <name>NetBeans Build System</name>
-
             <properties>
-
                 <property name="nb_all">${basedir}/..</property>
-
                 <property-file>user.build.properties</property-file>
-
                 <property-file>site.build.properties</property-file>
-
                 <property name="nbjdk.home">${java.home}/..</property>
-
                 <property name="nbjdk.bootclasspath">${nbjdk.home}/jre/lib/rt.jar</property>
-
             </properties>
-
             <folders>
-
                 <source-folder>
-
                     <label>Ant Tasks</label>
-
                     <location>antsrc</location>
-
                 </source-folder>
-
                 <source-folder>
-
                     <label>Tests for Ant Tasks</label>
-
                     <location>test/unit/src</location>
-
                 </source-folder>
-
                 <source-folder>
-
                     <label>Ant Tasks</label>
-
                     <type>java</type>
-
                     <location>antsrc</location>
-
                 </source-folder>
-
                 <source-folder>
-
                     <label>Tests for Ant Tasks</label>
-
                     <type>java</type>
-
                     <location>test/unit/src</location>
-
                 </source-folder>
-
             </folders>
-
             <ide-actions>
-
                 <action name="build">
-
                     <target>bootstrap</target>
-
                 </action>
-
                 <action name="rebuild">
-
                     <target>localclean</target>
-
                     <target>bootstrap</target>
-
                 </action>
-
                 <action name="clean">
-
                     <target>localclean</target>
-
                 </action>
-
                 <action name="test">
-
                     <target>localtest-nb</target>
-
                 </action>
-
                 <action name="run.single">
-
                     <target>localtest-single-nb</target>
-
                     <context>
-
                         <property>includes</property>
-
                         <folder>test/unit/src</folder>
-
                         <pattern>\.java$</pattern>
-
                         <format>absolute-path</format>
-
                         <arity>
-
                             <separated-files>:</separated-files>
-
                         </arity>
-
                     </context>
-
                 </action>
-
                 <action name="debug.single">
-
                     <target>localtest-single-nb-debug</target>
-
                     <context>
-
                         <property>includes</property>
-
                         <folder>test/unit/src</folder>
-
                         <pattern>\.java$</pattern>
-
                         <format>absolute-path</format>
-
                         <arity>
-
                             <separated-files>:</separated-files>
-
                         </arity>
-
                     </context>
-
                 </action>
-
                 <action name="javadoc">
-
                     <target>bootstrap-javadoc</target>
-
                 </action>
-
                 <action name="run">
-
                     <target>tryme</target>
-
                 </action>
-
                 <action name="debug">
-
                     <target>tryme-debug</target>
-
                 </action>
-
             </ide-actions>
-
             <export>
-
                 <type>jar</type>
-
                 <location>nbantext.jar</location>
-
                 <script>${ant.script}</script>
-
                 <build-target>bootstrap</build-target>
-
             </export>
-
             <view>
-
                 <items>
-
                     <source-folder style="packages">
-
                         <label>Ant Tasks</label>
-
                         <location>antsrc</location>
-
                     </source-folder>
-
                     <source-folder style="packages">
-
                         <label>Tests for Ant Tasks</label>
-
                         <location>test/unit/src</location>
-
                     </source-folder>
-
                     <source-file>
-
                         <location>build.xml</location>
-
                     </source-file>
-
                     <source-file>
-
                         <location>user.build.properties</location>
-
                     </source-file>
-
                 </items>
-
                 <context-menu>
-
                     <ide-action name="build"/>
-
                     <ide-action name="rebuild"/>
-
                     <ide-action name="clean"/>
-
                     <action>
-
                         <label>Clean User Directory</label>
-
                         <target>testuserdir-delete</target>
-
                     </action>
-
                     <ide-action name="test"/>
-
                     <ide-action name="javadoc"/>
-
                     <separator/>
-
                     <action>
-
                         <label>Build IDE (no ZIP file)</label>
-
                         <target>build-nozip</target>
-
                     </action>
-
                     <action>
-
                         <label>Clean Everything</label>
-
                         <target>real-clean</target>
-
                     </action>
-
                     <separator/>
-
                     <ide-action name="run"/>
-
                     <ide-action name="debug"/>
-
                     <action>
-
                         <label>Run Commit Validation</label>
-
                         <target>commit-validation</target>
-
                     </action>
-
                     <separator/>
-
                     <action>
-
                         <label>Build All API Javadoc</label>
-
                         <target>build-javadoc</target>
-
                     </action>
-
                     <action>
-
                         <label>Build Daily Alpha NBMs</label>
-
                         <target>merge</target>
-
                         <target>build-nbms</target>
-
                         <property name="moduleconfig">daily-alpha-nbms</property>
-
                     </action>
-
                     <action>
-
                         <script>../xtest/instance/build.xml</script>
-
                         <label>Run All Unit Tests</label>
-
                         <target>cleanresults</target>
-
                         <target>runtests</target>
-
                     </action>
-
                 </context-menu>
-
             </view>
-
             <subprojects>
                 <!-- To update, run: ant -f nbbuild/build.xml check-module-configs -->
                 <project>../ant</project>
@@ -574,45 +426,24 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../xml/xdm</project>
                 <project>../xml/xsl</project>
             </subprojects>
-
         </general-data>
-
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/2">
-
             <compilation-unit>
-
                 <package-root>antsrc</package-root>
-
                 <classpath mode="compile">${ant.home}/lib/ant.jar:${nb_all}/core/external/jh-2.0_04.jar</classpath>
-
                 <classpath mode="boot">${nbjdk.bootclasspath}</classpath>
-
                 <built-to>build/antclasses</built-to>
-
                 <built-to>nbantext.jar</built-to>
-
                 <source-level>1.5</source-level>
-
             </compilation-unit>
-
             <compilation-unit>
-
                 <package-root>test/unit/src</package-root>
-
                 <unit-tests/>
-
                 <classpath mode="compile">../junit/external/junit-3.8.2.jar:netbeans/testtools/modules/org-netbeans-modules-nbjunit.jar:../ant/external/lib/ant.jar:nbantext.jar</classpath>
-
                 <classpath mode="boot">${nbjdk.bootclasspath}</classpath>
-
                 <built-to>build/test/unit/classes</built-to>
-
                 <source-level>1.5</source-level>
-
             </compilation-unit>
-
         </java-data>
-
     </configuration>
-
 </project>
