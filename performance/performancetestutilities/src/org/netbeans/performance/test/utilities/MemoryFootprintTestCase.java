@@ -254,7 +254,13 @@ public abstract class MemoryFootprintTestCase extends org.netbeans.performance.t
      */
     private void getRssVszOnWindows(MeasuredMemoryValue mv) {
         String xtestHome = System.getProperty("xtest.tmpdir");
-        String pslist = executeNativeCommand(xtestHome+"/pslist.exe -m "+pid);
+        String pslist;
+        String platformString=(System.getProperty("os.name","")+","+System.getProperty("os.arch","")).replace(' ','_');
+        if(platformString.equalsIgnoreCase(SUPPORTED_PLATFORMS[8][0])) { // This is Vista
+           pslist =  executeNativeCommand(xtestHome+"/ps_vista.exe -m "+pid);
+        } else {
+            pslist = executeNativeCommand(xtestHome+"/pslist.exe -m "+pid);
+        }
         String pslist_line = getLine(pslist);
         mv.rss = getItem(pslist_line, 3);
         mv.vsz = getItem(pslist_line, 5);
