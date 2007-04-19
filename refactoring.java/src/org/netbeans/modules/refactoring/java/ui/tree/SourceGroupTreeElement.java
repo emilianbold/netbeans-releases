@@ -21,12 +21,13 @@ package org.netbeans.modules.refactoring.java.ui.tree;
 
 import java.awt.Image;
 import java.beans.BeanInfo;
+import java.lang.ref.WeakReference;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
 import org.netbeans.modules.refactoring.spi.ui.*;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Utilities;
@@ -37,20 +38,18 @@ import org.openide.util.Utilities;
  */
 public class SourceGroupTreeElement implements TreeElement {
     
-    private SourceGroup sg;
+    private WeakReference<SourceGroup> sg;
+    private FileObject dir;
+    private Icon icon;
+    private String displayName;
     
     private static String PACKAGE_BADGE = "org/netbeans/spi/java/project/support/ui/packageBadge.gif"; // NOI18N
 
     SourceGroupTreeElement(SourceGroup sg) {
-        this.sg = sg;
-    }
-
-    public TreeElement getParent(boolean isLogical) {
-        return TreeElementFactory.getTreeElement(FileOwnerQuery.getOwner(sg.getRootFolder()));
-    }
-
-    public Icon getIcon() {
-        Icon icon = sg.getIcon(false);
+        this.sg = new WeakReference(sg);
+        dir = sg.getRootFolder();
+ 
+        icon = sg.getIcon(false);
         if ( icon == null ) {
             try {
                 Image image = DataObject.find(sg.getRootFolder()).getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16);
@@ -59,15 +58,27 @@ public class SourceGroupTreeElement implements TreeElement {
             } catch (DataObjectNotFoundException d) {
             }
         }
+        displayName = sg.getDisplayName();
+    }
+
+    public TreeElement getParent(boolean isLogical) {
+        return TreeElementFactory.getTreeElement(FileOwnerQuery.getOwner(dir));
+    }
+
+    public Icon getIcon() {
         return icon;
     }
 
     public String getText(boolean isLogical) {
-        return sg.getDisplayName();
+        return displayName;
     }
 
     public Object getUserObject() {
-        return sg;
+        SourceGroup s = sg.get();
+        if (s==null) {
+            s = FolderTreeElement.getSourceGroup(dir);
+        }
+        return s;
     }
 }
 

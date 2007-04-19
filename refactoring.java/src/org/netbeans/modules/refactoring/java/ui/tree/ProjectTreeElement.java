@@ -19,11 +19,14 @@
 
 package org.netbeans.modules.refactoring.java.ui.tree;
 
+import java.lang.ref.WeakReference;
 import javax.swing.Icon;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.refactoring.spi.ui.*;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -31,12 +34,17 @@ import org.netbeans.modules.refactoring.spi.ui.*;
  */
 public class ProjectTreeElement implements TreeElement {
 
-    ProjectInformation pi;
-    Project prj;
+    private String name;
+    private Icon icon;
+    private WeakReference<Project> prj;
+    private FileObject prjDir;
     /** Creates a new instance of ProjectTreeElement */
     public ProjectTreeElement(Project prj) {
-        pi = ProjectUtils.getInformation(prj);
-        this.prj = prj;
+        ProjectInformation pi = ProjectUtils.getInformation(prj);
+        name = pi.getDisplayName();
+        icon = pi.getIcon();
+        this.prj = new WeakReference(prj);
+        prjDir = prj.getProjectDirectory();
     }
 
     public TreeElement getParent(boolean isLogical) {
@@ -44,15 +52,19 @@ public class ProjectTreeElement implements TreeElement {
     }
 
     public Icon getIcon() {
-        return pi.getIcon();
+        return icon;
     }
 
     public String getText(boolean isLogical) {
-        return pi.getDisplayName();
+        return name;
     }
 
     public Object getUserObject() {
-        return prj;
+        Project p = prj.get();
+        if (p==null) {
+            p = FileOwnerQuery.getOwner(prjDir);
+        }
+        return p;
     }
     
 }
