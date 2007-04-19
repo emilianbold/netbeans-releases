@@ -39,13 +39,11 @@ import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.ProgressListener;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.openide.LifecycleManager;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.NbDocument;
 
@@ -63,6 +61,8 @@ public class UndoManager extends FileChangeAdapter implements DocumentListener, 
 
     /** set of all CloneableEditorSupports */
     private final HashSet<CloneableEditorSupport> allCES = new HashSet();
+    
+    private final HashMap<FileObject, CloneableEditorSupport> fileObjectToCES = new HashMap();
     
     /** map document -> CloneableEditorSupport */
     private final HashMap<Document, CloneableEditorSupport> documentToCES = new HashMap();
@@ -291,6 +291,10 @@ public class UndoManager extends FileChangeAdapter implements DocumentListener, 
                                 ces.addChangeListener(UndoManager.this);
                                 d.addDocumentListener(UndoManager.this);
                                 documentToCES.put(d, ces);
+                                Object o = d.getProperty(Document.StreamDescriptionProperty);
+                                if (o instanceof DataObject) {
+                                    fileObjectToCES.put(((DataObject)o).getPrimaryFile(), ces);
+                                }
                             }
                         }
                     }
@@ -397,40 +401,25 @@ public class UndoManager extends FileChangeAdapter implements DocumentListener, 
             unregisterListeners();
             allCES.clear();
             documentToCES.clear();
+            fileObjectToCES.clear();
         }
     }        
     
     // FileChangeAdapter ........................................................
     
     public void fileChanged(FileEvent fe) {   
-        FileObject file = fe.getFile();
-        if (file != null) {
-            DataObject obj;
-            try {
-                obj = DataObject.find(file);
-            } catch (DataObjectNotFoundException e) {
-                return;
-            }
-            EditorCookie ec = obj.getCookie(EditorCookie.class);
-            if (ec != null) {
-                CloneableEditorSupport ces = documentToCES.get(ec.getDocument());
-                if (ces != null) {
-                    invalidate(ces);
-                }
-            }
+        CloneableEditorSupport ces = fileObjectToCES.get(fe.getFile());
+        if (ces!=null) {
+            invalidate(ces);
         }
     }
     
     public void fileDeleted(FileEvent fe) {
-        //if (Util.isJavaFile(fe.getFile(), true)) { // NOI18N
-            //TODO: invalidate(null);
-        //}
+        fileChanged(fe);
     }
 
     public void fileRenamed(FileRenameEvent fe) {
-        //if (Util.isJavaFile(fe.getFile(), true)) { // NOI18N
-            //TODO: invalidate(null);
-        //}
+        fileChanged(fe);
     }
     
     // DocumentListener .........................................................
