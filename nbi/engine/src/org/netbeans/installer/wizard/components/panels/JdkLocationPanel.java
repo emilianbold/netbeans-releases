@@ -104,6 +104,14 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
             ResourceUtils.getString(JdkLocationPanel.class, 
             "JLP.maximum.jdk.version"); // NOI18N
     
+    public static final String DEFAULT_USEDBY_LABEL = 
+            ResourceUtils.getString(JdkLocationPanel.class, 
+            "JLP.usedby.label"); //NOI18N
+    public static final String USEDBY_LABEL_PROPERTY = 
+            "usedby.label"; //NOI18N
+    
+    private static final String JDK_PRODUCT_UID = "jdk"; //NOI18N
+  
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     private Version minimumVersion;
@@ -139,6 +147,8 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
                 DEFAULT_ERROR_WRONG_VERSION_NEWER);
         setProperty(ERROR_UNKNOWN_PROPERTY, 
                 DEFAULT_ERROR_UNKNOWN);
+        setProperty(USEDBY_LABEL_PROPERTY,
+                DEFAULT_USEDBY_LABEL);
     }
     
     public void initialize() {
@@ -164,7 +174,7 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
             if (location.exists()) {
                 version = JavaUtils.getVersion(location);
             } else {
-                for (Product jdk: Registry.getInstance().getProducts("jdk")) {
+                for (Product jdk: Registry.getInstance().getProducts(JDK_PRODUCT_UID)) {
                     if ((jdk.getStatus() == Status.TO_BE_INSTALLED) &&
                             jdk.getInstallationLocation().equals(location)) {
                         version = jdk.getVersion();
@@ -200,7 +210,10 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
                 products.remove(product);
             }
             if (products.size() > 0) {
-                label = label + " (used by " + StringUtils.asString(products) + ")";
+                label = StringUtils.format(
+                        getProperty(USEDBY_LABEL_PROPERTY), 
+                        label, 
+                        StringUtils.asString(products));
             }
             
             // if the location exists and is a jdk installation (or if the
@@ -272,7 +285,7 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
             
             version = JavaUtils.getVersion(file);
         } else {
-            for (Product jdk: Registry.getInstance().getProducts("jdk")) {
+            for (Product jdk: Registry.getInstance().getProducts(JDK_PRODUCT_UID)) {
                 if ((jdk.getStatus() == Status.TO_BE_INSTALLED) &&
                         jdk.getInstallationLocation().equals(file)) {
                     version = jdk.getVersion();
