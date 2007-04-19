@@ -150,6 +150,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Prepare utils to be available from IDE during test -->    
     <target name="prepare_measure_footprint">
         <copy file="${nbextra.qa.performance.dist.dir}/pslist.exe" tofile="${xtest.tmpdir}/pslist.exe" />
+        <copy file="${nbextra.qa.performance.dist.dir}/ps_vista.exe " tofile="${xtest.tmpdir}/ps_vista.exe " />
         <copy file="${nbextra.qa.performance.dist.dir}/measure_footprint" tofile="${xtest.tmpdir}/measure_footprint" />
         <chmod perm="ugo+rx" file="${xtest.tmpdir}/measure_footprint"/>
     </target>
