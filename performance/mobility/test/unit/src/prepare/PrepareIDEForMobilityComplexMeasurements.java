@@ -180,7 +180,7 @@ public class PrepareIDEForMobilityComplexMeasurements extends JellyTestCase {
             String[][] nodes_path = {
                 {"MobileApplicationSwitchConfiguration","Source Packages|switchit","Midlet.java", null, OPEN},
                 {"MobileApplicationVisualMIDlet","Source Packages|allComponents","VisualMIDletMIDP20.java", null, OPEN},
-                {"MobileApplicationVisualMIDlet","Source Packages|allComponents","VisualMIDlet.java", null, OPEN}
+                {"MobileApplicationVisualMIDlet","Source Packages|simple","VisualMIDlet.java", null, OPEN}
             };
             
             ArrayList<Node> openFileNodes = new ArrayList<Node>();
@@ -218,7 +218,7 @@ public class PrepareIDEForMobilityComplexMeasurements extends JellyTestCase {
             // it doesn't finish in the real-time -> hard to reproduced by hand
             try {
                 new OpenAction().performAPI(openFileNodes.toArray(new Node[0]));
-                new EditAction().performAPI(editFileNodes.toArray(new Node[0]));
+                //new EditAction().performAPI(editFileNodes.toArray(new Node[0]));
             }catch(Exception exc){
                 err.println("---------------------------------------");
                 err.println("issue 56825 : EXCEPTION catched during OpenAction");
@@ -226,7 +226,7 @@ public class PrepareIDEForMobilityComplexMeasurements extends JellyTestCase {
                 err.println("---------------------------------------");
                 err.println("issue 56825 : Try it again");
                 new OpenAction().performAPI(openFileNodes.toArray(new Node[0]));
-                new EditAction().performAPI(editFileNodes.toArray(new Node[0]));
+                //new EditAction().performAPI(editFileNodes.toArray(new Node[0]));
                 err.println("issue 56825 : Success");
             }
             
