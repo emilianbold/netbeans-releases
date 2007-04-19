@@ -52,7 +52,7 @@ import java.util.List;
  */
 public class TopPanel extends JPanel {
 
-    private static final Color COLOR_SELECTION_FILL = new Color (235, 235, 231, 64);
+//    private static final Color COLOR_SELECTION_FILL = new Color (235, 235, 231, 64);
     private static final Color COLOR_SELECTION_DRAW = MainPanel.SELECT_COLOR;
 
 //    private static final Color COLOR_HOVER_FILL = new Color (0xB9, 0xDF, 0xC0, 128);
@@ -165,8 +165,8 @@ public class TopPanel extends JPanel {
 
         for (SelectionShape shape : selectionShapes) {
             gr.translate (shape.x, shape.y);
-            gr.setColor (COLOR_SELECTION_FILL);
-            gr.fill (shape.shape);
+//            gr.setColor (COLOR_SELECTION_FILL);
+//            gr.fill (shape.shape);
             gr.setColor (COLOR_SELECTION_DRAW);
             gr.draw (shape.shape);
             gr.translate (- shape.x, - shape.y);
