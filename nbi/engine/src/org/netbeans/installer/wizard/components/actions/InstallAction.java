@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -32,6 +32,7 @@ import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.progress.CompositeProgress;
@@ -48,6 +49,30 @@ public class InstallAction extends WizardAction {
             ResourceUtils.getString(InstallAction.class,
             "IA.description"); // NOI18N
     
+    public static final String DEFAULT_PROGRESS_INSTALL_TITLE =
+            ResourceUtils.getString(InstallAction.class,
+            "IA.progress.install.title"); // NOI18N
+    public static final String PROGRESS_INSTALL_TITLE_PROPERTY =
+            "progress.install.title"; //NOI18N
+    
+    public static final String DEFAULT_PROGRESS_ROLLBACK_TITLE =
+            ResourceUtils.getString(InstallAction.class,
+            "IA.progress.rollback.title"); // NOI18N
+    public static final String PROGRESS_ROLLBACK_TITLE_PROPERTY =
+            "progress.rollback.title"; //NOI18N
+    
+    public static final String DEFAULT_INSTALL_DEPENDENT_FAILED_EXCEPTION =
+            ResourceUtils.getString(InstallAction.class,
+            "IA.install.dependent.failed");//NOI18N
+    public static final String INSTALL_DEPENDENT_FAILED_EXCEPTION_PROPERTY =
+            "install.dependent.failed";
+    
+    public static final String DEFAULT_INSTALL_UNKNOWN_ERROR =
+            ResourceUtils.getString(InstallAction.class,
+            "IA.install.unknown.error");//NOI18N
+    public static final String INSTALL_UNKNOWN_ERROR_PROPERTY =
+            "install.unknown.error";
+    
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     private CompositeProgress overallProgress;
@@ -56,6 +81,14 @@ public class InstallAction extends WizardAction {
     public InstallAction() {
         setProperty(TITLE_PROPERTY, DEFAULT_TITLE);
         setProperty(DESCRIPTION_PROPERTY, DEFAULT_DESCRIPTION);
+        setProperty(PROGRESS_INSTALL_TITLE_PROPERTY,
+                DEFAULT_PROGRESS_INSTALL_TITLE);
+        setProperty(PROGRESS_ROLLBACK_TITLE_PROPERTY,
+                DEFAULT_PROGRESS_ROLLBACK_TITLE);
+        setProperty(INSTALL_DEPENDENT_FAILED_EXCEPTION_PROPERTY,
+                DEFAULT_INSTALL_DEPENDENT_FAILED_EXCEPTION);
+        setProperty(INSTALL_UNKNOWN_ERROR_PROPERTY,
+                DEFAULT_INSTALL_UNKNOWN_ERROR);
     }
     
     public boolean canExecuteForward() {
@@ -87,12 +120,16 @@ public class InstallAction extends WizardAction {
             currentProgress = new Progress();
             
             overallProgress.addChild(currentProgress, percentageChunk);
-            overallProgress.setTitle("Installing " + product.getDisplayName() + "...");
+            overallProgress.setTitle(StringUtils.format(
+                    getProperty(PROGRESS_INSTALL_TITLE_PROPERTY),
+                    product.getDisplayName()));
             try {
                 product.install(currentProgress);
                 
                 if (isCanceled())  {
-                    overallProgress.setTitle("Canceling, rolling back " + product.getDisplayName() + "...");
+                    overallProgress.setTitle(StringUtils.format(
+                            getProperty(PROGRESS_ROLLBACK_TITLE_PROPERTY),
+                            product.getDisplayName()));
                     product.rollback(currentProgress);
                     
                     final RegistryFilter filter = new OrFilter(
@@ -103,7 +140,9 @@ public class InstallAction extends WizardAction {
                     }
                     
                     for (Product toRollback: registry.getProductsToUninstall()) {
-                        overallProgress.setTitle("Canceling, rolling back " + toRollback.getDisplayName() + "...");
+                        overallProgress.setTitle(StringUtils.format(
+                                getProperty(PROGRESS_ROLLBACK_TITLE_PROPERTY),
+                                toRollback.getDisplayName()));
                         toRollback.rollback(progresses.get(toRollback));
                     }
                     break;
@@ -116,7 +155,8 @@ public class InstallAction extends WizardAction {
                 SystemUtils.sleep(200);
             } catch (Throwable e) {
                 if (!(e instanceof InstallationException)) {
-                    e = new InstallationException("Unknown Error", e);
+                    e = new InstallationException(
+                            getProperty(INSTALL_UNKNOWN_ERROR_PROPERTY), e);
                 }
                 
                 // adjust the product's status and save this error - it will
@@ -129,7 +169,13 @@ public class InstallAction extends WizardAction {
                 for(Product dependent: registry.getProducts()) {
                     if ((dependent.getStatus()  == Status.TO_BE_INSTALLED) &&
                             registry.satisfiesRequirement(product, dependent)) {
-                        final InstallationException dependentError = new InstallationException("Could not install " + dependent.getDisplayName() + ", since the installation of " + product.getDisplayName() + "failed", e);
+                        final String exceptionName = StringUtils.format(
+                                getProperty(INSTALL_DEPENDENT_FAILED_EXCEPTION_PROPERTY),
+                                dependent.getDisplayName(),
+                                product.getDisplayName());
+                        
+                        final InstallationException dependentError =
+                                new InstallationException(exceptionName,e);
                         
                         dependent.setStatus(Status.NOT_INSTALLED);
                         dependent.setInstallationError(dependentError);

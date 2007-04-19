@@ -139,8 +139,8 @@ public class SearchForJavaAction extends WizardAction {
                 get(Product.class);
         for (Dependency dependency: product.getDependencies(
                 DependencyType.INSTALL_AFTER)) {
-            if (dependency.getUid().equals("jdk")) {
-                for (Product jdk: Registry.getInstance().getProducts("jdk")) {
+            if (dependency.getUid().equals(JDK_PRODUCT_UID)) {
+                for (Product jdk: Registry.getInstance().getProducts(JDK_PRODUCT_UID)) {
                     if (jdk.getStatus() == Status.TO_BE_INSTALLED) {
                         javaLocations.add(jdk.getInstallationLocation());
                         javaLabels.add(getLabel(
@@ -310,7 +310,7 @@ public class SearchForJavaAction extends WizardAction {
     }
     
     private void fetchLocationsFromRegistry(List<File> locations) {
-        for (Product jdk: Registry.getInstance().getProducts("jdk")) {
+        for (Product jdk: Registry.getInstance().getProducts(JDK_PRODUCT_UID)) {
             if (jdk.getStatus() == Status.INSTALLED) {
                 if (!locations.contains(jdk.getInstallationLocation())) {
                     locations.add(jdk.getInstallationLocation());
@@ -342,6 +342,8 @@ public class SearchForJavaAction extends WizardAction {
    
    private static final String SUN_MICROSYSTEMS_VENDOR = 
            "Sun Microsystems Inc." ; //NOI18N
+   
+   private static final String JDK_PRODUCT_UID = "jdk"; //NOI18N
    
     public static final String [] JAVA_WINDOWS_REGISTRY_ENTRIES = new String [] {
         "SOFTWARE\\JavaSoft\\Java Development Kit",                         // NOI18N
