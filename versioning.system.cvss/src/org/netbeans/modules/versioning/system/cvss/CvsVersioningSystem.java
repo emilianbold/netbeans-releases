@@ -687,8 +687,6 @@ public class CvsVersioningSystem {
     }
 
     private static final int STATUS_DIFFABLE = 
-            FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | 
-            FileInformation.STATUS_VERSIONED_ADDEDLOCALLY | 
             FileInformation.STATUS_VERSIONED_UPTODATE | 
             FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY |
             FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY |

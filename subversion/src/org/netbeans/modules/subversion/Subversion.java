@@ -61,8 +61,6 @@ public class Subversion {
     static final String INVALID_METADATA_MARKER = "invalid-metadata"; // NOI18N
     
     private static final int STATUS_DIFFABLE = 
-            FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | 
-            FileInformation.STATUS_VERSIONED_ADDEDLOCALLY | 
             FileInformation.STATUS_VERSIONED_UPTODATE | 
             FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY |
             FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY |
