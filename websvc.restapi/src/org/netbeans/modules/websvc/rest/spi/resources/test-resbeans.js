@@ -465,7 +465,7 @@ function updateContent(xmlHttpReq) {
                 alert(content.substring(ndx, ndx+16));
             var ndx2 = content.indexOf('Caused by: java.lang.');
             if(ndx2 != -1)
-                alert('Server returned error: '+content);
+                alert('MSG_TEST_RESBEANS_ServerError '+content);
             //alert('result: ['+content+']');
             if(content != null && content != undefined) {
                 try {
@@ -628,9 +628,13 @@ function getUri(ref) {
     return tcStr;
 }
 function createRowForUri(refChild) {
-    var str = '';
+    var str = '';    
+    var id = '-';
+    if(refChild.childNodes.length > 0 && refChild.childNodes[0].childNodes.length > 0) {
+        id = refChild.childNodes[0].childNodes[0].nodeValue;
+    }
+    str += "<td>"+id+"</td>";
     var uri = refChild.attributes.getNamedItem('uri').nodeValue;
-    str += "<td>"+refChild.childNodes[0].childNodes[0].nodeValue+"</td>";
     str += "<td>";
     var disp = getDisplayUri(uri);
     str += "<a id='"+uri+"' href=javascript:doShowContent('"+uri+"') >"+getDisplayURL(disp, 70)+"</a>";
