@@ -32,23 +32,27 @@ import org.netbeans.modules.vmd.api.properties.common.PropertiesSupport;
  * @author Karol Harezlak
  */
 public class ResourcePropertyEditor implements ScreenPropertyEditor {
-
+    
     private String propertyName;
     private DesignComponent propertyComponent;
-
-    public ResourcePropertyEditor (String propertyName, DesignComponent propertyComponent) {
+    
+    public ResourcePropertyEditor(String propertyName, DesignComponent propertyComponent) {
         assert propertyName != null;
         this.propertyName = propertyName;
         this.propertyComponent = propertyComponent;
     }
-
-    public JComponent createEditorComponent (ScreenPropertyDescriptor property) {
-        PropertiesSupport.showPropertyEdiotrForCurrentComponent(propertyName, propertyComponent);
+    
+    public JComponent createEditorComponent(ScreenPropertyDescriptor property) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                PropertiesSupport.showPropertyEdiotrForCurrentComponent(propertyName, propertyComponent);
+            }
+        });
         return null;
     }
-
-    public Insets getEditorComponentInsets (JComponent editorComponent) {
+    
+    public Insets getEditorComponentInsets(JComponent editorComponent) {
         return null;
     }
-
+    
 }
