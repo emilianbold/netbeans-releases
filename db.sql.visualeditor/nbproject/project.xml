@@ -76,10 +76,12 @@
                 <friend>org.netbeans.modules.visualweb.dataconnectivity</friend>
                 <package>org.netbeans.modules.db.sql.visualeditor.api</package>
             </friend-packages>
+	    <!--
             <class-path-extension>
                 <runtime-relative-path>ext/jgraph.jar</runtime-relative-path>
                 <binary-origin>release/modules/ext/jgraph.jar</binary-origin>
             </class-path-extension>
+	    -->
         </data>
     </configuration>
 </project>

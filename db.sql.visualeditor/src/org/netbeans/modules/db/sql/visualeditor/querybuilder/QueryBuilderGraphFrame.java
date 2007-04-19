@@ -116,9 +116,9 @@ import org.netbeans.api.visual.action.PopupMenuProvider;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.SelectProvider;
 
-// Sanity!!
-import com.jgraph.JGraph;
-// EndSanity!!
+// // Sanity!!
+// import com.jgraph.JGraph;
+// // EndSanity!!
 
 /**
  *
@@ -145,9 +145,9 @@ public class QueryBuilderGraphFrame extends JPanel
     private JEditorPane			_sqlTextArea;
     private DefaultTableModel           _resultTableModel;
 
-    // Sanity!!
-    private JGraph                      _graph = null;
-    // EndSanity!!
+//     // Sanity!!
+//     private JGraph                      _graph = null;
+//     // EndSanity!!
     
 //    private DefaultGraphModel           _graphModel = null;
     
@@ -480,11 +480,11 @@ public class QueryBuilderGraphFrame extends JPanel
     
     // Adding a method to access _graph as per QE request
     
-    // Sanity!!
-     public JGraph getGraph() {
-         return (_graph);
-     }
-    // EndSanity!!
+//     // Sanity!!
+//      public JGraph getGraph() {
+//          return (_graph);
+//      }
+//     // EndSanity!!
     
     // Create a popup menu that will appear when the user clicks on the background
     // and similar places.

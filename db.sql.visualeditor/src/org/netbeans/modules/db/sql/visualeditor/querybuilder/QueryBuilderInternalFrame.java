@@ -53,9 +53,9 @@ import org.openide.DialogDisplayer;
 
 import org.openide.util.NbBundle;
 
-// Sanity!!
-import com.jgraph.graph.DefaultGraphCell;
-// EndSanity!!
+// // Sanity!!
+// import com.jgraph.graph.DefaultGraphCell;
+// // EndSanity!!
 
 import org.netbeans.modules.db.sql.visualeditor.querymodel.Predicate;
 import org.netbeans.modules.db.sql.visualeditor.querymodel.SQLQueryFactory;
@@ -82,9 +82,9 @@ public class QueryBuilderInternalFrame extends JInternalFrame
 
     // _graphCell is a pointer to the JGraph cell this internal frame represents
 
-    // Sanity!!
-    private DefaultGraphCell            _graphCell = null;
-    // EndSanity!!
+//     // Sanity!!
+//     private DefaultGraphCell            _graphCell = null;
+//     // EndSanity!!
 
     private JPopupMenu                  _tableColumnPopup;
     private TableNode                   _node;          // for property sheet
@@ -225,16 +225,16 @@ public class QueryBuilderInternalFrame extends JInternalFrame
 
     // Accessors/Mutators
 
-    // Sanity!!!!!
-    public void setGraphCell(DefaultGraphCell graphCell)
-    {
-	_graphCell = graphCell;
-    }
-    public DefaultGraphCell getGraphCell()
-    {
-	return(_graphCell);
-    }
-    // End Sanity!!!!!
+//     // Sanity!!!!!
+//     public void setGraphCell(DefaultGraphCell graphCell)
+//     {
+// 	_graphCell = graphCell;
+//     }
+//     public DefaultGraphCell getGraphCell()
+//     {
+// 	return(_graphCell);
+//     }
+//     // End Sanity!!!!!
 
     public QueryBuilderTableModel getQueryBuilderTableModel()
     {
