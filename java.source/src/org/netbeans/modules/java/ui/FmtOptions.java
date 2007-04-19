@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.ComboBoxModel;
@@ -491,6 +490,15 @@ public class FmtOptions {
             
             for (String[] option : forcedOptions) {
                 p.put( option[0], option[1]);
+            }
+            
+            
+            try {
+                int rm = p.getInt(rightMargin, Integer.parseInt(defaults.get(rightMargin)));
+                pane.putClientProperty("TextLimitLine", rm);
+            }
+            catch( NumberFormatException e ) {
+                // Ignore it
             }
             
             CodeStyle codeStyle = FmtOptions.createCodeStyle(p);

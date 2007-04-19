@@ -250,8 +250,6 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
     
     private void repaintPreview() { 
         
-        Logger.global.info("repaintPreview()");
-        
         Preferences p = new PreviewPreferences();
         
         
