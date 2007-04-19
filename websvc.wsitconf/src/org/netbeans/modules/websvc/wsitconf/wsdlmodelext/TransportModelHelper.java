@@ -122,7 +122,7 @@ public class TransportModelHelper {
             WebModule wm = WebModule.getWebModule(p.getProjectDirectory());
             if (wm != null) {
                 try {
-                    WebApp wApp = DDProvider.getDefault ().getMergedDDRoot(wm.getDeploymentDescriptor());                    
+                    WebApp wApp = DDProvider.getDefault ().getDDRoot(wm.getDeploymentDescriptor());                    
                     if (jsr109) {
                         String servletClassName = s.getImplementationClass();       //NOI18N
                         Servlet servlet = getServlet(wApp, servletClassName);
