@@ -47,10 +47,10 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
@@ -277,7 +277,9 @@ public final class SearchBar extends JToolBar {
         add(matchCaseCheckBox);
 
         // padding at the end of the toolbar
-        addSeparator(getMaximumSize());
+        JPanel padding = new JPanel();
+        padding.setOpaque(false);
+        add(padding);
         
         // initially not visible
         setVisible(false);
