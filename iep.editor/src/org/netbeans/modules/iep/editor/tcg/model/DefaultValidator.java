@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.iep.editor.tcg.ps.TcgPsI18n;
 import org.openide.util.NbBundle;
+//import java.util.logging.Logger;
 
 /**
  * DefaultValidator.java
@@ -33,6 +34,8 @@ import org.openide.util.NbBundle;
  * @author Bing Lu
  */
 public class DefaultValidator implements TcgComponentValidator {
+    
+    //private static Logger mLogger = Logger.getLogger(DefaultValidator.class.getName());
     /**
      * Creates a new instance of DefaultValidator 
      */
@@ -46,9 +49,8 @@ public class DefaultValidator implements TcgComponentValidator {
         for (Iterator it = component.getPropertyList().iterator(); it.hasNext();) {
             TcgProperty property = (TcgProperty) it.next();
             TcgPropertyType propertyType = property.getType();
-
             if (propertyType.isRequired() && 
-                (property.getValue() == null || property.getValue().equals(""))) 
+                (property.getStringValue() == null || property.getStringValue().equals(""))) 
             {
                 messageList.add(new TcgComponentValidationMsg(VALIDATION_ERROR_KEY, "'" + TcgPsI18n.getDisplayName(propertyType) + "' " +
                         NbBundle.getMessage(DefaultValidator.class,"DefaultValidator.property_is_required_but_undefined")));

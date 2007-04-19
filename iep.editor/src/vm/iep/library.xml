@@ -288,7 +288,8 @@ type CDATA #REQUIRED
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.TupleBasedAggregatorCustomEditor"/>
                 <property name="type" default="i18n.IEP.Operator.TupleBasedAggregator.title"/>
-                <property name="inputType" default="i18n.IEP.IOType.stream"/>
+                <property  name="inputType" default="i18n.IEP.IOType.stream"/>
+                <property  name="inputSchemaIdList" required="true" default=""/>
                 <property name="staticInputMaxCount" default="1000000"/>
                 <property name="outputType" default="i18n.IEP.IOType.stream"/>
                 <property name="isSchemaOwner" default="true"/>
