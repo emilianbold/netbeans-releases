@@ -63,8 +63,7 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
     private String[][] values;
     
     public TableItemDisplayPresenter() {
-        label = new JLabel();
-        
+        label = new JLabel();      
         panel = new JPanel() {
             public void paint(Graphics g) {
                 super.paint(g);
@@ -84,6 +83,9 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
         if (!hasModel) {
             cummulativeY += ScreenSupport.getFontHeight(g, valuesFont);
             g.drawString("No model specified", CELL_INSETS, cummulativeY);
+        } else if  (values == null) {
+            cummulativeY += ScreenSupport.getFontHeight(g, valuesFont);
+            g.drawString("Empty model", CELL_INSETS, cummulativeY);
         } else {
             Graphics2D g2D = (Graphics2D)g;
             Dimension oldSize = panel.getSize();
@@ -159,7 +161,6 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
     
     public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
-
         DesignComponent tableModelComponent = getComponent().readProperty(TableItemCD.PROP_MODEL).getComponent();
         hasModel = tableModelComponent != null;
         
@@ -181,7 +182,7 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
                     List<String> row = gatherStringValues(list.get(i).getArray());
                     values[i] = row.toArray(new String[row.size()]);
                 }
-            }
+            } 
         }
         
         panel.setPreferredSize(calculatePrefferedSize());
@@ -191,7 +192,7 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
     // TODO compute 14 from fontSize
     private Dimension calculatePrefferedSize() {
         final Dimension oldSize = panel.getPreferredSize();
-        if (!hasModel) {
+        if (!hasModel || values == null) {
             return oldSize;
         }
         
@@ -201,7 +202,7 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
         }
         if (values != null) {
             height += (DOUBLE_CELL_INSETS + 14 + BORDER_LINE_WIDTH) * values.length;
-        }
+        } 
         return new Dimension(oldSize.width, height);
     }
     
