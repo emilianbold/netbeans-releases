@@ -59,7 +59,7 @@
     </folder>
 
     <folder name="Shortcuts">
-        <file name="OS-F.shadow"> <!-- Alt+Shift+F -->
+        <file name="AS-F.shadow">
             <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-bpel-search-impl-action-SearchAction.instance"/>
         </file>
     </folder>
