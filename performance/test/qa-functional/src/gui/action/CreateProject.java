@@ -13,13 +13,12 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package gui.action;
 
-import java.io.File;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
@@ -108,7 +107,7 @@ public class CreateProject extends org.netbeans.performance.test.utilities.Perfo
         wizard.next();
         wizard_location = new NewProjectNameLocationStepOperator();
         
-        String directory = System.getProperty("xtest.tmpdir")+"/"+"createdProjects";
+        String directory = System.getProperty("xtest.tmpdir") + java.io.File.separator + "createdProjects";
         log("================= Destination directory={"+directory+"}");
         wizard_location.txtProjectLocation().setText("");
         new EventTool().waitNoEvent(1000);
@@ -131,7 +130,7 @@ public class CreateProject extends org.netbeans.performance.test.utilities.Perfo
     public void close(){
         if (index != repeat) { // ignore last round tha reports LRU caches
             Object /* Project */ prj = ProjectSupport.openProject(
-                    System.getProperty("xtest.tmpdir")+"/"+"createdProjects"+File.separatorChar+project_name);
+                    System.getProperty("xtest.tmpdir") + java.io.File.separator + "createdProjects" + java.io.File.separator + project_name);
             reportReference("Project "+project_name+" from CreateProject test", prj, PROJECT_REFS);
         }
         ProjectSupport.closeProject(project_name);
