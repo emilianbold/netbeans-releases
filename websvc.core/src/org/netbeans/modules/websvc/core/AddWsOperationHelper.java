@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -50,6 +49,7 @@ import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.common.source.GenerationUtils;
 import org.netbeans.modules.j2ee.common.source.SourceUtils;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import static org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
@@ -114,13 +114,7 @@ public class AddWsOperationHelper {
     }
     
     protected void okButtonPressed(MethodModel method, FileObject implClassFo, String className) throws IOException {
-        ProgressHandle handle = ProgressHandleFactory.createHandle("Adding operation");
-        try {
-            handle.start(100);
-                addOperation(method, implClassFo, handle);
-        } finally {
-            handle.finish();
-        }
+        addOperation(method, implClassFo);
     }
 
     protected FileObject getDDFile(FileObject fileObject) {
@@ -130,10 +124,11 @@ public class AddWsOperationHelper {
     /*
      * Adds a method definition to the the implementation class
      */
-    private void addOperation(final MethodModel methodModel, FileObject implClassFo, final ProgressHandle handle ) {
-        JavaSource targetSource = JavaSource.forFileObject(implClassFo);
+    private void addOperation(final MethodModel methodModel, FileObject implClassFo) {
+        final JavaSource targetSource = JavaSource.forFileObject(implClassFo);
+        final ProgressHandle handle = ProgressHandleFactory.createHandle("Adding operation"); 
         handle.progress(10);
-        CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
+        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 MethodTree method = MethodModelSupport.createMethodTree(workingCopy, methodModel);
@@ -206,11 +201,17 @@ public class AddWsOperationHelper {
             }
             public void cancel() {}
         };
-        try {
-            targetSource.runModificationTask(modificationTask).commit();
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
-        }        
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                try {
+                    targetSource.runModificationTask(modificationTask).commit();
+                } catch (IOException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                } finally {
+                    handle.finish();
+                }
+            }
+        });               
     }
     
     private String getMethodBody(Tree returnType) {
@@ -241,7 +242,7 @@ public class AddWsOperationHelper {
     }
     */
     
-    private Collection<MethodModel> getExistingMethods(FileObject implClass) {
+    private Collection<MethodModel> getExistingMethods(FileObject implClass) {       
         JavaSource javaSource = JavaSource.forFileObject(implClass);
         final ResultHolder<MethodModel> result = new ResultHolder<MethodModel>();
         if (javaSource!=null) {
