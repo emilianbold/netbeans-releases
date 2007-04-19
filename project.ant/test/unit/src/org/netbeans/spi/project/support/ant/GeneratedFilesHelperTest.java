@@ -19,14 +19,18 @@
 
 package org.netbeans.spi.project.support.ant;
 
+import org.netbeans.spi.project.ant.AntBuildExtenderImplementation;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.net.URL;
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.ant.Util;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
@@ -46,21 +50,26 @@ public class GeneratedFilesHelperTest extends NbTestCase {
     
     private FileObject scratch;
     private FileObject projdir;
+    private FileObject extension1;
     private ProjectManager pm;
     private Project p;
     private AntProjectHelper h;
     private GeneratedFilesHelper gfh;
+    private ExtImpl extenderImpl;
     
     protected void setUp() throws Exception {
         super.setUp();
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
         TestUtil.createFileFromContent(GeneratedFilesHelperTest.class.getResource("data/project.xml"), projdir, "nbproject/project.xml");
+        extension1 = TestUtil.createFileFromContent(GeneratedFilesHelperTest.class.getResource("data/extension1.xml"), projdir, "nbproject/extension1.xml");
+        extenderImpl = new ExtImpl();
         TestUtil.setLookup(new Object[] {
-            AntBasedTestUtil.testAntBasedProjectType(),
+            AntBasedTestUtil.testAntBasedProjectType(extenderImpl),
         });
         pm = ProjectManager.getDefault();
         p = pm.findProject(projdir);
+        extenderImpl.project = p;
         h = p.getLookup().lookup(AntProjectHelper.class);
         gfh = p.getLookup().lookup(GeneratedFilesHelper.class);
         assertNotNull(gfh);
@@ -198,6 +207,36 @@ public class GeneratedFilesHelperTest extends NbTestCase {
             }
             assertTrue("generated file has platform line endings", ok);
         }
+    }
+    
+    private class ExtImpl implements AntBuildExtenderImplementation {
+        Project project;
+        Element newElement;
+        Element oldElement;
+
+        public List<String> getExtensibleTargets() {
+            return Collections.singletonList("all");
+        }
+
+        public void updateBuildExtensionMetadata(Element element) {
+            newElement = element;
+        }
+
+        public Element getBuildExtensionMetadata() {
+            Element el = project.getLookup().lookup(AuxiliaryConfiguration.class).getConfigurationFragment(ELEMENT_ROOT, "urn:test:extension", true);
+            if (el != null) {
+                NodeList nl = el.getElementsByTagName(AntBuildExtenderImplementation.ELEMENT_ROOT);
+                if (nl.getLength() == 1) {
+                    return (Element) nl.item(0);
+                }
+            }
+            return null;
+        }
+
+        public Project getOwningProject() {
+            return project;
+        }
+
     }
     
 }

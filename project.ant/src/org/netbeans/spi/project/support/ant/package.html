@@ -130,6 +130,10 @@ build scripts and
 {@link org.netbeans.spi.project.support.ant.ProjectXmlSavedHook} to be told when
 to recreate them.</p>
 
+<p>To allow 3rd party extensions to build scripts, use {@link org.netbeans.spi.project.ant.AntBuildExtenderImplementation} and
+{@link org.netbeans.spi.project.support.ant.AntBuildExtenderSupport}.
+</p>
+
 <p>{@link org.netbeans.spi.project.support.ant.EditableProperties} is a
 VCS-friendly alternative to {@link java.util.Properties}.
 {@link org.netbeans.spi.project.support.ant.PropertyUtils} also provides various

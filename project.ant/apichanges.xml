@@ -81,6 +81,26 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+
+        <change id="build-extender">
+            <api name="general"/>
+            <summary>Support for externally extending the project's build script</summary>
+            <version major="1" minor="16"/>
+            <date day="10" month="4" year="2007"/>
+            <author login="mkleint"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                  Add framework for extending the project's build script with 3rd party snippets,
+                  allowing automated extensions to the build process. 
+                </p>
+            </description>
+            <class package="org.netbeans.api.project.ant" name="AntBuildExtender"/>
+            <class package="org.netbeans.spi.project.support.ant" name="GeneratedFileHelper"/>
+            <class package="org.netbeans.spi.project.ant" name="AntBuildExtenderImplementation"/>
+            <class package="org.netbeans.spi.project.support.ant" name="AntBuildExtenderSupport"/>
+            <issue number="93509"/>
+        </change>
         
         <change id="includes-excludes.ant">
             <api name="general"/>

@@ -19,6 +19,8 @@
 
 package org.netbeans.spi.project.support.ant;
 
+import org.netbeans.spi.project.ant.AntBuildExtenderImplementation;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileInputStream;
@@ -51,6 +53,7 @@ import org.netbeans.spi.diff.DiffProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.openide.filesystems.FileObject;
@@ -95,6 +98,9 @@ public class AntBasedTestUtil {
         return new TestAntBasedProjectType();
     }
     
+    public static AntBasedProjectType testAntBasedProjectType(AntBuildExtenderImplementation extender) {
+        return new TestAntBasedProjectType(extender);
+    }
     /**
      * You can adjust which artifacts are supplied.
      */
@@ -103,15 +109,20 @@ public class AntBasedTestUtil {
     }
     
     private static final class TestAntBasedProjectType implements AntBasedProjectType {
+        private AntBuildExtenderImplementation ext;
         
         TestAntBasedProjectType() {}
+        
+        TestAntBasedProjectType(AntBuildExtenderImplementation ext) {
+            this.ext = ext;
+        }
         
         public String getType() {
             return "test";
         }
         
         public Project createProject(AntProjectHelper helper) throws IOException {
-            return new TestAntBasedProject(helper);
+            return new TestAntBasedProject(helper, ext);
         }
         
         public String getPrimaryConfigurationDataElementName(boolean shared) {
@@ -131,14 +142,22 @@ public class AntBasedTestUtil {
         private final GeneratedFilesHelper genFilesHelper;
         private final Lookup l;
         
-        TestAntBasedProject(AntProjectHelper helper) throws IOException {
+        TestAntBasedProject(AntProjectHelper helper, AntBuildExtenderImplementation ext) throws IOException {
             if (helper.getProjectDirectory().getFileObject("nbproject/broken") != null) {
                 throw new IOException("broken");
             }
             this.helper = helper;
             AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
             refHelper = new ReferenceHelper(helper, aux, helper.getStandardPropertyEvaluator());
-            genFilesHelper = new GeneratedFilesHelper(helper);
+            Object extContent;
+            if (ext !=null) {
+                AntBuildExtender e = AntBuildExtenderSupport.createAntExtender(ext);
+                genFilesHelper = new GeneratedFilesHelper(helper, e);
+                extContent = e;
+            } else {
+                genFilesHelper = new GeneratedFilesHelper(helper);
+                extContent = new Object();
+            }       
             l = Lookups.fixed(new Object[] {
                 new TestInfo(),
                 helper,
@@ -161,6 +180,7 @@ public class AntBasedTestUtil {
                     }
                 },
                 "hello",
+                extContent
             });
         }
         
@@ -213,6 +233,7 @@ public class AntBasedTestUtil {
             public void removePropertyChangeListener(PropertyChangeListener listener) {}
             
         }
+
         
         private final class TestAntArtifactProvider implements AntArtifactProviderMutable {
             

@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URL;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -40,17 +41,30 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ant.AntBuildExtender;
+import org.netbeans.api.project.ant.AntBuildExtender.Extension;
+import org.netbeans.modules.project.ant.AntBuildExtenderAccessor;
 import org.netbeans.modules.project.ant.UserQuestionHandler;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.openide.util.UserQuestionException;
 import org.openide.util.Utilities;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * Helps a project type (re-)generate, and manage the state and versioning of,
@@ -160,6 +174,8 @@ public final class GeneratedFilesHelper {
     /** Project directory. */
     private final FileObject dir;
     
+    private AntBuildExtender extender;
+    
     /**
      * Create a helper based on the supplied project helper handle.
      * @param h an Ant-based project helper supplied to the project type provider
@@ -167,6 +183,19 @@ public final class GeneratedFilesHelper {
     public GeneratedFilesHelper(AntProjectHelper h) {
         this.h = h;
         dir = h.getProjectDirectory();
+    }
+
+    /**
+     * Create a helper based on the supplied project helper handle. The created
+     * instance is capable of extending the generated files with 3rd party content.
+     * @param h an Ant-based project helper supplied to the project type provider
+     * @param ex build extensibility support
+     * @since org.netbeans.modules.project.ant 1.16
+     * 
+     */
+    public GeneratedFilesHelper(AntProjectHelper h, AntBuildExtender ex) {
+        this(h);
+        extender = ex;
     }
     
     /**
@@ -255,7 +284,11 @@ public final class GeneratedFilesHelper {
                                     new ByteArrayInputStream(projectXmlData), projectXmlF.toURI().toString());
                                 ByteArrayOutputStream result = new ByteArrayOutputStream();
                                 t.transform(projectXmlSource, new StreamResult(result));
-                                resultData = result.toByteArray();
+                                if (BUILD_IMPL_XML_PATH.equals(path)) {
+                                    resultData = applyBuildExtensions(result.toByteArray(), extender);
+                                } else {
+                                    resultData = result.toByteArray();
+                                }
                             } catch (TransformerException e) {
                                 throw (IOException)new IOException(e.toString()).initCause(e);
                             }
@@ -369,6 +402,83 @@ public final class GeneratedFilesHelper {
         }
     }
     
+    private byte[] applyBuildExtensions(byte[] resultData, AntBuildExtender ext) {
+        if (ext == null) {
+            return resultData;
+        }
+        try {
+            ByteArrayInputStream in2 = new ByteArrayInputStream(resultData);
+            InputSource is = new InputSource(in2);
+
+            Document doc = XMLUtil.parse(is, false, true, null, null);
+            Element el = doc.getDocumentElement();
+            Node firstSubnode = el.getFirstChild();
+            //TODO check if first one is text and use it as indentation..
+            for (Extension extension : AntBuildExtenderAccessor.DEFAULT.getExtensions(ext)) {
+                Text after = doc.createTextNode("\n");
+                el.insertBefore(after, firstSubnode);
+                Element imp = createImportElement(AntBuildExtenderAccessor.DEFAULT.getPath(extension), doc);
+                el.insertBefore(imp, after);
+                Text before = doc.createTextNode("    ");
+                el.insertBefore(before, imp);
+                firstSubnode = before;
+                NodeList nl = el.getElementsByTagName("target"); //NOI18N
+                Map<String, Collection<String>> deps  = AntBuildExtenderAccessor.DEFAULT.getDependencies(extension);
+                for (String targetName : deps.keySet()) {
+                    Element targetEl = null;
+                    for (int i = 0; i < nl.getLength(); i++) {
+                        Element elem = (Element)nl.item(i);
+                        String at = elem.getAttribute("name"); //NOI18N
+                        if (at != null && at.equals(targetName)) {
+                            targetEl = elem;
+                            break;
+                        }
+                    }
+//                    System.out.println("target name=" + targetName);
+//                    System.out.println("target elem=" + targetEl);
+                    if (targetEl != null) {
+                        Attr depend = targetEl.getAttributeNode("depends"); //NOI18N
+                        if (depend == null) {
+                            depend = doc.createAttribute("depends"); //NOI18N
+                            depend.setValue("");
+                            targetEl.setAttributeNode(depend);
+                        }
+                        String oldVal = depend.getValue();
+                        for (String targ : deps.get(targetName)) {
+                            oldVal = oldVal + "," + targ; //NOI18N
+                        }
+                        if (oldVal.startsWith(",")) { //NOI18N
+                            oldVal = oldVal.substring(1);
+                        }
+                        depend.setValue(oldVal);
+                    } else {
+                        //TODO log??
+                    }
+                }
+            }
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            XMLUtil.write(doc, out, "UTF-8"); //NOI18N
+            return out.toByteArray();
+        }
+        catch (IOException ex) {
+            ex.printStackTrace();
+            Exceptions.printStackTrace(ex);
+            return resultData;
+        }
+        catch (SAXException ex) {
+            ex.printStackTrace();
+            Exceptions.printStackTrace(ex);
+            return resultData;
+        }
+    }
+
+    private Element createImportElement(String path, Document doc) {
+        Element el = doc.createElement("import"); //NOI18N
+        el.setAttribute("file", path);
+        return el;
+    }
+
     /**
      * Load data from a stream into a buffer.
      */
