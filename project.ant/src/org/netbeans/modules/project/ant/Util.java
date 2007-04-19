@@ -21,7 +21,9 @@ package org.netbeans.modules.project.ant;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.util.Exceptions;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -128,9 +130,7 @@ public class Util {
         public ErrHandler() {}
         
         private void annotate(SAXParseException exception) throws SAXException {
-            ErrorManager.getDefault().annotate(exception, ErrorManager.UNKNOWN,
-                "Occurred at: " + exception.getSystemId() + ":" + exception.getLineNumber(), // NOI18N
-                null, null, null);
+            Exceptions.attachMessage(exception, "Occurred at: " + exception.getSystemId() + ":" + exception.getLineNumber()); // NOI18N
         }
         
         public void fatalError(SAXParseException exception) throws SAXException {
@@ -145,7 +145,7 @@ public class Util {
         
         public void warning(SAXParseException exception) throws SAXException {
             annotate(exception);
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exception);
+            Logger.getLogger(Util.class.getName()).log(Level.INFO, null, exception);
         }
         
     }
