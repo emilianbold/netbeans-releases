@@ -140,6 +140,7 @@ public class JavaSourceHelper {
         try {
             source.runUserActionTask(new AbstractTask<CompilationController>() {
                 public void run(CompilationController controller) throws IOException {
+                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     ClassTree tree = getTopLevelClassTree(controller);
                     if (tree != null) {
                         className[0] = tree.getSimpleName().toString();
