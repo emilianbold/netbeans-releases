@@ -204,10 +204,10 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
      */
     public void validateGraph() {
         //        scene.layoutScene();
-//        System.out.println("Validating Graph: ");
-//        System.out.println("Nodes: " + scene.getNodes());
-//        System.out.println("Edges: "+ scene.getEdges());
-//        System.out.println("Pins: " + scene.getPins());
+        //        System.out.println("Validating Graph: ");
+        //        System.out.println("Nodes: " + scene.getNodes());
+        //        System.out.println("Edges: "+ scene.getEdges());
+        //        System.out.println("Pins: " + scene.getPins());
         scene.validate();
     }
     
@@ -281,7 +281,9 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         PinNode sourcePin = scene.getDefaultPin( fromPageNode);
         Collection<PinNode> pinNodes = scene.getPins();
         for (PinNode pinNode : pinNodes ){
-            if (pinNode.getFromOutcome() != null && pinNode.getFromOutcome().equals(navCaseNode.getFromOuctome()) ) {
+            if (pinNode.getFromOutcome() != null &&
+                    fromPageNode == pinNode.getPageFlowNode() &&
+                    pinNode.getFromOutcome().equals(navCaseNode.getFromOuctome()) ) {
                 sourcePin = pinNode;
                 /* Remove any old navigation case nodes coming from this source */
                 Collection<NavigationCaseNode> oldNavCaseNodes = scene.findPinEdges(sourcePin, true, false);
@@ -416,15 +418,16 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         //        nodeWidget.setNodeName(node.getDisplayName());
         if( nodeWidget !=  null ) {
             nodeWidget.setNodeProperties(pageNode.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16), pageNode.getDisplayName(), null, null );
+            if( contentItemsChanged ){
+                redrawPinsAndEdges(pageNode);
+            }
         } else  {
             System.err.println("Node Widget is null in scene for: " + pageNode.getDisplayName());
             System.err.println("Here are the scene nodes: " + scene.getNodes());
             Thread.dumpStack();
         }
         
-        if( contentItemsChanged ){
-            redrawPinsAndEdges(pageNode);
-        }
+        
     }
     
     private void redrawPinsAndEdges(PageFlowNode pageNode ) {

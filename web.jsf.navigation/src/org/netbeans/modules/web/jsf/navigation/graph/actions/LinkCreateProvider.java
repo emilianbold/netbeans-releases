@@ -55,8 +55,8 @@ public class LinkCreateProvider implements ConnectProvider {
     
     /**
      * Creates a new instance of LinkCreateProvider
-     * @param graphScene 
-     * 
+     * @param graphScene
+     *
      */
     public LinkCreateProvider(PageFlowScene graphScene) {
         this.graphScene = graphScene;
@@ -85,17 +85,17 @@ public class LinkCreateProvider implements ConnectProvider {
         if (target != null)
             return ConnectorState.ACCEPT;
         return object != null ? ConnectorState.REJECT_AND_STOP : ConnectorState.REJECT;
-//
-//        if (targetWidget instanceof VMDNodeWidget ) {
-//            return ConnectorState.ACCEPT;
-//        }
-//
-//        // Only allow it to be attached to the default pin.
-////        if (graphScene.isPin(targetWidget) &&
-////                ((Pin)graphScene.findObject(targetWidget)).getNavComp() == null ) {
-////            return ConnectorState.ACCEPT;
-////        }
-//        return ConnectorState.REJECT_AND_STOP;
+        //
+        //        if (targetWidget instanceof VMDNodeWidget ) {
+        //            return ConnectorState.ACCEPT;
+        //        }
+        //
+        //        // Only allow it to be attached to the default pin.
+        ////        if (graphScene.isPin(targetWidget) &&
+        ////                ((Pin)graphScene.findObject(targetWidget)).getNavComp() == null ) {
+        ////            return ConnectorState.ACCEPT;
+        ////        }
+        //        return ConnectorState.REJECT_AND_STOP;
     }
     
     public boolean hasCustomTargetWidgetResolver(Scene scene) {
@@ -111,17 +111,15 @@ public class LinkCreateProvider implements ConnectProvider {
         if ( pfc != null && sourceWidget != null && targetWidget != null ) {
             
             NavigationCase caseNode = pfc.createLink(source, target, pinNode);
-            assert caseNode != null;
-            assert caseNode.getToViewId() != null;
-            assert caseNode.getFromOutcome() != null;
-            NavigationRule navRule = (NavigationRule)(caseNode.getParent());
-//            assert caseNode.getParent()
+//            assert caseNode != null;
+//            assert caseNode.getToViewId() != null;
+//            assert caseNode.getFromOutcome() != null;
             
             graphScene.validate();
         }
-//            addEdge (edge);
-//            setEdgeSource (edge, source);
-//            setEdgeTarget (edge, target);
+        //            addEdge (edge);
+        //            setEdgeSource (edge, source);
+        //            setEdgeTarget (edge, target);
     }
     
 }

@@ -381,14 +381,18 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         
         VMDPinWidget widget = new VMDPinWidget(this);
         VMDNodeWidget nodeWidget = ((VMDNodeWidget) findWidget(node));
-        nodeWidget.attachPinWidget(widget);
-        widget.setProperties(pinNode.getName(), Arrays.asList(pinNode.getIcon()));
-        
-        
-        Chain actions = widget.getActions();
-        actions.addAction(createObjectHoverAction());
-        actions.addAction(createSelectAction());
-        actions.addAction(connectAction);
+        if( nodeWidget != null ) {
+            nodeWidget.attachPinWidget(widget);
+            widget.setProperties(pinNode.getName(), Arrays.asList(pinNode.getIcon()));
+
+
+            Chain actions = widget.getActions();
+            actions.addAction(createObjectHoverAction());
+            actions.addAction(createSelectAction());
+            actions.addAction(connectAction);
+        } else {
+            System.err.println("Node widget should not be null.");
+        }
         
         return widget;
     }

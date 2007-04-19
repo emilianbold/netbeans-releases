@@ -164,34 +164,40 @@ public class PageFlowController {
         int caseNum = 1;
         
         configModel.startTransaction();
+        
+        
         FacesConfig facesConfig = configModel.getRootComponent();
         NavigationRule navRule = getRuleWithFromViewID(facesConfig, source.getDisplayName());
         NavigationCase navCase = configModel.getFactory().createNavigationCase();
-        
-        if (navRule == null) {
-            navRule = configModel.getFactory().createNavigationRule();
-            navRule.setFromViewId(source.getDisplayName());
-            facesConfig.addNavigationRule(navRule);
-            navRule2String.put(navRule, navRule.getFromViewId());
-        } else {
-            caseNum = getNewCaseNumber(navRule);
-        }
-        String caseName = CASE_STRING + Integer.toString(caseNum);
-        
-        if( pinNode != null ){
-            pinNode.setFromOutcome(caseName);
-        }
-        navCase.setFromOutcome(caseName);
-        
-        
-        navCase.setToViewId(target.getDisplayName());
-        navRule.addNavigationCase(navCase);
-        
-        configModel.endTransaction();
         try {
-            configModel.sync();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            if (navRule == null) {
+                navRule = configModel.getFactory().createNavigationRule();
+                navRule.setFromViewId(source.getDisplayName());
+                facesConfig.addNavigationRule(navRule);
+                navRule2String.put(navRule, navRule.getFromViewId());
+            } else {
+                caseNum = getNewCaseNumber(navRule);
+            }
+            String caseName = CASE_STRING + Integer.toString(caseNum);
+            
+            if( pinNode != null ){
+                pinNode.setFromOutcome(caseName);
+            }
+            navCase.setFromOutcome(caseName);
+            
+            
+            navCase.setToViewId(target.getDisplayName());
+            navRule.addNavigationCase(navCase);
+        } catch ( Exception e ){
+            Exceptions.printStackTrace(e);
+        } finally {
+            
+            configModel.endTransaction();
+            try {
+                configModel.sync();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         
         return navCase;
@@ -467,8 +473,8 @@ public class PageFlowController {
         synchronized ( pageName2Node ) {
             PageFlowNode node2 = pageName2Node.remove(oldName);
             if( node == null || node2 == null ){
-                System.err.println("PageFlowEditor: Trying to add Page [" + oldName + "] but it is null.");                
-            } 
+                System.err.println("PageFlowEditor: Trying to add Page [" + oldName + "] but it is null.");
+            }
             pageName2Node.put(newName, node);
         }
     }
