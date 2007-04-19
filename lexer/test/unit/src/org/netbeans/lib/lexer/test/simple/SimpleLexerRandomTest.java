@@ -63,9 +63,9 @@ public class SimpleLexerRandomTest extends TestCase {
         //randomModify.setDebugHierarchy(true);
 
         // Check for incorrect lookahead counting problem
-        // after one of the larger updates of the LexerInputOperation
-        randomModify.insertText(0, "+--+");
-        randomModify.removeText(2, 1);
+        // after one of the larger updates of the LexerInputOperation's code
+        randomModify.insertText(0, "+--+"); // "+"[2]; "-"[0]; "-"[0]; "+"[1];
+        randomModify.removeText(2, 1); // "+-+": "+-+"[0];
         
         randomModify.clearDocument();
 
@@ -73,8 +73,8 @@ public class SimpleLexerRandomTest extends TestCase {
         // of subsequent tokens (already present in the token list)
         // correspond to the lookahead of the relexed token.
         // In the following example a "+-+" token must be created.
-        randomModify.insertText(0, "---+");
-        randomModify.insertText(1, "+");
+        randomModify.insertText(0, "---+"); // "-"[0]; "-"[0]; "-"[0]; "+"[1];
+        randomModify.insertText(1, "+"); 
         randomModify.removeText(3, 1);
         
         randomModify.clearDocument();
@@ -90,8 +90,9 @@ public class SimpleLexerRandomTest extends TestCase {
         // Check for the previous case but this time the relexing would normally
         // be skipped but this would lead to lookahead 1 for the "-" token
         // after the removed "+" (while the batch lexing would produce lookahead 0)
-        randomModify.insertText(0, "-+--");
-        randomModify.removeText(1, 1);
+        randomModify.insertText(0, "-+--"); // "-"[0]; "+"[2]; "-"[1]; "-"[0];
+        // Without extra care it would become "-"[0]; "-"[1]; "-"[0];
+        randomModify.removeText(1, 1); // "---": "-"[0]; "-"[0]; "-"[0]; 
         
         randomModify.clearDocument();
         
