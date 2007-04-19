@@ -120,6 +120,11 @@ ant build \
         \"-Dremote.host.macosx=${REMOTE_HOST_MACOSX}\" \
         \"-Dremote.port.macosx=${REMOTE_PORT_MACOSX}\" \
         \"-Dremote.user.macosx=${REMOTE_USER_MACOSX}\" \
+        \"-Dsjsas.image.token.hostname.windows=${SJSAS_IMAGE_HOSTNAME_WINDOWS}\" \
+        \"-Dsjsas.image.token.hostname.linux=${SJSAS_IMAGE_HOSTNAME_LINUX}\" \
+        \"-Dsjsas.image.token.hostname.solaris-x86=${SJSAS_IMAGE_HOSTNAME_SOLARIS_X86}\" \
+        \"-Dsjsas.image.token.hostname.solaris-sparc=${SJSAS_IMAGE_HOSTNAME_SOLARIS_SPARC}\" \
+        \"-Dsjsas.image.token.hostname.macosx=${SJSAS_IMAGE_HOSTNAME_MACOSX}\" \
         $* 2>&1 |tee ${LOG_FILE}
 
 ################################################################################

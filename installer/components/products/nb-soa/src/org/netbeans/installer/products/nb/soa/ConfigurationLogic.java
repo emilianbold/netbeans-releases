@@ -82,7 +82,7 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
         
         // get the list of suitable glassfish installations
         dependencies = 
-                amProduct.getDependencyByUid(GLASSFISH_UID);
+                amProduct.getDependencyByUid(APPSERVER_UID);
         sources = 
                 Registry.getInstance().getProducts(dependencies.get(0));
         
@@ -147,6 +147,9 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
     
     public static final String GLASSFISH_UID =
             "glassfish"; // NOI18N
+    public static final String APPSERVER_UID =
+            "sjsas"; // NOI18N
+
     public static final String OPENESB_UID =
             "openesb"; // NOI18N
     public static final String AM_UID = 
