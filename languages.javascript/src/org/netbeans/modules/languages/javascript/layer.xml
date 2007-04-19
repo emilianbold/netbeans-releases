@@ -29,8 +29,8 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
     <folder name="Templates">
-        <attr name="API_Support/Scripting" boolvalue="true"/>
-        <folder name="Scripting">
+        <attr name="API_Support/JavaScript" boolvalue="true"/>
+        <folder name="JavaScript">
             <file name="EmptyJavaScript.js" url="EmptyJavaScript.js">
                 <attr name="template" boolvalue="true" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.javascript.Bundle"/>
