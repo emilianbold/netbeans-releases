@@ -56,7 +56,7 @@ public abstract class ParserManager {
      * @return parser for given {@link javax.swing.text.Document}
      */
     public static synchronized ParserManager get (Document doc) {
-        String mimeType = (String) doc.getProperty("mimeType");
+//        String mimeType = (String) doc.getProperty("mimeType");
 //        if ("text/x-java".equals (mimeType))
 //            Thread.dumpStack();
         WeakReference<ParserManager> wr = managers.get (doc);
