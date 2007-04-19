@@ -8,7 +8,7 @@ export JAVA_HOME=$JDK_HOME
 
 if [ -z ${CVS_STAMP} ]; then
     HOUR_TIME=`date -u +%H`
-    if [ $HOUR_TIME -gt 12 ]; then
+    if [ $HOUR_TIME -ge 12 ]; then
 	export CVS_STAMP="12:00UTC today"
 	export DATESTAMP=`date -u +%Y%m%d1200`
     else
