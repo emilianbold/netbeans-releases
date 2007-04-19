@@ -65,11 +65,11 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.swingapp.resources.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/swingapp/resources/BasicShellApp.html"/>
             </file>
-<!--            <file name="CRUDShellApp.zip" url="CRUDShellApp.zip">
+            <file name="CRUDShellApp.zip" url="CRUDShellApp.zip">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.swingapp.resources.Bundle"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.form.j2ee.wizard.MasterDetailWizard.createForExisting" />
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/swingapp/resources/CRUDShellApp.html"/>
-            </file> -->
+            </file>
         </folder>
     </folder>
     
