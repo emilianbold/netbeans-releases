@@ -22,6 +22,7 @@ package org.netbeans.modules.websvc.design.view;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Image;
 import java.awt.Point;
 import java.util.Set;
 import javax.swing.JComponent;
@@ -41,7 +42,9 @@ import org.netbeans.modules.websvc.design.configuration.WSConfigurationProviderR
 import org.netbeans.modules.websvc.design.javamodel.ServiceModel;
 import org.netbeans.modules.websvc.design.view.widget.ButtonAction;
 import org.netbeans.modules.websvc.design.view.widget.OperationsWidget;
+import org.netbeans.modules.websvc.design.view.widget.ToggleButtonWidget;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Utilities;
 
 /**
  * WebService Designer
@@ -91,10 +94,17 @@ public class DesignView extends JPanel  {
         if (service.getWsdlUrl()!=null)
             serviceName = service.getServiceName()+"["+service.getPortName()+"]";
         LabelWidget serviceWidget = new LabelWidget(scene,serviceName);
-        serviceWidget.setBorder(BorderFactory.createOpaqueBorder(12,24,12,0));
-        serviceWidget.setBackground(new Color (180,180,255));
-        serviceWidget.setOpaque(true);
-        mMainLayer.addChild(serviceWidget);
+        Widget headerWidget = new Widget(scene);
+        headerWidget.setLayout(LayoutFactory.createHorizontalFlowLayout(
+                LayoutFactory.SerialAlignment.JUSTIFY, 12));
+        headerWidget.setBorder(BorderFactory.createOpaqueBorder(12,24,12,0));
+        headerWidget.setBackground(new Color (180,180,255));
+        headerWidget.setOpaque(true);
+        headerWidget.addChild(serviceWidget);
+        
+        headerWidget.addChild(createWSITWidget());
+        
+        mMainLayer.addChild(headerWidget);
         scene.addChild(mMainLayer);
         messageLayer = new LayerWidget(scene);
         messageLayer.setPreferredLocation(new Point(0, 0));
@@ -120,6 +130,28 @@ public class DesignView extends JPanel  {
         //addConfigurationPanel();
     }
     
+    private Widget createWSITWidget() {
+        Widget wsitButtons = new Widget(scene);
+        wsitButtons.setLayout(LayoutFactory.createHorizontalFlowLayout(
+                LayoutFactory.SerialAlignment.JUSTIFY, 8));
+        Image INPUT_IMAGE  = Utilities.loadImage
+                ("org/netbeans/modules/websvc/design/view/resources/input.png"); // NOI18N   
+        Image OUTPUT_IMAGE  = Utilities.loadImage
+                ("org/netbeans/modules/websvc/design/view/resources/output.png"); // NOI18N   
+        ToggleButtonWidget button1 = new ToggleButtonWidget(scene,INPUT_IMAGE,null);
+        // set the awt action. Mouseclick on togglebutton calls actionPerformed.
+        // If the toggle button is selected by user the action command passed to
+        // action event is ACTION_COMMAND_SELECTED, otherwise ACTION_COMMAND_DESELECTED
+        button1.setAction(null);
+        button1.setToolTipText("wsit button 1");
+        wsitButtons.addChild(button1);
+        ToggleButtonWidget button2 = new ToggleButtonWidget(scene,OUTPUT_IMAGE,null/* text */);
+        button2.setAction(null);
+        button2.setToolTipText("wsit button 2");
+        wsitButtons.addChild(button2);
+        return wsitButtons;
+    }
+
     /**
      * Adds the graph actions to the given toolbar.
      *
