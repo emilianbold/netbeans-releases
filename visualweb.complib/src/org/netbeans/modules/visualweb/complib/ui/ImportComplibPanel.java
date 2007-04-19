@@ -163,19 +163,7 @@ public class ImportComplibPanel extends javax.swing.JPanel {
      * Beginning of non-generated code
      */
 
-    /** Set system property to override default file chooser start directory */
-    private static File savedCurDir;
-    static {
-        // Initially point to the rave samples directory
-        String samplesPath = IdeUtil.getRaveSamplesDirectory()
-                .getAbsolutePath();
-        String deprecatedProperty = System.getProperty(
-                "toolbox.importStartDir", samplesPath);
-
-        // Current property name
-        savedCurDir = new File(System.getProperty("complib.importStartDir",
-                deprecatedProperty));
-    }
+    private static File savedCurDir = ComplibOptionsPanel.getImportStartDir();
 
     private static DefaultTreeModel EMPTY_TREE_MODEL = new DefaultTreeModel(
             new DefaultMutableTreeNode("/emptyPaletteRoot"));

@@ -443,6 +443,9 @@ public class ComplibServiceProvider implements ComplibService {
     /** Scope object where user imported complib files live */
     private Scope userScope;
 
+    /** Stores preferences for the complib module */
+    private Preferences preferences;
+
     public static ComplibServiceProvider getInstance() {
         return (ComplibServiceProvider) Lookup.getDefault().lookup(
                 ComplibService.class);
@@ -1577,6 +1580,13 @@ public class ComplibServiceProvider implements ComplibService {
         }
 
         return i == 0 ? null : buf.toString();
+    }
+
+    public Preferences getPreferences() {
+        if (preferences == null) {
+            preferences = NbPreferences.forModule(ComplibServiceProvider.class);
+        }
+        return preferences;
     }
 
     private static class SharedComplibState {

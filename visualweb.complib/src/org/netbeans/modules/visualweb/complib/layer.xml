@@ -17,7 +17,6 @@ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="Menu">
@@ -35,5 +34,9 @@ Microsystems, Inc. All Rights Reserved.
       -->
         </folder>
     </folder>
+    <folder name="OptionsDialog">
+        <folder name="Advanced">
+            <file name="org-netbeans-modules-visualweb-complib-ui-ComplibAdvancedOption.instance"/>
+        </folder>
+    </folder>
 </filesystem>
-
