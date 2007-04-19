@@ -15,11 +15,13 @@
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
+ *
  */
+
 package org.netbeans.modules.vmd.midp.screen;
 
-import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceCategoryDescriptor;
 import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceCategoriesPresenter;
+import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceCategoryDescriptor;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,17 +30,18 @@ import java.util.Collection;
  * @author breh
  *
  */
-public class DisplayableResourceCategoriesPresenter extends ScreenResourceCategoriesPresenter {
+public class FormResourceCategoriesPresenter extends ScreenResourceCategoriesPresenter {
 
     private static final ArrayList<ScreenResourceCategoryDescriptor> CATEGORIES = new ArrayList<ScreenResourceCategoryDescriptor>();
 
     static {
         CATEGORIES.add(ScreenResourceCategoryDescriptorSupport.ASSIGNED_COMMANDS);
+        CATEGORIES.add(ScreenResourceCategoryDescriptorSupport.ASSIGNED_ITEM_COMMANDS);
         CATEGORIES.add(ScreenResourceCategoryDescriptorSupport.OTHER_DESIGN_RESOURCES);
     }
-    public DisplayableResourceCategoriesPresenter() {
+    public FormResourceCategoriesPresenter () {
     }
-    
+
     @Override
     public Collection<ScreenResourceCategoryDescriptor> getCategoryDescriptors() {
         return CATEGORIES;

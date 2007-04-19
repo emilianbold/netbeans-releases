@@ -28,6 +28,7 @@ import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.actions.AddActionPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
+import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceCategoriesPresenter;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midp.components.MidpArraySupport;
@@ -40,12 +41,13 @@ import org.netbeans.modules.vmd.midp.flow.FlowItemCommandPinOrderPresenter;
 import org.netbeans.modules.vmd.midp.general.AcceptTypePresenter;
 import org.netbeans.modules.vmd.midp.inspector.controllers.DisplayablePC;
 import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
+import org.netbeans.modules.vmd.midp.screen.FormResourceCategoriesPresenter;
 import org.netbeans.modules.vmd.midp.screen.display.FormDisplayPresenter;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.ArrayList;
 
 /**
  * @author David Kaspar
@@ -93,6 +95,7 @@ public final class FormCD extends ComponentDescriptor {
 
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass (presenters, ScreenDisplayPresenter.class);
+        DocumentSupport.removePresentersOfClass (presenters, ScreenResourceCategoriesPresenter.class);
         super.gatherPresenters (presenters);
     }
 
@@ -117,7 +120,8 @@ public final class FormCD extends ComponentDescriptor {
             // delete
             DeleteDependencyPresenter.createNullableComponentReferencePresenter (PROP_ITEM_STATE_LISTENER),
             // screen
-            new FormDisplayPresenter ()
+            new FormDisplayPresenter (),
+            new FormResourceCategoriesPresenter ()
         );
     }
     
