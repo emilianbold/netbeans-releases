@@ -820,7 +820,13 @@ public class LiveUnit implements Unit, DesignContext, FacesDesignContext {
      * @see com.sun.rave.designtime.DesignContext#createBean(java.lang.String, com.sun.rave.designtime.DesignBeanContainer)
      */
     public DesignBean createBean(String type, DesignBean parent, Position pos) {
-        return createBeanOrFacet(type, parent, null, pos);
+        ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(getBeansUnit().getClassLoader());
+            return createBeanOrFacet(type, parent, null, pos);
+        } finally {
+            Thread.currentThread().setContextClassLoader(oldContextClassLoader);
+        }
     }
 
     /*
