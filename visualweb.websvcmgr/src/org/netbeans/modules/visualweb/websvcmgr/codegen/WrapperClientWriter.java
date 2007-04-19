@@ -301,13 +301,30 @@ public class WrapperClientWriter extends java.io.PrintWriter {
             println();
             
             /**
-             *  XXX The return types may differ between JAX-RPC and JAX-WS; since
+             *  XXX The return types and method names may differ between JAX-RPC and JAX-WS; since
              *  the model was created for JAX-WS, an alternate method of discovering
-             *  the return values is used (reflection on the port interface methods)
+             *  the values is used (reflection on the port interface methods)
              */
-            String methodReturnTypeName = (isJaxRpc) ? getJaxRpcReturnType(method) : method.getReturnType().getRealName();
+            String methodReturnTypeName;
+            String methodName;
+            
+            if (isJaxRpc) {
+                java.lang.reflect.Method actualMethod = getJaxRpcMethod(method);
+                
+                if (actualMethod == null) {
+                    methodReturnTypeName = method.getReturnType().getRealName();
+                    methodName = method.getName();
+                }else {
+                    methodReturnTypeName = actualMethod.getReturnType().getCanonicalName();
+                    methodName = actualMethod.getName();
+                }
+            }else {
+                methodReturnTypeName = method.getReturnType().getRealName();
+                methodName = method.getName();
+            }
             
             print("  public " + methodReturnTypeName + " ");
+            // use method.getName() so the DataProvider matches up
             print(method.getName() + "(");
             Iterator params = method. getParametersList().iterator();
             String parameterType = "";
@@ -381,12 +398,12 @@ public class WrapperClientWriter extends java.io.PrintWriter {
                 println( "      if( Beans.isDesignTime() && !testMode )" );
                 println( "        return " + designTimeReturnValue(methodReturnTypeName) + ";" );
                 println( "      else");
-                print("         return " + portInterfaceVariable + "." + method.getName()+ "(");
+                print("         return " + portInterfaceVariable + "." + methodName + "(");
             }else{
                 println( "      if( Beans.isDesignTime() ) " );
                 println( "        return;" );
                 println( "      else " );
-                print("         " + portInterfaceVariable + "." + method.getName() + "(");
+                print("         " + portInterfaceVariable + "." + methodName + "(");
             }
             params = method.getParametersList().iterator();
             while (params.hasNext()) {
@@ -466,7 +483,7 @@ public class WrapperClientWriter extends java.io.PrintWriter {
             println();
         }
     }
-    
+        
     private String designTimeReturnValue( String returnType ) {
         
         String fakeReturn = "null";
@@ -502,7 +519,7 @@ public class WrapperClientWriter extends java.io.PrintWriter {
             return null;
     }
     
-    private String getJaxRpcReturnType(JavaMethod method) {
+    private java.lang.reflect.Method getJaxRpcMethod(JavaMethod method) {
         String modelMethodName = method.getName();
         int index = doBinarySearch(sortedMethods, modelMethodName);
                 
@@ -510,7 +527,7 @@ public class WrapperClientWriter extends java.io.PrintWriter {
         for (int i = index; i < sortedMethods.size() && i >= 0; i++) {
             java.lang.reflect.Method nextMethod = sortedMethods.get(i);
             if (methodsEqual(nextMethod, method)) {
-                return nextMethod.getReturnType().getCanonicalName();
+                return nextMethod;
             }else if (!nextMethod.getName().equals(method.getName())) {
                 break;
             }
@@ -519,17 +536,17 @@ public class WrapperClientWriter extends java.io.PrintWriter {
         for (int i = index; i >= 0; i--) {
             java.lang.reflect.Method nextMethod = sortedMethods.get(i);
             if (methodsEqual(nextMethod, method)) {
-                return nextMethod.getReturnType().getCanonicalName();
+                return nextMethod;
             }else if (!nextMethod.getName().equals(method.getName())) {
                 break;
             }            
         }
         
-        return method.getReturnType().getRealName();
+        return null;
     }
     
     private boolean methodsEqual(java.lang.reflect.Method realMethod, JavaMethod modelMethod) {
-        if (!realMethod.getName().equals(modelMethod.getName())) {
+        if (!realMethod.getName().equalsIgnoreCase(modelMethod.getName())) {
             return false;
         }else {
             List<JavaParameter> modelParams = modelMethod.getParametersList();
@@ -559,7 +576,10 @@ public class WrapperClientWriter extends java.io.PrintWriter {
         while (low < high) {
             int mid = (low + high) / 2;
             String nextMethod = methods.get(mid).getName();
-            int compare = nextMethod.compareTo(name);
+            // XXX method names compared ignoring case since JAX-RPC and JAX-WS
+            // have different capitalization (JAX-WS changes the capitalization of
+            // methods if they start with capital letters)
+            int compare = nextMethod.compareToIgnoreCase(name);
             if (compare == 0) {
                 return mid;
             }else if (compare < 0) {
