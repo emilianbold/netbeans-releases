@@ -494,7 +494,9 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
 
     public void removeNotify() { // #72006
         super.removeNotify();
-        modelUpdater.cancel();
+        if (modelUpdater != null) { // #101286 - might be already null
+            modelUpdater.cancel();
+        }
         modelUpdater = null;
         subprojectsCache = null;
         updateSubprojectsTask = null;
