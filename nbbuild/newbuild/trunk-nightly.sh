@@ -120,6 +120,7 @@ if [ $ERROR_CODE != 0 ]; then
     exit $ERROR_CODE;
 fi
 
+cd $NB_ALL/nbbuild
 
 #Remove the build helper files
 rm -f netbeans/nb.cluster.*
