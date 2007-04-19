@@ -262,6 +262,7 @@ public final class Product extends RegistryNode {
         progress.setDetail("Running custom configuration logic");
         configurationLogic.install(logicProgress);
         logicProgress.setPercentage(Progress.COMPLETE);
+        progress.setDetail("");
         
         // check for cancel status
         if (progress.isCanceled()) return;
@@ -347,7 +348,7 @@ public final class Product extends RegistryNode {
                 }
                 
             case CUSTOM_LOGIC:
-                configurationLogic.uninstall(logicProgress);
+                configurationLogic.uninstall(logicProgress);        
                 
             case EXTRACTION:
                 logicProgress.setPercentage(Progress.COMPLETE);
@@ -418,9 +419,10 @@ public final class Product extends RegistryNode {
         // run custom unconfiguration logic
         configurationLogic.uninstall(logicProgress);
         logicProgress.setPercentage(Progress.COMPLETE);
+        progress.setDetail("");
         
         // files deletion phase /////////////////////////////////////////////////////
-        progress.setTitle("Uninstalling " + getDisplayName());
+        progress.setTitle("Uninstalling " + getDisplayName());        
                 
         // remove installation files
         if (configurationLogic.getRemovalMode() == RemovalMode.ALL) {
@@ -467,8 +469,9 @@ public final class Product extends RegistryNode {
             } catch (NativeException e) {
                 addUninstallationWarning(new UninstallationException("Cannot remove component from the native install manager", e));
             }
-        }        
+        }    
         
+        progress.setDetail("");
         // remove the files list
         try {
             FileUtils.deleteFile(getInstalledFilesList());
@@ -476,7 +479,7 @@ public final class Product extends RegistryNode {
             addUninstallationWarning(new UninstallationException("Cannot delete installed files list", e));
         }
         
-        progress.setPercentage(Progress.COMPLETE);
+        progress.setPercentage(Progress.COMPLETE);        
         setStatus(Status.NOT_INSTALLED);
     }
     
@@ -795,6 +798,7 @@ public final class Product extends RegistryNode {
     }
     
     public Product loadFromDom(final Element element) throws InitializationException {
+
         super.loadFromDom(element);
         
         Element child;
