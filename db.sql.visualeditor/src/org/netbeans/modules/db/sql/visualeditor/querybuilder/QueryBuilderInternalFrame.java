@@ -27,7 +27,6 @@ import java.awt.datatransfer.*;
 import java.awt.dnd.*;
 import java.io.*;
 
-
 import java.beans.PropertyVetoException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -54,10 +53,14 @@ import org.openide.DialogDisplayer;
 
 import org.openide.util.NbBundle;
 
+// Sanity!!
 import com.jgraph.graph.DefaultGraphCell;
+// EndSanity!!
 
 import org.netbeans.modules.db.sql.visualeditor.querymodel.Predicate;
 import org.netbeans.modules.db.sql.visualeditor.querymodel.SQLQueryFactory;
+
+import org.netbeans.api.visual.widget.Scene;
 
 /**
  * A class that implements a graph node, representing a DB table
@@ -77,17 +80,19 @@ public class QueryBuilderInternalFrame extends JInternalFrame
     private Object                      _dragObject;
     private DropTarget                  _dropTarget;
 
-    // private QueryBuilderInternalFrame        _relatedFrame = null;
-    private QueryBuilderTableModel      _queryBuilderTableModel = null;
+    // _graphCell is a pointer to the JGraph cell this internal frame represents
 
-    // _graphCell is a pointer to the JGraph cell this interal frame represents
+    // Sanity!!
     private DefaultGraphCell            _graphCell = null;
+    // EndSanity!!
 
     private JPopupMenu                  _tableColumnPopup;
     private TableNode                   _node;          // for property sheet
 
     private QueryBuilder                _queryBuilder;
+
     private QueryBuilderTable           _qbTable;
+    private QueryBuilderTableModel      _queryBuilderTableModel = null;
 
     // Record location of last placement, to aid layout
     private static int                  _lastX = 0, _lastY = 0;
@@ -154,18 +159,9 @@ public class QueryBuilderInternalFrame extends JInternalFrame
         // Create a JTable component, with the specified TableModel behind it
         _qbTable = new QueryBuilderTable(_queryBuilderTableModel);
         _qbTable.setBackground(Color.white); 
-        /* Currently not implemented
-        _tableColumnPopup = createTableColumnPopup();
-        MouseListener tableColumnPopupListener = new TableColumnPopupListener();
-        */
-        // Why add the listener on the panel, why not on its child the ScrollPane (see below)
-        // mainPanel.addMouseListener(tableColumnPopupListener);
         
         // Wrap the JTable in a JScrollPane
         JScrollPane sp = new JScrollPane(_qbTable);
-        /* Currently not implemented
-        sp.addMouseListener(tableColumnPopupListener);
-        */
         sp.getViewport().setBackground(Color.white); 
         
         // Wrap the JScrollPane in a JPanel
@@ -178,14 +174,14 @@ public class QueryBuilderInternalFrame extends JInternalFrame
         
         DragSource dragSource = DragSource.getDefaultDragSource();
 
-		dragSource.createDefaultDragGestureRecognizer(
-					_qbTable, // component where drag originates
-					DnDConstants.ACTION_MOVE, // actions
-					this); // drag gesture recognizer
+	dragSource.createDefaultDragGestureRecognizer(
+	    _qbTable, // component where drag originates
+	    DnDConstants.ACTION_MOVE, // actions
+	    this); // drag gesture recognizer
 
-        _dropTarget = new DropTarget  (   _qbTable, 
-						    DnDConstants.ACTION_MOVE,
-						    this );
+        _dropTarget = new DropTarget ( _qbTable, 
+				       DnDConstants.ACTION_MOVE,
+				       this );
 
         // Per JInternalFrame tutorial, it's importnat to set the size of the internal frame
         // (with pack, setSize, or setBounds) and make it visible (with setVisible or show)
@@ -229,15 +225,16 @@ public class QueryBuilderInternalFrame extends JInternalFrame
 
     // Accessors/Mutators
 
+    // Sanity!!!!!
     public void setGraphCell(DefaultGraphCell graphCell)
     {
-        _graphCell = graphCell;
+	_graphCell = graphCell;
     }
-
     public DefaultGraphCell getGraphCell()
     {
-        return(_graphCell);
+	return(_graphCell);
     }
+    // End Sanity!!!!!
 
     public QueryBuilderTableModel getQueryBuilderTableModel()
     {
@@ -314,23 +311,6 @@ public class QueryBuilderInternalFrame extends JInternalFrame
         }
     }
 
-//     public void itemStateChanged(ItemEvent e) {
-//      if ( DEBUG )
-//      {
-//          JMenuItem source = (JMenuItem)(e.getSource());
-//          String s = "Item event detected."
-//              + "\n"
-//              + "    Event source: " + source.getText()
-//              + " (an instance of " + getClassName(source) + ")"
-//              + "\n"
-//              + "    New state: " 
-//              + ((e.getStateChange() == ItemEvent.SELECTED) ?
-//                 "selected":"unselected");
-//          System.out.println (s + "\n");
-//      }
-//    }
-
-
 
     // Inner class for popup menu
     
@@ -362,18 +342,6 @@ public class QueryBuilderInternalFrame extends JInternalFrame
         _dragObject = this;
 
         if ( ( row < 0 ) || ( column < 2 ) ) {
-            /*
-              String msg = 
-              NbBundle.getMessage(QueryBuilderInternalFrame.class,
-              "DRAG_AND_DROP_COLUMNS");
-              NotifyDescriptor d = new NotifyDescriptor.Message (
-              msg + 
-              "\n\n", // NOI18N
-              NotifyDescriptor.ERROR_MESSAGE);
-              DialogDisplayer.getDefault().notify(d);
-            
-            */
-
             return;
         }
 

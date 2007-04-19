@@ -544,7 +544,8 @@ public class QueryBuilder extends TopComponent
                 case KeyEvent.VK_1:
                     if ( DEBUG )
                         System.out.println(" Alt + 1 pressed. "); // NOI18N
-//                    _queryBuilderPane.getQueryBuilderGraphFrame().getFocus ();
+		    // ToDo: Decide whether this needs to be duplicated in the GraphLib version
+		    // _queryBuilderPane.getQueryBuilderGraphFrame().getFocus ();
                     getGraphFrameCanvasFocus();
                     break;
                     // grid pane
@@ -1210,7 +1211,6 @@ public class QueryBuilder extends TopComponent
                 }
                 ParameterizedQueryDialog pqDlg =
 		    new ParameterizedQueryDialog( parameters, true);
-                // System.out.println(pqDlg.getReturnStatus());
                 if (pqDlg.getReturnStatus() == ParameterizedQueryDialog.RETURNED_OK) {
 
                     values = pqDlg.getParameterValues();
@@ -1337,10 +1337,8 @@ public class QueryBuilder extends TopComponent
             // Clear the current state.  It might be easier to recreate each of
             // the panes, as we did at startup.
             _queryBuilderPane.clear();
-
             // Generate the Diagram Pane and Grid Pane
             this.generateGraph();
-
         } finally {
             _updateText = true;
         }

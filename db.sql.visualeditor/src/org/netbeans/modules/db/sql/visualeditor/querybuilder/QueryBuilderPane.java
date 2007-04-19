@@ -27,7 +27,8 @@ import javax.swing.JSplitPane;
 import javax.swing.JScrollPane;
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.BorderFactory;
+import javax.swing.JList;
+// import javax.swing.BorderFactory;
 
 import javax.swing.table.DefaultTableModel;
 
@@ -90,6 +91,7 @@ public class QueryBuilderPane extends JSplitPane {
     private JPanel                      buttonPanel;
     private boolean                     _keyTyped = false;
 
+    JComponent					_sceneView; // Needed for drop
 
     // Constructor
 
@@ -170,9 +172,13 @@ public class QueryBuilderPane extends JSplitPane {
         qbgfLabel.setText(NbBundle.getMessage(QueryBuilderPane.class, "QBP_QBGF_label"));
         qbgfLabel.setLabelFor(_queryBuilderGraphFrame);
 
+	QBGraphScene scene = new QBGraphScene (_queryBuilderGraphFrame);
+ 	JComponent sceneView = scene.createView();
+ 	_queryBuilderGraphFrame.initScene(scene, sceneView);
+
         // Wrap the diagram into a scroll pane, and make it the
         // top component in the split pane
-        graphScrollPane = new JScrollPane(_queryBuilderGraphFrame);
+        graphScrollPane = new JScrollPane(_sceneView);
         graphScrollPane.setMinimumSize ( new java.awt.Dimension ( this.getWidth(),  40 ) );
         this.setTopComponent(graphScrollPane);
 
@@ -202,9 +208,6 @@ public class QueryBuilderPane extends JSplitPane {
         c.gridy = 0;
         gridbag.setConstraints(qbInputTableSP, c);
 
-//        bottomPanel.add(qbInputTableSP);
-
-
         // Wrap the SQL text area in a scroll pane, and add to bottom panel
         JScrollPane qbSqlTextAreaSP = new JScrollPane(_queryBuilderSqlTextArea,
                                                       JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
@@ -216,6 +219,7 @@ public class QueryBuilderPane extends JSplitPane {
         // ToDo: Should we do: qbSqlTextAreaSP.setBackground(Color.white); 
 
         // Wrap the result table in a scroll pane, and add to bottom panel
+        // JScrollPane qbResultTableSP = new JScrollPane(_queryBuilderGraphFrame,
         JScrollPane qbResultTableSP = new JScrollPane(_queryBuilderResultTable,
                                                       JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                                                       JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -289,10 +293,19 @@ public class QueryBuilderPane extends JSplitPane {
      */
     void clear()
     {
+	Log.getLogger().entering("QueryBuilderPane", "clear"); // NOTIFYDESCRIPTOR
+
         _queryBuilderInputTable.clearModel();
         _queryBuilderSqlTextArea.clear();
         _queryBuilderResultTable.clearModel();
-        _queryBuilderGraphFrame.clearGraph();
+
+	// We used to clear the graph by explicitly removing nodes and edges, but that causes
+        // CurrentModificationExceptions.  Instead, re-create the scene.  Should be faster anyway.
+        // _queryBuilderGraphFrame.clearGraph();
+	QBGraphScene scene = new QBGraphScene (_queryBuilderGraphFrame);
+  	JComponent sceneView = scene.createView();
+  	_queryBuilderGraphFrame.initScene(scene, sceneView);
+  	graphScrollPane.setViewportView(sceneView);
     }
 
     /**

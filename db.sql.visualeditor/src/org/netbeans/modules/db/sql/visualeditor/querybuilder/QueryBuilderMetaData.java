@@ -845,7 +845,7 @@ public class QueryBuilderMetaData {
 
     public List getColumnNames(String fullTableName) throws SQLException {
 
-        Log.getLogger().entering("QueryBuilderMetaData", "getColumnNames", fullTableName ); // NOI18N
+        // Log.getLogger().entering("QueryBuilderMetaData", "getColumnNames", fullTableName ); // NOI18N
     
 	String[] tb = parseTableName(fullTableName);
         return getColumns( tb[0], tb[1] ) ;
