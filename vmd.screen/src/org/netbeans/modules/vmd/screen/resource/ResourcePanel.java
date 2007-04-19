@@ -46,6 +46,7 @@ public class ResourcePanel extends JPanel {
         setLayout (new GridBagLayout ());
         fillPanel = new JPanel ();
         fillPanel.setBackground (MainPanel.BACKGROUND_COLOR);
+        fillPanel.setPreferredSize (new Dimension (250, 0));
     }
     
     // called in AWT and document transation
@@ -60,7 +61,7 @@ public class ResourcePanel extends JPanel {
         for (ScreenResourceCategoryDescriptor category : sortedCategories) {
             ResourceCategoryPanel categoryPanel = new ResourceCategoryPanel (category); // TODO - cache ResourceCategoryPanel instances
             categoryPanel.reload (categories.get (category));
-            add (categoryPanel, new GridBagConstraints (0, y ++, 1, 1, 1.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets (0, 0, 0, 0), 0, 0));
+            add (categoryPanel, new GridBagConstraints (0, y ++, 1, 1, 1.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets (0, 0, 20, 0), 0, 0));
         }
         add (fillPanel, new GridBagConstraints (0, y, 1, 1, 1.0, 1.0, GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets (0, 0, 0, 0), 0, 0));
     }

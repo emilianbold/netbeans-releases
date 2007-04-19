@@ -20,14 +20,13 @@
 
 package org.netbeans.modules.vmd.screen.resource;
 
-import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsSupport;
 import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceItemPresenter;
-import org.netbeans.modules.vmd.screen.ScreenViewController;
 import org.netbeans.modules.vmd.screen.MainPanel;
+import org.netbeans.modules.vmd.screen.ScreenViewController;
 import org.openide.util.Utilities;
 
 import javax.swing.*;
@@ -46,10 +45,13 @@ import java.util.Collection;
 public class ResourceItemPanel extends JLabel implements MouseListener {
     
     private static Border SELECTED_RESOURCE_BORDER = new LineBorder (MainPanel.SELECT_COLOR, 2, false);
+    private static Border HOVER_RESOURCE_BORDER = new LineBorder (MainPanel.HOVER_COLOR, 2, false);
     private static Border RESOURCE_BORDER = new EmptyBorder (2, 2, 2, 2);
 
     private DesignComponent component;
-    
+    private boolean selected;
+    private boolean hovered;
+
     public ResourceItemPanel(DesignComponent component) {
         this.component = component;
         setOpaque (true);
@@ -66,25 +68,11 @@ public class ResourceItemPanel extends JLabel implements MouseListener {
         InfoPresenter.NameType nameType = itemPresenter.getNameType();
         Image image = infoPresenter.getIcon(InfoPresenter.IconType.COLOR_16x16);
         setIcon(image != null ? new ImageIcon(image) : null);
-        
-        if (component.getDocument().getSelectedComponents().contains(component)) {
-            setBorder(SELECTED_RESOURCE_BORDER);
-        } else {
-            setBorder(RESOURCE_BORDER);
-        }
-         switch (nameType) {
-            case PRIMARY:
-                setText(infoPresenter.getDisplayName(nameType));
-                return;
-            case SECONDARY:
-                setText(infoPresenter.getDisplayName(nameType));
-                return;
-            case TERTIARY:
-                setText(infoPresenter.getDisplayName(nameType));
-                return;
-            default:
-                throw Debug.illegalState();
-        }
+
+        selected = component.getDocument ().getSelectedComponents ().contains (component);
+        resolveBorder ();
+
+        setText(infoPresenter.getDisplayName(nameType));
     }
     
     public JPopupMenu getComponentPopupMenu() {
@@ -92,8 +80,7 @@ public class ResourceItemPanel extends JLabel implements MouseListener {
     }
     
     public void mouseClicked(final MouseEvent e) {
-        // TODO selection should be implemented so it happens on mousePressed and confirmed by mouse released !!!
-        // this one wants to be selected
+        // TODO selection should be implemented so it happens on mousePressed and confirmed by mouse released
         final DesignDocument doc = component.getDocument();
         final Collection<DesignComponent> newSelection = new ArrayList<DesignComponent> ();
         doc.getTransactionManager().writeAccess(new Runnable() {
@@ -122,9 +109,20 @@ public class ResourceItemPanel extends JLabel implements MouseListener {
     }
     
     public void mouseEntered(MouseEvent e) {
+        hovered = true;
+        resolveBorder ();
     }
-    
+
     public void mouseExited(MouseEvent e) {
+        hovered = false;
+        resolveBorder ();
     }
     
+    private void resolveBorder () {
+        if (hovered)
+            setBorder (HOVER_RESOURCE_BORDER);
+        else
+            setBorder(selected ? SELECTED_RESOURCE_BORDER : RESOURCE_BORDER);
+    }
+
 }

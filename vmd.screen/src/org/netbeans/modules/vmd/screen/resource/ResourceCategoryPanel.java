@@ -26,6 +26,7 @@ import org.netbeans.modules.vmd.screen.MainPanel;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
 
 /**
@@ -34,54 +35,86 @@ import java.util.ArrayList;
  */
 public class ResourceCategoryPanel extends JPanel {
 
-    private static final Color FOREGROUND_COLOR = new Color (0x868686);
+    private static final Color LABEL_COLOR = new Color (0x868686);
+    private static final Color BORDER_COLOR = new Color (0xCBC9C1);
+    private static final Color GRADIENT_COLOR = new Color (0xD5D5D5);
+    private static final Insets EMPTY_INSETS = new Insets (0, 0, 0, 0);
 
-    private JPanel componentPanel;
+    private JLabel label;
 
-    // this class will need to have a listener to document changes
-    // the interest is in components added/removed and
-    // also in the name changes of the individual components
-    
     public ResourceCategoryPanel(ScreenResourceCategoryDescriptor category) {
-        setLayout(new BorderLayout());
+        setOpaque (false);
+        setLayout(new GridBagLayout());
         setBackground(MainPanel.BACKGROUND_COLOR);
+        setBorder (BorderFactory.createEmptyBorder (1, 1, 1, 1));
         
-//        Image image = category.getIcon();
-        JLabel label = new JLabel(category.getTitle(), /*image != null ? new ImageIcon(image) : null, */SwingConstants.LEFT);
+        label = new JLabel (category.getTitle(), JLabel.CENTER) {
+            public void paint (Graphics g) {
+                Graphics2D gr = (Graphics2D) g;
+                gr.setPaint (new GradientPaint (0.0f, 0.0f, Color.WHITE, 0.0f, getHeight (), GRADIENT_COLOR));
+                gr.fill (new Rectangle (getWidth (), getHeight ()));
+                super.paint (g);
+            }
+
+            public Dimension getPreferredSize () {
+                Dimension dimension = super.getPreferredSize ();
+                dimension.width += 8;
+                dimension.height += 8;
+                return dimension;
+            }
+        };
+        label.setBorder (null);
         label.setFont(getFont().deriveFont(Font.BOLD));
         label.setToolTipText(category.getToolTip());
-        label.setForeground (FOREGROUND_COLOR);
-        add(label, BorderLayout.NORTH);
-        
-        componentPanel = new JPanel(new GridBagLayout());
-        componentPanel.setBackground(MainPanel.BACKGROUND_COLOR);
-        add(componentPanel, BorderLayout.CENTER);
-
-        JPanel panel = new JPanel ();
-        panel.setBackground (MainPanel.BACKGROUND_COLOR);
-        panel.setMinimumSize (new Dimension (20, 100));
-        add (panel, BorderLayout.SOUTH);
+        label.setBackground (null);
+        label.setForeground (LABEL_COLOR);
+        label.setOpaque (false);
     }
     
     public void reload(ArrayList<ScreenResourceItemPresenter> list) {
+        removeAll ();
+
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.weightx = 1.0;
-        constraints.weighty = 1.0;
-        constraints.insets = new Insets(6, 6, 0, 6);
+        constraints.weighty = 0.0;
+        constraints.insets = EMPTY_INSETS;
         constraints.fill = GridBagConstraints.HORIZONTAL;
         constraints.gridx = GridBagConstraints.REMAINDER;
         constraints.gridy = GridBagConstraints.RELATIVE;
         constraints.anchor = GridBagConstraints.NORTHWEST;
-        
-        for (int i = 0; i < list.size(); i++) {
-            ScreenResourceItemPresenter presenter = list.get(i);
-            ResourceItemPanel item = new ResourceItemPanel(presenter.getRelatedComponent()); // TODO - cache ResourceItemPanels
-            item.reload();
-            if (i == list.size() - 1) {
-                constraints.insets = new Insets(6, 6, 6, 6);
-            }
-            componentPanel.add(item, constraints);
+
+        add (label, constraints);
+
+        for (ScreenResourceItemPresenter presenter : list) {
+            JPanel filler = new JPanel (); // TODO - cache filler panels
+            Dimension FILLER_SIZE = new Dimension (0, 1);
+            filler.setPreferredSize (FILLER_SIZE);
+            filler.setBackground (BORDER_COLOR);
+            add (filler, constraints);
+
+            ResourceItemPanel item = new ResourceItemPanel (presenter.getRelatedComponent ()); // TODO - cache ResourceItemPanels
+            item.reload ();
+            add (item, constraints);
         }
     }
-   
+
+
+    public void paint (Graphics g) {
+        Graphics2D gr = (Graphics2D) g;
+        Shape previousClip = gr.getClip ();
+        gr.clip (new RoundRectangle2D.Float (0, 0, getWidth (), getHeight (), 8, 8));
+
+        super.paint (g);
+
+        gr.setClip (previousClip);
+    }
+
+
+    protected void paintChildren (Graphics g) {
+        super.paintChildren (g);
+        Graphics2D gr = (Graphics2D) g;
+        gr.setColor (BORDER_COLOR);
+        gr.draw (new RoundRectangle2D.Float (0, 0, getWidth () - 1, getHeight () - 1, 8, 8));
+    }
+
 }
