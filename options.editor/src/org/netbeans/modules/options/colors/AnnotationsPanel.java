@@ -82,9 +82,12 @@ PropertyChangeListener {
         ((JComponent)cbBackground.getEditor()).addPropertyChangeListener (this);
         cbWaveUnderlined.addPropertyChangeListener (this);
         ((JComponent)cbWaveUnderlined.getEditor()).addPropertyChangeListener (this);
-        JLabel lCategory = new JLabel ();
-        loc (lCategory, "CTL_Category");
+        
         lCategory.setLabelFor (lCategories);
+        loc(lCategory, "CTL_Category");
+        loc(lForeground, "CTL_Foreground_label");
+        loc(lWaveUnderlined, "CTL_Wave_underlined_label");
+        loc(lbackground, "CTL_Background_label");
     }
     
     /** This method is called from within the constructor to

@@ -90,9 +90,11 @@ public class HighlightingPanel extends JPanel implements ActionListener, Propert
         ((JComponent)cbForeground.getEditor()).addPropertyChangeListener (this);
         cbBackground.addActionListener (this);
         ((JComponent)cbBackground.getEditor()).addPropertyChangeListener (this);
-        JLabel lCategory = new JLabel ();
-        loc (lCategory, "CTL_Category");
+
         lCategory.setLabelFor (lCategories);
+        loc (lCategory, "CTL_Category");
+        loc(lForeground, "CTL_Foreground_label");
+        loc(lBackground, "CTL_Background_label");
     }
     
     /** This method is called from within the constructor to

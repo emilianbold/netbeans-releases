@@ -85,7 +85,7 @@ PropertyChangeListener {
     public SyntaxColoringPanel (FontAndColorsPanel fontAndColorsPanel) {
         initComponents ();
         this.fontAndColorsPanel = fontAndColorsPanel;
-        
+
         // 1) init components
         cbLanguage.getAccessibleContext ().setAccessibleName (loc ("AN_Languages"));
         cbLanguage.getAccessibleContext ().setAccessibleDescription (loc ("AD_Languages"));
@@ -139,8 +139,16 @@ PropertyChangeListener {
         cbEffects.getAccessibleContext ().setAccessibleDescription (loc ("AD_Effects"));
         cbEffects.addActionListener (this);
         cbEffectColor.addActionListener (this);
-        loc (lCategory, "CTL_Category");
-        loc (lFont, "CTL_Font");
+        
+        loc(bFont, "CTL_Font_button");
+        loc(lBackground, "CTL_Background_label");
+        loc(lCategory, "CTL_Category");
+        loc(lEffectColor, "CTL_Effects_color");
+        loc(lEffects, "CTL_Effects_label");
+        loc(lFont, "CTL_Font");
+        loc(lForeground, "CTL_Foreground_label");
+        loc(lLanguage, "CTL_Languages");
+        loc(lPreview, "CTL_Preview");
 
         selectTask = new RequestProcessor ("SyntaxColoringPanel1").create (
             new Runnable () {
@@ -161,7 +169,6 @@ PropertyChangeListener {
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jButton1 = new javax.swing.JButton();
         lLanguage = new javax.swing.JLabel();
         cbLanguage = new javax.swing.JComboBox();
         lCategory = new javax.swing.JLabel();
@@ -181,8 +188,6 @@ PropertyChangeListener {
         cbEffectColor = new javax.swing.JComboBox();
         tfFont = new javax.swing.JTextField();
         bFont = new javax.swing.JButton();
-
-        jButton1.setText("jButton1");
 
         lLanguage.setLabelFor(cbLanguage);
         lLanguage.setText("Language:");
@@ -305,7 +310,6 @@ PropertyChangeListener {
     private javax.swing.JComboBox cbEffects;
     private javax.swing.JComboBox cbForeground;
     private javax.swing.JComboBox cbLanguage;
-    private javax.swing.JButton jButton1;
     private javax.swing.JLabel lBackground;
     private javax.swing.JList lCategories;
     private javax.swing.JLabel lCategory;
