@@ -57,8 +57,8 @@ public abstract class ParserManager {
      */
     public static synchronized ParserManager get (Document doc) {
         String mimeType = (String) doc.getProperty("mimeType");
-        if ("text/x-java".equals (mimeType))
-            Thread.dumpStack();
+//        if ("text/x-java".equals (mimeType))
+//            Thread.dumpStack();
         WeakReference<ParserManager> wr = managers.get (doc);
         ParserManager pm = wr != null ? wr.get () : null;
         if (pm == null) {

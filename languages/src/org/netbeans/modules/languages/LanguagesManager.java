@@ -85,8 +85,8 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
     public synchronized Language getLanguage (String mimeType) 
     throws LanguageDefinitionNotFoundException {
         if (!mimeTypeToLanguage.containsKey (mimeType)) {
-            if ("text/x-java".equals (mimeType))
-                Thread.dumpStack();
+//            if ("text/x-java".equals (mimeType))
+//                Thread.dumpStack();
             mimeTypeToLanguage.put (mimeType, parsingLanguage);
             FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
             FileObject fo = fs.findResource ("Editors/" + mimeType + "/language.nbs");
