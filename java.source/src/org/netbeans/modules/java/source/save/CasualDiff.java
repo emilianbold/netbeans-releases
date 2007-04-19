@@ -86,15 +86,10 @@ public class CasualDiff {
             JCTree newTree) 
     {
         CasualDiff td = new CasualDiff(context, copy);
-        try {
-            td.diffTree(oldTree, newTree, new int[] { -1, -1});
-            String resultSrc = td.printer.toString();
-            td.makeListMatch(td.workingCopy.getText(), resultSrc);
-            JavaSourceAccessor.INSTANCE.getCommandEnvironment(td.workingCopy).setResult(td.diffInfo, "user-info");
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
+        td.diffTree(oldTree, newTree, new int[] { -1, -1});
+        String resultSrc = td.printer.toString();
+        td.makeListMatch(td.workingCopy.getText(), resultSrc);
+        JavaSourceAccessor.INSTANCE.getCommandEnvironment(td.workingCopy).setResult(td.diffInfo, "user-info");
         
         return td.getDiffs();
     }
@@ -203,22 +198,13 @@ public class CasualDiff {
         int[] qualBounds = getBounds(oldT.getQualifiedIdentifier());
         copyTo(localPointer, qualBounds[0]);
         localPointer = diffTree(oldT.getQualifiedIdentifier(), newT.getQualifiedIdentifier(), qualBounds);
-//        if (TreeInfo.fullName(oldT.qualid) != TreeInfo.fullName(newT.qualid))
-//            append(Diff.modify(oldT, getOldPos(oldT), newT));  // includes possible staticImport change
-//        else if (oldT.staticImport != newT.staticImport)
-//            append(Diff.flags(oldT.pos, endPos(oldT), 
-//                              oldT.staticImport ? Flags.STATIC : 0L,
-//                              newT.staticImport ? Flags.STATIC : 0L));
-        
+        // TODO: Missing implementation. Static import change not covered!
         copyTo(localPointer, bounds[1]);
         
         return bounds[1];
     }
 
-    // need by visitMethodDef - in case of renaming class, we do not know
-    // this name in constructor matcher - save it in diffClassDef() and use
-    // in diffMethodDef(). Probably better to write method with additional
-    // parameter which delegates to original one visitMethodDef().
+    // TODO: should be here printer.enclClassName be used?
     private Name origClassName = null;
     
     protected int diffClassDef(JCClassDecl oldT, JCClassDecl newT, int[] bounds) {
@@ -462,7 +448,8 @@ public class CasualDiff {
                 localPointer = diffTree(oldT.body, newT.body, bodyBounds);
             } 
         }
-        //diffTree(oldT.defaultValue, newT.defaultValue);
+        // TODO: Missing implementation - default value matching!
+        // diffTree(oldT.defaultValue, newT.defaultValue);
         copyTo(localPointer, bounds[1]);
         return bounds[1];
     }
@@ -788,9 +775,6 @@ public class CasualDiff {
             printer.print(newT.label);
             localPointer += 6 + oldT.label.length();
         }
-//        int[] targetBounds = getBounds(oldT.target);
-//        copyTo(localPointer, targetBounds[0]);
-//        localPointer = diffTree(oldT.target, newT.target, targetBounds);
         copyTo(localPointer, bounds[1]);
         return bounds[1];
     }
@@ -803,9 +787,6 @@ public class CasualDiff {
             printer.print(newT.label);
             localPointer += 9 + oldT.label.length();
         }
-//        int[] targetBounds = getBounds(oldT.target);
-//        copyTo(localPointer, targetBounds[0]);
-//        localPointer = diffTree(oldT.target, newT.target, targetBounds);
         copyTo(localPointer, bounds[1]);
         
         return bounds[1];
@@ -1236,8 +1217,8 @@ public class CasualDiff {
     }
     
     protected void diffLetExpr(LetExpr oldT, LetExpr newT) {
-        diffList(oldT.defs, newT.defs, LineInsertionType.NONE, Query.NOPOS);
-        diffTree(oldT.expr, newT.expr, getBounds(oldT.expr));
+        // TODO: perhaps better to throw exception here. Should be never
+        // called.
     }
     
     protected void diffErroneous(JCErroneous oldT, JCErroneous newT) {
@@ -2159,7 +2140,6 @@ public class CasualDiff {
             return elementBounds[0];
         diffPrecedingComments(oldT, newT);
         int retVal = -1;
-        int oldPos = getOldPos(oldT);
 
         if (oldT.tag != newT.tag) {
             if (((compAssign.contains(oldT.getKind()) && compAssign.contains(newT.getKind())) == false) &&
