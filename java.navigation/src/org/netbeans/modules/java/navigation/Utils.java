@@ -718,6 +718,7 @@ class Utils {
             javaDocPane.setText(
                     "<html>" // NOI18N
                     + "<head>" // NOI18N
+                    + "<link rel=\"StyleSheet\" href=\"nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css\" type=\"text/css\">" // NOI18N
                     + "</head>" // NOI18N
                     + "<body>" // NOI18N
                     + javaDoc
@@ -735,16 +736,16 @@ class Utils {
     static String formatJavaDoc(String javaDoc) {
         if (javaDoc != null) {
             return javaDoc
-                    .replaceAll("@author ",     "<b>Author:</b> ") // NOI18N
-                    .replaceAll("@deprecated ", "<b>Deprecated:</b> ")  // NOI18N
-                    .replaceAll("@exception ",  "<b>Exception:</b> ") // NOI18N
-                    .replaceAll("@param ",      "<b>Parameter:</b> ") // NOI18N
-                    .replaceAll("@return ",     "<b>Return:</b> ") // NOI18N
-                    .replaceAll("@see ",        "<b>See:</b> ") // NOI18N
-                    .replaceAll("@since ",      "<b>Since:</b> ") // NOI18N
-                    .replaceAll("@throws ",     "<b>Throws:</b> ") // NOI18N
-                    .replaceAll("@version ",    "<b>Version:</b> ") // NOI18N
-                    .replaceAll("\n", "<br>") // NOI18N
+                    .replaceAll("@author ",     "<br><b>Author:</b> ") // NOI18N
+                    .replaceAll("@deprecated ", "<br><b>Deprecated.</b> ")  // NOI18N
+                    .replaceAll("@exception ",  "<br><b>Throws:</b> ") // NOI18N
+                    .replaceAll("@param ",      "<br><b>Parameter:</b> ") // NOI18N
+                    .replaceAll("@return ",     "<br><b>Returns:</b> ") // NOI18N
+                    .replaceAll("@see ",        "<br><b>See Also:</b> ") // NOI18N
+                    .replaceAll("@since ",      "<br><b>Since:</b> ") // NOI18N
+                    .replaceAll("@throws ",     "<br><b>Throws:</b> ") // NOI18N
+                    .replaceAll("@version ",    "<br><b>Version:</b> ") // NOI18N
+                    .replaceAll("\n\n",         "<br>") // NOI18N
                     ;            
         }
         return null;

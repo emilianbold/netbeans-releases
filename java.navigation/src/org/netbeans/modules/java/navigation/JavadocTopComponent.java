@@ -60,23 +60,25 @@ public final class JavadocTopComponent extends TopComponent {
             javadocEditorPane.setText("");
         } else {
             javadoc = javadoc
-                    .replaceAll("@author ",     "<b>Author:</b> ")
-                    .replaceAll("@deprecated ", "<b>Deprecated:</b> ")
-                    .replaceAll("@exception ",  "<b>Exception:</b> ")
-                    .replaceAll("@param ",      "<b>Parameter:</b> ")
-                    .replaceAll("@return ",     "<b>Return:</b> ")
-                    .replaceAll("@see ",        "<b>See:</b> ")
-                    .replaceAll("@since ",      "<b>Since:</b> ")
-                    .replaceAll("@throws ",     "<b>Throws:</b> ")
-                    .replaceAll("@version ",    "<b>Version:</b> ")
+                    .replaceAll("@author ",     "<br><b>Author:</b> ") // NOI18N
+                    .replaceAll("@deprecated ", "<br><b>Deprecated.</b> ") // NOI18N
+                    .replaceAll("@exception ",  "<br><b>Throws:</b> ") // NOI18N
+                    .replaceAll("@param ",      "<br><b>Parameter:</b> ") // NOI18N
+                    .replaceAll("@return ",     "<br><b>Returns:</b> ") // NOI18N
+                    .replaceAll("@see ",        "<br><b>See Also:</b> ") // NOI18N
+                    .replaceAll("@since ",      "<br><b>Since:</b> ") // NOI18N
+                    .replaceAll("@throws ",     "<br><b>Throws:</b> ") // NOI18N
+                    .replaceAll("@version ",    "<br><b>Version:</b> ") // NOI18N
+                    .replaceAll("\n\n",         "<br>") // NOI18N
                     ;
             javadocEditorPane.setText(
                     "<html>" // NOI18N
                     + "<head>" // NOI18N
+                    + "<link rel=\"StyleSheet\" href=\"nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css\" type=\"text/css\">" // NOI18N
                     + "</head>" // NOI18N
-                    + "<body>" // NOI18N
+                    + "<body style=\"background-color: rgb(255,255,222);\">" // NOI18N
                     + (header == null ? "" : ("<b>" + header + "</b><br><hr>"))
-                    + javadoc.replaceAll("\n", "<br>") // NOI18N
+                    + javadoc
                     + "</body>" // NOI18N
                     + "</html>" // NOI18N
                     );
