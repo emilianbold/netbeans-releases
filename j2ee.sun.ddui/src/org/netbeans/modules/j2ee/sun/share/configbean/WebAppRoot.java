@@ -110,8 +110,7 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
      */
 	public static final String SERVLET_LIST_CHANGED = "ServletListChanged"; //NOI18N
 	
-	private static final String JSPCONFIG_CLASSDEBUGINFO="classdebuginfo"; //NOI18N
-	private static final String JSPCONFIG_MAPPEDFILE="mappedfile"; //NOI18N
+	private static final String JSPCONFIG_KEEPGENERATED="keepgenerated"; //NOI18N
 	
 	public WebAppRoot() {
 		setDescriptorElement(bundle.getString("BDN_WebAppRoot"));	// NOI18N	
@@ -588,19 +587,13 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 	protected void setDefaultProperties() {
 		StorageBeanFactory beanFactory = getConfig().getStorageFactory();
         
-		// Add two properties to make developing and debugging JSP's easier by
-		// by default for new web applications.]
-		WebProperty classDebugInfoProperty = beanFactory.createWebProperty();
-		classDebugInfoProperty.setName(JSPCONFIG_CLASSDEBUGINFO);
-		classDebugInfoProperty.setValue("true");	 // NOI18N
-		classDebugInfoProperty.setDescription(bundle.getString("DESC_ClassDebugInfo"));	// NOI18N
-		jspConfig.addWebProperty(classDebugInfoProperty);
-
-		WebProperty mappedFileProperty = beanFactory.createWebProperty();
-		mappedFileProperty.setName(JSPCONFIG_MAPPEDFILE);
-		mappedFileProperty.setValue("true");		// NOI18N
-		mappedFileProperty.setDescription(bundle.getString("DESC_MappedFile"));	// NOI18N
-		jspConfig.addWebProperty(mappedFileProperty);
+//		// Add a property to make developing and debugging JSP's easier by
+//		// by default for new web applications.]
+		WebProperty keepGeneratedProperty = beanFactory.createWebProperty();
+		keepGeneratedProperty.setName(JSPCONFIG_KEEPGENERATED);
+		keepGeneratedProperty.setValue("true");		// NOI18N
+		keepGeneratedProperty.setDescription(bundle.getString("DESC_KeepGenerated"));	// NOI18N
+		jspConfig.addWebProperty(keepGeneratedProperty);
 
         classLoader = Boolean.TRUE;
         delegate = Boolean.TRUE;

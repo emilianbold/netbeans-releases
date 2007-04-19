@@ -190,6 +190,18 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
         </property-param>
 
 <!-- end of new 8.x properties -->
+
+<!-- properties to follow are new in 9.1 -->
+
+        <property-param>
+            <param-name>saveBytecode</param-name>
+            <param-type type="boolean"/>
+            <default-value>false</default-value>
+            <param-description>DESC_JSPC_SaveBytecode</param-description>
+        </property-param>
+
+<!-- end of new 9.1 properties -->
+
     </property-list>
 
     <!-- Web-app general properties list -->
