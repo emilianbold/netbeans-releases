@@ -9,8 +9,10 @@
 
 package org.netbeans.modules.websvc.design.configuration;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import org.openide.util.Lookup;
 
 
 /**
@@ -27,7 +29,7 @@ public class WSConfigurationProviderRegistry {
     private WSConfigurationProviderRegistry() {
     }
     
-     public static WSConfigurationProviderRegistry getDefault(){
+    public static WSConfigurationProviderRegistry getDefault(){
         return registry;
     }
     
@@ -40,7 +42,19 @@ public class WSConfigurationProviderRegistry {
     }
     
     public Set<WSConfigurationProvider> getWSConfigurationProviders(){
+        populateRegistry();
         return providers;
+    }
+    
+    private void populateRegistry(){
+        if(providers.isEmpty()){
+            Lookup.Result<WSConfigurationProvider> results = Lookup.getDefault().
+                    lookup(new Lookup.Template<WSConfigurationProvider>(WSConfigurationProvider.class));
+            Collection<? extends WSConfigurationProvider> providers = results.allInstances();
+            for(WSConfigurationProvider provider : providers){
+                register(provider);
+            }
+        }
     }
     
 }

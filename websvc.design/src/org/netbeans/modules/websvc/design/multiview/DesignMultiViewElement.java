@@ -74,7 +74,6 @@ public class DesignMultiViewElement extends TopComponent
         associateLookup(Lookups.fixed(mvSupport , new WSDesignNavigatorHint()));
         service = mvSupport.getService();
         implementationClass = mvSupport.getDataObject().getPrimaryFile();
-        populateConfigurationProviders();
     }
     
     public int getPersistenceType() {
@@ -163,17 +162,4 @@ public class DesignMultiViewElement extends TopComponent
             initialize((MultiViewSupport)firstObject);
 	}
     }
-    
-    private void populateConfigurationProviders(){
-        WSConfigurationProviderRegistry registry = WSConfigurationProviderRegistry.getDefault();
-        if(registry.getWSConfigurationProviders().isEmpty()){
-            Lookup.Result<WSConfigurationProvider> results = Lookup.getDefault().
-                    lookup(new Lookup.Template<WSConfigurationProvider>(WSConfigurationProvider.class));
-            Collection<? extends WSConfigurationProvider> providers = results.allInstances();
-            for(WSConfigurationProvider provider : providers){
-                registry.register(provider);
-            }
-        }
-    }
-    
 }
