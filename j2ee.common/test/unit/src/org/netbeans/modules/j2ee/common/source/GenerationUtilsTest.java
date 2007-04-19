@@ -37,6 +37,7 @@ import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
@@ -75,7 +76,8 @@ public class GenerationUtilsTest extends NbTestCase {
         ClassPathProviderImpl classPathProvider = new ClassPathProviderImpl(new FileObject[]{FileUtil.toFileObject(getWorkDir())});
         setLookups(
                 classPathProvider,
-                new FakeJavaDataLoaderPool()
+                new FakeJavaDataLoaderPool(),
+                new TestSourceLevelQueryImplementation()
                 );
         
     }
@@ -440,4 +442,13 @@ public class GenerationUtilsTest extends NbTestCase {
             setLookups(allLookups);
         }
     }
+    
+    public static final class TestSourceLevelQueryImplementation implements SourceLevelQueryImplementation {
+        
+        public String getSourceLevel(FileObject javaFile) {
+            return "1.5";
+        }
+
+    }
+
 }
