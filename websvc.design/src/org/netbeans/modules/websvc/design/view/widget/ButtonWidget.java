@@ -42,7 +42,7 @@ public class ButtonWidget extends AbstractMouseActionsWidget {
     
     private ImageLabelWidget button;
     private Action action;
-    private Insets margin = new Insets(2, 8, 2, 8);
+    private Insets margin = new Insets(2, 2, 2, 2);
    
     /**
      *
@@ -103,10 +103,8 @@ public class ButtonWidget extends AbstractMouseActionsWidget {
     }
     
     
-    public void setMargin(Insets margin) {
-        this.margin = margin;
-        revalidate();
-        repaint();
+    protected Insets getMargin() {
+        return margin;
     }
     
     /**
@@ -190,13 +188,17 @@ public class ButtonWidget extends AbstractMouseActionsWidget {
      * Called when mouse is clicked on the widget.
      */
     public void mouseClicked() {
+        super.mouseClicked();
         //simply delegate to swing action
         if(isButtonEnabled() && action!=null) {
-            action.actionPerformed(new ActionEvent(this,0, 
-                    (String)action.getValue(Action.ACTION_COMMAND_KEY)));
+            action.actionPerformed(new ActionEvent(this,0, getActionCommand()));
             //validate scene as called from ActionListeners
             getScene().validate();
         }
+    }
+
+    public String getActionCommand() {
+        return (String)action.getValue(Action.ACTION_COMMAND_KEY);
     }
 
     private static ImageLabelWidget createImageLabelWidget(Scene scene, Action action) {
@@ -206,7 +208,7 @@ public class ButtonWidget extends AbstractMouseActionsWidget {
         return new ImageLabelWidget(scene,image,label);
     }
 
-    private static class ButtonBorder implements Border, MouseActions {
+    protected static class ButtonBorder implements Border, MouseActions {
         private boolean rollover = false;
         private boolean pressed = false;
         private boolean enabled = true;
@@ -261,21 +263,33 @@ public class ButtonWidget extends AbstractMouseActionsWidget {
         public boolean isOpaque() {
             return true;
         }
-        
+
+        protected boolean isPressed() {
+            return pressed;
+        }
+
+        protected  void setPressed(boolean flag) {
+            pressed = flag;
+        }
+
+        protected  void setRolledOver(boolean flag) {
+            rollover = flag;
+        }
+
         public void mousePressed() {
-            pressed = true;
+            setPressed(true);
         }
         
         public void mouseReleased() {
-            pressed = false;
+            setPressed(false);
         }
         
         public void mouseEntered() {
-            rollover = true;
+            setRolledOver(true);
         }
         
         public void mouseExited() {
-            rollover = false;
+            setRolledOver(false);
         }
         
         public void mouseClicked() {

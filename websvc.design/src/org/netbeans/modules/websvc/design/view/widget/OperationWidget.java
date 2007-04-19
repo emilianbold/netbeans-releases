@@ -165,7 +165,6 @@ public class OperationWidget extends AbstractTitledWidget {
         getContentWidget().addChild(listWidget);
         getContentWidget().addChild(tabbedWidget);
         viewButton = new ButtonWidget(getScene(),"");
-        viewButton.setMargin(new Insets(2, 2, 2, 2));
         viewButton.setAction(new AbstractAction() {
             public void actionPerformed(ActionEvent arg0) {
                 setTabbedView(!isTabbedView());

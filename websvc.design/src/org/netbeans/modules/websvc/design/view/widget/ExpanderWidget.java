@@ -111,7 +111,6 @@ public class ExpanderWidget extends ButtonWidget {
     public ExpanderWidget(Scene scene, ExpandableWidget expandable,
             boolean expanded) {
         super(scene, expanded ? IMAGE_COLLAPSE : IMAGE_EXPAND);
-        setMargin(new Insets(2, 2, 2, 2));
         this.expandable = expandable;
         setAction(new AbstractAction() {
             public void actionPerformed(ActionEvent arg0) {
