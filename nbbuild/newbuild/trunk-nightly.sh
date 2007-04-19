@@ -25,7 +25,7 @@ if [ -d $DIST ]; then
 fi
     
 if [ -d $NB_ALL ]; then
-    rm -r $NB_ALL
+    rm -rf $NB_ALL
 fi
 
 mkdir -p $NB_ALL
