@@ -11,7 +11,8 @@
 <body>
 <h2>Using the Attribute Based Window Operator Property Editor </h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>The Attribute Based Window operator is a stream to relation converter operator.The Attribute Based Window  allows records to pass through if they fall within the range of the most recently received record's attribute and any previous records.</p>
+<p> At any given tim, the Attribute Based Window operator retains any event whose attribute value falls in the range defined by the attribute valiue of the most recently received event relation to the current time, less the value of the attribute provided in the size property.</p>
+<p>The Attribute Based Window operator is a stream to relation converter operator..</p>
 <p><strong>To create an Attribute Based Window operator:</strong></p>
 <ol>
   <li>Drag an Attribute Based Window operator from the Palette to the Design view.</li>
