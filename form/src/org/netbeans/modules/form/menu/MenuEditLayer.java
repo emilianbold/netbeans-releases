@@ -233,14 +233,14 @@ public class MenuEditLayer extends JPanel {
         configMouseListener(menu);
         
         RADVisualContainer menuRAD = (RADVisualContainer) formDesigner.getMetaComponent(menu);
-        registerForm(menuRAD);
+        registerForm(menuRAD,menu);
         
         // recurse for sub-menus
         for(Component c : subComps) {
             if(c instanceof JMenu) {
                 configureMenu(menu, (JMenu)c);
                 RADComponent rad = formDesigner.getMetaComponent(c);
-                registerForm((RADVisualContainer)rad);
+                registerForm((RADVisualContainer)rad,(JMenu)c);
             } else {
                 configureMenuItem(menu, (JComponent) c);
             }
@@ -580,18 +580,31 @@ public class MenuEditLayer extends JPanel {
     }
     
     //listens to see if this particular menu has been changed
-    private void registerForm(final RADVisualContainer metacomp) {
+    private void registerForm(final RADVisualContainer metacomp, final JMenu menu) {
         // don't double register
         if(!formModelListeners.containsKey(metacomp)) {
             FormModelListener fml = new FormModelListener() {
                 public void formChanged(FormModelEvent[] events) {
                     for(FormModelEvent evt : events) {
                         p("event = " + evt);
+                        p("type = " + evt.getChangeType());
+                        p("prop changed = " + evt.COMPONENT_PROPERTY_CHANGED);
+                        p("comp added = " + evt.COMPONENT_ADDED);
+                        p("comp removed = " + evt.COMPONENT_REMOVED);
+                        p("comp reordered = " + evt.COMPONENTS_REORDERED);
                         if(evt.getComponent() != null) {
                             p(" " + evt.getComponent().getName());
                         };
                         if(evt.getChangeType() == evt.COMPONENT_PROPERTY_CHANGED) {
                             rebuildOnScreenMenu(metacomp);
+                        }
+                        // if this menu was deleted then make sure it's popup is hidden and removed
+                        if(evt.getChangeType() == evt.COMPONENT_REMOVED) {
+                            if(evt.getComponent() == metacomp) {
+                                p("this component was removed");
+                                unconfigureMenu(menu);
+                                continue;
+                            }
                         }
                         // if something added to the menu we monitor
                         if(evt.getChangeType() == evt.COMPONENT_ADDED ||
