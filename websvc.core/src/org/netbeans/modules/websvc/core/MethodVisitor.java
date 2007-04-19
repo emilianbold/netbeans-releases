@@ -11,9 +11,9 @@ package org.netbeans.modules.websvc.core;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.util.TreePathScanner;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
@@ -34,6 +34,7 @@ public class MethodVisitor {
     private CompilationInfo info;
     private boolean hasWebMethod;
     private boolean hasPublicMethod;
+    private List<ExecutableElement> publicMethods;
     
     /** Creates a new instance of MethodLocator */
     public MethodVisitor(CompilationInfo info) {
@@ -51,12 +52,21 @@ public class MethodVisitor {
         return hasWebMethod;
     }
     
-     public boolean hasPublicMethod(){
+    public List<ExecutableElement> getPublicMethods(){
+        new PublicMethodVisitor().scan(info.getCompilationUnit(), null);
+        return publicMethods;
+    }
+    
+    public boolean hasPublicMethod(){
         new PublicMethodVisitor().scan(info.getCompilationUnit(), null);
         return hasPublicMethod;
     }
     
     private class PublicMethodVisitor extends TreePathScanner<Void, Void>{
+        public PublicMethodVisitor(){
+            publicMethods = new ArrayList<ExecutableElement>();
+        }
+        
         @Override
         public Void visitClass(ClassTree t, Void v) {
             Element el = info.getTrees().getElement(getCurrentPath());
@@ -66,9 +76,9 @@ public class MethodVisitor {
                 for(ExecutableElement m: methods){
                     if(m.getModifiers().contains(Modifier.PUBLIC)){
                         hasPublicMethod = true;
-                        break;
+                        publicMethods.add(m);
                     }
-                  
+                    
                 }
             }
             return null;
@@ -94,7 +104,9 @@ public class MethodVisitor {
     }
     
     private class JavaMethodVisitor extends TreePathScanner<Void, Void>{
+        
         public JavaMethodVisitor(){
+            
         }
         
         @Override

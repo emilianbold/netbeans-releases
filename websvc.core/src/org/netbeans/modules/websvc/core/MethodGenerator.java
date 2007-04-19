@@ -28,12 +28,16 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.Trees;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -148,89 +152,91 @@ public class MethodGenerator {
                 workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
                 GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
                 if (genUtils!=null) {
-                    ClassTree javaClass = genUtils.getClassTree();
-                    
-                    //first find out if @WebService annotation is present in the class
-                    boolean foundWebServiceAnnotation = false;
-                    TypeElement wsElement = workingCopy.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
-                    if (wsElement!=null) {
-                        TypeElement classEl = genUtils.getTypeElement();
-                        List<? extends AnnotationMirror> annotations = classEl.getAnnotationMirrors();
-                        for (AnnotationMirror anMirror : annotations) {
-                            if (workingCopy.getTypes().isSameType(wsElement.asType(), anMirror.getAnnotationType())) {
-                                foundWebServiceAnnotation = true;
-                                break;
-                            }
-                        }
-                    }
                     ExecutableElement method = new MethodVisitor(workingCopy).getMethod( operationName);
                     if(method != null){
+                        ClassTree javaClass = genUtils.getClassTree();
+                        //first find out if @WebService annotation is present in the class
+                        boolean foundWebServiceAnnotation = false;
+                        TypeElement wsElement = workingCopy.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
+                        if (wsElement!=null) {
+                            TypeElement classEl = genUtils.getTypeElement();
+                            List<? extends AnnotationMirror> annotations = classEl.getAnnotationMirrors();
+                            for (AnnotationMirror anMirror : annotations) {
+                                if (workingCopy.getTypes().isSameType(wsElement.asType(), anMirror.getAnnotationType())) {
+                                    foundWebServiceAnnotation = true;
+                                    break;
+                                }
+                            }
+                        }
+                        //do the class methods have at least one WebMethod annotation
+                        boolean classHasWebMethods = new MethodVisitor(workingCopy).hasWebMethod();
                         TreeMaker make = workingCopy.getTreeMaker();
                         MethodTree methodTree = workingCopy.getTrees().getTree(method);
                         if(methodTree != null){
                             if(foundWebServiceAnnotation){
-                                //find out if method has @WebMethod annotation
-                                AnnotationMirror webMethodAnMirror =  getWebMethodAnnotation(workingCopy, method);
-                                if(webMethodAnMirror != null){
-                                    //@WebMethod annotation found add exclude attribute
-                                    AssignmentTree assignment = make.Assignment(make.Identifier("exclude"), make.Literal("true")); //NOI18N
-                                    AnnotationTree anotTree = (AnnotationTree)workingCopy.getTrees().getTree(genUtils.getTypeElement(),webMethodAnMirror);
-                                    AnnotationTree modifiedAnotTree = make.addAnnotationAttrValue(anotTree, assignment);
-                                    workingCopy.rewrite(anotTree, modifiedAnotTree);
-                                    
-                                } else{ //no @WebMethod annotation found, add @WebMethod with "exclude" element
-                                    TypeElement webMethodAnn = workingCopy.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
-                                    List<ExpressionTree> attrs = new ArrayList<ExpressionTree>(); 
-                                    //attrs.add(make.Binary(Tree.Kind.BOOLEAN_LITERAL, make.Identifier("exclude"), make.Literal("true")));
-                                    attrs.add(make.Assignment(make.Identifier("exclude"), make.Literal(Boolean.TRUE))); //NOI18N
-                                    AnnotationTree webMethodAnnotation = make.Annotation(make.QualIdent(webMethodAnn),attrs);
+                                if(!classHasWebMethods){
+                                    //if class has no WebMethod annotations, add WebMethod annotation to all
+                                    //methods except the removed operation
+                                    List<ExecutableElement> publicMethods = new MethodVisitor(workingCopy).getPublicMethods();
+                                    for(ExecutableElement m : publicMethods){
+                                        if(m != method){
+                                            TypeElement webMethodAnn = workingCopy.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
+                                            List<ExpressionTree> emptyList = Collections.emptyList();
+                                            
+                                            AnnotationTree webMethodAnnotation = make.Annotation(make.QualIdent(webMethodAnn),emptyList);
+                                            MethodTree mTree = workingCopy.getTrees().getTree(m);
+                                            ModifiersTree modTree = mTree.getModifiers();
+                                            ModifiersTree newModifiersTree = make.addModifiersAnnotation(modTree, webMethodAnnotation);
+                                            workingCopy.rewrite(modTree, newModifiersTree);
+                                        }
+                                    }
+                                }else{ //there are WebMethod annotations in the class, remove WebMethod annotation from the method
                                     ModifiersTree modifiersTree = methodTree.getModifiers();
-                                    ModifiersTree newModifiersTree = make.addModifiersAnnotation(modifiersTree, webMethodAnnotation);
-                                    workingCopy.rewrite(modifiersTree, newModifiersTree);
+                                    ModifiersTree newModTree = make.Modifiers(modifiersTree.getFlags());
+                                    workingCopy.rewrite(modifiersTree, newModTree);
                                 }
-                            }else{ //no @WebService annotation, there must have been a @WebMethod annotation, add exclude element
-                                AnnotationMirror webMethodAnMirror =  getWebMethodAnnotation(workingCopy, method);
-                                if(webMethodAnMirror != null){
-                                    //@WebMethod annotation found
-                                    AssignmentTree assignment = make.Assignment(make.Identifier("exclude"), make.Literal(Boolean.TRUE)); //NOI18N
-                                    AnnotationTree anotTree = (AnnotationTree)workingCopy.getTrees().getTree(genUtils.getTypeElement(),webMethodAnMirror);
-                                    AnnotationTree modifiedAnotTree = make.addAnnotationAttrValue(anotTree, assignment);
-                                    workingCopy.rewrite(anotTree, modifiedAnotTree);
+                            } else{ //no @WebService annotation, there must have been a @WebMethod annotation, remove it
+                                AnnotationMirror webMethodAnMirr =  getWebMethodAnnotation(workingCopy, method);
+                                if(webMethodAnMirr != null){
+                                    ModifiersTree modifiersTree = methodTree.getModifiers();
+                                    AnnotationTree annotTree = (AnnotationTree)workingCopy.getTrees().getTree(genUtils.getTypeElement(),webMethodAnMirr);
+                                    ModifiersTree newModTree = make.removeModifiersAnnotation(modifiersTree, annotTree);
+                                    workingCopy.rewrite(modifiersTree, newModTree);
                                 }
                             }
-                        }
-                        boolean removeImplementsClause = false;
-                        //find out if there are no more exposed operations, if so remove the implements clause
-                        if(foundWebServiceAnnotation){
-                            //if there is a WebService annotation find out if there are no more public methods
-                           if(! new MethodVisitor(workingCopy).hasPublicMethod()){
-                               removeImplementsClause = true;
-                           }
-                        }
-                        else{
-                            if(! new MethodVisitor(workingCopy).hasWebMethod()){
-                                removeImplementsClause = true;
+                            
+                            boolean removeImplementsClause = false;
+                            //find out if there are no more exposed operations, if so remove the implements clause
+                            if(foundWebServiceAnnotation){
+                                //if there is a WebService annotation find out if there are no more public methods
+                                if(! new MethodVisitor(workingCopy).hasPublicMethod()){
+                                    removeImplementsClause = true;
+                                }
+                            } else{
+                                if(! new MethodVisitor(workingCopy).hasWebMethod()){
+                                    removeImplementsClause = true;
+                                }
                             }
-                        }
-                        if(removeImplementsClause){
-                            //TODO: need to remove implements clause on the SEI
-                            //for now all implements are being removed
-                            List<? extends Tree> implementeds = javaClass.getImplementsClause();
-                            ClassTree modifiedJavaClass = javaClass;
-                            for(Tree implemented : implementeds) {
-                                modifiedJavaClass = make.removeClassImplementsClause(modifiedJavaClass, implemented);
+                            if(removeImplementsClause){
+                                //TODO: need to remove implements clause on the SEI
+                                //for now all implements are being removed
+                                List<? extends Tree> implementeds = javaClass.getImplementsClause();
+                                ClassTree modifiedJavaClass = javaClass;
+                                for(Tree implemented : implementeds) {
+                                    modifiedJavaClass = make.removeClassImplementsClause(modifiedJavaClass, implemented);
+                                }
+                                workingCopy.rewrite(javaClass, modifiedJavaClass);
                             }
-                            workingCopy.rewrite(javaClass, modifiedJavaClass);
                         }
                     }
                 }
             }
-            
             public void cancel() {
             }
         };
         targetSource.runModificationTask(task).commit();
     }
+ 
     
     private static AnnotationMirror getWebMethodAnnotation(WorkingCopy workingCopy, ExecutableElement method){
         TypeElement methodAnnotationEl = workingCopy.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
