@@ -120,8 +120,17 @@ public final class TopLogging {
          */
     }
 
+    /**
+     * For use from NbErrorManagerTest.
+     */
+    public static void initializeQuietly() {
+        initialize(false);
+    }
     private static String previousUser;
     static final void initialize() {
+        initialize(true);
+    }
+    private static void initialize(boolean verbose) {
         if (previousUser == null || previousUser.equals(System.getProperty("netbeans.user"))) {
             // useful from tests
             streamHandler = null;
@@ -142,15 +151,17 @@ public final class TopLogging {
         // next time invoke the constructor of TopLogging itself please
         System.setProperty("java.util.logging.config.class", p);
 
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        PrintStream ps = new PrintStream(os);
-        printSystemInfo(ps);
-        ps.close();
-        try {
-            Logger logger = Logger.getLogger (TopLogging.class.getName()); // NOI18N
-            logger.log(Level.INFO, os.toString("utf-8"));
-        } catch (UnsupportedEncodingException ex) {
-            assert false;
+        if (verbose) {
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            PrintStream ps = new PrintStream(os);
+            printSystemInfo(ps);
+            ps.close();
+            try {
+                Logger logger = Logger.getLogger(TopLogging.class.getName()); // NOI18N
+                logger.log(Level.INFO, os.toString("utf-8"));
+            } catch (UnsupportedEncodingException ex) {
+                assert false;
+            }
         }
 
         if (!(System.err instanceof LgStream)) {
@@ -378,6 +389,78 @@ public final class TopLogging {
         }
     }
 
+    /**
+     * For use also from NbErrorManager.
+     * @param t throwable to print
+     * @param pw the destination
+     */
+    public static void printStackTrace(Throwable t, PrintWriter pw) {
+        // First try to find where the throwable was caught.
+        StackTraceElement[] tStack = t.getStackTrace();
+        StackTraceElement[] hereStack = new Throwable().getStackTrace();
+        int idx = -1;
+        for (int i = 1; i <= Math.min(tStack.length, hereStack.length); i++) {
+            if (!tStack[tStack.length - i].equals(hereStack[hereStack.length - i])) {
+                idx = tStack.length - i;
+                break;
+            }
+        }
+        doPrintStackTrace(pw, t, null, idx);
+    }
+
+    /**
+     * #91541: show stack traces in a more natural order.
+     */
+    private static void doPrintStackTrace(PrintWriter pw, Throwable t, Throwable higher, int caughtIndex) {
+        //if (t != null) {t.printStackTrace(pw);return;}//XxX
+        try {
+            if (t.getClass().getMethod("printStackTrace", PrintWriter.class).getDeclaringClass() != Throwable.class) { // NOI18N
+                // Hmm, overrides it, we should not try to bypass special logic here.
+                //System.err.println("using stock printStackTrace from " + t.getClass());
+                t.printStackTrace(pw);
+                return;
+            }
+            //System.err.println("using custom printStackTrace from " + t.getClass());
+        } catch (NoSuchMethodException e) {
+            assert false : e;
+        }
+        Throwable lower = t.getCause();
+        if (lower != null) {
+            doPrintStackTrace(pw, lower, t, -1);
+            pw.print("Caused: "); // NOI18N
+        }
+        String summary = t.toString();
+        if (lower != null) {
+            String suffix = ": " + lower;
+            if (summary.endsWith(suffix)) {
+                summary = summary.substring(0, summary.length() - suffix.length());
+            }
+        }
+        pw.println(summary);
+        StackTraceElement[] trace = t.getStackTrace();
+        int end = trace.length;
+        if (higher != null) {
+            StackTraceElement[] higherTrace = higher.getStackTrace();
+            while (end > 0) {
+                int higherEnd = end + higherTrace.length - trace.length;
+                if (higherEnd <= 0 || !higherTrace[higherEnd - 1].equals(trace[end - 1])) {
+                    break;
+                }
+                end--;
+            }
+        }
+        for (int i = 0; i < end; i++) {
+            if (i == caughtIndex) {
+                // Translate following tab -> space since formatting is bad in
+                // Output Window (#8104) and some mail agents screw it up etc.
+                pw.print("[catch] at "); // NOI18N
+            } else {
+                pw.print("\tat "); // NOI18N
+            }
+            pw.println(trace[i]);
+        }
+    }
+    
     /** Modified formater for use in NetBeans.
      */
     private static final class NbFormatter extends java.util.logging.Formatter {
@@ -393,7 +476,6 @@ public final class TopLogging {
 
 
         private void print(StringBuilder sb, LogRecord record, Set<Throwable> beenThere) {
-            // XXX this is copied from NbErrorManager? why are we maintaining two copies? -jglick
             String message = formatMessage(record);
             if (message != null && message.indexOf('\n') != -1 && record.getThrown() == null) {
                 // multi line messages print witout any wrappings
@@ -418,29 +500,7 @@ public final class TopLogging {
                     StringWriter sw = new StringWriter();
                     PrintWriter pw = new PrintWriter(sw);
                     // All other kinds of throwables we check for a stack trace.
-                    // First try to find where the throwable was caught.
-                    StackTraceElement[] tStack = record.getThrown().getStackTrace();
-                    StackTraceElement[] hereStack = new Throwable().getStackTrace();
-                    int idx = -1;
-                    for (int i = 1; i <= Math.min(tStack.length, hereStack.length); i++) {
-                        if (!tStack[tStack.length - i].equals(hereStack[hereStack.length - i])) {
-                            idx = tStack.length - i + 1;
-                            break;
-                        }
-                    }
-                    String[] tLines = decompose(record.getThrown());
-                    for (int i = 0; i < tLines.length; i++) {
-                        if (i == idx) {
-                            pw.print("[catch]"); // NOI18N
-                            // Also translate following tab -> space since formatting is bad in
-                            // Output Window (#8104) and some mail agents screw it up etc.
-                            if (tLines[i].charAt(0) == '\t') {
-                                pw.print(' ');
-                                tLines[i] = tLines[i].substring(1);
-                            }
-                        }
-                        pw.println(tLines[i]);
-                    }
+                    printStackTrace(record.getThrown(), pw);
                     pw.close();
                     sb.append(sw.toString());
                 } catch (Exception ex) {
@@ -535,12 +595,6 @@ public final class TopLogging {
                     print(sb, rec, beenThere);
                 }
             }
-        }
-        /** Get a throwable's stack trace, decomposed into individual lines. */
-        private static String[] decompose(Throwable t) {
-            StringWriter sw = new StringWriter();
-            t.printStackTrace(new PrintWriter(sw));
-            return sw.toString().split("(\r\n?|\n)($|(?=\\s*at ))"); // NOI18N
         }
     } // end of NbFormater
 
@@ -645,7 +699,9 @@ public final class TopLogging {
 
     /** Instances are created in awt.EventDispatchThread */
     public static final class AWTHandler {
-        /** The name MUST be handle and MUST be public */
+        /** The name MUST be handle and MUST be public 
+         * @param t the throwable to print
+         */
         public static void handle(Throwable t) {
             // Either org.netbeans or org.netbeans.core.execution pkgs:
             if (t.getClass().getName().endsWith(".ExitSecurityException")) { // NOI18N

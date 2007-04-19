@@ -25,7 +25,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Iterator;
 import java.util.MissingResourceException;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -33,7 +32,7 @@ import java.util.logging.Logger;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import junit.framework.Test;
-import org.netbeans.core.startup.CLIOptions;
+import org.netbeans.core.startup.TopLogging;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
@@ -42,9 +41,7 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.xml.sax.SAXParseException;
-
 
 /**
  * Test the core error manager impl.
@@ -69,7 +66,7 @@ public final class NbErrorManagerTest extends NbTestCase {
         
         System.setProperty("netbeans.user", getWorkDirPath());
         // init the whole system
-        CLIOptions.initialize();
+        TopLogging.initializeQuietly();
 
 
         err = ErrorManager.getDefault();
@@ -127,16 +124,20 @@ public final class NbErrorManagerTest extends NbTestCase {
         assertTrue(s.indexOf("java.lang.ClassNotFoundException") != -1);
         npe = new NullPointerException("msg1");
         IOException ioe = new IOException("msg2");
-        err.annotate(ioe, npe);
+        ioe.initCause(npe); // only works in right order with initCause, not ErrorManager.annotate
         InvocationTargetException ite = new InvocationTargetException(ioe, "msg3");
         IllegalStateException ise = new IllegalStateException("msg4");
-        err.annotate(ise, ite);
+        ise.initCause(ite);
         err.notify(ErrorManager.INFORMATIONAL, ise);
         s = readLog();
         assertTrue(s, s.indexOf("java.lang.NullPointerException: msg1") != -1);
         assertTrue(s, s.indexOf("java.io.IOException: msg2") != -1);
         assertTrue(s.indexOf("msg3") != -1);
         assertTrue(s, s.indexOf("java.lang.IllegalStateException: msg4") != -1);
+        // #91541: check that stack traces are printed in a pleasant order.
+        assertTrue(s, s.indexOf("java.lang.NullPointerException: msg1") < s.indexOf("java.io.IOException: msg2"));
+        assertTrue(s, s.indexOf("java.io.IOException: msg2") < s.indexOf("msg3"));
+        assertTrue(s, s.indexOf("msg3") < s.indexOf("java.lang.IllegalStateException: msg4"));
     }
     
     public void testNotifyWithAnnotations() throws Exception {
@@ -145,7 +146,7 @@ public final class NbErrorManagerTest extends NbTestCase {
         err.notify(ErrorManager.INFORMATIONAL, npe);
         String s = readLog();
         assertTrue(s.indexOf("java.lang.NullPointerException: unloc msg") != -1);
-        assertTrue(s.indexOf("loc msg #1") != -1);
+        assertTrue(s, s.indexOf("loc msg #1") != -1);
         npe = new NullPointerException("unloc msg");
         err.annotate(npe, ErrorManager.UNKNOWN, "extra unloc msg", null, null, null);
         err.notify(ErrorManager.INFORMATIONAL, npe);
@@ -172,7 +173,7 @@ public final class NbErrorManagerTest extends NbTestCase {
         err.annotate(e3, e4);
         err.notify(ErrorManager.INFORMATIONAL, e3);
         String s = readLog();
-        assertTrue(s.indexOf("java.lang.Exception: msg1") != -1);
+        assertTrue(s, s.indexOf("java.lang.Exception: msg1") != -1);
         assertTrue(s.indexOf("java.lang.Exception: msg2") != -1);
         assertTrue(s.indexOf("java.lang.Exception: msg3") != -1);
         assertTrue(s.indexOf("java.lang.Exception: msg4") != -1);
@@ -190,7 +191,7 @@ public final class NbErrorManagerTest extends NbTestCase {
         err.notify(ErrorManager.INFORMATIONAL, e1);
         String s = readLog();
         assertTrue(s.indexOf("java.lang.Exception: msg1") != -1);
-        assertTrue(s.indexOf("java.lang.Exception: msg2") != -1);
+        assertTrue(s, s.indexOf("java.lang.Exception: msg2") != -1);
         assertTrue(s.indexOf("java.lang.Exception: msg3") != -1);
         // warning from NBEM itself:
         assertTrue(s.indexOf("cyclic") != -1);
@@ -371,7 +372,7 @@ public final class NbErrorManagerTest extends NbTestCase {
         } catch (IOException e) {
             err.notify(ErrorManager.INFORMATIONAL, e);
             String s = readLog();
-            assertTrue("added [catch] marker in simple cases", s.indexOf("[catch] at " + NbErrorManagerTest.class.getName() + ".testCatchMarker") != -1);
+            assertTrue("added [catch] marker in simple cases: " + s, s.indexOf("[catch] at " + NbErrorManagerTest.class.getName() + ".testCatchMarker") != -1);
         }
         try {
             m3();
@@ -379,7 +380,7 @@ public final class NbErrorManagerTest extends NbTestCase {
         } catch (IOException e) {
             err.notify(ErrorManager.INFORMATIONAL, e);
             String s = readLog();
-            assertTrue("added [catch] marker in compound exception", s.indexOf("[catch] at " + NbErrorManagerTest.class.getName() + ".testCatchMarker") != -1);
+            assertTrue("added [catch] marker in compound exception: " + s, s.indexOf("[catch] at " + NbErrorManagerTest.class.getName() + ".testCatchMarker") != -1);
         }
         try {
             m5();
@@ -387,7 +388,7 @@ public final class NbErrorManagerTest extends NbTestCase {
         } catch (InterruptedException e) {
             err.notify(ErrorManager.INFORMATIONAL, e);
             String s = readLog();
-            assertTrue("added [catch] marker in multiply compound exception", s.indexOf("[catch] at " + NbErrorManagerTest.class.getName() + ".testCatchMarker") != -1);
+            assertTrue("added [catch] marker in multiply compound exception: " + s, s.indexOf("[catch] at " + NbErrorManagerTest.class.getName() + ".testCatchMarker") != -1);
         }
         try {
             throw new IOException("main line\ndata 1\ndata 2\ndata 3\ndata 4");
@@ -436,7 +437,7 @@ public final class NbErrorManagerTest extends NbTestCase {
 
         new FileOutputStream(log).close(); // truncate
 
-        return new String(arr);
+        return "---%<--- [start log of " + getName() + "]\n" + new String(arr).replaceFirst("\0+", "") + "\n---%<--- [end log of " + getName() + "]\n";
     }
 
     public static final class MockDD extends DialogDisplayer {

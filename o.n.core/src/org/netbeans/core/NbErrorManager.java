@@ -22,7 +22,6 @@ package org.netbeans.core;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,6 +35,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import org.netbeans.core.startup.TopLogging;
 
 /** Wraps errormanager with logger.
  *
@@ -336,30 +336,7 @@ public final class NbErrorManager extends Handler {
                 // Play it safe.
                 t.printStackTrace(pw);
             } else {
-                // All other kinds of throwables we check for a stack trace.
-                // First try to find where the throwable was caught.
-                StackTraceElement[] tStack = t.getStackTrace();
-                StackTraceElement[] hereStack = new Throwable().getStackTrace();
-                int idx = -1;
-                for (int i = 1; i <= Math.min(tStack.length, hereStack.length); i++) {
-                    if (!tStack[tStack.length - i].equals(hereStack[hereStack.length - i])) {
-                        idx = tStack.length - i + 1;
-                        break;
-                    }
-                }
-                String[] tLines = decompose(t);
-                for (int i = 0; i < tLines.length; i++) {
-                    if (i == idx) {
-                        pw.print("[catch]"); // NOI18N
-                        // Also translate following tab -> space since formatting is bad in
-                        // Output Window (#8104) and some mail agents screw it up etc.
-                        if (tLines[i].charAt(0) == '\t') {
-                            pw.print(' ');
-                            tLines[i] = tLines[i].substring(1);
-                        }
-                    }
-                    pw.println(tLines[i]);
-                }
+                TopLogging.printStackTrace(t, pw);
             }
             /*Nested annotations */
             for (int i = 0; i < arr.length; i++) {
@@ -374,14 +351,7 @@ public final class NbErrorManager extends Handler {
                 }
             }
         }
-        
-        /** Get a throwable's stack trace, decomposed into individual lines. */
-        private  String[] decompose(Throwable t) {
-            StringWriter sw = new StringWriter();
-            t.printStackTrace(new PrintWriter(sw));
-            return sw.toString().split("(\r\n?|\n)($|(?=\\s*at ))"); // NOI18N
-        }
-        
+
         /**
          * Method that iterates over annotations to find out
          * the first annotation that brings the requested value.
