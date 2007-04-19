@@ -91,7 +91,7 @@ implements ModuleConfiguration, DeploymentPlanConfiguration {
                 } else {
                     // create jboss-app.xml if it does not exist yet
                     jbossApp = genereatejbossApp();
-                    writeFile(jbossAppFile, jbossApp);
+                    ResourceConfigurationHelper.writeFile(jbossAppFile, jbossApp);
                 }
             } catch (ConfigurationException ce) {
                 ErrorManager.getDefault().notify(ce);

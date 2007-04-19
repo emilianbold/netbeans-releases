@@ -26,6 +26,7 @@ import java.util.Set;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.jboss4.config.JBDeploymentConfiguration;
+import org.netbeans.modules.j2ee.jboss4.config.ResourceConfigurationHelper;
 import org.netbeans.modules.j2ee.jboss4.config.gen.Mbean;
 import org.netbeans.modules.j2ee.jboss4.config.gen.Server;
 import org.openide.ErrorManager;
@@ -40,8 +41,13 @@ import org.openide.filesystems.FileUtil;
  */
 public class MessageDestinationSupport {
     
-    public static String MSG_DEST_RESOURCE_NAME_JB4 = "netbeans-destinations-service.xml"; // NOI18N
+    public static String MSG_DEST_RESOURCE_NAME_JB4 = "jboss4-netbeans-destinations-service.xml"; // NOI18N
     
+    public static final String CONN_FACTORY_JNDI_NAME_JB4 = "ConnectionFactory"; // NOI18N
+
+    // the directory with resources - supplied by the configuration support in the construction time
+    private File resourceDir;
+
     //model of the destination service file
     private Server destinationServiceModel;
     
@@ -52,9 +58,8 @@ public class MessageDestinationSupport {
     private FileObject destinationsFO;
     
     public MessageDestinationSupport(File resourceDir) {
-        this.destinationsFile = destinationsFile;
-
-        destinationsFile = new File(resourceDir, MSG_DEST_RESOURCE_NAME_JB4);
+        this.resourceDir = resourceDir;
+        this.destinationsFile = new File(resourceDir, MSG_DEST_RESOURCE_NAME_JB4);
         ensureDestinationsFOExists();
     }
     
@@ -156,7 +161,7 @@ public class MessageDestinationSupport {
             } else {
                 // create netbeans-destinations-service.xml if it does not exist yet
                 destinationServiceModel = new Server();
-                JBDeploymentConfiguration.writeFile(destinationsFile, destinationServiceModel);
+                ResourceConfigurationHelper.writeFile(destinationsFile, destinationServiceModel);
                 ensureDestinationsFOExists();
             }
         } catch (ConfigurationException ce) {

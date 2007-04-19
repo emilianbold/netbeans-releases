@@ -39,6 +39,8 @@ import org.netbeans.modules.j2ee.jboss4.config.gen.EjbRef;
 import org.netbeans.modules.j2ee.jboss4.config.gen.JbossWeb;
 import org.netbeans.modules.j2ee.jboss4.config.gen.MessageDestinationRef;
 import org.netbeans.modules.j2ee.jboss4.config.gen.ResourceRef;
+import org.netbeans.modules.j2ee.jboss4.config.mdb.JBossMessageDestination;
+import org.netbeans.modules.j2ee.jboss4.config.mdb.MessageDestinationSupport;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -158,7 +160,7 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
                     jbossWeb = null;
                 }
             } else {
-                super.propertyChange(evt);
+//                super.propertyChange(evt);
             }
         } else if (evt.getOldValue() == null) {
             if (newValue instanceof org.netbeans.modules.j2ee.dd.api.common.ResourceRef) {
@@ -167,7 +169,7 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
                 try {
                     String resType = resourceRef.getResType();
                     if ("javax.sql.DataSource".equals(resType)) { // NOI18N
-                        addResReference(resourceRef.getResRefName(), JBOSS4_DATASOURCE_JNDI_PREFIX + resourceRef.getResRefName());
+                        addResReference(resourceRef.getResRefName(), JBossDatasource.PREFIX + resourceRef.getResRefName());
                     } else if ("javax.mail.Session".equals(resType)) { // NOI18N
                         addMailReference(resourceRef.getResRefName());
                     } else if ("javax.jms.ConnectionFactory".equals(resType)) { // NOI18N
@@ -193,7 +195,7 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
                 try {
                     String messageDestinationType = messageDestinationRef.getMessageDestinationType();
                     String destPrefix = "javax.jms.Queue".equals(messageDestinationType) // NOI18N
-                                            ? JBOSS4_MSG_QUEUE_JNDI_PREFIX : JBOSS4_MSG_TOPIC_JNDI_PREFIX;
+                                            ? JBossMessageDestination.QUEUE_PREFIX : JBossMessageDestination.TOPIC_PREFIX;
                     addMsgDestReference(messageDestinationRef.getMessageDestinationRefName(), destPrefix);
                 } catch (ConfigurationException ce) {
                     ErrorManager.getDefault().notify(ce);
@@ -272,7 +274,7 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
                 //if it doesn't exist yet, create a new one
                 ResourceRef newRR = new ResourceRef();
                 newRR.setResRefName(name);
-                newRR.setJndiName(JBOSS4_MAIL_SERVICE_JNDI_NAME);
+                newRR.setJndiName(MAIL_SERVICE_JNDI_NAME_JB4);
                 modifiedJbossWeb.addResourceRef(newRR);
             }
         });
@@ -285,11 +287,11 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
         
         String jndiName = null;
         if (MessageDestination.Type.QUEUE.equals(type)) {
-            jndiName = "queue/" + destName;
+            jndiName = JBossMessageDestination.QUEUE_PREFIX + destName;
         }
         else
         if (MessageDestination.Type.TOPIC.equals(type)) {
-            jndiName = "topic/" + destName;
+            jndiName = JBossMessageDestination.TOPIC_PREFIX + destName;
         }
 
         addMsgDestReference(referenceName, jndiName);
@@ -317,7 +319,7 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
                 //if it doesn't exist yet, create a new one
                 ResourceRef newRR = new ResourceRef();
                 newRR.setResRefName(name);
-                newRR.setJndiName(JBOSS4_CONN_FACTORY_JNDI_NAME);
+                newRR.setJndiName(MessageDestinationSupport.CONN_FACTORY_JNDI_NAME_JB4);
                 modifiedJbossWeb.addResourceRef(newRR);
             }
         });
@@ -405,7 +407,7 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
                 } else {
                     // create jboss-web.xml if it does not exist yet
                     jbossWeb = generateJbossWeb();
-                    writeFile(jbossWebFile, jbossWeb);
+                    ResourceConfigurationHelper.writeFile(jbossWebFile, jbossWeb);
                 }
             } catch (ConfigurationException ce) {
                 ErrorManager.getDefault().notify(ce);
@@ -478,7 +480,7 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
             
             // save, if appropriate
             boolean modified = deploymentDescriptorDO.isModified();
-            replaceDocument(doc, newJbossWeb);
+            ResourceConfigurationHelper.replaceDocument(doc, newJbossWeb);
             if (!modified) {
                 SaveCookie cookie = (SaveCookie)deploymentDescriptorDO.getCookie(SaveCookie.class);
                 if (cookie != null) {

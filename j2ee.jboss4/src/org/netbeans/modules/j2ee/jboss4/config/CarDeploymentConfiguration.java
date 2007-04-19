@@ -37,6 +37,7 @@ import org.netbeans.modules.j2ee.jboss4.config.gen.EjbRef;
 import org.netbeans.modules.j2ee.jboss4.config.gen.JbossClient;
 import org.netbeans.modules.j2ee.jboss4.config.gen.ResourceRef;
 import org.netbeans.modules.j2ee.jboss4.config.gen.ServiceRef;
+import org.netbeans.modules.j2ee.jboss4.config.mdb.MessageDestinationSupport;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -111,7 +112,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
                 } else {
                     // create jboss-web.xml if it does not exist yet
                     jbossClient = generateJbossClient();
-                    writeFile(jbossClientFile, jbossClient);
+                    ResourceConfigurationHelper.writeFile(jbossClientFile, jbossClient);
                 }
             } catch (ConfigurationException ce) {
                 ErrorManager.getDefault().notify(ce);
@@ -131,7 +132,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
                     jbossClient = null;   
                 }
             } else {
-                super.propertyChange(evt);
+//                super.propertyChange(evt);
             }
         } else if (evt.getOldValue() == null) {
             // TODO do we also want to check changes in the application client display name?
@@ -220,7 +221,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
                 //if it doesn't exist yet, create a new one
                 ResourceRef newRR = new ResourceRef();
                 newRR.setResRefName(name);
-                newRR.setJndiName(JBOSS4_DATASOURCE_JNDI_PREFIX + name);
+                newRR.setJndiName(JBossDatasource.PREFIX + name);
                 modifiedJbossClient.addResourceRef(newRR);
             }
         });
@@ -248,7 +249,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
                 //if it doesn't exist yet, create a new one
                 ResourceRef newRR = new ResourceRef();
                 newRR.setResRefName(name);
-                newRR.setJndiName(JBOSS4_MAIL_SERVICE_JNDI_NAME);
+                newRR.setJndiName(MAIL_SERVICE_JNDI_NAME_JB4);
                 modifiedJbossClient.addResourceRef(newRR);
             }
         });
@@ -276,7 +277,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
                 //if it doesn't exist yet, create a new one
                 ResourceRef newRR = new ResourceRef();
                 newRR.setResRefName(name);
-                newRR.setJndiName(JBOSS4_CONN_FACTORY_JNDI_NAME);
+                newRR.setJndiName(MessageDestinationSupport.CONN_FACTORY_JNDI_NAME_JB4);
                 modifiedJbossClient.addResourceRef(newRR);
             }
         });
@@ -398,7 +399,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
             
             // save, if appropriate
             boolean modified = deploymentDescriptorDO.isModified();
-            replaceDocument(doc, newJbossClient);
+            ResourceConfigurationHelper.replaceDocument(doc, newJbossClient);
             if (!modified) {
                 SaveCookie cookie = (SaveCookie)deploymentDescriptorDO.getCookie(SaveCookie.class);
                 if (cookie != null) {

@@ -48,6 +48,8 @@ import org.netbeans.modules.j2ee.jboss4.config.gen.Jboss;
 import org.netbeans.modules.j2ee.jboss4.config.gen.MessageDriven;
 import org.netbeans.modules.j2ee.jboss4.config.gen.ResourceRef;
 import org.netbeans.modules.j2ee.jboss4.config.gen.Session;
+import org.netbeans.modules.j2ee.jboss4.config.mdb.JBossMessageDestination;
+import org.netbeans.modules.j2ee.jboss4.config.mdb.MessageDestinationSupport;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -64,7 +66,7 @@ import org.openide.util.lookup.Lookups;
 /**
  * EJB module deployment configuration handles jboss.xml configuration file creation.
  *
- * @author sherold, lkotouc
+ * @author Stepan Herold, Libor Kotouc
  */
 public class EjbDeploymentConfiguration extends JBDeploymentConfiguration 
 implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfiguration, PropertyChangeListener {
@@ -175,7 +177,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
                 } else {
                     // create jboss.xml if it does not exist yet
                     jboss = generateJboss();
-                    writeFile(jbossFile, jboss);
+                    ResourceConfigurationHelper.writeFile(jbossFile, jboss);
                 }
             } catch (ConfigurationException ce) {
                 ErrorManager.getDefault().notify(ce);
@@ -196,7 +198,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
                     jboss = null;
                 }
             } else {
-                super.propertyChange(evt);
+//                super.propertyChange(evt);
             }
 
 //        } else if (evt.getOldValue() == null) {
@@ -914,7 +916,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
     {
         modifyJboss(new JbossModifier() {
            public void modify(Jboss modifiedJboss) {
-               String jndiName = JBOSS4_MAIL_SERVICE_JNDI_NAME;
+               String jndiName = MAIL_SERVICE_JNDI_NAME_JB4;
                JbossDataSourceRefModifier.modify(modifiedJboss, resRefName, beanNames, beanType, jndiName);
            }
         });
@@ -932,7 +934,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
     {
         modifyJboss(new JbossModifier() {
            public void modify(Jboss modifiedJboss) {
-               String jndiName = JBOSS4_MAIL_SERVICE_JNDI_NAME;
+               String jndiName = MAIL_SERVICE_JNDI_NAME_JB4;
                JbossDataSourceRefModifier.modifyMsgDrv(modifiedJboss, resRefName, beans, jndiName);
            }
         });
@@ -954,8 +956,8 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
             if (mdbName.equals(mdb.getEjbName())) {
                 String destJndiName = mdb.getDestinationJndiName();
                 if (destJndiName != null) {
-                    if (destJndiName.startsWith("queue/") || destJndiName.startsWith("topic/")) {
-                        return destJndiName.substring(6); // "queue/".length() == "topic/".length() == 6
+                    if (destJndiName.startsWith(JBossMessageDestination.QUEUE_PREFIX) || destJndiName.startsWith(JBossMessageDestination.TOPIC_PREFIX)) {
+                        return destJndiName.substring(6); // JBossMessageDestination.QUEUE_PREFIX.length() == JBossMessageDestination.TOPIC_PREFIX.length() == 6
                     }
                     else {
                         ErrorManager.getDefault().log(
@@ -1002,11 +1004,11 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
                 MessageDriven mdb = new MessageDriven();
                 mdb.setEjbName(name);
                 if (MessageDestination.Type.QUEUE.equals(destType)) {
-                    mdb.setDestinationJndiName("queue/" + destName); // NOI18N
+                    mdb.setDestinationJndiName(JBossMessageDestination.QUEUE_PREFIX + destName); // NOI18N
                 }
                 else
                 if (MessageDestination.Type.TOPIC.equals(destType)) {
-                    mdb.setDestinationJndiName("topic/" + destName); // NOI18N
+                    mdb.setDestinationJndiName(JBossMessageDestination.TOPIC_PREFIX + destName); // NOI18N
                 }
                 eb.addMessageDriven(mdb);
             }
@@ -1025,7 +1027,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
     {
         modifyJboss(new JbossModifier() {
            public void modify(Jboss modifiedJboss) {
-               String jndiName = JBOSS4_CONN_FACTORY_JNDI_NAME;
+               String jndiName = MessageDestinationSupport.CONN_FACTORY_JNDI_NAME_JB4;
                JbossDataSourceRefModifier.modify(modifiedJboss, resRefName, beanNames, beanType, jndiName);
            }
         });
@@ -1042,7 +1044,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
     {
         modifyJboss(new JbossModifier() {
            public void modify(Jboss modifiedJboss) {
-               String jndiName = JBOSS4_CONN_FACTORY_JNDI_NAME;
+               String jndiName = MessageDestinationSupport.CONN_FACTORY_JNDI_NAME_JB4;
                JbossDataSourceRefModifier.modifyMsgDrv(modifiedJboss, connectionFactoryName, mdbName, jndiName);
            }
         });
@@ -1057,11 +1059,11 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
         
         String destPrefix = null;
         if (MessageDestination.Type.QUEUE.equals(type)) {
-            destPrefix = "queue/";
+            destPrefix = JBossMessageDestination.QUEUE_PREFIX;
         }
         else
         if (MessageDestination.Type.TOPIC.equals(type)) {
-            destPrefix = "topic/";
+            destPrefix = JBossMessageDestination.TOPIC_PREFIX;
         }
         
         if (org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans.SESSION.equals(ejbType)) {
@@ -1170,7 +1172,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
             
             // save, if appropriate
             boolean modified = deploymentDescriptorDO.isModified();
-            replaceDocument(doc, newJboss);
+            ResourceConfigurationHelper.replaceDocument(doc, newJboss);
             if (!modified) {
                 SaveCookie cookie = (SaveCookie)deploymentDescriptorDO.getCookie(SaveCookie.class);
                 if (cookie != null) {

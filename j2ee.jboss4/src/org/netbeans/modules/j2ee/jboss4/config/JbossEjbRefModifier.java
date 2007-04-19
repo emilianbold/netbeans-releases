@@ -254,7 +254,7 @@ final class JbossEjbRefModifier {
         for (Iterator it = msgdrvsWithoutReference.iterator(); it.hasNext(); ) {
             EjbRef newER = new EjbRef();
             newER.setEjbRefName(ejbRefName);
-            newER.setJndiName(JBDeploymentConfiguration.JBOSS4_EJB_JNDI_PREFIX + ejbRefName);
+            newER.setJndiName(ejbRefName);
             MessageDriven mdb = (MessageDriven)it.next();
             mdb.addEjbRef(newER);
         }

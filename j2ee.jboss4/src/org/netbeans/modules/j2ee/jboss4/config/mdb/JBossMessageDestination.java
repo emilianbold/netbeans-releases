@@ -26,6 +26,9 @@ import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
  * @author Libor Kotouc
  */
 public class JBossMessageDestination implements MessageDestination {
+
+    public static final String QUEUE_PREFIX = "queue/";
+    public static final String TOPIC_PREFIX = "topic/";
     
     private String name;
     private Type type;

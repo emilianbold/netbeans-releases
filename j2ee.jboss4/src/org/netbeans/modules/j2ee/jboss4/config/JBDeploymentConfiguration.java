@@ -19,17 +19,8 @@
 
 package org.netbeans.modules.j2ee.jboss4.config;
 
-import java.beans.PropertyChangeEvent;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.HashSet;
 import java.util.Set;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.StyledDocument;
 import org.netbeans.modules.j2ee.dd.api.common.ComponentInterface;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
@@ -39,25 +30,9 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DatasourceConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.EjbResourceConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.MessageDestinationConfiguration;
-import org.netbeans.modules.j2ee.jboss4.config.gen.Datasources;
-import org.netbeans.modules.j2ee.jboss4.config.gen.LocalTxDatasource;
+import org.netbeans.modules.j2ee.jboss4.config.ds.DatasourceSupport;
 import org.netbeans.modules.j2ee.jboss4.config.mdb.MessageDestinationSupport;
-import org.netbeans.modules.schema2beans.BaseBean;
-import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.SaveCookie;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.NbDocument;
-import org.openide.util.NbBundle;
 
 /** 
  * Base for JBoss DeploymentConfiguration implementations.
@@ -67,17 +42,9 @@ import org.openide.util.NbBundle;
 public abstract class JBDeploymentConfiguration 
         implements DatasourceConfiguration, MessageDestinationConfiguration, EjbResourceConfiguration {
 
-    
-    protected static final String JBOSS4_DATASOURCE_JNDI_PREFIX = "java:"; // NOI18N
-    protected static final String JBOSS4_MAIL_SERVICE_JNDI_NAME = "java:Mail"; // NOI18N
-    protected static final String JBOSS4_CONN_FACTORY_JNDI_NAME = "ConnectionFactory"; // NOI18N
-    protected static final String JBOSS4_EJB_JNDI_PREFIX = "java:comp/env/"; // NOI18N
+    // TODO move to a more appropriate class as soon as E-mail resource API is introduced
+    protected static final String MAIL_SERVICE_JNDI_NAME_JB4 = "java:Mail"; // NOI18N
 
-    static final String JBOSS4_MSG_QUEUE_JNDI_PREFIX = "queue/"; // NOI18N
-    static final String JBOSS4_MSG_TOPIC_JNDI_PREFIX = "topic/"; // NOI18N
-
-    private static final String DS_RESOURCE_NAME = "jboss-ds.xml"; // NOI18N
-    
     //JSR-88 deployable object - initialized when instance is constructed
     protected J2eeModule j2eeModule;
     
@@ -87,332 +54,44 @@ public abstract class JBDeploymentConfiguration
     //the directory with resources - supplied by the configuration support in the construction time
     private File resourceDir;
 
-    //model of the data source file
-    private Datasources datasources;
-    //data source file (placed in the resourceDir)
-    private File datasourcesFile;
-    //cached data object for the data source file
-    private DataObject datasourcesDO;
-    
-     //support for message destination resources
+     //support for data sources
+    private DatasourceSupport dsSupport;
+
+    //support for message destination resources
     private MessageDestinationSupport destSupport;
     
     /** Creates a new instance of JBDeploymentConfiguration */
     public JBDeploymentConfiguration (J2eeModule j2eeModule) {
         this.j2eeModule = j2eeModule;
-        resourceDir = j2eeModule.getResourceDirectory();
-        datasourcesFile = new File(resourceDir, DS_RESOURCE_NAME);
-        if (datasourcesFile.exists()) {
-            try {
-                ensureDatasourcesDOExists();
-            } catch (DataObjectNotFoundException donfe) {
-                ErrorManager.getDefault().notify(donfe);
-            }
-        }
+        this.resourceDir = j2eeModule.getResourceDirectory();
     }
             
-    // JSR-88 methods ---------------------------------------------------------
+// -------------------------------------- ModuleConfiguration  -----------------------------------------
     
     public J2eeModule getJ2eeModule() {
         return j2eeModule;
     }
     
-    // helper methods -------------------------------------------------
-    
-    public static void writeFile(final File file, final BaseBean bean) throws ConfigurationException {
-        try {
-            FileObject cfolder = FileUtil.toFileObject(file.getParentFile());
-            if (cfolder == null) {
-                File parentFile = file.getParentFile();
-                try {
-                    cfolder = FileUtil.toFileObject(parentFile.getParentFile()).createFolder(parentFile.getName());
-                } catch (IOException ioe) {
-                    throw new ConfigurationException(NbBundle.getMessage(JBDeploymentConfiguration.class, "MSG_FailedToCreateConfigFolder", parentFile.getAbsolutePath()));
-                }
-            }
-            final FileObject folder = cfolder;
-            FileSystem fs = folder.getFileSystem();
-            fs.runAtomicAction(new FileSystem.AtomicAction() {
-                public void run() throws IOException {
-                    OutputStream os = null;
-                    FileLock lock = null;
-                    try {
-                        String name = file.getName();
-                        FileObject configFO = folder.getFileObject(name);
-                        if (configFO == null) {
-                            configFO = folder.createData(name);
-                        }
-                        lock = configFO.lock();
-                        os = new BufferedOutputStream (configFO.getOutputStream(lock), 4086);
-                        // TODO notification needed
-                        if (bean != null) {
-                            bean.write(os);
-                        }
-                    } finally {
-                        if (os != null) {
-                            try { os.close(); } catch(IOException ioe) {}
-                        }
-                        if (lock != null) 
-                            lock.releaseLock();
-                    }
-                }
-            });
-        } catch (IOException e) {
-            throw new ConfigurationException (e.getLocalizedMessage ());
-        }
-    }
-    
-    // ---------------------------- resource generation ----------------------------------------
+// -------------------------------------- DatasourceConfiguration  -----------------------------------------
 
-    private abstract class DSResourceModifier {
-        String rawName;
-        String url;
-        String username;
-        String password;
-        String driver;
-
-        DSResourceModifier(String jndiName, String  url, String username, String password, String driver) {
-            this.rawName = JBossDatasource.getRawName(jndiName);
-            this.url = url;
-            this.username = username;
-            this.password = password;
-            this.driver = driver;
+    private DatasourceSupport getDatasourceSupport() {
+        if (dsSupport == null) {
+            dsSupport = new DatasourceSupport(resourceDir);
         }
-        
-        abstract JBossDatasource modify(Datasources datasources) throws DatasourceAlreadyExistsException;
+        return dsSupport;
     }
-    
+   
     public Set<Datasource> getDatasources() throws ConfigurationException {
+        return getDatasourceSupport().getDatasources();
+    }
+
+    public Datasource createDatasource(String jndiName, String url,
+            String username, String password, String driver) 
+            throws UnsupportedOperationException, ConfigurationException, DatasourceAlreadyExistsException {
         
-        HashSet<Datasource> projectDS = new HashSet<Datasource>();
-        Datasources dss = getDatasourcesGraph();
-        if (dss != null) {
-            LocalTxDatasource ltxds[] = datasources.getLocalTxDatasource();
-            for (int i = 0; i < ltxds.length; i++) {
-                if (ltxds[i].getJndiName().length() > 0) {
-                    projectDS.add(new JBossDatasource(
-                                    ltxds[i].getJndiName(),
-                                    ltxds[i].getConnectionUrl(),
-                                    ltxds[i].getUserName(),
-                                    ltxds[i].getPassword(),
-                                    ltxds[i].getDriverClass()));
-                }
-            }
-        }
-        
-        return projectDS;
-    }
-    
-    public JBossDatasource createDatasource(String jndiName, String  url, String username, String password, String driver) 
-    throws UnsupportedOperationException, ConfigurationException, DatasourceAlreadyExistsException
-    {
-        JBossDatasource ds = modifyDSResource(new DSResourceModifier(jndiName, url, username, password, driver) {
-            JBossDatasource modify(Datasources datasources) throws DatasourceAlreadyExistsException {
-               
-                LocalTxDatasource ltxds[] = datasources.getLocalTxDatasource();
-                for (int i = 0; i < ltxds.length; i++) {
-                    String jndiName = ltxds[i].getJndiName();
-                    if (rawName.equals(JBossDatasource.getRawName(jndiName))) {
-                        //already exists
-                        JBossDatasource ds = new JBossDatasource(
-                                jndiName,
-                                ltxds[i].getConnectionUrl(),
-                                ltxds[i].getUserName(),
-                                ltxds[i].getPassword(),
-                                ltxds[i].getDriverClass());
-                        
-                        throw new DatasourceAlreadyExistsException(ds);
-                    }
-                }
-                
-                LocalTxDatasource lds = new LocalTxDatasource();
-                lds.setJndiName(rawName);
-                lds.setConnectionUrl(url);
-                lds.setDriverClass(driver);
-                lds.setUserName(username);
-                lds.setPassword(password);
-                lds.setMinPoolSize("5");
-                lds.setMaxPoolSize("20");
-                lds.setIdleTimeoutMinutes("5");
-
-                datasources.addLocalTxDatasource(lds);
-                
-                return new JBossDatasource(rawName, url, username, password, driver);
-           }
-        });
-        
-        return ds;
-    }
-    
-    /**
-     * Return Datasources graph. If it was not created yet, load it from the file
-     * and cache it. If the file does not exist, generate it.
-     *
-     * @return Datasources graph or null if the jboss-ds.xml file is not parseable.
-     */
-    private synchronized Datasources getDatasourcesGraph() {
-        
-        try {
-            if (datasourcesFile.exists()) {
-                // load configuration if already exists
-                try {
-                    if (datasources == null)
-                        datasources = Datasources.createGraph(datasourcesFile);
-                } catch (IOException ioe) {
-                    ErrorManager.getDefault().notify(ioe);
-                } catch (RuntimeException re) {
-                    // jboss-ds.xml is not parseable, do nothing
-                }
-            } else {
-                // create jboss-ds.xml if it does not exist yet
-                datasources = new Datasources();
-                writeFile(datasourcesFile, datasources);
-            }
-        } catch (ConfigurationException ce) {
-            ErrorManager.getDefault().notify(ce);
-        }
-
-        return datasources;
-    }
-    
-    private void ensureResourceDirExists() {
-        if (!resourceDir.exists())
-            resourceDir.mkdir();
+        return getDatasourceSupport().createDatasource(jndiName, url, username, password, driver);
     }
 
-    private void ensureDatasourcesFilesExists() {
-        if (!datasourcesFile.exists())
-            getDatasourcesGraph();
-    }
-    
-    /**
-     * Listener of jboss-ds.xml document changes.
-     */
-    private class DatasourceFileListener extends FileChangeAdapter {
-        
-        public void fileChanged(FileEvent fe) {
-            assert(fe.getSource() == datasourcesDO.getPrimaryFile());
-            datasources = null;
-        }
-
-        public void fileDeleted(FileEvent fe) {
-            assert(fe.getSource() == datasourcesDO.getPrimaryFile());
-            datasources = null;
-        }
-    } 
-    
-    private void ensureDatasourcesDOExists() throws DataObjectNotFoundException {
-        if (datasourcesDO == null || !datasourcesDO.isValid()) {
-            FileObject datasourcesFO = FileUtil.toFileObject(datasourcesFile);
-            assert(datasourcesFO != null);
-            datasourcesDO = DataObject.find(datasourcesFO);
-            datasourcesDO.getPrimaryFile().addFileChangeListener(new DatasourceFileListener());
-        }
-    }
-    
-    public synchronized void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName() == DataObject.PROP_MODIFIED &&
-                evt.getNewValue() == Boolean.FALSE) {
-            
-            if (evt.getSource() == datasourcesDO) // dataobject has been modified, datasources graph is out of sync
-                datasources = null;
-        }
-    }    
-    /**
-     * Perform datasources graph changes defined by the jbossWeb modifier. Update editor
-     * content and save changes, if appropriate.
-     *
-     * @param modifier
-     */
-    private JBossDatasource modifyDSResource(DSResourceModifier modifier) 
-    throws ConfigurationException, DatasourceAlreadyExistsException {
-
-        JBossDatasource ds = null;
-        
-        try {
-            ensureResourceDirExists();
-            ensureDatasourcesFilesExists();
-            ensureDatasourcesDOExists();
-
-            EditorCookie editor = (EditorCookie)datasourcesDO.getCookie(EditorCookie.class);
-            StyledDocument doc = editor.getDocument();
-            if (doc == null)
-                doc = editor.openDocument();
-
-            Datasources newDatasources = null;
-            try {  // get the up-to-date model
-                // try to create a graph from the editor content
-                byte[] docString = doc.getText(0, doc.getLength()).getBytes();
-                newDatasources = Datasources.createGraph(new ByteArrayInputStream(docString));
-            } catch (RuntimeException e) {
-                Datasources oldDatasources = getDatasourcesGraph();
-                if (oldDatasources == null) {
-                    // neither the old graph is parseable, there is not much we can do here
-                    // TODO: should we notify the user?
-                    throw new ConfigurationException(
-                            NbBundle.getMessage(JBDeploymentConfiguration.class, "MSG_datasourcesXmlCannotParse", DS_RESOURCE_NAME)); // NOI18N
-                }
-                // current editor content is not parseable, ask whether to override or not
-                NotifyDescriptor notDesc = new NotifyDescriptor.Confirmation(
-                        NbBundle.getMessage(JBDeploymentConfiguration.class, "MSG_datasourcesXmlNotValid", DS_RESOURCE_NAME),
-                        NotifyDescriptor.OK_CANCEL_OPTION);
-                Object result = DialogDisplayer.getDefault().notify(notDesc);
-                if (result == NotifyDescriptor.CANCEL_OPTION) {
-                    // keep the old content
-                    return null;
-                }
-                // use the old graph
-                newDatasources = oldDatasources;
-            }
-
-            // perform changes
-            ds = modifier.modify(newDatasources);
-
-            // save, if appropriate
-            boolean modified = datasourcesDO.isModified();
-            replaceDocument(doc, newDatasources);
-            if (!modified) {
-                SaveCookie cookie = (SaveCookie)datasourcesDO.getCookie(SaveCookie.class);
-                cookie.save();
-            }
-
-            datasources = newDatasources;
-
-        } catch(DataObjectNotFoundException donfe) {
-            ErrorManager.getDefault().notify(donfe);
-        } catch (BadLocationException ble) {
-            // this should not occur, just log it if it happens
-            ErrorManager.getDefault().notify(ble);
-        } catch (IOException ioe) {
-            String msg = NbBundle.getMessage(JBDeploymentConfiguration.class, "MSG_CannotUpdateFile", datasourcesFile.getAbsolutePath());
-            throw new ConfigurationException(msg, ioe);
-        }
-        
-        return ds;
-    }
-
-    /**
-     * Replace the content of the document by the graph.
-     */
-    protected void replaceDocument(final StyledDocument doc, BaseBean graph) {
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        try {
-            graph.write(out);
-        } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
-        }
-        NbDocument.runAtomic(doc, new Runnable() {
-            public void run() {
-                try {
-                    doc.remove(0, doc.getLength());
-                    doc.insertString(0, out.toString(), null);
-                } catch (BadLocationException ble) {
-                    ErrorManager.getDefault().notify(ble);
-                }
-            }
-        });
-    }
-    
     public void bindDatasourceReference(String referenceName, String jndiName) throws ConfigurationException {}
     
     public void bindDatasourceReferenceForEjb(String ejbName, String ejbType, 
@@ -426,6 +105,8 @@ public abstract class JBDeploymentConfiguration
         return null;
     }
     
+// -------------------------------------- MessageDestinationConfiguration  -----------------------------------------
+
     private MessageDestinationSupport getMessageDestinationsSupport() {
         if (destSupport == null) {
             destSupport = new MessageDestinationSupport(resourceDir);
@@ -442,7 +123,8 @@ public abstract class JBDeploymentConfiguration
         return getMessageDestinationsSupport().createMessageDestination(name, type);
     }
     
-    public void bindMdbToMessageDestination(String mdbName, String name, MessageDestination.Type type) throws ConfigurationException {}
+    public void bindMdbToMessageDestination(String mdbName, String name, 
+            MessageDestination.Type type) throws ConfigurationException {}
 
     public String findMessageDestinationName(String mdbName) throws ConfigurationException {
         return null;
@@ -457,6 +139,8 @@ public abstract class JBDeploymentConfiguration
     
     public void ensureResourceDefined(ComponentInterface ejb, String jndiName) throws ConfigurationException {}
 
+// -------------------------------------- EjbResourceConfiguration  -----------------------------------------
+    
     public void bindEjbReference(String referenceName, String ejbName) throws ConfigurationException {}
 
     public void bindEjbReferenceForEjb(String ejbName, String ejbType,
