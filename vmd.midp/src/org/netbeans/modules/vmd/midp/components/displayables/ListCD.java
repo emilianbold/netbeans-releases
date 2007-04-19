@@ -126,6 +126,8 @@ public final class ListCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
                 // accept
+                
+                // accept
                 new AcceptTypePresenter(ListElementEventSourceCD.TYPEID) {
                     protected void notifyCreated (DesignComponent component) {
                         super.notifyCreated (component);
@@ -144,8 +146,7 @@ public final class ListCD extends ComponentDescriptor {
                 // actions
                 AddActionPresenter.create(AddActionPresenter.ADD_ACTION, 10, ListElementEventSourceCD.TYPEID),
                 // inspector
-                InspectorPositionPresenter.create(new DisplayablePC()),
-                MidpInspectorSupport.createComponentElementsCategory("Elements", getOrderingControllers(), ListElementEventSourceCD.TYPEID), //NOI18N
+                InspectorPositionPresenter.create(new DisplayablePC()),MidpInspectorSupport.createComponentElementsCategory("Elements",getInspectorOrderingControllers(), ListElementEventSourceCD.TYPEID), //NOI18N
                 // code
                 createSetterPresenter(),
                 ListCode.createListActionCodeNamePresenter (),
@@ -154,11 +155,12 @@ public final class ListCD extends ComponentDescriptor {
                 DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_SELECT_COMMAND),
                 // screen
                 new ListDisplayPresenter()
+        
         );
 
     }
     
-    private List<InspectorOrderingController> getOrderingControllers() {
+    private List<InspectorOrderingController> getInspectorOrderingControllers() {
         return Collections.<InspectorOrderingController>singletonList(new ArrayPropertyOrderingController(PROP_ELEMENTS, 0, ListElementEventSourceCD.TYPEID));
     }
 

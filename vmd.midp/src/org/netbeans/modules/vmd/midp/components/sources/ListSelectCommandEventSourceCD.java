@@ -33,6 +33,9 @@ import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
+import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
+import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
 
 /**
  * @author David Kaspar
@@ -66,8 +69,11 @@ public final class ListSelectCommandEventSourceCD extends ComponentDescriptor {
     }
 
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
+        DocumentSupport.removePresentersOfClass(presenters, InspectorFolderPresenter.class);
+        DocumentSupport.removePresentersOfClass(presenters, ActionsPresenter.class);
         DocumentSupport.removePresentersOfClass (presenters, InfoPresenter.class);
         DocumentSupport.removePresentersOfClass (presenters, CommandEventSourceCD.CommandEventSourceFlowPinPresenter.class);
+        MidpActionsSupport.addCommonActionsPresenters(presenters, false, false, false, false, true);
         super.gatherPresenters (presenters);
     }
 
@@ -86,7 +92,9 @@ public final class ListSelectCommandEventSourceCD extends ComponentDescriptor {
             // properties
             createPropertiesPresenter (),
             // delete
-            DeletePresenter.createUserIndeliblePresenter ()
+            DeletePresenter.createUserIndeliblePresenter(),
+            //inspector
+            InspectorFolderPresenter.create(false)
         );
     }
 

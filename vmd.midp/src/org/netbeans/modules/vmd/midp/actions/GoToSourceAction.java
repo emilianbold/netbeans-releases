@@ -98,7 +98,6 @@ public final class GoToSourceAction extends SystemAction {
                     if (presenter.matches(section)) {
                         pane.setCaretPosition(section.getCaretPosition().getOffset());
                         final DesignDocument d = ActiveDocumentSupport.getDefault().getActiveDocument();
-                        ProjectUtils.requestVisibility("Source"); //NOI18N
                         return;
                     }
                 }

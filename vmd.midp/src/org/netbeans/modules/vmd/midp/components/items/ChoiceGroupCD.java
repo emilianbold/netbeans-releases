@@ -108,11 +108,11 @@ public class ChoiceGroupCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
                 // properties
+                
+                // properties
                 createPropertiesPresenter(),
                 // code
-                createSetterPresenter(),
-                //inspector
-                MidpInspectorSupport.createComponentElementsCategory("Elements", getOrderingControllers(), ChoiceElementCD.TYPEID), //NOI18N
+                createSetterPresenter(),MidpInspectorSupport.createComponentElementsCategory("Elements",getInspectorOrderingControllers(), ChoiceElementCD.TYPEID), //NOI18N
                 //actions
                 AddActionPresenter.create(AddActionPresenter.ADD_ACTION, 10, ChoiceElementCD.TYPEID),
                 //accept
@@ -130,10 +130,11 @@ public class ChoiceGroupCD extends ComponentDescriptor {
                 },
                 // screen
                 new ChoiceGroupDisplayPresenter()
+        
         );
     }
      
-    private List<InspectorOrderingController> getOrderingControllers() {
+    private List<InspectorOrderingController> getInspectorOrderingControllers() {
         return Collections.<InspectorOrderingController>singletonList(new ArrayPropertyOrderingController(PROP_ELEMENTS, 0, ChoiceElementCD.TYPEID));
     }
     

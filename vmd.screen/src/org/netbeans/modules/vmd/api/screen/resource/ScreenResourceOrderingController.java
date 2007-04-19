@@ -52,16 +52,19 @@ public abstract class ScreenResourceOrderingController {
         }
         
         public List<ScreenResourceItemPresenter> getOrdered(DesignComponent component, Collection<ScreenResourceItemPresenter> items) {
-            List<ScreenResourceItemPresenter> orderedList = new ArrayList<ScreenResourceItemPresenter>(items.size());
-            List<PropertyValue> array = component.readProperty(propertyName).getArray();
-            for (PropertyValue propertyValue : array) {
-                for(ScreenResourceItemPresenter resource : items) {
-                    if (resource.getRelatedComponent() == propertyValue.getComponent()) {
-                        orderedList.add(array.indexOf(propertyValue), resource);
+            List<ScreenResourceItemPresenter> list = new ArrayList<ScreenResourceItemPresenter>(items.size());
+           
+            List<PropertyValue> array = new ArrayList<PropertyValue>(component.readProperty(propertyName).getArray());
+            for (PropertyValue value : array) {
+                DesignComponent commandEventSource = value.getComponent();
+                for (ScreenResourceItemPresenter descriptor : items)
+                    if (descriptor.getRelatedComponent() == commandEventSource) {
+                        list.add(descriptor);
+                        break;
                     }
-                }
             }
-            return orderedList;
+            
+            return list;
         }
     }
     
@@ -72,8 +75,8 @@ public abstract class ScreenResourceOrderingController {
                 public int compare(ScreenResourceItemPresenter item1, ScreenResourceItemPresenter item2) {
                     String name1 = InfoPresenter.getDisplayName(item1.getRelatedComponent());
                     String name2 = InfoPresenter.getDisplayName(item2.getRelatedComponent());
-                    if (name1 == null || name2 == null) 
-                        throw new NullPointerException();            
+                    if (name1 == null || name2 == null)
+                        throw new NullPointerException();
                     return name1.compareTo(name2);
                 }
             });
