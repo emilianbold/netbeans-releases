@@ -23,6 +23,8 @@ import java.awt.BorderLayout;
 import java.awt.Graphics;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -326,6 +328,55 @@ public class PropertiesFlushTest extends NbTestCase {
             Object oldVal = myValue;
             myValue = value;
         }
+    }
+    
+    private Exception throwMe2 = null;
+    public void testSetNodesToNullReleasesOldNode() throws Exception {
+        System.err.println(".testSetNodesToNullReleasesOldNode");
+        TNode2 tnd = new TNode2();
+        Reference oldNode = new WeakReference(tnd);
+        throwMe2 = null;
+        class R1 implements Runnable {
+            Node n;
+            R1 (Node n) { this.n = n; }
+            
+            public void run() {
+                try {
+                    ps.setNodes(new Node[] {n});
+                } catch (Exception e) {
+                    throwMe2 = e;
+                }
+            }
+        }
+        SwingUtilities.invokeAndWait(new R1(tnd));
+        tnd = null;
+        
+        if (throwMe2 != null) {
+            throw throwMe2;
+        }
+        sleep();
+        
+        int rowCount = ps.table.getRowCount();
+        assertTrue("With a single property in a single property set, row count should be 2 but is " + rowCount, rowCount == 2);
+        
+        
+        throwMe2 = null;
+        
+        SwingUtilities.invokeAndWait(new Runnable() {
+            public void run() {
+                try {
+                    System.err.println("Replacing property sets");
+                    ps.setNodes(new Node[] {});
+                } catch (Exception e) {
+                    throwMe2 = e;
+                }
+            }
+        });
+        if (throwMe2 != null) {
+            throw throwMe2;
+        }
+        sleep();
+        assertGC("Old node has to be released", oldNode);
     }
     
     

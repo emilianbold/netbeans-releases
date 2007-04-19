@@ -463,6 +463,7 @@ public class PropertySheet extends JPanel {
 
                 table.getPropertySetModel().setPropertySets(null);
                 table.getReusablePropertyEnv().clear();
+                helperNodes = null;
             } else {
                 SwingUtilities.invokeLater(
                     new Runnable() {
@@ -476,6 +477,7 @@ public class PropertySheet extends JPanel {
 
                             table.getPropertySetModel().setPropertySets(null);
                             table.getReusablePropertyEnv().clear();
+                            helperNodes = null;
                         }
                     }
                 );
