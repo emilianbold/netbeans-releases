@@ -28,8 +28,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.RegistryNode;
 import org.netbeans.installer.product.RegistryType;
@@ -44,7 +42,6 @@ import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
-import org.netbeans.installer.wizard.components.WizardPanel;
 import org.netbeans.installer.wizard.components.panels.ErrorMessagePanel;
 import org.netbeans.installer.wizard.components.panels.ErrorMessagePanel.ErrorMessagePanelSwingUi;
 import org.netbeans.installer.wizard.components.panels.ErrorMessagePanel.ErrorMessagePanelUi;
@@ -73,12 +70,23 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                 DEFAULT_INSTALLATION_SIZE);
         setProperty(DOWNLOAD_SIZE_PROPERTY,
                 DEFAULT_DOWNLOAD_SIZE);
+        setProperty(NB_ADDONS_LOCATION_TEXT_PROPERTY,
+                DEFAULT_NB_ADDONS_LOCATION_TEXT);
+        setProperty(GF_ADDONS_LOCATION_TEXT_PROPERTY,
+                DEFAULT_GF_ADDONS_LOCATION_TEXT);
         
         setProperty(NEXT_BUTTON_TEXT_PROPERTY,
                 DEFAULT_NEXT_BUTTON_TEXT);
         
-        setProperty(ERROR_NOT_ENOUGH_SPACE_PROPERTY, 
+        setProperty(ERROR_NOT_ENOUGH_SPACE_PROPERTY,
                 DEFAULT_ERROR_NOT_ENOUGH_SPACE);
+        setProperty(ERROR_CANNOT_CHECK_SPACE_PROPERTY,
+                DEFAULT_ERROR_CANNOT_CHECK_SPACE);
+        setProperty(ERROR_LOGIC_ACCESS_PROPERTY,
+                DEFAULT_ERROR_LOGIC_ACCESS);
+        setProperty(ERROR_FSROOTS_PROPERTY,
+                DEFAULT_ERROR_FSROOTS);
+        
     }
     
     @Override
@@ -187,19 +195,22 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                     }
                 } catch (InitializationException e) {
                     ErrorManager.notifyError(
-                            "Could not access product's configuration logic",
-                            e);
+                            panel.getProperty(ERROR_LOGIC_ACCESS_PROPERTY),e);
                 }
             }
             
             if (dependentOnNb.size() > 0) {
                 text.append(StringUtils.LF);
-                text.append(StringUtils.asString(dependentOnNb) + " will be installed to the NetBeans IDE directory.");
+                text.append(StringUtils.format(
+                        panel.getProperty(NB_ADDONS_LOCATION_TEXT_PROPERTY),
+                        StringUtils.asString(dependentOnNb)));
                 text.append(StringUtils.LF);
             }
             if (dependentOnGf.size() > 0) {
                 text.append(StringUtils.LF);
-                text.append(StringUtils.asString(dependentOnGf) + " will be installed to the GlassFish directory.");
+                text.append(StringUtils.format(
+                        panel.getProperty(GF_ADDONS_LOCATION_TEXT_PROPERTY),
+                        StringUtils.asString(dependentOnGf)));
                 text.append(StringUtils.LF);
             }
             
@@ -253,11 +264,11 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
         @Override
         protected String validateInput() {
             try {
-                final List<File> roots = 
+                final List<File> roots =
                         SystemUtils.getFileSystemRoots();
-                final List<Product> products = 
+                final List<Product> products =
                         Registry.getInstance().getProductsToInstall();
-                final Map<File, Long> spaceMap = 
+                final Map<File, Long> spaceMap =
                         new HashMap<File, Long>();
                 
                 for (Product product: products) {
@@ -266,7 +277,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                                 root, product.getInstallationLocation())) {
                             Long size = spaceMap.get(root);
                             if (size != null) {
-                                size = Long.valueOf(size.longValue() + 
+                                size = Long.valueOf(size.longValue() +
                                         product.getRequiredDiskSpace());
                             } else {
                                 size = Long.valueOf(product.getRequiredDiskSpace());
@@ -279,9 +290,9 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                 
                 for (File root: spaceMap.keySet()) {
                     try {
-                        final long availableSpace = 
+                        final long availableSpace =
                                 SystemUtils.getFreeSpace(root);
-                        final long requiredSpace = 
+                        final long requiredSpace =
                                 spaceMap.get(root) + REQUIRED_SPACE_ADDITION;
                         
                         if (availableSpace < requiredSpace) {
@@ -292,14 +303,13 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                         }
                     } catch (NativeException e) {
                         ErrorManager.notifyError(
-                                "Cannot check the free disk space", 
+                                panel.getProperty(ERROR_CANNOT_CHECK_SPACE_PROPERTY),
                                 e);
                     }
                 }
             } catch (IOException e) {
                 ErrorManager.notifyError(
-                        "Cannot get the list of file system roots", 
-                        e);
+                        panel.getProperty(ERROR_FSROOTS_PROPERTY), e);
             }
             
             return null;
@@ -414,9 +424,20 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             "installation.size"; // NOI18N
     public static final String DOWNLOAD_SIZE_PROPERTY =
             "download.size"; // NOI18N
+    public static final String NB_ADDONS_LOCATION_TEXT_PROPERTY =
+            "addons.nb.install.location.text"; //NOI18N
+    public static final String GF_ADDONS_LOCATION_TEXT_PROPERTY =
+            "addons.gf.install.location.text"; //NOI18N
     
     public static final String ERROR_NOT_ENOUGH_SPACE_PROPERTY =
             "error.not.enough.space"; // NOI18N
+    public static final String ERROR_CANNOT_CHECK_SPACE_PROPERTY =
+            "error.cannot.check.space"; //NOI18N
+    public static final String ERROR_LOGIC_ACCESS_PROPERTY =
+            "error.logic.access"; // NOI18N
+    public static final String ERROR_FSROOTS_PROPERTY=
+            "error.fsroots"; //NOI18N
+    
     
     public static final String DEFAULT_TITLE =
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
@@ -440,6 +461,12 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
     public static final String DEFAULT_DOWNLOAD_SIZE =
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
             "NPrISP.download.size"); // NOI18N
+    public static final String DEFAULT_GF_ADDONS_LOCATION_TEXT =
+            ResourceUtils.getString(NbPreInstallSummaryPanel.class,
+            "NPrISP.addons.gf.install.location.text");//NOI18N
+    public static final String DEFAULT_NB_ADDONS_LOCATION_TEXT =
+            ResourceUtils.getString(NbPreInstallSummaryPanel.class,
+            "NPrISP.addons.nb.install.location.text");//NOI18N
     
     public static final String DEFAULT_NEXT_BUTTON_TEXT =
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
@@ -451,7 +478,17 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
     public static final String DEFAULT_ERROR_NOT_ENOUGH_SPACE =
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
             "NPrISP.error.not.enough.space"); // NOI18N
+    public static final String DEFAULT_ERROR_CANNOT_CHECK_SPACE =
+            ResourceUtils.getString(NbPreInstallSummaryPanel.class,
+            "NPrISP.error.cannot.check.space");// NOI8N
+    public static final String DEFAULT_ERROR_LOGIC_ACCESS =
+            ResourceUtils.getString(NbPreInstallSummaryPanel.class,
+            "NPrISP.error.logic.access");// NOI18N
+    public static final String DEFAULT_ERROR_FSROOTS=
+            ResourceUtils.getString(NbPreInstallSummaryPanel.class,
+            "NPrISP.error.fsroots"); //NOI18N
     
-    public static final long REQUIRED_SPACE_ADDITION = 
+    
+    public static final long REQUIRED_SPACE_ADDITION =
             10L * 1024L * 1024L; // 10MB
 }
