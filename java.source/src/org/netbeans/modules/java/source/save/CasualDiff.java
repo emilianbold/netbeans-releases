@@ -1185,52 +1185,52 @@ public class CasualDiff {
     protected int diffAnnotation(JCAnnotation oldT, JCAnnotation newT, int[] bounds) {
         int localPointer = bounds[0];
         int[] annotationBounds = getBounds(oldT.annotationType);
-        copyTo(localPointer,annotationBounds[0]);
+        copyTo(localPointer, annotationBounds[0]);
         localPointer = diffTree(oldT.annotationType, newT.annotationType, annotationBounds);
-        diffParameterList(oldT.args, newT.args, false, -1, printer);
+        if (oldT.args.nonEmpty()) {
+            copyTo(localPointer, localPointer = getOldPos(oldT.args.head));
+        } else {
+            copyTo(localPointer, localPointer = endPos(oldT)-1);
+        }
+        localPointer = diffParameterList(oldT.args, newT.args, false, localPointer, printer);
         copyTo(localPointer, bounds[1]);
         
         return bounds[1];
     }
     
     protected int diffModifiers(JCModifiers oldT, JCModifiers newT, JCTree parent, int lastPrinted) {
+        int localPointer = lastPrinted;
         if (oldT == newT) {
             // modifiers wasn't changed, return the position lastPrinted.
-            return lastPrinted;
+            return localPointer;
         }
         int result = endPos(oldT.annotations);
         int oldPos = oldT.pos != Position.NOPOS ? getOldPos(oldT) : getOldPos(parent);
         if (listsMatch(oldT.annotations, newT.annotations)) {
-            copyTo(lastPrinted, lastPrinted = oldPos);
+            copyTo(localPointer, localPointer = oldPos);
             if (result > 0) {
-                copyTo(lastPrinted, lastPrinted = result);
+                copyTo(localPointer, localPointer = result);
             } else {
             }
         } else {
-            if (oldT.annotations.isEmpty()) copyTo(lastPrinted, oldPos);
+            copyTo(localPointer, oldPos);
             PositionEstimator est = EstimatorFactory.annotations(((ModifiersTree) oldT).getAnnotations(), ((ModifiersTree) newT).getAnnotations(), workingCopy);
             int[] res = diffList(oldT.annotations, newT.annotations, oldPos, est, Measure.DEFAULT, printer);
-            lastPrinted = res[1];
-            //printer.printAnnotations(newT.annotations);
-//            if (result > 0) {
-//                copyTo(lastPrinted, lastPrinted = result);
-//            }
+            localPointer = res[1];
         }
         if (oldT.flags != newT.flags) {
             int endPos = endPos(oldT);
             if (endPos > 0) {
                 printer.print(newT.toString().trim());
-                lastPrinted = endPos;
+                localPointer = endPos;
             } else {
                 printer.print(newT.toString());
             }
         }
         if (endPos(oldT) > 0) {
-            copyTo(lastPrinted, endPos(oldT));
-            return endPos(oldT);
-        } else {
-            return lastPrinted;
+            copyTo(localPointer, localPointer = endPos(oldT));
         }
+        return localPointer;
     }
     
     protected void diffLetExpr(LetExpr oldT, LetExpr newT) {
@@ -1347,7 +1347,7 @@ public class CasualDiff {
           case JCTree.SELECT:
               return matchSelect((JCFieldAccess) t1, (JCFieldAccess) t2);
           case JCTree.IDENT:
-              return ((JCIdent)t1).sym == ((JCIdent)t2).sym;
+              return ((JCIdent)t1).getName().contentEquals(((JCIdent)t2).getName());
           case JCTree.LITERAL:
               return matchLiteral((JCLiteral)t1, (JCLiteral)t2);
           case JCTree.TYPEIDENT:
