@@ -77,15 +77,14 @@ public class PropertyAction extends AbstractAction {
                         try {
                             String action = e.getActionCommand();
                             if (OK_COMMAND.equals(action)) {
-                                Object value = ((EnhancedCustomPropertyEditor)custEditor).getPropertyValue();
                                 //josh: this is a hack until we find the right place to put the veto code
                                 if(property.getCurrentEditor() instanceof VetoableChangeListener && "action".equals(property.getName())) {
                                     // do the veto
                                     ((VetoableChangeListener)property.getCurrentEditor()).vetoableChange(
                                             new PropertyChangeEvent(this,PropertyEnv.PROP_STATE,null,"dummytext"));
-                                } else {
-                                    property.setValue(value);
                                 }
+                                Object value = ((EnhancedCustomPropertyEditor)custEditor).getPropertyValue();
+                                property.setValue(value);                                
                             } else if (RESTORE_COMMAND.equals(action)) {
                                 property.restoreDefaultValue();
                             }
