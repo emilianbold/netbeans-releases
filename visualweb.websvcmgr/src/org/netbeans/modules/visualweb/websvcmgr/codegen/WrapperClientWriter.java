@@ -231,7 +231,7 @@ public class WrapperClientWriter extends java.io.PrintWriter {
         }else {
             // Instantiate the Service class, specifying the wsdl URL kept in the
             // web service jar
-            URL url = new File(wsData.getURL()).toURL();
+            URL url = new File(wsData.getURL()).toURI().toURL();
             String urlPath = url.getPath();
             int start;
             if (url.getProtocol().toLowerCase().startsWith("file")) { // NOI18N
