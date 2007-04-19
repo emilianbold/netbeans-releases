@@ -102,7 +102,7 @@ import org.netbeans.modules.visualweb.propertyeditors.binding.data.DataBindingHe
  */
 public abstract class AbstractDesignInfo implements DesignInfo, DesignInfoExt {
     public static final String DECORATION_ICON =
-            "/org/netbeans/modules/visualweb/web/ui/dt/resources/Decoration.gif";
+            "/org/netbeans/modules/visualweb/web/ui/dt/resources/Decoration.png";
     
     // ------------------------------------------------------------- Constructor
     
