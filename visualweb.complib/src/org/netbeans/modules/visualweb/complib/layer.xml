@@ -28,15 +28,19 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="org-netbeans-modules-visualweb-complib-ui-ComponentLibraryManagerAction.instance/org-netbeans-modules-visualweb-complib-ui-SharedComplibAction.instance" boolvalue="true"/>
             <file name="org-netbeans-modules-visualweb-complib-ui-ComponentLibraryManagerAction.instance"/>
             <!-- Temporary UI -->
+            <!--
             <file name="org-netbeans-modules-visualweb-complib-ui-SharedComplibAction.instance"/>
+            -->
       <!-- For debug only
             <file name="com-sun-rave-complib-ui-ComplibDebugAction.instance"/>
       -->
         </folder>
     </folder>
+    <!--
     <folder name="OptionsDialog">
         <folder name="Advanced">
             <file name="org-netbeans-modules-visualweb-complib-ui-ComplibAdvancedOption.instance"/>
         </folder>
     </folder>
+    -->
 </filesystem>
