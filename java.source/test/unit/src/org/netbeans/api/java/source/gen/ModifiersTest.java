@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.api.java.source.gen;
@@ -72,9 +72,10 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new ModifiersTest("testMethodMods7"));
 //        suite.addTest(new ModifiersTest("testAnnRename"));
 //        suite.addTest(new ModifiersTest("testAddArrayValue"));
+//        suite.addTest(new ModifiersTest("testRenameAnnotationAttribute"));
         return suite;
     }
-    
+
     /**
      * Tests the change of modifier in local variable
      */
@@ -580,6 +581,50 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 AssignmentTree at = make.Assignment(make.Identifier("value"), nat);
                 AnnotationTree ann = make.Annotation(make.Identifier("Annotation"), Collections.<ExpressionTree>singletonList(at));
                 workingCopy.rewrite(mods, make.Modifiers(mods.getFlags(), Collections.<AnnotationTree>singletonList(ann)));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /*
+     * Test rename annotation attribute, regression test for #99162
+     */
+    public void testRenameAnnotationAttribute() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package flaska;\n" +
+                "\n" +
+                "import java.io.*;\n" +
+                "\n" +
+                "@Annotation(val = 2)\n" +
+                "public class Test {\n" +
+                "}\n"
+                );
+        String golden =
+                "package flaska;\n" +
+                "\n" +
+                "import java.io.*;\n" +
+                "\n" +
+                "@Annotation(value = 2)\n" +
+                "public class Test {\n" +
+                "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+            
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                ModifiersTree mods = clazz.getModifiers();
+                AnnotationTree annotationTree = mods.getAnnotations().get(0);
+                AssignmentTree assignementTree = (AssignmentTree) annotationTree.getArguments().get(0);
+                workingCopy.rewrite(assignementTree.getVariable(), make.Identifier("value"));
             }
             
             public void cancel() {
