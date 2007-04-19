@@ -154,13 +154,15 @@ class Constants {
         XML_ROOT_ELEMENT,
         XML_ELEMENT,
         XML_TRANSIENT,
+        XML_ATTRIBUTE,
         ARRAY_LIST_TYPE
     };
     
     public static final String[] ITEM_CONVERTER_IMPORTS = {
         XML_ROOT_ELEMENT,
         XML_ELEMENT,
-        XML_TRANSIENT
+        XML_TRANSIENT,
+        XML_ATTRIBUTE
     };
     
     public static final String[] REF_CONVERTER_IMPORTS = {
