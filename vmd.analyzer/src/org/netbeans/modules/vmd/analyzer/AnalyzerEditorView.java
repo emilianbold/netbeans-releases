@@ -18,27 +18,29 @@
  */
 package org.netbeans.modules.vmd.analyzer;
 
-import org.netbeans.modules.vmd.api.io.DataObjectContext;
-import org.netbeans.modules.vmd.api.io.DataEditorView;
-import org.netbeans.modules.vmd.api.io.DesignDocumentAwareness;
 import org.netbeans.modules.vmd.api.analyzer.Analyzer;
+import org.netbeans.modules.vmd.api.io.DataEditorView;
+import org.netbeans.modules.vmd.api.io.DataObjectContext;
+import org.netbeans.modules.vmd.api.io.DesignDocumentAwareness;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.openide.awt.UndoRedo;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.awt.UndoRedo;
 
 import javax.swing.*;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Collections;
 import java.awt.*;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * @author David Kaspar
  */
 public class AnalyzerEditorView implements DataEditorView, DesignDocumentAwareness {
+
+    private static final Color BACKGROUND_COLOR = new Color (0xFBF9F3);
 
     private static final long serialVersionUID = -1;
 
@@ -61,33 +63,33 @@ public class AnalyzerEditorView implements DataEditorView, DesignDocumentAwarene
         Collection<? extends Analyzer> analyzers = Lookup.getDefault ().lookupResult (Analyzer.class).allInstances ();
         toolbar = new JPanel ();
         panel = new JPanel ();
-        panel.setLayout (new GridBagLayout ());
+        panel.setLayout(new GridBagLayout());
+        panel.setBackground(BACKGROUND_COLOR);
+        panel.setBorder (BorderFactory.createEmptyBorder (1, 1, 1, 1));
         scroll = new JScrollPane (panel);
-        GridBagConstraints gbc = new GridBagConstraints (0, 0, 1, 1, 1.0, 0.0, GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets (10, 10, 10, 10), 0, 0);
+
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.weightx = 1.0;
+        constraints.weighty = 0.0;
+        constraints.insets = new Insets (10, 10, 10, 10);
+        constraints.fill = GridBagConstraints.HORIZONTAL;
+        constraints.gridx = GridBagConstraints.REMAINDER;
+        constraints.gridy = GridBagConstraints.RELATIVE;
+        constraints.anchor = GridBagConstraints.NORTHWEST;
+
         for (Analyzer analyzer : analyzers) {
             String projectType = context.getProjectType ();
             if (projectType == null  ||  ! projectType.equals (analyzer.getProjectType ()))
                 continue;
             JComponent visualRepresentation = analyzer.createVisualRepresentation ();
             components.put (analyzer, visualRepresentation);
-            if (visualRepresentation != null) {
-                JLabel label = new JLabel ();
-                label.setBackground (Color.WHITE);
-                label.setOpaque (true);
-                label.setFont (label.getFont ().deriveFont (Font.BOLD, 16.0f));
-                Image icon = analyzer.getIcon ();
-                if (icon != null)
-                    label.setIcon (new ImageIcon (icon));
-                label.setText (analyzer.getDisplayName ());
-                label.setToolTipText (analyzer.getToolTip ());
-                panel.add (label, gbc);
-                gbc.gridy ++;
-                panel.add (visualRepresentation, gbc);
-                gbc.gridy ++;
-            }
+            if (visualRepresentation != null)
+                panel.add (new AnalyzerPanel (analyzer, visualRepresentation), constraints);
         }
-        gbc.weighty = 1.0;
-        panel.add (new JPanel (), gbc);
+        constraints.weighty = 1.0;
+        JPanel filler = new JPanel ();
+        filler.setOpaque (false);
+        panel.add (filler, constraints);
         context.addDesignDocumentAwareness (this);
     }
 
