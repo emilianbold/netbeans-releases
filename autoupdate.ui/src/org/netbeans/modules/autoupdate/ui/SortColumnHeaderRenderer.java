@@ -18,7 +18,6 @@
 package org.netbeans.modules.autoupdate.ui;
 
 import java.awt.Component;
-import java.util.Comparator;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JTable;
@@ -35,10 +34,10 @@ public class SortColumnHeaderRenderer implements TableCellRenderer{
     private Object sortColumn = null;
     private static ImageIcon SORT_DESC_ICON =
         new ImageIcon(org.openide.util.Utilities.loadImage(
-        "org/netbeans/modules/autoupdate/ui/columnsSortedDesc.gif")); // NOI18N
+        "org/netbeans/modules/autoupdate/ui/resources/columnsSortedDesc.gif")); // NOI18N
     private static ImageIcon SORT_ASC_ICON = 
         new ImageIcon(org.openide.util.Utilities.loadImage(
-        "org/netbeans/modules/autoupdate/ui/columnsSortedAsc.gif")); // NOI18N
+        "org/netbeans/modules/autoupdate/ui/resources/columnsSortedAsc.gif")); // NOI18N
     
     private boolean sortAscending = false;
     public SortColumnHeaderRenderer(UnitCategoryTableModel model, TableCellRenderer textRenderer) {
