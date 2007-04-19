@@ -140,6 +140,8 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
                 hfw = new DebuggerHeapFragmentWalker(heap);
                 cc = hfw.getClassesController();
                 content = cc.getPanel();
+                java.awt.Component header = cc.getClassesListController().getPanel().getComponent(0);
+                header.setVisible(false);
                 clc = cc.getClassesListController();
             }
             cc.getClassesListController().setColumnVisibility(3, false);

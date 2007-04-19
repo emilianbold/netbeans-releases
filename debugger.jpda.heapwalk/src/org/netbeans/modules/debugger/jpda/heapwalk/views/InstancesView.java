@@ -43,6 +43,13 @@ public class InstancesView extends TopComponent {
         HeapFragmentWalker hfw = cc.getCurrentFragmentWalker();
         if (hfw != null) {
             setLayout (new BorderLayout ());
+            java.awt.Container header;
+            header = (java.awt.Container) hfw.getInstancesController().getFieldsBrowserController().getPanel().getComponent(0);
+            header.getComponent(1).setVisible(false);
+            header = (java.awt.Container) hfw.getInstancesController().getInstancesListController().getPanel().getComponent(0);
+            header.getComponent(1).setVisible(false);
+            header = (java.awt.Container) hfw.getInstancesController().getReferencesBrowserController().getPanel().getComponent(0);
+            header.getComponent(1).setVisible(false);
             add(hfw.getInstancesController().getPanel(), "Center");
         }
     }
