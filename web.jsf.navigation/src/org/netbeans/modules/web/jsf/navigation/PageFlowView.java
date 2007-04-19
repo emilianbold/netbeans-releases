@@ -204,10 +204,10 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
      */
     public void validateGraph() {
         //        scene.layoutScene();
-        System.out.println("Validating Graph: ");
-        System.out.println("Nodes: " + scene.getNodes());
-        System.out.println("Edges: "+ scene.getEdges());
-        System.out.println("Pins: " + scene.getPins());
+//        System.out.println("Validating Graph: ");
+//        System.out.println("Nodes: " + scene.getNodes());
+//        System.out.println("Edges: "+ scene.getEdges());
+//        System.out.println("Pins: " + scene.getPins());
         scene.validate();
     }
     
