@@ -140,7 +140,8 @@ public class RenderErrorPanelImpl extends JPanel implements ActionListener, JsfF
 //        // 6274302: See if the user has cleared the error
 ////        webform.refresh(true);
 //        webform.refreshModel(true);
-        errorPanelCallback.handleRefresh(jsfForm.getFacesModel().isBusted());
+//        errorPanelCallback.handleRefresh(jsfForm.getFacesModel().isBusted());
+        errorPanelCallback.handleRefresh(jsfForm.isModelBusted());
     }
 
     /** This method is called from within the constructor to

@@ -292,9 +292,9 @@ class DomProviderImpl implements DomProvider {
 //        return Util.isWoodstockPage(jsfForm.getJspDom());
 //    }
 
-    private /*public*/ FacesModel getFacesModel() {
-        return jsfForm.getFacesModel();
-    }
+//    private /*public*/ FacesModel getFacesModel() {
+//        return jsfForm.getFacesModel();
+//    }
     
     private DndSupport getDndSupport() {
         return jsfForm.getDndSupport();
@@ -309,7 +309,8 @@ class DomProviderImpl implements DomProvider {
     }
 
     public DataObject getJspDataObject() {
-        FileObject file = getFacesModel().getMarkupFile();
+//        FileObject file = getFacesModel().getMarkupFile();
+        FileObject file = jsfForm.getMarkupFile();
 
         try {
             return DataObject.find(file);
@@ -321,7 +322,8 @@ class DomProviderImpl implements DomProvider {
     }
 
     public URL getBaseUrl() {
-        MarkupUnit markupUnit = getFacesModel().getMarkupUnit();
+//        MarkupUnit markupUnit = getFacesModel().getMarkupUnit();
+        MarkupUnit markupUnit = jsfForm.getMarkupUnit();
         if (markupUnit == null) {
             // #6457856 NPE
             return null;
@@ -341,7 +343,8 @@ class DomProviderImpl implements DomProvider {
     /*public*/
     /*public*/
     /*public*/ DocumentFragment renderHtmlForMarkupDesignBean(MarkupDesignBean markupDesignBean) {
-        return FacesPageUnit.renderHtml(getFacesModel(), markupDesignBean);
+//        return FacesPageUnit.renderHtml(getFacesModel(), markupDesignBean);
+        return jsfForm.renderMarkupDesignBean(markupDesignBean);
     }
 
 //    public Document getJspDom() {
@@ -415,7 +418,8 @@ class DomProviderImpl implements DomProvider {
 
         // See if ALL the beans being dragged can be dropped here
 //        LiveUnit unit = webform.getModel().getLiveUnit();
-        LiveUnit unit = getFacesModel().getLiveUnit();
+//        LiveUnit unit = getFacesModel().getLiveUnit();
+        LiveUnit unit = jsfForm.getLiveUnit();
 
         List<DesignBean> beans = new ArrayList<DesignBean>();
         for (Element componentRootElement : componentRootElements) {
@@ -458,7 +462,8 @@ class DomProviderImpl implements DomProvider {
 
         if ((region != null) && region.isClickable()) {
             Result r = region.regionClicked(clickCount);
-            ResultHandler.handleResult(r, getFacesModel());
+//            ResultHandler.handleResult(r, getFacesModel());
+            jsfForm.handleResult(r);
             // #6353410 If there was performed click on the region
             // then do not perform other actions on the same click.
             return true;
@@ -488,7 +493,8 @@ class DomProviderImpl implements DomProvider {
         if (markupDesignBean == null) {
             return false;
         }
-        FacesPageUnit facesUnit = getFacesModel().getFacesUnit();
+//        FacesPageUnit facesUnit = getFacesModel().getFacesUnit();
+        FacesPageUnit facesUnit = jsfForm.getFacesPageUnit();
         if ((facesUnit == null)
         || ((facesUnit.getDefaultParent() != Util.getMarkupBean(markupDesignBean))
             && (markupDesignBean.getElement() != MarkupService.getSourceElementForElement(getHtmlBody())))
@@ -579,7 +585,8 @@ class DomProviderImpl implements DomProvider {
 //    }
 
     /*public*/ boolean setPrerenderedBean(MarkupDesignBean markupDesignBean, DocumentFragment documentFragment) {
-        LiveUnit lu = getFacesModel().getLiveUnit();
+//        LiveUnit lu = getFacesModel().getLiveUnit();
+        LiveUnit lu = jsfForm.getLiveUnit();
         BeansUnit bu = lu.getBeansUnit();
 
         FacesPageUnit facesPageUnit;
@@ -594,18 +601,19 @@ class DomProviderImpl implements DomProvider {
     }
 
     public org.openide.nodes.Node getRootBeanNode() {
-        FacesModel facesModel = getFacesModel();
-        DesignBean rootBean = facesModel.getRootBean();
-        if (rootBean == null) {
-            // XXX If the model is busted then it is supposed to be OK, there is an error, see e.g. #6478860.
-            if (!facesModel.isBusted()) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                        new IllegalStateException("Invalid FacesModel, it is not busted and its root design bean is null, facesModel=" + facesModel)); // NOI18N
-            }
-            return null;
-        } else {
-            return DesigntimeIdeBridgeProvider.getDefault().getNodeRepresentation(rootBean);
-        }
+//        FacesModel facesModel = getFacesModel();
+//        DesignBean rootBean = facesModel.getRootBean();
+//        if (rootBean == null) {
+//            // XXX If the model is busted then it is supposed to be OK, there is an error, see e.g. #6478860.
+//            if (!facesModel.isBusted()) {
+//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+//                        new IllegalStateException("Invalid FacesModel, it is not busted and its root design bean is null, facesModel=" + facesModel)); // NOI18N
+//            }
+//            return null;
+//        } else {
+//            return DesigntimeIdeBridgeProvider.getDefault().getNodeRepresentation(rootBean);
+//        }
+        return jsfForm.getRootBeanNode();
     }
 
 //    public void deleteBean(DesignBean designBean) {
@@ -644,9 +652,11 @@ class DomProviderImpl implements DomProvider {
 //    }
     // XXX Replacing the above
     public Element getDefaultParentComponent() {
-        LiveUnit liveUnit = getFacesModel().getLiveUnit();
+//        LiveUnit liveUnit = getFacesModel().getLiveUnit();
+        LiveUnit liveUnit = jsfForm.getLiveUnit();
         if (liveUnit != null) {
-            MarkupBean bean = getFacesModel().getFacesUnit().getDefaultParent();
+//            MarkupBean bean = getFacesModel().getFacesUnit().getDefaultParent();
+            MarkupBean bean = jsfForm.getFacesPageUnit().getDefaultParent();
 
             if (bean != null) {
                 DesignBean designBean = liveUnit.getDesignBean(bean);
@@ -788,14 +798,16 @@ class DomProviderImpl implements DomProvider {
 //    }
 
     public void readLock() {
-        MarkupUnit markupUnit = getFacesModel().getMarkupUnit();
+//        MarkupUnit markupUnit = getFacesModel().getMarkupUnit();
+        MarkupUnit markupUnit = jsfForm.getMarkupUnit();
         if (markupUnit != null) {
             markupUnit.readLock();
         }
     }
 
     public void readUnlock() {
-        MarkupUnit markupUnit = getFacesModel().getMarkupUnit();
+//        MarkupUnit markupUnit = getFacesModel().getMarkupUnit();
+        MarkupUnit markupUnit = jsfForm.getMarkupUnit();
         if (markupUnit != null) {
             markupUnit.readUnlock();
         }
@@ -806,11 +818,13 @@ class DomProviderImpl implements DomProvider {
 //        if (markupUnit == null) {
 //            return false;
 //        }
-        return getFacesModel().isValid();
+//        return getFacesModel().isValid();
+        return jsfForm.isModelValid();
     }
     
     public boolean isModelBusted() {
-        return getFacesModel().isBusted();
+//        return getFacesModel().isBusted();
+        return jsfForm.isModelBusted();
     }
 
 //    public void setModelActivated(boolean activated) {
@@ -837,11 +851,13 @@ class DomProviderImpl implements DomProvider {
 //    }
 
     public boolean isPage() {
-        return getFacesModel().getFacesUnit().isPage();
+//        return getFacesModel().getFacesUnit().isPage();
+        return jsfForm.getFacesPageUnit().isPage();
     }
 
     public boolean isAlive() {
-        return getFacesModel().getLiveUnit() != null;
+//        return getFacesModel().getLiveUnit() != null;
+        return jsfForm.getLiveUnit() != null;
     }
 
     public boolean isFormComponent(Element componentRootElement) {
@@ -849,7 +865,8 @@ class DomProviderImpl implements DomProvider {
         if (bean == null) {
             return false;
         }
-        return Util.isFormBean(getFacesModel(), bean);
+//        return Util.isFormBean(getFacesModel(), bean);
+        return jsfForm.isFormDesignBean(bean);
     }
 
     public int getDropType(/*DesignBean origDroppee,*/Element origDropeeComponentRootElement, Element droppeeElement, Transferable t, boolean linkOnly) {
@@ -887,7 +904,8 @@ class DomProviderImpl implements DomProvider {
     }
     
     private /*public*/ MarkupDesignBean getMarkupDesignBeanEquivalentTo(MarkupDesignBean oldBean) {
-        LiveUnit liveUnit = getFacesModel().getLiveUnit();
+//        LiveUnit liveUnit = getFacesModel().getLiveUnit();
+        LiveUnit liveUnit = jsfForm.getLiveUnit();
         if (liveUnit == null) {
             return null;
         }
@@ -909,7 +927,8 @@ class DomProviderImpl implements DomProvider {
             return false;
         }
         
-        LiveUnit lu = getFacesModel().getLiveUnit();
+//        LiveUnit lu = getFacesModel().getLiveUnit();
+        LiveUnit lu = jsfForm.getLiveUnit();
         MarkupPosition markupPos = new MarkupPosition(parentNode, before);
         DesignBean parentBean = null;
         Node e = parentNode;
@@ -1397,8 +1416,10 @@ class DomProviderImpl implements DomProvider {
     //        }
     //        LiveUnit liveUnit = (LiveUnit)designContext;
     //        Project project = liveUnit.getModel().getProject();
-            Project project = getFacesModel().getProject();
-            LiveUnit liveUnit = getFacesModel().getLiveUnit();
+//            Project project = getFacesModel().getProject();
+//            LiveUnit liveUnit = getFacesModel().getLiveUnit();
+            Project project = jsfForm.getProject();
+            LiveUnit liveUnit = jsfForm.getLiveUnit();
             if (liveUnit == null) {
                 // XXX Log problem?
                 return;

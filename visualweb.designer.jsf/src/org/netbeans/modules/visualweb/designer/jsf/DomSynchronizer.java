@@ -99,7 +99,8 @@ FacesDndSupport.UpdateSuspender {
         currentDOM = jsfForm.getJspDom();
 
         if (currentDOM == null) {
-            jsfForm.getFacesModel().sync();
+//            jsfForm.getFacesModel().sync();
+            jsfForm.syncModel();
             currentDOM = jsfForm.getJspDom();
 
                 // XXX What was this good for?
@@ -920,8 +921,9 @@ FacesDndSupport.UpdateSuspender {
         // TODO - this should not necessarily have to involve FacesBeans!
 //        DocumentFragment df = FacesSupport.renderHtml(markupFile, bean, !CssBox.noBoxPersistence);
 //        DocumentFragment df = InSyncServiceProvider.get().renderHtml(markupFile, bean);
-        FacesModel facesModel = jsfForm.getFacesModel();
-        DocumentFragment df = FacesPageUnit.renderHtml(facesModel, bean);
+//        FacesModel facesModel = jsfForm.getFacesModel();
+//        DocumentFragment df = FacesPageUnit.renderHtml(facesModel, bean);
+        DocumentFragment df = jsfForm.renderMarkupDesignBean(bean);
         
         // XXX FIXME Is this correct here?
 //        webform.updateErrorsInComponent();
@@ -978,7 +980,8 @@ FacesDndSupport.UpdateSuspender {
         } else {
 //            assert false; // can this happen?
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                    new NullPointerException("Null DocumentFragment for FacesModel, facesModel=" + facesModel)); // NOI18N
+//                    new NullPointerException("Null DocumentFragment for FacesModel, facesModel=" + facesModel)); // NOI18N
+                    new NullPointerException("Null DocumentFragment for JsfForm, jsfForm=" + jsfForm)); // NOI18N
             return false;
         }
 

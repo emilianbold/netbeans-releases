@@ -29,6 +29,7 @@ import com.sun.rave.designtime.DesignEvent;
 import com.sun.rave.designtime.DesignProject;
 import com.sun.rave.designtime.DesignProperty;
 import com.sun.rave.designtime.Position;
+import com.sun.rave.designtime.Result;
 import com.sun.rave.designtime.event.DesignContextListener;
 import com.sun.rave.designtime.event.DesignProjectListener;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
@@ -60,11 +61,13 @@ import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
+import org.netbeans.modules.visualweb.api.designtime.idebridge.DesigntimeIdeBridgeProvider;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.netbeans.modules.visualweb.designer.jsf.ui.ErrorPanelImpl;
 import org.netbeans.modules.visualweb.designer.jsf.ui.JsfMultiViewElement;
 import org.netbeans.modules.visualweb.designer.jsf.ui.NotAvailableMultiViewElement;
 import org.netbeans.modules.visualweb.designer.jsf.ui.RenderErrorPanelImpl;
+import org.netbeans.modules.visualweb.insync.ResultHandler;
 import org.netbeans.modules.visualweb.insync.UndoEvent;
 import org.netbeans.modules.visualweb.insync.Unit;
 import org.netbeans.modules.visualweb.insync.Util;
@@ -589,7 +592,7 @@ public class JsfForm {
         }
     }
     
-    public FacesModel getFacesModel() {
+    private FacesModel getFacesModel() {
 //        synchronized (facesModel2jsfForm) {
         synchronized (jsfForms) {
             return facesModel;
@@ -767,17 +770,18 @@ public class JsfForm {
     }
     
     public boolean isGridMode() {
-        Element body = getHtmlBody();
-
-        if (body == null) {
-            return false;
-        }
-
-//        Value val = CssLookup.getValue(b, XhtmlCss.RAVELAYOUT_INDEX);
-        CssValue cssValue = CssProvider.getEngineService().getComputedValueForElement(body, XhtmlCss.RAVELAYOUT_INDEX);
-
-//        return val == CssValueConstants.GRID_VALUE;
-        return CssProvider.getValueService().isGridValue(cssValue);
+//        Element body = getHtmlBody();
+//
+//        if (body == null) {
+//            return false;
+//        }
+//
+////        Value val = CssLookup.getValue(b, XhtmlCss.RAVELAYOUT_INDEX);
+//        CssValue cssValue = CssProvider.getEngineService().getComputedValueForElement(body, XhtmlCss.RAVELAYOUT_INDEX);
+//
+////        return val == CssValueConstants.GRID_VALUE;
+//        return CssProvider.getValueService().isGridValue(cssValue);
+        return Util.isGridMode(getFacesModel());
     }
     
     void documentReplaced() {
@@ -1557,11 +1561,17 @@ public class JsfForm {
     }
     
     boolean isModelValid() {
-        return domProvider.isModelValid();
+        // XXX
+        MarkupUnit markupUnit = getFacesModel().getMarkupUnit();
+        if (markupUnit == null) {
+            return false;
+        }
+        return getFacesModel().isValid();
     }
     
     public boolean isModelBusted() {
-        return domProvider.isModelBusted();
+//        return domProvider.isModelBusted();
+        return getFacesModel().isBusted();
     }
     
     public /*private*/ void clearHtml() {
@@ -2417,5 +2427,68 @@ public class JsfForm {
         }
     } // End of DesignProjectListener.
 
+    
+    DocumentFragment renderMarkupDesignBean(MarkupDesignBean markupDesignBean) {
+        return FacesPageUnit.renderHtml(getFacesModel(), markupDesignBean);
+    }
+    
+    LiveUnit getLiveUnit() {
+        return getFacesModel().getLiveUnit();
+    }
+    
+    Project getProject() {
+        return getFacesModel().getProject();
+    }
+    
+    FileObject getMarkupFile() {
+        return getFacesModel().getMarkupFile();
+    }
+    
+    FacesPageUnit getFacesPageUnit() {
+        return getFacesModel().getFacesUnit();
+    }
+    
+    void customizeCreation(DesignBean[] designBeans) {
+        Util.customizeCreation(designBeans, getFacesModel());
+    }
+    
+    void designBeanCreated(DesignBean designBean) {
+        getFacesModel().beanCreated(designBean);
+    }
+    
+    void handleResult(Result result) {
+        ResultHandler.handleResult(result, getFacesModel());
+    }
+    
+    void linkDesignBeans(DesignBean droppee, DesignBean lb) {
+        getFacesModel().linkBeans(droppee, lb);
+    }
+    
+    DesignBean findParent(String className, DesignBean droppee, Node parentNode, boolean searchUp) {
+        return Util.findParent(className, droppee, parentNode, searchUp, getFacesModel());
+    }
+    
+    boolean isFormDesignBean(DesignBean designBean) {
+        return Util.isFormBean(getFacesModel(), designBean);
+    }
+    
+    MarkupUnit getMarkupUnit() {
+        return getFacesModel().getMarkupUnit();
+    }
+    
+    org.openide.nodes.Node getRootBeanNode() {
+        FacesModel facesModel = getFacesModel();
+        DesignBean rootBean = facesModel.getRootBean();
+        if (rootBean == null) {
+            // XXX If the model is busted then it is supposed to be OK, there is an error, see e.g. #6478860.
+            if (!facesModel.isBusted()) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                        new IllegalStateException("Invalid FacesModel, it is not busted and its root design bean is null, facesModel=" + facesModel)); // NOI18N
+            }
+            return null;
+        } else {
+            return DesigntimeIdeBridgeProvider.getDefault().getNodeRepresentation(rootBean);
+        }
+    }
 }
 

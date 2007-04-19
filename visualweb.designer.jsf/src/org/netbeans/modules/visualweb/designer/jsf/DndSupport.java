@@ -78,9 +78,9 @@ class DndSupport implements /*XXX*/FacesModel.JsfSupport {
     }
 
     
-    private FacesModel getFacesModel() {
-        return jsfForm.getFacesModel();
-    }
+//    private FacesModel getFacesModel() {
+//        return jsfForm.getFacesModel();
+//    }
     
     DataFlavor getImportFlavor(DataFlavor[] flavors) {
         return FacesDndSupport.getImportFlavor(flavors);
@@ -467,7 +467,8 @@ class DndSupport implements /*XXX*/FacesModel.JsfSupport {
     }
     
     private boolean canCreateBean(String className, DesignBean parent, Position pos) {
-        LiveUnit liveUnit = getFacesModel().getLiveUnit();
+//        LiveUnit liveUnit = getFacesModel().getLiveUnit();
+        LiveUnit liveUnit = jsfForm.getLiveUnit();
         if (liveUnit == null) {
             return false;
         }
@@ -475,11 +476,13 @@ class DndSupport implements /*XXX*/FacesModel.JsfSupport {
     }
     
     private DesignBean findParent(String className, DesignBean droppee, Node parentNode, boolean searchUp) {
-        return Util.findParent(className, droppee, parentNode, searchUp, getFacesModel());
+//        return Util.findParent(className, droppee, parentNode, searchUp, getFacesModel());
+        return jsfForm.findParent(className, droppee, parentNode, searchUp);
     }
     
     private Class getBeanClass(String className) throws ClassNotFoundException {
-        return getFacesModel().getFacesUnit().getBeanClass(className);
+//        return getFacesModel().getFacesUnit().getBeanClass(className);
+        return jsfForm.getFacesPageUnit().getBeanClass(className);
     }
     
     private void showDropMatch(Element componentRootElement, int dropType) {

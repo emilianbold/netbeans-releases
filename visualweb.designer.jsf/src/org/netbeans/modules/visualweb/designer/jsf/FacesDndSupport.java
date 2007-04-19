@@ -142,8 +142,8 @@ class FacesDndSupport {
 
 
     private final JsfForm jsfForm;
-    // XXX TODO Get rid of this.
-    private final FacesModel facesModel;
+//    // XXX TODO Get rid of this.
+//    private final FacesModel facesModel;
     
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     
@@ -162,7 +162,7 @@ class FacesDndSupport {
         }
         this.jsfForm = jsfForm;
 //        this.facesModel = facesModel;
-        this.facesModel = jsfForm.getFacesModel();
+//        this.facesModel = jsfForm.getFacesModel();
     }
 
     
@@ -343,7 +343,8 @@ class FacesDndSupport {
             return;
         }
         
-        LiveUnit unit = facesModel.getLiveUnit();
+//        LiveUnit unit = facesModel.getLiveUnit();
+        LiveUnit unit = jsfForm.getLiveUnit();
         if (unit == null) {
             NotifyDescriptor d =
                 new NotifyDescriptor.Message(NbBundle.getMessage(FacesDndSupport.class, "TXT_NoHtmlDrops"),
@@ -398,7 +399,8 @@ class FacesDndSupport {
                 DesignBean droppee = location.getDroppee();
                 if (droppee != null) {
 //                    location = computePositions(droppee1, DROP_CENTER, null, null, null, false);
-                    location = computeLocationForBean(droppee, DROP_CENTER, null, null, dropSize, facesModel);
+//                    location = computeLocationForBean(droppee, DROP_CENTER, null, null, dropSize, facesModel);
+                    location = computeLocationForBean(droppee, DROP_CENTER, null, null, dropSize, jsfForm);
                     doBindOrMoveItems(dropAction, beans, t, droppee, DROP_CENTER, null, location, /*coordinateTranslator,*/ updateSuspender);
                 }
             } else if (transferData instanceof org.openide.nodes.Node) {
@@ -408,18 +410,22 @@ class FacesDndSupport {
                 if (dobj != null) {
                     FileObject fo = dobj.getPrimaryFile();
 //                    String rel = DesignerUtils.getPageRelativePath(webform, fo);
-                    String rel = getPageRelativePath(facesModel.getProject(), fo);
+//                    String rel = getPageRelativePath(facesModel.getProject(), fo);
+                    String rel = getPageRelativePath(jsfForm.getProject(), fo);
                     
                     Project fileProject = FileOwnerQuery.getOwner(fo);
 
-                    if (fileProject != facesModel.getProject()) {
+//                    if (fileProject != facesModel.getProject()) {
+                    if (fileProject != jsfForm.getProject()) {
                         // Import file into our project first
-                        FileObject webitem = facesModel.getMarkupFile();
+//                        FileObject webitem = facesModel.getMarkupFile();
+                        FileObject webitem = jsfForm.getMarkupFile();
 
                         try {
                             if (isImage(fo.getExt()) || isStylesheet(fo.getExt())) {
                                 // Import web context relative rather than file relative
-                                DesignProject project = facesModel.getLiveUnit().getProject();
+//                                DesignProject project = facesModel.getLiveUnit().getProject();
+                                DesignProject project = jsfForm.getLiveUnit().getProject();
                                 File file = FileUtil.toFile(fo);
                                 URL url = file.toURI().toURL();
                                 rel = RESOURCES + UrlPropertyEditor.encodeUrl(file.getName());
@@ -542,13 +548,15 @@ class FacesDndSupport {
             int action = DnDConstants.ACTION_MOVE;
 
             if (location.getDroppee() == null) {
-                MarkupBean bean = facesModel.getFacesUnit().getDefaultParent();
+//                MarkupBean bean = facesModel.getFacesUnit().getDefaultParent();
+                MarkupBean bean = jsfForm.getFacesPageUnit().getDefaultParent();
 
                 if (bean != null) {
                     if (!(location instanceof LocationImpl)) {
                         location = new LocationImpl(location);
                     }
-                    ((LocationImpl)location).droppee = facesModel.getLiveUnit().getDesignBean(bean);
+//                    ((LocationImpl)location).droppee = facesModel.getLiveUnit().getDesignBean(bean);
+                    ((LocationImpl)location).droppee = jsfForm.getLiveUnit().getDesignBean(bean);
                 }
             }
 
@@ -565,7 +573,8 @@ class FacesDndSupport {
 
         String description = NbBundle.getMessage(FacesDndSupport.class,
                 (items.length > 1) ? "LBL_DropComponents" : "LBL_DropComponent"); // NOI18N
-        UndoEvent undoEvent = facesModel.writeLock(description);
+//        UndoEvent undoEvent = facesModel.writeLock(description);
+        UndoEvent undoEvent = jsfForm.writeLock(description);
         
         // Don't want BeanPaletteItem.beanCreated; only want the
         // set operation. For now the dataconnectivity module relies on
@@ -589,7 +598,8 @@ class FacesDndSupport {
             beansCreated(beans, beanItems);
 
             processLinks(location.getDroppeeElement(), null, beans, false, true, false, updateSuspender);
-            Util.customizeCreation(beans.toArray(new DesignBean[beans.size()]), facesModel);
+//            Util.customizeCreation(beans.toArray(new DesignBean[beans.size()]), facesModel);
+            jsfForm.customizeCreation(beans.toArray(new DesignBean[beans.size()]));
 
 ////            selectBean(select);
 ////            webform.getSelection().selectBean(select);
@@ -607,7 +617,8 @@ class FacesDndSupport {
             // and the right tab fronted!
         } finally {
 //            document.writeUnlock();
-            facesModel.writeUnlock(undoEvent);
+//            facesModel.writeUnlock(undoEvent);
+            jsfForm.writeUnlock(undoEvent);
         }
 
         return true;
@@ -626,7 +637,8 @@ class FacesDndSupport {
             DesignBean lb = beans.get(i);
 
             try {
-                facesModel.beanCreated(lb);
+//                facesModel.beanCreated(lb);
+                jsfForm.designBeanCreated(lb);
             } catch (Exception e) {
                 ErrorManager.getDefault().notify(e);
             }
@@ -673,13 +685,15 @@ class FacesDndSupport {
 
                     DesignBean[] createdBeans = list.toArray(new DesignBean[list.size()]);
                     Result result = bcis.beansCreatedSetup(createdBeans);
-                    ResultHandler.handleResult(result, facesModel);
+//                    ResultHandler.handleResult(result, facesModel);
+                    jsfForm.handleResult(result);
                 }
             } else if (item instanceof BeanCreateInfo) {
                 BeanCreateInfo bci = (BeanCreateInfo)item;
                 DesignBean bean = beans.get(i);
                 Result result = bci.beanCreatedSetup(bean);
-                ResultHandler.handleResult(result, facesModel);
+//                ResultHandler.handleResult(result, facesModel);
+                jsfForm.handleResult(result);
             } else {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                         new IllegalStateException("Invalid item=" + item)); // NOI18N
@@ -986,7 +1000,8 @@ class FacesDndSupport {
 //            Document document = webform.getDocument();
 
             String description = NbBundle.getMessage(FacesDndSupport.class, "LBL_LinkComponent"); // NOI18N
-            UndoEvent undoEvent = facesModel.writeLock(description);
+//            UndoEvent undoEvent = facesModel.writeLock(description);
+            UndoEvent undoEvent = jsfForm.writeLock(description);
             try {
 //                String description = NbBundle.getMessage(DndHandler.class, "LinkComponent"); // NOI18N
 //                document.writeLock(description);
@@ -1021,7 +1036,8 @@ class FacesDndSupport {
                         }
 
                         try {
-                            facesModel.linkBeans(droppee, lb);
+//                            facesModel.linkBeans(droppee, lb);
+                            jsfForm.linkDesignBeans(droppee, lb);
                         } finally {
                             if (mbean != null) {
                                 // Process queued up changes
@@ -1063,7 +1079,8 @@ class FacesDndSupport {
 
                         try {
                             Result r = region.linkBeans(droppee, lb);
-                            ResultHandler.handleResult(r, facesModel);
+//                            ResultHandler.handleResult(r, facesModel);
+                            jsfForm.handleResult(r);
                         } finally {
                             if (mbean != null) {
 //                                webform.getDomSynchronizer().setUpdatesSuspended(mbean, false);
@@ -1077,7 +1094,8 @@ class FacesDndSupport {
                 }
             } finally {
 //                document.writeUnlock();
-                facesModel.writeUnlock(undoEvent);
+//                facesModel.writeUnlock(undoEvent);
+                jsfForm.writeUnlock(undoEvent);
             }
         }
 
@@ -1233,7 +1251,8 @@ class FacesDndSupport {
                     className = classes[current++];
                 }
 
-                DesignBean parent = Util.findParent(className, droppee, position.getUnderParent(), true, facesModel);
+//                DesignBean parent = Util.findParent(className, droppee, position.getUnderParent(), true, facesModel);
+                DesignBean parent = jsfForm.findParent(className, droppee, position.getUnderParent(), true);
 
                 if (parent != null) {
                     boolean droppingOnFrameset = parent.getInstance() instanceof FramesetFrameset;
@@ -1306,7 +1325,8 @@ class FacesDndSupport {
                         ((position.getUnderParent() == null) &&
                         (position.getBeforeSibling() == null)))) {
                     // See if I have a Br
-                    MarkupBean formBean = facesModel.getFacesUnit().getDefaultParent();
+//                    MarkupBean formBean = facesModel.getFacesUnit().getDefaultParent();
+                    MarkupBean formBean = jsfForm.getFacesPageUnit().getDefaultParent();
 
                     if (formBean != null) {
                         Bean[] children = formBean.getChildren();
@@ -1355,7 +1375,8 @@ class FacesDndSupport {
                         // to the jsp box, not whatever outer container is
                         // establishing the current absolute positions
 //                        if (insertPos != Position.NONE) {
-                        if (!Util.isGridMode(facesModel)) {
+//                        if (!Util.isGridMode(facesModel)) {
+                        if (!jsfForm.isGridMode()) {
                             DesignProperty styleProp = bean.getProperty("style"); // NOI18N
 
                             if (styleProp != null) {
@@ -1396,7 +1417,8 @@ class FacesDndSupport {
     
     private DesignBean createBean(String className, DesignBean parent,
         com.sun.rave.designtime.Position pos, String facet) {
-        LiveUnit unit = facesModel.getLiveUnit();
+//        LiveUnit unit = facesModel.getLiveUnit();
+        LiveUnit unit = jsfForm.getLiveUnit();
 
         if (parent != null) {
             // It's possible that we're adding to a unit other than
@@ -1491,9 +1513,11 @@ class FacesDndSupport {
             }
         }
 
-        if (((parent == null) || grid || Util.isFormBean(facesModel, parent))) {
+//        if (((parent == null) || grid || Util.isFormBean(facesModel, parent))) {
+        if (((parent == null) || grid || jsfForm.isFormDesignBean(parent))) {
 //            GridHandler gm = GridHandler.getInstance();
-            setInitialPosition(designer, facesModel, lb, element, location.getCoordinates(), location.getSize(), /*coordinateTranslator,*/ updateSuspender);
+//            setInitialPosition(designer, facesModel, lb, element, location.getCoordinates(), location.getSize(), /*coordinateTranslator,*/ updateSuspender);
+            setInitialPosition(designer, lb, element, location.getCoordinates(), location.getSize(), /*coordinateTranslator,*/ updateSuspender);
             select = lb;
         }
     }
@@ -1509,7 +1533,7 @@ class FacesDndSupport {
      * @param size The size to assign to the component. If null, don't set a
      *              size, use the intrinsic size.
      */
-    private static void setInitialPosition(Designer designer, FacesModel facesModel, MarkupDesignBean bean, Element element, Point pos, Dimension size,
+    private static void setInitialPosition(Designer designer, /*FacesModel facesModel,*/ MarkupDesignBean bean, Element element, Point pos, Dimension size,
     /*CoordinateTranslator coordinateTranslator,*/ UpdateSuspender updateSuspender) {
         if (pos == null) {
             return;
@@ -1535,8 +1559,8 @@ class FacesDndSupport {
 //        WebForm webform = doc.getWebForm();
 //        XhtmlCssEngine engine = webform.getMarkup().getCssEngine();
 
-        // This model should already be locked when we attempt to do this
-        assert facesModel.isWriteLocked();
+//        // This model should already be locked when we attempt to do this
+//        assert facesModel.isWriteLocked();
 
         int x = pos.x;
         int y = pos.y;
@@ -1702,7 +1726,8 @@ class FacesDndSupport {
         }
 
         if (dropAction == DnDConstants.ACTION_COPY) {
-            LiveUnit unit = facesModel.getLiveUnit();
+//            LiveUnit unit = facesModel.getLiveUnit();
+            LiveUnit unit = jsfForm.getLiveUnit();
             Transferable newTransferable = unit.copyBeans(beans);
 
             if (newTransferable == null) {
@@ -1909,7 +1934,8 @@ class FacesDndSupport {
 linkCheckFinished: 
             for (int i = 0; i < classes.length; i++) {
                 try {
-                    Class clz = facesModel.getFacesUnit().getBeanClass(classes[i]);
+//                    Class clz = facesModel.getFacesUnit().getBeanClass(classes[i]);
+                    Class clz = jsfForm.getFacesPageUnit().getBeanClass(classes[i]);
                     DesignBean lb = null;
 
                     if (beans != null) {
@@ -1966,7 +1992,8 @@ linkCheckFinished:
         // See if any of the droppee parents accept the new item as a
         // child
         for (int i = 0; i < classes.length; i++) {
-            DesignBean parent = Util.findParent(classes[i], origDroppee, null, searchUp, facesModel);
+//            DesignBean parent = Util.findParent(classes[i], origDroppee, null, searchUp, facesModel);
+            DesignBean parent = jsfForm.findParent(classes[i], origDroppee, null, searchUp);
 
             if (parent != null) {
                 action |= DnDConstants.ACTION_COPY;
@@ -2095,7 +2122,8 @@ linkCheckFinished:
 
         int n = beans.size();
         String description = NbBundle.getMessage(FacesDndSupport.class, (n > 1) ? "LBL_LinkComponents" : "LBL_LinkComponent"); // NOI18N
-        UndoEvent undoEvent = facesModel.writeLock(description);
+//        UndoEvent undoEvent = facesModel.writeLock(description);
+        UndoEvent undoEvent = jsfForm.writeLock(description);
         try {
 //            int n = beans.size();
 //            String description =
@@ -2133,7 +2161,8 @@ linkCheckFinished:
                         }
 
                         try {
-                            facesModel.linkBeans(droppee, lb);
+//                            facesModel.linkBeans(droppee, lb);
+                            jsfForm.linkDesignBeans(droppee, lb);
                         } finally {
                             if (mbean != null) {
                                 // Process queued up changes
@@ -2153,7 +2182,8 @@ linkCheckFinished:
             }
         } finally {
 //            document.writeUnlock();
-            facesModel.writeUnlock(undoEvent);
+//            facesModel.writeUnlock(undoEvent);
+            jsfForm.writeUnlock(undoEvent);
         }
     }
     
@@ -2178,12 +2208,14 @@ linkCheckFinished:
         LiveUnit lu = (LiveUnit)beans[0].getDesignContext();
 
         UndoEvent undoEvent;
-        if (facesModel != null) {
+//        if (facesModel != null) {
+        if (jsfForm != null) {
             String description =
                 NbBundle.getMessage(FacesDndSupport.class,
                     (beans.length > 1) ? "LBL_MoveComponents" // NOI18N
                                        : "LBL_MoveComponent"); // NOI18N
-            undoEvent = facesModel.writeLock(description);
+//            undoEvent = facesModel.writeLock(description);
+            undoEvent = jsfForm.writeLock(description);
         } else {
             undoEvent = null; // No undo event
             lu.writeLock(undoEvent);
@@ -2244,8 +2276,10 @@ linkCheckFinished:
 //            } else {
 //                lu.writeUnlock(null);
 //            }
-            if (facesModel != null) {
-                facesModel.writeUnlock(undoEvent);
+//            if (facesModel != null) {
+//                facesModel.writeUnlock(undoEvent);
+            if (jsfForm != null) {
+                jsfForm.writeUnlock(undoEvent);
             } else {
                 lu.writeUnlock(undoEvent);
             }
@@ -2259,7 +2293,8 @@ linkCheckFinished:
             // Import web context relative rather than file relative
             //FileObject webitem = webform.getDataObject().getPrimaryFile();
             //String local = JsfProjectHelper.addResource(webitem, url, true);
-            DesignProject project = facesModel.getLiveUnit().getProject();
+//            DesignProject project = facesModel.getLiveUnit().getProject();
+            DesignProject project = jsfForm.getLiveUnit().getProject();
             String local = RESOURCES + UrlPropertyEditor.encodeUrl(file.getName());
             project.addResource(url, new URI(WEB + local));
 
@@ -2286,7 +2321,8 @@ linkCheckFinished:
 //        Document document = webform.getDocument();
 
         String description = NbBundle.getMessage(FacesDndSupport.class, "LBL_DropComponent"); // NOI18N
-        UndoEvent undoEvent = facesModel.writeLock(description);
+//        UndoEvent undoEvent = facesModel.writeLock(description);
+        UndoEvent undoEvent = jsfForm.writeLock(description);
         try {
 //            String description = NbBundle.getMessage(DndHandler.class, "DropComponent"); // NOI18N
 //            document.writeLock(description);
@@ -2298,11 +2334,13 @@ linkCheckFinished:
             // I.e. appropriate api is missing.
 //            if (DesignerUtils.isBraveheartPage(webform.getJspDom())) {
             // XXX This shouldn't be here resolved, but in parent bean.
-            if (InSyncServiceProvider.get().isWoodstockPage(facesModel.getJspDom())) {
+//            if (InSyncServiceProvider.get().isWoodstockPage(facesModel.getJspDom())) {
+            if (InSyncServiceProvider.get().isWoodstockPage(jsfForm.getJspDom())) {
                 // Use woodstock ImageComponent component
                 className = com.sun.webui.jsf.component.ImageComponent.class.getName(); // NOI18N
                 propertyName = "url";
-            } else if (InSyncServiceProvider.get().isBraveheartPage(facesModel.getJspDom())) {
+//            } else if (InSyncServiceProvider.get().isBraveheartPage(facesModel.getJspDom())) {
+            } else if (InSyncServiceProvider.get().isBraveheartPage(jsfForm.getJspDom())) {
                 className = com.sun.rave.web.ui.component.ImageComponent.class.getName(); // NOI18N
                 propertyName = "url";
             } else {
@@ -2310,7 +2348,8 @@ linkCheckFinished:
                 propertyName = "value";
             }
 
-            DesignBean parent = Util.findParent(className, droppee, location.getPos().getUnderParent(), true, facesModel);
+//            DesignBean parent = Util.findParent(className, droppee, location.getPos().getUnderParent(), true, facesModel);
+            DesignBean parent = jsfForm.findParent(className, droppee, location.getPos().getUnderParent(), true);
             DesignBean bean = createBean(className, parent, location.getPos(), null);
             select = bean;
 
@@ -2333,7 +2372,8 @@ linkCheckFinished:
             //inlineEdit(beans);
         } finally {
 //            document.writeUnlock();
-            facesModel.writeUnlock(undoEvent);
+//            facesModel.writeUnlock(undoEvent);
+            jsfForm.writeUnlock(undoEvent);
         }
     }
 
@@ -2344,7 +2384,8 @@ linkCheckFinished:
             // Import web context relative rather than file relative
             //FileObject webitem = webform.getDataObject().getPrimaryFile();
             //String local = JsfProjectHelper.addResource(webitem, url, true);
-            DesignProject project = facesModel.getLiveUnit().getProject();
+//            DesignProject project = facesModel.getLiveUnit().getProject();
+            DesignProject project = jsfForm.getLiveUnit().getProject();
             String local = RESOURCES + UrlPropertyEditor.encodeUrl(file.getName());
             project.addResource(url, new URI(WEB + local));
 
@@ -2359,24 +2400,29 @@ linkCheckFinished:
 
         //ArrayList beanItems = new ArrayList();
         String description = NbBundle.getMessage(FacesDndSupport.class, "LBL_DropComponent"); // NOI18N
-        UndoEvent undoEvent = facesModel.writeLock(description);
+//        UndoEvent undoEvent = facesModel.writeLock(description);
+        UndoEvent undoEvent = jsfForm.writeLock(description);
         try {
 //            String description = NbBundle.getMessage(DndHandler.class, "DropComponent"); // NOI18N
 //            document.writeLock(description);
 
             // Add stylesheet link
-            org.w3c.dom.Document dom = facesModel.getJspDom();
+//            org.w3c.dom.Document dom = facesModel.getJspDom();
+            org.w3c.dom.Document dom = jsfForm.getJspDom();
             Element root = dom.getDocumentElement();
-            MarkupUnit markup = facesModel.getMarkupUnit();
+//            MarkupUnit markup = facesModel.getMarkupUnit();
+            MarkupUnit markup = jsfForm.getMarkupUnit();
             Element html = markup.findHtmlTag(root);
             DesignBean bean = null;
 
             if (html == null) {
                 DesignBean uihead = null;
-                LiveUnit lu = facesModel.getLiveUnit();
+//                LiveUnit lu = facesModel.getLiveUnit();
+                LiveUnit lu = jsfForm.getLiveUnit();
                 DesignBean[] heads = null;
                 
-                Project project = facesModel.getProject();
+//                Project project = facesModel.getProject();
+                Project project = jsfForm.getProject();
                 if (project != null) {                    
                     if (J2eeModule.JAVA_EE_5.equals(JsfProjectUtils.getJ2eePlatformVersion(project))) {
                         // JSF 1.2 - hence use woodstock Head component
@@ -2423,7 +2469,8 @@ linkCheckFinished:
             bean.getProperty("type").setValue("text/css"); // NOI18N
         } finally {
 //            document.writeUnlock();
-            facesModel.writeUnlock(undoEvent);
+//            facesModel.writeUnlock(undoEvent);
+            jsfForm.writeUnlock(undoEvent);
         }
 
 //        webform.refresh(true);
@@ -2434,7 +2481,8 @@ linkCheckFinished:
         if (f.exists()) {
             String name = f.getName();
             String extension = name.substring(name.lastIndexOf(".") + 1); // NOI18N
-            Project project = facesModel.getProject();
+//            Project project = facesModel.getProject();
+            Project project = jsfForm.getProject();
             
             // XXX #95601 Skip the file if it is already inside the project.
             if (FileOwnerQuery.getOwner(f.toURI()) == project) {
@@ -2470,7 +2518,8 @@ linkCheckFinished:
 // </dep>
 
             if (panel == null) {
-                JsfProjectUtils.importFile(facesModel.getProject(), f);
+//                JsfProjectUtils.importFile(facesModel.getProject(), f);
+                JsfProjectUtils.importFile(jsfForm.getProject(), f);
             }
         }
 
@@ -2486,7 +2535,8 @@ linkCheckFinished:
 //        Document document = webform.getDocument();
 
         String description = NbBundle.getMessage(FacesDndSupport.class, "LBL_DropComponent"); // NOI18N
-        UndoEvent undoEvent = facesModel.writeLock(description);
+//        UndoEvent undoEvent = facesModel.writeLock(description);
+        UndoEvent undoEvent = jsfForm.writeLock(description);
         try {
 //            String description = NbBundle.getMessage(DndHandler.class, "DropComponent"); // NOI18N
 //            document.writeLock(description);
@@ -2498,11 +2548,13 @@ linkCheckFinished:
             // I.e. appropriate api is missing.
 //            if (DesignerUtils.isBraveheartPage(webform.getJspDom())) {
             // XXX This shouldn't be here resolved, but in parent bean.
-            if (InSyncServiceProvider.get().isWoodstockPage(facesModel.getJspDom())) {
+//            if (InSyncServiceProvider.get().isWoodstockPage(facesModel.getJspDom())) {
+            if (InSyncServiceProvider.get().isWoodstockPage(jsfForm.getJspDom())) {
                 // JSF 1.2 - hence use woodstock StaticText component
                 className = com.sun.webui.jsf.component.StaticText.class.getName(); // NOI18N
                 propertyName = "text";
-            } else if (InSyncServiceProvider.get().isBraveheartPage(facesModel.getJspDom())) {
+//            } else if (InSyncServiceProvider.get().isBraveheartPage(facesModel.getJspDom())) {
+            } else if (InSyncServiceProvider.get().isBraveheartPage(jsfForm.getJspDom())) {
                 className = com.sun.rave.web.ui.component.StaticText.class.getName(); // NOI18N
                 propertyName = "text";
             } else {
@@ -2510,7 +2562,8 @@ linkCheckFinished:
                 propertyName = "value";
             }
 
-            DesignBean parent = Util.findParent(className, droppee, location.getPos().getUnderParent(), true, facesModel);
+//            DesignBean parent = Util.findParent(className, droppee, location.getPos().getUnderParent(), true, facesModel);
+            DesignBean parent = jsfForm.findParent(className, droppee, location.getPos().getUnderParent(), true);
             DesignBean bean = createBean(className, parent, location.getPos(), null);
             select = bean;
 
@@ -2537,7 +2590,8 @@ linkCheckFinished:
             //inlineEdit(beans);
         } finally {
 //            document.writeUnlock();
-            facesModel.writeUnlock(undoEvent);
+//            facesModel.writeUnlock(undoEvent);
+            jsfForm.writeUnlock(undoEvent);
         }
     }
     
@@ -2546,7 +2600,8 @@ linkCheckFinished:
     private DesignBean createBean(String className, Node parent, Node before) {
         MarkupPosition pos = new MarkupPosition(parent, before);
         DesignBean parentBean = /*FacesSupport.*/Util.findParentBean(parent);
-        LiveUnit unit = facesModel.getLiveUnit();
+//        LiveUnit unit = facesModel.getLiveUnit();
+        LiveUnit unit = jsfForm.getLiveUnit();
         DesignBean bean = unit.createBean(className, parentBean, pos);
 
         return bean;
@@ -2577,7 +2632,8 @@ linkCheckFinished:
 //    }
 
     
-    private static Location computeLocationForBean(DesignBean bean, int where, String facet, Point canvasPos, Dimension dropSize, FacesModel facesModel) {
+//    private static Location computeLocationForBean(DesignBean bean, int where, String facet, Point canvasPos, Dimension dropSize, FacesModel facesModel) {
+    private static Location computeLocationForBean(DesignBean bean, int where, String facet, Point canvasPos, Dimension dropSize, JsfForm jsfForm) {
         if (bean == null) {
             throw new NullPointerException("Bean can't be null!"); // NOI18N
         }
@@ -2650,7 +2706,8 @@ linkCheckFinished:
         // the the br is the last element under the default parent.
         if ((under == null) && (before == null)) {
             if (parent == null) {
-                Element parentElement = facesModel.getFacesUnit().getDefaultParent().getElement();
+//                Element parentElement = facesModel.getFacesUnit().getDefaultParent().getElement();
+                Element parentElement = jsfForm.getFacesPageUnit().getDefaultParent().getElement();
                 parent = MarkupUnit.getMarkupDesignBeanForElement(parentElement);
             }
             location.pos = getDefaultMarkupPositionUnderParent(parent /*, facesModel*/);
@@ -2951,10 +3008,12 @@ linkCheckFinished:
 //        Document document = null;
 
         //LiveUnit unit = (LiveUnit)parent.getDesignContext();
-        LiveUnit unit = facesModel.getLiveUnit();
+//        LiveUnit unit = facesModel.getLiveUnit();
+        LiveUnit unit = jsfForm.getLiveUnit();
 
         String description = NbBundle.getMessage(FacesDndSupport.class, "LBL_Paste"); // NOI18N
-        UndoEvent undoEvent = facesModel.writeLock(description);
+//        UndoEvent undoEvent = facesModel.writeLock(description);
+        UndoEvent undoEvent = jsfForm.writeLock(description);
         try {
 //            document = webform.getDocument();
 //
@@ -3146,7 +3205,8 @@ linkCheckFinished:
             return beans;
         } finally {
 //            document.writeUnlock();
-            facesModel.writeUnlock(undoEvent);
+//            facesModel.writeUnlock(undoEvent);
+            jsfForm.writeUnlock(undoEvent);
         }
     }
 
