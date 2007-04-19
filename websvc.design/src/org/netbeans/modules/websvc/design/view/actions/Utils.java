@@ -57,7 +57,7 @@ public class Utils {
         "date", //NOI18N
         "time", //NOI18N
         "dateTime", //NOI18N
-        "anyUri", //NOI18N
+        "anyURI", //NOI18N
         "QName" //NOI18N
     };
     

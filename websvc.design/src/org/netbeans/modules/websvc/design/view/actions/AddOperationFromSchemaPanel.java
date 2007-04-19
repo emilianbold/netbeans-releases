@@ -350,7 +350,7 @@ private Project getProject(){
 
 private void populateWithTypes(WSDLModel wsdlModel) {
     returnCombo.removeAllItems();
-    returnCombo.addItem("none"); //NOI18N
+    returnCombo.addItem("void"); //NOI18N
     try {
         List<ReferenceableSchemaComponent> schemaTypes = Utils.getSchemaTypes(wsdlModel);
         for (ReferenceableSchemaComponent schemaType:schemaTypes) {
