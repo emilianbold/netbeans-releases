@@ -187,8 +187,11 @@ function changeMethod()
     }
     var paramRep = getParamRep(request, method);
     document.getElementById("paramHook").innerHTML = paramRep;
-    if(method != 'GET' || method != 'DELETE')
-        document.getElementById("mimeType").value = getDefaultMime();
+    var mimeType = getDefaultMime();
+    if(method.indexOf("(") != -1)
+        mimeType = method.substring(method.indexOf("(")+1, method.length-1);
+    //alert(mimeType);
+    document.getElementById("mimeType").value = mimeType;
     //alert(formSubmittal.innerHTML);
     updatepage('result', '');
     updatepage('resultheaders', '');
@@ -206,8 +209,8 @@ function getMethodMimeTypeCombo(resource) {
     for(j=0;j<methods.length;j++) {
         var m = methods[j];                            
         var mName = m.attributes.getNamedItem("name").nodeValue;
-        var request = m.getElementsByTagName('request');
-        var mediaType = getMediaType(request);
+        var response = m.getElementsByTagName('response');
+        var mediaType = getMediaType(response);
         var dispName = getMethodNameForDisplay(mName, mediaType);
         if(mName == 'GET')
             str += "  <option selected value='"+dispName+"' selected>"+dispName+"</option>";
@@ -277,6 +280,13 @@ function doShowContent1(uri, mName, mediaType) {
     str += "  <option value='PUT'>PUT (application/xml)</option>";
     str += "  <option value='DELETE'>DELETE</option>";
     str += "</select>";
+    str += "&nbsp;&nbsp;<b>MIME: </b>";
+    str += "<select id='mimeSel' name='mimeSel' onchange='javascript:changeMimeType();'>";
+    str += "  <option value='application/xml'>application/xml</option>";
+    str += "  <option value='text/xml'>text/xml</option>";
+    str += "  <option value='text/plain'>text/plain</option>";
+    str += "  <option value='text/html'>text/html</option>";    
+    str += "</select>";
     str += "<br/><br/>";
     str += getFormRep(null, uri, mName, mediaType);
     document.getElementById('testres').innerHTML = str;
@@ -298,8 +308,9 @@ function doShowContent2(uri, r) {
     var methodNode = document.getElementById("methodSel");
     var options = methodNode.options;
     for(i=0;i<options.length;i++) {
-        if(options[i].value.substring(0, 3) == 'GET')
+        if(options[i].value.substring(0, 3) == 'GET') {
             methodNode.selectedIndex = i;
+        }
     }
     changeMethod();    
     var req = uri;
@@ -353,7 +364,7 @@ function showBreadCrumbs(uri) {
 var bcCount = 0;
 function getParamRep(req, mName) {
     var str = "";
-    if(mName == 'GET') {
+    if(mName.substring(0, 3) == 'GET') {
         if(req != null && req.length > 0) {       
             //alert(req.length);             
             for(i=0;i<req.length;i++) {
@@ -371,7 +382,7 @@ function getParamRep(req, mName) {
             str = "";
         }
     }
-    else if(mName == 'DELETE')
+    else if(mName.length > 5 &&  mName.substring(0, 5) == 'DELETE')
         str = "";
     else
         str = "<textarea id='blobParam' name='params' rows='8' cols='70'></textarea><br/>";        
@@ -637,6 +648,8 @@ function createRowForUri(refChild) {
                 refChild.childNodes[0].childNodes.length > 0) {
         id = refChild.childNodes[0].childNodes[0].nodeValue;
     }
+    if(id == null)
+        id = '-';
     str += "<td>"+id+"</td>";
     var uri = refChild.attributes.getNamedItem('uri').nodeValue;
     str += "<td>";
@@ -671,9 +684,13 @@ function getRep() {
 }
 function getMethod() {
     var resource = document.getElementById('method');
-    if(resource != null)
-        return resource.value;
-    else
+    if(resource != null) {
+        var i = resource.value.indexOf('(');
+        if(i == -1)
+            return resource.value;
+        else
+            return resource.value.substring(0, i);
+    } else
         return getDefaultMethod();
 }
 function init() {
