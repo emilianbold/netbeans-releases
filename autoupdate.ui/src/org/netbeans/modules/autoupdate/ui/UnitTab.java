@@ -488,6 +488,9 @@ private void refresh (final boolean force) {
                         table.setEnabled(true);
                         bRefresh.setEnabled(true);
                         bTabAction.setEnabled(model.getMarkedUnits().size() > 0);
+                        // XXX: Avoid NPE when called refresh providers on selected units
+                        // #101836: OperationContainer.contains() sometimes fails
+                        Containers.initNotify ();
                     }
                 });
             }
