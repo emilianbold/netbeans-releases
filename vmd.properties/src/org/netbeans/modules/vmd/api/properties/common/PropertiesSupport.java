@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyDescriptor;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyEditor;
@@ -53,7 +54,7 @@ public final class PropertiesSupport {
             return descriptor1.getPropertyDisplayName().compareTo(descriptor2.getPropertyDisplayName());
         }
     };
-     
+    
     public static Sheet createSheet(final DesignComponent component) {
         final Sheet sheet = new Sheet();
         
@@ -84,7 +85,7 @@ public final class PropertiesSupport {
                     else {
                         throw new IllegalArgumentException();
                     }
-                    if (propertyEditor != null &&  propertyEditor.canEditAsText() != null) 
+                    if (propertyEditor != null &&  propertyEditor.canEditAsText() != null)
                         property.setValue("canEditAsText", propertyEditor.canEditAsText());
                     property.setValue("changeImmediate", false); // NOI18
                     sheet.get(designerPropertyDescriptor.getPropertyCategory()).put(property);
@@ -96,12 +97,14 @@ public final class PropertiesSupport {
     }
     //multi selection not supported
     public static void showPropertyEdiotrForCurrentComponent(String propertyName, DesignComponent component) {
+        if (component.getDocument().getTransactionManager().isWriteAccess())
+            Debug.warning("Calling PropertiesSupport.showPropertyEdiotrForCurrentComponent form write transaction may generate problems");
         Sheet sheet = createSheet(component);
         for (PropertySet propertySet : sheet.toArray()) {
             for (Property property : propertySet.getProperties()) {
                 if(propertyName.equals(property.getName())) {
                     final PropertyPanel propertyPanel = new PropertyPanel(property, PropertyPanel.PREF_CUSTOM_EDITOR);
-                    propertyPanel.setChangeImmediate(false);    
+                    propertyPanel.setChangeImmediate(false);
                     DialogDescriptor dd = new DialogDescriptor(propertyPanel, property.getDisplayName(), true, null); // NOI18N
                     Object helpID = property.getValue(ExPropertyEditor.PROPERTY_HELP_ID);
                     if (helpID != null) {
@@ -109,6 +112,7 @@ public final class PropertiesSupport {
                         HelpCtx helpCtx = new HelpCtx((String)helpID);
                         dd.setHelpCtx(helpCtx);
                     }
+                    
                     Object res = DialogDisplayer.getDefault().notify(dd);
                     
                     if (res == DialogDescriptor.OK_OPTION) {
