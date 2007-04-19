@@ -20,21 +20,16 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 
 <filesystem>
+    <!-- # 100900
     <folder name="Toolbars">
         <folder name="File">
-            <!-- # 100900
             <file name="org-netbeans-modules-bpel-search-impl-action-SearchAction.instance"/>
             <attr name="org-netbeans-modules-print-impl-action-PreviewAction.instance/org-netbeans-modules-bpel-search-impl-action-SearchAction.instance" boolvalue="true"/>
-            -->
         </folder>
     </folder>
+    -->
 
-    <folder name="Actions">
-        <folder name="Edit">
-            <file name="org-netbeans-modules-bpel-search-impl-action-SearchAction.instance"/>
-        </folder>
-    </folder>
-    
+    <!-- 
     <folder name="Menu">
         <folder name="Edit">
             <file name="org-netbeans-modules-bpel-search-impl-action-SearchAction.shadow">
@@ -42,6 +37,13 @@
             </file>
             <attr name="WhereUsedAction.instance/org-netbeans-modules-bpel-search-impl-action-SearchAction.shadow" boolvalue="true"/>
             <attr name="org-netbeans-modules-bpel-search-impl-action-SearchAction.shadow/org-netbeans-modules-search-project-ProjectsSearchAction.instance" boolvalue="true"/>
+        </folder>
+    </folder>
+    -->
+
+    <folder name="Actions">
+        <folder name="Edit">
+            <file name="org-netbeans-modules-bpel-search-impl-action-SearchAction.instance"/>
         </folder>
     </folder>
 
@@ -57,7 +59,7 @@
     </folder>
 
     <folder name="Shortcuts">
-        <file name="AS-F.shadow">
+        <file name="OS-F.shadow"> <!-- Alt+Shift+F -->
             <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-bpel-search-impl-action-SearchAction.instance"/>
         </file>
     </folder>
