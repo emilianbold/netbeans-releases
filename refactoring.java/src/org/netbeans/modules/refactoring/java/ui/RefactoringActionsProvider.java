@@ -320,9 +320,12 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         if (n==null)
             return null;
         PasteType[] pt = n.getPasteTypes(orig);
+        if (pt.length==1) {
+            return null;
+        }
         return pt[1];
     }
-    
+
     static String getName(Dictionary dict) {
         if (dict==null) 
             return null;
