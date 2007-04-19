@@ -20,10 +20,7 @@
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Map;
@@ -39,7 +36,6 @@ import org.netbeans.modules.j2ee.ejbcore.ui.EJBPreferences;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
