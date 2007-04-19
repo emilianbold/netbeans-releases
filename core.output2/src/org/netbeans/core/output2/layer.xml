@@ -29,6 +29,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="org-netbeans-core-actions-GlobalPropertiesAction.shadow/Output" boolvalue="true" />
             <attr name="org-netbeans-modules-tasklist-ui-TaskListAction.shadow/Output" boolvalue="true" />
             <folder name="Output">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.output2.Bundle"/>
                 <file name="org-netbeans-core-output2-OutputWindowAction.shadow">
                   <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-output2-OutputWindowAction.instance"/>
                 </file>
