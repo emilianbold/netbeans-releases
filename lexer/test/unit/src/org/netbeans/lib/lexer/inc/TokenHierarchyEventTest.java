@@ -24,15 +24,12 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenChange;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
-import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.lib.lexer.test.ModificationTextDocument;
-import org.netbeans.lib.lexer.test.simple.SimplePlainTokenId;
-import org.netbeans.lib.lexer.test.simple.SimpleTokenId;
-import org.netbeans.spi.lexer.LanguageEmbedding;
+import org.netbeans.lib.lexer.lang.TestTokenId;
 
 /**
  * Test several simple lexer impls.
@@ -56,21 +53,21 @@ public class TokenHierarchyEventTest extends NbTestCase {
         String text = "abc def ghi";
         doc.insertString(0, text, null);
         // Assign a language to the document
-        doc.putProperty(Language.class, SimpleTokenId.language());
+        doc.putProperty(Language.class,TestTokenId.language());
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         LexerTestUtilities.initLastTokenHierarchyEventListening(doc);
         TokenSequence<? extends TokenId> ts = hi.tokenSequence();
 
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "abc", 0);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 0);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.WHITESPACE, " ", 3);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.WHITESPACE, " ", 3);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "def", 4);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "def", 4);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.WHITESPACE, " ", 7);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.WHITESPACE, " ", 7);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "ghi", 8);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "ghi", 8);
         assertFalse(ts.moveNext());
         
         // Do insert
@@ -85,7 +82,7 @@ public class TokenHierarchyEventTest extends NbTestCase {
         assertEquals(4, tc.offset());
         assertEquals(1, tc.addedTokenCount());
         assertEquals(1, tc.removedTokenCount());
-        assertEquals(SimpleTokenId.language(), tc.language());
+        assertEquals(TestTokenId.language(), tc.language());
         assertEquals(0, tc.embeddedChangeCount());
         
     }

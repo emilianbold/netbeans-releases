@@ -19,6 +19,7 @@
 
 package org.netbeans.lib.lexer.test.simple;
 
+import org.netbeans.lib.lexer.lang.TestGenLanguage;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -51,24 +52,12 @@ public class GenLanguageTest extends TestCase {
 
     public void testTokenIds() {
         // Check that token ids are all present and correctly ordered
-        Language<TokenId> language  = GenLanguage.language();
+        Language<TokenId> language  = TestGenLanguage.language();
         Set<TokenId> ids = language.tokenIds();
         assertTrue("Invalid ids.size() - expected " + IDS_SIZE, ids.size() == IDS_SIZE);
         
         TokenId[] idArray = {
-            GenLanguage.IDENTIFIER_ID,
-            GenLanguage.PLUS_ID,
-            GenLanguage.MINUS_ID,
-            GenLanguage.PLUS_MINUS_PLUS_ID,
-            GenLanguage.SLASH_ID,
-            GenLanguage.STAR_ID,
-            GenLanguage.ML_COMMENT_ID,
-            GenLanguage.WHITESPACE_ID,
-            GenLanguage.SL_COMMENT_ID,
-            GenLanguage.ERROR_ID,
-            GenLanguage.PUBLIC_ID,
-            GenLanguage.PRIVATE_ID,
-            GenLanguage.STATIC_ID,
+            TestGenLanguage.IDENTIFIER_ID,TestGenLanguage.PLUS_ID,TestGenLanguage.MINUS_ID,TestGenLanguage.PLUS_MINUS_PLUS_ID,TestGenLanguage.SLASH_ID,TestGenLanguage.STAR_ID,TestGenLanguage.ML_COMMENT_ID,TestGenLanguage.WHITESPACE_ID,TestGenLanguage.SL_COMMENT_ID,TestGenLanguage.ERROR_ID,TestGenLanguage.PUBLIC_ID,TestGenLanguage.PRIVATE_ID,TestGenLanguage.STATIC_ID,
         };
 
         // Check operations with ids
@@ -118,48 +107,46 @@ public class GenLanguageTest extends TestCase {
         
         LexerTestUtilities.assertCollectionsEqual(
                 Arrays.asList(new TokenId[] {
-                    GenLanguage.PLUS_ID,
-                    GenLanguage.MINUS_ID,
-                    GenLanguage.PLUS_MINUS_PLUS_ID,
-                    GenLanguage.STAR_ID,
-                    GenLanguage.SLASH_ID,
+                    TestGenLanguage.PLUS_ID,TestGenLanguage.MINUS_ID,TestGenLanguage.PLUS_MINUS_PLUS_ID,TestGenLanguage.STAR_ID,TestGenLanguage.SLASH_ID,
                 }),
                 language.tokenCategoryMembers("operator")
+        
         );
         
         LexerTestUtilities.assertCollectionsEqual(
                 Arrays.asList(new TokenId[] {
-                    GenLanguage.PLUS_ID,
-                    GenLanguage.MINUS_ID,
-                    GenLanguage.IDENTIFIER_ID,
+                    TestGenLanguage.PLUS_ID,TestGenLanguage.MINUS_ID,TestGenLanguage.IDENTIFIER_ID,
                 }),
                 language.tokenCategoryMembers("test-category")
+        
         );
 
         LexerTestUtilities.assertCollectionsEqual(
                 Arrays.asList(new TokenId[] {
-                    GenLanguage.WHITESPACE_ID,
+                    TestGenLanguage.WHITESPACE_ID,
                 }),
                 language.tokenCategoryMembers("whitespace")
+        
         );
 
         LexerTestUtilities.assertCollectionsEqual(
                 Arrays.asList(new TokenId[] {
-                    GenLanguage.ERROR_ID,
+                    TestGenLanguage.ERROR_ID,
                 }),
                 language.tokenCategoryMembers("error")
+        
         );
 
         LexerTestUtilities.assertCollectionsEqual(
                 Arrays.asList(new TokenId[] {
-                    GenLanguage.ML_COMMENT_ID,
-                    GenLanguage.SL_COMMENT_ID,
+                    TestGenLanguage.ML_COMMENT_ID,TestGenLanguage.SL_COMMENT_ID,
                 }),
                 language.tokenCategoryMembers("comment")
+        
         );
                 
         List<String> testIdCats
-            = language.tokenCategories(GenLanguage.IDENTIFIER_ID);
+            = language.tokenCategories(TestGenLanguage.IDENTIFIER_ID);
         LexerTestUtilities.assertCollectionsEqual(
                 Arrays.asList(new String[] {
                     "test-category",
@@ -168,7 +155,7 @@ public class GenLanguageTest extends TestCase {
         );
 
         List<String> testIdCats2
-            = language.tokenCategories(GenLanguage.PLUS_ID);
+            = language.tokenCategories(TestGenLanguage.PLUS_ID);
         LexerTestUtilities.assertCollectionsEqual(
                 Arrays.asList(new String[] {
                     "test-category",
@@ -181,18 +168,16 @@ public class GenLanguageTest extends TestCase {
         // Check Language.merge()
         Collection<TokenId> mergedIds
                 = language.merge(
-                    Arrays.asList(new TokenId[] { GenLanguage.IDENTIFIER_ID }),
+                    Arrays.asList(new TokenId[] { TestGenLanguage.IDENTIFIER_ID }),
                     language.merge(language.tokenCategoryMembers("comment"),
                         language.tokenCategoryMembers("error"))
+                
                 );
-        LexerTestUtilities.assertCollectionsEqual("Invalid language.merge()",
-                Arrays.asList(new TokenId[] {
-                    GenLanguage.ML_COMMENT_ID,
-                    GenLanguage.SL_COMMENT_ID,
-                    GenLanguage.ERROR_ID,
-                    GenLanguage.IDENTIFIER_ID,
+        LexerTestUtilities.assertCollectionsEqual("Invalid language.merge()",Arrays.asList(new TokenId[] {
+                    TestGenLanguage.ML_COMMENT_ID,TestGenLanguage.SL_COMMENT_ID,TestGenLanguage.ERROR_ID,TestGenLanguage.IDENTIFIER_ID,
                 }),
                 mergedIds
+        
         );
 
     }

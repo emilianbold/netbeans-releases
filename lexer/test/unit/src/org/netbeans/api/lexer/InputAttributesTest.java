@@ -19,6 +19,8 @@
 
 package org.netbeans.api.lexer;
 
+import org.netbeans.lib.lexer.lang.TestTokenId;
+import org.netbeans.lib.lexer.lang.TestJavadocTokenId;
 import junit.framework.TestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.lib.lexer.test.simple.*;
@@ -40,9 +42,9 @@ public class InputAttributesTest extends TestCase {
     protected void tearDown() throws java.lang.Exception {
     }
 
-    LanguagePath simpleLP = LanguagePath.get(SimpleTokenId.language());
-    LanguagePath jdLP = LanguagePath.get(SimpleJavadocTokenId.language());
-    LanguagePath nestedJDLP  = LanguagePath.get(simpleLP, SimpleJavadocTokenId.language());
+    LanguagePath simpleLP = LanguagePath.get(TestTokenId.language());
+    LanguagePath jdLP = LanguagePath.get(TestJavadocTokenId.language());
+    LanguagePath nestedJDLP  = LanguagePath.get(simpleLP,TestJavadocTokenId.language());
 
     public void testGetSetValue() {
         InputAttributes attrs = new InputAttributes();
@@ -69,35 +71,35 @@ public class InputAttributesTest extends TestCase {
         String text = "public static private";
 
         // Default version recognizes "static" keyword
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, SimpleTokenId.language());
+        TokenHierarchy<?> hi = TokenHierarchy.create(text,TestTokenId.language());
         TokenSequence<? extends TokenId> ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.PUBLIC, "public", 0);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.PUBLIC, "public", 0);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.WHITESPACE, " ", 6);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.WHITESPACE, " ", 6);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.STATIC, "static", 7);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.STATIC, "static", 7);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.WHITESPACE, " ", 13);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.WHITESPACE, " ", 13);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.PRIVATE, "private", 14);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.PRIVATE, "private", 14);
         assertFalse(ts.moveNext());
 
         // Version 1 recognizes "static" as identifier
         InputAttributes attrs = new InputAttributes();
-        attrs.setValue(SimpleTokenId.language(), "version", Integer.valueOf(1), false);
-        hi = TokenHierarchy.create(text, false, SimpleTokenId.language(), null, attrs);
+        attrs.setValue(TestTokenId.language(), "version", Integer.valueOf(1), false);
+        hi = TokenHierarchy.create(text, false,TestTokenId.language(), null, attrs);
         ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.PUBLIC, "public", 0);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.PUBLIC, "public", 0);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.WHITESPACE, " ", 6);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.WHITESPACE, " ", 6);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "static", 7);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "static", 7);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.WHITESPACE, " ", 13);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.WHITESPACE, " ", 13);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.PRIVATE, "private", 14);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.PRIVATE, "private", 14);
         assertFalse(ts.moveNext());
     }
     

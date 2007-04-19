@@ -19,6 +19,7 @@
 
 package org.netbeans.lib.lexer.test.simple;
 
+import org.netbeans.lib.lexer.lang.TestCharTokenId;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.api.lexer.InputAttributes;
@@ -68,7 +69,7 @@ public class SimpleLanguageProvider extends LanguageProvider {
     public LanguageEmbedding<? extends TokenId> findLanguageEmbedding(
     Token<? extends TokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
         if ("text/x-simple-plain".equals(languagePath.mimePath()) && token.id().name().equals("WORD")) {
-            return LanguageEmbedding.create(SimpleCharTokenId.language(), 0, 0);
+            return LanguageEmbedding.create(TestCharTokenId.language(), 0, 0);
         } else {
             return null;
         }

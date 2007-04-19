@@ -29,7 +29,7 @@ import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.lib.lexer.test.ModificationTextDocument;
-import org.netbeans.lib.lexer.test.simple.SimpleTokenId;
+import org.netbeans.lib.lexer.lang.TestTokenId;
 import org.netbeans.spi.lexer.MutableTextInput;
 
 /**
@@ -45,7 +45,7 @@ public class TokenHierarchyRebuildTest extends NbTestCase {
     
     public void testRebuild() throws Exception {
         Document doc = new ModificationTextDocument();
-        doc.putProperty(Language.class, SimpleTokenId.language());
+        doc.putProperty(Language.class,TestTokenId.language());
         doc.insertString(0, "abc def", null);
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         TokenSequence<?> ts = hi.tokenSequence();

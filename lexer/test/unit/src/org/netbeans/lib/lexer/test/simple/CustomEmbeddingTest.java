@@ -19,6 +19,7 @@
 
 package org.netbeans.lib.lexer.test.simple;
 
+import org.netbeans.lib.lexer.lang.TestTokenId;
 import org.netbeans.api.lexer.TokenChange;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
@@ -27,7 +28,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
-import org.netbeans.lib.lexer.test.simple.SimplePlainTokenId;
+import org.netbeans.lib.lexer.lang.TestPlainTokenId;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 
 /**
@@ -49,17 +50,17 @@ public class CustomEmbeddingTest extends NbTestCase {
 
     public void testCreateEmbedding() {
         String text = "abc/*def ghi */// line comment";
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, SimpleTokenId.language());
+        TokenHierarchy<?> hi = TokenHierarchy.create(text,TestTokenId.language());
         THListener listener = new THListener();
         hi.addTokenHierarchyListener(listener);
         TokenSequence<? extends TokenId> ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "abc", 0);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 0);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.BLOCK_COMMENT, "/*def ghi */", 3);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.BLOCK_COMMENT, "/*def ghi */", 3);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.LINE_COMMENT, "// line comment", 15);
-        assertTrue(ts.createEmbedding(SimpleTokenId.language(), 3, 0));
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.LINE_COMMENT, "// line comment", 15);
+        assertTrue(ts.createEmbedding(TestTokenId.language(), 3, 0));
         
         // Check the fired event
         TokenHierarchyEvent evt = listener.fetchLastEvent();
@@ -70,59 +71,59 @@ public class CustomEmbeddingTest extends NbTestCase {
         assertEquals(15, tc.offset());
         assertEquals(0, tc.addedTokenCount());
         assertEquals(0, tc.removedTokenCount());
-        assertEquals(SimpleTokenId.language(), tc.language());
+        assertEquals(TestTokenId.language(), tc.language());
         assertEquals(1, tc.embeddedChangeCount());
         TokenChange<? extends TokenId> etc = tc.embeddedChange(0);
         assertEquals(0, etc.index());
         assertEquals(18, etc.offset());
         assertEquals(0, etc.addedTokenCount()); // 0 to allow for lazy lexing where this would be unknowns
         assertEquals(0, etc.removedTokenCount());
-        assertEquals(SimpleTokenId.language(), etc.language());
+        assertEquals(TestTokenId.language(), etc.language());
         assertEquals(0, etc.embeddedChangeCount());
         
         // Test the contents of the embedded sequence
         TokenSequence<? extends TokenId> ets = ts.embedded();
         assertTrue(ets.moveNext());
-        LexerTestUtilities.assertTokenEquals(ets, SimpleTokenId.IDENTIFIER, "line", 18);
+        LexerTestUtilities.assertTokenEquals(ets,TestTokenId.IDENTIFIER, "line", 18);
         assertTrue(ets.moveNext());
-        LexerTestUtilities.assertTokenEquals(ets, SimpleTokenId.WHITESPACE, " ", 22);
+        LexerTestUtilities.assertTokenEquals(ets,TestTokenId.WHITESPACE, " ", 22);
         assertTrue(ets.moveNext());
-        LexerTestUtilities.assertTokenEquals(ets, SimpleTokenId.IDENTIFIER, "comment", 23);
+        LexerTestUtilities.assertTokenEquals(ets,TestTokenId.IDENTIFIER, "comment", 23);
         assertFalse(ets.moveNext());
         
         // Move main TS back and try extra embedding on comment
         assertTrue(ts.movePrevious());
-        assertTrue(ts.createEmbedding(SimpleTokenId.language(), 2, 2));
+        assertTrue(ts.createEmbedding(TestTokenId.language(), 2, 2));
         ets = ts.embedded(); // Should be the explicit one
         assertTrue(ets.moveNext());
-        LexerTestUtilities.assertTokenEquals(ets, SimpleTokenId.IDENTIFIER, "def", 5);
+        LexerTestUtilities.assertTokenEquals(ets,TestTokenId.IDENTIFIER, "def", 5);
         assertTrue(ets.moveNext());
-        LexerTestUtilities.assertTokenEquals(ets, SimpleTokenId.WHITESPACE, " ", 8);
+        LexerTestUtilities.assertTokenEquals(ets,TestTokenId.WHITESPACE, " ", 8);
         assertTrue(ets.moveNext());
-        LexerTestUtilities.assertTokenEquals(ets, SimpleTokenId.IDENTIFIER, "ghi", 9);
+        LexerTestUtilities.assertTokenEquals(ets,TestTokenId.IDENTIFIER, "ghi", 9);
         assertTrue(ets.moveNext());
-        LexerTestUtilities.assertTokenEquals(ets, SimpleTokenId.WHITESPACE, " ", 12);
+        LexerTestUtilities.assertTokenEquals(ets,TestTokenId.WHITESPACE, " ", 12);
         assertFalse(ets.moveNext());
         
         // Get the default embedding - should be available as well
-        ets = ts.embedded(SimplePlainTokenId.language()); // Should be the explicit one
+        ets = ts.embedded(TestPlainTokenId.language()); // Should be the explicit one
         assertTrue(ets.moveNext());
-        LexerTestUtilities.assertTokenEquals(ets, SimplePlainTokenId.WORD, "def", 5);
+        LexerTestUtilities.assertTokenEquals(ets,TestPlainTokenId.WORD, "def", 5);
         assertTrue(ets.moveNext());
-        LexerTestUtilities.assertTokenEquals(ets, SimplePlainTokenId.WHITESPACE, " ", 8);
+        LexerTestUtilities.assertTokenEquals(ets,TestPlainTokenId.WHITESPACE, " ", 8);
         assertTrue(ets.moveNext());
-        LexerTestUtilities.assertTokenEquals(ets, SimplePlainTokenId.WORD, "ghi", 9);
+        LexerTestUtilities.assertTokenEquals(ets,TestPlainTokenId.WORD, "ghi", 9);
         assertTrue(ets.moveNext());
-        LexerTestUtilities.assertTokenEquals(ets, SimplePlainTokenId.WHITESPACE, " ", 12);
+        LexerTestUtilities.assertTokenEquals(ets,TestPlainTokenId.WHITESPACE, " ", 12);
         assertFalse(ets.moveNext());
     }
     
     public void testEmbeddingCaching() throws Exception {
-        LanguageEmbedding<? extends TokenId> e = LanguageEmbedding.create(SimpleTokenId.language(), 2, 1);
-        assertSame(SimpleTokenId.language(), e.language());
+        LanguageEmbedding<? extends TokenId> e = LanguageEmbedding.create(TestTokenId.language(), 2, 1);
+        assertSame(TestTokenId.language(), e.language());
         assertSame(2, e.startSkipLength());
         assertSame(1, e.endSkipLength());
-        LanguageEmbedding<? extends TokenId> e2 = LanguageEmbedding.create(SimpleTokenId.language(), 2, 1);
+        LanguageEmbedding<? extends TokenId> e2 = LanguageEmbedding.create(TestTokenId.language(), 2, 1);
         assertSame(e, e2);
     }
     

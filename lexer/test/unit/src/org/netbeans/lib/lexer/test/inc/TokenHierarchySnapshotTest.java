@@ -27,7 +27,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.lib.lexer.test.ModificationTextDocument;
-import org.netbeans.lib.lexer.test.simple.SimpleTokenId;
+import org.netbeans.lib.lexer.lang.TestTokenId;
 
 /**
  * Test several simple lexer impls.
@@ -49,7 +49,7 @@ public class TokenHierarchySnapshotTest extends TestCase {
     public void testSnapshot() throws Exception {
         Document doc = new ModificationTextDocument();
         // Assign a language to the document
-        doc.putProperty(Language.class, SimpleTokenId.language());
+        doc.putProperty(Language.class,TestTokenId.language());
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         assertNotNull("Null token hierarchy for document", hi);
         TokenSequence<? extends TokenId> ts = hi.tokenSequence();
@@ -61,21 +61,21 @@ public class TokenHierarchySnapshotTest extends TestCase {
 
         ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "abc", 0);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 0);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.PLUS, "+", 3);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.PLUS, "+", 3);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "def", 4);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "def", 4);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.MINUS, "-", 7);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.MINUS, "-", 7);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "xyz", 8);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "xyz", 8);
         assertFalse(ts.moveNext());
         LexerTestUtilities.incCheck(doc, false);
 
         // Create snapshot1 and check hierarchy
         String hi1text = doc.getText(0, doc.getLength());
-        TokenHierarchy<?> hi1 = TokenHierarchy.create(hi1text, SimpleTokenId.language());
+        TokenHierarchy<?> hi1 = TokenHierarchy.create(hi1text,TestTokenId.language());
         TokenHierarchy<?> snapshot1 = hi.createSnapshot();
         assertEquals(snapshot1.snapshotOf(), hi);
         assertFalse(snapshot1.isSnapshotReleased());
@@ -103,7 +103,7 @@ public class TokenHierarchySnapshotTest extends TestCase {
 
         // Create snapshot2 and check hierarchy
         String hi2text = doc.getText(0, doc.getLength());
-        TokenHierarchy<?> hi2 = TokenHierarchy.create(hi2text, SimpleTokenId.language());
+        TokenHierarchy<?> hi2 = TokenHierarchy.create(hi2text,TestTokenId.language());
         TokenHierarchy<?> snapshot2 = hi.createSnapshot();
         assertEquals(snapshot2.snapshotOf(), hi);
 

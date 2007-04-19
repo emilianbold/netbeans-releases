@@ -26,8 +26,8 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.lib.lexer.test.ModificationTextDocument;
-import org.netbeans.lib.lexer.test.simple.SimpleStringTokenId;
-import org.netbeans.lib.lexer.test.simple.SimpleTokenId;
+import org.netbeans.lib.lexer.lang.TestStringTokenId;
+import org.netbeans.lib.lexer.lang.TestTokenId;
 
 /**
  *
@@ -43,7 +43,7 @@ public class DocumentUpdateTest extends NbTestCase {
     public void testUpdate1() throws Exception {
         Document d = new ModificationTextDocument();
         
-        d.putProperty(Language.class, SimpleTokenId.language());
+        d.putProperty(Language.class,TestTokenId.language());
         
         d.insertString(0, "\"\\t\\b\\t test\"", null);
         
@@ -63,7 +63,7 @@ public class DocumentUpdateTest extends NbTestCase {
     public void testUpdate2() throws Exception {
         Document d = new ModificationTextDocument();
         
-        d.putProperty(Language.class, SimpleTokenId.language());
+        d.putProperty(Language.class,TestTokenId.language());
         
         d.insertString(0, "\"\\t\\b\\b\\t sfdsffffffffff\"", null);
         
@@ -83,7 +83,7 @@ public class DocumentUpdateTest extends NbTestCase {
     public void testUpdate3() throws Exception {
         Document d = new ModificationTextDocument();
         
-        d.putProperty(Language.class, SimpleTokenId.language());
+        d.putProperty(Language.class,TestTokenId.language());
         
         d.insertString(0, "\"t\"", null);
         
@@ -101,7 +101,7 @@ public class DocumentUpdateTest extends NbTestCase {
         
         System.err.println("d=" + d.getText(0, d.getLength()));
         
-        LexerTestUtilities.assertNextTokenEquals(h.tokenSequence(), SimpleTokenId.STRING_LITERAL, "\"\\t\"");
+        LexerTestUtilities.assertNextTokenEquals(h.tokenSequence(),TestTokenId.STRING_LITERAL, "\"\\t\"");
         
         s = h.tokenSequence();
         
@@ -113,7 +113,7 @@ public class DocumentUpdateTest extends NbTestCase {
         
         assertTrue(e.moveNext());
         
-        assertEquals(e.token().id(), SimpleStringTokenId.TAB);
+        assertEquals(e.token().id(),TestStringTokenId.TAB);
     }
     
 }

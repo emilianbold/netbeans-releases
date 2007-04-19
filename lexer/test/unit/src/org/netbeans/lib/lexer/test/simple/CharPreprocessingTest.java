@@ -19,6 +19,7 @@
 
 package org.netbeans.lib.lexer.test.simple;
 
+import org.netbeans.lib.lexer.lang.TestTokenId;
 import junit.framework.TestCase;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -45,7 +46,7 @@ public class CharPreprocessingTest extends TestCase {
 
     public void testMaxFlySequenceLength() {
         String text = " \\u0020 public";
-        TokenHierarchy hi = TokenHierarchy.create(text, SimpleTokenId.language());
+        TokenHierarchy hi = TokenHierarchy.create(text,TestTokenId.language());
         TokenSequence ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
 //        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.WHITESPACE, " \\u0020 ", 0);

@@ -19,6 +19,7 @@
 
 package org.netbeans.lib.lexer.inc;
 
+import org.netbeans.lib.lexer.lang.TestTokenId;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.lib.lexer.test.ModificationTextDocument;
@@ -30,7 +31,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
-import org.netbeans.lib.lexer.test.simple.SimplePlainTokenId;
+import org.netbeans.lib.lexer.lang.TestPlainTokenId;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 
 /**
@@ -53,24 +54,24 @@ public class EmbeddingUpdateTest extends NbTestCase {
     public void testEmbeddingUpdate() throws Exception {
         Document doc = new ModificationTextDocument();
         // Assign a language to the document
-        doc.putProperty(Language.class, SimpleTokenId.language());
+        doc.putProperty(Language.class,TestTokenId.language());
         doc.insertString(0, "a/*abc def*/", null);
         LexerTestUtilities.initLastTokenHierarchyEventListening(doc);
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         TokenSequence<? extends TokenId> ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "a", 0);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "a", 0);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.BLOCK_COMMENT, "/*abc def*/", 1);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.BLOCK_COMMENT, "/*abc def*/", 1);
         TokenSequence<? extends TokenId> ets = ts.embedded();
         assertNotNull(ets);
         assertFalse(ts.moveNext());
         assertTrue(ets.moveNext());
-        LexerTestUtilities.assertTokenEquals(ets, SimplePlainTokenId.WORD, "abc", 3);
+        LexerTestUtilities.assertTokenEquals(ets,TestPlainTokenId.WORD, "abc", 3);
         assertTrue(ets.moveNext());
-        LexerTestUtilities.assertTokenEquals(ets, SimplePlainTokenId.WHITESPACE, " ", 6);
+        LexerTestUtilities.assertTokenEquals(ets,TestPlainTokenId.WHITESPACE, " ", 6);
         assertTrue(ets.moveNext());
-        LexerTestUtilities.assertTokenEquals(ets, SimplePlainTokenId.WORD, "def", 7);
+        LexerTestUtilities.assertTokenEquals(ets,TestPlainTokenId.WORD, "def", 7);
         assertFalse(ets.moveNext());
 
         // Make "axbc" inside the comment
@@ -84,14 +85,14 @@ public class EmbeddingUpdateTest extends NbTestCase {
         assertEquals(1, tc.offset());
         assertEquals(1, tc.addedTokenCount());
         assertEquals(1, tc.removedTokenCount());
-        assertEquals(SimpleTokenId.language(), tc.language());
+        assertEquals(TestTokenId.language(), tc.language());
         assertEquals(1, tc.embeddedChangeCount());
         TokenChange<? extends TokenId> etc = tc.embeddedChange(0);
         assertEquals(0, etc.index());
         assertEquals(3, etc.offset());
         assertEquals(1, etc.addedTokenCount()); // 0 to allow for lazy lexing where this would be unknowns
         assertEquals(1, etc.removedTokenCount());
-        assertEquals(SimplePlainTokenId.language(), etc.language());
+        assertEquals(TestPlainTokenId.language(), etc.language());
         assertEquals(0, etc.embeddedChangeCount());
         
         

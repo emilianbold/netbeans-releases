@@ -27,9 +27,9 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.lib.lexer.test.simple.SimpleCharTokenId;
+import org.netbeans.lib.lexer.lang.TestCharTokenId;
 import org.netbeans.lib.lexer.test.simple.SimpleLanguageProvider;
-import org.netbeans.lib.lexer.test.simple.SimplePlainTokenId;
+import org.netbeans.lib.lexer.lang.TestPlainTokenId;
 
 /**
  *
@@ -105,30 +105,30 @@ public class LanguageManagerTest extends NbTestCase {
 
     /*
      * SimplePlainLanguage does not define any embedding. The SimpleLanguageProvider
-     * however defines the SimpleCharLanguage as an embedded language for the SimplePlainTokenId.WORD.
-     * Therefore SimplePlainTokenId.WHITESPACE should not have any embedded language and
-     * SimplePlainTokenId.WORD should have the SimpleCharLanguage.
+     * however defines the SimpleCharLanguage as an embedded language for the TestPlainTokenId.WORD.
+     * Therefore TestPlainTokenId.WHITESPACE should not have any embedded language and
+     * TestPlainTokenId.WORD should have the SimpleCharLanguage.
      */
     public void testEmbedding() {
-        TokenHierarchy th = TokenHierarchy.create("abc xyz 012 0xFF00 0-1-2-3-4-5-6-7-8-9", SimplePlainTokenId.language());
+        TokenHierarchy th = TokenHierarchy.create("abc xyz 012 0xFF00 0-1-2-3-4-5-6-7-8-9", TestPlainTokenId.language());
         TokenSequence tokens = th.tokenSequence();
         
         for( ; tokens.moveNext(); ) {
             TokenId id = tokens.token().id();
             TokenSequence embedded = tokens.embedded();
             
-            if (id == SimplePlainTokenId.WHITESPACE) {
+            if (id == TestPlainTokenId.WHITESPACE) {
                 assertNull("Whitespace should not have any embedded language", embedded);
-            } else if (id == SimplePlainTokenId.WORD) {
+            } else if (id == TestPlainTokenId.WORD) {
                 assertNotNull("Word should have an embedded token sequence", embedded);
                 assertNotNull("Word should have an embedded language", embedded.language());
-                assertEquals("Wrong embedded language", SimpleCharTokenId.MIME_TYPE, embedded.language().mimeType());
+                assertEquals("Wrong embedded language", TestCharTokenId.MIME_TYPE, embedded.language().mimeType());
             }
         }
     }
     
     public void testCachingE() {
-        TokenHierarchy th = TokenHierarchy.create("abc", SimplePlainTokenId.language());
+        TokenHierarchy th = TokenHierarchy.create("abc", TestPlainTokenId.language());
         TokenSequence tokens = th.tokenSequence();
         tokens.moveStart();
         assertEquals(true, tokens.moveNext());
@@ -143,7 +143,7 @@ public class LanguageManagerTest extends NbTestCase {
     }
 
     public void testGCedE() {
-        TokenHierarchy th = TokenHierarchy.create("abc", SimplePlainTokenId.language());
+        TokenHierarchy th = TokenHierarchy.create("abc", TestPlainTokenId.language());
         TokenSequence tokens = th.tokenSequence();
         tokens.moveStart();
         assertEquals(true, tokens.moveNext());
@@ -164,7 +164,7 @@ public class LanguageManagerTest extends NbTestCase {
     }
     
     public void testCacheRefreshedE() {
-        TokenHierarchy th = TokenHierarchy.create("abc", SimplePlainTokenId.language());
+        TokenHierarchy th = TokenHierarchy.create("abc", TestPlainTokenId.language());
         TokenSequence tokens = th.tokenSequence();
         tokens.moveStart();
         assertEquals(true, tokens.moveNext());

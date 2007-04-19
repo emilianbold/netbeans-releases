@@ -26,8 +26,8 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.lib.lexer.test.ModificationTextDocument;
-import org.netbeans.lib.lexer.test.simple.SimpleJavadocTokenId;
-import org.netbeans.lib.lexer.test.simple.SimpleTokenId;
+import org.netbeans.lib.lexer.lang.TestJavadocTokenId;
+import org.netbeans.lib.lexer.lang.TestTokenId;
 
 /**
  *
@@ -45,45 +45,45 @@ public class SnapshotTokenListTest extends NbTestCase {
     public void testInputAttributes() throws Exception {
         Document d = new ModificationTextDocument();
         
-        d.putProperty(Language.class, SimpleTokenId.language());
+        d.putProperty(Language.class,TestTokenId.language());
         
         d.insertString(0, "ident ident /** @see X */", null);
         
         TokenHierarchy<?> h = TokenHierarchy.get(d).createSnapshot();
         TokenSequence<? extends TokenId> ts = h.tokenSequence();
         
-        LexerTestUtilities.assertNextTokenEquals(ts, SimpleTokenId.IDENTIFIER, "ident");
+        LexerTestUtilities.assertNextTokenEquals(ts,TestTokenId.IDENTIFIER, "ident");
         assertEquals(0, ts.offset());
         
-        LexerTestUtilities.assertNextTokenEquals(ts, SimpleTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts,TestTokenId.WHITESPACE, " ");
         assertEquals(5, ts.offset());
         
-        LexerTestUtilities.assertNextTokenEquals(ts, SimpleTokenId.IDENTIFIER, "ident");
+        LexerTestUtilities.assertNextTokenEquals(ts,TestTokenId.IDENTIFIER, "ident");
         assertEquals(6, ts.offset());
         
-        LexerTestUtilities.assertNextTokenEquals(ts, SimpleTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts,TestTokenId.WHITESPACE, " ");
         assertEquals(11, ts.offset());
         
-        LexerTestUtilities.assertNextTokenEquals(ts, SimpleTokenId.JAVADOC_COMMENT, "/** @see X */");
+        LexerTestUtilities.assertNextTokenEquals(ts,TestTokenId.JAVADOC_COMMENT, "/** @see X */");
         assertEquals(12, ts.offset());
         
         TokenSequence<? extends TokenId> inner = ts.embedded();
         
         assertNotNull(inner);
         
-        LexerTestUtilities.assertNextTokenEquals(inner, SimpleJavadocTokenId.OTHER_TEXT, " ");
+        LexerTestUtilities.assertNextTokenEquals(inner,TestJavadocTokenId.OTHER_TEXT, " ");
         assertEquals(15, inner.offset());
         
-        LexerTestUtilities.assertNextTokenEquals(inner, SimpleJavadocTokenId.TAG, "@see");
+        LexerTestUtilities.assertNextTokenEquals(inner,TestJavadocTokenId.TAG, "@see");
         assertEquals(16, inner.offset());
         
-        LexerTestUtilities.assertNextTokenEquals(inner, SimpleJavadocTokenId.OTHER_TEXT, " ");
+        LexerTestUtilities.assertNextTokenEquals(inner,TestJavadocTokenId.OTHER_TEXT, " ");
         assertEquals(20, inner.offset());
         
-        LexerTestUtilities.assertNextTokenEquals(inner, SimpleJavadocTokenId.IDENT, "X");
+        LexerTestUtilities.assertNextTokenEquals(inner,TestJavadocTokenId.IDENT, "X");
         assertEquals(21, inner.offset());
         
-        LexerTestUtilities.assertNextTokenEquals(inner, SimpleJavadocTokenId.OTHER_TEXT, " ");
+        LexerTestUtilities.assertNextTokenEquals(inner,TestJavadocTokenId.OTHER_TEXT, " ");
         assertEquals(22, inner.offset());
     }
 }

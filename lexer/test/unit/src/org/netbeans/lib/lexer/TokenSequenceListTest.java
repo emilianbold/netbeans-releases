@@ -27,9 +27,9 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.lib.lexer.test.ModificationTextDocument;
-import org.netbeans.lib.lexer.test.simple.SimpleJavadocTokenId;
-import org.netbeans.lib.lexer.test.simple.SimpleTokenId;
-import org.netbeans.lib.lexer.test.simple.TestHTMLTagTokenId;
+import org.netbeans.lib.lexer.lang.TestJavadocTokenId;
+import org.netbeans.lib.lexer.lang.TestTokenId;
+import org.netbeans.lib.lexer.lang.TestHTMLTagTokenId;
 
 /**
  * Test collecting and maintaining of token sequence lists.
@@ -46,14 +46,14 @@ public class TokenSequenceListTest extends NbTestCase {
     }
 
     public void testBatch() throws Exception {
-        TokenHierarchy<?> tokenHierarchy = TokenHierarchy.create(getText1(), SimpleTokenId.language());
+        TokenHierarchy<?> tokenHierarchy = TokenHierarchy.create(getText1(),TestTokenId.language());
         testHierarchy(tokenHierarchy);
     }
 
     public void testInc() throws Exception {
         ModificationTextDocument doc = new ModificationTextDocument();
         doc.insertString(0, getText1(), null);
-        doc.putProperty(Language.class, SimpleTokenId.language());
+        doc.putProperty(Language.class,TestTokenId.language());
         testHierarchy(TokenHierarchy.get(doc));
     }
     
@@ -62,36 +62,36 @@ public class TokenSequenceListTest extends NbTestCase {
     }
 
     private void testHierarchy(TokenHierarchy<?> tokenHierarchy) throws Exception {
-        LanguagePath lp = LanguagePath.get(SimpleTokenId.language());
+        LanguagePath lp = LanguagePath.get(TestTokenId.language());
         List<TokenSequence<? extends TokenId>> tsList = tokenHierarchy.tokenSequenceList(lp, 0, Integer.MAX_VALUE);
         assertEquals(1, tsList.size());
         TokenSequence<?> ts = tsList.get(0);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "ab", 0);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "ab", 0);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.JAVADOC_COMMENT, "/**<t> x*/", 2);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.JAVADOC_COMMENT, "/**<t> x*/", 2);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "c", 12);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "c", 12);
 
         // Collect both javadocs
-        lp = lp.embedded(SimpleJavadocTokenId.language());
+        lp = lp.embedded(TestJavadocTokenId.language());
         tsList = tokenHierarchy.tokenSequenceList(lp, 0, Integer.MAX_VALUE);
         assertEquals(2, tsList.size());
         ts = tsList.get(0);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleJavadocTokenId.HTML_TAG, "<t>", 5);
+        LexerTestUtilities.assertTokenEquals(ts,TestJavadocTokenId.HTML_TAG, "<t>", 5);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleJavadocTokenId.OTHER_TEXT, " ", 8);
+        LexerTestUtilities.assertTokenEquals(ts,TestJavadocTokenId.OTHER_TEXT, " ", 8);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleJavadocTokenId.IDENT, "x", 9);
+        LexerTestUtilities.assertTokenEquals(ts,TestJavadocTokenId.IDENT, "x", 9);
         
         ts = tsList.get(1);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleJavadocTokenId.IDENT, "u", -1);
+        LexerTestUtilities.assertTokenEquals(ts,TestJavadocTokenId.IDENT, "u", -1);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleJavadocTokenId.HTML_TAG, "<t2>", -1);
+        LexerTestUtilities.assertTokenEquals(ts,TestJavadocTokenId.HTML_TAG, "<t2>", -1);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleJavadocTokenId.IDENT, "v", -1);
+        LexerTestUtilities.assertTokenEquals(ts,TestJavadocTokenId.IDENT, "v", -1);
         
         // Collect embedded html tags
         lp = lp.embedded(TestHTMLTagTokenId.language());

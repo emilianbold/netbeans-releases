@@ -19,6 +19,7 @@
 
 package org.netbeans.lib.lexer.test.simple;
 
+import org.netbeans.lib.lexer.lang.TestTokenId;
 import java.util.ConcurrentModificationException;
 import javax.swing.text.Document;
 import junit.framework.TestCase;
@@ -49,7 +50,7 @@ public class SimpleLexerIncTest extends TestCase {
     public void test() throws Exception {
         Document doc = new ModificationTextDocument();
         // Assign a language to the document
-        doc.putProperty(Language.class, SimpleTokenId.language());
+        doc.putProperty(Language.class,TestTokenId.language());
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         assertNotNull("Null token hierarchy for document", hi);
         TokenSequence<? extends TokenId> ts = hi.tokenSequence();
@@ -71,25 +72,25 @@ public class SimpleLexerIncTest extends TestCase {
         
         ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "abc", 0);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 0);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.PLUS, "+", 3);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.PLUS, "+", 3);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "uv", 4);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "uv", 4);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.MINUS, "-", 6);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.MINUS, "-", 6);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "xy", 7);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "xy", 7);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.WHITESPACE, " ", 9);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.WHITESPACE, " ", 9);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.PLUS_MINUS_PLUS, "+-+", 10);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.PLUS_MINUS_PLUS, "+-+", 10);
         assertTrue(ts.moveNext());
         int offset = commentTextStartOffset;
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.BLOCK_COMMENT, commentText, offset);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.BLOCK_COMMENT, commentText, offset);
         offset += commentText.length();
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "def", offset);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "def", offset);
         assertFalse(ts.moveNext());
 
         LexerTestUtilities.incCheck(doc, false);
@@ -98,22 +99,22 @@ public class SimpleLexerIncTest extends TestCase {
         int relOffset = ts.move(50); // past the end of all tokens
         assertEquals(relOffset, 50 - (offset + 3));
         assertTrue(ts.movePrevious());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "def", offset);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "def", offset);
 
         relOffset = ts.move(6); // right at begining of "-"
         assertEquals(relOffset, 0);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.MINUS, "-", 6);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.MINUS, "-", 6);
 
         relOffset = ts.move(-5); // to first token "abc"
         assertEquals(relOffset, -5);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "abc", 0);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 0);
 
         relOffset = ts.move(5); // to first token "abc"
         assertEquals(relOffset, 1);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "uv", 4);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "uv", 4);
 
 
         doc.insertString(2, "d", null); // should be "abdc"
@@ -128,7 +129,7 @@ public class SimpleLexerIncTest extends TestCase {
         
         ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "abdc", 0);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abdc", 0);
         LexerTestUtilities.incCheck(doc, false);
         
         // Remove added 'd' to become "abc" again
@@ -136,7 +137,7 @@ public class SimpleLexerIncTest extends TestCase {
 
         ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "abc", 0);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 0);
         LexerTestUtilities.incCheck(doc, false);
 
         
@@ -145,14 +146,14 @@ public class SimpleLexerIncTest extends TestCase {
         
         ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "abcx", 0);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abcx", 0);
         LexerTestUtilities.incCheck(doc, false);
 
         doc.remove(3, 1); // return back to "abc"
 
         ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "abc", 0);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 0);
         LexerTestUtilities.incCheck(doc, false);
 
         
@@ -161,13 +162,13 @@ public class SimpleLexerIncTest extends TestCase {
         
         ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "abc", 0);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 0);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.PLUS, "+", 3);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.PLUS, "+", 3);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "zuv", 4);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "zuv", 4);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.MINUS, "-", 7);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.MINUS, "-", 7);
         LexerTestUtilities.incCheck(doc, false);
 
         doc.remove(4, 1); // return back to "abc" "+" "uv"
@@ -179,15 +180,15 @@ public class SimpleLexerIncTest extends TestCase {
         
         ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "abc", 0);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 0);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.PLUS, "+", 3);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.PLUS, "+", 3);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "uv", 4);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "uv", 4);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.MINUS, "-", 6);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.MINUS, "-", 6);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "zxy", 7);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "zxy", 7);
         LexerTestUtilities.incCheck(doc, false);
 
         doc.remove(7, 1); // return back to "abc" "+" "uv"

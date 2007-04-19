@@ -19,6 +19,7 @@
 
 package org.netbeans.lib.lexer.test.simple;
 
+import org.netbeans.lib.lexer.lang.TestTokenId;
 import junit.framework.TestCase;
 import org.netbeans.lib.lexer.test.FixedTextDescriptor;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
@@ -56,7 +57,7 @@ public class SimpleLexerRandomTest extends TestCase {
     
     private void test(long seed) throws Exception {
         TestRandomModify randomModify = new TestRandomModify(seed);
-        randomModify.setLanguage(SimpleTokenId.language());
+        randomModify.setLanguage(TestTokenId.language());
         
         //randomModify.setDebugOperation(true);
         //randomModify.setDebugDocumentText(true);

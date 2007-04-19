@@ -19,6 +19,7 @@
 
 package org.netbeans.api.lexer;
 
+import org.netbeans.lib.lexer.lang.TestTokenId;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -51,13 +52,13 @@ public class TokenSequenceTest extends NbTestCase {
     
     public void testMove() {
         String text = "abc+defg";
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, SimpleTokenId.language());
+        TokenHierarchy<?> hi = TokenHierarchy.create(text,TestTokenId.language());
         TokenSequence<? extends TokenId> ts = hi.tokenSequence();
         
         assertNull(ts.token());
 
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "abc", 0);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 0);
 
         // Check movePrevious()
         assertFalse(ts.movePrevious()); // cannot go below first token
@@ -71,56 +72,56 @@ public class TokenSequenceTest extends NbTestCase {
         assertEquals(0, ts.move(0));
         assertNull(ts.token());
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "abc", 0);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 0);
         assertEquals(2, ts.move(2));
         assertNull(ts.token());
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "abc", 0);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 0);
         assertEquals(-1, ts.move(-1));
         assertNull(ts.token());
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "abc", 0);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 0);
         assertEquals(0, ts.move(3));
         assertNull(ts.token());
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.PLUS, "+", 3);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.PLUS, "+", 3);
         assertEquals(0, ts.move(4));
         assertNull(ts.token());
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "defg", 4);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "defg", 4);
         assertEquals(1, ts.move(5));
         assertNull(ts.token());
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "defg", 4);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "defg", 4);
         assertEquals(1, ts.move(9));
         assertNull(ts.token());
         assertFalse(ts.moveNext());
         assertTrue(ts.movePrevious());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "defg", 4);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "defg", 4);
         assertEquals(92, ts.move(100));
         assertNull(ts.token());
         assertFalse(ts.moveNext());
         assertTrue(ts.movePrevious());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "defg", 4);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "defg", 4);
 
         
         // Test subsequences
         TokenSequence<? extends TokenId> sub = ts.subSequence(1, 6);
         assertTrue(sub.moveNext());
-        LexerTestUtilities.assertTokenEquals(sub, SimpleTokenId.IDENTIFIER, "abc", 0);
+        LexerTestUtilities.assertTokenEquals(sub,TestTokenId.IDENTIFIER, "abc", 0);
         assertTrue(sub.moveNext());
-        LexerTestUtilities.assertTokenEquals(sub, SimpleTokenId.PLUS, "+", 3);
+        LexerTestUtilities.assertTokenEquals(sub,TestTokenId.PLUS, "+", 3);
         assertTrue(sub.moveNext());
-        LexerTestUtilities.assertTokenEquals(sub, SimpleTokenId.IDENTIFIER, "defg", 4);
+        LexerTestUtilities.assertTokenEquals(sub,TestTokenId.IDENTIFIER, "defg", 4);
         
         sub = ts.subSequence(1, 6);
         assertEquals(2, sub.move(6));
 
         sub = ts.subSequence(3);
         assertTrue(sub.moveNext());
-        LexerTestUtilities.assertTokenEquals(sub, SimpleTokenId.PLUS, "+", 3);
+        LexerTestUtilities.assertTokenEquals(sub,TestTokenId.PLUS, "+", 3);
         assertTrue(sub.moveNext());
-        LexerTestUtilities.assertTokenEquals(sub, SimpleTokenId.IDENTIFIER, "defg", 4);
+        LexerTestUtilities.assertTokenEquals(sub,TestTokenId.IDENTIFIER, "defg", 4);
 
         sub = ts.subSequence(3, 3);
         assertFalse(sub.moveNext());
@@ -128,55 +129,55 @@ public class TokenSequenceTest extends NbTestCase {
     
     public void testMoveNextPrevious() {
         String text = "abc+defg-";
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, SimpleTokenId.language());
+        TokenHierarchy<?> hi = TokenHierarchy.create(text,TestTokenId.language());
         TokenSequence<? extends TokenId> ts = hi.tokenSequence();
         assertEquals(0, ts.move(4));
         assertNull(ts.token());
         //assertEquals(4, ts.offset());
         assertTrue(ts.movePrevious());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.PLUS, "+", 3);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.PLUS, "+", 3);
         
         ts = hi.tokenSequence();
         ts.move(5);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "defg", 4);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "defg", 4);
         assertTrue(ts.movePrevious());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.PLUS, "+", 3);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.PLUS, "+", 3);
 
         // Move single char before token's end
         ts = hi.tokenSequence();
         ts.move(7);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "defg", 4);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "defg", 4);
         assertTrue(ts.movePrevious());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.PLUS, "+", 3);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.PLUS, "+", 3);
     
         // Move past all tokens
         ts = hi.tokenSequence();
         ts.move(text.length());
         assertTrue(ts.movePrevious());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.MINUS, "-", text.length() - 1);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.MINUS, "-", text.length() - 1);
 
         // Move at the begining
         ts = hi.tokenSequence();
         ts.move(0);
         assertFalse(ts.movePrevious());
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "abc", 0);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 0);
     }
     
     public void testMoveIndex() {
         String text = "abc+defg-";
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, SimpleTokenId.language());
+        TokenHierarchy<?> hi = TokenHierarchy.create(text,TestTokenId.language());
         TokenSequence<? extends TokenId> ts = hi.tokenSequence();
         assertEquals(0, ts.index());
         assertNull(ts.token());
         //assertEquals(4, ts.offset());
         assertTrue(ts.moveNext());
         assertEquals(0, ts.offset());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "abc", 0);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 0);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.PLUS, "+", 3);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.PLUS, "+", 3);
         assertEquals(3, ts.offset());
         ts.move(2);
         assertEquals(0, ts.index());
@@ -192,75 +193,74 @@ public class TokenSequenceTest extends NbTestCase {
 
     public void testMoveSkipTokens() {
         String text = "-abc+defg--hi";
-        Set<SimpleTokenId> skipTokenIds = 
-                EnumSet.of(SimpleTokenId.PLUS, SimpleTokenId.MINUS);
+        Set<TestTokenId> skipTokenIds = 
+                EnumSet.of(TestTokenId.PLUS,TestTokenId.MINUS);
         
-        assertTrue(skipTokenIds.contains(SimpleTokenId.PLUS));
-        assertTrue(skipTokenIds.contains(SimpleTokenId.MINUS));
-        assertFalse(skipTokenIds.contains(SimpleTokenId.IDENTIFIER));
+        assertTrue(skipTokenIds.contains(TestTokenId.PLUS));
+        assertTrue(skipTokenIds.contains(TestTokenId.MINUS));
+        assertFalse(skipTokenIds.contains(TestTokenId.IDENTIFIER));
 
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, false,
-                SimpleTokenId.language(), skipTokenIds, null);
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, false,TestTokenId.language(), skipTokenIds, null);
         TokenSequence<? extends TokenId> ts = hi.tokenSequence();
         
         // Fail if no "move*" method called yet
         assertNull(ts.token());
 
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "abc", 1);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 1);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "defg", 5);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "defg", 5);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "hi", 11);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "hi", 11);
         assertFalse(ts.moveNext());
         assertEquals(3, ts.tokenCount());
         assertEquals(0, ts.moveIndex(0));
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "abc", 1);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 1);
         assertTrue(ts.moveNext());
         assertEquals(0, ts.moveIndex(ts.tokenCount()));
         assertTrue(ts.movePrevious());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "hi", 11);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "hi", 11);
         assertFalse(ts.moveNext());
 
         // Check movePrevious()
         assertTrue(ts.movePrevious()); // over "defg"
         assertTrue(ts.movePrevious()); // over "abc"
         assertFalse(ts.movePrevious()); // cannot go below first token
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "abc", 1);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 1);
         
         assertEquals(-1, ts.move(0)); // below filtered-out token
         assertNull(ts.token());
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "abc", 1);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 1);
         assertEquals(0, ts.move(1));
         assertNull(ts.token());
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "abc", 1);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 1);
         assertEquals(1, ts.move(2));
         assertNull(ts.token());
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "abc", 1);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 1);
         assertEquals(3, ts.move(4));
         assertNull(ts.token());
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "abc", 1);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 1);
         assertEquals(0, ts.move(5));
         assertNull(ts.token());
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "defg", 5);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "defg", 5);
         assertEquals(1, ts.move(12));
         assertNull(ts.token());
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "hi", 11);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "hi", 11);
         
         
         // Test subsequences
         TokenSequence<? extends TokenId> sub = ts.subSequence(1, 6);
         assertTrue(sub.moveNext());
-        LexerTestUtilities.assertTokenEquals(sub, SimpleTokenId.IDENTIFIER, "abc", 1);
+        LexerTestUtilities.assertTokenEquals(sub,TestTokenId.IDENTIFIER, "abc", 1);
         assertTrue(sub.moveNext());
-        LexerTestUtilities.assertTokenEquals(sub, SimpleTokenId.IDENTIFIER, "defg", 5);
+        LexerTestUtilities.assertTokenEquals(sub,TestTokenId.IDENTIFIER, "defg", 5);
         assertFalse(sub.moveNext());
         
         // Test moves to first and last tokens on subsequence
@@ -268,27 +268,27 @@ public class TokenSequenceTest extends NbTestCase {
         assertEquals(0, sub.moveIndex(sub.tokenCount()));
         assertEquals(2, sub.tokenCount()); // "abc" and "defg" (others filtered out
         assertTrue(sub.movePrevious());
-        LexerTestUtilities.assertTokenEquals(sub, SimpleTokenId.IDENTIFIER, "defg", 5);
+        LexerTestUtilities.assertTokenEquals(sub,TestTokenId.IDENTIFIER, "defg", 5);
         assertEquals(0, sub.moveIndex(0));
         assertTrue(sub.moveNext());
-        LexerTestUtilities.assertTokenEquals(sub, SimpleTokenId.IDENTIFIER, "abc", 1);
+        LexerTestUtilities.assertTokenEquals(sub,TestTokenId.IDENTIFIER, "abc", 1);
         
         sub = ts.subSequence(4);
         assertTrue(sub.moveNext());
-        LexerTestUtilities.assertTokenEquals(sub, SimpleTokenId.IDENTIFIER, "defg", 5);
+        LexerTestUtilities.assertTokenEquals(sub,TestTokenId.IDENTIFIER, "defg", 5);
         assertTrue(sub.moveNext());
-        LexerTestUtilities.assertTokenEquals(sub, SimpleTokenId.IDENTIFIER, "hi", 11);
+        LexerTestUtilities.assertTokenEquals(sub,TestTokenId.IDENTIFIER, "hi", 11);
         assertFalse(sub.moveNext());
 
         sub = ts.subSequence(12, 15);
         assertTrue(sub.moveNext());
-        LexerTestUtilities.assertTokenEquals(sub, SimpleTokenId.IDENTIFIER, "hi", 11);
+        LexerTestUtilities.assertTokenEquals(sub,TestTokenId.IDENTIFIER, "hi", 11);
 
         sub = ts.subSequence(12, 15);
         assertEquals(-2, sub.move(9));
         assertNull(sub.token());
         assertTrue(sub.moveNext());
-        LexerTestUtilities.assertTokenEquals(sub, SimpleTokenId.IDENTIFIER, "hi", 11);
+        LexerTestUtilities.assertTokenEquals(sub,TestTokenId.IDENTIFIER, "hi", 11);
 
         sub = ts.subSequence(13, 15);
         assertFalse(sub.moveNext());
@@ -317,17 +317,17 @@ public class TokenSequenceTest extends NbTestCase {
 
     public void DtestMoveSkipTokens2() throws IOException {
         String text = "abc+defg--hi";
-        Set<SimpleTokenId> skipTokenIds =
-                EnumSet.of(SimpleTokenId.IDENTIFIER);
+        Set<TestTokenId> skipTokenIds =
+                EnumSet.of(TestTokenId.IDENTIFIER);
         
-        assertFalse(skipTokenIds.contains(SimpleTokenId.PLUS));
-        assertFalse(skipTokenIds.contains(SimpleTokenId.MINUS));
-        assertTrue(skipTokenIds.contains(SimpleTokenId.IDENTIFIER));
+        assertFalse(skipTokenIds.contains(TestTokenId.PLUS));
+        assertFalse(skipTokenIds.contains(TestTokenId.MINUS));
+        assertTrue(skipTokenIds.contains(TestTokenId.IDENTIFIER));
         
         Reader r = new StringReader(text);
         
         try {
-            TokenHierarchy<?> hi = TokenHierarchy.create(r, SimpleTokenId.language(), skipTokenIds, null);
+            TokenHierarchy<?> hi = TokenHierarchy.create(r,TestTokenId.language(), skipTokenIds, null);
             TokenSequence<? extends TokenId> ts = hi.tokenSequence();
             
             ts.tokenCount();
@@ -338,7 +338,7 @@ public class TokenSequenceTest extends NbTestCase {
     
     public void testMoveEmpty() {
         String text = "";
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, SimpleTokenId.language());
+        TokenHierarchy<?> hi = TokenHierarchy.create(text,TestTokenId.language());
         TokenSequence<? extends TokenId> ts = hi.tokenSequence();
 
         // Expect no tokens
@@ -367,13 +367,13 @@ public class TokenSequenceTest extends NbTestCase {
     
     public void testTokenSize() {
         String text = "abc+";
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, SimpleTokenId.language());
+        TokenHierarchy<?> hi = TokenHierarchy.create(text,TestTokenId.language());
         TokenSequence<? extends TokenId> ts = hi.tokenSequence();
         
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "abc", 0);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 0);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.PLUS, "+", 3);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.PLUS, "+", 3);
         assertFalse(ts.moveNext());
         
         TokenList tokenList = LexerTestUtilities.tokenList(ts);
@@ -381,13 +381,11 @@ public class TokenSequenceTest extends NbTestCase {
         assertTrue(ts.moveNext());
         // Test DefaultToken size
         assertSame(DefaultToken.class, ts.token().getClass());
-        assertSize("Token instance too big", Collections.singletonList(ts.token()), 24,
-                new Object[] { tokenList, SimpleTokenId.IDENTIFIER});
+        assertSize("Token instance too big", Collections.singletonList(ts.token()), 24,new Object[] {  tokenList,TestTokenId.IDENTIFIER});
         // Test TextToken size
         assertTrue(ts.moveNext());
         assertSame(TextToken.class, ts.token().getClass());
-        assertSize("Token instance too big", Collections.singletonList(ts.token()), 24,
-                new Object[] { tokenList, SimpleTokenId.PLUS, "+"});
+        assertSize("Token instance too big", Collections.singletonList(ts.token()), 24,new Object[] {  tokenList,TestTokenId.PLUS, "+"});
     }
 
 }

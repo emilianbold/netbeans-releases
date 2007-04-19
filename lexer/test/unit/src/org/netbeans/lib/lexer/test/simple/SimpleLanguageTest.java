@@ -19,6 +19,7 @@
 
 package org.netbeans.lib.lexer.test.simple;
 
+import org.netbeans.lib.lexer.lang.TestTokenId;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -51,29 +52,12 @@ public class SimpleLanguageTest extends TestCase {
 
     public void testTokenIds() {
         // Check that token ids are all present and correctly ordered
-        Language<SimpleTokenId> language  = SimpleTokenId.language();
+        Language<TestTokenId> language  = TestTokenId.language();
         Set ids = language.tokenIds();
         assertEquals("Invalid ids.size()", IDS_SIZE, ids.size());
         
         TokenId[] idArray = {
-            SimpleTokenId.IDENTIFIER,
-            SimpleTokenId.PLUS,
-            SimpleTokenId.MINUS,
-            SimpleTokenId.PLUS_MINUS_PLUS,
-            SimpleTokenId.DIV,
-            SimpleTokenId.STAR,
-            SimpleTokenId.BLOCK_COMMENT,
-            SimpleTokenId.BLOCK_COMMENT_INCOMPLETE,
-            SimpleTokenId.WHITESPACE,
-            SimpleTokenId.LINE_COMMENT,
-            SimpleTokenId.ERROR,
-            SimpleTokenId.PUBLIC,
-            SimpleTokenId.PRIVATE,
-            SimpleTokenId.STATIC,
-            SimpleTokenId.JAVADOC_COMMENT,
-            SimpleTokenId.JAVADOC_COMMENT_INCOMPLETE,
-            SimpleTokenId.STRING_LITERAL,
-            SimpleTokenId.STRING_LITERAL_INCOMPLETE
+            TestTokenId.IDENTIFIER,TestTokenId.PLUS,TestTokenId.MINUS,TestTokenId.PLUS_MINUS_PLUS,TestTokenId.DIV,TestTokenId.STAR,TestTokenId.BLOCK_COMMENT,TestTokenId.BLOCK_COMMENT_INCOMPLETE,TestTokenId.WHITESPACE,TestTokenId.LINE_COMMENT,TestTokenId.ERROR,TestTokenId.PUBLIC,TestTokenId.PRIVATE,TestTokenId.STATIC,TestTokenId.JAVADOC_COMMENT,TestTokenId.JAVADOC_COMMENT_INCOMPLETE,TestTokenId.STRING_LITERAL,TestTokenId.STRING_LITERAL_INCOMPLETE
             
         };
 
@@ -128,87 +112,57 @@ public class SimpleLanguageTest extends TestCase {
         LexerTestUtilities.assertCollectionsEqual("Invalid token categories",
                 cats, testCats);
         
-        LexerTestUtilities.assertCollectionsEqual(language.tokenCategoryMembers("operator"),
-                Arrays.asList(new TokenId[] {
-                    SimpleTokenId.PLUS,
-                    SimpleTokenId.MINUS,
-                    SimpleTokenId.PLUS_MINUS_PLUS,
-                    SimpleTokenId.STAR,
-                    SimpleTokenId.DIV,
+        LexerTestUtilities.assertCollectionsEqual(language.tokenCategoryMembers("operator"),Arrays.asList(new TokenId[] {
+                    TestTokenId.PLUS,TestTokenId.MINUS,TestTokenId.PLUS_MINUS_PLUS,TestTokenId.STAR,TestTokenId.DIV,
                 })
         );
         
-        LexerTestUtilities.assertCollectionsEqual(language.tokenCategoryMembers("test-category"),
-                Arrays.asList(new TokenId[] {
-                    SimpleTokenId.PLUS,
-                    SimpleTokenId.MINUS,
-                    SimpleTokenId.IDENTIFIER,
+        LexerTestUtilities.assertCollectionsEqual(language.tokenCategoryMembers("test-category"),Arrays.asList(new TokenId[] {
+                    TestTokenId.PLUS,TestTokenId.MINUS,TestTokenId.IDENTIFIER,
                 })
         );
 
-        LexerTestUtilities.assertCollectionsEqual(language.tokenCategoryMembers("whitespace"),
-                Arrays.asList(new TokenId[] {
-                    SimpleTokenId.WHITESPACE,
+        LexerTestUtilities.assertCollectionsEqual(language.tokenCategoryMembers("whitespace"),Arrays.asList(new TokenId[] {
+                    TestTokenId.WHITESPACE,
                 })
         );
 
-        LexerTestUtilities.assertCollectionsEqual(language.tokenCategoryMembers("error"),
-                Arrays.asList(new TokenId[] {
-                    SimpleTokenId.ERROR,
-                    SimpleTokenId.BLOCK_COMMENT_INCOMPLETE,
-                    SimpleTokenId.JAVADOC_COMMENT_INCOMPLETE,
-                    SimpleTokenId.STRING_LITERAL_INCOMPLETE,
+        LexerTestUtilities.assertCollectionsEqual(language.tokenCategoryMembers("error"),Arrays.asList(new TokenId[] {
+                    TestTokenId.ERROR,TestTokenId.BLOCK_COMMENT_INCOMPLETE,TestTokenId.JAVADOC_COMMENT_INCOMPLETE,TestTokenId.STRING_LITERAL_INCOMPLETE,
                 })
         );
 
-        LexerTestUtilities.assertCollectionsEqual(language.tokenCategoryMembers("comment"),
-                Arrays.asList(new TokenId[] {
-                    SimpleTokenId.LINE_COMMENT,
-                    SimpleTokenId.BLOCK_COMMENT,
-                    SimpleTokenId.JAVADOC_COMMENT,
-                    SimpleTokenId.BLOCK_COMMENT_INCOMPLETE,
-                    SimpleTokenId.JAVADOC_COMMENT_INCOMPLETE
+        LexerTestUtilities.assertCollectionsEqual(language.tokenCategoryMembers("comment"),Arrays.asList(new TokenId[] {
+                    TestTokenId.LINE_COMMENT,TestTokenId.BLOCK_COMMENT,TestTokenId.JAVADOC_COMMENT,TestTokenId.BLOCK_COMMENT_INCOMPLETE,TestTokenId.JAVADOC_COMMENT_INCOMPLETE
                 })
         );
                 
-        LexerTestUtilities.assertCollectionsEqual(language.tokenCategories(SimpleTokenId.IDENTIFIER),
+        LexerTestUtilities.assertCollectionsEqual(language.tokenCategories(TestTokenId.IDENTIFIER),
                 Arrays.asList(new String[] {
                     "test-category",
                 })
+        
         );
 
-        LexerTestUtilities.assertCollectionsEqual(language.tokenCategories(SimpleTokenId.PLUS),
+        LexerTestUtilities.assertCollectionsEqual(language.tokenCategories(TestTokenId.PLUS),
                 Arrays.asList(new String[] {
                     "test-category",
                     "operator",
                 })
+        
         );
 
-        LexerTestUtilities.assertCollectionsEqual(language.tokenCategories(SimpleTokenId.BLOCK_COMMENT_INCOMPLETE),
+        LexerTestUtilities.assertCollectionsEqual(language.tokenCategories(TestTokenId.BLOCK_COMMENT_INCOMPLETE),
                 Arrays.asList(new String[] {
                     "error",
                     "incomplete",
                     "comment",
                 })
+        
         );
 
         // Check indexedIds()
-        LexerTestUtilities.assertCollectionsEqual("Invalid language.indexedIds()",
-                language.merge(
-                    EnumSet.of(SimpleTokenId.IDENTIFIER),
-                    language.merge(language.tokenCategoryMembers("comment"),
-                        language.tokenCategoryMembers("error"))
-                ),
-                Arrays.asList(new TokenId[] {
-                    SimpleTokenId.LINE_COMMENT,
-                    SimpleTokenId.BLOCK_COMMENT,
-                    SimpleTokenId.JAVADOC_COMMENT,
-                    SimpleTokenId.BLOCK_COMMENT_INCOMPLETE,
-                    SimpleTokenId.JAVADOC_COMMENT_INCOMPLETE,
-                    SimpleTokenId.STRING_LITERAL_INCOMPLETE,
-                    SimpleTokenId.ERROR,
-                    SimpleTokenId.IDENTIFIER,
-                })
+        LexerTestUtilities.assertCollectionsEqual("Invalid language.indexedIds()",language.merge(java.util.EnumSet.of(TestTokenId.IDENTIFIER),language.merge(language.tokenCategoryMembers("comment"), language.tokenCategoryMembers("error"))),java.util.Arrays.asList(new org.netbeans.api.lexer.TokenId[]{TestTokenId.LINE_COMMENT, TestTokenId.BLOCK_COMMENT, TestTokenId.JAVADOC_COMMENT, TestTokenId.BLOCK_COMMENT_INCOMPLETE, TestTokenId.JAVADOC_COMMENT_INCOMPLETE, TestTokenId.STRING_LITERAL_INCOMPLETE, TestTokenId.ERROR, TestTokenId.IDENTIFIER})
         );
 
     }
