@@ -94,7 +94,7 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 
 #UML component
-ant -f nbbuild/entpack/build.xml uml > $UML_BUILD_LOG 2>&1
+ant -f nbbuild/entpack/build.xml -Ddo-not-rebuild-clusters=true uml > $UML_BUILD_LOG 2>&1
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
@@ -112,7 +112,7 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 
 #SOA component
-ant -f nbbuild/entpack/build.xml build > $SOA_BUILD_LOG 2>&1
+ant -f nbbuild/entpack/build.xml -Ddo-not-rebuild-clusters=true build > $SOA_BUILD_LOG 2>&1
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
