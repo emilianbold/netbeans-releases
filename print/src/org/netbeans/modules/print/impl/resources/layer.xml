@@ -20,14 +20,14 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 
 <filesystem>
+    <!-- # 100900
     <folder name="Toolbars">
         <folder name="File">
-            <!-- # 100900
             <file name="org-netbeans-modules-print-impl-action-PreviewAction.instance"/>
             <attr name="org-openide-actions-SaveAllAction.instance/org-netbeans-modules-print-impl-action-PreviewAction.instance" boolvalue="true"/>
-            -->
         </folder>
     </folder>
+    -->
 
     <folder name="Actions">
         <folder name="File">
@@ -70,10 +70,10 @@
     </folder>
     
     <folder name="Shortcuts">
-        <file name="D-P.shadow"> <!-- Ctrl-P -->
+        <file name="D-P.shadow"> <!-- Ctrl+P -->
             <attr name="originalFile" stringvalue="Actions/File/org-netbeans-modules-print-impl-action-PrintAction.instance"/>
         </file>
-        <file name="OS-P.shadow"> <!-- Alt-Shift-P -->
+        <file name="OS-P.shadow"> <!-- Alt+Shift+P -->
             <attr name="originalFile" stringvalue="Actions/File/org-netbeans-modules-print-impl-action-PreviewAction.instance"/>
         </file>
     </folder>
