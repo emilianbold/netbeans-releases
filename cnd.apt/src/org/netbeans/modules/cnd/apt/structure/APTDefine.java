@@ -53,4 +53,9 @@ public interface APTDefine extends APT {
      * returns List of tokens of macro body
      */      
     public List getBody();
+    
+    /**
+     * returns true if #define directive is valid
+     */
+    public boolean isValid();
 }

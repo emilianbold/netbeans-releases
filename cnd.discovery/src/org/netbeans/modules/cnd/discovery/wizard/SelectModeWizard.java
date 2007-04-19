@@ -57,7 +57,7 @@ public class SelectModeWizard implements WizardDescriptor.Panel, ChangeListener 
     }
     
     public HelpCtx getHelp() {
-        return new HelpCtx(DiscoveryWizardAction.HELP_CONTEXT);
+        return new HelpCtx(DiscoveryWizardAction.HELP_CONTEXT_SELECT_MODE);
     }
     
     public boolean isValid() {

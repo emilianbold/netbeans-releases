@@ -28,6 +28,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.modules.cnd.api.utils.AllFileFilter;
 import org.netbeans.modules.cnd.api.utils.ElfExecutableFileFilter;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -141,6 +142,8 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
                     continue;
                 addExecutables(files[i], filesAdded);
             } else {
+                if (AllFileFilter.getInstance().accept(files[i]))
+                    continue;
                 if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
                     if (exeExecutableFileFilter.accept(files[i]))
                         filesAdded.add(files[i].getPath());

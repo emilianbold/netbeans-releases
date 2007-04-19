@@ -176,7 +176,7 @@ public final class CsmProjectContentResolver {
         }
         CsmNamespace globNS = project.getGlobalNamespace();
         // add global variables
-        List res = getNamespaceVariables(globNS, strPrefix, match, false);
+        List res = getNamespaceVariables(globNS, strPrefix, match, false, false);
         if (res != null && sort) {
             CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
         }
@@ -189,7 +189,20 @@ public final class CsmProjectContentResolver {
             return Collections.EMPTY_LIST;
         }
         CsmNamespace globNS = project.getGlobalNamespace();
-        List res = getNamespaceFunctions(globNS, strPrefix, match, false);
+        List res = getNamespaceFunctions(globNS, strPrefix, match, false, false);
+        if (res != null && sort) {
+            CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
+        }
+        return res;
+    }
+    
+    public List getGlobalNamespaces(String strPrefix, boolean match) {
+        boolean sort = this.isSortNeeded();
+        if (project == null) {
+            return Collections.EMPTY_LIST;
+        }
+        CsmNamespace globNS = project.getGlobalNamespace();
+        List res = getNestedNamespaces(globNS, strPrefix, match);
         if (res != null && sort) {
             CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
         }
@@ -243,22 +256,22 @@ public final class CsmProjectContentResolver {
     // help methods to resolve current project libraries content
     
     public List getLibVariables(String strPrefix, boolean match) {
-        return getLibElements(NS_VARIABLE_FILTER, strPrefix, match, this.isSortNeeded());
+        return getLibElements(NS_VARIABLE_FILTER, strPrefix, match, this.isSortNeeded(), false);
     }
     
     public List getLibFunctions(String strPrefix, boolean match) {
-        return getLibElements(NS_FUNCTION_FILTER, strPrefix, match, this.isSortNeeded());
+        return getLibElements(NS_FUNCTION_FILTER, strPrefix, match, this.isSortNeeded(), false);
     }
     
     public List getLibClassesEnums(String strPrefix, boolean match) {
-        return getLibElements(NS_CLASS_ENUM_FILTER, strPrefix, match, this.isSortNeeded());
+        return getLibElements(NS_CLASS_ENUM_FILTER, strPrefix, match, this.isSortNeeded(), false);
     }
     
     public List getLibEnumerators(String strPrefix, boolean match, boolean sort) {
-        return getLibElements(NS_ENUMERATOR_FILTER, strPrefix, match, this.isSortNeeded());
+        return getLibElements(NS_ENUMERATOR_FILTER, strPrefix, match, this.isSortNeeded(), false);
     }
     
-    private List getLibElements(NsContentResultsFilter filter, String strPrefix, boolean match, boolean sort) {
+    public List getLibNamespaces(String strPrefix, boolean match) {
         if (project == null) {
             return Collections.EMPTY_LIST;
         }
@@ -271,7 +284,29 @@ public final class CsmProjectContentResolver {
                 handledLibs.add(lib);
                 CsmProjectContentResolver libResolver = new CsmProjectContentResolver(lib, isCaseSensitive(), isSortNeeded(), isNaturalSort());
                 // TODO: now only direct lib is handled and not libraries of libraries of ...
-                res = merge(res, filter.getResults(libResolver, lib.getGlobalNamespace(), strPrefix, match));
+                res = merge(res, libResolver.getGlobalNamespaces(strPrefix, match));
+            }
+        }
+        if (res != null && sort) {
+            CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
+        }
+        return res;
+    }
+    
+    private List getLibElements(NsContentResultsFilter filter, String strPrefix, boolean match, boolean sort, boolean searchNested) {
+        if (project == null) {
+            return Collections.EMPTY_LIST;
+        }
+        Set handledLibs = new HashSet();
+        List res = new ArrayList();
+        // add libararies elements
+        for (Iterator it = project.getLibraries().iterator(); it.hasNext();) {
+            CsmProject lib = (CsmProject) it.next();
+            if (!handledLibs.contains(lib)) {
+                handledLibs.add(lib);
+                CsmProjectContentResolver libResolver = new CsmProjectContentResolver(lib, isCaseSensitive(), isSortNeeded(), isNaturalSort());
+                // TODO: now only direct lib is handled and not libraries of libraries of ...
+                res = merge(res, filter.getResults(libResolver, lib.getGlobalNamespace(), strPrefix, match, searchNested));
             }
         }
         if (res != null && sort) {
@@ -290,32 +325,33 @@ public final class CsmProjectContentResolver {
          * @param strPrefix prefix to search elements starting from
          * @param match flag indicating that results must match prefix
          * @param sort flag indicating that results must be sorted
+         * @searchNested flag indicating that results must be searched in nested namespaces as well
          * @returns specific results of analyzed namespace
          */
-        public List getResults(CsmProjectContentResolver resolver, CsmNamespace ns, String strPrefix, boolean match);
+        public List getResults(CsmProjectContentResolver resolver, CsmNamespace ns, String strPrefix, boolean match, boolean searchNested);
     }
     
     private static final NsContentResultsFilter NS_VARIABLE_FILTER = new NsContentResultsFilter() {
-        public List getResults(CsmProjectContentResolver resolver, CsmNamespace ns, String strPrefix, boolean match) {
-            return resolver.getNamespaceVariables(ns, strPrefix, match);
+        public List getResults(CsmProjectContentResolver resolver, CsmNamespace ns, String strPrefix, boolean match, boolean searchNested) {
+            return resolver.getNamespaceVariables(ns, strPrefix, match, searchNested);
         }
     };
     
     private static final NsContentResultsFilter NS_FUNCTION_FILTER = new NsContentResultsFilter() {
-        public List getResults(CsmProjectContentResolver resolver, CsmNamespace ns, String strPrefix, boolean match) {
-            return resolver.getNamespaceFunctions(ns, strPrefix, match);
+        public List getResults(CsmProjectContentResolver resolver, CsmNamespace ns, String strPrefix, boolean match, boolean searchNested) {
+            return resolver.getNamespaceFunctions(ns, strPrefix, match, searchNested);
         }
     };
     
     private static final NsContentResultsFilter NS_CLASS_ENUM_FILTER = new NsContentResultsFilter() {
-        public List getResults(CsmProjectContentResolver resolver, CsmNamespace ns, String strPrefix, boolean match) {
-            return resolver.getNamespaceClassesEnums(ns, strPrefix, match);
+        public List getResults(CsmProjectContentResolver resolver, CsmNamespace ns, String strPrefix, boolean match, boolean searchNested) {
+            return resolver.getNamespaceClassesEnums(ns, strPrefix, match, searchNested);
         }
     };
     
     private static final NsContentResultsFilter NS_ENUMERATOR_FILTER = new NsContentResultsFilter() {
-        public List getResults(CsmProjectContentResolver resolver, CsmNamespace ns, String strPrefix, boolean match) {
-            return resolver.getNamespaceEnumerators(ns, strPrefix, match);
+        public List getResults(CsmProjectContentResolver resolver, CsmNamespace ns, String strPrefix, boolean match, boolean searchNested) {
+            return resolver.getNamespaceEnumerators(ns, strPrefix, match, searchNested);
         }
     };
     
@@ -353,12 +389,12 @@ public final class CsmProjectContentResolver {
 //        return res;
 //    }
     
-    public List getNamespaceVariables(CsmNamespace ns, String strPrefix, boolean match) {
-        return getNamespaceVariables(ns, strPrefix, match, isSortNeeded());
+    public List getNamespaceVariables(CsmNamespace ns, String strPrefix, boolean match, boolean searchNested) {
+        return getNamespaceVariables(ns, strPrefix, match, isSortNeeded(), searchNested);
     }
     
-    private List getNamespaceVariables(CsmNamespace ns, String strPrefix, boolean match, boolean sort) {
-        List res = getNamespaceMembers(ns, CsmDeclaration.Kind.VARIABLE, strPrefix, match);
+    private List getNamespaceVariables(CsmNamespace ns, String strPrefix, boolean match, boolean sort, boolean searchNested) {
+        List res = getNamespaceMembers(ns, CsmDeclaration.Kind.VARIABLE, strPrefix, match, searchNested);
         
         if (sort && res != null) {
             CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
@@ -366,16 +402,16 @@ public final class CsmProjectContentResolver {
         return res;
     }
     
-    public List getNamespaceFunctions(CsmNamespace ns, String strPrefix, boolean match) {
-        return getNamespaceFunctions(ns, strPrefix, match, isSortNeeded());
+    public List getNamespaceFunctions(CsmNamespace ns, String strPrefix, boolean match, boolean searchNested) {
+        return getNamespaceFunctions(ns, strPrefix, match, isSortNeeded(), searchNested);
     }
     
-    private List getNamespaceFunctions(CsmNamespace ns, String strPrefix, boolean match, boolean sort) {
+    private List getNamespaceFunctions(CsmNamespace ns, String strPrefix, boolean match, boolean sort, boolean searchNested) {
         CsmDeclaration.Kind memberKinds[] = {
             CsmDeclaration.Kind.FUNCTION,
             CsmDeclaration.Kind.FUNCTION_DEFINITION
         };
-        List res = getNamespaceMembers(ns, memberKinds, strPrefix, match);
+        List res = getNamespaceMembers(ns, memberKinds, strPrefix, match, searchNested);
         res = filterFunctionDefinitions(res);
         if (sort && res != null) {
             CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
@@ -383,7 +419,23 @@ public final class CsmProjectContentResolver {
         return res;
     }
     
-    public List/*<CsmClass>*/ getNamespaceClassesEnums(CsmNamespace ns, String strPrefix, boolean match) {
+    public List/*<CsmNamespace>*/ getNestedNamespaces(CsmNamespace ns, String strPrefix, boolean match) {
+        List res = new ArrayList();
+        // handle all nested namespaces
+        for (Iterator it = ns.getNestedNamespaces().iterator(); it.hasNext();) {
+            CsmNamespace nestedNs = (CsmNamespace) it.next();
+            // TODO: consider when we add nested namespaces
+            if (nestedNs.getName().length() != 0 && matchName(nestedNs.getName(), strPrefix, match)) {
+                res.add(nestedNs);
+            }
+        }  
+        if (sort && res != null) {
+            CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
+        }
+        return res;        
+    }
+    
+    public List/*<CsmClass>*/ getNamespaceClassesEnums(CsmNamespace ns, String strPrefix, boolean match, boolean searchNested) {
         CsmDeclaration.Kind classKinds[] =	{
             CsmDeclaration.Kind.CLASS,
             CsmDeclaration.Kind.STRUCT,
@@ -391,17 +443,17 @@ public final class CsmProjectContentResolver {
             CsmDeclaration.Kind.ENUM,
             CsmDeclaration.Kind.TYPEDEF
         };
-        List res = getNamespaceMembers(ns, classKinds, strPrefix, match);
+        List res = getNamespaceMembers(ns, classKinds, strPrefix, match, searchNested);
         if (isSortNeeded() && res != null) {
             CsmSortUtilities.sortClasses(res, isCaseSensitive());
         }
         return res;
     }
 
-    public List/*<CsmEnumerator>*/ getNamespaceEnumerators(CsmNamespace ns, String strPrefix, boolean match) {
+    public List/*<CsmEnumerator>*/ getNamespaceEnumerators(CsmNamespace ns, String strPrefix, boolean match, boolean searchNested) {
         boolean sort = isSortNeeded();
         // get all enums and check theirs enumerators
-        List enums = getNamespaceMembers(ns, CsmDeclaration.Kind.ENUM, "", false);
+        List enums = getNamespaceMembers(ns, CsmDeclaration.Kind.ENUM, "", false, searchNested);
         List res = new ArrayList();
         if (enums != null) {
             for (Iterator it = enums.iterator(); it.hasNext();) {
@@ -591,16 +643,16 @@ public final class CsmProjectContentResolver {
         return res;
     }
     
-    private List/*<CsmDeclaration>*/ getNamespaceMembers(CsmNamespace ns, CsmDeclaration.Kind kind, String strPrefix, boolean match) {
-        return getNamespaceMembers(ns, new CsmDeclaration.Kind[] {kind}, strPrefix, match);
+    private List/*<CsmDeclaration>*/ getNamespaceMembers(CsmNamespace ns, CsmDeclaration.Kind kind, String strPrefix, boolean match, boolean searchNested) {
+        return getNamespaceMembers(ns, new CsmDeclaration.Kind[] {kind}, strPrefix, match, searchNested);
     }
     
-    private List/*<CsmDeclaration>*/ getNamespaceMembers(CsmNamespace ns, CsmDeclaration.Kind kinds[], String strPrefix, boolean match) {
-        List res = getNamespaceMembers(ns, kinds, strPrefix, match, new HashSet());
+    private List/*<CsmDeclaration>*/ getNamespaceMembers(CsmNamespace ns, CsmDeclaration.Kind kinds[], String strPrefix, boolean match, boolean searchNested) {
+        List res = getNamespaceMembers(ns, kinds, strPrefix, match, new HashSet(), searchNested);
         return res;
     }
     
-    private List/*<CsmDeclaration>*/ getNamespaceMembers(CsmNamespace ns, CsmDeclaration.Kind kinds[], String strPrefix, boolean match, Set handledNS) {
+    private List/*<CsmDeclaration>*/ getNamespaceMembers(CsmNamespace ns, CsmDeclaration.Kind kinds[], String strPrefix, boolean match, Set handledNS, boolean searchNested) {
         if (handledNS.contains(ns)) {
             return Collections.EMPTY_LIST;
         }
@@ -616,16 +668,18 @@ public final class CsmProjectContentResolver {
             }
         }
         // handle all nested namespaces
-        for (it = ns.getNestedNamespaces().iterator(); it.hasNext();) {
-            CsmNamespace nestedNs = (CsmNamespace) it.next();
-            // TODO: consider when we add nested namespaces
+        if (searchNested) {
+            for (it = ns.getNestedNamespaces().iterator(); it.hasNext();) {
+                CsmNamespace nestedNs = (CsmNamespace) it.next();
+                // TODO: consider when we add nested namespaces
 //            if (nestedNs.getName().length() != 0) {
 //                if (need namespaces &&
 //                        matchName(nestedNs.getName(), strPrefix, match)) {
 //                    res.add(nestedNs);
-//                }                
+//                }
 //            }
-            res.addAll(getNamespaceMembers(nestedNs, kinds, strPrefix, match, handledNS));
+                res.addAll(getNamespaceMembers(nestedNs, kinds, strPrefix, match, handledNS, true));
+            }
         }
         return res;
     }
@@ -673,6 +727,4 @@ public final class CsmProjectContentResolver {
         }
         return out;
     }
-    
-    
 }

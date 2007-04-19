@@ -53,7 +53,7 @@ public class SelectObjectFilesWizard implements WizardDescriptor.Panel, ChangeLi
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx(DiscoveryWizardAction.HELP_CONTEXT);
+        return new HelpCtx(DiscoveryWizardAction.HELP_CONTEXT_SELECT_OBJECT_FILES);
     }
     
     public boolean isValid() {

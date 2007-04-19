@@ -230,8 +230,9 @@ public class DefaultProjectActionHandler implements ActionListener {
                     }
                 } else { // Build or Clean
                     String[] env1 = new String[env.length + 1];
-                    String csname = ((MakeConfiguration) pae.getConfiguration()).getCompilerSet().getOption().trim();
-                    String csdirs = CompilerSetManager.getDefault().getCompilerSet(csname).getDirectory();
+                    String csname = ((MakeConfiguration) pae.getConfiguration()).getCompilerSet().getOption();
+                    String csdname = ((MakeConfiguration) pae.getConfiguration()).getCompilerSet().getName();
+                    String csdirs = CompilerSetManager.getDefault().getCompilerSet(csname, csdname).getDirectory();
                     boolean gotpath = false;
                     int i;
                     for (i = 0; i < env.length; i++) {

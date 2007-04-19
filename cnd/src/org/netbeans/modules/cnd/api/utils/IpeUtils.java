@@ -680,6 +680,15 @@ public class IpeUtils {
             return s.replaceAll(" ", "\\\\ "); // NOI18N
         }
     }
+
+    public static String escapeQuotes(String s) {
+        if (s.indexOf('"') < 0)
+            return s;
+        else {
+            //return s.replace(" ", "\\ "); // NOI8N JDK1.5
+            return s.replaceAll("\"", "\\\\\""); // NOI18N
+        }
+    }
     
     /**
      * Trims .. from a file path.

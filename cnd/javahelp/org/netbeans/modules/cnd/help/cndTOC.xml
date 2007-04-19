@@ -4,12 +4,20 @@
 
 <toc version="2.0">
 	<tocitem text="C and C++ Development">
+		<tocitem text="Getting Started">
+			<tocitem text="C and C++ Development Overview" target="CandC++Overview" />
+			<tocitem text="Key C and C++ Development Concepts" target="KeyCandC++Concepts" />
+			<tocitem text="Memory Requirements" target="Memory" />
+		</tocitem>
 		<tocitem text="Working With C and C++ Projects">
 			<tocitem text="About C and C++ Projects" target="AboutCandC++Projects" />
-			<tocitem text="Configuring C and C++ Project Settings" target="Configuring" />
 			<tocitem text="Working With C and  C++ Projects" target="WorkingWithCandC++Projects" />
 			<tocitem text="Project Tasks: Quick Reference" target="ProjectTasks" />
 			<tocitem text="Creating a C and C++ Project" target="CreatingCorC++Project" />
+			<tocitem text="Configuring C and C++ Build Tools" target="ConfiguringBuildTools" />
+			<tocitem text="Configuring C and C++ Project Settings" target="Configuring" />
+			<tocitem text="Configuring C and C++ Parsing Settings" target="ConfiguringParsingSettings" />
+			<tocitem text="Configuring Code Assistance" target="CodeAssistance" />
 			<tocitem text="Deleting  a C or C++ Project" target="DeletingCorC++Project" />
 			<tocitem text="Moving, Copying, or Renaming a C or C++ Project" target="MovingCorC++Project" />
 			<tocitem text="Creating a Makefile" target="CreatingMakefile" />
@@ -19,17 +27,11 @@
 			<tocitem text="Adding Files and Folders to a C or C++ Project" target="AddingFiles&amp;Folders" />
 			<tocitem text="Setting the Main C or  C++ Project" target="SettingMainCorC++Project." />
 		</tocitem>
-		<tocitem text="Getting Started">
-			<tocitem text="C and C++ Development Overview" target="CandC++Overview" />
-			<tocitem text="Key C and C++ Development Concepts" target="KeyCandC++Concepts" />
-			<tocitem text="Memory Requirements" target="Memory" />
-		</tocitem>
 		<tocitem text="C and C++ Project Basics">
 			<tocitem text="Building C and  C++ Projects">
 				<tocitem text="Building Tasks: Quick Reference" target="C&amp;C++BuildingTasks" />
 				<tocitem text="Setting C and C++ Compiler Options" target="CompilerOptions" />
 				<tocitem text="Setting C and C++ Linker Options" target="LinkerOptions" />
-				<tocitem text="Setting C and C++ Archiver Options" target="ArchiverOptions" />
 				<tocitem text="Creating Dependencies Between C or  C++ Projects" target="CreatingDependencies" />
 				<tocitem text="Building a C or C++ Project" target="BuildingCorC++Project" />
 				<tocitem text="Compiling a Single C or C++ File" target="CompilingSingleC&amp;C++File" />
@@ -50,6 +52,7 @@
 				<tocitem text="Using Hyperlink Navigation" target="UsingHyperlinks" />
 				<tocitem text="Using the Class View" target="UsingClassView" />
 				<tocitem text="Folding Blocks of Code" target="C&amp;C++CodeFolding" />
+				<tocitem text="Commenting Lines in Your Code" target="Commenting" />
 			</tocitem>
 			<tocitem text="Running a C or C++ Project" target="RunningCorC++Project" />
 			<tocitem text="Debugging C and C++ Applications">

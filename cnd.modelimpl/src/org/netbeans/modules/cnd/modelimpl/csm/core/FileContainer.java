@@ -70,7 +70,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
         if (f != null && TraceFlags.USE_REPOSITORY) {
             if (f.fileNew != null){
                 // clean repository
-                RepositoryUtils.remove(f.fileNew);
+                if (false) RepositoryUtils.remove(f.fileNew);
             }
         }
     }
@@ -104,13 +104,17 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
                 if (state.isStateCorrect()) {
                     f.state = state;
                 } else {
-                    System.err.println("Do not reset correct state to incorrect "+file.getAbsolutePath());
+                    if (TRACE_PP_STATE_OUT) {
+                        System.err.println("Do not reset correct state to incorrect "+file.getAbsolutePath());
+                    }
                 }
             } else {
                 if (state.isStateCorrect()){
                     f.state = state;
                 } else {
-                    System.err.println("Do not reset incorrect state to incorrect state "+file.getAbsolutePath());
+                    if (TRACE_PP_STATE_OUT) {
+                        System.err.println("Do not reset incorrect state to incorrect state "+file.getAbsolutePath());
+                    }
                 }
             }
         }

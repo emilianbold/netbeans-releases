@@ -91,7 +91,9 @@ public class NamespaceKeyArray extends HostKeyArray implements UpdatebleHost, Cs
             for( Iterator/*<CsmNamespace>*/ iter = namespace.getNestedNamespaces().iterator(); iter.hasNext(); ) {
                 CsmNamespace ns = (CsmNamespace)iter.next();
                 PersistentKey key = PersistentKey.createKey(ns);
-                res.put(key, getSortedName(ns));
+                if (key != null) {
+                    res.put(key, getSortedName(ns));
+                }
             }
             Collection/*<CsmDeclaration>*/ decl = namespace.getDeclarations();
             if (decl != null) {
@@ -107,14 +109,19 @@ public class NamespaceKeyArray extends HostKeyArray implements UpdatebleHost, Cs
                     if (CsmKindUtilities.isOffsetable(d)) {
                         if (canCreateNode((CsmOffsetableDeclaration) d)){
                             PersistentKey key = PersistentKey.createKey(d);
-                            res.put(key, getSortedName((CsmOffsetableDeclaration) d));
+                            if (key != null) {
+                                res.put(key, getSortedName((CsmOffsetableDeclaration) d));
+                            }
                         }
                     }
                 }
             }
         }
         if (isRootNamespase && !getProject().isStable(null)){
-            res.put(PersistentKey.createKey(getProject()), new SortedName(0,"",0)); // NOI18N
+            PersistentKey key = PersistentKey.createKey(getProject());
+            if (key != null) {
+                res.put(key, new SortedName(0,"",0)); // NOI18N
+            }
         }
         return res;
     }

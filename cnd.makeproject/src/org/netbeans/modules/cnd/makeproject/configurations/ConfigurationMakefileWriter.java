@@ -355,8 +355,7 @@ public class ConfigurationMakefileWriter {
         String cwd = makefileConfiguration.getBuildCommandWorkingDirValue();
         String command = makefileConfiguration.getBuildCommand().getValue();
         //bw.write(target + ":" + "\n"); // NOI18N
-        bw.write("\tcd " + cwd + ";\\" + "\n"); // NOI18N
-        bw.write("\t" + command + "\n"); // NOI18N
+        bw.write("\tcd " + IpeUtils.escapeSpaces(cwd) + " && " + command + "\n"); // NOI18N
     }
     
     private void writeSubProjectBuildTargets(MakeConfiguration conf, BufferedWriter bw) throws IOException {
@@ -372,7 +371,7 @@ public class ConfigurationMakefileWriter {
                 String location = makeArtifact.getWorkingDirectory();
                 if (!makeArtifact.getBuild())
                     continue;
-                bw.write("\tcd " + location + " && " + makeArtifact.getBuildCommand() + "\n"); // NOI18N
+                bw.write("\tcd " + IpeUtils.escapeSpaces(location) + " && " + makeArtifact.getBuildCommand() + "\n"); // NOI18N
             }
         }
     }
@@ -390,7 +389,7 @@ public class ConfigurationMakefileWriter {
                 String location = makeArtifact.getWorkingDirectory();
                 if (!makeArtifact.getBuild())
                     continue;
-                bw.write("\tcd " + location + " && " + makeArtifact.getCleanCommand() + "\n"); // NOI18N
+                bw.write("\tcd " + IpeUtils.escapeSpaces(location) + " && " + makeArtifact.getCleanCommand() + "\n"); // NOI18N
             }
         }
     }
@@ -426,8 +425,7 @@ public class ConfigurationMakefileWriter {
             String cwd = makefileConfiguration.getBuildCommandWorkingDirValue();
             String command = makefileConfiguration.getCleanCommand().getValue();
             
-            bw.write("\tcd " + cwd + ";\\" + "\n"); // NOI18N
-            bw.write("\t" + command + "\n"); // NOI18N
+            bw.write("\tcd " + IpeUtils.escapeSpaces(cwd) + " && " + command + "\n"); // NOI18N
         }
         
         writeSubProjectCleanTargets(conf, bw);

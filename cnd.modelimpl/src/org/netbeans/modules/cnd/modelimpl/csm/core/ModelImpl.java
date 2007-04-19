@@ -148,6 +148,9 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
     public ProjectBase addProject(Object id, String name) {
         ProjectBase prj = null;
         synchronized( lock ) {
+	    if( state != CsmModelState.ON ) {
+		return null;
+	    }
             prj = obj2Project(id);
             if( prj == null ) {
                 prj = new ProjectImpl(this, id,  name);
@@ -245,15 +248,9 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
         String name = prj.getName();
         if (TraceFlags.TRACE_CLOSE_PROJECT) System.err.println("dispose project " + name);
         prj.setDisposed();
-        CsmUID<CsmProject> uid = UIDCsmConverter.projectToUID(prj);
-        assert uid != null;
         fireProjectClosed(prj);
         ParserThreadManager.instance().waitEmptyProjectQueue(prj);
         prj.dispose();
-        if (uid != null) {
-            // update repository
-            RepositoryUtils.remove(uid);
-        }
         if (TraceFlags.TRACE_CLOSE_PROJECT) System.err.println("project closed " + name);
     }
     
@@ -440,7 +437,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
             }
 	}
         
-        // dispose all opened projects, UIDs will be removed in disposeProject
+        // clearFileExistenceCache all opened projects, UIDs will be removed in disposeProject
         for (Iterator projIter =prjsColl.iterator(); projIter.hasNext();) {
             ProjectBase project = (ProjectBase) projIter.next();
             disposeProject(project);
@@ -588,8 +585,6 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
                 assert lib != null : "Null project for UID " + uid;
                 disposeProject(lib);
             }
-            // update repository before clearing
-            RepositoryUtils.remove(libUIDs);
         } else {
             Set<ProjectBase> libs;
             synchronized (lock) {
@@ -659,7 +654,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
         if (TraceFlags.USE_REPOSITORY) {
             UIDManager.instance().dispose();
         }
-        APTIncludeUtils.dispose();
+        APTIncludeUtils.clearFileExistenceCache();
     }
     
     private Object lock = new Object();

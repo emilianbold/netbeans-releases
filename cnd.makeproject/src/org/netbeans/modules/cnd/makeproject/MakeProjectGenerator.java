@@ -178,7 +178,7 @@ public class MakeProjectGenerator {
     }
     */
 
-    private static AntProjectHelper createProject(FileObject dirFO, String name, String makefileName, Configuration[] confs, Iterator sourceFolders, Iterator importantItems) throws IOException {
+    private static AntProjectHelper createProject(FileObject dirFO, String name, String makefileName, Configuration[] confs, final Iterator sourceFolders, final Iterator importantItems) throws IOException {
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, MakeProjectType.TYPE);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
@@ -201,11 +201,23 @@ public class MakeProjectGenerator {
         h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
 
 	// Create new project descriptor with default configurations and save it to disk.
-	MakeConfigurationDescriptor projectDescriptor = new MakeConfigurationDescriptor(FileUtil.toFile(dirFO).getPath());
+	final MakeConfigurationDescriptor projectDescriptor = new MakeConfigurationDescriptor(FileUtil.toFile(dirFO).getPath());
         projectDescriptor.setProjectMakefileName(makefileName);
 	projectDescriptor.init(confs);
-	projectDescriptor.initLogicalFolders(sourceFolders, sourceFolders == null, importantItems); // FIXUP: need a better check whether logical folder should be ccreated or not.
-	projectDescriptor.save();
+        
+        Project project = projectDescriptor.getProject();
+        if (project instanceof MakeProject){
+            MakeProject makeProject = (MakeProject) project;
+            makeProject.addOpenedTask(new Runnable(){
+                public void run() {
+                    projectDescriptor.initLogicalFolders(sourceFolders, sourceFolders == null, importantItems); // FIXUP: need a better check whether logical folder should be ccreated or not.
+                    projectDescriptor.save();
+                }
+            });
+        } else {
+            projectDescriptor.initLogicalFolders(sourceFolders, sourceFolders == null, importantItems); // FIXUP: need a better check whether logical folder should be ccreated or not.
+            projectDescriptor.save();
+        }
 	// create Makefile
 	copyURLFile("nbresloc:/org/netbeans/modules/cnd/makeproject/resources/MasterMakefile",  // NOI18N
 	    projectDescriptor.getBaseDir() + File.separator + projectDescriptor.getProjectMakefileName());

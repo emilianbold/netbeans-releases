@@ -114,7 +114,8 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         // FIXUP: update all configurations with settings from old item....
         String oldPath = getAbsPath();
         f.removeItem(this);
-        Item item = f.addItem(new Item(newPath));
+        Item item = new Item(newPath);
+        f.addItem(item);
         f.renameItemAction(oldPath,  item);
     }
     

@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
@@ -217,7 +218,15 @@ public class ProjectBridge {
     }
     
     public Set getResult(){
-        makeConfigurationDescriptor.checkForChangedItems(project, null, null);
+        if (SwingUtilities.isEventDispatchThread()) {
+            makeConfigurationDescriptor.checkForChangedItems(project, null, null);
+        } else {
+            SwingUtilities.invokeLater(new Runnable(){
+                public void run() {
+                    makeConfigurationDescriptor.checkForChangedItems(project, null, null);
+                }
+            });
+        }
         return resultSet;
     }
     

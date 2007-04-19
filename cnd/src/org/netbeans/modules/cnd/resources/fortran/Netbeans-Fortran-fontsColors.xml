@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+
+<fontscolors>
+    <fontcolor name="fortran-block-comment" default="comment"/>
+    <fontcolor name="fortran-char-literal" default="char"/>
+    <fontcolor name="fortran-errors" default="error"/>
+    <fontcolor name="fortran-identifier" default="identifier"/>
+    <fontcolor name="fortran-keywords" default="keyword"/>
+    <fontcolor name="fortran-line-comment" default="comment"/>
+    <fontcolor name="fortran-numeric-literals" default="number"/>
+    <fontcolor name="fortran-operators" default="operator"/>
+    <fontcolor name="fortran-keyword-operators" default="operator"/>
+    <fontcolor name="fortran-special-characters" default="char"/>
+
+    <!-- use bold "char" settings as default for preprocessor-->
+    <fontcolor name="fortran-preprocessor" default="char">
+        <font style="bold"/>
+    </fontcolor> 
+    <fontcolor name="fortran-sys-include" default="string"/>
+    <fontcolor name="fortran-user-include" default="string"/>
+    <fontcolor name="fortran-string-literal" default="string"/>
+    <fontcolor name="fortran-whitespace" default="whitespace"/>
+</fontscolors>

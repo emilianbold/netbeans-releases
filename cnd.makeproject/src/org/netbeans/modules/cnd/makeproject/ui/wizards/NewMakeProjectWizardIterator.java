@@ -26,6 +26,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -40,6 +41,7 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
+import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
@@ -239,7 +241,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
                     String configureArguments = (String)wiz.getProperty("configureArguments"); // NOI18N
                     if (configureArguments != null) {
                         ShellExecSupport ses = (ShellExecSupport)node.getCookie(ShellExecSupport.class);
-                        ses.setArguments(Utilities.parseParameters(configureArguments));
+                        ses.setArguments(Utilities.parseParameters(IpeUtils.escapeQuotes(configureArguments)));
                     }
 
                     // Possibly run the configure script
@@ -264,13 +266,33 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
             MakeProjectGenerator.createProject(dirF, name, makefileName, new MakeConfiguration[] {extConf}, (Iterator)wiz.getProperty("sourceFolders"), importantItemsIterator); // NOI18N
             FileObject dir = FileUtil.toFileObject(dirF);
             resultSet.add(dir);
-            IteratorExtension extension = (IteratorExtension)Lookup.getDefault().lookup(IteratorExtension.class);
+            final IteratorExtension extension = (IteratorExtension)Lookup.getDefault().lookup(IteratorExtension.class);
             if (extension != null) {
-                Project p = ProjectManager.getDefault().findProject(dir);
-                if (extension.canApply(wiz, p)){
-                    extension.apply(wiz, p);
+                final Project p = ProjectManager.getDefault().findProject(dir);
+                if (p instanceof MakeProject) {
+                    MakeProject makeProject = (MakeProject) p;
+                    final Map<String,Object> map = extension.clone(wiz);
+                    makeProject.addOpenedTask(new Runnable(){
+                        public void run() {
+                            if (extension.canApply(map, p)){
+                                try {
+                                    extension.apply(map, p);
+                                } catch (IOException ex) {
+                                    ex.printStackTrace();
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    if (extension.canApply(wiz, p)){
+                        try {
+                            extension.apply(wiz, p);
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                    extension.uninitialize(wiz);
                 }
-                extension.uninitialize(wiz);
             }
         } else if (wizardtype == TYPE_APPLICATION || wizardtype == TYPE_DYNAMIC_LIB || wizardtype == TYPE_STATIC_LIB) {
             int conftype = -1;

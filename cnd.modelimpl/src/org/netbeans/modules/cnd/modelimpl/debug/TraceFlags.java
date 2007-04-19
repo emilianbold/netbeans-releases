@@ -85,4 +85,9 @@ public interface TraceFlags {
 
     public static final boolean CLOSE_AFTER_PARSE = DebugUtils.getBoolean("cnd.close.ide.after.parse", false);
     public static final int     CLOSE_TIMEOUT = Integer.getInteger("cnd.close.ide.timeout",0); // in seconds
+
+    public static final boolean USE_DEEP_REPARSING = DebugUtils.getBoolean("cnd.modelimpl.use.deep.repersing", true);
+    public static final boolean USE_DEEP_REPARSING_TRACE = DebugUtils.getBoolean("cnd.modelimpl.use.deep.repersing.trace", false);
+    
+    public static final boolean SAFE_REPOSITORY_ACCESS = DebugUtils.getBoolean("cnd.modelimpl.repository.safe.access", false);
 }

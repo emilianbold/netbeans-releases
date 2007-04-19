@@ -37,6 +37,7 @@ import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileBufferFile;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ParserThreadManager;
 
 /**
  * simple test implementation of walker
@@ -89,7 +90,19 @@ public class APTWalkerTest extends APTWalker {
 
     protected void onDefine(APT apt) {
         APTDefine define = (APTDefine)apt;
-        getMacroMap().define(define.getName(), define.getParams(), define.getBody());
+        if (define.isValid()) {
+            getMacroMap().define(define.getName(), define.getParams(), define.getBody());
+        } else {
+            if (ParserThreadManager.instance().isStandalone()) {
+                if (APTUtils.LOG.getLevel().intValue() <= Level.SEVERE.intValue()) {
+                    System.err.println("INCORRECT #define directive: in " + path + " for:\n\t" + apt);// NOI18N
+                }
+            } else {
+                APTUtils.LOG.log(Level.SEVERE,
+                        "INCORRECT #define directive: in {0} for:\n\t{1}", // NOI18N
+                        new Object[] { path, apt });
+            }               
+        }
     }
 
     protected void onUndef(APT apt) {

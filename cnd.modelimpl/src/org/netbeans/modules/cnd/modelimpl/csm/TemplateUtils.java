@@ -69,12 +69,13 @@ public class TemplateUtils {
     }
     
     public static boolean isPartialClassSpecialization(AST ast) {
-	assert(ast.getType() == CPPTokenTypes.CSM_TEMPLATE_CLASS_DECLARATION);
-	for( AST node = ast.getFirstChild(); node != null; node = node.getNextSibling() ) {
-	    if( node.getType() == CPPTokenTypes.CSM_QUALIFIED_ID ) {
-		for( AST child = node.getFirstChild(); child != null; child = child.getNextSibling() ) {
-		    if( child.getType() == CPPTokenTypes.LESSTHAN ) {
-			return true;
+	if( ast.getType() == CPPTokenTypes.CSM_TEMPLATE_CLASS_DECLARATION ) {
+	    for( AST node = ast.getFirstChild(); node != null; node = node.getNextSibling() ) {
+		if( node.getType() == CPPTokenTypes.CSM_QUALIFIED_ID ) {
+		    for( AST child = node.getFirstChild(); child != null; child = child.getNextSibling() ) {
+			if( child.getType() == CPPTokenTypes.LESSTHAN ) {
+			    return true;
+			}
 		    }
 		}
 	    }

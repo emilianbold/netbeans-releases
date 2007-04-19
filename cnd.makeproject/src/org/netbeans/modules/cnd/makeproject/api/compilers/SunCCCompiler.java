@@ -100,19 +100,32 @@ public class SunCCCompiler extends CCCCompiler {
     }
     
     public String getSixtyfourBitsOption(boolean value) {
-        return value ? "-xarch=generic64" : ""; // NOI18N
+        if (getFlavor() == CompilerFlavor.Sun12)
+            return value ? "-m64" : ""; // NOI18N
+        else
+            return value ? "-xarch=generic64" : ""; // NOI18N
     }
     
     public String getStripOption(boolean value) {
         return value ? "-s" : ""; // NOI18N
     }
     
-    public void setSystemIncludeDirectories(Platform platform, List values) {
+    public boolean setSystemIncludeDirectories(Platform platform, List values) {
+        assert values != null;
+        if (values.equals(systemIncludeDirectoriesList)) {
+            return false;
+        }
         systemIncludeDirectoriesList = new PersistentList(values);
+        return true;        
     }
     
-    public void setSystemPreprocessorSymbols(Platform platform, List values) {
+    public boolean setSystemPreprocessorSymbols(Platform platform, List values) {
+        assert values != null;
+        if (values.equals(systemPreprocessorSymbolsList)) {
+            return false;
+        }
         systemPreprocessorSymbolsList = new PersistentList(values);
+        return true;
     }
     
     public List getSystemPreprocessorSymbols(Platform platform) {

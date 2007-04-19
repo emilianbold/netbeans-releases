@@ -20,6 +20,7 @@
 package org.netbeans.modules.cnd.makeproject.api.wizards;
 
 import java.io.IOException;
+import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.openide.WizardDescriptor;
 
@@ -33,9 +34,15 @@ public interface IteratorExtension {
 
     String getProviderID(WizardDescriptor wizard);
 
+    Map<String,Object> clone(WizardDescriptor wizard);
+
     boolean canApply(WizardDescriptor wizard, Project project);
+
+    boolean canApply(Map<String,Object> map, Project project);
     
     void apply(WizardDescriptor wizard, Project project) throws IOException;
+
+    void apply(Map<String,Object> map, Project project) throws IOException;
     
     void uninitialize(WizardDescriptor wizard);
 }

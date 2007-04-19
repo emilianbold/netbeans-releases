@@ -81,6 +81,10 @@ public interface CompletionResolver {
 
     public static final int RESOLVE_LIB_MACROS             = 1 << 17;
     
+    public static final int RESOLVE_GLOB_NAMESPACES        = 1 << 18;
+    
+    public static final int RESOLVE_LIB_NAMESPACES    = 1 << 19;
+    
     public static final int RESOLVE_MACROS                 = RESOLVE_FILE_LOCAL_MACROS | RESOLVE_FILE_PRJ_MACROS | RESOLVE_FILE_LIB_MACROS |
                                                                 RESOLVE_GLOB_MACROS | RESOLVE_LIB_MACROS;
 

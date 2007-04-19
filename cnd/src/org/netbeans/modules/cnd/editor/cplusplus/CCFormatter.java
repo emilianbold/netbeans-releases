@@ -54,43 +54,51 @@ public class CCFormatter extends ExtFormatter {
 	BaseDocument doc = Utilities.getDocument(target);
         int dotPos = target.getCaret().getDot();
         if (doc != null) {
-            /* Check whether the user has written the ending 'e'
-             * of the first 'else' on the line.
-             */
-            if ("e".equals(typedText)) { // NOI18N
-                try {
-                    int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
-                    if (fnw >= 0 && fnw + 4 == dotPos
-                        && "else".equals(doc.getText(fnw, 4)) // NOI18N
-                    ) {
-                        ret = new int[] { fnw, fnw + 4 };
-                    }
-                } catch (BadLocationException e) {
-                }
-
-            } else if (":".equals(typedText)) { // NOI18N
-                try {
-                    int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
-                    if (fnw >= 0 && fnw + 4 <= doc.getLength()
-                        && "case".equals(doc.getText(fnw, 4)) // NOI18N
-                    ) {
-                        ret = new int[] { fnw, fnw + 4 };
-                    } else {
-                        if (fnw >= 0 & fnw + 7 <= doc.getLength()
-                            && "default".equals(doc.getText(fnw, 7)) // NOI18N
-                        ) {
-                            ret = new int[] {fnw, fnw + 7 };
-                        }
-                    }
-                } catch (BadLocationException e) {
-                }
-            
-            } else {
+            ret = getKeywordBasedReformatBlock(doc, dotPos, typedText);
+            if (ret == null) {
                 ret = super.getReformatBlock(target, typedText);
             }
         }
         
         return ret;
+    }
+    
+    public static int[] getKeywordBasedReformatBlock(BaseDocument doc, int dotPos, String typedText) {
+        /* Check whether the user has written the ending 'e'
+         * of the first 'else' on the line.
+         */
+        int[] ret = null;
+        if ("e".equals(typedText)) { // NOI18N
+            try {
+                int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
+                if (checkCase(doc, fnw, "else")) { // NOI18N
+                    ret = new int[] { fnw, fnw + 4 };
+                }
+            } catch (BadLocationException e) {
+            }
+
+        } else if (":".equals(typedText)) { // NOI18N
+            try {
+                int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
+                if (checkCase(doc, fnw, "case")) { // NOI18N
+                    ret = new int[] { fnw, fnw + 4 };
+                } else if (checkCase(doc, fnw, "default")) { // NOI18N
+                    ret = new int[] {fnw, fnw + 7 };
+                } else if (checkCase(doc, fnw, "public")) { // NOI18N
+                    ret = new int[] {fnw, fnw + 6 };
+                } else if (checkCase(doc, fnw, "protected")) { // NOI18N
+                    ret = new int[] {fnw, fnw + 9 };
+                } else if (checkCase(doc, fnw, "private")) { // NOI18N
+                    ret = new int[] {fnw, fnw + 7 };
+                }
+            } catch (BadLocationException e) {
+            }
+        }
+        return ret;
+    }
+    
+    private static boolean checkCase(BaseDocument doc, int fnw, String what) throws BadLocationException{
+        return fnw >= 0 && fnw + what.length() <= doc.getLength() && what.equals(doc.getText(fnw, what.length()));
     }
     
     protected void initFormatLayers() {

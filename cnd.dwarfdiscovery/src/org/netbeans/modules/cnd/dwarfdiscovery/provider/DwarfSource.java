@@ -21,9 +21,9 @@ package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.FileNameMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,6 +39,7 @@ import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoTable;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfStatementList;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.BaseDwarfProvider.CompilerSettings;
+import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
@@ -173,6 +174,56 @@ public class DwarfSource implements SourceFileProperties{
         return fileName;
     }
     
+    private String linkSupport(String name){
+        if (Utilities.isWindows()) {
+            if (!new File(name).exists()){
+                String link = name+".lnk";
+                if (new File(link).exists()){
+                    try {
+                        LinkReader linkReader = new LinkReader(link);
+                        if (linkReader.getSource() != null){
+                            name = linkReader.getSource();
+                        }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                } else {
+                    StringTokenizer st = new StringTokenizer(name,"\\/");
+                    StringBuilder buf = new StringBuilder();
+                    while(st.hasMoreTokens()){
+                        String token = st.nextToken();
+                        if (buf.length()>0){
+                            buf.append('\\');
+                        }
+                        buf.append(token);
+                        if (token.length()>0 && token.charAt(token.length()-1) != ':'){
+                            String path = buf.toString();
+                            if (!new File(path).exists()){
+                                link = path+".lnk";
+                                if (new File(link).exists()){
+                                    try {
+                                        LinkReader linkReader = new LinkReader(link);
+                                        if (linkReader.getSource() != null){
+                                            buf = new StringBuilder(linkReader.getSource());
+                                        }
+                                    } catch (Exception ex) {
+                                        ex.printStackTrace();
+                                        return name;
+                                    }
+                                } else {
+                                    return name;
+                                }
+                            }
+                        }
+                    }
+                    name = buf.toString();
+                }
+            }
+        }
+        return name;
+    }
+    
+    
     private void initSourceSettings(CompilationUnit cu, boolean isCPP){
         userIncludes = new ArrayList<String>();
         userMacros = new HashMap<String,String>();
@@ -180,6 +231,7 @@ public class DwarfSource implements SourceFileProperties{
         File file = new File(cu.getSourceFileAbsolutePath());
         fullName = FileUtil.normalizeFile(file).getAbsolutePath();
         fullName = PathCache.getString(fixFileName(fullName));
+        fullName = linkSupport(fullName);
         if (fullName != null && Utilities.isWindows()) {
             fullName = fullName.replace('/', '\\');
         }
@@ -248,7 +300,7 @@ public class DwarfSource implements SourceFileProperties{
             path = fixCygwinPath(path);
             boolean system = false;
             if (path.startsWith("/") || // NOI18N
-                path.length()>2 && path.charAt(1)==':'){
+                    path.length()>2 && path.charAt(1)==':'){
                 for (String cp : systemIncludes){
                     if (path.startsWith(cp)){
                         system = true;
@@ -288,10 +340,24 @@ public class DwarfSource implements SourceFileProperties{
                 String dir = File.separator+path.substring(0,n);
                 ArrayList<String> paths = dwarfTable.getPathsForFile(name);
                 for(String dwarfPath : paths){
-                    if (dwarfPath.endsWith(dir) && !dwarfPath.startsWith("/usr")){ // NOI18N
+                    if (dwarfPath.endsWith(dir)){
                         String found = dwarfPath.substring(0,dwarfPath.length()-dir.length());
+                        found = fixCygwinPath(found);
                         if (!userIncludes.contains(found)) {
-                            userIncludes.add(PathCache.getString(found));
+                            if (haveSystemIncludes) {
+                                boolean system = false;
+                                if (found.startsWith("/") || // NOI18N
+                                        found.length()>2 && found.charAt(1)==':'){
+                                    system = systemIncludes.contains(found);
+                                }
+                                if (!system){
+                                    userIncludes.add(PathCache.getString(found));
+                                }
+                            } else {
+                                if (!dwarfPath.startsWith("/usr")){ // NOI18N
+                                    userIncludes.add(PathCache.getString(found));
+                                }
+                            }
                         }
                     }
                 }

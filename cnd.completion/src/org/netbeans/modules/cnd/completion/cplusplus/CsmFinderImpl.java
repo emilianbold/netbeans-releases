@@ -163,13 +163,14 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
         return cls;
     }
     
-    
-    
     public List findNamespaces(String name, boolean exactMatch, boolean subNamespaces) {
-        
         // System.out.println("findNamespaces: " + name); //NOI18N
         
         ArrayList ret = new ArrayList ();
+        if (true) {
+            // this methods should not be called
+            return ret;
+        }
         
 //        repository.beginTrans (false);
         try {
@@ -213,6 +214,17 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
 //            repository.endTrans (false);
         }                
         return ret;
+    }    
+
+    
+    public List findNestedNamespaces(CsmNamespace nmsp, String name, boolean exactMatch, boolean searchNested) {
+        
+        // System.out.println("findNamespaces: " + name); //NOI18N
+        
+        List ret = new ArrayList ();
+        CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive());
+        ret = contResolver.getNestedNamespaces(nmsp, name, exactMatch);
+        return ret;
     }
 
     /** Find elements (classes, variables, enumerators) by name and possibly in some namespace
@@ -222,7 +234,7 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
     *   of the element or not.
     * @return list of the matching elements
     */
-    public List findNamespaceElements(CsmNamespace nmsp, String name, boolean exactMatch) {
+    public List findNamespaceElements(CsmNamespace nmsp, String name, boolean exactMatch, boolean searchNested) {
         List ret = new ArrayList();
 
         CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive());
@@ -230,19 +242,19 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
         if (csmFile != null && csmFile.getProject() != null) {
             CsmProject prj = csmFile.getProject();
             CsmNamespace ns = nmsp == null ? prj.getGlobalNamespace() : nmsp;
-            List classes = contResolver.getNamespaceClassesEnums(ns, name, exactMatch);
+            List classes = contResolver.getNamespaceClassesEnums(ns, name, exactMatch, searchNested);
             if (classes != null) {
                 ret.addAll(classes);
             }
-            classes = contResolver.getNamespaceEnumerators(ns, name, exactMatch);
+            classes = contResolver.getNamespaceEnumerators(ns, name, exactMatch, searchNested);
             if (classes != null) {
                 ret.addAll(classes);
             }
-            classes = contResolver.getNamespaceVariables(ns, name, exactMatch);
+            classes = contResolver.getNamespaceVariables(ns, name, exactMatch, searchNested);
             if (classes != null) {
                 ret.addAll(classes);
             }
-            classes = contResolver.getNamespaceFunctions(ns, name, exactMatch);
+            classes = contResolver.getNamespaceFunctions(ns, name, exactMatch, searchNested);
             if (classes != null) {
                 ret.addAll(classes);
             }
@@ -263,7 +275,7 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
     *   of the class or not.
     * @return list of the matching classes
     */
-    public List findClasses(CsmNamespace nmsp, String name, boolean exactMatch) {
+    public List findClasses(CsmNamespace nmsp, String name, boolean exactMatch, boolean searchNested) {
         // System.out.println("findClasses: " + (nmsp == null ? "null" : nmsp.getName ()) + " " + name); //NOI18N
         
         List ret = new ArrayList();
@@ -273,7 +285,7 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
         if (csmFile != null && csmFile.getProject() != null) {
             CsmProject prj = csmFile.getProject();
             CsmNamespace ns = nmsp == null ? prj.getGlobalNamespace() : nmsp;
-            List classes = contResolver.getNamespaceClassesEnums(ns, name, exactMatch);
+            List classes = contResolver.getNamespaceClassesEnums(ns, name, exactMatch, searchNested);
             if (classes != null) {
                 ret.addAll(classes);
             }

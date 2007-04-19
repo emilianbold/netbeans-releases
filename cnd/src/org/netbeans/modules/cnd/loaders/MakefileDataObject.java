@@ -53,37 +53,37 @@ public class MakefileDataObject extends CndDataObject {
 	}
     }
 
-    /*
-     * Return name with extension so renaming etc works
-     * But this breaks creating makefile with names xxx.mk from templates, so
-     * check if name starts with "__", then return name without the 'extension'
-     * (4899051)
-     */
-    public String getName() {
-	String ename = null;
-	ename = super.getName();
-	 if (!ename.startsWith("__")) // NOI18N
-	    ename = getPrimaryFile().getNameExt();
-	return ename;
-    }
-
-    protected FileObject handleRename(String name) throws IOException {
-        FileLock lock = getPrimaryFile().lock();
-        int pos = name.lastIndexOf('.');
-
-        try {
-            if (pos <= 0){
-                // file without separator
-                getPrimaryFile().rename(lock, name, null);
-            } else {
-		getPrimaryFile().rename(lock, name.substring(0, pos), 
-                        name.substring(pos + 1, name.length()));
-            }
-        } finally {
-            lock.releaseLock ();
-        }
-        return getPrimaryFile ();
-    }
+//    /*
+//     * Return name with extension so renaming etc works
+//     * But this breaks creating makefile with names xxx.mk from templates, so
+//     * check if name starts with "__", then return name without the 'extension'
+//     * (4899051)
+//     */
+//    public String getName() {
+//	String ename = null;
+//	ename = super.getName();
+//	 if (!ename.startsWith("__")) // NOI18N
+//	    ename = getPrimaryFile().getNameExt();
+//	return ename;
+//    }
+//
+//    protected FileObject handleRename(String name) throws IOException {
+//        FileLock lock = getPrimaryFile().lock();
+//        int pos = name.lastIndexOf('.');
+//
+//        try {
+//            if (pos <= 0){
+//                // file without separator
+//                getPrimaryFile().rename(lock, name, null);
+//            } else {
+//		getPrimaryFile().rename(lock, name.substring(0, pos), 
+//                        name.substring(pos + 1, name.length()));
+//            }
+//        } finally {
+//            lock.releaseLock ();
+//        }
+//        return getPrimaryFile ();
+//    }
   
 
     /**

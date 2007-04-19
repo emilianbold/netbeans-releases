@@ -61,8 +61,8 @@ public class Stats {
     public static final boolean writeStatistics = getBoolean("cnd.repository.write.stat", false); //NOI18N
     
     public static final boolean dumoFileOnExit = getBoolean("cnd.repository.dump.on.exit", false); //NOI18N
-    public static final int sleepOnEmptyWriteQueue = getInteger("cnd.repository.write.queue.sleep", 1000); //NOI18N
-    public static final boolean defragmentOnEmptyWriteQueue = getBoolean("cnd.repository.defragm", true); //NOI18N
+    public static final int maintenanceInterval = getInteger("cnd.repository.queue.maintenance", 1000); //NOI18N
+    public static final boolean allowMaintenance = getBoolean("cnd.repository.defragm", true); //NOI18N
     
     public static final int fileRWAccess = getInteger("cnd.repository.rw", 0); //NOI18N
     public static final int bufSize = getInteger("cnd.repository.bufsize", -1); //NOI18N

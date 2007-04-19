@@ -239,6 +239,10 @@ public class TypeImpl extends OffsetableBase implements CsmType {
         else { // tokType.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND
             try {
                 CsmAST tokFirstId = (CsmAST) tokType.getFirstChild();
+		if( tokFirstId == null ) {
+		    // this is unnormal; but we should be able to work even on incorrect AST
+		    return null;
+		}
                         
                 firstOffset = tokFirstId.getOffset();
                 //Resolver resolver = ResolverFactory.createResolver(getContainingFile(), firstOffset);

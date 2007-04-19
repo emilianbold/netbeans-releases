@@ -14,19 +14,20 @@
 # "Portions Copyrighted [year] [name of copyright owner]"
 # 
 # The Original Software is NetBeans. The Initial Developer of the Original
-# Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+# Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 # Microsystems, Inc. All Rights Reserved.
 
 #set -x
 
 MWS_USERDIRS="/export/home/nbuserdirs"
 TIMEOUT=900
-#MEMORY_SET="128"
-#MEMORY_SET="1024 512 256 192 128"
-MEMORY_SET="512 256 192 128"
+MEMORY_SET="512 384 256 192 128"
 PROJECTS_SET="boost+mysql boost"
+#MEMORY_SET="128 256"
+#PROJECTS_SET="args"
 
-export LOGPATH=/tmp/mwstest/${LOGNAME-generic}/`date +%y%m%d%H%M`
+export LOGPATH=/export/home/mwstest/${LOGNAME-generic}/`date +%y%m%d%H%M`
+cp results.xsl /export/home/mwstest/${LOGNAME-generic}/
 
 if [ ! -d ${LOGPATH} ]; then
     mkdir -p ${LOGPATH}
@@ -49,14 +50,14 @@ function sfstest()
     echo "<test name='Disk repository ${sfstestname}'>" >> ${XMLOUTPUT}
     pushd . > /dev/null
     cd ./sfs
-    run-${sfstestname}.sh $TEST_SRC --noant > ${LOGPATH}/disk-${sfstestname}.log 2>&1
+    run-${sfstestname}.sh $TEST_SRC --noant > ${LOGPATH}/disk-${sfstestname}.txt 2>&1
     if [ $? -eq 0 ]; then
         result="passed"
     else
         result="failed"
     fi
     echo "Disk repository ${sfstestname} test - ${result}"
-    echo "<log name='Disk repository ${sfstestname} test log'>${LOGPATH}/disk-${sfstestname}.log</log>" >> ${XMLOUTPUT}
+    echo "<log name='Disk repository ${sfstestname} test log'>disk-${sfstestname}.txt</log>" >> ${XMLOUTPUT}
     echo "<result>${result}</result>" >> ${XMLOUTPUT}
     echo "</test>" >> ${XMLOUTPUT}
     popd > /dev/null
@@ -67,8 +68,8 @@ function repositorytest() {
     echo "<test name='Repository correctness'>" >> ${XMLOUTPUT}
     pushd . > /dev/null
     cd ./../../modelimpl/test/scripts/
-    echo "<log name='Repository correctness test log'>${LOGPATH}/repository-correctness.log</log>" >> ${XMLOUTPUT}
-    repository.sh $TEST_SRC > ${LOGPATH}/repository-correctness.log
+    echo "<log name='Repository correctness test log'>repository-correctness.txt</log>" >> ${XMLOUTPUT}
+    repository.sh $TEST_SRC > ${LOGPATH}/repository-correctness.txt
     popd > /dev/null
     echo "</test>" >> ${XMLOUTPUT}
     echo "done."
@@ -102,20 +103,23 @@ function runcnd() {
     PARAMS="${PARAMS} -J-Dcnd.close.report.xml=${XMLOUTPUT}"
     RUNLINE="run.sh  --userdir ${MWS_USERDIRS}/${MWSPROJECT} -J-Xmx${MEM}M ${REPPARAMS}"
 
-    echo "<test name='Memory Working Set'>" >> ${XMLOUTPUT}
-    echo "<param name='project' value='${MWSPROJECT}'/>" >> ${XMLOUTPUT}
-    echo "<param name='repository' value='${USE_REPOSITORY}'/>" >> ${XMLOUTPUT}
-    echo "<param name='memory' value='${MEM} Mb'/>" >> ${XMLOUTPUT}
-    echo "<param name='run-line' value='${RUNLINE}'/>" >> ${XMLOUTPUT}
+    echo "<test-mws name='Memory Working Set'>" >> ${XMLOUTPUT}
+    echo "<project>${MWSPROJECT}</project>" >> ${XMLOUTPUT}
+    echo "<repository>${USE_REPOSITORY}</repository>" >> ${XMLOUTPUT}
+    echo "<memory>${MEM} Mb</memory>" >> ${XMLOUTPUT}
+    echo "<run-line>${RUNLINE}</run-line>" >> ${XMLOUTPUT}
     #echo ${RUNLINE} 
-    LOGNAME="${LOGPATH}/mws-rep${USE_REPOSITORY}-${MEM}.log"
-    ${RUNLINE} ${PARAMS} > ${LOGNAME} 2>&1
+    LOGNAME="mws-rep${USE_REPOSITORY}-${MEM}.txt"
+    ${RUNLINE} ${PARAMS} > ${LOGPATH}/${LOGNAME} 2>&1
     echo "<log name='mws log'>${LOGNAME}</log>" >> ${XMLOUTPUT}
-    echo "</test>" >> ${XMLOUTPUT}
+    echo "</test-mws>" >> ${XMLOUTPUT}
     echo "done."
 }
 
-echo "<repository-tests>" > ${XMLOUTPUT}
+THEDATE=`date`
+echo "<?xml version='1.0' ?>" > ${XMLOUTPUT}
+echo "<?xml-stylesheet type='text/xsl' href='../results.xsl' ?>" >> ${XMLOUTPUT}
+echo "<repository-tests date='${THEDATE}'>" >> ${XMLOUTPUT}
 
 # Disk repository correctness test
 sfstestname=correctness

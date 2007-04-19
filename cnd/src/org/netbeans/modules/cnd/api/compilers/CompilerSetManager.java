@@ -45,12 +45,15 @@ public class CompilerSetManager {
     private static final String gpp_pattern = "([a-zA-z][a-zA-Z0-9_]*-)*g\\+\\+(([-.]\\d){2,4})?(\\.exe)?$"; // NOI18N
     private static final String cc_pattern = "([a-zA-z][a-zA-Z0-9_]*-)*cc(([-.]\\d){2,4})?(\\.exe)?$"; // NOI18N
     private static final String CC_pattern = "([a-zA-z][a-zA-Z0-9_]*-)*CC(([-.]\\d){2,4})?$"; // NOI18N
-    private static final String fortran_pattern = "([a-zA-z][a-zA-Z0-9_]*-)*[fg](77|90|95)(([-.]\\d){2,4})?(\\.exe)?"; // NOI18N
+    private static final String fortran_pattern = "([a-zA-z][a-zA-Z0-9_]*-)*[fg](77|90|95|fortran)(([-.]\\d){2,4})?(\\.exe)?"; // NOI18N
     
     /* Legacy defines for CND 5.5 compiler set definitions */
     public static final int SUN_COMPILER_SET = 0;
     public static final int GNU_COMPILER_SET = 1;
     
+    public static final String Sun12 = "Sun12"; // NOI18N
+    public static final String Sun11 = "Sun11"; // NOI18N
+    public static final String Sun10 = "Sun10"; // NOI18N
     public static final String Sun = "Sun"; // NOI18N
     public static final String GNU = "GNU"; // NOI18N
     
@@ -195,13 +198,17 @@ public class CompilerSetManager {
      * @param cs The CompilerSet to (possibly) add
      */
     public void add(CompilerSet cs) {
+        String csdir = cs.getDirectory();
+        
         if (sets.size() == 1 && sets.get(0).getName() == CompilerSet.None) {
             sets.remove(0);
         }
-        
-        if (!sets.contains(cs)) {
-            sets.add(cs);
+        for (CompilerSet cs2 : sets) {
+            if (cs2.getDirectory().equals(csdir)) {
+                return;
+            }
         }
+        sets.add(cs);
     }
     
     /**
@@ -226,6 +233,10 @@ public class CompilerSetManager {
         }
     }
     
+    public CompilerSet getCompilerSet(CompilerFlavor flavor) {
+        return getCompilerSet(flavor.toString());
+    }
+    
     public CompilerSet getCompilerSet(String name) {
         for (CompilerSet cs : sets) {
             if (cs.getName().equals(name)) {
@@ -234,7 +245,7 @@ public class CompilerSetManager {
         }
         return null;
     }
-    
+        
     public CompilerSet getCompilerSet(String name, String dname) {
         for (CompilerSet cs : sets) {
             if (cs.getName().equals(name) && cs.getDisplayName().equals(dname)) {
@@ -243,7 +254,7 @@ public class CompilerSetManager {
         }
         return null;
     }
-    
+
     public CompilerSet getCompilerSet(int idx) {
         assert idx >= 0 && idx < sets.size();
         return sets.get(idx);

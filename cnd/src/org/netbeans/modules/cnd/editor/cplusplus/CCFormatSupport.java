@@ -275,6 +275,44 @@ public class CCFormatSupport extends ExtFormatSupport {
         }
     }
 
+    /** Find the 'class' or 'struct'
+     * @param visibilityToken the token.
+     */
+    private TokenItem findClassifier(TokenItem visibilityToken) {
+        int braceDepth = 1; // depth of the braces - need one more left
+        TokenItem classifierToken = visibilityToken;
+        while (true) {
+            classifierToken = findStatement(classifierToken);
+            if (classifierToken == null) {
+                return null;
+            }
+            
+            switch (classifierToken.getTokenID().getNumericID()) {
+                case CCTokenContext.LBRACE_ID:
+                    if (--braceDepth < 0) {
+                        return null; // no corresponding right brace
+                    }
+                    if (braceDepth == 0){
+                        while ((classifierToken = classifierToken.getPrevious()) != null) {
+                            switch (classifierToken.getTokenID().getNumericID()) {
+                                case CCTokenContext.CLASS_ID:
+                                case CCTokenContext.STRUCT_ID:
+                                    return classifierToken;
+                            }
+                        }
+                        return null;
+                    }
+                    break;
+
+                case CCTokenContext.RBRACE_ID:
+                    braceDepth++;
+                    break;
+
+            }
+        }
+    }
+
+    
     /** Find the 'try' when the 'catch' is provided.
      * @param catchToken the token with the 'catch' command
      *  for which the 'try' is being searched.
@@ -503,44 +541,44 @@ public class CCFormatSupport extends ExtFormatSupport {
                         indent = getTokenIndent(ifss);
                     }
                     break;
-
+                    
                 case CCTokenContext.LBRACE_ID:
                     TokenItem stmt = findStatement(token);
                     if (stmt == null) {
                         indent = 0;
                     } else {
                         switch (stmt.getTokenID().getNumericID()) {
-                        case CCTokenContext.DO_ID:
-                        case CCTokenContext.FOR_ID:
-                        case CCTokenContext.IF_ID:
-                        case CCTokenContext.WHILE_ID:
-                        case CCTokenContext.ELSE_ID:
-                            indent = getTokenIndent(stmt);
-                            break;
-
-                        case CCTokenContext.LBRACE_ID:
-                            indent = getTokenIndent(stmt) + getShiftWidth();
-                            break;
-
-                        default:
-                            stmt = findStatementStart(token);
-                            if (stmt == null) {
-                                indent = 0;
-                            } else if (stmt == token) { 
-                                stmt = findStatement(token); // search for delimiter
-                                indent = (stmt != null) ? indent = getTokenIndent(stmt) : 0;
-                            } else { // valid statement
+                            case CCTokenContext.DO_ID:
+                            case CCTokenContext.FOR_ID:
+                            case CCTokenContext.IF_ID:
+                            case CCTokenContext.WHILE_ID:
+                            case CCTokenContext.ELSE_ID:
                                 indent = getTokenIndent(stmt);
-                                switch (stmt.getTokenID().getNumericID()) {
-                                    case CCTokenContext.LBRACE_ID:
-                                        indent += getShiftWidth();
-                                        break;
+                                break;
+                                
+                            case CCTokenContext.LBRACE_ID:
+                                indent = getTokenIndent(stmt) + getShiftWidth();
+                                break;
+                                
+                            default:
+                                stmt = findStatementStart(token);
+                                if (stmt == null) {
+                                    indent = 0;
+                                } else if (stmt == token) {
+                                    stmt = findStatement(token); // search for delimiter
+                                    indent = (stmt != null) ? indent = getTokenIndent(stmt) : 0;
+                                } else { // valid statement
+                                    indent = getTokenIndent(stmt);
+                                    switch (stmt.getTokenID().getNumericID()) {
+                                        case CCTokenContext.LBRACE_ID:
+                                            indent += getShiftWidth();
+                                            break;
+                                    }
                                 }
-                            }
                         }
                     }
                     break;
-
+                    
                 case CCTokenContext.RBRACE_ID:
                     TokenItem rbmt = findMatchingToken(token, null, CCTokenContext.LBRACE, true);
                     if (rbmt != null) { // valid matching left-brace
@@ -559,19 +597,27 @@ public class CCFormatSupport extends ExtFormatSupport {
                                 }
                             }
                         }
-                        // the right brace must be indented to the first 
+                        // the right brace must be indented to the first
                         // non-whitespace char - forceFirstNonWhitespace=true
                         indent = getTokenIndent(t, forceFirstNonWhitespace);
                     } else { // no matching left brace
                         indent = getTokenIndent(token); // leave as is
                     }
                     break;
-
+                    
                 case CCTokenContext.CASE_ID:
                 case CCTokenContext.DEFAULT_ID:
                     TokenItem swss = findSwitch(token);
                     if (swss != null) {
                         indent = getTokenIndent(swss) + getShiftWidth();
+                    }
+                    break;
+                case CCTokenContext.PUBLIC_ID:
+                case CCTokenContext.PRIVATE_ID:
+                case CCTokenContext.PROTECTED_ID:
+                    TokenItem cls = findClassifier(token);
+                    if (cls != null) {
+                        indent = getTokenIndent(cls);
                     }
                     break;
             }

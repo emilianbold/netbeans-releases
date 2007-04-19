@@ -42,11 +42,11 @@ public interface CsmFinder {
     /** Get the class from full name of the class */
     public CsmClassifier getExactClassifier(String classFullName);
 
-    /** Get the list of namespaces that start with the given name
+    /** Get the list of nested namespaces that start with the given name
     * @param name the start of the requested namespace(s) name
     * @return list of the matching namespaces
     */
-    public List findNamespaces(String name, boolean exactMatch, boolean subNamespaces);
+    public List findNestedNamespaces(CsmNamespace nmsp, String name, boolean exactMatch, boolean searchNested);
 
     /** Find classes by name and possibly in some namespace
     * @param nmsp namespace where the classes should be searched for. It can be null
@@ -55,7 +55,7 @@ public interface CsmFinder {
     *   of the class or not.
     * @return list of the matching classes
     */
-    public List findClasses(CsmNamespace nmsp, String name, boolean exactMatch);
+    public List findClasses(CsmNamespace nmsp, String name, boolean exactMatch, boolean searchNested);
 
     /** Find elements (classes, variables, enumerators) by name and possibly in some namespace
     * @param nmsp namespace where the elements should be searched for. It can be null
@@ -64,7 +64,7 @@ public interface CsmFinder {
     *   of the element or not.
     * @return list of the matching elements
     */
-    public List findNamespaceElements(CsmNamespace nmsp, String name, boolean exactMatch);
+    public List findNamespaceElements(CsmNamespace nmsp, String name, boolean exactMatch, boolean searchNested);
 
 //    /** Find fields by name in a given class.
 //    * @param c class which is searched for the fields.

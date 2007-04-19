@@ -56,7 +56,10 @@ public class SunFortranCompiler extends BasicCompiler {
     }
     
     public String getSixtyfourBitsOption(boolean value) {
-        return value ? "-xarch=generic64" : ""; // NOI18N
+        if (getFlavor() == CompilerFlavor.Sun12)
+            return value ? "-m64" : ""; // NOI18N
+        else
+            return value ? "-xarch=generic64" : ""; // NOI18N
     }
     
     public String getStripOption(boolean value) {

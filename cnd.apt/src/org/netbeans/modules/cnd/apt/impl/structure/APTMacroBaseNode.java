@@ -21,6 +21,8 @@ package org.netbeans.modules.cnd.apt.impl.structure;
 
 import antlr.Token;
 import java.io.Serializable;
+import java.util.logging.Level;
+import org.netbeans.modules.cnd.apt.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.support.APTTokenAbstact;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
@@ -61,8 +63,18 @@ public abstract class APTMacroBaseNode extends APTTokenBasedNode
 
     public boolean accept(Token token) {
         if (APTUtils.isID(token)) {
-            assert (macroName == EMPTY_NAME) : "init macro name only once"; // NOI18N
-            this.macroName = token;
+            if (macroName != EMPTY_NAME) {
+                // init macro name only once
+                if (DebugUtils.STANDALONE) {
+                    System.err.printf("line %d: warning: extra tokens at end of %s directive\n", // NOI18N
+                            getToken().getLine(), getToken().getText().trim());
+                } else {
+                    APTUtils.LOG.log(Level.SEVERE, "line {0}: warning: extra tokens at end of {1} directive", // NOI18N
+                            new Object[] {getToken().getLine(), getToken().getText().trim()} );
+                }
+            } else {
+                this.macroName = token;
+            }
         }
         // eat all till END_PREPROC_DIRECTIVE
         return !APTUtils.isEndDirectiveToken(token.getType());

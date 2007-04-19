@@ -121,7 +121,6 @@ public class BaseQueue {
             }
             return ret;
         }
-	
     }
     
     protected Object lock = new Object();

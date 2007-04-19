@@ -6,13 +6,13 @@
 	<indexitem text="abbreviations">
 		<indexitem text="C and C++, see code templates" />
 	</indexitem>
-	<indexitem text="archiver options, C and C++, setting" target="ArchiverOptions" />
 	<indexitem text="breakpoints">
 		<indexitem text="C and C++">
 			<indexitem text="about" target="C&amp;C++Breakpoints" />
 			<indexitem text="setting" target="SettingCorC++Breakpoint" />
 		</indexitem>
 	</indexitem>
+	<indexitem text="build tools, C and C++, configuring" target="ConfiguringBuildTools" />
 	<indexitem text="call stack">
 		<indexitem text="C and C++, using" target="UsingCorC++CallStack" />
 	</indexitem>
@@ -27,14 +27,18 @@
 	<indexitem text="code templates">
 		<indexitem text="C and C++" target="UsingAbbreviations" />
 	</indexitem>
+	<indexitem text="commenting lines in C and C++ code" target="Commenting" />
 	<indexitem text="compiler options, C and C++, setting" target="CompilerOptions" />
 	<indexitem text="compiling">
 		<indexitem text="C and C++ projects" target="BuildingCorC++Project" />
 		<indexitem text="single C or C++ file" target="CompilingSingleC&amp;C++File" />
 	</indexitem>
 	<indexitem text="configurations, C and C++ projects" target="ManagingProjectConfigurations" />
-	<indexitem text="configuring IDE">
+	<indexitem text="configuring">
 		<indexitem text="C and C++ project settings" target="Configuring" />
+		<indexitem text="C and C++ build tools" target="ConfiguringBuildTools" />
+		<indexitem text="C and C++ parser settings" target="ConfiguringParsingSettings" />
+		<indexitem text="C and C++ code assistance" target="CodeAssistance" />
 	</indexitem>
 	<indexitem text="dependencies between C or C++ projects" target="CreatingDependencies" />
 	<indexitem text="debugging">

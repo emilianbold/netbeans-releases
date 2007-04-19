@@ -36,21 +36,23 @@ public class ParserSettingsPanel extends JPanel {
     
     private ActionListener collectionActionListener;
     private HashMap predefinedPanels = new HashMap();
-    
+    private boolean updating = false;
     /**
      * Creates new form ParserSettingsPanel
      */
     public ParserSettingsPanel() {
+        setName("TAB_CodeAssistanceTab");// NOI18N
         initComponents();
         
-        updateCompilerCollections();
-        compilerCollectionComboBox.addActionListener(collectionActionListener = new ActionListener() {
+        collectionActionListener = new ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                updateTabs();
+                if (!updating) {
+                    updateTabs();
+                }
             }
-        });
-        
-        infoTextArea.setBackground(collectionPanel.getBackground());
+        };
+        update();
+        //infoTextArea.setBackground(collectionPanel.getBackground());
         
         //setPreferredSize(new java.awt.Dimension(600, 700));
         
@@ -92,20 +94,14 @@ public class ParserSettingsPanel extends JPanel {
         }
     }
     
-    public void save() {
-        PredefinedPanel[] viewedPanels = (PredefinedPanel[])predefinedPanels.values().toArray(new PredefinedPanel[predefinedPanels.values().size()]);
-        for (int i = 0; i < viewedPanels.length; i++) {
-            viewedPanels[i].save();
-        }
-        fireFilesPropertiesChanged();
-    }
-    
     public void fireFilesPropertiesChanged() {
+        if (CodeAssistancePanelController.TRACE_CODEASSIST) System.err.println("fireFilesPropertiesChanged for ParserSettingsPanel");
 	Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
 	for (int i = 0; i < openProjects.length; i++) {
             NativeProjectProvider npv = (NativeProjectProvider)openProjects[i].getLookup().lookup(NativeProjectProvider.class );
-            if (npv != null)
+            if (npv != null) {
                 npv.fireFilesPropertiesChanged();
+            }
         }
     }
     
@@ -123,69 +119,59 @@ public class ParserSettingsPanel extends JPanel {
         compilerCollectionComboBox = new javax.swing.JComboBox();
         tabPanel = new javax.swing.JPanel();
         tabbedPane = new javax.swing.JTabbedPane();
-        scrollPane = new javax.swing.JScrollPane();
-        infoTextArea = new javax.swing.JTextArea();
-
-        setLayout(new java.awt.GridBagLayout());
-
-        collectionPanel.setLayout(new java.awt.GridBagLayout());
 
         compilerCollectionLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("COMPILER_COLLECTION_MN").charAt(0));
         compilerCollectionLabel.setLabelFor(compilerCollectionComboBox);
         compilerCollectionLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("COMPILER_COLLECTION_LBL"));
-        collectionPanel.add(compilerCollectionLabel, new java.awt.GridBagConstraints());
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
-        collectionPanel.add(compilerCollectionComboBox, gridBagConstraints);
+        org.jdesktop.layout.GroupLayout collectionPanelLayout = new org.jdesktop.layout.GroupLayout(collectionPanel);
+        collectionPanel.setLayout(collectionPanelLayout);
+        collectionPanelLayout.setHorizontalGroup(
+            collectionPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(collectionPanelLayout.createSequentialGroup()
+                .add(compilerCollectionLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(compilerCollectionComboBox, 0, 217, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        collectionPanelLayout.setVerticalGroup(
+            collectionPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(collectionPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                .add(compilerCollectionLabel)
+                .add(compilerCollectionComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+        );
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
-        add(collectionPanel, gridBagConstraints);
+        org.jdesktop.layout.GroupLayout tabPanelLayout = new org.jdesktop.layout.GroupLayout(tabPanel);
+        tabPanel.setLayout(tabPanelLayout);
+        tabPanelLayout.setHorizontalGroup(
+            tabPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(tabbedPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 354, Short.MAX_VALUE)
+        );
+        tabPanelLayout.setVerticalGroup(
+            tabPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(tabbedPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
+        );
 
-        tabPanel.setLayout(new java.awt.GridBagLayout());
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        tabPanel.add(tabbedPane, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 12);
-        add(tabPanel, gridBagConstraints);
-
-        scrollPane.setBorder(null);
-        infoTextArea.setColumns(60);
-        infoTextArea.setEditable(false);
-        infoTextArea.setLineWrap(true);
-        infoTextArea.setRows(5);
-        infoTextArea.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("INFO_TEXT"));
-        infoTextArea.setWrapStyleWord(true);
-        infoTextArea.setBorder(null);
-        scrollPane.setViewportView(infoTextArea);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
-        add(scrollPane, gridBagConstraints);
-
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(collectionPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, tabPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(collectionPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(tabPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
     }// </editor-fold>//GEN-END:initComponents
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel collectionPanel;
     private javax.swing.JComboBox compilerCollectionComboBox;
     private javax.swing.JLabel compilerCollectionLabel;
-    private javax.swing.JTextArea infoTextArea;
-    private javax.swing.JScrollPane scrollPane;
     private javax.swing.JPanel tabPanel;
     private javax.swing.JTabbedPane tabbedPane;
     // End of variables declaration//GEN-END:variables
@@ -193,5 +179,68 @@ public class ParserSettingsPanel extends JPanel {
     
     private static String getString(String s) {
         return NbBundle.getMessage(ParserSettingsPanel.class, s);
+    }
+
+    void update() {
+        if (CodeAssistancePanelController.TRACE_CODEASSIST) System.err.println("update for ParserSettingsPanel");
+        try {
+            updating = true;
+            compilerCollectionComboBox.removeActionListener(collectionActionListener);
+            updateCompilerCollections();
+            compilerCollectionComboBox.addActionListener(collectionActionListener);
+            PredefinedPanel[] viewedPanels = getPredefinedPanels();
+            for (int i = 0; i < viewedPanels.length; i++) {
+                viewedPanels[i].update();
+            }    
+        } finally {
+            updating = false;
+        }
+    }
+
+    void cancel() {
+        if (CodeAssistancePanelController.TRACE_CODEASSIST) System.err.println("cancel for ParserSettingsPanel");
+        PredefinedPanel[] viewedPanels = getPredefinedPanels();
+        for (int i = 0; i < viewedPanels.length; i++) {
+            viewedPanels[i].cancel();
+        }         
+    }
+
+    boolean isDataValid() {
+        boolean isDataValid = true;
+        PredefinedPanel[] viewedPanels = getPredefinedPanels();
+        for (int i = 0; i < viewedPanels.length; i++) {
+            isDataValid &= viewedPanels[i].isDataValid();
+        }
+        if (CodeAssistancePanelController.TRACE_CODEASSIST) System.err.println("isDataValid for ParserSettingsPanel is " + isDataValid);
+        return isDataValid;
+    }
+
+    boolean isChanged() {
+        boolean isChanged = false;
+        PredefinedPanel[] viewedPanels = getPredefinedPanels();
+        for (int i = 0; i < viewedPanels.length; i++) {
+            isChanged |= viewedPanels[i].isChanged();
+        }
+        if (CodeAssistancePanelController.TRACE_CODEASSIST) System.err.println("isChanged for ParserSettingsPanel is " + isChanged);
+        return isChanged;
+    }
+        
+    public void save() {
+        if (CodeAssistancePanelController.TRACE_CODEASSIST) System.err.println("save for ParserSettingsPanel");
+        PredefinedPanel[] viewedPanels = getPredefinedPanels();
+        boolean wasChanges = false;
+        for (int i = 0; i < viewedPanels.length; i++) {
+            wasChanges |= viewedPanels[i].save();
+        }
+        if (wasChanges) {
+            if (CodeAssistancePanelController.TRACE_CODEASSIST) System.err.println("fireFilesPropertiesChanged in save for ParserSettingsPanel");
+            fireFilesPropertiesChanged();
+        } else {
+            if (CodeAssistancePanelController.TRACE_CODEASSIST) System.err.println("not need to fireFilesPropertiesChanged in save for ParserSettingsPanel");
+        }
+    }
+    
+    private PredefinedPanel[] getPredefinedPanels() {
+        return (PredefinedPanel[])predefinedPanels.values().toArray(new PredefinedPanel[predefinedPanels.size()]);
     }
 }

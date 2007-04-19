@@ -23,18 +23,18 @@ PROJECT_TEMP_FILE=${LOGPATH}/repositorytest
 echo Testing on project: ${TEST_PROJECT}
 echo Logs stored to: ${PROJECT_TEMP_FILE}
 echo "Running without repository..."
-./_parse_project.sh ${TEST_PROJECT} -fq  -J-Dcnd.repository.hardrefs=true  > ${PROJECT_TEMP_FILE}.original 2>&1
+./_parse_project.sh ${TEST_PROJECT} -fq  -J-Dcnd.repository.hardrefs=true  > ${PROJECT_TEMP_FILE}.original.txt 2>&1
 echo "Running with repository..."
-./_parse_project.sh ${TEST_PROJECT} -fq --cleanrepository> ${PROJECT_TEMP_FILE}.repository 2>&1
+./_parse_project.sh ${TEST_PROJECT} -fq --cleanrepository> ${PROJECT_TEMP_FILE}.repository.txt 2>&1
 
-diff ${PROJECT_TEMP_FILE}.original ${PROJECT_TEMP_FILE}.repository > ${PROJECT_TEMP_FILE}.diff
+diff ${PROJECT_TEMP_FILE}.original.txt ${PROJECT_TEMP_FILE}.repository.txt > ${PROJECT_TEMP_FILE}.diff.txt
 echo To see detailed results do
-echo cat ${PROJECT_TEMP_FILE}.diff
+echo cat ${PROJECT_TEMP_FILE}.diff.txt
 
 echo "Lines in diff file:"
-cat  ${PROJECT_TEMP_FILE}.diff | wc -l
+cat  ${PROJECT_TEMP_FILE}.diff.txt | wc -l
 
-if [ -s ${PROJECT_TEMP_FILE}.diff ]; then
+if [ -s ${PROJECT_TEMP_FILE}.diff.txt ]; then
     reptestresult="failed"
 else
     reptestresult="passed"
@@ -42,9 +42,9 @@ fi
 echo Repository correctness test: ${reptestresult}
 
 if [ -n "${XMLOUTPUT}" ]; then
-    echo "<log name='Model without repository'>${PROJECT_TEMP_FILE}.original</log>" >> ${XMLOUTPUT}
-    echo "<log name='Model with repository'>${PROJECT_TEMP_FILE}.repository</log>" >> ${XMLOUTPUT}
-    echo "<log name='Models diff'>${PROJECT_TEMP_FILE}.diff</log>" >> ${XMLOUTPUT}
+    echo "<log name='Model without repository'>repositorytest.original.txt</log>" >> ${XMLOUTPUT}
+    echo "<log name='Model with repository'>repositorytest.repository.txt</log>" >> ${XMLOUTPUT}
+    echo "<log name='Models diff'>repositorytest.diff.txt</log>" >> ${XMLOUTPUT}
     echo "<result>${reptestresult}</result>" >> ${XMLOUTPUT}
 fi
 

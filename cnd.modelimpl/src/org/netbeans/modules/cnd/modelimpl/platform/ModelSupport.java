@@ -286,24 +286,25 @@ public class ModelSupport implements PropertyChangeListener {
             try {
                 final ProjectBase project = getProject(items.get(0), true);
                 if( project != null ) {
-                    try {
-                        ParserQueue.instance().onStartAddingProjectFiles(project);
-                        for(NativeFileItem item : items) {
-                            // TODO: FIX me. This code doesn't work when item include paths are changed!
-                            // onFilePropertyChanged method shouldn't add item at the beginning.
-                            if (TraceFlags.USE_AST_CACHE) {
-                                CacheManager.getInstance().invalidate(item.getFile().getAbsolutePath());
-                            } else {
-                                // do not need to invalidate APT, it is preprocessor neutral
-                            }
-                            project.onFilePropertyChanged(item);
-                            // This is right working code.
-                            //project.onFileRemoved(item);
-                            //project.onFileAdded(item);
-                        }
-                    } finally{
-                        ParserQueue.instance().onEndAddingProjectFiles(project);
-                    }
+                    project.onFilePropertyChanged(items);
+//                    try {
+//                        ParserQueue.instance().onStartAddingProjectFiles(project);
+//                        for(NativeFileItem item : items) {
+//                            // TODO: FIX me. This code doesn't work when item include paths are changed!
+//                            // onFilePropertyChanged method shouldn't add item at the beginning.
+//                            if (TraceFlags.USE_AST_CACHE) {
+//                                CacheManager.getInstance().invalidate(item.getFile().getAbsolutePath());
+//                            } else {
+//                                // do not need to invalidate APT, it is preprocessor neutral
+//                            }
+//                            project.onFilePropertyChanged(item);
+//                            // This is right working code.
+//                            //project.onFileRemoved(item);
+//                            //project.onFileAdded(item);
+//                        }
+//                    } finally{
+//                        ParserQueue.instance().onEndAddingProjectFiles(project);
+//                    }
                 }
             } catch( Exception e ) {
                 e.printStackTrace(System.err);

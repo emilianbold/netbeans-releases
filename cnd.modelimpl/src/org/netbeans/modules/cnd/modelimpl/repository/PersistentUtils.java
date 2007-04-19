@@ -21,6 +21,7 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
@@ -36,6 +37,7 @@ import org.netbeans.modules.cnd.apt.utils.FilePathCache;
 import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NoType;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AbstractFileBuffer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileBuffer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileBufferFile;
@@ -59,9 +61,11 @@ public class PersistentUtils {
     
     public static void writeBuffer(FileBuffer buffer, DataOutput output) throws IOException {
         assert buffer != null;
-        if (buffer instanceof FileBufferFile) {
+        if (buffer instanceof AbstractFileBuffer) {
+            // always write as file buffer file
             output.writeInt(FILE_BUFFER_FILE);
-            ((FileBufferFile)buffer).write(output);
+            File file = buffer.getFile();
+            output.writeUTF(file.getAbsolutePath());
         } else {
             throw new IllegalArgumentException("instance of unknown FileBuffer " + buffer);  //NOI18N
         }        
@@ -71,7 +75,8 @@ public class PersistentUtils {
         FileBuffer buffer;
         int handler = input.readInt();
         assert handler == FILE_BUFFER_FILE;
-        buffer = new FileBufferFile(input);
+        String absPath = FilePathCache.getString(input.readUTF());
+        buffer = new FileBufferFile(new File(absPath));
         return buffer;
     }
     

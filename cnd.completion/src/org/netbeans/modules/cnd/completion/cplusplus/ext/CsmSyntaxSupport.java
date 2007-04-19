@@ -215,7 +215,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
 //        }
         if (ret == null && searchByName) {
             if (isUnknownInclude(className)) return null;    
-            List clsList = getFinder().findClasses(null, className, true);
+            List clsList = getFinder().findClasses(null, className, true, false);
             if (clsList != null && clsList.size() > 0) {
                 if (clsList.size() > 0 &&
                     (clsList.get(0) instanceof CsmClass)) { // more matching classes

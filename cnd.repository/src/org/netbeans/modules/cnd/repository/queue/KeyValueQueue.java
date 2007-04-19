@@ -49,7 +49,7 @@ public class KeyValueQueue<K, V> extends BaseQueue {
 	}
     }
 
-    private Map<K, Entry> map = new HashMap<K, Entry>();
+    protected Map<K, Entry> map = new HashMap<K, Entry>();
     protected boolean active = true;
 	    
     public KeyValueQueue() {
@@ -137,7 +137,7 @@ public class KeyValueQueue<K, V> extends BaseQueue {
     public void remove(K key) {
 	if( needsTrace() ) System.err.printf("%s: Removing %s\n", getTraceName(), key);
 	synchronized( lock ) {
-	    Entry e = map.get(key);
+	    Entry e = map.remove(key);
 	    if( e != null ) {
 		queue.remove(e);
 	    }

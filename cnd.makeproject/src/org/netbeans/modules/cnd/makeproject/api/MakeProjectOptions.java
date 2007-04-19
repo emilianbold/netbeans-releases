@@ -54,12 +54,23 @@ public class MakeProjectOptions {
             CppSettings.getDefault().setCompilerSetName(cs.getName());
             CppSettings.getDefault().setCompilerSetDirectories(cs.getDirectory());
         } else {
-            // The choices are:
-            //     Set the 0th compiler set as the default
-            //     throw an illegal state exception
-            //     or do nothing
-            cs = CompilerSetManager.getDefault().getCompilerSet(0); // use 0th as default?
-            // throw new IllegalStateException("MissingCompilerSet");
+            cs = CompilerSetManager.getDefault().getCompilerSet(0); // use 0th as default
+        }
+    }
+    
+    /**
+     * Choose either Sun or GNU compiler sets. Unfortunately, we no longer guarantee either
+     * exists. In CND 5.5, you had a Sun and GNU compiler set regardless of whether you had
+     * compilers to make either set usable. In CND 5.5.1, a compiler set is defined for every
+     * directory which has executables recognized as compilers.
+     */
+    public static void setDefaultCompilerSet(String name) {
+        CompilerSet cs = CompilerSetManager.getDefault().getCompilerSet(name);
+        if (cs != null) {
+            CppSettings.getDefault().setCompilerSetName(cs.getName());
+            CppSettings.getDefault().setCompilerSetDirectories(cs.getDirectory());
+        } else {
+            cs = CompilerSetManager.getDefault().getCompilerSet(0); // use 0th as default
         }
     }
 
@@ -84,8 +95,7 @@ public class MakeProjectOptions {
                 }
             }
         }
-        return 0; // the choice is to return 0 (and hope its valid) or
-        // throw new IllegalStateException("MissingDefaultCompilerSet");
+        return 0;
     }
 
     public static void setDefaultMakeOptions(String defaultMakeOptions) {

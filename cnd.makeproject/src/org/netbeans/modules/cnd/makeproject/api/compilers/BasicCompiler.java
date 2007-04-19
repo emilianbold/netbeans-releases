@@ -56,11 +56,17 @@ public class BasicCompiler extends Tool {
         return new Vector(); // NOI18N
     }
     
-    public void setSystemPreprocessorSymbols(Platform platform, List values) {
-        ;
+    /**
+     * @return true if settings were really replaced by new one
+     */
+    public boolean setSystemPreprocessorSymbols(Platform platform, List values) {
+        return false;
     }
     
-    public void setSystemIncludeDirectories(Platform platform, List values) {
-        ;
+    /**
+     * @return true if settings were really replaced by new one
+     */
+    public boolean setSystemIncludeDirectories(Platform platform, List values) {
+        return false;
     }
 }

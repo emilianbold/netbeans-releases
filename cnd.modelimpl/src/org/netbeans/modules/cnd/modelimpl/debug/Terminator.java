@@ -41,7 +41,7 @@ import org.openide.util.RequestProcessor;
 public class Terminator implements Runnable {
     
     private ProjectBase project;
-    private boolean timeout = false;
+    private static boolean timeout = false;
     
     private Terminator(ProjectBase project) {
         super();

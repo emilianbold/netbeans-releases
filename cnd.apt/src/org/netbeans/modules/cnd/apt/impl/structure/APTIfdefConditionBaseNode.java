@@ -56,8 +56,13 @@ public abstract class APTIfdefConditionBaseNode extends APTTokenAndChildBasedNod
         if (APTUtils.isID(token)) {
             if (macroName != null) {
                 // init macro name only once
-                APTUtils.LOG.log(Level.SEVERE, "line {0}: extra tokens after {1} at end of {2} directive", // NOI18N
-                        new Object[] {getToken().getLine(), macroName.getText(), getToken().getText().trim()} );
+                if (DebugUtils.STANDALONE) {
+                    System.err.printf("line %d: extra tokens after {1} at end of %s directive\n", // NOI18N
+                            getToken().getLine(), macroName.getText(), getToken().getText().trim());
+                } else {
+                    APTUtils.LOG.log(Level.SEVERE, "line {0}: extra tokens after {1} at end of {2} directive", // NOI18N
+                            new Object[] {getToken().getLine(), macroName.getText(), getToken().getText().trim()} );
+                }
             } else {
                 this.macroName = token;
             }

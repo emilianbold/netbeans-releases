@@ -26,6 +26,8 @@ import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.apt.debug.DebugUtils;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.uid.KeyBasedUID;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
@@ -40,7 +42,7 @@ public class RepositoryUtils {
     /** Creates a new instance of RepositoryUtils */
     private RepositoryUtils() {
     }
-
+    
     ////////////////////////////////////////////////////////////////////////////
     // repository access wrappers
     private static volatile int counter = 0;
@@ -76,15 +78,17 @@ public class RepositoryUtils {
                 index = nextIndex();
                 time = System.currentTimeMillis();
                 System.err.println(index + ":removing key " + key);
-            }            
-            RepositoryAccessor.getRepository().remove(key);
+            }
+            if (!TraceFlags.SAFE_REPOSITORY_ACCESS) {
+                RepositoryAccessor.getRepository().remove(key);
+            }
             if (TRACE_REPOSITORY_ACCESS) {
                 time = System.currentTimeMillis() - time;
                 System.err.println(index + ":removed in " + time + "ms the key " + key);
-            }            
+            }
         }
     }
-
+    
     public static void remove(Collection<? extends CsmUID> uids) {
         if (uids != null) {
             for (CsmUID uid : uids) {
@@ -93,7 +97,7 @@ public class RepositoryUtils {
             uids.clear();
         }
     }
-
+    
     public static CsmUID put(CsmIdentifiable csmObj) {
         CsmUID uid = null;
         if (csmObj != null) {
@@ -107,12 +111,12 @@ public class RepositoryUtils {
                     index = nextIndex();
                     time = System.currentTimeMillis();
                     System.err.println(index + ":putting key " + key);
-                }                  
+                }
                 RepositoryAccessor.getRepository().put(key, (Persistent)csmObj);
                 if (TRACE_REPOSITORY_ACCESS) {
                     time = System.currentTimeMillis() - time;
                     System.err.println(index + ":put in " + time + "ms the key " + key);
-                }                  
+                }
             }
         }
         return uid;
@@ -131,12 +135,12 @@ public class RepositoryUtils {
                     index = nextIndex();
                     time = System.currentTimeMillis();
                     System.err.println(index + ":hanging key " + key);
-                }                  
+                }
                 RepositoryAccessor.getRepository().hang(key, (Persistent)csmObj);
                 if (TRACE_REPOSITORY_ACCESS) {
                     time = System.currentTimeMillis() - time;
                     System.err.println(index + ":hung in " + time + "ms the key " + key);
-                }                 
+                }
             }
         }
     }
@@ -150,9 +154,9 @@ public class RepositoryUtils {
         }
         return uids;
     }
-        
+    
     ////////////////////////////////////////////////////////////////////////////
-    // 
+    //
     private static Key UIDtoKey(CsmUID uid) {
         if (uid instanceof KeyHolder) {
             return ((KeyHolder)uid).getKey();
@@ -162,7 +166,15 @@ public class RepositoryUtils {
     }
     
     public static void shutdown() {
-	RepositoryAccessor.getRepository().shutdown();
+        RepositoryAccessor.getRepository().shutdown();
     }
-    
+
+    public static void closeUnit(CsmUID uid) {
+        if (uid instanceof KeyBasedUID) {
+            String unitName = (((KeyBasedUID)uid).getKey()).getUnit();
+            RepositoryAccessor.getRepository().closeUnit(unitName);
+            KeyUtilities.closeUnit(unitName);
+        }
+    }
 }
+

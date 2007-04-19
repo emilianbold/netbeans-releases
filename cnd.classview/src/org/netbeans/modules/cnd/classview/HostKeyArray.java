@@ -86,7 +86,9 @@ abstract public class HostKeyArray extends Children.Keys implements UpdatebleHos
         final List<PersistentKey> res = new ArrayList<PersistentKey>();
         for(java.util.Map.Entry<PersistentKey,SortedName> entry :list){
             PersistentKey key = entry.getKey();
-            res.add(key);
+            if (key != null) {
+                res.add(key);
+            }
         }
         setKeys(res);
     }

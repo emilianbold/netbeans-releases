@@ -605,13 +605,18 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                         result = new CsmCompletionResult(component, res, formatType(lastType, true, true, true),
                                                 exp, substPos, 0, cls.getName().length() + 1, isProjectBeeingParsed());
                     } else { // Found package (otherwise ok would be false)
+                        if (true) {
+                            // in C++ it's not legal to have NS-> or NS.
+                            result = null;
+                            break;
+                        }
                         String searchPkg = lastNamespace.getName() + '.';
                         List res;
                         if (openingSource) {
                             res = new ArrayList();
                             res.add(lastNamespace); // return only the package
                         } else {
-                            res = finder.findNamespaces(searchPkg, false, false); // find all subpackages
+                            res = finder.findNestedNamespaces(lastNamespace, "", false, false); // find all nested namespaces
 
                             String text = null;
                             try {
@@ -631,7 +636,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                             }
 
                             if (text != null && -1 == text.indexOf("package")) { //NOI18N
-                                res.addAll(finder.findClasses(lastNamespace, "", false)); // package classes
+                                res.addAll(finder.findClasses(lastNamespace, "", false, false)); // package classes
                             }
                         }
                         result = new CsmCompletionResult(component, res, searchPkg + '*',
@@ -683,7 +688,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                             res = new ArrayList();
                             res.add(lastNamespace); // return only the package
                         } else {
-                            res = finder.findNamespaces(searchPkg, false, false); // find all subpackages
+                            res = finder.findNestedNamespaces(lastNamespace, "", false, false); // find all nested namespaces
 
                             String text = null;
                             try {
@@ -702,8 +707,8 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                 // ignore and provide full list of items
                             }
 
-                            if (text != null && -1 == text.indexOf("package")) { //NOI18N
-                                res.addAll(finder.findClasses(lastNamespace, "", false)); // package classes  //NOI18N
+                            if (text != null && -1 == text.indexOf("namespace")) { //NOI18N
+                                res.addAll(finder.findNamespaceElements(lastNamespace, "", false, false)); // namespace elements //NOI18N
                             }
                         }
                         result = new CsmCompletionResult(component, res, searchPkg + '*',  //NOI18N
@@ -713,7 +718,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 break;
                 
             case CsmCompletionExpression.NEW: // 'new' keyword
-                List res = finder.findClasses(null, "", false); // Find all classes by name // NOI18N
+                List res = finder.findClasses(null, "", false, false); // Find all classes by name // NOI18N
                 result = new CsmCompletionResult(component, res, "*", exp, endOffset, 0, 0, isProjectBeeingParsed()); // NOI18N
                 break;
 
@@ -806,7 +811,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 //                                                                    sup.isStaticBlock(varPos), true));
 //                                }
 //                                if (var.length() > 0 || !openingSource) {
-//                                    res.addAll(finder.findNamespaces(var, false, false)); // add matching packages
+//                                    res.addAll(finder.findNestedNamespaces(var, false, false)); // add matching packages
 //                                    if (var.length() > 0) { // if at least one char
 //                                        res.addAll(finder.findClasses(null, var, false)); // add matching classes
 //                                        if (cls!=null){
@@ -914,8 +919,8 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                 } else { // last and searching for completion output
                                     if (last) { // get all matching fields/methods/packages
                                         String searchPkg = lastNamespace.getName() + CsmCompletion.SCOPE + var;
-                                        List res = finder.findNamespaces(searchPkg, openingSource, false); // find matching subpackages
-                                        res.addAll(finder.findNamespaceElements(lastNamespace, var, openingSource)); // matching classes
+                                        List res = finder.findNestedNamespaces(lastNamespace, var, openingSource, false); // find matching nested namespaces
+                                        res.addAll(finder.findNamespaceElements(lastNamespace, var, openingSource, false)); // matching classes
                                         result = new CsmCompletionResult(component, res, searchPkg + '*', item, 0, isProjectBeeingParsed());
                                     }
                                 }
@@ -964,7 +969,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                         res = compResolver.getResult();
                     }                     
 //                }
-//                res.addAll(finder.findNamespaces("", false, false)); // find all packages
+//                res.addAll(finder.findNestedNamespaces("", false, false)); // find all packages
 //                res.addAll(finder.findClasses(null, "", false)); // find all classes
                 
                 result = new CsmCompletionResult(component, res, "*", item, endOffset, 0, 0, isProjectBeeingParsed()); // NOI18N

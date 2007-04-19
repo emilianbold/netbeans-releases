@@ -19,7 +19,9 @@
 
 package org.netbeans.modules.cnd.discovery.wizard;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
@@ -33,15 +35,15 @@ import org.openide.util.Utilities;
  * @author Alexander Simon
  */
 public class DiscoveryWizardDescriptor extends WizardDescriptor implements DiscoveryDescriptor{
-    private static final String PROJECT = "DW:project"; // NOI18N
-    private static final String PRIVIDER = "DW:provider"; // NOI18N
-    private static final String ROOT_FOLDER = "DW:rootFolder"; // NOI18N
-    private static final String BUILD_RESULT = "DW:buildResult"; // NOI18N
-    private static final String ADDITIONAL_LIBRARIES = "DW:libraries"; // NOI18N
-    private static final String CONSOLIDATION_STRATEGY = "DW:consolidationLevel"; // NOI18N
-    private static final String CONFIGURATIONS = "DW:configurations"; // NOI18N
-    private static final String INCLUDED = "DW:included"; // NOI18N
-    private static final String INVOKE_PROVIDER = "DW:invokeProvider"; // NOI18N
+    public static final String PROJECT = "DW:project"; // NOI18N
+    public static final String PRIVIDER = "DW:provider"; // NOI18N
+    public static final String ROOT_FOLDER = "DW:rootFolder"; // NOI18N
+    public static final String BUILD_RESULT = "DW:buildResult"; // NOI18N
+    public static final String ADDITIONAL_LIBRARIES = "DW:libraries"; // NOI18N
+    public static final String CONSOLIDATION_STRATEGY = "DW:consolidationLevel"; // NOI18N
+    public static final String CONFIGURATIONS = "DW:configurations"; // NOI18N
+    public static final String INCLUDED = "DW:included"; // NOI18N
+    public static final String INVOKE_PROVIDER = "DW:invokeProvider"; // NOI18N
     
     private boolean stateChanged = true;
     private boolean simple = true;
@@ -53,8 +55,12 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     public static DiscoveryDescriptor adaptee(Object wizard){
         if (wizard instanceof DiscoveryDescriptor) {
             return (DiscoveryDescriptor) wizard;
+        } else if (wizard instanceof WizardDescriptor) {
+            return new DiscoveryWizardDescriptorAdapter((WizardDescriptor)wizard);
+        } else if (wizard instanceof Map){
+            return new DiscoveryWizardClone((Map)wizard);
         }
-        return new DiscoveryWizardDescriptorAdapter((WizardDescriptor)wizard);
+        return null;
     }
     
     public Project getProject(){
@@ -158,8 +164,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     public void setSimpleMode(boolean simple) {
         this.simple = simple;
     }
-    
-    
+   
     private static class DiscoveryWizardDescriptorAdapter implements DiscoveryDescriptor{
         private WizardDescriptor wizard;
         public DiscoveryWizardDescriptorAdapter(WizardDescriptor wizard){
@@ -269,6 +274,130 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         
         public void setMessage(String message) {
             wizard.putProperty("WizardPanel_errorMessage", message); // NOI18N
+        }
+        
+        public void clean() {
+            setProject(null);
+            setProvider(null);
+            setRootFolder(null);
+            setBuildResult(null);
+            setAditionalLibraries(null);
+            setLevel(null);
+            setConfigurations(null);
+            setIncludedFiles(null);
+        }
+    }
+
+    private static class DiscoveryWizardClone implements DiscoveryDescriptor{
+        private Map<String, Object> map;
+        
+        public DiscoveryWizardClone(Map<String, Object> map){
+            this.map = map;
+        }
+        
+        public Project getProject(){
+            return (Project) map.get(PROJECT);
+        }
+        public void setProject(Project project){
+            map.put(PROJECT, project);
+        }
+        
+        public String getRootFolder(){
+            String root = (String) map.get(ROOT_FOLDER);
+            if (root == null) {
+                // field in project wizard
+                root = (String)map.get("buildCommandWorkingDirTextField"); // NOI18N
+                if (root != null && Utilities.isWindows()) {
+                    root = root.replace('\\','/');
+                }
+            }
+            return root;
+        }
+        public void setRootFolder(String root){
+            map.put(INVOKE_PROVIDER, Boolean.TRUE);
+            if (root != null && Utilities.isWindows()) {
+                root = root.replace('\\','/');
+            }
+            map.put(ROOT_FOLDER, root);
+        }
+        
+        public String getBuildResult() {
+            return (String) map.get(BUILD_RESULT);
+        }
+        
+        public void setBuildResult(String binaryPath) {
+            map.put(BUILD_RESULT, binaryPath);
+        }
+        
+        public String getAditionalLibraries() {
+            return (String) map.get(ADDITIONAL_LIBRARIES);
+        }
+        
+        public void setAditionalLibraries(String binaryPath) {
+            map.put(ADDITIONAL_LIBRARIES, binaryPath);
+        }
+        
+        public DiscoveryProvider getProvider(){
+            return (DiscoveryProvider) map.get(PRIVIDER);
+        }
+        public String getProviderID(){
+            DiscoveryProvider provider =(DiscoveryProvider) map.get(PRIVIDER);
+            if (provider != null){
+                return provider.getID();
+            }
+            return null;
+        }
+        public void setProvider(DiscoveryProvider provider){
+            map.put(INVOKE_PROVIDER, Boolean.TRUE);
+            map.put(PRIVIDER, provider);
+        }
+        
+        public String getLevel(){
+            return (String) map.get(CONSOLIDATION_STRATEGY);
+        }
+        public void setLevel(String level){
+            map.put(CONSOLIDATION_STRATEGY, level);
+        }
+        
+        public List<ProjectConfiguration> getConfigurations(){
+            return (List<ProjectConfiguration>) map.get(CONFIGURATIONS);
+        }
+        public void setConfigurations(List<ProjectConfiguration> configuration){
+            map.put(CONFIGURATIONS, configuration);
+        }
+        
+        public List<String> getIncludedFiles(){
+            return (List<String>) map.get(INCLUDED);
+        }
+        public void setIncludedFiles(List<String> includedFiles){
+            map.put(INCLUDED, includedFiles);
+        }
+        
+        public boolean isInvokeProvider(){
+            Boolean res = (Boolean)map.get(INVOKE_PROVIDER);
+            if (res == null) {
+                return true;
+            }
+            return res.booleanValue();
+        }
+        
+        public void setInvokeProvider(boolean invoke){
+            if (invoke) {
+                map.put(INVOKE_PROVIDER, Boolean.TRUE);
+            } else {
+                map.put(INVOKE_PROVIDER, Boolean.FALSE);
+            }
+        }
+        
+        public boolean isSimpleMode() {
+            return true;
+        }
+        
+        public void setSimpleMode(boolean simple) {
+        }
+        
+        public void setMessage(String message) {
+            map.put("WizardPanel_errorMessage", message); // NOI18N
         }
         
         public void clean() {

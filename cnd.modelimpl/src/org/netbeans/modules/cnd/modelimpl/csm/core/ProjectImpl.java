@@ -25,9 +25,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTPreprocState;
+import org.netbeans.modules.cnd.apt.utils.APTIncludeUtils;
 import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -132,7 +134,59 @@ public final class ProjectImpl extends ProjectBase {
                 editedFiles.remove(file);
             }
             file.setBuffer(buf);
-            ParserQueue.instance().addFirst(file, getPreprocState(buf.getFile()).getState(), false);
+            if (TraceFlags.USE_DEEP_REPARSING) {
+                reparseCoherence(file);
+            } else {
+                ParserQueue.instance().addFirst(file, getPreprocState(buf.getFile()).getState(), false);
+            }
+        }
+    }
+    
+    private void reparseCoherence(FileImpl file) {
+        Set<CsmFile> topParents = getGraph().getTopParentFiles(file);
+        if (topParents.size()>0){
+            Set<CsmFile> coherence = getGraph().getCoherenceFiles(file);
+            for(CsmFile parent : coherence){
+                if (!topParents.contains(parent)){
+                    if ((parent instanceof FileImpl) &&
+                            parent.getProject() == this){
+                        FileImpl parentImpl = (FileImpl) parent;
+                        Object stateLock = fileContainer.getLock(parentImpl.getBuffer().getFile());
+                        synchronized (stateLock) {
+                            APTPreprocState.State state = getPreprocStateState(parentImpl.getBuffer().getFile());
+                            state.invalidate();
+                        }
+                        parentImpl.stateChanged(false);
+                        if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
+                            System.out.println("Invalidate file to reparse "+parentImpl.getBuffer().getFile().getAbsolutePath());
+                        }
+                    }
+                }
+            }
+            boolean progress = false;
+            try {
+                if (topParents.size()>5) {
+                    ParserQueue.instance().onStartAddingProjectFiles(this);
+                    progress = true;
+                }
+                for(CsmFile parent : topParents){
+                    if ((parent instanceof FileImpl) &&
+                            parent.getProject() == this){
+                        FileImpl parentImpl = (FileImpl) parent;
+                        parentImpl.stateChanged(false);
+                        ParserQueue.instance().addFirst(parentImpl, getPreprocState(parentImpl.getBuffer().getFile()).getState(), false);
+                        if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
+                            System.out.println("Add top file to reparse "+parentImpl.getBuffer().getFile().getAbsolutePath());
+                        }
+                    }
+                }
+            } finally{
+                if (progress) {
+                    ParserQueue.instance().onEndAddingProjectFiles(this);
+                }
+            }
+        } else {
+            ParserQueue.instance().addFirst(file, getPreprocState(file.getBuffer().getFile()).getState(), false);
         }
     }
     
@@ -146,6 +200,27 @@ public final class ProjectImpl extends ProjectBase {
             file.stateChanged(true);
             APTPreprocState.State state;
             if (file.isSourceFile()) {
+                if (TraceFlags.USE_DEEP_REPARSING) {
+                    Set<CsmFile> coherence = getGraph().getIncludedFiles(file);
+                    for(CsmFile parent : coherence){
+                        if ((parent instanceof FileImpl) &&
+                                parent.getProject() == this){
+                            FileImpl parentImpl = (FileImpl) parent;
+                            Object stateLock = fileContainer.getLock(parentImpl.getBuffer().getFile());
+                            synchronized (stateLock) {
+                                state = getPreprocStateState(parentImpl.getBuffer().getFile());
+                                state.invalidate();
+                            }
+                            parentImpl.stateChanged(false);
+                            if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
+                                System.out.println("Invalidate file to reparse "+parentImpl.getBuffer().getFile().getAbsolutePath());
+                            }
+                        }
+                    }
+                    if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
+                        System.out.println("Add file to reparse "+nativeFile.getFile().getAbsolutePath());
+                    }
+                }
                 state = getDefaultPreprocState(nativeFile).getState();
             } else {
                 state = getPreprocState(nativeFile.getFile()).getState();
@@ -154,10 +229,71 @@ public final class ProjectImpl extends ProjectBase {
         }
     }
     
+    public void onFilePropertyChanged(List<NativeFileItem> items) {
+        if (items.size()>0){
+            try {
+                ParserQueue.instance().onStartAddingProjectFiles(this);
+                if (TraceFlags.USE_DEEP_REPARSING) {
+                    Set<CsmFile> top = new HashSet<CsmFile>();
+                    Set<CsmFile> coherence = new HashSet<CsmFile>();
+                    for(NativeFileItem item : items) {
+                        FileImpl file = getFile(item.getFile());
+                        if( file != null ) {
+                            top.add(file);
+                            coherence.addAll(getGraph().getIncludedFiles(file));
+                        }
+                    }
+                    for(CsmFile parent : coherence){
+                        if (!top.contains(parent)){
+                            if ((parent instanceof FileImpl) &&
+                                    parent.getProject() == this){
+                                FileImpl parentImpl = (FileImpl) parent;
+                                Object stateLock = fileContainer.getLock(parentImpl.getBuffer().getFile());
+                                synchronized (stateLock) {
+                                    APTPreprocState.State state = getPreprocStateState(parentImpl.getBuffer().getFile());
+                                    state.invalidate();
+                                }
+                                parentImpl.stateChanged(false);
+                                if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
+                                    System.out.println("Invalidate file to reparse "+parentImpl.getBuffer().getFile().getAbsolutePath());
+                                }
+                            }
+                        }
+                    }
+                }
+                for(NativeFileItem item : items) {
+                    if (TraceFlags.USE_AST_CACHE) {
+                        CacheManager.getInstance().invalidate(item.getFile().getAbsolutePath());
+                    }
+                    FileImpl file = getFile(item.getFile());
+                    if( file != null ) {
+                        file.stateChanged(true);
+                        APTPreprocState.State state;
+                        if (file.isSourceFile()) {
+                            state = getDefaultPreprocState(item).getState();
+                        } else {
+                            state = getPreprocState(item.getFile()).getState();
+                        }
+                        ParserQueue.instance().addFirst(file, state, false);
+                        if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
+                            System.out.println("Add file to reparse "+item.getFile().getAbsolutePath());
+                        }
+                    }
+                }
+            } catch( Exception e ) {
+                e.printStackTrace(System.err);
+            } finally {
+                ParserQueue.instance().onEndAddingProjectFiles(this);
+            }
+        }
+    }
+
+    
     public void onFileRemoved(File file) {
         try {
             //Notificator.instance().startTransaction();
             //File file = nativeFile.getFile();
+	    APTIncludeUtils.clearFileExistenceCache();
             FileImpl impl = getFile(file);
             if( impl != null ) {
                 synchronized( editedFiles ) {
@@ -171,6 +307,9 @@ public final class ProjectImpl extends ProjectBase {
                     APTDriver.getInstance().invalidateAPT(impl.getBuffer());
                 }
                 ParserQueue.instance().remove(impl);
+                if (TraceFlags.USE_DEEP_REPARSING) {
+                    getGraph().removeFile(impl);
+                }
             }
         } finally {
             //Notificator.instance().endTransaction();
@@ -180,6 +319,7 @@ public final class ProjectImpl extends ProjectBase {
     
     public void onFileAdded(NativeFileItem nativeFile) {
         if( isLanguageSupported(nativeFile.getLanguage() )) {
+	    APTIncludeUtils.clearFileExistenceCache();
             try {
                 //Notificator.instance().startTransaction();
                 createIfNeed(nativeFile, isSourceFile(nativeFile));

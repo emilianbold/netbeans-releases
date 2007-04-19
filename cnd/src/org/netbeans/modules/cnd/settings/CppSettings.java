@@ -76,8 +76,11 @@ public class CppSettings extends SystemOption {
     /** Initialize each property */
     protected void initialize() {
 	super.initialize();
+//        if (Boolean.getBoolean("netbeans.cnd.enable_fortran")) { // NOI18N
+//            setFortranEnabled(true); // DEBUG
+//        }
     }
-
+    
     /** Return the signleton cppSettings */
     public static CppSettings getDefault() {
 	return (CppSettings) findObject(CppSettings.class, true);
@@ -226,7 +229,7 @@ public class CppSettings extends SystemOption {
     public String getCCompilerName() {
         String name = (String) getProperty(PROP_C_COMPILER_NAME);
         if (name == null) {
-            return getCompilerSetName().equals("Sun") ? "cc" : "gcc"; // NOI18N
+            return getCompilerSetName().startsWith("Sun") ? "cc" : "gcc"; // NOI18N
         } else {
             return name;
         }
@@ -242,7 +245,7 @@ public class CppSettings extends SystemOption {
     public String getCppCompilerName() {
         String name = (String) getProperty(PROP_CPP_COMPILER_NAME);
         if (name == null) {
-            return getCompilerSetName().equals("Sun") ? "CC" : "g++"; // NOI18N
+            return getCompilerSetName().startsWith("Sun") ? "CC" : "g++"; // NOI18N
         } else {
             return name;
         }
@@ -258,7 +261,7 @@ public class CppSettings extends SystemOption {
     public String getFortranCompilerName() {
         String name = (String) getProperty(PROP_FORTRAN_COMPILER_NAME);
         if (name == null) {
-            return getCompilerSetName().equals("Sun") ? "f90" : "g77"; // NOI18N
+            return getCompilerSetName().startsWith("Sun") ? "f90" : "g77"; // NOI18N
         } else {
             return name;
         }

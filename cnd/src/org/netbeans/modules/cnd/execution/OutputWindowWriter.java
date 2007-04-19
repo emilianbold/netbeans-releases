@@ -326,8 +326,9 @@ public class OutputWindowWriter extends Writer {
     }
 
     private static final Pattern GCC_ERROR_SCANNER = Pattern.compile("([A-Z]:[^:\n]*|[^:\n]*):([^:\n]*):([^:\n]*):([^\n]*)"); // NOI18N
-    private static final Pattern GCC_DIRECTORY_ENTER = Pattern.compile("make\\[[0-9]+\\]: Entering directory `([^']*)'"); // NOI18N
-    private static final Pattern GCC_DIRECTORY_LEAVE = Pattern.compile("make\\[[0-9]+\\]: Leaving directory `([^']*)'"); // NOI18N
+    private static final Pattern GCC_ERROR_SCANNER_ANOTHER = Pattern.compile("([^:\n]*):([0-9]+): ([A-Z]*):*.*"); // NOI18N    
+    private static final Pattern GCC_DIRECTORY_ENTER_LEAVE = Pattern.compile("[gd]?make\\[([0-9]+)\\]: [\\w+\\s+]+`([^']*)'"); // NOI18N
+    private static final Pattern GCC_DIRECTORY_CD    = Pattern.compile("cd\\s+([\\S]+)[\\s;]");// NOI18N
     private static final Pattern GCC_STACK_HEADER = Pattern.compile("In file included from ([A-Z]:[^:\n]*|[^:\n]*):([^:^,]*)"); // NOI18N
     private static final Pattern GCC_STACK_NEXT =   Pattern.compile("                 from ([A-Z]:[^:\n]*|[^:\n]*):([^:^,]*)"); // NOI18N
     
@@ -346,32 +347,88 @@ public class OutputWindowWriter extends Writer {
             }
         }
         
-        private Stack/*<FileObject>*/ relativeTo;
+        private Stack/*<FileObject>*/   relativeTo;
+        private Stack/*int*/            relativeLevel;
         private ArrayList/*<StackIncludeItem>*/ errorInludes;
         private FileObject relativeToFO;
         private boolean failed;
+        private boolean isEntered;
         
         public GCCErrorParser(FileObject relativeTo) {
             this.relativeToFO = relativeTo;
             this.relativeTo = new Stack();
             this.errorInludes = new ArrayList();
+            this.relativeLevel = new Stack();
             
             this.relativeTo.push(relativeTo);
+            this.relativeLevel.push(0);
+            this.isEntered = false;
         }
         
         public boolean handleLine(OutputWriter delegate, String line, Matcher m) throws IOException {
-            if (m.pattern() == GCC_DIRECTORY_LEAVE) {
-                relativeTo.pop();
-                return false;
+            
+            if (m.pattern() == GCC_DIRECTORY_ENTER_LEAVE) {
+                int level = Integer.valueOf((m.group(1)));
+                int baseLavel = Integer.valueOf(this.relativeLevel.peek() + "");
+                String directory = m.group(2);
+                
+                if (level > baseLavel) {
+                    this.isEntered = true;
+                    this.relativeLevel.push(level);
+                    this.isEntered = true;
+                } else if (level == baseLavel) {
+                    this.isEntered = !this.isEntered;
+                } else {
+                    this.isEntered = false;
+                    this.relativeLevel.pop();
+                }
+                
+                if (this.isEntered) {
+                    if (!directory.startsWith("/") &&    //NOI18N
+                        !(directory.charAt(1) == ':')) { //NOI18N
+                        if (this.relativeToFO != null) {
+                            if (this.relativeToFO.isFolder()) {
+                                directory = this.relativeToFO.getURL().getPath() + "/" + directory;
+                            }
+                        }
+                    }
+                    
+                    FileObject relativeDir = resolveFile(directory);
+
+                    if (relativeDir != null) {
+                        relativeTo.push(relativeDir);
+                    }
+                    
+                    return false;
+                    
+                } else {
+                    relativeTo.pop();
+                    return false;
+                }
+                
+                
             }
-            if (m.pattern() == GCC_DIRECTORY_ENTER) {
-                FileObject relativeDir = resolveFile(m.group(1));
+            
+            if (m.pattern() == GCC_DIRECTORY_CD) {
+                String directory = m.group(1);
+                if (!directory.startsWith("/") ||    //NOI18N
+                    !(directory.charAt(1) == ':')) { //NOI18N
+                    if (this.relativeToFO != null) {
+                        if (this.relativeToFO.isFolder()) {
+                            directory = this.relativeToFO.getURL().getPath() + "/" + directory;
+                        }
+                    }
+                }
+                
+                FileObject relativeDir = resolveFile(directory);
                 if (relativeDir != null) {
+                    
                     relativeTo.push(relativeDir);
                 }
                 
                 return false;
             }
+            
 
             if (m.pattern() == GCC_STACK_HEADER) {
                 for(Iterator it = errorInludes.iterator(); it.hasNext();){
@@ -416,7 +473,8 @@ public class OutputWindowWriter extends Writer {
                 return true;
             }
             
-            if (m.pattern() == GCC_ERROR_SCANNER) {
+            if ((m.pattern() == GCC_ERROR_SCANNER) ||
+                (m.pattern() == GCC_ERROR_SCANNER_ANOTHER)){
                 try {
                     String file = m.group(1);
                     Integer lineNumber = Integer.valueOf(m.group(2));
@@ -425,7 +483,7 @@ public class OutputWindowWriter extends Writer {
                     if (relativeDir != null){
                         //FileObject fo = relativeDir.getFileObject(file);
                         FileObject fo = resolveRelativePath(relativeDir, file);
-                        
+
                         boolean important = m.group(3).indexOf("error") != (-1); // NOI18N
                         
                         if (fo != null) {
@@ -463,7 +521,7 @@ public class OutputWindowWriter extends Writer {
 
         
         public Pattern[] getPattern() {
-            return new Pattern[] {GCC_DIRECTORY_ENTER, GCC_DIRECTORY_LEAVE, GCC_STACK_HEADER, GCC_STACK_NEXT, GCC_ERROR_SCANNER};
+            return new Pattern[] {GCC_DIRECTORY_ENTER_LEAVE, GCC_DIRECTORY_CD, GCC_STACK_HEADER, GCC_STACK_NEXT, GCC_ERROR_SCANNER, GCC_ERROR_SCANNER_ANOTHER};
         }
         
     }

@@ -44,7 +44,7 @@ public class DeepUtil {
     }
     
     public static List/*<CsmScopeElement>*/ merge(CsmCondition condition, CsmStatement statement) {
-        return merge(condition.getDeclaration(),  statement);
+        return merge(condition == null ? null : condition.getDeclaration(),  statement);
     }
 
     public static List/*<CsmScopeElement>*/ merge(CsmCondition condition, CsmStatement statement1, CsmStatement statement2) {

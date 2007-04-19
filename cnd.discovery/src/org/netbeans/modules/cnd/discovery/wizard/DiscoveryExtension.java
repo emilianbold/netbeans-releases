@@ -22,7 +22,9 @@ package org.netbeans.modules.cnd.discovery.wizard;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
@@ -48,6 +50,23 @@ public class DiscoveryExtension implements IteratorExtension {
         descriptor.setProject(project);
         DiscoveryProjectGenerator generator = new DiscoveryProjectGenerator(descriptor);
         generator.makeProject();
+    }
+    
+    public void apply(Map<String, Object> map, Project project) throws IOException {
+        DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(map);
+        descriptor.setProject(project);
+        DiscoveryProjectGenerator generator = new DiscoveryProjectGenerator(descriptor);
+        generator.makeProject();
+    }
+
+
+    public Map<String,Object> clone(WizardDescriptor wizard){
+        Map<String,Object> map = new HashMap<String,Object>();
+        map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, wizard.getProperty("buildCommandWorkingDirTextField")); // NOI18N
+        map.put(DiscoveryWizardDescriptor.BUILD_RESULT, wizard.getProperty("outputTextField")); // NOI18N
+        map.put(DiscoveryWizardDescriptor.ADDITIONAL_LIBRARIES, wizard.getProperty("additionalLibraries")); // NOI18N
+        map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, wizard.getProperty("consolidationLevel")); // NOI18N
+        return map;
     }
     
     public void uninitialize(WizardDescriptor wizard) {
@@ -178,6 +197,12 @@ public class DiscoveryExtension implements IteratorExtension {
         descriptor.setProject(project);
         return canApply(descriptor);
     }
+
+    public boolean canApply(Map<String, Object> map, Project project) {
+        DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(map);
+        descriptor.setProject(project);
+        return canApply(descriptor);
+    }
     
     private DiscoveryProvider findProvider(String providerID){
         Lookup.Result providers = Lookup.getDefault().lookup(new Lookup.Template(DiscoveryProvider.class));
@@ -190,4 +215,5 @@ public class DiscoveryExtension implements IteratorExtension {
         }
         return null;
     }
+
 }

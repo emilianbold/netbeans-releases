@@ -31,6 +31,7 @@ public interface APTIncludeHandler {
      */
     public State getState();
     public void setState(State state);
+    
     public interface State {
         /**
          * clear cached restorable information of state
@@ -42,7 +43,11 @@ public interface APTIncludeHandler {
          * get include stack and clean this information internally
          */
         public Stack/*<IncludeInfo>*/ cleanIncludeStack();
-    
+
+        /**
+         * get copy of this state object
+         */        
+        public State copy();
     };     
     
     /*

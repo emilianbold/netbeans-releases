@@ -173,11 +173,11 @@ public class Folder {
     
     public Item addItem(Item item) {
         if (item == null)
-            return item;
+            return null;
         // Check if already in project. Silently ignore if already there.
         if (isProjectFiles() && ((MakeConfigurationDescriptor)configurationDescriptor).findProjectItemByPath(item.getPath()) != null) {
             System.err.println("Folder - addItem - item ignored, already added: " + item); // NOI18N  // FIXUP: correct?
-            return item;
+            return null;
         }
         // Add it to the folder
         item.setFolder(this);

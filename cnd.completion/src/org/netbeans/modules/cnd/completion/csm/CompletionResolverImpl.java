@@ -268,6 +268,9 @@ public class CompletionResolverImpl implements CompletionResolver {
         if (needGlobalFunctions(context, offset)) {
             globFuns = getGlobalFunctions(prj, strPrefix, match);
         }
+        if (needGlobalNamespaces(context, offset)) {
+            globProjectNSs = getGlobalNamespaces(prj, strPrefix, match);
+        }        
         if (needLibClasses(context, offset)) {
             libClasses = getLibClassesEnums(prj, strPrefix, match);
         }
@@ -280,6 +283,9 @@ public class CompletionResolverImpl implements CompletionResolver {
         if (needLibFunctions(context, offset)) {
             libFuns = getLibFunctions(prj, strPrefix, match);
         }
+        if (needLibNamespaces(context, offset)) {
+            libNSs = getLibNamespaces(prj, strPrefix, match);
+        }        
         this.result = buildResult(context, 
                 localVars, 
                 classFields, classEnumerators, classMethods, classesEnumsTypedefs, 
@@ -308,6 +314,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             hideTypes &= ~RESOLVE_LIB_CLASSES;
             hideTypes &= ~RESOLVE_LIB_ENUMERATORS;
             hideTypes &= ~RESOLVE_LIB_FUNCTIONS;
+            hideTypes &= ~RESOLVE_LIB_NAMESPACES;
             hideTypes &= ~RESOLVE_LIB_VARIABLES;
             // if not in exact file scope do not provide project globals
             if (!CsmKindUtilities.isFile(context.getLastScope())) {
@@ -417,7 +424,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             return null;
         }
         CsmNamespace globNS = prj.getGlobalNamespace();
-        List res = contResolver.getNamespaceClassesEnums(globNS, strPrefix, match);
+        List res = contResolver.getNamespaceClassesEnums(globNS, strPrefix, match, false);
         return res;
     }
     
@@ -431,12 +438,17 @@ public class CompletionResolverImpl implements CompletionResolver {
             return null;
         }
         CsmNamespace globNS = prj.getGlobalNamespace();
-        List res = contResolver.getNamespaceEnumerators(globNS, strPrefix, match);
+        List res = contResolver.getNamespaceEnumerators(globNS, strPrefix, match, false);
         return res;
     }
     
     private List getGlobalFunctions(CsmProject prj, String strPrefix, boolean match) {
         List res = contResolver.getGlobalFunctions(strPrefix, match);
+        return res;
+    }
+    
+    private List getGlobalNamespaces(CsmProject prj, String strPrefix, boolean match) {
+        List res = contResolver.getGlobalNamespaces(strPrefix, match);
         return res;
     }
     
@@ -460,6 +472,11 @@ public class CompletionResolverImpl implements CompletionResolver {
         return res;
     }
     
+    private List getLibNamespaces(CsmProject prj, String strPrefix, boolean match) {
+        List res = contResolver.getLibNamespaces(strPrefix, match);
+        return res;
+    }
+    
     private boolean needClasses(CsmContext context, int offset) {
         if ((hideTypes & resolveTypes & RESOLVE_CLASSES) == RESOLVE_CLASSES) {
             return true;
@@ -476,10 +493,12 @@ public class CompletionResolverImpl implements CompletionResolver {
                 resolveTypes |= RESOLVE_GLOB_VARIABLES;
                 resolveTypes |= RESOLVE_GLOB_ENUMERATORS;
                 resolveTypes |= RESOLVE_GLOB_FUNCTIONS;
+                resolveTypes |= RESOLVE_GLOB_NAMESPACES;
                 resolveTypes |= RESOLVE_LIB_CLASSES;
                 resolveTypes |= RESOLVE_LIB_VARIABLES;
                 resolveTypes |= RESOLVE_LIB_ENUMERATORS;
                 resolveTypes |= RESOLVE_LIB_FUNCTIONS;
+                resolveTypes |= RESOLVE_LIB_NAMESPACES;
                 need = true;
             } else if (CsmContextUtilities.getClass(context, true) != null) {
                 // for speed up remember result
@@ -496,10 +515,12 @@ public class CompletionResolverImpl implements CompletionResolver {
                 resolveTypes |= RESOLVE_GLOB_VARIABLES;
                 resolveTypes |= RESOLVE_GLOB_ENUMERATORS;
                 resolveTypes |= RESOLVE_GLOB_FUNCTIONS;
+                resolveTypes |= RESOLVE_GLOB_NAMESPACES;
                 resolveTypes |= RESOLVE_LIB_CLASSES;
                 resolveTypes |= RESOLVE_LIB_VARIABLES;
                 resolveTypes |= RESOLVE_LIB_ENUMERATORS;
-                resolveTypes |= RESOLVE_LIB_FUNCTIONS;                
+                resolveTypes |= RESOLVE_LIB_FUNCTIONS;     
+                resolveTypes |= RESOLVE_LIB_NAMESPACES;
                 need = true;
             }
         }
@@ -525,10 +546,12 @@ public class CompletionResolverImpl implements CompletionResolver {
                 resolveTypes |= RESOLVE_GLOB_VARIABLES;
                 resolveTypes |= RESOLVE_GLOB_ENUMERATORS;
                 resolveTypes |= RESOLVE_GLOB_FUNCTIONS;
+                resolveTypes |= RESOLVE_GLOB_NAMESPACES;
                 resolveTypes |= RESOLVE_LIB_CLASSES;
                 resolveTypes |= RESOLVE_LIB_VARIABLES;
                 resolveTypes |= RESOLVE_LIB_ENUMERATORS;
                 resolveTypes |= RESOLVE_LIB_FUNCTIONS;
+                resolveTypes |= RESOLVE_LIB_NAMESPACES;
                 need = true;
             }
         }
@@ -554,10 +577,12 @@ public class CompletionResolverImpl implements CompletionResolver {
                 resolveTypes |= RESOLVE_GLOB_VARIABLES;
                 resolveTypes |= RESOLVE_GLOB_ENUMERATORS;
                 resolveTypes |= RESOLVE_GLOB_FUNCTIONS;
+                resolveTypes |= RESOLVE_GLOB_NAMESPACES;
                 resolveTypes |= RESOLVE_LIB_CLASSES;
                 resolveTypes |= RESOLVE_LIB_VARIABLES;
                 resolveTypes |= RESOLVE_LIB_ENUMERATORS;
                 resolveTypes |= RESOLVE_LIB_FUNCTIONS;
+                resolveTypes |= RESOLVE_GLOB_NAMESPACES;
                 need = true;
             }
         }
@@ -583,6 +608,13 @@ public class CompletionResolverImpl implements CompletionResolver {
     
     private boolean needGlobalFunctions(CsmContext context, int offset) {
         if ((hideTypes & resolveTypes & RESOLVE_GLOB_FUNCTIONS) == RESOLVE_GLOB_FUNCTIONS) {
+            return true;
+        }
+        return false;
+    }
+    
+    private boolean needGlobalNamespaces(CsmContext context, int offset) {
+        if ((hideTypes & resolveTypes & RESOLVE_GLOB_NAMESPACES) == RESOLVE_GLOB_NAMESPACES) {
             return true;
         }
         return false;
@@ -615,6 +647,13 @@ public class CompletionResolverImpl implements CompletionResolver {
     
     private boolean needLibFunctions(CsmContext context, int offset) {
         if ((hideTypes & resolveTypes & RESOLVE_LIB_FUNCTIONS) == RESOLVE_LIB_FUNCTIONS) {
+            return true;
+        }
+        return false;
+    }
+    
+    private boolean needLibNamespaces(CsmContext context, int offset) {
+        if ((hideTypes & resolveTypes & RESOLVE_LIB_NAMESPACES) == RESOLVE_LIB_NAMESPACES) {
             return true;
         }
         return false;

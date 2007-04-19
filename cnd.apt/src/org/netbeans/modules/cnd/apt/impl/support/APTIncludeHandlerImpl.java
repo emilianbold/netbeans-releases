@@ -101,16 +101,33 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         return new StateImpl();
     }
     
-    public static class StateImpl implements State {
+    public final static class StateImpl implements State {
         // for now just remember lists
-        private List/*<String>*/ systemIncludePaths;
-        private List/*<String>*/ userIncludePaths;   
-        private String           startFile;
+        private List/*<String>*/ systemIncludePaths = null;
+        private List/*<String>*/ userIncludePaths = null;    
+        private String           startFile = null;
         
         private Map/*<String, Integer>*/ recurseIncludes = null;   
         private Stack<IncludeInfo> inclStack = null;        
         
-        public StateImpl() {
+        protected StateImpl() {
+        }
+        
+        private StateImpl(StateImpl other) {
+            // shared information
+            this.startFile = other.startFile;
+            this.systemIncludePaths = other.systemIncludePaths;
+            this.userIncludePaths = other.userIncludePaths;
+            
+            // own copy of include information
+            if (other.inclStack != null) {
+                this.inclStack = new Stack();
+                this.inclStack.addAll(other.inclStack);
+            }
+            if (other.recurseIncludes != null) {
+                this.recurseIncludes = new HashMap();
+                this.recurseIncludes.putAll(other.recurseIncludes);
+            }
         }
         
         void initFrom(APTIncludeHandlerImpl handler) {
@@ -152,8 +169,6 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             if (inclStack != null && inclStack.size() != 0) {
                 recurseIncludes = null;
                 cleaned = true;
-//                systemIncludePaths = Collections.EMPTY_LIST;
-//                userIncludePaths = Collections.EMPTY_LIST;
             }
             return cleaned;
         }
@@ -198,6 +213,11 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             } else {
                 return inclStack2 == null;
             }
+        }
+
+        
+        public APTIncludeHandler.State copy() {
+            return new StateImpl(this);
         }
     }
     

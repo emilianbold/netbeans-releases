@@ -1,0 +1,73 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!--
+Copyright &copy; 2006 Sun Microsystems, Inc. All rights reserved.
+Use is subject to license terms.
+ -->
+<html>
+<head>
+<link rel="StyleSheet" href="/org/netbeans/modules/usersguide/ide.css" 
+type="text/css">
+<title>Configure Code Assistance Wizard: Configure Code Assistance</title>
+</head>
+<body>
+<h2>Configure Code Assistance Wizard: Configure Code Assistance</h2>
+<p><small><a href="#seealso">See Also</a>&nbsp; </small>
+<p>For a C/C++ Project From Existing Code, the Configure Code 
+Assistance wizard lets you specify how your code will be parsed by the
+built-in parser used for the code assistance features of 
+the IDE.
+</p>
+<p>The Configure Code Assistance page lets you specify the folder that 
+contains the source files for your project and how it should be 
+explored to determine the parsing options.
+</p>
+<ul>
+<li><b>Source files root folder.</b> Lets you specify the folder that 
+contains the source files for your project.</li>
+<li><b>Select analyzer.</b>
+<ul>
+<li><b>Search file system for C/C++ header files.</b> Explore the 
+information in header files. This mode searches the source files root 
+folder for header files and tries to determine the correct include 
+search path. This mode is valid only after your project has been 
+completely parsed by the built-in parser.
+</li>
+<li><b>Explore Executable or Library File.</b> Explore the 
+debugging information in executables and library files.</li>
+<li><b>Explore Object Files in Folder.</b> Explore debugging 
+information in object files.</li>
+</ul>
+</ul>
+<p>The Explore Executable or Library File mode and the Explore 
+Object Files in Folder mode require that the project have been built 
+with debugging information. If you are using a Sun Studio compiler, 
+building with the <tt>-g</tt> option is sufficient. If you are using a 
+GNU compiler, use the following options:
+<pre>
+-g3 -gdwarf-2
+</pre>
+</p>
+<table>
+<tr>
+<th colspan="2" align="left"><a name="seealso">See also</a></th>
+</tr>
+<tr>
+<td width="23"></td>
+<td>
+<a href="CodeAssistanceWizardP1.html">Configure Code Assistance Wizard: Select Mode</a><br>
+<a href="CodeAssistanceWizardP3.html">Configure Code Assistance Wizard: Select Analyzed File(s)</a><br>
+<a href="CodeAssistanceWizardP4.html">Configure Code Assistance Wizard: Configuration Level</a><br>
+<a href="CodeAssistanceWizardP5.html">Configure Code Assistance Wizard: View Configuration</a>
+</td>
+</tr>
+</table>
+<hr>
+<small>
+<a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="20">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

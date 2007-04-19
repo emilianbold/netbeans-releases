@@ -57,7 +57,7 @@ public class SimpleConfigurationWizard implements WizardDescriptor.Panel, Change
     }
     
     public HelpCtx getHelp() {
-        return new HelpCtx(DiscoveryWizardAction.HELP_CONTEXT);
+        return new HelpCtx(DiscoveryWizardAction.HELP_CONTEXT_SIMPLE_CONFIGURATION);
     }
     
     public boolean isValid() {

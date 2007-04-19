@@ -40,15 +40,15 @@ public class RepositoryWritingThread implements Runnable {
     }
 
     private void waitReady() throws IOException, InterruptedException {
-	if( Stats.sleepOnEmptyWriteQueue > 0 ) {
-	    if( Stats.defragmentOnEmptyWriteQueue ) {
+	if( Stats.maintenanceInterval > 0 ) {
+	    if( Stats.allowMaintenance ) {
 		while( ! queue.isReady() ) {
-		    if( Stats.queueTrace ) System.err.printf("%s: maintenance %n ms...\n", getName(), Stats.sleepOnEmptyWriteQueue); // NOI18N
+		    if( Stats.queueTrace ) System.err.printf("%s: maintenance %n ms...\n", getName(), Stats.maintenanceInterval); // NOI18N
 		    long time = System.currentTimeMillis();
-		    if( ! writer.maintenance(Stats.sleepOnEmptyWriteQueue) ) {
+		    if( ! writer.maintenance(Stats.maintenanceInterval) ) {
 			time = System.currentTimeMillis() - time;
-			if( time < Stats.sleepOnEmptyWriteQueue ) {
-			    Thread.currentThread().sleep(Stats.sleepOnEmptyWriteQueue - time);
+			if( time < Stats.maintenanceInterval ) {
+			    Thread.currentThread().sleep(Stats.maintenanceInterval - time);
 			}
 			break;
 		    }
@@ -56,8 +56,8 @@ public class RepositoryWritingThread implements Runnable {
 		}
 	    }
 	    else {
-		if( Stats.queueTrace ) System.err.printf("%s: sleeping %n ms...\n", getName(), Stats.sleepOnEmptyWriteQueue); // NOI18N
-		Thread.currentThread().sleep(Stats.sleepOnEmptyWriteQueue);
+		if( Stats.queueTrace ) System.err.printf("%s: sleeping %n ms...\n", getName(), Stats.maintenanceInterval); // NOI18N
+		Thread.currentThread().sleep(Stats.maintenanceInterval);
 	    }
 	}
 	if( Stats.queueTrace ) System.err.printf("%s: waiting...\n", getName()); // NOI18N
@@ -66,6 +66,11 @@ public class RepositoryWritingThread implements Runnable {
     
     public void run() {
 	if( Stats.queueTrace ) System.err.printf("%s: started.\n", getName());
+        /*queue.registerMaintenancer(new Maintainer() {
+            public boolean maintenance(long timeout) throws IOException {
+                return writer.maintenance(timeout);
+            }
+        });*/
 	while( true ) {
 	    try {
 		RepositoryQueue.Entry entry = queue.poll();

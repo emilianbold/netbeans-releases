@@ -20,12 +20,13 @@
 package org.netbeans.modules.cnd.apt.impl.structure;
 
 import antlr.Token;
-import antlr.TokenStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import org.netbeans.modules.cnd.apt.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
@@ -40,21 +41,24 @@ public final class APTDefineNode extends APTMacroBaseNode
                                     implements APTDefine, Serializable {
     private static final long serialVersionUID = -99267816578145490L;
     
-    private List params = null;
-    private List bodyTokens = null;
-    // TODO: how to save memory here? state is needed only on initializing
-    transient private byte state = BEFORE_MACRO_NAME;
+    private List<Token> params = null;
+    private List<Token> bodyTokens = null;
+    
+    private byte state = BEFORE_MACRO_NAME;
     
     private static final byte BEFORE_MACRO_NAME = 0;
     private static final byte AFTER_MACRO_NAME = 1;
     private static final byte IN_PARAMS = 2;
     private static final byte IN_BODY = 3;
+    private static final byte IN_BODY_AFTER_SHARP = 4;
+    private static final byte ERROR = 5;
     
     /** Copy constructor */
     /**package*/APTDefineNode(APTDefineNode orig) {
         super(orig);
         this.params = orig.params;
         this.bodyTokens = orig.bodyTokens;
+        this.state = orig.state;
     }
     
     /** Constructor for serialization */
@@ -87,6 +91,13 @@ public final class APTDefineNode extends APTMacroBaseNode
      */
     public List getBody() {
         return bodyTokens != null ? bodyTokens : Collections.EMPTY_LIST;
+    }
+    
+    /**
+     * returns true if #define directive is valid
+     */
+    public boolean isValid() {
+        return state != ERROR;
     }
     
     public boolean accept(Token token) {
@@ -129,10 +140,21 @@ public final class APTDefineNode extends APTMacroBaseNode
                             break;
                         case APTTokenTypes.ELLIPSIS:
                             // TODO: need to support ELLIPSIS for IZ#83949
+                            params.add(APTUtils.VA_ARGS_TOKEN);
                             break;
                         default:
                             // eat comma and comments and leave IN_PARAMS state
-                            assert (token.getType() == APTTokenTypes.COMMA || APTUtils.isCommentToken(token.getType()));
+                            if (!(token.getType() == APTTokenTypes.COMMA || APTUtils.isCommentToken(token.getType()))) {
+                                // error check
+                                if (DebugUtils.STANDALONE) {
+                                    System.err.printf("line %d: \"%s\" may not appear in macro parameter list\n", // NOI18N
+                                            getToken().getLine(), token.getText());
+                                } else {
+                                    APTUtils.LOG.log(Level.SEVERE, "line {0}: {1} may not appear in macro parameter list", // NOI18N
+                                            new Object[] {getToken().getLine(), token.getText()} );
+                                }                                
+                                state = ERROR;
+                            }
                             break;
                     }
                     break;
@@ -143,7 +165,40 @@ public final class APTDefineNode extends APTMacroBaseNode
                     if (bodyTokens == null) {
                         bodyTokens = new ArrayList();
                     }
+                    // check for errors:
+                    if (token.getType() == APTTokenTypes.SHARP) {
+                        state = IN_BODY_AFTER_SHARP;
+                    }
                     bodyTokens.add(token);
+                    break;
+                }
+                case IN_BODY_AFTER_SHARP:
+                {
+                    bodyTokens.add(token);
+                    // skip comments
+                    if (APTUtils.isCommentToken(token.getType())) {
+                        // stay in the current state
+                    } else if (token.getType() == APTTokenTypes.ID) {
+                        // error check: token after # must be parameter
+                        state = isInParamList(token) ? IN_BODY : ERROR;
+                    } else {
+                        // only id is accepted after #
+                        state = ERROR;
+                    }                   
+                    if (state == ERROR) {
+                        if (DebugUtils.STANDALONE) {
+                            System.err.printf("line %d: '#' is not followed by a macro parameter\n", // NOI18N
+                                    getToken().getLine());
+                        } else {
+                            APTUtils.LOG.log(Level.SEVERE, "line {0}: '#' is not followed by a macro parameter", // NOI18N
+                                    new Object[] {getToken().getLine()} );
+                        }                                
+                    }
+                    break;
+                }
+                case ERROR:
+                {
+                    // eat all after error
                     break;
                 }
                 default:
@@ -153,6 +208,18 @@ public final class APTDefineNode extends APTMacroBaseNode
         }
     }
     
+    private boolean isInParamList(Token id) {
+        assert id != null;
+        if (params == null) {
+            return false;
+        }
+        for (Token param : params) {
+            if (APTUtils.getTokenTextKey(param).equals(APTUtils.getTokenTextKey(id))) {
+                return true;
+            }
+        }
+        return false;
+    }
     public String getText() {
         String ret = super.getText();
         String paramStr = ""; // NOI18N

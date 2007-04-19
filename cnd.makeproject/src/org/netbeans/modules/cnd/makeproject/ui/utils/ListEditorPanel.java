@@ -37,6 +37,8 @@ public class ListEditorPanel extends javax.swing.JPanel {
     protected Vector listData = new Vector();
     private boolean allowedToRemoveAll = true;
     
+    private boolean isChanged = false;
+    
     public ListEditorPanel(Object[] objects) {
 	this(objects, null);
     }
@@ -419,7 +421,6 @@ public class ListEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         controlsPanel.add(downButton, gridBagConstraints);
 
         defaultButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/utils/Bundle").getString("TARGET_EDITOR_DEFAULT_BUTTON_MNEMONIC").charAt(0));
@@ -434,7 +435,7 @@ public class ListEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
         controlsPanel.add(defaultButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -464,6 +465,7 @@ public class ListEditorPanel extends javax.swing.JPanel {
             return;
 	defaultAction(listData.elementAt(selectedIndex));
 	// Update gui
+        isChanged = true;
 	setData(listData);
         setSelectedIndex(selectedIndex);
 	defaultButton.requestFocus();
@@ -484,6 +486,7 @@ public class ListEditorPanel extends javax.swing.JPanel {
             return;
 	editAction(listData.elementAt(selectedIndex));
 	// Update gui
+        isChanged = true;
 	setData(listData);
         setSelectedIndex(selectedIndex);
 	renameButton.requestFocus();
@@ -507,6 +510,7 @@ public class ListEditorPanel extends javax.swing.JPanel {
 	if (newObject == null)
 	    return;
 	// Update gui
+        isChanged = true;
 	int addAtIndex = listData.size();
 	listData.add(addAtIndex, newObject);
 	setData(listData);
@@ -531,6 +535,7 @@ public class ListEditorPanel extends javax.swing.JPanel {
         if (selectedIndex >= (listData.size()-1))
             return;
 	// Update GUI
+        isChanged = true;
         Object tmp = listData.elementAt(selectedIndex);
         listData.removeElementAt(selectedIndex);
         listData.add(++selectedIndex, tmp);
@@ -555,6 +560,7 @@ public class ListEditorPanel extends javax.swing.JPanel {
         if (selectedIndex <= 0)
             return;
 	// Update GUI
+        isChanged = true;
         Object tmp = listData.elementAt(selectedIndex);
         listData.removeElementAt(selectedIndex);
         listData.add(--selectedIndex, tmp);
@@ -582,6 +588,7 @@ public class ListEditorPanel extends javax.swing.JPanel {
             return;
 	removeAction(listData.elementAt(selectedIndex));
 	// Update GUI
+        isChanged = true;
         listData.removeElementAt(selectedIndex);
         setData(listData);
         selectedIndex = (selectedIndex >= listData.size()) ? selectedIndex-1 : selectedIndex;
@@ -610,6 +617,7 @@ public class ListEditorPanel extends javax.swing.JPanel {
 	if (newObject == null)
 	    return;
 	// Update gui
+        this.isChanged = true;
 	int addAtIndex = listData.size(); //getSelectedIndex();
 	listData.add(addAtIndex, newObject);
 	setData(listData);
@@ -718,5 +726,14 @@ public class ListEditorPanel extends javax.swing.JPanel {
     
     private static String getString(String key) {
         return NbBundle.getMessage(ListEditorPanel.class, key);
+    }
+    
+    // support to be integrated into Tools->Options
+    public boolean isChanged() {
+        return isChanged;
+    }
+
+    public boolean isDataValid() {
+        return true;
     }
 }

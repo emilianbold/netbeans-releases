@@ -19,7 +19,11 @@
 
 package org.netbeans.modules.cnd.classview.model;
 
+import java.util.Collection;
+import javax.swing.Action;
 import  org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.classview.actions.GoToDeclarationAction;
+import org.netbeans.modules.cnd.classview.actions.MoreDeclarations;
 import org.openide.nodes.Children;
 
 /**
@@ -55,5 +59,34 @@ public class NamespaceNode extends NPNode {
             retValue = "<i>" + retValue; // NOI18N
         }
         return retValue;
+    }
+
+    public Action getPreferredAction() {
+        return createOpenAction();
+    }
+    
+    private Action createOpenAction() {
+        CsmNamespace ns = getNamespace();
+        if (ns != null){
+            Collection<CsmOffsetableDeclaration> arr = ns.getDefinitions();
+            if (arr.size() > 0) {
+                return new GoToDeclarationAction(arr.iterator().next());
+            }
+        }
+        return null;
+    }
+    
+    public Action[] getActions(boolean context) {
+        Action action = createOpenAction();
+        if (action != null){
+            CsmNamespace ns = getNamespace();
+            Collection<CsmOffsetableDeclaration> arr = ns.getDefinitions();
+            if (arr.size() > 1){
+                Action more = new MoreDeclarations(arr);
+                return new Action[] { action, more };
+            }
+            return new Action[] { action };
+        }
+        return new Action[0];
     }
 }

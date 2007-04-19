@@ -49,7 +49,7 @@
 	<mapID target="NewAppWizard" url="WorkingWithCandC++Projects/NewAppWizard.html"/>
 	<mapID target="NewDynamicLibWizard" url="WorkingWithCandC++Projects/NewDynamicLibWizard.html"/>
 	<mapID target="NewStaticLibWizard" url="WorkingWithCandC++Projects/NewStaticLibWizard.html"/>
-	<mapID target="NewMakeWizardP1" url="WorkingWithCandC++Projects/NewMakeWizardP1.html"/>
+	<mapID target="NewMakeWizardP1" url="WorkingWithCandC++Projects/NewMakeWizardP5.html"/>
 	<mapID target="NewMakeWizardP2" url="WorkingWithCandC++Projects/NewMakeWizardP2.html"/>
 	<mapID target="NewMakeWizardP3" url="WorkingWithCandC++Projects/NewMakeWizardP3.html"/>
 	<mapID target="ProjectsWindow" url="GettingStarted/ProjectsWindow.html"/>
@@ -90,17 +90,15 @@
 	<mapID target="Libraries" url="CandC++ProjectBasics/Libraries.html"/>
 	<mapID target="ProjectProperties" url="WorkingWithCandC++Projects/ProjectPropsGeneral.html"/>
 	<mapID target="ProjectPropsRunning" url="WorkingWithCandC++Projects/ProjectPropsRunning.html"/>
-	<mapID target="ProjectPropsArchiving" url="WorkingWithCandC++Projects/ProjectPropsArchiverGeneral.html"/>
 	<mapID target="ProjectPropsCompiling" url="WorkingWithCandC++Projects/ProjectPropsCompilerGeneral.html"/>
 	<mapID target="ProjectPropsLinking" url="WorkingWithCandC++Projects/ProjectPropsLinkerGeneral.html"/>
-	<mapID target="ArchiverOptions" url="CandC++ProjectBasics/ArchiverOptions.html"/>
 	<mapID target="Environment" url="CandC++ProjectBasics/Environment.html"/>
 	<mapID target="ProjectPropsLinkerGeneral" url="WorkingWithCandC++Projects/ProjectPropsLinkerLibraries.html"/>
 	<mapID target="ProjectPropsCommandLine" url="WorkingWithCandC++Projects/ProjectPropsCommandLine.html"/>
 	<mapID target="SettingC&amp;C++FileProperties" url="WorkingWithCandC++Projects/SettingC&amp;C++FileProperties.html"/>
 	<mapID target="UsingAbbreviations" url="EditingSourceFiles/UsingAbbreviations.html"/>
 	<mapID target="EditingSourceFiles" url="EditingSourceFiles/EditingSourceFiles.html"/>
-	<mapID target="Configuring" url="WorkingWithCandC++Projects/Configuring.html"/>
+	<mapID target="Configuring" url="WorkingWithCandC++Projects/ConfiguringProjectSettings.html"/>
 	<mapID target="UsingPairCompletion" url="EditingSourceFiles/UsingPairCompletion.html"/>
 	<mapID target="AbbreviationsQuickRef" url="EditingSourceFiles/AbbreviationsQuickRef.html"/>
 	<mapID target="CreatingCodeTemplates" url="EditingSourceFiles/CreatingCodeTemplates.html"/>
@@ -140,4 +138,19 @@
 	<mapID target="DeletingCorC++Project" url="WorkingWithCandC++Projects/DeletingCorC++Project.html"/>
 	<mapID target="MovingCorC++Project" url="WorkingWithCandC++Projects/MovingCorC++Project.html"/>
 	<mapID target="Memory" url="GettingStarted/Memory.html"/>
+	<mapID target="NewMakeWizardP11" url="WorkingWithCandC++Projects/NewMakeWizardP1.html"/>
+	<mapID target="NewMakeWizardP4" url="WorkingWithCandC++Projects/NewMakeWizardP4.html"/>
+	<mapID target="CodeAssistanceWizardP1" url="WorkingWithCandC++Projects/CodeAssistanceWizardP1.html"/>
+	<mapID target="CodeAssistanceWizardP2" url="WorkingWithCandC++Projects/CodeAssistanceWizardP2.html"/>
+	<mapID target="CodeAssistanceWizardP3" url="WorkingWithCandC++Projects/CodeAssistanceWizardP3.html"/>
+	<mapID target="CodeAssistanceWizardP4" url="WorkingWithCandC++Projects/CodeAssistanceWizardP4.html"/>
+	<mapID target="CodeAssistanceWizardP5" url="WorkingWithCandC++Projects/CodeAssistanceWizardP5.html"/>
+	<mapID target="ConfiguringBuildTools" url="WorkingWithCandC++Projects/ConfiguringBuildTools.html"/>
+	<mapID target="ConfiguringParsingSettings" url="WorkingWithCandC++Projects/ConfiguringParsingSettings.html"/>
+	<mapID target="ResolveBuildTools" url="CandC++ProjectBasics/ResolveBuildTools.html"/>
+	<mapID target="ProjectPropsDebugging" url="WorkingWithCandC++Projects/ProjectPropsDebugging.html"/>
+	<mapID target="ProjectPropsMake" url="WorkingWithCandC++Projects/ProjectPropsMake.html"/>
+	<mapID target="ProjectPropsParser" url="WorkingWithCandC++Projects/ProjectPropsParser.html"/>
+	<mapID target="CodeAssistance" url="WorkingWithCandC++Projects/CodeAssistance.html"/>
+	<mapID target="Commenting" url="EditingSourceFiles/Commenting.html"/>
 </map>

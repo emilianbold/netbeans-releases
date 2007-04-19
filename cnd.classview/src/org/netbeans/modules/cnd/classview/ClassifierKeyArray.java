@@ -82,14 +82,20 @@ public class ClassifierKeyArray extends HostKeyArray implements UpdatebleHost {
     private void initClass(CsmClass cls, java.util.Map<PersistentKey, SortedName> res){
         for( Iterator/*<CsmClass>*/ iter = cls.getMembers().iterator(); iter.hasNext(); ) {
             CsmMember member = (CsmMember) iter.next();
-            res.put(PersistentKey.createKey(member), getSortedName(member));
+            PersistentKey key = PersistentKey.createKey(member);
+            if (key != null) {
+                res.put(key, getSortedName(member));
+            }
         }
     }
     
     private void initEnum(CsmEnum en, java.util.Map<PersistentKey, SortedName> res){
         for (Iterator iter = en.getEnumerators().iterator(); iter.hasNext();) {
             CsmEnumerator val = (CsmEnumerator) iter.next();
-            res.put(PersistentKey.createKey(val), new SortedName(0,val.getName(),0));
+            PersistentKey key = PersistentKey.createKey(val);
+            if (key != null) {
+                res.put(key, new SortedName(0,val.getName(),0));
+            }
         }
     }
     

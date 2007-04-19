@@ -45,6 +45,7 @@ import java.util.Vector;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JSeparator;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -148,6 +149,11 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             return new MakeLogicalViewRootNode(getMakeConfigurationDescriptor().getLogicalFolders());
     }
     
+    private boolean findPathMode = false;
+    private boolean isFindPathMode() {
+        return findPathMode;
+    }
+    
     public org.openide.nodes.Node findPath( Node root, Object target ) {
         Node returnNode = null;
         Project rootProject = (Project)root.getLookup().lookup( Project.class );
@@ -175,25 +181,29 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             }
         }
         
-        // FIXUP: assume nde node is last node in current folder. Is this always true?
-        // Find the node and return it
-        Node folderNode = findFolderNode(root, item.getFolder());
-        if (folderNode != null) {
-            Node[] nodes = folderNode.getChildren().getNodes( true );
-            int index = 0;
-            for (index = 0; index < nodes.length; index++) {
-                Item nodeItem = (Item)nodes[index].getValue("Item"); // NOI18N
-                if (nodeItem == item)
-                    break;
+        try {
+            findPathMode = true;
+            // FIXUP: assume nde node is last node in current folder. Is this always true?
+            // Find the node and return it
+            Node folderNode = findFolderNode(root, item.getFolder());
+            if (folderNode != null) {
+                Node[] nodes = folderNode.getChildren().getNodes( true );
+                int index = 0;
+                for (index = 0; index < nodes.length; index++) {
+                    Item nodeItem = (Item)nodes[index].getValue("Item"); // NOI18N
+                    if (nodeItem == item)
+                        break;
+                }
+                if (nodes.length > 0 && index < nodes.length)
+                    returnNode = nodes[index];
+                /*
+                if (nodes.length > 0)
+                    returnNode = nodes[nodes.length -1];
+                 */
             }
-            if (nodes.length > 0 && index < nodes.length)
-                returnNode = nodes[index];
-            /*
-            if (nodes.length > 0)
-                returnNode = nodes[nodes.length -1];
-             */
-        }
-        
+        } finally {
+            findPathMode = false;
+        }        
         return returnNode;
     }
     
@@ -349,6 +359,24 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     }
     
     private static Image brokenProjectBadge = Utilities.loadImage( "org/netbeans/modules/cnd/makeproject/ui/resources/brokenProjectBadge.gif" ); // NOI18N
+    
+    private static Node getWaitNode() {
+        return new LoadingNode();
+    }
+    
+    private static class LoadingNode extends AbstractNode {
+
+        public LoadingNode() {
+            super(Children.LEAF);
+            setName("dummy"); // NOI18N
+            setDisplayName(NbBundle.getMessage(MakeLogicalViewProvider.class, "Tree_Loading")); // NOI18N
+        }
+
+        public Image getIcon(int param) {
+            //System.err.println("get icon asked");
+            return Utilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/waitNode.gif"); // NOI18N
+        }
+    }
     
     /** Filter node containin additional features for the Make physical
      */
@@ -668,29 +696,19 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
     }
     
-    private class LogicalViewChildren extends Children.Keys/*<SourceGroup>*/ implements ChangeListener {
-        private Folder folder;
+    private class LogicalViewChildren extends BaseMakeViewChildren {
         public LogicalViewChildren(Folder folder) {
-            this.folder = folder;
-        }
-        
-        protected void addNotify() {
-            super.addNotify();
-            setKeys( getKeys() );
-            folder.addChangeListener(this);
-        }
-        
-        protected void removeNotify() {
-            setKeys(Collections.EMPTY_SET);
-            super.removeNotify();
-            folder.removeChangeListener(this);
+            super(folder);
         }
         
         protected Node[] createNodes(Object key) {
             Node node = null;
-            if (key instanceof Node)
+            if (key instanceof LoadingNode) {
+                //System.err.println("LogicalViewChildren: return wait node");
+                node = (Node)key;                
+            } else if (key instanceof Node) {
                 node = (Node)key;
-            else if (key instanceof Folder) {
+            } else if (key instanceof Folder) {
                 Folder folder = (Folder)key;
                 if (folder.isProjectFiles()) {
                     //FileObject srcFileObject = project.getProjectDirectory().getFileObject("src");
@@ -709,9 +727,9 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 Item item = (Item)key;
                 DataObject fileDO = item.getDataObject();
                 if (fileDO != null) {
-                    node = new ViewItemNode(this, folder, item, fileDO);
+                    node = new ViewItemNode(this, getFolder(), item, fileDO);
                 } else {
-                    node = new BrokenViewItemNode(this, folder, item);
+                    node = new BrokenViewItemNode(this, getFolder(), item);
                 }
             } else if (key instanceof AbstractNode) {
                 node = (AbstractNode)key;
@@ -719,16 +737,10 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             return new Node[] {node};
         }
         
-        public void stateChanged( ChangeEvent e ) {
-            setKeys( getKeys() );
-        }
-        
-        // Private methods -----------------------------------------------------
-        
-        private Collection getKeys() {
-            Collection collection = folder.getElements();
+        protected Collection getKeys() {
+            Collection collection = getFolder().getElements();
             
-            if (folder.getName() == "root") { // NOI18N
+            if (getFolder().getName() == "root") { // NOI18N
                 LogicalViewNodeProvider[] providers = LogicalViewNodeProviders.getInstance().getProvidersAsArray();
                 if (providers.length > 0) {
                     for (int i = 0; i < providers.length; i++) {
@@ -740,10 +752,6 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             }
             
             return collection;
-        }
-        
-        public void refreshItem(Item item) {
-            refreshKey(item);
         }
     }
     
@@ -1123,29 +1131,79 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             return false;
         }
     }
-    
-    private class ExternalFilesChildren extends Children.Keys/*<SourceGroup>*/ implements ChangeListener {
-        private Project project;
-        private Folder folder;
-        
-        public ExternalFilesChildren(Project project, Folder folder) {
-            this.project = project;
+
+    private static final int WAIT_DELAY = 50;
+    private abstract class BaseMakeViewChildren extends Children.Keys implements ChangeListener {
+        private final Folder folder;
+
+        public BaseMakeViewChildren(Folder folder) {
             this.folder = folder;
         }
-        
+
         protected void addNotify() {
-            super.addNotify();
-            folder.addChangeListener( this );
-            setKeys( getKeys() );
+            if (isFindPathMode()) {
+                //System.err.println("BaseMakeViewChildren: FindPathMode " + (SwingUtilities.isEventDispatchThread() ? "UI":"regular") + " thread");
+                // no wait node for direct search
+                super.addNotify();
+                folder.addChangeListener( this );
+                setKeys( getKeys() );
+            }  else {
+                //System.err.println("BaseMakeViewChildren: create wait node " + (SwingUtilities.isEventDispatchThread() ? "UI":"regular") + " thread");
+                if (SwingUtilities.isEventDispatchThread()) {
+                    super.addNotify();
+                    setKeys(new Object[]{getWaitNode()});
+                    folder.addChangeListener( this );
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            //System.err.println("ExternalFilesChildren: setting real nodes");
+                            setKeys( getKeys() );
+                        }
+                    }, WAIT_DELAY);            
+                }  else {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            addNotify();
+                        }
+                    });
+                }
+            }
         }
-        
+
+        public void refreshItem(Item item) {
+            refreshKey(item);
+        }
+
+
         protected void removeNotify() {
             setKeys(Collections.EMPTY_SET);
             folder.removeChangeListener( this );
             super.removeNotify();
         }
+
+
+        public void stateChanged(ChangeEvent e) {
+            setKeys( getKeys() );
+        }
+
+        abstract protected Collection getKeys();
+
+        public Folder getFolder() {
+            return folder;
+        }
+    }
+
+    private class ExternalFilesChildren extends BaseMakeViewChildren {
+        private final Project project;
+        
+        public ExternalFilesChildren(Project project, Folder folder) {
+            super(folder);
+            this.project = project;
+        }
         
         protected Node[] createNodes( Object key ) {
+            if (key instanceof LoadingNode) {
+                return new Node[] { (Node)key };
+            }
             if (!(key instanceof Item)) {
                 System.err.println("wrong item in external files folder " + key); // NOI18N
                 return null;
@@ -1154,23 +1212,15 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             DataObject fileDO = item.getDataObject();
             Node node;
             if (fileDO != null) {
-                node = new ViewItemNode(this, folder, item, fileDO);
+                node = new ViewItemNode(this, getFolder(), item, fileDO);
             } else {
-                node = new BrokenViewItemNode(this, folder, item);
+                node = new BrokenViewItemNode(this, getFolder(), item);
             }
             return new Node[] {node};
         }
         
-        public void stateChanged( ChangeEvent e ) {
-            setKeys( getKeys() );
-        }
-        
-        private Collection getKeys() {
-            return folder.getElements();
-        }
-        
-        public void refreshItem(Item item) {
-            refreshKey(item);
+        protected Collection getKeys() {
+            return getFolder().getElements();
         }
     }
     

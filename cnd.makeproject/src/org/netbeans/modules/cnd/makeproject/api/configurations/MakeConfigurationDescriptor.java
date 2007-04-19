@@ -262,6 +262,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
     
     public Item findProjectItemByPath(String path) {
         // Try first as-is
+        path = FilePathAdaptor.normalize(path);
         Item item = (Item)projectItems.get(path);
         if (item == null) {
             // Then try absolute if relative or relative if absolute
@@ -556,8 +557,8 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
             } else {
                 String filePath = IpeUtils.toRelativePath(baseDir, files[i].getPath());
                 Item item = new Item(FilePathAdaptor.normalize(filePath));
-                filesAdded.add(item);
-                folder.addItem(item);
+                if (folder.addItem(item) != null)
+                    filesAdded.add(item);
                 if (handle != null) {
                     handle.progress(filePath);
                 }

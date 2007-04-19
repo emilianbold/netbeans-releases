@@ -20,6 +20,7 @@
 package org.netbeans.modules.cnd.makeproject.api;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 
@@ -69,8 +70,8 @@ public class MakeArtifact {
 		active = makeConfiguration.isDefault();
 		build = true;
 		workingDirectory = projectLocation;
-		buildCommand = "${MAKE} -f " + pd.getProjectMakefileName() + " CONF=" + configurationName; // NOI18N
-		cleanCommand = "${MAKE} -f " + pd.getProjectMakefileName() + " CONF=" + configurationName + " clean"; // NOI18N
+		buildCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " -f " + pd.getProjectMakefileName() + " CONF=" + configurationName; // NOI18N
+		cleanCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " -f " + pd.getProjectMakefileName() + " CONF=" + configurationName + " clean"; // NOI18N
 		if (makeConfiguration.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
 		    configurationType = MakeArtifact.TYPE_UNKNOWN;
 		    output = makeConfiguration.getMakefileConfiguration().getOutput().getValue();

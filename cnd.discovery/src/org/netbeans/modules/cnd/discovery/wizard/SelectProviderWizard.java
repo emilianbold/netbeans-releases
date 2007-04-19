@@ -57,7 +57,7 @@ public class SelectProviderWizard implements WizardDescriptor.Panel, ChangeListe
     }
     
     public HelpCtx getHelp() {
-        return new HelpCtx(DiscoveryWizardAction.HELP_CONTEXT);
+        return new HelpCtx(DiscoveryWizardAction.HELP_CONTEXT_SELECT_PROVIDER);
     }
     
     public boolean isValid() {

@@ -19,7 +19,9 @@
 
 package org.netbeans.modules.cnd.repository.queue;
 
-import org.netbeans.modules.cnd.repository.api.Repository;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
@@ -32,26 +34,83 @@ public class RepositoryQueue extends KeyValueQueue<Key, Persistent> {
     
     /** Overrides parent to allow timing by flag */
     protected boolean needsTiming() {
-	return Stats.queueTiming;
-    } 
-
+        return Stats.queueTiming;
+    }
+    
     /** Overrides parent to allow timing by flag */
     protected boolean needsTrace() {
-	return Stats.queueTrace;
-    }     
+        return Stats.queueTrace;
+    }
     
     /** Returns this queue name; used for tracing/debugging purposes */
     protected String getTraceName() {
-	return "RepositoryQueue" + '@' + hashCode(); // NOI18N
+        return "RepositoryQueue" + '@' + hashCode(); // NOI18N
     }
     
     protected void doReplaceAddLast(Key key, Persistent value, Entry existent) {
-	super.doReplaceAddLast(key, value, existent);
-	queue.remove(existent);
-	queue.addLast(existent);
-    }    
+        super.doReplaceAddLast(key, value, existent);
+        queue.remove(existent);
+        queue.addLast(existent);
+    }
     
+    private Maintainer maintainer;
+    
+    public void registerMaintenancer(Maintainer maintenancer) {
+        assert (maintenancer == null);
+        this.maintainer = this.maintainer;
+        throw new UnsupportedOperationException();
+    }
+    
+    /*public void waitReady() throws InterruptedException {
+        synchronized ( lock ) {
+            try {
+                while( active && !isReady() ) {
+                    if( Stats.allowMaintenance && maintainer != null) {
+                        if( Stats.queueTrace ) System.err.printf("%s: maintenance %n ms...\n", getName(), Stats.maintenanceInterval); // NOI18N
+                        long time = System.currentTimeMillis();
+                        if( ! maintainer.maintenance(Stats.maintenanceInterval) ) {
+                            time = System.currentTimeMillis() - time;
+                            if( time < Stats.maintenanceInterval ) {
+                                Thread.sleep(Stats.maintenanceInterval - time);
+                            }
+                            break;
+                        }
+                    } else {
+                        //if( Stats.queueTrace ) System.err.printf("%s: sleeping %n ms...\n", getName(), Stats.maintenanceInterval); // NOI18N
+                        lock.wait(Stats.maintenanceInterval);
+                    }
+                    onIdle();
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }*/
+
     public void onIdle() {
         // do nothing
     }
+    
+    private static String getName() {
+        return Thread.currentThread().getName();
+    }
+    
+    public void clearQueue(Validator validator) {
+        synchronized (lock) {
+            // don't use Iterator.remove here
+            Collection copy = new HashSet(map.keySet());
+            for (Iterator<Key> it = copy.iterator(); it.hasNext();) {
+                Key key = it.next();
+                if (!validator.isValid(key)) {
+                    remove(key);
+                }
+            }
+        }
+    }
+
+    public interface Validator {
+        boolean isValid(Key key);
+    }
 }
+
+

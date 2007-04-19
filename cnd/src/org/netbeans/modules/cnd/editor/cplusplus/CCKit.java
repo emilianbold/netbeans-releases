@@ -330,31 +330,7 @@ public class CCKit extends NbEditorKit {
 	    BaseDocument doc = Utilities.getDocument(target);
 	    int dotPos = target.getCaret().getDot();
 	    if (doc != null) {
-		/* Check whether the user has written the ending 'e'
-		 * of the first 'else' on the line.
-		 */
-		if ("e".equals(typedText)) { // NOI18N
-		    try {
-			int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
-			if (fnw >= 0 && fnw + 4 == dotPos
-			    && "else".equals(doc.getText(fnw, 4)) // NOI18N
-			    ) {
-			    reindent = true;
-			}
-		    } catch (BadLocationException e) {
-		    }
-	    
-		} else if (":".equals(typedText)) { // NOI18N
-		    try {
-			int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
-			if (fnw >= 0 && fnw + 4 <= doc.getLength()
-			    && "case".equals(doc.getText(fnw, 4)) // NOI18N
-			    ) {
-			    reindent = true;
-			}
-		    } catch (BadLocationException e) {
-		    }
-		}
+                reindent = CCFormatter.getKeywordBasedReformatBlock(doc, dotPos, typedText) != null;
 	  
 		// Reindent the line if necessary
 		if (reindent) {
@@ -408,7 +384,10 @@ public class CCKit extends NbEditorKit {
                             return Boolean.FALSE;
                         }
                         int lBracePos = item.getOffset();
-                        int lastSepOffset = sup.getLastCommandSeparator(lBracePos - 1);                        
+                        int lastSepOffset = sup.getLastCommandSeparator(lBracePos - 1);           
+                        if (lastSepOffset == -1 && lBracePos > 0) {
+                            lastSepOffset = 0;
+                        }
                         if (lastSepOffset != -1 && lastSepOffset < dotPos) {
                             TokenItem keyword = sup.getTokenChain(lastSepOffset, lBracePos);
                             while (keyword != null && keyword.getOffset() < lBracePos) {

@@ -298,7 +298,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         if (TraceFlags.USE_REPOSITORY) {
             CsmUID<CsmOffsetableDeclaration> uid = declarations.get(uniqueName);
             oldDecl = UIDCsmConverter.UIDtoDeclaration(uid);
-            assert oldDecl != null || uid == null;
+            assert oldDecl != null || uid == null : "no object for UID " + uid;
         } else {
             oldDecl = (CsmOffsetableDeclaration) declarationsOLD.get(uniqueName);
         }

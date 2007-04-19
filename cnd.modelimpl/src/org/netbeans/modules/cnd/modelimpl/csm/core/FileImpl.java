@@ -289,6 +289,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             if (TraceFlags.USE_REPOSITORY) {
                 RepositoryUtils.put(this);
             }
+            if (TraceFlags.USE_DEEP_REPARSING) {
+                getProjectImpl().getGraph().putFile(this);
+            }
             Notificator.instance().registerChangedFile(this);
             Notificator.instance().flush();
 	}
@@ -406,6 +409,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         } finally {
             if (TraceFlags.USE_REPOSITORY) {
                 RepositoryUtils.put(this);
+            }
+            if (TraceFlags.USE_DEEP_REPARSING) {
+                getProjectImpl().getGraph().putFile(this);
             }
             //Notificator.instance().endTransaction();
             Notificator.instance().registerChangedFile(this);
@@ -649,7 +655,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public List<CsmOffsetableDeclaration> getDeclarations() {
-	fixFakeRegistrations();
+        fixFakeRegistrations();
         if (TraceFlags.USE_REPOSITORY) {
             List<CsmOffsetableDeclaration> decls;
             synchronized (declarations) {
@@ -847,6 +853,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
     
     public void fixFakeRegistrations() {
+        if (!isValid()) {
+            return;
+        }
         Collection fakes;
         if (TraceFlags.USE_REPOSITORY) {
             Collection<CsmUID<FunctionImplEx>> fakeUIDs;
@@ -854,7 +863,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 fakeUIDs = fakeRegistrationUIDs;
                 fakeRegistrationUIDs = new ArrayList();
             }
-            fakes = UIDCsmConverter.UIDsToDeclarations(fakeUIDs);
+            fakes = UIDCsmConverter.UIDsToDeclarationsUnsafe(fakeUIDs);
         } else {
             synchronized( fakeLock ) {
                 // Right now we do not need to make a copy, fakeRegistrations is cleared anyway
@@ -918,5 +927,22 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         fakeLock = new String("File Lock for " + fileBuffer.getFile().getAbsolutePath()); // NOI18N        
         
         assert TraceFlags.USE_REPOSITORY;
+    }
+
+    public int hashCode() {
+        int retValue;
+        
+        retValue = getAbsolutePath().hashCode();
+        return retValue;
+    }
+
+    public boolean equals(Object obj) {
+        if (obj == null || !(obj instanceof CsmFile)) {
+            return false;
+        }
+        boolean retValue;
+        CsmFile other = (CsmFile)obj;
+        retValue = this.getAbsolutePath().equals(other.getAbsolutePath());
+        return retValue;
     }
 }

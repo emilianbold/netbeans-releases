@@ -83,6 +83,7 @@ public final class LibProjectImpl extends ProjectBase {
     public void onFileRemoved(File file) {}
     public void onFileAdded(NativeFileItem file) {}
     public void onFilePropertyChanged(NativeFileItem nativeFile) {}
+    public void onFilePropertyChanged(List<NativeFileItem> nativeFiles) {}
     
     /**
      * called to inform that file was #included from another file with specific callback

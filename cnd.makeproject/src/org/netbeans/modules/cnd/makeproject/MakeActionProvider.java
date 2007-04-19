@@ -676,7 +676,7 @@ public class MakeActionProvider implements ActionProvider {
             csdirs = cs.getDirectory();
         } else {
             csname = csconf.getOldName();
-            cs = CompilerSet.getCompilerSet("", new String[0], csconf.getOldName());
+            cs = CompilerSet.getCompilerSet(csconf.getOldName());
             CompilerSetManager.getDefault().add(cs);
             csconf.setValid();
             csdirs = "";

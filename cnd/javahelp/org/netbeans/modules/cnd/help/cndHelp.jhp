@@ -7,11 +7,10 @@
 
 <helenProject version="1.0">
     <documents>
-		<directory title="/net/techpubs/export/set/techpubs4/Work/arice/NetBeans5.5/cndHelp">
+		<directory title="/net/techpubs/export/set/techpubs4/Work/arice/cndHelp/org/netbeans/modules/cnd/help">
 			<directory title="CandC++ProjectBasics">
 				<file title="AddtlIncludeDirectories.html"/>
 				<file title="AddtlLibraryDirectories.html"/>
-				<file title="ArchiverOptions.html"/>
 				<file title="BalloonEvaluation.html"/>
 				<file title="BuildingCorC++Project.html"/>
 				<file title="C&amp;C++Breakpoints.html"/>
@@ -34,6 +33,7 @@
 				<file title="FinishingCorC++DebugSession.html"/>
 				<file title="Libraries.html"/>
 				<file title="LinkerOptions.html"/>
+				<file title="ResolveBuildTools.html"/>
 				<file title="RunningCorC++Project.html"/>
 				<file title="RuntimeSearchDirectories.html"/>
 				<file title="SettingCorC++Breakpoint.html"/>
@@ -64,6 +64,7 @@
 			<directory title="EditingSourceFiles">
 				<file title="AbbreviationsQuickRef.html"/>
 				<file title="C&amp;C++CodeFolding.html"/>
+				<file title="Commenting.html"/>
 				<file title="CreatingCodeTemplates.html"/>
 				<file title="DisablingAutoCodeCompletion.html"/>
 				<file title="EditingSourceFiles.html"/>
@@ -139,7 +140,15 @@
 			<directory title="WorkingWithCandC++Projects">
 				<file title="AboutC&amp;C++Projects.html"/>
 				<file title="AddingFiles&amp;Folders.html"/>
-				<file title="Configuring.html"/>
+				<file title="CodeAssistance.html"/>
+				<file title="CodeAssistanceWizardP1.html"/>
+				<file title="CodeAssistanceWizardP2.html"/>
+				<file title="CodeAssistanceWizardP3.html"/>
+				<file title="CodeAssistanceWizardP4.html"/>
+				<file title="CodeAssistanceWizardP5.html"/>
+				<file title="ConfiguringBuildTools.html"/>
+				<file title="ConfiguringParsingSettings.html"/>
+				<file title="ConfiguringProjectSettings.html"/>
 				<file title="CreatingCorC++Project.html"/>
 				<file title="DeletingCorC++Project.html"/>
 				<file title="ManagingProjectConfigurations.html"/>
@@ -149,13 +158,17 @@
 				<file title="NewMakeWizardP1.html"/>
 				<file title="NewMakeWizardP2.html"/>
 				<file title="NewMakeWizardP3.html"/>
+				<file title="NewMakeWizardP4.html"/>
+				<file title="NewMakeWizardP5.html"/>
 				<file title="NewStaticLibWizard.html"/>
-				<file title="ProjectPropsArchiverGeneral.html"/>
 				<file title="ProjectPropsCommandLine.html"/>
 				<file title="ProjectPropsCompilerGeneral.html"/>
+				<file title="ProjectPropsDebugging.html"/>
 				<file title="ProjectPropsGeneral.html"/>
 				<file title="ProjectPropsLinkerGeneral.html"/>
 				<file title="ProjectPropsLinkerLibraries.html"/>
+				<file title="ProjectPropsMake.html"/>
+				<file title="ProjectPropsParser.html"/>
 				<file title="ProjectPropsRunning.html"/>
 				<file title="ProjectTasks.html"/>
 				<file title="SettingC&amp;C++FileProperties.html"/>

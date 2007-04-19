@@ -20,7 +20,6 @@
 package org.netbeans.modules.cnd.makeproject.ui.options;
 
 import java.util.Vector;
-import java.awt.GridBagConstraints;
 import java.util.List;
 import javax.swing.JFileChooser;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
@@ -33,6 +32,9 @@ import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.openide.util.NbBundle;
 
+/**
+ * Panel used to manage predefined Include Paths and Macro Definitions of the compiler
+ */
 public class PredefinedPanel extends javax.swing.JPanel {
     private IncludesPanel includesPanel;
     private DefinitionsPanel definitionsPanel;
@@ -51,43 +53,39 @@ public class PredefinedPanel extends javax.swing.JPanel {
         resetButton.getAccessibleContext().setAccessibleDescription(getString("RESET_BUTTON_AD"));
     }
     
+    private static final int INSETS = 0;
+    private static final double WEIGTH = 0.1;
+
     private void updatePanels(Platform platform) {
         List includesList = compiler.getSystemIncludeDirectories(platform);
-        String[] includes = (String[])includesList.toArray(new String[includesList.size()]);
+        String[] includesAr = (String[])includesList.toArray(new String[includesList.size()]);
                 
-        if (includesPanel != null)
-            remove(includesPanel);
-        GridBagConstraints gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
-        add(includesPanel = new IncludesPanel(includes), gridBagConstraints);
-        
+        if (includesPanel != null) {
+            includes.remove(includesPanel);
+        }
+        includes.add(includesPanel = new IncludesPanel(includesAr));
         List definesList = compiler.getSystemPreprocessorSymbols(platform);
-        String[] defines = (String[])definesList.toArray(new String[definesList.size()]);
+        String[] definesAr = (String[])definesList.toArray(new String[definesList.size()]);
         
-        if (definitionsPanel != null)
-            remove(definitionsPanel);
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
-        add(definitionsPanel = new DefinitionsPanel(defines), gridBagConstraints);
+        if (definitionsPanel != null) {
+            macros.remove(definitionsPanel);
+        }
+        macros.add(definitionsPanel = new DefinitionsPanel(definesAr));
     }
     
-    public void save() {
+    public boolean save() {
+        boolean wasChanges = false;
         Vector includes = includesPanel.getListData();
-        compiler.setSystemIncludeDirectories(platform, includes);
+        wasChanges |= compiler.setSystemIncludeDirectories(platform, includes);
         Vector definitions = definitionsPanel.getListData();
-        compiler.setSystemPreprocessorSymbols(platform, definitions);
+        wasChanges |= compiler.setSystemPreprocessorSymbols(platform, definitions);
+        return wasChanges;
+    }
+    
+    public void update() {
+        if (CodeAssistancePanelController.TRACE_CODEASSIST) System.err.println("update for PredefinedPanel " + compiler.getName());
+        platform = Platforms.getPlatform(MakeOptions.getInstance().getPlatform());
+        updatePanels(platform);
     }
     
     /** This method is called from within the constructor to
@@ -99,9 +97,18 @@ public class PredefinedPanel extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        includes = new javax.swing.JPanel();
+        macros = new javax.swing.JPanel();
         resetButton = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
 
-        setLayout(new java.awt.GridBagLayout());
+        includes.setLayout(new java.awt.BorderLayout());
+
+        includes.setBackground(new java.awt.Color(255, 51, 51));
+
+        macros.setLayout(new java.awt.BorderLayout());
+
+        macros.setBackground(new java.awt.Color(204, 204, 0));
 
         resetButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("RESET_BUTTON_MN").charAt(0));
         resetButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("RESET_BUTTON_TXT"));
@@ -111,13 +118,31 @@ public class PredefinedPanel extends javax.swing.JPanel {
             }
         });
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
-        add(resetButton, gridBagConstraints);
+        jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("CODE_ASSISTANCE_COMMENT"));
 
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(includes, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
+                .add(org.jdesktop.layout.GroupLayout.TRAILING, macros, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
+                .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 371, Short.MAX_VALUE)
+                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                    .add(resetButton)))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(includes, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 149, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(macros, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 134, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(resetButton)
+                    .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 34, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+        );
     }// </editor-fold>//GEN-END:initComponents
 
     private void resetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetButtonActionPerformed
@@ -134,10 +159,13 @@ public class PredefinedPanel extends javax.swing.JPanel {
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel includes;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JPanel macros;
     private javax.swing.JButton resetButton;
     // End of variables declaration//GEN-END:variables
     
-    private class IncludesPanel extends ListEditorPanel {
+    private static class IncludesPanel extends ListEditorPanel {
 	public IncludesPanel(Object[] objects) {
 	    super(objects);
 	    getDefaultButton().setVisible(false);
@@ -215,8 +243,11 @@ public class PredefinedPanel extends javax.swing.JPanel {
         public char getDownButtonMnemonics() {
             return getString("IDownButtonMn").charAt(0);
         }
+        
+        
     }
-    private class DefinitionsPanel extends ListEditorPanel {
+    
+    private static class DefinitionsPanel extends ListEditorPanel {
 	public DefinitionsPanel(Object[] objects) {
 	    super(objects);
 	    getDefaultButton().setVisible(false);
@@ -225,13 +256,15 @@ public class PredefinedPanel extends javax.swing.JPanel {
 	public Object addAction() {
 	    NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("EditDialogLabelDef"), getString("AddDialogTitle"));
 	    DialogDisplayer.getDefault().notify(notifyDescriptor);
-	    if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION)
+	    if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION) {
 		return null;
+            }
 	    String def = notifyDescriptor.getInputText();
-            if (def.length() != 0)
+            if (def.length() != 0) {
                 return def;
-            else
+            } else {
                 return null;
+            }
 	}
 
 	public String getListLabelText() {
@@ -291,10 +324,38 @@ public class PredefinedPanel extends javax.swing.JPanel {
 
         public char getDownButtonMnemonics() {
             return getString("MDownButtonMn").charAt(0);
-        }
+        }       
     }
     
     private static String getString(String s) {
         return NbBundle.getMessage(PredefinedPanel.class, s);
+    }
+
+    boolean isChanged() {
+        boolean isChanged = false;
+        if (this.includesPanel != null) {
+            isChanged |= this.includesPanel.isChanged();
+        }        
+        if (this.definitionsPanel != null) {
+            isChanged |= this.definitionsPanel.isChanged();
+        }          
+        if (CodeAssistancePanelController.TRACE_CODEASSIST) System.err.println("isChanged for PredefinedPanel " + compiler.getName() + " is " + isChanged);
+        return isChanged;
+    }
+
+    boolean isDataValid() {
+        boolean isDataValid = true;
+        if (this.includesPanel != null) {
+            isDataValid &= this.includesPanel.isDataValid();
+        }        
+        if (this.definitionsPanel != null) {
+            isDataValid &= this.definitionsPanel.isDataValid();
+        }   
+        if (CodeAssistancePanelController.TRACE_CODEASSIST) System.err.println("isDataValid for PredefinedPanel " + compiler.getName() + " is " + isDataValid);
+        return isDataValid;
+    }
+
+    void cancel() {    
+        if (CodeAssistancePanelController.TRACE_CODEASSIST) System.err.println("cancel for PredefinedPanel " + compiler.getName());
     }
 }

@@ -671,6 +671,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     //public abstract void onFileRemoved(NativeFileItem nativeFile);
     public abstract void onFileRemoved(File nativeFile);
     public abstract void onFilePropertyChanged(NativeFileItem nativeFile);
+    public abstract void onFilePropertyChanged(List<NativeFileItem> items);
     protected abstract void scheduleIncludedFileParsing(FileImpl csmFile, APTPreprocState.State state);
     
     public CsmFile findFile(String absolutePath) {
@@ -765,9 +766,13 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         _clearNamespaces();
         _clearClassifiers();
         declarationsSorage.clearDeclarations();
+        if (TraceFlags.USE_DEEP_REPARSING) {
+            getGraph().clear();
+        }
         sysAPTData = new APTSystemStorage();
         unresolved = null;
         uid = null;
+        RepositoryUtils.closeUnit(getUID());
     }
     
     private void _clearClassifiers() {
@@ -972,8 +977,9 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
             synchronized (stateLock) {
                 if (state.isCleaned()) {
                     if (TRACE_PP_STATE_OUT) System.err.println("restoring for " + interestedFile);
+                    APTPreprocState.State cleanedState = state.copy();
                     // walk through include stack to restore preproc information
-                    Stack reverseInclStack = state.cleanIncludeStack();
+                    Stack reverseInclStack = cleanedState.cleanIncludeStack();
                     // we need to reverse includes stack
                     assert (reverseInclStack != null && !reverseInclStack.empty()) : "state of stack is " + reverseInclStack;
                     Stack inclStack = new Stack();
@@ -982,7 +988,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
                     } while (!reverseInclStack.empty());
                     
                     APTPreprocState.State oldState = preprocState.getState();
-                    preprocState.setState(state);
+                    preprocState.setState(cleanedState);
                     if (TRACE_PP_STATE_OUT) System.err.println("before restoring " + preprocState); // NOI18N
                     APTIncludeHandler inclHanlder = preprocState.getIncludeHandler();
                     assert inclHanlder != null;
@@ -1041,6 +1047,10 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
             aptLight = APTDriver.getInstance().findAPTLight(((FileImpl)csmFile).getBuffer());
         }
         return aptLight;
+    }
+    
+    public GraphContainer getGraph(){
+        return graphStorage;
     }
     
     private static class DefaultFileItem implements NativeFileItem {
@@ -1152,6 +1162,8 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     private Object namespaceLock = new String("namespaceLock in Projectbase "+hashCode()); // NOI18N
     
     protected FileContainer fileContainer = new FileContainer();
+
+    private GraphContainer graphStorage = new GraphContainer();
     
     //private NamespaceImpl fakeNamespace;
     

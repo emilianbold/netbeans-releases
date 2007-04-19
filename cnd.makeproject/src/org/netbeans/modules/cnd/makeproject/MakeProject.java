@@ -24,10 +24,12 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.ArrayList;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -48,6 +50,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.cnd.ui.options.LocalToolsPanelModel;
@@ -84,7 +87,7 @@ import org.w3c.dom.Text;
 /**
  * Represents one plain Make project.
  */
-final class MakeProject implements Project, AntProjectListener {
+public final class MakeProject implements Project, AntProjectListener {
     
     private static final Icon MAKE_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif")); // NOI18N
         
@@ -461,11 +464,28 @@ final class MakeProject implements Project, AntProjectListener {
         
     }
     
+    private List<Runnable> openedTasks;
+    public void addOpenedTask(Runnable task){
+        if (openedTasks == null) {
+            openedTasks = new ArrayList<Runnable>();
+        }
+        openedTasks.add(task);
+    }
+    
     private final class ProjectOpenedHookImpl extends ProjectOpenedHook {
         
         ProjectOpenedHookImpl() {}
         
         protected void projectOpened() {
+            
+            if (openedTasks != null){
+                for(Runnable runnable : openedTasks){
+                    runnable.run();
+                }
+                openedTasks.clear();
+                openedTasks = null;
+            }
+            
             ConfigurationDescriptor projectDescriptor = null;
             int count = 15;
             
@@ -490,7 +510,7 @@ final class MakeProject implements Project, AntProjectListener {
             ArrayList<String> errs = new ArrayList();
             String name = null;
             String csname = null;
-            MakeConfiguration mconf = null;
+            ArrayList<MakeConfiguration> mconfs = new ArrayList();
             
             for (int i = 0; i < confs.length; i++) {
 		MakeConfiguration makeConfiguration = (MakeConfiguration) confs[i];
@@ -499,16 +519,17 @@ final class MakeProject implements Project, AntProjectListener {
                     name = csconf.getOldName();
                 } else {
                     name = csconf.getOldName();
-                    csconf.setValid();
-                    CompilerSet cs = CompilerSet.getCompilerSet("", new String[0], name);
+                    CompilerSet cs = CompilerSet.getCompilerSet(name);
                     CompilerSetManager.getDefault().add(cs);
                     if (cs.isValid()) {
                         name = cs.getName();
                         csconf.setValue(name);
                     } else {
                         if (makeConfiguration.isDefault()) {
-                            mconf = makeConfiguration;
+                            mconfs.add(0, makeConfiguration);
                             csname = name;
+                        } else {
+                            mconfs.add(makeConfiguration);
                         }
                         String msg = NbBundle.getMessage(MakeProject.class, "ERR_MissingCompilerSet", name);
                         if (!errs.contains(msg)) {
@@ -517,14 +538,17 @@ final class MakeProject implements Project, AntProjectListener {
                     }
                 }
 	    }
-            if (!errs.isEmpty() && mconf != null) {
+            if (!errs.isEmpty() && mconfs.size() > 0) {
                 BuildToolsAction bt = (BuildToolsAction) SystemAction.get(BuildToolsAction.class);
                 bt.setTitle(NbBundle.getMessage(BuildToolsAction.class, "LBL_ResolveMissingCompilerSets_Title")); // NOI18N
                 ToolsPanelModel model = new LocalToolsPanelModel();
                 model.setCompilerSetName(csname);
                 model.setGdbEnabled(false);
                 if (bt.initBuildTools(model, errs)) {
-                    mconf.getCompilerSet().setValue(model.getCompilerSetName());
+                    for (MakeConfiguration mconf : mconfs) {
+                        mconf.getCompilerSet().setValid();
+                        mconf.getCompilerSet().setValue(model.getCompilerSetName());
+                    }
                     projectDescriptor.setModified();
                     projectDescriptor.save();
                     CompilerSetManager csm = CompilerSetManager.getDefault();
@@ -548,7 +572,18 @@ final class MakeProject implements Project, AntProjectListener {
                                     // ignore (always throws this for null)
                                 }
                             }
-                            OpenProjects.getDefault().close(new Project[] { thisMP });
+                            if (SwingUtilities.isEventDispatchThread()) {
+                                OpenProjects.getDefault().close(new Project[] { thisMP });
+                            } else {
+                                try {
+                                    SwingUtilities.invokeAndWait(new Runnable() {
+                                        public void run() {
+                                            OpenProjects.getDefault().close(new Project[] { thisMP });
+                                        }
+                                    });
+                                } catch (Exception ie) {
+                                }
+                            }
                         }
                     });
                 }
@@ -557,7 +592,7 @@ final class MakeProject implements Project, AntProjectListener {
         
         protected void projectClosed() {
             if (projectDescriptorProvider.getConfigurationDescriptor() != null)
-                projectDescriptorProvider.getConfigurationDescriptor().save(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/Bundle").getString("ProjectNotSaved"));
+                projectDescriptorProvider.getConfigurationDescriptor().save(NbBundle.getMessage(MakeProject.class, "ProjectNotSaved"));
         }
     }
     

@@ -54,7 +54,12 @@ import org.openide.util.actions.NodeAction;
  */
 public final class DiscoveryWizardAction extends NodeAction {
 
-    public static final String HELP_CONTEXT = "DiscoveryWizard"; // NOI18N
+    public static final String HELP_CONTEXT_SELECT_MODE = "CodeAssistanceWizardP1"; // NOI18N
+    public static final String HELP_CONTEXT_SIMPLE_CONFIGURATION = "CodeAssistanceWizardP6"; // NOI18N
+    public static final String HELP_CONTEXT_SELECT_PROVIDER = "CodeAssistanceWizardP2"; // NOI18N
+    public static final String HELP_CONTEXT_SELECT_OBJECT_FILES = "CodeAssistanceWizardP3"; // NOI18N
+    public static final String HELP_CONTEXT_CONSOLIDATION_STRATEGY = "CodeAssistanceWizardP4"; // NOI18N
+    public static final String HELP_CONTEXT_SELECT_CONFIGURATION = "CodeAssistanceWizardP5"; // NOI18N
 
     protected void performAction(Node[] activatedNodes) {
         Collection<Project> projects = getMakeProjects(activatedNodes);

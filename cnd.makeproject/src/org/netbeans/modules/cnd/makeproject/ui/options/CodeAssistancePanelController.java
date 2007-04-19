@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -21,21 +21,21 @@ package org.netbeans.modules.cnd.makeproject.ui.options;
 
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
-import org.netbeans.modules.cnd.makeproject.ui.options.CodeAssistancePanel;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 public final class CodeAssistancePanelController extends OptionsPanelController {
-
-    private CodeAssistancePanel panel = new CodeAssistancePanel();
-
+    public static final boolean TRACE_CODEASSIST = Boolean.getBoolean("trace.codeassist.controller");
+//    private CodeAssistancePanel panel = new CodeAssistancePanel();
+    private ParserSettingsPanel panel = new ParserSettingsPanel();
+    
     public void update() {
         panel.update();
-}
-
+    }
+    
     public void applyChanges() {
-        panel.applyChanges();
+        panel.save();
     }
     
     public void cancel() {
@@ -43,7 +43,7 @@ public final class CodeAssistancePanelController extends OptionsPanelController 
     }
     
     public boolean isValid() {
-        return panel.dataValid();
+        return panel.isDataValid();
     }
     
     public boolean isChanged() {
@@ -57,12 +57,12 @@ public final class CodeAssistancePanelController extends OptionsPanelController 
     public JComponent getComponent(Lookup masterLookup) {
         return panel;
     }
-
+    
     public void addPropertyChangeListener(PropertyChangeListener l) {
         panel.addPropertyChangeListener(l);
     }
-
-    public void removePropertyChangeListener (PropertyChangeListener l) {
+    
+    public void removePropertyChangeListener(PropertyChangeListener l) {
         panel.removePropertyChangeListener(l);
     }
 }

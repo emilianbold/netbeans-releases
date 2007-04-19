@@ -20,6 +20,7 @@
 
 package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
+import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
@@ -34,6 +35,8 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.completion.csm.CompletionUtilities;
 import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 
@@ -122,6 +125,25 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                     item = definition;
                 }
             }
+        } else if (CsmKindUtilities.isNamespace(csmObject)) {
+            // get all definitions of namespace, but prefer the definition in this file
+            CsmNamespace nmsp = (CsmNamespace)csmObject;
+            Collection<CsmNamespaceDefinition> defs = nmsp.getDefinitions();
+            CsmNamespaceDefinition bestDef = null;
+            CsmFile csmFile = CsmUtilities.getCsmFile(doc, true);
+            for (CsmNamespaceDefinition def : defs) {
+                if (bestDef == null) {
+                    // first time initialization
+                    bestDef = def;
+                }
+                CsmFile container = def.getContainingFile();
+                if (csmFile.equals(container)) {
+                    // this is the best choice
+                    bestDef = def;
+                    break;
+                }
+            }
+            item = bestDef;
         }
         return postJump(item, "goto_source_source_not_found", "cannot-open-csm-element"); //NOI18N
     }    

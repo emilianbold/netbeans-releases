@@ -210,6 +210,10 @@ public class APTUtils {
         return ttype == APTTokenTypes.EOF;
     }
     
+    public static boolean isVaArgsToken(Token token) {
+        return token != null && token.getText().equals(VA_ARGS_TOKEN.getText());
+    }
+    
     public static boolean isStartCondition(Token token) {
         return isStartCondition(token.getType());
     }
@@ -357,6 +361,23 @@ public class APTUtils {
             newToken = new APTBaseToken();
         }
         return newToken;
+    }
+    
+    public static final APTToken VA_ARGS_TOKEN; // support ELLIPSIS for IZ#83949 in macros
+    public static final APTToken EMPTY_ID_TOKEN; // support ELLIPSIS for IZ#83949 in macros
+    public static final APTToken COMMA_TOKEN; // support ELLIPSIS for IZ#83949 in macros
+    static {
+        VA_ARGS_TOKEN = createAPTToken();
+        VA_ARGS_TOKEN.setType(APTTokenTypes.ID);
+        VA_ARGS_TOKEN.setText("__VA_ARGS__"); // NOI18N
+        
+        EMPTY_ID_TOKEN = createAPTToken();
+        EMPTY_ID_TOKEN.setType(APTTokenTypes.ID);
+        EMPTY_ID_TOKEN.setText(""); // NOI18N        
+
+        COMMA_TOKEN = createAPTToken();
+        COMMA_TOKEN.setType(APTTokenTypes.COMMA);
+        COMMA_TOKEN.setText(","); // NOI18N             
     }
     
     public static final APTToken EOF_TOKEN = new APTEOFToken();

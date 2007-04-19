@@ -148,7 +148,19 @@ public class APTParseFileWalker extends APTWalker {
     
     protected void onDefine(APT apt) {
         APTDefine define = (APTDefine)apt;
-        getMacroMap().define(define.getName(), define.getParams(), define.getBody());
+        if (define.isValid()) {
+            getMacroMap().define(define.getName(), define.getParams(), define.getBody());
+        } else {
+            if (ParserThreadManager.instance().isStandalone()) {
+                if (APTUtils.LOG.getLevel().intValue() <= Level.SEVERE.intValue()) {
+                    System.err.println("INCORRECT #define directive: in " + file.getName() + " for:\n\t" + apt);// NOI18N
+                }
+            } else {
+                APTUtils.LOG.log(Level.SEVERE,
+                        "INCORRECT #define directive: in {0} for:\n\t{1}", // NOI18N
+                        new Object[] { file.getName(), apt });
+            }            
+        }
         if (needMacroAndIncludes()) {
             file.addMacro(createMacro(define));
         }

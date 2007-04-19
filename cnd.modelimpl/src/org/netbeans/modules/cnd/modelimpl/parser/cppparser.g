@@ -133,6 +133,7 @@ tokens {
 	CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_TEMPLATE_CLASS_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_EXTERN_TEMPLATE<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+	CSM_TEMPLATE_TEMPLATE_PARAMETER<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
 	CSM_DTOR_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_DTOR_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
@@ -1582,7 +1583,7 @@ member_declarator
 conversion_function_decl_or_def returns [boolean definition = false]
 	{CPPParser.TypeQualifier tq; }
 	:	// DW 01/08/03 Use type_specifier here? see syntax
-		LITERAL_OPERATOR declaration_specifiers (STAR | AMPERSAND)?
+		LITERAL_OPERATOR declaration_specifiers (STAR | AMPERSAND)*
 		(LESSTHAN template_parameter_list GREATERTHAN)?
 		LPAREN (parameter_list)? RPAREN	
 		(tq = cv_qualifier)?
@@ -2061,10 +2062,18 @@ exception_specification
 	{String so;}
 	:	LITERAL_throw 
 		LPAREN 
-		(	(so = scope_override ID (COMMA so = scope_override ID)? )? 
+		(	(exception_type_id (COMMA exception_type_id)? )? 
 		|	ELLIPSIS
 		)
 		RPAREN
+	;
+
+// simplified version of type_id that is used in exception specification
+protected 
+exception_type_id
+	{ /*TypeSpecifier*/int ts; String so; }
+	:
+	( (so = scope_override ID) | built_in_type ) (STAR | AMPERSAND)*
 	;
 
 function_attribute_specification! 
@@ -2164,11 +2173,21 @@ template_parameter
 		(LITERAL_class|LITERAL_typename) 
 		(id:ID  (ASSIGNEQUAL assigned_type_name)? )?
 		{templateTypeParameter((id == null) ? "" : id.getText());}
+	|
+		template_template_parameter
 	|	
 		parameter_declaration	// DW 30/06/03 This doesn't seem to match the
 					// current standard
 	)
 	;
+
+protected template_template_parameter
+    :
+	LITERAL_template LESSTHAN tpl:template_parameter_list GREATERTHAN 
+	LITERAL_class ID
+	{ #template_template_parameter = #(#[CSM_TEMPLATE_TEMPLATE_PARAMETER, "CSM_TEMPLATE_TEMPLATE_PARAMETER"], #template_template_parameter);}
+
+    ;
 
 /* This is to allow an assigned type_name in a template parameter
  *	list to be defined previously in the same parameter list,

@@ -55,6 +55,10 @@ public class Tool {
         this.path = name.length() > 0 ? path + File.separator + name : path;
     }
     
+    public CompilerFlavor getFlavor() {
+        return flavor;
+    }
+    
     public int getKind() {
         return kind;
     }
@@ -72,7 +76,12 @@ public class Tool {
     }
     
     public String getGenericName() {
-        return TOOL_NAMES[getKind()];
+        String name = getName();
+        if (name.length() > 0) {
+            return TOOL_NAMES[getKind()] + " - " + getName(); // NOI18N
+        } else {
+           return TOOL_NAMES[getKind()]; 
+        }
     }
     
     public static String getToolDisplayName(int kind) {

@@ -84,12 +84,22 @@ public class GNUCCCompiler extends CCCCompiler {
         return value ? "-s" : ""; // NOI18N
     }
     
-    public void setSystemIncludeDirectories(Platform platform, List values) {
+    public boolean setSystemIncludeDirectories(Platform platform, List values) {
+        assert values != null;
+        if (values.equals(systemIncludeDirectoriesList)) {
+            return false;
+        }
         systemIncludeDirectoriesList = new PersistentList(values);
+        return true;        
     }
     
-    public void setSystemPreprocessorSymbols(Platform platform, List values) {
+    public boolean setSystemPreprocessorSymbols(Platform platform, List values) {
+        assert values != null;
+        if (values.equals(systemPreprocessorSymbolsList)) {
+            return false;
+        }
         systemPreprocessorSymbolsList = new PersistentList(values);
+        return true;
     }
     
     public List getSystemPreprocessorSymbols(Platform platform) {

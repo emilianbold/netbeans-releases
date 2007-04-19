@@ -66,7 +66,7 @@ abstract class CommonConfigurationXMLCodec
     extends XMLDecoder
     implements XMLEncoder {
 
-    protected final static int CURRENT_VERSION = 34;
+    protected final static int CURRENT_VERSION = 35;
 
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N

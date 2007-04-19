@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLReader;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -43,29 +44,42 @@ public class ConfigurationDescriptorProvider {
         this.relativeOffset = relativeOffset;
     }
     
+    private Object readLock = new Object();
     public ConfigurationDescriptor getConfigurationDescriptor() {
-        if (projectDescriptor == null && !hasTried) {
-            hasTried = true;
-            ConfigurationXMLReader reader;
-            reader = new ConfigurationXMLReader(projectDirectory);
-            try {
-                projectDescriptor = reader.read(relativeOffset);
-            } catch (java.io.IOException x) {
-                ;	// most likely open failed
-            }
-            
-            if (projectDescriptor == null) {
-                // Big problems: cannot read descriptor. All information lost....
-                /*
-                projectDescriptor = new MakeProjectDescriptor(ProjectDescriptor.TYPE_APPLICATION);
-                ((MakeProjectDescriptor)projectDescriptor).init();
-                String folder = FileUtil.toFile(helper.getProjectDirectory()).getPath();
-                 */
-                /* OLD
-                Moved into ConfigurationXMLReader or rather, XMLDocReader
-                String errormsg = NbBundle.getMessage(ConfigurationDescriptorProvider.class, "CANTREADDESCRIPTOR", projectDirectory.getName());
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
-                 */
+        if (projectDescriptor == null) {
+            // attempt to read configuration descriptor
+            if (!hasTried) {
+                // do this only once
+                synchronized (readLock) {
+                    // check again that someone already havn't read
+                    if (!hasTried) {
+                        if (SwingUtilities.isEventDispatchThread()) {
+                             System.err.println("ConfigurationDescriptorProvider: I/O in EQ is not good idea"); // NOI18N
+                        }
+                        ConfigurationXMLReader reader;
+                        reader = new ConfigurationXMLReader(projectDirectory);
+                        try {
+                            projectDescriptor = reader.read(relativeOffset);
+                        } catch (java.io.IOException x) {
+                            ;	// most likely open failed
+                        }
+
+                        if (projectDescriptor == null) {
+                            // Big problems: cannot read descriptor. All information lost....
+                            /*
+                            projectDescriptor = new MakeProjectDescriptor(ProjectDescriptor.TYPE_APPLICATION);
+                            ((MakeProjectDescriptor)projectDescriptor).init();
+                            String folder = FileUtil.toFile(helper.getProjectDirectory()).getPath();
+                             */
+                            /* OLD
+                            Moved into ConfigurationXMLReader or rather, XMLDocReader
+                            String errormsg = NbBundle.getMessage(ConfigurationDescriptorProvider.class, "CANTREADDESCRIPTOR", projectDirectory.getName());
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
+                             */
+                        }
+                        hasTried = true;
+                    }
+                }
             }
         }
         return projectDescriptor;

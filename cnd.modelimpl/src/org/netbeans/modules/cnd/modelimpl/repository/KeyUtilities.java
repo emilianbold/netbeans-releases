@@ -32,7 +32,6 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.apt.utils.FilePathCache;
 import org.netbeans.modules.cnd.apt.utils.TextCache;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.textcache.ProjectNameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
@@ -178,7 +177,7 @@ public class KeyUtilities {
             assert level == 0;
             return KeyObjectFactory.KEY_NAMESPACE_KEY;
         }
-
+        
         public Key.Behavior getBehavior() {
             return Key.Behavior.LargeAndMutable;
         }
@@ -451,7 +450,7 @@ public class KeyUtilities {
         protected ProjectFileNameBasedKey(String prjName, String fileName) {
             super(prjName);
             assert fileName != null;
-            this.fileNameIndex = files.getId(fileName);
+            this.fileNameIndex = KeyUtilities.unitNamesCache.getFileNames(unitIndex).getId(fileName);
         }
         
         protected ProjectFileNameBasedKey(CsmFile file) {
@@ -464,8 +463,6 @@ public class KeyUtilities {
             assert (prj != null);
             return prj == null ? "<No Project Name>" : prj.getQualifiedName();  // NOI18N
         }
-
-        private static final IntToStringCache files = new IntToStringCache();
         
         public void write(DataOutput aStream) throws IOException {
             super.write(aStream);
@@ -493,7 +490,7 @@ public class KeyUtilities {
         }
         
         protected String getFileName() {
-            return FilePathCache.getString(files.getValueById(this.fileNameIndex));
+            return FilePathCache.getString(KeyUtilities.unitNamesCache.getFileNames(unitIndex).getValueById(this.fileNameIndex));
         }
         
         public int getDepth() {
@@ -506,41 +503,79 @@ public class KeyUtilities {
             return getFileName();
         }
     }
+
+    private static class UnitsCache extends IntToStringCache {
+        private static ArrayList<IntToStringCache> fileNamesCaches = new ArrayList<IntToStringCache>();
+    
+        public int remove(String value) {
+            synchronized (cache) {
+                int index = cache.indexOf(value);
+                if (index != -1) {
+                    cache.set(index, null);
+                    fileNamesCaches.set(index, null);
+                }
+                return index;
+            }
+        }
+        
+        protected int makeId(String value) {
+            int id = cache.indexOf(null);
+            if (id == -1) {
+                synchronized (this) {
+                    id = super.makeId(value);
+                    //fileNamesCaches.ensureCapacity(id+1);
+                    //fileNamesCaches.set(id, new IntToStringCache());
+                    fileNamesCaches.add(new IntToStringCache());
+                }
+            } else {
+                cache.set(id, value);
+                fileNamesCaches.set(id, new IntToStringCache());
+            }
+            return id;
+        }
+        
+        public IntToStringCache getFileNames(int unitId) {
+            return fileNamesCaches.get(unitId);
+        }
+    }
     
     private static class IntToStringCache {
-        private final List<String> cache = new ArrayList<String>();
+        protected final List<String> cache = new ArrayList<String>();
         
         public int getId(String value) {
             synchronized (cache) {
                 int id = cache.indexOf(value);
                 if (id == -1) {
-                    cache.add(value);
-                    id = cache.indexOf(value);
+                    id = makeId(value);
                 }
                 return id;
             }
+        }
+        
+        protected int makeId(String value) {
+            cache.add(value);
+            return cache.indexOf(value);
         }
         
         public String getValueById(int id) {
             synchronized (cache) {
                 return cache.get(id);
             }
-        }        
-
-        protected void finalize() throws Throwable {
-            super.finalize();
-            if (TraceFlags.DEBUG) {
-                System.err.println("KeyUtilities Cache Size: " + cache.size());
-            }
         }
-}
+    }
+    
+    private static UnitsCache unitNamesCache = new UnitsCache();
+    
+    public static void closeUnit(String unitName) {
+        unitNamesCache.remove(unitName);
+    }
     
     private static abstract class ProjectNameBasedKey extends AbstractKey {
-        private final int projectQualifiedNameIndex;
+        protected final int unitIndex;
         
         protected ProjectNameBasedKey(String project) {
             assert project != null;
-            this.projectQualifiedNameIndex = projects.getId(project);
+            this.unitIndex = KeyUtilities.unitNamesCache.getId(project);
         }
         
         public String toString() {
@@ -548,7 +583,7 @@ public class KeyUtilities {
         }
         
         public int hashCode() {
-            return projectQualifiedNameIndex;
+            return unitIndex;
         }
         
         public boolean equals(Object obj) {
@@ -557,19 +592,19 @@ public class KeyUtilities {
             }
             ProjectNameBasedKey other = (ProjectNameBasedKey)obj;
             
-            return this.projectQualifiedNameIndex==other.projectQualifiedNameIndex;
+            return this.unitIndex==other.unitIndex;
         }
         
         protected String getProjectName() {
-            return ProjectNameCache.getString(projects.getValueById(this.projectQualifiedNameIndex));
+            return getUnit();
         }
-
+        
         public void write(DataOutput aStream) throws IOException {
-            aStream.writeInt(this.projectQualifiedNameIndex);
+            aStream.writeInt(this.unitIndex);
         }
         
         protected ProjectNameBasedKey(DataInput aStream) throws IOException {
-            this.projectQualifiedNameIndex = aStream.readInt();
+            this.unitIndex = aStream.readInt();
         }
         
         public int getDepth() {
@@ -581,11 +616,9 @@ public class KeyUtilities {
         }
         
         public String getUnit() {
-            return getProjectName();
+            // having this functionality here to be sure unit is the same thing as project
+            return ProjectNameCache.getString(KeyUtilities.unitNamesCache.getValueById(this.unitIndex));
         }
-
-        // Project names caching utility code
-        private static final IntToStringCache projects = new IntToStringCache();
     }
     
     // have to be public or UID factory does not work
@@ -609,20 +642,20 @@ public class KeyUtilities {
             }
             return true;
         }
-
+        
         public Key.Behavior getBehavior() {
             return Key.Behavior.Default;
         }
-
+        
         public abstract int getSecondaryAt(int level);
-
+        
         public abstract String getAt(int level);
-
+        
         public abstract String getUnit();
-
+        
         public abstract int getSecondaryDepth();
-
+        
         public abstract int getDepth();
-
+        
     }
 }

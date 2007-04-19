@@ -100,7 +100,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                     // inner classes and enums
                     case CPPTokenTypes.CSM_CLASS_DECLARATION:
                     case CPPTokenTypes.CSM_TEMPLATE_CLASS_DECLARATION:
-                        ClassImpl innerClass = ClassImpl.create(token, getContainingNamespaceImpl(), getContainingFile(), ClassImpl.this);
+			ClassImpl innerClass = TemplateUtils.isPartialClassSpecialization(token) ? 
+			    ClassImplSpecialization.create(token, getContainingNamespaceImpl(), getContainingFile(), ClassImpl.this) :
+			    ClassImpl.create(token, getContainingNamespaceImpl(), getContainingFile(), ClassImpl.this);
                         innerClass.setVisibility(curentVisibility);
                         addMember(innerClass);
                         typedefs = renderTypedef(token, innerClass, ClassImpl.this);
@@ -374,7 +376,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         output.writeBoolean(this.template);
         output.writeInt(this.leftBracketPos);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
-        factory.writeUIDCollection(this.members, output, false);
+        factory.writeUIDCollection(this.members, output, true);
         PersistentUtils.writeInheritances(this.inheritances, output);
     }
     

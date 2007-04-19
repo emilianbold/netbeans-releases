@@ -602,6 +602,9 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             MakeConfiguration makeConfiguration = (MakeConfiguration)selectedConfigurations[i];
             int compilerSet2 = makeConfiguration.getCompilerSet().getValue();
             ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration); //ItemConfiguration)((MakeConfiguration)makeConfiguration).getAuxObject(ItemConfiguration.getId(item.getPath()));
+            if (itemConfiguration == null) {
+                continue;
+            }
             int tool2 = itemConfiguration.getTool();
             if (tool == -1 && compilerSet == -1) {
                 tool = tool2;

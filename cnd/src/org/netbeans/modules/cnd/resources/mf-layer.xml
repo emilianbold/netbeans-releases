@@ -45,6 +45,7 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="text">
                 <file name="x-c++" url="cplusplus/CCExample"/>
                 <file name="x-c" url="cplusplus/CExample"/>
+                <file name="x-fortran" url="fortran/FExample"/>
             </folder>
         </folder>
     </folder>
@@ -174,6 +175,14 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="keybindings.xml" url="DefaultKeyBindings.xml"/>
                 </folder>
                 <file name="Settings.settings" url="FOptions.settings"/>
+                  
+                <folder name="NetBeans">
+                    <folder name="Defaults">
+                        <file name="coloring.xml" url="fortran/Netbeans-Fortran-fontsColors.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.fortran.Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
                 
 		<folder name="Toolbars">
 		    <folder name="Default">

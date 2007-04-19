@@ -176,8 +176,13 @@ public class AstRenderer {
             for (int i = 0; i < typedefs.length; i++) {
                 // It could be important to register in project before add as member...
                 file.getProjectImpl().registerDeclaration(typedefs[i]);
-                container.addDeclaration(typedefs[i]);
-                currentNamespace.addDeclaration(typedefs[i]);
+                if (container != null) {
+                    container.addDeclaration(typedefs[i]);
+                }
+                if (currentNamespace != null) {
+                    // Note: DeclarationStatementImpl.DSRenderer can call with null namespace
+                    currentNamespace.addDeclaration(typedefs[i]);
+                }
             }
         }
     }

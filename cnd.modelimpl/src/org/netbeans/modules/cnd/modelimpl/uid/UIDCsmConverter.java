@@ -92,32 +92,39 @@ public class UIDCsmConverter {
     }
     
     public static <T extends CsmNamespace> List<T> UIDsToNamespaces(Collection<CsmUID<T>> uids) {
-        List<T> out = UIDsToList(uids);
+        List<T> out = UIDsToList(uids, false);
         return out;
     }
     
     public static <T extends CsmDeclaration> List<T> UIDsToDeclarations(Collection<CsmUID<T>> uids) {
-        List<T> out = UIDsToList(uids);
+        List<T> out = UIDsToList(uids, false);
+        return out;
+    }
+    
+    public static <T extends CsmDeclaration> List<T> UIDsToDeclarationsUnsafe(Collection<CsmUID<T>> uids) {
+        List<T> out = UIDsToList(uids, true);
         return out;
     }
     
     public static <T extends CsmMacro> List<T> UIDsToMacros(Collection<CsmUID<T>> uids) {
-        List<T> out = UIDsToList(uids);
+        List<T> out = UIDsToList(uids, false);
         return out;
     }
     
     public static <T extends CsmInclude> List<T> UIDsToIncludes(Collection<CsmUID<T>> uids) {
-        List<T> out = UIDsToList(uids);
+        List<T> out = UIDsToList(uids, false);
         return out;
     }
     
-    private static <T extends CsmIdentifiable> List<T> UIDsToList(Collection<CsmUID<T>> uids) {
+    private static <T extends CsmIdentifiable> List<T> UIDsToList(Collection<CsmUID<T>> uids, boolean allowNullsAndSkip) {
         List<T> out = new ArrayList<T>(uids.size());
         for (CsmUID<T> uid : uids) {
             assert uid != null;
             T decl = UIDCsmConverter.UIDtoIdentifiable(uid);
-            assert decl != null : "no object for UID " + uid;
-            out.add(decl);
+            if (!allowNullsAndSkip || decl != null) {
+                assert decl != null : "no object for UID " + uid;
+                out.add(decl);
+            }
         }
         return out;
     }

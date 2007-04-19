@@ -96,7 +96,7 @@ public class APTIncludeUtils {
         return resolveFilePath(it, file);
     }  
     
-    public static void dispose() {
+    public static void clearFileExistenceCache() {
         mapRef.clear();
         mapFoldersRef.clear();
     }

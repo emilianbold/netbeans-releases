@@ -54,7 +54,7 @@ public class ConsolidationStrategyWizard implements WizardDescriptor.Panel, Chan
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx(DiscoveryWizardAction.HELP_CONTEXT);
+        return new HelpCtx(DiscoveryWizardAction.HELP_CONTEXT_CONSOLIDATION_STRATEGY);
     }
     
     public boolean isValid() {
