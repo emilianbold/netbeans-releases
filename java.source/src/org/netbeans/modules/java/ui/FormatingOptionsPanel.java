@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -46,7 +47,7 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
     private FormatingOptionsPanelController fopControler;
     private List<FormatingOptionsPanel.Category> categories = new ArrayList<FormatingOptionsPanel.Category>();
     
-    private boolean isLoaded = false;
+    private boolean loaded = false;
     
     /** Creates new form FormatingOptionsPanel */
     public FormatingOptionsPanel( FormatingOptionsPanelController fopControler ) {
@@ -59,7 +60,8 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
             "HighlightsLayerExcludes", // NOI18N
             "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$" // NOI18N
         );
-        
+        previewPane.setText("1234567890123456789012345678901234567890"); // NOI18N
+        previewPane.setDoubleBuffered(true);
         createCategories();
         
         DefaultComboBoxModel model = new DefaultComboBoxModel();
@@ -77,7 +79,7 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
         for (Category category : categories) {
             category.update();
         }
-        isLoaded = true;
+        loaded = true;
         repaintPreview();        
     }
     
@@ -113,7 +115,7 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
 
         setLayout(new java.awt.GridBagLayout());
 
-        jSplitPane1.setDividerLocation(480);
+        jSplitPane1.setDividerLocation(400);
         jSplitPane1.setDividerSize(5);
 
         optionsPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
@@ -146,6 +148,8 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
 
         previewPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
         previewPanel.setLayout(new java.awt.GridBagLayout());
+
+        jScrollPane1.setDoubleBuffered(true);
 
         previewPane.setEditable(false);
         jScrollPane1.setViewportView(previewPane);
@@ -201,7 +205,10 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
         categoryPanel.setVisible(false);
         categoryPanel.removeAll();
         categoryPanel.add(category.getComponent(null), BorderLayout.CENTER);
-        categoryPanel.setVisible(true);        
+        categoryPanel.setVisible(true);  
+        if (loaded) {
+            repaintPreview();
+        }
     }
         
     public static abstract class Category extends OptionsPanelController {
@@ -214,7 +221,7 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
 
         public abstract void storeTo(Preferences preferences);
         
-        public abstract void refreshPreview(JEditorPane pane, CodeStyle codeStyle);
+        public abstract void refreshPreview(JEditorPane pane, Preferences p);
         
         @Override
         public String toString() {
@@ -227,7 +234,7 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
     // Change in some of the subpanels
     public void propertyChange(PropertyChangeEvent evt) {
         
-        if ( !isLoaded ) {
+        if ( !loaded ) {
             return;
         }
                 
@@ -243,6 +250,7 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
     
     private void repaintPreview() { 
         
+        Logger.global.info("repaintPreview()");
         
         Preferences p = new PreviewPreferences();
         
@@ -251,9 +259,11 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
             category.storeTo(p);
         }
         
-        CodeStyle codeStyle = FmtOptions.createCodeStyle(p);         
-        Category category = (Category)categoryCombo.getSelectedItem();        
-        category.refreshPreview(previewPane, codeStyle);
+        Category category = (Category)categoryCombo.getSelectedItem(); 
+        jScrollPane1.setIgnoreRepaint(true);
+        category.refreshPreview(previewPane, p);
+        previewPane.setIgnoreRepaint(false);
+        previewPane.repaint(100);
         
         FmtOptions.lastValues = p;
         

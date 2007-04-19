@@ -22,6 +22,7 @@ package org.netbeans.modules.java.ui;
 import static org.netbeans.modules.java.ui.FmtOptions.*;
 import static org.netbeans.modules.java.ui.FmtOptions.CategorySupport.OPTION_ID;
 import org.netbeans.modules.java.ui.FmtOptions.CategorySupport;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -59,7 +60,10 @@ public class FmtAlignmentBraces extends javax.swing.JPanel {
     }
     
     public static FormatingOptionsPanel.Category getController() {
-        return new CategorySupport("LBL_AlignmentAndBraces", new FmtAlignmentBraces(), null); // NOI18N
+        return new CategorySupport(
+                "LBL_AlignmentAndBraces", // NOI18N
+                new FmtAlignmentBraces(), 
+                /* NbBundle.getMessage(FmtAlignmentBraces.class, "SAMPLE_AlignBraces") */ null); // NOI18N
     }
     
     /** This method is called from within the constructor to
@@ -99,12 +103,12 @@ public class FmtAlignmentBraces extends javax.swing.JPanel {
         amCallArgsCheckBox = new javax.swing.JCheckBox();
         amImplementsCheckBox = new javax.swing.JCheckBox();
         amThrowsCheckBox = new javax.swing.JCheckBox();
-        amParenthesizedCheckBox = new javax.swing.JCheckBox();
         amBinaryOpCheckBox = new javax.swing.JCheckBox();
         amTernaryOpCheckBox = new javax.swing.JCheckBox();
         amAssignCheckBox = new javax.swing.JCheckBox();
         amForCheckBox = new javax.swing.JCheckBox();
         amArrayInitCheckBox = new javax.swing.JCheckBox();
+        amParenthesizedCheckBox = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -169,6 +173,7 @@ public class FmtAlignmentBraces extends javax.swing.JPanel {
         bracesPlacementPanel.add(specialElseIfCheckBox, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
@@ -254,11 +259,8 @@ public class FmtAlignmentBraces extends javax.swing.JPanel {
         bracesGenerationPanel.add(jPanel1, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
         add(bracesGenerationPanel, gridBagConstraints);
 
         newLinesPanel.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(FmtAlignmentBraces.class, "LBL_ab_newLinesBorder")), javax.swing.BorderFactory.createEmptyBorder(4, 8, 4, 8))); // NOI18N
@@ -303,11 +305,9 @@ public class FmtAlignmentBraces extends javax.swing.JPanel {
         newLinesPanel.add(nlFinallyCheckBox, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weighty = 1.0;
         add(newLinesPanel, gridBagConstraints);
 
         multilineAlignmentPanel.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(FmtAlignmentBraces.class, "LBL_ab_multilineAlignmentBodrer")), javax.swing.BorderFactory.createEmptyBorder(4, 8, 4, 8))); // NOI18N
@@ -317,7 +317,6 @@ public class FmtAlignmentBraces extends javax.swing.JPanel {
         amMethodParamsCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         amMethodParamsCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
@@ -329,14 +328,13 @@ public class FmtAlignmentBraces extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 6, 0);
         multilineAlignmentPanel.add(amCallArgsCheckBox, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(amImplementsCheckBox, org.openide.util.NbBundle.getMessage(FmtAlignmentBraces.class, "LBL_an_Implements")); // NOI18N
         amImplementsCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         amImplementsCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         multilineAlignmentPanel.add(amImplementsCheckBox, gridBagConstraints);
@@ -347,23 +345,13 @@ public class FmtAlignmentBraces extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 6, 0);
         multilineAlignmentPanel.add(amThrowsCheckBox, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(amParenthesizedCheckBox, org.openide.util.NbBundle.getMessage(FmtAlignmentBraces.class, "LBL_am_Paren")); // NOI18N
-        amParenthesizedCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        amParenthesizedCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
-        multilineAlignmentPanel.add(amParenthesizedCheckBox, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(amBinaryOpCheckBox, org.openide.util.NbBundle.getMessage(FmtAlignmentBraces.class, "LBL_am_BinaryOp")); // NOI18N
         amBinaryOpCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         amBinaryOpCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         multilineAlignmentPanel.add(amBinaryOpCheckBox, gridBagConstraints);
@@ -374,14 +362,13 @@ public class FmtAlignmentBraces extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 6, 8);
         multilineAlignmentPanel.add(amTernaryOpCheckBox, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(amAssignCheckBox, org.openide.util.NbBundle.getMessage(FmtAlignmentBraces.class, "LBL_am_Assign")); // NOI18N
         amAssignCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         amAssignCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         multilineAlignmentPanel.add(amAssignCheckBox, gridBagConstraints);
@@ -392,25 +379,35 @@ public class FmtAlignmentBraces extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 6, 0);
         multilineAlignmentPanel.add(amForCheckBox, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(amArrayInitCheckBox, org.openide.util.NbBundle.getMessage(FmtAlignmentBraces.class, "LBL_am_ArrayInit")); // NOI18N
         amArrayInitCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         amArrayInitCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1.0;
         multilineAlignmentPanel.add(amArrayInitCheckBox, gridBagConstraints);
 
+        org.openide.awt.Mnemonics.setLocalizedText(amParenthesizedCheckBox, org.openide.util.NbBundle.getMessage(FmtAlignmentBraces.class, "LBL_am_Paren")); // NOI18N
+        amParenthesizedCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        amParenthesizedCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
+        multilineAlignmentPanel.add(amParenthesizedCheckBox, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
         add(multilineAlignmentPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 

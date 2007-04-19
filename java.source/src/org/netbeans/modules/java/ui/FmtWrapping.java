@@ -22,6 +22,7 @@ package org.netbeans.modules.java.ui;
 import static org.netbeans.modules.java.ui.FmtOptions.*;
 import static org.netbeans.modules.java.ui.FmtOptions.CategorySupport.OPTION_ID;
 import org.netbeans.modules.java.ui.FmtOptions.CategorySupport;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -60,7 +61,10 @@ public class FmtWrapping extends javax.swing.JPanel {
     }
     
     public static FormatingOptionsPanel.Category getController() {
-        return new CategorySupport("LBL_Wrapping", new FmtWrapping(), null); // NOI18N
+        return new CategorySupport("LBL_Wrapping", // NOI18N
+                new FmtWrapping(),
+                NbBundle.getMessage(FmtWrapping.class, "SAMPLE_Wrapping"),
+                new String[] { FmtOptions.rightMargin, "30" } ); // NOI18N
     }
     
     /** This method is called from within the constructor to

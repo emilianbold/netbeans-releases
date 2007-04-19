@@ -22,6 +22,7 @@ package org.netbeans.modules.java.ui;
 import static org.netbeans.modules.java.ui.FmtOptions.*;
 import static org.netbeans.modules.java.ui.FmtOptions.CategorySupport.OPTION_ID;
 import org.netbeans.modules.java.ui.FmtOptions.CategorySupport;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -48,7 +49,9 @@ public class FmtBlankLines extends javax.swing.JPanel {
     }
     
     public static FormatingOptionsPanel.Category getController() {
-        return new CategorySupport("LBL_BlankLines", new FmtBlankLines(), null); // NOI18N
+        return new CategorySupport("LBL_BlankLines", // NOI18N
+                new FmtBlankLines(), 
+                NbBundle.getMessage(FmtBlankLines.class, "SAMPLE_BlankLines")); // NOI18N
     }
     
     /** This method is called from within the constructor to

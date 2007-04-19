@@ -360,10 +360,10 @@ public class FmtOptions {
             { blankLinesBeforeMethods, "1"}, //NOI18N
             { blankLinesAfterMethods, "0"}, //NOI18N
 
-            { spaceBeforeWhile, FALSE}, //NOI18N // XXX
-            { spaceBeforeElse, FALSE}, //NOI18N // XXX
-            { spaceBeforeCatch, FALSE}, //NOI18N // XXX
-            { spaceBeforeFinally, FALSE}, //NOI18N // XXX
+            { spaceBeforeWhile, TRUE}, //NOI18N // XXX
+            { spaceBeforeElse, TRUE}, //NOI18N // XXX
+            { spaceBeforeCatch, TRUE}, //NOI18N // XXX
+            { spaceBeforeFinally, TRUE}, //NOI18N // XXX
             { spaceBeforeMethodDeclParen, FALSE}, //NOI18N
             { spaceBeforeMethodCallParen, FALSE}, //NOI18N
             { spaceBeforeIfParen, TRUE}, //NOI18N
@@ -456,23 +456,18 @@ public class FmtOptions {
             };
         
         
-        private String previewText = 
-                "public class ClassA extends Object implements InterfaceA, InterfaceB, IntefaceC {" +
-                "public int number = 1;" +
-                "private String text =\"A\";" +
-                "public ClassA() {" +
-                "}" +
-                "public void method(String text, int number) {" +
-                "} }";
+        private String previewText = NbBundle.getMessage(FmtOptions.class, "SAMPLE_Default");
+        private String forcedOptions[][];
         
         private boolean changed = false;
         private JPanel panel;
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     
-        public CategorySupport(String nameKey, JPanel panel, String previewText) {
+        public CategorySupport(String nameKey, JPanel panel, String previewText, String[]... forcedOptions) {
             super(nameKey);
             this.panel = panel;            
             this.previewText = previewText == null ? this.previewText : previewText;
+            this.forcedOptions = forcedOptions;
             addListeners();
         }
         
@@ -492,7 +487,13 @@ public class FmtOptions {
             scan(panel, STORE, preferences);
         }
 
-        public void refreshPreview(JEditorPane pane, CodeStyle codeStyle) {
+        public void refreshPreview(JEditorPane pane, Preferences p ) {
+            
+            for (String[] option : forcedOptions) {
+                p.put( option[0], option[1]);
+            }
+            
+            CodeStyle codeStyle = FmtOptions.createCodeStyle(p);
             
             ClassPath empty = ClassPathSupport.createClassPath(new URL[0]);
             

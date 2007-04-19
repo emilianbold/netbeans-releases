@@ -22,6 +22,7 @@ package org.netbeans.modules.java.ui;
 import static org.netbeans.modules.java.ui.FmtOptions.*;
 import static org.netbeans.modules.java.ui.FmtOptions.CategorySupport.OPTION_ID;
 import org.netbeans.modules.java.ui.FmtOptions.CategorySupport;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -45,7 +46,11 @@ public class FmtTabsIndents extends javax.swing.JPanel {
     }
     
     public static FormatingOptionsPanel.Category getController() {
-        return new CategorySupport("LBL_TabsAndIndents", new FmtTabsIndents(), null); // NOI18N
+        return new CategorySupport(
+                "LBL_TabsAndIndents", 
+                new FmtTabsIndents(),    // NOI18N   
+                NbBundle.getMessage(FmtTabsIndents.class, "SAMPLE_TabsIndents"), // NOI18N
+                new String[] { FmtOptions.rightMargin, "30" } ); // NOI18N
     }
     
     /** This method is called from within the constructor to

@@ -331,7 +331,13 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
         FmtSpaces panel;
         
         public Controller() {
-            super("LBL_Spaces", new FmtSpaces(), null);
+            super("LBL_Spaces", // NOI18N
+                  new FmtSpaces(), 
+                  NbBundle.getMessage( FmtSpaces.class ,"SAMPLE_Spaces"), // NOI18N
+                  new String[] {FmtOptions.placeCatchOnNewLine, Boolean.FALSE.toString()},
+                  new String[] {FmtOptions.placeElseOnNewLine, Boolean.FALSE.toString()},
+                  new String[] {FmtOptions.placeWhileOnNewLine, Boolean.FALSE.toString()},
+                  new String[] {FmtOptions.placeFinallyOnNewLine, Boolean.FALSE.toString()} );
             this.panel = (FmtSpaces) getComponent(null); 
             update();
         }
@@ -355,7 +361,6 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
                 item.value = node.getBoolean(item.id, df);
             }
 
-            
         }
 
         @Override
@@ -395,62 +400,5 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
         }
     }
     
-    
-    /*
-    spaceBeforeWhile
-    spaceBeforeElse
-    spaceBeforeCatch
-    spaceBeforeFinally
-     
-    spaceBeforeMethodDeclParen
-    spaceBeforeMethodCallParen
-    spaceBeforeIfParen
-    spaceBeforeForParen
-    spaceBeforeWhileParen
-    spaceBeforeCatchParen
-    spaceBeforeSwitchParen
-    spaceBeforeSynchronizedParen
-    spaceBeforeAnnotationParen    
-      
-     
-    spaceAroundUnaryOps
-    spaceAroundBinaryOps
-    spaceAroundTernaryOps
-    spaceAroundAssignOps
-      
-    spaceBeforeClassDeclLeftBrace
-    spaceBeforeMethodDeclLeftBrace
-    spaceBeforeIfLeftBrace
-    spaceBeforeElseLeftBrace
-    spaceBeforeWhileLeftBrace
-    spaceBeforeForLeftBrace
-    spaceBeforeDoLeftBrace
-    spaceBeforeSwitchLeftBrace
-    spaceBeforeTryLeftBrace
-    spaceBeforeCatchLeftBrace
-    spaceBeforeFinallyLeftBrace
-    spaceBeforeSynchronizedLeftBrace
-    spaceBeforeStaticInitLeftBrace
-    spaceBeforeArrayInitLeftBrace
-    
-    spaceWithinParens
-    spaceWithinMethodDeclParens
-    spaceWithinMethodCallParens
-    spaceWithinIfParens
-    spaceWithinForParens
-    spaceWithinWhileParens
-    spaceWithinSwitchParens
-    spaceWithinCatchParens
-    spaceWithinSynchronizedParens
-    spaceWithinTypeCastParens
-    spaceWithinAnnotationParens
-    spaceWithinBraces
-    spaceWithinArrayInitBrackets
-    
-    spaceBeforeComma
-    spaceAfterComma
-    spaceBeforeSemi
-    spaceAfterSemi
-    spaceAfterTypeCast
-    */
+
 }
