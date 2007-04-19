@@ -19,10 +19,8 @@
 
 package org.netbeans.modules.autoupdate.ui.wizards;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JLabel;
 import org.netbeans.api.autoupdate.UpdateElement;
 
 /**
@@ -38,10 +36,6 @@ public class ValidationWarningPanel extends javax.swing.JPanel {
     }
     
     private void postInitComponents (List<UpdateElement> unsigned, List<UpdateElement> untrusted) {
-        Color bg = new JLabel ().getBackground ();
-        taHead.setBackground (bg);
-        taPlugins.setBackground (bg);
-        taWarning.setBackground (bg);
         List<UpdateElement> plugins = new ArrayList<UpdateElement> ();
         plugins.addAll (untrusted);
         plugins.addAll (unsigned);
@@ -75,15 +69,18 @@ public class ValidationWarningPanel extends javax.swing.JPanel {
         taHead.setEditable(false);
         taHead.setLineWrap(true);
         taHead.setWrapStyleWord(true);
+        taHead.setOpaque(false);
 
         taPlugins.setEditable(false);
         taPlugins.setLineWrap(true);
         taPlugins.setWrapStyleWord(true);
+        taPlugins.setOpaque(false);
 
         taWarning.setEditable(false);
         taWarning.setLineWrap(true);
         taWarning.setText(org.openide.util.NbBundle.getMessage(ValidationWarningPanel.class, "ValidationWarningPanel_taWarning_Text")); // NOI18N
         taWarning.setWrapStyleWord(true);
+        taWarning.setOpaque(false);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

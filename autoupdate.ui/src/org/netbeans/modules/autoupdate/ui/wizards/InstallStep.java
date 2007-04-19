@@ -208,10 +208,11 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                 dd.setAdditionalOptions (new JButton [] {showCertificate});
             }
             DialogDisplayer.getDefault ().createDialog (dd).setVisible (true);
-            if (cancel.equals (dd.getValue ())) {
+            if (! canContinue.equals (dd.getValue ())) {
+                if (! cancel.equals (dd.getValue ())) cancel.doClick ();
                 return null;
             }
-            assert canContinue.equals (canContinue);
+            assert canContinue.equals (dd.getValue ());
         }
         panel.waitAndSetProgressComponents (mainLabel, progressComponent, new JLabel (getBundle ("InstallStep_Done")));
         return inst;

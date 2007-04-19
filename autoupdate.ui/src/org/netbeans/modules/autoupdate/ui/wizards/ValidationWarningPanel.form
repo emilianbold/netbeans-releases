@@ -44,6 +44,7 @@
         <Property name="editable" type="boolean" value="false"/>
         <Property name="lineWrap" type="boolean" value="true"/>
         <Property name="wrapStyleWord" type="boolean" value="true"/>
+        <Property name="opaque" type="boolean" value="false"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JTextArea" name="taPlugins">
@@ -51,6 +52,7 @@
         <Property name="editable" type="boolean" value="false"/>
         <Property name="lineWrap" type="boolean" value="true"/>
         <Property name="wrapStyleWord" type="boolean" value="true"/>
+        <Property name="opaque" type="boolean" value="false"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JTextArea" name="taWarning">
@@ -61,6 +63,7 @@
           <ResourceString bundle="org/netbeans/modules/autoupdate/ui/wizards/Bundle.properties" key="ValidationWarningPanel_taWarning_Text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
         <Property name="wrapStyleWord" type="boolean" value="true"/>
+        <Property name="opaque" type="boolean" value="false"/>
       </Properties>
     </Component>
   </SubComponents>
