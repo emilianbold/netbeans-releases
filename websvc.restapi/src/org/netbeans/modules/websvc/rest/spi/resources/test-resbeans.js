@@ -208,8 +208,11 @@ function getMethodMimeTypeCombo(resource) {
         var mName = m.attributes.getNamedItem("name").nodeValue;
         var request = m.getElementsByTagName('request');
         var mediaType = getMediaType(request);
-        mName = getMethodNameForDisplay(mName, mediaType);
-        str += "  <option selected value='"+mName+"'>"+mName+"</option>";
+        var dispName = getMethodNameForDisplay(mName, mediaType);
+        if(mName == 'GET')
+            str += "  <option selected value='"+dispName+"' selected>"+dispName+"</option>";
+        else
+            str += "  <option selected value='"+dispName+"'>"+dispName+"</option>";
     }   
     str += "</select>";
     return str;
@@ -272,16 +275,8 @@ function doShowContent1(uri, mName, mediaType) {
     str += "<select id='methodSel' name='methodSel' onchange='javascript:changeMethod();'>";
     str += "  <option selected value='GET'>GET</option>";
     str += "  <option value='PUT'>PUT (application/xml)</option>";
-    str += "  <option value='POST'>POST (application/xml)</option>";
     str += "  <option value='DELETE'>DELETE</option>";
     str += "</select>";
-    /*str += "&nbsp;&nbsp;<b>MIME: </b>";
-    str += "<select id='mimeSel' name='mimeSel' onchange='javascript:changeMimeType();'>";
-    str += "  <option value='application/xml'>application/xml</option>";
-    str += "  <option value='text/xml'>text/xml</option>";
-    str += "  <option value='text/plain'>text/plain</option>";
-    str += "  <option value='text/html'>text/html</option>";    
-    str += "</select>";*/
     str += "<br/><br/>";
     str += getFormRep(null, uri, mName, mediaType);
     document.getElementById('testres').innerHTML = str;
@@ -300,6 +295,13 @@ function doShowContent2(uri, r) {
     str += "<br/><br/>";
     str += getFormRep(null, uri, mName, mediaType);
     document.getElementById('testres').innerHTML = str;
+    var methodNode = document.getElementById("methodSel");
+    var options = methodNode.options;
+    for(i=0;i<options.length;i++) {
+        if(options[i].value.substring(0, 3) == 'GET')
+            methodNode.selectedIndex = i;
+    }
+    changeMethod();    
     var req = uri;
     var disp = getDisplayUri(req);
     var uriLink = "<a id='"+req+"' href=javascript:doShowContent('"+req+"') >"+getDisplayURL(disp, 80)+"</a>";
@@ -630,7 +632,9 @@ function getUri(ref) {
 function createRowForUri(refChild) {
     var str = '';    
     var id = '-';
-    if(refChild.childNodes.length > 0 && refChild.childNodes[0].childNodes.length > 0) {
+    if(refChild.childNodes != null && refChild.childNodes.length > 0 && 
+            refChild.childNodes[0].childNodes != null && 
+                refChild.childNodes[0].childNodes.length > 0) {
         id = refChild.childNodes[0].childNodes[0].nodeValue;
     }
     str += "<td>"+id+"</td>";
