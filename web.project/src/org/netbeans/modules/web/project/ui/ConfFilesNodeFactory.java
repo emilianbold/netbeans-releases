@@ -82,7 +82,7 @@ import org.openide.util.lookup.Lookups;
  */
 public final class ConfFilesNodeFactory implements NodeFactory {
     
-    /** Creates a new instance of LibrariesNodeFactory */
+    /** Creates a new instance of ConfFilesNodeFactory */
     public ConfFilesNodeFactory() {
     }
 
@@ -461,11 +461,14 @@ public final class ConfFilesNodeFactory implements NodeFactory {
         }
         
         private void doSetKeys() {
-            Object[] result = keys.toArray();
+            final Object[] result = keys.toArray();
             java.util.Arrays.sort(result, comparator);
-            //for (int i = 0; i < result.length; i++)
-            //    System.out.println(result[i]);
-            setKeys(result);
+            
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    setKeys(result);
+                }
+            });
         }
                 
         private void addWellKnownFiles() {            
