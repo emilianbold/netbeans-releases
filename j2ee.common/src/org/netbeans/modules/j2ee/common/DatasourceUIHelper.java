@@ -38,11 +38,11 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxEditor;
-import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.JSeparator;
+import javax.swing.ListCellRenderer;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
@@ -146,7 +146,7 @@ public final class DatasourceUIHelper {
      * @return data source list cell renderer instance.
      * @since 1.16
      */
-    public static DatasourceListCellRenderer createDatasourceListCellRenderer() {
+    public static ListCellRenderer createDatasourceListCellRenderer() {
         return new DatasourceListCellRenderer();
     }
     

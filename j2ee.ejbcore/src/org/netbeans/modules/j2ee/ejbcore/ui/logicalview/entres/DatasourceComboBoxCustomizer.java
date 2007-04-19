@@ -201,6 +201,7 @@ final class DatasourceComboBoxCustomizer extends javax.swing.JPanel {
         return valid;
     }
     
+    // TODO this is incorrect - it is needed to normalize jndiName (e.g. "DefaultDs" vs. "java:DefaultDs" vs. "java:/DefaultDs")
     private boolean datasourceAlreadyExists(String jndiName) {
         return datasources.containsKey(jndiName);
     }

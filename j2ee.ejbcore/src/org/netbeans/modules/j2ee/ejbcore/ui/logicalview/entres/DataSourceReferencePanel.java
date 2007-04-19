@@ -85,7 +85,7 @@ public class DataSourceReferencePanel extends JPanel {
      * @return the reference name.
      */
     public String getReferenceName() {
-        return textDsReference.getText().trim();
+        return dsReferenceText.getText().trim();
     }
     
     /**
@@ -93,20 +93,20 @@ public class DataSourceReferencePanel extends JPanel {
      * @return selected data source.
      */
     public Datasource getDataSource() {
-        if (radioProjectDs.isSelected()) {
-            return (Datasource) comboProjectDs.getSelectedItem();
+        if (projectDsRadio.isSelected()) {
+            return (Datasource) projectDsCombo.getSelectedItem();
         }
-        return (Datasource) comboServerDs.getSelectedItem();
+        return (Datasource) serverDsCombo.getSelectedItem();
     }
     
     public boolean copyDataSourceToProject() {
-        if (radioProjectDs.isSelected()) {
+        if (projectDsRadio.isSelected()) {
             return false;
         }
-        return checkDsCopyToProject.isSelected();
+        return dsCopyToProjectCheck.isSelected();
     }
     
-    // TMYSIK this method should be reviewed (handle 'Missing server' error)
+    // TODO this method should be reviewed (handle 'Missing server' error)
     private boolean isDsApiSupportedByServerPlugin() {
         return (provider != null
                 && provider.isDatasourceCreationSupported()
@@ -115,7 +115,7 @@ public class DataSourceReferencePanel extends JPanel {
     
     private void registerListeners() {
         // text field
-        textDsReference.getDocument().addDocumentListener(new DocumentListener() {
+        dsReferenceText.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent documentEvent) {
                 verify();
             }
@@ -128,13 +128,13 @@ public class DataSourceReferencePanel extends JPanel {
         });
         
         // radio buttons
-        radioProjectDs.addActionListener(new ActionListener() {
+        projectDsRadio.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 verify();
                 handleComboBoxes();
             }
         });
-        radioServerDs.addActionListener(new ActionListener() {
+        serverDsRadio.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 verify();
                 handleComboBoxes();
@@ -142,12 +142,12 @@ public class DataSourceReferencePanel extends JPanel {
         });
         
         // combo boxes
-        comboProjectDs.addActionListener(new ActionListener() {
+        projectDsCombo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 verify();
             }
         });
-        comboServerDs.addActionListener(new ActionListener() {
+        serverDsCombo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 verify();
             }
@@ -155,26 +155,26 @@ public class DataSourceReferencePanel extends JPanel {
     }
     
     private void setupComboBoxes() {
-        comboProjectDs.setPrototypeDisplayValue(SelectDatabasePanel.PROTOTYPE_VALUE);
-        comboProjectDs.setRenderer(DatasourceUIHelper.createDatasourceListCellRenderer());
-        comboServerDs.setRenderer(DatasourceUIHelper.createDatasourceListCellRenderer());
+        projectDsCombo.setPrototypeDisplayValue(SelectDatabasePanel.PROTOTYPE_VALUE);
+        projectDsCombo.setRenderer(DatasourceUIHelper.createDatasourceListCellRenderer());
+        serverDsCombo.setRenderer(DatasourceUIHelper.createDatasourceListCellRenderer());
     }
     
     private void handleComboBoxes() {
-        if (radioProjectDs.isSelected()) {
-            comboProjectDs.setEnabled(true);
-            comboServerDs.setEnabled(false);
-            checkDsCopyToProject.setEnabled(false);
+        if (projectDsRadio.isSelected()) {
+            projectDsCombo.setEnabled(true);
+            serverDsCombo.setEnabled(false);
+            dsCopyToProjectCheck.setEnabled(false);
         } else {
-            comboProjectDs.setEnabled(false);
-            comboServerDs.setEnabled(true);
-            checkDsCopyToProject.setEnabled(true);
+            projectDsCombo.setEnabled(false);
+            serverDsCombo.setEnabled(true);
+            dsCopyToProjectCheck.setEnabled(true);
         }
     }
     
     private void populate() {
-        populateDataSources(moduleDatasources, comboProjectDs);
-        populateDataSources(serverDatasources, comboServerDs);
+        populateDataSources(moduleDatasources, projectDsCombo);
+        populateDataSources(serverDatasources, serverDsCombo);
     }
     
     private static void populateDataSources(final Set<Datasource> datasources, final JComboBox comboBox) {
@@ -191,7 +191,7 @@ public class DataSourceReferencePanel extends JPanel {
     
     private void setupErrorLabel() {
         setError(null);
-        labelError.setForeground(getErrorColor());
+        errorLabel.setForeground(getErrorColor());
     }
     
     private Color getErrorColor() {
@@ -205,10 +205,10 @@ public class DataSourceReferencePanel extends JPanel {
     private void setupWarningLabel() {
         if (!isDsApiSupportedByServerPlugin) {
             // DS API is not supported by the server plugin
-            labelWarning.setForeground(getWarningColor());
+            warningLabel.setForeground(getWarningColor());
             return;
         }
-        labelWarning.setText("");
+        warningLabel.setText("");
     }
     
     private Color getWarningColor() {
@@ -221,7 +221,7 @@ public class DataSourceReferencePanel extends JPanel {
     
     private void setupAddButton() {
         if (!isDsApiSupportedByServerPlugin) {
-            buttonAdd.setEnabled(false);
+            addButton.setEnabled(false);
         }
     }
     
@@ -232,7 +232,7 @@ public class DataSourceReferencePanel extends JPanel {
     
     private boolean verifyComponents() {
         // reference name
-        String refName = textDsReference.getText();
+        String refName = dsReferenceText.getText();
         if (refName == null || refName.trim().length() == 0) {
             setError("ERR_NO_REFNAME"); // NOI18N
             return false;
@@ -245,18 +245,18 @@ public class DataSourceReferencePanel extends JPanel {
         }
         
         // data sources (radio + combo)
-        if (groupDs.getSelection() == null) {
+        if (dsGroup.getSelection() == null) {
             setError("ERR_NO_DATASOURCE_SELECTED"); // NOI18N
             return false;
-        } else if (radioProjectDs.isSelected()) {
-            if (comboProjectDs.getItemCount() == 0
-                    || comboProjectDs.getSelectedIndex() == -1) {
+        } else if (projectDsRadio.isSelected()) {
+            if (projectDsCombo.getItemCount() == 0
+                    || projectDsCombo.getSelectedIndex() == -1) {
                 setError("ERR_NO_DATASOURCE_SELECTED"); // NOI18N
                 return false;
             }
-        } else if (radioServerDs.isSelected()) {
-            if (comboServerDs.getItemCount() == 0
-                    || comboServerDs.getSelectedIndex() == -1) {
+        } else if (serverDsRadio.isSelected()) {
+            if (serverDsCombo.getItemCount() == 0
+                    || serverDsCombo.getSelectedIndex() == -1) {
                 setError("ERR_NO_DATASOURCE_SELECTED"); // NOI18N
                 return false;
             }
@@ -269,10 +269,10 @@ public class DataSourceReferencePanel extends JPanel {
     
     private void setError(String key) {
         if (key == null) {
-            labelError.setText("");
+            errorLabel.setText("");
             return;
         }
-        labelError.setText(NbBundle.getMessage(DataSourceReferencePanel.class, key));
+        errorLabel.setText(NbBundle.getMessage(DataSourceReferencePanel.class, key));
     }
     
     /** This method is called from within the constructor to
@@ -283,47 +283,47 @@ public class DataSourceReferencePanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        groupDs = new javax.swing.ButtonGroup();
-        labelDsReference = new javax.swing.JLabel();
-        textDsReference = new javax.swing.JTextField();
-        radioProjectDs = new javax.swing.JRadioButton();
-        radioServerDs = new javax.swing.JRadioButton();
-        comboProjectDs = new javax.swing.JComboBox();
-        comboServerDs = new javax.swing.JComboBox();
-        checkDsCopyToProject = new javax.swing.JCheckBox();
-        buttonAdd = new javax.swing.JButton();
-        labelError = new javax.swing.JLabel();
-        labelWarning = new javax.swing.JLabel();
+        dsGroup = new javax.swing.ButtonGroup();
+        dsReferenceLabel = new javax.swing.JLabel();
+        dsReferenceText = new javax.swing.JTextField();
+        projectDsRadio = new javax.swing.JRadioButton();
+        serverDsRadio = new javax.swing.JRadioButton();
+        projectDsCombo = new javax.swing.JComboBox();
+        serverDsCombo = new javax.swing.JComboBox();
+        dsCopyToProjectCheck = new javax.swing.JCheckBox();
+        addButton = new javax.swing.JButton();
+        errorLabel = new javax.swing.JLabel();
+        warningLabel = new javax.swing.JLabel();
 
-        labelDsReference.setLabelFor(textDsReference);
-        org.openide.awt.Mnemonics.setLocalizedText(labelDsReference, org.openide.util.NbBundle.getMessage(DataSourceReferencePanel.class, "LBL_DsReferenceName")); // NOI18N
+        dsReferenceLabel.setLabelFor(dsReferenceText);
+        org.openide.awt.Mnemonics.setLocalizedText(dsReferenceLabel, org.openide.util.NbBundle.getMessage(DataSourceReferencePanel.class, "LBL_DsReferenceName")); // NOI18N
 
-        groupDs.add(radioProjectDs);
-        radioProjectDs.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(radioProjectDs, org.openide.util.NbBundle.getMessage(DataSourceReferencePanel.class, "LBL_ProjectDs")); // NOI18N
-        radioProjectDs.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        radioProjectDs.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        dsGroup.add(projectDsRadio);
+        projectDsRadio.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(projectDsRadio, org.openide.util.NbBundle.getMessage(DataSourceReferencePanel.class, "LBL_ProjectDs")); // NOI18N
+        projectDsRadio.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        projectDsRadio.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        groupDs.add(radioServerDs);
-        org.openide.awt.Mnemonics.setLocalizedText(radioServerDs, org.openide.util.NbBundle.getMessage(DataSourceReferencePanel.class, "LBL_ServerDs")); // NOI18N
-        radioServerDs.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        radioServerDs.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        dsGroup.add(serverDsRadio);
+        org.openide.awt.Mnemonics.setLocalizedText(serverDsRadio, org.openide.util.NbBundle.getMessage(DataSourceReferencePanel.class, "LBL_ServerDs")); // NOI18N
+        serverDsRadio.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        serverDsRadio.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        org.openide.awt.Mnemonics.setLocalizedText(checkDsCopyToProject, org.openide.util.NbBundle.getMessage(DataSourceReferencePanel.class, "LBL_DsCopyToProject")); // NOI18N
-        checkDsCopyToProject.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        checkDsCopyToProject.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        org.openide.awt.Mnemonics.setLocalizedText(dsCopyToProjectCheck, org.openide.util.NbBundle.getMessage(DataSourceReferencePanel.class, "LBL_DsCopyToProject")); // NOI18N
+        dsCopyToProjectCheck.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        dsCopyToProjectCheck.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        org.openide.awt.Mnemonics.setLocalizedText(buttonAdd, org.openide.util.NbBundle.getMessage(DataSourceReferencePanel.class, "LBL_Add")); // NOI18N
-        buttonAdd.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(DataSourceReferencePanel.class, "LBL_Add")); // NOI18N
+        addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buttonAddActionPerformed(evt);
+                addButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(labelError, org.openide.util.NbBundle.getMessage(DataSourceReferencePanel.class, "ERR_NO_REFNAME")); // NOI18N
-        labelError.setFocusable(false);
+        org.openide.awt.Mnemonics.setLocalizedText(errorLabel, org.openide.util.NbBundle.getMessage(DataSourceReferencePanel.class, "ERR_NO_REFNAME")); // NOI18N
+        errorLabel.setFocusable(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(labelWarning, org.openide.util.NbBundle.getMessage(DataSourceReferencePanel.class, "LBL_DSC_Warning")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(warningLabel, org.openide.util.NbBundle.getMessage(DataSourceReferencePanel.class, "LBL_DSC_Warning")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -336,28 +336,28 @@ public class DataSourceReferencePanel extends JPanel {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
                                 .add(17, 17, 17)
-                                .add(checkDsCopyToProject, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 547, Short.MAX_VALUE))
-                            .add(radioServerDs)))
+                                .add(dsCopyToProjectCheck, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 547, Short.MAX_VALUE))
+                            .add(serverDsRadio)))
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(labelError, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 564, Short.MAX_VALUE))
+                        .add(errorLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 564, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                                 .add(29, 29, 29)
-                                .add(labelWarning, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 467, Short.MAX_VALUE))
+                                .add(warningLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 467, Short.MAX_VALUE))
                             .add(layout.createSequentialGroup()
                                 .addContainerGap()
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(radioProjectDs)
-                                    .add(labelDsReference))
+                                    .add(projectDsRadio)
+                                    .add(dsReferenceLabel))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                    .add(org.jdesktop.layout.GroupLayout.LEADING, comboServerDs, 0, 331, Short.MAX_VALUE)
-                                    .add(org.jdesktop.layout.GroupLayout.LEADING, textDsReference, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE)
-                                    .add(org.jdesktop.layout.GroupLayout.LEADING, comboProjectDs, 0, 331, Short.MAX_VALUE))))
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, serverDsCombo, 0, 331, Short.MAX_VALUE)
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, dsReferenceText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE)
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, projectDsCombo, 0, 331, Short.MAX_VALUE))))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(buttonAdd)))
+                        .add(addButton)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -365,43 +365,35 @@ public class DataSourceReferencePanel extends JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(labelDsReference)
-                    .add(textDsReference, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(dsReferenceLabel)
+                    .add(dsReferenceText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(radioProjectDs)
-                    .add(comboProjectDs, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(buttonAdd))
+                    .add(projectDsRadio)
+                    .add(projectDsCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(addButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(labelWarning)
+                .add(warningLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(radioServerDs)
-                    .add(comboServerDs, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(serverDsRadio)
+                    .add(serverDsCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(checkDsCopyToProject)
+                .add(dsCopyToProjectCheck)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(labelError)
+                .add(errorLabel)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void buttonAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonAddActionPerformed
+    private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         Datasource datasource = handleDataSourceCustomizer();
         if (datasource != null) {
             moduleDatasources.add(datasource);
-            populateDataSources(moduleDatasources, comboProjectDs);
-            // TMYSIK is it needed to select current item later?
-            /*if (datasource == null) {
-                SwingUtilities.invokeLater(new Runnable() { // postpone item selection to enable event firing from JCombobox.setSelectedItem()
-                    public void run() {
-                        combo.setSelectedItem(model.getPreviousItem());
-                    }
-                });
-            }*/
-            comboProjectDs.setSelectedItem(datasource);
+            populateDataSources(moduleDatasources, projectDsCombo);
+            projectDsCombo.setSelectedItem(datasource);
         }
-    }//GEN-LAST:event_buttonAddActionPerformed
+}//GEN-LAST:event_addButtonActionPerformed
     
     private Datasource handleDataSourceCustomizer() {
         
@@ -425,7 +417,6 @@ public class DataSourceReferencePanel extends JPanel {
     }
     
     private Datasource createServerDataSource(DatasourceComboBoxCustomizer dsc) {
-        Collection<Action> actions = new ArrayList<Action>();
         final Datasource[] ds = new Datasource[1];
 
         // creating datasources asynchronously
@@ -435,9 +426,9 @@ public class DataSourceReferencePanel extends JPanel {
         final String username = dsc.getUsername();
         final String driverClassName = dsc.getDriverClassName();
         
-        actions.add(new AsynchronousAction() {
+        Action action = new AsynchronousAction() {
             public void run(Context actionContext) {
-                String msg = NbBundle.getMessage(DatasourceUIHelper.class, "MSG_creatingDS"); // NOI18N
+                String msg = NbBundle.getMessage(DatasourceUIHelper.class, "MSG_creatingDS");
                 actionContext.getProgress().progress(msg);
                 try {
                     ds[0] = provider.createDatasource(jndiName, url, username, password, driverClassName);
@@ -447,10 +438,9 @@ public class DataSourceReferencePanel extends JPanel {
                     for (Object conflict : daee.getDatasources()) {
                         sb.append(conflict.toString() + "\n"); // NOI18N
                     }
-                    ErrorManager.getDefault().annotate(daee, NbBundle.getMessage(DatasourceUIHelper.class, "ERR_DsConflict", sb.toString())); // NOI18N
+                    ErrorManager.getDefault().annotate(daee, NbBundle.getMessage(DatasourceUIHelper.class, "ERR_DsConflict", sb.toString()));
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, daee);
                 } catch (ConfigurationException ce) {
-                    // TMYSIK correct?
                     ErrorManager.getDefault().notify(ce);
                 }
             }
@@ -458,9 +448,10 @@ public class DataSourceReferencePanel extends JPanel {
             public boolean isEnabled() {
                 return password != null;
             }
-        });
+        };
         
         // invoke action
+        Collection<Action> actions = Collections.singleton(action);
         EventRequestProcessor eventRequestProcessor = new EventRequestProcessor();
         eventRequestProcessor.invoke(actions);
         
@@ -477,20 +468,19 @@ public class DataSourceReferencePanel extends JPanel {
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton buttonAdd;
-    private javax.swing.JCheckBox checkDsCopyToProject;
-    private javax.swing.JComboBox comboProjectDs;
-    private javax.swing.JComboBox comboServerDs;
-    private javax.swing.ButtonGroup groupDs;
-    private javax.swing.JLabel labelDsReference;
-    private javax.swing.JLabel labelError;
-    private javax.swing.JLabel labelWarning;
-    private javax.swing.JRadioButton radioProjectDs;
-    private javax.swing.JRadioButton radioServerDs;
-    private javax.swing.JTextField textDsReference;
+    private javax.swing.JButton addButton;
+    private javax.swing.JCheckBox dsCopyToProjectCheck;
+    private javax.swing.ButtonGroup dsGroup;
+    private javax.swing.JLabel dsReferenceLabel;
+    private javax.swing.JTextField dsReferenceText;
+    private javax.swing.JLabel errorLabel;
+    private javax.swing.JComboBox projectDsCombo;
+    private javax.swing.JRadioButton projectDsRadio;
+    private javax.swing.JComboBox serverDsCombo;
+    private javax.swing.JRadioButton serverDsRadio;
+    private javax.swing.JLabel warningLabel;
     // End of variables declaration//GEN-END:variables
     
-    // TMYSIK copied from DatasourceComboBoxHelper (that file should be removed)
     private static class DatasourceImpl implements Datasource {
         
         private final String jndiName;

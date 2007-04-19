@@ -52,9 +52,6 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
     
     public static final String IS_VALID = "SelectDatabasePanel_isValid"; //NOI18N
     
-    private Color nbErrorForeground;
-    
-    private Node driverNode;
     protected static final String PROTOTYPE_VALUE = "jdbc:pointbase://localhost/sample [pbpublic on PBPUBLIC] "; //NOI18N
     private final ServiceLocatorStrategyPanel slPanel;
     private final EJBPreferences ejbPreferences;
@@ -77,12 +74,6 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
         dsRefCombo.setPrototypeDisplayValue(PROTOTYPE_VALUE);
         populateReferences();
         
-        dsRefCombo.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                checkDatasourceReference();
-            }
-        });
-        
         slPanel = new ServiceLocatorStrategyPanel(lastLocator);
         serviceLocatorPanel.add(slPanel, BorderLayout.CENTER);
         createResourcesCheckBox.setSelected(ejbPreferences.isAgreedCreateServerResources());
@@ -92,9 +83,7 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
                     Object newvalue = evt.getNewValue();
                     if (newvalue instanceof Boolean) {
                         boolean isServiceLocatorOk = ((Boolean)newvalue).booleanValue();
-                        if (isServiceLocatorOk) {
-                            checkDatasourceReference();
-                        } else {
+                        if (!isServiceLocatorOk) {
                             firePropertyChange(IS_VALID, true, false);
                         }
                     }
@@ -238,10 +227,9 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
         Object option = DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (option == NotifyDescriptor.OK_OPTION) {
             final String refName = referencePanel.getReferenceName();
-            // TMYSIK: how to save datasource reference?
             references.put(refName, referencePanel.getDataSource());
             if (referencePanel.copyDataSourceToProject()) {
-                // TMYSIK how to copy it?
+                // TODO how to copy it?
             }
             
             // update gui (needed because of sorting)
@@ -280,15 +268,6 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
     private javax.swing.JPanel serviceLocatorPanel;
     // End of variables declaration//GEN-END:variables
     
-    protected void checkDatasourceReference() {
-        // TMYSIK is this necessary? or should be any check here (valid reference etc.)?
-        if (dsRefCombo.getSelectedItem() instanceof String) {
-            firePropertyChange(IS_VALID, false, true);
-        } else {
-            firePropertyChange(IS_VALID, true, false);
-        }
-    }
-
     private void populateReferences() {
         
         SortedSet<String> refNames = new TreeSet<String>(references.keySet());

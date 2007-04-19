@@ -124,7 +124,6 @@ public class UseDatabaseAction extends NodeAction {
                 }
             }
         });
-        selectDatabasePanel.checkDatasourceReference();
         
         Object option = DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (option == NotifyDescriptor.OK_OPTION) {
