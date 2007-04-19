@@ -585,7 +585,7 @@ public class OperationGeneratorHelper {
     //TODO: This is a temporary utility. This will go away when the copying of the
     //modified wsdl from the src/conf directory to the WEB-INF/wsdl directory is
     //done in the build script.
-    public FileObject getWsdlFolderForService(FileObject fo, String name) throws IOException {
+    public static FileObject getWsdlFolderForService(FileObject fo, String name) throws IOException {
         JAXWSSupport jaxwssupport = JAXWSSupport.getJAXWSSupport(fo);
         FileObject globalWsdlFolder = jaxwssupport.getWsdlFolder(true);
         FileObject oldWsdlFolder = globalWsdlFolder.getFileObject(name);
@@ -603,7 +603,7 @@ public class OperationGeneratorHelper {
     //TODO: This is a temporary utility. This will go away when the copying of the
     //modified wsdl from the src/conf directory to the WEB-INF/wsdl directory is
     //done in the build script.
-    public FileObject getLocalWsdlFolderForService(FileObject fo, String serviceName){
+    public static FileObject getLocalWsdlFolderForService(FileObject fo, String serviceName){
         JAXWSSupport jaxwssupport = JAXWSSupport.getJAXWSSupport(fo);
         return jaxwssupport.getLocalWsdlFolderForService(serviceName, false);
     }
