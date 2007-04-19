@@ -6,7 +6,7 @@ set -x
 export ANT_OPTS="-Xmx512m"
 export JAVA_HOME=$JDK_HOME
 
-if [ -z ${CVS_STAMP} ]; then
+if [ -z "${CVS_STAMP}" ]; then
     HOUR_TIME=`date -u +%H`
     if [ $HOUR_TIME -ge 12 ]; then
 	export CVS_STAMP="12:00UTC today"
