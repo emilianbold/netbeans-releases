@@ -26,9 +26,12 @@ import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.openide.awt.UndoRedo;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
@@ -50,8 +53,7 @@ public class AnalyzerEditorView implements DataEditorView, DesignDocumentAwarene
     private transient HashMap<Analyzer, JComponent> components;
     private transient DesignDocument document;
     private transient JScrollPane scroll;
-    private transient JPanel panel;
-    private transient JPanel toolbar;
+    private transient JToolBar toolbar;
 
     public AnalyzerEditorView (DataObjectContext context) {
         this.context = context;
@@ -61,8 +63,8 @@ public class AnalyzerEditorView implements DataEditorView, DesignDocumentAwarene
     private void init () {
         components = new HashMap<Analyzer, JComponent> ();
         Collection<? extends Analyzer> analyzers = Lookup.getDefault ().lookupResult (Analyzer.class).allInstances ();
-        toolbar = new JPanel ();
-        panel = new JPanel ();
+
+        JPanel panel = new JPanel ();
         panel.setLayout(new GridBagLayout());
         panel.setBackground(BACKGROUND_COLOR);
         panel.setBorder (BorderFactory.createEmptyBorder (1, 1, 1, 1));
@@ -91,6 +93,25 @@ public class AnalyzerEditorView implements DataEditorView, DesignDocumentAwarene
         filler.setOpaque (false);
         panel.add (filler, constraints);
         context.addDesignDocumentAwareness (this);
+
+        toolbar = new JToolBar ();
+        toolbar.setRollover (true);
+        toolbar.setPreferredSize (new Dimension (14, 14));
+        toolbar.setSize (new Dimension (14, 14));
+        toolbar.add (new JSeparator (JSeparator.VERTICAL));
+
+        JButton refreshButton = new JButton ();
+        refreshButton.setToolTipText ("Refresh");
+        refreshButton.setBorderPainted (false);
+        refreshButton.setRolloverEnabled (true);
+        refreshButton.setSize (14, 14);
+        refreshButton.setIcon (new ImageIcon (Utilities.loadImage ("org/netbeans/modules/vmd/analyzer/resources/refresh.png"))); // NOI18N
+        refreshButton.addActionListener (new ActionListener() {
+            public void actionPerformed (ActionEvent e) {
+                updateAnalyzers ();
+            }
+        });
+        toolbar.add (refreshButton);
     }
 
     public DataObjectContext getContext () {
@@ -114,7 +135,7 @@ public class AnalyzerEditorView implements DataEditorView, DesignDocumentAwarene
     }
 
     public String getDisplayName () {
-        return "Analyzer"; // TODO
+        return "Analyzer";
     }
 
     public HelpCtx getHelpCtx () {
@@ -146,9 +167,7 @@ public class AnalyzerEditorView implements DataEditorView, DesignDocumentAwarene
     }
 
     public void componentActivated () {
-        final DesignDocument doc = document;
-        for (Map.Entry<Analyzer, JComponent> entry : components.entrySet ())
-            entry.getKey ().update (entry.getValue (), doc);
+        updateAnalyzers ();
     }
 
     public void componentDeactivated () {
@@ -173,7 +192,7 @@ public class AnalyzerEditorView implements DataEditorView, DesignDocumentAwarene
     private void readObject (java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         Object object = in.readObject ();
         if (! (object instanceof DataObjectContext))
-            throw new ClassNotFoundException ("DataObjectContext expected but not found");
+            throw new ClassNotFoundException ("DataObjectContext expected but not found"); // NOI18N
         context = (DataObjectContext) object;
         init ();
     }
@@ -181,6 +200,12 @@ public class AnalyzerEditorView implements DataEditorView, DesignDocumentAwarene
     public void setDesignDocument (DesignDocument designDocument) {
         document = designDocument;
         componentActivated ();
+    }
+
+    private void updateAnalyzers () {
+        final DesignDocument doc = document;
+        for (Map.Entry<Analyzer, JComponent> entry : components.entrySet ())
+            entry.getKey ().update (entry.getValue (), doc);
     }
 
 }
