@@ -42,10 +42,11 @@ public class EditorPaneWidget extends Widget {
     /** Creates a new instance of EditorPaneWidget 
      * @param scene 
      * @param text 
+     * @param contentType 
      */
-    public EditorPaneWidget(Scene scene, String text) {
+    public EditorPaneWidget(Scene scene, String text, String contentType) {
         super(scene);
-        pane = new JEditorPane("text/xml",text);
+        pane = new JEditorPane(contentType,text);
         pane.setVisible(false);
         componentAdded = false;
         origoinalFontSize = pane.getFont().getSize2D();

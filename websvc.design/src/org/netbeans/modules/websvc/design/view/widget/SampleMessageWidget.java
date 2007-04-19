@@ -137,7 +137,6 @@ public class SampleMessageWidget extends Widget {
         setLayout(LayoutFactory.createVerticalFlowLayout(
                 LayoutFactory.SerialAlignment.JUSTIFY, 10));
         setOpaque(true);
-//        setForeground(type.getBorderColor());
 
         headerWidget = new Widget(getScene());
         headerWidget.setLayout(new LeftRightLayout(32));
@@ -163,7 +162,7 @@ public class SampleMessageWidget extends Widget {
                 LayoutFactory.SerialAlignment.JUSTIFY, 10));
         addChild(contentWidget);
         paneWidget = new EditorPaneWidget(scene, 
-                Utils.getFormatedDocument(type.getMessage(operation)));
+                Utils.getFormatedDocument(type.getMessage(operation)),"text/xml");
         paneWidget.setEditable(false);
         contentWidget.addChild(paneWidget);
 
@@ -187,11 +186,6 @@ public class SampleMessageWidget extends Widget {
             }
         }, ActionFactory.createDefaultResizeProvider()));
         getActions().addAction(ActionFactory.createMoveAction());
-        setBorder(BorderFactory.createLineBorder(10,type.getBorderColor()));
-    }
-    
-    public void paintChildren() {
-        System.out.println("");
-        super.paintChildren();
+        setBorder(BorderFactory.createResizeBorder(10,type.getBorderColor(),true));
     }
 }
