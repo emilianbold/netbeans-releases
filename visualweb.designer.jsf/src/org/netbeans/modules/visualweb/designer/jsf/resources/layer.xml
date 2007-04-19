@@ -82,12 +82,14 @@ Microsystems, Inc. All Rights Reserved.
                         <file name="org-netbeans-modules-visualweb-designer-jsf-action-VirtualFormsSupportAction.shadow">
                             <attr name="originalFile" stringvalue="/Actions/JSFSupport/org-netbeans-modules-visualweb-designer-jsf-action-VirtualFormsSupportAction.instance"/>
                         </file>
+                        <!--
                         <attr name="org-netbeans-modules-visualweb-designer-jsf-action-VirtualFormsSupportAction.shadow/org-netbeans-modules-visualweb-designer-jsf-action-AjaxTransactionsSupportAction.shadow" boolvalue="true"/>
                         <file name="org-netbeans-modules-visualweb-designer-jsf-action-AjaxTransactionsSupportAction.shadow">
                             <attr name="originalFile" stringvalue="/Actions/JSFSupport/org-netbeans-modules-visualweb-designer-jsf-action-AjaxTransactionsSupportAction.instance"/>
                         </file>
                         <attr name="org-netbeans-modules-visualweb-designer-jsf-action-AjaxTransactionsSupportAction.shadow/org-netbeans-modules-visualweb-designer-action-TargetResolutionAction.shadow" boolvalue="true"/>
-                    </folder>
+                        -->
+                        <attr name="org-netbeans-modules-visualweb-designer-jsf-action-VirtualFormsSupportAction.shadow/org-netbeans-modules-visualweb-designer-action-TargetResolutionAction.shadow" boolvalue="true"/>                    </folder>
                 </folder>
             </folder>
         </folder>
