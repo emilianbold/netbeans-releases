@@ -27,7 +27,7 @@
              executor="ide_perf_setup" name="UI responsiveness - setup">
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="gui/EPMeasuringSetup.class"/>
+                <include name="gui/MPMeasuringSetup.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -37,15 +37,15 @@
              executor="ide_performance" name="UI responsiveness - Actions" >
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="gui/EPMeasureActions.class"/>
+                <include name="gui/MPMeasureActions.class"/>
             </patternset>
         </testset>
     </testbag>
-<!-- no enteprise specific menus/dialogs tests so far    <testbag testattribs="all or dialogs" prio="3"
+    <testbag testattribs="all or dialogs" prio="3"
              executor="ide_performance" name="UI responsiveness - Dialogs" >
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="gui/EPMeasureDialogs.class"/>
+                <include name="gui/MPMeasureDialogs.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -53,25 +53,25 @@
              executor="ide_performance" name="UI responsiveness - Menus" >
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="gui/EPMeasureMenus.class"/>
+                <include name="gui/MPMeasureMenus.class"/>
             </patternset>
         </testset>
     </testbag>
--->    
+
     <!-- 2nd round -->    
     <testbag testattribs="(all or actions) and NOT once" prio="5"
              executor="ide_performance" name="UI responsiveness - Actions" >
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="gui/EPMeasureActions.class"/>
+                <include name="gui/MPMeasureActions.class"/>
             </patternset>
         </testset>
     </testbag>
-<!-- no enteprise specific menus/dialogs tests so far     <testbag testattribs="(all or dialogs) and NOT once" prio="6"
+    <testbag testattribs="(all or dialogs) and NOT once" prio="6"
              executor="ide_performance" name="UI responsiveness - Dialogs" >
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="gui/EPMeasureDialogs.class"/>
+                <include name="gui/MPMeasureDialogs.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -79,25 +79,25 @@
              executor="ide_performance" name="UI responsiveness - Menus" >
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="gui/EPMeasureMenus.class"/>
+                <include name="gui/MPMeasureMenus.class"/>
             </patternset>
         </testset>
     </testbag>
--->        
+      
     <!-- 3rd round -->    
     <testbag testattribs="(all or actions) and NOT once" prio="8"
              executor="ide_performance" name="UI responsiveness - Actions" >
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="gui/EPMeasureActions.class"/>
+                <include name="gui/MPMeasureActions.class"/>
             </patternset>
         </testset>
     </testbag>
-<!-- no enteprise specific menus/dialogs tests so far     <testbag testattribs="(all or dialogs) and NOT once" prio="9"
+    <testbag testattribs="(all or dialogs) and NOT once" prio="9"
              executor="ide_performance" name="UI responsiveness - Dialogs" >
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="gui/EPMeasureDialogs.class"/>
+                <include name="gui/MPMeasureDialogs.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -105,7 +105,7 @@
              executor="ide_performance" name="UI responsiveness - Menus" >
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="gui/EPMeasureMenus.class"/>
+                <include name="gui/MPMeasureMenus.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -115,7 +115,7 @@
              executor="ide_performance_scan" name="Classpath Scan" >
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="gui/scanclasspath/EPScanClasspath.class"/>
+                <include name="gui/scanclasspath/MPScanClasspath.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -123,30 +123,58 @@
     
 <!-- Memory Footprint Testbags -->
 
+    <!-- Out Of The Box -->
+    <testbag testattribs="all or footprint_OutOfTheBox" prio="300"
+             executor="ide_footprint" name="Footprint - Out Of The Box Startup" >
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="footprint/MPOutOfTheBox.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="(all or footprint_OutOfTheBox) and NOT once" prio="301"
+             executor="ide_footprint" name="Footprint - Out Of The Box Startup" >
+        <testset dir="footprint/src">
+            <patternset>
+                <include name="footprint/MPOutOfTheBox.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="(all or footprint_OutOfTheBox) and NOT once" prio="302"
+             executor="ide_footprint" name="Footprint - Out Of The Box Startup" >
+        <testset dir="footprint/src">
+            <patternset>
+                <include name="footprint/MPOutOfTheBox.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
     <!-- J2EE Project workflow -->
-    <testbag testattribs="all or footprint_EntepriseProject" prio="330"
-             executor="ide_footprint" name="Footprint - J2EE project workflow" >
+    <testbag testattribs="all or footprint_MobilityProject" prio="330"
+             executor="ide_footprint" name="Footprint - Mobility project workflow" >
 	<testset dir="footprint/src">
 	    <patternset>
-		<include name="footprint/J2EEProjectWorkflow.class"/>
+		<include name="footprint/MobilityProjectWorkflow.class"/>
 	    </patternset>
 	</testset>
     </testbag>
 
-    <testbag testattribs="(all or footprint_EntepriseProject) and NOT once" prio="331"
-             executor="ide_footprint" name="Footprint - J2EE project workflow" >
+    <testbag testattribs="(all or footprint_MobilityProject) and NOT once" prio="331"
+             executor="ide_footprint" name="Footprint - Mobility project workflow" >
 	<testset dir="footprint/src">
 	    <patternset>
-		<include name="footprint/J2EEProjectWorkflow.class"/>
+		<include name="footprint/MobilityProjectWorkflow.class"/>
 	    </patternset>
 	</testset>
     </testbag>
 
-    <testbag testattribs="(all or footprint_EntepriseProject) and NOT once" prio="332"
-             executor="ide_footprint" name="Footprint - J2EE project workflow" >
+    <testbag testattribs="(all or footprint_MobilityProject) and NOT once" prio="332"
+             executor="ide_footprint" name="Footprint - Mobility project workflow" >
 	<testset dir="footprint/src">
 	    <patternset>
-		<include name="footprint//J2EEProjectWorkflow.class"/>
+		<include name="footprint/MobilityrojectWorkflow.class"/>
 	    </patternset>
 	</testset>
     </testbag>

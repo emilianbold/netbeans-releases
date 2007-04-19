@@ -17,24 +17,27 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package gui;
+package gui.setup;
 
-
-import org.netbeans.junit.NbTestSuite;
+import gui.MPUtilities;
 
 /**
- * Measure UI-RESPONSIVENES and WINDOW_OPENING.
+ * Test suite that actually does not perform any test but sets up user directory
+ * for UI responsiveness tests
  *
  * @author  mmirilovic@netbeans.org
  */
-public class MPMeasureActions  {
-
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-
-        // TODO add some test cases
-        
-        return suite;
+public class MobilitySetupTest extends IDESetupTest {
+    
+    public MobilitySetupTest(java.lang.String testName) {
+        super(testName);
     }
     
+    public void openMobilityMIDletProject() {
+        MPUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir") + java.io.File.separator + "MobileApplicationVisualMIDlet");
+    }
+
+    public void openMobilitySwitchProject() {
+        MPUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir") + java.io.File.separator + "MobileApplicationSwitchConfiguration");
+    }
 }

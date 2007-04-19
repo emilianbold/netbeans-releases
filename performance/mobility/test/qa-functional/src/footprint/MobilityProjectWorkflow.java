@@ -19,7 +19,12 @@
 
 package footprint;
 
+import org.netbeans.jellytools.TopComponentOperator;
+
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JToggleButtonOperator;
+import org.netbeans.jemmy.operators.Operator;
 
 /**
  * Measure Mobility Project Workflow Memory footprint
@@ -28,6 +33,8 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  */
 public class MobilityProjectWorkflow extends org.netbeans.performance.test.utilities.MemoryFootprintTestCase {
     
+    private String projectName;
+            
     /**
      * Creates a new instance of MobilityProjectWorkflow
      *
@@ -54,18 +61,39 @@ public class MobilityProjectWorkflow extends org.netbeans.performance.test.utili
     
     public void initialize() {
         super.initialize();
-        EPFootprintUtilities.closeAllDocuments();
-        EPFootprintUtilities.closeMemoryToolbar();
+        MPFootprintUtilities.closeAllDocuments();
+        MPFootprintUtilities.closeMemoryToolbar();
+        MPFootprintUtilities.closeUIGesturesToolbar();
     }
     
     public ComponentOperator open(){
-        //TODO Create, edit, build and execute a sample Mobility project
+        projectName = MPFootprintUtilities.createproject("Mobility", "Mobile Application", true); //NOI18N
+        
+        // get opened editor
+        Operator.StringComparator defaultOperator = Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(new Operator.DefaultStringComparator(true, true));
+        TopComponentOperator midletEditor = new TopComponentOperator("HelloMidlet");
+        Operator.setDefaultStringComparator(defaultOperator);
+            
+        // switch to Screen Design
+        new JToggleButtonOperator(midletEditor, "Screen Design").pushNoBlock(); //NOI18N
+        new EventTool().waitNoEvent(1500);
+        
+        // switch to Source
+        new JToggleButtonOperator(midletEditor, "Source").pushNoBlock(); //NOI18N
+        new EventTool().waitNoEvent(3000);
+        
+        // switch to Screen Design
+        new JToggleButtonOperator(midletEditor, "Flow Design").pushNoBlock(); //NOI18N
+        new EventTool().waitNoEvent(1500);
+        
+        MPFootprintUtilities.buildproject(projectName);
         
         return null;
     }
     
     public void close(){
-        //TODO delete created projects
+        MPFootprintUtilities.deleteProject(projectName);
     }
     
     public static void main(java.lang.String[] args) {

@@ -27,7 +27,7 @@ import org.netbeans.jellytools.nodes.Node;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class EPFootprintUtilities extends gui.MPUtilities{
+public class MPFootprintUtilities extends gui.MPUtilities{
     
         // TODO some utilities
     

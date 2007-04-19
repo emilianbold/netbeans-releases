@@ -20,7 +20,6 @@
 package gui;
 
 import org.netbeans.junit.NbTestSuite;
-import gui.window.*;
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.

@@ -42,7 +42,7 @@ public class MPMeasuringSetup extends NbTestSuite {
         
         suite.addTest(new MobilitySetupTest("closeWelcome"));
         
-        // TODO open some project
+        suite.addTest(new MobilitySetupTest("openMobilitySwitchProject"));
         
         suite.addTest(new MobilitySetupTest("closeAllDocuments"));
         
