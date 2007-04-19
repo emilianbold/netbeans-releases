@@ -41,6 +41,7 @@ import org.netbeans.modules.websvc.design.configuration.WSConfiguration;
 import org.netbeans.modules.websvc.design.configuration.WSConfigurationProvider;
 import org.netbeans.modules.websvc.design.configuration.WSConfigurationProviderRegistry;
 import org.netbeans.modules.websvc.design.javamodel.ServiceModel;
+import org.netbeans.modules.websvc.design.view.layout.LeftRightLayout;
 import org.netbeans.modules.websvc.design.view.widget.ButtonAction;
 import org.netbeans.modules.websvc.design.view.widget.OperationsWidget;
 import org.netbeans.modules.websvc.design.view.widget.ToggleButtonWidget;
@@ -97,7 +98,7 @@ public class DesignView extends JPanel  {
         Widget headerWidget = new Widget(scene);
         headerWidget.setLayout(LayoutFactory.createHorizontalFlowLayout(
                 LayoutFactory.SerialAlignment.JUSTIFY, 12));
-        headerWidget.setBorder(BorderFactory.createOpaqueBorder(12,24,12,0));
+        headerWidget.setBorder(BorderFactory.createOpaqueBorder(12,24,12,12));
         headerWidget.setBackground(new Color(180,180,255));
         headerWidget.setOpaque(true);
         headerWidget.addChild(serviceWidget);
@@ -105,6 +106,7 @@ public class DesignView extends JPanel  {
         //if there are Configuration Providers, add their buttons
         Set<WSConfigurationProvider> providers = getConfigProviders();
         if(providers.size() > 0){
+            headerWidget.setLayout(new LeftRightLayout(32));
             headerWidget.addChild(createConfigWidget(providers));
         }
         
@@ -187,6 +189,9 @@ public class DesignView extends JPanel  {
         Widget configWidget = new Widget(scene);
         configWidget.setLayout(LayoutFactory.createHorizontalFlowLayout(
                 LayoutFactory.SerialAlignment.JUSTIFY, 8));
+        configWidget.setOpaque(true);
+        configWidget.setBorder(BorderFactory.createRoundedBorder(10, 10, 10, 10,
+                Color.WHITE, null));
         for(WSConfigurationProvider provider : providers){
             WSConfiguration config = provider.getWSConfiguration(service, implementationClass);
             if(config != null){
