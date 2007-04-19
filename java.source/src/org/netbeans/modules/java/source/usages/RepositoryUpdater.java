@@ -584,7 +584,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         String current = p.getProperty(attributeName);
         
         if (   (attributeValue != null && attributeValue.equals(current))
-            || (attributeName == null && current == null))
+            || (attributeValue == null && current == null))
             return false;
         
         if (attributeValue != null) {
