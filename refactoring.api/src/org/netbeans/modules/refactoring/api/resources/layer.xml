@@ -62,17 +62,18 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="WhereUsedAction.instance/sep-before-reposearch.instance" boolvalue="true"/>
         </folder>
         <folder name="Window">
-            <attr name="ResultViewOpenAction.shadow/FindUsagesOpenAction.shadow" boolvalue="true"/>
-            <file name="FindUsagesOpenAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-refactoring-spi-impl-FindUsagesOpenAction.instance"/>
-            </file>
-            <attr name="FindUsagesOpenAction.shadow/org-netbeans-modules-refactoring-spi-impl-RefactoringPreviewOpenAction.instance" boolvalue="true"/>
+            <folder name="Output">
+                <attr name="ResultViewOpenAction.shadow/FindUsagesOpenAction.shadow" boolvalue="true"/>
+                <file name="FindUsagesOpenAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-refactoring-spi-impl-FindUsagesOpenAction.instance"/>
+                </file>
+                <attr name="FindUsagesOpenAction.shadow/org-netbeans-modules-refactoring-spi-impl-RefactoringPreviewOpenAction.instance" boolvalue="true"/>
 
-            <attr name="FindUsagesOpenAction.shadow/RefactoringPreviewOpenAction.shadow" boolvalue="true"/>
-            <file name="RefactoringPreviewOpenAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-refactoring-spi-impl-RefactoringPreviewOpenAction.instance"/>
-            </file>
-            <attr name="RefactoringPreviewOpenAction.shadow/org-netbeans-modules-tasklist-ui-TaskListAction.shadow" boolvalue="true"/>
+                <attr name="FindUsagesOpenAction.shadow/RefactoringPreviewOpenAction.shadow" boolvalue="true"/>
+                <file name="RefactoringPreviewOpenAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-refactoring-spi-impl-RefactoringPreviewOpenAction.instance"/>
+                </file>
+            </folder>
         </folder> <!-- Window -->
     </folder>
 

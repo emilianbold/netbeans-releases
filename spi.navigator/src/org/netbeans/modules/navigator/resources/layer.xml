@@ -26,11 +26,14 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     <folder name="Menu">
         <folder name="Window">
-            <attr name="org-netbeans-core-output2-OutputWindowAction.shadow/org-netbeans-modules-navigator-ShowNavigatorAction.shadow" boolvalue="true"/>
-            <file name="org-netbeans-modules-navigator-ShowNavigatorAction.shadow">
-              <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-navigator-ShowNavigatorAction.instance"/>
-            </file>
-            <attr name="org-netbeans-modules-navigator-ShowNavigatorAction.shadow/org-netbeans-core-actions-GlobalPropertiesAction.shadow" boolvalue="true"/>
+            <folder name="Navigator">
+                <file name="org-netbeans-modules-navigator-ShowNavigatorAction.shadow">
+                  <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-navigator-ShowNavigatorAction.instance"/>
+                </file>
+                <attr name="org-netbeans-modules-navigator-ShowNavigatorAction.shadow/org-netbeans-core-actions-GlobalPropertiesAction.shadow" boolvalue="true"/>
+            </folder>
+            <attr name="Navigator/Debug" boolvalue="true"/>
+            <attr name="Navigator/SwitchToRecentDocumentAction.shadow" boolvalue="true"/>
         </folder>
     </folder>
 

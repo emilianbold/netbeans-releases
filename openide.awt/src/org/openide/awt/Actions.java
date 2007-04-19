@@ -859,8 +859,8 @@ public class Actions extends Object {
                 if (s instanceof String) {
                     setMenuText(((JMenuItem) comp), (String) s, true);
 
-                    //System.out.println("Menu item: " + s);
-                    //System.out.println("Action class: " + action.getClass());
+                    System.out.println("Menu item: " + s);
+                    System.out.println("Action class: " + action.getClass());
                 }
             }
         }

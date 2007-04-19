@@ -139,7 +139,8 @@ Microsystems, Inc. All Rights Reserved.
     
     <folder name="Menu">
         <folder name="Window">
-            <attr name="ProgressListAction.shadow/Debug" boolvalue="true" />
+            <attr name="Output/Debug" boolvalue="true" />
+            <attr name="Navigator/Debug" boolvalue="true" />
             <folder name="Debug">
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/openide/resources/actions/empty.gif" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.resources.Bundle" />
@@ -173,6 +174,8 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-ThreadsViewAction.instance"/>
                 </file>
             </folder>
+            <attr name="Debug/Versioning" boolvalue="true" />
+            <attr name="Debug/Other" boolvalue="true" />
             <attr name="Debug/Separator3.instance" boolvalue="true" />
         </folder>
     </folder>

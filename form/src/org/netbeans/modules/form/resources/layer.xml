@@ -57,11 +57,12 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Menu">
         <folder name="Window">
-            <file name="InspectorAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-form-actions-InspectorAction.instance"/>
-            </file>
-            <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-status-OpenVersioningAction.shadow/InspectorAction.shadow" boolvalue="true" />
-            <attr name="InspectorAction.shadow/SwitchToRecentDocumentAction.shadow" boolvalue="true" />
+            <folder name="Navigator">
+                <attr name="org-netbeans-modules-navigator-ShowNavigatorAction.shadow/InspectorAction.shadow" boolvalue="true" />
+                <file name="InspectorAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-form-actions-InspectorAction.instance"/>
+                </file>
+            </folder>
         </folder>
         <folder name="Tools">
             <folder name="PaletteManager">

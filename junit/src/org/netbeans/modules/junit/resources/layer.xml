@@ -179,21 +179,14 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 
         </folder>
         <folder name="Window">
-            <attr name="ViewRuntimeTabAction.shadow/ResultWindowOpenAction.shadow" boolvalue="true"/>
-            <attr name="ResultViewOpenAction.shadow/ResultWindowOpenAction.shadow" boolvalue="true"/>
-            <attr name="FindUsagesOpenAction.shadow/ResultWindowOpenAction.shadow" boolvalue="true"/>
-            <attr name="org-netbeans-core-actions-ViewRuntimeTabAction.instance/ResultWindowOpenAction.shadow" boolvalue="true"/>
-            <attr name="org-netbeans-modules-search-ResultViewOpenAction.instance/ResultWindowOpenAction.shadow" boolvalue="true"/>
-            <attr name="org-netbeans-modules-refactoring-ui-FindUsagesOpenAction.instance/ResultWindowOpenAction.shadow" boolvalue="true"/>
-            <file name="ResultWindowOpenAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-junit-output-ResultWindowOpenAction.instance"/>
-            </file> <!-- ResultWindowOpenAction -->
-            <attr name="ResultWindowOpenAction.shadow/org-netbeans-modules-refactoring-ui-RefactoringPreviewOpenAction.instance" boolvalue="true"/>
-            <attr name="ResultWindowOpenAction.shadow/org-netbeans-modules-versioning-system-cvss-ui-actions-status-OpenVersioningAction.instance" boolvalue="true"/>
-            <attr name="ResultWindowOpenAction.shadow/org-netbeans-core-windows-actions-SwitchToRecentDocumentAction.instance" boolvalue="true"/>
-            <attr name="ResultWindowOpenAction.shadow/RefactoringPreviewOpenAction.shadow" boolvalue="true"/>
-            <attr name="ResultWindowOpenAction.shadow/OpenVersioningAction.shadow" boolvalue="true"/>
-            <attr name="ResultWindowOpenAction.shadow/SwitchToRecentDocumentAction.shadow" boolvalue="true"/>
+            <folder name="Output">
+                <attr name="ResultViewOpenAction.shadow/ResultWindowOpenAction.shadow" boolvalue="true"/>
+                <attr name="FindUsagesOpenAction.shadow/ResultWindowOpenAction.shadow" boolvalue="true"/>
+                <file name="ResultWindowOpenAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-junit-output-ResultWindowOpenAction.instance"/>
+                </file> <!-- ResultWindowOpenAction -->
+                <attr name="ResultWindowOpenAction.shadow/RefactoringPreviewOpenAction.shadow" boolvalue="true"/>
+            </folder>
         </folder> <!-- Window -->
     </folder>
     

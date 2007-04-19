@@ -106,15 +106,19 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="org-netbeans-modules-java-navigation-actions-InspectHierarchyAction.shadow/SeparatorBeforeJumpBack.instance" boolvalue="true"/>
         </folder>
         <folder name="Window">
-            <attr name="InspectorAction.shadow/DeclarationAction.shadow" boolvalue="true"/>
-            <file name="DeclarationAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-java-navigation-actions-DeclarationAction.instance"/>
-            </file>
-            <attr name="DeclarationAction.shadow/JavadocAction.shadow" boolvalue="true"/>
-            <file name="JavadocAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-java-navigation-actions-JavadocAction.instance"/>
-            </file>
-            <attr name="JavadocAction.shadow/SwitchToRecentDocumentAction.shadow" boolvalue="true"/>
+            <attr name="Output/Other" boolvalue="true"/>
+            <attr name="Debug/Other" boolvalue="true"/>
+            <attr name="Versioning/Other" boolvalue="true"/>
+            <folder name="Other">
+                <file name="DeclarationAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-java-navigation-actions-DeclarationAction.instance"/>
+                </file>
+                <attr name="DeclarationAction.shadow/JavadocAction.shadow" boolvalue="true"/>
+                <file name="JavadocAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-java-navigation-actions-JavadocAction.instance"/>
+                </file>
+            </folder>
+            <attr name="Other/SwitchToRecentDocumentAction.shadow" boolvalue="true"/>
         </folder>
     </folder>
     

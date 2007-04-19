@@ -36,11 +36,13 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
         <folder name="Window">
+            <attr name="ViewRuntimeTabAction.shadow/ShowPaletteAction.shadow" boolvalue="true" />
+            <attr name="ViewFavoritesTabAction.shadow/ShowPaletteAction.shadow" boolvalue="true" />
             <file name="ShowPaletteAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-palette-ShowPaletteAction.instance"/>
             </file>
             <attr name="ShowPaletteAction.shadow/org-netbeans-core-actions-GlobalPropertiesAction.shadow" boolvalue="true" />
-            <attr name="org-netbeans-modules-navigator-ShowNavigatorAction.shadow/ShowPaletteAction.shadow" boolvalue="true" />
+            <attr name="ShowPaletteAction.shadow/Output" boolvalue="true" />
         </folder>
     </folder>
     

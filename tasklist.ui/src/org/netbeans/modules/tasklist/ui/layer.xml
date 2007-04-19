@@ -12,7 +12,7 @@
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-tasklist-ui-TaskListAction.instance"/>
             </file>
             
-            <attr name="oldRootsEnd.txt/org-netbeans-modules-tasklist-ui-TaskListAction.shadow" boolvalue="true" />
+            <attr name="org-netbeans-core-actions-GlobalPropertiesAction.shadow/org-netbeans-modules-tasklist-ui-TaskListAction.shadow" boolvalue="true" />
             <attr name="org-netbeans-modules-tasklist-ui-TaskListAction.shadow/Form" boolvalue="true" />
         </folder>
     </folder>

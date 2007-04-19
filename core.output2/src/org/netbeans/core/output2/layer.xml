@@ -26,12 +26,18 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     <folder name="Menu">
         <folder name="Window">
-            <attr name="ViewFavoritesTabAction.shadow/org-netbeans-core-output2-OutputWindowAction.shadow" boolvalue="true"/>
-            <attr name="org-netbeans-core-output2-OutputWindowAction.shadow/ViewRuntimeTabAction.shadow" boolvalue="true"/>
-            <file name="org-netbeans-core-output2-OutputWindowAction.shadow">
-              <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-output2-OutputWindowAction.instance"/>
-            </file>
-            <attr name="org-netbeans-core-output2-OutputWindowAction.shadow/Form" boolvalue="true"/>
+            <attr name="org-netbeans-core-actions-GlobalPropertiesAction.shadow/Output" boolvalue="true" />
+            <attr name="org-netbeans-modules-tasklist-ui-TaskListAction.shadow/Output" boolvalue="true" />
+            <folder name="Output">
+                <file name="org-netbeans-core-output2-OutputWindowAction.shadow">
+                  <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-output2-OutputWindowAction.instance"/>
+                </file>
+                <attr name="org-netbeans-core-output2-OutputWindowAction.shadow/ResultViewOpenAction.shadow" boolvalue="true"/>
+                <attr name="org-netbeans-core-output2-OutputWindowAction.shadow/FindUsagesOpenAction.shadow" boolvalue="true"/>
+                <attr name="org-netbeans-core-output2-OutputWindowAction.shadow/ResultWindowOpenAction.shadow" boolvalue="true"/>
+            </folder>
+            <attr name="Output/Navigator" boolvalue="true" />
+            <attr name="Output/Versioning" boolvalue="true" />
         </folder>
     </folder>
     <folder name="Shortcuts">

@@ -246,15 +246,15 @@ Microsystems, Inc. All Rights Reserved.
         </folder> <!-- File -->
 
         <folder name="Window">
-            <attr name="OutputWindowAction.shadow/ResultViewOpenAction.shadow" boolvalue="true"/>
-            <attr name="ViewRuntimeTabAction.shadow/ResultViewOpenAction.shadow" boolvalue="true"/>
-            <attr name="org-netbeans-core-output2-OutputWindowAction.instance/ResultViewOpenAction.shadow" boolvalue="true"/>
-            <attr name="org-netbeans-core-actions-ViewRuntimeTabAction.instance/ResultViewOpenAction.shadow" boolvalue="true"/>
-            <file name="ResultViewOpenAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-search-ResultViewOpenAction.instance"/>
-            </file>
-            <attr name="ResultViewOpenAction.shadow/org-netbeans-modules-web-monitor-client-MonitorAction.instance" boolvalue="true"/>
-            <attr name="ResultViewOpenAction.shadow/MonitorAction.shadow" boolvalue="true"/>
+            <folder name="Output">
+                <attr name="OutputWindowAction.shadow/ResultViewOpenAction.shadow" boolvalue="true"/>
+                <attr name="org-netbeans-core-output2-OutputWindowAction.instance/ResultViewOpenAction.shadow" boolvalue="true"/>
+                <file name="ResultViewOpenAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-search-ResultViewOpenAction.instance"/>
+                </file>
+                <attr name="ResultViewOpenAction.shadow/org-netbeans-modules-web-monitor-client-MonitorAction.instance" boolvalue="true"/>
+                <attr name="ResultViewOpenAction.shadow/MonitorAction.shadow" boolvalue="true"/>
+            </folder>
         </folder> <!-- Window -->
 
         <folder name="Help">
