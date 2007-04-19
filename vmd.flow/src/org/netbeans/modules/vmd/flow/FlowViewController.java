@@ -57,9 +57,9 @@ public class FlowViewController implements DesignDocumentAwareness {
         toolbar.setRollover (true);
         toolbar.setPreferredSize (new Dimension (14, 14));
         toolbar.setSize (new Dimension (14, 14));
-        JPanel sep = new JPanel ();
-        sep.setSize (10, 10);
-        toolbar.add (sep);
+        JToolBar.Separator separator = new JToolBar.Separator ();
+        separator.setOrientation(JSeparator.VERTICAL);
+        toolbar.add (separator);
 
         addToolbarButton ("layout", "Overview", new ActionListener() {
             public void actionPerformed (ActionEvent e) {
@@ -89,7 +89,8 @@ public class FlowViewController implements DesignDocumentAwareness {
     }
 
     private JButton addToolbarButton (String imageResourceName, String toolTipText, ActionListener listener) {
-        final JButton button = new JButton (new ImageIcon (Utilities.loadImage ("org/netbeans/modules/vmd/flow/resources/" + imageResourceName + ".png")));
+        final JButton button = new JButton (new ImageIcon (Utilities.loadImage ("org/netbeans/modules/vmd/flow/resources/" + imageResourceName + ".png"))); // NOI18N
+        button.setOpaque (false);
         button.setToolTipText (toolTipText);
         button.setBorderPainted (false);
         button.setRolloverEnabled (true);

@@ -98,9 +98,12 @@ public class AnalyzerEditorView implements DataEditorView, DesignDocumentAwarene
         toolbar.setRollover (true);
         toolbar.setPreferredSize (new Dimension (14, 14));
         toolbar.setSize (new Dimension (14, 14));
-        toolbar.add (new JSeparator (JSeparator.VERTICAL));
+        JToolBar.Separator separator = new JToolBar.Separator ();
+        separator.setOrientation(JSeparator.VERTICAL);
+        toolbar.add (separator);
 
         JButton refreshButton = new JButton ();
+        refreshButton.setOpaque (false);
         refreshButton.setToolTipText ("Refresh");
         refreshButton.setBorderPainted (false);
         refreshButton.setRolloverEnabled (true);
