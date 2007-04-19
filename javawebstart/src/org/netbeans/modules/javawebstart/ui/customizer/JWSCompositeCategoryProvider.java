@@ -27,10 +27,13 @@ import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.java.j2seproject.api.J2SEProjectConfigurations;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
@@ -49,7 +52,6 @@ import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -175,19 +177,60 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
             } catch (SAXException ex) {
                 ErrorManager.getDefault().notify(ex);
             }
-            // XXX test if it's already modified - then do not save!
+            FileObject jnlpBuildFile = projDir.getFileObject("nbproject/jnlp-impl.xml"); // NOI18N
+            AntBuildExtender extender = proj.getLookup().lookup(AntBuildExtender.class);
+            if (extender != null) {
+                assert jnlpBuildFile != null;
+                if (extender.getExtension("jws") == null) {
+                    AntBuildExtender.Extension ext = extender.addExtension("jws", jnlpBuildFile);
+                    ext.addDependency("jar", "jnlp");
+                }
+                ProjectManager.getDefault().saveProject(proj);
+            } else {
+                Logger.getLogger(JWSCompositeCategoryProvider.class.getName()).log(Level.INFO, 
+                        "Trying to include JWS build snippet in project type that doesn't support AntBuildExtender API contract.");
+            }
+            
+            //TODO this piece shall not proceed when the upgrade to j2se-project/4 was cancelled.
+            //how to figure..
             Element docElem = xmlDoc.getDocumentElement();
-            NodeList nl = docElem.getElementsByTagName("import"); // NOI18N
-            if (nl.getLength() == 1) {
-                Element importElem = xmlDoc.createElement("import"); // NOI18N
-                importElem.setAttribute("file", "nbproject/jnlp-impl.xml");  // NOI18N
-                Node n = nl.item(0).getNextSibling();
-                docElem.insertBefore(importElem, n);
-                Element targetElem = xmlDoc.createElement("target"); // NOI18N
-                targetElem.setAttribute("name", "-post-jar"); // NOI18N
-                targetElem.setAttribute("depends", "jnlp"); // NOI18N
-                n = importElem.getNextSibling();
-                docElem.insertBefore(targetElem, n);
+            NodeList nl = docElem.getElementsByTagName("target"); // NOI18N
+            Element target = null;
+            for (int i = 0; i < nl.getLength(); i++) {
+                Element e = (Element) nl.item(i);
+                if (e.getAttribute("name") != null && "-post-jar".equals(e.getAttribute("name"))) {
+                    target = e;
+                    break;
+                }
+            }
+            boolean changed = false;
+            if (target != null) {
+                if ((target.getAttribute("depends") != null && target.getAttribute("depends").contains("jnlp"))) {
+                    String old = target.getAttribute("depends");
+                    old = old.replaceAll("jnlp", "");
+                    old = old.replaceAll(",[\\s]*$", "");
+                    old = old.replaceAll("^[\\s]*,", "");
+                    old = old.replaceAll(",[\\s]*,", ",");
+                    old = old.trim();
+                    if (old.length() == 0) {
+                        target.removeAttribute("depends");
+                    } else {
+                        target.setAttribute("depends", old); // NOI18N
+                    }
+                    changed = true;
+                }
+            }
+            nl = docElem.getElementsByTagName("import");
+            for (int i = 0; i < nl.getLength(); i++) {
+                Element e = (Element) nl.item(i);
+                if (e.getAttribute("file") != null && "nbproject/jnlp-impl.xml".equals(e.getAttribute("file"))) {
+                    e.getParentNode().removeChild(e);
+                    changed = true;
+                    break;
+                }
+            }
+            
+            if (changed) {
                 final Document fdoc = xmlDoc;
                 try {
                     ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
