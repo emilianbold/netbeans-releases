@@ -11,13 +11,16 @@
 <body>
 <h2>Using the Stream  Projection and Filter Operator Property Editor</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>The Stream  Projection and Filter operator enables you to obtain a stream and for each event in the input stream:</p>
+<p>The Stream  Projection and Filter operator enables you to obtain a stream and for each event in the input stream and to: </p>
 <ul>
   <li>Make that event bigger by adding new attributes, or </li>
-  <li>Make  events smaller by eliminating attributes, or rename attributes.</li>
+  <li>Make  that event smaller by eliminating attributes</li>
+  <li>Rename attributes.</li>
 </ul>
+<p><strong>Filtering Dimensions for an Event </strong></p>
 <p>When you add or remove dimensions to an event; you are using the operator to provide a filtering capability on attributes to add or remove attributes.</p>
 <p>For example, you have information on a company that includes stock symbol and price but you want to filter out one of these.To do, you can use the Stream Projection and Filter Operator.</p>
+<p><strong>Joining a Set of Events to One or More Tables </strong></p>
 <p>You can also join an existing set of events with one or more static tables, in which case the output stream can have a different schema than the input stream's schema.  </p>
 <p>For example, you have information relating to an existing stock and its price, but you want to join a static SEC table to provide CEO and company size information--you are, in effect, adding a new dimension to the set of events in the input stream</p>
 <p><strong>To create a Stream Projection and Filter operator:</strong></p>
