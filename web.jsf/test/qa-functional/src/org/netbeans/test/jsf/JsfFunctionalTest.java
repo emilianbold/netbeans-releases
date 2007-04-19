@@ -20,8 +20,6 @@ package org.netbeans.test.jsf;
 
 import java.awt.event.KeyEvent;
 import java.io.IOException;
-import java.util.List;
-import javax.swing.text.Document;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
@@ -49,15 +47,6 @@ import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
-import org.netbeans.modules.editor.NbEditorUtilities;
-/* TODO - fix to use new implementation
-import org.netbeans.modules.web.jsf.JSFConfigDataObject;
-import org.netbeans.modules.web.jsf.JSFConfigUtilities;
-import org.netbeans.modules.web.jsf.config.model.FacesConfig;
-import org.netbeans.modules.web.jsf.config.model.ManagedBean;
-import org.netbeans.modules.web.jsf.config.model.NavigationCase;
-import org.netbeans.modules.web.jsf.config.model.NavigationRule;
- */
 
 /** Test JSF support.
  *
@@ -69,10 +58,14 @@ public class JsfFunctionalTest extends JellyTestCase{
     public static final String PROJECT_NAME = "myjsfproject";
     public static final String WELCOME_JSP = "welcomeJSF.jsp";
     public static final String INDEX_JSP = "index.jsp";
-    public static final String FROM_ACTION = "FromAction";
     public static final String FROM_ACTION1 = "FromAction1";
-    public static final String FROM_OUTCOME = "FromOutcome";
-    public static final String DESCRIPTION = "Description";
+    public static final String FROM_ACTION2 = "FromAction2";
+    public static final String FROM_OUTCOME1 = "FromOutcome1";
+    public static final String FROM_OUTCOME2 = "FromOutcome2";
+    public static final String DESCRIPTION_BEAN = "DescriptionBean";
+    public static final String DESCRIPTION_RULE = "DescriptionRule";
+    public static final String DESCRIPTION_CASE1 = "DescriptionCase1";
+    public static final String DESCRIPTION_CASE2 = "DescriptionCase2";
     
     public JsfFunctionalTest(String name) {
         super(name);
@@ -172,17 +165,6 @@ public class JsfFunctionalTest extends JellyTestCase{
         assertTrue("faces-config.xml should contain "+expected, facesEditor.contains(expected));
         expected = "<managed-bean-scope>session</managed-bean-scope>";
         assertTrue("faces-config.xml should contain "+expected, facesEditor.contains(expected));
-        
-        /* TODO - fix to use new implementation
-        Document document = facesEditor.txtEditorPane().getDocument();
-        JSFConfigDataObject data = (JSFConfigDataObject)NbEditorUtilities.getDataObject(document);
-        List mbeans = JSFConfigUtilities.getAllManagedBeans(data);
-        assertEquals("There should be one managed bean", 1, mbeans.size());
-        ManagedBean managedBean = (ManagedBean)mbeans.get(0);
-        assertEquals("Wrong managed-bean-name.", "MyManagedBean", managedBean.getManagedBeanName());
-        assertEquals("Wrong managed-bean-class.", "mypackage.MyManagedBean", managedBean.getManagedBeanClass());
-        assertEquals("Wrong managed-bean-scope.", "session", managedBean.getManagedBeanScope());
-         */
     }
     
     /** Test that delete safely bean removes record from faces-config.xml. */
@@ -194,13 +176,8 @@ public class JsfFunctionalTest extends JellyTestCase{
         node.waitNotPresent();
         // verify
         EditorOperator facesEditor = new EditorOperator("faces-config.xml");
-        /* TODO - fix to use new implementation
-        Document document = facesEditor.txtEditorPane().getDocument();
-        JSFConfigDataObject data = (JSFConfigDataObject)NbEditorUtilities.getDataObject(document);
-        List mbeans = JSFConfigUtilities.getAllManagedBeans(data);
-         */
-        //TODO - fails because of issue 77310
-        //assertEquals("There should be none managed bean.", 0, mbeans.size());
+        String expected = "<managed-bean>";
+        assertTrue("faces-config.xml should not contain "+expected, facesEditor.contains(expected));
     }
     
     /** Test adding JSF Managed Bean from faces-config.xml. */
@@ -212,23 +189,18 @@ public class JsfFunctionalTest extends JellyTestCase{
         addBeanOper.setBeanName("SecondBean");
         addBeanOper.setBeanClass("mypackage.MyManagedBean");
         addBeanOper.selectScope("application");
-        addBeanOper.setBeanDescription(DESCRIPTION);
+        addBeanOper.setBeanDescription(DESCRIPTION_BEAN);
         addBeanOper.add();
         // verify
-        /* TODO - fix to use new implementation
-        Document document = editor.txtEditorPane().getDocument();
-        JSFConfigDataObject data = (JSFConfigDataObject)NbEditorUtilities.getDataObject(document);
-        List mbeans = JSFConfigUtilities.getAllManagedBeans(data);
-        for (int i = 0; i < mbeans.size(); i++) {
-            ManagedBean managedBean = (ManagedBean)mbeans.get(i);
-            if(managedBean.getManagedBeanName().equals("SecondBean")) {
-                assertEquals("Wrong managed-bean-class.", "mypackage.MyManagedBean", managedBean.getManagedBeanClass());
-                assertEquals("Wrong managed-bean-scope.", "application", managedBean.getManagedBeanScope());
-                return;
-            }
-        }
-        fail("Managed bean record not added to faces-config.xml.");
-        */ 
+        EditorOperator facesEditor = new EditorOperator("faces-config.xml");
+        String expected = "<managed-bean>";
+        assertTrue("faces-config.xml should contain "+expected, facesEditor.contains(expected));
+        expected = "<managed-bean-name>SecondBean</managed-bean-name>";
+        assertTrue("faces-config.xml should contain "+expected, facesEditor.contains(expected));
+        expected = "<managed-bean-class>mypackage.MyManagedBean</managed-bean-class>";
+        assertTrue("faces-config.xml should contain "+expected, facesEditor.contains(expected));
+        expected = "<managed-bean-scope>application</managed-bean-scope>";
+        assertTrue("faces-config.xml should contain "+expected, facesEditor.contains(expected));
     }
     
     /** Test adding navigation rule from faces-config.xml. */
@@ -238,19 +210,19 @@ public class JsfFunctionalTest extends JellyTestCase{
         addRule.perform(editor);
         AddNavigationRuleDialogOperator rule = new AddNavigationRuleDialogOperator();
         rule.setRuleFromView("/"+WELCOME_JSP);
-        rule.setRuleDescription(DESCRIPTION);
+        rule.setRuleDescription(DESCRIPTION_RULE);
         rule.add();
+        editor.waitModified(true);
         editor.save();
         // verify
-        Document document = editor.txtEditorPane().getDocument();
-        /* TODO - fix to use new implementation
-        JSFConfigDataObject data = (JSFConfigDataObject)NbEditorUtilities.getDataObject(document);
-        FacesConfig facesConfig = data.getFacesConfig();
-        NavigationRule[] rules = facesConfig.getNavigationRule();
-        assertEquals("Wrong From View.", "/"+WELCOME_JSP, rules[0].getFromViewId());
-        assertTrue("Wrong rule description.", rules[0].getDescription()[0].indexOf(DESCRIPTION) > -1);
-        assertEquals("There should be one navigation rule", 1, rules.length);
-         */
+        String expected = "<from-view-id>/welcomeJSF.jsp</from-view-id>";
+        assertTrue("faces-config.xml should contain "+expected, editor.contains(expected));
+        expected = "<navigation-rule>";
+        assertTrue("faces-config.xml should contain "+expected, editor.contains(expected));
+        expected = "</navigation-rule>";
+        assertTrue("faces-config.xml should contain "+expected, editor.contains(expected));
+        expected = DESCRIPTION_RULE;
+        assertTrue("faces-config.xml should contain "+expected, editor.contains(expected));
     }
     
     /** Test adding navigation case from faces-config.xml. */
@@ -261,25 +233,25 @@ public class JsfFunctionalTest extends JellyTestCase{
         AddNavigationCaseDialogOperator caseOper = new AddNavigationCaseDialogOperator();
         caseOper.selectFromView("/"+WELCOME_JSP);
         caseOper.selectToView("/"+WELCOME_JSP);
-        caseOper.setFromAction(FROM_ACTION);
-        caseOper.setFromOutcome(FROM_OUTCOME);
-        caseOper.setRuleDescription(DESCRIPTION);
+        caseOper.setFromAction(FROM_ACTION1);
+        caseOper.setFromOutcome(FROM_OUTCOME1);
+        caseOper.setRuleDescription(DESCRIPTION_CASE1);
         caseOper.add();
+        editor.waitModified(true);
         editor.save();
         // verify
-        Document document = editor.txtEditorPane().getDocument();
-        /* TODO - fix to use new implementation
-        JSFConfigDataObject data = (JSFConfigDataObject)NbEditorUtilities.getDataObject(document);
-        FacesConfig facesConfig = data.getFacesConfig();
-        NavigationRule[] rules = facesConfig.getNavigationRule();
-        assertEquals("There should be one navigation rule.", 1, rules.length);
-        NavigationCase[] cases = rules[0].getNavigationCase();
-        assertTrue("There should be one navigation case.", cases.length==1);
-        assertEquals("Wrong From Action.", FROM_ACTION, cases[0].getFromAction());
-        assertEquals("Wrong From OutCome.", FROM_OUTCOME, cases[0].getFromOutcome());
-         */
-        // TODO - fails because of issue 91329
-        //assertFalse("Should not be redirected.", cases[0].isRedirected());
+        String expected = "<from-action>"+FROM_ACTION1+"</from-action>";
+        assertTrue("faces-config.xml should contain "+expected, editor.contains(expected));
+        expected = "<from-outcome>"+FROM_OUTCOME1+"</from-outcome>";
+        assertTrue("faces-config.xml should contain "+expected, editor.contains(expected));
+        expected = "<to-view-id>/"+WELCOME_JSP+"</to-view-id>";
+        assertTrue("faces-config.xml should contain "+expected, editor.contains(expected));
+        expected = "<navigation-case>";
+        assertTrue("faces-config.xml should contain "+expected, editor.contains(expected));
+        expected = "</navigation-case>";
+        assertTrue("faces-config.xml should contain "+expected, editor.contains(expected));
+        expected = DESCRIPTION_CASE1;
+        assertTrue("faces-config.xml should contain "+expected, editor.contains(expected));
     }
     
     /** Test adding navigation case with new rule from faces-config.xml. */
@@ -289,28 +261,27 @@ public class JsfFunctionalTest extends JellyTestCase{
         addCase.perform(editor);
         AddNavigationCaseDialogOperator caseOper = new AddNavigationCaseDialogOperator();
         caseOper.cboFromView().getTextField().setText("/"+INDEX_JSP);
-        caseOper.setFromAction(FROM_ACTION);
-        caseOper.setFromOutcome(FROM_OUTCOME);
-        caseOper.setRuleDescription(DESCRIPTION);
+        caseOper.setFromAction(FROM_ACTION2);
+        caseOper.setFromOutcome(FROM_OUTCOME2);
+        caseOper.setRuleDescription(DESCRIPTION_CASE2);
         caseOper.checkRedirect(true);
         caseOper.cboToView().getTextField().setText("/"+INDEX_JSP);
         caseOper.add();
+        editor.waitModified(true);
         editor.save();
         // verify
-        Document document = editor.txtEditorPane().getDocument();
-        /* TODO - fix to use new implementation
-        JSFConfigDataObject data = (JSFConfigDataObject)NbEditorUtilities.getDataObject(document);
-        FacesConfig facesConfig = data.getFacesConfig();
-        NavigationRule[] rules = facesConfig.getNavigationRule();
-        assertEquals("There should be two navigation rules.", 2, rules.length);
-        assertEquals("Wrong From View.", "/"+INDEX_JSP, rules[1].getFromViewId());
-        NavigationCase[] cases = rules[1].getNavigationCase();
-        assertEquals("There should be one navigation case.", 1, cases.length);
-        assertEquals("Wrong From Action.", FROM_ACTION, cases[0].getFromAction());
-        assertEquals("Wrong From OutCome.", FROM_OUTCOME, cases[0].getFromOutcome());
-         */
-        // TODO - fails because of issue 91329
-        //assertTrue("Should be redirected.", cases[0].isRedirected());
+        String expected = "<from-view-id>/"+INDEX_JSP+"</from-view-id>";
+        assertTrue("faces-config.xml should contain "+expected, editor.contains(expected));
+        expected = "<from-action>"+FROM_ACTION2+"</from-action>";
+        assertTrue("faces-config.xml should contain "+expected, editor.contains(expected));
+        expected = "<from-outcome>"+FROM_OUTCOME2+"</from-outcome>";
+        assertTrue("faces-config.xml should contain "+expected, editor.contains(expected));
+        expected = "<to-view-id>/"+INDEX_JSP+"</to-view-id>";
+        assertTrue("faces-config.xml should contain "+expected, editor.contains(expected));
+        expected = "<redirect/>";
+        assertTrue("faces-config.xml should contain "+expected, editor.contains(expected));
+        expected = DESCRIPTION_CASE2;
+        assertTrue("faces-config.xml should contain "+expected, editor.contains(expected));
     }
 
     /** Test adding JSF framework to existing web application. */
