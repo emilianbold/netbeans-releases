@@ -78,7 +78,7 @@ public class J2EEProjectWorkflow extends org.netbeans.performance.test.utilities
         j2eeproject_war = j2eeproject + "-war";
         j2eeproject_app = j2eeproject + "-app-client";
         
-// TODO temporary disabled - no index.jsp is created in War project        
+// TODO temporary disabled - no index.jsp is created in War project - IZ 101564     
 //        EPFootprintUtilities.openFile(new Node(new ProjectsTabOperator().getProjectRootNode(j2eeproject_war), EPFootprintUtilities.WEB_PAGES + "|index.jsp"),"index.jsp", true);
 //        EPFootprintUtilities.insertToFile("index.jsp", 23, "Hello World", true);
         
