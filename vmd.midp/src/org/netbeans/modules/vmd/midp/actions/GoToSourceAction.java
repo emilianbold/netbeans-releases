@@ -39,10 +39,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 
-
-
-
-
 /**
  *
  * @author Karol Harezlak

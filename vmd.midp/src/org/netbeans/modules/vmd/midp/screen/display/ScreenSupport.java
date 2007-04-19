@@ -156,7 +156,7 @@ public final class ScreenSupport {
                     String srcPath = sourceGroup.getRootFolder().getPath();
                     icon = new ImageIcon("/"+srcPath + iconPath); //NOI18N
                     if (icon == null) {
-                        Debug.warning("Resource path property in " + imageComponent + " contains incorrect value");
+                        Debug.warning("Resource path property in " + imageComponent + " contains incorrect value"); //NOI18N
                     }
                 }
             }

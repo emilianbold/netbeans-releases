@@ -132,9 +132,6 @@ final class GlobalFolderRegistry {
         for (InspectorFolder descriptor : tempDescriptors.values())
             resolveDescriptor(descriptor);
         descriptors = tempDescriptors;
-        //if (descriptors.isEmpty()) //TODO remove it later
-        //    Debug.warning(" Couldnt find folders descriptors");  // NOI18N //TODO remove it later
-        
     }
     
     private  static void resolveDescriptor( InspectorFolder descriptor) {

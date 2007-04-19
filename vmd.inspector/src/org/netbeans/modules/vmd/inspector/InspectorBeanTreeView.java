@@ -42,8 +42,8 @@ final class InspectorBeanTreeView extends BeanTreeView {
 
     public InspectorBeanTreeView(final ExplorerManager explorerManager) {
         final JPopupMenu popupMenu = new JPopupMenu();
-        Image collapseImage = Utilities.loadImage ("org/netbeans/modules/vmd/inspector/resources/collapse-all.png");
-        Image expandImage = Utilities.loadImage ("org/netbeans/modules/vmd/inspector/resources/expand-all.png");
+        Image collapseImage = Utilities.loadImage ("org/netbeans/modules/vmd/inspector/resources/collapse-all.png"); //NOI18N
+        Image expandImage = Utilities.loadImage ("org/netbeans/modules/vmd/inspector/resources/expand-all.png"); //NOI18N
         
         popupMenu.add( new MenuAction(NbBundle.getMessage(InspectorBeanTreeView.class, "CTL_InspectorExpandAction" ), expandImage) { //NOI18N
             public void actionPerformed(ActionEvent e) {

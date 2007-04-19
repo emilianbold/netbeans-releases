@@ -70,7 +70,7 @@ public final class AdvancedPropertySupport extends DefaultPropertySupport {
         if (getPropertyEditor() instanceof DesignPropertyEditor) {
             DesignPropertyEditor propertyEditor = (DesignPropertyEditor) getPropertyEditor();
             if (propertyEditor.canEditAsText() != null)
-                setValue("canEditAsText", propertyEditor.canEditAsText());
+                setValue("canEditAsText", propertyEditor.canEditAsText()); //NOI18N
         }
         if (value instanceof GroupValue) {
             this.value = (GroupValue) value;

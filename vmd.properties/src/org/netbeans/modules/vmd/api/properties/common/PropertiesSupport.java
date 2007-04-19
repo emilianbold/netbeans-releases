@@ -76,7 +76,7 @@ public final class PropertiesSupport {
                     DesignPropertyEditor propertyEditor = designerPropertyDescriptor.getPropertyEditor();
                     
                     if (propertyEditor instanceof GroupPropertyEditor && designerPropertyDescriptor.getPropertyNames().size() == 0)
-                        throw new IllegalStateException("To use AdvancedPropertyEditorSupport you need to specific at least one propertyName");
+                        throw new IllegalStateException("To use AdvancedPropertyEditorSupport you need to specific at least one propertyName"); //NOI18N
                     
                     if (propertyEditor instanceof GroupPropertyEditor)
                         property = new AdvancedPropertySupport(designerPropertyDescriptor, designerPropertyDescriptor.getPropertyEditorType());
@@ -86,7 +86,7 @@ public final class PropertiesSupport {
                         throw new IllegalArgumentException();
                     }
                     if (propertyEditor != null &&  propertyEditor.canEditAsText() != null)
-                        property.setValue("canEditAsText", propertyEditor.canEditAsText());
+                        property.setValue("canEditAsText", propertyEditor.canEditAsText()); //NOI18N
                     property.setValue("changeImmediate", false); // NOI18
                     sheet.get(designerPropertyDescriptor.getPropertyCategory()).put(property);
                 }
@@ -98,7 +98,7 @@ public final class PropertiesSupport {
     //multi selection not supported
     public static void showPropertyEdiotrForCurrentComponent(String propertyName, DesignComponent component) {
         if (component.getDocument().getTransactionManager().isWriteAccess())
-            Debug.warning("Calling PropertiesSupport.showPropertyEdiotrForCurrentComponent form write transaction may generate problems");
+            Debug.warning("Calling PropertiesSupport.showPropertyEdiotrForCurrentComponent form write transaction may generate problems"); //NOI18N
         Sheet sheet = createSheet(component);
         for (PropertySet propertySet : sheet.toArray()) {
             for (Property property : propertySet.getProperties()) {
@@ -145,7 +145,5 @@ public final class PropertiesSupport {
             sheet.put(createPropertiesSet(propertyCategory));
         }
     }
-    
-    
-    
+
 }

@@ -19,20 +19,18 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 
 import javax.swing.*;
-import org.netbeans.modules.vmd.api.inspector.OrderedNavigatorPanel;
-import org.netbeans.modules.vmd.api.io.ActiveViewSupport;
-import org.netbeans.modules.vmd.api.io.DataEditorView;
-import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
+import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
-import org.openide.util.lookup.ProxyLookup;
+
 
 /**
  * @author Karol Harezlak
  */
 
-public final class InspectorPanel implements OrderedNavigatorPanel, LookupListener {
+public final class InspectorPanel implements NavigatorPanel, LookupListener {
     
     private static InspectorPanel INSTANCE;
     private Node[] nodesToRemove;
@@ -55,11 +53,11 @@ public final class InspectorPanel implements OrderedNavigatorPanel, LookupListen
     }
     
     public String getDisplayName() {
-        return "Mobility Inspector"; // TODO Bundle
+        return NbBundle.getMessage(InspectorPanel.class, "LBL_InspectorPanelDisplayName"); //NOI18N
     }
     
     public String getDisplayHint() {
-        return "Shows the design structure"; // TODO Bundle
+        return NbBundle.getMessage(InspectorPanel.class, "LBL_InspectorPanelHint"); //NOI18N
     }
     
     public JComponent getComponent() {
@@ -83,10 +81,6 @@ public final class InspectorPanel implements OrderedNavigatorPanel, LookupListen
     }
     
     public void resultChanged(LookupEvent ev) {
-    }
-    
-    public Integer getOrder() {
-        return 1000;
     }
     
     synchronized void selectionChanged(final Node[] nodes) {

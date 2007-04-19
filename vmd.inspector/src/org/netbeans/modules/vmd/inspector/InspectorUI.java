@@ -259,6 +259,6 @@ final class InspectorUI  extends TopComponent implements ExplorerManager.Provide
     }
     
     public JMenuItem getPopupPresenter() {
-        return new JMenu("menu");
+        return new JMenu("menu"); //NOI18N
     }
 }
