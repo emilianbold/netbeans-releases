@@ -409,7 +409,7 @@ public abstract class AbstractDesignInfo implements DesignInfo, DesignInfoExt {
             }
             
             public Image getSmallIcon() {
-                throw new UnsupportedOperationException("Not supported yet.");
+                return new ImageIcon(getClass().getResource(DECORATION_ICON)).getImage();
             }
             
             public String getHelpKey() {
