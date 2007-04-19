@@ -26,9 +26,11 @@ import org.netbeans.modules.visualweb.api.designer.DomProvider;
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignContext;
 import com.sun.rave.designtime.DesignEvent;
+import com.sun.rave.designtime.DesignProject;
 import com.sun.rave.designtime.DesignProperty;
 import com.sun.rave.designtime.Position;
 import com.sun.rave.designtime.event.DesignContextListener;
+import com.sun.rave.designtime.event.DesignProjectListener;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
 import com.sun.rave.designtime.markup.MarkupPosition;
 import java.awt.EventQueue;
@@ -107,6 +109,9 @@ public class JsfForm {
 //    /** Weak <code>Marp</code> between <code>Designer</code> and <code>JsfMultiViewElement</code>. */
 //    private static final Map<Designer, JsfMultiViewElement> designer2jsfMultiViewElement = new WeakHashMap<Designer, JsfMultiViewElement>();
     private static final Set<JsfMultiViewElement> jsfMultiViewElements = new WeakSet<JsfMultiViewElement>();
+    
+    /** Maps weakly <code>DesignProject</code> to <code>JsfDesignProjectListener</code>. */
+    private static final Map<DesignProject, JsfDesignProjectListener> designProject2jsfDesignProjectListener = new WeakHashMap<DesignProject, JsfDesignProjectListener>();
 
 
     /** <code>FacesModel</code> associated with this JSF form. */
@@ -118,7 +123,7 @@ public class JsfForm {
 
 //    private DesignContext designContext;
 
-    private final PropertyChangeListener dataObjectListener = new DataObjectPropertyChangeListener(this);
+//    private final PropertyChangeListener dataObjectListener = new DataObjectPropertyChangeListener(this);
 
     private /*final*/ DesignContextListener designContextListener /*= new JsfDesignContextListener(this)*/;
 
@@ -182,8 +187,9 @@ public class JsfForm {
         
 //        this.designer = DesignerProvider.getDesigner(this);
 
-        // Set listening.
-        dataObject.addPropertyChangeListener(WeakListeners.propertyChange(dataObjectListener, dataObject));
+//        // Set listening.
+//        dataObject.addPropertyChangeListener(WeakListeners.propertyChange(dataObjectListener, dataObject));
+        initDesignProjectListening();
         updateDnDListening();
     }
     
@@ -512,6 +518,23 @@ public class JsfForm {
 //        }
 //    }
 
+    
+    private void initDesignProjectListening() {
+        DesignProject designProject = getFacesModel().getLiveUnit().getProject();
+        if (designProject == null) {
+            // Log issue?
+            return;
+        }
+        JsfDesignProjectListener jsfDesignProjectListener;
+        synchronized (designProject2jsfDesignProjectListener) {
+            jsfDesignProjectListener = designProject2jsfDesignProjectListener.get(designProject);
+            if (jsfDesignProjectListener == null) {
+                jsfDesignProjectListener = new JsfDesignProjectListener();
+                designProject.addDesignProjectListener(WeakListeners.create(DesignProjectListener.class, jsfDesignProjectListener, designProject));
+                designProject2jsfDesignProjectListener.put(designProject, jsfDesignProjectListener);
+            }
+        }
+    }
     
     private void updateDnDListening() {
         getDndSupport().updateDndListening();
@@ -2377,6 +2400,22 @@ public class JsfForm {
             jsfMultiViewElement.getJsfTopComponent().repaint();
         }
     }
+    
+
+    /** XXX #101837 Closing the component when facesModel goes away. */
+    private static class JsfDesignProjectListener implements DesignProjectListener {
+        public void contextOpened(DesignContext designContext) {
+            // No op.
+        }
+
+        public void contextClosed(DesignContext designContext) {
+            JsfForm jsfForm = JsfForm.findJsfForm(designContext);
+            JsfMultiViewElement[] jsfMultiViewElements = JsfForm.findJsfMultiViewElements(jsfForm);
+            for (JsfMultiViewElement jsfMultiViewElement : jsfMultiViewElements) {
+                jsfMultiViewElement.closeMultiView();
+            }
+        }
+    } // End of DesignProjectListener.
 
 }
 

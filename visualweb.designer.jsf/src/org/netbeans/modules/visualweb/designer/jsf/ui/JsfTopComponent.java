@@ -2228,4 +2228,16 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //            this.jsfTopComponent = jsfTopComponent;
 //        }
 //    } // End of JsfDesignerListener.
+    
+    void closeMultiView() {
+        MultiViewElementCallback callback = multiViewElementCallback;
+        if (callback == null) {
+            return;
+        }
+        TopComponent multiView = callback.getTopComponent();
+        if (multiView == null) {
+            return;
+        }
+        multiView.close();
+    }
 }

@@ -188,5 +188,9 @@ public class JsfMultiViewElement implements MultiViewElement {
         return jsfTopComponent.getDesigner();
     }
     // JSF notifications <<<
+    
+    public void closeMultiView() {
+        jsfTopComponent.closeMultiView();
+    }
             
 }
