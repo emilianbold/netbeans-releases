@@ -537,6 +537,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     }
     
     public void rebuildAll() {
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Rebuild All Called", new Exception());
+        }
+        
         List<URL> toRebuild = new LinkedList<URL>();
         
         for (FileObject file : getScannedSources().getRoots()) {
@@ -1681,14 +1685,19 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     }        
     
     public void verifySourceLevel(URL root, String sourceLevel) throws IOException {
-        if (sourceLevel != null && !sourceLevel.equals(getAttribute(root, SOURCE_LEVEL_ROOT, null))) {
+        String existingSourceLevel = getAttribute(root, SOURCE_LEVEL_ROOT, null);
+        
+        if (sourceLevel != null && !sourceLevel.equals(existingSourceLevel)) {
+            LOGGER.log(Level.FINE, "source level change detected (provided={1}, existing={2}), refreshing whole source root ({0})", new Object[] {root.toExternalForm(), sourceLevel, existingSourceLevel});
             submit(Work.filterChange(Collections.singletonList(root)));
             return ;
         }
         
         String extraCompilerOptions = CompilerSettings.getCommandLine();
+        String existingExtraCompilerOptions = getAttribute(root, EXTRA_COMPILER_OPTIONS, "");
         
-        if (!extraCompilerOptions.equals(getAttribute(root, EXTRA_COMPILER_OPTIONS, ""))) {
+        if (!extraCompilerOptions.equals(existingExtraCompilerOptions)) {
+            LOGGER.log(Level.FINE, "extra compiler options change detected (provided={1}, existing={2}), refreshing whole source root ({0})", new Object[] {root.toExternalForm(), extraCompilerOptions, existingExtraCompilerOptions});
             submit(Work.filterChange(Collections.singletonList(root)));
             return ;
         }
