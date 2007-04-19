@@ -37,8 +37,8 @@ public class ObjectArrayInstanceImpl extends InstanceImpl implements ObjectArray
     private ObjectVariable array;
     
     /** Creates a new instance of ObjectArrayInstanceImpl */
-    public ObjectArrayInstanceImpl(ObjectVariable array, int instanceNo) {
-        super(array, instanceNo);
+    public ObjectArrayInstanceImpl(HeapImpl heap, ObjectVariable array, int instanceNo) {
+        super(heap, array, instanceNo);
         this.array = array;
     }
 
@@ -51,7 +51,7 @@ public class ObjectArrayInstanceImpl extends InstanceImpl implements ObjectArray
         List<Instance> instances = new ArrayList<Instance>(values.length);
         int i = 0;
         for (Variable value: values) {
-            Instance instance = InstanceImpl.createInstance((ObjectVariable) value, i++);
+            Instance instance = InstanceImpl.createInstance(heap, (ObjectVariable) value, i++);
             instances.add(instance);
         }
         return instances;

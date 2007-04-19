@@ -41,14 +41,16 @@ public class JavaClassImpl implements JavaClass {
     
     private JPDAClassType classType;
     private long instanceCount = -1L;
+    private HeapImpl heap;
     private String className;
     
     /** Creates a new instance of JavaClassImpl */
-    public JavaClassImpl(JPDAClassType classType) {
+    public JavaClassImpl(HeapImpl heap, JPDAClassType classType) {
         if (classType == null) {
             throw new NullPointerException("classType == null");
         }
         this.classType = classType;
+        this.heap = heap;
     }
     
     /** For the case where the class type is not loaded yet. */
@@ -56,9 +58,10 @@ public class JavaClassImpl implements JavaClass {
         this.className = className;
     }
 
-    public JavaClassImpl(JPDAClassType classType, long instanceCount) {
+    public JavaClassImpl(HeapImpl heap, JPDAClassType classType, long instanceCount) {
         this.classType = classType;
         this.instanceCount = instanceCount;
+        this.heap = heap;
     }
 
     public long getJavaClassId() {
@@ -72,7 +75,7 @@ public class JavaClassImpl implements JavaClass {
 
     public Instance getClassLoader() {
         if (classType != null) {
-            return InstanceImpl.createInstance(classType.getClassLoader(), -1);
+            return InstanceImpl.createInstance(heap, classType.getClassLoader(), -1);
         } else {
             return null;
         }
@@ -82,7 +85,7 @@ public class JavaClassImpl implements JavaClass {
         if (classType != null) {
             Super superClass = classType.getSuperClass();
             if (superClass != null) {
-                return new JavaClassImpl(superClass.getClassType());
+                return new JavaClassImpl(heap, superClass.getClassType());
             }
         }
         return null;
@@ -116,9 +119,9 @@ public class JavaClassImpl implements JavaClass {
         for (org.netbeans.api.debugger.jpda.Field field : refFields) {
             if (field.isStatic()) {
                 if (field instanceof ObjectVariable) {
-                    fields.add(new ObjectFieldValueImpl(null, field, InstanceImpl.createInstance((ObjectVariable) field)));
+                    fields.add(new ObjectFieldValueImpl(heap, null, field, InstanceImpl.createInstance(heap, (ObjectVariable) field)));
                 } else {
-                    fields.add(new FieldValueImpl(null, field));
+                    fields.add(new FieldValueImpl(heap, null, field));
                 }
             }
         }
@@ -133,7 +136,7 @@ public class JavaClassImpl implements JavaClass {
         List<Instance> instances = new ArrayList<Instance>(typeInstances.size());
         int i = 1;
         for (ObjectVariable inst : typeInstances) {
-            Instance instance = InstanceImpl.createInstance(inst, i++);
+            Instance instance = InstanceImpl.createInstance(heap, inst, i++);
             instances.add(instance);
         }
         return instances;
@@ -164,6 +167,18 @@ public class JavaClassImpl implements JavaClass {
     
     public List<JavaClass> getSubClasses() {
         // TODO
+        /*
+        if (classType != null) {
+            List<JPDAClassType> subclasses = classType.getSubClasses();
+            if (subclasses.size() > 0) {
+                List<JavaClass> subClasses = new ArrayList<JavaClass>(subclasses.size());
+                for (JPDAClassType subclass : subclasses) {
+                    subClasses.add(new JavaClassImpl(heap, subclass));
+                }
+                return Collections.unmodifiableList(subClasses);
+            }
+        }
+         */
         return Collections.EMPTY_LIST;
     }
 

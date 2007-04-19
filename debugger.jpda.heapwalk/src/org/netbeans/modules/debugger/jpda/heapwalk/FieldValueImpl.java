@@ -33,15 +33,17 @@ public class FieldValueImpl implements FieldValue {
     
     private org.netbeans.api.debugger.jpda.Field field;
     private Instance defInstance;
+    private HeapImpl heap;
     
     /** Creates a new instance of FieldValueImpl */
-    public FieldValueImpl(Instance defInstance, org.netbeans.api.debugger.jpda.Field field) {
+    public FieldValueImpl(HeapImpl heap, Instance defInstance, org.netbeans.api.debugger.jpda.Field field) {
         this.field = field;
         this.defInstance = defInstance;
+        this.heap = heap;
     }
 
     public Field getField() {
-        return new FieldImpl(field);
+        return new FieldImpl(heap, field);
     }
 
     public String getValue() {

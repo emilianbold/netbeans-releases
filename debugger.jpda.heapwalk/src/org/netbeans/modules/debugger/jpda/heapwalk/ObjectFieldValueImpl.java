@@ -31,9 +31,10 @@ public class ObjectFieldValueImpl extends FieldValueImpl implements ObjectFieldV
     private Instance valueInstance;
     
     /** Creates a new instance of ObjectFieldValueImpl */
-    public ObjectFieldValueImpl(Instance defInstance, org.netbeans.api.debugger.jpda.Field field,
+    public ObjectFieldValueImpl(HeapImpl heap, Instance defInstance,
+                                org.netbeans.api.debugger.jpda.Field field,
                                 Instance valueInstance) {
-        super(defInstance, field);
+        super(heap, defInstance, field);
         this.valueInstance = valueInstance;
     }
 

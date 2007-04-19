@@ -30,14 +30,16 @@ import com.sun.tools.profiler.heap.Type;
 public class FieldImpl implements Field {
     
     private org.netbeans.api.debugger.jpda.Field field;
+    private HeapImpl heap;
     
     /** Creates a new instance of FieldImpl */
-    public FieldImpl(org.netbeans.api.debugger.jpda.Field field) {
+    public FieldImpl(HeapImpl heap, org.netbeans.api.debugger.jpda.Field field) {
         this.field = field;
+        this.heap = heap;
     }
 
     public JavaClass getDeclaringClass() {
-        return new JavaClassImpl(field.getDeclaringClass());
+        return new JavaClassImpl(heap, field.getDeclaringClass());
     }
 
     public String getName() {

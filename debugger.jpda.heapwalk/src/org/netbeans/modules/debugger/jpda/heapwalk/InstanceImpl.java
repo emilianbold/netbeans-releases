@@ -43,42 +43,43 @@ public class InstanceImpl implements Instance {
     
     private ObjectVariable var;
     private int instanceNo;
+    protected HeapImpl heap;
     
     /** Creates a new instance of InstanceImpl */
-    protected InstanceImpl(ObjectVariable var, int instanceNo) {
+    protected InstanceImpl(HeapImpl heap, ObjectVariable var, int instanceNo) {
         this.var = var;
         this.instanceNo = instanceNo;
+        this.heap = heap;
     }
     
-    public static Instance createInstance(ObjectVariable var) {
+    protected InstanceImpl(HeapImpl heap, ObjectVariable var) {
+        this.var = var;
+        this.instanceNo = -1;
+        this.heap = heap;
+    }
+    
+    public static Instance createInstance(HeapImpl heap, ObjectVariable var) {
         JPDAClassType classType = var.getClassType();
         if (classType == null) {
-            return createInstance(var, 0);
+            return createInstance(heap, var, 0);
+        } else {
+            return createInstance(heap, var, -1);
         }
-        List<ObjectVariable> vars = classType.getInstances(0);
-        int i = 1;
-        for (ObjectVariable obj: vars) {
-            if (classType.equals(obj)) {
-                break;
-            }
-            i++;
-        }
-        return createInstance(var, i);
     }
     
-    public static Instance createInstance(ObjectVariable var, int instanceNo) {
+    public static Instance createInstance(HeapImpl heap, ObjectVariable var, int instanceNo) {
         Instance instance;
         JPDAClassType type = var.getClassType();
         if (type instanceof JPDAArrayType) {
             boolean isPrimitiveArray = false;
             isPrimitiveArray = !(((JPDAArrayType) type).getComponentType() instanceof JPDAClassType);
             if (isPrimitiveArray) {
-                instance = new PrimitiveArrayInstanceImpl(var, instanceNo);
+                instance = new PrimitiveArrayInstanceImpl(heap, var, instanceNo);
             } else {
-                instance = new ObjectArrayInstanceImpl(var, instanceNo);
+                instance = new ObjectArrayInstanceImpl(heap, var, instanceNo);
             }
         } else {
-            instance = new InstanceImpl(var, instanceNo);
+            instance = new InstanceImpl(heap, var, instanceNo);
         }
         return instance;
     }
@@ -86,7 +87,7 @@ public class InstanceImpl implements Instance {
     public JavaClass getJavaClass() {
         JPDAClassType type = var.getClassType();
         if (type != null) {
-            return new JavaClassImpl(type);
+            return new JavaClassImpl(heap, type);
         } else {
             return new JavaClassImpl(var.getType());
         }
@@ -96,10 +97,29 @@ public class InstanceImpl implements Instance {
         return var.getUniqueID();
     }
 
-    public int getInstanceNumber() {
+    public synchronized int getInstanceNumber() {
+        if (instanceNo < 0) {
+            instanceNo = heap.getInstanceNumberCollector().getInstanceNumber(var);
+        }
         return instanceNo;
     }
 
+    /*private int computeInstanceNumber() {
+        JPDAClassType classType = var.getClassType();
+        if (classType == null) {
+            return 0;
+        }
+        List<ObjectVariable> vars = classType.getInstances(0);
+        int i = 1;
+        for (ObjectVariable obj: vars) {
+            if (var.getUniqueID() == obj.getUniqueID()) {
+                break;
+            }
+            i++;
+        }
+        return i;
+    }*/
+    
     public int getSize() {
         return 0;
     }
@@ -111,9 +131,9 @@ public class InstanceImpl implements Instance {
         for (org.netbeans.api.debugger.jpda.Field field : varFields) {
             if (!field.isStatic()) {
                 if (field instanceof ObjectVariable) {
-                    fields.add(new ObjectFieldValueImpl(this, field, InstanceImpl.createInstance((ObjectVariable) field)));
+                    fields.add(new ObjectFieldValueImpl(heap, this, field, InstanceImpl.createInstance(heap, (ObjectVariable) field)));
                 } else {
-                    fields.add(new FieldValueImpl(this, field));
+                    fields.add(new FieldValueImpl(heap, this, field));
                 }
             }
         }
@@ -139,7 +159,7 @@ public class InstanceImpl implements Instance {
                     int j = i;
                     for (Variable item: items) {
                         if (var.equals(item)) {
-                            Instance instance = createInstance(obj);
+                            Instance instance = createInstance(heap, obj);
                             values.add(new ArrayItemValueImpl(instance, this, j));
                             break;
                         }
@@ -158,8 +178,8 @@ public class InstanceImpl implements Instance {
                         var.getUniqueID() == ((ObjectVariable) field).getUniqueID()) {
                         
                         referencedFields.add(field);
-                        Instance instance = createInstance(obj);
-                        values.add(new ObjectFieldValueImpl(instance, field, this));
+                        Instance instance = createInstance(heap, obj);
+                        values.add(new ObjectFieldValueImpl(heap, instance, field, this));
                         break;
                     }
                 }

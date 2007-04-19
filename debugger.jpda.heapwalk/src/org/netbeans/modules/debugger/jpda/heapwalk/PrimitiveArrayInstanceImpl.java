@@ -36,8 +36,8 @@ public class PrimitiveArrayInstanceImpl extends InstanceImpl implements Primitiv
     private ObjectVariable array;
     
     /** Creates a new instance of PrimitiveArrayInstanceImpl */
-    public PrimitiveArrayInstanceImpl(ObjectVariable array, int instanceNo) {
-        super(array, instanceNo);
+    public PrimitiveArrayInstanceImpl(HeapImpl heap, ObjectVariable array, int instanceNo) {
+        super(heap, array, instanceNo);
         this.array = array;
     }
 
