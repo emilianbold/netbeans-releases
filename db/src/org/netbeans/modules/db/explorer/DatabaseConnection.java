@@ -34,6 +34,8 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.db.explorer.actions.ConnectAction;
 import org.openide.ErrorManager;
 import org.openide.util.Lookup;
@@ -478,6 +480,7 @@ public class DatabaseConnection implements DBConnection {
                     dbprops.put("password", pwd); //NOI18N
                 }
                 
+                Connection conn = null;
                 try {
                     propertySupport.firePropertyChange("connecting", null, null);
                     
@@ -497,7 +500,8 @@ public class DatabaseConnection implements DBConnection {
                         Class.forName(drv);
                     }
                     
-                    setConnection(DbDriverManager.getDefault().getConnection(db, dbprops, useDriver));
+                    conn = DbDriverManager.getDefault().getConnection(db, dbprops, useDriver);
+                    setConnection(conn);
                         
                     propertySupport.firePropertyChange("connected", null, null);
 
@@ -522,6 +526,15 @@ public class DatabaseConnection implements DBConnection {
                     DDLException ddle = new DDLException(message);
                     ddle.initCause(e);
                     sendException(ddle);
+                    
+                    if (conn != null) {
+                        setConnection(null);
+                        try {
+                            conn.close();
+                        } catch (SQLException sqle) {
+                            Logger.getLogger("global").log(Level.WARNING, null, sqle); // NOI18N
+                        }
+                    }
                 } catch (Exception exc) {
                     propertySupport.firePropertyChange("failed", null, null);
 
@@ -529,6 +542,15 @@ public class DatabaseConnection implements DBConnection {
                     getOpenConnection().disable();
 
                     sendException(exc);
+                    
+                    setConnection(null);
+                    if (conn != null) {
+                        try {
+                            conn.close();
+                        } catch (SQLException sqle) {
+                            Logger.getLogger("global").log(Level.WARNING, null, sqle); // NOI18N
+                        }
+                    }
                 }
             }
         }, 0);
