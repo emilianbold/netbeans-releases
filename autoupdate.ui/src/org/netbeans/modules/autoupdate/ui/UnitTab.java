@@ -105,37 +105,16 @@ public class UnitTab extends javax.swing.JPanel {
     
     public void refreshState() {
         Collection<Unit> units = model.getMarkedUnits();
+        int downloadSize = model.getDownloadSize ();
         
-        int size = 0;
-        
-        switch (model.getType()) {
-        case INSTALLED :
-            break ;
-        case UPDATE :
-            for (Unit u : units) {
-                size += u.getCompleteSize ();
-            }
-            break;
-        case AVAILABLE :
-            for (Unit u : units) {
-                size += u.getCompleteSize ();
-            }
-            break;
-        case LOCAL :
-//            for (Unit u : units) {
-//                size += u.getCompleteSize ();
-//            }
-            break;
-        }
-        
-        
-        if (units.size () == 0 || size == 0) {
+        if (units.size () == 0 || downloadSize == 0) {
             cleanHowMany();
+        } else {
+            setHowManyDownload(Utilities.getDownloadSizeAsString (downloadSize));
+            setHowManySelected(units.size());
         }
         
         bTabAction.setEnabled(units.size() > 0);
-        setHowManyDownload(Unit.getSize(size));
-        setHowManySelected(units.size());
     }
     
     private void initTab() {

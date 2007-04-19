@@ -179,6 +179,12 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
                 return 0;
             }
         };
-    }                
+    }
+
+    public OperationContainer getContainer() {
+        int available = Containers.forAvailableNbms().listAll().size();
+        int updates = Containers.forUpdateNbms().listAll().size();        
+        return (updates > available) ? Containers.forUpdateNbms() : Containers.forAvailableNbms();
+    }
     
 }

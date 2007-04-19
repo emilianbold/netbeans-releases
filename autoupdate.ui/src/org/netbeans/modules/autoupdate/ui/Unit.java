@@ -249,7 +249,7 @@ public abstract class Unit {
         }
         
         public String getSize() {
-            return getSize(updateEl.getDownloadSize());
+            return Utilities.getDownloadSizeAsString (updateEl.getDownloadSize());
         }
         
         public UpdateElement getRelevantElement() {
@@ -320,7 +320,7 @@ public abstract class Unit {
         }
         
         public String getSize() {
-            return getSize(updateEl.getDownloadSize());
+            return Utilities.getDownloadSizeAsString (updateEl.getDownloadSize());
         }
         
         public UpdateElement getRelevantElement() {
@@ -364,21 +364,5 @@ public abstract class Unit {
             throw new UnsupportedOperationException ("Not supported yet.");
         }
 }
-    
-    static String getSize(int size) {
-        int gbSize = size / (1024 * 1024 * 1024);
-        if (gbSize > 0) {
-            return gbSize + "GB";
-        }
-        int mbSize = size / (1024 * 1024);
-        if (mbSize > 0) {
-            return mbSize + "MB";
-        }
-        int kbSize = size / 1034;
-        if (kbSize > 0) {
-            return kbSize + "kB";
-        }
-        return size + "B";
-    }
     
 }

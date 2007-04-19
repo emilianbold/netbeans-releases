@@ -23,9 +23,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
+import org.netbeans.api.autoupdate.OperationContainer;
+import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
+import org.netbeans.api.autoupdate.UpdateElement;
 
 /**
  *
@@ -57,7 +62,8 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
     public abstract Object getValueAt (int row, int col);
     public abstract Class getColumnClass (int c);
     public abstract Type getType ();
-    public abstract boolean isSortAllowed (Object columnIdentifier);    
+    public abstract boolean isSortAllowed (Object columnIdentifier);
+    public abstract OperationContainer getContainer ();
     protected abstract Comparator<Unit> getComparator(final Object columnIdentifier, final boolean sortAscending);
 
     protected Comparator<Unit> getDefaultComparator() {
@@ -367,5 +373,21 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
         } else {
             return col == 0 || col == 1;
         }
+    }
+    
+    public int getDownloadSize () {
+        int res = 0;
+        OperationContainer container = getContainer ();
+        assert container != null : "OperationContainer found when asking for download size.";
+        List<OperationInfo> infos = container.listAll ();
+        Set<UpdateElement> elements = new HashSet<UpdateElement> ();
+        for (OperationInfo info : infos) {
+            elements.add (info.getUpdateElement ());
+            elements.addAll (info.getRequiredElements ());
+        }
+        for (UpdateElement el : elements) {
+            res += el.getDownloadSize ();
+        }
+        return res;
     }
 }

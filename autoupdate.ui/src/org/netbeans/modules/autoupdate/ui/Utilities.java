@@ -276,4 +276,21 @@ public class Utilities {
         return "GTK".equals (UIManager.getLookAndFeel ().getID ());
     }
     
+    public static String getDownloadSizeAsString (int size) {
+        // XXX: I18N
+        int gbSize = size / (1024 * 1024 * 1024);
+        if (gbSize > 0) {
+            return gbSize + "GB";
+        }
+        int mbSize = size / (1024 * 1024);
+        if (mbSize > 0) {
+            return mbSize + "MB";
+        }
+        int kbSize = size / 1034;
+        if (kbSize > 0) {
+            return kbSize + "kB";
+        }
+        return size + "B";
+    }
+    
 }

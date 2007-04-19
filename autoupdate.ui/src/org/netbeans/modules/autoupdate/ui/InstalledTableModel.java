@@ -189,6 +189,10 @@ public class InstalledTableModel extends UnitCategoryTableModel {
                 return 0;
             }
         };
-    }                
+    }
+
+    public OperationContainer getContainer() {
+        return uninstallContainer;
+    }
     
 }

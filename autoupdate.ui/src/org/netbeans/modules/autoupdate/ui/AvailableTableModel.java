@@ -80,7 +80,7 @@ public class AvailableTableModel extends UnitCategoryTableModel {
                 res = u.getAvailableVersion ();
                 break;
             case 3 :
-                res = Unit.getSize (u.getCompleteSize ());
+                res = Utilities.getDownloadSizeAsString (u.getCompleteSize ());
                 break;
             case 4 :
                 res = u.getMyRating ();
@@ -162,5 +162,9 @@ public class AvailableTableModel extends UnitCategoryTableModel {
                 return 0;
             }
         };
-    }                
+    }
+
+    public OperationContainer getContainer() {
+        return container;
+    }
 }

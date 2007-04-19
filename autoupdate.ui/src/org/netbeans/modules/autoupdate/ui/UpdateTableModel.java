@@ -85,7 +85,7 @@ public class UpdateTableModel extends UnitCategoryTableModel {
                 res = u.getAvailableVersion ();
                 break;
             case 4 :
-                res = Unit.getSize (u.getCompleteSize ());
+                res = Utilities.getDownloadSizeAsString (u.getCompleteSize ());
                 break;
             }
         }
@@ -168,5 +168,9 @@ public class UpdateTableModel extends UnitCategoryTableModel {
                 return 0;
             }
         };
-    }                
+    }
+
+    public OperationContainer getContainer() {
+        return container;
+    }
 }
