@@ -29,18 +29,22 @@ import javax.swing.UIManager;
  * @author  Jiri Rechtacek
  */
 public class OperationDescriptionPanel extends javax.swing.JPanel {
+    private String tpPrimaryTitleText;
+    private String tpPrimaryPluginsText;
+    private String tpDependingTitleText;
+    private String tpDependingPluginsText;
     /** Creates new form OperationDescriptionPanel */
     public OperationDescriptionPanel (String primary, String primaryU, String depending, String dependingU, boolean hasRequired) {
+        this.tpPrimaryTitleText = primary;
+        this.tpPrimaryPluginsText = primaryU;
+        this.tpDependingTitleText = depending;
+        this.tpDependingPluginsText = dependingU;
         initComponents ();
         hackBackground (tpPrimaryTitle);
-        tpPrimaryTitle.setText (primary);
         hackBackground (tpPrimaryPlugins);
-        tpPrimaryPlugins.setText (primaryU);
         if (hasRequired) {
             hackBackground (tpDependingTitle);
-            tpDependingTitle.setText (depending);
             hackBackground (tpDependingPlugins);
-            tpDependingPlugins.setText (dependingU);
         } else {
             tpDependingTitle.setVisible (false);
             tpDependingPlugins.setVisible (false);
@@ -80,6 +84,11 @@ public class OperationDescriptionPanel extends javax.swing.JPanel {
 
         tpDependingPlugins.setContentType(org.openide.util.NbBundle.getMessage(OperationDescriptionPanel.class, "OperationDescriptionPanel.tpDependingPlugins.contentType")); // NOI18N
         tpDependingPlugins.setEditable(false);
+
+        tpPrimaryTitle.setText(tpPrimaryTitleText);
+        tpPrimaryPlugins.setText(tpPrimaryPluginsText);
+        tpDependingTitle.setText(tpDependingTitleText);
+        tpDependingPlugins.setText(tpDependingPluginsText);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

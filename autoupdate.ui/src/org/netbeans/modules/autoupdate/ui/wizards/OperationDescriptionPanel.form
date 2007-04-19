@@ -59,6 +59,9 @@
         </Property>
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_AddingCodePre" type="java.lang.String" value="tpPrimaryTitle.setText(tpPrimaryTitleText);"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JTextPane" name="tpPrimaryPlugins">
       <Properties>
@@ -67,6 +70,9 @@
         </Property>
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_AddingCodePre" type="java.lang.String" value="tpPrimaryPlugins.setText(tpPrimaryPluginsText);"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JTextPane" name="tpDependingTitle">
       <Properties>
@@ -75,6 +81,9 @@
         </Property>
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_AddingCodePre" type="java.lang.String" value="tpDependingTitle.setText(tpDependingTitleText);"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JTextPane" name="tpDependingPlugins">
       <Properties>
@@ -83,6 +92,9 @@
         </Property>
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_AddingCodePre" type="java.lang.String" value="tpDependingPlugins.setText(tpDependingPluginsText);"/>
+      </AuxValues>
     </Component>
   </SubComponents>
 </Form>

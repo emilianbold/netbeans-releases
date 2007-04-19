@@ -21,7 +21,11 @@ package org.netbeans.modules.autoupdate.ui.wizards;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import javax.swing.JButton;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
@@ -35,9 +39,9 @@ import org.openide.util.NbBundle;
  * @author Jiri Rechtacek
  */
 public abstract class OperationWizardModel {
-    private List<UpdateElement> primaryElements;
-    private List<UpdateElement> requiredElements = null;
-    private List<UpdateElement> allElements = null;
+    private Set<UpdateElement> primaryElements;
+    private Set<UpdateElement> requiredElements = null;
+    private Set<UpdateElement> allElements = null;
     private JButton originalCancel = null;
     private JButton originalNext = null;
     private JButton originalFinish = null;
@@ -61,10 +65,10 @@ public abstract class OperationWizardModel {
         DISABLE
     }
     
-    public List<UpdateElement> getPrimaryUpdateElements () {
+    public Set<UpdateElement> getPrimaryUpdateElements () {
         if (primaryElements == null) {
             assert getContainer () != null;
-            primaryElements = new ArrayList<UpdateElement> ();
+            primaryElements = new HashSet<UpdateElement> ();
             List<OperationInfo> l = (List<OperationInfo>) getContainer ().listAll ();
             for (OperationInfo info : l) {
                 primaryElements.add (info.getUpdateElement ());
@@ -77,9 +81,9 @@ public abstract class OperationWizardModel {
         return ! getRequiredUpdateElements ().isEmpty ();
     }
     
-    public List<UpdateElement> getRequiredUpdateElements () {
+    public Set<UpdateElement> getRequiredUpdateElements () {
         if (requiredElements == null) {
-            requiredElements = new ArrayList<UpdateElement> ();
+            requiredElements = new HashSet<UpdateElement> ();
             
             List<OperationInfo> l = (List<OperationInfo>) getContainer ().listAll ();
             for (OperationInfo info : l) {
@@ -97,19 +101,23 @@ public abstract class OperationWizardModel {
         return ! getBrokenDependencies ().isEmpty ();
     }
     
-    public List<String> getBrokenDependencies () {
-        List<String> brokenDeps = new ArrayList<String> ();
+    public SortedMap<String, Set<String>> getBrokenDependencies () {
+        SortedMap<String, Set<String>> brokenDeps = new TreeMap<String, Set<String>> ();
 
         List<OperationInfo> l = (List<OperationInfo>) getContainer ().listAll ();
         for (OperationInfo info : l) {
-            brokenDeps.addAll (info.getBrokenDependencies ());
+            Set<String> broken = info.getBrokenDependencies ();
+            if (! broken.isEmpty()) {
+                brokenDeps.put (info.getUpdateElement ().getDisplayName (),
+                        new HashSet<String> (broken));
+            }
         }
         return brokenDeps;
     }
     
-    public List<UpdateElement> getAllUpdateElements () {
+    public Set<UpdateElement> getAllUpdateElements () {
         if (allElements == null) {
-            allElements = new ArrayList<UpdateElement> (getPrimaryUpdateElements ());
+            allElements = new HashSet<UpdateElement> (getPrimaryUpdateElements ());
             allElements.addAll (getRequiredUpdateElements ());
             assert allElements.size () == getPrimaryUpdateElements ().size () + getRequiredUpdateElements ().size () :
                 "Primary [" + getPrimaryUpdateElements ().size () + "] plus " +

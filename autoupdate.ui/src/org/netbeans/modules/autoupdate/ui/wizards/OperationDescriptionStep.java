@@ -20,7 +20,12 @@
 package org.netbeans.modules.autoupdate.ui.wizards;
 
 import java.awt.Component;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.autoupdate.UpdateElement;
@@ -103,10 +108,9 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
                 break;
             }
             if (model.hasBrokenDependencies ()) {
-                body = new OperationDescriptionPanel (getBundle (TABLE_TITLE_BROKEN),
-                        "",
-                        getBundle (TITLE_BROKEN_DEPENDENCIES),
+                body = new OperationDescriptionPanel ("", "",
                         prepareBrokenDependenciesForShow (model),
+                        "",
                         true);
                 component = new PanelBodyContainer (head, "", body);
             } else {
@@ -123,10 +127,14 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
     
     private String prepareBrokenDependenciesForShow (OperationWizardModel model) {
         String s = new String ();
-        for (String dep : model.getBrokenDependencies ()) {
-            s += s + "<b>"  + tryTakeDisplayName (dep) + "</b>" + "<br>"; // NOI18N
+        for (String plugin : model.getBrokenDependencies ().keySet ()) {
+            s += "<h3>" + NbBundle.getMessage (OperationDescriptionStep.class, "OperationDescriptionStep_PluginHasBrokenDependencies", plugin) + "</h3>";
+            SortedSet<String> sset = new TreeSet<String> (model.getBrokenDependencies ().get (plugin));
+            for (String dep : sset) {
+                s += "      " + tryTakeDisplayName (dep) + "<br>"; // NOI18N
+            }
         }
-        return s;
+        return s.trim ();
     }
     
     private String tryTakeDisplayName (String dep) {
@@ -134,13 +142,15 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
         if (dep != null && dep.startsWith ("module")) { // NOI18N
             String codeName = dep.substring (6).trim ();
             int end = codeName.indexOf (' '); // NOI18N
-            codeName = codeName.substring (0, end);
-            for (UpdateUnit u : UpdateManager.getDefault ().getUpdateUnits ()) {
-                if (codeName.equals (u.getCodeName ())) {
-                    if (u.getInstalled () != null) {
-                        displayName = u.getInstalled ().getDisplayName ();
-                    } else if (u.getAvailableUpdates ().size () > 0) {
-                        displayName = u.getAvailableUpdates ().get (0).getDisplayName ();
+            if (end != -1) {
+                codeName = codeName.substring (0, end);
+                for (UpdateUnit u : UpdateManager.getDefault ().getUpdateUnits ()) {
+                    if (codeName.equals (u.getCodeName ())) {
+                        if (u.getInstalled () != null) {
+                            displayName = u.getInstalled ().getDisplayName ();
+                        } else if (u.getAvailableUpdates ().size () > 0) {
+                            displayName = u.getAvailableUpdates ().get (0).getDisplayName ();
+                        }
                     }
                 }
             }
@@ -151,14 +161,19 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
         return displayName == null ? dep : displayName;
     }
     
-    private String preparePluginsForShow (List<UpdateElement> plugins) {
+    private String preparePluginsForShow (Set<UpdateElement> plugins) {
         String s = new String ();
+        List<String> names = new ArrayList<String> ();
         for (UpdateElement el : plugins) {
-            s += "<b>"  + el.getDisplayName () + "</b> " // NOI18N
+            names.add ("<b>"  + el.getDisplayName () + "</b> " // NOI18N
                     + NbBundle.getMessage (OperationDescriptionStep.class, "OperationDescriptionStep_PluginVersionFormat",
-                    el.getSpecificationVersion ()) + "<br>"; // NOI18N
+                    el.getSpecificationVersion ()) + "<br>"); // NOI18N
         }
-        return s;
+        Collections.sort (names);
+        for (String name : names) {
+            s += name;
+        }
+        return s.trim ();
     }
 
     public HelpCtx getHelp() {

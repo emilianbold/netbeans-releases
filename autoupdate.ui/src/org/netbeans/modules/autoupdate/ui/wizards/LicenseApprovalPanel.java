@@ -23,6 +23,7 @@ import java.awt.Color;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
 import javax.swing.JTextArea;
@@ -75,7 +76,7 @@ public class LicenseApprovalPanel extends javax.swing.JPanel {
     }
     
     private String[] getItems (InstallUnitWizardModel model) {
-        List<UpdateElement> all = model.getAllUpdateElements ();
+        Set<UpdateElement> all = model.getAllUpdateElements ();
         String [] items = new String [all.size ()];
         licenses = new String [items.length];
         int i = 0;

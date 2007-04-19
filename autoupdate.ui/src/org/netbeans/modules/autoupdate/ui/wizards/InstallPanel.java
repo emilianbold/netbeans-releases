@@ -21,7 +21,10 @@ package org.netbeans.modules.autoupdate.ui.wizards;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTextArea;
@@ -87,7 +90,8 @@ public class InstallPanel extends javax.swing.JPanel {
         revalidate ();
     }
     
-    public void setBody (final String msg, final List<UpdateElement> elements) {
+    public void setBody (final String msg, final Set<UpdateElement> updateElements) {
+        final List<UpdateElement> elements = new ArrayList<UpdateElement> (updateElements);
         if (SwingUtilities.isEventDispatchThread ()) {
             setBodyInEQ (msg, elements);
         } else {
