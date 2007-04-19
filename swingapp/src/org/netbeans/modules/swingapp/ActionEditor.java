@@ -251,15 +251,14 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
         if(!isAppFramework()) {
             return null;
         }
-        if(!scannedOnce) {
+        //if(!scannedOnce) {
             scanForActions();
-        }
+        //}
         return actionNames.toArray(new String[0]);
     }
     
     // property editor impl
     private void scanForActions() {
-        scannedOnce = true;
         actionMap.clear();
         List<ProxyAction> appActions = new ArrayList<ProxyAction>();
         List<ProxyAction> formActions = new ArrayList<ProxyAction>();
@@ -284,6 +283,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
             actionNames.add(act.getId() + GLOBAL_SUFFIX);
         }
         //josh: disabling for now. actionNames.add(NEW_ACTION);
+        scannedOnce = true;
     }
 
     /**
@@ -291,12 +291,12 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
      *         editor is invoked 
      */
     private List<ProxyAction> getClassActions() {
-        return ActionManager.getActions(getSourceFile(), true);
+        return ActionManager.getActions(getSourceFile(), !scannedOnce);
     }
 
     private List<ProxyAction> getApplicationActions() {
         String appClassName = AppFrameworkSupport.getApplicationClassName(getSourceFile());
-        return ActionManager.getActionManager(getSourceFile()).getActions(appClassName, true);
+        return ActionManager.getActionManager(getSourceFile()).getActions(appClassName, !scannedOnce);
     }
 
     public void setSourceFile(FileObject sourceFile) {
