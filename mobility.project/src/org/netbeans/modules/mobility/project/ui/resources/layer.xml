@@ -33,7 +33,7 @@ Microsystems, Inc. All Rights Reserved.
  
     <folder name="Menu">
         <folder name="Tools">
-            <attr name="LibrariesCustomizerAction.instance/MobilityDeploymentManagerAction.instance" boolvalue="true"/>
+            <attr name="ServerManagerAction.instance/MobilityDeploymentManagerAction.instance" boolvalue="true"/>
             <file name="MobilityDeploymentManagerAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.project.deployment.MobilityDeploymentManagerAction"/>
             </file>
