@@ -39,7 +39,7 @@ import org.openide.filesystems.FileUtil;
  * 
  * @author Dusan Balek
  */
-public class FormatingTest extends GeneratorTest {
+public class FormatingTest extends GeneratorTestMDRCompat {
     
     /** Creates a new instance of FormatingTest */
     public FormatingTest(String name) {
