@@ -39,13 +39,6 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
 
-    <folder name="Toolbars">
-    <folder name="Debug">
-        <attr name="org-openide-actions-AddWatchAction.instance/org-netbeans-modules-web-monitor-client-MonitorAction.instance" boolvalue="true" />
-       <file name="org-netbeans-modules-web-monitor-client-MonitorAction.instance"/>
-    </folder>
-    </folder>
-
     <folder name="Shortcuts">
         <file name="DS-5.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.modules.web.monitor.client.MonitorAction" />
