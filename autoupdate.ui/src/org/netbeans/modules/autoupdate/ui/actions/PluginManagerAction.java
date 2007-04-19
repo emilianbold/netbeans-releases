@@ -56,7 +56,7 @@ public final class PluginManagerAction extends CallableSystemAction {
     
     protected void initialize () {
         super.initialize ();
-        putValue ("noIconInMenu", Boolean.TRUE);
+        putValue ("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     
     public HelpCtx getHelpCtx () {

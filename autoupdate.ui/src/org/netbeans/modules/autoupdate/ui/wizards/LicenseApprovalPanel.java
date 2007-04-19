@@ -207,10 +207,10 @@ private void cbLicenseForItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-F
     // End of variables declaration//GEN-END:variables
     
     private void writeLicense (String plugin, String license) {
-        license = license.replaceAll ("\\n", "<br>");
-        tpLicense.setText ("<h1>" + 
+        license = license.replaceAll ("\\n", "<br>"); // NOI18N
+        tpLicense.setText ("<h1>" + // NOI18N
                 NbBundle.getMessage (LicenseApprovalPanel.class, "LicenseApprovalPanel_tpLicense_Head", plugin) +
-                "</h1>" + license);
+                "</h1>" + license); // NOI18N
         tpLicense.setCaretPosition (0);
     }
 }

@@ -19,12 +19,10 @@
 
 package org.netbeans.modules.autoupdate.ui;
 
-import java.text.Collator;
 import java.util.Comparator;
 import java.util.List;
 import org.netbeans.api.autoupdate.OperationContainer;
-import org.netbeans.api.autoupdate.UpdateUnit;
-import org.openide.modules.SpecificationVersion;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -115,18 +113,17 @@ public class AvailableTableModel extends UnitCategoryTableModel {
     }
 
     public String getColumnName(int column) {
-	//TODO I18N
         switch (column) {
-            case 0 : //group icon
-                return "Install";
+            case 0 :
+                return getBundle ("AvailableTableModel_Columns_Install");
             case 1 :
-                return "Name";
+                return getBundle ("AvailableTableModel_Columns_Name");
             case 2 :
-                return "Version";
+                return getBundle ("AvailableTableModel_Columns_Version");
             case 3 :
-                return "Size";
+                return getBundle ("AvailableTableModel_Columns_Size");
             case 4 :
-                return "Rating";
+                return getBundle ("AvailableTableModel_Columns_Rating");
         }
         
         assert false;
@@ -166,5 +163,9 @@ public class AvailableTableModel extends UnitCategoryTableModel {
 
     public OperationContainer getContainer() {
         return container;
+    }
+    
+    private String getBundle (String key) {
+        return NbBundle.getMessage (this.getClass (), key);
     }
 }

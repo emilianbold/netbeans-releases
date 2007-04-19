@@ -273,24 +273,26 @@ public class Utilities {
     }
     
     public static boolean isGtk () {
-        return "GTK".equals (UIManager.getLookAndFeel ().getID ());
+        return "GTK".equals (UIManager.getLookAndFeel ().getID ()); // NOI18N
     }
     
     public static String getDownloadSizeAsString (int size) {
-        // XXX: I18N
         int gbSize = size / (1024 * 1024 * 1024);
         if (gbSize > 0) {
-            return gbSize + "GB";
+            return gbSize + getBundle ("Utilities_DownloadSize_GB");
         }
         int mbSize = size / (1024 * 1024);
         if (mbSize > 0) {
-            return mbSize + "MB";
+            return mbSize + getBundle ("Utilities_DownloadSize_MB");
         }
-        int kbSize = size / 1034;
+        int kbSize = size / 1024;
         if (kbSize > 0) {
-            return kbSize + "kB";
+            return kbSize + getBundle ("Utilities_DownloadSize_kB");
         }
-        return size + "B";
+        return size + getBundle ("Utilities_DownloadSize_B");
     }
     
+    private static String getBundle (String key) {
+        return NbBundle.getMessage (Utilities.class, key);
+    }
 }

@@ -201,8 +201,9 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
         UnitCategoryTableModel catModel = (UnitCategoryTableModel) model;
         int count = catModel.getItemCount ();
         int rawCount = catModel.getRawItemCount ();        
-        String countInfo = (count == rawCount) ? String.valueOf(rawCount) : (count + "/"+ rawCount);
-        String newName = originalName + " (" + countInfo + ")";
+        String countInfo = (count == rawCount) ? String.valueOf(rawCount) :
+            NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_Tabs_CountFormat", count, rawCount);
+        String newName = NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_Tabs_NameFormat", originalName, countInfo);
         tpTabs.setTitleAt (index, count == 0 ? originalName : newName);
     }
 

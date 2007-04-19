@@ -128,7 +128,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         Runnable performDownload = new Runnable () {
             public void run () {
                 try {
-                    final ProgressHandle handle = ProgressHandleFactory.createHandle ("Downloading plugins...");
+                    final ProgressHandle handle = ProgressHandleFactory.createHandle (getBundle ("InstallStep_Download_DownloadingPlugins"));
                     JComponent progressComponent = ProgressHandleFactory.createProgressComponent (handle);
                     JLabel mainLabel = ProgressHandleFactory.createMainLabelComponent (handle);
                     JLabel detailLabel = ProgressHandleFactory.createDetailLabelComponent (handle);
@@ -157,7 +157,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         component.setHeadAndContent (getBundle (HEAD_VERIFY), getBundle (CONTENT_VERIFY));
         final InstallSupport support = model.getSupport ();
         assert support != null;
-        ProgressHandle handle = ProgressHandleFactory.createHandle ("Validating plugins...");
+        ProgressHandle handle = ProgressHandleFactory.createHandle (getBundle ("InstallStep_Validate_ValidatingPlugins"));
         JComponent progressComponent = ProgressHandleFactory.createProgressComponent (handle);
         JLabel mainLabel = ProgressHandleFactory.createMainLabelComponent (handle);
         JLabel detailLabel = ProgressHandleFactory.createDetailLabelComponent (handle);
@@ -223,7 +223,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         assert support != null;
         model.modifyOptionsForDisabledCancel (wd);
         
-        ProgressHandle handle = ProgressHandleFactory.createHandle ("Installing plugins...");
+        ProgressHandle handle = ProgressHandleFactory.createHandle (getBundle ("InstallStep_Install_InstallingPlugins"));
         JComponent progressComponent = ProgressHandleFactory.createProgressComponent (handle);
         JLabel mainLabel = ProgressHandleFactory.createMainLabelComponent (handle);
         JLabel detailLabel = ProgressHandleFactory.createDetailLabelComponent (handle);

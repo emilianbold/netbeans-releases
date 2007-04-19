@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.List;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -127,18 +128,17 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
     }
 
     public String getColumnName(int column) {
-	//TODO I18N
         switch (column) {
-            case 0 : //group icon
-                return "Install";
+            case 0 :
+                return getBundle ("LocallyDownloadedTableModel_Columns_Install");
             case 1 :
-                return "Name";
+                return getBundle ("LocallyDownloadedTableModel_Columns_Name");
             case 2 :
-                return "Version";
+                return getBundle ("LocallyDownloadedTableModel_Columns_Version");
             case 3 :
-                return "Size";
+                return getBundle ("LocallyDownloadedTableModel_Columns_Size");
             case 4 :
-                return "Rating";
+                return getBundle ("LocallyDownloadedTableModel_Columns_Rating");
         }
         
         assert false;
@@ -187,4 +187,7 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
         return (updates > available) ? Containers.forUpdateNbms() : Containers.forAvailableNbms();
     }
     
+    private String getBundle (String key) {
+        return NbBundle.getMessage (this.getClass (), key);
+    }
 }

@@ -118,10 +118,10 @@ public class InstallPanel extends javax.swing.JPanel {
     private JComponent getElementsComponent (List<UpdateElement> elements) {
         JTextPane area = new JTextPane ();
         area.setEditable (false);
-        area.setContentType ("text/html");
+        area.setContentType ("text/html"); // NOI18N
         String body = new String ();
         for (UpdateElement el : elements) {
-            body = body + el.getDisplayName () + "<br>";
+            body = body + el.getDisplayName () + "<br>"; // NOI18N
         }
         area.setText (body);
         area.setBackground (new JLabel ().getBackground ()); // XXX any better way how to set background?

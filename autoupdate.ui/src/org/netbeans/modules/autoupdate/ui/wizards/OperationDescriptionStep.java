@@ -124,16 +124,16 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
     private String prepareBrokenDependenciesForShow (OperationWizardModel model) {
         String s = new String ();
         for (String dep : model.getBrokenDependencies ()) {
-            s += s + "<b>"  + tryTakeDisplayName (dep) + "</b>" + "<br>";
+            s += s + "<b>"  + tryTakeDisplayName (dep) + "</b>" + "<br>"; // NOI18N
         }
         return s;
     }
     
     private String tryTakeDisplayName (String dep) {
         String displayName = null;
-        if (dep != null && dep.startsWith ("module")) {
+        if (dep != null && dep.startsWith ("module")) { // NOI18N
             String codeName = dep.substring (6).trim ();
-            int end = codeName.indexOf (' ');
+            int end = codeName.indexOf (' '); // NOI18N
             codeName = codeName.substring (0, end);
             for (UpdateUnit u : UpdateManager.getDefault ().getUpdateUnits ()) {
                 if (codeName.equals (u.getCodeName ())) {
@@ -145,7 +145,7 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
                 }
             }
             if (displayName != null) {
-                displayName = displayName + "[" + dep + "]";
+                displayName = NbBundle.getMessage (OperationDescriptionStep.class, "OperationDescriptionStep_PluginNameFormat", displayName, dep);
             }
         }
         return displayName == null ? dep : displayName;
@@ -154,7 +154,9 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
     private String preparePluginsForShow (List<UpdateElement> plugins) {
         String s = new String ();
         for (UpdateElement el : plugins) {
-            s += "<b>"  + el.getDisplayName () + "</b> [" + el.getSpecificationVersion () + "]<br>";
+            s += "<b>"  + el.getDisplayName () + "</b> " // NOI18N
+                    + NbBundle.getMessage (OperationDescriptionStep.class, "OperationDescriptionStep_PluginVersionFormat",
+                    el.getSpecificationVersion ()) + "<br>"; // NOI18N
         }
         return s;
     }

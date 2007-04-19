@@ -46,7 +46,7 @@ public class PanelBodyContainer extends javax.swing.JPanel {
     }
     
     private void writeToHeader (String heading, String msg) {
-        tpPanelHeader.setText ("<b>" + heading + "</b> <br>" + msg);
+        tpPanelHeader.setText ("<b>" + heading + "</b> <br>" + msg); // NOI18N
     }
     
     /** This method is called from within the constructor to

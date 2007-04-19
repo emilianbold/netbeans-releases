@@ -81,7 +81,7 @@ public class LocalDownloadSupport {
         File [] nbms = selectNbmFiles ();        
         List<UpdateUnit> retval = null;
         if (nbms != null) {
-            retval = UpdateUnitProviderFactory.getDefault ().create ("local-downloaded", nbms).getUpdateUnits ();
+            retval = UpdateUnitProviderFactory.getDefault ().create ("local-downloaded", nbms).getUpdateUnits (); // NOI18N
         } else {
             retval = Collections.emptyList();
         }        
@@ -99,7 +99,7 @@ public class LocalDownloadSupport {
     }
     
     private static File getDefaultDir () {
-        return new File (System.getProperty ("netbeans.user"));
+        return new File (System.getProperty ("netbeans.user")); // NOI18N
     }
 
     public static String getBundle (String key) {

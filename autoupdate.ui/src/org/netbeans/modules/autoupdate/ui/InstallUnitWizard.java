@@ -46,7 +46,7 @@ public class InstallUnitWizard {
         
         // {0} will be replaced by WizardDescriptor.Panel.getComponent().getName()
         // {1} will be replaced by WizardDescriptor.Iterator.name()
-        wizardDescriptor.setTitleFormat (new MessageFormat("{1}"));
+        wizardDescriptor.setTitleFormat (new MessageFormat(NbBundle.getMessage (InstallUnitWizard.class, "InstallUnitWizard_MessageFormat")));
         wizardDescriptor.setTitle (NbBundle.getMessage (InstallUnitWizard.class, "InstallUnitWizard_Title"));
         
         Dialog dialog = DialogDisplayer.getDefault ().createDialog (wizardDescriptor);

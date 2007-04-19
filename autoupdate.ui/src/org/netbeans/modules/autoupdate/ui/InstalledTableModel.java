@@ -127,18 +127,17 @@ public class InstalledTableModel extends UnitCategoryTableModel {
     
     @Override
     public String getColumnName(int column) {
-        //TODO I18N
         switch (column) {
-        case 0 : //group icon
-            return "Uninstall";
+        case 0 :
+            return getBundle ("InstalledTableModel_Columns_Uninstall");
         case 1 :
-            return "Name";
+            return getBundle ("InstalledTableModel_Columns_Name");
         case 2 :
-            return "Installed";
+            return getBundle ("InstalledTableModel_Columns_Installed");
         case 3 :
-            return "Previous";
+            return getBundle ("InstalledTableModel_Columns_Previous");
         case 4 :
-            return "My Rating";
+            return getBundle ("InstalledTableModel_Columns_MyRating");
         }
         
         assert false;
@@ -195,4 +194,7 @@ public class InstalledTableModel extends UnitCategoryTableModel {
         return uninstallContainer;
     }
     
+    private String getBundle (String key) {
+        return NbBundle.getMessage (this.getClass (), key);
+    }
 }

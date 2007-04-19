@@ -245,8 +245,9 @@ private void bEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
 }//GEN-LAST:event_bEditActionPerformed
 
 private void bNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bNewActionPerformed
-    //TODO: add keys to bundle,
-    final UpdateUnitProviderPanel panel = new UpdateUnitProviderPanel(true, "New Provider", "http://");
+    final UpdateUnitProviderPanel panel = new UpdateUnitProviderPanel (true,
+            NbBundle.getMessage(SettingsTab.class, "SettingsTab_NewProviderName"),
+            NbBundle.getMessage(SettingsTab.class, "SettingsTab_NewProviderURL"));
     DialogDescriptor descriptor = getCustomizerDescriptor(panel);
     panel.getOKButton().addActionListener(new ActionListener(){
         public void actionPerformed(ActionEvent arg0) {
@@ -350,11 +351,11 @@ private void bProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
                         ((SettingsTableModel)jTable1.getModel()).getUpdateUnitProvider(rowIndex);
                 if (uup != null) {
                     StringBuffer sb = new StringBuffer();
-                    sb.append("<h2>" + uup.getDisplayName() + "</h2>");
+                    sb.append("<h2>" + uup.getDisplayName() + "</h2>"); // NOI18N
                     URL u= uup.getProviderURL();
                     if (u != null) {
-                        sb.append("<b>Description: </b><br>");
-                        sb.append("<b>URL: </b><a href=\"" + u.toExternalForm() + "\">" + u.toExternalForm() + "<br>");
+                        sb.append("<b>" + getBundle ("SettingsTab_UpdateUnitProvider_Description") + "</b><br>"); // NOI18N
+                        sb.append("<b>URL: </b><a href=\"" + u.toExternalForm() + "\">" + u.toExternalForm() + "<br>"); // NOI18N
                     }
                     details.getDetails().setText(sb.toString());
                 }
@@ -393,4 +394,7 @@ private void bProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     private javax.swing.JTextField tfSearch;
     // End of variables declaration//GEN-END:variables
     
+    public static String getBundle (String key) {
+        return NbBundle.getMessage (LocalDownloadSupport.class, key);
+    }
 }

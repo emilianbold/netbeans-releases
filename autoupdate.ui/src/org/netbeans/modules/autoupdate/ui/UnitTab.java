@@ -462,7 +462,7 @@ private void refresh (final boolean force) {
     
     final Runnable checkUpdates = new Runnable(){
         public void run() {
-            ProgressHandle handle = ProgressHandleFactory.createHandle ("refresh-providers-handle");
+            ProgressHandle handle = ProgressHandleFactory.createHandle ("refresh-providers-handle"); // NOI18N
             JComponent progressComp = ProgressHandleFactory.createProgressComponent (handle);
             JLabel detailLabel = ProgressHandleFactory.createDetailLabelComponent (handle);
             JLabel progressLabel = new JLabel (NbBundle.getMessage (UnitTab.class, "UnitTab_CheckingForUpdates"));

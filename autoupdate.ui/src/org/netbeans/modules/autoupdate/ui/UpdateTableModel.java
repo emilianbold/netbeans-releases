@@ -117,18 +117,17 @@ public class UpdateTableModel extends UnitCategoryTableModel {
     }
 
     public String getColumnName(int column) {
-	//TODO I18N
         switch (column) {
-            case 0 : //group icon
-                return "Update";
+            case 0 :
+                return getBundle ("UpdateTableModel_Columns_Update");
             case 1 :
-                return "Name";
+                return getBundle ("UpdateTableModel_Columns_Name");
             case 2 :
-                return "Installed";
+                return getBundle ("UpdateTableModel_Columns_Installed");
             case 3 :
-                return "Available";
+                return getBundle ("UpdateTableModel_Columns_Available");
             case 4 :
-                return "Size";
+                return getBundle ("UpdateTableModel_Columns_Size");
         }
         
         assert false;
@@ -172,5 +171,9 @@ public class UpdateTableModel extends UnitCategoryTableModel {
 
     public OperationContainer getContainer() {
         return container;
+    }
+    
+    private String getBundle (String key) {
+        return NbBundle.getMessage (this.getClass (), key);
     }
 }
