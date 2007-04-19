@@ -33,6 +33,8 @@ import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Super;
 
+import org.openide.ErrorManager;
+
 /**
  *
  * @author Martin Entlicher
@@ -166,7 +168,21 @@ public class JavaClassImpl implements JavaClass {
     }
     
     public List<JavaClass> getSubClasses() {
-        // TODO
+        if (classType != null) {
+            try {
+                java.lang.reflect.Method getSubClassesMethod = classType.getClass().getMethod("getSubClasses", new Class[0]);
+                List<JPDAClassType> subclasses = (List<JPDAClassType>) getSubClassesMethod.invoke(classType, new Object[0]);
+                if (subclasses.size() > 0) {
+                    List<JavaClass> subClasses = new ArrayList<JavaClass>(subclasses.size());
+                    for (JPDAClassType subclass : subclasses) {
+                        subClasses.add(new JavaClassImpl(heap, subclass));
+                    }
+                    return Collections.unmodifiableList(subClasses);
+                }
+            } catch (Exception ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
+        }
         /*
         if (classType != null) {
             List<JPDAClassType> subclasses = classType.getSubClasses();

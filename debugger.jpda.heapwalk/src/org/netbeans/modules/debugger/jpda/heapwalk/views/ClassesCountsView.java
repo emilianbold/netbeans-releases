@@ -40,6 +40,7 @@ import org.netbeans.modules.debugger.jpda.heapwalk.HeapImpl;
 
 import org.netbeans.spi.viewmodel.Models;
 
+import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -284,18 +285,28 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
             if (refreshTask == null) {
                 refreshTask = RequestProcessor.getDefault().create(new Runnable() {
                     public void run() {
-                        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                        try {
+                        javax.swing.SwingUtilities.invokeAndWait(new Runnable() {
                             public void run() {
                                 refreshContent();
                             }
                         });
+                        } catch (InterruptedException iex) {
+                            return ;
+                        } catch (java.lang.reflect.InvocationTargetException itex) {
+                            ErrorManager.getDefault().notify(itex);
+                        }
                         JPDADebugger debugger;
                         synchronized (EngineListener.this) {
                             debugger = lastDebugger.get();
                         }
                         if (debugger != null) {
                             if (debugger.getState() == JPDADebugger.STATE_RUNNING) {
-                                refreshTask.schedule(500);
+                                synchronized (ClassesCountsView.this) {
+                                    if (refreshTask != null) {
+                                        refreshTask.schedule(500);
+                                    }
+                                }
                             }
                         }
                     }

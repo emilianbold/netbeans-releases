@@ -21,6 +21,7 @@ package org.netbeans.modules.debugger.jpda.models;
 
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ClassType;
+import com.sun.jdi.InterfaceType;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.PrimitiveValue;
 import com.sun.jdi.ReferenceType;
@@ -86,6 +87,36 @@ public class JPDAClassTypeImpl implements JPDAClassType {
         } else {
             return null;
         }
+    }
+    
+    public List<JPDAClassType> getSubClasses() {
+        if (classType instanceof ClassType) {
+            List<ClassType> subclasses = ((ClassType) classType).subclasses();
+            if (subclasses.size() > 0) {
+                List<JPDAClassType> subClasses = new ArrayList(subclasses.size());
+                for (ClassType subclass : subclasses) {
+                    subClasses.add(new JPDAClassTypeImpl(debugger, subclass));
+                }
+                return Collections.unmodifiableList(subClasses);
+            }
+        }
+        if (classType instanceof InterfaceType) {
+            List<InterfaceType> subinterfaces = ((InterfaceType) classType).subinterfaces();
+            List<ClassType> implementors = ((InterfaceType) classType).implementors();
+            int ss = subinterfaces.size();
+            int is = implementors.size();
+            if (ss > 0 || is > 0) {
+                List<JPDAClassType> subClasses = new ArrayList(ss + is);
+                for (InterfaceType subclass : subinterfaces) {
+                    subClasses.add(new JPDAClassTypeImpl(debugger, subclass));
+                }
+                for (ClassType subclass : implementors) {
+                    subClasses.add(new JPDAClassTypeImpl(debugger, subclass));
+                }
+                return Collections.unmodifiableList(subClasses);
+            }
+        }
+        return Collections.EMPTY_LIST;
     }
 
     public List<Field> staticFields() {

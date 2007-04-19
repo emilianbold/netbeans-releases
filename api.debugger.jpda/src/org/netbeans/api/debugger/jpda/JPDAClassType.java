@@ -63,6 +63,8 @@ public interface JPDAClassType extends VariableType {
      */
     Super getSuperClass();
     
+    /*List<JPDAClassType> getSubClasses();*/
+    
     /**
      * Provide a list of static fields declared in this type.
      * @return the list of {@link org.netbeans.api.debugger.jpda.Field} objects
