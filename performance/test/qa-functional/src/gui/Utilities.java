@@ -349,7 +349,7 @@ public class Utilities {
      * @param project
      */
     public static void buildproject(String project) {
-        ProjectRootNode prn = new ProjectsTabOperator().getProjectRootNode(project);
+        ProjectRootNode prn = ProjectsTabOperator.invoke().getProjectRootNode(project);
         prn.buildProject();
         MainWindowOperator.getDefault().waitStatusText("Finished building "+project); // NOI18N
     }
@@ -360,7 +360,7 @@ public class Utilities {
      * @param pushAction
      */
     public static void actionOnProject(String project, String pushAction) {
-        ProjectRootNode prn = new ProjectsTabOperator().getProjectRootNode(project);
+        ProjectRootNode prn = ProjectsTabOperator.invoke().getProjectRootNode(project);
         prn.callPopup().pushMenuNoBlock(pushAction);
     }
     
