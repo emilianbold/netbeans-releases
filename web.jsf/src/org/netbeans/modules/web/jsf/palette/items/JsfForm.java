@@ -20,11 +20,9 @@
 package org.netbeans.modules.web.jsf.palette.items;
 
 import java.io.IOException;
-import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
@@ -45,6 +43,7 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -53,7 +52,6 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
 import org.netbeans.modules.web.jsf.wizards.JSFClientGenerator;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -137,8 +135,8 @@ public final class JsfForm implements ActiveEditorDrop {
         }
         stringBuffer.append(MessageFormat.format(BEGIN [formType], new Object [] {variable}));
 
-        FileObject fileObject = getFO(target);
-        JavaSource javaSource = JavaSource.forFileObject(fileObject);
+        FileObject targetJspFO = getFO(target);
+        JavaSource javaSource = JavaSource.create(createClasspathInfo(targetJspFO));
         javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
@@ -258,17 +256,12 @@ public final class JsfForm implements ActiveEditorDrop {
         return null;
     }
     
-    static ClassPath getFullClasspath(FileObject fileObject) {
-        ArrayList entries = new ArrayList();
-        ArrayList urls = new ArrayList();
-        entries.addAll(ClassPath.getClassPath(fileObject, ClassPath.SOURCE).entries());
-        entries.addAll(ClassPath.getClassPath(fileObject, ClassPath.BOOT).entries());
-        entries.addAll(ClassPath.getClassPath(fileObject, ClassPath.COMPILE).entries());
-        for (Iterator it = entries.iterator(); it.hasNext();) {
-            ClassPath.Entry classPathEntry = (ClassPath.Entry) it.next();
-            urls.add(classPathEntry.getURL());
-        }
-        return ClassPathSupport.createClassPath((URL[]) urls.toArray(new URL[urls.size()]));
+    private static ClasspathInfo createClasspathInfo(FileObject fileObject) {
+        return ClasspathInfo.create(
+                ClassPath.getClassPath(fileObject, ClassPath.BOOT),
+                ClassPath.getClassPath(fileObject, ClassPath.COMPILE),
+                ClassPath.getClassPath(fileObject, ClassPath.SOURCE)
+                );
     }
     
     static boolean hasModuleJsf(JTextComponent target) {

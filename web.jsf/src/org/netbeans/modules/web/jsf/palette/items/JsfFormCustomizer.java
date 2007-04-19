@@ -300,14 +300,16 @@ public final class JsfFormCustomizer extends javax.swing.JPanel implements Docum
     protected static boolean classExists(final JTextComponent jTextComponent) throws IOException {
         final boolean[] result = new boolean[] { false };
         FileObject fileObject = JsfForm.getFO(jTextComponent);
-        JavaSource javaSource = JavaSource.forFileObject(fileObject);
-        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
-            public void run(CompilationController controller) throws IOException {
-                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                TypeElement typeElement = controller.getElements().getTypeElement(jTextComponent.getText());
-                result[0] = typeElement != null;
-            }
-        }, true);
+        if (fileObject != null) {
+            JavaSource javaSource = JavaSource.forFileObject(fileObject);
+            javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+                public void run(CompilationController controller) throws IOException {
+                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    TypeElement typeElement = controller.getElements().getTypeElement(jTextComponent.getText());
+                    result[0] = typeElement != null;
+                }
+            }, true);
+        }
         return result[0];
     }
     
