@@ -20,7 +20,7 @@
 package org.netbeans.modules.versioning.system.cvss.ui.actions.diff;
 
 import org.netbeans.api.diff.StreamSource;
-import org.netbeans.api.diff.DiffView;
+import org.netbeans.api.diff.DiffController;
 import org.netbeans.modules.versioning.system.cvss.*;
 import org.netbeans.lib.cvsclient.admin.Entry;
 import org.openide.util.NbBundle;
@@ -51,7 +51,7 @@ public final class Setup {
     private DiffStreamSource    firstSource;
     private DiffStreamSource    secondSource;
 
-    private DiffView view;
+    private DiffController view;
 
     private String    title;
 
@@ -129,11 +129,11 @@ public final class Setup {
         return baseFile;
     }
 
-    public void setView(DiffView view) {
+    public void setView(DiffController view) {
         this.view = view;
     }
 
-    public DiffView getView() {
+    public DiffController getView() {
         return view;
     }
 

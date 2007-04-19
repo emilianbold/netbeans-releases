@@ -28,7 +28,10 @@ import java.io.File;
  * 
  * @author Maros Sandor
  */
-public class VersioningSupport {
+public final class VersioningSupport {
+    
+    private VersioningSupport() {
+    }
     
     /**
      * Queries the Versioning infrastructure for file ownership.

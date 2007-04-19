@@ -67,7 +67,7 @@ public class SvnFileNode {
 
     public Object[] getLookupObjects() {
         List<Object> list = new ArrayList<Object>(2);
-        list.add(this);
+        list.add(file);
         FileObject fo = getFileObject();
         if (fo != null) {
             list.add(fo);

@@ -21,7 +21,6 @@ package org.netbeans.modules.versioning.system.cvss;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.lookup.InstanceContent;
 
 import java.io.File;
 import java.util.List;
@@ -68,7 +67,7 @@ public class CvsFileNode {
 
     public Object[] getLookupObjects() {
         List list = new ArrayList(2);
-        list.add(this);
+        list.add(file);
         FileObject fo = getFileObject();
         if (fo != null) {
             list.add(fo);
