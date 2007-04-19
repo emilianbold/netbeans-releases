@@ -94,7 +94,7 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 
 #UML component
-ant -f nbbuild/entpack/build.xml -Ddo-not-rebuild-clusters=true uml > $UML_BUILD_LOG 2>&1
+ant -f nbbuild/build.xml -Ddo-not-rebuild-clusters=true -Dnb.clusters.list=nb.cluster.profiler,nb.cluster.harness,nb.cluster.ide,nb.cluster.java,nb.cluster.apisupport,nb.cluster.j2ee,nb.cluster.nb,nb.cluster.platform,nb.cluster.uml build-nozip > $UML_BUILD_LOG 2>&1
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
@@ -112,7 +112,7 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 
 #SOA component
-ant -f nbbuild/entpack/build.xml -Ddo-not-rebuild-clusters=true build > $SOA_BUILD_LOG 2>&1
+ant -f nbbuild/build.xml -Ddo-not-rebuild-clusters=true -Dnb.clusters.list=nb.cluster.profiler,nb.cluster.harness,nb.cluster.ide,nb.cluster.java,nb.cluster.apisupport,nb.cluster.j2ee,nb.cluster.nb,nb.cluster.platform,nb.cluster.soa build-nozip > $SOA_BUILD_LOG 2>&1
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
