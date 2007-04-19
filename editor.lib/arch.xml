@@ -451,6 +451,12 @@ Description of public packages:
         Maintained by <code>org.openide.text</code> package.
     </api>
     <br/>
+    <api type="import" name="TextLimitLine" category="private" group="property">
+        Component client property that determines a column index where a text limit line
+        will be displayed. This overrides a default value from editor settings
+        for a particular component.
+    </api>
+    <br/>
     <api type="export" name="DefaultEditorKit.EndOfLineStringProperty" category="stable" group="property">
         Document property containing line separator that was used when the document content was
         loaded from a <code>java.io.Reader</code> by an <code>EditorKit.read()</code>.
