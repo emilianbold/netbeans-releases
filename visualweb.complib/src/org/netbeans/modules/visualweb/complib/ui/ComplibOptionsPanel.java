@@ -3,8 +3,13 @@ package org.netbeans.modules.visualweb.complib.ui;
 import java.io.File;
 import java.util.prefs.Preferences;
 
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileFilter;
+
 import org.netbeans.modules.visualweb.complib.ComplibServiceProvider;
 import org.netbeans.modules.visualweb.complib.IdeUtil;
+import org.netbeans.modules.visualweb.extension.openide.awt.JFileChooser_RAVE;
+import org.openide.util.NbBundle;
 
 final class ComplibOptionsPanel extends javax.swing.JPanel {
     
@@ -109,9 +114,30 @@ final class ComplibOptionsPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void browseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseActionPerformed
-// TODO add your handling code here:
-    }//GEN-LAST:event_browseActionPerformed
+    private void browseActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_browseActionPerformed
+        JFileChooser fcd = JFileChooser_RAVE.getJFileChooser();
+        fcd.setFileFilter(new FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                return f.isDirectory();
+            }
+
+            @Override
+            public String getDescription() {
+                return NbBundle.getMessage(ComplibOptionsPanel.class,
+                        "AdvancedOption_ImportFilterDesc"); // NOI18N
+            }
+        });
+
+        File file = new File(importStartDirField.getText());
+        fcd.setCurrentDirectory(file);
+
+        // FIXME This does not allow user to select a directory for some reason
+        if (fcd.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fcd.getSelectedFile();
+            importStartDirField.setText(selectedFile.getAbsolutePath());
+        }
+    }// GEN-LAST:event_browseActionPerformed
 
     private void importResetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importResetActionPerformed
         String samplesDir = IdeUtil.getRaveSamplesDirectory().getAbsolutePath();
