@@ -113,8 +113,7 @@ public class MethodGenerator {
                     List<ExpressionTree> exc = new ArrayList<ExpressionTree>();
                     while (exceptions.hasNext()) {
                         String exception = exceptions.next();
-                        TypeElement excEl = workingCopy.getElements().getTypeElement(exception);
-                        exc.add(make.QualIdent(excEl));
+                        exc.add(make.Identifier(exception));
                     }
                     
                     // create method
