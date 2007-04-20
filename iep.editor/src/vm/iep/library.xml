@@ -467,7 +467,7 @@ type CDATA #REQUIRED
             <code type="xml" file="vm/iep/operator/distinct.xml"/>
         </component_type>
         <!-- union all-->
-        <component_type name="UnionAll" icon="unionAllx16.png" title="IEP.Operator.UnionAll.title" description="IEP.Operator.UnionAll.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
+        <component_type name="UnionAll" icon="unionAllx16.png" title="IEP.Operator.UnionAll.title" description="IEP.Operator.UnionAll.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.ValidateForSimilarSchema">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>
@@ -482,7 +482,7 @@ type CDATA #REQUIRED
             <code type="xml" file="vm/iep/operator/unionAll.xml"/>
         </component_type>
         <!-- union-->
-        <component_type name="Union" icon="unionx16.png" title="IEP.Operator.Union.title" description="IEP.Operator.Union.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
+        <component_type name="Union" icon="unionx16.png" title="IEP.Operator.Union.title" description="IEP.Operator.Union.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.ValidateForSimilarSchema">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>

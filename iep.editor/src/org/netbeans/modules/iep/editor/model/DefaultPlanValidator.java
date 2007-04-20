@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.iep.editor.model;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.iep.editor.share.SharedConstants;
@@ -27,7 +26,6 @@ import org.netbeans.modules.iep.editor.tcg.model.TcgComponent;
 import org.netbeans.modules.iep.editor.tcg.model.TcgComponentValidationMsg;
 import org.netbeans.modules.iep.editor.tcg.model.TcgComponentValidationReport;
 import org.netbeans.modules.iep.editor.tcg.model.TcgComponentValidator;
-import org.netbeans.modules.iep.editor.tcg.model.TcgProperty;
 import org.netbeans.modules.iep.editor.tcg.ps.TcgPsI18n;
 import org.openide.util.NbBundle;
 import java.util.logging.Logger;
@@ -36,7 +34,7 @@ import org.netbeans.modules.iep.editor.tcg.model.TcgComponentType;
 
 /**
  *
- * @author rdwivedi
+ * @author rahul dwivedi
  */
 public class DefaultPlanValidator implements TcgComponentValidator, SharedConstants {
     
@@ -92,33 +90,7 @@ public class DefaultPlanValidator implements TcgComponentValidator, SharedConsta
             addErrorMessage(messageList,null,"DefaultOperatorValidator.atleast_one_output_required");
             type = VALIDATION_ERROR_KEY;
         }
-        
-        
-        /*TcgComponentValidationReport report = null;
-        ArrayList messageList = new ArrayList();
-        String type = VALIDATION_OK_KEY;
-        try {
-            TcgProperty isGlobal = component.getProperty(IS_GLOBAL_KEY);
-            if (!isGlobal.getBoolValue()) {
-                return report;
-            }
-            TcgProperty glbID = component.getProperty(GLOBAL_ID_KEY);
-            if (!glbID.hasValue() || glbID.getStringValue().trim().equals("")) {
-                messageList.add(
-                        new TcgComponentValidationMsg(VALIDATION_ERROR_KEY,
-                            "'" + TcgPsI18n.getDisplayName(glbID.getType()) + "' " +
-                            NbBundle.getMessage(DefaultOperatorValidator.class,
-                                "DefaultOperatorValidator.property_must_be_defined_for_a_global_entity")));
-                type = VALIDATION_ERROR_KEY;
-            }
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-        if (report.getType().equals(VALIDATION_ERROR_KEY)) {
-            type = VALIDATION_ERROR_KEY;
-        }
-         * */
-        
+       
         return new TcgComponentValidationReport(component, type, messageList, report.getChildReportList());
     }
     
@@ -133,5 +105,10 @@ public class DefaultPlanValidator implements TcgComponentValidator, SharedConsta
     private void ensureAtLeatOneOperator() {
         
     }
+    
+    private void validateForSpecificRules() {
+        
+    }
+    
     
 }
