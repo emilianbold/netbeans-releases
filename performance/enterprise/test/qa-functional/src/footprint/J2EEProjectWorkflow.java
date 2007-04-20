@@ -22,7 +22,7 @@ package footprint;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.actions.EditAction;
 import org.netbeans.jellytools.actions.SaveAllAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
@@ -82,7 +82,7 @@ public class J2EEProjectWorkflow extends org.netbeans.performance.test.utilities
 //        EPFootprintUtilities.openFile(new Node(new ProjectsTabOperator().getProjectRootNode(j2eeproject_war), EPFootprintUtilities.WEB_PAGES + "|index.jsp"),"index.jsp", true);
 //        EPFootprintUtilities.insertToFile("index.jsp", 23, "Hello World", true);
         
-        new OpenAction().perform(new Node(new ProjectsTabOperator().getProjectRootNode(j2eeproject_war), "Configuration Files|sun-web.xml")); // NOI18N
+        new EditAction().perform(new Node(new ProjectsTabOperator().getProjectRootNode(j2eeproject_war), "Configuration Files|sun-web.xml")); // NOI18N
         TopComponentOperator xmlEditor = new TopComponentOperator("sun-web.xml");
         new JButtonOperator(xmlEditor, "New...", 0).push(); //NOI18N
         
