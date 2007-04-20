@@ -19,14 +19,17 @@
 package org.netbeans.modules.visualweb.propertyeditors;
 
 import com.sun.rave.designtime.DesignProperty;
+import com.sun.rave.propertyeditors.resolver.PropertyEditorResolver;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyDescriptor;
 import java.beans.PropertyEditor;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
+import java.util.Collection;
 import javax.swing.JPanel;
 import org.openide.explorer.propertysheet.PropertyEnv;
+import org.openide.util.Lookup;
 
 /**
  * A abstract base class for custom property editors. Editor panels that extend
@@ -41,7 +44,7 @@ import org.openide.explorer.propertysheet.PropertyEnv;
  * @author gjmurphy
  */
 public abstract class PropertyPanelBase extends JPanel {
-
+    
     /**
      * A utility factory method for creating a property panel, such as for use in a
      * component customizer. If this method is unable to create a property panel
@@ -56,8 +59,20 @@ public abstract class PropertyPanelBase extends JPanel {
         if (editorClass == null)
             return null;
         try {
-            PropertyEditor editor = (PropertyEditor) editorClass.newInstance();
-            if (PropertyEditorBase.class.isAssignableFrom(editorClass))
+            // Ask each property editor resolver service that was registered with the
+            // IDE for an editor appropriate for the property descriptor
+            
+            PropertyEditor editor = null;
+            
+            for (PropertyEditorResolver resolver : getPropertyEditorResolvers()) {
+                editor = resolver.getEditor(descriptor);
+                if (editor != null)
+                    break;
+            }
+            if (editor == null){
+                editor = (PropertyEditor) editorClass.newInstance();
+            }
+            if (PropertyEditorBase.class.isAssignableFrom(editor.getClass()))
                 ((PropertyEditorBase) editor).setDesignProperty(designProperty);
             editor.setValue(designProperty.getValue());
             Component customEditor = editor.getCustomEditor();
@@ -70,10 +85,26 @@ public abstract class PropertyPanelBase extends JPanel {
         }
         return null;
     }
-
+    
+    private static Lookup.Result propertyEditorResolverLookupResult;
+    
+    /**
+     * Look up all property editor resolvers registered with the current IDE session.
+     */
+    private static PropertyEditorResolver[] getPropertyEditorResolvers() {
+        if (propertyEditorResolverLookupResult == null) {
+            Lookup.Template template = new Lookup.Template(PropertyEditorResolver.class);
+            Lookup lookup = Lookup.getDefault();
+            propertyEditorResolverLookupResult = lookup.lookup(template);
+        }
+        Collection instances = propertyEditorResolverLookupResult.allInstances();
+        return (PropertyEditorResolver[]) instances.toArray(
+                new PropertyEditorResolver[instances.size()]);
+    }
+    
     PropertyEditorBase propertyEditor;
     PanelSubmissionListener panelSubmissionListener;
-
+    
     /**
      * Create a new instance of PropertyPanelBase, for the property editor specified.
      * Property editors that extend {@link PropertyEditorBase} should pass themselves
@@ -89,13 +120,13 @@ public abstract class PropertyPanelBase extends JPanel {
             this.propertyEditor = propertyEditor;
         }
     }
-
+    
     /**
      * This method is called just after the user has clicked "ok". Sub-classes
      * should use this method to calculate and return the property value.
      */
     public abstract Object getPropertyValue();
-
+    
     protected void finalize() throws Throwable {
         if (panelSubmissionListener != null)
             this.propertyEditor.getEnv().removeVetoableChangeListener(panelSubmissionListener);
