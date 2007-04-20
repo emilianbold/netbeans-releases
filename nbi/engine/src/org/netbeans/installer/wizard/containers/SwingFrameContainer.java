@@ -19,6 +19,7 @@
  */
 package org.netbeans.installer.wizard.containers;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -444,14 +445,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
                 currentPanel.setBackground(Color.WHITE);
             }
             
-            add(currentPanel, new GridBagConstraints(
-                    0, 2,                             // x, y
-                    1, 1,                             // width, height
-                    1.0, 1.0,                         // weight-x, weight-y
-                    GridBagConstraints.CENTER,        // anchor
-                    GridBagConstraints.BOTH,          // fill
-                    new Insets(0, 0, 0, 0),           // padding
-                    0, 0));                           // padx, pady - ???
+            add(currentPanel, BorderLayout.CENTER);
             
             validate();
             repaint();
@@ -525,6 +519,9 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
             titlePanel.setLayout(new GridBagLayout());
             titlePanel.setOpaque(true);
             
+            // topSeparator /////////////////////////////////////////////////////////
+            topSeparator = new NbiSeparator();
+            
             titlePanel.add(titleLabel, new GridBagConstraints(
                     0, 0,                             // x, y
                     1, 1,                             // width, height
@@ -541,12 +538,14 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
                     GridBagConstraints.BOTH,          // fill
                     new Insets(6, 22, 11, 11),        // padding
                     0, 0));                           // padx, pady - ???
-            
-            // topSeparator /////////////////////////////////////////////////////////
-            topSeparator = new NbiSeparator();
-            
-            // currentPanel /////////////////////////////////////////////////////////
-            currentPanel = new NbiPanel();
+            titlePanel.add(topSeparator, new GridBagConstraints(
+                    0, 2,                             // x, y
+                    1, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.HORIZONTAL,    // fill
+                    new Insets(0, 0, 0, 0),           // padding
+                    0, 0));                           // padx, pady - ???
             
             // bottomSeparator //////////////////////////////////////////////////////
             bottomSeparator = new NbiSeparator();
@@ -569,8 +568,16 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
             // buttonsPanel /////////////////////////////////////////////////////////
             buttonsPanel = new NbiPanel();
             
-            buttonsPanel.add(helpButton, new GridBagConstraints(
+            buttonsPanel.add(bottomSeparator, new GridBagConstraints(
                     0, 0,                             // x, y
+                    5, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.HORIZONTAL,    // fill
+                    new Insets(0, 0, 0, 0),           // padding
+                    0, 0));                           // padx, pady - ???
+            buttonsPanel.add(helpButton, new GridBagConstraints(
+                    0, 1,                             // x, y
                     1, 1,                             // width, height
                     0.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.CENTER,        // anchor
@@ -578,7 +585,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
                     new Insets(11, 11, 11, 11),       // padding
                     0, 0));                           // padx, pady - ???
             buttonsPanel.add(spacerPanel, new GridBagConstraints(
-                    1, 0,                             // x, y
+                    1, 1,                             // x, y
                     1, 1,                             // width, height
                     1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.CENTER,        // anchor
@@ -586,7 +593,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
                     new Insets(0, 0, 0, 0),           // padding
                     0, 0));                           // padx, pady - ???
             buttonsPanel.add(backButton, new GridBagConstraints(
-                    2, 0,                             // x, y
+                    2, 1,                             // x, y
                     1, 1,                             // width, height
                     0.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.CENTER,        // anchor
@@ -594,7 +601,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
                     new Insets(11, 0, 11, 6),         // padding
                     0, 0));                           // padx, pady - ???
             buttonsPanel.add(nextButton, new GridBagConstraints(
-                    3, 0,                             // x, y
+                    3, 1,                             // x, y
                     1, 1,                             // width, height
                     0.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.CENTER,        // anchor
@@ -602,7 +609,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
                     new Insets(11, 0, 11, 11),        // padding
                     0, 0));                           // padx, pady - ???
             buttonsPanel.add(cancelButton, new GridBagConstraints(
-                    4, 0,                             // x, y
+                    4, 1,                             // x, y
                     1, 1,                             // width, height
                     0.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.CENTER,        // anchor
@@ -610,49 +617,15 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
                     new Insets(11, 0, 11, 11),        // padding
                     0, 0));                           // padx, pady - ???
             
-            // this /////////////////////////////////////////////////////////////////
-            setLayout(new GridBagLayout());
+            // currentPanel /////////////////////////////////////////////////////////
+            currentPanel = new NbiPanel();
             
-            add(titlePanel, new GridBagConstraints(
-                    0, 0,                             // x, y
-                    1, 1,                             // width, height
-                    1.0, 0.0,                         // weight-x, weight-y
-                    GridBagConstraints.CENTER,        // anchor
-                    GridBagConstraints.BOTH,          // fill
-                    new Insets(0, 0, 0, 0),           // padding
-                    0, 0));                           // padx, pady - ???
-            add(topSeparator, new GridBagConstraints(
-                    0, 1,                             // x, y
-                    1, 1,                             // width, height
-                    1.0, 0.0,                         // weight-x, weight-y
-                    GridBagConstraints.CENTER,        // anchor
-                    GridBagConstraints.HORIZONTAL,    // fill
-                    new Insets(0, 0, 0, 0),           // padding
-                    0, 0));                           // padx, pady - ???
-            add(currentPanel, new GridBagConstraints(
-                    0, 2,                             // x, y
-                    1, 1,                             // width, height
-                    1.0, 1.0,                         // weight-x, weight-y
-                    GridBagConstraints.CENTER,        // anchor
-                    GridBagConstraints.BOTH,          // fill
-                    new Insets(0, 0, 0, 0),           // padding
-                    0, 0));                           // padx, pady - ???
-            add(bottomSeparator, new GridBagConstraints(
-                    0, 3,                             // x, y
-                    1, 1,                             // width, height
-                    1.0, 0.0,                         // weight-x, weight-y
-                    GridBagConstraints.CENTER,        // anchor
-                    GridBagConstraints.HORIZONTAL,    // fill
-                    new Insets(0, 0, 0, 0),           // padding
-                    0, 0));                           // padx, pady - ???
-            add(buttonsPanel, new GridBagConstraints(
-                    0, 4,                             // x, y
-                    1, 1,                             // width, height
-                    1.0, 0.0,                         // weight-x, weight-y
-                    GridBagConstraints.CENTER,        // anchor
-                    GridBagConstraints.BOTH,          // fill
-                    new Insets(0, 0, 0, 0),           // padding
-                    0, 0));                           // padx, pady - ???
+            // this /////////////////////////////////////////////////////////////////
+            setLayout(new BorderLayout());
+            
+            add(titlePanel, BorderLayout.PAGE_START);
+            add(currentPanel, BorderLayout.CENTER);
+            add(buttonsPanel, BorderLayout.PAGE_END);
             
             // debugging plug ///////////////////////////////////////////////////////
             //KeyboardFocusManager.getCurrentKeyboardFocusManager().
