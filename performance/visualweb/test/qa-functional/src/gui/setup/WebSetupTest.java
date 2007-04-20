@@ -48,12 +48,6 @@ public class WebSetupTest extends IDESetupTest {
         super(testName);
     }
 
-    
-    public void openJeditProject() {
-        VWPUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+ java.io.File.separator +"jEdit41");
-        VWPUtilities.waitForPendingBackgroundTasks();
-    }
-
     public void openWebPackProject() {
         // we'll open this project, creating is expensive and not so stable
         //createTestProject("VisualWebProject");
@@ -65,13 +59,14 @@ public class WebSetupTest extends IDESetupTest {
     public void setupAppServer() {
         rto = RuntimeTabOperator.invoke();
         try {
-            rto.tree().findPath("Servers|Sun Java System Application Server"); // NOI18N
+            VWPUtilities.getApplicationServerNode();
         } catch (TimeoutExpiredException ex) {
             //App server node not found -(
             installAppServer();
         }
+        
         try {
-            rto.tree().findPath("Servers|Sun Java System Application Server"); // NOI18N
+            VWPUtilities.getApplicationServerNode();
         } catch (TimeoutExpiredException ex) {
             //App server node not found -(
             fail("Application Server Installation failed");
