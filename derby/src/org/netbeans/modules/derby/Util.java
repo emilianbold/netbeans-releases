@@ -70,6 +70,18 @@ public class Util {
         });
     }
 
+    public static boolean isDerbyInstallLocation(File location) {
+        File libDir = new File(location, "lib"); // NOI18N
+        if (!libDir.exists()) {
+            return false;
+        }
+        File[] libs = libDir.listFiles();
+        if (libs == null || libs.length <= 0) {
+            return false;
+        }
+        return true;
+    }
+
     public static void extractZip(File source, FileObject target) throws IOException {
         FileInputStream is = new FileInputStream(source);
         try {

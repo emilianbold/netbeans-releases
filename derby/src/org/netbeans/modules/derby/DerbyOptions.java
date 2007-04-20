@@ -138,7 +138,7 @@ public class DerbyOptions {
                 ErrorManager.getDefault().annotate(e, ErrorManager.USER, message, message, null, null);
                 throw e;
             }
-            if (!isDerbyInstallLocation(locationFile)) {
+            if (!Util.isDerbyInstallLocation(locationFile)) {
                 String message = NbBundle.getMessage(DerbyOptions.class, "ERR_InvalidDerbyLocation", locationFile);
                 IllegalArgumentException e = new IllegalArgumentException(message);
                 ErrorManager.getDefault().annotate(e, ErrorManager.USER, message, message, null, null);
@@ -212,22 +212,10 @@ public class DerbyOptions {
         if (location == null) {
             return null;
         }
-        if (!isDerbyInstallLocation(location)) {
+        if (!Util.isDerbyInstallLocation(location)) {
             return null;
         }
         return location.getAbsolutePath();
-    }
-
-    private static boolean isDerbyInstallLocation(File location) {
-        File libDir = new File(location, "lib"); // NOI18N
-        if (!libDir.exists()) {
-            return false;
-        }
-        File[] libs = libDir.listFiles();
-        if (libs == null || libs.length <= 0) {
-            return false;
-        }
-        return true;
     }
 
     private static void stopDerbyServer() {

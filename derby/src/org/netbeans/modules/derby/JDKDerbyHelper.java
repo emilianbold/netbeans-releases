@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.derby;
 
+import java.io.File;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
@@ -61,7 +62,10 @@ public class JDKDerbyHelper {
         for (Object dir : platform.getInstallFolders()) {
             FileObject derbyDir = ((FileObject)dir).getFileObject("db"); // NOI18N
             if (derbyDir != null) {
-                return FileUtil.toFile(derbyDir).getAbsolutePath();
+                File derbyDirFile = FileUtil.toFile(derbyDir);
+                if (Util.isDerbyInstallLocation(derbyDirFile)) {
+                    return derbyDirFile.getAbsolutePath();
+                }
             }
         }
         return null;
