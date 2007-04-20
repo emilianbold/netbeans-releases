@@ -24,7 +24,9 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.*;
+import java.util.logging.Logger;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.*;
@@ -76,6 +78,72 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
     }
 
     public Problem fastCheckParameters() {
+        if (!(refactoring instanceof MoveRefactoring)) 
+            return null;
+        try {
+            for (FileObject f: filesToMove) {
+                if (!RetoucheUtils.isJavaFile(f))
+                    continue;
+                String targetPackageName = this.getTargetPackageName(f);
+                if (!RetoucheUtils.isValidPackageName(targetPackageName)) {
+                    String s = NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_InvalidPackage"); //NOI18N
+                    String msg = new MessageFormat(s).format(
+                            new Object[] {targetPackageName}
+                    );
+                    return new Problem(true, msg);
+                }
+                FileObject targetRoot = RetoucheUtils.getClassPathRoot(((MoveRefactoring)refactoring).getTarget().lookup(URL.class));
+                FileObject targetF = targetRoot.getFileObject(targetPackageName.replace('.', '/'));
+            
+                String pkgName = null;
+                if ((targetF!=null && !targetF.canWrite())) {
+                    return new Problem(true, new MessageFormat(NbBundle.getMessage(MoveRefactoringPlugin.class,"ERR_PackageIsReadOnly")).format( // NOI18N
+                    new Object[] {targetPackageName}
+                    ));
+                }
+                
+//                this.movingToDefaultPackageMap.put(r, Boolean.valueOf(targetF!= null && targetF.equals(classPath.findOwnerRoot(targetF))));
+                pkgName = targetPackageName;
+            
+                if (pkgName == null) {
+                    pkgName = ""; // NOI18N
+                } else if (pkgName.length() > 0) {
+                    pkgName = pkgName + '.';
+                }
+                //targetPrefix = pkgName;
+                
+//                JavaClass[] sourceClasses = (JavaClass[]) sourceClassesMap.get(r);
+//                String[] names = new String [sourceClasses.length];
+//                for (int x = 0; x < names.length; x++) {
+//                    names [x] = sourceClasses [x].getName();
+//                }
+//                
+//                FileObject movedFile = JavaMetamodel.getManager().getDataObject(r).getPrimaryFile();
+                String fileName = f.getName();
+                if (targetF!=null) {
+                    FileObject[] children = targetF.getChildren();
+                    for (int x = 0; x < children.length; x++) {
+                        if (children[x].getName().equals(fileName) && "java".equals(children[x].getExt()) && !children[x].equals(f) && !children[x].isVirtual()) { //NOI18N
+                            return new Problem(true, new MessageFormat(
+                                    NbBundle.getMessage(MoveRefactoringPlugin.class,"ERR_ClassToMoveClashes")).format(new Object[] {fileName} // NOI18N
+                            ));
+                        }
+                    } // for
+                }
+                
+//                boolean accessedByOriginalPackage = ((Boolean) accessedByOriginalPackageMap.get(r)).booleanValue();
+//                boolean movingToDefaultPackage = ((Boolean) movingToDefaultPackageMap.get(r)).booleanValue();
+//                if (p==null && accessedByOriginalPackage && movingToDefaultPackage) {
+//                    p= new Problem(false, getString("ERR_MovingClassToDefaultPackage")); // NOI18N
+//                }
+                
+//                if (f.getFolder().getPrimaryFile().equals(targetF) && isPackageCorrect(r)) {
+//                    return new Problem(true, getString("ERR_CannotMoveIntoSamePackage"));
+//                }
+            }
+        } catch (IOException ioe) {
+            //do nothing
+        } 
         return null;
     }
 

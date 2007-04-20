@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -270,11 +271,12 @@ public class RetoucheUtils {
     }
     
     public static String getPackageName(URL url) {
-        FileObject result = URLMapper.findFileObject(url);
-        if (result != null)
-            return getPackageName(result);
-        
-        File f = FileUtil.normalizeFile(new File(url.getPath()));
+        File f = null;
+        try {
+            f = FileUtil.normalizeFile(new File(url.toURI()));
+        } catch (URISyntaxException uRISyntaxException) {
+            throw new IllegalArgumentException("Cannot create package name for url " + url);
+        }
         String suffix = "";
         
         do {
@@ -282,12 +284,13 @@ public class RetoucheUtils {
             if (fo != null) {
                 if ("".equals(suffix))
                     return getPackageName(fo);
-                return getPackageName(fo) + "." + suffix;
+                String prefix = getPackageName(fo);
+                return prefix + ("".equals(prefix)?"":".") + suffix;
             }
             if (!"".equals(suffix)) {
                 suffix = "." + suffix;
             }
-            suffix = suffix + f.getPath().substring(f.getPath().lastIndexOf(File.separatorChar)+1);
+            suffix = URLDecoder.decode(f.getPath().substring(f.getPath().lastIndexOf(File.separatorChar)+1)) + suffix;
             f = f.getParentFile();
         } while (f!=null);
         throw new IllegalArgumentException("Cannot create package name for url " + url);
@@ -310,6 +313,16 @@ public class RetoucheUtils {
         } catch (URISyntaxException ex) {
             throw (IOException) new IOException().initCause(ex);
         }
+    }
+    
+    public static FileObject getClassPathRoot(URL url) throws IOException {
+        FileObject result = URLMapper.findFileObject(url);
+        File f = FileUtil.normalizeFile(new File(url.getPath()));
+        while (result==null) {
+            result = FileUtil.toFileObject(f);
+            f = f.getParentFile();
+        }
+        return ClassPath.getClassPath(result, ClassPath.SOURCE).findOwnerRoot(result);
     }
     
     public static Collection<Element> getSuperTypes(TypeElement type, CompilationInfo info) {

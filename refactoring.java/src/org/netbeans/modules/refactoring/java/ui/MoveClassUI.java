@@ -21,6 +21,7 @@ package org.netbeans.modules.refactoring.java.ui;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Collections;
@@ -113,7 +114,7 @@ public class MoveClassUI implements RefactoringUI, RefactoringUIBypass {
 
         URL url = URLMapper.findURL(panel.getRootFolder(), URLMapper.EXTERNAL);
         try {
-            refactoring.setTarget(Lookups.singleton(new URL(url.toExternalForm() + "/" + panel.getPackageName().replace('.','/'))));
+            refactoring.setTarget(Lookups.singleton(new URL(url.toExternalForm() + URLEncoder.encode(panel.getPackageName().replace('.','/')))));
         } catch (MalformedURLException ex) {
             ex.printStackTrace();
         }
