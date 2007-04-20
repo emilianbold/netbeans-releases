@@ -63,21 +63,19 @@ public class GlassFishUtils {
         // does nothing
     }
     
-    public static boolean createDomain(File location, String domainName, String username, String password, String httpPort, String httpsPort, String adminPort) throws IOException {
-        return createDomain(location, domainName, username, password, httpPort, httpsPort, adminPort, null);
+    public static void createDomain(File location, String domainName, String username, String password, String httpPort, String httpsPort, String adminPort) throws IOException {
+        createDomain(location, domainName, username, password, httpPort, httpsPort, adminPort, null);
     }
     
-    public static boolean createDomain(File location, String domainName, String username, String password, String httpPort, String httpsPort, String adminPort, String domainProperties) throws IOException {
-        File passwordFile = createPasswordFile(password, location);
+    public static void createDomain(File location, String domainName, String username, String password, String httpPort, String httpsPort, String adminPort, String domainProperties) throws IOException {
+        final File passwordFile = createPasswordFile(password, location);
         
         if (passwordFile == null) {
-            return false;
+            throw new DomainCreationException();
         }
         
-        String executable = getAsadmin(location).getAbsolutePath();
-        
-        ExecutionResults results = SystemUtils.executeCommand(location,
-                executable,
+        final ExecutionResults results = SystemUtils.executeCommand(location,
+                getAsadmin(location).getAbsolutePath(),
                 "create-domain",
                 "--interactive=false",
                 "--adminport",
@@ -94,7 +92,13 @@ public class GlassFishUtils {
                 domainName
                 );
         
-        return results.getErrorCode() != Integer.MAX_VALUE;
+        if (results.getStdOut().indexOf(COULD_NOT_CREATE_DOMAIN_MARKER) != -1) {
+            throw new DomainCreationException(CLI_130);
+        }
+        
+        if (results.getErrorCode() > 0) {
+            throw new DomainCreationException(results.getErrorCode());
+        }
     }
     
     public static boolean startDomain(File location, String domainName) throws IOException {
@@ -520,6 +524,43 @@ public class GlassFishUtils {
     }
     
     /////////////////////////////////////////////////////////////////////////////////
+    // Inner Classes
+    public static class DomainCreationException extends IOException {
+        private String message;
+        
+        public DomainCreationException() {
+            super();
+            
+            message = "Could not create domain - " +
+                    "failed to create the password file.";
+        }
+        
+        public DomainCreationException(String errorNumber) {
+            super();
+            
+            message = "Could not create domain - " +
+                    "error " + errorNumber + " occurred.";
+        }
+        
+        public DomainCreationException(int errorCode) {
+            super();
+            
+            if (errorCode < Integer.MAX_VALUE) {
+                message = "Could not create domain - " +
+                        "the process returned " + errorCode;
+            } else {
+                message = "Could not create domain - " +
+                        "the process was killed due to timeout.";
+            }
+        }
+        
+        @Override
+        public String getMessage() {
+            return message;
+        }
+    }
+    
+    /////////////////////////////////////////////////////////////////////////////////
     // Constants
     public static final String INSTALL_ADDON_COMMAND = 
             "install-addon"; // NOI18N
@@ -529,4 +570,12 @@ public class GlassFishUtils {
     
     public static final String DEFAULT_DOMAIN = 
             "domain1"; // NOI18N
+    
+    public static final String CLI_130 = 
+            "CLI130"; // NOI18N
+    
+    public static final String COULD_NOT_CREATE_DOMAIN_MARKER =
+            CLI_130 + " Could not create domain"; // NOI18N
+    
+    
 }

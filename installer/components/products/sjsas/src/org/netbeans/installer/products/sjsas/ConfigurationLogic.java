@@ -62,7 +62,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     
     // configuration logic implementation ///////////////////////////////////////////
     public void install(final Progress progress)
-    throws InstallationException {
+            throws InstallationException {
         final File directory = getProduct().getInstallationLocation();
         
         final String username  = getProperty(ASPanel.USERNAME_PROPERTY);
@@ -94,12 +94,12 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             map.put(HOST_NAME_TOKEN,  SystemUtils.getHostName());
             map.put(ADMIN_USERNAME_TOKEN, username);
             map.put(HTTP_PORT_TOKEN,httpPort);
-            map.put(ADMIN_PORT_TOKEN,adminPort);            
+            map.put(ADMIN_PORT_TOKEN,adminPort);
             
             FileUtils.modifyFile(new File(directory, BIN_SUBDIR),map);
             FileUtils.modifyFile(new File(directory, CONFIG_SUBDIR),map);
             FileUtils.modifyFile(new File(directory, DOCS_SUBDIR),map);
-            FileUtils.modifyFile(new File(directory, IMQ_SUBDIR), map);            
+            FileUtils.modifyFile(new File(directory, IMQ_SUBDIR), map);
             FileUtils.modifyFile(new File(directory, JBI_SUBDIR),map);
             FileUtils.modifyFile(new File(directory, DERBY_SUBDIR),map);
             FileUtils.modifyFile(new File(directory, SAMPLES_SUBDIR), map);
@@ -190,7 +190,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     }
     
     public void uninstall(final Progress progress)
-    throws UninstallationException {
+            throws UninstallationException {
         File directory = getProduct().getInstallationLocation();
         
         /////////////////////////////////////////////////////////////////////////////
