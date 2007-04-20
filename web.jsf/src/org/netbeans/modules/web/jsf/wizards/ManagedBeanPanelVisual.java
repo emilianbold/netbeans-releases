@@ -18,18 +18,22 @@
  */
 
 package org.netbeans.modules.web.jsf.wizards;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 //import org.netbeans.modules.web.struts.StrutsConfigUtilities;
+import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 
 public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCtx.Provider, ListDataListener {
+    
+    private final DefaultComboBoxModel scopeModel = new DefaultComboBoxModel();
     
     /**
      * Creates new form PropertiesPanelVisual
@@ -42,7 +46,10 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
             String[] configFiles = JSFConfigUtilities.getConfigFiles(wm.getDeploymentDescriptor());
             jComboBoxConfigFile.setModel(new javax.swing.DefaultComboBoxModel(configFiles));
         }
-        
+        ManagedBean.Scope[] scopes = ManagedBean.Scope.values();
+        for (int i = 0; i < scopes.length; i++){
+            scopeModel.addElement(scopes[i]);
+        }
         
 //        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FormBeanNewPanelVisual.class, "ACS_BeanFormProperties"));  // NOI18N
     }
@@ -68,7 +75,7 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
 
         jLabelConfigFile.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ManagedBeanPanelVisual.class, "MNE_ConfigFile").charAt(0));
         jLabelConfigFile.setLabelFor(jComboBoxConfigFile);
-        jLabelConfigFile.setText(org.openide.util.NbBundle.getMessage(ManagedBeanPanelVisual.class, "LBL_ConfigFile"));
+        jLabelConfigFile.setText(org.openide.util.NbBundle.getMessage(ManagedBeanPanelVisual.class, "LBL_ConfigFile")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 12);
@@ -79,11 +86,12 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(jComboBoxConfigFile, gridBagConstraints);
-        jComboBoxConfigFile.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("ACSD_ConfigurationFile"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle"); // NOI18N
+        jComboBoxConfigFile.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ConfigurationFile")); // NOI18N
 
         jLabelScope.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ManagedBeanPanelVisual.class, "MNE_Scope").charAt(0));
         jLabelScope.setLabelFor(jComboBoxScope);
-        jLabelScope.setText(org.openide.util.NbBundle.getMessage(ManagedBeanPanelVisual.class, "LBL_Scope"));
+        jLabelScope.setText(org.openide.util.NbBundle.getMessage(ManagedBeanPanelVisual.class, "LBL_Scope")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -91,7 +99,7 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 12);
         add(jLabelScope, gridBagConstraints);
 
-        jComboBoxScope.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "request", "session", "application", "none" }));
+        jComboBoxScope.setModel(scopeModel);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -99,11 +107,11 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(jComboBoxScope, gridBagConstraints);
-        jComboBoxScope.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("ACSD_ManagedBeanScope"));
+        jComboBoxScope.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ManagedBeanScope")); // NOI18N
 
         jLabelDesc.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ManagedBeanPanelVisual.class, "MNE_BeanDescription").charAt(0));
         jLabelDesc.setLabelFor(jTextAreaDesc);
-        jLabelDesc.setText(org.openide.util.NbBundle.getMessage(ManagedBeanPanelVisual.class, "LBL_BeanDescription"));
+        jLabelDesc.setText(org.openide.util.NbBundle.getMessage(ManagedBeanPanelVisual.class, "LBL_BeanDescription")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -113,7 +121,7 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
         jTextAreaDesc.setColumns(20);
         jTextAreaDesc.setRows(5);
         jScrollPaneDesc.setViewportView(jTextAreaDesc);
-        jTextAreaDesc.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("ACSD_BeanDescription"));
+        jTextAreaDesc.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_BeanDescription")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -122,9 +130,7 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(jScrollPaneDesc, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox jComboBoxConfigFile;
