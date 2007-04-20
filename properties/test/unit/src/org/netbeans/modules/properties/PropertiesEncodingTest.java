@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.properties;
 
+import java.nio.charset.CharacterCodingException;
 import java.util.Arrays;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.properties.PropertiesEncoding.PropCharset;
@@ -35,7 +36,7 @@ public class PropertiesEncodingTest extends NbTestCase {
         super("Encoding test");
     }
     
-    public void testCharEncoding() {
+    public void testCharEncodingOfSingleChar() {
         final PropCharsetEncoder encoder
                 = new PropCharsetEncoder(new PropCharset());
         assertTrue(Arrays.equals(
@@ -173,6 +174,21 @@ public class PropertiesEncodingTest extends NbTestCase {
         assertTrue(Arrays.equals(
                 encoder.encodeCharForTests((char) 0xffff),
                 new byte[] {'\\', 'u', 'f', 'f', 'f', 'f'}));
+    }
+    
+    public void testCharEncodingOfString() throws CharacterCodingException {
+        final PropCharsetEncoder encoder
+                = new PropCharsetEncoder(new PropCharset());
+        compare(encoder.encodeStringForTests(""),
+                new byte[] {});
+        compare(encoder.encodeStringForTests("a"),
+                new byte[] {'a'});
+        compare(encoder.encodeStringForTests("\\"),     //pending character
+                new byte[] {'\\', '\\'});
+        compare(encoder.encodeStringForTests("\\\\"),
+                new byte[] {'\\', '\\'});
+        compare(encoder.encodeStringForTests("\\t"),
+                new byte[] {'\\', 't'});
     }
     
     public void testCharDecoding() {
@@ -370,5 +386,47 @@ public class PropertiesEncodingTest extends NbTestCase {
                 new char[] {(char) 0xffff}));
 
     }
+
+    private void compare(byte[] actual, byte[] expected) {
+        if (!Arrays.equals(expected, actual)) {
+            fail("byte arrays do not match"
+                 + " - expected: " + showByteArray(expected)
+                 + ", actual: " + showByteArray(actual));
+        }
+    }
     
+    private static String showByteArray(final byte[] arr) {
+        StringBuilder buf = new StringBuilder(3 * arr.length + 5);
+        buf.append('{');
+        for (int i = 0; i < arr.length - 1; i++) {
+            buf.append(getVisualRepresentation(arr[i]));
+            buf.append(',');
+        }
+        if (arr.length != 0) {
+            buf.append(getVisualRepresentation(arr[arr.length - 1]));
+        }
+        buf.append('}');
+        return buf.toString();
+    }
+    
+    private static char[] getVisualRepresentation(byte b) {
+        if (b < 0x20) {
+            char[] result = new char[4];
+            int off = 0;
+            result[off++] = '<';
+            result[off++] = getCharForHexadec((b >>> 4) & 0x0f);
+            result[off++] = getCharForHexadec(    b     & 0x0f);
+            result[off++] = '>';
+            return result;
+        } else {
+            return new char[] {(char) b};
+        }
+    }
+    
+    private static char getCharForHexadec(int b) {
+        assert b < 0x10;
+        return (b < 10) ? (char) ('0' + (b & 0x0f))
+                        : (char) ('a' + ((b & 0x0f) - 10));
+    }
+
 }

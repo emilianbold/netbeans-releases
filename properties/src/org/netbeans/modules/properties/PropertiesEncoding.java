@@ -23,6 +23,7 @@ import java.nio.BufferOverflowException;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
@@ -30,6 +31,7 @@ import java.nio.charset.CoderResult;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Utilities;
+import sun.security.util.PendingException;
 import static java.lang.Math.min;
 import static java.nio.charset.CoderResult.OVERFLOW;
 import static java.nio.charset.CoderResult.UNDERFLOW;
@@ -155,11 +157,13 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
                         encodeBuf();
                         if (emptyInBuf && !emptyIn) {
                             continue readInLoop;
+                        } else if (emptyIn && hasPendingCharacters()) {
+                            handlePendingCharacters();
                         }
                         flushOutBuf(out);
                         if (fullOut) {
                             return OVERFLOW;
-                        } else if (emptyInBuf && emptyIn) {
+                        } else if (emptyInBuf && emptyIn && !hasPendingCharacters()) {
                             return UNDERFLOW;
                         }
                     }
@@ -222,12 +226,7 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
             
             int encodingInBufPos = 0;
             while ((encodingInBufPos < inBufPos)
-                    && (outBufPos <= outBufSize - (maxEncodedTokenLen + 1))) {
-                /*
-                 * Sometimes we must flush a pending backslash so the maximum
-                 * number of output bytes during one call is
-                 * (maxEncodedTokenLen + 1).
-                 */
+                    && (outBufPos <= outBufSize - maxEncodedTokenLen)) {
                 encodeChar(inBuf[encodingInBufPos++]);
             }
             
@@ -242,6 +241,41 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
         }
         
         /**
+         * Are there any pending characters to be sent to the {@code outBuf}?
+         * 
+         * @return  {@code true} if there are any pending characters to be
+         *          written to the {@link #outBuf}, {@code false} otherwise
+         * @see  #handlePendingCharacters
+         */
+        private boolean hasPendingCharacters() {
+            return backslashPending;
+        }
+        
+        /**
+         * Sends all pending characters to the {@link #outBuf} if there is enough
+         * space for them in the buffer.
+         * Success of the operation can be enquired by calling method
+         * {@link #hasPendingCharacters}.
+         * 
+         * @return  number of characters written to the {@link #outBuf}
+         */
+        private int handlePendingCharacters() {
+            if (!hasPendingCharacters()) {
+                return 0;
+            }
+            
+            if (outBufPos <= (outBufSize - 1)) {
+                outBuf[outBufPos++] = '\\';
+                backslashPending = false;
+                return 1;
+            } else {
+                return 0;
+            }
+        }
+        
+        /**
+         * Writes as many as possible bytes from the {@code outBuf} to the given
+         * {@code ByteBuffer} and removes the written bytes from {@code outBuf}.
          * 
          * @return  {@code true} if the given {@code out} buffer is overflown,
          *          {@code false} otherwise
@@ -346,16 +380,6 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
             return outBufPos - oldPos;
         }
         
-        private int handlePendingCharacters() {
-            if (backslashPending) {
-                outBuf[outBufPos++] = '\\';
-                backslashPending = false;
-                return 1;
-            } else {
-                return 0;
-            }
-        }
-        
         byte[] encodeCharForTests(final char c) {
             reset();
             
@@ -363,6 +387,19 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
             byte[] result = new byte[tokenLength];
             System.arraycopy(outBuf, 0, result, 0, tokenLength);
             return result;
+        }
+        
+        byte[] encodeStringForTests(final String s) throws CharacterCodingException {
+            ByteBuffer resultBuf = encode(CharBuffer.wrap(s));
+            byte[] resultBufArray = resultBuf.array();
+            int resultBufPos = resultBuf.limit();
+            if (resultBufPos == resultBufArray.length) {
+                return resultBufArray;
+            } else {
+                byte[] result = new byte[resultBufPos];
+                System.arraycopy(resultBufArray, 0, result, 0, resultBufPos);
+                return result;
+            }
         }
         
     }
