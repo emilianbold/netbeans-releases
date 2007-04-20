@@ -39,7 +39,7 @@ import org.w3c.dom.Node;
  */
 public class JsfMultiViewElement implements MultiViewElement {
 
-    private static final String PATH_TOOLBAR_FOLDER = "Designer/application/x-designer/Toolbars/Default"; // NOI18N
+//    private static final String PATH_TOOLBAR_FOLDER = "Designer/application/x-designer/Toolbars/Default"; // NOI18N
     
 //    private final Designer designer;
     private final JsfTopComponent jsfTopComponent;

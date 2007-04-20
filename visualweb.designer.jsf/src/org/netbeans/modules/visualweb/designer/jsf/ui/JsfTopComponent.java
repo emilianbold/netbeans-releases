@@ -1325,53 +1325,57 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         
         InputMap keys = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         keys.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "escape-multiplex"); // NOI18N
-        map.put("escape-multiplex", // NOI18N
-            new AbstractAction() {
-                public void actionPerformed(ActionEvent evt) {
-                    escape(evt.getWhen());
-                }
-            }
-        );
+//        map.put("escape-multiplex", // NOI18N
+//            new AbstractAction() {
+//                public void actionPerformed(ActionEvent evt) {
+//                    escape(evt.getWhen());
+//                }
+//            }
+//        );
+        map.put("escape-multiplex", new EscapeAction(this)); // NOI18N
 
         keys = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);    
         keys.put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), "edit-value"); // NOI18N
-        map.put("edit-value", // NOI18N
-            new AbstractAction() {
-                public void actionPerformed(ActionEvent evt) {
-//                    if (webform.getManager().isInlineEditing()) {
-                    if (designer.isInlineEditing()) {
-                        // Already inline editing - no point doing anything
-                        return;
-                    }
-
-//                    boolean success = webform.getActions().editValue();
-                    boolean success = editValue();
-
-                    if (!success) {
-//                        UIManager.getLookAndFeel().provideErrorFeedback(DesignerTopComp.this); // beep
-                        UIManager.getLookAndFeel().provideErrorFeedback(JsfTopComponent.this); // beep
-                    }
-                }
-            });
+//        map.put("edit-value", // NOI18N
+//            new AbstractAction() {
+//                public void actionPerformed(ActionEvent evt) {
+////                    if (webform.getManager().isInlineEditing()) {
+//                    if (designer.isInlineEditing()) {
+//                        // Already inline editing - no point doing anything
+//                        return;
+//                    }
+//
+////                    boolean success = webform.getActions().editValue();
+//                    boolean success = editValue();
+//
+//                    if (!success) {
+////                        UIManager.getLookAndFeel().provideErrorFeedback(DesignerTopComp.this); // beep
+//                        UIManager.getLookAndFeel().provideErrorFeedback(JsfTopComponent.this); // beep
+//                    }
+//                }
+//            });
+        map.put("edit-value", new EditValueAction(this)); // NOI18N
             
         // >>>Debugging helpers
         keys.put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK), "rave-designer-dump-html"); // NOI18N
-        map.put("rave-designer-dump-html", // NOI18N
-            new AbstractAction() {
-                public void actionPerformed(ActionEvent evt) {
-                    dumpActivatedMarkupDesignBeansHtml();
-                }
-            }
-        );
+//        map.put("rave-designer-dump-html", // NOI18N
+//            new AbstractAction() {
+//                public void actionPerformed(ActionEvent evt) {
+//                    dumpActivatedMarkupDesignBeansHtml();
+//                }
+//            }
+//        );
+        map.put("rave-designer-dump-html", new DumpHtmlAction(this)); // NOI18N
         
         keys.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK), "rave-designer-dump-boxes"); // NOI18N
-        map.put("rave-designer-dump-boxes", // NOI18N
-            new AbstractAction() {
-                public void actionPerformed(ActionEvent evt) {
-                    dumpActivatedComponentCssBoxes();
-                }
-            }
-        );
+//        map.put("rave-designer-dump-boxes", // NOI18N
+//            new AbstractAction() {
+//                public void actionPerformed(ActionEvent evt) {
+//                    dumpActivatedComponentCssBoxes();
+//                }
+//            }
+//        );
+        map.put("rave-designer-dump-boxes", new DumpBoxesAction(this)); // NOI18N
         // <<< Debugging helpers
     }
 
@@ -2240,4 +2244,67 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         }
         multiView.close();
     }
+    
+
+    private abstract static class JsfTopComponentAction extends AbstractAction {
+        private final JsfTopComponent jsfTopComponent;
+        
+        public JsfTopComponentAction(JsfTopComponent jsfTopComponent) {
+            this.jsfTopComponent = jsfTopComponent;
+        }
+        
+        protected JsfTopComponent getJsfTopComponent() {
+            return jsfTopComponent;
+        }
+    } // End of JsfTopComponentAction.
+    
+    private static class EscapeAction extends JsfTopComponentAction {
+        public EscapeAction(JsfTopComponent jsfTopComponent) {
+            super(jsfTopComponent);
+        }
+        public void actionPerformed(ActionEvent evt) {
+            getJsfTopComponent().escape(evt.getWhen());
+        }
+    } // End of EscapeAction.
+    
+    private static class EditValueAction extends JsfTopComponentAction {
+        public EditValueAction(JsfTopComponent jsfTopComponent) {
+            super(jsfTopComponent);
+        }
+
+        public void actionPerformed(ActionEvent evt) {
+            JsfTopComponent jsfTopComponent = getJsfTopComponent();
+            if (jsfTopComponent.designer.isInlineEditing()) {
+                // Already inline editing - no point doing anything
+                return;
+            }
+
+            boolean success = jsfTopComponent.editValue();
+
+            if (!success) {
+                UIManager.getLookAndFeel().provideErrorFeedback(jsfTopComponent); // beep
+            }
+        }
+        
+    } // End of EditValueAction.
+    
+    private static class DumpHtmlAction extends JsfTopComponentAction {
+        public DumpHtmlAction(JsfTopComponent jsfTopComponent) {
+            super(jsfTopComponent);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            getJsfTopComponent().dumpActivatedMarkupDesignBeansHtml();
+        }
+    } // End of DumpHtmlAction.
+    
+    private static class DumpBoxesAction extends JsfTopComponentAction {
+        public DumpBoxesAction(JsfTopComponent jsfTopComponent) {
+            super(jsfTopComponent);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            getJsfTopComponent().dumpActivatedComponentCssBoxes();
+        }
+    } // End of DumpBoxesAction.
 }
