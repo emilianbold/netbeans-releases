@@ -35,6 +35,7 @@ public class ProfilerAboutDialog  extends org.netbeans.performance.test.utilitie
      */
     public ProfilerAboutDialog(String testName) {
         super(testName);
+        expectedTime =  WINDOW_OPEN;
     }
     /**
      * 
@@ -43,6 +44,7 @@ public class ProfilerAboutDialog  extends org.netbeans.performance.test.utilitie
      */    
     public ProfilerAboutDialog(String testName, String performanceDataName) {
         super(testName,performanceDataName);
+        expectedTime =  WINDOW_OPEN;        
     }
     /**
      *  initialize 
