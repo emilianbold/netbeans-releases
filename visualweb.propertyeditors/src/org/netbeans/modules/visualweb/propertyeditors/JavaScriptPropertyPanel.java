@@ -120,7 +120,7 @@ public class JavaScriptPropertyPanel extends PropertyPanelBase {
         // Editor pane
         JScrollPane scrollPane = new javax.swing.JScrollPane();
         editorPane = new JEditorPane();
-        editorPane.setContentType("text/x-java"); // NOI18N
+        editorPane.setContentType("text/javascript"); // NOI18N
         editorPane.setText(string);
         scrollPane.setViewportView(editorPane);
         gridBagConstraints = new java.awt.GridBagConstraints();
