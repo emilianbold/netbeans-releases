@@ -249,7 +249,10 @@ class TaskListTable extends JTable {
             storeColumnState();
             ((TaskListModel)getModel()).detach();
         }
-        
+            
+        if( newModel instanceof TaskListModel ) {
+            ((TaskListModel)newModel).attach();
+        }
         super.setModel( newModel );
         createDefaultColumnsFromModel();
     }

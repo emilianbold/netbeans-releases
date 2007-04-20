@@ -47,7 +47,6 @@ class TaskListModel extends AbstractTableModel implements TaskList.Listener {
     /** Creates a new instance of TaskListModel */
     public TaskListModel( TaskList taskList ) {
         this.list = taskList;
-        this.list.addListener( this );
         
         sortingCol = Settings.getDefault().getSortingColumn();
         ascending = Settings.getDefault().isAscendingSort();
@@ -207,6 +206,10 @@ class TaskListModel extends AbstractTableModel implements TaskList.Listener {
         
             sortTaskList();
         }
+    }
+    
+    void attach() {
+        list.addListener( this );
     }
     
     void detach() {
