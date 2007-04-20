@@ -383,7 +383,6 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             
             // customizeButton //////////////////////////////////////////////////////
             customizeButton = new NbiButton();
-            customizeButton.setOpaque(false);
             customizeButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
                     customizeButtonPressed();
@@ -418,6 +417,11 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                     GridBagConstraints.HORIZONTAL,    // fill
                     new Insets(7, 11, 0, 11),         // padding
                     0, 0));                           // padx, pady - ???
+            
+            // platform-specific tweak //////////////////////////////////////////////
+            if (SystemUtils.isMacOS()) {
+                customizeButton.setOpaque(false);
+            }
         }
         
         private void customizeButtonPressed() {
