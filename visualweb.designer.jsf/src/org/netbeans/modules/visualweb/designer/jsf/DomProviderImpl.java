@@ -251,8 +251,9 @@ class DomProviderImpl implements DomProvider {
 
 //    public int computeActions(DesignBean droppee, Transferable transferable, boolean searchUp, int nodePos) {
     public int computeActions(Element dropeeComponentRootElement, Transferable transferable) {
-        MarkupDesignBean droppee = MarkupUnit.getMarkupDesignBeanForElement(dropeeComponentRootElement);
-        return getDndSupport().computeActions(droppee, transferable);
+//        MarkupDesignBean droppee = MarkupUnit.getMarkupDesignBeanForElement(dropeeComponentRootElement);
+//        return getDndSupport().computeActions(droppee, transferable);
+        return jsfForm.computeActions(dropeeComponentRootElement, transferable);
     }
 
 //    public DesignBean findParent(String className, DesignBean droppee, Node parentNode, boolean searchUp) {
@@ -309,16 +310,17 @@ class DomProviderImpl implements DomProvider {
     }
 
     public DataObject getJspDataObject() {
-//        FileObject file = getFacesModel().getMarkupFile();
-        FileObject file = jsfForm.getMarkupFile();
-
-        try {
-            return DataObject.find(file);
-        } catch (DataObjectNotFoundException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-
-            return null;
-        }
+////        FileObject file = getFacesModel().getMarkupFile();
+//        FileObject file = jsfForm.getMarkupFile();
+//
+//        try {
+//            return DataObject.find(file);
+//        } catch (DataObjectNotFoundException ex) {
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+//
+//            return null;
+//        }
+        return jsfForm.getJspDataObject();
     }
 
     public URL getBaseUrl() {
@@ -652,19 +654,20 @@ class DomProviderImpl implements DomProvider {
 //    }
     // XXX Replacing the above
     public Element getDefaultParentComponent() {
-//        LiveUnit liveUnit = getFacesModel().getLiveUnit();
-        LiveUnit liveUnit = jsfForm.getLiveUnit();
-        if (liveUnit != null) {
-//            MarkupBean bean = getFacesModel().getFacesUnit().getDefaultParent();
-            MarkupBean bean = jsfForm.getFacesPageUnit().getDefaultParent();
-
-            if (bean != null) {
-                DesignBean designBean = liveUnit.getDesignBean(bean);
-                return designBean instanceof MarkupDesignBean ? getComponentRootElementForMarkupDesignBean((MarkupDesignBean)designBean) : null;
-            }
-        }
-
-        return null;
+////        LiveUnit liveUnit = getFacesModel().getLiveUnit();
+//        LiveUnit liveUnit = jsfForm.getLiveUnit();
+//        if (liveUnit != null) {
+////            MarkupBean bean = getFacesModel().getFacesUnit().getDefaultParent();
+//            MarkupBean bean = jsfForm.getFacesPageUnit().getDefaultParent();
+//
+//            if (bean != null) {
+//                DesignBean designBean = liveUnit.getDesignBean(bean);
+//                return designBean instanceof MarkupDesignBean ? getComponentRootElementForMarkupDesignBean((MarkupDesignBean)designBean) : null;
+//            }
+//        }
+//
+//        return null;
+        return jsfForm.getDefaultParentComponent();
     }
 
 //    private /*public*/ Exception getRenderFailure() {
@@ -922,37 +925,38 @@ class DomProviderImpl implements DomProvider {
     }
     
     public boolean moveComponent(Element componentRootElement, Node parentNode, Node before) {
-        MarkupDesignBean bean = MarkupUnit.getMarkupDesignBeanForElement(componentRootElement);
-        if (bean == null) {
-            return false;
-        }
-        
-//        LiveUnit lu = getFacesModel().getLiveUnit();
-        LiveUnit lu = jsfForm.getLiveUnit();
-        MarkupPosition markupPos = new MarkupPosition(parentNode, before);
-        DesignBean parentBean = null;
-        Node e = parentNode;
-
-        while (e != null) {
-//            if (e instanceof RaveElement) {
-//                parentBean = ((RaveElement)e).getDesignBean();
-            if (e instanceof Element) {
-//                parentBean = InSyncService.getProvider().getMarkupDesignBeanForElement((Element)e);
-                parentBean = MarkupUnit.getMarkupDesignBeanForElement((Element)e);
-                
-                if (parentBean != null) {
-                    break;
-                }
-            }
-
-            e = e.getParentNode();
-        }
-
-        if (bean == parentBean) {
-            return false;
-        }
-
-        return lu.moveBean(bean, parentBean, markupPos);
+//        MarkupDesignBean bean = MarkupUnit.getMarkupDesignBeanForElement(componentRootElement);
+//        if (bean == null) {
+//            return false;
+//        }
+//        
+////        LiveUnit lu = getFacesModel().getLiveUnit();
+//        LiveUnit lu = jsfForm.getLiveUnit();
+//        MarkupPosition markupPos = new MarkupPosition(parentNode, before);
+//        DesignBean parentBean = null;
+//        Node e = parentNode;
+//
+//        while (e != null) {
+////            if (e instanceof RaveElement) {
+////                parentBean = ((RaveElement)e).getDesignBean();
+//            if (e instanceof Element) {
+////                parentBean = InSyncService.getProvider().getMarkupDesignBeanForElement((Element)e);
+//                parentBean = MarkupUnit.getMarkupDesignBeanForElement((Element)e);
+//                
+//                if (parentBean != null) {
+//                    break;
+//                }
+//            }
+//
+//            e = e.getParentNode();
+//        }
+//
+//        if (bean == parentBean) {
+//            return false;
+//        }
+//
+//        return lu.moveBean(bean, parentBean, markupPos);
+        return jsfForm.moveComponent(componentRootElement, parentNode, before);
     }
 
 //    public void setUpdatesSuspended(Element componentRootElement, boolean suspend) {
@@ -1114,34 +1118,35 @@ class DomProviderImpl implements DomProvider {
 //        System.err.println(Util.getHtmlStream(html)); // NOI18N
 //    }
 
-    private static final DataFlavor FLAVOR_DISPLAY_ITEM = new DataFlavor(
-            DataFlavor.javaJVMLocalObjectMimeType + "; class=" + DisplayItem.class.getName(), // NOI18N
-            "RAVE_PALETTE_ITEM"); // TODO get rid of such name.
+//    private static final DataFlavor FLAVOR_DISPLAY_ITEM = new DataFlavor(
+//            DataFlavor.javaJVMLocalObjectMimeType + "; class=" + DisplayItem.class.getName(), // NOI18N
+//            "RAVE_PALETTE_ITEM"); // TODO get rid of such name.
 
     public boolean canPasteTransferable(Transferable trans) {
-        if (trans != null) {
-            DataFlavor[] df = trans.getTransferDataFlavors();
-            int n = 0;
-
-            if (df != null) {
-                n = df.length;
-            }
-
-            for (int i = 0; i < n; i++) {
-                DataFlavor flavor = df[i];
-
-		// XXX TODO Get rid of this dep, you can specify your own data flavor
-		// which can match, there will be created new data flavors avoiding
-		// usage of .
-                if (FLAVOR_DISPLAY_ITEM.equals(flavor)
-		|| (flavor.getRepresentationClass() == String.class)
-		|| flavor.getMimeType().startsWith("application/x-creator-")) { // NOI18N
-                    // Yes!
-                    return true;
-                }
-            }
-        }
-        return false;
+//        if (trans != null) {
+//            DataFlavor[] df = trans.getTransferDataFlavors();
+//            int n = 0;
+//
+//            if (df != null) {
+//                n = df.length;
+//            }
+//
+//            for (int i = 0; i < n; i++) {
+//                DataFlavor flavor = df[i];
+//
+//		// XXX TODO Get rid of this dep, you can specify your own data flavor
+//		// which can match, there will be created new data flavors avoiding
+//		// usage of .
+//                if (FLAVOR_DISPLAY_ITEM.equals(flavor)
+//		|| (flavor.getRepresentationClass() == String.class)
+//		|| flavor.getMimeType().startsWith("application/x-creator-")) { // NOI18N
+//                    // Yes!
+//                    return true;
+//                }
+//            }
+//        }
+//        return false;
+        return jsfForm.canPasteTransferable(trans);
     }
 
     public void importString(Designer designer, String string, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,

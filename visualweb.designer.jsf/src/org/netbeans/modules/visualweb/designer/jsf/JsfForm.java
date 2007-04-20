@@ -28,6 +28,7 @@ import com.sun.rave.designtime.DesignContext;
 import com.sun.rave.designtime.DesignEvent;
 import com.sun.rave.designtime.DesignProject;
 import com.sun.rave.designtime.DesignProperty;
+import com.sun.rave.designtime.DisplayItem;
 import com.sun.rave.designtime.Position;
 import com.sun.rave.designtime.Result;
 import com.sun.rave.designtime.event.DesignContextListener;
@@ -35,6 +36,7 @@ import com.sun.rave.designtime.event.DesignProjectListener;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
 import com.sun.rave.designtime.markup.MarkupPosition;
 import java.awt.EventQueue;
+import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import org.netbeans.modules.visualweb.designer.jsf.text.DomDocumentImpl;
 import org.netbeans.modules.visualweb.insync.live.LiveUnit;
@@ -1517,7 +1519,38 @@ public class JsfForm {
     }
     
     public boolean moveComponent(Element componentRootElement, Node parentNode, Node before) {
-        return domProvider.moveComponent(componentRootElement, parentNode, before);
+//        return domProvider.moveComponent(componentRootElement, parentNode, before);
+        MarkupDesignBean bean = MarkupUnit.getMarkupDesignBeanForElement(componentRootElement);
+        if (bean == null) {
+            return false;
+        }
+        
+//        LiveUnit lu = getFacesModel().getLiveUnit();
+        LiveUnit lu = getLiveUnit();
+        MarkupPosition markupPos = new MarkupPosition(parentNode, before);
+        DesignBean parentBean = null;
+        Node e = parentNode;
+
+        while (e != null) {
+//            if (e instanceof RaveElement) {
+//                parentBean = ((RaveElement)e).getDesignBean();
+            if (e instanceof Element) {
+//                parentBean = InSyncService.getProvider().getMarkupDesignBeanForElement((Element)e);
+                parentBean = MarkupUnit.getMarkupDesignBeanForElement((Element)e);
+                
+                if (parentBean != null) {
+                    break;
+                }
+            }
+
+            e = e.getParentNode();
+        }
+
+        if (bean == parentBean) {
+            return false;
+        }
+
+        return lu.moveBean(bean, parentBean, markupPos);
     }
 
     public boolean isInlineEditing() {
@@ -1584,7 +1617,16 @@ public class JsfForm {
     }
     
     public DataObject getJspDataObject() {
-        return domProvider.getJspDataObject();
+//        return domProvider.getJspDataObject();
+        FileObject file = getMarkupFile();
+
+        try {
+            return DataObject.find(file);
+        } catch (DataObjectNotFoundException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+
+            return null;
+        }
     }
     
     public void deleteDesignBean(DesignBean designBean) {
@@ -1619,9 +1661,37 @@ public class JsfForm {
         CENTER,
         RIGHT
     } // End of Alignment.
+
+    
+    private static final DataFlavor FLAVOR_DISPLAY_ITEM = new DataFlavor(
+            DataFlavor.javaJVMLocalObjectMimeType + "; class=" + DisplayItem.class.getName(), // NOI18N
+            "RAVE_PALETTE_ITEM"); // TODO get rid of such name.
     
     public boolean canPasteTransferable(Transferable trans) {
-        return domProvider.canPasteTransferable(trans);
+//        return domProvider.canPasteTransferable(trans);
+        if (trans != null) {
+            DataFlavor[] df = trans.getTransferDataFlavors();
+            int n = 0;
+
+            if (df != null) {
+                n = df.length;
+            }
+
+            for (int i = 0; i < n; i++) {
+                DataFlavor flavor = df[i];
+
+		// XXX TODO Get rid of this dep, you can specify your own data flavor
+		// which can match, there will be created new data flavors avoiding
+		// usage of .
+                if (FLAVOR_DISPLAY_ITEM.equals(flavor)
+		|| (flavor.getRepresentationClass() == String.class)
+		|| flavor.getMimeType().startsWith("application/x-creator-")) { // NOI18N
+                    // Yes!
+                    return true;
+                }
+            }
+        }
+        return false;
     }
     
     public UndoRedo getUndoManager() {
@@ -1630,7 +1700,9 @@ public class JsfForm {
     }
     
     public int computeActions(Element componentRootElement, Transferable transferable) {
-        return domProvider.computeActions(componentRootElement, transferable);
+//        return domProvider.computeActions(componentRootElement, transferable);
+        MarkupDesignBean droppee = MarkupUnit.getMarkupDesignBeanForElement(componentRootElement);
+        return getDndSupport().computeActions(droppee, transferable);
     }
     
     public void attachContext() {
@@ -1728,7 +1800,20 @@ public class JsfForm {
     }
     
     public Element getDefaultParentComponent() {
-        return domProvider.getDefaultParentComponent();
+//        return domProvider.getDefaultParentComponent();
+//        LiveUnit liveUnit = getFacesModel().getLiveUnit();
+        LiveUnit liveUnit = getLiveUnit();
+        if (liveUnit != null) {
+//            MarkupBean bean = getFacesModel().getFacesUnit().getDefaultParent();
+            MarkupBean bean = getFacesPageUnit().getDefaultParent();
+
+            if (bean != null) {
+                DesignBean designBean = liveUnit.getDesignBean(bean);
+                return designBean instanceof MarkupDesignBean ? JsfSupportUtilities.getComponentRootElementForMarkupDesignBean((MarkupDesignBean)designBean) : null;
+            }
+        }
+
+        return null;
     }
     
     public Transferable copyComponents(Element[] componentRootElements) {
