@@ -20,6 +20,8 @@
 package org.netbeans.modules.vmd.api.io.javame;
 
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
+import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.api.project.Project;
 
 import java.awt.*;
 
@@ -33,6 +35,10 @@ public final class MidpProjectPropertiesSupport {
         return MidpProjectPropertiesSupportImpl.getDeviceScreenSizeFromProject (context);
     }
 
+    public static String evaluateProperty (EditableProperties ep, String propertyName, String configuration) {
+        return MidpProjectPropertiesSupportImpl.evaluateProperty (ep, propertyName, configuration);
+    }
+
     public static void addDeviceListener (DataObjectContext context, DeviceListener listener) {
         MidpProjectPropertiesSupportImpl.addDeviceListener (context, listener);
     }
@@ -41,4 +47,11 @@ public final class MidpProjectPropertiesSupport {
         MidpProjectPropertiesSupportImpl.removeDeviceListener (context, listener);
     }
 
+    public static boolean isMobileProject (Project project) {
+        return MidpProjectPropertiesSupportImpl.isMobileProject (project);
+    }
+
+    public static String getActiveConfiguration (Project project) {
+        return MidpProjectPropertiesSupportImpl.getActiveConfiguration (project);
+    }
 }

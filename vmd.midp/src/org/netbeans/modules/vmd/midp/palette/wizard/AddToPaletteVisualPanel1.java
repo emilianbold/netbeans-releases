@@ -22,7 +22,7 @@ package org.netbeans.modules.vmd.midp.palette.wizard;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.mobility.project.J2MEProject;
+import org.netbeans.modules.vmd.api.io.javame.MidpProjectPropertiesSupport;
 
 import javax.swing.*;
 import java.awt.*;
@@ -53,22 +53,17 @@ public final class AddToPaletteVisualPanel1 extends JPanel {
         Project[] projects = OpenProjects.getDefault ().getOpenProjects ();
         Vector projectsVector = new Vector ();
         for (Project prj : projects)
-            if (isMobileProject (prj))
+            if (MidpProjectPropertiesSupport.isMobileProject (prj))
                 projectsVector.add (prj);
         projectCombo.setModel (new DefaultComboBoxModel (projectsVector));
         if (project == null) {
             Project prj = OpenProjects.getDefault ().getMainProject ();
-            if (isMobileProject (prj))
+            if (MidpProjectPropertiesSupport.isMobileProject (prj))
                 project = prj;
         }
         if (project == null  &&  projects.length > 0)
             project = projects[0];
         projectCombo.setSelectedItem (project);
-    }
-
-    private boolean isMobileProject (Project prj) {
-        // TODO - remove implementation dependency
-        return prj instanceof J2MEProject; // "J2MEProject".equals (prj.getClass ().getSimpleName ()); // NOI18N
     }
 
     /** This method is called from within the constructor to

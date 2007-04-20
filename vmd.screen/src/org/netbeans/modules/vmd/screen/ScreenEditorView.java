@@ -33,6 +33,7 @@ import java.util.Collections;
 /**
  * @author David Kaspar
  */
+// TODO - reload screen designer only when it is visible
 public class ScreenEditorView implements DataEditorView, DeviceListener {
 
     private static final long serialVersionUID = -1;
@@ -92,18 +93,18 @@ public class ScreenEditorView implements DataEditorView, DeviceListener {
     }
 
     public void componentOpened () {
+    }
+
+    public void componentClosed () {
+    }
+
+    public void componentShowing () {
         MidpProjectPropertiesSupport.addDeviceListener (context, this);
         deviceChanged ();
     }
 
-    public void componentClosed () {
-        MidpProjectPropertiesSupport.removeDeviceChangedListener (context, this);
-    }
-
-    public void componentShowing () {
-    }
-
     public void componentHidden () {
+        MidpProjectPropertiesSupport.removeDeviceChangedListener (context, this);
     }
 
     public void componentActivated () {

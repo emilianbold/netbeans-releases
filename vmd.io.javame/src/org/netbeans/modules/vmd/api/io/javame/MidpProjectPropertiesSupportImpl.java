@@ -88,7 +88,7 @@ public class MidpProjectPropertiesSupportImpl {
         return null;
     }
     
-    private static String evaluateProperty (EditableProperties ep, String propertyName, String configuration) {
+    public static String evaluateProperty (EditableProperties ep, String propertyName, String configuration) {
         if (configuration == null)
             return ep.getProperty (propertyName);
         String value = ep.getProperty ("configs." + configuration + "." + propertyName); // NOI18N
@@ -117,6 +117,15 @@ public class MidpProjectPropertiesSupportImpl {
         assert antListener != null;
         helper.removeAntProjectListener (antListener);
         deviceListeners.remove (listener);
+    }
+
+    public static boolean isMobileProject (Project project) {
+        return project instanceof J2MEProject; // "J2MEProject".equals (prj.getClass ().getSimpleName ()); // NOI18N
+    }
+
+    public static String getActiveConfiguration (Project project) {
+        ProjectConfigurationsHelper confs = project.getLookup ().lookup (ProjectConfigurationsHelper.class);
+        return confs.getActiveConfiguration () != confs.getDefaultConfiguration () ? confs.getActiveConfiguration ().getDisplayName () : null;
     }
 
     private static class DeviceAntProjectListener implements AntProjectListener {
