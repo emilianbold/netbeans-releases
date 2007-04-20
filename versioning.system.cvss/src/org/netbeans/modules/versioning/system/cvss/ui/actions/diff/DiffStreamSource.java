@@ -105,8 +105,8 @@ public class DiffStreamSource extends StreamSource {
         throw new IOException("Operation not supported"); // NOI18N
     }
 
-    public boolean isEditable() {
-        return VersionsCache.REVISION_CURRENT.equals(revision) && isPrimary();
+    public synchronized boolean isEditable() {
+        return !binary && VersionsCache.REVISION_CURRENT.equals(revision) && isPrimary();
     }
 
     private boolean isPrimary() {
@@ -184,10 +184,10 @@ public class DiffStreamSource extends StreamSource {
         if (fo == null && remoteFile != null) {
             fo = FileUtil.toFileObject(remoteFile);
         }
-        if (fo != null) {
-            mimeType = fo.getMIMEType();
-        } else if (binary) {
+        if (binary) {
             mimeType = "application/octet-stream"; // NOI18N
+        } else if (fo != null) {
+            mimeType = fo.getMIMEType();
         } else {
             mimeType = "text/plain"; // NOI18N
         }

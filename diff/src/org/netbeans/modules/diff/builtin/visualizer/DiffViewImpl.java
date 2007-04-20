@@ -19,9 +19,6 @@
 
 package org.netbeans.modules.diff.builtin.visualizer;
 
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.event.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -37,7 +34,6 @@ import javax.swing.*;
 import javax.swing.text.*;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
-import org.netbeans.modules.diff.NestableDiffView;
 import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
 
 import org.openide.actions.CopyAction;
@@ -50,8 +46,6 @@ import org.netbeans.api.diff.Difference;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.spi.diff.DiffProvider;
 import org.netbeans.spi.diff.DiffVisualizer;
-import org.netbeans.editor.EditorUI;
-import org.netbeans.editor.ext.ExtCaret;
 import org.openide.text.CloneableEditorSupport;
 
 /**
@@ -60,7 +54,7 @@ import org.openide.text.CloneableEditorSupport;
  * 
  * @author Maros Sandor
  */
-public class DiffViewImpl extends javax.swing.JPanel implements org.netbeans.api.diff.DiffView, javax.swing.event.CaretListener, NestableDiffView {
+public class DiffViewImpl extends javax.swing.JPanel implements org.netbeans.api.diff.DiffView, javax.swing.event.CaretListener {
 
 //    static final long serialVersionUID =3683458237532937983L;
     
@@ -91,8 +85,6 @@ public class DiffViewImpl extends javax.swing.JPanel implements org.netbeans.api
     private String source1;
     private String source2;
     
-    private static final String PLAIN_TEXT_MIME = "text/plain";
-
     private int onLayoutLine;
     private int onLayoutLength;
 
@@ -550,135 +542,6 @@ public class DiffViewImpl extends javax.swing.JPanel implements org.netbeans.api
             jViewport1.setViewPosition(p1);  // joinScrollBar will move paired view
         }
     }
-
-    // NestableDiffView implementation ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    public void joinScrollPane(final JScrollPane pane) {
-        jScrollPane1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-        jScrollPane1.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        jScrollPane2.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-        jScrollPane2.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        jScrollPane1.setWheelScrollingEnabled(false);
-        jScrollPane2.setWheelScrollingEnabled(false);
-        jScrollPane1.addMouseWheelListener(new MouseWheelListener() {
-            public void mouseWheelMoved(MouseWheelEvent e) {
-                pane.dispatchEvent(e);
-            }
-        });
-        jScrollPane2.addMouseWheelListener(new MouseWheelListener() {
-            public void mouseWheelMoved(MouseWheelEvent e) {
-                pane.dispatchEvent(e);
-            }
-        });
-        jEditorPane1.getCaret().setVisible(false);
-        jEditorPane2.getCaret().setVisible(false);
-
-        // map JEditorPane keystroke to JScrollPane action registered for even keystroke
-        KeyStroke[] keyStrokes = new KeyStroke[] {
-            KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0),
-            KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0),
-
-            KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0),
-            KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0),
-
-            KeyStroke.getKeyStroke(KeyEvent.VK_HOME, 0),
-            KeyStroke.getKeyStroke(KeyEvent.VK_HOME, InputEvent.CTRL_MASK),
-
-            KeyStroke.getKeyStroke(KeyEvent.VK_HOME, InputEvent.CTRL_MASK),
-            KeyStroke.getKeyStroke(KeyEvent.VK_HOME, InputEvent.CTRL_MASK),
-            
-            KeyStroke.getKeyStroke(KeyEvent.VK_END, 0),
-            KeyStroke.getKeyStroke(KeyEvent.VK_END, InputEvent.CTRL_MASK),
-
-            KeyStroke.getKeyStroke(KeyEvent.VK_END, InputEvent.CTRL_MASK),
-            KeyStroke.getKeyStroke(KeyEvent.VK_END, InputEvent.CTRL_MASK),
-
-            KeyStroke.getKeyStroke(KeyEvent.VK_END, 0),
-            KeyStroke.getKeyStroke(KeyEvent.VK_END, 0),
-
-            KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0),
-            KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0),
-
-            KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0),
-            KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0),
-
-            KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0),
-            KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0),
-
-            KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0),
-            KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0),
-        };
-
-        for (int i = 0; i<keyStrokes.length; i+=2) {
-            KeyStroke stroke = keyStrokes[i];
-            KeyStroke stroke2 = keyStrokes[i+1];
-            Object pane1Key = jEditorPane1.getInputMap().get(stroke);
-            Object pane2Key = jEditorPane2.getInputMap().get(stroke);
-            Object scrollKey = pane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).get(stroke2);
-            if (scrollKey != null) {
-                final Action scrollAction = pane.getActionMap().get(scrollKey);
-                jEditorPane1.getActionMap().put(pane1Key, new SourceTranslatorAction(scrollAction, pane));
-                jEditorPane2.getActionMap().put(pane2Key, new SourceTranslatorAction(scrollAction, pane));
-            } else {
-                // System.err.println("No JScrollPane binding for " + stroke);  // HOME, END
-            }
-        }
-
-    }
-
-    public int getInnerScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
-        return jEditorPane1.getScrollableUnitIncrement(visibleRect, orientation, direction);
-    }
-
-    public int getInnerScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
-        return jEditorPane1.getScrollableBlockIncrement(visibleRect, orientation, direction);
-    }
-    
-    public int getInnerWidth() {
-        Dimension d1 = jScrollPane1.getViewport().getView().getPreferredSize();
-        Dimension d2 = jScrollPane2.getViewport().getView().getPreferredSize();
-        int w = Math.max(d1.width, d2.width) * 2;
-        return w;
-    }
-
-    public void setInnerWidth(int width) {
-        Dimension dim = jScrollPane1.getViewport().getViewSize();
-        dim.width = width/2;
-        jScrollPane1.getViewport().setViewSize(dim);
-
-        dim = jScrollPane2.getViewport().getViewSize();
-        dim.width = width/2;
-        jScrollPane2.getViewport().setViewSize(dim);
-
-        jSplitPane1.setDividerLocation(0.5);
-    }
-
-    public void setHorizontalPosition(int pos) {
-        pos /= 2;
-
-        Point p = jScrollPane1.getViewport().getViewPosition();
-        p.x =  pos;
-        jScrollPane1.getViewport().setViewPosition(p);
-
-        p = jScrollPane2.getViewport().getViewPosition();
-        p.x =  pos;
-        jScrollPane2.getViewport().setViewPosition(p);
-    }
-
-    /** Return change's top y-axis position. */
-    public int getChangeY(int change) {
-        Difference diff = diffs[change];
-        int line = diff.getFirstStart() + diffShifts[change][0];
-        int padding = 5;
-        if (line <= 5) {
-            padding = line/2;
-        }
-        initGlobalSizes();
-        int ypos = (totalHeight*(line - padding - 1))/(totalLines + 1);
-        ypos += fileLabel1.getHeight();
-        return ypos;
-    }
-
 
     private void joinScrollBars() {
         final JScrollBar scrollBarH1 = jScrollPane1.getHorizontalScrollBar();

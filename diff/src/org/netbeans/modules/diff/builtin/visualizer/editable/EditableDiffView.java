@@ -20,7 +20,6 @@
 package org.netbeans.modules.diff.builtin.visualizer.editable;
 
 import java.awt.Component;
-import java.awt.event.*;
 import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
@@ -43,9 +42,7 @@ import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.editor.fold.FoldHierarchyListener;
 import org.netbeans.api.editor.fold.FoldHierarchyEvent;
-import org.netbeans.modules.diff.NestableDiffView;
 import org.netbeans.modules.diff.builtin.visualizer.GraphicalDiffVisualizer;
-import org.netbeans.modules.diff.builtin.visualizer.SourceTranslatorAction;
 import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
 import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
 
@@ -74,7 +71,7 @@ import org.openide.text.NbDocument;
  * 
  * @author Maros Sandor
  */
-public class EditableDiffView extends DiffControllerImpl implements DiffView, NestableDiffView, DocumentListener, AncestorListener, PropertyChangeListener {
+public class EditableDiffView extends DiffControllerImpl implements DiffView, DocumentListener, AncestorListener, PropertyChangeListener {
 
     private Stroke boldStroke = new BasicStroke(3);
     
@@ -99,6 +96,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Ne
 
     private boolean secondSourceAvailable;
     private boolean firstSourceAvailable;
+    private final boolean binaryDiff;
     
     private JViewport jViewport2;
 
@@ -113,9 +111,6 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Ne
    
     private boolean isSetCurrentDifferenceContext = false;
     
-    private int totalHeight = 0;
-    private int totalLines = 0;
-
     private int horizontalScroll1ChangedValue = -1;
     private int horizontalScroll2ChangedValue = -1;
     
@@ -133,9 +128,6 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Ne
     private UndoRedo.Manager editorUndoRedo;
     private EditableDiffMarkProvider diffMarkprovider;
 
-    public EditableDiffView() {
-    }
-
     public EditableDiffView(final StreamSource ss1, final StreamSource ss2) throws IOException {
         refreshDiffTask = RequestProcessor.getDefault().create(new RefreshDiffTask());
         initColors();
@@ -147,14 +139,11 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Ne
         String mimeType2 = ss2.getMIMEType();
         if (mimeType1 == null) mimeType1 = mimeType2;
         if (mimeType2 == null) mimeType2 = mimeType1;
+        binaryDiff = mimeType1 == null || mimeType2 == null || mimeType1.equals("application/octet-stream") || mimeType2.equals("application/octet-stream");        
         
         actionsEnabled = ss2.isEditable();
         diffMarkprovider = new EditableDiffMarkProvider();        
-                
-        jEditorPane1 = new DiffContentPanel(this, true);
-        jEditorPane2 = new DiffContentPanel(this, false);
-        jEditorPane2.getEditorPane().putClientProperty(DiffMarkProviderCreator.MARK_PROVIDER_KEY, diffMarkprovider);
-        
+                        
         initComponents ();
         jSplitPane1.setName(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "DiffComponent.title")); // NOI18N
         spui = new DiffSplitPaneUI(jSplitPane1);
@@ -164,30 +153,29 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Ne
         jSplitPane1.putClientProperty("PersistenceType", "Never"); // NOI18N
         jSplitPane1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "ACS_DiffPanelA11yName"));  // NOI18N
         jSplitPane1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "ACS_DiffPanelA11yDesc"));  // NOI18N
-        jEditorPane1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "ACS_EditorPane1A11yName"));  // NOI18N
-        jEditorPane1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "ACS_EditorPane1A11yDescr"));  // NOI18N
-        jEditorPane2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "ACS_EditorPane2A11yName"));  // NOI18N
-        jEditorPane2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "ACS_EditorPane2A11yDescr"));  // NOI18N
-
-        jSplitPane1.addAncestorListener(this);
         
         setSourceTitle(fileLabel1, title1);
         setSourceTitle(fileLabel2, title2);
 
-        // Make sure split pane opens with divider in the center
-        Dimension pf1 = fileLabel1.getPreferredSize();
-        Dimension pf2 = fileLabel2.getPreferredSize();
-        if (pf1.width > pf2.width) {
-            fileLabel2.setPreferredSize(new Dimension(pf1.width, pf2.height));
-        } else {
-            fileLabel1.setPreferredSize(new Dimension(pf2.width, pf1.height));
-        }
-        
         final String f1 = mimeType1;
         final String f2 = mimeType2;
         try {
             Runnable awtTask = new Runnable() {
                 public void run() {
+                    Color borderColor = UIManager.getColor("scrollpane_border"); // NOI18N
+                    if (borderColor == null) borderColor = UIManager.getColor("controlShadow"); // NOI18N
+                    jSplitPane1.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
+                    
+                    if (binaryDiff) {
+                        adjustPreferredSizes();
+                        return;
+                    }
+
+                    jEditorPane1.getScrollPane().setBorder(null);
+                    jEditorPane2.getScrollPane().setBorder(null);
+                    jEditorPane1.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
+                    jEditorPane2.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
+                    
                     jEditorPane1.getEditorPane().setEditorKit(CloneableEditorSupport.getEditorKit(f1));
                     jEditorPane2.getEditorPane().setEditorKit(CloneableEditorSupport.getEditorKit(f2));
                     
@@ -199,11 +187,20 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Ne
                     }
                     
                     if (!secondSourceAvailable) {
-                        jEditorPane2.getEditorPane().setText(NbBundle.getMessage(EditableDiffView.class, "CTL_DiffPanel_NoContent")); // NOI18N
+                        filePanel2.remove(jEditorPane2);
+                        NoContentPanel ncp = new NoContentPanel(NbBundle.getMessage(EditableDiffView.class, "CTL_DiffPanel_NoContent")); // NOI18N
+                        ncp.setPreferredSize(new Dimension(jEditorPane1.getPreferredSize().width, ncp.getPreferredSize().height));
+                        filePanel2.add(ncp);
+                        actionsEnabled = false;
                     }
                     if (!firstSourceAvailable) {
-                        jEditorPane1.getEditorPane().setText(NbBundle.getMessage(EditableDiffView.class, "CTL_DiffPanel_NoContent")); // NOI18N
+                        filePanel1.remove(jEditorPane1);
+                        NoContentPanel ncp = new NoContentPanel(NbBundle.getMessage(EditableDiffView.class, "CTL_DiffPanel_NoContent")); // NOI18N
+                        ncp.setPreferredSize(new Dimension(jEditorPane2.getPreferredSize().width, ncp.getPreferredSize().height));
+                        filePanel1.add(ncp);
+                        actionsEnabled = false;
                     }
+                    adjustPreferredSizes();
 
                     int bgRGB = jEditorPane2.getEditorPane().getBackground().getRGB() & 0xFFFFFF;
                     if (jEditorPane2.getEditorPane().isEditable() && bgRGB == 0xFFFFFF && System.getProperty("netbeans.experimental.diff.ReadonlyBg") == null) {
@@ -212,16 +209,6 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Ne
                     if (bgRGB == 0) {
                         colorLines   = Color.WHITE;
                     }
-                    
-                    Color borderColor = UIManager.getColor("scrollpane_border"); // NOI18N
-                    if (borderColor == null) borderColor = UIManager.getColor("controlShadow"); // NOI18N
-
-                    jEditorPane1.getScrollPane().setBorder(null);
-                    jEditorPane2.getScrollPane().setBorder(null);
-                    
-                    jEditorPane1.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
-                    jEditorPane2.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
-                    jSplitPane1.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
                 }
             };
             if (SwingUtilities.isEventDispatchThread()) {
@@ -237,10 +224,28 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Ne
             err.notify(e);
         }
 
+        if (binaryDiff) {
+            return;
+        }
+        
+        jEditorPane2.getEditorPane().putClientProperty(DiffMarkProviderCreator.MARK_PROVIDER_KEY, diffMarkprovider);
+        jSplitPane1.addAncestorListener(this);
+        
         refreshDiffTask.run();
         
         manager = new DiffViewManager(this);
         manager.init();
+    }
+
+    private void adjustPreferredSizes() {
+        // Make sure split pane opens with divider in the center
+        Dimension pf1 = fileLabel1.getPreferredSize();
+        Dimension pf2 = fileLabel2.getPreferredSize();
+        if (pf1.width > pf2.width) {
+            fileLabel2.setPreferredSize(new Dimension(pf1.width, pf2.height));
+        } else {
+            fileLabel1.setPreferredSize(new Dimension(pf2.width, pf1.height));
+        }
     }
 
     public void setLocation(DiffController.DiffPane pane, DiffController.LocationType type, int location) {
@@ -557,17 +562,33 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Ne
     private void initComponents() {
         fileLabel1.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         fileLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        fileLabel1.setLabelFor(jEditorPane1);
         filePanel1.setLayout(new BorderLayout());
         filePanel1.add(fileLabel1, BorderLayout.PAGE_START);
-        filePanel1.add(jEditorPane1);
 
         fileLabel2.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         fileLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        fileLabel2.setLabelFor(jEditorPane2);
         filePanel2.setLayout(new BorderLayout());
         filePanel2.add(fileLabel2, BorderLayout.PAGE_START);
-        filePanel2.add(jEditorPane2);
+
+        if (binaryDiff) {
+            NoContentPanel ncp1 = new NoContentPanel(NbBundle.getMessage(EditableDiffView.class, "CTL_DiffPanel_BinaryFile"));
+            fileLabel1.setLabelFor(ncp1);
+            filePanel1.add(ncp1);
+            NoContentPanel ncp2 = new NoContentPanel(NbBundle.getMessage(EditableDiffView.class, "CTL_DiffPanel_BinaryFile"));
+            fileLabel2.setLabelFor(ncp2);
+            filePanel2.add(ncp2);
+        } else {
+            jEditorPane1 = new DiffContentPanel(this, true);
+            jEditorPane2 = new DiffContentPanel(this, false);
+            jEditorPane1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "ACS_EditorPane1A11yName"));  // NOI18N
+            jEditorPane1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "ACS_EditorPane1A11yDescr"));  // NOI18N
+            jEditorPane2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "ACS_EditorPane2A11yName"));  // NOI18N
+            jEditorPane2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "ACS_EditorPane2A11yDescr"));  // NOI18N
+            fileLabel1.setLabelFor(jEditorPane1);
+            filePanel1.add(jEditorPane1);
+            fileLabel2.setLabelFor(jEditorPane2);
+            filePanel2.add(jEditorPane2);
+        }        
         
         jSplitPane1.setLeftComponent(filePanel1);
         jSplitPane1.setRightComponent(filePanel2);        
@@ -597,138 +618,9 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Ne
 
         int numLines = Math.max(numLines1, numLines2);
         if (numLines < 1) numLines = 1;
-        this.totalLines = numLines;
         int totHeight = jEditorPane1.getSize().height;
         int value = jEditorPane2.getSize().height;
         if (value > totHeight) totHeight = value;
-        this.totalHeight = totHeight;
-    }
-
-    // NestableDiffView implementation ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    public void joinScrollPane(final JScrollPane pane) {
-        jEditorPane1.getScrollPane().setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-        jEditorPane1.getScrollPane().setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        jEditorPane2.getScrollPane().setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-        jEditorPane2.getScrollPane().setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        jEditorPane1.getScrollPane().setWheelScrollingEnabled(false);
-        jEditorPane2.getScrollPane().setWheelScrollingEnabled(false);
-        jEditorPane1.getScrollPane().addMouseWheelListener(new MouseWheelListener() {
-            public void mouseWheelMoved(MouseWheelEvent e) {
-                pane.dispatchEvent(e);
-            }
-        });
-        jEditorPane2.getScrollPane().addMouseWheelListener(new MouseWheelListener() {
-            public void mouseWheelMoved(MouseWheelEvent e) {
-                pane.dispatchEvent(e);
-            }
-        });
-        jEditorPane1.getEditorPane().getCaret().setVisible(false);
-        jEditorPane2.getEditorPane().getCaret().setVisible(false);
-
-        // map JEditorPane keystroke to JScrollPane action registered for even keystroke
-        KeyStroke[] keyStrokes = new KeyStroke[] {
-            KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0),
-            KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0),
-
-            KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0),
-            KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0),
-
-            KeyStroke.getKeyStroke(KeyEvent.VK_HOME, 0),
-            KeyStroke.getKeyStroke(KeyEvent.VK_HOME, InputEvent.CTRL_MASK),
-
-            KeyStroke.getKeyStroke(KeyEvent.VK_HOME, InputEvent.CTRL_MASK),
-            KeyStroke.getKeyStroke(KeyEvent.VK_HOME, InputEvent.CTRL_MASK),
-            
-            KeyStroke.getKeyStroke(KeyEvent.VK_END, 0),
-            KeyStroke.getKeyStroke(KeyEvent.VK_END, InputEvent.CTRL_MASK),
-
-            KeyStroke.getKeyStroke(KeyEvent.VK_END, InputEvent.CTRL_MASK),
-            KeyStroke.getKeyStroke(KeyEvent.VK_END, InputEvent.CTRL_MASK),
-
-            KeyStroke.getKeyStroke(KeyEvent.VK_END, 0),
-            KeyStroke.getKeyStroke(KeyEvent.VK_END, 0),
-
-            KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0),
-            KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0),
-
-            KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0),
-            KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0),
-
-            KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0),
-            KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0),
-
-            KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0),
-            KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0),
-        };
-
-        for (int i = 0; i<keyStrokes.length; i+=2) {
-            KeyStroke stroke = keyStrokes[i];
-            KeyStroke stroke2 = keyStrokes[i+1];
-            Object pane1Key = jEditorPane1.getInputMap().get(stroke);
-            Object pane2Key = jEditorPane2.getInputMap().get(stroke);
-            Object scrollKey = pane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).get(stroke2);
-            if (scrollKey != null) {
-                final Action scrollAction = pane.getActionMap().get(scrollKey);
-                jEditorPane1.getActionMap().put(pane1Key, new SourceTranslatorAction(scrollAction, pane));
-                jEditorPane2.getActionMap().put(pane2Key, new SourceTranslatorAction(scrollAction, pane));
-            } else {
-                // System.err.println("No JScrollPane binding for " + stroke);  // HOME, END
-            }
-        }
-
-    }
-
-    public int getInnerScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
-        return jEditorPane1.getEditorPane().getScrollableUnitIncrement(visibleRect, orientation, direction);
-    }
-
-    public int getInnerScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
-        return jEditorPane1.getEditorPane().getScrollableBlockIncrement(visibleRect, orientation, direction);
-    }
-    
-    public int getInnerWidth() {
-        Dimension d1 = jEditorPane1.getScrollPane().getViewport().getView().getPreferredSize();
-        Dimension d2 = jEditorPane2.getScrollPane().getViewport().getView().getPreferredSize();
-        return Math.max(d1.width, d2.width) * 2;
-    }
-
-    public void setInnerWidth(int width) {
-        Dimension dim = jEditorPane1.getScrollPane().getViewport().getViewSize();
-        dim.width = width/2;
-        jEditorPane1.getScrollPane().getViewport().setViewSize(dim);
-
-        dim = jEditorPane2.getScrollPane().getViewport().getViewSize();
-        dim.width = width/2;
-        jEditorPane2.getScrollPane().getViewport().setViewSize(dim);
-
-        jSplitPane1.setDividerLocation(0.5);
-    }
-
-    public void setHorizontalPosition(int pos) {
-        pos /= 2;
-
-        Point p = jEditorPane1.getScrollPane().getViewport().getViewPosition();
-        p.x =  pos;
-        jEditorPane1.getScrollPane().getViewport().setViewPosition(p);
-
-        p = jEditorPane2.getScrollPane().getViewport().getViewPosition();
-        p.x =  pos;
-        jEditorPane2.getScrollPane().getViewport().setViewPosition(p);
-    }
-
-    /** Return change's top y-axis position. */
-    public int getChangeY(int change) {
-        Difference diff = diffs[change];
-        int line = diff.getFirstStart();
-        int padding = 5;
-        if (line <= 5) {
-            padding = line/2;
-        }
-        initGlobalSizes();
-        int ypos = (totalHeight*(line - padding - 1))/(totalLines + 1);
-        ypos += fileLabel1.getHeight();
-        return ypos;
     }
 
     private void joinScrollBars() {

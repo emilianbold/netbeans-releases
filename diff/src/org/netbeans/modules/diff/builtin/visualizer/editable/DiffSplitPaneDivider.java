@@ -164,6 +164,14 @@ class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionL
             Graphics2D g = (Graphics2D) gr.create();
             Rectangle clip = g.getClipBounds();
             Stroke cs = g.getStroke();
+            
+            g.setColor(getBackground());
+            g.fillRect(clip.x, clip.y, clip.width, clip.height);
+
+            if (master.getEditorPane1() == null) {
+                g.dispose();
+                return;
+            }
         
             Rectangle rightView = master.getEditorPane2().getScrollPane().getViewport().getViewRect();
             Rectangle leftView = master.getEditorPane1().getScrollPane().getViewport().getViewRect();
@@ -172,9 +180,6 @@ class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionL
             
             int rightOffset = -rightView.y + editorsOffset;
             int leftOffset = -leftView.y + editorsOffset;
-
-            g.setColor(getBackground());
-            g.fillRect(clip.x, clip.y, clip.width, clip.height);
 
             if (renderingHints != null) {
                 g.addRenderingHints(renderingHints);
