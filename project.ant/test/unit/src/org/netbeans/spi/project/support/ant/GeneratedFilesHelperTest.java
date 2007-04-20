@@ -29,6 +29,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.project.ant.AntBuildExtenderAccessor;
 import org.netbeans.modules.project.ant.Util;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.filesystems.FileObject;
@@ -223,9 +224,9 @@ public class GeneratedFilesHelperTest extends NbTestCase {
         }
 
         public Element getBuildExtensionMetadata() {
-            Element el = project.getLookup().lookup(AuxiliaryConfiguration.class).getConfigurationFragment(ELEMENT_ROOT, "urn:test:extension", true);
+            Element el = project.getLookup().lookup(AuxiliaryConfiguration.class).getConfigurationFragment(AntBuildExtenderAccessor.ELEMENT_ROOT, "urn:test:extension", true);
             if (el != null) {
-                NodeList nl = el.getElementsByTagName(AntBuildExtenderImplementation.ELEMENT_ROOT);
+                NodeList nl = el.getElementsByTagName(AntBuildExtenderAccessor.ELEMENT_ROOT);
                 if (nl.getLength() == 1) {
                     return (Element) nl.item(0);
                 }

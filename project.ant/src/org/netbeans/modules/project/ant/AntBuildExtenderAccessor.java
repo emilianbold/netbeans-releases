@@ -33,6 +33,42 @@ import org.netbeans.spi.project.ant.AntBuildExtenderImplementation;
 public abstract class AntBuildExtenderAccessor {
 
     public static AntBuildExtenderAccessor DEFAULT = null;
+    
+    public static String AUX_NAMESPACE        = "http://www.netbeans.org/ns/ant-build-extender/1"; //NOI18N
+    /**
+     * 
+     */
+    public static String ELEMENT_ROOT         = "buildExtensions"; //NOI18N
+    
+    /**
+     * 
+     */
+    public static String ELEMENT_EXTENSION    = "extension"; //NOI18N
+    
+    /**
+     * 
+     */
+    public static String ELEMENT_DEPENDENCY   = "dependency"; //NOI18N
+    
+    /**
+     * 
+     */
+    public static String ATTR_TARGET      = "target";
+    /**
+     * 
+     */
+    public static String ATTR_DEPENDSON   = "dependsOn";
+    /**
+     * 
+     */
+    public static String ATTR_ID          = "id";
+    /**
+     * 
+     */
+    public static String ATTR_FILE        = "file";
+    
+    
+    
 
     static {
         // invokes static initializer of Item.class

@@ -36,38 +36,6 @@ import org.netbeans.api.project.Project;
  */
 public interface AntBuildExtenderImplementation {
     
-    String AUX_NAMESPACE        = "http://www.netbeans.org/ns/ant-build-extender/1"; //NOI18N
-    /**
-     * 
-     */
-    String ELEMENT_ROOT         = "buildExtensions"; //NOI18N
-    
-    /**
-     * 
-     */
-    String ELEMENT_EXTENSION    = "extension"; //NOI18N
-    
-    /**
-     * 
-     */
-    String ELEMENT_DEPENDENCY   = "dependency"; //NOI18N
-    
-    /**
-     * 
-     */
-    String ATTR_TARGET      = "target";
-    /**
-     * 
-     */
-    String ATTR_DEPENDSON   = "dependsOn";
-    /**
-     * 
-     */
-    String ATTR_ID          = "id";
-    /**
-     * 
-     */
-    String ATTR_FILE        = "file";
     
     
     /**

@@ -33,6 +33,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.modules.project.ant.AntBuildExtenderAccessor;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ant.AntBuildExtenderImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -66,7 +67,7 @@ import org.w3c.dom.NodeList;
 public final class AntBuildExtender {
     private HashMap<String, Extension> extensions;
     private AntBuildExtenderImplementation implementation;
-    
+
     static {
         AntBuildExtenderAccessorImpl.createAccesor();
     }
@@ -170,22 +171,21 @@ public final class AntBuildExtender {
     
     private void updateProjectMetadata() {
         Document doc = createNewDocument();
-        Element root = doc.createElementNS(AntBuildExtenderImplementation.AUX_NAMESPACE, 
-                                           AntBuildExtenderImplementation.ELEMENT_ROOT);
+        Element root = doc.createElementNS(AntBuildExtenderAccessor.AUX_NAMESPACE, AntBuildExtenderAccessor.ELEMENT_ROOT);
         if (extensions  != null) {
             FileObject nbproj = implementation.getOwningProject().getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_XML_PATH).getParent();
             for (Extension ext : extensions.values()) {
-                Element child = doc.createElement(AntBuildExtenderImplementation.ELEMENT_EXTENSION);
-                child.setAttribute(AntBuildExtenderImplementation.ATTR_ID, ext.id);
+                Element child = doc.createElement(AntBuildExtenderAccessor.ELEMENT_EXTENSION);
+                child.setAttribute(AntBuildExtenderAccessor.ATTR_ID, ext.id);
                 String relPath = FileUtil.getRelativePath(nbproj, ext.file);
                 assert relPath != null;
-                child.setAttribute(AntBuildExtenderImplementation.ATTR_FILE, relPath);
+                child.setAttribute(AntBuildExtenderAccessor.ATTR_FILE, relPath);
                 root.appendChild(child);
                 for (String target : ext.dependencies.keySet()) {
                     for (String depTarget : ext.dependencies.get(target)) {
-                        Element dep = doc.createElement(AntBuildExtenderImplementation.ELEMENT_DEPENDENCY);
-                        dep.setAttribute(AntBuildExtenderImplementation.ATTR_TARGET, target);
-                        dep.setAttribute(AntBuildExtenderImplementation.ATTR_DEPENDSON, depTarget);
+                        Element dep = doc.createElement(AntBuildExtenderAccessor.ELEMENT_DEPENDENCY);
+                        dep.setAttribute(AntBuildExtenderAccessor.ATTR_TARGET, target);
+                        dep.setAttribute(AntBuildExtenderAccessor.ATTR_DEPENDSON, depTarget);
                         child.appendChild(dep);
                     }
                 }
@@ -197,26 +197,26 @@ public final class AntBuildExtender {
     
     private void readProjectMetadata() {
         AuxiliaryConfiguration config = implementation.getOwningProject().getLookup().lookup(AuxiliaryConfiguration.class);
-        Element cfgEl = config.getConfigurationFragment(AntBuildExtenderImplementation.ELEMENT_ROOT, AntBuildExtenderImplementation.AUX_NAMESPACE, true);
+        Element cfgEl = config.getConfigurationFragment(AntBuildExtenderAccessor.ELEMENT_ROOT, AntBuildExtenderAccessor.AUX_NAMESPACE, true);
         FileObject nbproj = implementation.getOwningProject().getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_XML_PATH).getParent();
         extensions = new HashMap<String, Extension>();
         if (cfgEl != null) {
             String namespace = cfgEl.getNamespaceURI();
-            NodeList roots = cfgEl.getElementsByTagNameNS(namespace, AntBuildExtenderImplementation.ELEMENT_EXTENSION);
+            NodeList roots = cfgEl.getElementsByTagNameNS(namespace, AntBuildExtenderAccessor.ELEMENT_EXTENSION);
             for (int i=0; i <roots.getLength(); i++) {
                 Element root = (Element) roots.item(i);
-                String id = root.getAttribute(AntBuildExtenderImplementation.ATTR_ID);
+                String id = root.getAttribute(AntBuildExtenderAccessor.ATTR_ID);
                 assert id.length() > 0 : "Illegal project.xml";
-                String value = root.getAttribute(AntBuildExtenderImplementation.ATTR_FILE);
+                String value = root.getAttribute(AntBuildExtenderAccessor.ATTR_FILE);
                 FileObject script = nbproj.getFileObject(value);
                 assert script != null : "Missing file " + script;
                 Extension ext = new Extension(id, script, value);
                 extensions.put(id, ext);
-                NodeList deps = root.getElementsByTagNameNS(namespace, AntBuildExtenderImplementation.ELEMENT_DEPENDENCY);
+                NodeList deps = root.getElementsByTagNameNS(namespace, AntBuildExtenderAccessor.ELEMENT_DEPENDENCY);
                 for (int j = 0; j < deps.getLength(); j++) {
                     Element dep = (Element)deps.item(j);
-                    String target = dep.getAttribute(AntBuildExtenderImplementation.ATTR_TARGET);
-                    String dependsOn = dep.getAttribute(AntBuildExtenderImplementation.ATTR_DEPENDSON);
+                    String target = dep.getAttribute(AntBuildExtenderAccessor.ATTR_TARGET);
+                    String dependsOn = dep.getAttribute(AntBuildExtenderAccessor.ATTR_DEPENDSON);
                     assert target != null;
                     assert dependsOn != null;
                     ext.loadDependency(target, dependsOn);
