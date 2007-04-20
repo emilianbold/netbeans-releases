@@ -144,7 +144,7 @@ common-build-indep:: configure-once
 
 install/$(p_platform)::
 	# copy core platform files
-	rsync --files-from=$(list_platform_core) $(DEB_SRCDIiR)/ $(r_platform)/
+	rsync --files-from=$(list_platform_core) $(DEB_SRCDIR)/ $(r_platform)/
 	# insure script is executable
 	chmod +x $(r_platform)/harness/launchers/app.sh
 	# move documentation to FHS location

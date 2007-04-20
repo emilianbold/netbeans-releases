@@ -1,3 +1,16 @@
+netbeans5.5 (5.5-2) feisty; urgency=low
+
+  [ Daniel Holbach ]
+
+  * debian/rules:
+    - DEB_SRCDIiR -> DEB_SRCDIR.
+
+  [ Tom Marble ]
+
+  * Updated ide-license.patch
+
+ -- Tom Marble <tom.marble@sun.com>  Fri, 20 Apr 2007 14:11:22 -0500
+
 netbeans5.5 (5.5-1) feisty; urgency=low
 
   * Resolved licensing issue ("installer" no longer necessary)
