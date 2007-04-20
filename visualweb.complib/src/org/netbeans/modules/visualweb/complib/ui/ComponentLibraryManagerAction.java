@@ -26,18 +26,12 @@ import org.openide.util.actions.CallableSystemAction;
  * This Action does the same thing as ManageComponentLibrariesAction but has a
  * different menu label. Apparently there isn't an easy way in NB to share the
  * same Action class and use two different labels.
- *
+ * 
  * @author Edwin Goei
  */
 public class ComponentLibraryManagerAction extends CallableSystemAction {
-    private String actionName;
-
     public ComponentLibraryManagerAction() {
-        // Action invoked from non-context menu, eg. Tools->Component Library
-        // Manager
-        this.actionName = NbBundle.getMessage(
-                ComponentLibraryManagerAction.class,
-                "ComponentLibraryManagerAction.ComponentLibraryManager"); // NOI18N
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
     public void performAction() {
@@ -45,7 +39,8 @@ public class ComponentLibraryManagerAction extends CallableSystemAction {
     }
 
     public String getName() {
-        return actionName;
+        return NbBundle.getMessage(ComponentLibraryManagerAction.class,
+                "ComponentLibraryManagerAction.ComponentLibraryManager"); // NOI18N
     }
 
     public HelpCtx getHelpCtx() {

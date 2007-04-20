@@ -28,14 +28,8 @@ import org.openide.util.actions.CallableSystemAction;
  * @author Edwin Goei
  */
 public class SharedComplibAction extends CallableSystemAction {
-    private String actionName;
-
     public SharedComplibAction() {
-        // Action invoked from non-context menu, eg. Tools->Component Library
-        // Manager
-        this.actionName = NbBundle.getMessage(
-                SharedComplibAction.class,
-                "SharedComplibAction.actionName"); // NOI18N
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
     public void performAction() {
@@ -43,7 +37,8 @@ public class SharedComplibAction extends CallableSystemAction {
     }
 
     public String getName() {
-        return actionName;
+        return NbBundle.getMessage(SharedComplibAction.class,
+                "SharedComplibAction.actionName"); // NOI18N
     }
 
     public HelpCtx getHelpCtx() {
