@@ -301,7 +301,7 @@ COLOR:js_separator: {
 }
 
 COLOR:FunctionName: {
-    color_name: "method";
+    color_name: "js_method";
     default_coloring: "default";
     font_type: "bold";
 }
@@ -312,14 +312,14 @@ COLOR:js_regularExpression: {
 }
 
 COLOR:js_identifier: {
-    color_name: "functionParameter";
+    color_name: "js_functionParameter";
     default_coloring: "default";
     condition:org.netbeans.modules.languages.javascript.JavaScript.isFunctionParameter;
     foreground_color: "0xA06001";
 }
 
 COLOR:js_identifier: {
-    color_name: "localVariable";
+    color_name: "js_localVariable";
     default_coloring: "default";
     font_type: "bold";
     condition:org.netbeans.modules.languages.javascript.JavaScript.isLocalVariable;

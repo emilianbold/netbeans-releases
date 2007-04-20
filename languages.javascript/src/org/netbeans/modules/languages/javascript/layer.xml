@@ -89,6 +89,7 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="org-netbeans-editor-GlyphGutter.instance/org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance" boolvalue="true"/>
                 </folder>
                 <file name="Settings.settings" url="LanguagesOptions.settings"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.javascript.Bundle"/>
                 <file name="language.nbs" url="JavaScript.nbs">
                     <attr name="icon" stringvalue="org/netbeans/modules/languages/javascript/JavaScript.png"/>
                 </file>
