@@ -516,7 +516,7 @@ public class Utils {
             return "false";
         } else if ("byte[]".equals(paramType)) {
             return "73616D706C652074657874";
-        } else if ("java.math.BigInteger".equals(paramType)) {
+        } else if ("java.math.BigDecimal".equals(paramType)) {
             return "99.99";
         } else if ("javax.xml.datatype.XMLGregorianCalendar".equals(paramType)) {
             return "2007-04-19";
