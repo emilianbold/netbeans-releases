@@ -14,7 +14,6 @@
 package org.netbeans.modules.project.ui.actions;
 
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -51,6 +50,9 @@ import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.MultiFileSystem;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -123,23 +125,16 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
         LOGGER.log(Level.FINER, "configurationsListChanged: {0}", configs);
         if (configs == null) {
             configListCombo.setModel(EMPTY_MODEL);
-            configListCombo.setEnabled(false);
-            /*if( null != toolbarPanel )
-                toolbarPanel.setVisible( false );*/
+            DynLayer.INSTANCE.setEnabled(false);
+            configListCombo.setEnabled(false); // possibly redundant, but just in case
         } else {
             DefaultComboBoxModel model = new DefaultComboBoxModel(configs.toArray());
             if (pcp.hasCustomizer()) {
                 model.addElement(CUSTOMIZE_ENTRY);
             }
             configListCombo.setModel(model);
+            DynLayer.INSTANCE.setEnabled(true);
             configListCombo.setEnabled(true);
-            if( null != toolbarPanel )
-                toolbarPanel.setVisible( true );
-        }
-        if( null != toolbarPanel && null != toolbarPanel.getParent() ) {
-            Container parentComp = toolbarPanel.getParent();
-            parentComp.invalidate();
-            parentComp.repaint();
         }
         if (pcp != null) {
             activeConfigurationChanged(getActiveConfiguration(pcp));
@@ -188,19 +183,49 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
         assert false;
     }
 
-    private JPanel toolbarPanel;
     public Component getToolbarPresenter() {
         // Do not return combo box directly; looks bad.
-        toolbarPanel = new JPanel(new GridBagLayout());
+        JPanel toolbarPanel = new JPanel(new GridBagLayout());
         toolbarPanel.setOpaque(false); // don't interrupt JToolBar background
         toolbarPanel.setMaximumSize(new Dimension(150, 80));
         toolbarPanel.setMinimumSize(new Dimension(150, 0));
         toolbarPanel.setPreferredSize(new Dimension(150, 23));
         // XXX top inset of 2 looks better w/ small toolbar, but 1 seems to look better for large toolbar (the default):
         toolbarPanel.add(configListCombo, new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(1, 6, 1, 5), 0, 0));
-        //toolbarPanel.setVisible( configListCombo.getItemCount() > 0 );
-        toolbarPanel.setEnabled( configListCombo.getItemCount() > 0 );
         return toolbarPanel;
+    }
+
+    /**
+     * Dynamically inserts or removes the action from the toolbar.
+     */
+    public static final class DynLayer extends MultiFileSystem {
+
+        static DynLayer INSTANCE;
+
+        private final FileSystem fragment;
+
+        /**
+         * Default constructor for lookup.
+         */
+        public DynLayer() {
+            INSTANCE = this;
+            fragment = FileUtil.createMemoryFileSystem();
+            try {
+                FileUtil.createData(fragment.getRoot(), "Toolbars/Build/org-netbeans-modules-project-ui-actions-ActiveConfigAction.shadow"). // NOI18N
+                        setAttribute("originalFile", "Actions/Project/org-netbeans-modules-project-ui-actions-ActiveConfigAction.instance"); // NOI18N
+            } catch (IOException e) {
+                throw new AssertionError(e);
+            }
+        }
+
+        void setEnabled(boolean enabled) {
+            if (enabled) {
+                setDelegates(fragment);
+            } else {
+                setDelegates();
+            }
+        }
+
     }
 
     class ConfigMenu extends JMenu implements DynamicMenuContent {
