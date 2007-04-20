@@ -71,6 +71,10 @@
             classpath="${custom.tasks.cls}" 
             classname="org.netbeans.installer.infra.build.ant.BuildNumberSjsam"/>
         <taskdef 
+            name="swdp-buildnumber" 
+            classpath="${custom.tasks.cls}" 
+            classname="org.netbeans.installer.infra.build.ant.BuildNumberSwdp"/>
+        <taskdef 
             name="if" 
             classpath="${custom.tasks.cls}" 
             classname="org.netbeans.installer.infra.build.ant.If"/>
@@ -100,7 +104,13 @@
         <openesb-buildnumber 
             file="${temp.file}" 
             prefix="openesb"/>
-        
+        <get
+            src="${glassfish.builds.host}/java/re/swdp/1.0/promoted/fcs/latest/bundles/"
+            dest="${temp.file}"/>
+        <swdp-buildnumber 
+            file="${temp.file}" 
+            prefix="swdp"/>
+	
         <!--
         <get
             src="${sjsam.builds.host}/projects/am-javaee/update3beta/"
@@ -142,6 +152,12 @@ openesb.build.number.real=${openesb.build.number.real}
 
 sjsam.milestone.number=${sjsam.milestone.number}
 sjsam.build.number=${sjsam.build.number}
+
+swdp.milestone.number=${swdp.milestone.number}
+swdp.build.type=${swdp.build.type}
+swdp.build.number=${swdp.build.number}
+swdp.macro.number=${swdp.macro.number}
+
 
 dont.build.custom.tasks=true
 custom.tasks.cls=${custom.tasks.cls}
@@ -561,6 +577,26 @@ jarsigner.storepass=${jarsigner.storepass}
                 name="release.parent.platforms"
                 value=""/>
         </ant>
+
+        <echo message="BUILDING SWDP ============================================"/>
+        <ant dir="${nbi.netbeans.dir}/infra/build/products/swdp" target="release-all">
+            <property 
+                name="basedir" 
+                value="${nbi.netbeans.dir}/infra/build/products/swdp"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            
+            <property
+                name="release.parent.uid"
+                value="runtimes-group"/>
+            <property
+                name="release.parent.version"
+                value=""/>
+            <property
+                name="release.parent.platforms"
+                value=""/>
+        </ant>
         
         <delete dir="${output.dir}"/>
         
@@ -626,6 +662,31 @@ jarsigner.storepass=${jarsigner.storepass}
         <get 
             src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;component=nb-javase,6.0.0.0.${build.number}&amp;component=nb-javaee,6.0.0.0.${build.number}&amp;component=nb-soa,6.0.0.0.${build.number}&amp;component=nb-uml,6.0.0.0.${build.number}&amp;component=nb-ruby,6.0.0.0.${build.number}&amp;component=sjsas,9.1.0.${sjsas.milestone.number}.${sjsas.build.number}&amp;component=openesb,5.0.3.0.${openesb.build.number}&amp;component=sjsam,5.0.3.${sjsam.milestone.number}.${sjsam.build.number}&amp;platform=macosx-ppc"
             dest="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-full-macosx-ppc.command"/>
+
+	<!-- Java Tools Bundle deliverables --> 
+	<!-- Turned off now since it should not be published on the public site  -->
+	<!--
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;component=nb-javase,6.0.0.0.${build.number}&amp;component=nb-javaee,6.0.0.0.${build.number}&amp;component=nb-javame,6.0.0.0.${build.number}&amp;component=nb-soa,6.0.0.0.${build.number}&amp;component=nb-uml,6.0.0.0.${build.number}&amp;component=nb-ruby,6.0.0.0.${build.number}&amp;component=sjsas,9.1.0.${sjsas.milestone.number}.${sjsas.build.number}&amp;component=openesb,5.0.3.0.${openesb.build.number}&amp;component=sjsam,5.0.3.${sjsam.milestone.number}.${sjsam.build.number}&amp;component=swdp,${swdp.macro.number}.0.0.${swdp.milestone.number}.${swdp.build.number}&amp;platform=windows"
+            dest="${output.dir}/bundles/java-tools-bundle-u3-preview2-nightly-${build.number}-windows.exe"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;component=nb-javase,6.0.0.0.${build.number}&amp;component=nb-javaee,6.0.0.0.${build.number}&amp;component=nb-javame,6.0.0.0.${build.number}&amp;component=nb-soa,6.0.0.0.${build.number}&amp;component=nb-uml,6.0.0.0.${build.number}&amp;component=nb-ruby,6.0.0.0.${build.number}&amp;component=sjsas,9.1.0.${sjsas.milestone.number}.${sjsas.build.number}&amp;component=openesb,5.0.3.0.${openesb.build.number}&amp;component=sjsam,5.0.3.${sjsam.milestone.number}.${sjsam.build.number}&amp;component=swdp,${swdp.macro.number}.0.0.${swdp.milestone.number}.${swdp.build.number}&amp;platform=linux"
+            dest="${output.dir}/bundles/java-tools-bundle-u3-preview2-nightly-${build.number}-linux.sh"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;component=nb-javase,6.0.0.0.${build.number}&amp;component=nb-javaee,6.0.0.0.${build.number}&amp;component=nb-soa,6.0.0.0.${build.number}&amp;component=nb-uml,6.0.0.0.${build.number}&amp;component=nb-ruby,6.0.0.0.${build.number}&amp;component=sjsas,9.1.0.${sjsas.milestone.number}.${sjsas.build.number}&amp;component=openesb,5.0.3.0.${openesb.build.number}&amp;component=sjsam,5.0.3.${sjsam.milestone.number}.${sjsam.build.number}&amp;component=swdp,${swdp.macro.number}.0.0.${swdp.milestone.number}.${swdp.build.number}&amp;platform=solaris-x86"
+            dest="${output.dir}/bundles/java-tools-bundle-u3-preview2-nightly-${build.number}-solaris-x86.sh"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;component=nb-javase,6.0.0.0.${build.number}&amp;component=nb-javaee,6.0.0.0.${build.number}&amp;component=nb-soa,6.0.0.0.${build.number}&amp;component=nb-uml,6.0.0.0.${build.number}&amp;component=nb-ruby,6.0.0.0.${build.number}&amp;component=sjsas,9.1.0.${sjsas.milestone.number}.${sjsas.build.number}&amp;component=openesb,5.0.3.0.${openesb.build.number}&amp;component=sjsam,5.0.3.${sjsam.milestone.number}.${sjsam.build.number}&amp;component=swdp,${swdp.macro.number}.0.0.${swdp.milestone.number}.${swdp.build.number}&amp;platform=solaris-sparc"
+            dest="${output.dir}/bundles/java-tools-bundle-u3-preview2-nightly-${build.number}-solaris-sparc.sh"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;component=nb-javase,6.0.0.0.${build.number}&amp;component=nb-javaee,6.0.0.0.${build.number}&amp;component=nb-soa,6.0.0.0.${build.number}&amp;component=nb-uml,6.0.0.0.${build.number}&amp;component=nb-ruby,6.0.0.0.${build.number}&amp;component=sjsas,9.1.0.${sjsas.milestone.number}.${sjsas.build.number}&amp;component=openesb,5.0.3.0.${openesb.build.number}&amp;component=sjsam,5.0.3.${sjsam.milestone.number}.${sjsam.build.number}&amp;component=swdp,${swdp.macro.number}.0.0.${swdp.milestone.number}.${swdp.build.number}&amp;platform=macosx-x86"
+            dest="${output.dir}/bundles/java-tools-bundle-u3-preview2-nightly-${build.number}-macosx-x86.command"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;component=nb-javase,6.0.0.0.${build.number}&amp;component=nb-javaee,6.0.0.0.${build.number}&amp;component=nb-soa,6.0.0.0.${build.number}&amp;component=nb-uml,6.0.0.0.${build.number}&amp;component=nb-ruby,6.0.0.0.${build.number}&amp;component=sjsas,9.1.0.${sjsas.milestone.number}.${sjsas.build.number}&amp;component=openesb,5.0.3.0.${openesb.build.number}&amp;component=sjsam,5.0.3.${sjsam.milestone.number}.${sjsam.build.number}&amp;component=swdp,${swdp.macro.number}.0.0.${swdp.milestone.number}.${swdp.build.number}&amp;platform=macosx-ppc"
+            dest="${output.dir}/bundles/java-tools-bundle-u3-preview2-nightly-${build.number}-macosx-ppc.command"/>
+        -->
+
+
             
         <get 
             src="http://${glassfish.host}:${glassfish.http.port}${context.path}/download-2/download.html"
