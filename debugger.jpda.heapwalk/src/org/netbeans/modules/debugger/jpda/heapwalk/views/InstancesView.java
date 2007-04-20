@@ -32,6 +32,8 @@ import org.openide.windows.WindowManager;
  */
 public class InstancesView extends TopComponent {
     
+    javax.swing.JPanel hfwPanel;
+    
     /** Creates a new instance of InstancesView */
     public InstancesView() {
         setIcon (Utilities.loadImage ("org/netbeans/modules/debugger/jpda/resources/root.gif")); // NOI18N
@@ -50,7 +52,16 @@ public class InstancesView extends TopComponent {
             header.getComponent(1).setVisible(false);
             header = (java.awt.Container) hfw.getInstancesController().getReferencesBrowserController().getPanel().getComponent(0);
             header.getComponent(1).setVisible(false);
-            add(hfw.getInstancesController().getPanel(), "Center");
+            hfwPanel = hfw.getInstancesController().getPanel();
+            add(hfwPanel, "Center");
+        }
+    }
+    
+    protected void componentHidden () {
+        super.componentHidden ();
+        if (hfwPanel != null) {
+            remove(hfwPanel);
+            hfwPanel = null;
         }
     }
     
