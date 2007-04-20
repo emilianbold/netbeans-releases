@@ -16,7 +16,7 @@ public class ShellApp extends SingleFrameApplication {
     /**
      * At startup create and show the main frame of the application.
      */
-    @Override public void startup(String[] args) {
+    @Override protected void startup() {
        setMainFrame(new ShellFrame());
        show(getMainFrame());
     }
