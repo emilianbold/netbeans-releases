@@ -296,37 +296,37 @@ public class WindowsNativeUtils extends NativeUtils {
         final String allUsersRootPath = SystemUtils.getEnvironmentVariable("allusersprofile");
         
         switch (locationType) {
-        case CURRENT_USER_DESKTOP:
-            String userDesktop = registry.getStringValue(HKCU, SHELL_FOLDERS_KEY, "Desktop", false);
-            if (userDesktop == null) {
-                userDesktop = SystemUtils.getUserHomeDirectory() + File.separator + "Desktop";
-            }
-            
-            return new File(userDesktop, fileName);
-            
-        case ALL_USERS_DESKTOP:
-            String commonDesktop = registry.getStringValue(HKLM, SHELL_FOLDERS_KEY, "Common Desktop", false);
-            if (commonDesktop == null) {
-                commonDesktop = allUsersRootPath + File.separator + "Desktop";
-            }
-            
-            return new File(commonDesktop, fileName);
-            
-        case CURRENT_USER_START_MENU:
-            String userStartMenu = registry.getStringValue(HKCU, SHELL_FOLDERS_KEY, "Programs", false);
-            if (userStartMenu == null) {
-                userStartMenu = SystemUtils.getUserHomeDirectory() + File.separator + "Start Menu" + File.separator + "Programs";
-            }
-            
-            return new File(userStartMenu, path + File.separator + fileName);
-            
-        case ALL_USERS_START_MENU:
-            String commonStartMenu = registry.getStringValue(HKLM, SHELL_FOLDERS_KEY, "Common Programs", false);
-            if (commonStartMenu == null) {
-                commonStartMenu = SystemUtils.getUserHomeDirectory() + File.separator + "Start Menu" + File.separator + "Programs";
-            }
-            
-            return new File(commonStartMenu, path + File.separator + fileName);
+            case CURRENT_USER_DESKTOP:
+                String userDesktop = registry.getStringValue(HKCU, SHELL_FOLDERS_KEY, "Desktop", false);
+                if (userDesktop == null) {
+                    userDesktop = SystemUtils.getUserHomeDirectory() + File.separator + "Desktop";
+                }
+                
+                return new File(userDesktop, fileName);
+                
+            case ALL_USERS_DESKTOP:
+                String commonDesktop = registry.getStringValue(HKLM, SHELL_FOLDERS_KEY, "Common Desktop", false);
+                if (commonDesktop == null) {
+                    commonDesktop = allUsersRootPath + File.separator + "Desktop";
+                }
+                
+                return new File(commonDesktop, fileName);
+                
+            case CURRENT_USER_START_MENU:
+                String userStartMenu = registry.getStringValue(HKCU, SHELL_FOLDERS_KEY, "Programs", false);
+                if (userStartMenu == null) {
+                    userStartMenu = SystemUtils.getUserHomeDirectory() + File.separator + "Start Menu" + File.separator + "Programs";
+                }
+                
+                return new File(userStartMenu, path + File.separator + fileName);
+                
+            case ALL_USERS_START_MENU:
+                String commonStartMenu = registry.getStringValue(HKLM, SHELL_FOLDERS_KEY, "Common Programs", false);
+                if (commonStartMenu == null) {
+                    commonStartMenu = SystemUtils.getUserHomeDirectory() + File.separator + "Start Menu" + File.separator + "Programs";
+                }
+                
+                return new File(commonStartMenu, path + File.separator + fileName);
         }
         
         return null;
@@ -350,12 +350,12 @@ public class WindowsNativeUtils extends NativeUtils {
             
             if (cleanupParents) {
                 switch (locationType) {
-                case CURRENT_USER_START_MENU:
-                case ALL_USERS_START_MENU:
-                    FileUtils.deleteEmptyParents(shortcutFile);
-                    break;
-                default:
-                    break;
+                    case CURRENT_USER_START_MENU:
+                    case ALL_USERS_START_MENU:
+                        FileUtils.deleteEmptyParents(shortcutFile);
+                        break;
+                    default:
+                        break;
                 }
             }
         } catch (IOException e) {
@@ -396,9 +396,9 @@ public class WindowsNativeUtils extends NativeUtils {
                 LogManager.log("Set '" + NO_REPAIR + "' = [" + 1 + "]");
                 registry.set32BitValue(uninstallSection, key, NO_REPAIR, 1);
                 
-                final String command = 
-                        QUOTE + 
-                        asString(launcher.getExecutionCommand(), QUOTE + SPACE + QUOTE) + 
+                final String command =
+                        QUOTE +
+                        asString(launcher.getExecutionCommand(), QUOTE + SPACE + QUOTE) +
                         QUOTE;
                 
                 LogManager.log("Set '" + MODIFY_STRING + "' = [" + command + "]");
@@ -416,9 +416,9 @@ public class WindowsNativeUtils extends NativeUtils {
                 final Launcher launcher = createUninstaller(descriptor, true, new Progress());
                 list.add(launcher.getOutputFile());
                 
-                final String command = 
-                        QUOTE + 
-                        asString(launcher.getExecutionCommand(), QUOTE + SPACE + QUOTE) + 
+                final String command =
+                        QUOTE +
+                        asString(launcher.getExecutionCommand(), QUOTE + SPACE + QUOTE) +
                         QUOTE;
                 
                 LogManager.log("Set '" + UNINSTALL_STRING + "' = [" + command + "]");
@@ -461,7 +461,11 @@ public class WindowsNativeUtils extends NativeUtils {
                 }
                 
                 if (registry.keyExists(section, rootKey)) {
-                    value = registry.getStringValue(section, rootKey, name, expand);
+                    if(registry.valueExists(section, rootKey, name)) {
+                        value = registry.getStringValue(section, rootKey, name, expand);
+                    } else {
+                        LogManager.log(ErrorLevel.DEBUG, "Environment variable " + name + " doesn`t exist.");
+                    }
                 } else {
                     LogManager.log(ErrorLevel.DEBUG, "Root environment key doesn`t exist. Can`t get environment variable");
                 }
