@@ -23,6 +23,8 @@ package org.netbeans.modules.vmd.screen;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.DesignDocumentAwareness;
 import org.netbeans.modules.vmd.api.io.IOUtils;
+import org.netbeans.modules.vmd.api.io.ProjectUtils;
+import org.netbeans.modules.vmd.api.io.javame.MidpProjectPropertiesSupport;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 
 import javax.swing.*;
@@ -73,9 +75,17 @@ public class ScreenViewController implements DesignDocumentAwareness {
 
                 designDocument = newDesignDocument;
 
-                ScreenAccessController accessController = designDocument != null ? designDocument.getListenerManager ().getAccessController (ScreenAccessController.class) : null;
+                final ScreenAccessController accessController = designDocument != null ? designDocument.getListenerManager ().getAccessController (ScreenAccessController.class) : null;
                 if (accessController != null) {
                     accessController.showNotify ();
+                    final DataObjectContext context = ProjectUtils.getDataObjectContextForDocument (designDocument);
+                    if (context != null) {
+                        designDocument.getTransactionManager ().readAccess (new Runnable () {
+                            public void run () {
+                                accessController.setScreenSize (MidpProjectPropertiesSupport.getDeviceScreenSizeFromProject(context));
+                            }
+                        });
+                    }
                     visual.add (new JScrollPane (accessController.getMainPanel ()), BorderLayout.CENTER);
 
                     JToolBar.Separator separator = new JToolBar.Separator ();
@@ -92,4 +102,19 @@ public class ScreenViewController implements DesignDocumentAwareness {
         });
     }
 
+    public void setScreenSize (final Dimension deviceScreenSize) {
+        IOUtils.runInAWTNoBlocking (new Runnable () {
+            public void run () {
+                if (designDocument != null) {
+                    designDocument.getTransactionManager ().readAccess (new Runnable () {
+                        public void run () {
+                            ScreenAccessController accessController = designDocument.getListenerManager ().getAccessController (ScreenAccessController.class);
+                            if (accessController != null)
+                                accessController.setScreenSize (deviceScreenSize);
+                        }
+                    });
+                }
+            }
+        });
+    }
 }

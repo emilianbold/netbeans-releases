@@ -24,11 +24,11 @@ import org.netbeans.modules.vmd.api.model.AccessController;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.DesignEvent;
-import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
-import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
-import org.netbeans.modules.vmd.screen.resource.ResourcePanel;
+import org.netbeans.modules.vmd.api.screen.editor.EditedScreenSupport;
 import org.netbeans.modules.vmd.screen.device.DevicePanel;
+import org.netbeans.modules.vmd.screen.resource.ResourcePanel;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -36,9 +36,6 @@ import java.awt.event.ActionListener;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.ArrayList;
-import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
-import org.netbeans.modules.vmd.api.screen.editor.EditedScreenSupport;
 
 /**
  * TODO - implement refresh of only components those were claimed as dirty by their ScreenPresenters - similar to Flow
@@ -173,7 +170,11 @@ public final class ScreenAccessController implements AccessController, EditedScr
         assert document.getTransactionManager().isAccess();
         return editedScreen;
     }
-    
+
+    public void setScreenSize (Dimension deviceScreenSize) {
+        devicePanel.setScreenSize (deviceScreenSize);
+    }
+
     private class EditedComboRenderer extends DefaultListCellRenderer {
         
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {

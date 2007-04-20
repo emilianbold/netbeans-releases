@@ -161,9 +161,8 @@ public class DevicePanel extends JPanel {
         //due to issues in GridBagLayout which ignores minSize, we need to compute necessary height for component
         int requiredHeight = 0;
         Component[] content = comp.getComponents();
-        for (int i = 0; i < content.length; i++) {
-            Component jComponent = content[i];
-            requiredHeight += jComponent.getPreferredSize().getHeight();
+        for (Component jComponent : content) {
+            requiredHeight += jComponent.getPreferredSize ().getHeight ();
 //            GridBagConstraints constrains = ((GridBagLayout)comp.getLayout()).getConstraints(jComponent);
 //            requiredHeight += constrains.insets.top;
 //            requiredHeight += constrains.insets.bottom;
@@ -230,16 +229,25 @@ public class DevicePanel extends JPanel {
         return point;
     }
 
-    /**
-     * Helper debugging method for inspecting component's hiearchy
-     */
-    private void dump(JComponent component){
-        System.out.println("Type " + component.getClass() + " Layout " + component.getLayout() + " Size: " + component.getSize() + " Preferred size: " + component.getPreferredSize());
-        Component comps[] = component.getComponents();
-        for (int i = 0; i < comps.length; i++) {
-            Component component1 = comps[i];
-            dump((JComponent)component1);
-        }
+//    /**
+//     * Helper debugging method for inspecting component's hiearchy
+//     */
+//    private void dump(JComponent component){
+//        System.out.println("Type " + component.getClass() + " Layout " + component.getLayout() + " Size: " + component.getSize() + " Preferred size: " + component.getPreferredSize());
+//        Component comps[] = component.getComponents();
+//        for (int i = 0; i < comps.length; i++) {
+//            Component component1 = comps[i];
+//            dump((JComponent)component1);
+//        }
+//    }
 
+    public void setScreenSize (Dimension deviceScreenSize) {
+        if (deviceScreenSize == null)
+            deviceScreenSize = new Dimension (240, 320);
+        if (deviceScreenSize.equals (deviceInfo.getCurrentScreenSize ()))
+            return;
+        deviceInfo.setArbitraryScreenSize (deviceScreenSize);
+        reload ();
     }
+
 }

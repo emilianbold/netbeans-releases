@@ -24,6 +24,14 @@
             <code-name-base>org.netbeans.modules.vmd.io.javame</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.api.mobility</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>8.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.core.multiview</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -39,6 +47,15 @@
                     <run-dependency>
                         <release-version>0-1</release-version>
                         <specification-version>0.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.java.platform</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.9</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -59,6 +76,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.mobility.cldcplatform</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.mobility.editor</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -73,11 +98,28 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.mobility.project</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.2.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.mobility.snippets</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.project.ant</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -164,6 +206,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.openide.modules</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.nodes</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -196,7 +246,9 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <public-packages>
+                <package>org.netbeans.modules.vmd.api.io.javame</package>
+            </public-packages>
         </data>
     </configuration>
 </project>
