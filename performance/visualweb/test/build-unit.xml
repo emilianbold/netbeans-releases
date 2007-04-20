@@ -45,31 +45,6 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ========= -->
 
     <!-- Executor - Prepare IDE for complex measurements -->
-    <target name="prepare_ide_for_complex_measurements" depends="copy_unzip_jedit_project,check-appserver">
-        <antcall target="copy_released_ide_cfg_file"/>
-        
-        <executeTests pluginName="ide">
-            <classpath>
-                <pathelement location="${nb_all}/jellytools/builds/jelly2-nb.jar"/>
-                <pathelement location="${nb_all}/jemmy/builds/jemmy.jar"/>
-                <pathelement location="${nb_all}/performance/performancetestutilities/dist/performance-test-utilities.jar"/>
-            </classpath>
-            
-            <property name="xtest.enable.assertions" value="false" /> 
-            
-            <!-- Add AppSever to NetBeans  -->
-            <property name="xtest.ide.commandline.suffix" value="-J-Dcom.sun.aas.installRoot=&quot;${j2ee.appserver.path}&quot;"/>
-            
-            <!-- Opens project at specified location -->
-            <property name="xtest.ide.open.project" location="${xtest.tmpdir}/jEdit41"/>
-            
-            <property name="xtest.timeout" value="1800000" />
-        </executeTests>
-        
-        <antcall target="copy_original_ide_cfg_file"/>
-    </target>
-    
-    <!-- Executor - Prepare IDE for complex measurements -->
     <target name="prepare_ide_for_complex_measurements_web_project" depends="copy_unzip_j2ee_project,check-appserver">
         <antcall target="copy_released_ide_cfg_file"/>
         <executeTests pluginName="ide">
@@ -96,7 +71,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Executor for Measure Complex Web Project Startup Time -->
     <target name="runcodetest_measure_complex_startup_web_project" depends="make_netbeans_executable">
         <!-- copy xsl transformator file for ActionTracker log into appropriate directory -->
-        <copy file="${nball.dir}/performance/performancetestutilities/dist/ActionTracker.xsl" tofile="${xtest.results.testrun.dir}/ActionTracker.xsl" />
+        <copy file="${performance.testutilities.dist.dir}/ActionTracker.xsl" todir="${xtest.results.testrun.dir}" />
         
         <antcall target="copy_released_ide_cfg_file"/>
         <executeTests pluginName="jvm">
@@ -127,12 +102,6 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ========= -->
     <!-- Utils     -->
     <!-- ========= -->
-    
-    <!-- Make ide executable -->
-    <target name="make_netbeans_executable">
-        <chmod perm="ugo+rx" file="${netbeans.dest.dir}/bin/netbeans"/>
-        <chmod perm="ugo+rx" dir="${netbeans.dest.dir}" includes="platform?/lib/nbexec"/>
-    </target>
     
     <!-- Copy and unzip project Huge Web Application project from close source path, will be used for Performance tests -->
     <target name="copy_unzip_j2ee_project">

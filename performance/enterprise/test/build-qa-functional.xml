@@ -33,50 +33,11 @@
     <!-- Custom properties -->
     <property name="xtest.tmpdir.createproject" location="${xtest.tmpdir}/createdProjects"/>
 
-
     <!-- ==================== -->
     <!-- Setting command line -->
     <!-- ==================== -->
     <!-- Command line is created from this property and xtest.perf.commandline.suffix which can be set from command line of xtest -->
     <property name="ide.commandline.suffix" value="-J-Dorg.netbeans.performance.repeat=5 -J-Dorg.netbeans.performance.memory.usage.log=true"/>
-
-    
-    <!-- ================================== -->
-    <!-- Use tests from performance module  -->
-    <!-- ================================== -->
-    <target name="check-perf-tests-built">
-        <available file="${nb_all}/performance/build/test/qa-functional/classes/performance-tests.jar" property="perf.classes.exist" type="dir"/>
-    </target>
-    
-    <target name="build-performance" unless="perf.classes.exist" depends="check-perf-tests-built">
-	<java classname="org.apache.tools.ant.Main" dir="${nball.dir}/performance/test" failonerror="true" fork="true">
-          <jvmarg value="-Dant.home=${ant.home}"/>
-          <arg value="buildtests"/>
-          <arg value="-Dxtest.testtype=qa-functional"/>
-          <arg value="-Dxtest.attribs=all"/>
-          <arg value="-Dxtest.home=${xtest.home}"/>
-          <arg value="-Dnetbeans.dest.dir=${netbeans.dest.dir}"/>
-	  <classpath path="${java.class.path}"/>
-        </java>
-        
-        <jar basedir="${nb_all}/performance/build/test/qa-functional/classes" jarfile="${nb_all}/performance/build/test/qa-functional/performance-tests.jar">
-            <include name="gui/**"/>
-            <include name="footprint/**"/>
-            <exclude name="gui/Measure*.class"/>
-        </jar>
-    </target>
-    
-    <target name="clean-performance" unless="perf.classes.exist">
-	<java classname="org.apache.tools.ant.Main" dir="${nball.dir}/performance/test" failonerror="true" fork="true">
-          <jvmarg value="-Dant.home=${ant.home}"/>
-          <arg value="cleantests"/>
-          <arg value="-Dxtest.testtype=qa-functional"/>
-          <arg value="-Dxtest.attribs=all"/>
-          <arg value="-Dxtest.home=${xtest.home}"/>
-          <arg value="-Dnetbeans.dest.dir=${netbeans.dest.dir}"/>
-	  <classpath path="${java.class.path}"/>
-        </java>
-    </target>
 
     
     <!-- ========= -->
@@ -109,8 +70,8 @@
             
             <property name="xtest.timeout" value="2400000" />
             
-            <!-- Opens project at specified location -->
-            <property name="xtest.ide.open.project" location="${xtest.tmpdir}/jEdit41"/>
+            <!-- Opens project at specified location
+            <property name="xtest.ide.open.project" location="${xtest.tmpdir}/jEdit41"/>  -->
     
             <property name="xtest.ide.commandline.suffix" value="-J-Dcom.sun.aas.installRoot=&quot;${j2ee.appserver.path}&quot;"/>
         </executeTests>
@@ -135,7 +96,7 @@
         <antcall target="copy_released_ide_cfg_file"/>
        
         <!-- copy xsl transformator file for ActionTracker log into appropriate directory -->
-        <copy file="${nball.dir}/performance/performancetestutilities/dist/ActionTracker.xsl" tofile="${xtest.results.testrun.dir}/ActionTracker.xsl" />
+        <copy file="${performance.testutilities.dist.dir}/ActionTracker.xsl" todir="${xtest.results.testrun.dir}" />
         
         <executeTests pluginName="ide">
             <classpath>
@@ -196,18 +157,8 @@
         
         <antcall target="copy_original_ide_cfg_file"/>
     </target>
-    
-    <!-- ========= -->
-    <!-- Utils     -->
-    <!-- ========= -->
-    
-    <!-- Prepare utils to be available from IDE during test -->    
-    <target name="prepare_measure_footprint">
-        <copy file="${nbextra.qa.performance.dist.dir}/pslist.exe" tofile="${xtest.tmpdir}/pslist.exe" />
-        <copy file="${nbextra.qa.performance.dist.dir}/measure_footprint" tofile="${xtest.tmpdir}/measure_footprint" />
-        <chmod perm="ugo+rx" file="${xtest.tmpdir}/measure_footprint"/>
-    </target>
 
+    
     <!-- =================== -->
     <!-- Work with Appserver -->
     <!-- =================== -->

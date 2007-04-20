@@ -43,9 +43,6 @@ public class EPMeasuringSetup extends NbTestSuite {
         
         suite.addTest(new EnterpriseSetupTest("closeWelcome"));
         
-        // need for some Menu tests
-	// opened from build script suite.addTest(new EnterpriseSetupTest("openJeditProject"));
-        suite.addTest(new EnterpriseSetupTest("openDataProject"));
 //TODO no tomcat - see issue 101104        suite.addTest(new EnterpriseSetupTest("openWebProject"));
 
         suite.addTest(new EnterpriseSetupTest("openReservationPartnerServicesProject"));

@@ -95,7 +95,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Executor for Measure Startup Time with empty userdir -->
     <target name="runcodetest_measure_startup" depends="make_netbeans_executable">
         <!-- copy xsl transformator file for ActionTracker log into appropriate directory -->
-        <copy file="${nball.dir}/performance/performancetestutilities/dist/ActionTracker.xsl" tofile="${xtest.results.testrun.dir}/ActionTracker.xsl" />
+        <copy file="${performance.testutilities.dist.dir}/ActionTracker.xsl" todir="${xtest.results.testrun.dir}" />
         
         <antcall target="copy_released_ide_cfg_file"/>
         <executeTests pluginName="jvm">
@@ -120,7 +120,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Executor for Measure Complex Startup Time -->
     <target name="runcodetest_measure_complex_startup" depends="make_netbeans_executable">
         <!-- copy xsl transformator file for ActionTracker log into appropriate directory -->
-        <copy file="${nball.dir}/performance/performancetestutilities/dist/ActionTracker.xsl" tofile="${xtest.results.testrun.dir}/ActionTracker.xsl" />
+        <copy file="${performance.testutilities.dist.dir}/ActionTracker.xsl" todir="${xtest.results.testrun.dir}" />
         
         <antcall target="copy_released_ide_cfg_file"/>
         <executeTests pluginName="jvm">
@@ -149,7 +149,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Executor for Measure Complex NB Project Startup Time -->
     <target name="runcodetest_measure_complex_startup_nb_project" depends="make_netbeans_executable">
         <!-- copy xsl transformator file for ActionTracker log into appropriate directory -->
-        <copy file="${nball.dir}/performance/performancetestutilities/dist/ActionTracker.xsl" tofile="${xtest.results.testrun.dir}/ActionTracker.xsl" />
+        <copy file="${performance.testutilities.dist.dir}/ActionTracker.xsl" todir="${xtest.results.testrun.dir}" />
         
         <antcall target="copy_released_ide_cfg_file"/>
         
@@ -196,16 +196,6 @@ Microsystems, Inc. All Rights Reserved.
             
         </executeTests>
         <antcall target="copy_original_ide_cfg_file"/>
-    </target>
-    
-    <!-- ========= -->
-    <!-- Utils     -->
-    <!-- ========= -->
-    
-    <!-- Make ide executable -->
-    <target name="make_netbeans_executable">
-        <chmod perm="ugo+rx" file="${netbeans.dest.dir}/bin/netbeans"/>
-        <chmod perm="ugo+rx" dir="${netbeans.dest.dir}" includes="platform?/lib/nbexec"/>
     </target>
     
 </project>

@@ -75,7 +75,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="test.qa-functional.run.cp.extra" value=""/>
         
         <!-- copy xsl transformator file for ActionTracker log into appropriate directory -->
-        <copy file="${nball.dir}/performance/performancetestutilities/dist/ActionTracker.xsl" tofile="${xtest.results.testrun.dir}/ActionTracker.xsl" />
+        <copy file="${performance.testutilities.dist.dir}/ActionTracker.xsl" todir="${xtest.results.testrun.dir}" />
         
         <executeTests pluginName="ide">
             <classpath>
@@ -141,18 +141,6 @@ Microsystems, Inc. All Rights Reserved.
         </executeTests>
         
         <antcall target="copy_original_ide_cfg_file"/>
-    </target>
-    
-    <!-- ========= -->
-    <!-- Utils     -->
-    <!-- ========= -->
-    
-    <!-- Prepare utils to be available from IDE during test -->    
-    <target name="prepare_measure_footprint">
-        <copy file="${nbextra.qa.performance.dist.dir}/pslist.exe" tofile="${xtest.tmpdir}/pslist.exe" />
-        <copy file="${nbextra.qa.performance.dist.dir}/ps_vista.exe" tofile="${xtest.tmpdir}/ps_vista.exe " />
-        <copy file="${nbextra.qa.performance.dist.dir}/measure_footprint" tofile="${xtest.tmpdir}/measure_footprint" />
-        <chmod perm="ugo+rx" file="${xtest.tmpdir}/measure_footprint"/>
     </target>
     
 </project>

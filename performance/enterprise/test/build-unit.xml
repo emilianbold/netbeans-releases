@@ -18,7 +18,7 @@
  Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="Measure startup time and memory usage" basedir="." default="all">
+<project name="Enterprise Pack performance tests" basedir="." default="all">
 
     <!-- Root folders -->
     <property name="nball.dir" location="../../.."/>
@@ -72,7 +72,7 @@
     <!-- Executor for Measure Complex Startup Time -->
     <target name="runcodetest_measure_complex_startup" depends="make_netbeans_executable">
         <!-- copy xsl transformator file for ActionTracker log into appropriate directory -->
-        <copy file="${nball.dir}/performance/performancetestutilities/dist/ActionTracker.xsl" tofile="${xtest.results.testrun.dir}/ActionTracker.xsl" />
+        <copy file="${performance.testutilities.dist.dir}/ActionTracker.xsl" todir="${xtest.results.testrun.dir}" />
         
         <antcall target="copy_released_ide_cfg_file"/>
         <executeTests pluginName="jvm">
@@ -102,12 +102,6 @@
     <!-- Utils     -->
     <!-- ========= -->
     
-    <!-- Make ide executable -->
-    <target name="make_netbeans_executable">
-        <chmod perm="ugo+rx" file="${netbeans.dest.dir}/bin/netbeans"/>
-        <chmod perm="ugo+rx" dir="${netbeans.dest.dir}" includes="platform?/lib/nbexec"/>
-    </target>
-
     <!-- Copy and unzip project TravelReservationService from close source path, will be used for Performance tests -->
     <target name="copy_unzip_j2ee_project">
         <unzip src="${nbextra.dir}/qa/projectized/TravelReservationService.zip" dest="${xtest.tmpdir}/"/>
