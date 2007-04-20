@@ -25,7 +25,7 @@ Microsystems, Inc. All Rights Reserved.
     localizing_bundle='org.netbeans.modules.debugger.resources.Bundle'
     visible='true'
     glyph='nbresloc:/org/netbeans/modules/debugger/resources/editor/MultiBreakpoint_broken.png'
-    highlight='0xFC9D9F'
+    highlight='0xDCDCD8'
     type='line'
     severity='ok'
     priority='100'
