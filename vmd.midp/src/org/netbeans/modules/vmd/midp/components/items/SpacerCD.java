@@ -25,6 +25,8 @@ import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
+import org.netbeans.modules.vmd.api.properties.DesignPropertyDescriptor;
+import org.netbeans.modules.vmd.api.properties.PropertiesPresenter;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
@@ -32,17 +34,15 @@ import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
+import org.netbeans.modules.vmd.midp.components.displayables.FormCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorArrayInteger;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorLayout;
 import org.netbeans.modules.vmd.midp.screen.display.SpacerDisplayPresenter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.api.properties.DesignPropertyDescriptor;
-import org.netbeans.modules.vmd.api.properties.PropertiesPresenter;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorDefaultCommand;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorLayout;
 
 /**
  *
@@ -111,6 +111,7 @@ public class SpacerCD extends ComponentDescriptor {
         DocumentSupport.removePresentersOfClass(presenters, ActionsPresenter.class);
         DocumentSupport.removePresentersOfClass(presenters, ScreenDisplayPresenter.class);
         MidpActionsSupport.addCommonActionsPresenters(presenters, true, true, true, true, true);
+        MidpActionsSupport.addMoveActionPresenter(presenters, FormCD.PROP_ITEMS);
         super.gatherPresenters(presenters);
     }
     
