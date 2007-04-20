@@ -35,7 +35,8 @@ public class Components2 extends HttpServlet {
                 "nb-javase",
                 "nb-javaee",
                 "nb-javame",
-                "glassfish");
+                "glassfish",
+                "sjsas");
         final List<String> full = Arrays.asList(
                 "nb-platform",
                 "nb-base",
@@ -49,7 +50,8 @@ public class Components2 extends HttpServlet {
                 "glassfish",
                 "openesb",
                 "sjsam",
-                "tomcat");
+                "tomcat",
+                "sjsas");
         final List<String> hidden = Arrays.asList(
                 "nb-platform",
                 "nb-base",
