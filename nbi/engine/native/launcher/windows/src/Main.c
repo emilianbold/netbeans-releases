@@ -104,7 +104,7 @@ void initErrorTitleWindow(LauncherProperties *props, HINSTANCE hInstance) {
     cyVScroll = GetSystemMetrics(SM_CYVSCROLL);
     GetClientRect(hwndMain, &rcClient);
     hwndErrorTitle = CreateWindowExW(0,  WC_STATICW,  WC_STATICW, WS_CHILD,
-    rcClient.left + 10,  15, rcClient.right - 20, 30, hwndMain, NULL, hInstance, NULL);
+    rcClient.left + 10,  15, rcClient.right - 20, 20, hwndMain, NULL, hInstance, NULL);
     if (hwndErrorTitle)  {
         HFONT hFont = (HFONT) GetStockObject(DEFAULT_GUI_FONT);
         LOGFONT lfTitle;
@@ -126,7 +126,7 @@ void initErrorDetailWindow(LauncherProperties *props, HINSTANCE hInstance) {
     cyVScroll = GetSystemMetrics(SM_CYVSCROLL);
     GetClientRect(hwndMain, &rcClient);
     hwndErrorDetail = CreateWindowExW(0,  WC_STATICW,  WC_STATICW, WS_CHILD  ,
-    rcClient.left + 10,  50, rcClient.right - 20, 60,
+    rcClient.left + 10,  40, rcClient.right - 20, 70,
     hwndMain, NULL, hInstance, NULL);
     if (hwndErrorDetail)  {
         LOGFONT lfDetail;

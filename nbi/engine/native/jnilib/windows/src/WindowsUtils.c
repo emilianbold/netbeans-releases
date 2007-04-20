@@ -95,7 +95,7 @@ int setValue(HKEY section, const char* key, const char* name, DWORD type, const 
     
     HKEY hkey  = 0;
     
-    if (RegOpenKeyEx(section, key, 0, KEY_ALL_ACCESS, &hkey) == ERROR_SUCCESS) {
+    if (RegOpenKeyEx(section, key, 0, KEY_SET_VALUE, &hkey) == ERROR_SUCCESS) {
         if (!(RegSetValueEx(hkey, name, 0, type, data, size) == ERROR_SUCCESS)) {
             result = 0;
         }

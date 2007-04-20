@@ -62,7 +62,7 @@ JNIEXPORT jboolean JNICALL Java_org_netbeans_installer_utils_system_windows_Wind
     char* key   = getChars(jEnv, jKey);
     char* value = getChars(jEnv, jName);
     jboolean result = FALSE;
-    if (RegOpenKeyEx(getHKEY(jSection), key, 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS) {        
+    if (RegOpenKeyEx(getHKEY(jSection), key, 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS) {
         result = (RegQueryValueEx(hkey, value, NULL, NULL, NULL, NULL) == ERROR_SUCCESS);
     } else {
         throwException(jEnv, "Cannot open key");
@@ -268,11 +268,14 @@ JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsR
     char* parent = getChars(jEnv, jParent);
     char* child  = getChars(jEnv, jChild);
     
-    if (RegOpenKeyEx(getHKEY(jSection), parent, 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS) {
-        if (RegCreateKeyEx(hkey, child, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &newKey, NULL) == ERROR_SUCCESS) {
+    if (RegOpenKeyEx(getHKEY(jSection), parent, 0, KEY_CREATE_SUB_KEY, &hkey) == ERROR_SUCCESS) {
+        LONG result = RegCreateKeyEx(hkey, child, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_READ | KEY_WRITE, NULL, &newKey, NULL);
+        if (result == ERROR_SUCCESS) {
             if (newKey != 0) {
                 RegCloseKey(newKey);
             }
+        } else if (result == ERROR_ACCESS_DENIED) {
+            throwException(jEnv, "Could not create a new key (access denied)");
         } else {
             throwException(jEnv, "Could not create a new key");
         }
@@ -294,7 +297,7 @@ JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsR
     char* jChildS  = getChars(jEnv, jChild);
     
     
-    if (RegOpenKeyEx(getHKEY(jSection), jParentS, 0, KEY_ALL_ACCESS, &hkey) == ERROR_SUCCESS) {
+    if (RegOpenKeyEx(getHKEY(jSection), jParentS, 0, KEY_READ | KEY_WRITE, &hkey) == ERROR_SUCCESS) {
         if (RegDeleteKey(hkey, jChildS) != ERROR_SUCCESS) {
             throwException(jEnv, "Could not delete key");
         }
@@ -315,7 +318,7 @@ JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsR
     char* key   = getChars(jEnv, jKey);
     char* value = getChars(jEnv, jName);
     
-    if (RegOpenKeyEx(getHKEY(jSection), key, 0, KEY_ALL_ACCESS, &hkey) == ERROR_SUCCESS) {
+    if (RegOpenKeyEx(getHKEY(jSection), key, 0, KEY_SET_VALUE , &hkey) == ERROR_SUCCESS) {
         if (RegDeleteValue(hkey, value) != ERROR_SUCCESS) {
             throwException(jEnv, "Cannot delete value");
         }
@@ -579,7 +582,7 @@ JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsR
 }
 
 JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_setNoneValue0(JNIEnv *jEnv, jobject jobj, jint jSection, jstring jKey, jstring jName, jbyteArray jValue) {
-     char*  key     = getChars(jEnv, jKey);
+    char*  key     = getChars(jEnv, jKey);
     char*  name    = getChars(jEnv, jName);
     BYTE*  data    = (BYTE*) (*jEnv)->GetByteArrayElements(jEnv, jValue, 0);
     DWORD  length  = (*jEnv)->GetArrayLength(jEnv, jValue);
