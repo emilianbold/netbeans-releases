@@ -322,6 +322,22 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="Copy.shadow">
                     <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-CopyAction.instance"/>
                 </file>
+                <file name="Extract Superclass.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-java-api-ui-ExtractSuperclassAction.instance"/>
+                </file>
+                <file name="Pull Up.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-java-api-ui-PullUpAction.instance"/>
+                </file>
+                <file name="Push Down.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-java-api-ui-PushDownAction.instance"/>
+                </file>
+                <file name="Use Supertype Where Possible....shadow">
+                    <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-java-api-ui-UseSuperTypeAction.instance"/>
+                </file>
+                <file name="Extract Interface.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-java-api-ui-ExtractInterfaceAction.instance"/>
+                </file>
+                
 <!--retouche:-->
 <!--                <file name="Change Method Parameters.shadow">
                     <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-ChangeParametersAction.instance"/>
@@ -332,27 +348,13 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="Encapsulate Fields.shadow">
                     <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-EncapsulateFieldAction.instance"/>
                 </file>
-                <file name="Extract Superclass.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-ExtractSuperClassAction.instance"/>
-                </file>
                 <file name="Extract Method.shadow">
                     <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-ExtractMethodAction.instance"/>
-                </file>
-                <file name="Extract Interface.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-ExtractInterfaceAction.instance"/>
                 </file>
                 <file name="Move Inner to Outer Level.shadow">
                     <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-InnerToOuterAction.instance"/>
                 </file>
-                <file name="Pull Up.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-PullUpAction.instance"/>
-                </file>
-                <file name="Push Down.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-PushDownAction.instance"/>
-                </file>
-                <file name="Use Supertype Where Possible....shadow">
-                    <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-UseSuperTypeAction.instance"/>
-                </file>-->
+-->
             </folder>
             <folder name="Run">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.options.editor.Bundle"/>

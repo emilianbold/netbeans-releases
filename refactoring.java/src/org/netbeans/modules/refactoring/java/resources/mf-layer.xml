@@ -21,24 +21,30 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
     <folder name="Menu">
         <folder name="Refactoring">
-            <attr name="org-netbeans-modules-refactoring-java-api-ui-ExtractInterfaceAction.instance/LastSeparator.instance" boolvalue="true"/>
+            <attr name="CopyAction.instance/FirstSeparator.instance" boolvalue="true"/>
+            <file name="FirstSeparator.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+            <attr name="FirstSeparator.instance/org-netbeans-modules-refactoring-java-api-ui-PullUpAction.instance" boolvalue="true"/>
+            <attr name="org-netbeans-modules-refactoring-java-api-ui-PullUpAction.instance/org-netbeans-modules-refactoring-java-api-ui-PushDownAction.instance" boolvalue="true"/>
+          <file name="org-netbeans-modules-refactoring-java-api-ui-PullUpAction.instance">
+             <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.pullUpAction"/>
+          </file>
+          <attr name="org-netbeans-modules-refactoring-java-api-ui-PushDownAction.instance/org-netbeans-modules-refactoring-java-api-ui-ExtractInterfaceAction.instance" boolvalue="true"/>
+          <file name="org-netbeans-modules-refactoring-java-api-ui-PushDownAction.instance">
+             <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.pushDownAction"/>
+          </file>
+            <attr name="org-netbeans-modules-refactoring-java-api-ui-ExtractInterfaceAction.instance/org-netbeans-modules-refactoring-java-api-ui-ExtractSuperclassAction.instance" boolvalue="true"/>
             <file name="org-netbeans-modules-refactoring-java-api-ui-ExtractInterfaceAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.extractInterfaceAction"/>
             </file>
-            <attr name="org-netbeans-modules-refactoring-java-api-ui-ExtractSuperclassAction.instance/LastSeparator.instance" boolvalue="true"/>
+            <attr name="org-netbeans-modules-refactoring-java-api-ui-ExtractSuperclassAction.instance/org-netbeans-modules-refactoring-java-api-ui-UseSuperTypeAction.instance" boolvalue="true"/>
             <file name="org-netbeans-modules-refactoring-java-api-ui-ExtractSuperclassAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.extractSuperclassAction"/>
             </file>
-             <attr name="org-netbeans-modules-refactoring-java-api-ui-PushDownAction.instance/LastSeparator.instance" boolvalue="true"/>
-             <file name="org-netbeans-modules-refactoring-java-api-ui-PushDownAction.instance">
-             <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.pushDownAction"/>
-          </file>
-             <file name="org-netbeans-modules-refactoring-java-api-ui-PullUpAction.instance">
-             <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.pullUpAction"/>
-          </file>
-         <attr name="UseSuperTypeAction.instance/LastSeparator.instance" boolvalue="true"/>
-            <file name="UseSuperTypeAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.java.ui.UseSuperTypeAction"/>
+         <attr name="org-netbeans-modules-refactoring-java-api-ui-UseSuperTypeAction.instance/LastSeparator.instance" boolvalue="true"/>
+            <file name="org-netbeans-modules-refactoring-java-api-ui-UseSuperTypeAction.instance">
+                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.useSuperTypeAction"/>
             </file>
 
         </folder>    
@@ -103,17 +109,23 @@ Microsystems, Inc. All Rights Reserved.
           <file name="options"/>
       </folder>
   </folder>
-  <folder name="Actions">
-     <folder name="Refactoring">
-          <file name="org-netbeans-modules-refactoring-java-api-ui-PushDownAction.instance">
-             <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.pushDownAction"/>
-          </file>
-          <file name="org-netbeans-modules-refactoring-java-api-ui-UseSuperTypeAction.instance">
+    <folder name="Actions">
+        <folder name="Refactoring">
+            <file name="org-netbeans-modules-refactoring-java-api-ui-PushDownAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.pushDownAction"/>
+            </file>
+            <file name="org-netbeans-modules-refactoring-java-api-ui-UseSuperTypeAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.useSuperTypeAction"/>
-          </file>
-          <file name="org-netbeans-modules-refactoring-java-api-ui-PullUpAction.instance">
+            </file>
+            <file name="org-netbeans-modules-refactoring-java-api-ui-PullUpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.pullUpAction"/>
-          </file>
-    </folder>
-  </folder>  
+            </file>
+            <file name="org-netbeans-modules-refactoring-java-api-ui-ExtractInterfaceAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.extractInterfaceAction"/>
+            </file>
+            <file name="org-netbeans-modules-refactoring-java-api-ui-ExtractSuperclassAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.extractSuperclassAction"/>
+            </file>
+        </folder>
+    </folder>  
 </filesystem>

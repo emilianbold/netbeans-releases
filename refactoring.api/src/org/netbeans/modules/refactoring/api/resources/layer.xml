@@ -22,29 +22,36 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Menu">
         <folder name="Refactoring">
 	    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.refactoring.spi.impl.Bundle"/>
-            <attr name="SafeDeleteAction.instance/LastSeparator.instance" boolvalue="true"/>
+            <file name="RenameAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.spi.impl.RenameAction"/>
+            </file>
+            <attr name="RenameAction.instance/MoveAction.instance" boolvalue="true"/>
+            <file name="MoveAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.spi.impl.MoveAction"/>
+            </file>
+            <attr name="MoveAction.instance/CopyAction.instance" boolvalue="true"/>
+            <file name="CopyAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.spi.impl.CopyAction"/>
+            </file>
+            <attr name="CopyAction.instance/LastSeparator.instance" boolvalue="true"/>
             <file name="LastSeparator.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
             </file>
-            <attr name="LastSeparator.instance/UndoAction.instance" boolvalue="true"/>
+            <attr name="LastSeparator.instance/SafeDeleteAction.instance" boolvalue="true"/>
+            <file name="SafeDeleteAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.spi.impl.SafeDeleteAction"/>
+            </file>
+            <attr name="SafeDeleteAction.instance/UndoSeparator.instance" boolvalue="true"/>
+            <file name="UndoSeparator.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+            <attr name="UndoSeparator.instance/UndoAction.instance" boolvalue="true"/>
             <file name="UndoAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.spi.impl.UndoAction"/>
             </file>
             <attr name="UndoAction.instance/RedoAction.instance" boolvalue="true"/>
             <file name="RedoAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.spi.impl.RedoAction"/>
-            </file>
-            <file name="SafeDeleteAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.spi.impl.SafeDeleteAction"/>
-            </file>
-            <file name="RenameAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.spi.impl.RenameAction"/>
-            </file>
-            <file name="MoveAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.spi.impl.MoveAction"/>
-            </file>
-            <file name="CopyAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.spi.impl.CopyAction"/>
             </file>
             
             
