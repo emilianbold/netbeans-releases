@@ -383,6 +383,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             
             // customizeButton //////////////////////////////////////////////////////
             customizeButton = new NbiButton();
+            customizeButton.setOpaque(false);
             customizeButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
                     customizeButtonPressed();
