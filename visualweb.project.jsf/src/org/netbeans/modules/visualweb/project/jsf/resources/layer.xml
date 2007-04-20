@@ -159,6 +159,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
         </folder>  <!-- Jsf12Apps -->
+    </folder> <!-- Templates -->
 
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
