@@ -19,6 +19,7 @@
 
 package gui;
 
+import gui.window.MobilityDeploymentManagerDialog;
 import org.netbeans.junit.NbTestSuite;
 
 /**
@@ -30,9 +31,9 @@ public class MPMeasureDialogs  {
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-
+            
         // TODO add some test cases
-        
+        suite.addTest(new MobilityDeploymentManagerDialog("measureTime","Mobility Deployment Manager dialog time"));
         return suite;
     }
     
