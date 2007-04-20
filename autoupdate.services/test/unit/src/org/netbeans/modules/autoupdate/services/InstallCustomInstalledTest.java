@@ -49,7 +49,7 @@ public class InstallCustomInstalledTest extends OperationsTestImpl {
     public void testSelf () throws Exception {
         UpdateManager.getDefault().getUpdateUnits();
         UpdateUnit toInstall = UpdateManagerImpl.getInstance ().getUpdateUnit (moduleCodeNameBaseForTest ());
-        installModule(toInstall, true);
+        installModule(toInstall, null, true);
         assertTrue ("Custom installer was called.", installerCalled);
     }
     

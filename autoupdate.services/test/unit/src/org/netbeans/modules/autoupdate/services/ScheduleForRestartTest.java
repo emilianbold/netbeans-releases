@@ -39,7 +39,8 @@ public class ScheduleForRestartTest extends OperationsTestImpl {
     
     public void testSelf() throws Exception {
         UpdateUnit toInstall = UpdateManagerImpl.getInstance ().getUpdateUnit (moduleCodeNameBaseForTest ());
-        installModule (toInstall);
+        assertNotNull(toInstall.getAvailableUpdates ().get (1));
+        installModule (toInstall, toInstall.getAvailableUpdates ().get (1));
         UpdateUnit toUpdate = toInstall;
         
         // try to update, should pass

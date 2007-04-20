@@ -36,8 +36,8 @@ public class InstallWhenDependsOnUpdateTest extends OperationsTestImpl {
     
     public void testSelf() throws Exception {
         UpdateUnit toInstall = UpdateManagerImpl.getInstance ().getUpdateUnit (moduleCodeNameBaseForTest ());
-        installModule (UpdateManagerImpl.getInstance ().getUpdateUnit ("org.yourorghere.engine"));
-        installModule (toInstall);
+        installModule (UpdateManagerImpl.getInstance ().getUpdateUnit ("org.yourorghere.engine"), null);
+        installModule (toInstall, null);
     }
     
 }

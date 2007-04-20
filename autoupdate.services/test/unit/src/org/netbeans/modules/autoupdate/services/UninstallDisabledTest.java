@@ -38,7 +38,7 @@ public class UninstallDisabledTest extends OperationsTestImpl {
     public void testSelf() throws Exception {
         UpdateUnit toUnInstall = UpdateManagerImpl.getInstance().getUpdateUnit(moduleCodeNameBaseForTest());
         assertNotNull(toUnInstall);
-        installModule(toUnInstall);
+        installModule(toUnInstall, null);
         disableModule(toUnInstall);
         unInstallModule(toUnInstall);
     }

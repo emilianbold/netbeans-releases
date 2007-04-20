@@ -103,12 +103,12 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
 //        return retval;
 //    }
 //    
-    public UpdateElement installModule(UpdateUnit toInstall) throws Exception {
-        return installModuleImpl(toInstall, true, false);
+    public UpdateElement installModule(UpdateUnit toInstall, UpdateElement installElement) throws Exception {
+        return installModuleImpl(toInstall, installElement, true, false);
     }
     
-    public UpdateElement installModule(UpdateUnit toInstall, boolean customInstaller) throws Exception {
-        return installModuleImpl(toInstall, true, customInstaller);
+    public UpdateElement installModule(UpdateUnit toInstall, UpdateElement installElement, boolean customInstaller) throws Exception {
+        return installModuleImpl(toInstall, installElement, true, customInstaller);
     }
     
     /*public void installModuleDirect(UpdateUnit toInstall) throws Exception {
@@ -116,7 +116,9 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
     }*/
     
     
-    private UpdateElement installModuleImpl(UpdateUnit toInstall, final boolean installSupport, boolean customInstaller) throws Exception {
+    private UpdateElement installModuleImpl(UpdateUnit toInstall, UpdateElement installElement,final boolean installSupport, boolean customInstaller) throws Exception {
+        installElement = (installElement != null) ? installElement : toInstall.getAvailableUpdates().get(0);
+        
         File configModules = new File(getWorkDir(), "config/Modules");
         File modules = new File(getWorkDir(), "modules");
         int configModulesSize = (configModules.listFiles() != null) ? configModules.listFiles().length : 0;
@@ -131,8 +133,6 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
         
         assertSame(toInstall, Utils.toUpdateUnit(toInstall.getCodeName()));
         
-        int avUpdatesCount = toInstall.getAvailableUpdates().size();
-        UpdateElement installElement = toInstall.getAvailableUpdates().get(0);
         OperationContainer container2 = null;
         InstallSupport.Restarter r = null;
         if (installSupport) {
@@ -181,7 +181,6 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
         if (! customInstaller) {
         
             assertNotNull(toInstall.getInstalled());
-            assertEquals(avUpdatesCount-1, toInstall.getAvailableUpdates().size());
 
             if (r == null) {
                 assertTrue(configModules.listFiles().length > configModulesSize);

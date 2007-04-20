@@ -20,6 +20,8 @@
 package org.netbeans.modules.autoupdate.services;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -144,6 +146,11 @@ public class UpdateUnitImpl extends Object {
         if (res == null) {
             res = java.util.Collections.emptyList();
         }
+        Collections.sort(res,new Comparator<UpdateElement>(){
+            public int compare(UpdateElement o1, UpdateElement o2) {
+                return new SpecificationVersion(o2.getSpecificationVersion()).compareTo(new SpecificationVersion(o1.getSpecificationVersion()));
+            }
+        });
         return res; 
     }
 

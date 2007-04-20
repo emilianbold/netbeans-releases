@@ -38,7 +38,7 @@ public class UpdateTest extends OperationsTestImpl {
     public void testSelf() throws Exception {
         UpdateUnit toUpdate = UpdateManagerImpl.getInstance().getUpdateUnit(moduleCodeNameBaseForTest());
         assertNotNull(toUpdate);
-        installModule(toUpdate);
+        installModule(toUpdate, toUpdate.getAvailableUpdates ().get (1));
         updateModule(toUpdate);
     }
     

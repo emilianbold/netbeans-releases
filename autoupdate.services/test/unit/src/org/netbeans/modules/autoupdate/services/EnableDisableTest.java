@@ -38,7 +38,7 @@ public class EnableDisableTest extends OperationsTestImpl {
     public void testSelf() throws Exception {
         UpdateUnit toEnable = UpdateManagerImpl.getInstance().getUpdateUnit(moduleCodeNameBaseForTest());
         assertNotNull(toEnable);
-        installModule(toEnable);
+        installModule(toEnable, null);
         disableModule(toEnable);
         enableModule(toEnable);
         disableModule(toEnable);

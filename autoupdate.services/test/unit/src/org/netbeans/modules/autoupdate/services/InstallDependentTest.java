@@ -36,7 +36,7 @@ public class InstallDependentTest extends InstallTest {
     }     
 
     public UpdateElement installModule(UpdateUnit toInstall) throws Exception {
-        return super.installModule(toInstall);
+        return super.installModule(toInstall, null);
     }
 
     
