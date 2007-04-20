@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,13 +25,11 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 
@@ -118,6 +116,7 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
         assert wmFO.isFolder() : "Not really a dir: " + dirSrcF;
         
         FileObject docBase;
+        FileObject webInf;
         FileObject libFolder;
         if (docBaseName == null || docBaseName.equals("")) //NOI18N
             docBase = FileSearchUtility.guessDocBase(wmFO);
@@ -125,12 +124,14 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
             File f = new File(docBaseName);
             docBase = FileUtil.toFileObject(f);
         }
-//        if (javaRootName == null || javaRootName.equals("")) //NOI18N
-//            javaRoot = guessJavaRoot(wmFO);
-//        else {
-//            File f = new File(javaRootName);
-//            javaRoot = FileUtil.toFileObject(f);
-//        }
+        
+        if (webInfFolder == null || webInfFolder.equals("")) //NOI18N
+            webInf = FileSearchUtility.guessWebInf(wmFO);
+        else {
+            File f = new File(webInfFolder);
+            webInf = FileUtil.toFileObject(f);
+        }
+
         if (libName == null || libName.equals("")) //NOI18N
             libFolder = FileSearchUtility.guessLibrariesFolder(wmFO);
         else {
@@ -157,7 +158,7 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
         createData.setBuildfile(buildfile);
         createData.setJavaPlatformName((String) wiz.getProperty(WizardProperties.JAVA_PLATFORM));
         createData.setSourceLevel((String) wiz.getProperty(WizardProperties.SOURCE_LEVEL));       
-        createData.setWebInfFolder(FileUtil.toFileObject(new File(webInfFolder)));
+        createData.setWebInfFolder(webInf);
         
         WebProjectUtilities.importProject(createData);       
         handle.progress(2);

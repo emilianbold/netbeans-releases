@@ -24,14 +24,13 @@ import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.Iterator;
 import javax.swing.JFileChooser;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.web.project.ProjectWebModule;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -92,12 +91,16 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         
         FileObject guessFO;
         String webPages = ""; //NOI18N
+        String webInf = ""; //NOI18N
         String libraries = ""; //NOI18N
         File javaRoots [] = null;
         
         guessFO = FileSearchUtility.guessDocBase(fo);
         if (guessFO != null)
             webPages = FileUtil.toFile(guessFO).getPath();
+        guessFO = FileSearchUtility.guessWebInf(fo);
+        if (guessFO != null)
+            webInf = FileUtil.toFile(guessFO).getPath();
         guessFO = FileSearchUtility.guessLibrariesFolder(fo);
         if (guessFO != null)
             libraries = FileUtil.toFile(guessFO).getPath();
@@ -106,6 +109,8 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         //set the locations only if they weren't set before
         if (jTextFieldWebPages.getText().trim().equals(""))
             jTextFieldWebPages.setText(webPages);
+        if (jTextFieldWebInf.getText().trim().equals(""))
+            jTextFieldWebInf.setText(webInf);
         if (jTextFieldLibraries.getText().trim().equals(""))
             jTextFieldLibraries.setText(libraries);
         
@@ -173,9 +178,10 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
 	}
         
 	File webPages = getWebPages();
+	File webInf = getWebInfDir();
         File[] sourceRoots = ((FolderList)this.sourcePanel).getFiles();
         File[] testRoots = ((FolderList)this.testsPanel).getFiles();
-        String result = checkValidity (projectLocation, webPages, sourceRoots, testRoots);
+        String result = checkValidity (projectLocation, webPages, webInf, sourceRoots, testRoots);
         if (result == null) {
             wizardDescriptor.putProperty( "WizardPanel_errorMessage","");   //NOI18N
             return true;
@@ -186,7 +192,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         }
     }
 
-    private String checkValidity (final File projectLocation, final File webPages, final File[] sources, final File[] tests) {
+    private String checkValidity (final File projectLocation, final File webPages, final File webInf, final File[] sources, final File[] tests) {
         String ploc = projectLocation.getAbsolutePath ();
         
 	if (projectLocation.equals(webPages))
@@ -194,22 +200,19 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
 	    
 	if (!webPages.exists() || !webPages.isDirectory())
 	    return NbBundle.getMessage(PanelSourceFolders.class, "MSG_WebPagesFolderDoesNotExist"); //NOI18N
+        
+	if (!webInf.exists() || !webInf.isDirectory())
+	    return NbBundle.getMessage(PanelSourceFolders.class, "MSG_WebInfFolderDoesNotExist"); //NOI18N
 	
-//        FileObject webInf = FileUtil.toFileObject(webPages).getFileObject(ProjectWebModule.FOLDER_WEB_INF);
-//	if (webInf == null)
-//	    return NbBundle.getMessage(PanelSourceFolders.class, "MSG_WebInfCorrupted", webPages.getPath()); //NOI18N
-//        else {
-//            FileObject webXml = webInf.getFileObject(ProjectWebModule.FILE_DD);
-//            
-//            //#74837 - filesystem is probably not refreshed and file object for non-existing file is found
-//            //rather setting to null that refreshing filesystem from a performance reason
-//            if (webXml != null && !webXml.isValid())
-//                webXml = null;
-//            
-//            String j2eeLevel = (String) wizardDescriptor.getProperty(WizardProperties.J2EE_LEVEL);
-//            if (webXml == null && (j2eeLevel.equals(J2eeModule.J2EE_13) || j2eeLevel.equals(J2eeModule.J2EE_14)))
-//                return NbBundle.getMessage(PanelSourceFolders.class, "MSG_FileNotFound", webPages.getPath()); //NOI18N
-//        }        
+        FileObject webInfFO = FileUtil.toFileObject(webInf);
+        FileObject webXml = webInfFO.getFileObject(ProjectWebModule.FILE_DD);
+        //#74837 - filesystem is probably not refreshed and file object for non-existing file is found
+        //rather setting to null that refreshing filesystem from a performance reason
+        if (webXml != null && !webXml.isValid())
+            webXml = null;
+        String j2eeLevel = (String) wizardDescriptor.getProperty(WizardProperties.J2EE_LEVEL);
+        if (webXml == null && (j2eeLevel.equals(J2eeModule.J2EE_13) || j2eeLevel.equals(J2eeModule.J2EE_14)))
+            return NbBundle.getMessage(PanelSourceFolders.class, "MSG_FileNotFound", webInf.getPath()); //NOI18N
         
         for (int i=0; i<sources.length;i++) {
             if (!sources[i].isDirectory() || !sources[i].canRead()) {

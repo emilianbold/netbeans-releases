@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -71,24 +71,40 @@ public final class FileSearchUtility {
         );
     }
 
-    static FileObject guessDocBase (FileObject dir) {
+    static FileObject guessWebInf(FileObject dir) {        
         Enumeration ch = getChildrenToDepth(dir, 3, true);
         while (ch.hasMoreElements ()) {
             FileObject f = (FileObject) ch.nextElement ();
-            if (f.isFolder () && f.getName ().equals ("WEB-INF")) {
-                final FileObject webXmlFO = f.getFileObject ("web.xml");
+            if (f.isFolder()) {
+                final FileObject webXmlFO = f.getFileObject("web.xml"); //NOI18N
                 if (webXmlFO != null && webXmlFO.isData()) {
-                    return f.getParent();
+                    return f;
                 }
             }
         }
+        
         return null;
     }
     
+    static FileObject guessDocBase(FileObject dir) {
+        FileObject potentialDocBase = null;
+        Enumeration ch = getChildrenToDepth(dir, 3, true);
+        while (ch.hasMoreElements ()) {
+            FileObject f = (FileObject) ch.nextElement ();
+            if (f.isData() && f.getExt().equals("jsp")) { //NOI18N
+                return f.getParent();
+            } else if (f.isFolder() && (f.getName().equalsIgnoreCase("web") || f.getName().equalsIgnoreCase("webroot"))) { //NOI18N
+                potentialDocBase = f;
+            }
+        }
+        
+        return potentialDocBase;
+    }
+       
     static FileObject guessLibrariesFolder (FileObject dir) {
-        FileObject docBase = guessDocBase (dir);
-        if (docBase != null) {
-            FileObject lib = docBase.getFileObject ("WEB-INF/lib"); //NOI18N
+        FileObject webInf = guessWebInf(dir);
+        if (webInf != null) {
+            FileObject lib = webInf.getFileObject("lib"); //NOI18N
             if (lib != null) {
                 return lib;
             }
@@ -128,9 +144,9 @@ public final class FileSearchUtility {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, fsie);
         }
         if (foundRoots.size() == 0) {
-            FileObject docBase = guessDocBase (dir);
-            if (docBase != null) {
-                FileObject classes = docBase.getFileObject ("WEB-INF/classes"); //NOI18N
+            FileObject webInf = guessWebInf(dir);
+            if (webInf != null) {
+                FileObject classes = webInf.getFileObject("classes"); //NOI18N
                 if (classes != null) {
                     foundRoots.add(classes);
                 }
@@ -188,17 +204,6 @@ public final class FileSearchUtility {
         }
         // AB: fix for #56160: assume the class is in the default package
         return ""; // NOI18N
-    }
-
-    static boolean containsWebInf(FileObject dir) {
-        Enumeration ch = getChildrenToDepth(dir, 3, true);
-        while (ch.hasMoreElements ()) {
-            FileObject f = (FileObject) ch.nextElement ();
-            if (f.isFolder())
-                if (f.getName().equals("WEB-INF")) //NOI18N
-                    return true;
-        }
-        return false;
     }
     
     private static int getDepth(final FileObject fo) {
