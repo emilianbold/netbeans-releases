@@ -26,15 +26,16 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 
+import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.jemmy.operators.Operator.StringComparator;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 
-import footprint.VWPFootprintUtilities;
-import javax.swing.tree.TreePath;
-import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.progress.module.Controller;
 import org.netbeans.progress.spi.InternalHandle;
 import org.netbeans.progress.spi.TaskModel;
+
+import javax.swing.tree.TreePath;
 
 /**
  *
@@ -79,7 +80,7 @@ public class WebProjectDeployment extends org.netbeans.performance.test.utilitie
         log("App server started in "+(stop-start)+" ms");
         
         new ProjectsTabOperator().invoke();
-        VWPFootprintUtilities.buildproject(targetProject);
+        VWPUtilities.buildproject(targetProject);
         waitForNetBeansTask(targetProject+" (dist)");
         
     }
@@ -98,12 +99,18 @@ public class WebProjectDeployment extends org.netbeans.performance.test.utilitie
         
         TreePath path = null;
         
+        // create exactly (full match) and case sensitively comparing comparator
+        Operator.DefaultStringComparator comparator = new Operator.DefaultStringComparator(false, false);
+        StringComparator previousComparator = rto.tree().getComparator();
+        rto.setComparator(comparator);
+        
         try {
             path = rto.tree().findPath("Servers|Sun Java System Application Server"); // NOI18N
-        } catch (TimeoutExpiredException exc) {
+        } catch (Exception exc) {
             exc.printStackTrace(System.err);
             throw new Error("Cannot find Application Server Node");
         }
+        rto.setComparator(previousComparator);
 
         Node asNode = new Node(rto.tree(),path);
         asNode.select(); 
