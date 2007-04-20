@@ -272,7 +272,12 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
             brokenLinksAction = new BrokenLinksAction();
             setProjectFiles(project);
         }
-        
+
+        @Override
+        public String getShortDescription() {
+            String prjDirDispName = FileUtil.getFileDisplayName(project.getProjectDirectory());
+            return NbBundle.getMessage(J2SELogicalViewProvider.class, "HINT_project_root_node", prjDirDispName);
+        }
         
         protected final void setProjectFiles(Project project) {
             Sources sources = ProjectUtils.getSources(project);  // returns singleton
