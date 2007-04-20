@@ -43,6 +43,7 @@ import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
@@ -62,32 +63,45 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
     public static final String LOCATION_LABEL_TEXT_PROPERTY = 
-            "location.label.text";
+            "location.label.text"; // NOI18N
     public static final String LOCATION_BUTTON_TEXT_PROPERTY = 
-            "location.button.text";
+            "location.button.text"; // NOI18N
     public static final String LIST_LABEL_TEXT_PROPERTY = 
-            "list.label.text";
+            "list.label.text"; // NOI18N
     
     public static final String DEFAULT_LOCATION_LABEL_TEXT = 
             ResourceUtils.getString(ApplicationLocationPanel.class, 
-            "ALP.location.label.text");
+            "ALP.location.label.text"); // NOI18N
     public static final String DEFAULT_LOCATION_BUTTON_TEXT = 
             ResourceUtils.getString(ApplicationLocationPanel.class, 
-            "ALP.location.button.text");
+            "ALP.location.button.text"); // NOI18N
     public static final String DEFAULT_LIST_LABEL_TEXT = 
             ResourceUtils.getString(ApplicationLocationPanel.class, 
-            "ALP.list.label.text");
+            "ALP.list.label.text"); // NOI18N
+    
+    public static final String ERROR_NOTHING_FOUND_PROPERTY = 
+            "error.nothing.found"; // NOI18N
+    
+    public static final String DEFAULT_ERROR_NOTHING_FOUND = 
+            ResourceUtils.getString(ApplicationLocationPanel.class, 
+            "ALP.error.nothing.found"); // NOI18N
     
     public static final String DEFAULT_LOCATION = 
             ResourceUtils.getString(ApplicationLocationPanel.class, 
-            "ALP.default.location");
+            "ALP.default.location"); // NOI18N
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     public ApplicationLocationPanel() {
-        setProperty(LOCATION_LABEL_TEXT_PROPERTY, DEFAULT_LOCATION_LABEL_TEXT);
-        setProperty(LOCATION_BUTTON_TEXT_PROPERTY, DEFAULT_LOCATION_BUTTON_TEXT);
-        setProperty(LIST_LABEL_TEXT_PROPERTY, DEFAULT_LIST_LABEL_TEXT);
+        setProperty(LOCATION_LABEL_TEXT_PROPERTY, 
+                DEFAULT_LOCATION_LABEL_TEXT);
+        setProperty(LOCATION_BUTTON_TEXT_PROPERTY, 
+                DEFAULT_LOCATION_BUTTON_TEXT);
+        setProperty(LIST_LABEL_TEXT_PROPERTY, 
+                DEFAULT_LIST_LABEL_TEXT);
+        
+        setProperty(ERROR_NOTHING_FOUND_PROPERTY, 
+                DEFAULT_ERROR_NOTHING_FOUND);
     }
     
     public abstract List<File> getLocations();
@@ -539,8 +553,13 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
             
             this.listeners = new LinkedList<ListDataListener>();
             
-            this.selectedItem = labels.get(0);
-            this.selectedItemFromList = true;
+            if (labels.size() > 0) {
+                this.selectedItem = labels.get(0);
+                this.selectedItemFromList = true;
+            } else {
+                this.selectedItem = StringUtils.EMPTY_STRING;
+                this.selectedItemFromList = false;
+            }
         }
         
         public List<String> getLabels() {

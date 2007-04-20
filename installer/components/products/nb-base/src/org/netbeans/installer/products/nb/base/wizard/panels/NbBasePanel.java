@@ -34,6 +34,8 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.StringUtils;
+import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.utils.helper.swing.NbiComboBox;
 import org.netbeans.installer.utils.helper.swing.NbiTextField;
 import org.netbeans.installer.wizard.components.panels.ApplicationLocationPanel.LocationValidator;
@@ -135,6 +137,7 @@ public class NbBasePanel extends DestinationPanel {
         private NbiLabel jdkLocationLabel;
         private NbiComboBox jdkLocationComboBox;
         private NbiButton browseButton;
+        private NbiLabel statusLabel;
         
         private NbiTextField jdkLocationField;
         
@@ -158,9 +161,26 @@ public class NbBasePanel extends DestinationPanel {
             jdkLocationLabel.setText(
                     panel.getProperty(JDK_LOCATION_LABEL_TEXT_PROPERTY));
             
+            final JdkLocationPanel jdkLocationPanel = panel.getJdkLocationPanel();
+            
+            if (jdkLocationPanel.getLocations().size() == 0) {
+                final Version minVersion = Version.getVersion(jdkLocationPanel.getProperty(
+                        JdkLocationPanel.MINIMUM_JDK_VERSION_PROPERTY));
+                final Version maxVersion = Version.getVersion(jdkLocationPanel.getProperty(
+                        JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY));
+                
+                statusLabel.setText(StringUtils.format(
+                        jdkLocationPanel.getProperty(JdkLocationPanel.ERROR_NOTHING_FOUND_PROPERTY),
+                        minVersion.toJdkStyle(),
+                        minVersion.toJdkStyle()));
+            } else {
+                statusLabel.clearText();
+                statusLabel.setVisible(false);
+            }
+            
             final LocationsComboBoxModel model = new LocationsComboBoxModel(
-                    panel.getJdkLocationPanel().getLocations(),
-                    panel.getJdkLocationPanel().getLabels());
+                    jdkLocationPanel.getLocations(),
+                    jdkLocationPanel.getLabels());
             
             ((LocationsComboBoxEditor) jdkLocationComboBox.getEditor()).setModel(
                     model);
@@ -168,7 +188,7 @@ public class NbBasePanel extends DestinationPanel {
                     model);
             
             model.setSelectedItem(
-                    panel.getJdkLocationPanel().getSelectedLocation().toString());
+                    jdkLocationPanel.getSelectedLocation().toString());
             
             browseButton.setText(
                     panel.getProperty(BROWSE_BUTTON_TEXT_PROPERTY));
@@ -245,6 +265,9 @@ public class NbBasePanel extends DestinationPanel {
                 }
             });
             
+            // statusLabel //////////////////////////////////////////////////////////
+            statusLabel = new NbiLabel();
+            
             // fileChooser //////////////////////////////////////////////////////////
             fileChooser = new JFileChooser();
             fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -274,6 +297,14 @@ public class NbBasePanel extends DestinationPanel {
                     GridBagConstraints.LINE_START,    // anchor
                     GridBagConstraints.HORIZONTAL,    // fill
                     new Insets(3, 6, 0, 11),          // padding
+                    0, 0));                           // padx, pady - ???
+            add(statusLabel, new GridBagConstraints(
+                    0, 4,                             // x, y
+                    2, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.LINE_START,    // anchor
+                    GridBagConstraints.HORIZONTAL,    // fill
+                    new Insets(6, 11, 0, 11),         // padding
                     0, 0));                           // padx, pady - ???
         }
         

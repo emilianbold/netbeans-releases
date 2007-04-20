@@ -96,6 +96,9 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
     public static final String DEFAULT_ERROR_UNKNOWN = 
             ResourceUtils.getString(JdkLocationPanel.class, 
             "JLP.error.unknown"); // NOI18N
+    public static final String DEFAULT_ERROR_NOTHING_FOUND = 
+            ResourceUtils.getString(JdkLocationPanel.class, 
+            "JLP.error.nothing.found"); // NOI18N
     
     public static final String DEFAULT_MINIMUM_JDK_VERSION = 
             ResourceUtils.getString(JdkLocationPanel.class, 
@@ -147,6 +150,9 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
                 DEFAULT_ERROR_WRONG_VERSION_NEWER);
         setProperty(ERROR_UNKNOWN_PROPERTY, 
                 DEFAULT_ERROR_UNKNOWN);
+        setProperty(ERROR_NOTHING_FOUND_PROPERTY, 
+                DEFAULT_ERROR_NOTHING_FOUND);
+        
         setProperty(USEDBY_LABEL_PROPERTY,
                 DEFAULT_USEDBY_LABEL);
     }
