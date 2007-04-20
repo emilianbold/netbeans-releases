@@ -13,21 +13,23 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.actions;
 
 import org.netbeans.jellytools.Bundle;
 
-/** Used to call "Window|Output" main menu item,
- * "org.netbeans.core.output.OutputWindowAction" or Ctrl+4 shortcut.
+/** Used to call "Window|Output|Output" main menu item or
+ * "org.netbeans.core.output.OutputWindowAction".
  * @see Action
  */
 public class OutputWindowViewAction extends Action {
     private static final String menu =
         Bundle.getStringTrimmed("org.netbeans.core.Bundle",
                                 "Menu/Window") +
+        "|" +
+        Bundle.getStringTrimmed("org.netbeans.core.output2.Bundle", "Menu/Window/Output")+
         "|" +
         Bundle.getStringTrimmed("org.netbeans.core.output2.Bundle",
                                 "OutputWindow");
