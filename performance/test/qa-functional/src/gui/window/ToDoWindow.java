@@ -50,7 +50,7 @@ public class ToDoWindow extends org.netbeans.performance.test.utilities.Performa
     
     public void initialize() {
         MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Window") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.tasklist.ui.Bundle","CTL_TaskListAction");
-        TITLE = Bundle.getStringTrimmed("org.netbeans.modules.tasklist.ui.Bundle",":CTL_TaskListTopComponent");
+        TITLE = Bundle.getStringTrimmed("org.netbeans.modules.tasklist.ui.Bundle","CTL_TaskListTopComponent");
         gui.Utilities.workarroundMainMenuRolledUp();
     }    
     
