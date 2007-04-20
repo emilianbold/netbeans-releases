@@ -424,7 +424,14 @@ public class Utils {
                 }
                 
                 SOAPElement paramElement = methodElement.addChildElement(paramName);
-                paramElement.addTextNode(getSampleValue(param.getParamType()));
+                
+                String paramType = param.getParamType();
+                if ("javax.xml.namespace.QName".equals(paramType)) {    
+                    paramElement.addNamespaceDeclaration("sampleNs", "http://www.netbeans.org/sampleNamespace");
+                    paramElement.addTextNode("sampleNs:sampleQName");
+                } else {
+                    paramElement.addTextNode(getSampleValue(paramType));
+                }
             }
             
             methodModel.setSoapRequest(request);
@@ -475,8 +482,15 @@ public class Utils {
                 resultName = envelope.createName(resultModel.getName()); //NOI18N
             }
             
-            SOAPElement resultElement = responseElement.addChildElement(resultName);
-            resultElement.addTextNode(getSampleValue(resultModel.getResultType()));
+            String resultType = resultModel.getResultType();
+            if ("javax.xml.namespace.QName".equals(resultType)) {
+                SOAPElement resultElement = responseElement.addChildElement(resultName);
+                resultElement.addNamespaceDeclaration("sampleNs", "http://www.netbeans.org/sampleNamespace");
+                resultElement.addTextNode("sampleNs:sampleQName");
+            } else if (!"void".equals(resultType)) { //NOI18N
+                SOAPElement resultElement = responseElement.addChildElement(resultName);
+                resultElement.addTextNode(getSampleValue(resultType));
+            }
 
             methodModel.setSoapResponse(response);
             
@@ -501,7 +515,13 @@ public class Utils {
         } else if ("boolean".equals(paramType)) {
             return "false";
         } else if ("byte[]".equals(paramType)) {
-            return "";
+            return "73616D706C652074657874";
+        } else if ("java.math.BigInteger".equals(paramType)) {
+            return "99.99";
+        } else if ("javax.xml.datatype.XMLGregorianCalendar".equals(paramType)) {
+            return "2007-04-19";
+        } else if ("javax.xml.datatype.Duration".equals(paramType)) {
+            return "P2007Y4M";
         } else return "...";
     }
     
