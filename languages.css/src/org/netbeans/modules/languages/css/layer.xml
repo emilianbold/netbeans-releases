@@ -29,6 +29,7 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Editors">
         <folder name="text">
             <folder name="x-css">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.css.Bundle"/>
                 <file name="language.nbs" url="CSS.nbs">
                     <attr name="icon" stringvalue="org/netbeans/modules/languages/css/css.gif"/>
                 </file>
