@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.java.ui;
 
+import org.netbeans.api.java.source.CodeStyle.WrapStyle;
 import static org.netbeans.modules.java.ui.FmtOptions.*;
 import static org.netbeans.modules.java.ui.FmtOptions.CategorySupport.OPTION_ID;
 import org.netbeans.modules.java.ui.FmtOptions.CategorySupport;
@@ -29,7 +30,7 @@ import org.openide.util.NbBundle;
  * @author  phrebejk
  */
 public class FmtTabsIndents extends javax.swing.JPanel {
-    
+   
     /** Creates new form FmtTabsIndents */
     public FmtTabsIndents() {
         initComponents();
@@ -50,7 +51,38 @@ public class FmtTabsIndents extends javax.swing.JPanel {
                 "LBL_TabsAndIndents", 
                 new FmtTabsIndents(),    // NOI18N   
                 NbBundle.getMessage(FmtTabsIndents.class, "SAMPLE_TabsIndents"), // NOI18N
-                new String[] { FmtOptions.rightMargin, "30" } ); // NOI18N
+                new String[] { FmtOptions.rightMargin, "30" },
+                new String[] { FmtOptions.wrapAnnotations, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapArrayInit, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapAssert, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapAssignOps, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapBinaryOps, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapChainedMethodCalls, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapDoWhileStatement, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapEnumConstants, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapExtendsImplementsKeyword, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapExtendsImplementsList, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapFor, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapForStatement, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapIfStatement, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapMethodCallArgs, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapMethodParams, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapModifiers, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapTernaryOps, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapThrowsKeyword, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapThrowsList, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapWhileStatement, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.alignMultilineArrayInit, Boolean.FALSE.toString() },
+                new String[] { FmtOptions.alignMultilineAssignment, Boolean.FALSE.toString() },
+                new String[] { FmtOptions.alignMultilineBinaryOp, Boolean.FALSE.toString() },
+                new String[] { FmtOptions.alignMultilineCallArgs, Boolean.FALSE.toString() },
+                new String[] { FmtOptions.alignMultilineFor, Boolean.FALSE.toString() },
+                new String[] { FmtOptions.alignMultilineImplements, Boolean.FALSE.toString() },
+                new String[] { FmtOptions.alignMultilineMethodParams, Boolean.FALSE.toString() },
+                new String[] { FmtOptions.alignMultilineParenthesized, Boolean.FALSE.toString() },
+                new String[] { FmtOptions.alignMultilineTernaryOp, Boolean.FALSE.toString() },
+                new String[] { FmtOptions.alignMultilineThrows, Boolean.FALSE.toString() }
+                ); // NOI18N
     }
     
     /** This method is called from within the constructor to
@@ -117,25 +149,36 @@ public class FmtTabsIndents extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(expandTabsToSpacesCheckBox)
+                    .add(labelIndentLabel)
+                    .add(continuationIndentSizeLabel)
+                    .add(indentSizeLabel)
+                    .add(tabSizeLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(continuationIndentSizeField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(42, 42, 42))
+                    .add(layout.createSequentialGroup()
+                        .add(indentSizeField, 0, 36, Short.MAX_VALUE)
+                        .add(42, 42, 42))
+                    .add(layout.createSequentialGroup()
+                        .add(tabSizeField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(42, 42, 42))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(rightMarginField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 36, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(labelIndentField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 36, Short.MAX_VALUE))
+                        .add(42, 42, 42)))
+                .addContainerGap(219, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(absoluteLabelIndentCheckBox)
                     .add(indentTopLevelClassMembersCheckBox)
-                    .add(indentCasesFromSwitchCheckBox)
+                    .add(rightMarginLabel)
                     .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(labelIndentLabel)
-                            .add(continuationIndentSizeLabel)
-                            .add(indentSizeLabel)
-                            .add(tabSizeLabel)
-                            .add(rightMarginLabel))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                                .add(continuationIndentSizeField, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .add(labelIndentField)
-                                .add(indentSizeField, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .add(tabSizeField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                            .add(rightMarginField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 36, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(261, Short.MAX_VALUE))
+                        .add(indentCasesFromSwitchCheckBox)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addContainerGap())
         );
 
         layout.linkSize(new java.awt.Component[] {continuationIndentSizeField, indentSizeField, labelIndentField, rightMarginField, tabSizeField}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -146,8 +189,8 @@ public class FmtTabsIndents extends javax.swing.JPanel {
                 .add(expandTabsToSpacesCheckBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(tabSizeField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(tabSizeLabel))
+                    .add(tabSizeLabel)
+                    .add(tabSizeField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(10, 10, 10)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(indentSizeLabel)
@@ -155,22 +198,22 @@ public class FmtTabsIndents extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(continuationIndentSizeLabel)
-                    .add(labelIndentField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(continuationIndentSizeField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(labelIndentLabel)
-                    .add(continuationIndentSizeField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                    .add(labelIndentField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(absoluteLabelIndentCheckBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(indentTopLevelClassMembersCheckBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(indentCasesFromSwitchCheckBox)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(rightMarginLabel)
                     .add(rightMarginField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(101, 101, 101))
+                .addContainerGap(122, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     

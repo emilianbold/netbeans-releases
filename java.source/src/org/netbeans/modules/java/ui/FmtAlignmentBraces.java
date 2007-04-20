@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.java.ui;
 
+import org.netbeans.api.java.source.CodeStyle.WrapStyle;
 import static org.netbeans.modules.java.ui.FmtOptions.*;
 import static org.netbeans.modules.java.ui.FmtOptions.CategorySupport.OPTION_ID;
 import org.netbeans.modules.java.ui.FmtOptions.CategorySupport;
@@ -62,8 +63,28 @@ public class FmtAlignmentBraces extends javax.swing.JPanel {
     public static FormatingOptionsPanel.Category getController() {
         return new CategorySupport(
                 "LBL_AlignmentAndBraces", // NOI18N
-                new FmtAlignmentBraces(), 
-                /* NbBundle.getMessage(FmtAlignmentBraces.class, "SAMPLE_AlignBraces") */ null); // NOI18N
+                new FmtAlignmentBraces(), // NOI18N
+                NbBundle.getMessage(FmtAlignmentBraces.class, "SAMPLE_AlignBraces"),
+                new String[] { FmtOptions.wrapAnnotations, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapArrayInit, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapAssert, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapAssignOps, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapBinaryOps, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapChainedMethodCalls, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapDoWhileStatement, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapEnumConstants, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapExtendsImplementsKeyword, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapExtendsImplementsList, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapFor, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapForStatement, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapIfStatement, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapMethodCallArgs, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapMethodParams, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapModifiers, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapTernaryOps, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapThrowsKeyword, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapThrowsList, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapWhileStatement, WrapStyle.WRAP_ALWAYS.name() } ); 
     }
     
     /** This method is called from within the constructor to

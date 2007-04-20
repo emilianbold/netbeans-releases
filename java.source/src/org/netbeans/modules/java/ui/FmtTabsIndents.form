@@ -36,31 +36,47 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="expandTabsToSpacesCheckBox" min="-2" max="-2" attributes="0"/>
-                  <Component id="absoluteLabelIndentCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="indentTopLevelClassMembersCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="indentCasesFromSwitchCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Group type="102" alignment="0" max="-2" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="labelIndentLabel" min="-2" max="-2" attributes="0"/>
-                          <Component id="continuationIndentSizeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="indentSizeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="tabSizeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="rightMarginLabel" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                  <Component id="expandTabsToSpacesCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="labelIndentLabel" min="-2" max="-2" attributes="0"/>
+                  <Component id="continuationIndentSizeLabel" min="-2" max="-2" attributes="0"/>
+                  <Component id="indentSizeLabel" min="-2" max="-2" attributes="0"/>
+                  <Component id="tabSizeLabel" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="32767" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="continuationIndentSizeField" linkSize="2" min="-2" max="-2" attributes="1"/>
+                      <EmptySpace min="42" pref="42" max="42" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="indentSizeField" linkSize="2" min="0" pref="36" max="32767" attributes="1"/>
+                      <EmptySpace min="-2" pref="42" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="tabSizeField" linkSize="2" min="-2" max="-2" attributes="1"/>
+                      <EmptySpace min="42" pref="42" max="42" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="1" attributes="0">
                       <Group type="103" groupAlignment="1" attributes="0">
-                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                              <Component id="continuationIndentSizeField" linkSize="2" alignment="0" min="0" max="32767" attributes="1"/>
-                              <Component id="labelIndentField" linkSize="2" alignment="0" max="32767" attributes="1"/>
-                              <Component id="indentSizeField" linkSize="2" alignment="0" min="0" max="32767" attributes="1"/>
-                              <Component id="tabSizeField" linkSize="2" alignment="0" min="-2" max="-2" attributes="1"/>
-                          </Group>
-                          <Component id="rightMarginField" linkSize="2" min="-2" pref="36" max="-2" attributes="1"/>
+                          <Component id="rightMarginField" linkSize="2" alignment="1" min="-2" pref="36" max="-2" attributes="1"/>
+                          <Component id="labelIndentField" linkSize="2" alignment="1" pref="36" max="32767" attributes="1"/>
                       </Group>
+                      <EmptySpace min="42" pref="42" max="42" attributes="0"/>
                   </Group>
               </Group>
-              <EmptySpace pref="261" max="32767" attributes="0"/>
+              <EmptySpace pref="219" max="32767" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="0" attributes="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="absoluteLabelIndentCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="indentTopLevelClassMembersCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="rightMarginLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="indentCasesFromSwitchCheckBox" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
+                  </Group>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -70,8 +86,8 @@
               <Component id="expandTabsToSpacesCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="tabSizeField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="tabSizeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="tabSizeField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -81,25 +97,25 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="continuationIndentSizeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="labelIndentField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="continuationIndentSizeField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="labelIndentLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="continuationIndentSizeField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="labelIndentField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="absoluteLabelIndentCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="indentTopLevelClassMembersCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="indentCasesFromSwitchCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="rightMarginLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="rightMarginField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="101" max="-2" attributes="0"/>
+              <EmptySpace pref="122" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
