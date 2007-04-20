@@ -20,6 +20,7 @@
 package org.netbeans.modules.autoupdate.services;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,6 +34,7 @@ import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.autoupdate.UpdateProvider;
+import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Exceptions;
 
@@ -166,6 +168,28 @@ public class UpdateUnitFactory {
         // find if corresponding element exists
         UpdateUnit unit = impls.get (element.getCodeName ());
         UpdateUnitImpl impl;
+        
+        // #101515: Plugin Manager must filter updates by platform dependency
+        UpdateElementImpl elImpl = Trampoline.API.impl (element);
+        UpdateItemImpl itemImpl = elImpl.getUpdateItemImpl ();
+        if (itemImpl != null && itemImpl instanceof ModuleItem) {
+            ModuleItem moduleItem = (ModuleItem) itemImpl;
+            for (Dependency d : moduleItem.getModuleInfo ().getDependencies ()) {
+                if (Dependency.TYPE_REQUIRES == d.getType ()) {
+                    //log.log (Level.FINEST, "Dependency: NAME: " + d.getName () + ", TYPE: " + d.getType () + ": " + d.toString ());
+                    if (d.getName ().startsWith ("org.openide.modules.os")) { // NOI18N
+                        for (ModuleInfo info : ModuleProvider.getInstalledModules ().values ()) {
+                            if (Arrays.asList (info.getProvides ()).contains (d.getName ())) {
+                                log.log (Level.FINEST, element + " which requires OS " + d + " succeed.");
+                                break;
+                            }
+                        }
+                        log.log (Level.FINE, element + " which requires OS " + d + " fails.");
+                        return ;
+                    }
+                }
+            }
+        }
         
         if (unit == null) {
             impl = new UpdateUnitImpl (element.getCodeName ());
