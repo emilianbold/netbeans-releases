@@ -19,10 +19,7 @@
 
 package org.netbeans.modules.autoupdate.ui.wizards;
 
-import java.awt.Color;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.UIManager;
+import org.jdesktop.layout.GroupLayout;
 
 /**
  *
@@ -39,27 +36,80 @@ public class OperationDescriptionPanel extends javax.swing.JPanel {
         this.tpPrimaryPluginsText = primaryU;
         this.tpDependingTitleText = depending;
         this.tpDependingPluginsText = dependingU;
-        initComponents ();
-        hackBackground (tpPrimaryTitle);
-        hackBackground (tpPrimaryPlugins);
-        if (hasRequired) {
-            hackBackground (tpDependingTitle);
-            hackBackground (tpDependingPlugins);
-        } else {
+        customInitComponents ();
+        if (! hasRequired) {
             tpDependingTitle.setVisible (false);
             tpDependingPlugins.setVisible (false);
         }
     }
     
-    private void hackBackground (JComponent comp) {
-        // XXX: Hack to set as same background as JLabel.background
-        Color c = UIManager.getColor ("Label.background");
-        if (c == null) {
-            c = new JLabel ().getBackground ();
-        }
-        comp.setBackground (c);
+    // XXX: cannot be designed by mattise
+    private void customInitComponents () {
+        tpPrimaryTitle = new javax.swing.JTextPane();
+        tpPrimaryPlugins = new javax.swing.JTextPane();
+        tpDependingTitle = new javax.swing.JTextPane();
+        tpDependingPlugins = new javax.swing.JTextPane();
+
+        tpPrimaryTitle.setContentType("text/html"); // NOI18N
+        tpPrimaryTitle.setEditable(false);
+        tpDependingTitle.setOpaque (false);
+
+        tpPrimaryPlugins.setContentType ("text/html"); // NOI18N
+        tpPrimaryPlugins.setEditable(false);
+        tpPrimaryPlugins.setOpaque (false);
+
+        tpDependingTitle.setContentType ("text/html"); // NOI18N
+        tpDependingTitle.setEditable(false);
+        tpDependingTitle.setOpaque (false);
+
+        tpDependingPlugins.setContentType ("text/html"); // NOI18N
+        tpDependingPlugins.setEditable(false);
+        tpDependingPlugins.setOpaque (false);
+
+        tpPrimaryTitle.setText(tpPrimaryTitleText);
+        tpPrimaryPlugins.setText(tpPrimaryPluginsText);
+        tpDependingTitle.setText(tpDependingTitleText);
+        tpDependingPlugins.setText(tpDependingPluginsText);
+        
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(49, 49, 49)
+                        .add(tpDependingPlugins, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 403, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(tpDependingTitle, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(49, 49, 49)
+                        .add(tpPrimaryPlugins, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 403, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(tpPrimaryTitle, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup (GroupLayout.PREFERRED_SIZE)
+            .add(layout.createSequentialGroup()
+                //.add (tpPrimaryTitle, GroupLayout.PREFERRED_SIZE, tpPrimaryTitle.getPreferredSize ().height, GroupLayout.PREFERRED_SIZE)
+                .add (tpPrimaryTitle, GroupLayout.DEFAULT_SIZE, 40, 40)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add (tpPrimaryPlugins, GroupLayout.PREFERRED_SIZE, tpPrimaryPlugins.getPreferredSize ().height, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add (0, 30, 30)
+                .add (tpDependingTitle, GroupLayout.DEFAULT_SIZE, 80, 80)
+                //.add (tpDependingTitle)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add (tpDependingPlugins, GroupLayout.PREFERRED_SIZE, tpDependingPlugins.getPreferredSize ().height, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                //.add(tpDependingPlugins, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                //.add(90, 90, 90)
+                )
+        );
     }
-    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -120,7 +170,7 @@ public class OperationDescriptionPanel extends javax.swing.JPanel {
                 .add(tpDependingTitle)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(tpDependingPlugins, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(344, 344, 344))
+                .add(90, 90, 90))
         );
     }// </editor-fold>//GEN-END:initComponents
     
