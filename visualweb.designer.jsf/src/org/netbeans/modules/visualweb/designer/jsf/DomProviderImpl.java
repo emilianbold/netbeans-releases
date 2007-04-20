@@ -1157,11 +1157,11 @@ class DomProviderImpl implements DomProvider {
                 droppeeElement, droppeeBean, defaultParent/*, coordinateTranslator*/);
     }
 
-    public void importData(Designer designer, JComponent comp, Transferable t, /*Object transferData,*/ Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
+    public boolean  importData(Designer designer, JComponent comp, Transferable t, /*Object transferData,*/ Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
             Element droppeeElement, Element dropeeComponentRootElement, Element defaultParentComponentRootElement/*, DomProvider.CoordinateTranslator coordinateTranslator*/, int dropAction) {
         DesignBean droppeeBean = MarkupUnit.getMarkupDesignBeanForElement(dropeeComponentRootElement);
         DesignBean defaultParent = MarkupUnit.getMarkupDesignBeanForElement(defaultParentComponentRootElement);
-        getDndSupport().importData(designer, comp, t, /*transferData,*/ canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
+        return getDndSupport().importData(designer, comp, t, /*transferData,*/ canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
                 droppeeElement, droppeeBean, defaultParent, /*coordinateTranslator,*/ dropAction);
     }
 

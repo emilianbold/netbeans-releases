@@ -287,7 +287,7 @@ class FacesDndSupport {
     }
     
     
-    private /*public*/ void importData(Designer designer, JComponent comp, Transferable t, /*Object transferData,*/
+    private /*public*/ boolean importData(Designer designer, JComponent comp, Transferable t, /*Object transferData,*/
     Dimension dropSize, Location location, /*CoordinateTranslator coordinateTranslator,*/ UpdateSuspender updateSuspender, int dropAction) {
         Object transferData = null;
         try {
@@ -298,13 +298,13 @@ class FacesDndSupport {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
                         new IllegalStateException("Unusable transfer flavors " + Arrays.asList(t.getTransferDataFlavors()))); // NOI18N
 
-                return /*false*/;
+                return false;
             }
 
             // XXX What was before in SelectionTopComp.
             if (importFlavor.getMimeType().startsWith("application/x-creator-")) { // NOI18N
 //                /*return*/ webform.tcImportComponentData(comp, t);
-                importComponentData(designer, comp, t);
+                return importComponentData(designer, comp, t);
             } // TEMP
 
             Class rc = importFlavor.getRepresentationClass();
@@ -323,7 +323,7 @@ class FacesDndSupport {
                     if(focusOwner instanceof JTextComponent) {
                         JTextComponent textComp = (JTextComponent)focusOwner;
                         textComp.paste();
-                        return /*true*/;
+                        return true;
                     } 
                 }
 
@@ -334,13 +334,13 @@ class FacesDndSupport {
 //                    webform.getPane().getCaret().replaceSelection((String)transferData);
 //                    webform.getPane().replaceSelection((String)transferData);
                     jsfForm.getDomDocumentImpl().insertString(designer, designer.getPaneCaretRange(), (String)transferData);
-                    return /*true*/;
+                    return true;
                 }
             }
         
         
         if (!isValidTransferData(t, transferData)) {
-            return;
+            return false;
         }
         
 //        LiveUnit unit = facesModel.getLiveUnit();
@@ -356,7 +356,7 @@ class FacesDndSupport {
             
 //            clearDropMatch();
 
-            return;
+            return false;
         }
 
         // wrap process in a try to allow cleanup in the finally
@@ -383,7 +383,7 @@ class FacesDndSupport {
 //                Location location = computePositions(null, DROP_CENTER, null, getDropPoint(), insertPos, true);
                 // Todo: pass in a set instead
 //                doImportItem(item, null, DROP_CENTER, null, null, location);
-                importBean(designer, new DisplayItem[] {item}, null, DROP_CENTER, null, null, location, /*coordinateTranslator,*/ updateSuspender);
+                return importBean(designer, new DisplayItem[] {item}, null, DROP_CENTER, null, null, location, /*coordinateTranslator,*/ updateSuspender);
             } else if (transferData instanceof DesignBean[]) {
                 DesignBean[] beans = (DesignBean[])transferData;
 //                Location location =
@@ -401,8 +401,9 @@ class FacesDndSupport {
 //                    location = computePositions(droppee1, DROP_CENTER, null, null, null, false);
 //                    location = computeLocationForBean(droppee, DROP_CENTER, null, null, dropSize, facesModel);
                     location = computeLocationForBean(droppee, DROP_CENTER, null, null, dropSize, jsfForm);
-                    doBindOrMoveItems(dropAction, beans, t, droppee, DROP_CENTER, null, location, /*coordinateTranslator,*/ updateSuspender);
+                    return doBindOrMoveItems(dropAction, beans, t, droppee, DROP_CENTER, null, location, /*coordinateTranslator,*/ updateSuspender);
                 }
+                return false;
             } else if (transferData instanceof org.openide.nodes.Node) {
                 org.openide.nodes.Node node = (org.openide.nodes.Node)transferData;
                 DataObject dobj = (DataObject)node.getCookie(DataObject.class);
@@ -442,9 +443,9 @@ class FacesDndSupport {
                     if (isImage(fo.getExt())) {
 //                        Location location =
 //                            computePositions(null, DROP_CENTER, null, getDropPoint(), insertPos, true);
-                        importImage(designer, rel, location, /*coordinateTranslator,*/ updateSuspender);
+                        return importImage(designer, rel, location, /*coordinateTranslator,*/ updateSuspender);
                     } else if (isStylesheet(fo.getExt())) {
-                        importStylesheet(rel);
+                        return importStylesheet(rel);
                     }
 
                     //} else if (node instanceof org.netbeans.modules.properties.KeyNode) {
@@ -459,46 +460,62 @@ class FacesDndSupport {
             } else if (transferData instanceof File) {
                 File f = (File)transferData;
 //                Location location = computePositions(null, DROP_CENTER, null, getDropPoint(), insertPos, true);
-                importFile(designer, f, null, location, /*coordinateTranslator,*/ updateSuspender);
+                return importFile(designer, f, /*null,*/ location, /*coordinateTranslator,*/ updateSuspender);
             } else if (transferData instanceof String) {
                 String s = (String)transferData;
 
+                boolean success = false;
                 // XXX Try to extract files from the string (flavor used when DnD e.g. from desktop, it doesn't look correct).
                 File[] files = extractFilesFromString(s);
                 if (files != null) {
                     for (int i = 0; i < files.length; i++) {
                         File file = files[i];
-                        importFile(designer, file, null, location, /*coordinateTranslator,*/ updateSuspender);
+                        boolean imported = importFile(designer, file, /*null,*/ location, /*coordinateTranslator,*/ updateSuspender);
+                        if (imported) {
+                            success = true;
+                        }
                     }
+                    return success;
                 } else {
                     // XXX Why?
                     s = Util.truncateString(s, 600);
 //                    Location location =
 //                        computePositions(null, DROP_CENTER, null, getDropPoint(), insertPos, true);
-                    importString(designer, s, location, /*coordinateTranslator,*/ updateSuspender);
+                    return importString(designer, s, location, /*coordinateTranslator,*/ updateSuspender);
                 }
             } else if (transferData instanceof List) {
                 // TODO: place this under a single undo unit?
                 List list = (List)transferData;
                 Iterator it = list.iterator();
-                JPanel panel = null;
-
+                
+                boolean success = false;
+//                JPanel panel = null;
+                // XXX
+                importFilePanel = null;
                 while (it.hasNext()) {
                     Object o = it.next();
 
                     if (o instanceof File) {
                         File f = (File)o;
 //                        Location location = computePositions(null, DROP_CENTER, null, getDropPoint(), insertPos, true);
-                        panel = importFile(designer, f, panel, location, /*coordinateTranslator,*/ updateSuspender);
+//                        panel = importFile(designer, f, /*panel,*/ location, /*coordinateTranslator,*/ updateSuspender);
+                        boolean imported = importFile(designer, f, /*panel,*/ location, /*coordinateTranslator,*/ updateSuspender);
+                        if (imported) {
+                            success = true;
+                        }
                     }
                 }
+                // XXX
+                importFilePanel = null;
+                return success;
             } else {
-                assert false : transferData;
+//                assert false : transferData;
+                return false;
             }
         } catch (Exception e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
 
-            return;
+            return false;
         } finally {
             if (comp != null) {
                 comp.setCursor(null);
@@ -512,7 +529,10 @@ class FacesDndSupport {
         
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            return false;
         }
+        
+        return false;
     }
     
     /**
@@ -1704,7 +1724,7 @@ class FacesDndSupport {
 //    }
     
     
-    private void doBindOrMoveItems(int dropAction, DesignBean[] beans, Transferable t,
+    private boolean doBindOrMoveItems(int dropAction, DesignBean[] beans, Transferable t,
     DesignBean dropNode, int nodePos, String facet, Location location, /*CoordinateTranslator coordinateTranslator,*/
     UpdateSuspender updateSuspender) {
 //        if(DesignerUtils.DEBUG) {
@@ -1714,7 +1734,7 @@ class FacesDndSupport {
             throw(new IllegalArgumentException("Null transferable."));
         }
         if ((beans == null) || (beans.length == 0)) {
-            return;
+            return false;
         }
 
         // It's a app outline drag: either move or link. Don't involve
@@ -1722,7 +1742,7 @@ class FacesDndSupport {
         int allowed = computeActions(dropNode, t, false, nodePos);
 
         if (allowed == DnDConstants.ACTION_NONE) {
-            return;
+            return false;
         }
 
         if (dropAction == DnDConstants.ACTION_COPY) {
@@ -1731,7 +1751,7 @@ class FacesDndSupport {
             Transferable newTransferable = unit.copyBeans(beans);
 
             if (newTransferable == null) {
-                return;
+                return false;
             }
 
 //            Location location =
@@ -1739,7 +1759,7 @@ class FacesDndSupport {
             DesignBean parent = location.getDroppee();
             pasteBeans(/*webform,*/ t, parent, location.getPos(), null, /*coordinateTranslator,*/ updateSuspender);
 
-            return;
+            return true;
         } else if (nodePos != DROP_CENTER) {
             // MOVE: fall through to handle
         } else if ((dropAction == DnDConstants.ACTION_LINK) ||
@@ -1761,7 +1781,7 @@ class FacesDndSupport {
             assert nodePos == DROP_CENTER;
             handleLinks((DesignBean)dropNode, list, updateSuspender);
 
-            return;
+            return true;
         } else if ((dropAction & DnDConstants.ACTION_MOVE) != 0) {
             // MOVE: fall through to handle
         }
@@ -1771,6 +1791,7 @@ class FacesDndSupport {
 //            computePositions((DesignBean)dropNode, nodePos, facet, null, null, false);
         DesignBean parent = location.getDroppee();
         moveBeans(/*webform,*/ beans, parent, location.getPos(), updateSuspender);
+        return true;
     }
 
 
@@ -2286,7 +2307,7 @@ linkCheckFinished:
         }
     }
 
-    private void importImage(Designer designer, final File file, Location location, /*CoordinateTranslator coordinateTranslator,*/ UpdateSuspender updateSuspender) {
+    private boolean importImage(Designer designer, final File file, Location location, /*CoordinateTranslator coordinateTranslator,*/ UpdateSuspender updateSuspender) {
         try {
             URL url = file.toURI().toURL();
 
@@ -2298,13 +2319,14 @@ linkCheckFinished:
             String local = RESOURCES + UrlPropertyEditor.encodeUrl(file.getName());
             project.addResource(url, new URI(WEB + local));
 
-            importImage(designer, local, location, /*coordinateTranslator,*/ updateSuspender);
+            return importImage(designer, local, location, /*coordinateTranslator,*/ updateSuspender);
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ex);
         }
+        return false;
     }
 
-    private void importImage(Designer designer, final String local, Location location, /*CoordinateTranslator coordinateTranslator,*/ UpdateSuspender updateSuspender) {
+    private boolean importImage(Designer designer, final String local, Location location, /*CoordinateTranslator coordinateTranslator,*/ UpdateSuspender updateSuspender) {
         // Import the file.
         // If it's an image, just create an image component for it
         // and drop it on the page.  (If there are multiple images,
@@ -2375,9 +2397,10 @@ linkCheckFinished:
 //            facesModel.writeUnlock(undoEvent);
             jsfForm.writeUnlock(undoEvent);
         }
+        return true;
     }
 
-    private void importStylesheet(final File file) {
+    private boolean importStylesheet(final File file) {
         try {
             URL url = file.toURI().toURL();
 
@@ -2389,13 +2412,14 @@ linkCheckFinished:
             String local = RESOURCES + UrlPropertyEditor.encodeUrl(file.getName());
             project.addResource(url, new URI(WEB + local));
 
-            importStylesheet(local);
+            return importStylesheet(local);
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ex);
         }
+        return false;
     }
 
-    private void importStylesheet(final String local) {
+    private boolean importStylesheet(final String local) {
 //        Document document = webform.getDocument();
 
         //ArrayList beanItems = new ArrayList();
@@ -2462,7 +2486,7 @@ linkCheckFinished:
             }
 
             if (bean == null) {
-                return;
+                return false;
             }
 
             bean.getProperty("rel").setValue("stylesheet"); // NOI18N
@@ -2475,9 +2499,12 @@ linkCheckFinished:
 
 //        webform.refresh(true);
         fireRefreshNeeded(true);
+        return true;
     }
 
-    private JPanel importFile(Designer designer, final File f, JPanel panel, Location location, /*CoordinateTranslator coordinateTranslator,*/ UpdateSuspender updateSuspender) {
+    // XXX
+    private JPanel importFilePanel;
+    private boolean importFile(Designer designer, final File f, /*JPanel panel,*/ Location location, /*CoordinateTranslator coordinateTranslator,*/ UpdateSuspender updateSuspender) {
         if (f.exists()) {
             String name = f.getName();
             String extension = name.substring(name.lastIndexOf(".") + 1); // NOI18N
@@ -2486,7 +2513,8 @@ linkCheckFinished:
             
             // XXX #95601 Skip the file if it is already inside the project.
             if (FileOwnerQuery.getOwner(f.toURI()) == project) {
-                return panel;
+//                return panel;
+                return true;
             }
 
             //String mime = FileUtil.getMIMEType(extension);
@@ -2496,11 +2524,13 @@ linkCheckFinished:
 //                    computePositions(null, DROP_CENTER, null, getDropPoint(), insertPos, true);
                 importImage(designer, f, location, /*coordinateTranslator,*/ updateSuspender);
 
-                return panel;
+//                return panel;
+                return true;
             } else if (/*DesignerUtils.*/isStylesheet(extension)) {
                 importStylesheet(f);
 
-                return panel;
+//                return panel;
+                return true;
             }
 
 // <dep> XXX Getting rid of dep on project/importpage.
@@ -2512,21 +2542,24 @@ linkCheckFinished:
             Iterator<? extends Importable.PageImportable> it = l.lookup(template).allInstances().iterator();
             while (it.hasNext()) {
                 Importable.PageImportable pageImportable = it.next();
-                panel = pageImportable.importRandomFile(project, f, extension, panel);
+//                panel = pageImportable.importRandomFile(project, f, extension, panel);
+                importFilePanel = pageImportable.importRandomFile(project, f, extension, importFilePanel);
                 break;
             }
 // </dep>
 
-            if (panel == null) {
+//            if (panel == null) {
+            if (importFilePanel == null) {
 //                JsfProjectUtils.importFile(facesModel.getProject(), f);
                 JsfProjectUtils.importFile(jsfForm.getProject(), f);
             }
         }
 
-        return panel;
+//        return panel;
+        return false;
     }
     
-    private /*public*/ void importString(Designer designer, String string, Location location, /*CoordinateTranslator coordinateTranslator,*/ UpdateSuspender updateSuspender) {
+    private /*public*/ boolean importString(Designer designer, String string, Location location, /*CoordinateTranslator coordinateTranslator,*/ UpdateSuspender updateSuspender) {
         // Import the string as part of an output text component
 //        Location location =
 //            computePositions(null, DROP_CENTER, null, getDropPoint(), insertPos, true);
@@ -2593,6 +2626,7 @@ linkCheckFinished:
 //            facesModel.writeUnlock(undoEvent);
             jsfForm.writeUnlock(undoEvent);
         }
+        return true;
     }
     
     /** Create a new bean of the given type, positioned below parent
@@ -3593,10 +3627,10 @@ linkCheckFinished:
         importString(designer, string, location, /*coordinateTranslator,*/ updateSuspender);
     }
 
-    public void importData(Designer designer, JComponent comp, Transferable t, /*Object transferData,*/ Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dropSize, boolean isGrid,
+    public boolean importData(Designer designer, JComponent comp, Transferable t, /*Object transferData,*/ Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dropSize, boolean isGrid,
     Element droppeeElement, DesignBean droppeeBean, DesignBean defaultParent, /*CoordinateTranslator coordinateTranslator,*/ UpdateSuspender updateSuspender, int dropAction) {
         Location location = computeLocationForPositions(null, canvasPos, documentPosNode, documentPosOffset, dropSize, isGrid, droppeeElement, droppeeBean, defaultParent);
-        importData(designer, comp, t, /*transferData,*/ dropSize, location, /*coordinateTranslator,*/ updateSuspender, dropAction);
+        return importData(designer, comp, t, /*transferData,*/ dropSize, location, /*coordinateTranslator,*/ updateSuspender, dropAction);
     }
 
     private static boolean isValidTransferData(Transferable t, Object transferData) {

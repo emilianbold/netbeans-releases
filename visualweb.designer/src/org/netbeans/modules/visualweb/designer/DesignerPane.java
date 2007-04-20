@@ -159,6 +159,8 @@ implements /*PropertyChangeListener,*/ PreferenceChangeListener {
 //        settings.addPropertyChangeListener(WeakListeners.propertyChange(this, settings));
         settings.addWeakPreferenceChangeListener(this);
 
+        setDropTarget(new DesignerPaneDropTarget(this));
+        
         dndHandler = new DndHandler(webform);
 //        setTransferHandler(dndHandler);
         setTransferHandler(designerTransferHandler);

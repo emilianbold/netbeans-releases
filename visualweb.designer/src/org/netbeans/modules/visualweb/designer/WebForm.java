@@ -2129,9 +2129,9 @@ public class WebForm implements Designer {
                 droppeeElement, dropeeComponentRootElement, defaultParentComponentRootElement);
     }
 
-    void importData(JComponent comp, Transferable t, /*Object transferData,*/ Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
+    boolean importData(JComponent comp, Transferable t, /*Object transferData,*/ Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
     Element droppeeElement, Element dropeeComponentRootElement, Element defaultParentComponentRootElement, int dropAction) {
-        domProvider.importData(this, comp, t, /*transferData,*/ canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
+        return domProvider.importData(this, comp, t, /*transferData,*/ canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
                 droppeeElement, dropeeComponentRootElement, defaultParentComponentRootElement, dropAction);
     }
 

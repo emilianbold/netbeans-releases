@@ -348,7 +348,8 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
         
         DropTarget dropTarget = editor.getDropTarget();
         
-        if (dropTarget instanceof UIResource) {
+//        if (dropTarget instanceof UIResource) {
+        if (dropTarget != null) {
             getDropTargetListener();
             
             try {

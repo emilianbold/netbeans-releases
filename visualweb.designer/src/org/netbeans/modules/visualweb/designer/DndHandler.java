@@ -299,29 +299,31 @@ public class DndHandler /*extends TransferHandler*/ {
 //            dropPoint = webform.getPastePoint();
 //        }
 
-        // Delay this operation so that the other listener, DesignerPane.
-        // DesignerDropListener, can provide a pixel position for this drop
-        // TODO Consider only doing this when in grid mode
-        // TODO Instead of creating a new runnable each time, at a minumum
-        //   keep the runnable around, or alternatively simply make this
-        //   object a Runnable and invokeLater on this.
-//        final Object transfer = transferData;
-        SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-//                    try {
-//                        importDataDelayed(comp, t, transfer);
-                        importDataDelayed(comp, t);
-//                    } catch (Exception e) {
-//                        ErrorManager.getDefault().notify(e);
-//                        return;
-//                    }
-                }
-            });
-
-        // We don't actually know if the drop succeeded since we have to defer
-        // to pick up the grid coordinate...
-        // XXX TODO Provide your own impl of DropTarget to avoid scheduling later this task.
-        return true;
+//        // Delay this operation so that the other listener, DesignerPane.
+//        // DesignerDropListener, can provide a pixel position for this drop
+//        // TODO Consider only doing this when in grid mode
+//        // TODO Instead of creating a new runnable each time, at a minumum
+//        //   keep the runnable around, or alternatively simply make this
+//        //   object a Runnable and invokeLater on this.
+////        final Object transfer = transferData;
+//        SwingUtilities.invokeLater(new Runnable() {
+//                public void run() {
+////                    try {
+////                        importDataDelayed(comp, t, transfer);
+//                        importDataDelayed(comp, t);
+////                    } catch (Exception e) {
+////                        ErrorManager.getDefault().notify(e);
+////                        return;
+////                    }
+//                }
+//            });
+//
+//        // We don't actually know if the drop succeeded since we have to defer
+//        // to pick up the grid coordinate...
+//        // XXX TODO Provide your own impl of DropTarget to avoid scheduling later this task.
+//        return true;
+        // XXX #101880 Now we can do it sync (see DesignerPaneDropTarget#drop).
+        return importDataExt(comp, t);
     }
 
     /**
@@ -339,9 +341,10 @@ public class DndHandler /*extends TransferHandler*/ {
      *   it in a call to computeActions, and computeActions also needs the drop position which
      *   depends the delay...
      */
-    private void importDataDelayed(JComponent comp, Transferable t/*, Object transferData*/) {
+//    private void importDataDelayed(JComponent comp, Transferable t/*, Object transferData*/) {
+    private boolean importDataExt(JComponent comp, Transferable t) {
         if (comp == null) {
-            return;
+            return false;
         }
 
 //        assert transferData != null;
@@ -462,7 +465,7 @@ public class DndHandler /*extends TransferHandler*/ {
 //        DomProvider.Location location = WebForm.getDomProviderService().computeLocationForPositions(null, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement,
 //                /*droppeeBean,*/dropeeComponentRootElement, /*defaultParentBean*/defaultParentComponentRootElement);
 //        doImportDataDelayed(comp, t, transferData, location/*, coordinateTranslator*/);
-            webform.importData(comp, t, /*transferData,*/ canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid,
+          boolean success = webform.importData(comp, t, /*transferData,*/ canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid,
                     droppeeElement, dropeeComponentRootElement, defaultParentComponentRootElement , /*coordinateTranslator,*/ dropAction);
 
 //        } catch (Exception e) {
@@ -475,6 +478,8 @@ public class DndHandler /*extends TransferHandler*/ {
         insertPos = DomPosition.NONE;
         dropPoint = null;
         clearDropMatch();
+        
+        return success;
     }
     
 //    private void doImportDataDelayed(JComponent comp, Transferable t, Object transferData,

@@ -503,11 +503,11 @@ class DndSupport implements /*XXX*/FacesModel.JsfSupport {
                 droppeeElement, droppeeBean, defaultParent, /*new CoordinateTranslatorImpl(coordinateTranslator),*/ jsfForm.getUpdateSuspender());
     }
 
-    void importData(Designer designer, JComponent comp, Transferable t, /*Object transferData,*/ Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
+    boolean importData(Designer designer, JComponent comp, Transferable t, /*Object transferData,*/ Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
             Element droppeeElement, DesignBean droppeeBean, DesignBean defaultParent/*, DomProvider.CoordinateTranslator coordinateTranslator*/, int dropAction) {
 //        getFacesModel().getDnDSupport().importData(comp, t, transferData, canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
 //                droppeeElement, droppeeBean, defaultParent, new CoordinateTranslatorImpl(coordinateTranslator), jsfForm.getUpdateSuspender(), dropAction);
-        facesDndSupport.importData(designer, comp, t, /*transferData,*/ canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
+        return facesDndSupport.importData(designer, comp, t, /*transferData,*/ canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
                 droppeeElement, droppeeBean, defaultParent, /*new CoordinateTranslatorImpl(coordinateTranslator),*/ jsfForm.getUpdateSuspender(), dropAction);
 
     }
