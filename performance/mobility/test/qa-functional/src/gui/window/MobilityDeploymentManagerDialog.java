@@ -20,26 +20,21 @@
 package gui.window;
 
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.actions.ActionNoBlock;
 
-import org.netbeans.jemmy.operators.ComponentOperator;
 
 /**
  *
  * @author mkhramov@netbeans.org
  */
-public class MobilityDeploymentManagerDialog extends org.netbeans.performance.test.utilities.PerformanceTestCase {
-    private NbDialogOperator manager;
-    private String cmdName;
-
+public class MobilityDeploymentManagerDialog extends  MobilityToolsDialogs {
     /**
      * Creates a new instance of MobilityDeploymentManagerDialog
      * @param testName the name of the test
      */
     public MobilityDeploymentManagerDialog(String testName) {
         super(testName);
-        expectedTime = WINDOW_OPEN;
+        cmdName = Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.deployment.Bundle", "Title_DeploymentManager");        
+
     }
 
     /**
@@ -49,33 +44,6 @@ public class MobilityDeploymentManagerDialog extends org.netbeans.performance.te
      */
     public MobilityDeploymentManagerDialog(String testName, String performanceDataName) {
         super(testName,performanceDataName);
-        expectedTime = WINDOW_OPEN;
+        cmdName = Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.deployment.Bundle", "Title_DeploymentManager");        
     }
-
-    public void initialize() {
-        log(":: initialize");
-        cmdName = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|"+
-                Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.deployment.Bundle", "Title_DeploymentManager");
-    }
-
-    public void prepare() {
-        log(":: prepare");
-    }
-
-    public ComponentOperator open() {
-        log(":: open");
-        new ActionNoBlock(cmdName,null).performMenu();
-        manager = new NbDialogOperator(cmdName);
-        return null;
-    }
-
-    public void close() {
-        log(":: close");
-        manager.close();
-    }
-
-    public void shutdown() {
-        log(":: shutdown");
-    }
-
 }
