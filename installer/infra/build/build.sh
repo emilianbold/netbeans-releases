@@ -52,6 +52,13 @@
 #REMOTE_HOST_MACOSX=
 #REMOTE_PORT_MACOSX=
 #REMOTE_USER_MACOSX=
+#
+#SJSAS_IMAGE_HOSTNAME_WINDOWS=
+#SJSAS_IMAGE_HOSTNAME_LINUX=
+#SJSAS_IMAGE_HOSTNAME_SOLARIS_X86=
+#SJSAS_IMAGE_HOSTNAME_SOLARIS_SPARC=
+#SJSAS_IMAGE_HOSTNAME_MACOSX=
+#
 ################################################################################
 
 ################################################################################
