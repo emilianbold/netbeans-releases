@@ -14,9 +14,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -27,7 +25,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -53,10 +51,6 @@ public class PersistenceHelper {
     private static final String CLASS_TAG = "class";                //NOI18N
     private static final String PROPERTIES_TAG = "properties";      //NOI18N
     private static final String NAME_ATTR = "name";                 //NOI18N
-    private static final String DEFAULT_PU = "DefaultPU";           //NOI18N
-    private static final String CONFIG_DIR = "/src/conf";           //NOI18N
-    private static final String PERSISTENCE_FILE_NAME = "persistence";  //NOI18N
-    private static final String PERSISTENCE_FILE_EXT = "xml";           //NOI8N
     
     private static int TIME_TO_WAIT = 300;
     
@@ -151,14 +145,10 @@ public class PersistenceHelper {
     }      
     
     private static FileObject getPersistenceXML(Project project) {
-        FileObject projectDir = project.getProjectDirectory();
-        FileObject configDir = projectDir.getFileObject(CONFIG_DIR);
-        
-        if (configDir != null) {
-            return configDir.getFileObject(PERSISTENCE_FILE_NAME,
-                    PERSISTENCE_FILE_EXT);
+        RestSupport rs = project.getLookup().lookup(RestSupport.class);
+        if (rs != null) {
+            return rs.getPersistenceXml();
         }
-        
         return null;
     }
     
