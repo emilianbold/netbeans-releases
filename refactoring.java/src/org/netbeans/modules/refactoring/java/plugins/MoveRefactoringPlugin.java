@@ -78,72 +78,93 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
     }
 
     public Problem fastCheckParameters() {
-        if (!(refactoring instanceof MoveRefactoring)) 
-            return null;
-        try {
-            for (FileObject f: filesToMove) {
-                if (!RetoucheUtils.isJavaFile(f))
-                    continue;
-                String targetPackageName = this.getTargetPackageName(f);
-                if (!RetoucheUtils.isValidPackageName(targetPackageName)) {
-                    String s = NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_InvalidPackage"); //NOI18N
-                    String msg = new MessageFormat(s).format(
-                            new Object[] {targetPackageName}
+        if (refactoring instanceof RenameRefactoring) {
+            //folder rename
+            FileObject f = refactoring.getRefactoringSource().lookup(FileObject.class);
+            if (f!=null) {
+                String newName = ((RenameRefactoring) refactoring).getNewName();
+                if (!RetoucheUtils.isValidPackageName(newName)) {
+                    String msg = new MessageFormat(NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_InvalidPackage")).format(
+                            new Object[] {newName}
                     );
                     return new Problem(true, msg);
                 }
-                FileObject targetRoot = RetoucheUtils.getClassPathRoot(((MoveRefactoring)refactoring).getTarget().lookup(URL.class));
-                FileObject targetF = targetRoot.getFileObject(targetPackageName.replace('.', '/'));
-            
-                String pkgName = null;
-                if ((targetF!=null && !targetF.canWrite())) {
-                    return new Problem(true, new MessageFormat(NbBundle.getMessage(MoveRefactoringPlugin.class,"ERR_PackageIsReadOnly")).format( // NOI18N
-                    new Object[] {targetPackageName}
-                    ));
+                
+                if (f.getParent().getFileObject(newName, f.getExt())!=null) {
+                    String msg = new MessageFormat(NbBundle.getMessage(RenameRefactoringPlugin.class,"ERR_PackageExists")).format(
+                            new Object[] {newName}
+                    );
+                    return new Problem(true, msg);
                 }
-                
-//                this.movingToDefaultPackageMap.put(r, Boolean.valueOf(targetF!= null && targetF.equals(classPath.findOwnerRoot(targetF))));
-                pkgName = targetPackageName;
-            
-                if (pkgName == null) {
-                    pkgName = ""; // NOI18N
-                } else if (pkgName.length() > 0) {
-                    pkgName = pkgName + '.';
-                }
-                //targetPrefix = pkgName;
-                
-//                JavaClass[] sourceClasses = (JavaClass[]) sourceClassesMap.get(r);
-//                String[] names = new String [sourceClasses.length];
-//                for (int x = 0; x < names.length; x++) {
-//                    names [x] = sourceClasses [x].getName();
-//                }
-//                
-//                FileObject movedFile = JavaMetamodel.getManager().getDataObject(r).getPrimaryFile();
-                String fileName = f.getName();
-                if (targetF!=null) {
-                    FileObject[] children = targetF.getChildren();
-                    for (int x = 0; x < children.length; x++) {
-                        if (children[x].getName().equals(fileName) && "java".equals(children[x].getExt()) && !children[x].equals(f) && !children[x].isVirtual()) { //NOI18N
-                            return new Problem(true, new MessageFormat(
-                                    NbBundle.getMessage(MoveRefactoringPlugin.class,"ERR_ClassToMoveClashes")).format(new Object[] {fileName} // NOI18N
-                            ));
-                        }
-                    } // for
-                }
-                
-//                boolean accessedByOriginalPackage = ((Boolean) accessedByOriginalPackageMap.get(r)).booleanValue();
-//                boolean movingToDefaultPackage = ((Boolean) movingToDefaultPackageMap.get(r)).booleanValue();
-//                if (p==null && accessedByOriginalPackage && movingToDefaultPackage) {
-//                    p= new Problem(false, getString("ERR_MovingClassToDefaultPackage")); // NOI18N
-//                }
-                
-//                if (f.getFolder().getPrimaryFile().equals(targetF) && isPackageCorrect(r)) {
-//                    return new Problem(true, getString("ERR_CannotMoveIntoSamePackage"));
-//                }
             }
-        } catch (IOException ioe) {
-            //do nothing
-        } 
+            return null;
+        }
+        if (refactoring instanceof MoveRefactoring) {
+            try {
+                for (FileObject f: filesToMove) {
+                    if (!RetoucheUtils.isJavaFile(f))
+                        continue;
+                    String targetPackageName = this.getTargetPackageName(f);
+                    if (!RetoucheUtils.isValidPackageName(targetPackageName)) {
+                        String s = NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_InvalidPackage"); //NOI18N
+                        String msg = new MessageFormat(s).format(
+                                new Object[] {targetPackageName}
+                        );
+                        return new Problem(true, msg);
+                    }
+                    FileObject targetRoot = RetoucheUtils.getClassPathRoot(((MoveRefactoring)refactoring).getTarget().lookup(URL.class));
+                    FileObject targetF = targetRoot.getFileObject(targetPackageName.replace('.', '/'));
+                    
+                    String pkgName = null;
+                    if ((targetF!=null && !targetF.canWrite())) {
+                        return new Problem(true, new MessageFormat(NbBundle.getMessage(MoveRefactoringPlugin.class,"ERR_PackageIsReadOnly")).format( // NOI18N
+                                new Object[] {targetPackageName}
+                        ));
+                    }
+                    
+                    //                this.movingToDefaultPackageMap.put(r, Boolean.valueOf(targetF!= null && targetF.equals(classPath.findOwnerRoot(targetF))));
+                    pkgName = targetPackageName;
+                    
+                    if (pkgName == null) {
+                        pkgName = ""; // NOI18N
+                    } else if (pkgName.length() > 0) {
+                        pkgName = pkgName + '.';
+                    }
+                    //targetPrefix = pkgName;
+                    
+                    //                JavaClass[] sourceClasses = (JavaClass[]) sourceClassesMap.get(r);
+                    //                String[] names = new String [sourceClasses.length];
+                    //                for (int x = 0; x < names.length; x++) {
+                    //                    names [x] = sourceClasses [x].getName();
+                    //                }
+                    //
+                    //                FileObject movedFile = JavaMetamodel.getManager().getDataObject(r).getPrimaryFile();
+                    String fileName = f.getName();
+                    if (targetF!=null) {
+                        FileObject[] children = targetF.getChildren();
+                        for (int x = 0; x < children.length; x++) {
+                            if (children[x].getName().equals(fileName) && "java".equals(children[x].getExt()) && !children[x].equals(f) && !children[x].isVirtual()) { //NOI18N
+                                return new Problem(true, new MessageFormat(
+                                        NbBundle.getMessage(MoveRefactoringPlugin.class,"ERR_ClassToMoveClashes")).format(new Object[] {fileName} // NOI18N
+                                ));
+                            }
+                        } // for
+                    }
+                    
+                    //                boolean accessedByOriginalPackage = ((Boolean) accessedByOriginalPackageMap.get(r)).booleanValue();
+                    //                boolean movingToDefaultPackage = ((Boolean) movingToDefaultPackageMap.get(r)).booleanValue();
+                    //                if (p==null && accessedByOriginalPackage && movingToDefaultPackage) {
+                    //                    p= new Problem(false, getString("ERR_MovingClassToDefaultPackage")); // NOI18N
+                    //                }
+                    
+                    //                if (f.getFolder().getPrimaryFile().equals(targetF) && isPackageCorrect(r)) {
+                    //                    return new Problem(true, getString("ERR_CannotMoveIntoSamePackage"));
+                    //                }
+                }
+            } catch (IOException ioe) {
+                //do nothing
+            }
+        }
         return null;
     }
 

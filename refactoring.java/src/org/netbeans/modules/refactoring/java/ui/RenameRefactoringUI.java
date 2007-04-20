@@ -23,6 +23,7 @@ import java.text.MessageFormat;
 import javax.lang.model.element.ElementKind;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
@@ -133,7 +134,8 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
             oldName = file.getName();
         }
         dispOldName = oldName;
-        refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(handle));
+        ClasspathInfo cpInfo = handle==null?RetoucheUtils.getClasspathInfoFor(file):RetoucheUtils.getClasspathInfoFor(handle);
+        refactoring.getContext().add(cpInfo);
         //this(jmiObject, (FileObject) null, true);
     }
 
@@ -152,12 +154,17 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
 //    }
 
     RenameRefactoringUI(FileObject jmiObject, String newName, TreePathHandle handle, CompilationInfo info) {
-        this.refactoring = new RenameRefactoring(Lookups.fixed(jmiObject, handle));
+        if (handle!=null) {
+            this.refactoring = new RenameRefactoring(Lookups.fixed(jmiObject, handle));
+        } else {
+            this.refactoring = new RenameRefactoring(Lookups.fixed(jmiObject));
+        }
         //this.jmiObject = jmiObject;
         oldName = newName;
         //[FIXME] this should be oldName of refactored object
         this.dispOldName = newName;
-        refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(handle));
+        ClasspathInfo cpInfo = handle==null?RetoucheUtils.getClasspathInfoFor(jmiObject):RetoucheUtils.getClasspathInfoFor(handle);
+        refactoring.getContext().add(cpInfo);
         fromListener = true;
     }
     
@@ -234,6 +241,8 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     }
     
     public org.netbeans.modules.refactoring.api.Problem checkParameters() {
+        if (!panel.isUpdateReferences()) 
+            return null;
         newName = panel.getNameValue();
         if (refactoring instanceof RenameRefactoring) {
             ((RenameRefactoring) refactoring).setNewName(newName);
