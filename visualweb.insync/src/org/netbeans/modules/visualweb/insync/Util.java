@@ -1313,27 +1313,25 @@ public final class Util {
 
     public static void displayErrorForFileObject(String message, final FileObject fileObject, final int line, final int column) {
 //        final XhtmlElement e = Util.getSource(element);
-        OutputListener listener;
-        if (fileObject == null) {
-            listener = null;
-        } else {
-            listener = new OutputListener() {
-                public void outputLineSelected(OutputEvent ev) {
-                }
-                public void outputLineAction(OutputEvent ev) {
+        OutputListener listener = new OutputListener() {
+            public void outputLineSelected(OutputEvent ev) {
+            }
+            public void outputLineAction(OutputEvent ev) {
 //                    Util.show(null, unit.getFileObject(), unit.getLine(e),
 //                              0, true);
-                    // <markup_separation>
+                // <markup_separation>
 //                    Util.show(null, fileObject, lineNumber, 0, true);
-                    // ====
+                // ====
+                if (fileObject != null) {
                     showLineAt(fileObject, line, column);
-                    // </markup_separation>
                 }
-                public void outputLineCleared (OutputEvent ev) {
-                }
-            };
-        }
+                // </markup_separation>
+            }
+            public void outputLineCleared (OutputEvent ev) {
+            }
+        };
 
+        // XXX There needs to be a non-null listener.
         displayError(message, listener);
     }
 

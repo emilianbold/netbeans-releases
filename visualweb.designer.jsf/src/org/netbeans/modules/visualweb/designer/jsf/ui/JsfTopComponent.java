@@ -111,7 +111,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //    // XXX Get rid of this suspicious impl.
 //    private static boolean pendingRefreshAll;
 
-    private transient boolean initialized;
+//    private transient boolean initialized;
     private transient JToolBar toolbar;
     private transient boolean needListeners = true;
 
@@ -200,6 +200,9 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         setDisplayName(NbBundle.getMessage(JsfTopComponent.class, "LBL_JsfDisplayName")); // NOI18N
 
         initA11Y();
+        
+        initComponent();
+        
         initListeners();
     }
 
@@ -228,6 +231,22 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         designer.addDesignerListener(WeakListeners.create(DesignerListener.class, designerListener, designer));
     }
 
+    private void initComponent() {
+        setLayout(new BorderLayout());
+        createDesignerPane();
+
+        installActions();
+
+        //#43157 - editor actions need to be accessible from outside using the
+        // TopComponent.getLookup(ActionMap.class) call.
+        // used in main menu enabling/disabling logic.
+        ActionMap am = getActionMap();
+//            ActionMap paneMap = html.getActionMap();
+        ActionMap paneMap = designer.getPaneActionMap();
+
+        am.setParent(paneMap);
+    }
+    
     protected String preferredID() {
         return "DESIGNER"; //NOI18N
     }
@@ -239,22 +258,23 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 
     public /* For testsuite
     protected */ void componentOpened() {
-        if (!initialized) {
-            initialized = true;
-            setLayout(new BorderLayout());
-            createDesignerPane();
-
-            installActions();
-
-            //#43157 - editor actions need to be accessible from outside using the
-            // TopComponent.getLookup(ActionMap.class) call.
-            // used in main menu enabling/disabling logic.
-            ActionMap am = getActionMap();
-//            ActionMap paneMap = html.getActionMap();
-            ActionMap paneMap = designer.getPaneActionMap();
-            
-            am.setParent(paneMap);
-        }
+//        if (!initialized) {
+//            initialized = true;
+////            setLayout(new BorderLayout());
+////            createDesignerPane();
+////
+////            installActions();
+////
+////            //#43157 - editor actions need to be accessible from outside using the
+////            // TopComponent.getLookup(ActionMap.class) call.
+////            // used in main menu enabling/disabling logic.
+////            ActionMap am = getActionMap();
+//////            ActionMap paneMap = html.getActionMap();
+////            ActionMap paneMap = designer.getPaneActionMap();
+////            
+////            am.setParent(paneMap);
+//            initComponent();
+//        }
 
         // The following will also initialize the context listeners,
         // provided the context is available
@@ -946,11 +966,11 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     
     public /* For testsuite
     protected */ void componentShowing() {
-        // PROJECTTODO: Why is componentShowing occuring before componentOpened, not sure
-        // THIS is a HACK !EAT
-        if (!initialized) {
-            componentOpened();
-        }
+//        // PROJECTTODO: Why is componentShowing occuring before componentOpened, not sure
+//        // THIS is a HACK !EAT
+//        if (!initialized) {
+//            componentOpened();
+//        }
 
         if (showing) {
             return;
