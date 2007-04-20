@@ -46,24 +46,21 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-
 import org.netbeans.modules.j2ee.dd.api.web.*;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileLock;
-
+import org.openide.filesystems.Repository;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.FrameworkConfigurationPanel;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
-
 import org.openide.loaders.DataObject;
 import org.openide.cookies.OpenCookie;
 
@@ -507,6 +504,21 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 }
             }
 
+            // copy faces-config.xml
+            File fileConfig = new File(FileUtil.toFile(webModule.getWebInf()), "faces-config.xml"); // NOI18N
+            if (!fileConfig.exists()) {
+                String facesConfigTemplate = "faces-config.xml"; //NOI18N
+                if (ddRoot != null) {
+                    if (WebApp.VERSION_2_5.equals(ddRoot.getVersion())) {
+                        facesConfigTemplate = "faces-config_1_2.xml"; //NOI18N
+                    }
+                }
+                String content = readResource(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-jsf/" + facesConfigTemplate).getInputStream(), "UTF-8"); //NOI18N
+                FileObject target = FileUtil.createData(webModule.getWebInf(), "faces-config.xml");//NOI18N
+                createFile(target, content, "UTF-8"); //NOI18N
+            }
+
+            // update welcome page
             FileObject documentBase = webModule.getDocumentBase();
             FileObject indexjsp = documentBase.getFileObject("index.jsp"); //NOI18N
             if (indexjsp != null){

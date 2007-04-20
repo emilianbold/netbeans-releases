@@ -160,29 +160,6 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         </folder>  <!-- Jsf12Apps -->
 
-        <attr name="Jsf12Apps/JsfAdvanced" boolvalue="true"/>
-        <folder name="JsfAdvanced">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
-            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/advancedTemplateHelp.html" />
-            <!-- faces-config xml templates -->
-            <file name="faces-config.xml" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/faces-config.xml.template">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
-                <attr name="template" boolvalue="true" />
-                <attr name="templateCategory" stringvalue="rave-advanced"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/facesConfigHelp.html" />
-                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-            </file>
-            <attr name="faces-config.xml/faces-config12.xml" boolvalue="true"/>
-            <file name="faces-config12.xml" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/1_5/faces-config.xml.template">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
-                <attr name="template" boolvalue="true" />
-                <attr name="templateCategory" stringvalue="rave-advanced_1.5"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/facesConfigHelp.html" />
-                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-            </file>
-        </folder> <!-- JsfAdvanced -->
-    </folder> <!-- Templates -->
-
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
             <file name="commons-logging-1-0-4.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/commons-logging-1-0-4.xml"/>
