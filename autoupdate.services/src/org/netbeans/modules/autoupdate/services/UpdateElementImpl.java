@@ -49,7 +49,7 @@ public class UpdateElementImpl extends Object {
         displayName = info.getDisplayName ();
         specVersion = info.getSpecificationVersion ();
         description = (String) info.getLocalizedAttribute("OpenIDE-Module-Long-Description");
-        source = "NetBeans 6.0";
+        source = "NetBeans 6.0"; // XXX: Read from some bundle
         category = (String) info.getLocalizedAttribute ("OpenIDE-Module-Display-Category");
         isModule = true;
         itemOrInfo = Union2.createSecond(info);
