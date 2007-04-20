@@ -20,26 +20,4 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="editor" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
-
-  <!-- Original javadoc target -->
-  <target name="javadoc" depends="init" description="Build editor module API documentation.">
-        <selector id="editor_javadoc_files" >
-            <or>
-                <filename name="src/**/*.java" />
-            </or>
-        </selector>
-
-    <ant dir="../nbbuild/javadoctools" antfile="template.xml" target="javadoc" inheritRefs="true">
-        <property name="javadoc.base" location="${basedir}"/>
-        <property name="javadoc.name" value="${code.name.base.dashes}"/>
-        <property name="javadoc.title" value="Editor Module API"/>
-		<property name="javadoc.packages" value="org.netbeans.modules.editor,org.netbeans.modules.editor.options"/>
-        <property name="javadoc.classpath" refid="cp"/>
-        <property name="javadoc.src" value="../../editor"/>
-        <property name="javadoc.files" value="editor_javadoc_files" />
-        <property name="javadoc.arch" location="arch/arch-editor.xml"/>
-        <property name="javadoc.project" location="nbproject/project.xml"/>
-    </ant>
-  </target>
-
 </project>
