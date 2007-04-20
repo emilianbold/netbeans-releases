@@ -19,16 +19,25 @@
 
 package org.netbeans.modules.j2ee.metadata.model.support;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.spi.java.classpath.ClassPathFactory;
+import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 
 /**
  *
@@ -37,6 +46,10 @@ import org.openide.filesystems.FileUtil;
 public abstract class JavaSourceTestCase extends NbTestCase {
 
     protected static FileObject srcFO;
+    protected static List<FileObject> roots;
+
+    protected static ClassPathImpl srcCPImpl;
+    protected static ClassPathImpl compileCPImpl;
 
     protected static ClassPath srcCP;
     protected static ClassPath compileCP;
@@ -51,12 +64,14 @@ public abstract class JavaSourceTestCase extends NbTestCase {
         File userdir = new File(getWorkDir(), "userdir");
         userdir.mkdirs();
         System.setProperty("netbeans.user", userdir.getAbsolutePath());
-        File src = new File(getWorkDir(), "src");
-        src.mkdirs();
-        srcFO = FileUtil.toFileObject(src);
-        srcCP = ClassPathSupport.createClassPath(new URL[] { src.toURI().toURL() });
-        compileCP = additionalCompilePath();
+        srcFO = FileUtil.toFileObject(getWorkDir()).createFolder("src");
+        srcCPImpl = new ClassPathImpl(URLMapper.findURL(srcFO, URLMapper.INTERNAL));
+        srcCP = ClassPathFactory.createClassPath(srcCPImpl);
+        compileCPImpl = new ClassPathImpl();
+        compileCP = ClassPathFactory.createClassPath(compileCPImpl);
         bootCP = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
+        roots = new ArrayList<FileObject>();
+        roots.add(srcFO);
         MockServices.setServices(ClassPathProviderImpl.class);
     }
 
@@ -64,14 +79,38 @@ public abstract class JavaSourceTestCase extends NbTestCase {
         MockServices.setServices();
     }
 
-    protected ClassPath additionalCompilePath() {
-        return ClassPathSupport.createClassPath(new URL[0]);
+    protected void addSourceRoots(List<FileObject> roots) {
+        JavaSourceTestCase.roots.addAll(roots);
+        List<URL> urls = new ArrayList<URL>(roots.size());
+        for (FileObject root : roots) {
+            urls.add(URLMapper.findURL(root, URLMapper.INTERNAL));
+        }
+        srcCPImpl.addResources(urls);
+    }
+
+    protected void removeSourceRoots(List<FileObject> roots) {
+        JavaSourceTestCase.roots.removeAll(roots);
+        List<URL> urls = new ArrayList<URL>(roots.size());
+        for (FileObject root : roots) {
+            urls.add(URLMapper.findURL(root, URLMapper.INTERNAL));
+        }
+        srcCPImpl.removeResources(urls);
+    }
+
+    protected void addCompileRoots(List<URL> roots) {
+        compileCPImpl.addResources(roots);
     }
 
     public static class ClassPathProviderImpl implements ClassPathProvider {
 
         public ClassPath findClassPath(FileObject file, String type) {
-            if (!srcFO.equals(file) && !FileUtil.isParentOf(srcFO, file)) {
+            boolean found = false;
+            for (FileObject root : roots) {
+                if (root.equals(file) || FileUtil.isParentOf(root, file)) {
+                    found = true;
+                }
+            }
+            if (!found) {
                 return null;
             }
             if (ClassPath.SOURCE.equals(type)) {
@@ -82,6 +121,59 @@ public abstract class JavaSourceTestCase extends NbTestCase {
                 return bootCP;
             }
             return null;
+        }
+    }
+
+    private static final class ClassPathImpl implements ClassPathImplementation {
+
+        private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
+        private final List<PathResourceImplementation> resources = new ArrayList<PathResourceImplementation>();
+
+        public ClassPathImpl() {}
+
+        public ClassPathImpl(URL url) {
+            addResource(url);
+        }
+
+        public void addResources(List<URL> urls) {
+            for (URL url : urls) {
+                addResource(url);
+            }
+            propSupport.firePropertyChange(PROP_RESOURCES, null, null);
+        }
+
+        public void removeResources(List<URL> urls) {
+            boolean modified = false;
+            main: for (URL url : urls) {
+                for (PathResourceImplementation resource : resources) {
+                    for (URL resourceRoot : resource.getRoots()) {
+                        if (resourceRoot.equals(url)) {
+                            resources.remove(resource);
+                            modified = true;
+                            break main;
+                        }
+                    }
+                }
+            }
+            if (modified) {
+                propSupport.firePropertyChange(PROP_RESOURCES, null, null);
+            }
+        }
+
+        private void addResource(URL url) {
+            resources.add(ClassPathSupport.createResource(url));
+        }
+
+        public List<? extends PathResourceImplementation> getResources() {
+            return resources;
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            propSupport.addPropertyChangeListener(listener);
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            propSupport.removePropertyChangeListener(listener);
         }
     }
 }

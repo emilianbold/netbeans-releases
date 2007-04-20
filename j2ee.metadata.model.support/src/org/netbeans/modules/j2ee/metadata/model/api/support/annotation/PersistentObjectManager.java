@@ -48,18 +48,17 @@ public class PersistentObjectManager<T extends PersistentObject> {
         return helper;
     }
 
-    public void initialize() {
+    private void ensureInitialized() {
         if (!initialized) {
             for (T object : provider.createInitialObjects()) {
                 objects.put(object.getSourceElementHandle(), object);
             }
-            // ClassIndex needs to be held to avoid it being garbage-collected
-            // in a future implementation of ClasspathInfo
             initialized = true;
         }
     }
 
     public Collection<T> getObjects() {
+        ensureInitialized();
         return objects.values();
     }
 
@@ -90,5 +89,10 @@ public class PersistentObjectManager<T extends PersistentObject> {
                 object.sourceElementChanged();
             }
         }
+    }
+
+    void rootsChanged() {
+        initialized = false;
+        objects.clear();
     }
 }

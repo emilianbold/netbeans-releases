@@ -324,11 +324,31 @@ public final class AnnotationModelHelper {
         }
 
         public void rootsAdded(RootsEvent event) {
-            throw new NotImplementedException();
+            try {
+                userActionTask(new Runnable() {
+                    public void run() {
+                        for (PersistentObjectManager<? extends PersistentObject> manager : managers) {
+                            manager.rootsChanged();
+                        }
+                    }
+                });
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
+            }
         }
 
         public void rootsRemoved(RootsEvent event) {
-            throw new NotImplementedException();
+            try {
+                userActionTask(new Runnable() {
+                    public void run() {
+                        for (PersistentObjectManager<? extends PersistentObject> manager : managers) {
+                            manager.rootsChanged();
+                        }
+                    }
+                });
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
+            }
         }
     }
 }

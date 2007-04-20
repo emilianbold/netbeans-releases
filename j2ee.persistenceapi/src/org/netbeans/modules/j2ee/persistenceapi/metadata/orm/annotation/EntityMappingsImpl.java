@@ -313,7 +313,6 @@ public class EntityMappingsImpl implements EntityMappings {
     }
 
     public Entity[] getEntity() {
-        entityManager.initialize();
         Collection<EntityImpl> entities = entityManager.getObjects();
         return entities.toArray(new Entity[entities.size()]);
     }

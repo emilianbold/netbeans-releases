@@ -21,6 +21,7 @@ package org.netbeans.modules.j2ee.persistenceapi.metadata.orm.annotation;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collections;
 import javax.persistence.spi.PersistenceProvider;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
@@ -28,7 +29,6 @@ import org.netbeans.modules.j2ee.metadata.model.support.JavaSourceTestCase;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -41,10 +41,10 @@ public class EntityMappingsTestCase extends JavaSourceTestCase {
         super(name);
     }
 
-    protected ClassPath additionalCompilePath() {
-        return ClassPathSupport.createClassPath(new URL[] {
-            FileUtil.getArchiveRoot(PersistenceProvider.class.getProtectionDomain().getCodeSource().getLocation())
-        });
+    protected void setUp() throws Exception {
+        super.setUp();
+        URL root = FileUtil.getArchiveRoot(PersistenceProvider.class.getProtectionDomain().getCodeSource().getLocation());
+        addCompileRoots(Collections.singletonList(root));
     }
 
     protected MetadataModel<EntityMappingsMetadata> createModel() throws IOException, InterruptedException {

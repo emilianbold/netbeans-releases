@@ -19,14 +19,18 @@
 
 package org.netbeans.modules.j2ee.metadata.model.api.support.annotation;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.source.ClassIndexListener;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
@@ -37,6 +41,8 @@ import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 import org.netbeans.modules.j2ee.metadata.model.support.PersistenceTestCase;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 
 /**
  *
@@ -65,6 +71,9 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
                 "@javax.persistence.Entity(name = \"Address\")" +
                 "public class Address {" +
                 "}");
+        GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] { ClassPath.getClassPath(srcFO, ClassPath.SOURCE) });
+        GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, new ClassPath[] { ClassPath.getClassPath(srcFO, ClassPath.COMPILE) });
+        GlobalPathRegistry.getDefault().register(ClassPath.BOOT, new ClassPath[] { ClassPath.getClassPath(srcFO, ClassPath.BOOT) });
         RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
@@ -73,7 +82,6 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         helper.userActionTask(new Runnable() {
             public void run() {
                 manager = helper.createPersistentObjectManager(new EntityProvider(helper));
-                manager.initialize();
                 for (EntityImpl entity : manager.getObjects()) {
                     if ("Employee".equals(entity.getName())) {
                         employeeEntity[0] = entity;
@@ -85,21 +93,18 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
                 assertNotNull(addressEntity[0]);
             }
         });
+        // adding, removing and changing some types
         final AtomicBoolean departmentAdded = new AtomicBoolean();
         final AtomicBoolean addressRemoved = new AtomicBoolean();
         final AtomicBoolean employeeChanged = new AtomicBoolean();
         final AtomicBoolean departmentChanged = new AtomicBoolean();
-        final CountDownLatch latch = new CountDownLatch(4);
-        cpi.getClassIndex().addClassIndexListener(new ClassIndexListener() {
-            public void rootsAdded(RootsEvent event) {
-            }
-            public void rootsRemoved(RootsEvent event) {
-            }
+        final CountDownLatch typesLatch = new CountDownLatch(4);
+        ClassIndexListener listener = new ClassIndexAdapter() {
             public void typesAdded(TypesEvent event) {
                 for (ElementHandle<TypeElement> type : event.getTypes()) {
                     if ("foo.Department".equals(type.getQualifiedName())) {
                         departmentAdded.set(true);
-                        latch.countDown();
+                        typesLatch.countDown();
                     }
                 }
                 assertTrue("Should not have got an empty added event ", event.getTypes().iterator().hasNext());
@@ -108,11 +113,11 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
                 for (ElementHandle<TypeElement> type : event.getTypes()) {
                     if ("foo.Employee".equals(type.getQualifiedName())) {
                         employeeChanged.set(true);
-                        latch.countDown();
+                        typesLatch.countDown();
                     }
                     if ("foo.Department".equals(type.getQualifiedName())) {
                         departmentChanged.set(true);
-                        latch.countDown();
+                        typesLatch.countDown();
                     }
                 }
                 assertTrue("Should not have got an empty changed event ", event.getTypes().iterator().hasNext());
@@ -121,12 +126,13 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
                 for (ElementHandle<TypeElement> type : event.getTypes()) {
                     if ("foo.Address".equals(type.getQualifiedName())) {
                         addressRemoved.set(true);
-                        latch.countDown();
+                        typesLatch.countDown();
                     }
                 }
                 assertTrue("Should not have got an empty removed event ", event.getTypes().iterator().hasNext());
             }
-        });
+        };
+        cpi.getClassIndex().addClassIndexListener(listener);
         TestUtilities.copyStringToFileObject(employeeFO,
                 "package foo;" +
                 "@javax.persistence.Entity(name = \"NewEmployee\")" +
@@ -138,11 +144,12 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
                 "public class Department {" +
                 "}");
         addressFO.delete();
-        latch.await(5000, TimeUnit.MILLISECONDS);
+        typesLatch.await(10, TimeUnit.SECONDS);
         assertTrue("Should have got a typesAdded event for Department", departmentAdded.get());
         assertTrue("Should have got a typesRemoved event for Address ", addressRemoved.get());
         assertTrue("Should have got a typesChanged event for Employee", employeeChanged.get());
         assertTrue("Should have got a typesChanged event for Department", departmentChanged.get());
+        cpi.getClassIndex().removeClassIndexListener(listener);
         helper.userActionTask(new Runnable() {
             public void run() {
                 Collection<EntityImpl> entities = manager.getObjects();
@@ -157,6 +164,89 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
                     }
                 }
                 assertTrue(hasDepartmentEntity);
+            }
+        });
+        // adding a new root
+        final FileObject src2FO = FileUtil.toFileObject(getWorkDir()).createFolder("src2");
+        FileObject productFO = TestUtilities.copyStringToFileObject(src2FO, "foo/Product.java",
+                "package foo;" +
+                "@javax.persistence.Entity(name = \"Product\")" +
+                "public class Product {" +
+                "}");
+        FileObject orderFO = TestUtilities.copyStringToFileObject(src2FO, "foo/Order.java",
+                "package foo;" +
+                "@javax.persistence.Entity(name = \"Order\")" +
+                "public class Order {" +
+                "}");
+        final AtomicBoolean rootAdded = new AtomicBoolean();
+        final CountDownLatch rootAddedLatch = new CountDownLatch(1);
+        listener = new ClassIndexAdapter() {
+            public void rootsAdded(RootsEvent event) {
+                URL src2URL = URLMapper.findURL(src2FO, URLMapper.INTERNAL);
+                for (URL url : event.getRoots()) {
+                    if (src2URL.equals(url)) {
+                        rootAdded.set(true);
+                        rootAddedLatch.countDown();
+                    }
+                }
+                assertTrue("Should not have got an empty roots added event", event.getRoots().iterator().hasNext());
+            }
+        };
+        cpi.getClassIndex().addClassIndexListener(listener);
+        addSourceRoots(Collections.singletonList(src2FO));
+        rootAddedLatch.await(10, TimeUnit.SECONDS);
+        assertTrue("Should have got a rootsAdded event", rootAdded.get());
+        cpi.getClassIndex().removeClassIndexListener(listener);
+        helper.userActionTask(new Runnable() {
+            public void run() {
+                Collection<EntityImpl> entities = manager.getObjects();
+                boolean hasProductEntity = false;
+                boolean hasOrderEntity = false;
+                for (EntityImpl entity : entities) {
+                    if ("Product".equals(entity.getName())) {
+                        hasProductEntity = true;
+                    } else if ("Order".equals(entity.getName())) {
+                        hasOrderEntity = true;
+                    }
+                }
+                assertTrue(hasProductEntity);
+                assertTrue(hasOrderEntity);
+            }
+        });
+        // removing a root
+        final AtomicBoolean rootRemoved = new AtomicBoolean();
+        final CountDownLatch rootRemovedLatch = new CountDownLatch(1);
+        listener = new ClassIndexAdapter() {
+            public void rootsRemoved(RootsEvent event) {
+                URL src2URL = URLMapper.findURL(src2FO, URLMapper.INTERNAL);
+                for (URL url : event.getRoots()) {
+                    if (src2URL.equals(url)) {
+                        rootRemoved.set(true);
+                        rootRemovedLatch.countDown();
+                    }
+                }
+                assertTrue("Should not have got an empty roots removed event", event.getRoots().iterator().hasNext());
+            }
+        };
+        cpi.getClassIndex().addClassIndexListener(listener);
+        removeSourceRoots(Collections.singletonList(src2FO));
+        rootRemovedLatch.await(10, TimeUnit.SECONDS);
+        assertTrue("Should have got a rootsRemoved event", rootRemoved.get());
+        cpi.getClassIndex().removeClassIndexListener(listener);
+        helper.userActionTask(new Runnable() {
+            public void run() {
+                Collection<EntityImpl> entities = manager.getObjects();
+                boolean hasProductEntity = false;
+                boolean hasOrderEntity = false;
+                for (EntityImpl entity : entities) {
+                    if ("Product".equals(entity.getName())) {
+                        hasProductEntity = true;
+                    } else if ("Order".equals(entity.getName())) {
+                        hasOrderEntity = true;
+                    }
+                }
+                assertFalse(hasProductEntity);
+                assertFalse(hasOrderEntity);
             }
         });
     }
@@ -212,5 +302,18 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         public String getName() {
             return name;
         }
+    }
+
+    private static abstract class ClassIndexAdapter implements ClassIndexListener {
+
+        public void typesAdded(TypesEvent event) {}
+
+        public void typesRemoved(TypesEvent event) {}
+
+        public void typesChanged(TypesEvent event) {}
+
+        public void rootsAdded(RootsEvent event) {}
+
+        public void rootsRemoved(RootsEvent event) {}
     }
 }

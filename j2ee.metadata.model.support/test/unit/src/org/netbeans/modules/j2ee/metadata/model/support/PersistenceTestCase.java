@@ -20,9 +20,8 @@
 package org.netbeans.modules.j2ee.metadata.model.support;
 
 import java.net.URL;
+import java.util.Collections;
 import javax.persistence.spi.PersistenceProvider;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -35,9 +34,9 @@ public class PersistenceTestCase extends JavaSourceTestCase {
         super(name);
     }
 
-    protected ClassPath additionalCompilePath() {
-        return ClassPathSupport.createClassPath(new URL[] {
-            FileUtil.getArchiveRoot(PersistenceProvider.class.getProtectionDomain().getCodeSource().getLocation())
-        });
+    protected void setUp() throws Exception {
+        super.setUp();
+        URL root = FileUtil.getArchiveRoot(PersistenceProvider.class.getProtectionDomain().getCodeSource().getLocation());
+        addCompileRoots(Collections.singletonList(root));
     }
 }
