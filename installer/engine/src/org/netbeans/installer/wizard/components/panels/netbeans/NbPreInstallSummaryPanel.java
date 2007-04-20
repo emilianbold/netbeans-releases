@@ -86,7 +86,8 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                 DEFAULT_ERROR_LOGIC_ACCESS);
         setProperty(ERROR_FSROOTS_PROPERTY,
                 DEFAULT_ERROR_FSROOTS);
-        
+        setProperty(ERROR_NON_EXISTENT_ROOT_PROPERTY, 
+                DEFAULT_ERROR_NON_EXISTENT_ROOT);
     }
     
     @Override
@@ -272,9 +273,12 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                         new HashMap<File, Long>();
                 
                 for (Product product: products) {
+                    boolean rootFound = false;
                     for (File root: roots) {
                         if (FileUtils.isParent(
                                 root, product.getInstallationLocation())) {
+                            rootFound = true;
+                            
                             Long size = spaceMap.get(root);
                             if (size != null) {
                                 size = Long.valueOf(size.longValue() +
@@ -285,6 +289,13 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                             
                             spaceMap.put(root, size);
                         }
+                    }
+                    
+                    if (!rootFound) {
+                        return StringUtils.format(
+                                panel.getProperty(ERROR_NON_EXISTENT_ROOT_PROPERTY),
+                                product,
+                                product.getInstallationLocation());
                     }
                 }
                 
@@ -437,6 +448,8 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             "error.logic.access"; // NOI18N
     public static final String ERROR_FSROOTS_PROPERTY=
             "error.fsroots"; //NOI18N
+    public static final String ERROR_NON_EXISTENT_ROOT_PROPERTY=
+            "error.non.existent.root"; //NOI18N
     
     
     public static final String DEFAULT_TITLE =
@@ -463,10 +476,10 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             "NPrISP.download.size"); // NOI18N
     public static final String DEFAULT_GF_ADDONS_LOCATION_TEXT =
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
-            "NPrISP.addons.gf.install.location.text");//NOI18N
+            "NPrISP.addons.gf.install.location.text"); //NOI18N
     public static final String DEFAULT_NB_ADDONS_LOCATION_TEXT =
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
-            "NPrISP.addons.nb.install.location.text");//NOI18N
+            "NPrISP.addons.nb.install.location.text"); //NOI18N
     
     public static final String DEFAULT_NEXT_BUTTON_TEXT =
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
@@ -484,9 +497,12 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
     public static final String DEFAULT_ERROR_LOGIC_ACCESS =
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
             "NPrISP.error.logic.access");// NOI18N
-    public static final String DEFAULT_ERROR_FSROOTS=
+    public static final String DEFAULT_ERROR_FSROOTS =
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
             "NPrISP.error.fsroots"); //NOI18N
+    public static final String DEFAULT_ERROR_NON_EXISTENT_ROOT =
+            ResourceUtils.getString(NbPreInstallSummaryPanel.class,
+            "NPrISP.error.non.existent.root"); //NOI18N
     
     
     public static final long REQUIRED_SPACE_ADDITION =
