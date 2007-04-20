@@ -28,6 +28,7 @@ import java.util.List;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.UI;
+import org.netbeans.modules.visualweb.insync.live.DesignBeanNode;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -89,7 +90,12 @@ public class FacesRefactoringActionsProvider extends ActionsImplementationProvid
     public boolean canMove(Lookup lookup) {
         // Get the Node being renamed
         Node node = lookup.lookup(Node.class);
-        if (node != null) {
+
+        if (node != null &&
+                // The DesignBeanNodes in outline also have the JsfJspDataObject
+                // in the lookup. However drag and drop of those shouls not
+                // refactoring
+                !(node instanceof DesignBeanNode)) {
             // Get the DataObject
             DataObject dataObject = node.getLookup().lookup(DataObject.class);
             if (dataObject != null) {
