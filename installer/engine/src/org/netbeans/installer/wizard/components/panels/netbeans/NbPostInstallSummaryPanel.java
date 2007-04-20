@@ -26,6 +26,7 @@ import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
+import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
@@ -80,6 +81,8 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
                 DEFAULT_MESSAGE_TEXT_ERRORS_UNINSTALL);
         setProperty(MESSAGE_CONTENT_TYPE_ERRORS_UNINSTALL_PROPERTY, 
                 DEFAULT_MESSAGE_CONTENT_TYPE_ERRORS_UNINSTALL);
+        setProperty(MESSAGE_FILES_REMAINING_PROPERTY,
+                DEFAULT_MESSAGE_FILES_REMAINING);
         
         setProperty(NEXT_BUTTON_TEXT_PROPERTY, 
                 DEFAULT_NEXT_BUTTON_TEXT);
@@ -220,7 +223,27 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
                     } else {
                         messagePaneNetBeans.setText(DEFAULT_MESSAGE_NETBEANS_TEXT_UNIX);
                     }
+                    break;
                 }
+            }
+            
+            products.clear();
+            
+            products.addAll(registry.getProducts(UNINSTALLED_SUCCESSFULLY));
+            products.addAll(registry.getProducts(UNINSTALLED_WITH_WARNINGS));
+            
+            final List<Product> notCompletelyRemoved = new LinkedList<Product>();
+            for (Product product: products) {
+                if (!FileUtils.isEmpty(product.getInstallationLocation())) {
+                    notCompletelyRemoved.add(product);
+                }
+            }
+            
+            if (notCompletelyRemoved.size() > 0) {
+                final String text = messagePaneUninstall.getText();
+                messagePaneUninstall.setText(text + StringUtils.format(
+                        panel.getProperty(MESSAGE_FILES_REMAINING_PROPERTY),
+                        StringUtils.asString(notCompletelyRemoved)));
             }
         }
         
@@ -288,6 +311,8 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
             "message.text.errors.uninstall"; // NOI18N
     public static final String MESSAGE_CONTENT_TYPE_ERRORS_UNINSTALL_PROPERTY =
             "message.content.type.errors.uninstall"; // NOI18N
+    public static final String MESSAGE_FILES_REMAINING_PROPERTY =
+            "message.files.remaining"; // NOI18N
     
     public static final String DEFAULT_MESSAGE_TEXT_SUCCESS =
             ResourceUtils.getString(NbPostInstallSummaryPanel.class,
@@ -325,6 +350,9 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
     public static final String DEFAULT_MESSAGE_CONTENT_TYPE_ERRORS_UNINSTALL =
             ResourceUtils.getString(NbPostInstallSummaryPanel.class,
             "NPoISP.message.content.type.errors.uninstall"); // NOI18N
+    public static final String DEFAULT_MESSAGE_FILES_REMAINING =
+            ResourceUtils.getString(NbPostInstallSummaryPanel.class,
+            "NPoISP.message.files.remaining"); // NOI18N
     
     public static final String DEFAULT_MESSAGE_NETBEANS_TEXT_WINDOWS = 
             ResourceUtils.getString(NbPostInstallSummaryPanel.class,

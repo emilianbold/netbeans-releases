@@ -88,6 +88,8 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                 DEFAULT_ERROR_FSROOTS);
         setProperty(ERROR_NON_EXISTENT_ROOT_PROPERTY, 
                 DEFAULT_ERROR_NON_EXISTENT_ROOT);
+        setProperty(ERROR_CANNOT_WRITE_PROPERTY, 
+                DEFAULT_ERROR_CANNOT_WRITE);
     }
     
     @Override
@@ -158,6 +160,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
         }
         
         // protected ////////////////////////////////////////////////////////////////
+        @Override
         protected void initializeContainer() {
             super.initializeContainer();
             
@@ -165,6 +168,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                     panel.getProperty(NEXT_BUTTON_TEXT_PROPERTY));
         }
         
+        @Override
         protected void initialize() {
             final Registry registry = Registry.getInstance();
             
@@ -267,12 +271,12 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             try {
                 final List<File> roots =
                         SystemUtils.getFileSystemRoots();
-                final List<Product> products =
+                final List<Product> toInstall =
                         Registry.getInstance().getProductsToInstall();
                 final Map<File, Long> spaceMap =
                         new HashMap<File, Long>();
                 
-                for (Product product: products) {
+                for (Product product: toInstall) {
                     boolean rootFound = false;
                     for (File root: roots) {
                         if (FileUtils.isParent(
@@ -318,6 +322,18 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                                 e);
                     }
                 }
+                
+                final List<Product> toUninstall = 
+                        Registry.getInstance().getProductsToUninstall();
+                for (Product product: toUninstall) {
+                    if (!FileUtils.canWrite(product.getInstallationLocation())) {
+                        return StringUtils.format(
+                                panel.getProperty(ERROR_CANNOT_WRITE_PROPERTY),
+                                product,
+                                product.getInstallationLocation());
+                    }
+                }
+                
             } catch (IOException e) {
                 ErrorManager.notifyError(
                         panel.getProperty(ERROR_FSROOTS_PROPERTY), e);
@@ -436,21 +452,22 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
     public static final String DOWNLOAD_SIZE_PROPERTY =
             "download.size"; // NOI18N
     public static final String NB_ADDONS_LOCATION_TEXT_PROPERTY =
-            "addons.nb.install.location.text"; //NOI18N
+            "addons.nb.install.location.text"; // NOI18N
     public static final String GF_ADDONS_LOCATION_TEXT_PROPERTY =
-            "addons.gf.install.location.text"; //NOI18N
+            "addons.gf.install.location.text"; // NOI18N
     
     public static final String ERROR_NOT_ENOUGH_SPACE_PROPERTY =
             "error.not.enough.space"; // NOI18N
     public static final String ERROR_CANNOT_CHECK_SPACE_PROPERTY =
-            "error.cannot.check.space"; //NOI18N
+            "error.cannot.check.space"; // NOI18N
     public static final String ERROR_LOGIC_ACCESS_PROPERTY =
             "error.logic.access"; // NOI18N
-    public static final String ERROR_FSROOTS_PROPERTY=
-            "error.fsroots"; //NOI18N
-    public static final String ERROR_NON_EXISTENT_ROOT_PROPERTY=
-            "error.non.existent.root"; //NOI18N
-    
+    public static final String ERROR_FSROOTS_PROPERTY =
+            "error.fsroots"; // NOI18N
+    public static final String ERROR_NON_EXISTENT_ROOT_PROPERTY =
+            "error.non.existent.root"; // NOI18N
+    public static final String ERROR_CANNOT_WRITE_PROPERTY = 
+            "error.cannot.write"; // NOI18N
     
     public static final String DEFAULT_TITLE =
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
@@ -476,10 +493,10 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             "NPrISP.download.size"); // NOI18N
     public static final String DEFAULT_GF_ADDONS_LOCATION_TEXT =
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
-            "NPrISP.addons.gf.install.location.text"); //NOI18N
+            "NPrISP.addons.gf.install.location.text"); // NOI18N
     public static final String DEFAULT_NB_ADDONS_LOCATION_TEXT =
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
-            "NPrISP.addons.nb.install.location.text"); //NOI18N
+            "NPrISP.addons.nb.install.location.text"); // NOI18N
     
     public static final String DEFAULT_NEXT_BUTTON_TEXT =
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
@@ -499,10 +516,13 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             "NPrISP.error.logic.access");// NOI18N
     public static final String DEFAULT_ERROR_FSROOTS =
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
-            "NPrISP.error.fsroots"); //NOI18N
+            "NPrISP.error.fsroots"); // NOI18N
     public static final String DEFAULT_ERROR_NON_EXISTENT_ROOT =
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
-            "NPrISP.error.non.existent.root"); //NOI18N
+            "NPrISP.error.non.existent.root"); // NOI18N
+    public static final String DEFAULT_ERROR_CANNOT_WRITE =
+            ResourceUtils.getString(NbPreInstallSummaryPanel.class,
+            "NPrISP.error.cannot.write"); // NOI18N
     
     
     public static final long REQUIRED_SPACE_ADDITION =
