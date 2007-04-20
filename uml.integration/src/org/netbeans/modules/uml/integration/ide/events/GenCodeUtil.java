@@ -68,19 +68,7 @@ public final class GenCodeUtil
 	boolean fullyQualified)
     {
 
-	  String fullClassName = "";
 	  String[] packAndName = getFullyQualifiedCodeGenType(classType);
-	  if (packAndName != null && packAndName.length == 2) {
-	      fullClassName = packAndName[1];
-	  }
-      
-//        if (fullClassName.indexOf('.') > 0)
-//        {
-//            // we have an inner class, so trim off all outer classes possible
-//            // i.e. - A.B.C used by A can be reduced to B.C
-//            // TODO
-//        }
-        
 //        if (mult != null && mult.getRangeCount() > 0)
         if (mult != null && isMultiDim(mult))
         {
@@ -92,11 +80,14 @@ public final class GenCodeUtil
 	}        
         else
 	{
+	  String fullClassName = null;
+	  if (packAndName != null && packAndName.length == 2) {
 	    if (fullyQualified) 
-		return packAndName[0] + "." + packAndName[1];
+		fullClassName = packAndName[0] + "." + packAndName[1];
 	    else 
-		return packAndName[1];
-	
+		fullClassName = packAndName[1];	
+	  }              
+	  return fullClassName;
 	}
 
     }
@@ -140,7 +131,7 @@ public final class GenCodeUtil
 		    rightPart = '>' + rightPart;
 		}
 	    } else {
-		rightPart = "[]"+ rightPart;
+		rightPart = "[]" + rightPart;
 	    }
 	}
 	return leftPart + coreTypeName + rightPart;
@@ -235,9 +226,18 @@ public final class GenCodeUtil
 	    if ( ! ( fqType != null && fqType.length == 2 && fqType[1] != null) ) {	
 		return null;
 	    }
+	    
+	    String fullClassName = fqType[1];
+	    int ind = fullClassName.indexOf('.');
+	    if (ind > 0)
+	    {
+		// nested class, only it outer most owner 
+		// is needed to be referred/imported
+		fullClassName = fullClassName.substring(0, ind); 
+		fqType[1] = fullClassName;
+	    }	   
 	    refs = new ArrayList<String[]>();
 	    refs.add(fqType);
-	    String fullClassName = fqType[1];
 	    isPrimitive = JavaClassUtils.isPrimitive(fullClassName);
 	}
 

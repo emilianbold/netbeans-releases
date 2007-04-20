@@ -158,28 +158,10 @@ extends
 </#macro>
 
 
-<#--
-<#assign accessList = ["public", "protected", "package", "private"] />
-<#assign staticList = ["static", ""] />
-
-<#macro FieldDeclarations classInfo nestingLevel >
-<#list staticList as staticParm >
-<#list accessList as accessParm >
-<#if classInfo.getFields(staticParm, accessParm)?? >
-<#list classInfo.getFields(staticParm, accessParm) as fieldInfo > 
-<@FieldDeclaration fieldInfo nestingLevel />
-</#list>
-</#if>
-</#list>
-</#list>
-</#macro>
--->
-
-
 <#macro FieldDeclaration fieldInfo nestingLevel >
 <@MemberDeclarationComment fieldInfo nestingLevel />
 <@ident nestingLevel /><@compress single_line=true>
-${classInfo.getModifierText(fieldInfo.getModifiers())} ${fieldInfo.getCodeGenType()} ${fieldInfo.getName()} 
+${classInfo.getModifierText(fieldInfo.getModifiers())} ${fieldInfo.getCodeGenType()!} ${fieldInfo.getName()!}
 <#if fieldInfo.getInitializer()??> 
 = ${fieldInfo.getInitializer()}
 </#if></@compress>;<#return />
@@ -199,7 +181,7 @@ ${classInfo.getModifierText(fieldInfo.getModifiers())} ${fieldInfo.getCodeGenTyp
 <#macro ConstructorDeclaration methodInfo nestingLevel >
 <@MemberDeclarationComment methodInfo nestingLevel />
 <@ident nestingLevel /><@compress single_line=true>
-${classInfo.getModifierText(methodInfo.getModifiers())} ${methodInfo.getName()} <@MethodDeclarationFormalParameters methodInfo /> <@MethodDeclarationThrows methodInfo /> 
+${classInfo.getModifierText(methodInfo.getModifiers())} ${methodInfo.getName()!} <@MethodDeclarationFormalParameters methodInfo /> <@MethodDeclarationThrows methodInfo /> 
 </@compress> 
 <@ConstructorDeclarationBody methodInfo nestingLevel />
 </#macro>
@@ -226,7 +208,7 @@ ${classInfo.getModifierText(methodInfo.getModifiers())} ${methodInfo.getName()} 
 <#macro MethodDeclaration methodInfo nestingLevel >
 <@MemberDeclarationComment methodInfo nestingLevel />
 <@ident nestingLevel /><@compress single_line=true><@compress single_line=true>
-${classInfo.getModifierText(methodInfo.getModifiers())} ${methodInfo.getCodeGenReturnType()} ${methodInfo.getName()} <@MethodDeclarationFormalParameters methodInfo /> <@MethodDeclarationThrows methodInfo /> 
+${classInfo.getModifierText(methodInfo.getModifiers())} ${methodInfo.getCodeGenReturnType()!} ${methodInfo.getName()!} <@MethodDeclarationFormalParameters methodInfo /> <@MethodDeclarationThrows methodInfo /> 
 </@compress><#if methodInfo.isAbstract() >;</#if>
 </@compress> 
 <#if ! methodInfo.isAbstract() >
@@ -254,8 +236,10 @@ ${classInfo.getModifierText(methodInfo.getModifiers())} ${methodInfo.getCodeGenR
 <#if methodInfo.isAccessor() >
 <@ident nestingLevel />return ${methodInfo.getMemberName()};
 <#else>
+<#if methodInfo.getParameterInfos()?? && (methodInfo.getParameterInfos()?size > 0) >
 <#assign params=methodInfo.getParameterInfos() />
-<@ident nestingLevel />this.${methodInfo.getMemberName()} = ${params[0].getName()};
+<@ident nestingLevel />this.${methodInfo.getMemberName()!} = ${params[0].getName()!};
+</#if>
 </#if>
 </@singleline>
 
@@ -290,9 +274,9 @@ throws ${exceptionsList}
 
 <#macro MethodDeclarationFormalParameters methodInfo >
 (<@singleline>
-<#if methodInfo.getParameterInfos()?? >
+<#if methodInfo.getParameterInfos()?? && (methodInfo.getParameterInfos()?size > 0) >
 <#list methodInfo.getParameterInfos() as parameterInfo> 
-${parameterInfo.getCodeGenType()} ${parameterInfo.getName()}<#if parameterInfo_has_next>, </#if>
+${(parameterInfo.getCodeGenType())!} ${(parameterInfo.getName())!}<#if parameterInfo_has_next>, </#if>
 </#list>
 </#if>
 </@singleline>)
@@ -323,8 +307,10 @@ ${parameterInfo.getCodeGenType()} ${parameterInfo.getName()}<#if parameterInfo_h
 <#if classInfo.getLiterals()?? >
 <@ident nestingLevel /><@singleline>
 <#list classInfo.getLiterals() as literal >
+<#if literal.getName()?? >
 ${literal.getName()}
 <#if literal_has_next>, <#else>;</#if>
+</#if>
 </#list>
 </@singleline>
 </#if>
@@ -380,7 +366,9 @@ ${JAVA_IDENT}
 <#assign input >
 <#nested />
 </#assign>
-${input?replace("\n","")}<#return />
+<#assign output >
+${input?replace("\r\n","")}</#assign >
+${output?replace("\n","")}<#return />
 </#macro> 
 
 
