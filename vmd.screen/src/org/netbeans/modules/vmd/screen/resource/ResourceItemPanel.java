@@ -54,7 +54,7 @@ public class ResourceItemPanel extends JLabel implements MouseListener {
 
     public ResourceItemPanel(DesignComponent component) {
         this.component = component;
-        setOpaque (true);
+        setOpaque (false);
         setBackground (Color.WHITE);
         addMouseListener(this);
     }
