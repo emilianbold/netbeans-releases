@@ -20,6 +20,7 @@
 package org.netbeans.modules.autoupdate.updateprovider;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.spi.autoupdate.UpdateItem;
@@ -51,10 +52,10 @@ public class LocalNBMsProvider implements UpdateProvider {
         Map<String, UpdateItem> res = new HashMap<String, UpdateItem> ();
         for (int i = 0; i < nbms.length; i++) {
             Map<String, UpdateItem> items = AutoupdateInfoParser.getUpdateItems (nbms [i]);
-            assert items != null && ! items.isEmpty ();
-            String id = items.keySet ().iterator ().next ();
-            assert items.size () == 1 : "AutoupdateInfoParser returns " + items.get (id) + " for file " + nbms [i];
-            res.put (id, items.get (id));
+            assert items != null && ! items.isEmpty () && items.size () == 1 : "Only one item found in parsed items " + items;
+            for (String id : items.keySet ()) {
+                res.put (id, items.get (id));
+            }
         }
         return res;
     }

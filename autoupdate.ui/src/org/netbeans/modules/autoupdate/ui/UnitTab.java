@@ -60,6 +60,7 @@ public class UnitTab extends javax.swing.JPanel {
     private DocumentListener dlForSearch;
     private String filter = "";
     private PluginManagerUI manager = null;
+    private LocalDownloadSupport localDownloadSupport = null;
     private static final RequestProcessor RP = new RequestProcessor();
     private final RequestProcessor.Task searchTask = RP.create(new Runnable(){
         public void run() {
@@ -367,12 +368,27 @@ public class UnitTab extends javax.swing.JPanel {
     
 private void bAddLocallyDownloadsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bAddLocallyDownloadsActionPerformed
     
-    List<UpdateUnit> units = LocalDownloadSupport.getUpdateUnits ();
-    List<UnitCategory> categories = new ArrayList<UnitCategory>();
-    categories.addAll(Utilities.makeAvailableCategories(units, true));
-    categories.addAll(Utilities.makeUpdateCategories(units, true));    
-    model.setData (categories);
-    fireUpdataUnitChange ();
+    try {
+        table.setEnabled(false);
+        bAddLocallyDownloads.setEnabled(false);
+        bTabAction.setEnabled(false);            
+        List<UpdateUnit> units = getLocalDownloadSupport ().getUpdateUnits ();
+        List<UnitCategory> categories = new ArrayList<UnitCategory>();
+        categories.addAll(Utilities.makeAvailableCategories(units, true));
+        categories.addAll(Utilities.makeUpdateCategories(units, true));
+        for (UnitCategory c : categories) {
+            for (Unit u : c.getUnits ()) {
+                u.setMarked (true);
+            }
+        }
+        model.setData (categories);
+        fireUpdataUnitChange ();
+    } finally {
+        table.setEnabled(true);
+        bAddLocallyDownloads.setEnabled(true);
+        bTabAction.setEnabled(model.getMarkedUnits().size() > 0);
+        fireUpdataUnitChange();
+    }
     
 }//GEN-LAST:event_bAddLocallyDownloadsActionPerformed
 
@@ -454,6 +470,13 @@ private void bTabActionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 private void bRefreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bRefreshActionPerformed
     refresh (true);
 }//GEN-LAST:event_bRefreshActionPerformed
+
+private LocalDownloadSupport getLocalDownloadSupport () {
+    if (localDownloadSupport == null) {
+        localDownloadSupport = new LocalDownloadSupport ();
+    }
+    return localDownloadSupport;
+}
 
 private void refresh (final boolean force) {
     table.setEnabled(false);

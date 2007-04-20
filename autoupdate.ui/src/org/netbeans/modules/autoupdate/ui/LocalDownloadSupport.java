@@ -24,25 +24,27 @@ import java.awt.Window;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.prefs.Preferences;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
-import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.netbeans.api.autoupdate.UpdateUnit;
-import org.netbeans.api.autoupdate.UpdateUnitProvider;
-import org.netbeans.spi.autoupdate.UpdateProvider;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
  * @author Jiri Rechtacek
  */
 public class LocalDownloadSupport {
-    private static File defaultDir = null;
     private static final FileFilter NBM_FILE_FILTER = new NbmFileFilter();
+    private Set<File> selectedFiles = null;
+    private static String LOCAL_DOWNLOAD_DIRECTORY_KEY = "local-download-directory"; // NOI18N
     
-    public static File [] selectNbmFiles () {
+    public File [] selectNbmFiles () {
         JFileChooser chooser = new JFileChooser ();
         chooser.setFileSelectionMode (JFileChooser.FILES_ONLY);
         chooser.addChoosableFileFilter (NBM_FILE_FILTER);
@@ -51,33 +53,41 @@ public class LocalDownloadSupport {
         chooser.setFileHidingEnabled (false);
         chooser.setDialogTitle (getBundle ("CTL_FileChooser_Title"));
         
-        if (defaultDir == null)
-            defaultDir = getDefaultDir ();
+        String filePath = getPreferences ().get (LOCAL_DOWNLOAD_DIRECTORY_KEY, null);
+        File dir = null;
+        if (filePath != null) {
+            dir = new File (filePath);
+            if (! dir.exists ()) {
+                dir = getDefaultDir ();
+            }
+        }
 
-        if ( defaultDir != null) {
-            chooser.setCurrentDirectory (defaultDir);
+        if ( dir != null) {
+            chooser.setCurrentDirectory (dir);
         }
 
         Window focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager ().getActiveWindow ();
 
         if (chooser.showOpenDialog (KeyboardFocusManager.getCurrentKeyboardFocusManager ().getActiveWindow ()) 
-                /*, getBundle ("CTL_FileChooser_Approve_Button")*/
-                != JFileChooser.APPROVE_OPTION) {
+                == JFileChooser.APPROVE_OPTION) {
             
-            return null;
+            File [] newFiles = chooser.getSelectedFiles ();
+
+            getSelectedFiles ().addAll (Arrays.asList (newFiles));
         }
 
-        defaultDir = chooser.getCurrentDirectory ();
+        getPreferences ().put(LOCAL_DOWNLOAD_DIRECTORY_KEY, chooser.getCurrentDirectory ().getAbsolutePath ()); // NOI18N
         
-        // #46353, recover focus after close the JFileChooser
+        /*// #46353, recover focus after close the JFileChooser
         if (focusOwner != null) {
             focusOwner.toFront ();
-        }
+        }*/
+        
 
-        return chooser.getSelectedFiles ();
+        return getSelectedFiles ().toArray (new File [0]);
     }
     
-    public static List<UpdateUnit> getUpdateUnits () {
+    public List<UpdateUnit> getUpdateUnits () {
         File [] nbms = selectNbmFiles ();        
         List<UpdateUnit> retval = null;
         if (nbms != null) {
@@ -104,6 +114,17 @@ public class LocalDownloadSupport {
 
     public static String getBundle (String key) {
         return NbBundle.getMessage (LocalDownloadSupport.class, key);
+    }
+    
+    private Set<File> getSelectedFiles () {
+        if (selectedFiles == null) {
+            selectedFiles = new HashSet<File> ();
+        }
+        return selectedFiles;
+    }
+    
+    private Preferences getPreferences () {
+        return NbPreferences.forModule (LocalDownloadSupport.class);
     }
     
 }

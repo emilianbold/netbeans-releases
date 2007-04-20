@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.autoupdate.updateprovider;
 
-import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -62,7 +61,8 @@ public class AutoupdateInfoParser {
             Document doc = getAutoupdateInfo (nbmFile);
             SimpleItem simple = createSimpleItem (doc, false);
             assert ! (simple instanceof SimpleItem.License) : simple + " is not instanceof License.";
-            items.put (simple.getId (), simple.toUpdateItem (getLicenses (nbmFile)));
+            UpdateItem update = simple.toUpdateItem (getLicenses (nbmFile));
+            items.put (simple.getId (), update);
         } catch (IOException ex) {
             ERR.log (Level.INFO, ex.getMessage(), ex);
         } catch (SAXException ex) {

@@ -22,11 +22,9 @@ package org.netbeans.modules.autoupdate.services;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.UpdateElement;
@@ -75,7 +73,7 @@ public class UpdateUnitFactory {
     public Map<String, UpdateUnit> getUpdateUnits (UpdateProvider provider) {
         Collection<UpdateItem> items = null;
         try {
-             items = provider.getUpdateItems ().values();        
+             items = provider.getUpdateItems ().values();
 
         } catch(IOException iex) {
             Exceptions.printStackTrace(iex);
