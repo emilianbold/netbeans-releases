@@ -336,7 +336,7 @@ abstract class Panel<T> implements WizardDescriptor.ValidatingPanel<T> {
 
   private static final String DOT = "."; // NOI18N
   private static final String EXT = "xsl"; // NOI18N
-  private static final String NAME = "newXslFile"; // NOI18N
+  private static final String NAME = "newXSLFile"; // NOI18N
 
   protected static final String EMPTY = ""; // NOI18N
 
