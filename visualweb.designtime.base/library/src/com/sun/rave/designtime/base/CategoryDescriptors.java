@@ -19,7 +19,7 @@ import java.util.ResourceBundle;
 public class CategoryDescriptors {
     
     private static final ResourceBundle bundle =
-            ResourceBundle.getBundle("com.sun.rave.designtime.base.CategoryDescriptorsBundle", // NOI18N
+            ResourceBundle.getBundle("com.sun.rave.designtime.base.Bundle", // NOI18N
             Locale.getDefault(),
             CategoryDescriptors.class.getClassLoader());
     
