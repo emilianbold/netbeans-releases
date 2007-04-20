@@ -27,9 +27,19 @@ public interface ILanguageParser
 	public void parseFile( String filename );
 
 	/**
+	 * Process the given file. The fileName should be an absolute path to the file.
+	*/
+	public void parseFile( String filename, String charset);
+
+	/**
 	 * Parse the contents of the specified operation.  Message events will be sent the registered reverse engineering listeners.
 	*/
 	public void parseOperation( String filename, IREOperation operation );
+
+	/**
+	 * Parse the contents of the specified operation.  Message events will be sent the registered reverse engineering listeners.
+	*/
+	public void parseOperation( String filename, String charset, IREOperation operation );
 
 	/**
 	 * Get/Sets the parsers state listener.

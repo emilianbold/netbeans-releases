@@ -32,10 +32,13 @@ import org.netbeans.modules.uml.parser.java.JavaTreeParser;
 import org.netbeans.modules.uml.core.reverseengineering.parsers.javaparser.IREJavaParser;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 
 import org.dom4j.Node;
 
@@ -117,13 +120,24 @@ public class REJavaParser implements IREJavaParser
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguageParser#parseFile(java.lang.String)
+     * @see org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguageParser#parseFile(java.lang.String, java.lang.String)
      */
-    public void parseFile(String filename)
+    public void parseFile(String filename, String charset)
     {
         try
         {
-            FileReader reader = new FileReader(filename);
+	    InputStreamReader reader = null;
+	    if (charset != null) {
+		try {
+		    reader = new InputStreamReader(new FileInputStream(filename), charset);
+		} catch (UnsupportedEncodingException uee) {
+		    // catch it here thus giving chance 
+		    // to default charset version below
+		}
+	    }
+	    if (reader == null) {
+		reader = new InputStreamReader(new FileInputStream(filename));
+	    }
             BufferedReader bufr = new BufferedReader(reader);
             CharBuffer buffer = new CharBuffer(bufr);
             processStreamAsFile(buffer, filename);
@@ -141,9 +155,17 @@ public class REJavaParser implements IREJavaParser
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguageParser#parseOperation(java.lang.String, org.netbeans.modules.uml.core.reverseengineering.reframework.IREOperation)
+     * @see org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguageParser#parseFile(java.lang.String)
      */
-    public void parseOperation(String filename, IREOperation operation)
+    public void parseFile(String filename)
+    {
+	parseFile(filename, null);
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguageParser#parseOperation(java.lang.String, java.lang.String, org.netbeans.modules.uml.core.reverseengineering.reframework.IREOperation)
+     */
+    public void parseOperation(String filename, String charset, IREOperation operation)
     {
         if (filename != null && operation != null)
         {
@@ -154,13 +176,21 @@ public class REJavaParser implements IREJavaParser
             // This is non-ideal, but easier than creating a constrained Reader
             // TODO: Fix this to use a constrained Reader so that we 
             // don't introduce a memory bottleneck here.
-            String text = extractText(filename, (int) start, (int) end);
+            String text = extractText(filename, charset, (int) start, (int) end);
             StringReader read = new StringReader(text);
             CharBuffer buf = new CharBuffer(read);
             processStreamAsFragment(buf, filename);
         }
     }
     
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguageParser#parseOperation(java.lang.String, org.netbeans.modules.uml.core.reverseengineering.reframework.IREOperation)
+     */
+    public void parseOperation(String filename, IREOperation operation)
+    {
+	parseOperation(filename, null, operation);
+    }
+
     private long getPosition(IParserData data, String tagname)
     {
         long pos = -1;
@@ -175,14 +205,25 @@ public class REJavaParser implements IREJavaParser
         return pos;
     }
     
-    private String extractText(String filename, int start, int end)
+    private String extractText(String filename, String charset, int start, int end)
     {
         if (end < start)
             return null;
 
         try 
         {
-	        FileReader reader = new FileReader(filename);
+	    InputStreamReader reader = null;
+	    if (charset != null) {
+		try {
+		    reader = new InputStreamReader(new FileInputStream(filename), charset);
+		} catch (UnsupportedEncodingException uee) {
+		    // catch it here thus giving chance 
+		    // to default charset version below
+		}
+	    }
+	    if (reader == null) {
+		reader = new InputStreamReader(new FileInputStream(filename));
+	    }
             BufferedReader bufr = new BufferedReader(reader);
             bufr.skip(start);
             

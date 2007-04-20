@@ -84,9 +84,27 @@ public class LanguageParser implements ILanguageParser
     }
 
     /* (non-Javadoc)
+     * @see org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguageParser#parseFile(java.lang.String, java.lang.String)
+     */
+    public void parseFile(String filename, String charset)
+    {
+        // TODO Auto-generated method stub
+
+    }
+
+    /* (non-Javadoc)
      * @see org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguageParser#parseOperation(java.lang.String, org.netbeans.modules.uml.core.reverseengineering.reframework.IREOperation)
      */
     public void parseOperation(String filename, IREOperation operation)
+    {
+        // TODO Auto-generated method stub
+
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguageParser#parseOperation(java.lang.String, java.lang.String, org.netbeans.modules.uml.core.reverseengineering.reframework.IREOperation)
+     */
+    public void parseOperation(String filename, String charset, IREOperation operation)
     {
         // TODO Auto-generated method stub
 

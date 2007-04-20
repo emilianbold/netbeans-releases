@@ -38,6 +38,8 @@ import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframe
 import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguageParserSettings;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ParseFacility;
 
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.REIntegrationUtil;
+
 /**
  * @author Aztec
  *
@@ -102,7 +104,7 @@ public class UMLParser  extends ParseFacility implements IUMLParser
 		ILanguageParser  pParser = retrieveOpParserForFile(filename, pOptions, pOperation);
 		if((pParser != null) && (m_ParserDispatcher != null))
 		{      
-		   pParser.parseOperation(filename, pOperation);
+		   pParser.parseOperation(filename, REIntegrationUtil.getEncoding(filename), pOperation);
 		}
 	}
 	
@@ -157,7 +159,7 @@ public class UMLParser  extends ParseFacility implements IUMLParser
 					ILanguageParser  pParser = retrieveParserForFile(filename);
 					if(pParser != null)
 					{  
-						pParser.parseFile(filename);               
+						pParser.parseFile(filename, REIntegrationUtil.getEncoding(filename));
 					}
 				}
 				m_ParserDispatcher.fireEndParse(filename, null);
@@ -170,8 +172,8 @@ public class UMLParser  extends ParseFacility implements IUMLParser
 
 	}
 
-	public void processStreamFromFile(String filename, ILanguageParserSettings 
-									   					pSettings)
+	public void processStreamFromFile(String filename, 
+					  ILanguageParserSettings pSettings)
 	{
 		if(m_ParserDispatcher != null)
 		{
@@ -203,7 +205,7 @@ public class UMLParser  extends ParseFacility implements IUMLParser
 //						}
 //						else
 						{
-							pParser.parseFile(filename);               
+							pParser.parseFile(filename, REIntegrationUtil.getEncoding(filename));
 						}
 					}
 				}
