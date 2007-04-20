@@ -33,6 +33,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.core.api.multiview.MultiViewHandler;
+import org.netbeans.core.api.multiview.MultiViewPerspective;
+import org.netbeans.core.api.multiview.MultiViews;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
@@ -69,6 +72,16 @@ class OutlineManagerListener implements PropertyChangeListener {
                 if (!isMultiViewTopComponent(tc)) {
                     continue;
                 }
+
+                // XXX This doesn't work, one can't get to the component from the perspective, nor set the activated nodes.
+                // TODO Find a better solution (some connection to designer/jsf?).
+                // Maybe one need to listen on the changes in the navigator (with outline?), there doesn't seem to be any support for that.
+//                MultiViewHandler multiViewHandler = MultiViews.findMultiViewHandler(tc);
+//                if (multiViewHandler == null) {
+//                    continue;
+//                }
+//                
+//                MultiViewPerspective multiViewPerspective = multiViewHandler.getSelectedPerspective();
 
                 // XXX NB #73301 see below.
                 TopComponent elementTC = getSelectedMultiView(tc);
@@ -139,11 +152,13 @@ class OutlineManagerListener implements PropertyChangeListener {
         }
         // XXX Is it better to use client property or other mechanism
         // or to put something in its context?
-        return "org.netbeans.modules.visualweb.designer.DesignerTopComp".equals(tc.getClass().getName()); // NOI18N
+        // XXX This is definitelly not correct way.
+        return "org.netbeans.modules.visualweb.designer.jsf.ui.JsfTopComponent".equals(tc.getClass().getName()); // NOI18N
     }
 
     // XXX NB #49507 See below.
     private static boolean isMultiViewTopComponent(TopComponent tc) {
+        // XXX This string comparison is bad too.
         return tc != null
             && "org.netbeans.core.multiview.MultiViewCloneableTopComponent".equals(tc.getClass().getName()); // NOI18N
     }
