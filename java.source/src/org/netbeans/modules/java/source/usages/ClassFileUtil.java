@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -282,15 +282,15 @@ public class ClassFileUtil {
         if (nameChars.length < nameLength) {
             nameChars = new char[nameLength];
         }
-        Convert.utf2chars(name.table.names, name.index, nameChars, 0, nameLength);
+        int charLength = Convert.utf2chars(name.table.names, name.index, nameChars, 0, nameLength);
         if (separator != '.') {         //NOI18N
-            for (int i=0; i<nameLength; i++) {
+            for (int i=0; i<charLength; i++) {
                 if (nameChars[i] == '.') {  //NOI18N
                     nameChars[i] = separator; 
                 }
             }
         }
-        sb.append(nameChars,0,nameLength);
+        sb.append(nameChars,0,charLength);
     }
     
     /**
