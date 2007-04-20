@@ -54,11 +54,6 @@ public class FileStatusCache {
      */ 
     private static final Map<File, FileInformation> NOT_MANAGED_MAP = new NotManagedMap();
         
-    private static final int STATUS_MISSING =  
-            FileInformation.STATUS_VERSIONED_NEWINREPOSITORY | 
-            FileInformation.STATUS_VERSIONED_DELETEDLOCALLY | 
-            FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY; 
-    
     public static final int REPOSITORY_STATUS_UNKNOWN   = 0;
     public static final int REPOSITORY_STATUS_UPDATED   = 'U';
     public static final int REPOSITORY_STATUS_PATCHED   = 'P';
@@ -338,37 +333,22 @@ public class FileStatusCache {
     }
 
     /**
-     * Scans given directory and performs two tasks: 1) refreshes all cached file statuses, 2) removes from cache
-     * all files having one of the {@link STATUS_MISSING} status.  
+     * Refreshes status of all files in the given directory.  
      *  
      * @param dir directory to cleanup
      */ 
     public void clearVirtualDirectoryContents(File dir, boolean recursive, File [] exclusions) {
-        Map<File, FileInformation> files = (Map<File, FileInformation>) turbo.readEntry(dir, FILE_STATUS_MAP);
-        if (files == null) {
-           return;
-        }
-        Set<File> set = new HashSet<File>(files.keySet());
-        Map<File, FileInformation> newMap = null;
-        outter: for (Iterator i = set.iterator(); i.hasNext();) {
-            File file = (File) i.next();
+        Map<File, FileInformation> files = cacheProvider.getAllModifiedValues();
+        outter : for (Map.Entry<File, FileInformation> entry : files.entrySet()) {
+            File file = entry.getKey();
             if (exclusions != null) {
                 for (int j = 0; j < exclusions.length; j++) {
                     if (Utils.isParentOrEqual(exclusions[j], file)) continue outter; 
                 }
             }
-            if (recursive && file.isDirectory()) {
-                clearVirtualDirectoryContents(file, true, exclusions);
-            }
-            FileInformation fi = refresh(file, REPOSITORY_STATUS_UNKNOWN);
-            if ((fi.getStatus() & STATUS_MISSING) != 0) {
-                if (newMap == null) newMap = new HashMap<File, FileInformation>(files);
-                newMap.remove(file);
-            }
-        }
-        if (newMap != null) {
-            dir = FileUtil.normalizeFile(dir);
-            turbo.writeEntry(dir, FILE_STATUS_MAP, newMap);
+            if (!Utils.isParentOrEqual(dir, file)) continue;
+            if (!recursive && !dir.equals(file.getParentFile())) continue;
+            refresh(file, REPOSITORY_STATUS_UNKNOWN);
         }
     }
 
