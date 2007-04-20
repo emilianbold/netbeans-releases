@@ -16,6 +16,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
@@ -81,9 +82,9 @@ public class WebFolderListener extends FileChangeAdapter{
     }
     public void fileRenamed(FileRenameEvent fe) {
         /* fileRenamed should not modify the faces-config because it should
-        * be up to refactoring to do this. If that is the case, FacesModelPropertyChangeListener
-        * should reload it.
-        */
+         * be up to refactoring to do this. If that is the case, FacesModelPropertyChangeListener
+         * should reload it.
+         */
         final FileObject fileObj = fe.getFile();
         final FileRenameEvent event = fe;
         EventQueue.invokeLater(new Runnable() {
@@ -109,10 +110,10 @@ public class WebFolderListener extends FileChangeAdapter{
         PageFlowNode oldNode = pfc.getPageName2Node(pageDisplayName);
         if( oldNode != null ) {
             if( pfc.isPageInFacesConfig(oldNode.getDisplayName()) ) {
-//                Node tmpNode = new AbstractNode(Children.LEAF);
-//                tmpNode.setName(pageDisplayName);
-//                oldNode.replaceWrappedNode(tmpNode);
-//                view.resetNodeWidget(oldNode, false);  /* If I add a listener to PageFlowNode, then I won't have to do this*/ 
+                //                Node tmpNode = new AbstractNode(Children.LEAF);
+                //                tmpNode.setName(pageDisplayName);
+                //                oldNode.replaceWrappedNode(tmpNode);
+                //                view.resetNodeWidget(oldNode, false);  /* If I add a listener to PageFlowNode, then I won't have to do this*/
                 pfc.changeToAbstractNode(oldNode, pageDisplayName );
             } else {
                 view.removeNodeWithEdges(oldNode);
@@ -193,23 +194,28 @@ public class WebFolderListener extends FileChangeAdapter{
             }
         }
     }
+
     
     
     private void renameFile(FileObject fileObj, String oldDisplayName, String newDisplayName ){
         
-        PageFlowNode oldNode = pfc.getPageName2Node(oldDisplayName);
+        PageFlowNode oldNode = pfc.getPageName2Node(oldDisplayName);        
+        PageFlowNode abstractNode = pfc.getPageName2Node(newDisplayName); // I know I do this twice, but I am trying to keep it less confusing.
         
-        if ( oldNode == null || oldNode.isRenaming()){
+        if ( oldNode == null && abstractNode != null ){
+            /* Probably a refactoring scenario */
+            Node dataNode = getNodeDelegate( fileObj );
+            abstractNode.replaceWrappedNode(dataNode);
+            view.resetNodeWidget(abstractNode, true);
+            view.validateGraph();
             return;
         }
         
-        PageFlowNode abstractNode = pfc.getPageName2Node(newDisplayName);
-        Node newNodeDelegate = null;
-        try {
-            newNodeDelegate = (DataObject.find(fileObj)).getNodeDelegate();
-        } catch ( DataObjectNotFoundException donfe ){
-            Exceptions.printStackTrace(donfe);
+        if( oldNode.isRenaming() ){
+            return;
         }
+        
+        Node newNodeDelegate = getNodeDelegate(fileObj);
         
         //If we are in project view scope
         if( PageFlowUtilities.getInstance().getCurrentScope() == PageFlowUtilities.LBL_SCOPE_PROJECT ){
@@ -217,7 +223,7 @@ public class WebFolderListener extends FileChangeAdapter{
         }
         
         if( abstractNode != null ){
-//            assert !abstractNode.isDataNode();  //Never should this have already been a file node.
+            //            assert !abstractNode.isDataNode();  //Never should this have already been a file node.
             if( abstractNode.isDataNode()) {
                 System.err.println("So Called Abstract Node: " + abstractNode);
                 Thread.dumpStack();
@@ -229,9 +235,10 @@ public class WebFolderListener extends FileChangeAdapter{
                 pfc.changeToAbstractNode(oldNode, oldDisplayName);
             } else if ( oldNode != null ){
                 view.removeNodeWithEdges(oldNode);
+                pfc.removePageName2Node(oldNode, true);
             }
             abstractNode.replaceWrappedNode(newNodeDelegate);
-            view.resetNodeWidget(abstractNode, false);
+            view.resetNodeWidget(abstractNode, true);
         } else if ( oldNode != null ){
             if( pfc.isPageInFacesConfig(oldDisplayName) ){
                 pfc.changeToAbstractNode(oldNode, oldDisplayName);
@@ -246,5 +253,14 @@ public class WebFolderListener extends FileChangeAdapter{
         view.validateGraph();
         
     }
-    
+        
+    private Node getNodeDelegate( FileObject fileObj) {
+        Node newNodeDelegate = null;
+        try {
+            newNodeDelegate = (DataObject.find(fileObj)).getNodeDelegate();
+        } catch ( DataObjectNotFoundException donfe ){
+            Exceptions.printStackTrace(donfe);
+        }
+        return newNodeDelegate;
+    }
 }

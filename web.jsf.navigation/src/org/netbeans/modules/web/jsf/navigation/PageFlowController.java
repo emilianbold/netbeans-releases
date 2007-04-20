@@ -274,11 +274,19 @@ public class PageFlowController {
     }
     
     public final boolean isKnownFolder( FileObject folder ){
-        
-        if( !folder.getPath().contains("WEB-INF") && !folder.getPath().contains("META-INF") ) {
-            return true;
+        /* If it is not a folder return false*/
+         if( !folder.isFolder()  ) {
+            return false;
+         }  
+         /* If it does not exist within WebFolder return false */
+         if(  !folder.getPath().contains(getWebFolder().getPath() )){
+             return false;
+         }
+        /* If it exists withing WEB-INF or META-INF return false */
+        if( folder.getPath().contains("WEB-INF") ||folder.getPath().contains("META-INF") ) {
+            return false;
         }
-        return false;
+        return true;
     }
     
     /**
@@ -673,6 +681,21 @@ public class PageFlowController {
     public final boolean containsWebFile(FileObject fileObj){
         return webFiles.contains(fileObj);
     }
+    
+    //    /**
+    //     * Return the file if the file name is in the webfiles collection
+    //     * @param displayName
+    //     * @return fileObject, returns null if nothing is found.
+    //     **/
+    //    public final FileObject getFileFromWebFiles( String displayName ){
+    //        for( FileObject fileObject : webFiles ){
+    //            String fileDisplayName = PageFlowNode.getFolderDisplayName(webFolder, fileObject);
+    //            if( fileDisplayName.equals(displayName)){
+    //                return fileObject;
+    //            }
+    //        }
+    //        return null;
+    //    }
     
     // case2Node Wrappers
     public final void putCase2Node(NavigationCase navCase, NavigationCaseNode navCaseNode ){
