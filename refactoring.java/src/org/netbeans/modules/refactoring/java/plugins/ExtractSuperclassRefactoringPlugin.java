@@ -42,6 +42,8 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.CancellableTask;
@@ -402,7 +404,6 @@ public class ExtractSuperclassRefactoringPlugin extends RetoucheRefactoringPlugi
             boolean makeAbstract = false;
             TreeMaker make = wc.getTreeMaker();
             
-            
             // add type parameters
             List<TypeMirror> typeParams = findUsedGenericTypes(wc, sourceType.resolve(wc), refactoring);
             List<TypeParameterTree> newTypeParams = new ArrayList<TypeParameterTree>(typeParams.size());
@@ -419,7 +420,6 @@ public class ExtractSuperclassRefactoringPlugin extends RetoucheRefactoringPlugi
                         }
                     }
                 }
-
             }
 
             // add fields, methods and implements
@@ -460,8 +460,7 @@ public class ExtractSuperclassRefactoringPlugin extends RetoucheRefactoringPlugi
             }
 
             // create superclass
-            Tree superClass = make.Type(sourceTypeElm.getSuperclass());
-            
+            Tree superClass = makeSuperclass(make, sourceTypeElm);
             
             // create new class
             ClassTree newClassTree = make.Class(
@@ -498,6 +497,14 @@ public class ExtractSuperclassRefactoringPlugin extends RetoucheRefactoringPlugi
             flags.add(Modifier.ABSTRACT);
             flags.remove(Modifier.FINAL);
             return make.Modifiers(flags, oldMods.getAnnotations());
+        }
+        
+        private static Tree makeSuperclass(TreeMaker make, TypeElement clazz) {
+            DeclaredType supType = (DeclaredType) clazz.getSuperclass();
+            TypeElement supEl = (TypeElement) supType.asElement();
+            return supEl.getSuperclass().getKind() == TypeKind.NONE
+                    ? null
+                    : make.Type(supType);
         }
         
     }
