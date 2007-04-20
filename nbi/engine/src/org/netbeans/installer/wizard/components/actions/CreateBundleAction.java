@@ -273,6 +273,7 @@ public class CreateBundleAction extends WizardAction {
                 // increment the progress percentage
                 progress.addPercentage(percentageChunk);
             }
+            
             LogManager.log("... adding " + groups.size() + " groups");
             for (Group group: groups) {
                 // check for cancel status
@@ -336,6 +337,11 @@ public class CreateBundleAction extends WizardAction {
                 }
             }
             
+            // set the products' status back to installed so that they are
+            // correctly mentioned in the state file
+            for (Product product: products) {
+                product.setStatus(Status.INSTALLED);
+            }
         } catch (IOException e) {
             ErrorManager.notifyError("Failed to create the bundle", e);
         } catch (XMLException e) {
@@ -361,11 +367,12 @@ public class CreateBundleAction extends WizardAction {
             }
             long seconds = System.currentTimeMillis() - started;
             LogManager.log("... generating bundle finished");
-            LogManager.log("[bundle] Time : " + (seconds/1000) + "." + (seconds%1000) + " seconds");
+            LogManager.log("[bundle] Time : " + (seconds / 1000) + "." + (seconds % 1000) + " seconds");
             LogManager.unindent();
         }
     }
     
+    @Override
     public void cancel() {
         super.cancel();
         
