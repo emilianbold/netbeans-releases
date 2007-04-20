@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -20,6 +20,7 @@
 package org.netbeans.installer.wizard.components.actions;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.installer.product.Registry;
@@ -60,7 +61,7 @@ public class SearchForJavaAction extends WizardAction {
     // private //////////////////////////////////////////////////////////////////////
     private static String getLabel(File javaHome, JavaInfo javaInfo) {
         return StringUtils.format(JAVA_ENTRY_LABEL,
-                javaHome, 
+                javaHome,
                 javaInfo.getVersion().toJdkStyle(),
                 javaInfo.getVendor());
     }
@@ -74,8 +75,8 @@ public class SearchForJavaAction extends WizardAction {
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
-    public static List<File>   javaLocations = new LinkedList<File>();
-    public static List<String> javaLabels    = new LinkedList<String>();
+    public static List<File> javaLocations = new LinkedList<File>();
+    public static List<String> javaLabels = new LinkedList<String>();
     
     public static File lastSelectedJava = null;
     
@@ -107,7 +108,7 @@ public class SearchForJavaAction extends WizardAction {
         for (int i = 0; i < locations.size(); i++) {
             final File javaHome = locations.get(i).getAbsoluteFile();
             
-            progress.setDetail(StringUtils.format(CHECKING,javaHome));
+            progress.setDetail(StringUtils.format(CHECKING, javaHome));
             
             if (isCanceled()) return; // check for cancel status
             
@@ -211,9 +212,17 @@ public class SearchForJavaAction extends WizardAction {
         return javaLocations.size() == 0;
     }
     
-    private void fetchLocationsFromFilesystem(List<File> locations) {
-        for (String location: JAVA_FILESYSTEM_LOCATIONS) {
-            File parent = SystemUtils.parsePath(location);
+    private void fetchLocationsFromFilesystem(final List<File> locations) {
+        String[] candidateLocations = JAVA_FILESYSTEM_LOCATIONS;
+        if (SystemUtils.isWindows()) {
+            candidateLocations = SystemUtils.substract(
+                    Arrays.asList(candidateLocations),
+                    Arrays.asList(JAVA_FILESYSTEM_EXCLUDES_WINDOWS)).toArray(
+                    new String[0]);
+        }
+        
+        for (String location: candidateLocations) {
+            final File parent = SystemUtils.parsePath(location);
             
             if (parent.exists() && parent.isDirectory()) {
                 locations.add(parent);
@@ -227,16 +236,16 @@ public class SearchForJavaAction extends WizardAction {
         }
     }
     
-    private void fetchLocationsFromEnvironment(List<File> locations) {
+    private void fetchLocationsFromEnvironment(final List<File> locations) {
         LogManager.logIndent("checking for possible java locations in environment");
         
         for (String name: JAVA_ENVIRONMENT_VARIABLES) {
-            String value = System.getenv(name);
+            final String value = System.getenv(name);
             
             if (value != null) {
                 LogManager.log("found: " + name + " = " + value); // NOI18N
                 
-                File file = new File(value).getAbsoluteFile();
+                final File file = new File(value).getAbsoluteFile();
                 if (!locations.contains(file)) {
                     locations.add(file);
                 }
@@ -246,12 +255,12 @@ public class SearchForJavaAction extends WizardAction {
         LogManager.logUnindent("... finished");
     }
     
-    private void fetchLocationsFromWindowsRegistry(List<File> locations) {
+    private void fetchLocationsFromWindowsRegistry(final List<File> locations) {
         LogManager.logIndent("checking for possible java locations in environment");
         
-        WindowsNativeUtils nativeUtils =
+        final WindowsNativeUtils nativeUtils =
                 ((WindowsNativeUtils) SystemUtils.getNativeUtils());
-        WindowsRegistry registry =
+        final WindowsRegistry registry =
                 nativeUtils.getWindowsRegistry();
         
         try {
@@ -280,7 +289,7 @@ public class SearchForJavaAction extends WizardAction {
                             continue;
                         }
                         
-                        String javaHome = registry.getStringValue(
+                        final String javaHome = registry.getStringValue(
                                 section,
                                 path + WindowsRegistry.SEPARATOR + key,
                                 JavaUtils.JAVAHOME_VALUE,
@@ -288,12 +297,12 @@ public class SearchForJavaAction extends WizardAction {
                         
                         LogManager.log("found: " + (section == HKLM ?
                             "HKEY_LOCAL_MACHINE" : "HKEY_CURRENT_USER") + // NOI18N
-                                "\\" + path + "\\" + key + "\\" + // NOI18N
-                                JavaUtils.JAVAHOME_VALUE + " = " + javaHome); // NOI18N
+                            "\\" + path + "\\" + key + "\\" + // NOI18N
+                            JavaUtils.JAVAHOME_VALUE + " = " + javaHome); // NOI18N
                         
                         
                         // add java home to the list if it's not there already
-                        File file = new File(javaHome);
+                        final File file = new File(javaHome);
                         if (file.exists() &&
                                 file.isDirectory() &&
                                 !locations.contains(file)) {
@@ -309,7 +318,7 @@ public class SearchForJavaAction extends WizardAction {
         LogManager.logUnindent("... finished");
     }
     
-    private void fetchLocationsFromRegistry(List<File> locations) {
+    private void fetchLocationsFromRegistry(final List<File> locations) {
         for (Product jdk: Registry.getInstance().getProducts(JDK_PRODUCT_UID)) {
             if (jdk.getStatus() == Status.INSTALLED) {
                 if (!locations.contains(jdk.getInstallationLocation())) {
@@ -333,18 +342,18 @@ public class SearchForJavaAction extends WizardAction {
     public static final String CHECKING =
             ResourceUtils.getString(SearchForJavaAction.class,
             "SFJA.checking");//NOI18N
-   public static final String SEARCH_INSTALLED_JAVAS = 
-           ResourceUtils.getString(SearchForJavaAction.class,
+    public static final String SEARCH_INSTALLED_JAVAS =
+            ResourceUtils.getString(SearchForJavaAction.class,
             "SFJA.search.java");//NOI18N
-   public static final String JAVA_ENTRY_LABEL = 
-           ResourceUtils.getString(SearchForJavaAction.class,
-           "SFJA.entrylabel");//NOI18N
-   
-   private static final String SUN_MICROSYSTEMS_VENDOR = 
-           "Sun Microsystems Inc." ; //NOI18N
-   
-   private static final String JDK_PRODUCT_UID = "jdk"; //NOI18N
-   
+    public static final String JAVA_ENTRY_LABEL =
+            ResourceUtils.getString(SearchForJavaAction.class,
+            "SFJA.entrylabel");//NOI18N
+    
+    private static final String SUN_MICROSYSTEMS_VENDOR =
+            "Sun Microsystems Inc." ; //NOI18N
+    
+    private static final String JDK_PRODUCT_UID = "jdk"; //NOI18N
+    
     public static final String [] JAVA_WINDOWS_REGISTRY_ENTRIES = new String [] {
         "SOFTWARE\\JavaSoft\\Java Development Kit",                         // NOI18N
         "SOFTWARE\\JRockit\\Java Development Kit",                          // NOI18N
@@ -375,6 +384,39 @@ public class SearchForJavaAction extends WizardAction {
         "$N{install}", // NOI18N
         "$N{install}/Java", // NOI18N
         
+        "$N{home}", // NOI18N
+        "$N{home}/Java", // NOI18N
+        
+        "/usr", // NOI18N
+        "/usr/jdk", // NOI18N
+        "/usr/jdk/instances", // NOI18N
+        "/usr/java", // NOI18N
+        
+        "/usr/local", // NOI18N
+        "/usr/local/jdk", // NOI18N
+        "/usr/local/jdk/instances", // NOI18N
+        "/usr/local/java", // NOI18N
+        
+        "/export", // NOI18N
+        "/export/jdk", // NOI18N
+        "/export/jdk/instances", // NOI18N
+        "/export/java", // NOI18N
+        
+        "/opt", // NOI18N
+        "/opt/jdk", // NOI18N
+        "/opt/jdk/instances", // NOI18N
+        "/opt/java", // NOI18N
+        
+        "/Library/Java", // NOI18N
+        "/System/Library/Frameworks/JavaVM.framework/Versions/1.5", // NOI18N
+        "/System/Library/Frameworks/JavaVM.framework/Versions/1.5.0", // NOI18N
+        "/System/Library/Frameworks/JavaVM.framework/Versions/1.6", // NOI18N
+        "/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0", // NOI18N
+        "/System/Library/Frameworks/JavaVM.framework/Versions/1.7", // NOI18N
+        "/System/Library/Frameworks/JavaVM.framework/Versions/1.7.0" // NOI18N
+    };
+    
+    public static final String[] JAVA_FILESYSTEM_EXCLUDES_WINDOWS = new String[] {
         "$N{home}", // NOI18N
         "$N{home}/Java", // NOI18N
         

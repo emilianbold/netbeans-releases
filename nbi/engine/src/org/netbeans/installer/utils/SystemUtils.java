@@ -626,7 +626,7 @@ public final class SystemUtils {
     }
     
     // miscellanea //////////////////////////////////////////////////////////////////
-    public static boolean intersects(List<? extends Object> list1, List<? extends Object> list2) {
+    public static boolean intersects(final List<? extends Object> list1, final List<? extends Object> list2) {
         for (int i = 0; i < list1.size(); i++) {
             for (int j = 0; j < list2.size(); j++) {
                 if (list1.get(i).equals(list2.get(j))) {
@@ -638,7 +638,7 @@ public final class SystemUtils {
         return false;
     }
     
-    public static <T> List<T> intersect(List<? extends T> list1, List<? extends T> list2) {
+    public static <T> List<T> intersect(final List<? extends T> list1, final List<? extends T> list2) {
         final List<T> intersection = new LinkedList<T>();
         
         for (T item: list1) {
@@ -648,6 +648,27 @@ public final class SystemUtils {
         }
         
         return intersection;
+    }
+    
+    public static <T> List<T> substract(final List<? extends T> list1, final List<? extends T> list2) {
+        final List<T> result = new LinkedList<T>();
+        
+        for (T item1: list1) {
+            boolean found = false;
+            
+            for (T item2: list2) {
+                if (item1.equals(item2)) {
+                    found = true;
+                    break;
+                }
+            }
+            
+            if (!found) {
+                result.add(item1);
+            }
+        }
+        
+        return result;
     }
     
     // native accessor //////////////////////////////////////////////////////////////
