@@ -28,7 +28,6 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 
 import org.netbeans.junit.ide.ProjectSupport;
 
-
 /**
  * Test create CreateMobilityProject
  *
@@ -99,6 +98,7 @@ public class CreateMobilityProject extends org.netbeans.performance.test.utiliti
         log("================= Project name="+project_name+"}");
         wizard_location.txtProjectName().setText("");
         new EventTool().waitNoEvent(1000);
+        
         wizard_location.txtProjectName().typeText(project_name);
     }
     

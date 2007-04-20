@@ -19,55 +19,61 @@
 
 package gui.window;
 
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
+
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
 
 /**
  *
  * @author mkhramov@netbeans.org
  */
 public class MobilityDeploymentManagerDialog extends org.netbeans.performance.test.utilities.PerformanceTestCase {
-    private JDialogOperator manager;
+    private NbDialogOperator manager;
     private String cmdName;
+
     /**
-     * 
-     * @param testName 
+     * Creates a new instance of MobilityDeploymentManagerDialog
+     * @param testName the name of the test
      */
     public MobilityDeploymentManagerDialog(String testName) {
         super(testName);
-        expectedTime = WINDOW_OPEN;        
+        expectedTime = WINDOW_OPEN;
     }
+
     /**
-     * 
-     * @param testName
-     * @param performanceDataName 
+     * Creates a new instance of MobilityDeploymentManagerDialog
+     * @param testName the name of the test
+     * @param performanceDataName measured values will be saved under this name
      */
     public MobilityDeploymentManagerDialog(String testName, String performanceDataName) {
         super(testName,performanceDataName);
-        expectedTime = WINDOW_OPEN;          
+        expectedTime = WINDOW_OPEN;
     }
+
     public void initialize() {
         log(":: initialize");
-        cmdName = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.deployment.Bundle", "Title_DeploymentManager");
+        cmdName = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|"+
+                Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.deployment.Bundle", "Title_DeploymentManager");
     }
-    
+
     public void prepare() {
         log(":: prepare");
     }
 
     public ComponentOperator open() {
         log(":: open");
-        new ActionNoBlock("Tools|"+cmdName,null).performMenu();
-        manager = new JDialogOperator(cmdName);
+        new ActionNoBlock(cmdName,null).performMenu();
+        manager = new NbDialogOperator(cmdName);
         return null;
     }
-    
+
     public void close() {
         log(":: close");
         manager.close();
-        
-    }    
+    }
+
     public void shutdown() {
         log(":: shutdown");
     }
