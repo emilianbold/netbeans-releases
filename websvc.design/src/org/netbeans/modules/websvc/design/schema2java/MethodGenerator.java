@@ -37,10 +37,10 @@ public class MethodGenerator {
         this.implClassFo=implClassFo;
     }
     /** generate new method to implementation class
-     */ 
-    public void generateMethod(String operationName) {   
-       
-        org.netbeans.modules.websvc.core.MethodGenerator delegatedGenerator = 
+     */
+    public void generateMethod(String operationName) {
+        
+        org.netbeans.modules.websvc.core.MethodGenerator delegatedGenerator =
                 new org.netbeans.modules.websvc.core.MethodGenerator(wsdlModel, implClassFo);
         try {
             delegatedGenerator.generateMethod(operationName);
@@ -48,16 +48,4 @@ public class MethodGenerator {
             ErrorManager.getDefault().notify(ex);
         }
     }
-    
-    public void removeMethod(String operationName) {   
-       
-        org.netbeans.modules.websvc.core.MethodGenerator delegatedGenerator = 
-                new org.netbeans.modules.websvc.core.MethodGenerator(wsdlModel, implClassFo);
-        try {
-            delegatedGenerator.removeMethod(implClassFo, operationName);
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
-        }
-    }
-    
 }

@@ -25,7 +25,6 @@ import java.net.MalformedURLException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -72,7 +71,6 @@ import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.Output;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.PortType;
-import org.netbeans.modules.xml.wsdl.model.RequestResponseOperation;
 import org.netbeans.modules.xml.wsdl.model.Types;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -129,7 +127,7 @@ public class OperationGeneratorHelper {
             
             // we need to distinct between void operation and one way
             //if(returnType != null) {
-                operation = factory.createRequestResponseOperation();
+            operation = factory.createRequestResponseOperation();
             //} else {
             //    operation = factory.createOneWayOperation();
             //}
@@ -150,24 +148,24 @@ public class OperationGeneratorHelper {
                 schema = it.next();
                 schemaModel = schema.getModel();
             }
-                
+            
             if (parameterTypes.size()==0 || parameterTypes.size() > 1 || (parameterTypes.size() == 1 && isPrimitiveType(parameterTypes.get(0)))) {
                 if(schemaModel == null) {
                     schemaModel = createSchemaModel(factory, definitions, types);
                     schema = schemaModel.getSchema();
                 }
-
+                
                 //wrap the parameters in a global element
                 GlobalComplexType complexType = schemaModel.getFactory().createGlobalComplexType();
                 complexType.setName(paramTypeName);
                 Sequence seq = schemaModel.getFactory().createSequence();
                 complexType.setDefinition(seq);
                 schema.addComplexType(complexType);
-
+                
                 for(ParamModel param : parameterTypes) {
                     addElementToSequence(seq, schemaModel, param);
                 }
-
+                
                 paramElement = schemaModel.getFactory().createGlobalElement();
                 paramElement.setName(getUniqueGlobalElementName(schema, operationName)); //NOI18N
                 NamedComponentReference<GlobalType> complexTypeRef = schema.createReferenceTo((GlobalType)complexType, GlobalType.class);
@@ -190,7 +188,7 @@ public class OperationGeneratorHelper {
                     schema.addElement(paramElement);
                 }
             }
-
+            
             if (paramElement!=null) {
                 if(inputMessage == null){
                     inputMessage = factory.createMessage();
@@ -203,7 +201,7 @@ public class OperationGeneratorHelper {
                 part.setElement(ref);
                 inputMessage.addPart(part);
             }
-
+            
             if (inputMessage!=null) {
                 Input input = factory.createInput();
                 NamedComponentReference<Message> inputRef = input.createReferenceTo(inputMessage, Message.class);
@@ -262,22 +260,22 @@ public class OperationGeneratorHelper {
             } else {
                 // return type == null
                 if(schemaModel == null){
-                        schemaModel = createSchemaModel(factory, definitions, types);
-                        schema = schemaModel.getSchema();
+                    schemaModel = createSchemaModel(factory, definitions, types);
+                    schema = schemaModel.getSchema();
                 }
                 GlobalComplexType responseComplexType = schemaModel.getFactory().createGlobalComplexType();
                 responseComplexType.setName(responseTypeName); //NOI18N
                 Sequence seq1 = schemaModel.getFactory().createSequence();
                 responseComplexType.setDefinition(seq1);
                 schema.addComplexType(responseComplexType);
-
+                
                 returnElement = schemaModel.getFactory().createGlobalElement();
                 returnElement.setName(this.getUniqueGlobalElementName(schema, responseElementName));
                 NamedComponentReference<GlobalType> responseTypeRef = schema.createReferenceTo((GlobalType)responseComplexType, GlobalType.class);
                 returnElement.setType(responseTypeRef);
                 schema.addElement(returnElement);
             }
-                
+            
             if (returnElement!=null) {
                 outputMessage = factory.createMessage();
                 outputMessage.setName(responseMessageName);
@@ -288,7 +286,7 @@ public class OperationGeneratorHelper {
                 outputMessage.addPart(outpart);
                 definitions.addMessage(outputMessage);
             }
-
+            
             if (outputMessage!=null) {
                 Output output = factory.createOutput();
                 NamedComponentReference<Message> outputRef = output.createReferenceTo(outputMessage, Message.class);
@@ -526,7 +524,12 @@ public class OperationGeneratorHelper {
                     if(!remove){
                         generator.generateMethod(operationName);
                     }else{
-                        generator.removeMethod(operationName);
+                        try                     {
+                            org.netbeans.modules.websvc.core.MethodGenerator.
+                                    removeMethod(implementationClass,operationName);
+                        } catch (IOException ex) {
+                            ErrorManager.getDefault().notify(ex);
+                        }
                     }
                 }
             },true);

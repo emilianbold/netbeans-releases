@@ -17,11 +17,11 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
+import org.netbeans.modules.websvc.core.MethodGenerator;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
 import org.netbeans.modules.websvc.design.schema2java.OperationGeneratorHelper;
 import org.netbeans.modules.websvc.design.util.Util;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
-import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -99,7 +99,7 @@ public class RemoveOperationAction extends AbstractAction{
             
         } else{
             //WS from Java
-            generatorHelper.generateJavaArtifacts(service.getName(), implementationClass, methodName, true);
+            MethodGenerator.removeMethod(implementationClass, methodName);
         }
         //save the changes so events will be fired
         
