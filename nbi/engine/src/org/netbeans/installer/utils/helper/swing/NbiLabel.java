@@ -117,7 +117,7 @@ public class NbiLabel extends JLabel {
     public static final String DEFAULT_TEXT =
             " "; // NOI18N
     public static final String DEFAULT_TOOLTIP_TEXT =
-            " "; // NOI18N
+            null;
     public static final char DEFAULT_MNEMONIC_CHAR =
             '\u0000'; // NOI18N
 }

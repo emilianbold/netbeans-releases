@@ -311,9 +311,9 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
     }
     
     private void initialize() {
-        if (!panel.isThereAnythingVisibleToInstall()) {
+        if (!isThereAnythingVisibleToInstall()) {
             messageLabel.setText(panel.getProperty(panel.MESSAGE_UNINSTALL_PROPERTY));
-        } else if (!panel.isThereAnythingVisibleToUninstall()) {
+        } else if (!isThereAnythingVisibleToUninstall()) {
             messageLabel.setText(panel.getProperty(panel.MESSAGE_INSTALL_PROPERTY));
         } else {
             messageLabel.setText(panel.getProperty(panel.MESSAGE_PROPERTY));
@@ -325,7 +325,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         descriptionPane.setContentType(
                 panel.getProperty(panel.COMPONENT_DESCRIPTION_CONTENT_TYPE_PROPERTY));
         
-        if (!panel.isThereAnythingVisibleToInstall()) {
+        if (!isThereAnythingVisibleToInstall()) {
             sizesLabel.setVisible(false);
         }
         
@@ -388,10 +388,10 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
                 registry.getProducts(Status.TO_BE_UNINSTALLED);
         
         if ((toInstall.size() == 0) && (toUninstall.size() == 0)) {
-            if (!panel.isThereAnythingVisibleToInstall()) {
+            if (!isThereAnythingVisibleToInstall()) {
                 return panel.getProperty(panel.ERROR_NO_CHANGES_UNINSTALL_ONLY_PROPERTY);
             }
-            if (!panel.isThereAnythingVisibleToUninstall()) {
+            if (!isThereAnythingVisibleToUninstall()) {
                 return panel.getProperty(panel.ERROR_NO_CHANGES_INSTALL_ONLY_PROPERTY);
             }
             return panel.getProperty(panel.ERROR_NO_CHANGES_PROPERTY);
@@ -507,6 +507,38 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         
         model.cancelChanges();
         setVisible(false);
+    }
+    
+    public boolean isThereAnythingVisibleToInstall() {
+        final Registry registry = Registry.getInstance();
+        
+        final List<Product> toInstall = new LinkedList<Product>();
+        toInstall.addAll(registry.getProducts(Status.NOT_INSTALLED));
+        toInstall.addAll(registry.getProducts(Status.TO_BE_INSTALLED));
+        
+        for (Product product: toInstall) {
+            if (product.isVisible()) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    public boolean isThereAnythingVisibleToUninstall() {
+        final Registry registry = Registry.getInstance();
+        
+        final List<Product> toUninstall = new LinkedList<Product>();
+        toUninstall.addAll(registry.getProducts(Status.INSTALLED));
+        toUninstall.addAll(registry.getProducts(Status.TO_BE_UNINSTALLED));
+        
+        for (Product product: toUninstall) {
+            if (product.isVisible()) {
+                return true;
+            }
+        }
+        
+        return false;
     }
     
     /////////////////////////////////////////////////////////////////////////////////

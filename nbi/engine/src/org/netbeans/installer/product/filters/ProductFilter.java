@@ -49,8 +49,16 @@ public class ProductFilter implements RegistryFilter {
     
     private Feature feature;
     
+    private Boolean visible;
+    
     public ProductFilter() {
         this.platforms = new LinkedList<Platform>();
+    }
+    
+    public ProductFilter(final boolean visible) {
+        this();
+        
+        this.visible = visible;
     }
     
     public ProductFilter(final Platform platform) {
@@ -162,6 +170,12 @@ public class ProductFilter implements RegistryFilter {
                     if (feature.getId().equals(id)) {
                         return false;
                     }
+                }
+            }
+            
+            if (visible != null) {
+                if (product.isVisible() != visible.booleanValue()) {
+                    return false;
                 }
             }
             

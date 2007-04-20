@@ -32,6 +32,7 @@ import org.netbeans.installer.product.RegistryNode;
 import org.netbeans.installer.product.RegistryType;
 import org.netbeans.installer.product.components.Group;
 import org.netbeans.installer.product.components.Product;
+import org.netbeans.installer.product.filters.AndFilter;
 import org.netbeans.installer.product.filters.OrFilter;
 import org.netbeans.installer.product.filters.ProductFilter;
 import org.netbeans.installer.product.filters.RegistryFilter;
@@ -59,6 +60,9 @@ import org.netbeans.installer.wizard.ui.WizardUi;
 public class NbWelcomePanel extends ErrorMessagePanel {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
+    private Registry bundledRegistry;
+    private Registry defaultRegistry;
+    
     public NbWelcomePanel() {
         setProperty(TITLE_PROPERTY,
                 DEFAULT_TITLE);
@@ -126,6 +130,26 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                 DEFAULT_ERROR_NO_ENOUGH_SPACE_TO_DOWNLOAD);
         setProperty(ERROR_NO_ENOUGH_SPACE_TO_EXTRACT_PROPERTY,
                 DEFAULT_ERROR_NO_ENOUGH_SPACE_TO_EXTRACT);
+        setProperty(ERROR_EVERYTHING_IS_INSTALLED_PROPERTY,
+                DEFAULT_ERROR_EVERYTHING_IS_INSTALLED);
+        
+        // initialize the registries used on the panel - see the initialize() and
+        // canExecute() method
+        try {
+            defaultRegistry = Registry.getInstance();
+            bundledRegistry = new Registry();
+            
+            final String bundledRegistryUri = System.getProperty(
+                    Registry.BUNDLED_PRODUCT_REGISTRY_URI_PROPERTY);
+            if (bundledRegistryUri != null) {
+                bundledRegistry.loadProductRegistry(bundledRegistryUri);
+            } else {
+                bundledRegistry.loadProductRegistry(
+                        Registry.DEFAULT_BUNDLED_PRODUCT_REGISTRY_URI);
+            }
+        } catch (InitializationException e) {
+            ErrorManager.notifyError("Cannot load bundled registry", e);
+        }
     }
     
     @Override
@@ -154,80 +178,29 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         // we need to apply additional filters to the components tree - filter out
         // the components which are not present in the bundled registry (if it is
         // available of course)
-        try {
-            final Registry defaultRegistry = Registry.getInstance();
-            final Registry bundledRegistry = new Registry();
-            
-            final String bundledRegistryUri = System.getProperty(
-                    Registry.BUNDLED_PRODUCT_REGISTRY_URI_PROPERTY);
-            if (bundledRegistryUri != null) {
-                bundledRegistry.loadProductRegistry(bundledRegistryUri);
-            } else {
-                bundledRegistry.loadProductRegistry(
-                        Registry.DEFAULT_BUNDLED_PRODUCT_REGISTRY_URI);
-            }
-            
-            // if the bundled registry contains only one element - registry root, 
-            // this means that we're running without any bundle, hence not filtering 
-            // is required
-            if (bundledRegistry.getNodes().size() == 1) {
-                return;
-            }
-            
-            for (Product product: defaultRegistry.getProducts()) {
-                if (bundledRegistry.getProduct(
-                        product.getUid(), 
-                        product.getVersion()) == null) {
-                    product.setVisible(false);
-                    
-                    if (product.getStatus() == Status.TO_BE_INSTALLED) {
-                        product.setStatus(Status.NOT_INSTALLED);
-                    }
+        // if the bundled registry contains only one element - registry root,
+        // this means that we're running without any bundle, hence not filtering
+        // is required
+        if (bundledRegistry.getNodes().size() == 1) {
+            return;
+        }
+        
+        for (Product product: defaultRegistry.getProducts()) {
+            if (bundledRegistry.getProduct(
+                    product.getUid(),
+                    product.getVersion()) == null) {
+                product.setVisible(false);
+                
+                if (product.getStatus() == Status.TO_BE_INSTALLED) {
+                    product.setStatus(Status.NOT_INSTALLED);
                 }
             }
-        } catch (InitializationException e) {
-            ErrorManager.notifyError("Cannot load bundled registry", e);
         }
-    }
-    
-    public boolean isThereAnythingVisibleToInstall() {
-        final Registry registry = Registry.getInstance();
-        
-        final List<Product> toInstall = new LinkedList<Product>();
-        toInstall.addAll(registry.getProducts(Status.NOT_INSTALLED));
-        toInstall.addAll(registry.getProducts(Status.TO_BE_INSTALLED));
-        
-        for (Product product: toInstall) {
-            if (product.isVisible()) {
-                return true;
-            }
-        }
-        
-        return false;
-    }
-    
-    public boolean isThereAnythingVisibleToUninstall() {
-        final Registry registry = Registry.getInstance();
-        
-        final List<Product> toUninstall = new LinkedList<Product>();
-        toUninstall.addAll(registry.getProducts(Status.INSTALLED));
-        toUninstall.addAll(registry.getProducts(Status.TO_BE_UNINSTALLED));
-        
-        for (Product product: toUninstall) {
-            if (product.isVisible()) {
-                return true;
-            }
-        }
-        
-        return false;
     }
     
     // private //////////////////////////////////////////////////////////////////////
     private boolean canExecute() {
-        final Registry registry = Registry.getInstance();
-        
-        return registry.getProducts(Status.NOT_INSTALLED).size() +
-                registry.getProducts(Status.TO_BE_INSTALLED).size() > 0;
+        return bundledRegistry.getNodes().size() > 1;
     }
     
     /////////////////////////////////////////////////////////////////////////////////
@@ -261,6 +234,8 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         private NbCustomizeSelectionDialog customizeDialog;
         
         private List<RegistryNode> registryNodes;
+        
+        private boolean everythingIsInstalled;
         
         ValidatingThread validatingThread;
         
@@ -297,7 +272,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             final StringBuilder welcomeText = new StringBuilder();
             welcomeText.append(panel.getProperty(WELCOME_TEXT_HEADER_PROPERTY));
             
-            boolean isThereSomethingToInstall = false;
+            everythingIsInstalled = true;
             for (RegistryNode node: registryNodes) {
                 if (node instanceof Product) {
                     final Product product = (Product) node;
@@ -310,15 +285,19 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                         welcomeText.append(StringUtils.format(
                                 panel.getProperty(WELCOME_TEXT_PRODUCT_NOT_INSTALLED_TEMPLATE_PROPERTY),
                                 node.getDisplayName()));
+                        
+                        everythingIsInstalled = false;
                     } else {
                         continue;
                     }
                 } else if (node instanceof Group) {
-                    final RegistryFilter filter = new OrFilter(
+                    final RegistryFilter filter = new AndFilter(
+                            new ProductFilter(true), 
+                            new OrFilter(
                             new ProductFilter(Status.TO_BE_INSTALLED),
-                            new ProductFilter(Status.INSTALLED));
+                            new ProductFilter(Status.INSTALLED)));
                     
-                    if (((Group) node).hasChildren(filter)) {
+                    if (node.hasChildren(filter)) {
                         welcomeText.append(StringUtils.format(
                                 panel.getProperty(WELCOME_TEXT_GROUP_TEMPLATE_PROPERTY),
                                 node.getDisplayName()));
@@ -349,6 +328,16 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         
         @Override
         protected String validateInput() {
+            if (everythingIsInstalled) {
+                customizeButton.setEnabled(false);
+                installationSizeLabel.setVisible(false);
+                
+                return panel.getProperty(ERROR_EVERYTHING_IS_INSTALLED_PROPERTY);
+            } else {
+                customizeButton.setEnabled(true);
+                installationSizeLabel.setVisible(true);
+            }
+            
             final List<Product> products =
                     Registry.getInstance().getProductsToInstall();
             
@@ -601,6 +590,8 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             "error.not.enough.space.to.download"; // NOI18N
     public static final String ERROR_NO_ENOUGH_SPACE_TO_EXTRACT_PROPERTY =
             "error.not.enough.space.to.extract"; // NOI18N
+    public static final String ERROR_EVERYTHING_IS_INSTALLED_PROPERTY = 
+            "error.everything.is.installed"; // NOI18N
     
     public static final String DEFAULT_ERROR_NO_CHANGES =
             ResourceUtils.getString(NbWelcomePanel.class,
@@ -626,6 +617,9 @@ public class NbWelcomePanel extends ErrorMessagePanel {
     public static final String DEFAULT_ERROR_NO_ENOUGH_SPACE_TO_EXTRACT =
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.error.not.enough.space.to.extract"); // NOI18N
+    public static final String DEFAULT_ERROR_EVERYTHING_IS_INSTALLED =
+            ResourceUtils.getString(NbWelcomePanel.class,
+            "NWP.error.everything.is.installed"); // NOI18N
     
     public static final long REQUIRED_SPACE_ADDITION =
             10L * 1024L * 1024L; // 10MB
