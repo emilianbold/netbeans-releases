@@ -20,7 +20,6 @@
 package org.netbeans.modules.debugger.jpda.models;
 
 import com.sun.jdi.ObjectReference;
-import com.sun.jdi.PrimitiveValue;
 import com.sun.jdi.Value;
 
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
@@ -28,22 +27,23 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 /**
  * @author   Martin Entlicher
  */
-public class ArgumentVariable extends AbstractVariable implements org.netbeans.api.debugger.jpda.LocalVariable {
+public class ArgumentObjectVariable extends AbstractObjectVariable implements org.netbeans.api.debugger.jpda.LocalVariable {
         
     String              name;
     String              className;
     String              genericSignature;
     
-    public ArgumentVariable (
+    public ArgumentObjectVariable (
         JPDADebuggerImpl debugger,
-        PrimitiveValue value,
+        ObjectReference value,
         String name,
         String className
     ) {
         super (
             debugger, 
             value, 
-            name + className.hashCode()
+            name + className.hashCode() +
+                (value instanceof ObjectReference ? "^" : "")
         );
         this.name = name;
         this.className = className;
@@ -80,7 +80,7 @@ public class ArgumentVariable extends AbstractVariable implements org.netbeans.a
     * @return string representation of type of this variable.
     */
     public String getDeclaredType () {
-        return className;//local.typeName ();
+        return className;
     }
     
     public Value getInnerValue() {
@@ -104,13 +104,13 @@ public class ArgumentVariable extends AbstractVariable implements org.netbeans.a
     
     // other methods ...........................................................
     
-    public ArgumentVariable clone() {
-        ArgumentVariable clon;
-        clon = new ArgumentVariable(getDebugger(), (PrimitiveValue) getJDIValue(), name, className);
+    public ArgumentObjectVariable clone() {
+        ArgumentObjectVariable clon;
+        clon = new ArgumentObjectVariable(getDebugger(), (ObjectReference) getJDIValue(), name, className);
         return clon;
     }
     
     public String toString () {
-        return "ArgumentVariable " + name;
+        return "ArgumentObjectVariable " + name;
     }
 }

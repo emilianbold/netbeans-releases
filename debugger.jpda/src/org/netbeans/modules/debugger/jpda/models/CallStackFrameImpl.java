@@ -24,6 +24,7 @@ import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.InvalidStackFrameException;
 import com.sun.jdi.NativeMethodException;
 import com.sun.jdi.ObjectReference;
+import com.sun.jdi.PrimitiveValue;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
@@ -262,11 +263,19 @@ public class CallStackFrameImpl implements CallStackFrame {
         LocalVariable[] arguments = new LocalVariable[argumentNames.length];
         for (int i = 0; i < arguments.length; i++) {
             com.sun.jdi.Value value = argValues.get(i);
-            arguments[i] =
-                    new ArgumentVariable(debugger,
-                                         value,
-                                         argumentNames[i].getName(),
-                                         argumentNames[i].getType());
+            if (value instanceof ObjectReference) {
+                arguments[i] =
+                        new ArgumentObjectVariable(debugger,
+                                             (ObjectReference) value,
+                                             argumentNames[i].getName(),
+                                             argumentNames[i].getType());
+            } else {
+                arguments[i] =
+                        new ArgumentVariable(debugger,
+                                             (PrimitiveValue) value,
+                                             argumentNames[i].getName(),
+                                             argumentNames[i].getType());
+            }
         }
         return arguments;
     }
@@ -341,12 +350,21 @@ public class CallStackFrameImpl implements CallStackFrame {
                         List<LocalVariable> argumentList = new ArrayList<LocalVariable>(arguments.size());
                         for (int i = 0; i < arguments.size(); i++) {
                             com.sun.jdi.Value value = arguments.get(i);
-                            argumentList.add(
-                                    new ArgumentVariable(debuggerImpl,
-                                                         value,
-                                                         argumentNames[i].getName(),
-                                                         //argumentNames[i].getType()));
-                                                         value.type().name()));
+                            if (value instanceof ObjectReference) {
+                                argumentList.add(
+                                        new ArgumentObjectVariable(debuggerImpl,
+                                                             (ObjectReference) value,
+                                                             argumentNames[i].getName(),
+                                                             //argumentNames[i].getType()));
+                                                             value.type().name()));
+                            } else {
+                                argumentList.add(
+                                        new ArgumentVariable(debuggerImpl,
+                                                             (PrimitiveValue) value,
+                                                             argumentNames[i].getName(),
+                                                             //argumentNames[i].getType()));
+                                                             value.type().name()));
+                            }
                         }
                         return argumentList;
                     }
