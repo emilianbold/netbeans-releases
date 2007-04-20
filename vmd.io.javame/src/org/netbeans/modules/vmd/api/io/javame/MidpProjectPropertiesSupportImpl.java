@@ -22,6 +22,7 @@ package org.netbeans.modules.vmd.api.io.javame;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
 import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
 import org.netbeans.modules.mobility.project.J2MEProject;
@@ -30,14 +31,19 @@ import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.AntProjectListener;
+import org.netbeans.spi.project.support.ant.AntProjectEvent;
 
 import java.awt.*;
+import java.util.HashMap;
 
 /**
  * @author David Kaspar
  */
 public class MidpProjectPropertiesSupportImpl {
-    
+
+    private static final HashMap<DeviceListener, AntProjectListener> deviceListeners = new HashMap<DeviceListener, AntProjectListener> ();
+
     static Dimension getDeviceScreenSizeFromProject (DataObjectContext context) {
         return getDeviceScreenSizeFromProject ((J2MEProject) ProjectUtils.getProject(context));
     }
@@ -54,8 +60,7 @@ public class MidpProjectPropertiesSupportImpl {
             JavaPlatform[] platforms = JavaPlatformManager.getDefault ().getPlatforms (null, new Specification (J2MEPlatform.SPECIFICATION_NAME, null));
             J2MEPlatform platform = null;
 
-            if (platforms != null) for (int i = 0; i < platforms.length; i++) {
-                JavaPlatform javaPlatform = platforms[i];
+            if (platforms != null) for (JavaPlatform javaPlatform : platforms) {
                 if (javaPlatform instanceof J2MEPlatform) {
                     if (platformActive.equals ((((J2MEPlatform) javaPlatform).getName ()))) {
                         platform = (J2MEPlatform) javaPlatform;
@@ -66,14 +71,13 @@ public class MidpProjectPropertiesSupportImpl {
 
             if (platform != null) {
                 J2MEPlatform.Device[] devices = platform.getDevices ();
-                if (devices != null) for (int i = 0; i < devices.length; i++) {
-                    J2MEPlatform.Device device = devices[i];
+                if (devices != null) for (J2MEPlatform.Device device : devices) {
                     if (deviceActive.equals (device.getName ())) {
                         J2MEPlatform.Screen screen = device.getScreen ();
                         if (screen != null) {
                             Integer height = screen.getHeight ();
                             Integer width = screen.getWidth ();
-                            if (height != null  &&  width != null)
+                            if (height != null && width != null)
                                 return new Dimension (width, height);
                         }
                     }
@@ -90,5 +94,47 @@ public class MidpProjectPropertiesSupportImpl {
         String value = ep.getProperty ("configs." + configuration + "." + propertyName); // NOI18N
         return value != null ? value : evaluateProperty (ep, propertyName, null);
     }
-    
+
+    public static void addDeviceListener (DataObjectContext context, DeviceListener listener) {
+        Project project = ProjectUtils.getProject (context);
+        assert project != null;
+        AntProjectHelper helper = project.getLookup ().lookup (AntProjectHelper.class);
+        assert helper != null;
+
+        assert ! deviceListeners.containsKey (listener);
+        DeviceAntProjectListener antListener = new DeviceAntProjectListener (listener);
+        helper.addAntProjectListener (antListener);
+        deviceListeners.put (listener, antListener);
+    }
+
+    public static void removeDeviceListener (DataObjectContext context, DeviceListener listener) {
+        Project project = ProjectUtils.getProject (context);
+        assert project != null;
+        AntProjectHelper helper = project.getLookup ().lookup (AntProjectHelper.class);
+        assert helper != null;
+
+        AntProjectListener antListener = deviceListeners.get (listener);
+        assert antListener != null;
+        helper.removeAntProjectListener (antListener);
+        deviceListeners.remove (listener);
+    }
+
+    private static class DeviceAntProjectListener implements AntProjectListener {
+
+        private DeviceListener listener;
+
+        public DeviceAntProjectListener (DeviceListener listener) {
+            this.listener = listener;
+        }
+
+        public void configurationXmlChanged (AntProjectEvent ev) {
+            listener.deviceChanged ();
+        }
+
+        public void propertiesChanged (AntProjectEvent ev) {
+            listener.deviceChanged ();
+        }
+
+    }
+
 }

@@ -18,14 +18,10 @@
  */
 package org.netbeans.modules.vmd.screen;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.vmd.api.io.DataEditorView;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
-import org.netbeans.modules.vmd.api.io.ProjectUtils;
+import org.netbeans.modules.vmd.api.io.javame.DeviceListener;
 import org.netbeans.modules.vmd.api.io.javame.MidpProjectPropertiesSupport;
-import org.netbeans.spi.project.support.ant.AntProjectEvent;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.openide.awt.UndoRedo;
 import org.openide.util.HelpCtx;
 
@@ -37,7 +33,7 @@ import java.util.Collections;
 /**
  * @author David Kaspar
  */
-public class ScreenEditorView implements DataEditorView, AntProjectListener {
+public class ScreenEditorView implements DataEditorView, DeviceListener {
 
     private static final long serialVersionUID = -1;
 
@@ -96,16 +92,12 @@ public class ScreenEditorView implements DataEditorView, AntProjectListener {
     }
 
     public void componentOpened () {
-        Project project = ProjectUtils.getProject (context);
-        AntProjectHelper helper = project.getLookup ().lookup (AntProjectHelper.class);
-        helper.addAntProjectListener(this);
-        propertiesChanged(null);
+        MidpProjectPropertiesSupport.addDeviceListener (context, this);
+        deviceChanged ();
     }
 
     public void componentClosed () {
-        Project project = ProjectUtils.getProject (context);
-        AntProjectHelper helper = project.getLookup ().lookup (AntProjectHelper.class);
-        helper.removeAntProjectListener(this);
+        MidpProjectPropertiesSupport.removeDeviceChangedListener (context, this);
     }
 
     public void componentShowing () {
@@ -132,11 +124,7 @@ public class ScreenEditorView implements DataEditorView, AntProjectListener {
         return 1000;
     }
 
-    public void configurationXmlChanged (AntProjectEvent ev) {
-        propertiesChanged (ev);
-    }
-
-    public void propertiesChanged (AntProjectEvent ev) {
+    public void deviceChanged () {
         controller.setScreenSize (MidpProjectPropertiesSupport.getDeviceScreenSizeFromProject(context));
     }
 

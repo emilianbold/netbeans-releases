@@ -15,30 +15,16 @@
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
+ *
  */
 
 package org.netbeans.modules.vmd.api.io.javame;
 
-import org.netbeans.modules.vmd.api.io.DataObjectContext;
-
-import java.awt.*;
-
-
 /**
  * @author David Kaspar
  */
-public final class MidpProjectPropertiesSupport {
+public interface DeviceListener {
 
-    public static Dimension getDeviceScreenSizeFromProject (DataObjectContext context) {
-        return MidpProjectPropertiesSupportImpl.getDeviceScreenSizeFromProject (context);
-    }
-
-    public static void addDeviceListener (DataObjectContext context, DeviceListener listener) {
-        MidpProjectPropertiesSupportImpl.addDeviceListener (context, listener);
-    }
-
-    public static void removeDeviceChangedListener (DataObjectContext context, DeviceListener listener) {
-        MidpProjectPropertiesSupportImpl.removeDeviceListener (context, listener);
-    }
+    void deviceChanged ();
 
 }
