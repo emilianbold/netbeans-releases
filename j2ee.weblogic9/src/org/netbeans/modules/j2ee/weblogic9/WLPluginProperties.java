@@ -279,7 +279,9 @@ public class WLPluginProperties {
             Document d = XMLUtil.parse(source, false, false, null, null);
             
             // Retrieve domain version
-            return d.getElementsByTagName("domain-version").item(0).getTextContent();
+            if (d.getElementsByTagName("domain-version").getLength() > 0) {
+                return d.getElementsByTagName("domain-version").item(0).getTextContent();
+            }
             
         } catch(FileNotFoundException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
