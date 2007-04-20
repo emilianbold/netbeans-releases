@@ -23,13 +23,13 @@
     <folder name="Templates">
         <folder name="Project">
             <folder name="SOA">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.project.prjwizard.Bundle"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.project.wizard.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xslt/project/resources/ejbjar.html"/>
 
                 <file name="emptyXsltpro.xml">
                     <attr name="template" boolvalue="true"/>
-                    <attr name="templateWizardIterator" newvalue="org.netbeans.modules.xslt.project.prjwizard.NewXsltproProjectWizardIterator"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.project.prjwizard.Bundle"/>
+                    <attr name="templateWizardIterator" newvalue="org.netbeans.modules.xslt.project.wizard.NewXsltproProjectWizardIterator"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.project.wizard.Bundle"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xslt/project/resources/xsltProjectIcon.png"/>
                     <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xslt/project/resources/emptyProject.html"/>
                 </file>
