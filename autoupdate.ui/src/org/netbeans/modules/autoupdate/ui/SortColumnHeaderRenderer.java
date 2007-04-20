@@ -32,12 +32,8 @@ public class SortColumnHeaderRenderer implements TableCellRenderer{
     private UnitCategoryTableModel model;
     private TableCellRenderer textRenderer;
     private Object sortColumn = null;
-    private static ImageIcon SORT_DESC_ICON =
-        new ImageIcon(org.openide.util.Utilities.loadImage(
-        "org/netbeans/modules/autoupdate/ui/resources/columnsSortedDesc.gif")); // NOI18N
-    private static ImageIcon SORT_ASC_ICON = 
-        new ImageIcon(org.openide.util.Utilities.loadImage(
-        "org/netbeans/modules/autoupdate/ui/resources/columnsSortedAsc.gif")); // NOI18N
+    private ImageIcon sortDescIcon = null;
+    private static ImageIcon sortAscIcon = null; 
     
     private boolean sortAscending = false;
     public SortColumnHeaderRenderer(UnitCategoryTableModel model, TableCellRenderer textRenderer) {
@@ -53,7 +49,7 @@ public class SortColumnHeaderRenderer implements TableCellRenderer{
         if( text instanceof JLabel ) {
             JLabel label = (JLabel)text;
             if (table.getColumnModel().getColumn(column).getIdentifier().equals(sortColumn)) {
-                label.setIcon( sortAscending ? SORT_ASC_ICON : SORT_DESC_ICON);
+                label.setIcon( sortAscending ? getSortAscIcon () : getSortDescIcon ());
                 label.setHorizontalTextPosition( SwingConstants.LEFT );
             } else {
                 label.setIcon( null);
@@ -75,5 +71,21 @@ public class SortColumnHeaderRenderer implements TableCellRenderer{
             }
         }
         this.model.sort(column, sortAscending);
+    }
+    
+    private ImageIcon getSortAscIcon () {
+        if (sortAscIcon == null) {
+            sortAscIcon = new ImageIcon (org.openide.util.Utilities.loadImage (
+                    "org/netbeans/modules/autoupdate/ui/resources/columnsSortedDesc.gif")); // NOI18N
+        }
+        return sortAscIcon;
+    }
+    
+    private ImageIcon getSortDescIcon () {
+        if (sortDescIcon == null) {
+            sortDescIcon = new ImageIcon(org.openide.util.Utilities.loadImage (
+            "org/netbeans/modules/autoupdate/ui/resources/columnsSortedAsc.gif")); // NOI18N
+        }
+        return sortDescIcon;
     }
 }
