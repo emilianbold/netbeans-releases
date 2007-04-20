@@ -271,7 +271,7 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                                 throw new IllegalArgumentException ("The file must exist on disk");     //NOI18N
                             }
                             ClassPathSupport.Item item = ClassPathSupport.Item.create( f, null, path);
-                            if (resources.contains(item)) {
+                            if (!resources.contains(item)) {
                                 resources.add (item);
                                 changed = true;
                             }                            
@@ -321,7 +321,7 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                                 throw new IllegalArgumentException ("The file must exist on disk");     //NOI18N
                             }
                             ClassPathSupport.Item item = ClassPathSupport.Item.create( f, null, ClassPathSupport.Item.PATH_IN_WAR_NONE);
-                            if (resources.contains(item)) {
+                            if (!resources.contains(item)) {
                                 resources.add (item);
                                 changed = true;
                             }                            
