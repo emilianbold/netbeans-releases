@@ -86,7 +86,7 @@ NAVIGATOR:directive: {
 }
 
 NAVIGATOR:scriptlet: {
-    display_name: "<% $S$ %>";
+    display_name: org.netbeans.modules.web.core.syntax.JSP.navigatorDisplayName;
     tooltip: "$$";
     icon: "/org/netbeans/modules/languages/resources/class.gif";
 }

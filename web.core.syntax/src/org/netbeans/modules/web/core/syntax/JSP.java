@@ -36,13 +36,20 @@ import org.netbeans.api.languages.ASTToken;
  */
 public class JSP {
     
+    private static final int MAX_PRINT_CHARS = 30; //max. length of scriptlet code shown in navigator
+    
     public static String navigatorDisplayName(SyntaxContext context) {
         ASTItem item = context.getASTPath().getLeaf();
         if(item instanceof ASTNode) {
             ASTNode node = (ASTNode)item;
             String type = node.getNT();
             String name = null;
-            if("simpleTag".equals(type) || "unpairedStartTag".equals(type)) {
+            if("scriptlet".equals(type)) {
+                name = node.getNode("S").getAsText();
+                if(name != null && name.length() > MAX_PRINT_CHARS) {
+                    return name.substring(0, MAX_PRINT_CHARS) + "..."; //NOI18N
+                }
+            } else if("simpleTag".equals(type) || "unpairedStartTag".equals(type)) {
                 name = node.getTokenTypeIdentifier("TAG");
             } else if("unpairedEndTag".equals(type)) {
                 name = node.getTokenTypeIdentifier("ENDTAG");
