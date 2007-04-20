@@ -149,10 +149,10 @@ public class InstalledTableModel extends UnitCategoryTableModel {
         if (! isCategoryAtRow (row)) {
             if (col == 1) { // XXX
                 Unit.Installed u = (Unit.Installed) getUnitAtRow (row);
-                return ! u.isNotEditable ();
+                return u.isUninstallAllowed ();
             } else if (col == 0) {
                 Unit.Installed u = (Unit.Installed) getUnitAtRow (row);
-                return ! u.isNotEditable ();
+                return u.isUninstallAllowed ();
             }
         }
         return super.isCellEditable (row, col);

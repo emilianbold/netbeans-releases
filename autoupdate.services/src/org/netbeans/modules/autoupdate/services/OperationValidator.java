@@ -21,6 +21,8 @@ package org.netbeans.modules.autoupdate.services;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -29,6 +31,7 @@ import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateUnit;
+import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 
 /** XXX Only Modules are supposed here. Needs to impl. for Features or Localization types.
@@ -129,15 +132,66 @@ abstract class OperationValidator {
             }
             List<UpdateElement> retval = new ArrayList<UpdateElement>();
             if (mm != null) {
-                List<Module> toDisable = mm.simulateDisable(modules);
-                for (Module module : toDisable) {
-                    if (!modules.contains(module) && !module.isAutoload() && !module.isEager() && !module.isFixed()) {
+                List<Module> toUninstall = requiredForUninstall(new ArrayList<Module>(),modules,mm.getEnabledModules(), mm);
+                for (Module module : toUninstall) {
+                    if (!modules.contains(module) &&  !module.isFixed()) {
                         retval.add(Utils.toUpdateUnit(module).getInstalled());
                     }
                 }
-            }
+            }                        
             return retval;
         }
+        
+        private static List<Module> requiredForUninstall(List<Module> resultToUninstall, final Set<Module> requestedToUninstall, final Set<Module> stillEnabled, ModuleManager mm) {
+            resultToUninstall.addAll(requestedToUninstall);            
+            stillEnabled.removeAll(resultToUninstall);
+            Set<Module> dependenciesToUninstall = new HashSet<Module>();
+            Iterator<Module> it = requestedToUninstall.iterator();
+                while (it.hasNext()) {
+                    Module m = it.next();
+                    for (Module other: stillEnabled) {
+                        Dependency[] dependencies = other.getDependenciesArray();
+                        boolean added = false;
+                        for (int i = 0; !added && i < dependencies.length; i++) {
+                            Dependency dep = dependencies[i];
+                            if (dep.getType() == Dependency.TYPE_MODULE) {
+                                if (dep.getName().equals(m.getCodeName())) {
+                                    added = true;
+                                    dependenciesToUninstall.add(other);
+                                    continue;
+                                }
+                            } else if (
+                                    dep.getType() == Dependency.TYPE_REQUIRES ||
+                                    dep.getType() == Dependency.TYPE_NEEDS ||
+                                    dep.getType() == Dependency.TYPE_RECOMMENDS
+                                    ) {
+                                if (m.provides(dep.getName())) {
+                                    boolean foundOne = false;
+                                    for (Module third: mm.getEnabledModules()) {
+                                        if (third.isEnabled() &&
+                                                !resultToUninstall.contains(third) && !dependenciesToUninstall.contains(third) &&
+                                                third.provides(dep.getName())) {
+                                            foundOne = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!foundOne) {
+                                        // Nope, we were the only/last one to provide it.
+                                        added = true;
+                                        dependenciesToUninstall.add(other);
+                                        continue;
+                                    }                                    
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                if (dependenciesToUninstall.size() > 0) {                    
+                    requiredForUninstall(resultToUninstall, dependenciesToUninstall, stillEnabled, mm);
+                }
+            return resultToUninstall;
+        }        
     }
     
     private static class UpdateValidator extends OperationValidator {

@@ -79,20 +79,12 @@ public final class ModuleDeleterImpl  {
             err.log(Level.FINE,
                     "Cannot delete module because module " +
                     module.getCodeName() + " isFixed.");
-        } else if (module.isAutoload ()) {
-            err.log(Level.FINE,
-                    "Cannot delete module because module " +
-                    module.getCodeName() + " isAutoload. See issue #74819.");
-        } else if (module.isEager ()) {
-            err.log(Level.FINE,
-                    "Cannot delete module because module " +
-                    module.getCodeName() + " isEager. See issue #74819.");
         }
         return isUninstallAllowed (module) && findUpdateTracking (module, ONLY_FROM_AUTOUPDATE);
     }
     
-    public static boolean isUninstallAllowed(final Module m) {
-        return ! (m.isAutoload () || m.isEager () || m.isFixed ());
+    private static boolean isUninstallAllowed(final Module m) {
+        return ! (m.isFixed ());
     }
     
     public void delete (final Module[] modules) throws IOException {

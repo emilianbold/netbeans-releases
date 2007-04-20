@@ -42,20 +42,7 @@ import org.openide.util.NbBundle;
  * @author Jiri Rechtacek
  */
 public class Utilities {
-    private static Logger logger = Logger.getLogger(Utilities.class.getName());
-    
-    private static List<UpdateUnit> filterUneditable(List<UpdateUnit> units) {                        
-        List<UpdateUnit> retval = new ArrayList<UpdateUnit>();
-        for (UpdateUnit updateUnit : units) {
-            UpdateElement installed = updateUnit.getInstalled();
-            boolean isEditable = (installed == null) ? true : !Unit.Installed.isNotEditable(updateUnit, installed);
-            if (isEditable) {
-                retval.add(updateUnit);
-            }
-        }        
-        return retval;
-    }
-    
+    private static Logger logger = Logger.getLogger(Utilities.class.getName());     
     private static final String UNSORTED_CATEGORY = NbBundle.getMessage (Utilities.class, "Utilities_Unsorted_Category");
     private static final String LIBRARIES_CATEGORY = NbBundle.getMessage (Utilities.class, "Utilities_Libraries_Category");
     private static final String BRIDGES_CATEGORY = NbBundle.getMessage (Utilities.class, "Utilities_Bridges_Category");

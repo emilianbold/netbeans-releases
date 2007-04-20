@@ -20,7 +20,6 @@
 package org.netbeans.modules.autoupdate.ui;
 
 import java.text.Collator;
-import java.util.Comparator;
 import java.util.Set;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
@@ -87,12 +86,11 @@ public abstract class Unit {
         
         private UpdateElement installEl = null;
         private UpdateElement backupEl = null;
-        private boolean isNotEditable ;
+        private boolean isUninstallAllowed ;
         
-        public static boolean isNotEditable(UpdateUnit uUnit, UpdateElement element ) {
+        public static boolean isOperationAllowed(UpdateUnit uUnit, UpdateElement element, OperationContainer<OperationSupport> container) {
             ModuleInfo mInfo = ModuleProvider.getInstalledModules().get(element.getCodeName());
-            return mInfo == null || (mInfo != null && mInfo.isEnabled() && !Containers.forDisable().canBeAdded(uUnit, element) ||
-                    mInfo != null && !mInfo.isEnabled() && !Containers.forEnable().canBeAdded(uUnit, element));
+            return (mInfo != null && container.canBeAdded(uUnit, element));
         }
         public boolean isModuleEnabled() {
             ModuleInfo mInfo = ModuleProvider.getInstalledModules().get(installEl.getCodeName());
@@ -103,7 +101,7 @@ public abstract class Unit {
             this.installEl = unit.getInstalled();
             assert installEl != null : "Installed UpdateUnit " + unit + " has Installed UpdateElement.";
             this.backupEl = unit.getBackup();
-            this.isNotEditable = isNotEditable(this.updateUnit, installEl);
+            this.isUninstallAllowed = isOperationAllowed(this.updateUnit, installEl, Containers.forUninstall());
         }
         
         public boolean isMarked() {
@@ -119,41 +117,6 @@ public abstract class Unit {
             }
         }
         
-        /*public boolean isMarked() {//alternative for enable/disable
-            // XXX add new API in UpdateUnit
-            ModuleInfo mInfo = getModuleInfos().get(updateUnit.getCodeName());
-            assert mInfo != null;
-            boolean retval = mInfo.isEnabled();
-            if (retval) {
-                retval = Containers.forDisable().contains(installEl);
-            } else {
-                retval = Containers.forEnable().contains(installEl);
-            }
-            return retval;
-        }*/
-        
-        /*public void setMarked(boolean marked) {//alternative for enable/disable
-            assert marked != isMarked();
-            ModuleInfo mInfo = getModuleInfos().get(updateUnit.getCodeName());
-            assert mInfo != null;
-            boolean isEnabled = mInfo.isEnabled();
-            Containers.forEnable().remove(installEl);
-            Containers.forDisable().remove(installEl);
-            if (marked) {
-                if (isEnabled) {
-                    Containers.forDisable().add(installEl);;
-                } else {
-                    Containers.forEnable().add(installEl);
-                }
-            } else {
-                if (isEnabled) {
-                    Containers.forDisable().remove(installEl);;
-                } else {
-                    Containers.forEnable().remove(installEl);
-                }
-            }
-        }*/
-
         public static int compareInstalledVersions(Unit u1, Unit u2) {
             if (u1 instanceof Unit.Installed && u2 instanceof Unit.Installed) {
                 Unit.Installed unit1 = (Unit.Installed )u1;
@@ -163,8 +126,8 @@ public abstract class Unit {
             return Unit.compareDisplayVersions(u1, u2);
         }
         
-        public boolean isNotEditable() {
-            return isNotEditable ;
+        public boolean isUninstallAllowed() {
+            return isUninstallAllowed ;
         }
         
         public String getInstalledVersion() {
