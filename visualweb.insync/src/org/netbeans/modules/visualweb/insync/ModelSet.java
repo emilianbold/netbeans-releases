@@ -22,22 +22,21 @@ import java.awt.Component;
 import java.awt.Container;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.lang.reflect.Constructor;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
 import java.util.Map;
-import java.io.File;
-import java.net.MalformedURLException;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.swing.SwingUtilities;
 
@@ -48,6 +47,10 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.modules.visualweb.classloaderprovider.CommonClassloaderProvider;
+import org.netbeans.modules.visualweb.extension.openide.util.Trace;
+import org.netbeans.modules.visualweb.insync.models.FacesModel;
+import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -58,21 +61,16 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.loaders.DataObject;
 import org.openide.loaders.DataLoaderPool;
+import org.openide.loaders.DataObject;
 import org.openide.loaders.OperationEvent;
 import org.openide.loaders.OperationListener;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditor;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Lookup.Result;
-import org.openide.util.Lookup.Template;
 import org.openide.util.WeakListeners;
-
-import org.netbeans.modules.visualweb.classloaderprovider.CommonClassloaderProvider;
-import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
-import org.netbeans.modules.visualweb.extension.openide.util.Trace;
+import org.openide.util.Lookup.Result;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -414,8 +412,9 @@ public abstract class ModelSet implements FileChangeListener {
             }
         }
         // XXX NB issue #81746.
- 	DataLoaderPool.getDefault().addOperationListener(
- 	(OperationListener)WeakListeners.create(OperationListener.class, operationListener, DataLoaderPool.getDefault()));
+ 	    DataLoaderPool.getDefault().addOperationListener(
+ 	    (OperationListener)WeakListeners.create(OperationListener.class, operationListener, DataLoaderPool.getDefault()));
+
         fireModelSetAdded(this);
     }
 
@@ -932,6 +931,7 @@ public abstract class ModelSet implements FileChangeListener {
         }
         return fileObject;
     }
+    
     // XXX NB issue #
     private void processFileDataCreated(final FileObject fileObject) {  
         // we should create Model only if the file is under document root or source root
@@ -972,28 +972,6 @@ public abstract class ModelSet implements FileChangeListener {
     }
     
     public void fileDeleted (final FileEvent event) {
-        final FileObject fileObject = getLocalFileObject(event.getFile());
-        if (fileObject == null) {
-            return;
-        }
-        final Model model = getModel(fileObject);
-        if (model != null) {
-            models.remove(model.getFile());
-/*//NB6.0
-        MdrInSyncSynchronizer.get().doOutsideOfRefactoringSession(new Runnable() {
-            public void run() {
- */
-            // There are some elements that get refreshed that assume they are on UI thread
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    removeModel(model);
-                }
-            });
-/*
-            }
-        });
- //*/
-        }
     }
     
     public void fileRenamed(final FileRenameEvent event) {
@@ -1005,18 +983,11 @@ public abstract class ModelSet implements FileChangeListener {
         //it is necessary to remove the model
         final boolean needToRemove = getLocalFileObject(fileObject) == null ? true : false;
         final Model[] models = getModels();
-/*//NB6.0
-        MdrInSyncSynchronizer.get().doOutsideOfRefactoringSession(new Runnable() {
-            public void run() {
-*/ 
-                for (int i=0; i < models.length; i++) {
-                    Model model = models[i];
-                    model.fileRenamed(oldName, newName, extension, fileObject, needToRemove);
-                }
-/*
-            }
-        });
-//*/
+
+        for (int i=0; i < models.length; i++) {
+            Model model = models[i];
+            model.fileRenamed(oldName, newName, extension, fileObject, needToRemove);
+        }
     }
     
     private /*static*/ class ModelSetOperationListener implements OperationListener {
@@ -1026,7 +997,24 @@ public abstract class ModelSet implements FileChangeListener {
         
         public void operationMove(OperationEvent.Move ev) {}
         
-        public void operationDelete(OperationEvent ev) {}
+        public void operationDelete(OperationEvent ev) {
+            final FileObject fileObject = getLocalFileObject(ev.getObject().getPrimaryFile());
+            if (fileObject == null) {
+                return;
+            }
+            
+            final Model model = getModel(fileObject);
+            if (model != null) {                
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        ModelSet modelSet = model.getOwner();
+                        if (modelSet != null) {
+                            modelSet.removeModel(model);
+                        }
+                    }
+                });
+            }
+        }
         
         public void operationRename(OperationEvent.Rename ev) {}
         

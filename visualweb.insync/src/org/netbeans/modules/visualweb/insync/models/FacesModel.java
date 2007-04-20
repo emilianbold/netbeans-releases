@@ -36,15 +36,20 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.visualweb.insync.java.Method;
 import org.openide.ErrorManager;
 import org.openide.cookies.CloseCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.loaders.OperationEvent;
+import org.openide.loaders.OperationListener;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -83,6 +88,9 @@ import org.netbeans.modules.visualweb.insync.live.LiveUnit;
 import org.netbeans.modules.visualweb.insync.live.LiveUnitWrapper;
 import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
 import java.io.File;
+
+import javax.swing.SwingUtilities;
+
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
@@ -329,6 +337,8 @@ public class FacesModel extends Model {
 
     protected LiveUnitWrapper liveUnitWrapper;
     
+    private OperationListener operationListener = new ModelOperationListener();
+    
 //    private final FacesDnDSupport dndSupport = new FacesDnDSupport(this);
     
 
@@ -354,6 +364,8 @@ public class FacesModel extends Model {
         else if (FacesFactory.isModelMime(file.getMIMEType())) {
             markupFile = file;
         }
+        
+        DataLoaderPool.getDefault().addOperationListener(operationListener);
         //fireModelOpened(this);
     }
 
@@ -367,7 +379,10 @@ public class FacesModel extends Model {
 //        if (markupFile != null) {
 //            DesignerServiceHack.getDefault().destroyWebFormForFileObject(markupFile);
 //        }
-        
+       if (operationListener != null) {
+           DataLoaderPool.getDefault().removeOperationListener(operationListener);
+           operationListener = null;
+       }
        DataObject javaDataObject = javaUnit == null ? null : javaUnit.getDataObject(); 
         
         // invoke fireContextDeleted() to let viewers know our context is dead
@@ -1744,4 +1759,43 @@ public class FacesModel extends Model {
         
         clearHtml();
     }
+    
+    private class ModelOperationListener implements OperationListener {
+        public void operationPostCreate(OperationEvent ev) {}
+        
+        public void operationCopy(OperationEvent.Copy ev) {}
+        
+        public void operationMove(OperationEvent.Move ev) {
+            FileObject fo = ev.getOriginalPrimaryFile();
+            
+            // The following computaion ensures that we react to a file rename only
+            // after all files of a FacesModel are renamed e.g. .java and .jsp
+            boolean doRemoveModel = false;
+            if (markupUnit != null) {
+                if(javaUnit.getFileObject() == fo && JsfProjectUtils.getJspForJava(ev.getObject().getPrimaryFile()) != null) {
+                    doRemoveModel = true;
+                } else if(file == fo && JsfProjectUtils.getJavaForJsp(ev.getObject().getPrimaryFile()) != null) {
+                    doRemoveModel = true;
+                }
+            } else if (file == fo){
+                doRemoveModel = true;
+            }
+            
+            if(doRemoveModel){
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        getFacesModelSet().removeModel(FacesModel.this);
+                    }
+                });
+            }
+        }
+        
+        public void operationDelete(OperationEvent ev) {}
+        
+        public void operationRename(OperationEvent.Rename ev) {}
+        
+        public void operationCreateShadow(OperationEvent.Copy ev) {}
+        
+        public void operationCreateFromTemplate(OperationEvent.Copy ev) {}
+    } // End of ModelSetOperationListener.
 }
