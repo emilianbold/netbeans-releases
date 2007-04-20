@@ -211,21 +211,23 @@ public class OperationGeneratorHelper {
             }
             
             // create schema elements for faults
-            for(ParamModel faultModel : faultTypes) {
-                ReferenceableSchemaComponent faultType = faultModel.getParamType();
-                if (faultType instanceof GlobalType) {
-                    if(schemaModel == null){
-                        schemaModel = createSchemaModel(factory, definitions, types);
-                        schema = schemaModel.getSchema();
+            if (returnType!=null) { // don't accept faults if return type
+                for(ParamModel faultModel : faultTypes) {
+                    ReferenceableSchemaComponent faultType = faultModel.getParamType();
+                    if (faultType instanceof GlobalType) {
+                        if(schemaModel == null){
+                            schemaModel = createSchemaModel(factory, definitions, types);
+                            schema = schemaModel.getSchema();
+                        }
+                        GlobalElement faultElement = schemaModel.getFactory().createGlobalElement();
+                        NamedComponentReference<GlobalType> typeRef = schemaModel.getSchema().createReferenceTo((GlobalType)faultType, GlobalType.class);
+                        faultElement.setName(getUniqueGlobalElementName(schema,faultModel.getParamName()));
+                        faultElement.setType(typeRef);
+                        schema.addElement(faultElement);
+                        faultElements.add(faultElement);
+                    } else if (faultType instanceof GlobalElement) {
+                        faultElements.add((GlobalElement)faultType);
                     }
-                    GlobalElement faultElement = schemaModel.getFactory().createGlobalElement();
-                    NamedComponentReference<GlobalType> typeRef = schemaModel.getSchema().createReferenceTo((GlobalType)faultType, GlobalType.class);
-                    faultElement.setName(getUniqueGlobalElementName(schema,faultModel.getParamName()));
-                    faultElement.setType(typeRef);
-                    schema.addElement(faultElement);
-                    faultElements.add(faultElement);
-                } else if (faultType instanceof GlobalElement) {
-                    faultElements.add((GlobalElement)faultType);
                 }
             }
             
@@ -252,10 +254,18 @@ public class OperationGeneratorHelper {
                     NamedComponentReference<GlobalType> responseTypeRef = schema.createReferenceTo((GlobalType)responseComplexType, GlobalType.class);
                     returnElement.setType(responseTypeRef);
                     schema.addElement(returnElement);
-                } else {
-                    if(returnType instanceof GlobalElement){
+                } else if (returnType instanceof GlobalElement) {
                         returnElement = (GlobalElement)returnType;
+                } else if (returnType instanceof  GlobalType) {
+                    if(schemaModel == null){
+                        schemaModel = createSchemaModel(factory, definitions, types);
+                        schema = schemaModel.getSchema();
                     }
+                    returnElement = schemaModel.getFactory().createGlobalElement();
+                    returnElement.setName(getUniqueGlobalElementName(schema, responseElementName)); //NOI18N
+                    NamedComponentReference<GlobalType> typeRef = schema.createReferenceTo((GlobalType)returnType, GlobalType.class);
+                    returnElement.setType(typeRef);
+                    schema.addElement(returnElement);
                 }
             } else {
                 // return type == null
