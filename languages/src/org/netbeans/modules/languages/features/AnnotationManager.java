@@ -23,9 +23,7 @@ import org.netbeans.api.languages.ASTEvaluator;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ASTPath;
-import org.netbeans.api.languages.ParserManager;
 import org.netbeans.api.languages.ParserManager.State;
-import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.ASTNode;
@@ -35,12 +33,14 @@ import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManager;
 import org.openide.text.Annotation;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.modules.languages.EditorParser;
 
 
 /**
@@ -50,7 +50,7 @@ import javax.swing.text.Document;
 public class AnnotationManager extends ASTEvaluator {
     
     private NbEditorDocument            doc;
-    private ParserManager               parser;
+    private EditorParser                parser;
     private List<ASTItem>               items;
     private List<Feature>               marks;
     private List<LanguagesAnnotation>   annotations = new ArrayList<LanguagesAnnotation> ();
@@ -58,9 +58,9 @@ public class AnnotationManager extends ASTEvaluator {
     
     /** Creates a new instance of AnnotationManager */
     public AnnotationManager (Document doc) {
-        //doc.addDocumentListener (this);
+        
         this.doc = (NbEditorDocument) doc;
-        parser = ParserManager.get ((NbEditorDocument) doc);
+        parser = EditorParser.get (doc);
         parser.addASTEvaluator (this);
     }
 
@@ -89,13 +89,18 @@ public class AnnotationManager extends ASTEvaluator {
         }
     }
     
+    public void remove () {
+        Iterator<LanguagesAnnotation> it = annotations.iterator ();
+        while (it.hasNext ())
+            doc.removeAnnotation (it.next ());
+        parser.removeASTEvaluator (this);
+    }
+    
     private void refresh (final List<ASTItem> items, final List<Feature> marks) {
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
                 try {
-                    Iterator<LanguagesAnnotation> it = annotations.iterator ();
-                    while (it.hasNext ())
-                        doc.removeAnnotation (it.next ());
+                    remove ();
                     annotations = new ArrayList<LanguagesAnnotation> ();
                     Iterator<ASTItem> it2 = items.iterator ();
                     Iterator<Feature> it3 = marks.iterator ();

@@ -19,17 +19,17 @@
 
 package org.netbeans.modules.languages.features;
 
-import org.netbeans.api.languages.ASTNode;
 import javax.swing.text.Document;
-import org.netbeans.api.languages.ParserManager;
+import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ParserManager.State;
 import org.netbeans.api.languages.ParserManagerListener;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.languages.ParserManagerImpl;
 import org.netbeans.api.languages.ASTNode;
+import org.netbeans.modules.languages.EditorParser;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatus;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatusProvider;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatusProviderFactory;
+
 
 /**
  *
@@ -47,12 +47,12 @@ public class UpToDateStatusProviderFactoryImpl implements UpToDateStatusProvider
     
     private static class UpToDateStatusProviderImpl extends UpToDateStatusProvider {
         
-        private ParserManager parserManager;
+        private EditorParser editorParser;
         
         
         private UpToDateStatusProviderImpl (NbEditorDocument doc) {
-            parserManager = ParserManager.get (doc);
-            parserManager.addListener (new ParserManagerListener () {
+            editorParser = EditorParser.get (doc);
+            editorParser.addListener (new ParserManagerListener () {
                 public void parsed (State state, ASTNode ast) {
                     firePropertyChange (PROP_UP_TO_DATE, null, null);
                 }
@@ -60,7 +60,7 @@ public class UpToDateStatusProviderFactoryImpl implements UpToDateStatusProvider
         }
         
         public UpToDateStatus getUpToDate () {
-            switch (parserManager.getState ()) {
+            switch (editorParser.getState ()) {
                 case ERROR:
                     return UpToDateStatus.UP_TO_DATE_DIRTY;
                 case OK:

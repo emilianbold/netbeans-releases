@@ -20,19 +20,11 @@
 package org.netbeans.modules.languages.dataobject;
 
 import java.util.Map;
-import org.netbeans.modules.languages.*;
 import javax.swing.Action;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import javax.swing.JLabel;
-
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.EditorUI;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsNames;
-import org.netbeans.editor.Syntax;
-import org.netbeans.editor.ext.ToolTipSupport;
 import javax.swing.text.Document;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -41,19 +33,24 @@ import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.UIManager;
 import javax.swing.text.TextAction;
+
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.EditorUI;
+import org.netbeans.editor.Settings;
+import org.netbeans.editor.SettingsNames;
+import org.netbeans.editor.Syntax;
+import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.editor.PopupManager;
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.ext.plain.PlainSyntax;
 import org.netbeans.modules.editor.NbEditorUI;
+import org.netbeans.modules.languages.features.AnnotationManager;
 import org.netbeans.modules.languages.features.BraceCompletionDeleteAction;
 import org.netbeans.modules.languages.features.BraceCompletionInsertAction;
 import org.netbeans.modules.languages.features.BraceHighlighting;
 import org.netbeans.modules.languages.features.CollapseFoldTypeAction;
-import org.netbeans.modules.languages.LanguagesManager;
-import org.netbeans.modules.languages.features.AnnotationManager;
 import org.netbeans.modules.languages.features.ExpandFoldTypeAction;
 import org.netbeans.modules.languages.features.HyperlinkListener;
-import org.netbeans.api.languages.ParseException;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.languages.features.IndentAction;
 import org.netbeans.modules.languages.features.LanguagesGenerateFoldPopupAction;
@@ -243,14 +240,9 @@ public class LanguagesEditorKit extends NbEditorKit {
     
     public void install (JEditorPane c) {
         super.install (c);
-        try {
-            Language l = LanguagesManager.getDefault ().getLanguage (mimeType);
-            //if (!l.supportsHyperlinks ()) return;
-            HyperlinkListener hl = new HyperlinkListener (l);
-            c.addMouseMotionListener (hl);
-            c.addMouseListener (hl);
-        } catch (ParseException ex) {
-        }
+        HyperlinkListener hl = new HyperlinkListener ();
+        c.addMouseMotionListener (hl);
+        c.addMouseListener (hl);
     }
     
     public String getContentType() {

@@ -19,6 +19,7 @@
 package org.netbeans.api.languages;
 
 import java.lang.ref.WeakReference;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.text.Document;
@@ -38,7 +39,7 @@ public abstract class ParserManager {
     public static enum State {
         /** Parser is running. */
         PARSING, 
-        /** Parsed witouut errors. */
+        /** Parsed without errors. */
         OK, 
         /** Parser with errors. */
         ERROR, 
@@ -56,15 +57,13 @@ public abstract class ParserManager {
      * @return parser for given {@link javax.swing.text.Document}
      */
     public static synchronized ParserManager get (Document doc) {
-//        String mimeType = (String) doc.getProperty("mimeType");
-//        if ("text/x-java".equals (mimeType))
-//            Thread.dumpStack();
         WeakReference<ParserManager> wr = managers.get (doc);
         ParserManager pm = wr != null ? wr.get () : null;
         if (pm == null) {
             pm = new ParserManagerImpl (doc);
             managers.put (doc, new WeakReference<ParserManager> (pm));
             //Utils.startTest ("ParserManager.managers", managers);
+//            printManagers ();
         }
         return pm;
     }
@@ -111,6 +110,21 @@ public abstract class ParserManager {
      * @param l ASTEvaluator to be unregisterred
      */
     public abstract void removeASTEvaluator (ASTEvaluator e);
+    
+    
+    private static void printManagers () {
+        System.out.println("\nParserManagers:");
+        Iterator<Document> it = managers.keySet ().iterator ();
+        while (it.hasNext ()) {
+            Document document =  it.next ();
+            String title = (String) document.getProperty("title");
+            if (title == null)
+                title = document.toString();
+            WeakReference wr = managers.get (document);
+            if (wr.get () != null)
+                System.out.println("  " + title);
+        }
+    }
 }
 
 

@@ -20,8 +20,18 @@
 package org.netbeans.modules.languages.features;
 
 import java.util.Set;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import javax.swing.SwingUtilities;
 import javax.swing.text.StyledDocument;
+import javax.swing.text.Document;
+import javax.swing.text.BadLocationException;
+import org.openide.text.NbDocument;
+import javax.swing.event.DocumentEvent;
+
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.languages.ASTEvaluator;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.languages.ParseException;
@@ -37,24 +47,15 @@ import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.languages.Feature;
-import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.spi.editor.fold.FoldHierarchyTransaction;
 import org.netbeans.spi.editor.fold.FoldManager;
 import org.netbeans.spi.editor.fold.FoldManagerFactory;
 import org.netbeans.spi.editor.fold.FoldOperation;
-import org.openide.text.NbDocument;
+import org.netbeans.modules.languages.EditorParser;
+import org.netbeans.modules.languages.Feature;
+import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.Language;
-import org.netbeans.modules.languages.ParserManagerImpl;
-import java.util.ArrayList;
-import javax.swing.SwingUtilities;
-import javax.swing.text.Document;
-import javax.swing.event.DocumentEvent;
-import javax.swing.text.BadLocationException;
-import java.util.Iterator;
-import java.util.List;
-import org.netbeans.api.lexer.TokenHierarchy;
 
 
 /**
@@ -63,13 +64,13 @@ import org.netbeans.api.lexer.TokenHierarchy;
  */
 public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
     
-    private static final int EVALUATING = 0;
-    private static final int STOPPED = 1;
+    private static final int    EVALUATING = 0;
+    private static final int    STOPPED = 1;
     
-    private FoldOperation operation;
-    private Document doc;
-    private ParserManagerImpl parserManager;
-    private int evalState = STOPPED;
+    private FoldOperation       operation;
+    private Document            doc;
+    private EditorParser        editorParser;
+    private int                 evalState = STOPPED;
     
     
     /** Creates a new instance of JavaFoldManager */
@@ -86,9 +87,9 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
         if (d instanceof NbEditorDocument) {
             this.doc = d;
             this.operation = operation;
-            parserManager = (ParserManagerImpl)ParserManagerImpl.get(doc);
-            parserManager.addASTEvaluator (this);
-            parserManager.forceEvaluation(this);
+            editorParser = EditorParser.get (doc);
+            editorParser.addASTEvaluator (this);
+           // parserManager.forceEvaluation (this);
         }
     }
     
@@ -193,9 +194,9 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
     public void release () {
         //S ystem.out.println("release " + mimeType + " : " + operation + " : " + this);
         if (doc != null) {
-            parserManager.removeASTEvaluator (this);
+            editorParser.removeASTEvaluator (this);
         }
-        parserManager = null;
+        editorParser = null;
     }
 
     
@@ -307,8 +308,8 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
     void init (Document doc) {
         this.doc = doc;
         this.operation = null;
-        parserManager = (ParserManagerImpl)ParserManagerImpl.get(doc);
-        parserManager.addASTEvaluator(this);
+        editorParser = EditorParser.get(doc);
+        editorParser.addASTEvaluator(this);
     }
     
     List<FoldItem> getFolds() {

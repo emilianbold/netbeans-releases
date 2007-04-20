@@ -57,13 +57,8 @@ import javax.swing.text.StyleConstants;
 public class HyperlinkListener  implements MouseMotionListener,
 MouseListener {
 
-    private Context      context = null;
-    private Language    language;
+    private Context     context = null;
     private Runnable    runnable = null;
-
-    public HyperlinkListener (Language l) {
-        language = l;
-    }
 
     public void mouseMoved (MouseEvent e) {
         JEditorPane c = (JEditorPane) e.getComponent ();
@@ -195,7 +190,7 @@ MouseListener {
                 TokenSequence tokenSequence = tokenHierarchy.tokenSequence ();
                 tokenSequence.move (offset);
                 tokenSequence.moveNext ();
-                Language l = LanguagesManager.getDefault ().getLanguage (mimeType);
+                Language language = LanguagesManager.getDefault ().getLanguage (mimeType);
                 Token token = tokenSequence.token ();
                 Feature hyperlink = language.getFeature 
                     (Language.HYPERLINK, token.id ().name ());
@@ -207,6 +202,7 @@ MouseListener {
             int i, k = path.size ();
             for (i = 0; i < k; i++) {
                 ASTPath p = path.subPath (i);
+                Language language = LanguagesManager.getDefault ().getLanguage (p.getLeaf ().getMimeType ());
                 Feature hyperlink = language.getFeature (Language.HYPERLINK, p);
                 if (hyperlink != null) 
                     return new Object[] {SyntaxContext.create (doc, p), hyperlink};
