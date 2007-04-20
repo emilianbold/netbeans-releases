@@ -12,17 +12,18 @@
 <h2>Using the Insert Stream Operator Property Window </h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 <p>The Insert Stream operator converts a relation  into a stream. </p>
-<p> When the insert stream operation is triggered, all of the changed or new records are issued. 
+<p> When the insert stream operation is triggered, all changed or new records are issued. 
   
  
-  In other words, the Insert Stream operator  passes  new records, unlike the Relation Output operator, which issues individual records tagged with either a plus, meaning a new record, or minus, meaning a record that was issued previously, but is no longer part of the relation result. </p>
-<p>If you want to output data from the IEP process, using the Insert Stream operator, connect it to a Stream Output operator.</p>
+  In other words, the Insert Stream operator  passes  new records, unlike the Relation Output operator, which issues individual records tagged with either a plus, meaning a new record, or taggied with minus, meaning a record that was issued previously, but is no longer part of the relation result. </p>
+<p>If you want to output data from the IEP process, using the Insert Stream operator and connect it to a Stream Output operator.</p>
 <p><strong>To create an Insert Stream operator:</strong></p>
 <ol>
   <li>Drag an Insert Stream operator from the Palette to the Design view.</li>
   <li>Connect it to an operator with a relation output. </li>
   <li>Click the Insert Stream operator icon.The Property Editor opens. </li>
   <li>The Details section of the property editor displays the name of the operator and the output schema.</li>
+  <li>Click Ok. </li>
 </ol>
 <dl>
 <dt><a name="seealso">See Also</a></dt>
