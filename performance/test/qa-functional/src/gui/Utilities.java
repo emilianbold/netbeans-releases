@@ -19,13 +19,6 @@
 
 package gui;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
 import javax.swing.tree.TreePath;
 
 import org.netbeans.jellytools.Bundle;
@@ -34,8 +27,6 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jellytools.OutputOperator;
-import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
@@ -49,6 +40,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
@@ -58,6 +50,10 @@ import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.StringComparator;
 
 import org.netbeans.junit.ide.ProjectSupport;
+
+import org.netbeans.progress.module.Controller;
+import org.netbeans.progress.spi.InternalHandle;
+import org.netbeans.progress.spi.TaskModel;
 
 
 
@@ -177,10 +173,10 @@ public class Utilities {
      * @throws java.io.FileNotFoundException
      * @throws java.io.IOException
      */
-    public static void copyFile(File f1, File f2) throws java.io.FileNotFoundException, java.io.IOException{
+    public static void copyFile(java.io.File f1, java.io.File f2) throws java.io.FileNotFoundException, java.io.IOException{
         int data;
-        InputStream fis = new BufferedInputStream(new FileInputStream(f1));
-        OutputStream fos = new BufferedOutputStream(new FileOutputStream(f2));
+        java.io.InputStream fis = new java.io.BufferedInputStream(new java.io.FileInputStream(f1));
+        java.io.OutputStream fos = new java.io.BufferedOutputStream(new java.io.FileOutputStream(f2));
         
         while((data=fis.read())!=-1){
             fos.write(data);
@@ -439,12 +435,9 @@ public class Utilities {
         }
     }
     
-    
-    /**
-     * Start Application server
-     * @param rto Runtime Tab
-     */
-    public static void performApplicationServerStartup(RuntimeTabOperator rto) {
+    public static Node getApplicationServerNode(){
+        RuntimeTabOperator rto = new RuntimeTabOperator().invoke();
+        
         TreePath path = null;
         
         // create exactly (full match) and case sensitively comparing comparator
@@ -459,29 +452,98 @@ public class Utilities {
             throw new Error("Cannot find Application Server Node");
         }
         rto.setComparator(previousComparator);
-        
-        Node asNode = new Node(rto.tree(),path);
-        String serverIDEName = asNode.getText();
+
+        return new Node(rto.tree(),path);
+    }
+
+    
+    public static Node startApplicationServer() {
+        Node node = performApplicationServerAction("Start", "Starting");  // NOI18N
+        new EventTool().waitNoEvent(80000);
+        return node;
+    }
+    
+    public static Node stopApplicationServer() {
+        Node node = performApplicationServerAction("Stop", "Stopping");  // NOI18N
+        new EventTool().waitNoEvent(50000);
+        return node;
+    }
+    
+    /**
+     * Invoke action on Application server node (start/stop/...)
+     * @param action Action to be invoked on the Application server node
+     */
+    private static Node performApplicationServerAction(String action, String message) {
+        Node asNode = getApplicationServerNode();
         asNode.select();
+        
+        String serverIDEName = asNode.getText();
         
         JPopupMenuOperator popup = asNode.callPopup();
         if (popup == null) {
             throw new Error("Cannot get context menu for Application server node ");
         }
-        boolean startEnabled = popup.showMenuItem("Start").isEnabled(); // NOI18N
+        boolean startEnabled = popup.showMenuItem(action).isEnabled();
         if(startEnabled) {
-            popup.pushMenuNoBlock("Start"); // NOI18N
+            popup.pushMenuNoBlock(action);
         }
         
-        waitForAppServerStarted(serverIDEName);
+        waitForAppServerTask(message, serverIDEName);
+        
+        return asNode;
     }
     
-    private static void waitForAppServerStarted(String serverIDEName) {
-        OutputOperator oot = new OutputOperator();
-        oot.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",300000);
-        OutputTabOperator asot = oot.getOutputTab(serverIDEName);
-        asot.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",300000);
-        asot.waitText("Application server startup complete");         // NOI18N
+    private static void waitForAppServerTask(String taskName, String serverIDEName) {
+        Controller controller = Controller.getDefault();
+        TaskModel model = controller.getModel();
+        
+        InternalHandle task = waitServerTaskHandle(model,taskName+" "+serverIDEName);
+        long taskTimestamp = task.getTimeStampStarted();
+        
+        System.err.println("task started at : "+taskTimestamp);
+        
+        while(true) {
+            int state = task.getState();
+            if(state == task.STATE_FINISHED) { return; }
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException exc) {
+                exc.printStackTrace(System.err);
+                return;
+            }
+        }
+    }
+    
+    private static InternalHandle waitServerTaskHandle(TaskModel model, String serverIDEName) {
+        while(true) {
+            InternalHandle[] handles =  model.getHandles();
+            InternalHandle  serverTask = getServerTaskHandle(handles,serverIDEName);
+            if(serverTask != null) {
+                System.err.println("Returning task handle");
+                return serverTask;
+            }
+            
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException exc) {
+                exc.printStackTrace(System.err);
+            }
+        }
+    }
+    
+    private static InternalHandle getServerTaskHandle(InternalHandle[] handles, String taskName) {
+        if(handles.length == 0)  {
+            System.err.println("Empty tasks queue");
+            return null;
+        }
+        
+        for (InternalHandle internalHandle : handles) {
+            if(internalHandle.getDisplayName().equals(taskName)) {
+                System.err.println("Expected task found...");
+                return internalHandle;
+            }
+        }
+        return null;
     }
     
     /**

@@ -19,10 +19,7 @@
 
 package gui.actions;
 
-
-import javax.swing.tree.TreePath;
-
-import org.netbeans.jellytools.RuntimeTabOperator;
+import gui.EPUtilities;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
@@ -37,7 +34,7 @@ import org.netbeans.jemmy.JemmyProperties;
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
  *
- * @author rashid@netbeans.org
+ * @author rashid@netbeans.org, mmirilovic@netbeans.org
  *
  */
 public class DeployProject extends org.netbeans.performance.test.utilities.PerformanceTestCase {
@@ -63,19 +60,13 @@ public class DeployProject extends org.netbeans.performance.test.utilities.Perfo
     
     public void initialize(){
         log(":: initialize");
-        RuntimeTabOperator rto = new RuntimeTabOperator().invoke();
-        TreePath path = rto.tree().findPath("Servers|Sun Java System Application Server"); // NOI18N
-        rto.tree().selectPath(path);
-        new EventTool().waitNoEvent(5000);
-        
-        new Node(rto.tree(),path).performPopupAction("Start"); // NOI18N
-        new EventTool().waitNoEvent(80000);
+        Node asNode = EPUtilities.startApplicationServer();
         
         OutputOperator oot = new OutputOperator();
         timeout = JemmyProperties.getCurrentTimeout(TIMEOUT_NAME);
         JemmyProperties.setCurrentTimeout(TIMEOUT_NAME,300000);
         
-        OutputTabOperator asot = oot.getOutputTab("Sun Java System Application Server 9"); // NOI18N
+        OutputTabOperator asot = oot.getOutputTab(asNode.getText()); // NOI18N
         asot.waitText("Application server startup complete"); // NOI18N
         
         new CloseAllDocumentsAction().performAPI();
