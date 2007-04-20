@@ -31,7 +31,10 @@ import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 
 import javax.swing.*;
+import javax.swing.text.Document;
 import java.io.File;
+import java.io.Reader;
+import java.io.StringReader;
 import java.util.*;
 
 /**
@@ -135,6 +138,22 @@ public class Utils {
 
     public static boolean isLocalHistory(VersioningSystem system) {
         return system.getProperty(VersioningSystem.PROP_LOCALHISTORY_VCS) != null;
+    }
+    
+    public static Reader getDocumentReader(final Document doc) {
+        final String[] str = new String[1];
+        Runnable run = new Runnable() {
+            public void run () {
+                try {
+                    str[0] = doc.getText(0, doc.getLength());
+                } catch (javax.swing.text.BadLocationException e) {
+                    // impossible
+                    e.printStackTrace();
+                }
+            }
+        };
+        doc.render(run);
+        return new StringReader(str[0]);
     }
     
     /**

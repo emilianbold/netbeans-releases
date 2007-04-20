@@ -410,12 +410,7 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
         JTextComponent component = editorUI.getComponent();
         if (component == null) return null;
 
-        Document doc = component.getDocument();
-        try {
-            return new StringReader(doc.getText(0, doc.getLength()));
-        } catch (BadLocationException e) {
-            return null;
-        }
+        return Utils.getDocumentReader(component.getDocument());
     }
     
     private void refreshDiff() {
