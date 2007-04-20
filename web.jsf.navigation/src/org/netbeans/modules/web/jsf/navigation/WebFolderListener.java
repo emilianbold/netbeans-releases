@@ -109,13 +109,14 @@ public class WebFolderListener extends FileChangeAdapter{
         PageFlowNode oldNode = pfc.getPageName2Node(pageDisplayName);
         if( oldNode != null ) {
             if( pfc.isPageInFacesConfig(oldNode.getDisplayName()) ) {
-                Node tmpNode = new AbstractNode(Children.LEAF);
-                tmpNode.setName(pageDisplayName);
-                oldNode.replaceWrappedNode(tmpNode);
-                view.resetNodeWidget(oldNode, false);  /* If I add a listener to PageFlowNode, then I won't have to do this*/ 
+//                Node tmpNode = new AbstractNode(Children.LEAF);
+//                tmpNode.setName(pageDisplayName);
+//                oldNode.replaceWrappedNode(tmpNode);
+//                view.resetNodeWidget(oldNode, false);  /* If I add a listener to PageFlowNode, then I won't have to do this*/ 
+                pfc.changeToAbstractNode(oldNode, pageDisplayName );
             } else {
-                pfc.removePageName2Node(oldNode);
                 view.removeNodeWithEdges(oldNode);
+                pfc.removePageName2Node(oldNode, true);
             }
             view.validateGraph();   //Either action validate graph
         }

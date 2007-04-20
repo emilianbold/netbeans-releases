@@ -40,7 +40,7 @@ public class PageFlowDeleteAction extends AbstractAction{
     @Override
     public boolean isEnabled() {
         //Workaround: Temporarily Wrapping Collection because of Issue: 100127
-        Set<Object> selectedObjs = (Set<Object>) scene.getSelectedObjects();
+        Set<? extends Object> selectedObjs = scene.getSelectedObjects();
         if (selectedObjs.size() == 0 ){
             return false;
         }

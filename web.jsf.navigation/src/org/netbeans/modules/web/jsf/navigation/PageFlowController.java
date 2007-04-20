@@ -26,7 +26,6 @@
 
 package org.netbeans.modules.web.jsf.navigation;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Collection;
@@ -42,10 +41,7 @@ import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
-import org.netbeans.modules.xml.xam.Model.State;
-import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -54,10 +50,9 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.netbeans.modules.web.jsf.navigation.NavigationCaseNode;
-import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import java.util.*;
 /**
  *
  * @author joelle lam
@@ -299,7 +294,6 @@ public class PageFlowController {
         
         view.saveLocations();
         view.clearGraph();
-        //        pageName2Node.clear();
         clearPageName2Node();
         case2Node.clear();
         navRule2String.clear();
@@ -376,8 +370,23 @@ public class PageFlowController {
         return pages;
     }
     
+    public java.util.Stack<String> PageFlowCreationStack = new java.util.Stack<String>();
+    int PageFlowCreationCount = 0;
     public PageFlowNode createPageFlowNode(Node node) {
-        return new PageFlowNode(this, node);
+        PageFlowNode pageNode =  new PageFlowNode(this, node);
+        Calendar rightNow = Calendar.getInstance();
+        PageFlowCreationStack.push("\n" + PageFlowCreationCount + ". " + rightNow.get(Calendar.MINUTE)+ ":" + rightNow.get(Calendar.SECOND) + " -  " + pageNode);
+        PageFlowCreationCount++;
+        return pageNode;
+        
+    }
+    public java.util.Stack<String> PageFlowDestroyStack = new java.util.Stack<String>();
+    int PageFlowDestroyCount = 0;
+    public void destroyPageFlowNode(PageFlowNode pageNode){
+        pageNode.destroy2();
+        Calendar rightNow = Calendar.getInstance();
+        PageFlowDestroyStack.push("\n" + PageFlowDestroyCount + ". " + rightNow.get(Calendar.MINUTE)+ ":" + rightNow.get(Calendar.SECOND) + " -  " + pageNode);
+        PageFlowDestroyCount++;
     }
     
     private void createAllProjectPageNodes(Collection<String> pagesInConfig) {
@@ -407,7 +416,6 @@ public class PageFlowController {
             if( pageName != null ){
                 Node tmpNode = new AbstractNode(Children.LEAF);
                 tmpNode.setName(pageName);
-                //                PageFlowNode node = new PageFlowNode(this,tmpNode);
                 PageFlowNode node = createPageFlowNode(tmpNode);
                 view.createNode(node, null, null);
             }
@@ -448,7 +456,6 @@ public class PageFlowController {
                         donfe.printStackTrace();
                     }
                 }
-                //                PageFlowNode node = new PageFlowNode(this, wrapNode);
                 PageFlowNode node = createPageFlowNode(wrapNode);
                 view.createNode(node, null, null);
             }
@@ -456,15 +463,19 @@ public class PageFlowController {
     }
     
     
-    public PageFlowNode removePageName2Node(PageFlowNode pageNode ){
+    public PageFlowNode removePageName2Node(PageFlowNode pageNode , boolean destroy ){
+        return removePageName2Node(pageNode.getDisplayName(), destroy);
+    }
+    
+    public PageFlowNode removePageName2Node( String displayName, boolean destroy ) {
         printThreadInfo();
         synchronized ( pageName2Node ) {
-            return pageName2Node.remove(pageNode.getDisplayName());
-        }
-    }
-    public void removePageName2Node( String displayName ) {
-        synchronized ( pageName2Node ) {
-            pageName2Node.remove(displayName);
+            PageFlowNode node = pageName2Node.remove(displayName);
+            if( destroy ) {
+                destroyPageFlowNode(node);
+            }
+            return node;
+            
         }
     }
     
@@ -480,10 +491,16 @@ public class PageFlowController {
     }
     
     public void clearPageName2Node(){
-        printThreadInfo();
+        //        printThreadInfo();
+        Set<String> keys;
         synchronized ( pageName2Node ) {
-            pageName2Node.clear();
+            keys = new HashSet<String>(pageName2Node.keySet());
         }
+        for( String key : keys ){
+            PageFlowNode node = removePageName2Node(key, true);
+        }
+        //            pageName2Node.clear();
+        //        }
     }
     
     public void putPageName2Node(String displayName, PageFlowNode pageNode){
@@ -499,6 +516,20 @@ public class PageFlowController {
     public PageFlowNode getPageName2Node(String displayName){
         printThreadInfo();
         synchronized ( pageName2Node ) {
+            /*
+             * Begin Test
+             */
+            PageFlowNode pageNode = pageName2Node.remove(displayName);
+            if( pageNode != null ) {
+                PageFlowNode pageNode2 = pageName2Node.get(displayName);
+                if( pageNode2 != null ){
+                    throw new RuntimeException("Why are there two of the same page?: " + displayName +"\n PageNode1: " + pageNode + "\n PageNode2:" + pageNode2);
+                }
+                putPageName2Node(displayName, pageNode);
+            }
+            /*
+             * End Test
+             */
             return pageName2Node.get(displayName);
         }
     }

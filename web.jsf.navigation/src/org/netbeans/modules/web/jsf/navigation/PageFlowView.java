@@ -14,7 +14,7 @@
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
+ * Microsystems, Inc. All Rights  Reserved.
  *
  */
 
@@ -412,8 +412,8 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         
         //Reset the Node Name
         VMDNodeWidget nodeWidget = (VMDNodeWidget)scene.findWidget(pageNode);
-        //Do this because sometimes the node display name is the object display name.
         
+        //Do this because sometimes the node display name is the object display name.        
         pageNode.updateNode_HACK();
         //        nodeWidget.setNodeName(node.getDisplayName());
         if( nodeWidget !=  null ) {
@@ -422,9 +422,15 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
                 redrawPinsAndEdges(pageNode);
             }
         } else  {
-            System.err.println("Node Widget is null in scene for: " + pageNode.getDisplayName());
+            validateGraph();
+            System.err.println("PageFlowCreationStack: " + pfc.PageFlowCreationStack);
+            System.err.println("PageFlowDestroyStack: " + pfc.PageFlowDestroyStack);
+            pfc.PageFlowCreationStack.clear();
+            pfc.PageFlowDestroyStack.clear();
+            System.err.println("PageNode: " + pageNode);
+//            System.err.println("Node Widget is null in scene for: " + pageNode.getDisplayName());
             System.err.println("Here are the scene nodes: " + scene.getNodes());
-            Thread.dumpStack();
+//            Thread.dumpStack();
         }
         
         

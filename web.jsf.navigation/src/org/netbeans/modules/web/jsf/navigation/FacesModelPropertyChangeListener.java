@@ -120,10 +120,9 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
                     PageFlowNode pageNode = pfc.getPageName2Node(toPage);
                     if( pageNode != null && !pfc.isPageInFacesConfig(toPage)){
                         if( !pageNode.isDataNode() || PageFlowUtilities.getInstance().getCurrentScope() == PageFlowUtilities.LBL_SCOPE_FACESCONFIG){
-                            pfc.removePageName2Node(pageNode);
                             view.removeNodeWithEdges(pageNode);
+                            pfc.removePageName2Node(pageNode,true);
                             view.validateGraph();
-                            //                                node.destroy(); //only okay because it is an abstract node.
                         }
                     }
                 }
@@ -142,8 +141,8 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
                 PageFlowNode pageNode = pfc.getPageName2Node(fromPage);
                 if( pageNode != null && !pfc.isPageInFacesConfig(fromPage)){
                     if( !pageNode.isDataNode() || PageFlowUtilities.getInstance().getCurrentScope() == PageFlowUtilities.LBL_SCOPE_FACESCONFIG){
-                        pfc.removePageName2Node(pageNode);
                         view.removeNodeWithEdges(pageNode);
+                        pfc.removePageName2Node(pageNode, true);
                         view.validateGraph();
                         //                                node.destroy(); //only okay because it is an abstract node.
                     }
