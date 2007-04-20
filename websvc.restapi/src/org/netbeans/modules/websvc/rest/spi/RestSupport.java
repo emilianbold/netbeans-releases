@@ -62,7 +62,7 @@ public abstract class RestSupport {
     public static final String PROP_RESTBEANS_TEST_URL = "restbeans.test.url";
     public static final String PROP_BASE_URL_TOKEN = "base.url.token";
     public static final String BASE_URL_TOKEN = "___BASE_URL___";
-    public static final String RESTBEANS_TEST_DIR = "nbproject/private/restbeans";
+    public static final String RESTBEANS_TEST_DIR = "build/generated/rest-test";
     public static final String COMMAND_TEST_RESTBEANS = "test.restbeans";
     public static final String REST_SUPPORT_ON = "rest.support.on";
     public static final String TEST_RESBEANS = "test-resbeans";
@@ -96,6 +96,11 @@ public abstract class RestSupport {
      * generic test client created ?
      */
     public abstract boolean isReady();
+    
+    /**
+     * Get persistence.xml file.
+     */
+    public abstract FileObject getPersistenceXml();
 
     /**
      * Generates test client.  Typically RunTestClientAction would need to call 
