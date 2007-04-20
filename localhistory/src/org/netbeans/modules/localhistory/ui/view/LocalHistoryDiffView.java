@@ -25,8 +25,8 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
+
 import org.netbeans.api.diff.Diff;
 import org.netbeans.api.diff.DiffView;
 import org.netbeans.api.diff.StreamSource;
@@ -51,12 +51,14 @@ import org.openide.util.lookup.Lookups;
  */
 public class LocalHistoryDiffView implements PropertyChangeListener, ActionListener {
            
+    private final LocalHistoryTopComponent master;
     private DiffPanel panel;
     private Component diffComponent;
     private DiffView diffView;            
     
     /** Creates a new instance of LocalHistoryView */
-    public LocalHistoryDiffView() {                
+    public LocalHistoryDiffView(LocalHistoryTopComponent master) {
+        this.master = master;
         panel = new DiffPanel();                                                              
         panel.nextButton.addActionListener(this);
         panel.prevButton.addActionListener(this);
@@ -127,7 +129,9 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
                         
                         diffView = diff.createDiff(ss1, ss2);  
                         
-                        setDiffComponent(diffView.getComponent());                        
+                        JComponent c = (JComponent) diffView.getComponent();
+                        setDiffComponent(c);
+                        master.setDiffView(c);
                         if(diffView.getDifferenceCount() > 0) {
                             setCurrentDifference(0);
                         } else {

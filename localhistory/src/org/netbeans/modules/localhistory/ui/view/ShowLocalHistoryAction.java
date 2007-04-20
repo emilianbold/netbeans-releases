@@ -61,7 +61,7 @@ public class ShowLocalHistoryAction extends NodeAction {
                 if(files[0].isFile()) {
                     // XXX hm 
                     LocalHistoryFileView fileView = new LocalHistoryFileView();                
-                    LocalHistoryDiffView diffView = new LocalHistoryDiffView(); 
+                    LocalHistoryDiffView diffView = new LocalHistoryDiffView(tc); 
                     fileView.getExplorerManager().addPropertyChangeListener(diffView); 
                     fileView.getExplorerManager().addPropertyChangeListener(new PropertyChangeListener() {
                         public void propertyChange(PropertyChangeEvent evt) {

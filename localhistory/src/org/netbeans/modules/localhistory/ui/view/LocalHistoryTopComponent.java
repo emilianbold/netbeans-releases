@@ -19,9 +19,12 @@
 package org.netbeans.modules.localhistory.ui.view;
 
 import java.io.Serializable;
-import javax.swing.JPanel;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
+import org.openide.awt.UndoRedo;
+import org.netbeans.modules.versioning.util.DelegatingUndoRedo;
+
+import javax.swing.*;
 
 /**
  * Top component which displays something.
@@ -33,6 +36,7 @@ final public class LocalHistoryTopComponent extends TopComponent {
     private static LocalHistoryTopComponent instance;
     private LocalHistoryFileView masterView;
     private static final String PREFERRED_ID = "LocalHistoryTopComponent";
+    private final DelegatingUndoRedo delegatingUndoRedo = new DelegatingUndoRedo(); 
 
     public LocalHistoryTopComponent() {
         initComponents();
@@ -70,6 +74,14 @@ final public class LocalHistoryTopComponent extends TopComponent {
         splitPane.setBottomComponent(diffPanel);                   
     }
     
+    public UndoRedo getUndoRedo() {
+        return delegatingUndoRedo;
+    }
+    
+    void setDiffView(JComponent currentDiffView) {
+        delegatingUndoRedo.setDiffView(currentDiffView);
+    }
+
     /**
      * Gets default instance. Do not use directly: reserved for *.settings files only,
      * i.e. deserialization routines; otherwise you could get a non-deserialized instance.
