@@ -277,6 +277,7 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
             }
 
             DataObject dataObject = super.handleCopy(folder);
+            boolean doNormalEventNotify = false;
             
             // fix the name of the PageBean to __NAME__ if the destination is a Template folder.
             if (folder.getPrimaryFile().getFileSystem().isDefault()) {
@@ -303,7 +304,7 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
 				}
             } else {
             	// do the normal event notification
-            	InSyncService.getProvider().copied((JsfJspDataObjectMarker) this, (JsfJspDataObjectMarker) dataObject);
+            	doNormalEventNotify = true;
             }
 
             try {
@@ -317,6 +318,19 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, dnfe);
             }
 
+            if (doNormalEventNotify) {
+                // invalidate the JspDataObject (created because the backing java had not been created)
+                // and pick up the new JsfJspDataObject
+                try {
+                    FileObject fo = dataObject.getPrimaryFile();
+                    dataObject.setValid(false);
+                    dataObject = DataObject.find(fo);
+                }catch (PropertyVetoException ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    return dataObject;
+                }
+                InSyncService.getProvider().copied((JsfJspDataObjectMarker) this, (JsfJspDataObjectMarker) dataObject);
+            }
             return dataObject;
         }
     }
