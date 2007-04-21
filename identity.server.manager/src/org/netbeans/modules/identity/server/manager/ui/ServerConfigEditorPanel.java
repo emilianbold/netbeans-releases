@@ -38,6 +38,11 @@ import org.openide.util.NbBundle;
  */
 public class ServerConfigEditorPanel extends javax.swing.JPanel
     implements EditDialogDescriptor.Panel {
+    
+    private static final int MAX_PORT = 65535;
+    
+    private static final int MIN_PORT = 0;
+    
     private final List listeners = new ArrayList();
     
     private ServerInstance instance;
@@ -95,6 +100,11 @@ public class ServerConfigEditorPanel extends javax.swing.JPanel
         if (host == null || host.trim().length() == 0) {
             return NbBundle.getMessage(ServerConfigEditorPanel.class,
                     "MSG_EnterHost");
+        } else {
+            if (host.split("\\s").length > 1) {             //NOI18N
+                 return NbBundle.getMessage(ServerConfigEditorPanel.class,
+                    "MSG_InvalidHost");
+            }
         }
         
         String port = portTF.getText();
@@ -105,7 +115,12 @@ public class ServerConfigEditorPanel extends javax.swing.JPanel
         }
         
         try {
-            Integer.parseInt(port.trim());
+            int portNumber = Integer.parseInt(port.trim());
+            
+            if (portNumber < MIN_PORT || portNumber > MAX_PORT) {
+                return NbBundle.getMessage(ServerConfigEditorPanel.class,
+                    "MSG_InvalidPort");
+            }
         } catch (NumberFormatException ex) {
             return NbBundle.getMessage(ServerConfigEditorPanel.class,
                     "MSG_InvalidPort");
