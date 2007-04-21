@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.visualweb.faces.dt_1_1.component.html;
 
+import com.sun.rave.propertyeditors.domains.InputComponentIdsDomain;
 import java.beans.BeanDescriptor;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
@@ -31,7 +32,6 @@ import com.sun.rave.designtime.Constants;
 import com.sun.rave.designtime.markup.AttributeDescriptor;
 import com.sun.rave.propertyeditors.DomainPropertyEditor;
 import com.sun.rave.propertyeditors.SelectOneDomainEditor;
-import com.sun.rave.propertyeditors.domains.ComponentIdsDomain;
 import com.sun.rave.propertyeditors.domains.TextDirectionDomain;
 import org.netbeans.modules.visualweb.faces.dt.BeanDescriptorBase;
 import org.netbeans.modules.visualweb.faces.dt.PropertyDescriptorBase;
@@ -125,7 +125,7 @@ public class HtmlOutputLabelBeanInfo extends UIOutputBeanInfoBase {
             attrib = new AttributeDescriptor("for",false,null,true);
             prop_for.setValue(Constants.PropertyDescriptor.ATTRIBUTE_DESCRIPTOR,attrib);
             prop_for.setValue(Constants.PropertyDescriptor.CATEGORY,com.sun.rave.designtime.base.CategoryDescriptors.APPEARANCE);
-            prop_for.setValue(DomainPropertyEditor.DOMAIN_CLASS, ComponentIdsDomain.class);
+            prop_for.setValue(DomainPropertyEditor.DOMAIN_CLASS, InputComponentIdsDomain.class);
             PropertyDescriptor prop_lang = new PropertyDescriptorBase("lang",beanClass,"getLang","setLang");
             prop_lang.setDisplayName(resources.getString("HtmlOutputLabel_lang_DisplayName"));
             prop_lang.setShortDescription(resources.getString("HtmlOutputLabel_lang_Description"));

@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.visualweb.faces.dt_1_1.component;
 
+import com.sun.rave.propertyeditors.domains.InputComponentIdsDomain;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.util.Locale;
@@ -30,7 +31,6 @@ import com.sun.rave.designtime.Constants;
 import com.sun.rave.designtime.markup.AttributeDescriptor;
 import com.sun.rave.propertyeditors.DomainPropertyEditor;
 import com.sun.rave.propertyeditors.SelectOneDomainEditor;
-import com.sun.rave.propertyeditors.domains.ComponentIdsDomain;
 import org.netbeans.modules.visualweb.faces.dt.PropertyDescriptorBase;
 
 
@@ -66,7 +66,7 @@ public abstract class UIMessageBeanInfoBase extends UIComponentBeanInfoBase {
             attrib = new AttributeDescriptor("for",true,null,true);
             prop_for.setValue(Constants.PropertyDescriptor.ATTRIBUTE_DESCRIPTOR,attrib);
             prop_for.setValue(Constants.PropertyDescriptor.CATEGORY,com.sun.rave.designtime.base.CategoryDescriptors.APPEARANCE);
-            prop_for.setValue(DomainPropertyEditor.DOMAIN_CLASS, ComponentIdsDomain.class);
+            prop_for.setValue(DomainPropertyEditor.DOMAIN_CLASS, InputComponentIdsDomain.class);
 
             PropertyDescriptor prop_showDetail = new PropertyDescriptorBase("showDetail",beanClass,"isShowDetail","setShowDetail");
             prop_showDetail.setDisplayName(resources.getString("UIMessage_showDetail_DisplayName"));
