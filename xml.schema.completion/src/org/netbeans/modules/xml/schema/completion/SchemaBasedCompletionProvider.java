@@ -51,7 +51,7 @@ public class SchemaBasedCompletionProvider implements CompletionProvider {
     }
     
     public CompletionTask createTask(int queryType, JTextComponent component) {
-        if (queryType == COMPLETION_QUERY_TYPE)
+        if (queryType == COMPLETION_QUERY_TYPE || queryType == COMPLETION_ALL_QUERY_TYPE)
             return new AsyncCompletionTask(new CompletionQuery(getPrimaryFile()), component);
         
         return null;
