@@ -27,6 +27,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -35,12 +37,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListResourceBundle;
 import java.util.Map;
+import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -543,6 +547,10 @@ public class ComplibServiceProvider implements ComplibService {
         userScope = Scope.createScope(userInstallDir);
     }
 
+    private File getComplibStateDir() {
+        return complibStateDir;
+    }
+
     private void initSharedComplibs(HashSet<Project> projects) {
         for (Project project : projects) {
             // Load in shared complib info used by this project
@@ -592,15 +600,13 @@ public class ComplibServiceProvider implements ComplibService {
                         }
 
                         /*
-                         * Add Lib Ref if needed. Defs are created at install
-                         * time.
-                         * 
-                         * @since NB 6.
+                         * Add Lib Ref if needed. Lib Defs are created at
+                         * install time. (since NB 6)
                          */
                         ExtensionComplib userComplib = userScope
                                 .getExistingComplib(projectComplib);
                         if (userComplib != null) {
-                            addLibraryRef(project, userComplib);
+                            addLibraryRefAndDef(project, userComplib);
                         }
                     }
                 } catch (IOException e) {
@@ -701,54 +707,130 @@ public class ComplibServiceProvider implements ComplibService {
     }
 
     /**
-     * ResourceBundle used to localize NetBeans libraries. Note this must be
-     * public so that NetBeans can access it.
+     * ResourceBundle used to localize NetBeans libraries. Note this class must
+     * be public so that NetBeans code can access it.
      */
-    public static class LibraryLocalizationBundle extends ListResourceBundle {
-        // TODO Bundle needs to be persisted to somewhere accessible to the
-        // NetBeans system classloader
-        private static HashMap<String, String[]> l10nMap = new HashMap<String, String[]>();
+    public static class LibraryLocalizationBundle extends ResourceBundle {
 
+        private static File propsFile = new File(ComplibServiceProvider
+                .getInstance().getComplibStateDir(),
+                "LibraryLocalizationBundle.properties");
+
+        private static HashMap<Object, Object> map;
+
+        /**
+         * The constructor must be public so NetBeans can access this
+         * ResourceBundle class and create an instance of it.
+         */
+        public LibraryLocalizationBundle() {
+        }
+
+        private static HashMap<Object, Object> getMap() {
+            // Load the last saved state once
+            if (map == null) {
+                Properties props = new Properties();
+                try {
+                    props.load(new FileInputStream(propsFile));
+                } catch (IOException e) {
+                    // File may not exist so ignore
+                }
+                map = new HashMap<Object, Object>(props);
+            }
+            return map;
+        }
+
+        /**
+         * Add a entry
+         * 
+         * @param key
+         * @param value
+         */
         static void add(String key, String value) {
-            String[] bundleEntry = { key, value };
-            l10nMap.put(key, bundleEntry);
+            getMap().put(key, value);
+            save();
         }
 
-        static String[] remove(String key) {
-            return l10nMap.remove(key);
+        /**
+         * Remove an entry
+         * 
+         * @param key
+         */
+        static void remove(String key) {
+            getMap().remove(key);
+            save();
         }
 
-        protected Object[][] getContents() {
-            return l10nMap.values().toArray(new Object[l10nMap.size()][]);
+        private static void save() {
+            // Transfer data into a Properties object to save it
+            Properties props = new Properties();
+            Set<Object> keys = map.keySet();
+            for (Object object : keys) {
+                String key = (String) object;
+                String value = (String) map.get(key);
+                props.setProperty(key, value);
+            }
+
+            try {
+                props.store(new FileOutputStream(propsFile), null);
+            } catch (IOException e) {
+                IdeUtil.logError("Unable to save LibraryLocalizationBundle", e);
+            }
         }
+
+        public Object handleGetObject(String key) {
+            if (key == null) {
+                throw new NullPointerException();
+            }
+
+            return getMap().get(key);
+        }
+
+        public Enumeration<String> getKeys() {
+            final Set<Object> keys = getMap().keySet();
+            return new Enumeration<String>() {
+                Iterator<Object> it = keys.iterator();
+
+                public boolean hasMoreElements() {
+                    return it.hasNext();
+                }
+
+                public String nextElement() {
+                    // Elements are always a String
+                    return (String) it.next();
+                }
+            };
+        }
+
     }
 
     /**
-     * Add a Library Ref to a user scoped complib for a project, if needed.
+     * Ensures that a Library Ref to a user scoped complib for a project exists
+     * and it may also create the associated Lib Def, if needed.
      * 
      * @param project
      * @param userComplib
      * @throws IOException
      */
-    private void addLibraryRef(Project project, ExtensionComplib userComplib)
-            throws IOException {
+    private void addLibraryRefAndDef(Project project,
+        ExtensionComplib userComplib) throws IOException {
         String libName = deriveUniqueLibraryName(userComplib);
         Library libDef = LibraryManager.getDefault().getLibrary(libName);
         if (libDef == null) {
-            // assert false;
-            // Library Defs are created at install time. @since NB 6.
-            IdeUtil
-                    .logError("Cannot add Library Ref, unable to find Library Definition: "
-                            + libName);
-            return;
+            /*
+             * Library Defs are created at install time (since NB 6). However,
+             * it is still possible that the user removes the Lib Def afterward
+             * and so we re-create it here in case that happens.
+             */
+            libDef = createUserScopeLibDef(userComplib);
         }
 
         // If needed, create new Library Ref
         if (!JsfProjectUtils.hasLibraryReference(project, libDef)) {
             if (!JsfProjectUtils.addLibraryReferences(project,
                     new Library[] { libDef })) {
-                IdeUtil.logError("Failed to add library reference to project: "
-                        + libDef.getName());
+                IdeUtil
+                        .logWarning("Failed to add library reference to project: "
+                                + libDef.getName());
             }
         }
     }
@@ -937,34 +1019,43 @@ public class ComplibServiceProvider implements ComplibService {
         finishInstallToUserScope(newComplib);
     }
 
-    private void finishInstallToUserScope(ExtensionComplib complib)
+    private void finishInstallToUserScope(ExtensionComplib userComplib)
             throws ComplibException, IOException, MalformedURLException {
         /*
          * Temporarily install the complib into the system so that UI Item-s can
          * be created and then rollback if a problem occurs
          */
         try {
-            addToPalette(complib);
+            addToPalette(userComplib);
         } catch (ComplibException e1) {
             // Rollback
-            remove(complib);
+            remove(userComplib);
             throw e1;
         }
-        JavaHelpStorage.installComplibHelp(complib);
+        JavaHelpStorage.installComplibHelp(userComplib);
 
         // Create Lib Def
-        createUserScopeLibDef(complib);
+        createUserScopeLibDef(userComplib);
 
         fireAddableComplibsChanged(userScope);
     }
 
+    /**
+     * Creates a new Lib Def. Any existing Lib Def with the same name will be
+     * removed first.
+     * 
+     * @param complib
+     * @return
+     * @throws IOException
+     * @throws MalformedURLException
+     */
     private Library createUserScopeLibDef(ExtensionComplib complib)
             throws IOException, MalformedURLException {
         String libName = deriveUniqueLibraryName(complib);
 
         Library libDef = LibraryManager.getDefault().getLibrary(libName);
         if (libDef != null) {
-            // assert false;
+            // If one exists, remove it first
             JsfProjectUtils.removeLibrary(libName);
         }
 
@@ -1309,7 +1400,7 @@ public class ComplibServiceProvider implements ComplibService {
         ExtensionComplib projectComplib = scope
                 .installComplib(userDirExtComplib);
         fireAddableComplibsChanged(scope);
-        addLibraryRef(project, userDirExtComplib);
+        addLibraryRefAndDef(project, userDirExtComplib);
         installProjectResources(userDirExtComplib, project);
         return projectComplib;
     }
