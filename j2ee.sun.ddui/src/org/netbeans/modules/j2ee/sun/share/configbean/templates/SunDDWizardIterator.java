@@ -147,7 +147,7 @@ public final class SunDDWizardIterator implements WizardDescriptor.Instantiating
         return result;
     }
     
-    private static class XmlFileCreator implements FileSystem.AtomicAction {
+    public static class XmlFileCreator implements FileSystem.AtomicAction {
         
         private final FileObject source;
         private final FileObject destFolder;
@@ -155,7 +155,7 @@ public final class SunDDWizardIterator implements WizardDescriptor.Instantiating
         private final String ext;
         private FileObject result;
         
-        XmlFileCreator(final FileObject source, final FileObject destFolder, final String name, final String ext) {
+        public XmlFileCreator(final FileObject source, final FileObject destFolder, final String name, final String ext) {
             this.source = source;
             this.destFolder = destFolder;
             this.name = name;
