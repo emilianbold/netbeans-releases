@@ -39,8 +39,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.font.FontRenderContext;
-import java.awt.font.LineMetrics;
 import java.lang.ref.WeakReference;
 import java.text.CharacterIterator;
 import java.util.Vector;
@@ -80,7 +78,6 @@ import org.netbeans.modules.uml.core.metamodel.structure.IComment;
 import org.netbeans.modules.uml.core.support.umlsupport.IStrings;
 import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
 import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
-import org.netbeans.modules.uml.core.support.umlsupport.Log;
 import org.netbeans.modules.uml.core.support.umlutils.IPropertyDefinition;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeControl;
 import org.netbeans.modules.uml.ui.products.ad.applicationcore.IADProduct;
@@ -812,7 +809,7 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
       Component other = e.getOppositeComponent();
       if (other == null || (!other.equals(m_Button) && !other.equals(m_Panel) && !other.equals(this)))
       {
-         m_TooltipMenu.reshape(0, 0, 0, 0);
+         m_TooltipMenu.setBounds(0, 0, 0, 0);
          m_TooltipMenu.setVisible(false);
       }
    }
@@ -1012,7 +1009,7 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
       m_TooltipMenu.setAlignmentX(0);
       m_TooltipMenu.setAlignmentY(0);
       //m_TooltipMenu.setLayout(null);
-      m_TooltipMenu.reshape(0, 0, 0, 0);
+      m_TooltipMenu.setBounds(0, 0, 0, 0);
 
       ICompartment compartment = null;
 
@@ -1089,10 +1086,10 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
       //setLayout(new BorderLayout());
       //add(m_Field, BorderLayout.CENTER);
       //m_Panel.add(m_Button);
-      m_Button.reshape(0, 0, 15, 3);
+      m_Button.setBounds(0, 0, 15, 3);
       setOpaque(false);
       add(m_Panel, BorderLayout.SOUTH);
-      m_Panel.reshape(0, 0, 200, 3);
+      m_Panel.setBounds(0, 0, 200, 3);
       m_Panel.setOpaque(false);
    }
 
@@ -1513,7 +1510,7 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
       p = m_TooltipMenu.getLocation();
       if (p != null)
       {
-         m_TooltipMenu.reshape(p.x, p.y - metrix.getHeight(), width, metrix.getHeight());
+         m_TooltipMenu.setBounds(p.x, p.y - metrix.getHeight(), width, metrix.getHeight());
          IEditControlField pField = m_Translator.getCurrentField();
          if (pField != null)
          {
@@ -1617,9 +1614,9 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
          length = metrix.stringWidth(str);
       }
       m_Panel.removeAll();
-      m_Panel.reshape(0, 0, 200, 3);
+      m_Panel.setBounds(0, 0, 200, 3);
       m_Panel.repaint();
-      m_Button.reshape(length, 0, 15, 3);
+      m_Button.setBounds(length, 0, 15, 3);
       m_Panel.add(m_Button);
       if (m_BackgroundColor != null)
       {
@@ -1645,7 +1642,7 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
          m_Panel.setBackground(m_BackgroundColor);
          m_Panel.setUI(this.getUI());
       }
-      m_Panel.reshape(0, 0, 200, 3);
+      m_Panel.setBounds(0, 0, 200, 3);
       m_Panel.repaint();
       //m_Button.reshape(0,0,0,0);
       //m_Panel.add(m_Button);

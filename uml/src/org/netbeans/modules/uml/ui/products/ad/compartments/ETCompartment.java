@@ -34,13 +34,11 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 import javax.accessibility.Accessible;
-import javax.accessibility.AccessibleAction;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleComponent;
 import javax.accessibility.AccessibleRole;
 import javax.accessibility.AccessibleState;
 import javax.accessibility.AccessibleStateSet;
-import javax.accessibility.AccessibleText;
 
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.metamodel.basic.basicactions.IProcedure;
@@ -62,7 +60,6 @@ import org.netbeans.modules.uml.ui.products.ad.application.IMenuManager;
 import org.netbeans.modules.uml.ui.products.ad.application.action.BaseAction;
 import org.netbeans.modules.uml.ui.products.ad.application.action.ContextMenuActionClass;
 import org.netbeans.modules.uml.ui.products.ad.application.action.IETContextMenuHandler;
-//import org.netbeans.modules.uml.ui.products.ad.application.action.Separator;
 import org.netbeans.modules.uml.ui.products.ad.diagramengines.diagramActivityEngine.ETInvocationNodeDrawEngine;
 import org.netbeans.modules.uml.ui.products.ad.diagramengines.diagramActivityEngine.ObjectNodeDrawEngine;
 import org.netbeans.modules.uml.ui.products.ad.diagramengines.sequencediagram.LifelineDrawEngine;
@@ -103,20 +100,14 @@ import org.netbeans.modules.uml.ui.support.viewfactorysupport.TypeConversions;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.UIResources;
 import org.netbeans.modules.uml.ui.swing.drawingarea.ADGraphWindow;
 import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
-import com.tomsawyer.editor.TSEFont;
 import com.tomsawyer.editor.TSEGraphWindow;
 import com.tomsawyer.editor.graphics.TSEGraphics;
 import com.tomsawyer.graph.TSGraphObject;
-//import com.tomsawyer.util.TSConstPoint;
 import com.tomsawyer.drawing.geometry.TSConstPoint;
-//import com.tomsawyer.util.TSConstRect;
-import com.tomsawyer.drawing.geometry.TSConstRect;
-//import com.tomsawyer.util.TSTransform;
 import com.tomsawyer.editor.TSTransform;
 import java.util.StringTokenizer;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
-import javax.swing.JSeparator;
 import org.netbeans.modules.uml.ui.swing.testbed.addin.menu.Separator;
 
 /**
@@ -967,6 +958,10 @@ public abstract class ETCompartment extends ETTransformOwner implements IADCompa
    public void invertSelected()
    {
       this.m_selected = !this.m_selected;
+      if ((m_selected) && (m_engine != null))
+      {
+          m_engine.setAnchoredCompartment(this);
+      }
    }
    
    public boolean isCollapsible()

@@ -64,6 +64,8 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.LineMetrics;
 import org.netbeans.modules.uml.ui.swing.drawingarea.ADDrawingAreaControl;
 import com.tomsawyer.graph.TSGraphObject;
+import org.netbeans.modules.uml.ui.products.ad.graphobjects.ETEdgeLabel;
+import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETGraphObject;
 import org.openide.util.NbBundle;
 
 public class ETEditableCompartment extends ETCompartment implements IADEditableCompartment, IEditControlEventSink
@@ -415,13 +417,24 @@ public class ETEditableCompartment extends ETCompartment implements IADEditableC
          this.getEngine().getDrawingArea().setEditCompartment(this);
          //editCtrl.setPreferredSize(new Dimension(300,25));
          m_EditDialog.setContentPane(m_EditControl);
-         if (m_boundingRect != null)
+         
+         // Fix IZ=87193. When the Overwiew window is opened, the m_boundingRect of an edge label contains the data 
+         // (i.e. x,y,w,h) corresponding the overview window; hence the computed location of the edit control dialog
+         //  is screwed up. Need to to call the getDeviceBoudingRec() to get the bounding rect
+         //  of the edge label on the diagram window.
+         Rectangle rect = getDeviceBoundingRectangle();        
+         if ( m_boundingRect != null)
          {
-            Rectangle rect = (Rectangle)m_boundingRect;
-            if (rect != null && rect.x == 0 && rect.y == 0)
+            IETGraphObject grapObj = this.getObject(); 
+            if (grapObj != null && !(grapObj instanceof ETEdgeLabel))
             {
-               rect = getDeviceBoundingRectangle();
+               rect = (Rectangle) m_boundingRect;
+               if (rect != null && rect.x == 0 && rect.y == 0)
+               {
+                  rect = getDeviceBoundingRectangle();
+               }
             }
+            
             Point p1 = this.getEngine().getDrawingArea().getGraphWindow().getCanvas().getLocationOnScreen();
             //m_EditDialog.setBounds(p1.x + rect.x, p1.y + rect.y, rect.width-5, 20);
 
@@ -464,7 +477,7 @@ public class ETEditableCompartment extends ETCompartment implements IADEditableC
          m_EditDialog.getRootPane().setOpaque(false);
          //dialog.setModal(true);
          m_EditControl.requestFocus();
-         m_EditDialog.show();
+         m_EditDialog.setVisible(true);
       }
       else
       {
