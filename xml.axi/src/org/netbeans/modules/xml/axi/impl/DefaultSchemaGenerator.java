@@ -169,7 +169,7 @@ public abstract class DefaultSchemaGenerator extends SchemaGenerator {
                         if(lct.getDefinition() != null) {
                             ComplexTypeDefinition ctd = lct.getDefinition();
                             if(ctd instanceof SimpleContent)   {
-                                transformToComplexContent(ctd);
+                                transformToComplexContent(compositor, ctd);
                                 seq = SchemaGeneratorUtil.createSequence(sm, lct);
                             } else
                                 seq = SchemaGeneratorUtil.createSequence(sm, ctd, index);
@@ -181,7 +181,7 @@ public abstract class DefaultSchemaGenerator extends SchemaGenerator {
                         if(gct.getDefinition() != null) {
                             ComplexTypeDefinition ctd = gct.getDefinition();
                             if(ctd instanceof SimpleContent) {
-                                transformToComplexContent(ctd);
+                                transformToComplexContent(compositor, ctd);
                                 seq = SchemaGeneratorUtil.createSequence(sm, gct);
                             } else
                                 seq = SchemaGeneratorUtil.createSequence(sm, ctd, index);
@@ -230,7 +230,7 @@ public abstract class DefaultSchemaGenerator extends SchemaGenerator {
                     if(gct.getDefinition() != null) {
                         ComplexTypeDefinition ctd = gct.getDefinition();
                         if(ctd instanceof SimpleContent) {
-                            transformToComplexContent(ctd);
+                            transformToComplexContent(compositor, ctd);
                             c = SchemaGeneratorUtil.createChoice(sm, gct);
                         } else
                             c = SchemaGeneratorUtil.createChoice(sm, ctd, index);
@@ -293,7 +293,8 @@ public abstract class DefaultSchemaGenerator extends SchemaGenerator {
         }
     }
     
-    private ComplexType transformToComplexContent(final ComplexTypeDefinition ctd) {
+    private ComplexType transformToComplexContent(Compositor compositor, final ComplexTypeDefinition ctd) {
+        AXIComponent parent = compositor.getParent();
         ComplexType lct = null;
         if(ctd instanceof SimpleContent) {
             lct = (ComplexType) ctd.getParent();
@@ -301,21 +302,26 @@ public abstract class DefaultSchemaGenerator extends SchemaGenerator {
                 NamedComponentReference base = ((SimpleExtension)ctd.getChildren().get(0)).getBase();                
                 if(base.get() instanceof GlobalSimpleType) {
                     SimpleContent sc1 = (SimpleContent) ctd;                    
-                    copyAttribute(lct, sc1);
-                    copyAttribute(lct, sc1.getLocalDefinition());
+                    copyAttribute(parent, lct, sc1);
+                    copyAttribute(parent, lct, sc1.getLocalDefinition());
                 }
             }
         }
         return lct;
     }
 
-    private void copyAttribute(final LocalAttributeContainer lac, 
+    private void copyAttribute(AXIComponent parent, final LocalAttributeContainer lac, 
             final SchemaComponent scd) {
         for(SchemaComponent sc: scd.getChildren()) {
-            if(sc instanceof org.netbeans.modules.xml.schema.model.Attribute)
-                lac.addLocalAttribute(
-                    (LocalAttribute) ((org.netbeans.modules.xml.schema.model.Attribute)sc).
-                        copy(lac));
+            if(sc instanceof org.netbeans.modules.xml.schema.model.Attribute) {
+                LocalAttribute la = (LocalAttribute)((org.netbeans.modules.xml.schema.model.Attribute)sc).copy(lac);
+                lac.addLocalAttribute(la);
+                for(AXIComponent child : parent.getChildren()) {
+                    if(child.getPeer() == sc) {
+                        child.setPeer(la);
+                    }
+                }                
+            }
         }
     }
     
