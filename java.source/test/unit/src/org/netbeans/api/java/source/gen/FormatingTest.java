@@ -49,7 +49,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTestSuite(FormatingTest.class);
-//        suite.addTest(new FormatingTest("testClass"));
+//        suite.addTest(new FormatingTest("testStaticBlock"));
         return suite;
     }
 
@@ -253,6 +253,66 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "    int test4(int i)\n" +
             "        {\n" +
             "        return i;\n" +
+            "        }\n" +
+            "}\n";
+        assertEquals(golden, res);
+    }
+    
+    public void testStaticBlock() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "}\n"
+            );
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        final int[] counter = new int[] {0};
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker maker = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                BlockTree block = maker.Block(Collections.<StatementTree>emptyList(), true);
+                workingCopy.rewrite(clazz, maker.addClassMember(clazz, block));
+            }            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+
+        Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
+        preferences.putBoolean("spaceBeforeStaticInitLeftBrace", false);
+        testSource.runModificationTask(task).commit();
+        preferences.putBoolean("spaceBeforeStaticInitLeftBrace", true);
+
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE.name());
+        testSource.runModificationTask(task).commit();
+
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        testSource.runModificationTask(task).commit();
+
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_INDENTED.name());
+        testSource.runModificationTask(task).commit();
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.SAME_LINE.name());
+
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+
+        String golden = 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    static {\n" +
+            "    }\n" +
+            "    static{\n" +
+            "    }\n" +
+            "    static\n" +
+            "    {\n" +
+            "    }\n" +
+            "    static\n" +
+            "      {\n" +
+            "      }\n" +
+            "    static\n" +
+            "        {\n" +
             "        }\n" +
             "}\n";
         assertEquals(golden, res);

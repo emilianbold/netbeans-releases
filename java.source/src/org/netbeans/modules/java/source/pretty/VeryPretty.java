@@ -411,9 +411,6 @@ public final class VeryPretty extends JCTree.Visitor {
                     needSpace();
                 }
                 print(tree.restype, tree.sym != null && tree.sym.type!=null ? tree.sym.type.getReturnType() : null);
-                //TODO: DB
-                //	    if(options.methodNamesStartLine) { newline(); out.toLeftMargin(); }
-                //	    else
                 needSpace();
                 print(tree.name);
             }
@@ -486,7 +483,23 @@ public final class VeryPretty extends JCTree.Visitor {
             if (tree.init != null) {
                 if (cs.spaceAroundAssignOps())
                     print(' ');
-                print(cs.spaceAroundAssignOps() ? "= " : "=");
+                print('=');
+                int rm = cs.getRightMargin();
+                switch(cs.wrapAssignOps()) {
+                case WRAP_IF_LONG:
+                    if (widthEstimator.estimateWidth(tree.init, rm - out.col) + out.col <= cs.getRightMargin()) {
+                        if(cs.spaceAroundAssignOps())
+                            print(' ');
+                        break;
+                    }
+                case WRAP_ALWAYS:
+                    toColExactly(out.leftMargin + cs.getContinuationIndentSize());
+                    break;
+                case WRAP_NEVER:
+                    if(cs.spaceAroundAssignOps())
+                        print(' ');
+                    break;
+                }
                 printNoParenExpr(tree.init);
             }
             if (prec == treeinfo.notExpression)
@@ -501,7 +514,7 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     public void visitBlock(JCBlock tree) {
-	printFlags(tree.flags);
+	printFlags(tree.flags, false);
 	printBlock(tree.stats, cs.getOtherBracePlacement(), (tree.flags & Flags.STATIC) != 0 ? cs.spaceBeforeStaticInitLeftBrace() : false);
     }
 
@@ -807,9 +820,11 @@ public final class VeryPretty extends JCTree.Visitor {
 	    printExpr(tree.meth, treeinfo.postfixPrec);
 	}
 	print(cs.spaceBeforeMethodCallParen() ? " (" : "(");
+        if (cs.spaceWithinMethodCallParens())
+            print(' ');
 	wrapTrees(tree.args, cs.wrapMethodCallArgs(), cs.alignMultilineCallArgs()
                 ? out.col : out.leftMargin + cs.getContinuationIndentSize());
-	print(')');
+	print(cs.spaceWithinMethodCallParens() ? " )" : ")");
     }
 
     public void visitNewClass(JCNewClass tree) {
@@ -829,10 +844,12 @@ public final class VeryPretty extends JCTree.Visitor {
 	    print(tree.clazz.type.tsym.name);
 	else
 	    print(tree.clazz);
-	print('(');
+	print(cs.spaceBeforeMethodCallParen() ? " (" : "(");
+        if (cs.spaceWithinMethodCallParens())
+            print(' ');
 	wrapTrees(tree.args, cs.wrapMethodCallArgs(), cs.alignMultilineCallArgs()
                 ? out.col : out.leftMargin + cs.getContinuationIndentSize());
-	print(')');
+	print(cs.spaceWithinMethodCallParens() ? " )" : ")");
 	if (tree.def != null) {
 	    Name enclClassNamePrev = enclClassName;
 	    enclClassName = null;
@@ -852,19 +869,21 @@ public final class VeryPretty extends JCTree.Visitor {
 	    }
 	    printExpr(elemtype);
 	    for (List<? extends JCTree> l = tree.dims; l.nonEmpty(); l = l.tail) {
-		print('[');
+		print(cs.spaceWithinArrayInitBrackets() ? "[ " : "[");
 		printNoParenExpr(l.head);
-		print(']');
+		print(cs.spaceWithinArrayInitBrackets() ? " ]" : "]");
 		n--;
 	    }
 	    while(--n >= 0) 
-                print("[]");
+                print(cs.spaceWithinArrayInitBrackets() ? "[ ]" : "[]");
 	}
 	if (tree.elems != null) {
-	    print("{");
+	    print(cs.spaceBeforeArrayInitLeftBrace() ? " {" : "{");
+            if (cs.spaceWithinBraces())
+                print(' ');
 	    wrapTrees(tree.elems, cs.wrapArrayInit(), cs.alignMultilineArrayInit()
                     ? out.col : out.leftMargin + cs.getContinuationIndentSize());
-	    print('}');
+	    print(cs.spaceWithinBraces() ? " }" : "}");
 	}
     }
 
@@ -877,17 +896,53 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     public void visitAssign(JCAssign tree) {
+        int col = out.col;
 	printExpr(tree.lhs, treeinfo.assignPrec + 1);
-	print(cs.spaceAroundAssignOps() ? " = " : "=");
+	if (cs.spaceAroundAssignOps())
+            print(' ');
+	print('=');
+	int rm = cs.getRightMargin();
+        switch(cs.wrapAssignOps()) {
+        case WRAP_IF_LONG:
+            if (widthEstimator.estimateWidth(tree.rhs, rm - out.col) + out.col <= cs.getRightMargin()) {
+                if(cs.spaceAroundAssignOps())
+                    print(' ');
+                break;
+            }
+        case WRAP_ALWAYS:
+            toColExactly(cs.alignMultilineAssignment() ? col : out.leftMargin + cs.getContinuationIndentSize());
+            break;
+        case WRAP_NEVER:
+            if(cs.spaceAroundAssignOps())
+                print(' ');
+            break;
+        }
 	printExpr(tree.rhs, treeinfo.assignPrec);
     }
 
     public void visitAssignop(JCAssignOp tree) {
+        int col = out.col;
 	printExpr(tree.lhs, treeinfo.assignopPrec + 1);
 	if (cs.spaceAroundAssignOps())
             print(' ');
 	print(treeinfo.operatorName(tree.tag - JCTree.ASGOffset));
-	print(cs.spaceAroundAssignOps() ? "= " : "=");
+        print('=');
+	int rm = cs.getRightMargin();
+        switch(cs.wrapAssignOps()) {
+        case WRAP_IF_LONG:
+            if (widthEstimator.estimateWidth(tree.rhs, rm - out.col) + out.col <= cs.getRightMargin()) {
+                if(cs.spaceAroundAssignOps())
+                    print(' ');
+                break;
+            }
+        case WRAP_ALWAYS:
+            toColExactly(cs.alignMultilineAssignment() ? col : out.leftMargin + cs.getContinuationIndentSize());
+            break;
+        case WRAP_NEVER:
+            if(cs.spaceAroundAssignOps())
+                print(' ');
+            break;
+        }
 	printExpr(tree.rhs, treeinfo.assignopPrec);
     }
 
@@ -918,18 +973,27 @@ public final class VeryPretty extends JCTree.Visitor {
     public void visitBinary(JCBinary tree) {
 	int ownprec = treeinfo.opPrec(tree.tag);
 	Name opname = treeinfo.operatorName(tree.tag);
-	int stcol = out.col;
+        int col = out.col;
 	printExpr(tree.lhs, ownprec);
-	if(cs.spaceAroundBinaryOps()) {
+	if(cs.spaceAroundBinaryOps())
             print(' ');
-	    print(opname);
-            print(' ');
-        } else {
-            print(opname);
-        }
+	print(opname);
 	int rm = cs.getRightMargin();
-	if(out.col + widthEstimator.estimateWidth(tree.rhs, rm - out.col) > rm)
-	    out.toColExactly(stcol);
+        switch(cs.wrapBinaryOps()) {
+        case WRAP_IF_LONG:
+            if (widthEstimator.estimateWidth(tree.rhs, rm - out.col) + out.col <= cs.getRightMargin()) {
+                if(cs.spaceAroundBinaryOps())
+                    print(' ');
+                break;
+            }
+        case WRAP_ALWAYS:
+            toColExactly(cs.alignMultilineBinaryOp() ? col : out.leftMargin + cs.getContinuationIndentSize());
+            break;
+        case WRAP_NEVER:
+            if(cs.spaceAroundBinaryOps())
+                print(' ');
+            break;
+        }
 	printExpr(tree.rhs, ownprec + 1);
     }
 
@@ -1136,11 +1200,14 @@ public final class VeryPretty extends JCTree.Visitor {
 	    if (ty instanceof Type.ClassType) {
 		List < Type > typarams = ((Type.ClassType) ty).typarams_field;
 		if (typarams != null && typarams.nonEmpty()) {
-		    char prec = '<';
+                    print('<');
 		    for (; typarams.nonEmpty(); typarams = typarams.tail) {
-			print(prec);
-			prec = ',';
 			print(null, typarams.head);
+                        if (typarams.tail.nonEmpty()) {
+                            if (cs.spaceBeforeComma())
+                                print(' ');
+                            print(cs.spaceAfterComma() ? ", " : ",");
+                        }
 		    }
 		    print('>');
 		}
@@ -1164,8 +1231,12 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     private void printFlags(long flags) {
+        printFlags(flags, true);
+    }
+    
+    private void printFlags(long flags, boolean addSpace) {
 	print(treeinfo.flagNames(flags));
-	if ((flags & StandardFlags) != 0)
+	if (addSpace && (flags & StandardFlags) != 0)
 	    needSpace();
     }
 
@@ -1527,19 +1598,21 @@ public final class VeryPretty extends JCTree.Visitor {
         boolean first = true;
         for (List < T > l = trees; l.nonEmpty(); l = l.tail) {
             if (!first) {
-                print(',');
+                print(cs.spaceBeforeComma() ? " ," : ",");
                 switch(wrapStyle) {
                 case WRAP_IF_LONG:
                     int rm = cs.getRightMargin();
                     if (widthEstimator.estimateWidth(l.head, rm - out.col) + out.col + 1 <= rm) {
-                        print(' ');
+                        if (cs.spaceAfterComma())
+                            print(' ');
                         break;
                     }
                 case WRAP_ALWAYS:
                     toColExactly(wrapIndent);
                     break;
                 case WRAP_NEVER:
-                    print(' ');
+                    if (cs.spaceAfterComma())
+                        print(' ');
                     break;
                 }
             }
