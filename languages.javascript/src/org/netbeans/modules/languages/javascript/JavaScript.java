@@ -363,6 +363,8 @@ public class JavaScript {
     
     public static void performRun (ASTNode node, JTextComponent comp) {
         ClassLoader cl = JavaScript.class.getClassLoader ();
+        InputOutput io = null;
+        FileObject fo = null;
         try {
 //        ScriptEngineManager manager = new ScriptEngineManager ();
 //        ScriptEngine engine = manager.getEngineByMimeType ("text/javascript");
@@ -374,6 +376,7 @@ public class JavaScript {
             Document doc = comp.getDocument ();
             DataObject dob = NbEditorUtilities.getDataObject (doc);
             String name = dob.getPrimaryFile ().getNameExt ();
+            fo = dob.getPrimaryFile();
             SaveCookie saveCookie = (SaveCookie) dob.getLookup ().lookup (SaveCookie.class);
             if (saveCookie != null)
                 try {
@@ -386,8 +389,10 @@ public class JavaScript {
             Class engineClass = cl.loadClass ("javax.script.ScriptEngine");
             Method getContext = engineClass.getMethod ("getContext", new Class[] {});
             Object context = getContext.invoke (engine, new Object[] {});
+            Method put = engineClass.getMethod ("put", new Class[] {String.class, Object.class});
+            put.invoke(engine, new Object[] {"javax.script.filename", fo.getPath()});
             
-            InputOutput io = IOProvider.getDefault ().getIO ("Run " + name, false);
+            io = IOProvider.getDefault ().getIO ("Run " + name, false);
             
 //            context.setWriter (io.getOut ());
 //            context.setErrorWriter (io.getErr ());
@@ -401,7 +406,6 @@ public class JavaScript {
             setReader.invoke (context, new Object[] {io.getIn ()});
             
             io.getOut().reset ();
-            io.getErr ().reset ();
             io.select ();
             
 //            Object o = engine.eval (doc.getText (0, doc.getLength ()));
@@ -417,7 +421,20 @@ public class JavaScript {
                 if (ex.getCause () != null && 
                     scriptExceptionClass.isAssignableFrom (ex.getCause ().getClass ())
                 )
-                    DialogDisplayer.getDefault ().notify (new NotifyDescriptor.Message (ex.getCause ().getMessage ()));
+                    if (io != null) {
+                        String msg = ex.getCause ().getMessage ();
+                        int line = 0;
+                        if (msg.startsWith("sun.org.mozilla")) { //NOI18N
+                            msg = msg.substring(msg.indexOf(':') + 1);
+                            msg = msg.substring(0, msg.lastIndexOf('(')).trim() + " " + msg.substring(msg.lastIndexOf(')') + 1).trim();
+                            try {
+                                line = Integer.valueOf(msg.substring(msg.lastIndexOf("number") + 7)); //NOI18N
+                            } catch (NumberFormatException nfe) {
+                                //cannot parse, jump at line zero
+                            }
+                        }
+                        io.getOut().println(msg, new OutputProcessor(fo, line));
+                    }
                 else
                     ErrorManager.getDefault ().notify (ex);
             } catch (Exception ex2) {
