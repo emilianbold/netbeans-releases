@@ -34,7 +34,6 @@ import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -132,27 +131,32 @@ public final class SyntaxParser {
     
     //---------------------------- private methods -------------------------------
     
-    private void restartParser() {
+    private synchronized void restartParser() {
         if(!parserTask.isFinished()) {
-            parserTask.cancel();
+            parserTask.cancel(); //removes the task from the queue AND INTERRUPTS the thread!
+            isParsing = false;
         }
         parserTask.schedule(PARSER_DELAY);
         isScheduled = true;
     }
     
-    private void parse() {
+    private synchronized void parse() {
         synchronized (parsingState) {
+            if(isParsing) {
+               return ;
+            }
             isParsing = true;
             isScheduled = false;
         }
         
         reallyParse();
         
+        notifyParsingFinished();
+        
         synchronized (parsingState) {
             isParsing = false;
         }
         
-        notifyParsingFinished();
     }
     
     private void reallyParse() {
