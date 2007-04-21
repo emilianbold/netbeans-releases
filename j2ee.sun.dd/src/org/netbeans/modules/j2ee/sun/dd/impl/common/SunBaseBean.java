@@ -18,17 +18,22 @@
  */
 package org.netbeans.modules.j2ee.sun.dd.impl.common;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Writer;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
+import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
+import org.netbeans.modules.j2ee.sun.dd.api.DDException;
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.netbeans.modules.schema2beans.BeanProp;
 import org.netbeans.modules.schema2beans.Common;
+import org.netbeans.modules.schema2beans.Schema2BeansException;
 import org.netbeans.modules.schema2beans.Version;
-
-import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
-import org.netbeans.modules.j2ee.sun.dd.api.DDException;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -54,16 +59,31 @@ public abstract class SunBaseBean extends BaseBean implements CommonDDBean {
             return null;
     }
 
-    public void write(java.io.Writer w) throws java.io.IOException, org.netbeans.modules.j2ee.sun.dd.api.DDException {
+    public void write(Writer w) throws IOException, DDException {
         try {
             super.write(w);
-        } catch(org.netbeans.modules.schema2beans.Schema2BeansException ex) {
+        } catch(Schema2BeansException ex) {
             // !PW FIXME We should do a proper wrapped exception here, but there are 
             // difficulties overriding this method if DDException is not derived directly
             // from Schema2BeanException (due to method signature mismatch.)
             DDException ddEx = new DDException(ex.getMessage());
             ddEx.setStackTrace(ex.getStackTrace());
             throw ddEx;
+        }
+    }
+    
+    public void write(FileObject fo) throws IOException {
+        // TODO: need to be implemented with Dialog opened when the file object is locked
+        FileLock lock = fo.lock();
+        try {
+            OutputStream os = fo.getOutputStream(lock);
+            try {
+                write(os);
+            } finally {
+                os.close();
+            }
+        } finally {
+            lock.releaseLock();
         }
     }
 
@@ -101,7 +121,6 @@ public abstract class SunBaseBean extends BaseBean implements CommonDDBean {
             
             bean = (SunBaseBean) newBeanClass.newInstance();
         } catch(Exception e) {
-        // !PW TODO incompatible w/ JDK 1.4.2  wrap this up some other way for production.
             throw new IllegalArgumentException(e.getMessage(), e);
         }
 

@@ -41,6 +41,11 @@ import org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.sun.dd.impl.DTDRegistry;
 import org.netbeans.modules.j2ee.sun.dd.impl.DDTreeWalker;
 import org.netbeans.modules.j2ee.sun.dd.impl.RootInterfaceImpl;
+import org.netbeans.modules.j2ee.sun.dd.impl.common.DDProviderDataObject;
+import org.netbeans.modules.schema2beans.Schema2BeansUtil;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXParseException;
 
@@ -54,16 +59,17 @@ public class SunApplicationClientProxy implements SunApplicationClient, RootInte
     
     private SunApplicationClient appClientRoot;
     private String version;
-    private OutputProvider outputProvider;
     private int ddStatus;
     private SAXParseException error;    
     private List<PropertyChangeListener> listeners; 
+    private Schema2BeansUtil.ReindentationListener reindentationListener = new Schema2BeansUtil.ReindentationListener();
     
 
     public SunApplicationClientProxy(SunApplicationClient appClientRoot, String version) {
         this.appClientRoot = appClientRoot;
         this.version = version;
         this.listeners = new ArrayList<PropertyChangeListener>();
+        addPropertyChangeListener(reindentationListener);
     }
 
     public void setEjbRef(int index, EjbRef value) {
@@ -396,10 +402,18 @@ public class SunApplicationClientProxy implements SunApplicationClient, RootInte
         return document;
     }
     public void merge(CommonDDBean root, int mode) {
-        if (appClientRoot != null) {
-            if (root instanceof SunApplicationClientProxy)
-                appClientRoot.merge(((SunApplicationClientProxy)root).getOriginal(), mode);
-            else appClientRoot.merge(root, mode);
+        if (root instanceof SunApplicationClientProxy) {
+            root = ((SunApplicationClientProxy) root).getOriginal();
+        }
+        if (appClientRoot != root && root instanceof SunApplicationClient) {
+            SunApplicationClient newAppClientRoot = (SunApplicationClient) root;
+            if (appClientRoot != null && appClientRoot.getVersion().equals(newAppClientRoot.getVersion())) {
+                removePropertyChangeListener(reindentationListener);
+                appClientRoot.merge(newAppClientRoot, mode);
+                addPropertyChangeListener(reindentationListener);
+            } else {
+                setOriginal((SunApplicationClient) newAppClientRoot.clone());
+            }
         }
     }
 
@@ -514,7 +528,28 @@ public class SunApplicationClientProxy implements SunApplicationClient, RootInte
     public void write(Writer w) throws IOException, DDException {
         if (appClientRoot != null) appClientRoot.write(w);
     }
-
+    
+    public void write(FileObject fo) throws IOException {
+        if(appClientRoot != null) {
+            DataObject dataObject = DataObject.find(fo);
+            if(dataObject instanceof DDProviderDataObject) {
+                ((DDProviderDataObject) dataObject).writeModel(appClientRoot);
+            } else {
+                FileLock lock = fo.lock();
+                try {
+                    OutputStream os = fo.getOutputStream(lock);
+                    try {
+                        write(os);
+                    } finally {
+                        os.close(); 
+                    }
+                } finally {
+                    lock.releaseLock();
+                }
+            }
+        }
+    }
+    
     public String dumpBeanNode() {
         if (appClientRoot != null) 
             return appClientRoot.dumpBeanNode();
@@ -582,12 +617,5 @@ public class SunApplicationClientProxy implements SunApplicationClient, RootInte
     
     public boolean hasOriginal() {
         return getOriginal() != null;
-    }
-    
-    /** Contract between friend modules that enables 
-    * a specific handling of write(FileObject) method for targeted FileObject
-    */
-    public static interface OutputProvider {
-        public void write(SunApplicationClient appClientRoot) throws java.io.IOException;
     }
 }

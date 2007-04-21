@@ -20,6 +20,9 @@ package org.netbeans.modules.j2ee.sun.dd.impl.web;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
@@ -29,6 +32,11 @@ import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
 import org.netbeans.modules.j2ee.sun.dd.impl.DDTreeWalker;
 import org.netbeans.modules.j2ee.sun.dd.impl.DTDRegistry;
 import org.netbeans.modules.j2ee.sun.dd.impl.RootInterfaceImpl;
+import org.netbeans.modules.j2ee.sun.dd.impl.common.DDProviderDataObject;
+import org.netbeans.modules.schema2beans.Schema2BeansUtil;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXParseException;
 
@@ -42,16 +50,17 @@ public class SunWebAppProxy implements SunWebApp, RootInterfaceImpl {
     
     private SunWebApp webRoot;
     private String version;
-    private OutputProvider outputProvider;
     private int ddStatus;
     private SAXParseException error;    
     private List<PropertyChangeListener> listeners; 
+    private Schema2BeansUtil.ReindentationListener reindentationListener = new Schema2BeansUtil.ReindentationListener();
         
     
     public SunWebAppProxy(SunWebApp webRoot, String version) {
         this.webRoot = webRoot;
         this.version = version;
         this.listeners = new ArrayList<PropertyChangeListener>();
+        addPropertyChangeListener(reindentationListener);
     }
 
     public int addEjbRef(org.netbeans.modules.j2ee.sun.dd.api.common.EjbRef ejbRef) {
@@ -679,9 +688,34 @@ public class SunWebAppProxy implements SunWebApp, RootInterfaceImpl {
         return webRoot==null?null:webRoot.getValue(name);
     }
     
-    public void write(java.io.OutputStream os) throws java.io.IOException {
+    public void write(OutputStream os) throws IOException {
         if (webRoot != null) {
             webRoot.write(os);
+        }
+    }
+    
+    public void write(Writer w) throws IOException, DDException {
+        if (webRoot!=null) webRoot.write(w);
+    }
+
+    public void write(FileObject fo) throws IOException {
+        if(webRoot != null) {
+            DataObject dataObject = DataObject.find(fo);
+            if(dataObject instanceof DDProviderDataObject) {
+                ((DDProviderDataObject) dataObject).writeModel(webRoot);
+            } else {
+                FileLock lock = fo.lock();
+                try {
+                    OutputStream os = fo.getOutputStream(lock);
+                    try {
+                        write(os);
+                    } finally {
+                        os.close(); 
+                    }
+                } finally {
+                    lock.releaseLock();
+                }
+            }
         }
     }
     
@@ -732,10 +766,6 @@ public class SunWebAppProxy implements SunWebApp, RootInterfaceImpl {
         return webRoot==null?-1:webRoot.removeValue(name, value);
     }
 
-    public void write(java.io.Writer w) throws java.io.IOException, DDException {
-        if (webRoot!=null) webRoot.write(w);
-    }
-
     public void removeValue(String name, int index) {
         if (webRoot!=null) webRoot.removeValue(name, index);
     }
@@ -777,10 +807,18 @@ public class SunWebAppProxy implements SunWebApp, RootInterfaceImpl {
     }
 
     public void merge(CommonDDBean root, int mode) {
-        if (webRoot != null) {
-            if (root instanceof SunWebAppProxy)
-                webRoot.merge(((SunWebAppProxy)root).getOriginal(), mode);
-            else webRoot.merge(root, mode);
+        if (root instanceof SunWebAppProxy) {
+            root = ((SunWebAppProxy) root).getOriginal();
+        }
+        if (webRoot != root && root instanceof SunWebApp) {
+            SunWebApp newWebRoot = (SunWebApp) root;
+            if (webRoot != null && webRoot.getVersion().equals(newWebRoot.getVersion())) {
+                removePropertyChangeListener(reindentationListener);
+                webRoot.merge(newWebRoot, mode);
+                addPropertyChangeListener(reindentationListener);
+            } else {
+                setOriginal((SunWebApp) newWebRoot.clone());
+            }
         }
     }
 
@@ -841,12 +879,5 @@ public class SunWebAppProxy implements SunWebApp, RootInterfaceImpl {
 
     public boolean hasOriginal() {
         return getOriginal() != null;
-    }
-    
-    /** Contract between friend modules that enables 
-    * a specific handling of write(FileObject) method for targeted FileObject
-    */
-    public static interface OutputProvider {
-        public void write(SunWebApp webApp) throws java.io.IOException;
     }
 }

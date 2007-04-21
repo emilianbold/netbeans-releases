@@ -34,6 +34,11 @@ import org.netbeans.modules.j2ee.sun.dd.api.cmp.SunCmpMappings;
 import org.netbeans.modules.j2ee.sun.dd.impl.DTDRegistry;
 import org.netbeans.modules.j2ee.sun.dd.impl.DDTreeWalker;
 import org.netbeans.modules.j2ee.sun.dd.impl.RootInterfaceImpl;
+import org.netbeans.modules.j2ee.sun.dd.impl.common.DDProviderDataObject;
+import org.netbeans.modules.schema2beans.Schema2BeansUtil;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.w3c.dom.Document;
 
 
@@ -45,16 +50,17 @@ public class SunCmpMappingsProxy implements SunCmpMappings, RootInterfaceImpl {
     
     private SunCmpMappings cmpMappingsRoot;
     private String version;
-    private OutputProvider outputProvider;
     private int ddStatus;
     private org.xml.sax.SAXParseException error;    
     private List<PropertyChangeListener> listeners; 
+    private Schema2BeansUtil.ReindentationListener reindentationListener = new Schema2BeansUtil.ReindentationListener();
     
 
     public SunCmpMappingsProxy(SunCmpMappings cmpMappingsRoot, String version) {
         this.cmpMappingsRoot = cmpMappingsRoot;
         this.version = version;
         this.listeners = new ArrayList<PropertyChangeListener>();
+        addPropertyChangeListener(reindentationListener);
     }
     
     public void setSunCmpMapping(int index, SunCmpMapping value) {
@@ -197,10 +203,18 @@ public class SunCmpMappingsProxy implements SunCmpMappings, RootInterfaceImpl {
         return document;
     }
     public void merge(CommonDDBean root, int mode) {
-        if (cmpMappingsRoot != null) {
-            if (root instanceof SunCmpMappingsProxy)
-                cmpMappingsRoot.merge(((SunCmpMappingsProxy)root).getOriginal(), mode);
-            else cmpMappingsRoot.merge(root, mode);
+        if (root instanceof SunCmpMappingsProxy) {
+            root = ((SunCmpMappingsProxy) root).getOriginal();
+        }
+        if (cmpMappingsRoot != root && root instanceof SunCmpMappings) {
+            SunCmpMappings newCmpMappingsRoot = (SunCmpMappings) root;
+            if (cmpMappingsRoot != null && cmpMappingsRoot.getVersion().equals(newCmpMappingsRoot.getVersion())) {
+                removePropertyChangeListener(reindentationListener);
+                cmpMappingsRoot.merge(newCmpMappingsRoot, mode);
+                addPropertyChangeListener(reindentationListener);
+            } else {
+                setOriginal((SunCmpMappings) newCmpMappingsRoot.clone());
+            }
         }
     }
 
@@ -315,7 +329,28 @@ public class SunCmpMappingsProxy implements SunCmpMappings, RootInterfaceImpl {
     public void write(Writer w) throws IOException, DDException {
         if (cmpMappingsRoot != null) cmpMappingsRoot.write(w);
     }
-
+    
+    public void write(FileObject fo) throws IOException {
+        if(cmpMappingsRoot != null) {
+            DataObject dataObject = DataObject.find(fo);
+            if(dataObject instanceof DDProviderDataObject) {
+                ((DDProviderDataObject) dataObject).writeModel(cmpMappingsRoot);
+            } else {
+                FileLock lock = fo.lock();
+                try {
+                    OutputStream os = fo.getOutputStream(lock);
+                    try {
+                        write(os);
+                    } finally {
+                        os.close(); 
+                    }
+                } finally {
+                    lock.releaseLock();
+                }
+            }
+        }
+    }
+    
     public String dumpBeanNode() {
         if (cmpMappingsRoot != null) 
             return cmpMappingsRoot.dumpBeanNode();
@@ -383,12 +418,5 @@ public class SunCmpMappingsProxy implements SunCmpMappings, RootInterfaceImpl {
     
     public boolean hasOriginal() {
         return getOriginal() != null;
-    }
-    
-    /** Contract between friend modules that enables 
-    * a specific handling of write(FileObject) method for targeted FileObject
-    */
-    public static interface OutputProvider {
-        public void write(SunCmpMappings cmpMappingsRoot) throws java.io.IOException;
     }
 }
