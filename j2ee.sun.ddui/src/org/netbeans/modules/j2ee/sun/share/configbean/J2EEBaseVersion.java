@@ -24,6 +24,8 @@
 
 package org.netbeans.modules.j2ee.sun.share.configbean;
 
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+
 /**
  *  Base class to relate enumerated types of various J2EE versions.
  *
@@ -115,7 +117,21 @@ public abstract class J2EEBaseVersion implements Comparable {
 			return 0;
 		}
 	}
-	
+
+    public static J2EEBaseVersion getVersion(Object/*ModuleType*/ moduleType, String moduleVersion) {
+        J2EEBaseVersion version = null;
+        if(J2eeModule.WAR.equals(moduleType)) {
+            version = ServletVersion.getServletVersion(moduleVersion);
+        } else if(J2eeModule.EJB.equals(moduleType)) {
+            version = EjbJarVersion.getEjbJarVersion(moduleVersion);
+        } else if(J2eeModule.EAR.equals(moduleType)) {
+            version = ApplicationVersion.getApplicationVersion(moduleVersion);
+        } else if(J2eeModule.CLIENT.equals(moduleType)) {
+            version = AppClientVersion.getAppClientVersion(moduleVersion);
+        }
+        return version;
+    }
+    
 /*
 	public static J2EEBaseVersion getJ2EEVersion(String version) {
 		J2EEBaseVersion result = null;
