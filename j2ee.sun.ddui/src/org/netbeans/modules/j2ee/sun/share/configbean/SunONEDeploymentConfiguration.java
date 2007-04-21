@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
-
 import javax.enterprise.deploy.model.DDBean;
 import javax.enterprise.deploy.model.DDBeanRoot;
 import javax.enterprise.deploy.shared.ModuleType;
@@ -47,24 +46,6 @@ import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.BeanNotFoundException;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
-import org.netbeans.modules.j2ee.dd.api.common.ComponentInterface;
-import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
-import org.netbeans.modules.j2ee.sun.dd.api.ejb.CmpResource;
-import org.netbeans.modules.j2ee.sun.dd.api.ejb.MdbConnectionFactory;
-import org.netbeans.modules.j2ee.sun.share.config.StandardDDImpl;
-import org.openide.filesystems.FileSystem;
-
-import org.xml.sax.SAXException;
-
-import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -76,21 +57,35 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
-import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
-import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
-import org.netbeans.modules.j2ee.sun.dd.api.DDException;
-import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
-
 import org.netbeans.modules.j2ee.sun.api.ResourceConfiguratorInterface;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentConfigurationInterface;
-
+import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
+import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
+import org.netbeans.modules.j2ee.sun.dd.api.DDException;
+import org.netbeans.modules.j2ee.sun.dd.api.RootInterface;
+import org.netbeans.modules.j2ee.sun.dd.api.ejb.CmpResource;
+import org.netbeans.modules.j2ee.sun.dd.api.ejb.MdbConnectionFactory;
+import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
 import org.netbeans.modules.j2ee.sun.share.Constants;
-import org.netbeans.modules.j2ee.sun.share.plan.DeploymentPlan;
-import org.netbeans.modules.j2ee.sun.share.plan.FileEntry;
 import org.netbeans.modules.j2ee.sun.share.config.ConfigurationStorage;
 import org.netbeans.modules.j2ee.sun.share.config.DDRoot;
 import org.netbeans.modules.j2ee.sun.share.config.DDFilesListener;
+import org.netbeans.modules.j2ee.sun.share.config.StandardDDImpl;
+import org.netbeans.modules.j2ee.sun.share.configbean.templates.SunDDWizardIterator.XmlFileCreator;
+import org.netbeans.modules.j2ee.sun.share.plan.DeploymentPlan;
+import org.netbeans.modules.j2ee.sun.share.plan.FileEntry;
+import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.xml.sax.SAXException;
 
 /** Manages the deployment plan I/O and access for initializing DConfigBeans
  * 
@@ -236,8 +231,10 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
         
         // Determine what the available server types can be (WS 6.0, AS 7.0, AS 8.1, AS 9.0)
         // based on j2ee spec version.
-//        J2eeModule j2eeModule = provider.getJ2eeModule();
-        minASVersion = computeMinASVersion((ModuleType) module.getModuleType(), module.getModuleVersion());
+        Object mt = module.getModuleType();
+        ModuleType moduleType = mt instanceof ModuleType ? (ModuleType) mt : null;
+        String moduleVersion = module.getModuleVersion();
+        minASVersion = computeMinASVersion(moduleType, moduleVersion);
         maxASVersion = computeMaxASVersion();
 
         appServerVersion = maxASVersion;
@@ -247,29 +244,20 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
 //        if("sun-ra.xml".equals(configFiles[0].getName())) {
 //            return;
 //        }
-      
-        if(keepUpdated) {
-            // This forces the creation of the DConfigBean tree.
-            if(!ensureConfigurationLoaded()) {
-                throw new ConfigurationException("DConfigBean storage failed initialization for " + configFiles[0].getName());
-            } else {
-                // If this is J2EE 1.4 or earlier and configuration does not exist, save it.
-                BaseRoot masterRoot = getMasterDCBRoot();
-                if(masterRoot != null && 
-                        J2EEVersion.J2EE_1_4.compareSpecification(masterRoot.getJ2EEModuleVersion()) >= 0 &&
-                        !configFiles[0].exists()
-                        ) {
-                    getStorage().setChanged();
-                }                
+
+        if(!cfgFiles[0].exists()) {
+            // If module is J2EE 1.4 (or 1.3), or this is a web app (where we have
+            // a default property even for JavaEE5), then copy the default template.
+            J2EEBaseVersion j2eeVersion = J2EEBaseVersion.getVersion(moduleType, moduleVersion);
+            if(J2eeModule.WAR.equals(moduleType) || J2EEVersion.J2EE_1_4.compareSpecification(j2eeVersion) >= 0) {
+                try {
+                    createDefaultSunDD(configFiles[0]);
+                } catch (IOException ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    String defaultMessage = " trying to create " + configFiles[0].getPath(); // Requires I18N
+                    displayError(ex, defaultMessage);
+                }
             }
-        
-            // This listener listens to the lifecycle and changes affecting the 
-            // standard deployment descriptors (web.xml, ejb-jar.xml, application.xml,
-            // and webservices.xml for now).  In particular it is used to detect
-            // the creation and deletion of webservices.xml so that we can properly
-            // add and remove the WebServices root DConfigBean that is bound to 
-            // the DDBean at the root of webservices.xml.
-            ddFilesListener = new DDFilesListener(this, provider);
         }
     }
     
@@ -1268,7 +1256,8 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
         WebAppRoot war = null;
         
         //DDBeanRoot root = dObj.getDDBeanRoot();
-        RootInterface root = module.getDeploymentDescriptor(J2eeModule.WEB_XML);
+        org.netbeans.modules.j2ee.dd.api.common.RootInterface root = 
+                module.getDeploymentDescriptor(J2eeModule.WEB_XML);
         if(null != root) {
             try {
                 ConfigurationStorage storage = getStorage();
@@ -1315,39 +1304,63 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
         return ejbJar;
     }
     
-    /** Set the context root of the module this DeploymentConfiguration represents,
-     *  if the deployable object is a WAR file.
+    /** 
+     * Set the context root of the module this DeploymentConfiguration represents,
+     * if the deployable object is a WAR file.
+     * 
+     * @param contextRoot new value for context-root field for this web app.
      */
     public void setContextRoot(String contextRoot){
-        if (module.getModuleType().equals(ModuleType.WAR)) {
-            WebAppRoot war = getWebAppRoot();
-            if(war != null) {
-                try {
-                    war.setContextRoot(contextRoot);
-                } catch(java.beans.PropertyVetoException ex){
-                    // !PW Should not happen.
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        if(ModuleType.WAR.equals(module.getModuleType())) {
+            try {
+                FileObject primarySunDDFO = getSunDD(configFiles[0], true);
+                if(primarySunDDFO != null) {
+                    RootInterface rootDD = DDProvider.getDefault().getDDRoot(primarySunDDFO);
+                    if(rootDD instanceof SunWebApp) {
+                        SunWebApp swa = (SunWebApp) rootDD;
+                        swa.setContextRoot(contextRoot);
+                        swa.write(primarySunDDFO);
+                    }
                 }
+            } catch(IOException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                String defaultMessage = " trying set context-root in sun-web.xml";
+                displayError(ex, defaultMessage);
+            } catch(Exception ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                String defaultMessage = " trying set context-root in sun-web.xml";
+                displayError(ex, defaultMessage);
             }
         } else {
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "SunONEDeploymentConfiguration.setContextRoot() invoked on incorrect module type: " + module.getModuleType());
-        }        
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, 
+                    "SunONEDeploymentConfiguration.setContextRoot() invoked on incorrect module type: " + 
+                    module.getModuleType());
+        }
     }
     
-    /** Get the context root of the module this DeploymentConfiguration represents,
-     *  if the deployable object is a WAR file.
+    /** 
+     * Get the context root of the module this DeploymentConfiguration represents,
+     * if the deployable object is a WAR file.
+     * 
+     * @return value of context-root field for this web app, if any.
      */
     public String getContextRoot() {
         String contextRoot = null;
-        if (module.getModuleType().equals(ModuleType.WAR)) {
-            WebAppRoot war = getWebAppRoot();
-            if(war != null) {
-                contextRoot = war.getContextRoot();
-            } else {
-                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "SunONEDeploymentConfiguration.getContextRoot(): No WebAppRoot DConfigBean found for module.");
+        if(ModuleType.WAR.equals(module.getModuleType())) {
+            try {
+                RootInterface rootDD = getSunDDRoot(false);
+                if(rootDD instanceof SunWebApp) {
+                    contextRoot = ((SunWebApp) rootDD).getContextRoot();
+                }
+            } catch(IOException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                String defaultMessage = " retrieving context-root from sun-web.xml";
+                displayError(ex, defaultMessage);
             }
         } else {
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "SunONEDeploymentConfiguration.getContextRoot() invoked on incorrect module type: " + module.getModuleType());
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, 
+                    "SunONEDeploymentConfiguration.setContextRoot() invoked on incorrect module type: " + 
+                    module.getModuleType());
         }
         return contextRoot;
     }
@@ -1387,6 +1400,58 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
         return wsr;
     }
 
+    /* ------------------------------------------------------------------------
+     * Default descriptor file creation, root interface retrieval
+     */
+    // This method is only useful for reading the model.  If the model is to
+    // be modified and rewritten to disk, you'll need the FileObject it was
+    // retrieved from as well.
+    private RootInterface getSunDDRoot(boolean create) throws IOException {
+        RootInterface sunDDRoot = null;
+        FileObject primarySunDDFO = getSunDD(configFiles[0], create);
+        if(primarySunDDFO != null) {
+            sunDDRoot = DDProvider.getDefault().getDDRoot(primarySunDDFO);
+        }
+        return sunDDRoot;
+    }
+
+    private FileObject getSunDD(File sunDDFile, boolean create) throws IOException {
+        if(!sunDDFile.exists()) {
+            if(create) {
+                createDefaultSunDD(sunDDFile);
+            } else {
+                return null;
+            }
+        }
+        return FileUtil.toFileObject(sunDDFile);
+    }
+
+    private void createDefaultSunDD(File sunDDFile) throws IOException {
+        String resource = "org-netbeans-modules-j2ee-sun-ddui/" + sunDDFile.getName(); // NOI18N
+        FileObject sunDDTemplate = Repository.getDefault().getDefaultFileSystem().findResource(resource);
+        if(sunDDTemplate != null) {
+            File configDir = sunDDFile.getParentFile();
+            if(!configDir.exists()) {
+                if(!configDir.mkdirs()) {
+                    throw new IOException("Unable to create folder " + configDir.getPath());
+                }
+            }
+            FileObject configFolder = FileUtil.toFileObject(configDir);
+            FileSystem fs = configFolder.getFileSystem();
+            XmlFileCreator creator = new XmlFileCreator(sunDDTemplate, 
+                    configFolder, sunDDTemplate.getName(), sunDDTemplate.getExt());
+            fs.runAtomicAction(creator);
+        }
+    }
+    
+    private void displayError(Exception ex, String defaultMessage) {
+        String message = ex.getLocalizedMessage();
+        if(Utils.strEmpty(message)) {
+            message = ex.getClass().getSimpleName() + defaultMessage;
+        }
+        final NotifyDescriptor.Message msg = new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE);
+        DialogDisplayer.getDefault().notifyLater(msg);
+    }
     
     /* ------------------------------------------------------------------------
      * DDBeanRoot -> DConfigBeanRoot cache support
@@ -2181,13 +2246,13 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
         return rootDCBean;
     }
 
-    public void ensureResourceDefined(ComponentInterface ci) {
+    public void ensureResourceDefined(org.netbeans.modules.j2ee.dd.api.common.ComponentInterface ci) {
         // TODO : remove before merge to trunk
         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                 new UnsupportedOperationException());
     }
     
-    public void ensureResourceDefinedForEjb(ComponentInterface ci, String jndi) {
+    public void ensureResourceDefinedForEjb(org.netbeans.modules.j2ee.dd.api.common.ComponentInterface ci, String jndi) {
         // TODO : remove before merge to trunk
         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                 new UnsupportedOperationException());
