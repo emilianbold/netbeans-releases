@@ -27,16 +27,23 @@ import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.j2ee.deployment.common.api.SourceFileMap;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.ConfigSupport;
 
 import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
 
 
 /**
- * Listen on Deployment Descriptor files, mainly to detect the 
- * need to save configuration.
- *
+ * Listen on Deployment Descriptor files, to detect changes affecting the standard
+ * deployment descriptors (web.xml, ejb-jar.xml, application.xml, and webservices.xml
+ * for now).
+ * 
+ * In particular it is used to detect the creation and deletion of webservices.xml
+ * so that we can properly add and remove the WebServices root DConfigBean that
+ * is bound to the DDBean at the root of webservices.xml.
+ * 
+ * Also used to be used to know when to save the configuration, but not anymore.
+ * 
  * @author nn136682
+ * @author peterw99
  */
 public class DDFilesListener extends AbstractFilesListener {
     
