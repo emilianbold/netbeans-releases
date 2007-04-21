@@ -24,8 +24,10 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -216,7 +218,22 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
             if (element.getKind() ==  ElementKind.CONSTRUCTOR) {
                 String constructorName = element.getEnclosingElement().getSimpleName().toString();
                 declaration = declaration.replaceAll(Pattern.quote("<init>"), Matcher.quoteReplacement(constructorName));
-            }                    
+            } else if (element.getKind() ==  ElementKind.METHOD) {
+                if (declaration != null) {
+                    ExecutableElement executableElement = (ExecutableElement) element;
+                    AnnotationValue annotationValue = executableElement.getDefaultValue();
+                    if (annotationValue != null) {
+                        int lastSemicolon = declaration.lastIndexOf(";"); // NOI18N
+                        if (lastSemicolon == -1) {
+							declaration += " default " + String.valueOf(annotationValue) + ";"; // NOI18N
+                        } else {
+                            declaration = declaration.substring(0, lastSemicolon) +
+							    " default " + String.valueOf(annotationValue) +  // NOI18N
+							    declaration.substring(lastSemicolon);
+                        }
+                    }
+                }
+            }
             setDeclaration(declaration);
             return;
         }
