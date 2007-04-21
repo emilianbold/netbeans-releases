@@ -345,27 +345,6 @@ class ComplibPaletteItemDataObject extends MultiDataObject {
             return t;
         }
 
-        /**
-         * TODO Fix bug where drag or copy within palette itself will cause
-         * complib to be copied to project. This needs to be coordinated with
-         * designer and may be difficult to implement.
-         * 
-         * @throws IOException
-         */
-        private void ensureComplibCopiedToProject() throws IOException {
-            try {
-                ComplibServiceProvider.getInstance()
-                        .ensureComplibCopiedToProject(complib);
-            } catch (ComplibException e) {
-                // I think this is the right way to abort
-                IOException ioe = new IOException(
-                        "Unable to copy complib to project");
-                ioe.initCause(e);
-                IdeUtil.logError(ioe);
-                throw ioe;
-            }
-        }
-
         private Transferable addPaletteFlavor(Transferable t) {
             // ExTransferable allows you to add additional flavors.
             ExTransferable et = ExTransferable.create(t);

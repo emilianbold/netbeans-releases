@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.channels.FileChannel;
 import java.util.Properties;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -34,13 +35,13 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.visualweb.api.designerapi.DesignerServiceHack;
 import org.openide.ErrorManager;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.openide.modules.InstalledFileLocator;
-
-import org.netbeans.modules.visualweb.api.designerapi.DesignerServiceHack;
 
 /**
  * Misc methods to simplify interface to IDE
@@ -48,6 +49,8 @@ import org.netbeans.modules.visualweb.api.designerapi.DesignerServiceHack;
  * @author Edwin Goei
  */
 public class IdeUtil {
+    private static final Logger logger = Logger.getLogger(IdeUtil.class
+            .getPackage().getName());
 
     private static File raveClusterDir;
 
@@ -418,4 +421,53 @@ public class IdeUtil {
         }
         return name;
     }
+
+    /** ********* Begin module-specifc methods ****************************** */
+
+    /** Root directory in userDir where complib state is stored */
+    private static File complibStateDir;
+
+    /**
+     * Returns the NetBeans module code name base.
+     * 
+     * @return
+     */
+    public static String getCodeNameBase() {
+        // Code name base should be the same as the package name of this class
+        return IdeUtil.class.getPackage().getName();
+    }
+
+    /**
+     * Get the directory where state of this module is kept. This will be in the
+     * userdir and also part of the NetBeans filesystem so that it will make it
+     * easier to migrate to future IDE versions.
+     * 
+     * @return
+     * @throws IOException
+     */
+    public static File getComplibStateDir() {
+        if (complibStateDir == null) {
+            File root = FileUtil.toFile(Repository.getDefault()
+                    .getDefaultFileSystem().getRoot());
+            complibStateDir = new File(root, getCodeNameBase());
+            if (!complibStateDir.exists() && !complibStateDir.mkdirs()) {
+                IllegalStateException ex = new IllegalStateException(
+                        "Unable to create dir: " + complibStateDir);
+                logError(ex);
+                throw ex;
+            }
+        }
+        return complibStateDir;
+    }
+
+    /**
+     * Returns the Logger for this NB module
+     * 
+     * @return
+     */
+    public static Logger getLogger() {
+        return logger;
+    }
+
+    /** *********** End module-specifc methods ****************************** */
 }

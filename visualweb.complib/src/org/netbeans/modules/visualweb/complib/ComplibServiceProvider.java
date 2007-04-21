@@ -27,8 +27,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -37,14 +35,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -79,7 +74,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -441,9 +435,6 @@ public class ComplibServiceProvider implements ComplibService {
 
     private PropertyChangeSupport pceListeners = new PropertyChangeSupport(this);
 
-    /** Root directory in userDir where complib state is stored */
-    private File complibStateDir;
-
     /** Scope object where user imported complib files live */
     private Scope userScope;
 
@@ -461,7 +452,16 @@ public class ComplibServiceProvider implements ComplibService {
      * @throws IOException
      */
     public ComplibServiceProvider() throws IOException {
-        initState();
+        /*
+         * Note: no code executed as a result of calling this constructor should
+         * call back into this constructor. For example, do not call
+         * ComplibServiceProvider.getInstance() or else this will cause
+         * initialization problems.
+         * 
+         * TODO Reduce the amount of code here so it is easier to tell
+         */
+
+        initUserScope();
 
         installNewComplibPackages(complibsToInstallDir);
 
@@ -511,28 +511,15 @@ public class ComplibServiceProvider implements ComplibService {
                 });
     }
 
-    /**
-     * Init directory where most of the state about this NetBeans "complib"
-     * module is kept. It lives in the NetBeans system filesystem.
-     * 
-     * @throws IOException
-     */
-    private void initState() throws IOException {
-        File root = FileUtil.toFile(Repository.getDefault()
-                .getDefaultFileSystem().getRoot());
-        complibStateDir = new File(root, getCodeNameBase());
-        if (!complibStateDir.exists() && !complibStateDir.mkdirs()) {
-            throw new IOException("Unable to create dir: " + complibStateDir);
-        }
-
-        File userInstallDir = new File(complibStateDir, "installed-complibs");
+    private void initUserScope() throws IOException {
+        File userInstallDir = new File(IdeUtil.getComplibStateDir(),
+                "installed-complibs");
         if (!userInstallDir.isDirectory()) {
             // Try to migrate installed complibs from old to new location
             String userDir = System.getProperty("netbeans.user"); // NOI18N
             if (userDir != null) {
                 File oldInstallDir = new File(userDir, "complibs"); // NOI18N
                 if (oldInstallDir.exists()) {
-                    // Do Library defs in projects still need to be migrated?
                     IdeUtil.copyFileRecursive(oldInstallDir, userInstallDir);
 
                     // Try to remove the old directory
@@ -545,10 +532,6 @@ public class ComplibServiceProvider implements ComplibService {
         }
 
         userScope = Scope.createScope(userInstallDir);
-    }
-
-    private File getComplibStateDir() {
-        return complibStateDir;
     }
 
     private void initSharedComplibs(HashSet<Project> projects) {
@@ -582,31 +565,28 @@ public class ComplibServiceProvider implements ComplibService {
                     Set<ExtensionComplib> projectComplibs = scope.getComplibs();
                     ensureProjectComplibsAreInstalled(projectComplibs);
 
-                    // Init library refs for each complib
+                    // Init library ref for each complib
                     for (ExtensionComplib projectComplib : projectComplibs) {
-
-                        /*
-                         * For migration to NB 6. Attempt to clean up any
-                         * legacy, pre-NB6 Library Defs and Refs.
-                         */
-                        try {
-                            removeLegacyLibraryRefsAndDef(project,
-                                    projectComplib);
-                        } catch (IOException e) {
-                            IdeUtil
-                                    .logWarning(
-                                            "Unable to remove legacy library reference and definition. Use Project Properties to remove manually",
-                                            e);
-                        }
-
-                        /*
-                         * Add Lib Ref if needed. Lib Defs are created at
-                         * install time. (since NB 6)
-                         */
                         ExtensionComplib userComplib = userScope
                                 .getExistingComplib(projectComplib);
                         if (userComplib != null) {
-                            addLibraryRefAndDef(project, userComplib);
+                            if (addLibraryRefAndDef(project, userComplib)) {
+                                /*
+                                 * An existing modern Lib Ref was not found in
+                                 * the project which means that we need to
+                                 * remove any legacy Lib Refs and Defs from
+                                 * prior versions of the IDE.
+                                 */
+                                try {
+                                    removeLegacyLibraryRefsAndDefs(project,
+                                            projectComplib);
+                                } catch (IOException e) {
+                                    IdeUtil
+                                            .logWarning(
+                                                    "Unable to remove legacy library reference and definition. Use Project Properties to remove manually",
+                                                    e);
+                                }
+                            }
                         }
                     }
                 } catch (IOException e) {
@@ -670,137 +650,84 @@ public class ComplibServiceProvider implements ComplibService {
     }
 
     /**
-     * Remove existing Library Refs and Library Def to an embedded complib for a
-     * particular project.
+     * Remove existing the legacy Library Refs and Library Defs to an embedded
+     * complib for a particular project.
+     * 
+     * TODO This is a hack b/c there isn't a NB API to get all of the project's
+     * library references. If and when NB provides such an API, change this
+     * code!
      * 
      * @param project
      * @param projectComplib
-     *            complib within project
+     *            complib embedded in project
      * @throws IOException
      */
-    /**
-     * @param project
-     * @param projectComplib
-     * @throws IOException
-     */
-    private void removeLegacyLibraryRefsAndDef(Project project,
+    private void removeLegacyLibraryRefsAndDefs(Project project,
         ExtensionComplib projectComplib) throws IOException {
-        // Compute legacy Lib Def name
+
+        /*
+         * In VWP 5.5.x or shortfin, there was only a single Lib Def with a
+         * "design-time" volume but two separate Lib Refs. However, the API has
+         * changed so I don't know if this code will remove both of the exiting
+         * Lib Refs.
+         */
+        // TODO Test that this works.
         String projectName = project.getProjectDirectory().getName();
         String libName = IdeUtil.removeWhiteSpace(projectName + "_"
                 + projectComplib.getDirectoryBaseName());
-
-        Library libDef = LibraryManager.getDefault().getLibrary(libName);
-        if (libDef != null) {
-            // Existing definition so first remove any existing references
-            if (JsfProjectUtils.hasLibraryReference(project, libDef)) {
-                JsfProjectUtils.removeLibraryReferences(project,
-                        new Library[] { libDef });
-            }
-
-            // Remove the Lib Def
-            JsfProjectUtils.removeLibrary(libName);
-
-            // Cleanup bundle
-            LibraryLocalizationBundle.remove(libName);
+        if (removeLibraryDefAndRef(project, libName)) {
+            return;
         }
+
+        /*
+         * In Creator, there were a couple Lib Def and Lib Ref pairs, one for
+         * design-time and one for runtime. So we remove both pairs.
+         */
+        libName = IdeUtil.removeWhiteSpace(projectName + " Design-time "
+                + projectComplib.getTitle());
+        removeLibraryDefAndRef(project, libName);
+
+        libName = IdeUtil.removeWhiteSpace(projectName + " Runtime "
+                + projectComplib.getTitle());
+        removeLibraryDefAndRef(project, libName);
     }
 
     /**
-     * ResourceBundle used to localize NetBeans libraries. Note this class must
-     * be public so that NetBeans code can access it.
+     * Remove a named Lib Ref and also it's corresponding Lib Def.
+     * 
+     * @param project
+     * @param libName
+     * @return
+     * @throws IOException
      */
-    public static class LibraryLocalizationBundle extends ResourceBundle {
+    private boolean removeLibraryDefAndRef(Project project, String libName)
+            throws IOException {
+        boolean found = false;
 
-        private static File propsFile = new File(ComplibServiceProvider
-                .getInstance().getComplibStateDir(),
-                "LibraryLocalizationBundle.properties");
-
-        private static HashMap<Object, Object> map;
-
-        /**
-         * The constructor must be public so NetBeans can access this
-         * ResourceBundle class and create an instance of it.
-         */
-        public LibraryLocalizationBundle() {
+        Library libDef = LibraryManager.getDefault().getLibrary(libName);
+        if (libDef == null) {
+            /*
+             * There is no NB API to remove just a Lib Ref so we create a dummy
+             * Lib Def to check if there is a Lib Ref that points to it.
+             */
+            libDef = JsfProjectUtils.createComponentLibrary(libName, null,
+                    null, null, null, null, null);
         }
 
-        private static HashMap<Object, Object> getMap() {
-            // Load the last saved state once
-            if (map == null) {
-                Properties props = new Properties();
-                try {
-                    props.load(new FileInputStream(propsFile));
-                } catch (IOException e) {
-                    // File may not exist so ignore
-                }
-                map = new HashMap<Object, Object>(props);
-            }
-            return map;
+        // Remove an existing Lib Ref
+        if (JsfProjectUtils.hasLibraryReference(project, libDef)) {
+            JsfProjectUtils.removeLibraryReferences(project,
+                    new Library[] { libDef });
+            found = true;
         }
 
-        /**
-         * Add a entry
-         * 
-         * @param key
-         * @param value
-         */
-        static void add(String key, String value) {
-            getMap().put(key, value);
-            save();
-        }
+        // Remove the Lib Def
+        JsfProjectUtils.removeLibrary(libName);
 
-        /**
-         * Remove an entry
-         * 
-         * @param key
-         */
-        static void remove(String key) {
-            getMap().remove(key);
-            save();
-        }
+        // Cleanup bundle
+        LibraryLocalizationBundle.remove(libName);
 
-        private static void save() {
-            // Transfer data into a Properties object to save it
-            Properties props = new Properties();
-            Set<Object> keys = map.keySet();
-            for (Object object : keys) {
-                String key = (String) object;
-                String value = (String) map.get(key);
-                props.setProperty(key, value);
-            }
-
-            try {
-                props.store(new FileOutputStream(propsFile), null);
-            } catch (IOException e) {
-                IdeUtil.logError("Unable to save LibraryLocalizationBundle", e);
-            }
-        }
-
-        public Object handleGetObject(String key) {
-            if (key == null) {
-                throw new NullPointerException();
-            }
-
-            return getMap().get(key);
-        }
-
-        public Enumeration<String> getKeys() {
-            final Set<Object> keys = getMap().keySet();
-            return new Enumeration<String>() {
-                Iterator<Object> it = keys.iterator();
-
-                public boolean hasMoreElements() {
-                    return it.hasNext();
-                }
-
-                public String nextElement() {
-                    // Elements are always a String
-                    return (String) it.next();
-                }
-            };
-        }
-
+        return found;
     }
 
     /**
@@ -809,9 +736,11 @@ public class ComplibServiceProvider implements ComplibService {
      * 
      * @param project
      * @param userComplib
+     * @return false iff a Library Ref was already found in the project and
+     *         therefore there is no need to check for legacy Lib Refs and Defs
      * @throws IOException
      */
-    private void addLibraryRefAndDef(Project project,
+    private boolean addLibraryRefAndDef(Project project,
         ExtensionComplib userComplib) throws IOException {
         String libName = deriveUniqueLibraryName(userComplib);
         Library libDef = LibraryManager.getDefault().getLibrary(libName);
@@ -832,35 +761,9 @@ public class ComplibServiceProvider implements ComplibService {
                         .logWarning("Failed to add library reference to project: "
                                 + libDef.getName());
             }
+            return true;
         }
-    }
-
-    /**
-     * Remove an existing NB Library Ref corresponding to a project embedded
-     * complib.
-     * 
-     * @param project
-     * @param prjCompLib
-     * @throws IOException
-     */
-    private void removeLibraryDefsAndRefs(Project project,
-        ExtensionComplib prjCompLib) throws IOException {
-        ExtensionComplib userComplib = userScope.getExistingComplib(prjCompLib);
-        if (userComplib == null) {
-            // assert false;
-            IdeUtil
-                    .logWarning("Unable to find installed component library in userdir: "
-                            + prjCompLib.getVersionedTitle());
-            return;
-        }
-        String libName = deriveUniqueLibraryName(userComplib);
-        Library libDef = LibraryManager.getDefault().getLibrary(libName);
-        if (libDef != null) {
-            if (JsfProjectUtils.hasLibraryReference(project, libDef)) {
-                JsfProjectUtils.removeLibraryReferences(project,
-                        new Library[] { libDef });
-            }
-        }
+        return false;
     }
 
     /**
@@ -1306,77 +1209,34 @@ public class ComplibServiceProvider implements ComplibService {
     }
 
     /**
-     * Ensure that complib has been embedded into the current project. The
-     * complib is typically obtained from getInstalledComplib().
+     * Remove any existing Library Ref and the complib itself from the project
+     * scope.
      * 
-     * @param complib
-     * @throws ComplibException
+     * @param project
+     * @param prjComplib
      * @throws IOException
      */
-    public void ensureComplibCopiedToProject(Complib userDirComplib)
-            throws IOException, ComplibException {
-        assert userDirComplib instanceof ExtensionComplib;
-        ExtensionComplib userDirExtComplib = (ExtensionComplib) userDirComplib;
+    private void removeComplibFromProject0(Project project,
+        ExtensionComplib prjComplib) throws IOException {
 
-        Identifier userComplibId = userDirExtComplib.getIdentifier();
-        URI namespace = userComplibId.getNamespaceUri();
-        Version version = userComplibId.getVersion();
-
-        // Iterate through all complibs in project
-        Project project = IdeUtil.getActiveProject();
-        Scope scope = Scope.getScopeForProject(project);
-        Set<ExtensionComplib> projectComplibs = scope.getComplibs();
-        for (ExtensionComplib iComplib : projectComplibs) {
-            Identifier iComplibId = iComplib.getIdentifier();
-            if (iComplibId.getNamespaceUri().equals(namespace)) {
-                if (!iComplibId.getVersion().equals(version)) {
-                    // This should not normally happen
-                    throw new ComplibException(
-                            "Project already contains complib with the same namespace URI but different version.");
-                }
-
-                // At this point, identifiers are equal
-                if (scope.getTimeStamp(iComplib) >= userScope
-                        .getTimeStamp(userDirExtComplib)) {
-                    // Existing complib exists and is newer than the expanded
-                    // userDirExtComplib so do nothing
-                    return;
-                } else {
-                    /*
-                     * Existing complib is obsolete so remove any existing
-                     * library definitions and refs and the complib itself from
-                     * the project scope. Below we will add the new time-stamped
-                     * userDir complib to project scope.
-                     */
-                    removeComplibFromProject0(project, iComplib);
+        ExtensionComplib userComplib = userScope.getExistingComplib(prjComplib);
+        if (userComplib == null) {
+            IdeUtil
+                    .logWarning("Unable to find installed component library in userdir: "
+                            + prjComplib.getVersionedTitle());
+        } else {
+            String libName = deriveUniqueLibraryName(userComplib);
+            Library libDef = LibraryManager.getDefault().getLibrary(libName);
+            if (libDef != null) {
+                if (JsfProjectUtils.hasLibraryReference(project, libDef)) {
+                    JsfProjectUtils.removeLibraryReferences(project,
+                            new Library[] { libDef });
                 }
             }
         }
 
-        /*
-         * If we get here then we want to install userDirExtComplib as a new
-         * complib into project scope. Also, notify listeners that a complib was
-         * added to the project, which in turn may affect which complib
-         * components appear in the palette. For example, components from
-         * complibs with the same complib namespace but different versions
-         * should disappear from the palette.
-         */
-        addProjectComplib(project, userDirExtComplib);
-    }
-
-    /**
-     * Remove any existing library definitions and refs and the complib itself
-     * from the project scope.
-     * 
-     * @param project
-     * @param complib
-     * @throws IOException
-     */
-    private void removeComplibFromProject0(Project project,
-        ExtensionComplib complib) throws IOException {
-        removeLibraryDefsAndRefs(project, complib);
         Scope scope = Scope.getScopeForProject(project);
-        scope.remove(complib);
+        scope.remove(prjComplib);
         fireAddableComplibsChanged(scope);
 
         // TODO remove any project resources that were originally
@@ -1550,6 +1410,19 @@ public class ComplibServiceProvider implements ComplibService {
                 sameVersionComplib);
     }
 
+    /**
+     * Replace a project-scoped complib with a new installed user-scoped
+     * complib. They share the same namespace. A null origComplib means to just
+     * add newComplib to the project.
+     * 
+     * @param project
+     * @param origComplib
+     *            original project-scoped complib, may be null
+     * @param newComplib
+     *            new installed user-scoped complib
+     * @throws IOException
+     * @throws ComplibException
+     */
     public void replaceProjectComplib(Project project,
         ExtensionComplib origComplib, ExtensionComplib newComplib)
             throws IOException, ComplibException {
@@ -2059,15 +1932,5 @@ public class ComplibServiceProvider implements ComplibService {
                 + " Shared Component Library";
         String libName = IdeUtil.removeWhiteSpace(description);
         return new LibraryDescriptor(libName, description);
-    }
-
-    /**
-     * Returns the NetBeans module code name base.
-     * 
-     * @return
-     */
-    String getCodeNameBase() {
-        // Code name base should be the same as the package name of this class
-        return this.getClass().getPackage().getName();
     }
 }
