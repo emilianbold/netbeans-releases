@@ -17,6 +17,8 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
 import javax.swing.AbstractAction;
+import org.netbeans.modules.web.jsf.navigation.NavigationCaseNode;
+import org.netbeans.modules.web.jsf.navigation.PinNode;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -56,6 +58,7 @@ public class PageFlowDeleteAction extends AbstractAction{
     
     public void actionPerformed(ActionEvent event) {
         
+        Queue<Node> deleteNodesList = new LinkedList<Node>();
         //Workaround: Temporarily Wrapping Collection because of Issue: 100127
         Set<Object> selectedObjects = new HashSet<Object>(scene.getSelectedObjects());
         
@@ -63,13 +66,12 @@ public class PageFlowDeleteAction extends AbstractAction{
         if (selectedObjects.size() == 1){
             Object myObj = selectedObjects.toArray()[0];
             if( myObj instanceof Node ) {
-                delete((Node)myObj);
+                deleteNodesList.add((Node)myObj);
+                deleteNodes(deleteNodesList);
                 return;
             }
         }
         
-        //            Queue<Node> deleteNodesList  new LinkedList<Node>();
-        Queue<Node> deleteNodesList = new LinkedList<Node>();
         /* When deleting multiple objects, make sure delete all the links first. */
         for( Object selectedObj : selectedObjects ){
             if( scene.isEdge(selectedObj) ){
@@ -85,12 +87,12 @@ public class PageFlowDeleteAction extends AbstractAction{
                 //                    delete((Node)selectedObj);
             }
         }
-        delete(deleteNodesList);
+        deleteNodes(deleteNodesList);
         
     }
     
     //        public Queue<Node> myDeleteNodes;
-    private void delete( Queue<Node> deleteNodes ){
+    private void deleteNodes( Queue<Node> deleteNodes ){
         final Queue<Node> myDeleteNodes = deleteNodes;
         EventQueue.invokeLater(new Runnable() {
             public void run() {
@@ -98,6 +100,12 @@ public class PageFlowDeleteAction extends AbstractAction{
                     //This should walk through in order.
                     for( Node deleteNode : myDeleteNodes ){
                         if( deleteNode.canDestroy() ){
+                            
+                            if( deleteNode instanceof NavigationCaseNode ){
+                                updateSourcePins((NavigationCaseNode)deleteNode);
+                            }
+                            
+                            
                             deleteNode.destroy();
                         }
                     }
@@ -108,22 +116,12 @@ public class PageFlowDeleteAction extends AbstractAction{
         });
     }
     
-    
-    //        public Node myNode;
-    private void delete( Node node ){
-        final Node myNode = node;
-        if ( node.canDestroy() ){
-            EventQueue.invokeLater(new Runnable() {
-                public void run() {
-                    try {
-                        myNode.destroy();
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            });
-            
-        }
+    private void updateSourcePins(NavigationCaseNode navCaseNode) {
+        PinNode source = scene.getEdgeSource(navCaseNode);
+        if( !source.isDefault()) {
+            source.setFromOutcome(null);
+        } 
+        return;
     }
     
     

@@ -11,11 +11,8 @@ package org.netbeans.modules.visualweb.navigation;
 
 import com.sun.rave.designtime.DesignBean;
 import java.awt.Image;
-import java.awt.event.ActionEvent;
 import javax.swing.Action;
 import org.netbeans.modules.web.jsf.navigation.pagecontentmodel.PageContentItem;
-import org.openide.util.HelpCtx;
-import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -52,9 +49,14 @@ public class VWPContentItem extends PageContentItem{
     
     @Override
     public void setFromOutcome(String fromOutcome) {
-        model.setCaseOutcome(this, fromOutcome, false);
+        if ( fromOutcome == null ) {
+            model.deleteCaseOutcome(this);
+        } else {
+            model.setCaseOutcome(this, fromOutcome, false);
+        }
         super.setFromOutcome(fromOutcome);
     }
+    
     
 
     public DesignBean getDesignBean() {

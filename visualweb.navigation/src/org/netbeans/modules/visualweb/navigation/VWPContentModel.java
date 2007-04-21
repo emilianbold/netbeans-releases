@@ -10,9 +10,9 @@
 package org.netbeans.modules.visualweb.navigation;
 
 import com.sun.rave.designtime.DesignBean;
+import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignEvent;
 import com.sun.rave.designtime.DesignProperty;
-import java.awt.Event;
 import java.awt.EventQueue;
 import java.awt.Image;
 import java.beans.BeanInfo;
@@ -40,7 +40,6 @@ import org.netbeans.modules.web.jsf.navigation.pagecontentmodel.PageContentModel
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -334,7 +333,7 @@ public class VWPContentModel extends PageContentModel{
             }
         }
         if (setCaseOutcome(contentItem, caseOutcome, addLinkToDP, rename)) {
-//            updatePageContentItems();
+            //            updatePageContentItems();
         }
     }
     
@@ -349,7 +348,7 @@ public class VWPContentModel extends PageContentModel{
         
         
         if( getPageContentItems() != null && getPageContentItems().size() > 0 ) {
-//            updatePageContentItems();  //just incase the user had made changes
+            //            updatePageContentItems();  //just incase the user had made changes
             UndoEvent undo = null;
             try {
                 undo = facesModel.writeLock(null);
@@ -501,6 +500,42 @@ public class VWPContentModel extends PageContentModel{
         //        NavigableComponent navComp = new NavigableComponent(designBean, action, page, name, icon);
         return item;
         
+    }
+    
+    public void deleteCaseOutcome(VWPContentItem item ){
+        UndoEvent undo = null;
+//        DesignBean designBean = item.getDesignBean();
+        String fromOutcome = item.getFromOutcome();
+        DesignBean container = facesModel.getRootBean();
+        List<DesignBean> beans = new ArrayList<DesignBean>();
+        findCommandBeans( facesModel, container, beans, false);
+        try {
+            for( DesignBean designBean : beans ){
+                undo = facesModel.writeLock(null);  //!CQ TODO: nice description
+                DesignProperty pr = null;
+                String javaeePlatform = JsfProjectUtils.getJ2eePlatformVersion(getProject());
+                if ((javaeePlatform != null) && JsfProjectUtils.JAVA_EE_5.equals(javaeePlatform)){
+                    pr = designBean.getProperty("actionExpression");
+                }else{
+                    pr = designBean.getProperty("action");
+                }
+                //                        DesignProperty pr = designBean.getProperty("action"); // NOI18N
+                if (pr != null && fromOutcome.equals(pr.getValueSource())) {
+                    // Yes, this action bound to this port
+                    pr.unset(); // means "reset" despite the name
+                }
+                //update the java source
+                if (pr instanceof MethodBindDesignProperty) {
+                    MethodBindDesignProperty mpr = (MethodBindDesignProperty) pr;
+                    MethodBindDesignEvent mev = mpr.getEventReference();
+                    if (mev != null && mev.getHandlerName() != null) {
+                        mev.updateReturnStrings(fromOutcome, null);
+                    }
+                }
+            }
+        } finally {
+            facesModel.writeUnlock(undo);
+        }
     }
     
     
