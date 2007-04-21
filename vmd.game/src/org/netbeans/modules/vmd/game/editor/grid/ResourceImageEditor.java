@@ -53,6 +53,7 @@ public class ResourceImageEditor extends javax.swing.JPanel {
 		this.textFieldNumTiles.setText(Integer.toString(imageResource.getStaticTileCount(tileWidth, tileHeight)));
 		this.textFieldSize.setText(tileWidth  + "x" + tileHeight);
 		this.resourceComponent.setImageResource(imageResource, tileWidth, tileHeight, zeroBasedIndex);
+		this.resourceComponent.setSelectedIndex(0);
 	}
 
 	/** This method is called from within the constructor to

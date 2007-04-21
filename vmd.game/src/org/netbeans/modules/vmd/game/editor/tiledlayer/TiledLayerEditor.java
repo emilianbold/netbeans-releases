@@ -54,6 +54,24 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
 		this.tiledLayer.addPropertyChangeListener(this);
 		this.editorComponent = new TiledLayerEditorComponent(this.tiledLayer);
 		initComponents();
+		
+		this.toggleButtonPaint.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+				if (toggleButtonPaint.isSelected()) {
+					editorComponent.setEditMode(TiledLayerEditorComponent.EDIT_MODE_PAINT);
+				}
+            }
+		});
+		this.toggleButtonSelect.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+				if (toggleButtonSelect.isSelected()) {
+					editorComponent.setEditMode(TiledLayerEditorComponent.EDIT_MODE_SELECT);
+				}
+            }
+		});
+		
+		this.toggleButtonPaint.setSelected(true);
+		
 		this.buttonAddAnimatedTile.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				NewAnimatedTileDialog dialog = new NewAnimatedTileDialog(tiledLayer.getImageResource(), tiledLayer.getTileWidth(), tiledLayer.getTileHeight());
@@ -90,17 +108,22 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        buttonGroupMouseMode = new javax.swing.ButtonGroup();
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         textFieldName = new javax.swing.JTextField();
-        textFieldCols = new javax.swing.JTextField();
-        jLabel3 = new javax.swing.JLabel();
-        textFieldRows = new javax.swing.JTextField();
+        toggleButtonPaint = new javax.swing.JToggleButton();
+        toggleButtonSelect = new javax.swing.JToggleButton();
         jLabel2 = new javax.swing.JLabel();
+        textFieldRows = new javax.swing.JTextField();
+        jLabel3 = new javax.swing.JLabel();
+        textFieldCols = new javax.swing.JTextField();
         jSplitPane1 = new javax.swing.JSplitPane();
         jPanel2 = new javax.swing.JPanel();
         panelAnimatedTiles = new javax.swing.JPanel();
         buttonAddAnimatedTile = new javax.swing.JButton();
+
+        setLayout(new java.awt.BorderLayout());
 
         jLabel1.setText("Tiled Layer:");
 
@@ -109,36 +132,84 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
         textFieldName.setText(this.tiledLayer.getName());
         textFieldName.setBorder(null);
 
-        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jLabel1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(textFieldName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 175, Short.MAX_VALUE))
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                .add(jLabel1)
-                .add(textFieldName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-        );
+        buttonGroupMouseMode.add(toggleButtonPaint);
+        toggleButtonPaint.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/vmd/game/editor/tiledlayer/res/layered_pane_16.png"))); // NOI18N
+        toggleButtonPaint.setToolTipText("Paint mode");
+        toggleButtonPaint.setBorder(null);
+        toggleButtonPaint.setBorderPainted(false);
+        toggleButtonPaint.setRolloverEnabled(true);
 
-        textFieldCols.setEditable(false);
-        textFieldCols.setHorizontalAlignment(javax.swing.JTextField.LEFT);
-        textFieldCols.setText(Integer.toString(this.tiledLayer.getColumnCount()));
-        textFieldCols.setBorder(null);
+        buttonGroupMouseMode.add(toggleButtonSelect);
+        toggleButtonSelect.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/vmd/game/editor/tiledlayer/res/selection_mode.png"))); // NOI18N
+        toggleButtonSelect.setToolTipText("Selection mode");
+        toggleButtonSelect.setBorder(null);
+        toggleButtonSelect.setBorderPainted(false);
+        toggleButtonSelect.setRolloverEnabled(true);
 
-        jLabel3.setText("Cols:");
+        jLabel2.setText("Rows:");
 
         textFieldRows.setEditable(false);
         textFieldRows.setHorizontalAlignment(javax.swing.JTextField.LEFT);
         textFieldRows.setText(Integer.toString(this.tiledLayer.getRowCount()));
         textFieldRows.setBorder(null);
 
-        jLabel2.setText("Rows:");
+        jLabel3.setText("Cols:");
+
+        textFieldCols.setEditable(false);
+        textFieldCols.setHorizontalAlignment(javax.swing.JTextField.LEFT);
+        textFieldCols.setText(Integer.toString(this.tiledLayer.getColumnCount()));
+        textFieldCols.setBorder(null);
+
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(toggleButtonPaint, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 26, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(toggleButtonSelect, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(jLabel1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(textFieldName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 0, Short.MAX_VALUE)
+                .add(36, 36, 36)
+                .add(jLabel2)
+                .add(6, 6, 6)
+                .add(textFieldRows, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jLabel3)
+                .add(6, 6, 6)
+                .add(textFieldCols, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        jPanel1Layout.linkSize(new java.awt.Component[] {toggleButtonPaint, toggleButtonSelect}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
+                .add(5, 5, 5)
+                .add(textFieldRows, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+            .add(jPanel1Layout.createSequentialGroup()
+                .add(5, 5, 5)
+                .add(jLabel2))
+            .add(jPanel1Layout.createSequentialGroup()
+                .add(5, 5, 5)
+                .add(jLabel3))
+            .add(jPanel1Layout.createSequentialGroup()
+                .add(5, 5, 5)
+                .add(textFieldCols, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+            .add(jPanel1Layout.createSequentialGroup()
+                .add(5, 5, 5)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, textFieldName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel1)))
+            .add(toggleButtonSelect, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(toggleButtonPaint, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+        );
+
+        add(jPanel1, java.awt.BorderLayout.NORTH);
 
         jSplitPane1.setBorder(null);
         jSplitPane1.setDividerSize(5);
@@ -146,6 +217,7 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
         jSplitPane1.setContinuousLayout(true);
 
         jPanel2.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel2.setToolTipText("Paint mode");
         jPanel2.setPreferredSize(new java.awt.Dimension(10000, 10000));
         jPanel2.setLayout(new java.awt.BorderLayout());
         jSplitPane1.setLeftComponent(jPanel2);
@@ -160,40 +232,13 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
 
         jSplitPane1.setRightComponent(panelAnimatedTiles);
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jLabel2)
-                .add(6, 6, 6)
-                .add(textFieldRows, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jLabel3)
-                .add(6, 6, 6)
-                .add(textFieldCols, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-            .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 456, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(textFieldCols, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(jLabel3)
-                        .add(textFieldRows, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(jLabel2)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 130, Short.MAX_VALUE))
-        );
+        add(jSplitPane1, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 	
 	
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public javax.swing.JButton buttonAddAnimatedTile;
+    public javax.swing.ButtonGroup buttonGroupMouseMode;
     public javax.swing.JLabel jLabel1;
     public javax.swing.JLabel jLabel2;
     public javax.swing.JLabel jLabel3;
@@ -204,6 +249,8 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
     public javax.swing.JTextField textFieldCols;
     public javax.swing.JTextField textFieldName;
     public javax.swing.JTextField textFieldRows;
+    public javax.swing.JToggleButton toggleButtonPaint;
+    public javax.swing.JToggleButton toggleButtonSelect;
     // End of variables declaration//GEN-END:variables
 	
 	public void setPaintTile(Tile tile) {

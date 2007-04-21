@@ -625,9 +625,9 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		
 		JPopupMenu menu = new JPopupMenu();
 		
-		menu.add(itemPaint);
-		menu.add(itemSelect);
-        menu.addSeparator();
+//		menu.add(itemPaint);
+//		menu.add(itemSelect);
+//      menu.addSeparator();
 		menu.add(ctl);
 		menu.add(dtl);
 		List<Action> actions = this.tiledLayer.getActions();
