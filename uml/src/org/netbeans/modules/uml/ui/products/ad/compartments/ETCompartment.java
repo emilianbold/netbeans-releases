@@ -1619,10 +1619,12 @@ public abstract class ETCompartment extends ETTransformOwner implements IADCompa
          if (pEvent.isControlDown())
          {
             this.invertSelected();
-         } else if (pEvent.isShiftDown())
+         }
+         else if (pEvent.isShiftDown())
          {
             this.m_engine.selectExtendCompartments(pEvent);
-         } else
+         }
+         else
          {
             this.m_engine.selectAllCompartments(false);
             this.m_engine.anchorMouseEvent(pEvent, this);
@@ -1645,7 +1647,8 @@ public abstract class ETCompartment extends ETTransformOwner implements IADCompa
       if (isMouseInBoundingRect(pEvent, isHandled))
       {
          bBeginEdit = true;
-      } else if (isMouseInTextRect(pEvent, isHandled))
+      }
+      else if (isMouseInTextRect(pEvent, isHandled))
       {
          bBeginEdit = true;
       }
@@ -1655,19 +1658,19 @@ public abstract class ETCompartment extends ETTransformOwner implements IADCompa
          //int x = pEvent.getX() - getWinScaledOwnerRect().left;
          editCompartment(false, 0, 0, pEvent.getX());
          isHandled = true;
-		 	if (!(this.m_engine instanceof ETCommentDrawEngine) &&
-                !(this.m_engine instanceof ETUseCaseDrawEngine) &&
-                !(this.m_engine instanceof ETInvocationNodeDrawEngine) &&
-                !(this.m_engine instanceof ObjectNodeDrawEngine) &&
-                !(this.m_engine instanceof LifelineDrawEngine) &&
-                !(this.m_engine instanceof ETStateDrawEngine)&&
-                !(this.m_engine instanceof ETClassDrawEngine)&&
-                !(this.m_engine instanceof ETLabelDrawEngine))
-         	{
-         this.m_engine.selectAllCompartments(false);
-         this.m_engine.anchorMouseEvent(pEvent, this);
-         this.invertSelected();
-      }
+         if (!(this.m_engine instanceof ETCommentDrawEngine) &&
+               !(this.m_engine instanceof ETUseCaseDrawEngine) &&
+               !(this.m_engine instanceof ETInvocationNodeDrawEngine) &&
+               !(this.m_engine instanceof ObjectNodeDrawEngine) &&
+               !(this.m_engine instanceof LifelineDrawEngine) &&
+               !(this.m_engine instanceof ETStateDrawEngine)&&
+               !(this.m_engine instanceof ETClassDrawEngine)&&
+               !(this.m_engine instanceof ETLabelDrawEngine))
+         {
+            this.m_engine.selectAllCompartments(false);
+            this.m_engine.anchorMouseEvent(pEvent, this);
+            this.invertSelected();
+         }
       }
       return isHandled;
    }
