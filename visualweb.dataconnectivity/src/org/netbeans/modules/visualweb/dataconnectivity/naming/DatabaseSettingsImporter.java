@@ -214,6 +214,7 @@ public class DatabaseSettingsImporter {
         String seps =  File.separator ;
         File contextReleaseRoot  = new File(System.getProperty("netbeans.user") + seps + "config" +  seps); // NOI18N
         String contextReleasePath = contextReleaseRoot.getPath();
+        String creator2_1Path = contextReleasePath  +  seps + "2_0"; // NOI18N
         String creator2_1Path = contextReleasePath  +  seps + "2_1"; // NOI18N
         String nb55Path = contextReleasePath +  seps  + "5_5"; // NOI18N
         String nb551Path = contextReleasePath  +  seps + "5_5_1"; // NOI18N
@@ -225,8 +226,8 @@ public class DatabaseSettingsImporter {
         for (File releaseDir : configDir) {
             String rPath = releaseDir.getPath();
             
-            if ((rPath.equals(creator2_1Path) || rPath.equals(nb55Path) || 
-                    rPath.equals(nb551Path))) {
+            if (rPath.equals(creator2_0Path) || rPath.equals(creator2_1Path) || rPath.equals(nb55Path) || 
+                    rPath.equals(nb551Path)) {
                 contextReleaseDir = releaseDir;
                 found = true;
                 break;
