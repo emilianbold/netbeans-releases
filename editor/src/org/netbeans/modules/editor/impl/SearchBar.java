@@ -396,10 +396,11 @@ public final class SearchBar extends JToolBar {
         
         public static final String NAME = "incremental-search-forward"; // NOI18N
     
-        static final long serialVersionUID = -1; // TODO
+        static final long serialVersionUID = -1;
         
         public IncrementalSearchForwardAction() {
             super(NAME, CLEAR_STATUS_TEXT);
+            putValue(SHORT_DESCRIPTION, NbBundle.getMessage(IncrementalSearchForwardAction.class, NAME));
         }
         
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -419,10 +420,11 @@ public final class SearchBar extends JToolBar {
         
         public static final String NAME = "incremental-search-backward"; // NOI18N
 
-        static final long serialVersionUID = -1; // TODO
+        static final long serialVersionUID = -1;
         
         public IncrementalSearchBackwardAction() {
             super(NAME, CLEAR_STATUS_TEXT);
+            putValue(SHORT_DESCRIPTION, NbBundle.getMessage(IncrementalSearchBackwardAction.class, NAME));
         }
         
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
