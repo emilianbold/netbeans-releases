@@ -54,6 +54,7 @@ import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.progress.module.Controller;
 import org.netbeans.progress.spi.InternalHandle;
 import org.netbeans.progress.spi.TaskModel;
+import org.openide.util.Exceptions;
 
 
 
@@ -293,9 +294,15 @@ public class Utilities {
         
         // wait for classpath scanning finish
         if (wait) {
-            new QueueTool().waitEmpty(1000);
-            //checkScanFinished();
-            waitForPendingBackgroundTasks();
+            try {
+                ProjectSupport.waitScanFinished();
+                new EventTool().wait(1000);
+                ProjectSupport.waitScanFinished();
+                
+                waitForPendingBackgroundTasks();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
             //} else {
             //    ProjectSupport.waitScanFinished();
         }
