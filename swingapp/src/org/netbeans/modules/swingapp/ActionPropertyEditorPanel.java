@@ -173,6 +173,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
     void setMode(Mode mode) {
         this.mode = mode;
         if(mode == Mode.Form) {
+            actionToEdit.setVisible(true);
             actionsCombo.setVisible(true);
             actionsLabel.setVisible(false);
             classLabel.setVisible(true);
@@ -187,12 +188,14 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         }
         if(mode == Mode.NewActionForm) {
             newAction =  new ProxyAction();
+            actionToEdit.setVisible(true);
             setNewActionCreated(true);
             classField.setText(scopeClasses.get(ProxyAction.Scope.Form));
             classField.setVisible(false);
             scopeCombo.setVisible(true);
         }
         if(mode == Mode.Global) {
+            actionToEdit.setVisible(true);
             actionsCombo.setVisible(false);
             actionsLabel.setVisible(true);
             classLabel.setVisible(true);
@@ -206,6 +209,8 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         }
         if(mode == Mode.NewActionGlobal) {
             newAction = new ProxyAction();
+            actionsLabel.setVisible(false);
+            actionToEdit.setVisible(false);
             setNewActionCreated(true);
             classField.setText("");
             classField.setVisible(false);
@@ -337,7 +342,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         blockingType = new javax.swing.JComboBox();
         blockingDialogTitle = new javax.swing.JTextField();
         blockingDialogText = new javax.swing.JTextField();
-        jLabel16 = new javax.swing.JLabel();
+        actionToEdit = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
         jLabel12 = new javax.swing.JLabel();
         jLabel14 = new javax.swing.JLabel();
@@ -521,7 +526,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
 
         jTabbedPane1.addTab("Advanced", jPanel3);
 
-        jLabel16.setText("Action to edit:");
+        actionToEdit.setText("Action to edit:");
 
         jLabel9.setText("Class:");
 
@@ -659,7 +664,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
                     .add(jLabel14)
                     .add(jLabel17)
                     .add(jLabel12)
-                    .add(jLabel16)
+                    .add(actionToEdit)
                     .add(jLabel9))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -676,7 +681,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jPanel6, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel16))
+                    .add(actionToEdit))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -905,6 +910,7 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField acceleratorText;
+    private javax.swing.JLabel actionToEdit;
     private javax.swing.JComboBox actionsCombo;
     private javax.swing.JLabel actionsLabel;
     private javax.swing.JCheckBox backgroundTaskCheckbox;
@@ -922,7 +928,6 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel14;
-    private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel17;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
