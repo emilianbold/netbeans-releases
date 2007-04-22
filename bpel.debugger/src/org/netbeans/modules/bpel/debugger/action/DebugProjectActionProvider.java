@@ -67,7 +67,7 @@ public class DebugProjectActionProvider extends ActionsProviderSupport {
                     for (Object objEntry : params.entrySet()) {
                         Map.Entry entry = (Map.Entry)objEntry;
                         String key = (String)entry.getKey();
-                        if (key.startsWith("com.sun.bpelse")) {
+                        if ("sun-bpel-engine".equals(key)) {
                             bpelseParams = (Map)entry.getValue();
                             break;
                         }
@@ -76,16 +76,10 @@ public class DebugProjectActionProvider extends ActionsProviderSupport {
                         return;
                     }
 
-                    String projectBaseDir = (String)params.get("projectBaseDir");
                     String j2eeServerInstance = (String)params.get("j2eeServerInstance");
                     String host = getServerInstanceHost(j2eeServerInstance);
                     Integer port = (Integer)bpelseParams.get("port");
                     
-//                    Set<String> subprojectsBaseDirs =
-//                            ProjectUtil.getSubprojectsBaseDirs(projectBaseDir);
-//                    for (String baseDir : subprojectsBaseDirs) {
-//                        System.out.println("Subproject: " + baseDir);
-//                    }
                     mDebugger.setRunning(host, port);
                 } catch (Exception ex) {
                     mDebugger.setException(new DebugException(ex));
