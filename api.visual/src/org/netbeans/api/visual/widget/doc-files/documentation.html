@@ -111,6 +111,9 @@ code {
 <li><a href="#ConnectAction">ConnectAction</a>
 <li><a href="#EditAction">EditAction</a>
 <li><a href="#HoverAction">HoverAction</a>
+<ul>
+<li><a href="#HoverActionVsObjectSceneHoverAction">HoverAction vs. ObjectSceneHoverAction</a>
+</ul>
 <li><a href="#InplaceEditorAction">InplaceEditorAction</a>
 <li><a href="#MoveAction">MoveAction</a>
 <li><a href="#MoveControlPointAction">MoveControlPointAction</a>
@@ -933,6 +936,28 @@ There is a <code>Scene.createWidgetHoverAction</code> method which creates a wid
 
 <p>
 There is also <code>ObjectScene.createObjectHoverAction</code> method which creates an object-specific hover action. The hovering is based actual hovered object (not a hovered widget) in the ObjectScene instance. It means the mouse cursor is changed against widget that are representing objects in <code>ObjectScene</code>. The actual hovered object is held by <code>ObjectScene</code> instance. See <a href="#ObjectScene">ObjectScene<a> section.
+
+<a name="HoverActionVsObjectSceneHoverAction"</a>
+<h4>HoverAction vs. ObjectSceneHoverAction</h4>
+
+A regular <code>HoverAction</code> (with your own implementation of <code>HoverProvider</code> or <code>TwoStatedHoverProvider</code> interfaces) and <code>ObjectHoverAction</code> can be used exclusively only.
+
+<p>
+How to use <code>HoverAction</code>:
+<ul>
+<li>Implement your own <code>HoverProvider</code> or <code>TwoStateProvider</code>.
+<li>Create an <code>HoverAction<code> from it.
+<li>Then assign the action to the scene (for reseting hover) and to all widgets that can be hovered.
+<li>If a mouse-cursor is own a widget which HoverAction assigned, then the widgetHovered method is called with particular widget as argument.
+</ul>
+
+<p>
+How to use <code>ObjectSceneHoverAction</code>:
+<ul>
+<li>You do not have to implement anything. You use an action created by the <code>ObjectScene.createObjectHoverAction</code> method.
+<li>This action should be assigned to the widgets of objects (in an <code>ObjectScene</code>) that can be hovered.
+<li>Note that you should not assign it to a scene - it is done automatically. If a mouse-cursor is over a widget which <code>ObjectHoverAction</code> assigned, then the <code>ObjectScene.hoveredObjectM</code> property is changed to an object which belongs to the widget and all widgets registered for the object are called using <code>Widget.notifyStateChanged</code> method where the new <code>ObjectState</code> is passed as an argument. Each widget itself is defining how it will change its apperance based on the provided <code>ObjectState</code>.
+</ul>
 
 <a name="InplaceEditorAction">
 <h3>InplaceEditorAction</h3>
