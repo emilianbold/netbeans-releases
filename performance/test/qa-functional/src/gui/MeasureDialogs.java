@@ -61,7 +61,7 @@ public class MeasureDialogs  {
         
 //TODO       suite.addTest(new OutputWindow("measureTime", "Output window open"));
         suite.addTest(new ToDoWindow("measureTime", "To Do window open"));
-        suite.addTest(new HttpMonitorWindow("measureTime", "Http Monitor window open"));
+//TODO no more in Window main menu      suite.addTest(new HttpMonitorWindow("measureTime", "Http Monitor window open"));
 
         suite.addTest(new HelpContentsWindow("measureTime", "Help Contents window open"));
         
