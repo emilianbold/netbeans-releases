@@ -74,9 +74,19 @@ class AppFrameworkSupport {
      * @return true if the project of given file uses app framework
      */
     static boolean isFrameworkEnabledProject(FileObject fileInProject) {
+        String appclass = getApplicationClassName(fileInProject);
+        boolean foundSwingAppLib = isFrameworkLibAvailable(fileInProject);
+        if(foundSwingAppLib && appclass != null) { 
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    private static boolean isFrameworkLibAvailable(FileObject fileInProject) {
         ClassPath cp = ClassPath.getClassPath(fileInProject, ClassPath.EXECUTE);
-        boolean b = (cp != null && cp.findResource(APPLICATION_RESOURCE_NAME) != null); // NOI18N
-        return b;
+        boolean foundSwingAppLib = (cp != null && cp.findResource(APPLICATION_RESOURCE_NAME) != null); // NOI18N
+        return foundSwingAppLib;
     }
 
     static boolean isApplicationProject(Project project) {
@@ -242,7 +252,7 @@ class AppFrameworkSupport {
     // scanning project sources
 
     private static String findApplicationClass(FileObject fileInProject) {
-        if (isFrameworkEnabledProject(fileInProject)) {
+        if (isFrameworkLibAvailable(fileInProject)) {
             ClassPath cp = ClassPath.getClassPath(fileInProject, ClassPath.SOURCE);
             return scanFolderForApplication(cp.findOwnerRoot(fileInProject));
         } else {

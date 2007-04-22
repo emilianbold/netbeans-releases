@@ -296,6 +296,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
 
     private List<ProxyAction> getApplicationActions() {
         String appClassName = AppFrameworkSupport.getApplicationClassName(getSourceFile());
+        assert(appClassName != null);
         return ActionManager.getActionManager(getSourceFile()).getActions(appClassName, !scannedOnce);
     }
 
