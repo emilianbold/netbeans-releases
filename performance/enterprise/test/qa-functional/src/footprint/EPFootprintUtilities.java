@@ -69,7 +69,7 @@ public class EPFootprintUtilities extends gui.EPUtilities{
         wizard.finish();
 
         // wait 10 seconds
-        waitForProjectCreation(10000, wait);
+        waitForProjectCreation(30000, wait);
         
         return pname;
     }
