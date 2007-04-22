@@ -29,6 +29,7 @@ import javax.swing.*;
 import java.util.*;
 import java.text.MessageFormat;
 import javax.swing.undo.UndoableEdit;
+import org.netbeans.modules.form.actions.DuplicateAction;
 import org.netbeans.modules.form.assistant.AssistantModel;
 import org.netbeans.spi.palette.PaletteController;
 
@@ -404,6 +405,16 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 else p = new Point(6, 6);
 
                 showContextMenu(p);
+                e.consume();
+                return;
+            }
+        } else if (e.getID() == KeyEvent.KEY_PRESSED
+                && (keyCode == KeyEvent.VK_DOWN || keyCode == KeyEvent.VK_UP
+                    || keyCode == KeyEvent.VK_LEFT || keyCode == KeyEvent.VK_RIGHT)) {
+            // cursor keys
+            if (e.isControlDown() && !e.isAltDown() && !e.isShiftDown()) {
+                // duplicating
+                DuplicateAction.performAction(formDesigner.getSelectedComponentNodes(), keyCode);
                 e.consume();
                 return;
             }

@@ -484,7 +484,9 @@ Microsystems, Inc. All Rights Reserved.
         <file name="C-R.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.modules.form.actions.ReloadAction"/>
         </file>
-        
+        <file name="C-D.instance">
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.form.actions.DuplicateAction"/>
+        </file>
     </folder>
 
 

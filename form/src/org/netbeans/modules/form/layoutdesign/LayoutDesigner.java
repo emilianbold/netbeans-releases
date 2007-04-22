@@ -1570,15 +1570,22 @@ public class LayoutDesigner implements LayoutConstants {
         visualStateUpToDate = false;
     }
 
-    public void duplicateLayout(String[] sourceIds, String[] targetIds) {
+    /**
+     * Duplicates layout of given components. Duplicated components are added
+     * sequentially along given axis (dimension), in parallel in the orthogonal
+     * dimension.
+     * @param sourceIds Ids of the source components
+     * @param targetIds Ids for the duplicates (non-existing layout components
+     *        are created automatically with the given Ids)
+     * @param dimension the dimension in which the layout should be duplicated
+     *        (extended sequentially); HORIZONTAL, VERTICAL, or < 0
+     * @param direction the direction of addition - LEADING or TRAILING
+     */
+    public void duplicateLayout(String[] sourceIds, String[] targetIds, int dimension, int direction) {
         LayoutComponent[] sourceComps = new LayoutComponent[sourceIds.length];
         LayoutInterval[][] sourceIntervals = new LayoutInterval[DIM_COUNT][sourceIds.length];
         LayoutComponent[] targetComps = new LayoutComponent[targetIds.length];
         Map<LayoutComponent, LayoutComponent> compMap = new HashMap<LayoutComponent, LayoutComponent>();
-//        Map<LayoutInterval, LayoutInterval>[] intervalMaps = new Map[DIM_COUNT];
-//        for (int dim=0; dim < DIM_COUNT; dim++) {
-//            intervalMaps[dim] = new HashMap<LayoutInterval, LayoutInterval>();
-//        }
         LayoutComponent container = null;
         for (int i=0; i < sourceComps.length; i++) {
             LayoutComponent sourceLC = layoutModel.getLayoutComponent(sourceIds[i]);
@@ -1602,12 +1609,11 @@ public class LayoutDesigner implements LayoutConstants {
             for (int dim=0; dim < DIM_COUNT; dim++) {
                 LayoutInterval li = sourceLC.getLayoutInterval(dim);
                 sourceIntervals[dim][i] = li;
-//                intervalMaps[dim].put(li, targetLC.getLayoutInterval(dim));
             }
         }
 
-        int seqDim = getSeqDuplicatingDimension(sourceComps);
-        int seqDir = getSeqDuplicatingDirection(sourceComps, seqDim);
+        int seqDim = dimension < 0 ? getSeqDuplicatingDimension(sourceComps) : dimension;
+        int seqDir = direction < 0 ? getSeqDuplicatingDirection(sourceComps, seqDim) : direction;
         int parDim = seqDim ^ 1;
         try {
             modelListener.deactivate(); // do not react on model changes during adding
@@ -1846,7 +1852,6 @@ public class LayoutDesigner implements LayoutConstants {
     private static int getDuplicationBoundary(LayoutInterval seq, int index, Set<LayoutInterval> dupIntervals, int direction) {
         assert seq.isSequential();
         int d = (direction == LEADING ? -1 : 1);
-//        int lastDup = index;
         index += d;
         while (index >= 0 && index < seq.getSubIntervalCount()) {
             LayoutInterval sub = seq.getSubInterval(index);
@@ -1855,26 +1860,9 @@ public class LayoutDesigner implements LayoutConstants {
                 // which might be unnecessary (at least in horizontal dimension, in
                 // vertical it is most probably ok). Maybe we should parallelize with
                 // parallel members if they don't contain another duplicated component.]
-//            } else if (sub.isComponent() && dupIntervals.contains(sub)) {
-//                lastDup = index;
-////                boolean dup = false;
-////                for (LayoutInterval li : dupIntervals) {
-////                    if (li == sub) {
-////                        dup = true;
-////                        break;
-////                    }
-////                }
-////                if (dup) {
-////                    break;
-////                }
             }
             index += d;
         }
-//        if (index < 0) {
-//            index = 0;
-//        } else if (index >= seq.getSubIntervalCount()) {
-//            index = seq.getSubIntervalCount() - 1;
-//        }
         return index - d;
     }
 

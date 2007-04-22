@@ -19,13 +19,18 @@
 
 package org.netbeans.modules.form.actions;
 
+import java.awt.event.KeyEvent;
 import java.util.List;
+import javax.swing.undo.UndoableEdit;
 import org.netbeans.modules.form.FormEditor;
+import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.FormUtils;
 import org.netbeans.modules.form.MetaComponentCreator;
 import org.netbeans.modules.form.RADComponent;
 import org.netbeans.modules.form.RADVisualComponent;
 import org.netbeans.modules.form.RADVisualContainer;
+import org.netbeans.modules.form.layoutdesign.LayoutConstants;
+import org.netbeans.modules.form.layoutdesign.LayoutModel;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -34,6 +39,10 @@ import org.openide.util.actions.NodeAction;
 /**
  */
 public class DuplicateAction  extends NodeAction {
+
+    protected boolean asynchronous() {
+        return false;
+    }
 
     protected boolean enable(Node[] nodes) {
         List comps = FormUtils.getSelectedLayoutComponents(nodes);
@@ -49,24 +58,52 @@ public class DuplicateAction  extends NodeAction {
     }
 
     protected void performAction(Node[] nodes) {
+        duplicate(nodes, -1, -1);
+    }
+
+    public static void performAction(Node[] nodes, int keyCode) {
+        int dimension = (keyCode == KeyEvent.VK_LEFT || keyCode == KeyEvent.VK_RIGHT)
+                ? LayoutConstants.HORIZONTAL : LayoutConstants.VERTICAL;
+        int direction = (keyCode == KeyEvent.VK_LEFT || keyCode == KeyEvent.VK_UP)
+                ? LayoutConstants.LEADING : LayoutConstants.TRAILING;
+        duplicate(nodes, dimension, direction);
+    }
+
+    private static void duplicate(Node[] nodes, int dimension, int direction) {
         List<RADComponent> comps = FormUtils.getSelectedLayoutComponents(nodes);
         RADVisualContainer parent = getParent(comps);
         if (parent != null) {
+            FormModel formModel = parent.getFormModel();
+            LayoutModel layoutModel = formModel.getLayoutModel();
+            Object layoutUndoMark = layoutModel.getChangeMark();
+            UndoableEdit layoutEdit = layoutModel.getUndoableEdit();
+            boolean autoUndo = true; // in case of unexpected error, for robustness
+
             String[] sourceIds = new String[comps.size()];
             String[] targetIds = new String[comps.size()];
             int i = 0;
-            MetaComponentCreator creator = parent.getFormModel().getComponentCreator();
-            for (RADComponent comp : comps) {
-                RADComponent copiedComp = creator.copyComponent(comp, parent);
-                if (copiedComp == null) {
-                    return; // copy failed...
+            MetaComponentCreator creator = formModel.getComponentCreator();
+            try {
+                for (RADComponent comp : comps) {
+                    RADComponent copiedComp = creator.copyComponent(comp, parent);
+                    if (copiedComp == null) {
+                        return; // copy failed...
+                    }
+                    sourceIds[i] = comp.getId();
+                    targetIds[i] = copiedComp.getId();
+                    i++;
                 }
-                sourceIds[i] = comp.getId();
-                targetIds[i] = copiedComp.getId();
-                i++;
+                FormEditor.getFormDesigner(formModel).getLayoutDesigner()
+                        .duplicateLayout(sourceIds, targetIds, dimension, direction);
+                autoUndo = false;
+            } finally {
+                if (layoutUndoMark != null && !layoutUndoMark.equals(layoutModel.getChangeMark())) {
+                    formModel.addUndoableEdit(layoutEdit);
+                }
+                if (autoUndo) {
+                    formModel.forceUndoOfCompoundEdit();
+                }
             }
-            FormEditor.getFormDesigner(parent.getFormModel()).getLayoutDesigner()
-                    .duplicateLayout(sourceIds, targetIds);
         }
     }
 
