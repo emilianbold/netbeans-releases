@@ -30,6 +30,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.net.URL;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -59,6 +60,7 @@ import org.openide.filesystems.FileObject;
 public class JavaMembersPanel extends javax.swing.JPanel {
     private FileObject fileObject;
     private JavaMembersModel javaMembersModel;
+    private HyperlinkListener hyperlinkListener;
 
     /**
      *
@@ -95,6 +97,15 @@ public class JavaMembersPanel extends javax.swing.JPanel {
         javaMembersTree.setModel(javaMembersModel);
         javaDocPane.setEditorKitForContentType("text/html", new HTMLEditorKit()); // NOI18N
         javaDocPane.setContentType("text/html"); // NOI18N
+
+        registerKeyboardAction(
+                new ActionListener() {
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        close();
+                    }
+                },
+                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true),
+                JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
         filterTextField.getDocument().addDocumentListener(
                 new DocumentListener() {
@@ -289,7 +300,7 @@ public class JavaMembersPanel extends javax.swing.JPanel {
                 KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask(), true),
                 JComponent.WHEN_FOCUSED);
 
-        javaDocPane.addHyperlinkListener(new HyperlinkListener() {
+        hyperlinkListener = new HyperlinkListener() {
             public void hyperlinkUpdate(HyperlinkEvent e) {
                 if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
                     URL url = e.getURL();
@@ -299,7 +310,8 @@ public class JavaMembersPanel extends javax.swing.JPanel {
                     }
                 }
             }
-        });
+        };
+        javaDocPane.addHyperlinkListener(hyperlinkListener);
 
         showInheritedToggleButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
@@ -378,22 +390,14 @@ public class JavaMembersPanel extends javax.swing.JPanel {
 
     public void addNotify() {
         super.addNotify();
-        SwingUtilities.getRootPane(this).registerKeyboardAction(
-                new ActionListener() {
-                    public void actionPerformed(ActionEvent actionEvent) {
-                        close();
-                    }
-                },
-                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true),
-                JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        SwingUtilities.getWindowAncestor(JavaMembersPanel.this).addWindowListener(
-                new WindowAdapter() {
-            public void windowDeactivated(WindowEvent windowEvent) {
-                if (!showingSubDialog) {
-                    close();
-                }
-            }});
         applyFilter();
+    }
+
+    public void removeNotify() {
+        // The following two are required for fixing memory leaks
+        javaDocPane.removeHyperlinkListener(hyperlinkListener);
+        javaDocScrollPane.setViewportView(null);
+        super.removeNotify();
     }
 
     private void applyFilter() {
@@ -491,9 +495,6 @@ public class JavaMembersPanel extends javax.swing.JPanel {
     private void close() {
         Window window = SwingUtilities.getWindowAncestor(JavaMembersPanel.this);
         if (window != null) {
-            if (window instanceof RootPaneContainer) {
-                ((RootPaneContainer)window).setContentPane(ResizablePopup.blank);
-            }
             window.setVisible(false);
         }
     }

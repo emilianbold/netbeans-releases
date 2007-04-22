@@ -28,16 +28,12 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.net.URL;
+
 import javax.lang.model.element.Element;
 import javax.swing.JComponent;
 import javax.swing.JRootPane;
-import javax.swing.JRootPane;
 import javax.swing.KeyStroke;
-import javax.swing.RootPaneContainer;
-import javax.swing.SwingUtilities;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.event.DocumentEvent;
@@ -49,6 +45,7 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+
 import org.netbeans.api.java.source.CompilationInfo;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
@@ -60,6 +57,7 @@ import org.openide.filesystems.FileObject;
 public class JavaHierarchyPanel extends javax.swing.JPanel {
     private FileObject fileObject;
     private JavaHierarchyModel javaHierarchyModel;
+    private HyperlinkListener hyperlinkListener;
 
     /**
      *
@@ -89,6 +87,15 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
         javaHierarchyTree.setModel(javaHierarchyModel);
         javaDocPane.setEditorKitForContentType("text/html", new HTMLEditorKit()); // NOI18N
         javaDocPane.setContentType("text/html"); // NOI18N
+
+        registerKeyboardAction(
+                new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                close();
+            }
+        },
+                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true),
+                JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
         filterTextField.getDocument().addDocumentListener(
                 new DocumentListener() {
@@ -281,7 +288,7 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
                 KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask(), true),
                 JComponent.WHEN_FOCUSED);
 
-        javaDocPane.addHyperlinkListener(new HyperlinkListener() {
+        hyperlinkListener = new HyperlinkListener() {
             public void hyperlinkUpdate(HyperlinkEvent e) {
                 if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
                     URL url = e.getURL();
@@ -291,11 +298,12 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
                     }
                 }
             }
-        });
+        };
+        javaDocPane.addHyperlinkListener(hyperlinkListener);
 
         showSuperTypeHierarchyToggleButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
-                applyFilter();                
+                applyFilter();
             }
         });
 
@@ -322,7 +330,7 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
                         expandAll();
                     }
                 });
-                
+
         closeButton.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent actionEvent) {
                         close();
@@ -334,23 +342,17 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
 
     public void addNotify() {
         super.addNotify();
-        SwingUtilities.getRootPane(this).registerKeyboardAction(
-                new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                close();
-            }
-        },
-                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true),
-                JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        SwingUtilities.getWindowAncestor(JavaHierarchyPanel.this).addWindowListener(
-                new WindowAdapter() {
-            public void windowDeactivated(WindowEvent windowEvent) {
-                if (!showingSubDialog) {
-                    close();
-                }
-            }
-        });
         applyFilter();
+    }
+
+    public void removeNotify() {
+        // Reset the hierarchy mode
+        JavaMembersAndHierarchyOptions.setShowSuperTypeHierarchy(true);
+
+        // The following two are required for fixing memory leaks
+        javaDocPane.removeHyperlinkListener(hyperlinkListener);
+        javaDocScrollPane.setViewportView(null);
+        super.removeNotify();
     }
 
     private void applyFilter() {
@@ -380,7 +382,7 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
                     // expand the tree
                     for (int row = 0; row < javaHierarchyTree.getRowCount(); row++) {
                         TreePath treePath = javaHierarchyTree.getPathForRow(row);
-                        if (JavaMembersAndHierarchyOptions.isShowSubTypeHierarchy()) { 
+                        if (JavaMembersAndHierarchyOptions.isShowSubTypeHierarchy()) {
                             if (treePath.getPathCount() < JavaMembersAndHierarchyOptions.getSubTypeHierarchyDepth()) {
                                 javaHierarchyTree.expandRow(row);
                             }
@@ -413,7 +415,7 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
         SwingUtilities.invokeLater(
                 new Runnable() {
             public void run() {
-                try {                   
+                try {
                     // expand the tree
                     for (int row = 0; row < javaHierarchyTree.getRowCount(); row++) {
                         TreePath treePath = javaHierarchyTree.getPathForRow(row);
@@ -430,7 +432,7 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
         }
         );
     }
-    
+
     private void selectMatchingRow() {
         javaHierarchyModel.setPattern(filterTextField.getText());
         // select first matching
@@ -478,17 +480,12 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
     }
 
     private void close() {
-        // Reset the hierarchy mode
-        JavaMembersAndHierarchyOptions.setShowSuperTypeHierarchy(true);
         Window window = SwingUtilities.getWindowAncestor(JavaHierarchyPanel.this);
         if (window != null) {
-            if (window instanceof RootPaneContainer) {
-                ((RootPaneContainer)window).setContentPane(ResizablePopup.blank);
-            }
             window.setVisible(false);
         }
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

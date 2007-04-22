@@ -19,45 +19,66 @@
 package org.netbeans.modules.java.navigation;
 
 import javax.swing.JPanel;
+import javax.swing.RootPaneContainer;
+
 import org.openide.windows.WindowManager;
-import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.awt.Window;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+
 import javax.swing.JDialog;
 
 /**
  * A simple singleton factory for a popup dialog for
  * hierarchy and members pop up windows.
- * 
+ *
  * @author Sandip Chitale (Sandip.Chitale@Sun.Com)
  */
 final class ResizablePopup {
-    private static JDialog dialog;
-    
-    static final JPanel blank = new JPanel();
+    private static Rectangle lastBounds;
+    static
+    {
+        Dimension dimensions = Toolkit.getDefaultToolkit().getScreenSize();
+        lastBounds = new Rectangle(((dimensions.width / 2) - 410), ((dimensions.height / 2) - 300), 820, 600);
+    }
 
-    static JDialog getDialog() {
-        if (dialog == null) {
-            dialog = new JDialog(WindowManager.getDefault()
-                                                           .getMainWindow(),
-                    "", false) {
-                        public void setVisible(boolean visible) {
-                            super.setVisible(visible);
-
-                            if (!visible) {
-                                getContentPane().removeAll();
-                            }
-                        }
-                    };
-            //dialog.setUndecorated(true);
-            dialog.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
-            dialog.getContentPane().setLayout(new BorderLayout());
-
-            Dimension dimensions = Toolkit.getDefaultToolkit().getScreenSize();
-            dialog.setBounds(((dimensions.width / 2) - 410),
-                ((dimensions.height / 2) - 300), 820, 600);
+    private static final WindowListener windowListener = new WindowAdapter() {
+        public void windowDeactivated(WindowEvent windowEvent) {
+            cleanup(windowEvent.getWindow());
         }
 
+        public void windowClosing(WindowEvent windowEvent) {
+            cleanup(windowEvent.getWindow());
+        }
+
+        private void cleanup(Window window) {
+            window.setVisible(false);
+            if (window instanceof RootPaneContainer) {
+                ((RootPaneContainer) window).setContentPane(new JPanel());
+            }
+            window.removeWindowListener(this);
+            window.dispose();
+        }
+    };
+
+    static JDialog getDialog() {
+        JDialog dialog = new JDialog(WindowManager.getDefault().getMainWindow(), "", false) {
+                    public void setVisible(boolean visible) {
+                        boolean wasVisible = isVisible();
+                        if (wasVisible && !visible) {
+                            lastBounds = getBounds();
+                        }
+                        super.setVisible(visible);
+                    }
+                };
+        //dialog.setUndecorated(true);
+        dialog.setBounds(lastBounds);
+        dialog.addWindowListener(windowListener);
+        dialog.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
         return dialog;
     }
 }
