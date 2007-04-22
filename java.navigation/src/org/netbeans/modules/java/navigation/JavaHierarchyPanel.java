@@ -303,13 +303,19 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
 
         showSuperTypeHierarchyToggleButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
-                applyFilter();
+                // Prevent reloading of super type hierarchy
+                if (!JavaMembersAndHierarchyOptions.isShowSuperTypeHierarchy()) {
+                    applyFilter();
+                }
             }
         });
 
         showSubTypeHierarchyToggleButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
-                applyFilter();
+                // Prevent reloading of sub type hierarchy
+                if (!JavaMembersAndHierarchyOptions.isShowSubTypeHierarchy()) {
+                    applyFilter();
+                }
             }
         });
 
