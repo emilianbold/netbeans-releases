@@ -51,6 +51,7 @@ public interface Manager {
             "        <j2se version=\"1.6.0-beta2\"/>\n" +
             "        <jar href=\"{2}\"/>\n" +
             "        <property name=\"nbi.product.remote.registries\" value=\"{3}\"/>\n" +
+            "        <property name=\"nbi.product.suggest.install\" value=\"true\"/>\n" +
             "    </resources>\n" +
             "    <application-desc main-class=\"org.netbeans.installer.Installer\"/>\n" +
             "</jnlp>";

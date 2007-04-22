@@ -338,19 +338,30 @@
         <copy todir="${build.web.dir.real}">
             <fileset excludes="${build.web.excludes}" dir="${web.docbase.dir}"/>
         </copy>
+        <copy todir="${build.web.dir.real}/WEB-INF">
+            <fileset excludes="${build.web.excludes}" dir="${webinf.dir}"/>
+        </copy>
     </target>
-    <target name="-rest-pre-compile" if="rest.support.on">
+    <target name="-init-rest" if="rest.support.on">
+        <taskdef name="restapt" classname="com.sun.ws.rest.tools.ant.RestBeansProcessorTask">
+            <classpath>
+                <path path="${j2ee.platform.classpath}"/>
+            </classpath>
+        </taskdef>
+    </target>
+    <target name="-rest-pre-compile" depends="-init-rest" if="rest.support.on">
         <mkdir dir="${build.generated.dir}/rest-gen"/>
-        <apt fork="true" debug="true" verbose="true" includeJavaRuntime="yes" destdir="${build.classes.dir.real}" preprocessdir="${build.generated.dir}/rest-gen">
-            <bootclasspath path="${j2ee.platform.classpath}"/>
+        <restapt fork="true" xEndorsed="true" sourcePath="${src.dir}" nocompile="false" destdir="${build.classes.dir.real}" sourcedestdir="${build.generated.dir}/rest-gen">
             <classpath>
                 <path path="${javac.classpath}"/>
+                <path path="${libs.jaxws20.classpath}"/>
                 <path path="${j2ee.platform.classpath}"/>
                 <pathelement location="${build.web.dir}/WEB-INF/classes"/>
             </classpath>
-            <src location="${src.dir}"/>
-            <include name="**/*.java"/>
-        </apt>
+            <source dir="${src.dir}">
+                <include name="**/*.java"/>
+            </source>
+        </restapt>
         <copy todir="${build.classes.dir}">
             <fileset dir="${src.dir}" excludes="**/*.java"/>
         </copy>
