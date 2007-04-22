@@ -24,9 +24,13 @@ import java.awt.event.FocusListener;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.JButton;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.autoupdate.UpdateUnitProvider;
+import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.openide.util.NbBundle;
 
 /**
@@ -37,8 +41,14 @@ public class UpdateUnitProviderPanel extends javax.swing.JPanel {
     private FocusListener focusNameListener;
     private FocusListener focusUrlListener;
     private JButton bOK = new JButton(NbBundle.getMessage(UpdateUnitProviderPanel.class, "UpdateUnitProviderPanel_OK"));//NOI18N        
+    private Set<String> namesOfProviders = null;
+    private boolean isEdit;
+    private String originalName;
+    
     /** Creates new form UpdateUnitProviderPanel */
-    public UpdateUnitProviderPanel(boolean isActive, String name, String url) {
+    public UpdateUnitProviderPanel(boolean isActive, String name, String url, boolean editing) {
+        isEdit = editing;
+        originalName = name;
         initComponents();
         addListeners ();
         tfURL.setText(url);
@@ -78,6 +88,10 @@ public class UpdateUnitProviderPanel extends javax.swing.JPanel {
                 private boolean isValid() {
                     boolean isOk = getProviderName().length() > 0 && getProviderURL ().length () > 0;
                     if (isOk) {
+                        isOk = (isEdit && getProviderName().equals (originalName))
+                                || ! getNamesOfProviders ().contains (getProviderName ());
+                    }
+                    if (isOk) {
                         String s = getProviderURL ();
                         try {
                             new URI (s).toURL ();
@@ -115,6 +129,16 @@ public class UpdateUnitProviderPanel extends javax.swing.JPanel {
             tfName.getDocument().addDocumentListener(listener);
             tfURL.getDocument().addDocumentListener(listener);
         }        
+    }
+    
+    private Set<String> getNamesOfProviders () {
+        if (namesOfProviders == null) {
+            namesOfProviders = new HashSet<String> ();
+            for (UpdateUnitProvider p : UpdateUnitProviderFactory.getDefault ().getUpdateUnitProviders (false)) {
+                namesOfProviders.add (p.getDisplayName ());
+            }
+        }
+        return namesOfProviders;
     }
 
     private void removeListener() {

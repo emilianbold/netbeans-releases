@@ -125,10 +125,14 @@ public final class UpdateUnitProviderImpl {
                 ownHandle.finish ();
             }
         }
+        // don't remember clean-up update units
+        UpdateManagerImpl.getInstance().cleanupUpdateUnits ();
         return res;
     }
     
     public void setEnable (boolean state) {
+        // don't remember clean-up update units
+        UpdateManagerImpl.getInstance().cleanupUpdateUnits ();
         storeState (getUpdateProvider (), state);
     }
     
@@ -158,6 +162,8 @@ public final class UpdateUnitProviderImpl {
         } catch(BackingStoreException bsx) {
             Exceptions.printStackTrace(bsx);
         }
+        // don't remember clean-up update units
+        UpdateManagerImpl.getInstance().cleanupUpdateUnits ();
     }
     
     // static factory methods
@@ -274,7 +280,8 @@ public final class UpdateUnitProviderImpl {
             // store time of the last check
             AutoupdateSettings.setLastCheck (new Date ());
         }
-        UpdateManagerImpl.getInstance().refresh();
+        // don't remember clean-up update units
+        UpdateManagerImpl.getInstance().cleanupUpdateUnits ();
     }
     
     private static void storeProvider (String codeName, String displayName, URL url) {
@@ -379,14 +386,17 @@ public final class UpdateUnitProviderImpl {
         
         // store only if differs
         if (url == null) {
-            providerPreferences.remove ("url");
+            providerPreferences.remove ("url"); // NOI18N
         } else {
             URL orig = null;
             if (p instanceof AutoupdateCatalog) {
                 orig = ((AutoupdateCatalog) p).getUpdateCenterURL ();
             }
             if (! url.equals (orig)) {
-                providerPreferences.put ("url", url.toExternalForm ());
+                providerPreferences.put ("url", url.toExternalForm ()); // NOI18N
+                if (p instanceof AutoupdateCatalog) {
+                    ((AutoupdateCatalog) p).setUpdateCenterURL (url);
+                }
             }
         }
     }

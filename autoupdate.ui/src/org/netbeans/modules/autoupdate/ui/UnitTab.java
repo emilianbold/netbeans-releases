@@ -19,17 +19,11 @@
 
 package org.netbeans.modules.autoupdate.ui;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -41,10 +35,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
-import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.netbeans.api.autoupdate.UpdateUnit;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -485,43 +476,20 @@ private void refresh (final boolean force) {
     
     final Runnable checkUpdates = new Runnable(){
         public void run() {
-            ProgressHandle handle = ProgressHandleFactory.createHandle ("refresh-providers-handle"); // NOI18N
-            JComponent progressComp = ProgressHandleFactory.createProgressComponent (handle);
-            JLabel detailLabel = ProgressHandleFactory.createDetailLabelComponent (handle);
-            JLabel progressLabel = new JLabel (NbBundle.getMessage (UnitTab.class, "UnitTab_CheckingForUpdates"));
-            try {
-                manager.setProgressComponent (progressLabel, detailLabel, progressComp);
-                handle.setInitialDelay (0);
-                handle.start ();
-                UpdateUnitProviderFactory.getDefault ().refreshProviders (handle, force);
-            } catch (IOException ioe) {
-                log.log(Level.FINE, ioe.getMessage(), ioe);
-                if (handle != null) {
-                    handle.finish ();
+            Utilities.presentRefreshProviders (manager, force);
+            SwingUtilities.invokeLater(new Runnable () {
+                public void run() {
+                    fireUpdataUnitChange();
+                    table.setEnabled(true);
+                    bRefresh.setEnabled(true);
+                    bTabAction.setEnabled(model.getMarkedUnits().size() > 0);
                 }
-                NetworkProblemPanel.showNetworkProblemDialog();
-            } finally {
-                if (handle != null) {
-                    handle.finish ();
-                }
-                manager.unsetProgressComponent (progressLabel, detailLabel, progressComp);
-                SwingUtilities.invokeLater(new Runnable(){
-                    public void run() {
-                        fireUpdataUnitChange();
-                        table.setEnabled(true);
-                        bRefresh.setEnabled(true);
-                        bTabAction.setEnabled(model.getMarkedUnits().size() > 0);
-                        // XXX: Avoid NPE when called refresh providers on selected units
-                        // #101836: OperationContainer.contains() sometimes fails
-                        Containers.initNotify ();
-                    }
-                });
-            }
+            });
         }
     };
     NetworkProblemPanel.setPerformAgain(checkUpdates);
     
-    RequestProcessor.Task t = RequestProcessor.getDefault().post(checkUpdates, 100);
+    RequestProcessor.getDefault().post(checkUpdates);
 }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

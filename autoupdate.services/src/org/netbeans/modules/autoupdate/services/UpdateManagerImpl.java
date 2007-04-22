@@ -76,7 +76,7 @@ public class UpdateManagerImpl extends Object {
         return Collections.list (Collections.enumeration (units.values ()));
     }
     
-    public void refresh() {
+    public void cleanupUpdateUnits () {
         synchronized(UpdateManagerImpl.class) {
             if (updateUnits != null) {
                 updateUnits = null;

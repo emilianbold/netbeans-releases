@@ -31,6 +31,7 @@ import javax.swing.table.AbstractTableModel;
 import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -50,11 +51,20 @@ public class SettingsTableModel extends AbstractTableModel {
     };
     private List<UpdateUnitProvider> updateProviders;
     private String filter;
+    private PluginManagerUI pluginManager = null;
     
     private final Logger logger = Logger.getLogger ("org.netbeans.modules.autoupdate.ui.SettingsTableModel");    
     /** Creates a new instance of SettingsTableModel */
     public SettingsTableModel() {
         refreshModel();
+    }
+    
+    void setPluginManager (PluginManagerUI manager) {
+        this.pluginManager = manager;
+    }
+    
+    PluginManagerUI getPluginManager () {
+        return pluginManager;
     }
     
     void setFilter(final String filter)  {
@@ -64,7 +74,6 @@ public class SettingsTableModel extends AbstractTableModel {
                     SettingsTableModel.this.filter = filter.toLowerCase();
                 }
                 refreshModel();
-                fireTableDataChanged();
             }            
         });        
         
@@ -89,10 +98,20 @@ public class SettingsTableModel extends AbstractTableModel {
         if (unitProvider != null) {
             UpdateUnitProviderFactory.getDefault().remove(unitProvider);
         }
+        getPluginManager ().updateUnitsChanged ();
     }
         
-    public void add(String name, String displayName, URL url) {
-        UpdateUnitProvider uup = UpdateUnitProviderFactory.getDefault().create(name, displayName, url);        
+    public void add(String name, String displayName, URL url, boolean state) {
+        final UpdateUnitProvider uup = UpdateUnitProviderFactory.getDefault().create(name, displayName, url);
+        uup.setEnable (state);
+        if (state) {
+            RequestProcessor.getDefault ().post (new Runnable () {
+                public void run () {
+                    Utilities.presentRefreshProvider (uup, getPluginManager (), true);
+                    getPluginManager ().updateUnitsChanged ();
+                }
+            });
+        }
     }
 
     public UpdateUnitProvider getUpdateUnitProvider(int rowIndex) {            
@@ -114,9 +133,31 @@ public class SettingsTableModel extends AbstractTableModel {
     
     @Override
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-        UpdateUnitProvider unitProvider = getUpdateUnitProvider(rowIndex);
+        final UpdateUnitProvider unitProvider = getUpdateUnitProvider(rowIndex);
         switch(columnIndex) {
-            case 0: unitProvider.setEnable((Boolean)aValue);break;
+            case 0:
+                boolean oldValue = unitProvider.isEnabled ();
+                boolean newValue = ((Boolean) aValue).booleanValue ();
+                if (oldValue != newValue) {
+                    unitProvider.setEnable (newValue);
+                    if (oldValue) {
+                        RequestProcessor.getDefault ().post (new Runnable () {
+                            public void run () {
+                                // was enabled and won't be more -> remove it from model
+                                getPluginManager ().updateUnitsChanged ();
+                            }
+                        });
+                    } else {
+                        // was enabled and won't be more -> add it from model and read its content
+                        RequestProcessor.getDefault ().post (new Runnable () {
+                            public void run () {
+                                Utilities.presentRefreshProvider (unitProvider, getPluginManager (), false);
+                                getPluginManager ().updateUnitsChanged ();
+                            }
+                        });
+                    }
+                }
+                break;
             case 1: unitProvider.setDisplayName((String)aValue);break;
             /*case 2: URL u = null;
                 try {

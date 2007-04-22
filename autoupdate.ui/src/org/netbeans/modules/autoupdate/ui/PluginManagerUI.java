@@ -67,44 +67,42 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
         });        
     }
     
-    void setProgressComponent (final JLabel title,  final JLabel detail, final JComponent progressComponent) {
+    void setProgressComponent (final JLabel detail, final JComponent progressComponent) {
         if (SwingUtilities.isEventDispatchThread ()) {
-            setProgressComponentInAwt (title, detail, progressComponent);
+            setProgressComponentInAwt (detail, progressComponent);
         } else {
             SwingUtilities.invokeLater (new Runnable () {
                 public void run () {
-                    setProgressComponentInAwt (title, detail, progressComponent);
+                    setProgressComponentInAwt (detail, progressComponent);
                 }
             });
         }
     }
     
-    private void setProgressComponentInAwt (JLabel title, JLabel detail, JComponent progressComponent) {
+    private void setProgressComponentInAwt (JLabel detail, JComponent progressComponent) {
         assert pProgress != null;
         assert SwingUtilities.isEventDispatchThread () : "Must be called in EQ.";
         pProgress.setVisible (true);
-        pProgress.add (title, BorderLayout.WEST);
         pProgress.add (detail, BorderLayout.CENTER);
         pProgress.add (progressComponent, BorderLayout.EAST);
         revalidate ();
     }
     
-    void unsetProgressComponent (final JLabel title, final JLabel detail, final JComponent progressComponent) {
+    void unsetProgressComponent (final JLabel detail, final JComponent progressComponent) {
         if (SwingUtilities.isEventDispatchThread ()) {
-            unsetProgressComponentInAwt (title, detail, progressComponent);
+            unsetProgressComponentInAwt (detail, progressComponent);
         } else {
             SwingUtilities.invokeLater (new Runnable () {
                 public void run () {
-                    unsetProgressComponentInAwt (title, detail, progressComponent);
+                    unsetProgressComponentInAwt (detail, progressComponent);
                 }
             });
         }
     }
     
-    private void unsetProgressComponentInAwt (JLabel title, JLabel detail, JComponent progressComponent) {
+    private void unsetProgressComponentInAwt (JLabel detail, JComponent progressComponent) {
         assert pProgress != null;
         assert SwingUtilities.isEventDispatchThread () : "Must be called in EQ.";
-        pProgress.remove (title);
         pProgress.remove (detail);
         pProgress.remove (progressComponent);
         pProgress.setVisible (false);
@@ -149,7 +147,7 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(bClose)
-                    .add(pProgress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 21, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(pProgress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 17, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -186,7 +184,7 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
         SplittedUnitTab installedTab = new SplittedUnitTab(installedTable, new UnitDetails (), this);
         installedTab.addUpdateUnitListener (this);
         tpTabs.add (NbBundle.getMessage(PluginManagerUI.class, "PluginManagerUI_UnitTab_Installed_Title"), installedTab);
-        SettingsTab st = new SettingsTab();
+        SettingsTab st = new SettingsTab(this);
         tpTabs.add (st.getDisplayName(), st);
         
         decorateTitle (0, updateTable, NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Update_Title"));
@@ -253,6 +251,9 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
     }
 
     public void updateUnitsChanged() {
+        // XXX: Avoid NPE when called refresh providers on selected units
+        // #101836: OperationContainer.contains() sometimes fails
+        Containers.initNotify ();
         refreshUnits ();
     }
     

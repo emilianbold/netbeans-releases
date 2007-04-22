@@ -59,8 +59,9 @@ public class SettingsTab extends javax.swing.JPanel {
         }
     });
     /** Creates new form SettingsTab */
-    public SettingsTab() {
+    public SettingsTab (PluginManagerUI manager) {
         initComponents();
+        getSettingsTableModel ().setPluginManager (manager);
         TableColumn activeColumn = jTable1.getColumnModel().getColumn(0);
         activeColumn.setMaxWidth(jTable1.getTableHeader().getHeaderRect(0).width);
         jScrollPane2.setViewportView(details = new DetailsPanel());
@@ -229,7 +230,10 @@ private void bEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
     if (rowIndex != -1) {
         final UpdateUnitProvider provider = getSettingsTableModel().getUpdateUnitProvider(rowIndex);
         if (provider == null) return;
-        final UpdateUnitProviderPanel panel = new UpdateUnitProviderPanel(provider.isEnabled(), provider.getDisplayName(), provider.getProviderURL().toExternalForm());
+        final UpdateUnitProviderPanel panel = new UpdateUnitProviderPanel(provider.isEnabled(),
+                provider.getDisplayName(), // display name
+                provider.getProviderURL().toExternalForm(), // URL
+                true); // editing
         DialogDescriptor descriptor = getCustomizerDescriptor(panel);
         panel.getOKButton().addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent arg0) {
@@ -247,12 +251,17 @@ private void bEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
 private void bNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bNewActionPerformed
     final UpdateUnitProviderPanel panel = new UpdateUnitProviderPanel (true,
             NbBundle.getMessage(SettingsTab.class, "SettingsTab_NewProviderName"),
-            NbBundle.getMessage(SettingsTab.class, "SettingsTab_NewProviderURL"));
+            NbBundle.getMessage(SettingsTab.class, "SettingsTab_NewProviderURL"),
+            false);
     DialogDescriptor descriptor = getCustomizerDescriptor(panel);
     panel.getOKButton().addActionListener(new ActionListener(){
         public void actionPerformed(ActionEvent arg0) {
             try {
-                getSettingsTableModel().add(panel.getProviderName(), panel.getProviderName(), new URL(panel.getProviderURL()));
+                getSettingsTableModel().add
+                        (panel.getProviderName(),
+                        panel.getProviderName(),
+                        new URL(panel.getProviderURL()),
+                        panel.isActive());
                 getSettingsTableModel().refreshModel();
                 SettingsTableModel model = getSettingsTableModel();
                 for (int i = 0; i < model.getRowCount(); i++) {
@@ -285,8 +294,8 @@ private void bProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
                 model.remove(rowIndex);
             }
         }
+        model.refreshModel();
         if (rowIndexes.length > 0) {
-            model.refreshModel();
             if (model.getRowCount() > rowIndexes[0]) {
                 jTable1.getSelectionModel().setSelectionInterval(rowIndexes[0], rowIndexes[0]);
             } else {
@@ -295,13 +304,40 @@ private void bProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         }
 }//GEN-LAST:event_bRemoveActionPerformed
     
-    private void setData(UpdateUnitProvider provider, UpdateUnitProviderPanel panel) {
+    private void setData (final UpdateUnitProvider provider, UpdateUnitProviderPanel panel) {
         provider.setDisplayName(panel.getProviderName ());
-        provider.setEnable(panel.isActive());
+        boolean forceRead = false;
+        boolean refreshModel = false;
         try {
-            provider.setProviderURL(new URL(panel.getProviderURL()));
+            URL oldUrl = provider.getProviderURL ();
+            URL newUrl = new URL (panel.getProviderURL ());
+            if (! oldUrl.equals (newUrl)) {
+                provider.setProviderURL (newUrl);
+                refreshModel = true;
+                forceRead = true;
+            }
         } catch(MalformedURLException mex) {
             Exceptions.printStackTrace(mex);
+        }
+        boolean oldValue = provider.isEnabled ();
+        if (oldValue != panel.isActive ()) {
+            refreshModel = true;
+        }
+        if (refreshModel) {
+            provider.setEnable (panel.isActive ());
+            if (oldValue && ! forceRead) {
+                // was enabled and won't be more -> remove it from model
+                getSettingsTableModel ().getPluginManager ().updateUnitsChanged ();
+            } else {
+                // was enabled and won't be more -> add it from model and read its content
+                final boolean force = forceRead;
+                RequestProcessor.getDefault ().post (new Runnable () {
+                    public void run () {
+                        Utilities.presentRefreshProvider (provider, getSettingsTableModel ().getPluginManager (), force);
+                        getSettingsTableModel ().getPluginManager ().updateUnitsChanged ();
+                    }
+                });
+            }
         }
     }
     private static DialogDescriptor getCustomizerDescriptor(UpdateUnitProviderPanel panel) {
@@ -355,7 +391,8 @@ private void bProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
                     URL u= uup.getProviderURL();
                     if (u != null) {
                         sb.append("<b>" + getBundle ("SettingsTab_UpdateUnitProvider_Description") + "</b><br>"); // NOI18N
-                        sb.append("<b>URL: </b><a href=\"" + u.toExternalForm() + "\">" + u.toExternalForm() + "<br>"); // NOI18N
+                        sb.append("<b>" + getBundle ("SettingsTab_UpdateUnitProvider_URL") +  // NOI18N
+                                " </b><a href=\"" + u.toExternalForm() + "\">" + u.toExternalForm() + "<br>"); // NOI18N
                     }
                     details.getDetails().setText(sb.toString());
                 }

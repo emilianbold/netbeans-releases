@@ -19,21 +19,31 @@
 
 package org.netbeans.modules.autoupdate.ui;
 
+import java.io.IOException;
 import java.net.URL;
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.api.autoupdate.UpdateUnitProvider;
+import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.NbBundle;
 
@@ -281,5 +291,43 @@ public class Utilities {
     
     private static String getBundle (String key) {
         return NbBundle.getMessage (Utilities.class, key);
+    }
+    
+    // Call PluginManagerUI.updateUnitsChanged() after refresh to reflect change in model
+    public static void presentRefreshProvider (UpdateUnitProvider provider, PluginManagerUI manager, boolean force) {
+        assert ! SwingUtilities.isEventDispatchThread () : "Don't presentRefreshProvider() call in EQ!";
+        doRefreshProviders (Collections.singleton (provider), manager, force);
+    }
+    
+    // Call PluginManagerUI.updateUnitsChanged() after refresh to reflect change in model
+    public static void presentRefreshProviders (PluginManagerUI manager, boolean force) {
+        assert ! SwingUtilities.isEventDispatchThread () : "Don't presentRefreshProviders() call in EQ!";
+        doRefreshProviders (UpdateUnitProviderFactory.getDefault ().getUpdateUnitProviders (true), manager, force);
+    }
+    
+    private static void doRefreshProviders (Collection<UpdateUnitProvider> providers, PluginManagerUI manager, boolean force) {
+        ProgressHandle handle = ProgressHandleFactory.createHandle ("refresh-providers-handle"); // NOI18N
+        JComponent progressComp = ProgressHandleFactory.createProgressComponent (handle);
+        JLabel detailLabel = ProgressHandleFactory.createDetailLabelComponent (handle);
+        detailLabel.setHorizontalAlignment (SwingConstants.RIGHT);
+        try {
+            manager.setProgressComponent (detailLabel, progressComp);
+            handle.setInitialDelay (0);
+            handle.start ();
+            for (UpdateUnitProvider p : providers) {
+                p.refresh (handle, force);
+            }
+        } catch (IOException ioe) {
+            logger.log (Level.FINE, ioe.getMessage(), ioe);
+            if (handle != null) {
+                handle.finish ();
+            }
+            NetworkProblemPanel.showNetworkProblemDialog();
+        } finally {
+            if (handle != null) {
+                handle.finish ();
+            }
+            manager.unsetProgressComponent (detailLabel, progressComp);
+        }
     }
 }
