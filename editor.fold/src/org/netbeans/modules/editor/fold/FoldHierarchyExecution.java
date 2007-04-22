@@ -742,12 +742,7 @@ public final class FoldHierarchyExecution implements DocumentListener {
         if (origFoldingEnabled != foldingEnabled) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    lock();
-                    try{
-                        rebuild();
-                    } finally {
-                        unlock();
-                    }
+                    rebuild();
                 }
             });
         }
