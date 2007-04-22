@@ -21,12 +21,14 @@ package org.netbeans.modules.bpel.core;
 import java.awt.EventQueue;
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.StyledDocument;
@@ -189,6 +191,37 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
          *  But this method is called always on editor opening. 
          */ 
         getValidationController().attach();
+    }
+
+    @Override
+    public JEditorPane[] getOpenedPanes() {
+        if (SwingUtilities.isEventDispatchThread()) {
+            return super.getOpenedPanes();
+        } else {
+            class SafeGetOpenedPanes implements Runnable {
+                private JEditorPane[] myResult;
+                
+                public void run() {
+                    myResult = BPELDataEditorSupport.super.getOpenedPanes();
+                }
+                
+                public JEditorPane[] getResult() {
+                    return myResult;
+                }
+            }
+            
+            try {
+                SafeGetOpenedPanes sgop = new SafeGetOpenedPanes();
+                SwingUtilities.invokeAndWait(sgop);
+                return sgop.getResult();
+            } catch (InterruptedException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+                return null;
+            } catch (InvocationTargetException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+                return null;
+            }
+        }
     }
 
     @Override

@@ -108,16 +108,26 @@
             </folder>
         </folder>
     </folder>
-<!--  Don't need activity annotations for source editor (they are used on diagram only
     <folder name="Editors"> 
+        <folder name="text">
+            <folder name="xml-bpel+xml">
+                <folder name="GlyphGutterActions">
+                    <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+<!--  Don't need activity annotations for source editor (they are used on diagram only
         <folder name="AnnotationTypes">
             <file name="NeverExecutedElement.xml" url="NeverExecutedElement.xml"/>
             <file name="StartedElement.xml" url="StartedElement.xml"/>
             <file name="CompletedElement.xml" url="CompletedElement.xml"/>
             <file name="FaultedElement.xml" url="FaultedElement.xml"/>
         </folder>
-    </folder>
 -->    
+    </folder>
+    
     <folder name="BPELProjectDebuggerAction">
         <file name="Action">
             <attr name="Action" stringvalue="org.netbeans.modules.bpel.debugger.ui.action.AttachDebuggerAction"/>
