@@ -650,7 +650,7 @@ public class ComplibServiceProvider implements ComplibService {
     }
 
     /**
-     * Remove existing the legacy Library Refs and Library Defs to an embedded
+     * Remove existing legacy Library Refs and Library Defs to an embedded
      * complib for a particular project.
      * 
      * TODO This is a hack b/c there isn't a NB API to get all of the project's
@@ -666,16 +666,23 @@ public class ComplibServiceProvider implements ComplibService {
         ExtensionComplib projectComplib) throws IOException {
 
         /*
+         * FIXME This code does not work because of complicated problems related
+         * to changes in the way Lib Defs and Refs were mapped to NB APIs in
+         * JsfProjectUtils. I think, it would be time consuming to really fix
+         * this so the workaround is to remove old Lib Refs manually via Project
+         * Properties.
+         */
+
+        /*
          * In VWP 5.5.x or shortfin, there was only a single Lib Def with a
          * "design-time" volume but two separate Lib Refs. However, the API has
          * changed so I don't know if this code will remove both of the exiting
          * Lib Refs.
          */
-        // TODO Test that this works.
         String projectName = project.getProjectDirectory().getName();
         String libName = IdeUtil.removeWhiteSpace(projectName + "_"
                 + projectComplib.getDirectoryBaseName());
-        if (removeLibraryDefAndRef(project, libName)) {
+        if (removeLibraryDefAndRef(project, libName, projectComplib)) {
             return;
         }
 
@@ -685,11 +692,11 @@ public class ComplibServiceProvider implements ComplibService {
          */
         libName = IdeUtil.removeWhiteSpace(projectName + " Design-time "
                 + projectComplib.getTitle());
-        removeLibraryDefAndRef(project, libName);
+        removeLibraryDefAndRef(project, libName, projectComplib);
 
         libName = IdeUtil.removeWhiteSpace(projectName + " Runtime "
                 + projectComplib.getTitle());
-        removeLibraryDefAndRef(project, libName);
+        removeLibraryDefAndRef(project, libName, projectComplib);
     }
 
     /**
@@ -697,21 +704,28 @@ public class ComplibServiceProvider implements ComplibService {
      * 
      * @param project
      * @param libName
+     *            Lib Def name
+     * @param complib
+     *            the complib that corresponds to the Lib Def
      * @return
      * @throws IOException
      */
-    private boolean removeLibraryDefAndRef(Project project, String libName)
-            throws IOException {
+    private boolean removeLibraryDefAndRef(Project project, String libName,
+        ExtensionComplib complib) throws IOException {
         boolean found = false;
 
         Library libDef = LibraryManager.getDefault().getLibrary(libName);
         if (libDef == null) {
             /*
              * There is no NB API to remove just a Lib Ref so we create a dummy
-             * Lib Def to check if there is a Lib Ref that points to it.
+             * Lib Def to check if there is a Lib Ref that points to it. As of
+             * 2007-04-22, we also need to have a classpath specified or else
+             * JsfProjectUtils.hasLibraryReference(project, libDef) does not
+             * work.
              */
+            List<URL> rtPath = fileListToUrlList(complib.getRuntimePath());
             libDef = JsfProjectUtils.createComponentLibrary(libName, null,
-                    null, null, null, null, null);
+                    null, rtPath, null, null, null);
         }
 
         // Remove an existing Lib Ref
