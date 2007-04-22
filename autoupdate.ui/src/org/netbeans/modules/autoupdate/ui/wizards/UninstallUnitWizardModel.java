@@ -20,7 +20,6 @@
 package org.netbeans.modules.autoupdate.ui.wizards;
 
 import org.netbeans.api.autoupdate.OperationContainer;
-import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.modules.autoupdate.ui.Containers;
 
 /**
@@ -68,4 +67,9 @@ public class UninstallUnitWizardModel extends OperationWizardModel {
         return null;
     }
     
+    @Override
+    public boolean hasBrokenDependencies () {
+        // doesn't matter broken dependencies when uninstall
+        return false;
+    }
 }
