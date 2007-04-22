@@ -126,7 +126,7 @@ public class ProcessInstanceImpl implements ProcessInstance {
         if (bdiDebugger != null) {
             VirtualBPELEngine virtualBPELEngine = bdiDebugger.getVirtualBPELEngine();
             if (virtualBPELEngine != null) {
-                virtualBPELEngine.terminatePI(mProcessInstanceRef);
+                virtualBPELEngine.terminatePI(mProcessInstanceRef.globalGUID());
             }
         }
     }
