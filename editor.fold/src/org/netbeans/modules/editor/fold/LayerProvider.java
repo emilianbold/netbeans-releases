@@ -28,17 +28,8 @@ import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.spi.editor.fold.FoldManager;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.spi.editor.fold.FoldManagerFactory;
-import org.openide.ErrorManager;
-import org.openide.cookies.InstanceCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Lookup;
 
 /**
  * Fold manager factory provider that obtains the factories
@@ -76,9 +67,8 @@ class LayerProvider extends FoldManagerFactoryProvider {
             if (factoryList == null) { // not cached yet
                 String mimeType = kit.getContentType();
                 if (mimeType != null) {
-                    MimeLookup mimeLookup = MimeLookup.getMimeLookup(mimeType);
-                    factoryList = new ArrayList();
-                    factoryList.addAll(mimeLookup.lookup(new Lookup.Template(FoldManagerFactory.class)).allInstances());
+                    MimePath mimePath = MimePath.parse(mimeType);
+                    factoryList = new ArrayList(MimeLookup.getLookup(mimePath).lookupAll(FoldManagerFactory.class));
                 }
             } // not yet cached
         }
