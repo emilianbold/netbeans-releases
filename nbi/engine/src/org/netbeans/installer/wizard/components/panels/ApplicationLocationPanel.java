@@ -42,6 +42,7 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.plaf.basic.BasicComboBoxEditor;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
@@ -60,36 +61,6 @@ import org.netbeans.installer.wizard.containers.SwingContainer;
  * @author Kirill Sorokin
  */
 public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
-    /////////////////////////////////////////////////////////////////////////////////
-    // Constants
-    public static final String LOCATION_LABEL_TEXT_PROPERTY = 
-            "location.label.text"; // NOI18N
-    public static final String LOCATION_BUTTON_TEXT_PROPERTY = 
-            "location.button.text"; // NOI18N
-    public static final String LIST_LABEL_TEXT_PROPERTY = 
-            "list.label.text"; // NOI18N
-    
-    public static final String DEFAULT_LOCATION_LABEL_TEXT = 
-            ResourceUtils.getString(ApplicationLocationPanel.class, 
-            "ALP.location.label.text"); // NOI18N
-    public static final String DEFAULT_LOCATION_BUTTON_TEXT = 
-            ResourceUtils.getString(ApplicationLocationPanel.class, 
-            "ALP.location.button.text"); // NOI18N
-    public static final String DEFAULT_LIST_LABEL_TEXT = 
-            ResourceUtils.getString(ApplicationLocationPanel.class, 
-            "ALP.list.label.text"); // NOI18N
-    
-    public static final String ERROR_NOTHING_FOUND_PROPERTY = 
-            "error.nothing.found"; // NOI18N
-    
-    public static final String DEFAULT_ERROR_NOTHING_FOUND = 
-            ResourceUtils.getString(ApplicationLocationPanel.class, 
-            "ALP.error.nothing.found"); // NOI18N
-    
-    public static final String DEFAULT_LOCATION = 
-            ResourceUtils.getString(ApplicationLocationPanel.class, 
-            "ALP.default.location"); // NOI18N
-    
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     public ApplicationLocationPanel() {
@@ -437,7 +408,6 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
             this.validator = validator;
             
             textField = new NbiTextField();
-            textField.setBorder(new EmptyBorder(1, 1, 1, 1));
             textField.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     fireAction(e);
@@ -459,6 +429,11 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
                             textField.getText());
                 }
             });
+            
+            // l&f tweaks
+            if (!SystemUtils.isMacOS()) {
+                textField.setBorder(new EmptyBorder(1, 1, 1, 1));
+            }
             
             this.listeners = new LinkedList<ActionListener>();
         }
@@ -637,4 +612,34 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
     public static interface LocationValidator {
         void validate(String location);
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final String LOCATION_LABEL_TEXT_PROPERTY = 
+            "location.label.text"; // NOI18N
+    public static final String LOCATION_BUTTON_TEXT_PROPERTY = 
+            "location.button.text"; // NOI18N
+    public static final String LIST_LABEL_TEXT_PROPERTY = 
+            "list.label.text"; // NOI18N
+    
+    public static final String DEFAULT_LOCATION_LABEL_TEXT = 
+            ResourceUtils.getString(ApplicationLocationPanel.class, 
+            "ALP.location.label.text"); // NOI18N
+    public static final String DEFAULT_LOCATION_BUTTON_TEXT = 
+            ResourceUtils.getString(ApplicationLocationPanel.class, 
+            "ALP.location.button.text"); // NOI18N
+    public static final String DEFAULT_LIST_LABEL_TEXT = 
+            ResourceUtils.getString(ApplicationLocationPanel.class, 
+            "ALP.list.label.text"); // NOI18N
+    
+    public static final String ERROR_NOTHING_FOUND_PROPERTY = 
+            "error.nothing.found"; // NOI18N
+    
+    public static final String DEFAULT_ERROR_NOTHING_FOUND = 
+            ResourceUtils.getString(ApplicationLocationPanel.class, 
+            "ALP.error.nothing.found"); // NOI18N
+    
+    public static final String DEFAULT_LOCATION = 
+            ResourceUtils.getString(ApplicationLocationPanel.class, 
+            "ALP.default.location"); // NOI18N
 }

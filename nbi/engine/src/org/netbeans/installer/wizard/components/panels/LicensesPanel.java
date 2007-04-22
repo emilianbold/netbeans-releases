@@ -19,6 +19,7 @@
  */
 package org.netbeans.installer.wizard.components.panels;
 
+import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -167,6 +168,7 @@ public class LicensesPanel extends WizardPanel {
             // licensePane //////////////////////////////////////////////////////////
             licensePane = new NbiTextPane();
             licensePane.setOpaque(true);
+            licensePane.setBackground(Color.WHITE);
             licensePane.setBorder(new EmptyBorder(new Insets(5, 5, 5, 5)));
             
             // licenseScrollPane ////////////////////////////////////////////////////
@@ -198,11 +200,6 @@ public class LicensesPanel extends WizardPanel {
                     GridBagConstraints.HORIZONTAL,    // fill
                     new Insets(7, 11, 11, 11),        // padding
                     0, 0));                           // padx, pady - ???
-            
-            // l&f-specific tweaks
-            if (UIManager.getLookAndFeel().getID().equals("GTK")) {
-                licenseScrollPane.setViewportBorder(null);
-            }
         }
         
         private void acceptCheckBoxToggled() {

@@ -20,12 +20,7 @@
  */
 package org.netbeans.installer.utils.helper.swing;
 
-import java.awt.Component;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.ListCellRenderer;
 
 /**
  *
@@ -35,30 +30,6 @@ public class NbiComboBox extends JComboBox {
     public NbiComboBox() {
         super();
         
-        setRenderer(new NbiDefaultComboBoxRenderer());
-    }
-    
-    private static class NbiDefaultComboBoxRenderer extends DefaultListCellRenderer {
-        private boolean opaque;
-        
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean selected, boolean focus) {
-            super.getListCellRendererComponent(list, value, index, selected, focus);
-            
-            if (selected) {
-                setOpaque(true);
-            } else {
-                setOpaque(false);
-            }
-            
-            return this;
-        }
-        
-        public boolean isOpaque() {
-            return opaque;
-        }
-        
-        public void setOpaque(final boolean opaque) {
-            this.opaque = opaque;
-        }
+        setPreferredSize(new NbiTextField().getPreferredSize());
     }
 }

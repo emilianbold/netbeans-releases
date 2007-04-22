@@ -30,13 +30,15 @@ import org.netbeans.installer.utils.SystemUtils;
  * @author Kirill Sorokin
  */
 public class NbiButton extends JButton {
+    /////////////////////////////////////////////////////////////////////////////////
+    // Instance
     public NbiButton() {
         super();
         
         if (SystemUtils.isWindows()) {
             final Object object = Toolkit.
                     getDefaultToolkit().
-                    getDesktopProperty("win.xpstyle.themeActive");
+                    getDesktopProperty(WINDOWS_XP_THEME_MARKER_PROPERTY);
             
             if (object != null) {
                 boolean xpThemeActive = (Boolean) object;
@@ -45,10 +47,20 @@ public class NbiButton extends JButton {
                 }
             }
         }
+        
+        setText(DEFAULT_TEXT);
     }
     
     public void setText(String text) {
         super.setText(StringUtils.stripMnemonic(text));
         super.setMnemonic(StringUtils.fetchMnemonic(text));
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final String DEFAULT_TEXT = 
+            " "; // NOI18N
+    
+    private static final String WINDOWS_XP_THEME_MARKER_PROPERTY = 
+            "win.xpstyle.themeActive"; // NOI18N
 }

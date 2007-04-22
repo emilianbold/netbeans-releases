@@ -355,7 +355,7 @@ public class DestinationPanel extends ErrorMessagePanel {
                     0, 1,                             // x, y
                     1, 1,                             // width, height
                     1.0, 0.0,                         // weight-x, weight-y
-                    GridBagConstraints.PAGE_START,    // anchor
+                    GridBagConstraints.LINE_START,    // anchor
                     GridBagConstraints.HORIZONTAL,    // fill
                     new Insets(4, 11, 0, 0),          // padding
                     0, 0));                           // padx, pady - ???
@@ -363,7 +363,7 @@ public class DestinationPanel extends ErrorMessagePanel {
                     1, 1,                             // x, y
                     1, 1,                             // width, height
                     0.0, 0.0,                         // weight-x, weight-y
-                    GridBagConstraints.PAGE_START,    // anchor
+                    GridBagConstraints.LINE_START,    // anchor
                     GridBagConstraints.NONE,          // fill
                     new Insets(4, 4, 0, 11),          // padding
                     0, 0));                           // padx, pady - ???
@@ -371,8 +371,8 @@ public class DestinationPanel extends ErrorMessagePanel {
                     1, 50,                            // x, y
                     2, 1,                             // width, height
                     0.0, 1.0,                         // weight-x, weight-y
-                    GridBagConstraints.PAGE_START,    // anchor
-                    GridBagConstraints.NONE,          // fill
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
                     new Insets(0, 0, 0, 0),           // padding
                     0, 0));                           // padx, pady - ???
         }

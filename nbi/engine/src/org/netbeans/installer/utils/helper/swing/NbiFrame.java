@@ -144,7 +144,7 @@ public class NbiFrame extends JFrame {
     public static final int DEFAULT_FRAME_WIDTH  = 
             650;
     public static final int DEFAULT_FRAME_HEIGHT = 
-            500;
+            600;
     public static final String DEFAULT_FRAME_ICON_URI = 
             ExtendedUri.RESOURCE_SCHEME + 
             ":org/netbeans/installer/utils/helper/swing/frame-icon.png";

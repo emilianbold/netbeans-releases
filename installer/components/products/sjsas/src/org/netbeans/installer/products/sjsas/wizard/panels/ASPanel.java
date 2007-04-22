@@ -19,6 +19,7 @@
  */
 package org.netbeans.installer.products.sjsas.wizard.panels;
 
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -597,8 +598,17 @@ public class ASPanel extends DestinationPanel {
             fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             fileChooser.setMultiSelectionEnabled(false);
             
+            final Dimension longFieldSize = new Dimension(
+                    200, 
+                    new NbiTextField().getPreferredSize().height);
+            final Dimension shortFieldSize = new Dimension(
+                    80, 
+                    longFieldSize.height);
+            
             // usernameField ////////////////////////////////////////////////////////
             usernameField = new NbiTextField();
+            usernameField.setPreferredSize(longFieldSize);
+            usernameField.setMinimumSize(longFieldSize);
             usernameField.getDocument().addDocumentListener(
                     new ValidatingDocumentListener(this));
             
@@ -608,6 +618,8 @@ public class ASPanel extends DestinationPanel {
             
             // passwordField ////////////////////////////////////////////////////////
             passwordField = new NbiPasswordField();
+            passwordField.setPreferredSize(longFieldSize);
+            passwordField.setMinimumSize(longFieldSize);
             passwordField.getDocument().addDocumentListener(
                     new ValidatingDocumentListener(this));
             
@@ -617,6 +629,8 @@ public class ASPanel extends DestinationPanel {
             
             // repeatPasswordField //////////////////////////////////////////////////
             repeatPasswordField = new NbiPasswordField();
+            repeatPasswordField.setPreferredSize(longFieldSize);
+            repeatPasswordField.setMinimumSize(longFieldSize);
             repeatPasswordField.getDocument().addDocumentListener(
                     new ValidatingDocumentListener(this));
             
@@ -626,6 +640,8 @@ public class ASPanel extends DestinationPanel {
             
             // httpPortField ////////////////////////////////////////////////////////
             httpPortField = new NbiTextField();
+            httpPortField.setPreferredSize(shortFieldSize);
+            httpPortField.setMinimumSize(shortFieldSize);
             httpPortField.getDocument().addDocumentListener(
                     new ValidatingDocumentListener(this));
             
@@ -635,6 +651,8 @@ public class ASPanel extends DestinationPanel {
             
             // httpsPortField ///////////////////////////////////////////////////////
             httpsPortField = new NbiTextField();
+            httpsPortField.setPreferredSize(shortFieldSize);
+            httpsPortField.setMinimumSize(shortFieldSize);
             httpsPortField.getDocument().addDocumentListener(
                     new ValidatingDocumentListener(this));
             
@@ -644,6 +662,8 @@ public class ASPanel extends DestinationPanel {
             
             // adminPortField ///////////////////////////////////////////////////////
             adminPortField = new NbiTextField();
+            adminPortField.setPreferredSize(shortFieldSize);
+            adminPortField.setMinimumSize(shortFieldSize);
             adminPortField.getDocument().addDocumentListener(
                     new ValidatingDocumentListener(this));
             
@@ -669,7 +689,7 @@ public class ASPanel extends DestinationPanel {
                     1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.LINE_START,    // anchor
                     GridBagConstraints.HORIZONTAL,    // fill
-                    new Insets(3, 11, 0, 0),          // padding
+                    new Insets(4, 11, 0, 0),          // padding
                     0, 0));                           // padx, pady - ???
             add(browseButton, new GridBagConstraints(
                     1, 3,                             // x, y
@@ -677,7 +697,7 @@ public class ASPanel extends DestinationPanel {
                     0.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.LINE_START,    // anchor
                     GridBagConstraints.HORIZONTAL,    // fill
-                    new Insets(3, 6, 0, 11),          // padding
+                    new Insets(4, 4, 0, 11),          // padding
                     0, 0));                           // padx, pady - ???
             add(statusLabel, new GridBagConstraints(
                     0, 4,                             // x, y
@@ -685,14 +705,14 @@ public class ASPanel extends DestinationPanel {
                     1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.LINE_START,    // anchor
                     GridBagConstraints.HORIZONTAL,    // fill
-                    new Insets(6, 11, 0, 11),         // padding
+                    new Insets(4, 11, 0, 11),         // padding
                     0, 0));                           // padx, pady - ???
             add(containerPanel, new GridBagConstraints(
                     0, 5,                             // x, y
                     2, 1,                             // width, height
                     1.0, 1.0,                         // weight-x, weight-y
                     GridBagConstraints.LINE_START,    // anchor
-                    GridBagConstraints.HORIZONTAL,    // fill
+                    GridBagConstraints.BOTH,          // fill
                     new Insets(0, 0, 0, 0),           // padding
                     0, 0));                           // padx, pady - ???
             

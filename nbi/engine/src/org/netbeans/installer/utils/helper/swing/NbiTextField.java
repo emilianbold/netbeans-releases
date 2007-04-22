@@ -29,7 +29,5 @@ import javax.swing.JTextField;
 public class NbiTextField extends JTextField {
     public NbiTextField() {
         super();
-        
-        setColumns(15);
     }
 }

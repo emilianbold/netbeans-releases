@@ -288,7 +288,7 @@ public class NbBasePanel extends DestinationPanel {
                     1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.LINE_START,    // anchor
                     GridBagConstraints.HORIZONTAL,    // fill
-                    new Insets(3, 11, 0, 0),          // padding
+                    new Insets(4, 11, 0, 0),          // padding
                     0, 0));                           // padx, pady - ???
             add(browseButton, new GridBagConstraints(
                     1, 3,                             // x, y
@@ -296,7 +296,7 @@ public class NbBasePanel extends DestinationPanel {
                     0.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.LINE_START,    // anchor
                     GridBagConstraints.HORIZONTAL,    // fill
-                    new Insets(3, 6, 0, 11),          // padding
+                    new Insets(4, 4, 0, 11),          // padding
                     0, 0));                           // padx, pady - ???
             add(statusLabel, new GridBagConstraints(
                     0, 4,                             // x, y
@@ -304,7 +304,7 @@ public class NbBasePanel extends DestinationPanel {
                     1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.LINE_START,    // anchor
                     GridBagConstraints.HORIZONTAL,    // fill
-                    new Insets(6, 11, 0, 11),         // padding
+                    new Insets(4, 11, 0, 11),         // padding
                     0, 0));                           // padx, pady - ???
         }
         
