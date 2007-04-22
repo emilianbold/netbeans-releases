@@ -501,8 +501,9 @@ public class Utilities {
         long taskTimestamp = task.getTimeStampStarted();
         
         System.err.println("task started at : "+taskTimestamp);
-        
-        while(true) {
+        int i=0;
+        while(i<12000) { // max 12000*50=600000=10 min
+            i++;
             int state = task.getState();
             if(state == task.STATE_FINISHED) { return; }
             try {
@@ -515,7 +516,7 @@ public class Utilities {
     }
     
     private static InternalHandle waitServerTaskHandle(TaskModel model, String serverIDEName) {
-        while(true) {
+        for(int i=0; i<12000; i++) { // max 12000*50=600000=10 min
             InternalHandle[] handles =  model.getHandles();
             InternalHandle  serverTask = getServerTaskHandle(handles,serverIDEName);
             if(serverTask != null) {
@@ -529,6 +530,8 @@ public class Utilities {
                 exc.printStackTrace(System.err);
             }
         }
+        
+        return null;
     }
     
     private static InternalHandle getServerTaskHandle(InternalHandle[] handles, String taskName) {
