@@ -94,7 +94,7 @@ public final class FoldChildren extends GapList {
     
     public Fold[] foldsToArray(int index, int length) {
         Fold[] folds = new Fold[length];
-        copyItems(index, index + length, folds, 0);
+        copyElements(index, index + length, folds, 0);
         return folds;
     }
     
