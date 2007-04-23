@@ -9,6 +9,12 @@ source init.sh
 
 cd $TRUNK_NIGHTLY_DIRNAME
 bash clean-all.sh
+ERROR_CODE=$?
+
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - Clean failed"
+    exit $ERROR_CODE;
+fi
 
 #Clean the leftovers from the last build.
 #For more info about "cvspurge" take a look 
@@ -26,6 +32,12 @@ bash clean-all.sh
 
 cd $TRUNK_NIGHTLY_DIRNAME
 bash checkout-all-componets.sh
+ERROR_CODE=$?
+
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - Checkout failed"
+    exit $ERROR_CODE;
+fi
 
 ###################################################################
 #
@@ -35,6 +47,14 @@ bash checkout-all-componets.sh
 
 cd $TRUNK_NIGHTLY_DIRNAME
 bash build-all-componets.sh
+ERROR_CODE=$?
+
+ERROR_CODE=$?
+
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - Build failed"
+    exit $ERROR_CODE;
+fi
 
 ###################################################################
 #
@@ -44,6 +64,12 @@ bash build-all-componets.sh
 
 cd $TRUNK_NIGHTLY_DIRNAME
 bash pack-all-componets.sh
+ERROR_CODE=$?
+
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - Packaging failed"
+    exit $ERROR_CODE;
+fi
 
 ###################################################################
 #
