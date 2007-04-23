@@ -189,7 +189,8 @@ public class GoToSupport {
                         
                         result[0] = "<html><body>" + v.result.toString();
                     } else {
-                        Tree tree = controller.getTrees().getTree(el);
+                        TreePath elpath = controller.getTrees().getPath(el);
+                        Tree tree = elpath != null? elpath.getLeaf(): null;
                         
                         if (tree == null && (el.getKind() == ElementKind.PARAMETER || el.getKind() == ElementKind.LOCAL_VARIABLE)) {
                             while (path.getLeaf().getKind() != Kind.METHOD && path.getLeaf().getKind() != Kind.CLASS) {
