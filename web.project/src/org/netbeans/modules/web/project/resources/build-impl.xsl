@@ -590,7 +590,6 @@ introduced by support for multiple source roots. -jglick
                             <xsl:variable name="seiclass" select="jaxws:implementation-class"/>
                             <target name="wsgen-{$wsname}-nonJSR109" depends="wsgen-init-nonJSR109">
                                 <wsgen
-                                    fork="true"
                                     xendorsed="true"
                                     sourcedestdir="${{build.generated.dir}}/wsgen/service"
                                     resourcedestdir="${{build.generated.dir}}/wsgen/service"
@@ -1030,7 +1029,6 @@ introduced by support for multiple source roots. -jglick
             </target>
             
             <target name="-post-compile">
-                <!--                <xsl:attribute name="depends"><xsl:if test="$jaxws/jaxws:jax-ws/jaxws:services/jaxws:service">wsgen-generate</xsl:if></xsl:attribute>-->
                 <xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:web-services/webproject3:web-service">
                     <xsl:attribute name="depends">
                         <xsl:for-each select="/p:project/p:configuration/webproject3:data/webproject3:web-services/webproject3:web-service">
@@ -2259,9 +2257,6 @@ introduced by support for multiple source roots. -jglick
                         </xsl:for-each>
                     </xsl:attribute>
                 </binding>
-            </xsl:if>
-            <xsl:if test="not($isService)">
-                <jvmarg value="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
             </xsl:if>
         </wsimport>
     </xsl:template>   
