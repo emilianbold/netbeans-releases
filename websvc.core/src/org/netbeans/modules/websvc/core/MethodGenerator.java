@@ -52,7 +52,9 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlParameter;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 
 /**
  *
@@ -142,6 +144,11 @@ public class MethodGenerator {
             }
         };
         targetSource.runModificationTask(task).commit();
+        DataObject dobj = DataObject.find(implClassFo);
+        if (dobj!=null) {
+            SaveCookie cookie = dobj.getCookie(SaveCookie.class);
+            if (cookie!=null) cookie.save();
+        }
     }
     
     public static void removeMethod(final FileObject implClass, final String operationName) throws IOException {

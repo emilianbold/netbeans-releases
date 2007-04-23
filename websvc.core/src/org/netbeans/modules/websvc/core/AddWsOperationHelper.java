@@ -48,6 +48,8 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.common.source.GenerationUtils;
 import org.netbeans.modules.j2ee.common.source.SourceUtils;
+import org.openide.cookies.SaveCookie;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import static org.netbeans.api.java.source.JavaSource.Phase;
@@ -124,7 +126,7 @@ public class AddWsOperationHelper {
     /*
      * Adds a method definition to the the implementation class
      */
-    private void addOperation(final MethodModel methodModel, FileObject implClassFo) {
+    private void addOperation(final MethodModel methodModel, final FileObject implClassFo) {
         final JavaSource targetSource = JavaSource.forFileObject(implClassFo);
         final ProgressHandle handle = ProgressHandleFactory.createHandle("Adding operation"); 
         handle.start(100);
@@ -205,6 +207,11 @@ public class AddWsOperationHelper {
             public void run() {
                 try {
                     targetSource.runModificationTask(modificationTask).commit();
+                    DataObject dataObject = DataObject.find(implClassFo);
+                    if (dataObject!=null) {
+                        SaveCookie cookie = dataObject.getCookie(SaveCookie.class);
+                        if (cookie!=null) cookie.save();
+                    }
                 } catch (IOException ex) {
                     ErrorManager.getDefault().notify(ex);
                 } finally {
