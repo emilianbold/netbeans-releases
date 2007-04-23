@@ -30,6 +30,8 @@ import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
@@ -223,7 +225,8 @@ public class Installer implements FinishHandler {
         LogManager.indent();
         
         Properties properties = System.getProperties();
-        for (Object key: properties.keySet()) {
+        SortedSet <Object> sortedKeys = new TreeSet <Object> (properties.keySet());
+        for (Object key: sortedKeys) {        
             LogManager.log(key.toString() + " => " + properties.get(key).toString());
         }
         
