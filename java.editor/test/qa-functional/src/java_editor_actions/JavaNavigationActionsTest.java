@@ -150,14 +150,14 @@ import editor_actions.EditorActionsTest;
             checkActionByKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.CTRL_DOWN_MASK, 11, 22, false);
             
             // -------- test caret-previous-word action -----
-            checkActionByKeyStroke(KeyEvent.VK_LEFT, KeyEvent.CTRL_DOWN_MASK, 34, 23, false);
+            checkActionByKeyStroke(KeyEvent.VK_LEFT, KeyEvent.CTRL_DOWN_MASK, 34, 33, false);
             
             // -------- test selection-next-word action ---
             // set caret at 1,12
             checkActionByKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK, 11, 22, true);
             
             // -------- test selection-previous-word action -----
-            checkActionByKeyStroke(KeyEvent.VK_LEFT, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK, 34, 23, true);
+            checkActionByKeyStroke(KeyEvent.VK_LEFT, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK, 34, 33, true);
 
             // -------- test page-down action -------
             editor.setCaretPosition(5,1);

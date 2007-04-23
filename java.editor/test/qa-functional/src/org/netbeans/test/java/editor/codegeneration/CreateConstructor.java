@@ -146,12 +146,11 @@ public class CreateConstructor extends EditorTestCase {
             jto.selectRow(2);
             gco.btOK().push();
             String expected = "" +
-                    "    public testSimpleCase(ThreadGroup group, Runnable target, String name,\n"+
-                    "                          long stackSize, double c) {\n"+
+                    "    public testSimpleCase(ThreadGroup group, Runnable target, String name, long stackSize, double c) {\n"+
                     "        super(group, target, name, stackSize);\n"+
                     "        this.c = c;\n"+
                     "    }\n";
-            if(isWin()) expected = expected.replace("\n", "\r\n");
+            if(isWin()) expected = expected.replace("\n", "\r\n");           
             waitMaxMilisForValue(1500,new EditorValueResolver(expected), Boolean.TRUE);
             assertTrue("Constuctor not inserted",contains(editor.getText(),expected));
         } finally {
@@ -175,8 +174,7 @@ public class CreateConstructor extends EditorTestCase {
             jto.selectRow(7);
             gco.btOK().push();
             String expected = "" +
-                    "    public testSimpleCase(ThreadGroup group, Runnable target, String name,\n"+
-                    "                          long stackSize) {\n"+
+                    "    public testSimpleCase(ThreadGroup group, Runnable target, String name, long stackSize) {\n"+
                     "        super(group, target, name, stackSize);\n"+
                     "    }\n";
             if(isWin()) expected = expected.replace("\n", "\r\n");
@@ -295,7 +293,8 @@ public class CreateConstructor extends EditorTestCase {
     
     public static void main(String[] args) {
         //new TestRunner().run(CreateConstructor.class);
-        new TestRunner().run(new CreateConstructor("testUndoRedo"));
+        new TestRunner().run(new CreateConstructor("testInitFieldAndSuper"));
+        new TestRunner().run(new CreateConstructor("testMultipleSuperSelection"));
     }
     
     

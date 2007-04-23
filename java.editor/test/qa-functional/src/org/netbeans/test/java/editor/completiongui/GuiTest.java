@@ -85,10 +85,10 @@ public class GuiTest extends EditorTestCase {
             }
             if(allsymbols) {
                 editor.pushKey(KeyEvent.VK_SPACE, KeyEvent.CTRL_DOWN_MASK | KeyEvent.ALT_DOWN_MASK);
-                new EventTool().waitNoEvent(3000);
+                new EventTool().waitNoEvent(10000);
             } else {
                 editor.pushKey(KeyEvent.VK_SPACE, KeyEvent.CTRL_DOWN_MASK);
-                new EventTool().waitNoEvent(1500);
+                new EventTool().waitNoEvent(5000);
             }
             while(itemNo>1) {
                 editor.pushKey(KeyEvent.VK_DOWN);
