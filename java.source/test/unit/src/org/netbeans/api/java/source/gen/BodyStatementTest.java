@@ -87,6 +87,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new BodyStatementTest("testRenameInCase"));
 //        suite.addTest(new BodyStatementTest("testRenameClazzInNewParameter"));
 //        suite.addTest(new BodyStatementTest("test99445"));
+//        suite.addTest(new BodyStatementTest("test101717"));
         return suite;
     }
     
@@ -2213,6 +2214,49 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                     )
                 );
                 workingCopy.rewrite(block, make.addBlockStatement(block, est));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    /**
+     * #101717: When rename of parameter, -1 was changed to 1.
+     */
+    public void test101717() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method(Class o) {\n" +
+            "        method(abcd, -1);\n" +
+            "    }\n" +
+            "}\n");
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method(Class o) {\n" +
+            "        method(abcde, -1);\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree)workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree)clazz.getMembers().get(1);
+                BlockTree block = method.getBody();
+                MethodInvocationTree mit = (MethodInvocationTree) ((ExpressionStatementTree) block.getStatements().get(0)).getExpression();
+                workingCopy.rewrite(mit.getArguments().get(0), make.Identifier("abcde"));
             }
             
             public void cancel() {
