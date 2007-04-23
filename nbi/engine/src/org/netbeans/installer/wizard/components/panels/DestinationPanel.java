@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -83,7 +83,7 @@ public class DestinationPanel extends ErrorMessagePanel {
                 DEFAULT_ERROR_NOT_EMPTY);
         setProperty(ERROR_NOT_ENDS_WITH_APP_PROPERTY,
                 DEFAULT_ERROR_NOT_ENDS_WITH_APP);
-        setProperty(ERROR_NOT_ENOUGH_SPACE_PROPERTY, 
+        setProperty(ERROR_NOT_ENOUGH_SPACE_PROPERTY,
                 DEFAULT_ERROR_NOT_ENOUGH_SPACE);
     }
     
@@ -169,7 +169,7 @@ public class DestinationPanel extends ErrorMessagePanel {
             try {
                 if (SystemUtils.isMacOS() && (
                         product.getLogic().wrapForMacOs() ||
-                        product.getLogic().correctForMacOs())) {
+                        product.getLogic().requireDotAppForMacOs())) {
                     if (!destination.endsWith(APP_SUFFIX)) {
                         final File parent = new File(destination).getParentFile();
                         final String suffix = product.getDisplayName() + APP_SUFFIX;
@@ -287,9 +287,9 @@ public class DestinationPanel extends ErrorMessagePanel {
                             file.getAbsolutePath());
                 }
                 
-                final long requiredSize = 
+                final long requiredSize =
                         product.getRequiredDiskSpace() + REQUIRED_SPACE_ADDITION;
-                final long availableSize = 
+                final long availableSize =
                         SystemUtils.getFreeSpace(file);
                 if (availableSize < requiredSize) {
                     return StringUtils.format(
@@ -383,26 +383,38 @@ public class DestinationPanel extends ErrorMessagePanel {
                     getContext().
                     get(Product.class);
             
-            fileChooser.setSelectedFile(new File(destinationField.getText()));
+            final File currentDestination = new File(destinationField.getText());
+            
+            fileChooser.setSelectedFile(currentDestination);
             
             if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-                String selected = fileChooser.getSelectedFile().getAbsolutePath();
+                String newDestination = 
+                        fileChooser.getSelectedFile().getAbsolutePath();
                 
                 try {
-                    if (SystemUtils.isMacOS() &&
-                            !selected.endsWith(APP_SUFFIX) &&
-                            product.getLogic().correctForMacOs()) {
-                        final String suffix = product.getDisplayName() + APP_SUFFIX;
+                    if (SystemUtils.isMacOS() && (
+                            product.getLogic().wrapForMacOs() ||
+                            product.getLogic().requireDotAppForMacOs())) {
+                        if (!newDestination.endsWith(APP_SUFFIX)) {
+                            final String suffix = 
+                                    product.getDisplayName() + APP_SUFFIX;
+                            
+                            newDestination = new File(
+                                    newDestination,
+                                    suffix).getAbsolutePath();
+                        }
+                    } else {
+                        final String suffix = currentDestination.getName();
                         
-                        selected = new File(
-                                selected,
+                        newDestination = new File(
+                                newDestination,
                                 suffix).getAbsolutePath();
                     }
                 } catch (InitializationException e) {
                     ErrorManager.notifyError("Cannot obtain confguration logic", e);
                 }
                 
-                destinationField.setText(selected);
+                destinationField.setText(newDestination);
             }
         }
     }
@@ -492,6 +504,6 @@ public class DestinationPanel extends ErrorMessagePanel {
     public static final String APP_SUFFIX =
             ".app"; // NOI18N
     
-    public static final long REQUIRED_SPACE_ADDITION = 
+    public static final long REQUIRED_SPACE_ADDITION =
             10L * 1024L * 1024L; // 10MB
 }

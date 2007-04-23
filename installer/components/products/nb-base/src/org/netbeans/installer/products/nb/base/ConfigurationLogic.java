@@ -273,11 +273,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     }
     
     @Override
-    public boolean correctForMacOs() {
-        return true;
-    }
-    
-    @Override
     public String getExecutable() {
         if (SystemUtils.isWindows()) {
             return EXECUTABLE_WINDOWS;

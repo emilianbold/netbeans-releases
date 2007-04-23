@@ -135,14 +135,29 @@ public abstract class ProductConfigurationLogic {
         return true;
     }
     
+    /**
+     * Specifies whether some special handling should be applied to the product's
+     * files when placing them on disk. If this method returns <code>true</code>,
+     * then the files of the product will be "wrapped" in the standard MacOS 
+     * application directories structure. Also the {@link #getExecutable()} and
+     * {@link #getIcon()} methods will be called and will be expected to return 
+     * proper values for the product's executable and icon so that they are 
+     * symlinked from appropriate locations.
+     * 
+     * @return Whether the product's files should be wrapped with the standard 
+     *      Mac OS application directories structure.
+     */
     public boolean wrapForMacOs() {
         return false;
     }
     
-    public boolean correctForMacOs() {
-        return false;
-    }
-    
+    /**
+     * Specifies whether the the installation directory for the product should end
+     * with Mac OS's specific extension - <code>.app</code>.
+     * 
+     * @return <code>true</code> - if the installation directory must end with 
+     *      <code>.app</code>, <code>false</code> - otherwise.
+     */
     public boolean requireDotAppForMacOs() {
         return false;
     }
