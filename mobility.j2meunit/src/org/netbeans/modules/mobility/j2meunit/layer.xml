@@ -28,13 +28,14 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
     <folder name="Templates">
-    	<folder name="J2MEUnit">
+        <folder name="MIDP">
             <file name="EmptyJ2MEUnitTest.java" url="resources/templates/EmptyJ2MEUnitTest.java.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.j2meunit.Bundle"/> 
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/j2meunit/resources/templates/EmptyJUnitTest.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/j2meunit/resources/JUnitLogo.png"/>
-                <attr name="templateCategory" stringvalue="junit"/>
+                <attr name="templateCategory" stringvalue="MIDP"/>
+                <attr name="MIDP" boolvalue="true"/>
             </file>
         </folder>
     </folder>
