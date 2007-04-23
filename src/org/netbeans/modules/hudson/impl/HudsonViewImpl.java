@@ -19,9 +19,6 @@
 
 package org.netbeans.modules.hudson.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import org.netbeans.modules.hudson.api.HudsonView;
 import org.netbeans.modules.hudson.ui.nodes.OpenableInBrowser;
 
@@ -35,8 +32,6 @@ public class HudsonViewImpl implements HudsonView, OpenableInBrowser {
     private String name;
     private String description;
     private String url;
-    
-    private List<String> jobs = new ArrayList<String>();
     
     public HudsonViewImpl(String name, String description, String url) {
         this.name = name;
@@ -54,14 +49,6 @@ public class HudsonViewImpl implements HudsonView, OpenableInBrowser {
     
     public String getUrl() {
         return url;
-    }
-    
-    public Collection<String> getJobs() {
-        return jobs;
-    }
-    
-    public void addJob(String name) {
-        jobs.add(name);
     }
     
     public boolean equals(Object o) {

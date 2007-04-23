@@ -25,11 +25,13 @@ import javax.swing.Action;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.impl.HudsonJobImpl;
 import org.netbeans.modules.hudson.ui.actions.OpenUrlAction;
+import org.netbeans.modules.hudson.ui.actions.ShowJobDetailAction;
 import org.netbeans.modules.hudson.ui.actions.StartJobAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.NodeTransfer;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -53,7 +55,7 @@ public class HudsonJobNode extends AbstractNode {
     private HudsonJobImpl job;
     
     public HudsonJobNode(HudsonJobImpl job) {
-        super(Children.LEAF, Lookups.fixed(job));
+        super(Children.LEAF, Lookups.singleton(job));
         
         setJob(job);
     }
@@ -66,22 +68,34 @@ public class HudsonJobNode extends AbstractNode {
     @Override
     public Action[] getActions(boolean context) {
         return new Action [] {
+            SystemAction.get(ShowJobDetailAction.class),
             SystemAction.get(StartJobAction.class),
+            null,
             SystemAction.get(OpenUrlAction.class)
         };
     }
     
     @Override
     public Action getPreferredAction() {
-        return SystemAction.get(OpenUrlAction.class);
+        return SystemAction.get(ShowJobDetailAction.class);
     }
     
     @Override
     public Transferable drag() throws IOException {
         return NodeTransfer.transferable(this, NodeTransfer.DND_COPY);
     }
+
+    @Override
+    public PasteType getDropType(Transferable arg0, int arg1, int arg2) {
+        return super.getDropType(arg0, arg1, arg2);
+    }
+    
+    
     
     private void refreshState() {
+        // Store old html name
+        String oldHtmlDisplayName = getHtmlDisplayName();
+        
         // Set new node data
         htmlDisplayName = job.getDisplayName();
         color = job.getColor();
@@ -121,11 +135,7 @@ public class HudsonJobNode extends AbstractNode {
         }
         
         // Fire changes if any
-        fireIconChange();
-    }
-    
-    public Color getColor() {
-        return color;
+        fireDisplayNameChange(oldHtmlDisplayName, getHtmlDisplayName());
     }
     
     public void setJob(HudsonJobImpl job) {

@@ -20,13 +20,14 @@
 package org.netbeans.modules.hudson.api;
 
 import java.util.Collection;
+import org.openide.util.Lookup;
 
 /**
  * Instance of the Hudson Job in specified instance
  *
  * @author Michal Mocnak
  */
-public interface HudsonJob extends Comparable<HudsonJob> {
+public interface HudsonJob extends Lookup.Provider, Comparable<HudsonJob> {
     
     /**
      * Describes state of the Hudson Job
@@ -63,6 +64,11 @@ public interface HudsonJob extends Comparable<HudsonJob> {
      */
     public String getUrl();
     
+    /**
+     * Views where the job is situated
+     * 
+     * @return views
+     */
     public Collection<HudsonView> getViews();
     
     /**
@@ -87,7 +93,42 @@ public interface HudsonJob extends Comparable<HudsonJob> {
     public boolean isBuildable();
     
     /**
+     * Returns number of the last build
+     * 
+     * @return last build number
+     */
+    public int getLastBuild();
+    
+    /**
+     * Returns number of the last stable build
+     * 
+     * @return last stable build number
+     */
+    public int getLastStableBuild();
+    
+    /**
+     * Returns number of the last successful build
+     * 
+     * @return last successful build number
+     */
+    public int getLastSuccessfulBuild();
+    
+    /**
+     * Returns number of the last failed build
+     * 
+     * @return last failed build number
+     */
+    public int getLastFailedBuild();
+    
+    /**
      * Starts Hudson job
      */
     public void start();
+    
+    /**
+     * Returns number of the last successful build
+     * 
+     * @return default job lookup
+     */
+    public Lookup getLookup();
 }

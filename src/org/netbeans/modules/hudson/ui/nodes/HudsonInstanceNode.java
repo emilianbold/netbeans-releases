@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.hudson.api.HudsonChangeListener;
+import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.api.HudsonView;
@@ -146,25 +147,16 @@ public class HudsonInstanceNode extends AbstractNode {
         run = false;
         
         // Refresh state flags
-        for (Node n : getChildren().getNodes()) {
-            if (n instanceof HudsonViewNode &&
-                    n.getLookup().lookup(HudsonView.class).getName().equals(HudsonView.ALL_VIEW)) {
-                for (Node o : n.getChildren().getNodes()) {
-                    if (o instanceof HudsonJobNode) {
-                        Color c = ((HudsonJobNode) o).getColor();
-                        
-                        if (c.equals(Color.red) || c.equals(Color.red_anime))
-                            warn = true;
-                        
-                        if (c.equals(Color.blue_anime) || c.equals(Color.grey_anime)
-                                || c.equals(Color.red_anime) || c.equals(Color.yellow_anime))
-                            run = true;
-                    }
-                }
-                
-                // Other nodes can be skipped
-                break;
-            }
+        for (HudsonJob job : instance.getJobs()) {
+            if (job.getColor().equals(Color.red) || job.getColor().equals(Color.red_anime))
+                warn = true;
+            
+            if (job.getColor().equals(Color.blue_anime) || job.getColor().equals(Color.grey_anime)
+                    || job.getColor().equals(Color.red_anime) || job.getColor().equals(Color.yellow_anime))
+                run = true;
+            
+            if (warn && run)
+                break; // it's not necessary to continue
         }
         
         // Fire changes if any
@@ -233,9 +225,7 @@ public class HudsonInstanceNode extends AbstractNode {
             return l;
         }
         
-        public void stateChanged() {
-            
-        }
+        public void stateChanged() {}
         
         public void contentChanged() {
             refreshKeys();

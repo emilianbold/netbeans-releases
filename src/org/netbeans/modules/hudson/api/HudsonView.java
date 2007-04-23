@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.hudson.api;
 
-import java.util.Collection;
-
 /**
  * Describes Hudson view
  *
@@ -54,11 +52,4 @@ public interface HudsonView {
      * @return Hudson's view url
      */
     public String getUrl();
-    
-    /**
-     * Returns jobs of the hudson view
-     *
-     * @return Hudson's view job
-     */
-    public Collection<String> getJobs();
 }

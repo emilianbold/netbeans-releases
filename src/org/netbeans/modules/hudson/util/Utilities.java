@@ -19,6 +19,13 @@
 
 package org.netbeans.modules.hudson.util;
 
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.Toolkit;
+import java.util.Map;
+import javax.swing.UIManager;
 import org.netbeans.modules.hudson.api.HudsonVersion;
 
 /**
@@ -40,5 +47,28 @@ public class Utilities {
             return false;
         
         return true;
+    }
+    
+    public static Graphics2D prepareGraphics(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g;
+        Map rhints = (Map)(Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints")); //NOI18N
+        if( rhints == null && Boolean.getBoolean("swing.aatext") ) { //NOI18N
+            g2.setRenderingHint( RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON );
+        } else if( rhints != null ) {
+            g2.addRenderingHints( rhints );
+        }
+        return g2;
+    }
+    
+    public static int getDefaultFontSize() {
+        Integer customFontSize = (Integer)UIManager.get("customFontSize"); // NOI18N
+        if (customFontSize != null) {
+            return customFontSize.intValue();
+        } else {
+            Font systemDefaultFont = UIManager.getFont("TextField.font"); // NOI18N
+            return (systemDefaultFont != null)
+                ? systemDefaultFont.getSize()
+                : 12;
+        }
     }
 }

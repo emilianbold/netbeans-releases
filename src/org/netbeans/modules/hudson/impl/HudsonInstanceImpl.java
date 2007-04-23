@@ -21,20 +21,25 @@ package org.netbeans.modules.hudson.impl;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.hudson.api.HudsonChangeAdapter;
 import org.netbeans.modules.hudson.api.HudsonChangeListener;
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.api.HudsonView;
+import org.netbeans.modules.hudson.ui.HudsonJobView;
 import org.netbeans.modules.hudson.ui.nodes.OpenableInBrowser;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -53,6 +58,8 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     private Collection<HudsonView> views = new ArrayList<HudsonView>();
     private Collection<HudsonChangeListener> listeners = new ArrayList<HudsonChangeListener>();
     
+    private boolean sync = false;
+    
     private HudsonInstanceImpl(String name, String url) {
         this(new HudsonInstanceProperties(name, url));
     }
@@ -64,12 +71,44 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
         // Start synchronization
         synchronization.start();
         
-        // Add property listener
+        // Add property listener for synchronization
         this.properties.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals(HudsonInstanceProperties.PROP_SYNC))
                     if (!synchronization.isRunning())
                         synchronization.start();
+            }
+        });
+        
+        // Add content change listener to update HudsonJobViews in cache
+        addHudsonChangeListener(new HudsonChangeAdapter() {
+            @Override
+            public void contentChanged() {
+                for (final HudsonJob job : getJobs()) {
+                    try {
+                        // Updates jobs views in the cache
+                        SwingUtilities.invokeAndWait(new Runnable() {
+                            public void run() {
+                                HudsonJobView.getInstanceFromCache(job);
+                            }
+                        });
+                    } catch (InterruptedException e) {
+                        Exceptions.printStackTrace(e);
+                    } catch (InvocationTargetException e) {
+                        Exceptions.printStackTrace(e);
+                    }
+                }
+                
+                for (final HudsonJobView v : HudsonJobView.getCachedInstances()) {
+                    if (!getJobs().contains(v.getJob())) {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                if (v.isOpened())
+                                    v.close();
+                            }
+                        });
+                    }
+                }
             }
         });
     }
@@ -147,6 +186,14 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     }
     
     public synchronized void synchronize() {
+        // Set synchronization flag or exit if synchronization is running
+        synchronized(this) {
+            if (sync)
+                return;
+            else
+                sync = true;
+        }
+        
         final ProgressHandle handle = ProgressHandleFactory.createHandle(
                 NbBundle.getMessage(HudsonInstanceImpl.class, "MSG_Synchronizing", getName()));
         
@@ -178,6 +225,11 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
                     fireContentChanges();
                 } finally {
                     handle.finish();
+                    
+                    // Release synchronization flag
+                    synchronized(this) {
+                        sync = false;
+                    }
                 }
             }
         });

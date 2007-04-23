@@ -120,7 +120,7 @@ public class HudsonViewNode extends AbstractNode {
             List<HudsonJobImpl> l = new ArrayList<HudsonJobImpl>();
             
             for (HudsonJobImpl job : Arrays.asList(instance.getJobs().toArray(new HudsonJobImpl[] {}))) {
-                if (view.getJobs().contains(job.getName()))
+                if (job.getViews().contains(view))
                     l.add(job);
             }
             

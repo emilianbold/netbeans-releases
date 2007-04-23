@@ -24,6 +24,8 @@ import java.util.Collection;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonView;
 import org.netbeans.modules.hudson.ui.nodes.OpenableInBrowser;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Implementation of the HudsonJob
@@ -39,6 +41,10 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
     private Color color;
     private boolean isInQueue;
     private boolean isBuildable;
+    private int lastBuild;
+    private int lastStableBuild;
+    private int lastSuccessfulBuild;
+    private int lastFailedBuild;
     
     private Collection<HudsonView> views = new ArrayList<HudsonView>();
     
@@ -51,16 +57,7 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
      * @param url
      * @param color
      */
-    public HudsonJobImpl(String displayName, String name, String description, String url, Color color,
-            boolean isInQueue, boolean isBuidable, HudsonInstanceImpl instance) {
-        this.displayName = displayName;
-        this.name = name;
-        this.url = url;
-        this.description = description;
-        this.color = color;
-        this.isInQueue = isInQueue;
-        this.isBuildable = isBuidable;
-        
+    public HudsonJobImpl(HudsonInstanceImpl instance) {
         this.instance = instance;
     }
     
@@ -68,28 +65,88 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
         return displayName;
     }
     
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+    
     public String getName() {
         return name;
+    }
+    
+    public void setName(String name) {
+        this.name = name;
     }
     
     public String getDescription() {
         return description;
     }
     
+    public void setDescription(String description) {
+        this.description = description;
+    }
+    
     public String getUrl() {
         return url;
+    }
+    
+    public void setUrl(String url) {
+        this.url = url;
     }
     
     public Color getColor() {
         return color;
     }
     
+    public void setColor(Color color) {
+        this.color = color;
+    }
+    
     public boolean isInQueue() {
         return isInQueue;
     }
     
+    public void setIsInQueue(boolean isInQueue) {
+        this.isInQueue = isInQueue;
+    }
+    
     public boolean isBuildable() {
         return isBuildable;
+    }
+    
+    public void setIsBuildable(boolean isBuildable) {
+        this.isBuildable = isBuildable;
+    }
+    
+    public int getLastBuild() {
+        return lastBuild;
+    }
+    
+    public void setLastBuild(int lastBuild) {
+        this.lastBuild = lastBuild;
+    }
+    
+    public int getLastStableBuild() {
+        return lastStableBuild;
+    }
+    
+    public void setLastStableBuild(int lastStableBuild) {
+        this.lastStableBuild = lastStableBuild;
+    }
+    
+    public int getLastSuccessfulBuild() {
+        return lastSuccessfulBuild;
+    }
+    
+    public void setLastSuccessfulBuild(int lastSuccessfulBuild) {
+        this.lastSuccessfulBuild = lastSuccessfulBuild;
+    }
+    
+    public int getLastFailedBuild() {
+        return lastFailedBuild;
+    }
+    
+    public void setLastFailedBuild(int lastFailedBuild) {
+        this.lastFailedBuild = lastFailedBuild;
     }
     
     public synchronized Collection<HudsonView> getViews() {
@@ -106,6 +163,10 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
         
         // Synchronize jobs
         instance.synchronize();
+    }
+    
+    public Lookup getLookup() {
+        return Lookups.singleton(instance);
     }
     
     public boolean equals(Object obj) {
@@ -131,6 +192,9 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
         if (this.isInQueue != other.isInQueue)
             return false;
         if (this.isBuildable != other.isBuildable)
+            return false;
+        if (this.getViews() != other.getViews() &&
+                (this.getViews() == null || !this.getViews().equals(other.getViews())))
             return false;
         
         return true;
