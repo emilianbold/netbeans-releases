@@ -197,5 +197,28 @@ public class JavaClassImpl implements JavaClass {
          */
         return Collections.EMPTY_LIST;
     }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof JavaClassImpl)) {
+            return false;
+        }
+        JavaClassImpl jc = (JavaClassImpl) obj;
+        if (classType != null && classType.equals(jc.classType)) {
+            return true;
+        }
+        if (className != null && className.equals(jc.className)) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        if (classType != null) {
+            return classType.hashCode();
+        }
+        return className.hashCode() + 1024;
+    }
 
 }
