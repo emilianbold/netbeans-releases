@@ -190,11 +190,8 @@ public final class JavaSource {
     private static final int RESCHEDULE_FINISHED_TASKS = CHANGE_EXPECTED<<1;
     private static final int UPDATE_INDEX = RESCHEDULE_FINISHED_TASKS<<1;
     
-    /**Slow task reporting*/
-    private static final boolean reportSlowTasks = Boolean.getBoolean("org.netbeans.api.java.source.JavaSource.reportSlowTasks");   //NOI18N
     private static final Pattern excludedTasks;
     /**Limit for task to be marked as a slow one, in ms*/
-    private static final int SLOW_TASK_LIMIT = 250;
     private static final int SLOW_CANCEL_LIMIT = 50;
     
     /**Not final for tests.*/
@@ -1260,14 +1257,14 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                                                         final long startTime = System.currentTimeMillis();
                                                         ((CancellableTask<CompilationInfo>)r.task).run (ci); //XXX: How to do it in save way?
                                                         final long endTime = System.currentTimeMillis();
-                                                        if (reportSlowTasks) {
-                                                            if ((endTime - startTime) > SLOW_TASK_LIMIT) {
-                                                                LOGGER.log(Level.INFO,String.format("JavaSource executed a slow task: %s in %d ms.",  //NOI18N
-                                                                    r.task.getClass().toString(), (endTime-startTime)));
-                                                            }
+                                                        if (LOGGER.isLoggable(Level.FINEST)) {
+                                                            LOGGER.finest(String.format("executed task: %s in %d ms.",  //NOI18N
+                                                                r.task.getClass().toString(), (endTime-startTime)));
+                                                        }
+                                                        if (LOGGER.isLoggable(Level.FINER)) {
                                                             final long cancelTime = currentRequest.getCancelTime();
                                                             if (cancelTime >= startTime && (endTime - cancelTime) > SLOW_CANCEL_LIMIT) {
-                                                                LOGGER.log(Level.INFO,String.format("Task: %s ignored cancel for %d ms.",  //NOI18N
+                                                                LOGGER.finer(String.format("Task: %s ignored cancel for %d ms.",  //NOI18N
                                                                     r.task.getClass().toString(), (endTime-cancelTime)));
                                                             }
                                                         }
@@ -1619,9 +1616,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                         this.canceledReference = request;
                         this.reference = null;
                         this.canceled = true;                    
-                        if (reportSlowTasks) {
-                            cancelTime = System.currentTimeMillis();
-                        }
+                        this.cancelTime = System.currentTimeMillis();
                     }
                 }
             }
@@ -1638,9 +1633,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                         this.canceledReference = request;
                         this.reference = null;
                         this.canceled = true;
-                        if (reportSlowTasks) {
-                            cancelTime = System.currentTimeMillis();
-                        }
+                        this.cancelTime = System.currentTimeMillis();
                     }
                 }
             }
@@ -1673,9 +1666,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                         this.canceledReference = request;
                         this.reference = null;
                         this.canceled = true;
-                        if (reportSlowTasks) {
-                            cancelTime = System.currentTimeMillis();
-                        }
+                        this.cancelTime = System.currentTimeMillis();
                     }
                 }
             }
