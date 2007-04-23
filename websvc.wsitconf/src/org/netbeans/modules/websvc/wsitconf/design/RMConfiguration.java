@@ -23,7 +23,6 @@ import java.awt.Component;
 import java.awt.Image;
 import java.util.Collection;
 import java.util.LinkedList;
-import javax.swing.Icon;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
@@ -31,8 +30,6 @@ import org.netbeans.modules.websvc.design.configuration.WSConfiguration;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.WSITModelSupport;
 import org.netbeans.modules.xml.wsdl.model.Binding;
-import org.netbeans.modules.xml.wsdl.model.Definitions;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Utilities;
 
@@ -73,7 +70,7 @@ public class RMConfiguration  implements WSConfiguration {
     }
   
     public boolean isSet() {
-        Binding binding = getBinding();
+        Binding binding = WSITModelSupport.getBinding(service, implementationFile, project, false, createdFiles);
         if (binding != null) {
             return RMModelHelper.isRMEnabled(binding);
         }
@@ -81,31 +78,20 @@ public class RMConfiguration  implements WSConfiguration {
     }
         
     public void set() {
-        Binding binding = getBinding();
+        Binding binding = WSITModelSupport.getBinding(service, implementationFile, project, true, createdFiles);
         if (binding == null) return;
         if (!(RMModelHelper.isRMEnabled(binding))) {
             RMModelHelper.enableRM(binding);
+            WSITModelSupport.save(binding);            
         }
     }
 
     public void unset() {
-        Binding binding = getBinding();
+        Binding binding = WSITModelSupport.getBinding(service, implementationFile, project, false, createdFiles);
         if (binding == null) return;
         if (RMModelHelper.isRMEnabled(binding)) {
             RMModelHelper.disableRM(binding);
+            WSITModelSupport.save(binding);
         }
     }
-
-    //TODO: Need a way to determine binding that the user wants
-    //For now just get the first one (if there is one)
-    private Binding getBinding(){
-        WSDLModel model = WSITModelSupport.getModelForService(service, implementationFile, project, true, createdFiles, true);
-        Definitions definitions = model.getDefinitions();
-        Collection<Binding> bindings = definitions.getBindings();
-        if(bindings.size() > 0){
-            return bindings.iterator().next();
-        }
-        return null;
-    }    
-
 }

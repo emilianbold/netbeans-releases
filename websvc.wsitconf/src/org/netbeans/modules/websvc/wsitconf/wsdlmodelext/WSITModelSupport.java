@@ -65,6 +65,7 @@ import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -119,28 +120,7 @@ public class WSITModelSupport {
         }
         return model;
     }
-    
-    public static WSDLModel getModelForService(Service service, FileObject implClass, 
-            Project p, boolean create, Collection createdFiles, boolean useLocal) {
-        try {
-            String wsdlUrl = service.getWsdlUrl();
-            if (wsdlUrl == null) { // WS from Java
-                if (implClass == null) return null;
-                JAXWSSupport supp = JAXWSSupport.getJAXWSSupport(implClass);
-                return getModelForServiceFromJava(implClass, supp, create, createdFiles);
-            } else {
-                if (p == null) return null;
-                JAXWSSupport supp = JAXWSSupport.getJAXWSSupport(p.getProjectDirectory());
-                return getModelForServiceFromWsdl(supp, service, useLocal);
-            }
-        } catch (IOException ex) {
-            logger.log(Level.INFO, null, ex);
-        } catch (Exception e) {
-            logger.log(Level.INFO, null, e);
-        }
-        return null;
-    }
-    
+
     public static WSDLModel getModelForService(Service service, FileObject implClass, Project p, boolean create, Collection createdFiles) {
         try {
             String wsdlUrl = service.getWsdlUrl();
@@ -327,12 +307,7 @@ public class WSITModelSupport {
         }
         return model;
     }
-    
-    private static FileObject getWsdlFO(FileObject folder, String wsdlLocation) {
-        String relativePath = wsdlLocation.substring(wsdlLocation.indexOf("/wsdl/") + 6);
-        return folder.getFileObject(relativePath);
-    }
-    
+   
     private static FileObject getLocalWsdlFO(FileObject localWSDLFolder, String wsdlName){
         return localWSDLFolder.getFileObject(wsdlName);
     }
@@ -349,25 +324,14 @@ public class WSITModelSupport {
         return null;
     }
     
-    private static WSDLModel getModelForServiceFromWsdl(JAXWSSupport supp, Service service, boolean useLocal) throws IOException, Exception {
-        if(useLocal){
-            String wsdlLocation = supp.getWsdlLocation(service.getName());
-             FileObject wsdlFO = getLocalWsdlFO(supp.getLocalWsdlFolderForService(service.getName(),false), getWSDLFileName(wsdlLocation));
-            return getModelFromFO(wsdlFO, true);
-        }
-        return getModelForServiceFromWsdl(supp, service);
+    private static WSDLModel getModelForServiceFromWsdl(JAXWSSupport supp, Service service) throws IOException, Exception {
+        String wsdlLocation = supp.getWsdlLocation(service.getName());
+        FileObject wsdlFO = getLocalWsdlFO(supp.getLocalWsdlFolderForService(service.getName(),false), getWSDLFileName(wsdlLocation));
+        return getModelFromFO(wsdlFO, true);
     }
     
     private static String getWSDLFileName(String wsdlLocation){
         return wsdlLocation.substring(wsdlLocation.lastIndexOf("/") + 1);
-    }
-    
-    /* Retrieves WSDL model for a WS from Java - if config file exists, reuses that one, otherwise generates new one
-     */
-    private static WSDLModel getModelForServiceFromWsdl(JAXWSSupport supp, Service service) throws IOException, Exception {
-        String wsdlLocation = supp.getWsdlLocation(service.getName());
-        FileObject wsdlFO = getWsdlFO(supp.getWsdlFolder(false), wsdlLocation);
-        return getModelFromFO(wsdlFO, true);
     }
     
     /* Retrieves WSDL model for a WS from Java - if config file exists, reuses that one, otherwise generates new one
@@ -617,5 +581,43 @@ public class WSITModelSupport {
             }
         }
     }
-    
+
+    public static void save(WSDLComponent c) {
+        WSDLModel model = c.getModel();
+        save(model);
+    }
+
+    public synchronized static void save(WSDLModel model) {
+        try {
+            if (model != null) {
+                FileObject wsdlFO = Utilities.getFileObject(model.getModelSource());
+                if (wsdlFO == null) {
+                    logger.log(Level.INFO, "Cannot find fileobject in lookup for: " + model.getModelSource());
+                }
+                DataObject wsdlDO = DataObject.find(wsdlFO);
+                if ((wsdlDO != null) && (wsdlDO.isModified())) {
+                    SaveCookie wsdlSaveCookie = (SaveCookie)wsdlDO.getCookie(SaveCookie.class);
+                    if(wsdlSaveCookie != null){
+                        wsdlSaveCookie.save();
+                    }
+                    wsdlDO.setModified(false);
+                }
+            }
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, null, e);
+        }
+    }
+
+    //TODO: Need a way to determine binding that the user wants
+    //For now just get the first one (if there is one)
+    public static Binding getBinding(Service service, FileObject implClass, Project project, boolean create, Collection createdFiles) {
+        WSDLModel model = WSITModelSupport.getModelForService(service, implClass, project, create, createdFiles);
+        if (model == null) return null;
+        Definitions definitions = model.getDefinitions();
+        Collection<Binding> bindings = definitions.getBindings();
+        if(bindings.size() > 0){
+            return bindings.iterator().next();
+        }
+        return null;
+    }        
 }

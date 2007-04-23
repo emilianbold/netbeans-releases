@@ -23,7 +23,6 @@ import java.awt.Component;
 import java.awt.Image;
 import java.util.Collection;
 import java.util.LinkedList;
-import javax.swing.Icon;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
@@ -37,8 +36,6 @@ import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPoli
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.WSITModelSupport;
 import org.netbeans.modules.xml.wsdl.model.Binding;
-import org.netbeans.modules.xml.wsdl.model.Definitions;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Utilities;
 
@@ -82,7 +79,7 @@ public class SecurityConfiguration  implements WSConfiguration {
     }
   
     public boolean isSet() {
-        Binding binding = getBinding();
+        Binding binding = WSITModelSupport.getBinding(service, implementationFile, project, false, createdFiles);
         if (binding != null) {
             return SecurityPolicyModelHelper.isSecurityEnabled(binding);
         }
@@ -90,13 +87,13 @@ public class SecurityConfiguration  implements WSConfiguration {
     }
         
     public void set() {
-        Binding binding = getBinding();
-
-        scl = new  WsitServiceChangeListener(binding);
-        serviceModel.addServiceChangeListener(scl);
+        Binding binding = WSITModelSupport.getBinding(service, implementationFile, project, true, createdFiles);
         
         if (binding == null) return;
         if (!(SecurityPolicyModelHelper.isSecurityEnabled(binding))) {
+
+            scl = new  WsitServiceChangeListener(binding);
+            serviceModel.addServiceChangeListener(scl);
             
             // default profile with the easiest setup
             ProfilesModelHelper.setSecurityProfile(binding, ComboConstants.PROF_MUTUALCERT);
@@ -113,30 +110,21 @@ public class SecurityConfiguration  implements WSConfiguration {
             ProprietarySecurityPolicyModelHelper.setStoreLocation(binding, Util.getServerStoreLocation(project, true), false, false);
             ProprietarySecurityPolicyModelHelper.setTrustPeerAlias(binding, "xws-security-client", false); //NOI18N
             ProprietarySecurityPolicyModelHelper.setStorePassword(binding, "changeit", true, false); //NOI18N
+
+            WSITModelSupport.save(binding);
         }
     }
 
     public void unset() {
         serviceModel.removeServiceChangeListener(scl);
         
-        Binding binding = getBinding();
+        Binding binding = WSITModelSupport.getBinding(service, implementationFile, project, false, createdFiles);
         if (binding == null) return;
         if (SecurityPolicyModelHelper.isSecurityEnabled(binding)) {
             SecurityPolicyModelHelper.disableSecurity(binding, true);
+            WSITModelSupport.save(binding);
         }
     }
-
-    //TODO: Need a way to determine binding that the user wants
-    //For now just get the first one (if there is one)
-    private Binding getBinding() {
-        WSDLModel model = WSITModelSupport.getModelForService(service, implementationFile, project, true, createdFiles, true);
-        Definitions definitions = model.getDefinitions();
-        Collection<Binding> bindings = definitions.getBindings();
-        if(bindings.size() > 0){
-            return bindings.iterator().next();
-        }
-        return null;
-    }    
 
 }
 

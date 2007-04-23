@@ -220,18 +220,7 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
         try {
             WSDLModel model = WSITModelSupport.getModel(node, jaxWsModel, this, false, createdFiles);
             if (model != null) {
-                FileObject wsdlFO = Utilities.getFileObject(model.getModelSource());
-                if (wsdlFO == null) {
-                    logger.log(Level.INFO, "Cannot find fileobject in lookup for: " + model.getModelSource());
-                }
-                DataObject wsdlDO = DataObject.find(wsdlFO);
-                if ((wsdlDO != null) && (wsdlDO.isModified())) {
-                    SaveCookie wsdlSaveCookie = (SaveCookie)wsdlDO.getCookie(SaveCookie.class);
-                    if(wsdlSaveCookie != null){
-                        wsdlSaveCookie.save();
-                    }
-                    wsdlDO.setModified(false);
-                }
+                WSITModelSupport.save(model);
             }
         } catch (Exception e){
             logger.log(Level.SEVERE, null, e);
