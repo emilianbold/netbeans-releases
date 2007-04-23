@@ -186,7 +186,7 @@ public class JavaScript {
         NbEditorDocument doc = (NbEditorDocument) context.getDocument ();
         SyntaxContext scontext = (SyntaxContext) context;
         ASTPath path = scontext.getASTPath ();
-        JSItem item = getDeclaration (path);
+        JSItem item = getDeclaration (doc, path);
         if (item == null) return null;
         int offset = item.getOffset();
         DataObject dobj = NbEditorUtilities.getDataObject (doc);
@@ -261,6 +261,7 @@ public class JavaScript {
             ASTPath path = ((SyntaxContext) context).getASTPath ();
             Document doc = syntaxContext.getDocument ();
             Map<String,CompletionItem> members = getMembers (
+                doc,
                 path,
                 getDocumentName (doc)
             );
@@ -486,7 +487,7 @@ public class JavaScript {
         NbEditorDocument doc = (NbEditorDocument)comp.getDocument();
         int position = comp.getCaretPosition();
         ASTPath path = node.findPath(position);
-        JSItem item = getDeclaration (path);
+        JSItem item = getDeclaration (doc, path);
         if (item == null) return;
         int offset = item.getOffset();
         DataObject dobj = NbEditorUtilities.getDataObject (doc);
@@ -501,7 +502,7 @@ public class JavaScript {
         NbEditorDocument doc = (NbEditorDocument)comp.getDocument();
         int position = comp.getCaretPosition();
         ASTPath path = node.findPath(position);
-        JSItem item = getDeclaration (path);
+        JSItem item = getDeclaration (doc, path);
         return item != null;
     }
     
@@ -517,10 +518,10 @@ public class JavaScript {
     // helper methods ..........................................................
     
     private static JSParser jsParser;
-    private static Map<ASTNode,JSRoot> jsParsers = new WeakHashMap<ASTNode,JSRoot> ();
+    private static Map<Document,JSRoot> jsParsers = new WeakHashMap<Document,JSRoot> ();
     
-    public static JSRoot getRoot (ASTNode ast) {
-        JSRoot result = jsParsers.get (ast);
+    public static JSRoot getRoot (Document doc, ASTNode ast) {
+        JSRoot result = jsParsers.get (doc);
         if (result != null)
             return result;
         if (jsParser == null)
@@ -529,23 +530,35 @@ public class JavaScript {
             } catch (LanguageDefinitionNotFoundException ex) {
             }
         result = jsParser.process (ast);
-        jsParsers.put (ast, result);
+        jsParsers.put (doc, result);
+        printRoots ();
         return result;
     }
     
-    public static JSItem getDeclaration (ASTPath path) {
+    private static void printRoots () {
+        System.out.println("\nJSRoots:");
+        Iterator<Document> it = jsParsers.keySet ().iterator ();
+        while (it.hasNext ()) {
+            Document document =  it.next ();
+            String title = (String) document.getProperty("title");
+            if (title == null) title = document.toString();
+            System.out.println("  " + title);
+        }
+    }
+    
+    public static JSItem getDeclaration (Document doc, ASTPath path) {
         ASTItem leaf = path.getLeaf();
         if (!(leaf instanceof ASTToken))
             return null;
         ASTToken token = (ASTToken) leaf;
         ASTNode ast = (ASTNode) path.getRoot ();
-        JSRoot root = JavaScript.getRoot (ast);
+        JSRoot root = JavaScript.getRoot (doc, ast);
         return root.getItem (token.getIdentifier (), token.getOffset ());
     }
     
-    private static Map<String,CompletionItem> getMembers (ASTPath path, String title) {
+    private static Map<String,CompletionItem> getMembers (Document doc, ASTPath path, String title) {
         Map<String,CompletionItem> result = new HashMap<String,CompletionItem> ();
-        JSRoot root = getRoot ((ASTNode) path.get (0));
+        JSRoot root = getRoot (doc, (ASTNode) path.get (0));
         Collection<JSItem> c = root.getItems (path.getLeaf ().getOffset ());
         Iterator<JSItem> it = c.iterator ();
         while (it.hasNext ()) {
@@ -619,7 +632,7 @@ public class JavaScript {
         }
         SyntaxContext scontext = (SyntaxContext)context;
         ASTPath path = scontext.getASTPath ();
-        JSItem item = getDeclaration (path);
+        JSItem item = getDeclaration (context.getDocument(), path);
         return (item instanceof JSVariable) &&
                ((JSVariable) item).getType () == type;
     }
