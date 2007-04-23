@@ -97,8 +97,7 @@ public class CharSubSequence extends AbstractCharSequence {
      */
     public static class StringLike extends CharSubSequence {
 
-
-        public StringLike(CharSubSequence backingSequence, int start, int end) {
+        public StringLike(CharSequence backingSequence, int start, int end) {
             super(backingSequence, start, end);
         }
     
