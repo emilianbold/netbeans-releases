@@ -56,7 +56,7 @@ public class CasaEngineTitleWidget extends Widget {
             "org/netbeans/modules/compapp/casaeditor/palette/resources/question_violet.png");   // NOI18N
     
     private static final Border BORDER_MINIMIZE = BorderFactory.createRoundedBorder(
-            2, 2, null, new Color(154, 154, 154));
+            2, 2, null, new Color(96, 96, 96));
 
     private ImageWidget mDeleteWidget;
     private ImageWidget mEditWidget;

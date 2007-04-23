@@ -30,6 +30,7 @@ import org.netbeans.api.visual.widget.ConnectionWidget;
 public class CasaConnectionWidget extends ConnectionWidget {
 
     private static final Stroke STROKE_DEFAULT  = new BasicStroke (1.0f);
+    private static final Stroke STROKE_HOVERED  = new BasicStroke (1.5f);
     private static final Stroke STROKE_SELECTED = new BasicStroke (2.0f);
     
     
@@ -53,7 +54,7 @@ public class CasaConnectionWidget extends ConnectionWidget {
             setForeground (CasaFactory.getCasaCustomizer().getCOLOR_SELECTION());
         } else if (state.isHovered () || state.isHighlighted()) {
             bringToFront();
-            setStroke(STROKE_DEFAULT);
+            setStroke(STROKE_HOVERED);
             setForeground (CasaFactory.getCasaCustomizer().getCOLOR_HOVERED_EDGE());
         } else {
             setStroke(STROKE_DEFAULT);

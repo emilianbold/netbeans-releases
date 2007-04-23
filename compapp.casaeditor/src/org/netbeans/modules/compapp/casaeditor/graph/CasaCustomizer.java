@@ -653,7 +653,7 @@ public class CasaCustomizer {
         
         // SELECTION COLOR
         
-        colorsMap.put(S_COLOR_SELECTION, new Integer((new Color(51, 0, 204)).getRGB()).toString());
+        colorsMap.put(S_COLOR_SELECTION, new Integer((new Color(255, 100, 0)).getRGB()).toString());
         
         // CONNECTIONS
         
