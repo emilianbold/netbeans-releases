@@ -1136,8 +1136,8 @@ public class TestCreator {
             return true;
         else if (modifiers.contains(Modifier.PROTECTED) && methodAccessModifiers.contains(Modifier.PROTECTED))
             return true;
-        else
-        if (!(modifiers.contains(Modifier.PUBLIC) || modifiers.contains(Modifier.PROTECTED)) && testPkgPrivateMethods)
+        else if (!(modifiers.contains(Modifier.PUBLIC) || modifiers.contains(Modifier.PROTECTED))
+                && testPkgPrivateMethods && !modifiers.contains(Modifier.PRIVATE))
             return true;
         else
             return false;
