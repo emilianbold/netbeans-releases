@@ -31,7 +31,6 @@ import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.form.FormDataObject;
 import org.netbeans.modules.form.j2ee.J2EEUtils;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
@@ -40,6 +39,7 @@ import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistenc
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
@@ -265,13 +265,13 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
             resultSet.add(javaFile);
         }
         javaFile.setAttribute("justCreatedByNewWizard", Boolean.TRUE); // NOI18N
-        FormDataObject dob = null;
+        DataObject dob = null;
         try {
-            dob = (FormDataObject)DataObject.find(javaFile);
+            dob = DataObject.find(javaFile);
         } catch (DataObjectNotFoundException ex) {
             ex.printStackTrace(); // should not happen
         }
-        FileObject formFile = dob.getFormFile();
+        FileObject formFile = FileUtil.findBrother(dob.getPrimaryFile(), "form"); // NOI18N
 
         String[][] entity = instantiatePersitence(javaFile.getParent(), connection, masterTableName, detailFKTable);
 
