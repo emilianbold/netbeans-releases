@@ -32,6 +32,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.web.project.UpdateHelper;
+import org.netbeans.modules.web.project.ui.customizer.ClassPathUiSupport;
+import org.netbeans.modules.web.project.ui.customizer.WarIncludesUiSupport;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -256,35 +258,70 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                 new Mutex.ExceptionAction<Boolean>() {
                     public Boolean run() throws Exception {
                         EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                        String raw = props.getProperty((String)props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL));                            
-                        List<ClassPathSupport.Item> resources = cs.itemsList(raw, ClassPathSupport.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
-                        boolean changed = false;
-                        for (int i=0; i< roots.length; i++) {
-                            assert roots[i] != null;
-                            assert roots[i].toExternalForm().endsWith("/");    //NOI18N
+                        
+                        //Temporary solution till missing libraries described in issue #100114 are fixed
+                        WarIncludesUiSupport.ClasspathTableModel addModel = WarIncludesUiSupport.createTableModel(cs.itemsList((String) props.get(WebProjectProperties.WAR_CONTENT_ADDITIONAL), ClassPathSupport.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
+                        File[] files = new File[roots.length];
+                        for (int i = 0; i < roots.length; i++) {
                             URL toAdd = FileUtil.getArchiveFile(roots[i]);
                             if (toAdd == null) {
                                 toAdd = roots[i];
                             }
-                            File f = FileUtil.normalizeFile( new File (URI.create(toAdd.toExternalForm())));
-                            if (f == null ) {
-                                throw new IllegalArgumentException ("The file must exist on disk");     //NOI18N
-                            }
-                            ClassPathSupport.Item item = ClassPathSupport.Item.create( f, null, path);
-                            if (!resources.contains(item)) {
-                                resources.add (item);
-                                changed = true;
-                            }                            
-                        }                                                                                                                
-                        if (changed) {
-                            String itemRefs[] = cs.encodeToStrings( resources.iterator(), ClassPathSupport.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
-                            props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);  //PathParser may change the EditableProperties
-                            props.setProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL, itemRefs);
-                            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
-                            ProjectManager.getDefault().saveProject(project);
-                            return true;
+                            files[i] = FileUtil.normalizeFile(new File(URI.create(toAdd.toExternalForm())));                            
                         }
-                        return false;
+                        WarIncludesUiSupport.addJarFiles(files, addModel);
+                        int count = addModel.getRowCount();
+                        for (int i = 0; i < files.length; i++) {
+                            ClassPathSupport.Item item = (ClassPathSupport.Item) addModel.getValueAt(count - i - 1, 0);
+                            item.setPathInWAR(path);
+                            addModel.setValueAt(path, count - i - 1, 1);
+                        }
+
+                        String[] war_includes = cs.encodeToStrings(WarIncludesUiSupport.getIterator(addModel), ClassPathSupport.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
+                        props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);  //PathParser may change the EditableProperties
+                        props.setProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL, war_includes);
+                        
+                        ArrayList libs = new ArrayList ();
+                        libs.addAll(cs.itemsList(props.getProperty(WebProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));
+                        libs.addAll(WarIncludesUiSupport.getList(addModel));
+
+                        EditableProperties privateProperties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                        WebProjectProperties.storeLibrariesLocations (libs.iterator(), privateProperties);
+                        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                        helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
+
+                        ProjectManager.getDefault().saveProject(project);
+                        return true;
+
+//                        String raw = props.getProperty((String)props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL));                            
+//                        List<ClassPathSupport.Item> resources = cs.itemsList(raw, ClassPathSupport.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
+//                        boolean changed = false;
+//                        for (int i=0; i< roots.length; i++) {
+//                            assert roots[i] != null;
+//                            assert roots[i].toExternalForm().endsWith("/");    //NOI18N
+//                            URL toAdd = FileUtil.getArchiveFile(roots[i]);
+//                            if (toAdd == null) {
+//                                toAdd = roots[i];
+//                            }
+//                            File f = FileUtil.normalizeFile( new File (URI.create(toAdd.toExternalForm())));
+//                            if (f == null ) {
+//                                throw new IllegalArgumentException ("The file must exist on disk");     //NOI18N
+//                            }
+//                            ClassPathSupport.Item item = ClassPathSupport.Item.create( f, null, path);
+//                            if (!resources.contains(item)) {
+//                                resources.add (item);
+//                                changed = true;
+//                            }                            
+//                        }                                                                                                                
+//                        if (changed) {
+//                            String itemRefs[] = cs.encodeToStrings( resources.iterator(), ClassPathSupport.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
+//                            props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);  //PathParser may change the EditableProperties
+//                            props.setProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL, itemRefs);
+//                            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+//                            ProjectManager.getDefault().saveProject(project);
+//                            return true;
+//                        }
+//                        return false;
                     }
                 }
             );

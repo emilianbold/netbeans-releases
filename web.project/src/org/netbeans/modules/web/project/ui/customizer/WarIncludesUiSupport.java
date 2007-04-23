@@ -153,7 +153,9 @@ public class WarIncludesUiSupport {
         tableModel.fireTableRowsInserted(data.length, data.length + artifactItems.length - 1);
     }
     
-    static class ClasspathTableModel extends AbstractTableModel {
+    //Temporary making public till missing libraries described in issue #100114 are fixed
+    //DON'T USE IT DIRECTLY IN YOUR CODE
+    public static class ClasspathTableModel extends AbstractTableModel {
         public int getColumnCount() {
             return 2; //classpath item name, item location within WAR
         }
