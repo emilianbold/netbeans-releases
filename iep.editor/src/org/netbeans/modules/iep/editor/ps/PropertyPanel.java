@@ -450,9 +450,9 @@ public class PropertyPanel {
         JLabel nameLabel = new JLabel(label);
         JComboBox cbb = new JComboBox(values);
         // PreferredSize must be set o.w. failed validation will resize this field.
-        cbb.setPreferredSize(new Dimension(80, 20));
-        cbb.setMinimumSize(new Dimension(30, 20));
-        
+        cbb.setPreferredSize(new Dimension(160, 20));
+        cbb.setMinimumSize(new Dimension(50, 20));
+
         String value = prop.getStringValue();
         for (int i = 0; i < values.length; i++) {
             if (values[i].equals(value)) {
