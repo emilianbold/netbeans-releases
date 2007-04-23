@@ -208,11 +208,10 @@ public class JavaScript {
         ASTNode nameNode = n.getNode ("FunctionName");
         if (nameNode != null)
             name = nameNode.getAsText ();
-        String parameters = "";
         ASTNode parametersNode = n.getNode ("FormalParameterList");
-        if (parametersNode != null)
-            parameters = parametersNode.getAsText ();
-        if (name != null) return name + " (" + parameters + ")";
+        if (name != null) {
+            return name + " (" + getParametersAsText(parametersNode) + ")";
+        }
         
         ListIterator<ASTItem> it = path.listIterator (path.size () - 1);
         while (it.hasPrevious ()) {
@@ -223,11 +222,11 @@ public class JavaScript {
                 p.getNode ("AssignmentOperator") != null
             ) {
                 return ((ASTNode) p.getChildren ().get (0)).getAsText () + 
-                    " (" + getAsText (n.getNode ("FormalParameterList")) + ")";
+                    " (" + getParametersAsText (n.getNode ("FormalParameterList")) + ")";
             }
             if (p.getNT ().equals ("PropertyNameAndValue")) {
                 return p.getNode ("PropertyName").getAsText () + 
-                    " (" + getAsText (n.getNode ("FormalParameterList")) + ")";
+                    " (" + getParametersAsText (n.getNode ("FormalParameterList")) + ")";
             }
         }
         return "?";
@@ -670,8 +669,24 @@ public class JavaScript {
         return 0;
     }
     
-    private static String getAsText (ASTNode n) {
-        if (n == null) return "";
-        return n.getAsText ();
+    private static String getParametersAsText (ASTNode params) {
+        if (params == null) return "";
+        StringBuffer buf = new StringBuffer();
+        for (ASTItem item : params.getChildren()) {
+            if (!(item instanceof ASTToken)) {
+                continue;
+            }
+            ASTToken token = (ASTToken)item;
+            String type = token.getType();
+            if ("js_whitespace".equals(type) || "js_comment".equals(type)) {
+                continue;
+            }
+            String id = token.getIdentifier();
+            buf.append(id);
+            if (",".equals(id)) {
+                buf.append(' ');
+            }
+        }
+        return buf.toString();
     }
 }
