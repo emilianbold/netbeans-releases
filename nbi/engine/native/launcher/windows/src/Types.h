@@ -91,6 +91,7 @@ extern "C" {
         
         WCHAR * testJVMClass;
         WCHAR * tmpDir;
+        DWORD   tmpDirCreated;
         int64t * bundledSize;
         DWORD bundledNumber;
         JavaCompatible ** compatibleJava;
@@ -109,6 +110,7 @@ extern "C" {
         WCHAR  * command;
         WCHAR  * exePath;
         WCHAR  * exeDir;
+        WCHAR  * exeName;
         DWORD status;
         DWORD exitCode;
         DWORD silentMode;

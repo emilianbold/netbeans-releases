@@ -64,7 +64,7 @@ void skipStub(LauncherProperties * props) {
         if(!isOK(props)) {
             writeMessageA(props, OUTPUT_LEVEL_NORMAL, 1,
             "Error! Can`t process launcher stub", 1);
-            showErrorW(INTEGRITY_ERROR_PROP, 1, props->exePath);
+            showErrorW(INTEGRITY_ERROR_PROP, 1, props->exeName);
         }
     }
 }

@@ -130,7 +130,7 @@ void loadLocalizationStrings(LauncherProperties *props) {
     
     if(!isOK(props)) {
         writeMessageA(props, OUTPUT_LEVEL_NORMAL, 1, "Error! Can`t load i18n strings!!", 1);
-        showErrorW(props, INTEGRITY_ERROR_PROP, 1, props->exePath);
+        showErrorW(props, INTEGRITY_ERROR_PROP, 1, props->exeName);
     }
 }
 
@@ -164,7 +164,7 @@ void checkExtractionStatus(LauncherProperties *props) {
     }
     else if(props->status == ERROR_INTEGRITY) {
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "Error! Can`t extract data from bundle. Seems to be integrirty error!", 1);
-        showErrorW(props, INTEGRITY_ERROR_PROP, 1, props->exePath);
+        showErrorW(props, INTEGRITY_ERROR_PROP, 1, props->exeName);
     }
 }
 
@@ -599,6 +599,7 @@ WCHARList * getCommandlineArguments() {
     return commandsList;
 }
 
+
 LauncherProperties * createLauncherProperties(WCHARList * commandLine) {
     LauncherProperties *props = (LauncherProperties*)malloc(sizeof(LauncherProperties));
     props->jvmArguments = NULL;
@@ -610,12 +611,14 @@ LauncherProperties * createLauncherProperties(WCHARList * commandLine) {
     props->jars         = NULL;
     props->testJVMFile  = NULL;
     props->tmpDir       = NULL;
+    props->tmpDirCreated = 0;
     props->compatibleJava=NULL;
     props->compatibleJavaNumber=0;
     props->java    = NULL;
     props->command = NULL;
     props->jvms    = NULL;
-    props->exePath = getExeName();
+    props->exePath = getExePath();
+    props->exeName = getExeName();
     props->exeDir  = getExeDirectory();
     props->handler = CreateFileW(props->exePath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     props->bundledSize = newint64_t(0, 0);
@@ -623,25 +626,23 @@ LauncherProperties * createLauncherProperties(WCHARList * commandLine) {
     props->commandLine   = getCommandlineArguments();
     props->status       = ERROR_OK;
     props->exitCode     = 0;
-    props->outputLevel  = argumentExists(props, debugArg, 1) ?
-    OUTPUT_LEVEL_DEBUG :
-        OUTPUT_LEVEL_NORMAL;
-        props->stdoutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-        props->stderrHandle = GetStdHandle(STD_ERROR_HANDLE);
-        props->bufsize = 65536;
-        props->restOfBytes = createSizedString();
-        props->I18N_PROPERTIES_NUMBER = 0;
-        props->i18nMessages = NULL;
-        props->userDefinedJavaHome    = getArgumentValue(props, javaArg, 1);
-        props->userDefinedTempDir     = getArgumentValue(props, tempdirArg, 1);
-        props->userDefinedExtractDir  = getArgumentValue(props, extractArg, 1);
-        props->userDefinedOutput      = getArgumentValue(props, outputFileArg, 1);
-        props->checkForFreeSpace      = !argumentExists(props, nospaceCheckArg, 1);
-        props->silentMode             = argumentExists(props, silentArg, 0);
-        props->extractOnly            = (props->userDefinedExtractDir!=NULL) ? 1 : 0;
-        props->launcherSize = getFileSize(props->exePath);
-        props->isOnlyStub = (compare(props->launcherSize, STUB_FILL_SIZE) < 0);
-        return props;
+    props->outputLevel  = argumentExists(props, debugArg, 1) ? OUTPUT_LEVEL_DEBUG : OUTPUT_LEVEL_NORMAL;
+    props->stdoutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    props->stderrHandle = GetStdHandle(STD_ERROR_HANDLE);
+    props->bufsize = 65536;
+    props->restOfBytes = createSizedString();
+    props->I18N_PROPERTIES_NUMBER = 0;
+    props->i18nMessages = NULL;
+    props->userDefinedJavaHome    = getArgumentValue(props, javaArg, 1);
+    props->userDefinedTempDir     = getArgumentValue(props, tempdirArg, 1);
+    props->userDefinedExtractDir  = getArgumentValue(props, extractArg, 1);
+    props->userDefinedOutput      = getArgumentValue(props, outputFileArg, 1);
+    props->checkForFreeSpace      = !argumentExists(props, nospaceCheckArg, 1);
+    props->silentMode             = argumentExists(props, silentArg, 0);
+    props->extractOnly            = (props->userDefinedExtractDir!=NULL) ? 1 : 0;
+    props->launcherSize = getFileSize(props->exePath);
+    props->isOnlyStub = (compare(props->launcherSize, STUB_FILL_SIZE) < 0);
+    return props;
 }
 freeLauncherResourceList(LauncherResourceList ** list) {
     if(*list!=NULL) {
@@ -695,6 +696,7 @@ void freeLauncherProperties(LauncherProperties **props) {
         FREE((*props)->command);
         FREE((*props)->exePath);
         FREE((*props)->exeDir);
+        FREE((*props)->exeName);
         FREE((*props)->bundledSize);
         FREE((*props)->launcherSize);
         freeSizedString(&((*props)->restOfBytes));
@@ -776,9 +778,11 @@ void processLauncher(LauncherProperties * props) {
                 }
             }
         }
-        if(!props->extractOnly && props->bundledNumber>0) {
-            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... deleting temporary directory ", 1);
-            deleteDirectory(props, props->tmpDir);
-        }
     }
+    
+    if(!props->extractOnly && props->tmpDirCreated) {
+        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... deleting temporary directory ", 1);
+        deleteDirectory(props, props->tmpDir);
+    }
+    
 }

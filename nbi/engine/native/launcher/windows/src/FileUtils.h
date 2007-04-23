@@ -41,9 +41,11 @@ extern "C" {
     void createDirectory(LauncherProperties * props, WCHAR * directory);
     void createTempDirectory(LauncherProperties * props, WCHAR * argTempDir, DWORD createRndSubDir);
     void deleteDirectory(LauncherProperties * props,WCHAR * dir);
+    WCHAR * getExePath();
     WCHAR * getExeName();
-    WCHAR * getSystemTemporaryDirectory();
     WCHAR * getExeDirectory();
+    
+    WCHAR * getSystemTemporaryDirectory();    
     DWORD isDirectory(WCHAR *path);
     WCHAR * getCurrentDirectory();
     WCHAR * getCurrentUserHome();

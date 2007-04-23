@@ -264,6 +264,7 @@ void createTempDirectory(LauncherProperties * props, WCHAR * argTempDir, DWORD c
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "creating directory...", 1);
         createDirectory(props, nbiTmp);
         if(isOK(props)) {
+            props->tmpDirCreated = 1;
             writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "Directory created : ", 0);
             writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, nbiTmp, 1);
             // set hidden attribute
@@ -366,7 +367,7 @@ WCHAR * getSystemTemporaryDirectory() {
     return expanded;
 }
 
-WCHAR * getExeName() {
+WCHAR * getExePath() {
     WCHAR szPath[MAX_PATH];
     
     if( !GetModuleFileNameW( NULL, szPath, MAX_PATH ) ) {
@@ -376,6 +377,19 @@ WCHAR * getExeName() {
     }
 }
 
+
+WCHAR * getExeName() {
+    WCHAR szPath[MAX_PATH];
+    if(GetModuleFileNameW( NULL, szPath, MAX_PATH )) {
+        WCHAR * lastSlash = szPath;
+        while(wcsstr(lastSlash, FILE_SEP)!=NULL) {
+            lastSlash = wcsstr(lastSlash, FILE_SEP) + 1;
+        }        
+        return appendStringW(NULL, lastSlash);
+    } else {
+        return NULL;
+    }
+}
 
 WCHAR * getExeDirectory() {
     WCHAR szPath[MAX_PATH];
