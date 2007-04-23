@@ -88,15 +88,7 @@ public class RemoveOperationAction extends AbstractAction{
             generatorHelper.removeWSOperation(wsdlModel, generatorHelper.
                     getPortTypeName(implementationClass), methodName);
             generatorHelper.generateJavaArtifacts(service.getName(), implementationClass, methodName, true);
-            //TODO:this will go away when the recopying of the changed wsdls and schemas
-            //from the src/conf to the WEB-INF/wsdl directory is done in the build script.
-            
-            FileObject wsdlFolder = generatorHelper.
-                    getWsdlFolderForService(implementationClass, service.getName());
-            FileObject localWsdlFolder = generatorHelper.
-                    getLocalWsdlFolderForService(implementationClass, service.getName());
-            WSUtils.copyFiles(localWsdlFolder, wsdlFolder);
-            
+    
         } else{
             //WS from Java
             MethodGenerator.removeMethod(implementationClass, methodName);

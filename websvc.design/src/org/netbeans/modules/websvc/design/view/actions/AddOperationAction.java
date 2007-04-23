@@ -200,14 +200,7 @@ public class AddOperationAction extends AbstractAction {
         Operation operation = generatorHelper.addWsOperation(wsdlModel, generatorHelper.getPortTypeName(implementationClass),
                 operationName, parameterTypes, returnType, faultTypes);
         generatorHelper.generateJavaArtifacts(service.getName(), implementationClass, operationName, false);
-        
-        //TODO:this will go away when the recopying of the changed wsdls and schemas
-        //from the src/conf to the WEB-INF/wsdl directory is done in the build script.
-        FileObject wsdlFolder = generatorHelper.
-                getWsdlFolderForService(implementationClass, service.getName());
-        FileObject localWsdlFolder = generatorHelper.
-                getLocalWsdlFolderForService(implementationClass, service.getName());
-        WSUtils.copyFiles(localWsdlFolder, wsdlFolder);
+   
         saveImplementationClass(implementationClass);
     }
     

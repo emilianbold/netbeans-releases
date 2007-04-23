@@ -748,7 +748,10 @@ introduced by support for multiple source roots. -jglick
                             <xsl:with-param name="wsName" select="$wsname" />
                             <xsl:with-param name="wsdlUrl" select="$wsdl_url"/>
                             <xsl:with-param name="Catalog" select="$catalog"/>  
-                        </xsl:call-template>                         
+                        </xsl:call-template>
+                       <copy todir="${{build.web.dir.real}}/WEB-INF/wsdl/{$wsname}">
+                        <fileset dir="${{basedir}}/${{conf.dir}}/xml-resources/web-services/{$wsname}/wsdl/" />
+                       </copy>                            
                     </target>
                     <target name="wsimport-service-clean-{$wsname}" depends="-init-project">
                         <delete dir="${{build.generated.dir}}/wsimport/service/{$package_path}"/>
