@@ -39,10 +39,20 @@ import org.openide.util.Lookup;
 
 
 public class ServerLocationManager  {
+    
+    public static final int SJSAS_90 = 900;
+    
+    public static final int SJSAS_91 = 910;
+    
+    public static final int SJSAS_82 = 820;
+    
+    public static final int GF_V1 = 900;
+    
+    public static final int GF_V2 = 910;
 
     public static final String INSTALL_ROOT_PROP_NAME = "com.sun.aas.installRoot"; //NOI18N
     private static final String JAR_BRIGDES_DEFINITION_LAYER="/J2EE/SunAppServer/Bridge"; //NOI18N
-    private static Map ServerLocationAndClassLoaderMap = Collections.synchronizedMap((Map)new HashMap(2,1));
+    private static Map serverLocationAndClassLoaderMap = Collections.synchronizedMap((Map)new HashMap(2,1));
     
     private static void updatePluginLoader(File platformLocation, ExtendedClassLoader loader) throws Exception{
         try {
@@ -125,7 +135,7 @@ public class ServerLocationManager  {
      **/
     
     static public File getLatestPlatformLocation(){
-        Iterator i = ServerLocationAndClassLoaderMap.entrySet().iterator();
+        Iterator i = serverLocationAndClassLoaderMap.entrySet().iterator();
         File ret =null;
         while (i.hasNext()){
             Map.Entry e = (Map.Entry)i.next();
@@ -152,10 +162,10 @@ public class ServerLocationManager  {
     
     
     public static ClassLoader getServerOnlyClassLoader(File platformLocation){
-	CacheData data =(CacheData) ServerLocationAndClassLoaderMap.get(platformLocation.getAbsolutePath());
+	CacheData data =(CacheData) serverLocationAndClassLoaderMap.get(platformLocation.getAbsolutePath());
 	if (data==null){// try to initialize it
 	    getNetBeansAndServerClassLoader(platformLocation);
-	    data =(CacheData) ServerLocationAndClassLoaderMap.get(platformLocation.getAbsolutePath());
+	    data =(CacheData) serverLocationAndClassLoaderMap.get(platformLocation.getAbsolutePath());
             if (data==null){
                 return null;
             }
@@ -164,10 +174,10 @@ public class ServerLocationManager  {
 
     }
     public synchronized static DeploymentFactory getDeploymentFactory(File platformLocation) {
-	CacheData data =(CacheData) ServerLocationAndClassLoaderMap.get(platformLocation.getAbsolutePath());
+	CacheData data =(CacheData) serverLocationAndClassLoaderMap.get(platformLocation.getAbsolutePath());
 	if (data==null){// try to initialize it
 	    getNetBeansAndServerClassLoader(platformLocation);
-	    data =(CacheData) ServerLocationAndClassLoaderMap.get(platformLocation.getAbsolutePath());
+	    data =(CacheData) serverLocationAndClassLoaderMap.get(platformLocation.getAbsolutePath());
             if (data==null){
                 return null;
             }
@@ -177,13 +187,13 @@ public class ServerLocationManager  {
     }
     
     public synchronized static ClassLoader getNetBeansAndServerClassLoader(File platformLocation) {
-	CacheData data =(CacheData) ServerLocationAndClassLoaderMap.get(platformLocation.getAbsolutePath());
+	CacheData data =(CacheData) serverLocationAndClassLoaderMap.get(platformLocation.getAbsolutePath());
 	if (data==null){
 	    if (!isGoodAppServerLocation(platformLocation)){
 		return null;
             }
             data = new CacheData();
-	    ServerLocationAndClassLoaderMap.put(platformLocation.getAbsolutePath(), data);
+	    serverLocationAndClassLoaderMap.put(platformLocation.getAbsolutePath(), data);
 	    
 	}
 	if(data.cachedClassLoader==null){
@@ -317,5 +327,31 @@ public class ServerLocationManager  {
         
 	public DeploymentFactory deploymentFactory;
 	
+    }
+    /** Attempt to discern the application server who's root directory was passed in.
+     *
+     * 9.0 uses sun-domain_1_0.dtd
+     * 8.1 uses sun-domain_1_1.dtd (also includes the 1_0 version for backwards compatibility)
+     *
+     * @param asInstallRoot 
+     * @return 
+     */
+    public static int getAppServerPlatformVersion(File asInstallRoot) {
+        int version = 0;
+        
+        if(asInstallRoot != null && asInstallRoot.exists()) {
+            File sunDomain11Dtd = new File(asInstallRoot, "lib/dtds/sun-domain_1_1.dtd"); // NOI18N
+            //now test for AS 9 (J2EE 5.0) which should work for this plugin
+            File as90 = new File((asInstallRoot)+"/lib/dtds/sun-domain_1_2.dtd");   // NOI18N
+            File as91 = new File((asInstallRoot)+"/lib/dtds/sun-domain_1_3.dtd");   // NOI18N
+            if(as91.exists()){
+                version = GF_V2; 
+            } else if (as90.exists()) {
+                version = GF_V1;
+            } else    if(sunDomain11Dtd.exists()) {
+                version = SJSAS_82;
+            }
+        }
+        return version;
     }
 }

@@ -1,3 +1,4 @@
+// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
@@ -13,9 +14,10 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+// </editor-fold>
 
 package org.netbeans.modules.j2ee.sun.ide.j2ee;
 
@@ -23,10 +25,13 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.DeploymentManager;
+import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.w3c.dom.Document;
 
-import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 /**
  *
  * @author Ludovic Champenois
@@ -38,7 +43,7 @@ public class ConfigureProfiler {
     private static final String ASENV_INSERTION_POINT_NOWIN_STRING  = "AS_JAVA";
     
     // removes any existing 'profiler' element and creates new one using provided parameters (if needed)
-    public static boolean instrumentProfilerInDOmain(DeploymentManager dm, String nativeLibraryPath, String[] jvmOptions) {
+    static boolean instrumentProfilerInDomain(DeploymentManager dm, String nativeLibraryPath, String[] jvmOptions) {
         DomainEditor dEditor = new DomainEditor(dm);
         
         // Load domain.xml
@@ -51,9 +56,9 @@ public class ConfigureProfiler {
     }
     
     // removes any existing 'profiler' element and creates new one using provided parameters (if needed)
-    public static boolean removeProfilerFromDomain(DeploymentManager dm) {
+    static boolean removeProfilerFromDomain(DeploymentManager dm) {
         DomainEditor dEditor = new DomainEditor(dm);
-                
+        
         // Load domain.xml
         Document domainDocument = dEditor.getDomainDocument();
         if (domainDocument == null) {
@@ -61,27 +66,32 @@ public class ConfigureProfiler {
         }
         
         return dEditor.removeProfilerElements(domainDocument);
-    }    
+    }
     
     // replaces the AS_JAVA item in asenv.bat/conf
-    public static boolean modifyAsEnvScriptFile( SunDeploymentManagerInterface dm, String targetJavaHomePath) {
+    static boolean modifyAsEnvScriptFile( DeploymentManager dm, String targetJavaHomePath) {
         
-            String ext = (isUnix() ? "conf" : "bat");
-        File irf = dm.getPlatformRoot();
+        String ext = (isUnix() ? "conf" : "bat");
+        File irf = ((SunDeploymentManagerInterface)dm).getPlatformRoot();
         if (null == irf || !irf.exists()) {
+            Logger.getLogger(ConfigureProfiler.class.getName()).log(Level.SEVERE,"installRoot issue");
             return false;
         }
         String installRoot = irf.getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot");
         String asEnvScriptFilePath  = installRoot+"/config/asenv." + ext;
-  //      System.out.println("asEnvScriptFilePath="+asEnvScriptFilePath);
         File asEnvScriptFile = new File(asEnvScriptFilePath);
+        if (!asEnvScriptFile.canWrite()) {
+            Logger.getLogger(ConfigureProfiler.class.getName()).log(Level.SEVERE,"asenv issue");
+            return false;
+        }
         String lineBreak = System.getProperty("line.separator");
-        
+        BufferedReader br = null;
+        FileWriter fw = null;
         try {
             
             String line;
             FileReader fr = new FileReader(asEnvScriptFile);
-            BufferedReader br = new BufferedReader(fr);
+            br = new BufferedReader(fr);
             StringBuffer buffer = new StringBuffer();
             
             String asJavaString = (isUnix() ? ASENV_INSERTION_POINT_NOWIN_STRING : ASENV_INSERTION_POINT_WIN_STRING);
@@ -89,19 +99,21 @@ public class ConfigureProfiler {
             // copy config file from disk into memory buffer and modify line containing AS_JAVA definition
             while ((line = br.readLine()) != null) {
                 if (line.trim().startsWith(asJavaString)) {
-                    buffer.append(asJavaString + "=" + targetJavaHomePath);
+                    buffer.append(asJavaString);
+                    buffer.append('=');
+                    buffer.append(targetJavaHomePath);
                 } else {
                     buffer.append(line);
                 }
                 buffer.append(lineBreak);
             }
-            br.close();
+            //br.close();
             
             // flush modified config file from memory buffer back to disk
-            FileWriter fw = new FileWriter(asEnvScriptFile);
+            fw = new FileWriter(asEnvScriptFile);
             fw.write(buffer.toString());
             fw.flush();
-            fw.close();
+            //fw.close();
             
             if (isUnix()) {
                 Runtime.getRuntime().exec("chmod a+r " + asEnvScriptFile.getAbsolutePath()); //NOI18N
@@ -109,18 +121,32 @@ public class ConfigureProfiler {
             
             return true;
             
-        } catch (Exception ex) {
-            
-            System.err.println("Modifying " + asEnvScriptFilePath + " failed!\n" + ex.getMessage());
+        } catch (RuntimeException re) {
+            Logger.getLogger(ConfigureProfiler.class.getName()).log(Level.SEVERE,"",re);
             return false;
-            
+        } catch (Exception ex) {
+            Logger.getLogger(ConfigureProfiler.class.getName()).log(Level.SEVERE,"",ex);
+            return false;
+        } finally {
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException ioe) {
+                    Logger.getLogger(ConfigureProfiler.class.getName()).log(Level.WARNING,"",ioe);
+                }
+            }
+            if (fw != null) {
+                try {
+                    fw.close();
+                } catch (IOException ioe) {
+                    Logger.getLogger(ConfigureProfiler.class.getName()).log(Level.WARNING,"",ioe);
+                }
+            }
         }
         
     }
     
-    public static boolean isUnix() {
+    static boolean isUnix() {
         return File.separatorChar == '/';
-    }
-    
-
+    }    
 }

@@ -1,3 +1,4 @@
+// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
@@ -13,9 +14,10 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+// </editor-fold>
 
 package org.netbeans.modules.j2ee.sun.ide.j2ee;
 
@@ -25,7 +27,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -40,20 +41,21 @@ import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
+// TODO finish migration towards being an abstract class
 /**
  */
 public class PlatformImpl extends J2eePlatformImpl {
     
     private static final Set/*<Object>*/ MODULE_TYPES = new HashSet();
-    private static final Set/*<String>*/ SPEC_VERSIONS = new HashSet();
+    protected static final Set/*<String>*/ SPEC_VERSIONS = new HashSet();
     private static final Set/*<String>*/ SPEC_VERSIONS_WITH_5 = new HashSet();
     // Appserver version strings.
-    private static final String APPSERVER_VERSION_9_1 = "9.1"; // NOI18N
-    private static final String APPSERVER_VERSION_9 = "9.0"; // NOI18N
-    private static final String APPSERVER_VERSION_8_1 = "8.1"; // NOI18N
-    private static final String APPSERVER_VERSION_8_2 = "8.2"; // NOI18N
-    private static final String APPSERVER_VERSION_UNKNOWN = "unknown"; // NOI18N
-    private  String version = APPSERVER_VERSION_UNKNOWN;	// NOI18N
+//    private static final String APPSERVER_VERSION_9_1 = "9.1"; // NOI18N
+//    private static final String APPSERVER_VERSION_9 = "9.0"; // NOI18N
+//    private static final String APPSERVER_VERSION_8_1 = "8.1"; // NOI18N
+//    private static final String APPSERVER_VERSION_8_2 = "8.2"; // NOI18N
+//    private static final String APPSERVER_VERSION_UNKNOWN = "unknown"; // NOI18N
+//    private  String version = APPSERVER_VERSION_UNKNOWN;	// NOI18N
     private static final String J2EE_14_JAR = "lib/j2ee.jar"; //NOI18N
     private static final String JAVA_EE_JAR = "lib/javaee.jar"; //NOI18N
     private static final String JSF_API_JAR = "lib/jsf-api.jar"; //NOI18N
@@ -84,7 +86,7 @@ public class PlatformImpl extends J2eePlatformImpl {
     private static final String WEBSERVICES_RT_JAR = "lib/webservices-rt.jar"; //NOI18N
     private static final String WEBSERVICES_TOOLS_JAR = "lib/webservices-tools.jar"; //NOI18N
     
-    public static final String[] SWDP_JARS = new String[] {
+    private static final String[] SWDP_JARS = new String[] {
             "lib/addons/restbeans-api.jar",
             "lib/addons/restbeans-impl.jar",
             "lib/addons/wadl2java.jar"
@@ -126,7 +128,10 @@ public class PlatformImpl extends J2eePlatformImpl {
     private final DeploymentManagerProperties dmProps;
     private LibraryImplementation[] libraries;
     
-    /** Creates a new instance of PlatformImpl */
+    /** Creates a new instance of PlatformImpl 
+     * @param root 
+     * @param dmProps 
+     */
     public PlatformImpl(File root, DeploymentManagerProperties dmProps) {
         this.dmProps = dmProps;
         this.root = root;
@@ -134,15 +139,17 @@ public class PlatformImpl extends J2eePlatformImpl {
     
     /** Returns error message for an invalid platform or an empty string
      * for a valid platform.
+     * @param platformRoot 
+     * @return 
      */
-    public  String isValidPlatformRoot(File platformRoot) {
+    private  String isValidPlatformRoot(File platformRoot) {
         String result = "";
         if(platformRoot == null || "".equals(platformRoot.getPath())) {
             result = "Install directory cannot be empty.";
         } else if(!platformRoot.exists()) {
             result = "Directory '" + platformRoot.getAbsolutePath() + "' does not exist.";
         } else {
-            version = getAppServerVersion(platformRoot);
+//            version = getAppServerVersion(platformRoot);
             File testF = new File(platformRoot, "bin"); // NOI18N
             if(!testF.exists()) {
                 result = "'" + platformRoot.getAbsolutePath() + "' is not a SJSAS 8.1 installation directory.";
@@ -161,28 +168,6 @@ public class PlatformImpl extends J2eePlatformImpl {
         return result;
     }
     
-    /** Attempt to discern the application server who's root directory was passed in.
-     *
-     * 9.0 uses sun-domain_1_0.dtd
-     * 8.1 uses sun-domain_1_1.dtd (also includes the 1_0 version for backwards compatibility)
-     *
-     */
-    public  String getAppServerVersion(File asInstallRoot) {
-        version = APPSERVER_VERSION_UNKNOWN;	// NOI18N
-        
-        if(asInstallRoot != null && asInstallRoot.exists()) {
-            File sunDomain11Dtd = new File(asInstallRoot, "lib/dtds/sun-domain_1_1.dtd"); // NOI18N
-            //now test for AS 9 (J2EE 5.0) which should work for this plugin
-            File as9 = new File((asInstallRoot)+"/lib/dtds/sun-web-app_2_5-0.dtd");
-            if(as9.exists()){
-                version = APPSERVER_VERSION_9;
-                
-            } else    if(sunDomain11Dtd.exists()) {
-                version = APPSERVER_VERSION_8_1;
-            }
-        }
-        return version;
-    }
     
     private void initLibraries() {
         List<LibraryImplementation> libs = new ArrayList<LibraryImplementation>();
@@ -329,6 +314,9 @@ public class PlatformImpl extends J2eePlatformImpl {
         return libraries.clone();
     }
     
+    /**
+     * 
+     */
     public void notifyLibrariesChanged() {
         initLibraries();
         firePropertyChange(PROP_LIBRARIES, null, libraries);
@@ -523,7 +511,7 @@ public class PlatformImpl extends J2eePlatformImpl {
                 }
             }
         }
-        return null;
+        return new File[0];
     }
     
     /**
@@ -538,8 +526,8 @@ public class PlatformImpl extends J2eePlatformImpl {
         || J2eePlatform.TOOL_APP_CLIENT_RUNTIME.equals(toolName)) {
             return true;
         }
-        if (!APPSERVER_VERSION_8_1.equals(version) &&
-                !APPSERVER_VERSION_8_2.equals(version)) { // we want this to work for 9.1 as well
+//        if (!APPSERVER_VERSION_8_1.equals(version) &&
+//                !APPSERVER_VERSION_8_2.equals(version)) { // we want this to work for 9.1 as well
             if (J2eePlatform.TOOL_WSGEN.equals(toolName)) {
                 return true;
             }
@@ -585,7 +573,7 @@ public class PlatformImpl extends J2eePlatformImpl {
                 return true;
             }
             
-        }
+        //}
         return false;
     }
     
@@ -596,12 +584,8 @@ public class PlatformImpl extends J2eePlatformImpl {
      *
      * @return list of supported J2EE specification versions.
      */
-    public Set/*<String>*/ getSupportedSpecVersions() {
-        
-        if(APPSERVER_VERSION_9.equals(version)){
-            return SPEC_VERSIONS_WITH_5;
-        } else
-            return SPEC_VERSIONS;
+    public Set/*<String>*/ getSupportedSpecVersions() {        
+        return SPEC_VERSIONS_WITH_5;
     }
     
     /**
@@ -617,8 +601,8 @@ public class PlatformImpl extends J2eePlatformImpl {
     
     public Set/*<String>*/ getSupportedJavaPlatformVersions() {
         Set versions = new HashSet();
-        versions.add("1.4"); // NOI18N
         versions.add("1.5"); // NOI18N
+        versions.add("1.6"); // NOI18N
         return versions;
     }
     
