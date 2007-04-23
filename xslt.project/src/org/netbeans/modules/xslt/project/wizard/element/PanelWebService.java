@@ -134,6 +134,9 @@ final class PanelWebService<T> extends Panel<T> {
   }
 
   private FileObject getWSDL() {
+    if (myWSDL.isEmpty()) {
+      return null;
+    }
     return ((Util.WSDLFile) myWSDL.getSelectedItem()).getFile();
   }
 
