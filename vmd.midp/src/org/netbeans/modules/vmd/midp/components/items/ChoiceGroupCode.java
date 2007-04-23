@@ -322,13 +322,13 @@ public class ChoiceGroupCode {
             if (propertyValue.getKind () == PropertyValue.Kind.VALUE) {
                 int value = MidpTypes.getInteger (propertyValue);
                 switch (value) {
-                    case ChoiceCD.VALUE_EXCLUSIVE:
+                    case ChoiceSupport.VALUE_EXCLUSIVE:
                         section.getWriter ().write ("Choice.EXCLUSIVE"); // NOI18N
                         break;
-                    case ChoiceCD.VALUE_MULTIPLE:
+                    case ChoiceSupport.VALUE_MULTIPLE:
                         section.getWriter ().write ("Choice.MULTIPLE"); // NOI18N
                         break;
-                    case ChoiceCD.VALUE_POPUP:
+                    case ChoiceSupport.VALUE_POPUP:
                         section.getWriter ().write ("Choice.POPUP"); // NOI18N
                         break;
                     default:
@@ -352,13 +352,13 @@ public class ChoiceGroupCode {
             if (propertyValue.getKind () == PropertyValue.Kind.VALUE) {
                 int value = MidpTypes.getInteger (propertyValue);
                 switch (value) {
-                    case ChoiceCD.VALUE_TEXT_WRAP_DEFAULT:
+                    case ChoiceSupport.VALUE_TEXT_WRAP_DEFAULT:
                         section.getWriter ().write ("Choice.TEXT_WRAP_DEFAULT"); // NOI18N
                         break;
-                    case ChoiceCD.VALUE_TEXT_WRAP_ON:
+                    case ChoiceSupport.VALUE_TEXT_WRAP_ON:
                         section.getWriter ().write ("Choice.TEXT_WRAP_ON"); // NOI18N
                         break;
-                    case ChoiceCD.VALUE_TEXT_WRAP_OFF:
+                    case ChoiceSupport.VALUE_TEXT_WRAP_OFF:
                         section.getWriter ().write ("Choice.TEXT_WRAP_OFF"); // NOI18N
                         break;
                     default:

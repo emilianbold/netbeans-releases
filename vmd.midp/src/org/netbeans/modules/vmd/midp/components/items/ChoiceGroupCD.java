@@ -19,31 +19,31 @@
 
 package org.netbeans.modules.vmd.midp.components.items;
 
-import java.util.ArrayList;
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.codegen.Parameter;
+import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
+import org.netbeans.modules.vmd.api.inspector.common.ArrayPropertyOrderingController;
 import org.netbeans.modules.vmd.api.model.*;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
+import org.netbeans.modules.vmd.api.model.presenters.actions.AddActionPresenter;
+import org.netbeans.modules.vmd.api.model.support.ArraySupport;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.elements.ChoiceElementCD;
+import org.netbeans.modules.vmd.midp.general.AcceptTypePresenter;
+import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorComboBox;
+import org.netbeans.modules.vmd.midp.screen.display.ChoiceGroupDisplayPresenter;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
-import org.netbeans.modules.vmd.api.inspector.common.ArrayPropertyOrderingController;
-import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
-import org.netbeans.modules.vmd.api.model.presenters.actions.AddActionPresenter;
-import org.netbeans.modules.vmd.api.model.support.ArraySupport;
-import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
-import org.netbeans.modules.vmd.midp.general.AcceptTypePresenter;
-import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
-import org.netbeans.modules.vmd.midp.screen.display.ChoiceGroupDisplayPresenter;
 
 /**
  *
@@ -70,9 +70,9 @@ public class ChoiceGroupCD extends ComponentDescriptor {
 
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList(
-                new PropertyDescriptor(PROP_CHOICE_TYPE, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue (ChoiceCD.VALUE_MULTIPLE), false, true, MidpVersionable.MIDP),
+                new PropertyDescriptor(PROP_CHOICE_TYPE, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue (ChoiceSupport.VALUE_MULTIPLE), false, true, MidpVersionable.MIDP),
                 new PropertyDescriptor(PROP_ELEMENTS, ChoiceElementCD.TYPEID.getArrayType(), PropertyValue.createEmptyArray(ChoiceElementCD.TYPEID), false, false, MidpVersionable.MIDP),
-                new PropertyDescriptor(PROP_FIT_POLICY, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue (ChoiceCD.VALUE_TEXT_WRAP_DEFAULT), false, true, MidpVersionable.MIDP_2)
+                new PropertyDescriptor(PROP_FIT_POLICY, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue (ChoiceSupport.VALUE_TEXT_WRAP_DEFAULT), false, true, MidpVersionable.MIDP_2)
         );
     }
     
@@ -84,10 +84,10 @@ public class ChoiceGroupCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
                 .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
-                    .addProperty("Type", PropertyEditorComboBox.createInstance(ChoiceCD.getChoiceGroupTypes(), TYPEID), PROP_CHOICE_TYPE)
+                    .addProperty("Type", PropertyEditorComboBox.createInstance(ChoiceSupport.getChoiceGroupTypes(), TYPEID), PROP_CHOICE_TYPE)
                     .addProperty("Fit Policy", "Sets the application's preferred policy for fitting Choice element contents to the available screen space.",
-//                        true, PropertyEditorComboBox.createInstance(ChoiceCD.getListTypes(), TYPEID, Bundle.getMessage("LBL_STRING_NONE")), null, PROP_FIT_POLICY); //NOI18N
-                        true, PropertyEditorComboBox.createInstance(ChoiceCD.getFitPolicyValues(), TYPEID), PROP_FIT_POLICY);
+//                        true, PropertyEditorComboBox.createInstance(ChoiceSupport.getListTypes(), TYPEID, Bundle.getMessage("LBL_STRING_NONE")), null, PROP_FIT_POLICY); //NOI18N
+                        true, PropertyEditorComboBox.createInstance(ChoiceSupport.getFitPolicyValues(), TYPEID), PROP_FIT_POLICY);
     }
     
     private static Presenter createSetterPresenter() {

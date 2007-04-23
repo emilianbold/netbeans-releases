@@ -19,16 +19,19 @@
 
 package org.netbeans.modules.vmd.midp.screen.display;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JPanel;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.items.ChoiceGroupCD;
+import org.netbeans.modules.vmd.midp.components.items.ChoiceSupport;
+
+import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.BevelBorder;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  *
@@ -36,9 +39,12 @@ import org.netbeans.modules.vmd.midp.components.items.ChoiceGroupCD;
  * @version 1.0
  */
 public class ChoiceGroupDisplayPresenter extends ItemDisplayPresenter {
-    
+
+    private static final Border POPUP_BORDER = BorderFactory.createBevelBorder (BevelBorder.RAISED);
+    private static final Border EMPTY_BORDER = BorderFactory.createEmptyBorder ();
+
     private JPanel panel;
-    
+
     public ChoiceGroupDisplayPresenter() {
         panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
@@ -55,6 +61,12 @@ public class ChoiceGroupDisplayPresenter extends ItemDisplayPresenter {
     
     public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
+
+        PropertyValue value = getComponent ().readProperty (ChoiceGroupCD.PROP_CHOICE_TYPE);
+        panel.setBorder (
+                value.getKind () == PropertyValue.Kind.VALUE  &&  MidpTypes.getInteger (value) == ChoiceSupport.VALUE_POPUP
+                ? POPUP_BORDER : EMPTY_BORDER
+        );
         
         panel.removeAll();
         for (DesignComponent item : getChildren()) {

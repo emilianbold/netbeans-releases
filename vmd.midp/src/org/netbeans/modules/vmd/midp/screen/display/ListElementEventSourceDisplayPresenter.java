@@ -28,7 +28,7 @@ import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
 import org.netbeans.modules.vmd.midp.components.elements.ChoiceElementCD;
 import org.netbeans.modules.vmd.midp.components.displayables.ListCD;
-import org.netbeans.modules.vmd.midp.components.items.ChoiceCD;
+import org.netbeans.modules.vmd.midp.components.items.ChoiceSupport;
 import org.netbeans.modules.vmd.midp.components.sources.ListElementEventSourceCD;
 import org.netbeans.modules.vmd.midp.screen.display.property.ScreenStringPropertyEditor;
 import org.netbeans.modules.vmd.midp.screen.display.property.ScreenBooleanPropertyEditor;
@@ -82,10 +82,10 @@ public class ListElementEventSourceDisplayPresenter extends ScreenDisplayPresent
         PropertyValue selectedValue = getComponent ().readProperty (ListElementEventSourceCD.PROP_SELECTED);
         boolean selected = selectedValue.getKind () == PropertyValue.Kind.VALUE  &&  MidpTypes.getBoolean (selectedValue);
         switch (type) {
-            case ChoiceCD.VALUE_EXCLUSIVE:
+            case ChoiceSupport.VALUE_EXCLUSIVE:
                 state.setIcon (selected ? ChoiceElementDisplayPresenter.ICON_RADIOBUTTON : ChoiceElementDisplayPresenter.ICON_EMPTY_RADIOBUTTON);
                 break;
-            case ChoiceCD.VALUE_MULTIPLE:
+            case ChoiceSupport.VALUE_MULTIPLE:
                 state.setIcon (selected ? ChoiceElementDisplayPresenter.ICON_CHECKBOX : ChoiceElementDisplayPresenter.ICON_EMPTY_CHECKBOX);
                 break;
             default:

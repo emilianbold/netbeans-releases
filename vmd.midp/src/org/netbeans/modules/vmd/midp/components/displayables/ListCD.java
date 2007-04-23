@@ -33,7 +33,7 @@ import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
-import org.netbeans.modules.vmd.midp.components.items.ChoiceCD;
+import org.netbeans.modules.vmd.midp.components.items.ChoiceSupport;
 import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
 import org.netbeans.modules.vmd.midp.components.sources.ListElementEventSourceCD;
 import org.netbeans.modules.vmd.midp.flow.FlowListElementPinOrderPresenter;
@@ -82,8 +82,8 @@ public final class ListCD extends ComponentDescriptor {
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList(
                 new PropertyDescriptor(PROP_ELEMENTS, ListElementEventSourceCD.TYPEID.getArrayType(), PropertyValue.createEmptyArray(ListElementEventSourceCD.TYPEID), false, true, MidpVersionable.MIDP),
-                new PropertyDescriptor(PROP_LIST_TYPE, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue (ChoiceCD.VALUE_IMPLICIT), false, true, MidpVersionable.MIDP),
-                new PropertyDescriptor(PROP_FIT_POLICY, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue (ChoiceCD.VALUE_TEXT_WRAP_DEFAULT), false, true, MidpVersionable.MIDP_2),
+                new PropertyDescriptor(PROP_LIST_TYPE, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue (ChoiceSupport.VALUE_IMPLICIT), false, true, MidpVersionable.MIDP),
+                new PropertyDescriptor(PROP_FIT_POLICY, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue (ChoiceSupport.VALUE_TEXT_WRAP_DEFAULT), false, true, MidpVersionable.MIDP_2),
                 new PropertyDescriptor(PROP_SELECT_COMMAND, CommandEventSourceCD.TYPEID, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2),
                 new PropertyDescriptor(PROP_INDEX_BASED_SWITCH, MidpTypes.TYPEID_BOOLEAN, MidpTypes.createBooleanValue (false), false, false, Versionable.FOREVER)
         );
@@ -97,8 +97,8 @@ public final class ListCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
                 .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
-                    .addProperty("Type", PropertyEditorComboBox.createInstance( ChoiceCD.getListTypes(), TYPEID), PROP_LIST_TYPE) //NOI18N
-                    .addProperty("Fit Policy", PropertyEditorComboBox.createInstance(ChoiceCD.getFitPolicyValues(), TYPEID), PROP_FIT_POLICY) //NOI18N
+                    .addProperty("Type", PropertyEditorComboBox.createInstance( ChoiceSupport.getListTypes(), TYPEID), PROP_LIST_TYPE) //NOI18N
+                    .addProperty("Fit Policy", PropertyEditorComboBox.createInstance(ChoiceSupport.getFitPolicyValues(), TYPEID), PROP_FIT_POLICY) //NOI18N
                     .addProperty("Select Command", PropertyEditorListSelectCommand.create(), PROP_SELECT_COMMAND) //NOI18N
                 .addPropertiesCategory(PropertiesCategories.CATEGORY_CODE_PROPERTIES)
                     .addProperty("Index Based Switch", Boolean.class, PROP_INDEX_BASED_SWITCH); //NOI18N

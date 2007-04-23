@@ -25,7 +25,7 @@ import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.commands.ListSelectCommandCD;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
-import org.netbeans.modules.vmd.midp.components.items.ChoiceCD;
+import org.netbeans.modules.vmd.midp.components.items.ChoiceSupport;
 import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
 import org.netbeans.modules.vmd.midp.components.sources.ListElementEventSourceCD;
 
@@ -478,13 +478,13 @@ public class ListCode {
             if (propertyValue.getKind () == PropertyValue.Kind.VALUE) {
                 int value = MidpTypes.getInteger (propertyValue);
                 switch (value) {
-                    case ChoiceCD.VALUE_IMPLICIT:
+                    case ChoiceSupport.VALUE_IMPLICIT:
                         section.getWriter ().write ("Choice.IMPLICIT"); // NOI18N
                         break;
-                    case ChoiceCD.VALUE_EXCLUSIVE:
+                    case ChoiceSupport.VALUE_EXCLUSIVE:
                         section.getWriter ().write ("Choice.EXCLUSIVE"); // NOI18N
                         break;
-                    case ChoiceCD.VALUE_MULTIPLE:
+                    case ChoiceSupport.VALUE_MULTIPLE:
                         section.getWriter ().write ("Choice.MULTIPLE"); // NOI18N
                         break;
                     default:
@@ -508,13 +508,13 @@ public class ListCode {
             if (propertyValue.getKind () == PropertyValue.Kind.VALUE) {
                 int value = MidpTypes.getInteger (propertyValue);
                 switch (value) {
-                    case ChoiceCD.VALUE_TEXT_WRAP_DEFAULT:
+                    case ChoiceSupport.VALUE_TEXT_WRAP_DEFAULT:
                         section.getWriter ().write ("Choice.TEXT_WRAP_DEFAULT"); // NOI18N
                         break;
-                    case ChoiceCD.VALUE_TEXT_WRAP_ON:
+                    case ChoiceSupport.VALUE_TEXT_WRAP_ON:
                         section.getWriter ().write ("Choice.TEXT_WRAP_ON"); // NOI18N
                         break;
-                    case ChoiceCD.VALUE_TEXT_WRAP_OFF:
+                    case ChoiceSupport.VALUE_TEXT_WRAP_OFF:
                         section.getWriter ().write ("Choice.TEXT_WRAP_OFF"); // NOI18N
                         break;
                     default:
