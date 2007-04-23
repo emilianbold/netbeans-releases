@@ -29,6 +29,7 @@ import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.exceptions.NativeException;
@@ -36,6 +37,7 @@ import org.netbeans.installer.utils.exceptions.UninstallationException;
 import org.netbeans.installer.utils.helper.Dependency;
 import org.netbeans.installer.utils.helper.EnvironmentScope;
 import org.netbeans.installer.utils.helper.ErrorLevel;
+import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.utils.system.WindowsNativeUtils;
 import org.netbeans.installer.utils.system.windows.WindowsRegistry;
@@ -46,31 +48,6 @@ import org.netbeans.installer.utils.system.windows.WindowsRegistry;
  */
 public class ConfigurationLogic extends NbClusterConfigurationLogic {
     /////////////////////////////////////////////////////////////////////////////////
-    // Constants
-    public static final String UML_CLUSTER =
-            "{uml-cluster}"; // NOI18N
-    public static final String ID =
-            "UML"; // NOI18N
-    private static final long XMX_VALUE_REQUIRED = 512 * NetBeansUtils.M;
-    
-    private static final String MACOSX_QUARTZ_OPTION =
-            "-Dapple.awt.graphics.UseQuartz"; //NOI18N
-    
-    private static final String PATH_ENV = "PATH"; //NOI18N
-    
-    private static final String CONFIG_DOORS_LOCATION =            
-            "modules" + File.separator +  //NOI18N
-            "DoorsIntegrationFiles" + File.separator +
-            "modules" +  File.separator + "bin";//NOI18N
-    
-    private static final String CSCRIPT = "cscript"; //NOI18N
-    
-    private static final String CONFIG_DOORS_COMMAND =
-            "modules" + File.separator +  //NOI18N
-            "DoorsIntegrationFiles" + File.separator + //NOI18N
-            "configDoors.vbs"; //NOI18N
-    
-    /////////////////////////////////////////////////////////////////////////////////
     // Instance
     public ConfigurationLogic() throws InitializationException {
         super(new String[]{
@@ -78,37 +55,49 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
     }
     
     public void install(final Progress progress) throws InstallationException {
-	super.install(progress);        
+	super.install(progress);
+        
         LogManager.log("Configuring UML...");
-	// get the list of suitable netbeans ide installations
-        List<Dependency> dependencies =
+	
+        // get the list of suitable netbeans ide installations
+        final List<Dependency> dependencies =
                 getProduct().getDependencyByUid(BASE_IDE_UID);
-        List<Product> sources =
+        final List<Product> sources =
                 Registry.getInstance().getProducts(dependencies.get(0));
         
-        // pick the first one and integrate with it
+        // pick the first one, integrate with it and resolve the dependency
         final File nbLocation = sources.get(0).getInstallationLocation();
-        
+        dependencies.get(0).setVersionResolved(sources.get(0).getVersion());
         
         if (nbLocation != null) {
-            progress.setDetail(getString("CL.install.netbeans.conf.uml")); // NOI18N
+            progress.setDetail(getString("CL.install.netbeans.conf")); // NOI18N
             try {
-                // TODO
-                // this option should be change back after UML uninstallation
-                long xmx = NetBeansUtils.getJvmMemorySize(nbLocation, NetBeansUtils.MEMORY_XMX);
-                if(xmx < XMX_VALUE_REQUIRED) {
+                final long xmx = NetBeansUtils.getJvmMemorySize(
+                        nbLocation, 
+                        NetBeansUtils.MEMORY_XMX);
+                if (xmx < XMX_VALUE_REQUIRED) {
                     NetBeansUtils.setJvmMemorySize(nbLocation,
                             NetBeansUtils.MEMORY_XMX,
                             XMX_VALUE_REQUIRED);
                 }
-                if(SystemUtils.isMacOS()) {
-                    // TODO
-                    // This option should not be set if JDK6 is used for NB
-                    NetBeansUtils.setJvmOption(nbLocation, MACOSX_QUARTZ_OPTION, "false");
+                
+                if (SystemUtils.isMacOS()) {
+                    final File javaHome = 
+                            new File(NetBeansUtils.getJavaHome(nbLocation));
+                    final Version javaVersion = 
+                            JavaUtils.getInfo(javaHome).getVersion();
+                    
+                    if (javaVersion.olderThan(
+                            Version.getVersion(MACOSX_QUARTZ_JAVA_VERSION))) {
+                        NetBeansUtils.setJvmOption(
+                                nbLocation, 
+                                MACOSX_QUARTZ_OPTION_NAME, 
+                                MACOSX_QUARTZ_OPTION_VALUE);
+                    }
                 }
             } catch (IOException ex) {
                 throw new InstallationException(
-                        getString("CL.install.error.netbeans.conf.uml"),
+                        getString("CL.install.error.netbeans.conf"),
                         ex);
             }
             
@@ -145,25 +134,25 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
         
         /////////////////////////////////////////////////////////////////////////////
         try {
-            progress.setDetail(getString("CL.uninstall.netbeans.conf.uml")); // NOI18N
+            progress.setDetail(getString("CL.uninstall.netbeans.conf")); // NOI18N
             
-            NetBeansUtils.removeJvmOption(nbLocation, MACOSX_QUARTZ_OPTION);
+            NetBeansUtils.removeJvmOption(nbLocation, MACOSX_QUARTZ_OPTION_NAME);
         } catch (IOException e) {
             throw new UninstallationException(
-                    getString("CL.uninstall.error.netbeans.conf.uml"), // NOI18N
+                    getString("CL.uninstall.error.netbeans.conf"), // NOI18N
                     e);
         }
+        
         /////////////////////////////////////////////////////////////////////////////
-        // Cancel integration with Telelogic Doors
         if(SystemUtils.isWindows()) {            
             try {
                 LogManager.indent();
                 progress.setDetail(
-                        getString("CL.uninstall.telelogic.integration.cancel")); // NOI18N
+                        getString("CL.uninstall.telelogic.integration")); // NOI18N
                 configureTelelogicDoors(nbLocation, progress, false);
             } catch (IOException ex) {
                 throw new UninstallationException(
-                        getString("CL.uninstall.error.telelogic.integration.cancel"),
+                        getString("CL.uninstall.error.telelogic.integration"),
                         ex);
             } finally {
                 LogManager.unindent();
@@ -171,7 +160,10 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
         }
     }
     
-    private void configureTelelogicDoors(File nbLocation, Progress progress, boolean install) throws IOException {
+    private void configureTelelogicDoors(
+            final File nbLocation, 
+            final Progress progress, 
+            final boolean install) throws IOException {
         try {
             
             File    location = new File(getProduct().getInstallationLocation(), 
@@ -268,4 +260,33 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
             throw e;
         }
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final String UML_CLUSTER =
+            "{uml-cluster}"; // NOI18N
+    public static final String ID =
+            "UML"; // NOI18N
+    private static final long XMX_VALUE_REQUIRED = 512 * NetBeansUtils.M;
+    
+    private static final String MACOSX_QUARTZ_OPTION_NAME =
+            "-Dapple.awt.graphics.UseQuartz"; // NOI18N
+    private static final String MACOSX_QUARTZ_OPTION_VALUE =
+            "false"; // NOI18N
+    private static final String MACOSX_QUARTZ_JAVA_VERSION =
+            "1.6.0.0.0"; // NOI18N
+            
+    private static final String PATH_ENV = "PATH"; // NOI18N
+    
+    private static final String CONFIG_DOORS_LOCATION =            
+            "modules" + File.separator +  // NOI18N
+            "DoorsIntegrationFiles" + File.separator +
+            "modules" +  File.separator + "bin";// NOI18N
+    
+    private static final String CSCRIPT = "cscript"; // NOI18N
+    
+    private static final String CONFIG_DOORS_COMMAND =
+            "modules" + File.separator +  // NOI18N
+            "DoorsIntegrationFiles" + File.separator + // NOI18N
+            "configDoors.vbs"; // NOI18N
 }
