@@ -215,7 +215,7 @@ public final class DesignComponent {
     public PropertyValue readProperty(String propertyName) {
         assert document.getTransactionManager().isAccess();
         PropertyValue value = properties.get(propertyName);
-        assert properties.containsKey(propertyName) : toString () + "." + propertyName + "property is missing"; //NOI18N
+        assert properties.containsKey(propertyName) : toString () + "." + propertyName + " property is missing"; //NOI18N
         assert value != null;
         return value;
     }
