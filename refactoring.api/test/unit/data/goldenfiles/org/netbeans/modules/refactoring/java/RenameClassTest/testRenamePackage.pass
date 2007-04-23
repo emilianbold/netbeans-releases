@@ -1,15 +1,12 @@
 defaultpkg.RenamePkgDep2.java
 --------------------
 Update reference to renamepkg
-null
 Update reference to renamepkg
-null
 --------------------
   1   
   2   package defaultpkg;
   3   
   4 - import renamepkg.RenamePkgDep1;
-    + import newpkgname.RenamePkgDep1;
     + import newpkgname.RenamePkgDep1;
   5   
   6   /** */
@@ -32,7 +29,6 @@ File was deleted
 renamepkg.RenamePkgDep1.java
 --------------------
 Update package statement
-null
 --------------------
 File was deleted
 

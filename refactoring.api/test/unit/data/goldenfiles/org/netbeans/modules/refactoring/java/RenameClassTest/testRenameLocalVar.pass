@@ -9,12 +9,11 @@ Update reference to local
   6       public void method() {
   7 -         int local;
     +         int newVarName;
-  8           
-  9 -         local = 2;
-    +         
- 10 -         System.out.println(local);
+  8 -         
     +         newVarName = 2;
+  9 -         local = 2;
     +         System.out.println(newVarName);
+ 10 -         System.out.println(local);
  11       }
  12       
  13   }

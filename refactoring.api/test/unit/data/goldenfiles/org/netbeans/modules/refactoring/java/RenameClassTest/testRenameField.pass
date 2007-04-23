@@ -20,7 +20,6 @@ Update reference to field
 defaultpkg.RenameFieldDep.java
 --------------------
 Update reference to field
-null
 Update reference to field
 --------------------
   5       
@@ -30,7 +29,6 @@ Update reference to field
     +         super.newFieldName = 3;
   9           
  10 -         new RenameField().field = 1;
-    +         
     +         new RenameField().newFieldName = 1;
  11       }
  12       
