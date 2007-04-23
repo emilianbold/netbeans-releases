@@ -29,7 +29,6 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
-import org.netbeans.modules.j2ee.jboss4.config.JBDeploymentConfiguration;
 import org.netbeans.modules.j2ee.jboss4.config.JBossDatasource;
 import org.netbeans.modules.j2ee.jboss4.config.ResourceConfigurationHelper;
 import org.netbeans.modules.j2ee.jboss4.config.gen.Datasources;
@@ -266,7 +265,7 @@ public class DatasourceSupport {
             // perform changes
             ds = modifier.modify(newDatasources);
 
-            // save, if appropriate
+            // save if appropriate
             boolean modified = datasourcesDO.isModified();
             ResourceConfigurationHelper.replaceDocument(doc, newDatasources);
             if (!modified) {
