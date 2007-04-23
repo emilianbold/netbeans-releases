@@ -165,3 +165,48 @@ a{
 {
     visibility: hidden;
 }
+
+.wht 
+{
+   color: #FFFFFF
+}
+
+.bld
+{
+   font-weight: bold
+}
+
+.frame
+{
+    width: 600;
+    height: 300;
+    align: left;
+}
+
+.tableW
+{
+    width: 600;
+}
+
+.tableW1
+{
+    width: 100;
+}
+
+.tableW2
+{
+    width: 500;
+}
+
+.tab
+{
+    width: 100;
+    text-decoration: none;
+}
+
+.lfa
+{
+    align: left;
+}
+    
+    

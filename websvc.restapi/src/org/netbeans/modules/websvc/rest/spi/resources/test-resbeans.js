@@ -97,7 +97,7 @@ function updateMenu(xmlHttpReq) {
                 return;
             }
             setvisibility('main', 'inherit');
-            document.getElementById('subheader').innerHTML = '<br/><b>WADL: </b>'+wadlURL;
+            document.getElementById('subheader').innerHTML = '<br/><span class=bld>WADL: </span>'+wadlURL;
             wadlDoc = loadXml(rtext);
             if(wadlDoc != null) {                
                 initTree(wadlDoc);
@@ -218,7 +218,7 @@ function changeMimeType()
 };
 function getMethodMimeTypeCombo(resource) {
     var methods = resource.getElementsByTagName('method');
-    var str = "<b>Method: </b>";
+    var str = "<span class=bld>Method: </span>";
     str += "<select id='methodSel' name='methodSel' onchange='javascript:changeMethod();'>";
     for(j=0;j<methods.length;j++) {
         var m = methods[j];                            
@@ -303,13 +303,13 @@ function doShowContent1(uri, mName, mediaType) {
     else
         mediaType = getDefaultMime();
     showBreadCrumbs(uri);
-    var str = "<b>Method: </b>";
+    var str = "<span class=bld>Method: </span>";
     str += "<select id='methodSel' name='methodSel' onchange='javascript:changeMethod();'>";
     str += "  <option selected value='GET'>GET</option>";
     str += "  <option value='PUT'>PUT</option>";
     str += "  <option value='DELETE'>DELETE</option>";
     str += "</select>";
-    str += "&nbsp;&nbsp;<b>MIME: </b>";
+    str += "&nbsp;&nbsp;<span class=bld>MIME: </span>";
     str += "<select id='mimeSel' name='mimeSel' onchange='javascript:changeMimeType();'>";
     str += "  <option value='application/xml'>application/xml</option>";
     str += "  <option value='text/xml'>text/xml</option>";
@@ -322,7 +322,7 @@ function doShowContent1(uri, mName, mediaType) {
     var req = uri;
     var disp = getDisplayUri(req);
     var uriLink = "<a id='"+req+"' href=javascript:doShowContent('"+req+"') >"+getDisplayURL(disp, 80)+"</a>";
-    updatepage('request', '<b>MSG_TEST_RESBEANS_Resource</b> '+uriLink+' <br/>(<a href="'+req+'" target="_blank">'+getDisplayURL(req, 90)+'</a>)');
+    updatepage('request', '<span class=bld>MSG_TEST_RESBEANS_Resource</span> '+uriLink+' <br/>(<a href="'+req+'" target="_blank">'+getDisplayURL(req, 90)+'</a>)');
 }
 function doShowContent2(uri, r) {
     updatepage('result', '');
@@ -345,7 +345,7 @@ function doShowContent2(uri, r) {
     var req = uri;
     var disp = getDisplayUri(req);
     var uriLink = "<a id='"+req+"' href=javascript:doShowContent('"+req+"') >"+getDisplayURL(disp, 80)+"</a>";
-    updatepage('request', '<b>Resource:</b> '+uriLink+' <br/>(<a href="'+req+'" target="_blank">'+getDisplayURL(req, 90)+'</a>)');
+    updatepage('request', '<span class=bld>Resource:</span> '+uriLink+' <br/>(<a href="'+req+'" target="_blank">'+getDisplayURL(req, 90)+'</a>)');
 }
 function getFormRep(req, uri, mName, mediaType) {
     if(mName == null || mName == 'undefined')
@@ -403,7 +403,7 @@ function getParamRep(req, mName) {
                     for(j=0;j<params.length;j++) {
                         var pname = params[j].attributes.getNamedItem('name').nodeValue;
                         var num = j+1;
-                        str += "<b>"+pname+":</b>"+"<input id='params' name='"+pname+"' type='text' value='"+pname+"'>"+"<br><br>";
+                        str += "<span class=bld>"+pname+":</span>"+"<input id='params' name='"+pname+"' type='text' value='"+pname+"'>"+"<br><br>";
                     }
                 }
             }
@@ -416,7 +416,7 @@ function getParamRep(req, mName) {
     else
         str = "<textarea id='blobParam' name='params' rows='6' cols='70'>MSG_TEST_RESBEANS_Insert</textarea><br/>";        
     if(str != "")
-        str = "<b>MSG_TEST_RESBEANS_ResourceInputs</b><br><br><div class='ml20'>"+str+"</div><br/>";
+        str = "<span class=bld>MSG_TEST_RESBEANS_ResourceInputs</span><br><br><div class='ml20'>"+str+"</div><br/>";
     return str;
 }
 function testResource() {
@@ -474,7 +474,7 @@ function testResource() {
     xmlHttpReq4.send(params);
 }
 function createIFrame(url) {
-    var c = '<iframe src="'+url+'" width="600" height="300" align="left">'+
+    var c = '<iframe src="'+url+'" class="frame" width="600" height="300" align="left">'+
         '<p>See <a href="'+url+'">"'+url+'"</a>.</p>'+
         '</iframe>';
     return c;
@@ -531,7 +531,7 @@ function updateContent(xmlHttpReq) {
                 try {
                     var tableContent = '';
                     //alert(content);
-                    var cErr = '<table border=1><tr><td width=600>MSG_TEST_RESBEANS_No_Container</td></tr></table>';
+                    var cErr = '<table border=1><tr><td class=tableW>MSG_TEST_RESBEANS_No_Container</td></tr></table>';
                     if(content.indexOf("<?xml ") != -1) {
                         tableContent = getContainerTable(content);
                         if(tableContent == null || tableContent.length <= 594 || 
@@ -551,8 +551,8 @@ function updateContent(xmlHttpReq) {
                         rawViewStyle = ' ';
                         headerViewStyle = nodisp;
                     }
-                    updatepage('result', '<b>MSG_TEST_RESBEANS_Status</b> '+ xmlHttpReq.status+' ('+xmlHttpReq.statusText+')<br/><br/>'+
-                        '<b>MSG_TEST_RESBEANS_Content</b> '+
+                    updatepage('result', '<span class=bld>MSG_TEST_RESBEANS_Status</span> '+ xmlHttpReq.status+' ('+xmlHttpReq.statusText+')<br/><br/>'+
+                        '<span class=bld>MSG_TEST_RESBEANS_Content</span> '+
                         getTab('table', tableViewStyle)+getTab('raw', rawViewStyle)+getTab('header', headerViewStyle)+                        
                         '<div id="menu_bottom" class="stab tabsbottom"></div>'+
                         '<div id="headerInfo"'+headerViewStyle+'>'+getHeaderAsTable(xmlHttpReq)+'</div>'+
@@ -562,8 +562,8 @@ function updateContent(xmlHttpReq) {
                 } catch( e ) {
                     //alert(e.name+e.message);
                     var c = createIFrame(currentValidUrl);
-                    updatepage('result', '<b>Content:</b> '+c);
-                    updatepage('resultheaders', '<b>Response Headers:</b> '+getHeaderAsTable(xmlHttpReq));                    
+                    updatepage('result', '<span class=bld>MSG_TEST_RESBEANS_Content</span> '+c);
+                    updatepage('resultheaders', '<span class=bld>MSG_TEST_RESBEANS_ResponseHeaders</span> '+getHeaderAsTable(xmlHttpReq));                    
                 }  
             }
         } else {
@@ -589,8 +589,8 @@ function getTab(id, style) {
             style = 'stab';
         else
             style = 'otab';
-        c += '<td width=100 class="'+style+'"><a href="javascript:showViews(\''+
-            viewIds[i]+'\')"><span class="stext">'+viewNames[i]+'</span></a></td>';
+        c += '<td class="tab '+style+'"><a href="javascript:showViews(\''+
+            viewIds[i]+'\')" class="tab"><span class="stext">'+viewNames[i]+'</span></a></td>';
     }
     c += '</tr></table></div>';
     return c;
@@ -601,13 +601,13 @@ function getHeaderAsTable(xmlHttpReq) {
     var str = "<table class='results' border='1'>";
     str += "<thead class='resultHeader'>";
     var colNames = new Array()
-    colNames[0] = "name"
-    colNames[1] = "value"
+    colNames[0] = "MSG_TEST_RESBEANS_HeaderName"
+    colNames[1] = "MSG_TEST_RESBEANS_HeaderValue"
     var colSizes = new Array()
-    colSizes[0] = "80"
-    colSizes[1] = "250"
+    colSizes[0] = "class='tableW1 lfa'"
+    colSizes[1] = "class='tableW2 lfa'"
     for (i=0;i<colNames.length;i++) {
-        str += "<th width='"+colSizes[i]+"' align='left'><font color='#FFFFFF'><b>"+colNames[i]+"</b></font></th>";
+        str += "<th width='"+colSizes[i]+"'><span class='bld wht'>"+colNames[i]+"</span></th>";
     }
     str += "</thead>";
     str += "<tbody>";
@@ -668,12 +668,12 @@ function getContainerTable(xmlStr) {
             colNames[0] = "ID"
             colNames[1] = "URI"
             var colSizes = new Array()
-            colSizes[0] = "100"
-            colSizes[1] = "500"
+            colSizes[0] = "class='tableW1 lfa'"
+            colSizes[1] = "class='tableW2 lfa'"
             var str = "<table class='results' border='1'>";
             str += "<thead class='resultHeader'>";
             for (i=0;i<colNames.length;i++) {
-                str += "<th width='"+colSizes[i]+"' align='left'><font color='#FFFFFF'><b>"+colNames[i]+"</b></font></th>";
+                str += "<th "+colSizes[i]+"><span class='bld wht'>"+colNames[i]+"</span></th>";
             }
             str += "</thead>";
             str += "<tbody id='containerTable'>";
