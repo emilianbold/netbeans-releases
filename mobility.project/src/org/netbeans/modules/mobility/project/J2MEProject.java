@@ -334,6 +334,11 @@ public final class J2MEProject implements Project, AntProjectListener {
                     }
                     helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, priv);
                     if (modified) helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, proj);
+                    try {
+                        refHelper.addExtraBaseDirectory("netbeans.user"); //NOI18N
+                    } catch (IllegalArgumentException iae) {
+                        //ignore - see issue #102148
+                    }
                     return null;
                 }
             });
