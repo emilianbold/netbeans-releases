@@ -32,6 +32,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.ant.freeform.spi.support.NewFreeformProjectSupport;
 import org.netbeans.modules.java.freeform.spi.support.NewJavaFreeformProjectSupport;
+import org.netbeans.modules.j2ee.common.FileSearchUtility;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -109,8 +110,18 @@ public class WebLocationsWizardPanel implements WizardDescriptor.Panel {
             this.baseFolder = baseFolder;
             FileObject fo = FileUtil.toFileObject(baseFolder);
             if (fo != null) {
-                webPages = guessDocBase(fo);
-                webInf = ""; //guess
+                FileObject webPagesFO = FileSearchUtility.guessDocBase(fo);
+                if (webPagesFO == null)
+                    webPages = ""; //NOI18N
+                else
+                    webPages = FileUtil.toFile(webPagesFO).getAbsolutePath();
+                
+                FileObject webInfFO = FileSearchUtility.guessWebInf(fo);
+                if (webInfFO == null)
+                    webInf = ""; //NOI18N
+                else
+                    webInf = FileUtil.toFile(webInfFO).getAbsolutePath();
+                
                 srcPackages = guessJavaRoot(fo);
             } else {
                 webPages = ""; // NOI18N
@@ -134,20 +145,6 @@ public class WebLocationsWizardPanel implements WizardDescriptor.Panel {
         wizardDescriptor.putProperty(NewWebFreeformProjectWizardIterator.PROP_WEB_SOURCE_FOLDERS, component.getWebSrcFolder());
         wizardDescriptor.putProperty(NewWebFreeformProjectWizardIterator.PROP_WEB_INF_FOLDER, component.getWebInfFolder());
         wizardDescriptor.putProperty("NewProjectWizard_Title", null); // NOI18N
-    }
-
-    private String guessDocBase (FileObject dir) {
-        Enumeration ch = dir.getChildren (true);
-        while (ch.hasMoreElements ()) {
-            FileObject f = (FileObject) ch.nextElement ();
-            if (f.isFolder () && f.getName ().equals ("WEB-INF")) { // NOI18N
-                final FileObject webXmlFleObject = f.getFileObject ("web.xml"); // NOI18N
-                if (webXmlFleObject!= null && webXmlFleObject.isData ()) { 
-                    return FileUtil.toFile(f.getParent()).getAbsolutePath();
-                }
-            }
-        }
-        return ""; // NOI18N
     }
 
     private String guessJavaRoot (FileObject dir) {
