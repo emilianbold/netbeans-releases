@@ -176,5 +176,8 @@ public class CatchNode extends BpelNode<Catch> {
             }
         }
     }
+     public String getHelpId() {
+        return "orch_elements_scope_add_catch"; //NOI18N
+    }
 
 }

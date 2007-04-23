@@ -66,4 +66,7 @@ public class FaultHandlersNode extends BpelNode<FaultHandlers> {
     public NodeType getNodeType() {
         return NodeType.FAULT_HANDLERS;
     }
+     public String getHelpId() {
+        return "orch_elements_scope_add_fault_handler"; //NOI18N
+    }
 }

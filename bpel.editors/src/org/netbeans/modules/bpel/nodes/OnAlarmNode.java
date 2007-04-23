@@ -213,4 +213,7 @@ public final class OnAlarmNode extends BpelNode<TimeEventHolder>
             ActionType.PROPERTIES
         };
     }
+    public String getHelpId() {
+        return "orch_elements_event_handler_onalarm"; //NOI18N
+    }
 }

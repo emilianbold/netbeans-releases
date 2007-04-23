@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -136,74 +136,74 @@ public final class OnAlarmEventNode extends BpelNode<OnAlarmEvent>
         final BPELElementsBuilder builder = model.getBuilder();
         //
         switch (newValue) {
-            case REPEAT_TIME:
-                model.invoke(new Callable() {
-                    public Object call() throws Exception {
-                        if (alarmEvent.getRepeatEvery() == null) {
-                            alarmEvent.setRepeatEvery(builder.createRepeatEvery());
-                        }
-                        alarmEvent.removeTimeEvent();
-                        return null;
+        case REPEAT_TIME:
+            model.invoke(new Callable() {
+                public Object call() throws Exception {
+                    if (alarmEvent.getRepeatEvery() == null) {
+                        alarmEvent.setRepeatEvery(builder.createRepeatEvery());
                     }
-                }, OnAlarmEventNode.this);
-                break;
-            case FOR_TIME:
-                model.invoke(new Callable() {
-                    public Object call() throws Exception {
-                        alarmEvent.removeRepeatEvery();
-                        TimeEvent timeEvent = alarmEvent.getTimeEvent();
-                        if (timeEvent == null || !(timeEvent instanceof For)) {
-                            alarmEvent.setTimeEvent(builder.createFor());
-                        }
-                        return null;
+                    alarmEvent.removeTimeEvent();
+                    return null;
+                }
+            }, OnAlarmEventNode.this);
+            break;
+        case FOR_TIME:
+            model.invoke(new Callable() {
+                public Object call() throws Exception {
+                    alarmEvent.removeRepeatEvery();
+                    TimeEvent timeEvent = alarmEvent.getTimeEvent();
+                    if (timeEvent == null || !(timeEvent instanceof For)) {
+                        alarmEvent.setTimeEvent(builder.createFor());
                     }
-                }, OnAlarmEventNode.this);
-                break;
-            case UNTIL_TIME:
-                model.invoke(new Callable() {
-                    public Object call() throws Exception {
-                        alarmEvent.removeRepeatEvery();
-                        TimeEvent timeEvent = alarmEvent.getTimeEvent();
-                        if (timeEvent == null || 
-                                !(timeEvent instanceof DeadlineExpression)) {
-                            alarmEvent.setTimeEvent(builder.createUntil());
-                        }
-                        return null;
+                    return null;
+                }
+            }, OnAlarmEventNode.this);
+            break;
+        case UNTIL_TIME:
+            model.invoke(new Callable() {
+                public Object call() throws Exception {
+                    alarmEvent.removeRepeatEvery();
+                    TimeEvent timeEvent = alarmEvent.getTimeEvent();
+                    if (timeEvent == null ||
+                            !(timeEvent instanceof DeadlineExpression)) {
+                        alarmEvent.setTimeEvent(builder.createUntil());
                     }
-                }, OnAlarmEventNode.this);
-                break;
-            case FOR_REPEAT_TIME:
-                model.invoke(new Callable() {
-                    public Object call() throws Exception {
-                        TimeEvent timeEvent = alarmEvent.getTimeEvent();
-                        if (timeEvent == null || !(timeEvent instanceof For)) {
-                            alarmEvent.setTimeEvent(builder.createFor());
-                        }
-                        if (alarmEvent.getRepeatEvery() == null) {
-                            alarmEvent.setRepeatEvery(builder.createRepeatEvery());
-                        }
-                        return null;
+                    return null;
+                }
+            }, OnAlarmEventNode.this);
+            break;
+        case FOR_REPEAT_TIME:
+            model.invoke(new Callable() {
+                public Object call() throws Exception {
+                    TimeEvent timeEvent = alarmEvent.getTimeEvent();
+                    if (timeEvent == null || !(timeEvent instanceof For)) {
+                        alarmEvent.setTimeEvent(builder.createFor());
                     }
-                }, OnAlarmEventNode.this);
-                break;
-            case UNTIL_REPEAT_TIME:
-                model.invoke(new Callable() {
-                    public Object call() throws Exception {
-                        TimeEvent timeEvent = alarmEvent.getTimeEvent();
-                        if (timeEvent == null || 
-                                !(timeEvent instanceof DeadlineExpression)) {
-                            alarmEvent.setTimeEvent(builder.createUntil());
-                        }
-                        if (alarmEvent.getRepeatEvery() == null) {
-                            alarmEvent.setRepeatEvery(builder.createRepeatEvery());
-                        }
-                        return null;
+                    if (alarmEvent.getRepeatEvery() == null) {
+                        alarmEvent.setRepeatEvery(builder.createRepeatEvery());
                     }
-                }, OnAlarmEventNode.this);
-                break;
-            case NOT_ASSIGNED:
-            case INVALID:
-                break;
+                    return null;
+                }
+            }, OnAlarmEventNode.this);
+            break;
+        case UNTIL_REPEAT_TIME:
+            model.invoke(new Callable() {
+                public Object call() throws Exception {
+                    TimeEvent timeEvent = alarmEvent.getTimeEvent();
+                    if (timeEvent == null ||
+                            !(timeEvent instanceof DeadlineExpression)) {
+                        alarmEvent.setTimeEvent(builder.createUntil());
+                    }
+                    if (alarmEvent.getRepeatEvery() == null) {
+                        alarmEvent.setRepeatEvery(builder.createRepeatEvery());
+                    }
+                    return null;
+                }
+            }, OnAlarmEventNode.this);
+            break;
+        case NOT_ASSIGNED:
+        case INVALID:
+            break;
         }
         //
         updateAlarmEventTypeState(getAlarmEventType(), getPropertySets());
@@ -221,37 +221,37 @@ public final class OnAlarmEventNode extends BpelNode<OnAlarmEvent>
         boolean isRepeatEveryHidden = true;
         //
         switch (alarmEventType) {
-            case REPEAT_TIME:
-                isForHidden = true;
-                isUntilHidden = true;
-                isRepeatEveryHidden = false;
-                break;
-            case FOR_TIME:
-                isForHidden = false;
-                isUntilHidden = true;
-                isRepeatEveryHidden = true;
-                break;
-            case UNTIL_TIME:
-                isForHidden = true;
-                isUntilHidden = false;
-                isRepeatEveryHidden = true;
-                break;
-            case FOR_REPEAT_TIME:
-                isForHidden = false;
-                isUntilHidden = true;
-                isRepeatEveryHidden = false;
-                break;
-            case UNTIL_REPEAT_TIME:
-                isForHidden = true;
-                isUntilHidden = false;
-                isRepeatEveryHidden = false;
-                break;
-            case NOT_ASSIGNED:
-            case INVALID:
-                isForHidden = true;
-                isUntilHidden = true;
-                isRepeatEveryHidden = true;
-                break;
+        case REPEAT_TIME:
+            isForHidden = true;
+            isUntilHidden = true;
+            isRepeatEveryHidden = false;
+            break;
+        case FOR_TIME:
+            isForHidden = false;
+            isUntilHidden = true;
+            isRepeatEveryHidden = true;
+            break;
+        case UNTIL_TIME:
+            isForHidden = true;
+            isUntilHidden = false;
+            isRepeatEveryHidden = true;
+            break;
+        case FOR_REPEAT_TIME:
+            isForHidden = false;
+            isUntilHidden = true;
+            isRepeatEveryHidden = false;
+            break;
+        case UNTIL_REPEAT_TIME:
+            isForHidden = true;
+            isUntilHidden = false;
+            isRepeatEveryHidden = false;
+            break;
+        case NOT_ASSIGNED:
+        case INVALID:
+            isForHidden = true;
+            isUntilHidden = true;
+            isRepeatEveryHidden = true;
+            break;
         }
         
         prop = PropertyUtils.lookForPropertyByType(
@@ -288,5 +288,8 @@ public final class OnAlarmEventNode extends BpelNode<OnAlarmEvent>
             ActionType.SEPARATOR,
             ActionType.PROPERTIES
         };
+    }
+    public String getHelpId() {
+        return "orch_elements_event_handler_onalarm"; //NOI18N
     }
 }

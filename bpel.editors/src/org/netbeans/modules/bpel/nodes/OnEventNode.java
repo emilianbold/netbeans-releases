@@ -397,4 +397,8 @@ public class OnEventNode extends BpelNode<OnEvent> {
             }
         }
     }
+    
+    public String getHelpId() {
+        return "org.netbeans.modules.bpel.properties.editors.OnEventCustomEditor"; //NOI18N
+    }
 }
