@@ -507,12 +507,12 @@ is divided into following sections:
             <xsl:if test="$jaxws/*/*/*/jaxws:wsdl-url">
                 <target name="wsimport-init" depends="init">
                     <xsl:if test="$jaxws/jaxws:jax-ws/jaxws:clients/jaxws:client">
-                        <mkdir dir="${{build.generated.dir}}/wsimport/client"/>
-                        <mkdir dir="${{build.generated.dir}}/wsimport/binaries"/>
+                        <mkdir dir="${{build.generated.dir}}/wsimport/client"/>                        
                     </xsl:if>
                     <xsl:if test="$jaxws/jaxws:jax-ws/jaxws:services/jaxws:service/jaxws:wsdl-url">
                         <mkdir dir="${{build.generated.dir}}/wsimport/service"/>
                     </xsl:if>
+                    <mkdir dir="${{build.generated.dir}}/wsimport/binaries"/>
                     <mkdir dir="${{classes.dir}}"/>
                     <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">
                         <classpath path="${{j2ee.platform.wsimport.classpath}}"/>
@@ -676,7 +676,7 @@ is divided into following sections:
                                 extension="true"
                                 verbose="true"
                                 package="{$package_name}"
-                                destdir="${{classes.dir}}"
+                                destdir="${{build.generated.dir}}/wsimport/binaries"
                                 wsdl="${{basedir}}/${{meta.inf}}/xml-resources/web-services/{$wsname}/wsdl/{$wsdl_url}"
                                 catalog="{$catalog}">
                                 <xsl:if test="jaxws:binding">
@@ -721,7 +721,7 @@ is divided into following sections:
                                 sourcedestdir="${{build.generated.dir}}/wsimport/service"
                                 extension="true"
                                 verbose="true"
-                                destdir="${{classes.dir}}"
+                                destdir="${{build.generated.dir}}/wsimport/binaries"
                                 wsdl="${{basedir}}/${{meta.inf}}/xml-resources/web-services/{$wsname}/wsdl/{$wsdl_url}"
                                 catalog="{$catalog}">
                                 <xsl:if test="jaxws:binding">
