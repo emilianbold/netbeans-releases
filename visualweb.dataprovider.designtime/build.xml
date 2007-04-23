@@ -21,12 +21,11 @@ Microsystems, Inc. All Rights Reserved.
 <project name="org.netbeans.modules.visualweb.dataprovider.designtime" default="netbeans" basedir=".">
 
     <description>Builds and tests the project org.netbeans.modules.visualweb.dataprovider.designtime</description>
-    <import file="nbproject/build-impl.xml"/>
-    <import file="${suite.dir}/templates/common.xml"/>
+    <import file="../../../nbbuild/templates/projectized.xml"/>
     
-    <target name="init" depends="harness.init,generate"/>
+    <target name="init" depends="projectized.init,generate"/>
     
-    <target name="generate" depends="harness.init,pre-generate" unless="generated-uptodate">
+    <target name="generate" depends="projectized.init,pre-generate" unless="generated-uptodate">
         <antcall target="validate"/>
         <echo>Generating BeanInfo classes...</echo>
         <java classname="com.sun.rave.jsfmeta.generators.Main" fork="true">
@@ -49,7 +48,7 @@ Microsystems, Inc. All Rights Reserved.
         </uptodate>
     </target>
 
-    <target name="validate" depends="harness.init">
+    <target name="validate" depends="projectized.init">
         <xmlcatalog id="faces-catalog">
             <dtd publicId="-//Sun Microsystems, Inc.//DTD JavaServer Faces Overlay 1.0//EN"
               location="../../ravelibs/jsf-api/conf/web-facesconfig-overlay_1_0.dtd"/>

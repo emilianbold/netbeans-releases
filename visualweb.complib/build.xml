@@ -20,6 +20,5 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="org.netbeans.modules.visualweb.complib" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project org.netbeans.modules.visualweb.complib.</description>
-    <import file="nbproject/build-impl.xml"/>
-    <import file="${suite.dir}/templates/common.xml"/>
+    <import file="../../nbbuild/templates/projectized.xml"/>
 </project>

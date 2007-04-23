@@ -1032,6 +1032,13 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <delete dir="nbms" />
     <delete dir="${netbeans.dest.dir}"/>
   </target>
+
+  <target name="build-visual-cluster-only" depends="init">
+    <antcall target="build-one-cluster">
+      <param name="one.cluster.name" value="nb.cluster.visualweb"/>
+      <param name="one.cluster.name-hasNoDependencies" value="true"/>
+    </antcall>
+  </target>
   
   <!-- more correct but takes too long: <target name="localtest" depends="bootstrap,all-xtest/nbjunit" > -->
   <target name="localtest" depends="bootstrap">

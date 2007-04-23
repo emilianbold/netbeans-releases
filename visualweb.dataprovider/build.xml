@@ -21,10 +21,9 @@ Microsystems, Inc. All Rights Reserved.
 <project name="org.netbeans.modules.visualweb.dataprovider" default="netbeans" basedir=".">
     
     <description>Builds and tests the project org.netbeans.modules.visualweb.dataprovider.</description>
-    <import file="nbproject/build-impl.xml"/>
-    <import file="${suite.dir}/templates/common.xml"/>
+    <import file="../../../nbbuild/templates/projectized.xml"/>
     
-    <target name="init" depends="library-init,javadoc-zip-init,src-zip-init,harness.init"/>
+    <target name="init" depends="library-init,javadoc-zip-init,src-zip-init,projectized.init"/>
     
     <!-- Build the J2SE project JAR on which this library wrapper module depends. -->
     <target name="library-init">
