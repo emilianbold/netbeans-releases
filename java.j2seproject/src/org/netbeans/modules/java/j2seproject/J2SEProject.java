@@ -65,9 +65,9 @@ import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
+import org.netbeans.spi.project.ant.AntBuildExtenderFactory;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.ant.AntBuildExtenderImplementation;
-import org.netbeans.spi.project.support.ant.AntBuildExtenderSupport;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
@@ -134,7 +134,7 @@ public final class J2SEProject implements Project, AntProjectListener {
         eval = createEvaluator();
         aux = helper.createAuxiliaryConfiguration();
         refHelper = new ReferenceHelper(helper, aux, eval);
-        buildExtender = AntBuildExtenderSupport.createAntExtender(new J2SEExtenderImplementation());
+        buildExtender = AntBuildExtenderFactory.createAntExtender(new J2SEExtenderImplementation());
     /// TODO replace this GeneratedFilesHelper with the default one when fixing #101710
         genFilesHelper = new GeneratedFilesHelper(helper, buildExtender);
         this.updateHelper = new UpdateHelper (this, this.helper, this.aux, this.genFilesHelper,
@@ -494,15 +494,18 @@ public final class J2SEProject implements Project, AntProjectListener {
         }
         
         protected void projectClosed() {
-            // Probably unnecessary, but just in case:
-            try {
-                ProjectManager.getDefault().saveProject(J2SEProject.this);
-            } catch (IOException e) {
-                if (!J2SEProject.this.getProjectDirectory().canWrite()) {
-                    // #91398 - ignore, we already reported on project open. 
-                    // not counting with someone setting the ro flag while the project is opened.
-                } else {
-                    ErrorManager.getDefault().notify(e);
+            // just do if the whole project was not deleted...
+            if (getProjectDirectory().isValid()) {
+                // Probably unnecessary, but just in case:
+                try {
+                    ProjectManager.getDefault().saveProject(J2SEProject.this);
+                } catch (IOException e) {
+                    if (!J2SEProject.this.getProjectDirectory().canWrite()) {
+                        // #91398 - ignore, we already reported on project open. 
+                        // not counting with someone setting the ro flag while the project is opened.
+                    } else {
+                        ErrorManager.getDefault().notify(e);
+                    }
                 }
             }
             

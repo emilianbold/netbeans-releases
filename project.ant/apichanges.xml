@@ -98,7 +98,7 @@ is the proper place.
             <class package="org.netbeans.api.project.ant" name="AntBuildExtender"/>
             <class package="org.netbeans.spi.project.support.ant" name="GeneratedFilesHelper"/>
             <class package="org.netbeans.spi.project.ant" name="AntBuildExtenderImplementation"/>
-            <class package="org.netbeans.spi.project.support.ant" name="AntBuildExtenderSupport"/>
+            <class package="org.netbeans.spi.project.ant" name="AntBuildExtenderFactory"/>
             <issue number="93509"/>
         </change>
         
