@@ -37,7 +37,9 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import org.netbeans.modules.j2ee.ejbcore.test.TestBase;
 import org.openide.filesystems.FileObject;
@@ -56,7 +58,7 @@ public class UseDatabaseGeneratorTest extends TestBase {
         super(testName);
     }
     
-    public void testGenerate() throws IOException {
+    public void testGenerate() throws IOException, ConfigurationException {
         UseDatabaseGenerator generator = new UseDatabaseGenerator();
         
         // EJB 2.1 Stateless Session Bean
@@ -65,7 +67,8 @@ public class UseDatabaseGeneratorTest extends TestBase {
         Node node = new AbstractNode(Children.LEAF, Lookups.singleton(beanClass));
         final ElementHandle<TypeElement> elementHandle = _RetoucheUtil.getJavaClassFromNode(node);
         Datasource datasource = new DatasourceImpl();
-        generator.generate(beanClass, elementHandle, datasource, false, null);
+        J2eeModuleProvider j2eeModuleProvider = testModule.getProject().getLookup().lookup(J2eeModuleProvider.class);
+        generator.generate(beanClass, elementHandle, j2eeModuleProvider, "testJndiName", datasource, false, null);
         
         JavaSource javaSource = JavaSource.forFileObject(beanClass);
         javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
@@ -90,7 +93,8 @@ public class UseDatabaseGeneratorTest extends TestBase {
         node = new AbstractNode(Children.LEAF, Lookups.singleton(beanClass));
         final ElementHandle<TypeElement> elementHandle2 = _RetoucheUtil.getJavaClassFromNode(node);
         datasource = new DatasourceImpl();
-        generator.generate(beanClass, elementHandle2, datasource, false, null);
+        j2eeModuleProvider = testModule.getProject().getLookup().lookup(J2eeModuleProvider.class);
+        generator.generate(beanClass, elementHandle2, j2eeModuleProvider, "testJndiName", datasource, false, null);
         
         javaSource = JavaSource.forFileObject(beanClass);
         javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {

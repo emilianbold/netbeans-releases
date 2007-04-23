@@ -35,12 +35,13 @@ import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
+import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.VersionListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarsInProject;
-import org.netbeans.modules.schema2beans.BaseBean;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -133,7 +134,8 @@ public final class ProjectImpl implements Project {
         }
         
         public J2eeModule getJ2eeModule() {
-            return new J2eeModuleImpl(moduleVersion);
+            J2eeModuleImplementation j2eeModuleImpl = new J2eeModuleImpl(moduleVersion);
+            return J2eeModuleFactory.createJ2eeModule(j2eeModuleImpl);
         }
         
         public ModuleChangeReporter getModuleChangeReporter() {
@@ -161,7 +163,7 @@ public final class ProjectImpl implements Project {
         
     }
     
-    private static class J2eeModuleImpl implements J2eeModule {
+    private static class J2eeModuleImpl implements J2eeModuleImplementation {
         
         private final String moduleVersion;
         
@@ -195,16 +197,25 @@ public final class ProjectImpl implements Project {
         public FileObject getContentDirectory() throws IOException {
             return null;
         }
-        
-        public BaseBean getDeploymentDescriptor(String location) {
+
+        public RootInterface getDeploymentDescriptor(String location) {
             return null;
         }
-        
-        public void addVersionListener(VersionListener listener) {
+
+        public File getResourceDirectory() {
+            return null;
+        }
+
+        public File getDeploymentConfigurationFile(String name) {
+            return null;
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
         }
         
-        public void removeVersionListener(VersionListener listener) {
-        }
     }
     
     private static class EnterpriseReferenceContainerImpl implements EnterpriseReferenceContainer {
