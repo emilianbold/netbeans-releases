@@ -131,7 +131,7 @@ public final class SyntaxParser {
     
     //---------------------------- private methods -------------------------------
     
-    private synchronized void restartParser() {
+    private void restartParser() {
         if(!parserTask.isFinished()) {
             parserTask.cancel(); //removes the task from the queue AND INTERRUPTS the thread!
             isParsing = false;
@@ -140,7 +140,7 @@ public final class SyntaxParser {
         isScheduled = true;
     }
     
-    private synchronized void parse() {
+    private void parse() {
         synchronized (parsingState) {
             if(isParsing) {
                return ;
