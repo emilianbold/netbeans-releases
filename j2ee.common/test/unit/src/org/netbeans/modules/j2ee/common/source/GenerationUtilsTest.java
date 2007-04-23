@@ -399,6 +399,19 @@ public class GenerationUtilsTest extends NbTestCase {
         });
     }
 
+    public void testCreateType() throws Exception {
+        TestUtilities.copyStringToFileObject(testFO,
+                "package foo;" +
+                "public class TestClass {" +
+                "}");
+        runModificationTask(testFO, new AbstractTask<WorkingCopy>() {
+            public void run(WorkingCopy copy) throws Exception {
+                GenerationUtils genUtils = GenerationUtils.newInstance(copy);
+                assertNotNull(genUtils.createType("byte[]"));
+            }
+        });
+    }
+
     private static void runUserActionTask(FileObject javaFile, CancellableTask<CompilationController> taskToTest) throws Exception {
         JavaSource javaSource = JavaSource.forFileObject(javaFile);
         javaSource.runUserActionTask(taskToTest, true);
@@ -418,7 +431,6 @@ public class GenerationUtilsTest extends NbTestCase {
         }
         fail("Type " + typeElement + " does not implement " + interfaceName);
     }
-    
 
     private static void setLookups(Object... lookups) {
         ((Lkp)Lookup.getDefault()).setProxyLookups(Lookups.fixed(lookups));

@@ -247,7 +247,14 @@ public final class GenerationUtils extends SourceUtils {
         if (primitiveTypeKind != null) {
             return getTreeMaker().PrimitiveType(primitiveTypeKind);
         }
-        return createQualIdent(typeName);
+        Tree typeTree = tryCreateQualIdent(typeName);
+        if (typeTree == null) {
+            // XXX does not handle imports; temporary until issue 102149 is fixed
+            WorkingCopy copy = getWorkingCopy();
+            TypeMirror typeMirror = copy.getTreeUtilities().parseType(typeName, getTypeElement());
+            typeTree = make.Type(typeMirror);
+        }
+        return typeTree;
     }
 
     public ModifiersTree createModifiers(Modifier modifier) {
@@ -731,12 +738,21 @@ public final class GenerationUtils extends SourceUtils {
         return getTreeMaker().Modifiers(Collections.<Modifier>emptySet(), Collections.<AnnotationTree>emptyList());
     }
 
-    private ExpressionTree createQualIdent(String typeName) {
+    private ExpressionTree tryCreateQualIdent(String typeName) {
         TypeElement typeElement = getWorkingCopy().getElements().getTypeElement(typeName);
-        if (typeElement == null) {
-            throw new IllegalArgumentException("Type " + typeName + " cannot be found"); // NOI18N
+        if (typeElement != null) {
+            return getTreeMaker().QualIdent(typeElement);
         }
-        return getTreeMaker().QualIdent(typeElement);
+        return null;
+
+    }
+
+    private ExpressionTree createQualIdent(String typeName) {
+        ExpressionTree qualIdent = tryCreateQualIdent(typeName);
+        if (qualIdent == null) {
+            throw new IllegalArgumentException("Cannot create a QualIdent for " + typeName); // NOI18N
+        }
+        return qualIdent;
     }
 
     private String createPropertyAccessorName(String propertyName, boolean getter) {
