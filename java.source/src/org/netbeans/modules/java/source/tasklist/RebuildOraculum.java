@@ -99,7 +99,7 @@ public class RebuildOraculum {
         return binaryName + ".java";                //NOI18N
     }
     
-    private static final Pattern ANNONYMOUS = Pattern.compile("\\$[0-9]"); //NOI18N
+    private static final Pattern ANONYMOUS = Pattern.compile("\\$[0-9]"); //NOI18N
     
     public List<File> findFilesToRebuild(File root, FileObject file, ClasspathInfo cpInfo, Map<ElementHandle, Collection<String>> currentMembers, Collection<String> possiblyRemovedClasses) {
         Logger.getLogger(RebuildOraculum.class.getName()).log(Level.FINE, "members={0}", getMembers());
@@ -148,7 +148,7 @@ public class RebuildOraculum {
         }
         
         for (String s : removedClasses) {
-            if (!ANNONYMOUS.matcher(s).find()) {//ignore probable annonymous inner classes/local classes
+            if (!ANONYMOUS.matcher(s).find()) {//ignore probable anonymous inner classes/local classes
                 classes.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, s));
             }
         }

@@ -389,7 +389,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
     }
 
     /**
-     * Adds method to annonymous class declared in try section.
+     * Adds method to anonymous class declared in try section.
      */
     public void testAddMethodToAnnInTry() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
