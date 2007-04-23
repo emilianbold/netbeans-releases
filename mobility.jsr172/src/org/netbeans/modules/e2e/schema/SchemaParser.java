@@ -169,7 +169,8 @@ public class SchemaParser extends DefaultHandler {
             validationResults.add( new WSDL2Java.ValidationResult(
                 WSDL2Java.ValidationResult.ErrorLevel.FATAL, "Connection problem. Cannot download schema from " + uri + " location." ));
         } catch( IOException e ) {
-            e.printStackTrace();
+            validationResults.add( new WSDL2Java.ValidationResult(
+                WSDL2Java.ValidationResult.ErrorLevel.FATAL, "Connection problem. Cannot download schema from " + uri + " location." ));
         }        
     }
 
