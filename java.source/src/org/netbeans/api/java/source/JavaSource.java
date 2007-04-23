@@ -63,6 +63,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeEvent;
@@ -190,6 +192,7 @@ public final class JavaSource {
     
     /**Slow task reporting*/
     private static final boolean reportSlowTasks = Boolean.getBoolean("org.netbeans.api.java.source.JavaSource.reportSlowTasks");   //NOI18N
+    private static final Pattern excludedTasks;
     /**Limit for task to be marked as a slow one, in ms*/
     private static final int SLOW_TASK_LIMIT = 250;
     private static final int SLOW_CANCEL_LIMIT = 50;
@@ -221,6 +224,17 @@ public final class JavaSource {
         phase2Key.put(Phase.RESOLVED, "attributed");                            //NOI18N
         phase2Message.put (Phase.RESOLVED, "Attributed");                       //NOI18N
         
+        //Initialize the excludedTasks
+        Pattern _excludedTasks = null;
+        try {
+            String excludedValue= System.getProperty("org.netbeans.api.java.source.JavaSource.excludedTasks");      //NOI18N
+            if (excludedValue != null) {
+                _excludedTasks = Pattern.compile(excludedValue);
+            }
+        } catch (PatternSyntaxException e) {
+            e.printStackTrace();
+        }
+        excludedTasks = _excludedTasks;
     }    
                             
     private final static PriorityBlockingQueue<Request> requests = new PriorityBlockingQueue<Request> (10, new RequestComparator());
@@ -700,6 +714,9 @@ public final class JavaSource {
         if (priority == null) {
             throw new IllegalArgumentException ("The priority cannot be null");    //NOI18N
         }
+        if (excludedTasks != null && excludedTasks.matcher(task.getClass().getName()).matches()) {
+            return;
+        }
         CompilationInfo currentInfo;
         synchronized (this) {
             currentInfo = this.currentInfo;
@@ -719,6 +736,9 @@ public final class JavaSource {
      * @task The task to remove.
      */
     void removePhaseCompletionTask( CancellableTask<CompilationInfo> task ) {
+        if (excludedTasks != null && excludedTasks.matcher(task.getClass().getName()).matches()) {
+            return;
+        }
         synchronized (JavaSource.class) {
             toRemove.add (task);
         }
