@@ -76,11 +76,15 @@ public class ResourceItemPanel extends JLabel implements MouseListener {
     }
     
     public JPopupMenu getComponentPopupMenu() {
-        return Utilities.actionsToPopup(ActionsSupport.createActionsArray(component), this);
+        return null;
     }
     
     public void mouseClicked(final MouseEvent e) {
         // TODO selection should be implemented so it happens on mousePressed and confirmed by mouse released
+        doSelect (e);
+    }
+
+    private void doSelect (final MouseEvent e) {
         final DesignDocument doc = component.getDocument();
         final Collection<DesignComponent> newSelection = new ArrayList<DesignComponent> ();
         doc.getTransactionManager().writeAccess(new Runnable() {
@@ -101,11 +105,19 @@ public class ResourceItemPanel extends JLabel implements MouseListener {
             }
         });
     }
-    
+
     public void mousePressed(MouseEvent e) {
+        if (e.isPopupTrigger ()) {
+            doSelect (e);
+            Utilities.actionsToPopup(ActionsSupport.createActionsArray(component), this).show (this, e.getX (), e.getY ());
+        }
     }
     
     public void mouseReleased(MouseEvent e) {
+        if (e.isPopupTrigger ()) {
+            doSelect (e);
+            Utilities.actionsToPopup(ActionsSupport.createActionsArray(component), this).show (this, e.getX (), e.getY ());
+        }
     }
     
     public void mouseEntered(MouseEvent e) {
