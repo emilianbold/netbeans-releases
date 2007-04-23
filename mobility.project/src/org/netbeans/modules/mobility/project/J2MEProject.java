@@ -76,6 +76,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.mobility.project.classpath.J2MEClassPathProvider;
 import org.netbeans.modules.mobility.project.queries.SourceLevelQueryImpl;
 import org.netbeans.modules.mobility.project.queries.FileBuiltQueryImpl;
+import org.netbeans.modules.mobility.project.queries.FileEncodingQueryImpl;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
@@ -250,7 +251,8 @@ public final class J2MEProject implements Project, AntProjectListener {
             new J2MEProjectOperations(this, helper, refHelper),
             new J2MEUnitPlugin(this,helper),
             new UnitTestForSourceQueryImpl(this.helper),
-            new PreprocessorFileFilterImplementation(configHelper, helper)
+            new PreprocessorFileFilterImplementation(configHelper, helper),
+            new FileEncodingQueryImpl(helper)
         });
     }
     
