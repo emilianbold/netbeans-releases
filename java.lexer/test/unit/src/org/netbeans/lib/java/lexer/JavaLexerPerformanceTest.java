@@ -50,55 +50,80 @@ public class JavaLexerPerformanceTest extends NbTestCase {
 
     protected void tearDown() throws java.lang.Exception {
     }
+    
+    private static final int PREPARE_COUNT = 10;
 
-    public void testString() throws Exception {
+    public void testAString() throws Exception {
         String text = readJComponentFile();
-        TokenHierarchy hi = TokenHierarchy.create(text, JavaTokenId.language());
-        TokenSequence ts = hi.tokenSequence();
-        // Initial pass - force all the tokens to be initialized
-        while (ts.moveNext()) { }
+        // Possibly some extra prepare runs
+        int prepareTokenCount = 0;
+        for (int i = 0; i < PREPARE_COUNT; i++) { prepareTokenCount += prepareTestAString(text); }
 
-        // Create the token hierarchy again and measure time
-        hi = TokenHierarchy.create(text, JavaTokenId.language());
-        ts = hi.tokenSequence();
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, JavaTokenId.language());
+        TokenSequence<?> ts = hi.tokenSequence();
         long tm = System.currentTimeMillis();
         // Force all the tokens to be initialized
-        while (ts.moveNext()) { }
+        int tokenCount = 0;
+        while (ts.moveNext()) { tokenCount++; }
         tm = System.currentTimeMillis() - tm;
-        System.err.println("TH over String: all tokens created in " + tm + " ms.");
+        System.err.println("TH over String: " + tokenCount + " tokens created in " + tm
+                + " ms over text with " + text.length() + " chars; prepareTokenCount="
+                + prepareTokenCount + ".");
     }
     
     public void testDocument() throws Exception {
         String text = readJComponentFile();
+        // Possibly some extra prepare runs
+        int prepareTokenCount = 0;
+        for (int i = 0; i < PREPARE_COUNT; i++) { prepareTokenCount += prepareTestDocument(text); }
+
+        // Create the document and token hierarchy again and measure time
         ModificationTextDocument doc = new ModificationTextDocument();
         doc.insertString(0, text, null);
         doc.putProperty(Language.class, JavaTokenId.language());
-        TokenHierarchy hi = TokenHierarchy.get(doc);
-        TokenSequence ts = hi.tokenSequence();
-        while (ts.moveNext()) { }
-        
-        // Create the document and token hierarchy again and measure time
-        doc = new ModificationTextDocument();
-        doc.insertString(0, text, null);
-        doc.putProperty(Language.class, JavaTokenId.language());
-        hi = TokenHierarchy.get(doc);
-        ts = hi.tokenSequence();
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        TokenSequence<?> ts = hi.tokenSequence();
         long tm = System.currentTimeMillis();
+        int tokenCount = 0;
         // Force all the tokens to be initialized
-        while (ts.moveNext()) { }
+        while (ts.moveNext()) { tokenCount++; }
         tm = System.currentTimeMillis() - tm;
-        System.err.println("TH over Swing Document: all tokens created in " + tm + " ms.");
-
+        System.err.println("TH over Swing Document: " + tokenCount + " tokens created in " + tm
+                + " ms over document with " + doc.getLength() + " chars; prepareTokenCount="
+                + prepareTokenCount + ".");
     }
     
+    private int prepareTestAString(String text) throws Exception {
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, JavaTokenId.language());
+        TokenSequence<?> ts = hi.tokenSequence();
+        int tokenCount = 0;
+        while (ts.moveNext()) { tokenCount++; }
+        return tokenCount;
+    }
+    
+    private int prepareTestDocument(String text) throws Exception {
+        ModificationTextDocument doc = new ModificationTextDocument();
+        doc.insertString(0, text, null);
+        doc.putProperty(Language.class, JavaTokenId.language());
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        TokenSequence<?> ts = hi.tokenSequence();
+        int tokenCount = 0;
+        while (ts.moveNext()) { tokenCount++; }
+        return tokenCount;
+    }
+
     private String readJComponentFile() throws Exception {
         File testJComponentFile = new File(getDataDir() + "/testfiles/JComponent.java.txt");
         FileReader r = new FileReader(testJComponentFile);
-        int fileLen = (int)testJComponentFile.length();
-        CharBuffer cb = CharBuffer.allocate(fileLen);
-        r.read(cb);
-        cb.rewind();
-        return cb.toString();
+        try {
+            int fileLen = (int)testJComponentFile.length();
+            CharBuffer cb = CharBuffer.allocate(fileLen);
+            r.read(cb);
+            cb.rewind();
+            return cb.toString();
+        } finally {
+            r.close();
+        }
     }
     
 }
