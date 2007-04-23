@@ -45,8 +45,8 @@ public class PropertiesEncodingTest extends NbTestCase {
                 new byte[] {'\\', 't'});
         compare(encoder.encodeCharForTests((char) 0x0c),    /* FF */
                 new byte[] {'\\', 'f'});
-//        compare(encoder.encodeCharForTests((char) 0x0a),    /* NL */
-//                new byte[] {'\\', 'n'});
+        compare(encoder.encodeCharForTests((char) 0x0a),    /* NL */
+                getNewLineBytes());
         compare(encoder.encodeCharForTests((char) 0x0d),    /* CR */
                 new byte[] {'\\', 'r'});
         compare(encoder.encodeCharForTests((char) 0x00),
@@ -353,6 +353,20 @@ public class PropertiesEncodingTest extends NbTestCase {
         assert b < 0x10;
         return (b < 10) ? (char) ('0' + (b & 0x0f))
                         : (char) ('a' + ((b & 0x0f) - 10));
+    }
+    
+    private static byte[] getNewLineBytes() {
+        switch (PropertiesEncoding.getDefaultNewLineType()) {
+            case CR:
+                return new byte[] {0x0d};
+            case CR_LF:
+                return new byte[] {0x0d, 0x0a};
+            case LF:
+                return new byte[] {0x0a};
+            default:
+                assert false;
+                throw new IllegalStateException();
+        }
     }
 
 }
