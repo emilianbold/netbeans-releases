@@ -72,8 +72,6 @@ public class ListDisplayPresenter extends DisplayableDisplayPresenter {
             presenter.reload(deviceInfo);
         }
         contentPanel.add(Box.createVerticalGlue());
-        
-        contentPanel.validate();
     }
     
 }

@@ -19,11 +19,11 @@
 
 package org.netbeans.modules.vmd.midp.screen.display;
 
-import javax.swing.Icon;
-import javax.swing.JLabel;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.midp.components.items.ImageItemCD;
+
+import javax.swing.*;
 
 /**
  *
@@ -45,7 +45,5 @@ public class ImageItemDisplayPresenter extends ItemDisplayPresenter {
         DesignComponent imageComponent = getComponent().readProperty(ImageItemCD.PROP_IMAGE).getComponent();
         Icon icon = ScreenSupport.getIconFromImageComponent(imageComponent);
         label.setIcon(icon);
-        label.revalidate();
-        label.repaint();
     }
 }

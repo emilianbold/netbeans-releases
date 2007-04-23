@@ -74,8 +74,6 @@ public class FormDisplayPresenter extends DisplayableDisplayPresenter {
         constraints.weighty = 1.0;
         constraints.anchor = GridBagConstraints.CENTER;
         contentPanel.add(fillPanel, constraints);
-        
-        contentPanel.validate();
     }
     
 }
