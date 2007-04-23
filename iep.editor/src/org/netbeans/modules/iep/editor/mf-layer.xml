@@ -78,6 +78,7 @@
             <file name="DeleteStream.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/relationConverter/DeleteStream.xml" />
             <file name="Table.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/relationConverter/Table.xml" />
             <file name="RelationStream.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/relationConverter/RelationStream.xml" />
+            <file name="NotificationStream.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/relationConverter/NotificationStream.xml" />
         </folder>
 
         <folder name="relationOperator">
@@ -97,6 +98,12 @@
             <file name="TimeBasedWindow.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/streamConverter/TimeBasedWindow.xml" />
             <file name="PartitionedWindow.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/streamConverter/PartitionedWindow.xml" />
             <file name="TupleBasedWindow.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/streamConverter/TupleBasedWindow.xml" />
+        </folder>
+
+        <folder name="sequence">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.iep.editor.palette.Bundle"/>
+            <file name="GapWindow.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/sequence/GapWindow.xml" />
+            <file name="ContiguousOrder.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/sequence/ContiguousOrder.xml" />
         </folder>
     </folder>
 </filesystem>

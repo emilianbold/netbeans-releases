@@ -43,6 +43,8 @@ public interface SharedConstants {
 
     public static final String OP_TIME_BASED_AGGREGATOR = "TimeBasedAggregator";
 
+    public static final String OP_RELATION_AGGREGATOR = "RelationAggregator";
+    
     public static final String OP_TUPLE_BASED_WINDOW = "TupleBasedWindow";
     
     public static final String OP_PARTITIONED_WINDOW = "PartitionedWindow";
@@ -63,17 +65,21 @@ public interface SharedConstants {
     
     public static final String OP_MINUS = "Minus";
     
-    public static final String OP_RELATION_AGGREGATOR = "RelationAggregator";
-    
     public static final String OP_INSERT_STREAM = "InsertStream";
     
     public static final String OP_DELETE_STREAM = "DeleteStream";
     
     public static final String OP_RELATION_STREAM = "RelationStream";
     
+    public static final String OP_NOTIFICATION_STREAM = "NotificationStream";
+
     public static final String OP_TABLE = "Table";
     
+    public static final String OP_GAP_WINDOW = "GapWindow";
     
+    public static final String OP_CONTIGUOUS_ORDER = "ContiguousOrder";
+    
+       
     // Sub TcgCompoent
     public static String METADATA_KEY = "Metadata";
     

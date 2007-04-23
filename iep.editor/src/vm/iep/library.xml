@@ -439,6 +439,20 @@ type CDATA #REQUIRED
             </property_group>
             <code type="xml" file="vm/iep/operator/relationToStream/relationStream.xml"/>
         </component_type>
+        <!-- solicit stream-->
+        <component_type name="NotificationStream" icon="notificationStreamx16.gif" title="IEP.Operator.NotificationStream.title" description="IEP.Operator.NotificationStream.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
+            <property_group ref="/IEP/View/Node"/>
+            <property_group ref="/IEP/Model/Entity">
+                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.NotificationStreamCustomEditor"/>
+                <property name="type" default="i18n.IEP.Operator.NotificationStream.title"/>
+                <property name="inputType" default="i18n.IEP.IOType.relation"/>
+                <property name="outputType" default="i18n.IEP.IOType.stream"/>
+                <property name="palette" default="relationConverter"/>
+            </property_group>
+            <property transient="false" category="IEP.Category.operator" name="size" title="IEP.Operator.NotificationStream.size.title" description="IEP.Operator.NotificationStream.size.description" required="true" type="integer" editor="default" default="1" renderer="string" access="&RW;" multiple="false"/>
+            <property transient="false" category="IEP.Category.operator" name="unit" title="IEP.Operator.NotificationStream.unit.title" description="IEP.Operator.NotificationStream.unit.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TimeUnitPropertyEditor" default="second" renderer="string" access="&RW;" multiple="false"/>
+            <code type="xml" file="vm/iep/operator/relationToStream/NotificationStream.xml"/>
+        </component_type>
         <!-- relation output: use a table update info to maintain the table's state -->
         <component_type name="Table" icon="tablex16.png" title="IEP.Operator.Table.title" description="IEP.Operator.Table.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
@@ -526,6 +540,37 @@ type CDATA #REQUIRED
             </property_group>
             <property transient="false" category="IEP.Category.operator" name="subtractFrom" title="IEP.Operator.Minus.subtractFrom.title" description="IEP.Operator.Minus.subtractFrom.description" required="true" type="string" editor="default" default="" renderer="string" access="&RW;" multiple="false"/>
             <code type="xml" file="vm/iep/operator/minus.xml"/>
+        </component_type>
+        <!-- gap window -->
+        <component_type name="GapWindow" icon="gapWindowx16.gif" title="IEP.Operator.GapWindow.title" description="IEP.Operator.GapWindow.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
+            <property_group ref="/IEP/View/Node"/>
+            <property_group ref="/IEP/Model/Entity">
+                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.GapWindowCustomEditor"/>
+                <property name="type" default="i18n.IEP.Operator.GapWindow.title"/>
+                <property name="inputType" default="i18n.IEP.IOType.stream"/>
+                <property name="outputType" default="i18n.IEP.IOType.relation"/>
+                <property name="palette" default="sequence"/>
+                <property name="isSchemaOwner" default="true"/>
+            </property_group>
+            <property transient="false" category="IEP.Category.operator" name="start" title="IEP.Operator.GapWindow.start.title" description="IEP.Operator.GapWindow.start.description" required="true" type="integer" editor="default" default="1" renderer="string" access="&RW;" multiple="false"/>
+            <property transient="false" category="IEP.Category.operator" name="attribute" title="IEP.Operator.GapWindow.attribute.title" description="IEP.Operator.GapWindow.attribute.description" required="true" type="string" editor="default" default="" renderer="string" access="&RW;" multiple="false"/>
+            <property transient="false" category="IEP.Category.operator" name="attributeList" title="IEP.Operator.GapWindow.attributeList.title" description="IEP.Operator.GapWindow.attributeList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="&RW;" multiple="true"/>
+            <code type="xml" file="vm/iep/operator/GapWindow.xml"/>
+        </component_type>
+        <!-- stream sort -->
+        <component_type name="ContiguousOrder" icon="contiguousOrderx16.gif" title="IEP.Operator.ContiguousOrder.title" description="IEP.Operator.ContiguousOrder.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
+            <property_group ref="/IEP/View/Node"/>
+            <property_group ref="/IEP/Model/Entity">
+                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.ContiguousOrderCustomEditor"/>
+                <property name="type" default="i18n.IEP.Operator.ContiguousOrder.title"/>
+                <property name="inputType" default="i18n.IEP.IOType.stream"/>
+                <property name="outputType" default="i18n.IEP.IOType.stream"/>
+                <property name="palette" default="sequence"/>
+            </property_group>
+            <property transient="false" category="IEP.Category.operator" name="start" title="IEP.Operator.ContiguousOrder.start.title" description="IEP.Operator.ContiguousOrder.start.description" required="true" type="integer" editor="default" default="1" renderer="string" access="&RW;" multiple="false"/>
+            <property transient="false" category="IEP.Category.operator" name="attribute" title="IEP.Operator.ContiguousOrder.attribute.title" description="IEP.Operator.ContiguousOrder.attribute.description" required="true" type="string" editor="default" default="" renderer="string" access="&RW;" multiple="false"/>
+            <property transient="false" category="IEP.Category.operator" name="attributeList" title="IEP.Operator.ContiguousOrder.attributeList.title" description="IEP.Operator.ContiguousOrder.attributeList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="&RW;" multiple="true"/>
+            <code type="xml" file="vm/iep/operator/ContiguousOrder.xml"/>
         </component_type>
     </component_type_group>
 </component_type_group>
