@@ -65,6 +65,7 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="Customizer">
                 <attr name="Run.instance/Application" boolvalue="true"/>
                 <folder name="Application">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javawebstart.Bundle"/>
                     <attr name="Application.instance/WebStart.instance" boolvalue="true"/>
                     <file name="WebStart.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.javawebstart.ui.customizer.JWSCompositeCategoryProvider.createWebStart"/>
