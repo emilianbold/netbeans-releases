@@ -256,7 +256,7 @@ public final class JsfForm implements ActiveEditorDrop {
         return null;
     }
     
-    private static ClasspathInfo createClasspathInfo(FileObject fileObject) {
+    static ClasspathInfo createClasspathInfo(FileObject fileObject) {
         return ClasspathInfo.create(
                 ClassPath.getClassPath(fileObject, ClassPath.BOOT),
                 ClassPath.getClassPath(fileObject, ClassPath.COMPILE),
