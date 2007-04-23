@@ -373,14 +373,11 @@ public class EntityMappingsImpl implements EntityMappings {
             return result;
         }
 
-        public List<EntityImpl> createObjects(List<TypeElement> types) {
-            final List<EntityImpl> result = new ArrayList<EntityImpl>();
-            for (TypeElement type : types) {
-                if (helper.hasAnnotation(type.getAnnotationMirrors(), "javax.persistence.Entity")) {
-                    result.add(new EntityImpl(helper, EntityMappingsImpl.this, type));
-                }
+        public EntityImpl createObject(TypeElement type) {
+            if (helper.hasAnnotation(type.getAnnotationMirrors(), "javax.persistence.Entity")) { // NOI18N
+                return new EntityImpl(helper, EntityMappingsImpl.this, type);
             }
-            return result;
+            return null;
         }
     }
 }

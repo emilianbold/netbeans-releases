@@ -251,6 +251,98 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         });
     }
 
+    public void testChangedFiles() throws Exception {
+        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        ClasspathInfo cpi = ClasspathInfo.create(srcFO);
+        final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
+        final EntityImpl[] employeeEntity = { null };
+        final EntityImpl[] addressEntity = { null };
+        helper.userActionTask(new Runnable() {
+            public void run() {
+                manager = helper.createPersistentObjectManager(new EntityProvider(helper));
+            }
+        });
+        // adding a class which is not an entity class
+        final AtomicBoolean departmentAdded = new AtomicBoolean();
+        final CountDownLatch addedLatch = new CountDownLatch(1);
+        ClassIndexListener listener = new ClassIndexAdapter() {
+            public void typesAdded(TypesEvent event) {
+                for (ElementHandle<TypeElement> type : event.getTypes()) {
+                    if ("foo.Department".equals(type.getQualifiedName())) {
+                        departmentAdded.set(true);
+                        addedLatch.countDown();
+                    }
+                }
+            }
+        };
+        cpi.getClassIndex().addClassIndexListener(listener);
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Department.java",
+                "package foo;" +
+                "public class Department {" +
+                "}");
+        addedLatch.await(10, TimeUnit.SECONDS);
+        assertTrue("Should have got a typesAdded event for Department", departmentAdded.get());
+        cpi.getClassIndex().removeClassIndexListener(listener);
+        helper.userActionTask(new Runnable() {
+            public void run() {
+                assertEquals(0, manager.getObjects().size());
+            }
+        });
+        // modifying the class to be an entity class
+        final AtomicBoolean departmentChanged = new AtomicBoolean();
+        final CountDownLatch changedLatch = new CountDownLatch(1);
+        listener = new ClassIndexAdapter() {
+            public void typesChanged(TypesEvent event) {
+                for (ElementHandle<TypeElement> type : event.getTypes()) {
+                    if ("foo.Department".equals(type.getQualifiedName())) {
+                        departmentChanged.set(true);
+                        changedLatch.countDown();
+                    }
+                }
+            }
+        };
+        cpi.getClassIndex().addClassIndexListener(listener);
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Department.java",
+                "package foo;" +
+                "@javax.persistence.Entity(name=\"Department\")" +
+                "public class Department {" +
+                "}");
+        changedLatch.await(10, TimeUnit.SECONDS);
+        assertTrue("Should have got a typesChanged event for Department", departmentChanged.get());
+        cpi.getClassIndex().removeClassIndexListener(listener);
+        helper.userActionTask(new Runnable() {
+            public void run() {
+                assertEquals(1, manager.getObjects().size());
+            }
+        });
+        // modifying the class to be an non-entity class
+        final AtomicBoolean departmentChanged2 = new AtomicBoolean();
+        final CountDownLatch changedLatch2 = new CountDownLatch(1);
+        listener = new ClassIndexAdapter() {
+            public void typesChanged(TypesEvent event) {
+                for (ElementHandle<TypeElement> type : event.getTypes()) {
+                    if ("foo.Department".equals(type.getQualifiedName())) {
+                        departmentChanged2.set(true);
+                        changedLatch2.countDown();
+                    }
+                }
+            }
+        };
+        cpi.getClassIndex().addClassIndexListener(listener);
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Department.java",
+                "package foo;" +
+                "public class Department {" +
+                "}");
+        changedLatch2.await(10, TimeUnit.SECONDS);
+        assertTrue("Should have got a typesChanged event for Department", departmentChanged2.get());
+        cpi.getClassIndex().removeClassIndexListener(listener);
+        helper.userActionTask(new Runnable() {
+            public void run() {
+                assertEquals(0, manager.getObjects().size());
+            }
+        });
+    }
+
     private static final class EntityProvider implements ObjectProvider<EntityImpl> {
 
         private final AnnotationModelHelper helper;
@@ -269,14 +361,11 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
             return result;
         }
 
-        public List<EntityImpl> createObjects(List<TypeElement> types) {
-            List<EntityImpl> result = new ArrayList<EntityImpl>();
-            for (TypeElement type : types) {
-                if (helper.hasAnnotation(type.getAnnotationMirrors(), "javax.persistence.Entity")) {
-                    result.add(new EntityImpl(helper, type));
-                }
+        public EntityImpl createObject(TypeElement type) {
+            if (helper.hasAnnotation(type.getAnnotationMirrors(), "javax.persistence.Entity")) {
+                return new EntityImpl(helper, type);
             }
-            return result;
+            return null;
         }
     }
 
@@ -286,17 +375,23 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
 
         public EntityImpl(AnnotationModelHelper helper, TypeElement typeElement) {
             super(helper, typeElement);
-            readPersistentData(typeElement);
+            boolean valid = readPersistentData(typeElement);
+            assert valid;
         }
 
-        protected void sourceElementChanged() {
-            readPersistentData(getSourceElement());
+        protected boolean sourceElementChanged() {
+            return readPersistentData(getSourceElement());
         }
 
-        private void readPersistentData(TypeElement typeElement) {
+        private boolean readPersistentData(TypeElement typeElement) {
             AnnotationParser parser = AnnotationParser.create(getHelper());
             parser.expectString("name", parser.defaultValue(typeElement.getSimpleName()));
-            name = parser.parse(typeElement.getAnnotationMirrors().get(0)).get("name", String.class);
+            List<? extends AnnotationMirror> annotations = typeElement.getAnnotationMirrors();
+            if (annotations.size() == 0) {
+                return false;
+            }
+            name = parser.parse(annotations.get(0)).get("name", String.class);
+            return true;
         }
 
         public String getName() {
