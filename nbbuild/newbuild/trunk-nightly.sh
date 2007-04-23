@@ -16,14 +16,6 @@ if [ $ERROR_CODE != 0 ]; then
     exit $ERROR_CODE;
 fi
 
-#Clean the leftovers from the last build.
-#For more info about "cvspurge" take a look 
-#at http://www.red-bean.com/cvsutils/
-#for i in `ls | grep -v "CVS"`; do
-#    cvspurge $i;
-#done
-
-
 ###################################################################
 #
 # Checkout all the required NB modules
@@ -46,7 +38,7 @@ fi
 ###################################################################
 
 cd $TRUNK_NIGHTLY_DIRNAME
-bash build-all-componets.sh
+bash build-all-components.sh
 ERROR_CODE=$?
 
 ERROR_CODE=$?
