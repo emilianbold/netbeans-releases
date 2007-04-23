@@ -57,6 +57,8 @@ public class Components2 extends HttpServlet {
                 "nb-base",
                 "openesb",
                 "sjsam");
+        final Map<String, String> notes = new HashMap<String, String>();
+        notes.put("nb-javase", "for Java SE, includes GUI Builder, Profiler");
         
         try {
             response.setContentType("text/javascript; charset=UTF-8");
@@ -75,6 +77,8 @@ public class Components2 extends HttpServlet {
             final List<String> productVersions =
                     new LinkedList<String>();
             final List<String> productDisplayNames =
+                    new LinkedList<String>();
+            final List<String> productNotes =
                     new LinkedList<String>();
             final List<String> productDescriptions =
                     new LinkedList<String>();
@@ -121,6 +125,12 @@ public class Components2 extends HttpServlet {
                 productDownloadSizes.add(Long.toString(size));
                 productPlatforms.add(product.getPlatforms());
                 
+                if (notes.get(product.getUid()) != null) {
+                    productNotes.add(notes.get(product.getUid()).replace("\"", "\\\"").replaceAll("\r\n|\r|\n", "\\\n"));
+                } else {
+                    productNotes.add("");
+                }
+                
                 String properties = "PROPERTY_NONE";
                 if (basic.contains(product.getUid())) {
                     properties += " | PROPERTY_BASIC";
@@ -154,6 +164,12 @@ public class Components2 extends HttpServlet {
             out.println("product_display_names = new Array();");
             for (int i = 0; i < productDisplayNames.size(); i++) {
                 out.println("    product_display_names[" + i + "] = \"" + productDisplayNames.get(i) + "\";");
+            }
+            out.println();
+            
+            out.println("product_notes = new Array();");
+            for (int i = 0; i < productNotes.size(); i++) {
+                out.println("    product_notes[" + i + "] = \"" + productNotes.get(i) + "\";");
             }
             out.println();
             
