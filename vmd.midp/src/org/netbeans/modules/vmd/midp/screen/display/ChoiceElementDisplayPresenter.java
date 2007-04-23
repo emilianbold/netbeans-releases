@@ -26,10 +26,9 @@ import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
-import org.netbeans.modules.vmd.midp.components.displayables.ListCD;
 import org.netbeans.modules.vmd.midp.components.elements.ChoiceElementCD;
 import org.netbeans.modules.vmd.midp.components.items.ChoiceCD;
-import org.netbeans.modules.vmd.midp.components.sources.ListElementEventSourceCD;
+import org.netbeans.modules.vmd.midp.components.items.ChoiceGroupCD;
 import org.netbeans.modules.vmd.midp.screen.display.property.ScreenBooleanPropertyEditor;
 import org.netbeans.modules.vmd.midp.screen.display.property.ScreenStringPropertyEditor;
 import org.openide.util.Utilities;
@@ -90,8 +89,8 @@ public class ChoiceElementDisplayPresenter extends ScreenDisplayPresenter {
     }
     
     public void reload(ScreenDeviceInfo deviceInfo) {
-        int type = (Integer) getComponent ().getParentComponent ().readProperty (ListCD.PROP_LIST_TYPE).getPrimitiveValue ();
-        PropertyValue selectedValue = getComponent ().readProperty (ListElementEventSourceCD.PROP_SELECTED);
+        int type = (Integer) getComponent ().getParentComponent ().readProperty (ChoiceGroupCD.PROP_CHOICE_TYPE).getPrimitiveValue ();
+        PropertyValue selectedValue = getComponent ().readProperty (ChoiceElementCD.PROP_SELECTED);
         boolean selected = selectedValue.getKind () == PropertyValue.Kind.VALUE  &&  MidpTypes.getBoolean (selectedValue);
         switch (type) {
             case ChoiceCD.VALUE_EXCLUSIVE:
@@ -105,14 +104,14 @@ public class ChoiceElementDisplayPresenter extends ScreenDisplayPresenter {
                 break;
         }
 
-        PropertyValue imageValue = getComponent ().readProperty (ListElementEventSourceCD.PROP_IMAGE);
+        PropertyValue imageValue = getComponent ().readProperty (ChoiceElementCD.PROP_IMAGE);
         Icon imageIcon = ScreenSupport.getIconFromImageComponent (imageValue.getComponent ());
         image.setIcon (imageIcon);
 
-        String text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(ListElementEventSourceCD.PROP_STRING));
+        String text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(ChoiceElementCD.PROP_STRING));
         label.setText(ScreenSupport.wrapWithHtml(text));
 
-        DesignComponent font = getComponent().readProperty(ListElementEventSourceCD.PROP_FONT).getComponent();
+        DesignComponent font = getComponent().readProperty(ChoiceElementCD.PROP_FONT).getComponent();
         label.setFont(ScreenSupport.getFont(deviceInfo, font));
     }
     
