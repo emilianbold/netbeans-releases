@@ -1,4 +1,5 @@
 0 6
+    background java.awt.Color[r=255,g=255,b=255]
     default comment
     display name Comment
     foreground java.awt.Color[r=0,g=255,b=255]
@@ -165,6 +166,7 @@
     foreground java.awt.Color[r=0,g=0,b=0]
     name whitespace
 122 132
+    background java.awt.Color[r=255,g=255,b=255]
     default comment
     display name Comment
     foreground java.awt.Color[r=0,g=255,b=255]
