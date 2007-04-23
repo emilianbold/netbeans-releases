@@ -229,35 +229,40 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
 //        System.out.println("SunONEDeploymentConfiguration::init: instance: " + instance + ", serverType: " + serverType);
         // -------- end prototype ------- checking server version
         
-        // Determine what the available server types can be (WS 6.0, AS 7.0, AS 8.1, AS 9.0)
-        // based on j2ee spec version.
-        Object mt = module.getModuleType();
-        ModuleType moduleType = mt instanceof ModuleType ? (ModuleType) mt : null;
-        String moduleVersion = module.getModuleVersion();
-        minASVersion = computeMinASVersion(moduleType, moduleVersion);
-        maxASVersion = computeMaxASVersion();
+        try {
+            // Determine what the available server types can be (WS 6.0, AS 7.0, AS 8.1, AS 9.0)
+            // based on j2ee spec version.
+            Object mt = module.getModuleType();
+            ModuleType moduleType = mt instanceof ModuleType ? (ModuleType) mt : null;
+            String moduleVersion = module.getModuleVersion();
+            minASVersion = computeMinASVersion(moduleType, moduleVersion);
+            maxASVersion = computeMaxASVersion();
 
-        appServerVersion = maxASVersion;
+            appServerVersion = maxASVersion;
 
-//        // Connectors are not supported by the configuration editor since sun-ra.xml is deprecated.
-//        // To avoid failing initialization here when encountering that file, we will ignore it explicitly.
-//        if("sun-ra.xml".equals(configFiles[0].getName())) {
-//            return;
-//        }
+//            // Connectors are not supported by the configuration editor since sun-ra.xml is deprecated.
+//            // To avoid failing initialization here when encountering that file, we will ignore it explicitly.
+//            if("sun-ra.xml".equals(configFiles[0].getName())) {
+//                return;
+//            }
 
-        if(!cfgFiles[0].exists()) {
-            // If module is J2EE 1.4 (or 1.3), or this is a web app (where we have
-            // a default property even for JavaEE5), then copy the default template.
-            J2EEBaseVersion j2eeVersion = J2EEBaseVersion.getVersion(moduleType, moduleVersion);
-            if(J2eeModule.WAR.equals(moduleType) || J2EEVersion.J2EE_1_4.compareSpecification(j2eeVersion) >= 0) {
-                try {
-                    createDefaultSunDD(configFiles[0]);
-                } catch (IOException ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                    String defaultMessage = " trying to create " + configFiles[0].getPath(); // Requires I18N
-                    displayError(ex, defaultMessage);
+            if(!cfgFiles[0].exists()) {
+                // If module is J2EE 1.4 (or 1.3), or this is a web app (where we have
+                // a default property even for JavaEE5), then copy the default template.
+                J2EEBaseVersion j2eeVersion = J2EEBaseVersion.getVersion(moduleType, moduleVersion);
+                boolean isJ2ee14 = (j2eeVersion != null) ? (J2EEVersion.J2EE_1_4.compareSpecification(j2eeVersion) >= 0) : false;
+                if(J2eeModule.WAR.equals(moduleType) || isJ2ee14) {
+                    try {
+                        createDefaultSunDD(configFiles[0]);
+                    } catch (IOException ex) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                        String defaultMessage = " trying to create " + configFiles[0].getPath(); // Requires I18N
+                        displayError(ex, defaultMessage);
+                    }
                 }
             }
+        } catch(RuntimeException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
     }
     
