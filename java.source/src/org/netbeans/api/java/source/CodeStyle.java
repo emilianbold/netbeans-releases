@@ -597,6 +597,14 @@ public final class CodeStyle {
         return preferences.getBoolean(spaceAfterSemi, true);
     }
 
+    public boolean spaceBeforeColon() {
+        return preferences.getBoolean(spaceBeforeColon, true);
+    }
+
+    public boolean spaceAfterColon() {
+        return preferences.getBoolean(spaceAfterColon, true);
+    }
+
     public boolean spaceAfterTypeCast() {
         return preferences.getBoolean(spaceAfterTypeCast, true);
     }

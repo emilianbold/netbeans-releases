@@ -196,6 +196,8 @@ public class FmtOptions {
     public static final String spaceAfterComma = "spaceAfterComma"; //NOI18N
     public static final String spaceBeforeSemi = "spaceBeforeSemi"; //NOI18N
     public static final String spaceAfterSemi = "spaceAfterSemi"; //NOI18N
+    public static final String spaceBeforeColon = "spaceBeforeColon"; //NOI18N
+    public static final String spaceAfterColon = "spaceAfterColon"; //NOI18N
     public static final String spaceAfterTypeCast = "spaceAfterTypeCast"; //NOI18N
     
     public static final String useSingleClassImport = "useSingleClassImport"; //NOI18N
@@ -407,6 +409,8 @@ public class FmtOptions {
             { spaceAfterComma, TRUE}, //NOI18N
             { spaceBeforeSemi, FALSE}, //NOI18N
             { spaceAfterSemi, TRUE}, //NOI18N
+            { spaceBeforeColon, TRUE}, //NOI18N
+            { spaceAfterColon, TRUE}, //NOI18N
             { spaceAfterTypeCast, TRUE}, //NOI18N
 
             { useSingleClassImport, TRUE}, //NOI18N

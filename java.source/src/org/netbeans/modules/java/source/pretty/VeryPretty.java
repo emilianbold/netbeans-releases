@@ -565,14 +565,17 @@ public final class VeryPretty extends JCTree.Visitor {
 		printExprs(tree.init);
 	    }
 	}
-	print(';');
+        String sep = cs.spaceBeforeSemi() ? " ;" : ";";
+	print(sep);
 	if (tree.cond != null) {
-            print(' ');
+            if (cs.spaceAfterSemi())
+                print(' ');
 	    printNoParenExpr(tree.cond);
         }
-	print(';');
+	print(sep);
         if (tree.step.nonEmpty()) {
-            print(' ');
+            if (cs.spaceAfterSemi())
+                print(' ');
             printExprs(tree.step);
         }
 	print(cs.spaceWithinForParens() ? " )" : ")");
@@ -1126,7 +1129,8 @@ public final class VeryPretty extends JCTree.Visitor {
         if (cs.spaceWithinForParens())
             print(' ');
         printExpr(tree.getVariable());
-        print(" : ");
+        String sep = cs.spaceBeforeColon() ? " :" : ":";
+        print(cs.spaceAfterColon() ? sep + " " : sep);
         printExpr(tree.getExpression());
         print(cs.spaceWithinForParens() ? " )" : ")");
 	printIndentedStat(tree.getStatement(), cs.redundantForBraces(), cs.spaceBeforeForLeftBrace(), cs.wrapForStatement());
@@ -1262,7 +1266,8 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     private <T extends JCTree >void printExprs(List < T > trees) {
-	printExprs(trees, ", ");
+        String sep = cs.spaceBeforeComma() ? " ," : ",";
+	printExprs(trees, cs.spaceAfterComma() ? sep + " " : sep);
     }
 
     private <T extends JCTree >void printExprs(List < T > trees, String sep) {
