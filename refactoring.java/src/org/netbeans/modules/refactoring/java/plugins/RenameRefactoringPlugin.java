@@ -369,6 +369,8 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
     //        return problem;
     //    }
     
+    private Set<ElementHandle<ExecutableElement>> allMethods;
+    
     private Set<FileObject> getRelevantFiles() {
         ClasspathInfo cpInfo = getClasspathInfo(refactoring);
         final Set<FileObject> set = new HashSet<FileObject>();
@@ -398,23 +400,21 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                     } else if (el instanceof TypeElement) {
                         set.addAll(idx.getResources(enclosingType, EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
                     } else if (kind == ElementKind.METHOD) {
-                        //XXX: IMPLEMENTORS_RECURSIVE was removedSa
-                        Set<ElementHandle<TypeElement>> s = idx.getElements(enclosingType, EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE));
-                        for (ElementHandle<TypeElement> eh:s) {
-                            TypeElement te = eh.resolve(info);
-                            if (te==null) {
-                                continue;
-                            }
-                            //add all references of overriding methods
-                            for (ExecutableElement e:RetoucheUtils.getOverridingMethods((ExecutableElement)el, info)) {
-                                set.add(SourceUtils.getFile(e, info.getClasspathInfo()));
-                                set.addAll(idx.getResources(enclosingType, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
-                            }
-                            //add all references of overriden methods
-                            for (ExecutableElement e:RetoucheUtils.getOverridenMethods((ExecutableElement)el, info)) {
-                                set.add(SourceUtils.getFile(e, info.getClasspathInfo()));
-                                set.addAll(idx.getResources(enclosingType, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
-                            }
+                        //add all references of overriding methods
+                        allMethods = new HashSet();
+                        allMethods.add(ElementHandle.create((ExecutableElement)el));
+                        for (ExecutableElement e:RetoucheUtils.getOverridingMethods((ExecutableElement)el, info)) {
+                            set.add(SourceUtils.getFile(e, info.getClasspathInfo()));
+                            ElementHandle<TypeElement> encl = ElementHandle.create(SourceUtils.getEnclosingTypeElement(e));
+                            set.addAll(idx.getResources(encl, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+                            allMethods.add(ElementHandle.create(e));
+                        }
+                        //add all references of overriden methods
+                        for (ExecutableElement e:RetoucheUtils.getOverridenMethods((ExecutableElement)el, info)) {
+                            set.add(SourceUtils.getFile(e, info.getClasspathInfo()));
+                            ElementHandle<TypeElement> encl = ElementHandle.create(SourceUtils.getEnclosingTypeElement(e));
+                            set.addAll(idx.getResources(encl, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+                            allMethods.add(ElementHandle.create(e));
                         }
                         set.addAll(idx.getResources(enclosingType, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE))); //?????
                     }
@@ -1291,7 +1291,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
             Element el = treePathHandle.resolveElement(compiler);
             assert el != null;
             
-            RenameTransformer findVisitor = new RenameTransformer(refactoring.getNewName(), compiler);
+            RenameTransformer findVisitor = new RenameTransformer(refactoring.getNewName(), compiler, allMethods);
             findVisitor.scan(compiler.getCompilationUnit(), el);
             
             for (TreePath tree : findVisitor.getUsages()) {

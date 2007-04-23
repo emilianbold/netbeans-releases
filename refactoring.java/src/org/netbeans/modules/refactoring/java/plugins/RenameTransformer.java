@@ -21,8 +21,11 @@ package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
+import java.lang.annotation.ElementType;
+import java.util.Set;
 import javax.lang.model.element.*;
 import javax.lang.model.util.Elements;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.WorkingCopy;
 
@@ -32,11 +35,15 @@ import org.netbeans.api.java.source.WorkingCopy;
  */
 public class RenameTransformer extends SearchVisitor {
 
+    private Set<ElementHandle<ExecutableElement>> allMethods;
     private String newName;
+    Elements elements = workingCopy.getElements();
+    
 
-    public RenameTransformer(String newName, WorkingCopy workingCopy) {
+    public RenameTransformer(String newName, WorkingCopy workingCopy, Set<ElementHandle<ExecutableElement>> am) {
         super(workingCopy);
         this.newName = newName;
+        this.allMethods = am;
     }
 
     @Override
@@ -58,17 +65,9 @@ public class RenameTransformer extends SearchVisitor {
         if (el==null)
             return;
         
-        if (el != null && elementToFind!=null && elementToFind.getKind() == ElementKind.METHOD && el.getKind() == ElementKind.METHOD) {
-            if (el.equals(elementToFind) 
-                    || workingCopy.getElements().overrides(((ExecutableElement) el), (ExecutableElement) elementToFind, (TypeElement) elementToFind.getEnclosingElement())
-                    || workingCopy.getElements().overrides(((ExecutableElement) elementToFind), (ExecutableElement) el, (TypeElement) el.getEnclosingElement())
-                    ) {
-                Tree nju = make.setLabel(tree, newName);
-                workingCopy.rewrite(tree, nju);
-            }
-        } else if (el.equals(elementToFind)) {
-                Tree nju = make.setLabel(tree, newName);
-                workingCopy.rewrite(tree, nju);
+        if (el.equals(elementToFind) || isMethodMatch(el)) {
+            Tree nju = make.setLabel(tree, newName);
+            workingCopy.rewrite(tree, nju);
         }
     }
 
@@ -94,14 +93,22 @@ public class RenameTransformer extends SearchVisitor {
         if (workingCopy.getTreeUtilities().isSynthetic(path))
             return;
         Element el = workingCopy.getTrees().getElement(path);
-        Elements elements = workingCopy.getElements();
-        if (elementToFind.equals(el)
-                || ( ((el.getKind() == ElementKind.METHOD) && (elementToFind.getKind() == ElementKind.METHOD)) 
-                    && ((elements.overrides((ExecutableElement) elementToFind, (ExecutableElement) el, SourceUtils.getEnclosingTypeElement(el)))
-                           || (elements.overrides((ExecutableElement)el, (ExecutableElement)elementToFind, SourceUtils.getEnclosingTypeElement(elementToFind)))))) {
+        if (el.equals(elementToFind) || isMethodMatch(el)) {
             Tree nju = make.setLabel(tree, newName);
             workingCopy.rewrite(tree, nju);
+            return;
         }
     }
     
+    private boolean isMethodMatch(Element method) {
+        if (method.getKind() == ElementKind.METHOD && allMethods !=null) {
+            for (ElementHandle<ExecutableElement> mh: allMethods) {
+                ExecutableElement baseMethod =  mh.resolve(workingCopy);
+                if (baseMethod.equals(method) || elements.overrides((ExecutableElement)method, baseMethod, SourceUtils.getEnclosingTypeElement(baseMethod))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }
