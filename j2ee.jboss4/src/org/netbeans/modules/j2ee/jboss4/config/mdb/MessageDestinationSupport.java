@@ -223,7 +223,8 @@ public class MessageDestinationSupport {
             byte[] docString = doc.getText(0, doc.getLength()).getBytes();
             newDestinationServiceModel = Server.createGraph(new ByteArrayInputStream(docString));
         } catch (IOException ioe) {
-            String msg = NbBundle.getMessage(DatasourceSupport.class, "MSG_CannotUpdateFile", destinationsFile.getAbsolutePath());
+            String msg = NbBundle.getMessage(MessageDestinationSupport.class, 
+                    "MSG_CannotUpdateFile", destinationsFile.getAbsolutePath());    // NOI18N
             throw new ConfigurationException(msg, ioe);
         } catch (BadLocationException ble) {
             // this should not occur, just log it if it happens
@@ -234,11 +235,13 @@ public class MessageDestinationSupport {
                 // neither the old graph is parseable, there is not much we can do here
                 // TODO: should we notify the user?
                 throw new ConfigurationException(
-                        NbBundle.getMessage(DatasourceSupport.class, "MSG_datasourcesXmlCannotParse", MSG_DEST_RESOURCE_NAME_JB4)); // NOI18N
+                        NbBundle.getMessage(MessageDestinationSupport.class, 
+                        "MSG_msgdestXmlCannotParse", destinationsFile.getAbsolutePath())); // NOI18N
             }
             // current editor content is not parseable, ask whether to override or not
             NotifyDescriptor notDesc = new NotifyDescriptor.Confirmation(
-                    NbBundle.getMessage(DatasourceSupport.class, "MSG_datasourcesXmlNotValid", MSG_DEST_RESOURCE_NAME_JB4),       // NOI18N
+                    NbBundle.getMessage(MessageDestinationSupport.class, 
+                    "MSG_msgdestXmlNotValid", destinationsFile.getAbsolutePath()),       // NOI18N
                     NotifyDescriptor.OK_CANCEL_OPTION);
             Object result = DialogDisplayer.getDefault().notify(notDesc);
             if (result == NotifyDescriptor.CANCEL_OPTION) {
@@ -260,7 +263,8 @@ public class MessageDestinationSupport {
             try {
                 cookie.save();
             } catch (IOException ioe) {
-                String msg = NbBundle.getMessage(DatasourceSupport.class, "MSG_CannotSaveFile", destinationsFile.getAbsolutePath());    // NOI18N
+                String msg = NbBundle.getMessage(MessageDestinationSupport.class, 
+                        "MSG_CannotSaveFile", destinationsFile.getAbsolutePath());    // NOI18N
                 throw new ConfigurationException(msg, ioe);
             }
         }
