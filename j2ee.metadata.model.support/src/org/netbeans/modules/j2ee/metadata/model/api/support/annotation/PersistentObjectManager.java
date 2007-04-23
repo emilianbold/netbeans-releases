@@ -24,18 +24,14 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.ElementHandle;
 
 /**
  *
- * @author Andrei Badea
+ * @author abadea
  */
 public class PersistentObjectManager<T extends PersistentObject> {
-
-    private static final Logger LOGGER = Logger.getLogger(PersistentObjectManager.class.getName());
 
     private final AnnotationModelHelper helper;
     private final ObjectProvider<T> provider;
@@ -54,9 +50,7 @@ public class PersistentObjectManager<T extends PersistentObject> {
 
     private void ensureInitialized() {
         if (!initialized) {
-            LOGGER.log(Level.FINE, "intializing"); // NOI18N
             for (T object : provider.createInitialObjects()) {
-                LOGGER.log(Level.FINE, "created object {0}", object); // NOI18N
                 objects.put(object.getSourceElementHandle(), object);
             }
             initialized = true;
@@ -65,64 +59,39 @@ public class PersistentObjectManager<T extends PersistentObject> {
 
     public Collection<T> getObjects() {
         ensureInitialized();
-        Collection<T> values = objects.values();
-        LOGGER.log(Level.FINE, "getObjects returning {0} objects", values.size()); // NOI18N
-        return values;
+        return objects.values();
     }
 
     void typesAdded(Iterable<? extends ElementHandle<TypeElement>> typeHandles) {
-        LOGGER.log(Level.FINE, "typesAdded called with {0}", typeHandles); // NOI18N
         List<TypeElement> types = new ArrayList<TypeElement>();
         for (ElementHandle<TypeElement> typeHandle : typeHandles) {
             TypeElement type = typeHandle.resolve(helper.getCompilationController());
             if (type == null) {
                 continue;
             }
-            T object = provider.createObject(type);
-            if (object != null) {
-                LOGGER.log(Level.FINE, "typesAdded: new object {0}", object); // NOI18N
-                objects.put(object.getSourceElementHandle(), object);
-            }
+            types.add(type);
+        }
+        for (T object : provider.createObjects(types)) {
+            objects.put(object.getSourceElementHandle(), object);
         }
     }
 
     void typesRemoved(Iterable<? extends ElementHandle<TypeElement>> typeHandles) {
-        LOGGER.log(Level.FINE, "typesRemoved called with {0}", typeHandles); // NOI18N
         for (ElementHandle<TypeElement> typeHandle : typeHandles) {
-            T object = objects.remove(typeHandle);
-            if (object != null) {
-                LOGGER.log(Level.FINE, "typesRemoved: removing object {0}", object); // NOI18N
-            }
+            objects.remove(typeHandle);
         }
     }
 
     void typesChanged(Iterable<? extends ElementHandle<TypeElement>> typeHandles) {
-        LOGGER.log(Level.FINE, "typesChanged called with {0}", typeHandles); // NOI18N
         for (ElementHandle<TypeElement> typeHandle : typeHandles) {
             T object = objects.get(typeHandle);
             if (object != null) {
-                boolean valid = object.sourceElementChanged();
-                if (valid) {
-                    LOGGER.log(Level.FINE, "typesChanged: changing object {0}", object); // NOI18N
-                } else {
-                    objects.remove(typeHandle);
-                    LOGGER.log(Level.FINE, "typesChanged: removing object {0}", object); // NOI18N
-                }
-            } else {
-                TypeElement type = typeHandle.resolve(helper.getCompilationController());
-                if (type != null) {
-                    T newObject = provider.createObject(type);
-                    if (newObject != null) {
-                        objects.put(newObject.getSourceElementHandle(), newObject);
-                        LOGGER.log(Level.FINE, "typesChanged: new object {0}", newObject); // NOI18N
-                    }
-                }
+                object.sourceElementChanged();
             }
         }
     }
 
     void rootsChanged() {
-        LOGGER.log(Level.FINE, "rootsChanged called"); // NOI18N
         initialized = false;
         objects.clear();
     }

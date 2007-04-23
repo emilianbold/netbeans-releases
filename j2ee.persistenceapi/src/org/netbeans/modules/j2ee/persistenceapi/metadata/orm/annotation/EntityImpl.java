@@ -45,30 +45,28 @@ public class EntityImpl extends PersistentObject implements Entity, JavaContextL
         super(helper, sourceElement);
         this.root = root;
         helper.addJavaContextListener(this);
-        boolean valid = readPersistentData();
-        assert valid;
+        readPersistentData();
     }
 
-    protected boolean sourceElementChanged() {
-        return readPersistentData();
+    protected void sourceElementChanged() {
+        readPersistentData();
     }
 
-    private boolean readPersistentData() {
+    private void readPersistentData() {
         TypeElement sourceElement = getSourceElement();
-        class2 = sourceElement.getQualifiedName().toString();
         AnnotationModelHelper helper = getHelper();
         Map<String, ? extends AnnotationMirror> annByType = helper.getAnnotationsByType(sourceElement.getAnnotationMirrors());
-        AnnotationMirror entityAnn = annByType.get("javax.persistence.Entity"); // NOI18N
         AnnotationParser parser = AnnotationParser.create(helper);
         parser.expectString("name", parser.defaultValue(sourceElement.getSimpleName().toString())); // NOI18N
-        ParseResult parseResult = parser.parse(entityAnn); // NOI18N
+        ParseResult parseResult = parser.parse(annByType.get("javax.persistence.Entity"));
         name = parseResult.get("name", String.class); // NOI18N
+        class2 = sourceElement.getQualifiedName().toString();
+
         // also reading the table element to avoid initializing the whole model
         // when a client looking the entity mapped to a specific table iterates
         // over all entities calling getTable().
         // XXX locale?
         table = new TableImpl(helper, annByType.get("javax.persistence.Table"), name.toUpperCase()); // NOI18N
-        return entityAnn != null;
     }
 
     public void javaContextLeft() {

@@ -48,5 +48,5 @@ public abstract class PersistentObject {
         return sourceElementHandle.resolve(helper.getCompilationController());
     }
 
-    protected abstract boolean sourceElementChanged();
+    protected abstract void sourceElementChanged();
 }

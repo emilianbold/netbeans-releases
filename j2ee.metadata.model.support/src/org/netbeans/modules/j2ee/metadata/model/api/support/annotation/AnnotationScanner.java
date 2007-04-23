@@ -50,7 +50,6 @@ public class AnnotationScanner {
     }
 
     public void findAnnotatedTypes(final String searchedTypeName, final TypeAnnotationHandler handler) {
-        LOGGER.log(Level.FINE, "findAnnotatedTypes called with {0}", searchedTypeName); // NOI18N
         CompilationController controller = helper.getCompilationController();
         TypeElement searchedType = controller.getElements().getTypeElement(searchedTypeName);
         if (searchedType == null) {
@@ -61,7 +60,6 @@ public class AnnotationScanner {
         final Set<ElementHandle<TypeElement>> elementHandles = helper.getClasspathInfo().getClassIndex().getElements(searchedTypeHandle, EnumSet.of(SearchKind.TYPE_REFERENCES), EnumSet.of(SearchScope.SOURCE, SearchScope.DEPENDENCIES));
         TypeMirror searchedTypeMirror = searchedType.asType();
         for (ElementHandle<TypeElement> elementHandle : elementHandles) {
-            LOGGER.log(Level.FINE, "found element {0}", elementHandle.getQualifiedName()); // NOI18N
             TypeElement element = elementHandle.resolve(controller);
             if (element == null) {
                 continue;
@@ -71,7 +69,6 @@ public class AnnotationScanner {
                 TypeMirror annotationType = annotationMirror.getAnnotationType();
                 // XXX or should compare annotation type names here?
                 if (controller.getTypes().isSameType(searchedTypeMirror, annotationType)) {
-                    LOGGER.log(Level.FINE, "notifying element {0}, annotation {1}", new Object[] { element.getQualifiedName(), annotationMirror }); // NOI18N
                     handler.typeAnnotation(element, annotationMirror);
                 }
             }
