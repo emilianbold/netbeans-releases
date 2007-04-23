@@ -55,7 +55,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.web.project.classpath.ClassPathSupport;
 import org.netbeans.modules.web.project.classpath.WebProjectClassPathExtender;
 import org.netbeans.modules.web.project.ui.customizer.PlatformUiSupport;
-import org.netbeans.modules.web.project.ui.wizards.FileSearchUtility;
+import org.netbeans.modules.j2ee.common.FileSearchUtility;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.openide.modules.SpecificationVersion;
 import org.w3c.dom.NodeList;

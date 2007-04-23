@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.web.project.ui.wizards;
 
+import org.netbeans.modules.j2ee.common.FileSearchUtility;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.io.File;
