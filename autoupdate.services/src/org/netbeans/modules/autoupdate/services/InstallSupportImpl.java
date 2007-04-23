@@ -364,8 +364,16 @@ public class InstallSupportImpl {
     }
 
     public String getCertificate(Installer validator, UpdateElement uElement) {
-        Collection<Certificate> c = certs.get (uElement);
-        return c != null && c.size() > 0 ? c.iterator ().next ().toString () : null; // XXX allow more certificates for UpdateElement
+        Collection<Certificate> certificates = certs.get (uElement);
+        if (certificates != null) {
+            String res = "";
+            for (Certificate c :certificates) {
+                res += c;
+            }
+            return res;
+        } else {
+            return null;
+        }
     }
 
     public boolean isTrusted(Installer validator, UpdateElement uElement) {
@@ -516,7 +524,6 @@ public class InstallSupportImpl {
             Collection<Certificate> nbmCerts = getNbmCertificates (nbmFile, progress, verified, label);
             assert nbmCerts != null;
             if (nbmCerts.size () > 0) {
-                assert nbmCerts.size () == 1 : "Only one certificate for " + nbmFile;
                 certs.put (el, nbmCerts);
             }
             if (nbmCerts.isEmpty()) {
