@@ -79,11 +79,16 @@ public class SecurityConfiguration  implements WSConfiguration {
     }
   
     public boolean isSet() {
+        boolean set = false;
         Binding binding = WSITModelSupport.getBinding(service, implementationFile, project, false, createdFiles);
         if (binding != null) {
-            return SecurityPolicyModelHelper.isSecurityEnabled(binding);
+            set = SecurityPolicyModelHelper.isSecurityEnabled(binding);
         }
-        return false;
+        if (set && (scl == null)) {
+            scl = new  WsitServiceChangeListener(binding);
+            serviceModel.addServiceChangeListener(scl);
+        }
+        return set;
     }
         
     public void set() {
@@ -92,7 +97,9 @@ public class SecurityConfiguration  implements WSConfiguration {
         if (binding == null) return;
         if (!(SecurityPolicyModelHelper.isSecurityEnabled(binding))) {
 
-            scl = new  WsitServiceChangeListener(binding);
+            if (scl == null) {
+                scl = new  WsitServiceChangeListener(binding);
+            }
             serviceModel.addServiceChangeListener(scl);
             
             // default profile with the easiest setup
@@ -115,8 +122,16 @@ public class SecurityConfiguration  implements WSConfiguration {
         }
     }
 
+    public void finalize() {
+        if (scl != null) {
+            serviceModel.removeServiceChangeListener(scl);
+        }
+    }
+    
     public void unset() {
-        serviceModel.removeServiceChangeListener(scl);
+        if (scl != null) {
+            serviceModel.removeServiceChangeListener(scl);
+        }
         
         Binding binding = WSITModelSupport.getBinding(service, implementationFile, project, false, createdFiles);
         if (binding == null) return;

@@ -23,6 +23,7 @@ import org.netbeans.modules.websvc.design.javamodel.ServiceChangeListener;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.WSITModelSupport;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.BindingOperation;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
@@ -52,6 +53,7 @@ public class WsitServiceChangeListener implements ServiceChangeListener {
     public void operationAdded(MethodModel method) {
         BindingOperation bO = Util.generateOperation(b, Util.getPortType(b), method.getOperationName(), method.getImplementationClass());
         ProfilesModelHelper.setMessageLevelSecurityProfilePolicies(bO, ComboConstants.PROF_MUTUALCERT);
+        WSITModelSupport.save(b);
     }
 
     public void operationRemoved(MethodModel method) {
@@ -70,6 +72,7 @@ public class WsitServiceChangeListener implements ServiceChangeListener {
         try {
             for (BindingOperation bOperation : bOperations) {
                 if (methodName.equals(bOperation.getName())) {
+                    ProfilesModelHelper.setMessageLevelSecurityProfilePolicies(bOperation, ComboConstants.NONE);
                     b.removeBindingOperation(bOperation);
                 }
             }
@@ -85,23 +88,17 @@ public class WsitServiceChangeListener implements ServiceChangeListener {
                     d.removeMessage(m);
                 }
             }
-
-            Collection<BindingOperation> bOps = b.getBindingOperations();
-            for (BindingOperation op : bOps) {
-                if (op.getName().equals(method.getOperationName())) {
-                    ProfilesModelHelper.setMessageLevelSecurityProfilePolicies(op, ComboConstants.PROF_MUTUALCERT);
-                }
-            }
         } finally {
             if (!isTransaction) {
                 model.endTransaction();
             }
         }
+        WSITModelSupport.save(b);
     }
 
     public void operationChanged(MethodModel oldMethod,
                                  MethodModel newMethod) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        //
     }
             
 }

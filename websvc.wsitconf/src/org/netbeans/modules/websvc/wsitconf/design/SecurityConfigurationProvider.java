@@ -20,6 +20,7 @@
 package org.netbeans.modules.websvc.wsitconf.design;
 
 
+import java.util.HashMap;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.design.configuration.WSConfiguration;
 import org.netbeans.modules.websvc.design.configuration.WSConfigurationProvider;
@@ -31,12 +32,20 @@ import org.openide.filesystems.FileObject;
  */
 public class SecurityConfigurationProvider implements WSConfigurationProvider {
     
+    private HashMap<String, WSConfiguration> configProviders = new HashMap();
+    
     /** Creates a new instance of SecurityConfigurationProvider */
     public SecurityConfigurationProvider() {
     }
 
-    public WSConfiguration getWSConfiguration(Service service, FileObject implementationFile) {
-        return new SecurityConfiguration(service, implementationFile);
+    public synchronized WSConfiguration getWSConfiguration(Service service, FileObject implementationFile) {
+        String key = "";
+        if (service != null) key += service.getLocalWsdlFile();
+        if (implementationFile != null) key += implementationFile.getPath();
+        if (!configProviders.containsKey(key)) {
+            configProviders.put(key, new SecurityConfiguration(service, implementationFile));
+        }
+        return configProviders.get(key);
     }
     
 }
