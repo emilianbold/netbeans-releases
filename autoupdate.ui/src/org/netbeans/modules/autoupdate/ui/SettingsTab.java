@@ -350,7 +350,7 @@ private void bProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         return descriptor;
     }
     
-    private SettingsTableModel getSettingsTableModel() {
+    public SettingsTableModel getSettingsTableModel() {
         return ((SettingsTableModel)jTable1.getModel());
     }
     

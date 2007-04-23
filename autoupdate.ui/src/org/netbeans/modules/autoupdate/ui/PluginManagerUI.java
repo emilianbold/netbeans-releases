@@ -27,6 +27,7 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.table.TableModel;
@@ -48,6 +49,7 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
     private UnitTable updateTable;
     private UnitTable localTable;
     private JButton closeButton;
+    private SettingsTab settingTab;
     
     /** Creates new form PluginManagerUI */
     public PluginManagerUI (JButton closeButton) {
@@ -121,6 +123,12 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
         pProgress = new javax.swing.JPanel();
         bClose = closeButton;
 
+        tpTabs.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                tpTabsStateChanged(evt);
+            }
+        });
+
         pProgress.setLayout(new java.awt.BorderLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(bClose, org.openide.util.NbBundle.getMessage(PluginManagerUI.class, "UnitTab_bClose_Text")); // NOI18N
@@ -151,6 +159,12 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
+
+private void tpTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_tpTabsStateChanged
+    if (((JTabbedPane) evt.getSource ()).getSelectedComponent ().equals (settingTab)) {
+        settingTab.getSettingsTableModel ().refreshModel ();
+    }
+}//GEN-LAST:event_tpTabsStateChanged
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -184,8 +198,8 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
         SplittedUnitTab installedTab = new SplittedUnitTab(installedTable, new UnitDetails (), this);
         installedTab.addUpdateUnitListener (this);
         tpTabs.add (NbBundle.getMessage(PluginManagerUI.class, "PluginManagerUI_UnitTab_Installed_Title"), installedTab);
-        SettingsTab st = new SettingsTab(this);
-        tpTabs.add (st.getDisplayName(), st);
+        settingTab = new SettingsTab(this);
+        tpTabs.add (settingTab.getDisplayName(), settingTab);
         
         decorateTitle (0, updateTable, NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Update_Title"));
         decorateTitle (1, availableTable, NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Available_Title"));

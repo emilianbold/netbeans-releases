@@ -300,6 +300,12 @@ public class Utilities {
     }
     
     // Call PluginManagerUI.updateUnitsChanged() after refresh to reflect change in model
+    public static void presentRefreshProviders (Collection<UpdateUnitProvider> providers, PluginManagerUI manager, boolean force) {
+        assert ! SwingUtilities.isEventDispatchThread () : "Don't presentRefreshProvider() call in EQ!";
+        doRefreshProviders (providers, manager, force);
+    }
+    
+    // Call PluginManagerUI.updateUnitsChanged() after refresh to reflect change in model
     public static void presentRefreshProviders (PluginManagerUI manager, boolean force) {
         assert ! SwingUtilities.isEventDispatchThread () : "Don't presentRefreshProviders() call in EQ!";
         doRefreshProviders (UpdateUnitProviderFactory.getDefault ().getUpdateUnitProviders (true), manager, force);

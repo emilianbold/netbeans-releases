@@ -23,11 +23,14 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
+import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.openide.util.NbBundle;
@@ -50,6 +53,7 @@ public class SettingsTableModel extends AbstractTableModel {
         /*String.class*/
     };
     private List<UpdateUnitProvider> updateProviders;
+    private Set<String> originalProviders;
     private String filter;
     private PluginManagerUI pluginManager = null;
     
@@ -80,17 +84,38 @@ public class SettingsTableModel extends AbstractTableModel {
     }
 
     void refreshModel() {
-            updateProviders = new ArrayList<UpdateUnitProvider>(UpdateUnitProviderFactory.getDefault().getUpdateUnitProviders(false));
-            if (filter != null && filter.length() > 0) {
-                for (Iterator<UpdateUnitProvider> it = updateProviders.iterator(); it.hasNext();) {
-                    UpdateUnitProvider updateUnitProvider = it.next();
-                    if (updateUnitProvider.getDisplayName().toLowerCase().indexOf(filter) == -1 ) {
-                        it.remove();
-                    }
+        Set<String> oldValue = originalProviders;
+        originalProviders = new HashSet<String> ();
+        final List<UpdateUnitProvider> forRefresh = new ArrayList<UpdateUnitProvider> ();
+        List<UpdateUnitProvider> providers = UpdateUnitProviderFactory.getDefault ().getUpdateUnitProviders (false);
+        for (UpdateUnitProvider p : providers) {
+           if (oldValue != null && !oldValue.contains (p.getName ())) {
+               // new one provider
+               if (p.isEnabled()) {
+                   forRefresh.add (p);
+               }
+           }
+           originalProviders.add (p.getName ());
+        }
+        if (! forRefresh.isEmpty ()) {
+            RequestProcessor.getDefault ().post (new Runnable () {
+                public void run () {
+                    Utilities.presentRefreshProviders (forRefresh, getPluginManager (), true);
+                    getPluginManager ().updateUnitsChanged ();
+                }
+            });
+        }
+        updateProviders = new ArrayList<UpdateUnitProvider> (providers);
+        if (filter != null && filter.length() > 0) {
+            for (Iterator<UpdateUnitProvider> it = updateProviders.iterator(); it.hasNext();) {
+                UpdateUnitProvider updateUnitProvider = it.next();
+                if (updateUnitProvider.getDisplayName().toLowerCase().indexOf(filter) == -1 ) {
+                    it.remove();
                 }
             }
-            sortAlphabetically(updateProviders);
-            fireTableDataChanged();
+        }
+        sortAlphabetically(updateProviders);
+        fireTableDataChanged();
     }
     
     public void remove(int rowIndex) {
