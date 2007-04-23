@@ -261,9 +261,10 @@ public class RegisterDerby implements DatabaseRuntime {
 
             ee.displayProcessOutputs(process,NbBundle.getMessage(StartAction.class, "LBL_outputtab"));
             if (waitTime > 0){
-                ee.waitForMessage(NbBundle.getMessage(RegisterDerby.class, "MSG_StartingDerby"),
-                    waitTime); // to make sure the server is up and running
-                //Thread.currentThread().sleep(waitTime); // to make sure the server is up and running
+                boolean result = ee.waitForMessage(NbBundle.getMessage(RegisterDerby.class, "MSG_StartingDerby"), waitTime); // to make sure the server is up and running
+                if (!result) {
+                    LOGGER.log(ErrorManager.WARNING, "Derby server failed to start in " + waitTime + " ms"); // NOI18N
+                }
             }
             
         } catch (Exception e) {
