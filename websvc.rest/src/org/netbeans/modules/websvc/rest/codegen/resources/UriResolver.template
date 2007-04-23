@@ -80,14 +80,15 @@ public class UriResolver {
         }
     }
     
-    private void resolveEntity(Object obj) {
+     private void resolveEntity(Object obj) {
         try {
             Method method = obj.getClass().getMethod("getEntity");
             Object entity = method.invoke(obj);
             entity = PersistenceService.getInstance().resolveEntity(entity);
-            method = obj.getClass().getMethod("setEntity", Object.class);
-            method.invoke(obj, entity);
+            method = obj.getClass().getMethod("setEntity", entity.getClass());
+            method.invoke(obj, entity.getClass().cast(entity));
         } catch (Exception ex) {
+            ex.printStackTrace();
         }
     }
 }
