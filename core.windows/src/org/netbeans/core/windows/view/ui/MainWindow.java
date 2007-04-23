@@ -588,8 +588,16 @@ public final class MainWindow extends JFrame {
                     }
                 }
             });
-        } else
+        } else {
             WindowManagerImpl.getInstance().setVisible(true);
+            SwingUtilities.invokeLater( new Runnable() {
+                public void run() {
+                    invalidate();
+                    validate();
+                    repaint();
+                }
+            });
+        }
     }
     
     public boolean isFullScreenMode() {
