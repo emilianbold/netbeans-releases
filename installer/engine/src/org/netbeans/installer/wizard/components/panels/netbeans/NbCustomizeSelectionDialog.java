@@ -331,6 +331,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         
         updateDescription();
         updateSizes();
+        updateErrorMessage();
         
         okButton.setText(panel.getProperty(panel.OK_BUTTON_TEXT_PROPERTY));
         cancelButton.setText(panel.getProperty(panel.CANCEL_BUTTON_TEXT_PROPERTY));
