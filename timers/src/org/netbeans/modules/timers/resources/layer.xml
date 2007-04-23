@@ -33,18 +33,11 @@
 
     </folder>
 
-    <folder name="Actions">
-        <folder name="Window">
+    <folder name="Toolbars">
+        <folder name="Memory">
+            <attr name="org-openide-actions-GarbageCollectAction.instance/org-netbeans-modules-timers-OpenTimeComponentAction.instance" boolvalue="true"/>
             <file name="org-netbeans-modules-timers-OpenTimeComponentAction.instance"/>
         </folder>
     </folder>
-    <folder name="Menu">
-        <folder name="Window">
-            <file name="OpenTimeComponentAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-timers-OpenTimeComponentAction.instance"/>
-            </file>
-        </folder>
-    </folder>
-    
-</filesystem>
 
+</filesystem>
