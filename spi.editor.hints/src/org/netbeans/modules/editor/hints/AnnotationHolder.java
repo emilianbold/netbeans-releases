@@ -68,7 +68,6 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
-import org.netbeans.api.timers.TimesCollector;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -150,7 +149,8 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener 
         
         propertyChange(null);
         
-        TimesCollector.getDefault().reportReference(file, "annotation-holder", "[M] Annotation Holder", this);
+        Logger.getLogger("TIMER").log(Level.FINE, "Annotation Holder",
+                    new Object[] {file, this});
     }
     
     private synchronized void init() {
@@ -659,7 +659,8 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener 
             throw (IOException) new IOException().initCause(ex);
         } finally {
             long end = System.currentTimeMillis();
-            TimesCollector.getDefault().reportTime(file, "annotation-holder-" + layer, "Errors update for " + layer, end - start);
+            Logger.getLogger("TIMER").log(Level.FINE, "Errors update for " + layer,
+                    new Object[] {file, end - start});
         }
     }
     
