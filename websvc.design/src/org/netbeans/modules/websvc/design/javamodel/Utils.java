@@ -501,28 +501,38 @@ public class Utils {
     
     private static String getSampleValue(String paramType) {
         if ("java.lang.String".equals(paramType)) {
-            return "sample text";
-        } else if ("int".equals(paramType)) {
-            return "99";
-        } else if ("double".equals(paramType)) {
-            return "999.999";
-        } else if ("float".equals(paramType)) {
-            return "99.99";
-        } else if ("long".equals(paramType)) {
-            return "999";
-        } else if ("long".equals(paramType)) {
-            return "999";
-        } else if ("boolean".equals(paramType)) {
-            return "false";
-        } else if ("byte[]".equals(paramType)) {
-            return "73616D706C652074657874";
-        } else if ("java.math.BigDecimal".equals(paramType)) {
-            return "99.99";
-        } else if ("javax.xml.datatype.XMLGregorianCalendar".equals(paramType)) {
-            return "2007-04-19";
-        } else if ("javax.xml.datatype.Duration".equals(paramType)) {
-            return "P2007Y4M";
-        } else return "...";
+            return "sample text"; //NOI18N
+        } else if ("int".equals(paramType) || //NOI18N
+                    "java.lang.Integer".equals(paramType) || //NOI18N
+                    "java.math.BigInteger".equals(paramType)) { //NOI18N
+            return "99"; //NOI18N
+        } else if ("double".equals(paramType) || "java.lang.Double".equals(paramType)) { //NOI18N
+            return "999.999"; //NOI18N
+        } else if ("float".equals(paramType) || //NOI18N
+                    "java.lang.Float".equals(paramType) || //NOI18N
+                    "java.math.BigDecimal".equals(paramType)) {//NOI18N
+            return "99.99"; //NOI18N
+        } else if ("long".equals(paramType) || "java.lang.Long".equals(paramType)) { //NOI18N
+            return "999"; //NOI18N
+        } else if ("boolean".equals(paramType) || "java.lang.Boolean".equals(paramType)) { //NOI18N
+            return "false"; //NOI18N
+        } else if ("char".equals(paramType) || //NOI18N
+                    "java.lang.Char".equals(paramType) || //NOI18N
+                    "short".equals(paramType) || //NOI18N
+                    "java.lang.Short".equals(paramType)) { //NOI18N
+            return "65"; //NOI18N
+        } else if ("byte[]".equals(paramType)) { //NOI18N
+            return "73616D706C652074657874"; //NOI18N
+        } else if ("javax.xml.datatype.XMLGregorianCalendar".equals(paramType) || //NOI18N
+                   "java.util.Date".equals(paramType) || //NOI18N
+                   "java.util.Calendar".equals(paramType) || //NOI18N
+                   "java.util.GregorianCalendar".equals(paramType)) { //NOI18N
+            return "2007-04-19"; //NOI18N
+        } else if ("javax.xml.datatype.Duration".equals(paramType)) { //NOI18N
+            return "P2007Y4M"; //NOI18N
+        } else if ("java.net.URI".equals(paramType) || "java.net.URL".equals(paramType)) { //NOI18N
+            return "http://www.netbeans.org/sampleURI"; //NOI18N
+        } else return "..."; //NOI18N
     }
     
     public static void setJavadoc(final FileObject implClass, final MethodModel methodModel, final String text) {

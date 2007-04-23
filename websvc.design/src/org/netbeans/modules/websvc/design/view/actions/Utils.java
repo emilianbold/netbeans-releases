@@ -47,8 +47,11 @@ public class Utils {
     private static final String[] primitiveTypes = new String[] {
         "string", //NOI18N
         "int", //NOI18N
-        "boolean", //NOI18N
         "decimal", //NOI18N
+        "short", //NOI18N
+        "unsignedShort", // NOI18N
+        "long", //NOI18N
+        "boolean", //NOI18N
         "float", //NOI18N
         "double", //NOI18N
         "duration", //NOI18N
