@@ -124,7 +124,7 @@ public final class EarProjectGenerator {
     }
     
     private AntProjectHelper doCreateProject() throws IOException {
-        doRefresh();
+        prjDirFO = FileUtil.createFolder(prjDir);
         
         AntProjectHelper h = setupProject();
         FileObject docBase = FileUtil.createFolder(prjDirFO, DEFAULT_DOC_BASE_FOLDER);
@@ -152,7 +152,7 @@ public final class EarProjectGenerator {
             Map<FileObject, ModuleType> userModules,
             String platformName) throws IOException {
         
-        doRefresh();
+        prjDirFO = FileUtil.createFolder(prjDir);
         
         FileObject srcPrjDirFO = FileUtil.toFileObject(FileUtil.normalizeFile(srcPrjDir));
         FileObject docBase = FileUtil.createFolder(srcPrjDirFO, DEFAULT_DOC_BASE_FOLDER);
@@ -235,21 +235,6 @@ public final class EarProjectGenerator {
         }
         
         return earHelper;
-    }
-    
-    private void doRefresh() throws FileStateInvalidException {
-        // XXX clumsy way to refresh, but otherwise it doesn't work for new folders
-        prjDir.mkdirs();
-        File rootF = prjDir;
-        while (rootF.getParentFile() != null) {
-            rootF = rootF.getParentFile();
-        }
-        FileObject rootFO = FileUtil.toFileObject(FileUtil.normalizeFile(rootF));
-        assert rootFO != null : "At least disk roots must be mounted! " + rootF;
-        rootFO.getFileSystem().refresh(false);
-        this.prjDirFO = FileUtil.toFileObject(FileUtil.normalizeFile(prjDir));
-        assert prjDirFO != null : "No such dir on disk: " + prjDir;
-        assert prjDirFO.isFolder() : "Not really a dir: " + prjDir;
     }
     
     private void addUserModules(final Map<FileObject, ModuleType> userModules,

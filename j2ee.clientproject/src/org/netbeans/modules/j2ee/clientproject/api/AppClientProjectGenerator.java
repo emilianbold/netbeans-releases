@@ -97,7 +97,7 @@ public class AppClientProjectGenerator {
      * @throws IOException in case something went wrong
      */
     public static AntProjectHelper createProject(File dir, String name, String mainClass, String j2eeLevel, String serverInstanceID) throws IOException {
-        FileObject fo = createProjectDir(dir);
+        FileObject fo = FileUtil.createFolder(dir);
         
         FileObject srcRoot = fo.createFolder(DEFAULT_SRC_FOLDER);
         FileObject javaRoot = srcRoot.createFolder(DEFAULT_JAVA_FOLDER);
@@ -152,7 +152,7 @@ public class AppClientProjectGenerator {
     public static AntProjectHelper importProject(final File dir, final String name,
             final File[] sourceFolders, final File[] testFolders, final File confFolder, final File libFolder, String j2eeLevel, String serverInstanceID) throws IOException {
         assert sourceFolders != null && testFolders != null: "Package roots can't be null";   //NOI18N
-        final FileObject dirFO = createProjectDir(dir);
+        final FileObject dirFO = FileUtil.createFolder(dir);
         final AntProjectHelper h = createProject(dirFO, name, null, null,
                 confFolder.getAbsolutePath(), (libFolder == null ? null : libFolder.getAbsolutePath()),
                 null, null, j2eeLevel, serverInstanceID);
@@ -502,24 +502,6 @@ public class AppClientProjectGenerator {
         return h;
     }
     
-    private static FileObject createProjectDir(File dir) throws IOException {
-        Stack stack = new Stack ();
-        while (!dir.exists()) {
-            stack.push (dir.getName());
-            dir = dir.getParentFile();
-        }
-        FileObject dirFO = FileUtil.toFileObject (dir);
-        if (dirFO == null) {
-            refreshFileSystem(dir);
-            dirFO = FileUtil.toFileObject (dir);
-        }
-        assert dirFO != null;
-        while (!stack.isEmpty()) {
-            dirFO = dirFO.createFolder((String)stack.pop());
-        }
-        return dirFO;
-    }
-    
     private static void createMainClass( String mainClassName, FileObject srcFolder ) throws IOException {
         
         int lastDotIdx = mainClassName.lastIndexOf( '.' );
@@ -552,17 +534,6 @@ public class AppClientProjectGenerator {
         DataFolder pDf = DataFolder.findFolder( pkgFolder );
         mt.createFromTemplate( pDf, mName );
         
-    }
-    
-    
-    private static void refreshFileSystem(final File dir) throws FileStateInvalidException {
-        File rootF = dir;
-        while (rootF.getParentFile() != null) {
-            rootF = rootF.getParentFile();
-        }
-        FileObject dirFO = FileUtil.toFileObject(rootF);
-        assert dirFO != null : "At least disk roots must be mounted! " + rootF; // NOI18N
-        dirFO.getFileSystem().refresh(false);
     }
     
     /**

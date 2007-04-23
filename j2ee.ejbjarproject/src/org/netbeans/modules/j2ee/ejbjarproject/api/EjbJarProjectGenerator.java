@@ -83,7 +83,7 @@ public class EjbJarProjectGenerator {
      * @throws IOException in case something went wrong
      */
     public static AntProjectHelper createProject(File dir, String name, String j2eeLevel, String serverInstanceID) throws IOException {
-        FileObject fo = createProjectDir(dir);
+        FileObject fo = FileUtil.createFolder(dir);
 
         FileObject srcRoot = fo.createFolder(DEFAULT_SRC_FOLDER); // NOI18N
         srcRoot.createFolder(DEFAULT_JAVA_FOLDER); //NOI18N
@@ -153,7 +153,7 @@ public class EjbJarProjectGenerator {
             final File[] sourceFolders, final File[] testFolders, 
             final File configFilesBase, final File libFolder, final String j2eeLevel, String serverInstanceID) throws IOException {
         assert sourceFolders != null && testFolders != null: "Package roots can't be null";   //NOI18N
-        final FileObject dirFO = createProjectDir (dir);
+        final FileObject dirFO = FileUtil.createFolder(dir);
         // this constructor creates only java application type
         final AntProjectHelper h = setupProject(dirFO, name, null, null, 
                 configFilesBase, (libFolder == null ? null : libFolder), null, j2eeLevel, serverInstanceID);
@@ -417,34 +417,6 @@ public class EjbJarProjectGenerator {
         Project p = ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
         return h;
-    }
-
-    private static FileObject createProjectDir (File dir) throws IOException {
-        Stack stack = new Stack ();
-        while (!dir.exists()) {
-            stack.push (dir.getName());
-            dir = dir.getParentFile();
-        }        
-        FileObject dirFO = FileUtil.toFileObject (dir);
-        if (dirFO == null) {
-            refreshFileSystem(dir);
-            dirFO = FileUtil.toFileObject (dir);
-        }
-        assert dirFO != null;
-        while (!stack.isEmpty()) {
-            dirFO = dirFO.createFolder((String)stack.pop());
-        }        
-        return dirFO;
-    }
-
-    private static void refreshFileSystem (final File dir) throws FileStateInvalidException {
-        File rootF = dir;
-        while (rootF.getParentFile() != null) {
-            rootF = rootF.getParentFile();
-        }
-        FileObject dirFO = FileUtil.toFileObject(rootF);
-        assert dirFO != null : "At least disk roots must be mounted! " + rootF; // NOI18N
-        dirFO.getFileSystem().refresh(false);
     }
 
     // AB: this method is also called from the enterprise application, so we can't pass UpdateHelper here

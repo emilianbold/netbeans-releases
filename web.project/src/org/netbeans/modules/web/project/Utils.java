@@ -57,40 +57,8 @@ public class Utils {
     private static final String PLATFORM_ANT_NAME = "platform.ant.name"; //NOI18N
     public static final String SPECIFICATION_J2SE = "j2se";              //NOI18N
 
-    public static File getRoot(File f) {
-        File rootF = f;
-        while (rootF.getParentFile() != null) {
-            rootF = rootF.getParentFile();
-        }
-        return rootF;
-    }
-
     public static FileObject getValidDir(File dir) throws IOException {
-        Stack stack = new Stack ();
-        while (!dir.exists()) {
-            stack.push (dir.getName());
-            dir = dir.getParentFile();
-        }
-        FileObject dirFO = FileUtil.toFileObject (dir);
-        if (dirFO == null) {
-            refreshFileSystem(dir);
-            dirFO = FileUtil.toFileObject (dir);
-        }
-        assert dirFO != null;
-        while (!stack.isEmpty()) {
-            dirFO = dirFO.createFolder((String)stack.pop());
-        }
-        return dirFO;
-    }
-    
-    private static void refreshFileSystem (final File dir) throws FileStateInvalidException {
-        File rootF = dir;
-        while (rootF.getParentFile() != null) {
-            rootF = rootF.getParentFile();
-        }
-        FileObject dirFO = FileUtil.toFileObject(rootF);
-        assert dirFO != null : "At least disk roots must be mounted! " + rootF; // NOI18N
-        dirFO.getFileSystem().refresh(false);
+        return FileUtil.createFolder(dir);
     }
     
     public static FileObject getValidEmptyDir(File dir) throws IOException {

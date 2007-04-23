@@ -157,9 +157,7 @@ public class DeployableWizardIterator implements WizardDescriptor.InstantiatingI
         }
         if (null == retVal) {
             File dirF = FileUtil.normalizeFile((File) wiz.getProperty(PROJECT_DIR_PROP));
-            dirF.mkdirs();
-            
-            final FileObject dir = FileUtil.toFileObject(dirF);
+            final FileObject dir = FileUtil.createFolder(dirF);
             
             final AntProjectHelper h = ProjectGenerator.createProject(dir,
                     ArchiveProjectType.TYPE);
