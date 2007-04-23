@@ -160,9 +160,16 @@ public class LanguagesNavigator implements NavigatorPanel {
     private void refresh () {
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
-                EditorCookie ec = (EditorCookie) dataObject.getCookie (EditorCookie.class);
-                if (ec == null) return;
-                LineCookie lc = (LineCookie) dataObject.getCookie (LineCookie.class);
+                EditorCookie ec = null;
+                LineCookie lc = null;
+                try {
+                    ec = (EditorCookie) dataObject.getCookie (EditorCookie.class);
+                    if (ec == null) return;
+                    lc = (LineCookie) dataObject.getCookie (LineCookie.class);
+                } catch (NullPointerException e) {
+                    // dataObject == null, panelDeactivated() called
+                    return;
+                }
                 try {
                     NbEditorDocument document = (NbEditorDocument) ec.openDocument ();
                     ASTNode ast = null;
