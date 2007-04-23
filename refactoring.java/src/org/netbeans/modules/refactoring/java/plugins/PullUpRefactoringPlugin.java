@@ -583,7 +583,10 @@ public class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
                 return;
             }
             Element el = treePathHandle.resolveElement(compiler);
-            assert el != null;
+            if (el==null) {
+                //element does not exist in current context
+                return;
+            }
             
             PullUpTransformer findVisitor = new PullUpTransformer(compiler, refactoring.getMembers(), refactoring.getSourceType().resolveElement(compiler), refactoring.getTargetType().resolve(compiler));
             findVisitor.scan(compiler.getCompilationUnit(), el);
