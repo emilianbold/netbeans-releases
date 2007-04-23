@@ -90,17 +90,21 @@ public class AnnotationManager extends ASTEvaluator {
     }
     
     public void remove () {
+        removeAnnotations ();
+        parser.removeASTEvaluator (this);
+    }
+    
+    private void removeAnnotations () {
         Iterator<LanguagesAnnotation> it = annotations.iterator ();
         while (it.hasNext ())
             doc.removeAnnotation (it.next ());
-        parser.removeASTEvaluator (this);
     }
     
     private void refresh (final List<ASTItem> items, final List<Feature> marks) {
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
                 try {
-                    remove ();
+                    removeAnnotations ();
                     annotations = new ArrayList<LanguagesAnnotation> ();
                     Iterator<ASTItem> it2 = items.iterator ();
                     Iterator<Feature> it3 = marks.iterator ();
