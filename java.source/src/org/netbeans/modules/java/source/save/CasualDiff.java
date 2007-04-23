@@ -50,8 +50,6 @@ import static org.netbeans.modules.java.source.save.PositionEstimator.*;
 public class CasualDiff {
     protected ListBuffer<Diff> diffs;
     protected CommentHandler comments;
-    protected JCTree oldParent;
-    protected JCTree newParent;
     protected JCCompilationUnit oldTopLevel;
     
     private WorkingCopy workingCopy;
@@ -210,10 +208,6 @@ public class CasualDiff {
     protected int diffClassDef(JCClassDecl oldT, JCClassDecl newT, int[] bounds) {
         int localPointer = bounds[0];
         int insertHint = localPointer;
-        JCTree opar = oldParent;
-        oldParent = oldT;
-        JCTree npar = newParent;
-        newParent = newT;
         // skip the section when printing anonymous class
         if (anonClass == false) {
         tokenSequence.move(oldT.pos);
@@ -320,8 +314,6 @@ public class CasualDiff {
         if (localPointer != -1)
             copyTo(localPointer, bounds[1]);
         printer.enclClassName = origName;
-        oldParent = opar;
-        newParent = npar;
         // the reference is no longer needed.
         origClassName = null;
         printer.undent(old);
@@ -572,19 +564,21 @@ public class CasualDiff {
 
     protected int diffForLoop(JCForLoop oldT, JCForLoop newT, int[] bounds) {
         int localPointer = bounds[0];
-        int initListHint = oldT.cond != null ? oldT.cond.pos - 1 : Query.NOPOS;
-        int stepListHint = oldT.cond != null ? endPos(oldT.cond) + 1 : Query.NOPOS;
-        copyTo(bounds[0], getOldPos(oldT.init.head));
-        localPointer = diffList(oldT.init, newT.init, LineInsertionType.NONE, initListHint);
-        copyTo(localPointer, getOldPos(oldT.cond));
+
+        copyTo(bounds[0], localPointer = getOldPos(oldT.init.head));
+        localPointer = diffParameterList(oldT.init, newT.init, false, localPointer, printer);
+        copyTo(localPointer, localPointer = getOldPos(oldT.cond));
         localPointer = diffTree(oldT.cond, newT.cond, getBounds(oldT.cond));
         if (oldT.step.nonEmpty()) 
-            copyTo(localPointer, getOldPos(oldT.step.head));
-        else
-            copyTo(localPointer, stepListHint);
-        localPointer = diffList(oldT.step, newT.step, LineInsertionType.NONE, stepListHint);
+            copyTo(localPointer, localPointer = getOldPos(oldT.step.head));
+        else {
+            int stepListHint = oldT.cond != null ? endPos(oldT.cond) + 1 : Query.NOPOS;
+            copyTo(localPointer, localPointer = stepListHint);
+        }
+        localPointer = diffParameterList(oldT.step, newT.step, false, localPointer, printer);
         copyTo(localPointer, getOldPos(oldT.body));
         localPointer = diffTree(oldT.body, newT.body, getBounds(oldT.body));
+        
         copyTo(localPointer, bounds[1]);
         return bounds[1];
     }
@@ -1222,7 +1216,6 @@ public class CasualDiff {
     }
     
     protected void diffErroneous(JCErroneous oldT, JCErroneous newT) {
-        diffList(oldT.errs, newT.errs, LineInsertionType.BEFORE, Query.NOPOS);
     }
     
     protected int diffFieldGroup(FieldGroupTree oldT, FieldGroupTree newT, int[] bounds) {
@@ -1412,60 +1405,6 @@ public class CasualDiff {
         return false;
     }
 
-    /**
-     * Diff an unordered list, which may contain insertions and deletions.
-     * REMOVE IT WHEN CORRECT LIST MATCHING WILL BE IMPLEMENTED
-     */
-    protected int diffList(List<? extends JCTree> oldList, 
-                            List<? extends JCTree> newList, 
-                            LineInsertionType newLine, int insertHint) {
-        int lastPrinted = insertHint;
-        if (oldList == newList)
-            return insertHint;
-        assert oldList != null && newList != null;
-        int lastOldPos = insertHint;
-        Iterator<? extends JCTree> oldIter = oldList.iterator();
-        Iterator<? extends JCTree> newIter = newList.iterator();
-        JCTree oldT = safeNext(oldIter);
-        JCTree newT = safeNext(newIter);
-        while (oldT != null && newT != null) {
-            if (oldTopLevel != null) {
-                int endPos = endPos(oldT);
-
-                if (endPos != Position.NOPOS)
-                    lastOldPos = endPos;
-            }
-            if (treesMatch(oldT, newT, false)) {
-                lastPrinted  = diffTree(oldT, newT, new int[] { getOldPos(oldT), endPos(oldT) });
-                oldT = safeNext(oldIter);
-                newT = safeNext(newIter);
-            }
-            else if (!listContains(newList, oldT) && !listContains(oldList, newT)) {
-                //append(Diff.modify(oldT, getOldPos(oldT), newT));
-                oldT = safeNext(oldIter);
-                newT = safeNext(newIter);
-            }
-            else if (!listContains(newList, oldT)) {
-                append(Diff.delete(getOldPos(oldT), endPos(oldT)));
-                oldT = safeNext(oldIter);
-            }
-            else {
-                // append(Diff.insert(newT, getOldPos(oldT), newLine, null));
-                newT = safeNext(newIter);
-            }
-        }
-        while (oldT != null) {
-            append(Diff.delete(getOldPos(oldT), endPos(oldT)));
-            if (oldTopLevel != null)
-                lastOldPos = endPos(oldT);
-            oldT = safeNext(oldIter);
-        }
-        while (newT != null) {
-            //append(Diff.insert(newT, lastOldPos, newLine, null));
-            newT = safeNext(newIter);
-        }
-        return lastPrinted;
-    }
     
     private JCTree safeNext(Iterator<? extends JCTree> iter) {
         return iter.hasNext() ? iter.next() : null;
