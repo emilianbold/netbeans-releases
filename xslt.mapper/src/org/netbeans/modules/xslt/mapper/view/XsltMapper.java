@@ -49,13 +49,14 @@ import org.netbeans.modules.xslt.mapper.model.nodes.TreeNode;
 import org.netbeans.modules.xslt.mapper.model.nodes.actions.DeleteAction;
 import org.netbeans.modules.xslt.mapper.model.targettree.TargetTreeModel;
 import org.netbeans.modules.xslt.model.XslModel;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 /**
  *
  * @author Alexey
  */
-public class XsltMapper extends BasicMapper {
+public class XsltMapper extends BasicMapper implements HelpCtx.Provider{
     
     
     
@@ -86,6 +87,7 @@ public class XsltMapper extends BasicMapper {
         xslModelBridge = new ModelBridge(this);
         diagramBuilder = new DiagramBuilder(this);
         super.addMapperListener(xslModelBridge);
+        super.setMapperRule(new XsltMapperRule(this));
         
         if (context != null) {
             context.addMapperContextChangeListener(new MapperContextChangeListener() {
@@ -352,6 +354,10 @@ public class XsltMapper extends BasicMapper {
             errorPanel.install();
             
         }
+    }
+
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("xslt_editor_design_about"); //NOI18N
     }
     
     
