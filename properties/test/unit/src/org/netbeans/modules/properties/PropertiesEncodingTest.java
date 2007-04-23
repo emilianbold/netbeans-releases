@@ -276,6 +276,59 @@ public class PropertiesEncodingTest extends NbTestCase {
         compare(decoder.decodeBytesForTests(new byte[] {'\\', 'u', '1', '2', '3', 'x', 'y', 'z'}),
                 "\\u123xyz".toCharArray());
     }
+    
+    public void testDecodingNewLineTypeStatistics() throws CharacterCodingException {
+        PropCharsetDecoder decoderA = new PropCharsetDecoder(new PropCharset());
+        decoderA.decodeBytesForTests(new byte[] {'C', 'R', '1', 0x0d,
+                                                 'C', 'R', '2', 0x0d,
+                                                 'C', 'R', '3', 0x0d,
+                                                 'C', 'R', '4', 0x0d,
+                                                 
+                                                 'L', 'F', '1', 0x0a,
+                                                 'L', 'F', '2', 0x0a,
+                                                 'L', 'F', '3', 0x0a,
+                                                 
+                                                 'C', 'R', 'L', 'F', '1', 0x0d, 0x0a,
+                                                 'C', 'R', 'L', 'F', '2', 0x0d, 0x0a,
+                                                 'C', 'R', 'L', 'F', '3', 0x0d, 0x0a,
+                                                });
+        assertSame(PropertiesEncoding.NewLineType.CR,
+                   decoderA.getNewLineType());
+        
+        PropCharsetDecoder decoderB = new PropCharsetDecoder(new PropCharset());
+        decoderB.decodeBytesForTests(new byte[] {'C', 'R', '1', 0x0d,
+                                                 'C', 'R', '2', 0x0d,
+                                                 'C', 'R', '3', 0x0d,
+                                                 
+                                                 'L', 'F', '1', 0x0a,
+                                                 'L', 'F', '2', 0x0a,
+                                                 'L', 'F', '3', 0x0a,
+                                                 'L', 'F', '4', 0x0a,
+                                                 
+                                                 'C', 'R', 'L', 'F', '1', 0x0d, 0x0a,
+                                                 'C', 'R', 'L', 'F', '2', 0x0d, 0x0a,
+                                                 'C', 'R', 'L', 'F', '3', 0x0d, 0x0a,
+                                                });
+        assertSame(PropertiesEncoding.NewLineType.LF,
+                   decoderB.getNewLineType());
+        
+        PropCharsetDecoder decoderC = new PropCharsetDecoder(new PropCharset());
+        decoderC.decodeBytesForTests(new byte[] {'C', 'R', '1', 0x0d,
+                                                 'C', 'R', '2', 0x0d,
+                                                 'C', 'R', '3', 0x0d,
+                                                 
+                                                 'L', 'F', '1', 0x0a,
+                                                 'L', 'F', '2', 0x0a,
+                                                 'L', 'F', '3', 0x0a,
+                                                 
+                                                 'C', 'R', 'L', 'F', '1', 0x0d, 0x0a,
+                                                 'C', 'R', 'L', 'F', '2', 0x0d, 0x0a,
+                                                 'C', 'R', 'L', 'F', '3', 0x0d, 0x0a,
+                                                 'C', 'R', 'L', 'F', '4', 0x0d, 0x0a,
+                                                });
+        assertSame(PropertiesEncoding.NewLineType.CR_LF,
+                   decoderC.getNewLineType());
+    }
 
     private void compare(char[] actual, char[] expected) {
         if (!Arrays.equals(expected, actual)) {

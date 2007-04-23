@@ -602,6 +602,10 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
                         state = State.CR;
                     } else if (bChar == '\\') {
                         state = State.BACKSLASH;
+                    } else if (bChar == '\n') {
+                        outBuf[outBufPos++] = bChar;
+                        nlTypesUsage[NewLineType.LF.ordinal()]++;
+                        /* keep the state at INITIAL */
                     } else {
                         outBuf[outBufPos++] = bChar;
                         /* keep the state at INITIAL */
