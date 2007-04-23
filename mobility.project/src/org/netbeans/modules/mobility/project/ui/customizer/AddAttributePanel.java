@@ -155,50 +155,39 @@ public class AddAttributePanel extends javax.swing.JPanel implements ActionListe
             errorPanel.setErrorBundleMessage("ERR_AddAttr_Push"); // NOI18N
             return false;
         }
-        if (getKey().startsWith("MIDlet-")) { // NOI18N
-            final String tmp = getKey().substring("MIDlet-".length()); // NOI18N
-            boolean isNumber = false;
-            try {
-                Integer.parseInt(tmp);
-                isNumber = true;
-            } catch (NumberFormatException e) {
-            }
-            if (isNumber) {
-                errorPanel.setErrorBundleMessage("ERR_AddAttr_MIDlet"); // NOI18N
-                return false;
-            }
-        }
         if (editing) {
             if (mandatory) {
                 if (getValue() == null  ||  "".equals(getValue())) { //NOI18N
                     errorPanel.setErrorBundleMessage("ERR_AddAttr_EmptyMandAttVal"); //NOI18N
                     return false;
                 }
-            } else {
-                if (!tableModel.isAcceptable(getKey())) {
-                    errorPanel.setErrorBundleMessage("ERR_AddAttr_InvAttName"); //NOI18N
-                    return false;
-                }
-                if (!getKey().equals(originalKey)  && keys.contains(getKey())) {
-                    errorPanel.setErrorBundleMessage("ERR_AddAttr_AttNameExists"); //NOI18N
-                    return false;
-                }
             }
-        } else {
-            if (tableModel.containsInMandatory(getKey()))
+        } else if (tableModel.containsInMandatory(getKey()))
                 if (getValue() == null  ||  "".equals(getValue())) { //NOI18N
                 errorPanel.setErrorBundleMessage("ERR_AddAttr_EmptyMandAttVal"); //NOI18N
                 return false;
+        }
+        if (!getKey().equals(originalKey)  && keys.contains(getKey())) {
+            errorPanel.setErrorBundleMessage("ERR_AddAttr_AttNameExists"); //NOI18N
+            return false;
+        }
+        if (getKey().startsWith("MIDlet-")) { // NOI18N
+            final String tmp = getKey().substring("MIDlet-".length()); // NOI18N
+            try {
+                Integer.parseInt(tmp);
+                errorPanel.setErrorBundleMessage("ERR_AddAttr_MIDlet"); // NOI18N
+                return false;
+            } catch (NumberFormatException e) {
+                if (!tableModel.isAcceptable(getKey())) {
+                    errorPanel.setErrorBundleMessage("WARN_AddAttr_MIDlet"); // NOI18N
+                    return true;
                 }
-            if (!tableModel.isAcceptable(getKey())) {
-                errorPanel.setErrorBundleMessage("ERR_AddAttr_InvAttName"); //NOI18N
-                return false;
-            }
-            if (!getKey().equals(originalKey)  && keys.contains(getKey())) {
-                errorPanel.setErrorBundleMessage("ERR_AddAttr_AttNameExists"); //NOI18N
-                return false;
             }
         }
+//        if (!tableModel.isAcceptable(getKey())) {
+//            errorPanel.setErrorBundleMessage("ERR_AddAttr_InvAttName"); //NOI18N
+//            return false;
+//        }
         return true;
     }
     

@@ -595,7 +595,7 @@ public class CustomizerJad extends JPanel implements CustomizerPanel, VisualProp
         }
         
         public int addRow(final String key, final String value, final Boolean placement) {
-            if (items.contains(key)  ||  ! isAcceptable(key))
+            if (key == null || items.contains(key))
                 return -1;
             final int row = items.size();
             map1.remove(key);
