@@ -20,14 +20,12 @@
 package org.netbeans.modules.visualweb.designer.jsf.text;
 
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.visualweb.api.designer.DomProvider;
 import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
 import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition.Bias;
-import org.netbeans.modules.visualweb.designer.jsf.JsfForm;
 
-import org.openide.ErrorManager;
-
-import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Node;
 import org.w3c.dom.ranges.DocumentRange;
 
@@ -92,39 +90,55 @@ import org.w3c.dom.ranges.DocumentRange;
 //        this.jsfForm = jsfForm;
         this.domDocumentImpl = domDocumentImpl;
 
-        // Determine if this node is in a DocumentFragment which means
-        // it's read only
-        Node curr = dotNode;
-
-        while (curr.getParentNode() != null) {
-            curr = curr.getParentNode();
-        }
-
-//        if (curr == webform.getJspDom()) {
-        if (curr == domDocumentImpl.getJsfForm().getJspDom()) {
+//        // Determine if this node is in a DocumentFragment which means
+//        // it's read only
+//        Node curr = dotNode;
+//
+//        while (curr.getParentNode() != null) {
+//            curr = curr.getParentNode();
+//        }
+//
+////        if (curr == webform.getJspDom()) {
+//        if (curr == domDocumentImpl.getJsfForm().getJspDom()) {
+//            // It's below the main document dom node so it's part of
+//            // the writable document portion
+////            DocumentRange dom = (DocumentRange)webform.getJspDom();
+//            DocumentRange dom = (DocumentRange)domDocumentImpl.getJsfForm().getJspDom();
+//            
+//            domRange = dom.createRange();
+//            domRange.setStart(markNode, markOffset);
+//            domRange.setEnd(dotNode, dotOffset);
+////        } else if (webform.getManager().isInlineEditing()) {
+//        } else if (domDocumentImpl.getJsfForm().isInlineEditing()) {
+//            // Handle regions in generated dom
+//            assert curr instanceof DocumentFragment;
+//
+//            //assert webform.getSelection().getInlineEditor().getFragment() == curr;
+//            DocumentRange dom = (DocumentRange)curr.getOwnerDocument();
+//            domRange = dom.createRange();
+//            domRange.setStart(markNode, markOffset);
+//            domRange.setEnd(dotNode, dotOffset);
+//        } else {
+////            assert false : dotNode + "; " + curr + "; " + webform.getJspDom(); // NOI18N
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+////                    new IllegalStateException("dotNode=" + dotNode + ", curr=" + curr + ", jsp dom=" + webform.getJspDom())); // NOI18N
+//                    new IllegalStateException("dotNode=" + dotNode + ", curr=" + curr + ", jsp dom=" + domDocumentImpl.getJsfForm().getJspDom())); // NOI18N
+//        }
+        // XXX #102048 If the owner is the source doc, get the range.
+        if (dotNode.getOwnerDocument() == domDocumentImpl.getJsfForm().getJspDom()) {
             // It's below the main document dom node so it's part of
             // the writable document portion
-//            DocumentRange dom = (DocumentRange)webform.getJspDom();
             DocumentRange dom = (DocumentRange)domDocumentImpl.getJsfForm().getJspDom();
             
             domRange = dom.createRange();
             domRange.setStart(markNode, markOffset);
             domRange.setEnd(dotNode, dotOffset);
-//        } else if (webform.getManager().isInlineEditing()) {
-        } else if (domDocumentImpl.getJsfForm().isInlineEditing()) {
-            // Handle regions in generated dom
-            assert curr instanceof DocumentFragment;
-
-            //assert webform.getSelection().getInlineEditor().getFragment() == curr;
-            DocumentRange dom = (DocumentRange)curr.getOwnerDocument();
-            domRange = dom.createRange();
-            domRange.setStart(markNode, markOffset);
-            domRange.setEnd(dotNode, dotOffset);
         } else {
-//            assert false : dotNode + "; " + curr + "; " + webform.getJspDom(); // NOI18N
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-//                    new IllegalStateException("dotNode=" + dotNode + ", curr=" + curr + ", jsp dom=" + webform.getJspDom())); // NOI18N
-                    new IllegalStateException("dotNode=" + dotNode + ", curr=" + curr + ", jsp dom=" + domDocumentImpl.getJsfForm().getJspDom())); // NOI18N
+            Logger logger = Logger.getLogger(DomRangeImpl.class.getName());
+            logger.log(Level.INFO, null,
+                new IllegalStateException("dotNode=" + dotNode // NOI18N
+                    + ", dotNode owner=" + dotNode.getOwnerDocument() // NOI18N
+                    + ", jsp dom=" + domDocumentImpl.getJsfForm().getJspDom())); // NOI18N
         }
 
         dotIsFirst = false;
