@@ -641,12 +641,11 @@ introduced by support for multiple source roots. -jglick
                 <target name="wsimport-init" depends="init">
                     <xsl:if test="$jaxws/jaxws:jax-ws/jaxws:clients/jaxws:client">
                         <mkdir dir="${{build.generated.dir}}/wsimport/client"/>
-                        <mkdir dir="${{build.generated.dir}}/wsimport/binaries"/>
                     </xsl:if>
                     <xsl:if test="$jaxws/jaxws:jax-ws/jaxws:services/jaxws:service/jaxws:wsdl-url">
                         <mkdir dir="${{build.generated.dir}}/wsimport/service"/>
-                        <mkdir dir="${{build.classes.dir.real}}"/>
                     </xsl:if>
+                    <mkdir dir="${{build.generated.dir}}/wsimport/binaries"/>
                     <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">
                         <classpath path="${{java.home}}/../lib/tools.jar:${{j2ee.platform.wsimport.classpath}}:${{javac.classpath}}"/>                       
                     </taskdef>
@@ -2265,17 +2264,7 @@ introduced by support for multiple source roots. -jglick
             <xsl:attribute name="verbose">true</xsl:attribute> 
             <xsl:attribute name="sourcedestdir">${build.generated.dir}/wsimport/<xsl:value-of select="$wsType"/></xsl:attribute>
             <xsl:attribute name="extension">true</xsl:attribute>
-            <xsl:variable name="destination" >
-                <xsl:choose>
-                    <xsl:when test="$isService = 'true'">
-                        <xsl:text>${build.classes.dir.real}</xsl:text>               
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:text>${build.generated.dir}/wsimport/binaries</xsl:text> 
-                    </xsl:otherwise>
-                </xsl:choose>
-            </xsl:variable>
-            <xsl:attribute name="destdir"><xsl:value-of select="$destination" /></xsl:attribute>
+            <xsl:attribute name="destdir">${{build.generated.dir}}/wsimport/binaries</xsl:attribute>
             <xsl:variable name="wsDir">
                 <xsl:choose>
                     <xsl:when test="$isService = 'true'">
