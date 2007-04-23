@@ -105,6 +105,10 @@
             name="uri-to-path"
             classname="org.netbeans.installer.infra.build.ant.UriToPath"
             classpath="${custom.tasks.cls}"/>
+        <taskdef
+            name="n-unzip"
+            classname="org.netbeans.installer.infra.build.ant.NativeUnzip"
+            classpath="${custom.tasks.cls}"/>
         
         <!-- check whether the engine should be built -->
         <condition property="do.build.engine">
@@ -389,7 +393,7 @@
                 <mkdir 
                     dir="${current.temp.dir}"/>
                 <if property="current.zip" value="true">
-                    <unzip
+                    <n-unzip
                         src="${current.download}" 
                         dest="${current.temp.dir}"/>
                 </if>

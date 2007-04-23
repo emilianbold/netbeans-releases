@@ -47,14 +47,14 @@ import org.apache.tools.ant.Project;
 
 /**
  * A collection of utility methods used throughout the custom tasks classes.
- * 
+ *
  * @author Kirill Sorokin
  */
 public final class Utils {
     /////////////////////////////////////////////////////////////////////////////////
     // Static
     /**
-     * The current ant project. Some of its methods will get called in process of 
+     * The current ant project. Some of its methods will get called in process of
      * the executions of some of the utility procedures. Thus the ant tasks using the
      * class are streongly encouraged to call the {@link #setProject(Project)}
      * method prior to suing any other functionality.
@@ -63,7 +63,7 @@ public final class Utils {
     
     /**
      * Setter for the 'project' property.
-     * 
+     *
      * @param project New value for the 'project' property.
      */
     public static void setProject(final Project project) {
@@ -72,7 +72,7 @@ public final class Utils {
     
     /**
      * Calculates the MD5 checksum for the given file.
-     * 
+     *
      * @param file File for which the checksum should be calculated.
      * @return The MD5 checksum of the file.
      * @throws java.io.IOException if an I/O error occurs.
@@ -83,9 +83,9 @@ public final class Utils {
     
     /**
      * Checks whether the given file is a directory.
-     * 
+     *
      * @param file File to check for being a directory.
-     * @return <code>true</code> if the file is a directory, <code>false</code> 
+     * @return <code>true</code> if the file is a directory, <code>false</code>
      *      otherwise.
      */
     public static boolean isEmpty(final File file) {
@@ -98,9 +98,9 @@ public final class Utils {
     
     /**
      * Checks whether the given file is a jar archive.
-     * 
+     *
      * @param file File to check for being a jar archive.
-     * @return <code>true</code> if the file is a jar archive, <code>false</code> 
+     * @return <code>true</code> if the file is a jar archive, <code>false</code>
      *      otherwise.
      */
     public static boolean isJarFile(final File file) {
@@ -128,9 +128,9 @@ public final class Utils {
     
     /**
      * Checks whether the given file is a signed jar archive.
-     * 
+     *
      * @param file File to check for being a signed jar archive.
-     * @return <code>true</code> if the file is a signedjar archive, 
+     * @return <code>true</code> if the file is a signedjar archive,
      *      <code>false</code> otherwise.
      * @throws java.io.IOException if an I/O error occurs.
      */
@@ -152,14 +152,14 @@ public final class Utils {
     
     /**
      * Packs the given jar archive using the pack200 utility.
-     * 
+     *
      * @param source Jar archive to pack.
      * @param target File which should become the packed jar archive.
      * @return The target file, i.e. the packed jar archive.
      * @throws java.io.IOException if an I/O error occurs.
      */
     public static boolean pack(
-            final File source, 
+            final File source,
             final File target) throws IOException {
         boolean result = false;
         
@@ -170,11 +170,11 @@ public final class Utils {
             packer = System.getProperty("java.home") + "/bin/pack200";
         }
         
-        final String xmx = ARG_PREFIX + XMX_ARG + 
+        final String xmx = ARG_PREFIX + XMX_ARG +
                 project.getProperty("pack200.xmx");
-        final String permSize = ARG_PREFIX + PERM_SIZE_ARG + 
+        final String permSize = ARG_PREFIX + PERM_SIZE_ARG +
                 project.getProperty("pack200.perm.size");
-        final String maxPermSize = ARG_PREFIX + MAX_PERM_SIZE_ARG + 
+        final String maxPermSize = ARG_PREFIX + MAX_PERM_SIZE_ARG +
                 project.getProperty("pack200.max.perm.size");
         
         Results results = run(
@@ -203,14 +203,14 @@ public final class Utils {
     
     /**
      * Unpacks the given packed jar archive using the unpack200 utility.
-     * 
+     *
      * @param source Packe jar archive to unpack.
      * @param target File to which the unpacked archive should be saved.
      * @return The target file, i.e. the unpacked jar archive.
      * @throws java.io.IOException if an I/O errors occurs.
      */
     public static boolean unpack(
-            final File source, 
+            final File source,
             final File target) throws IOException {
         boolean result = false;
         
@@ -246,11 +246,11 @@ public final class Utils {
     }
     
     /**
-     * Verifies that the jar archive is correct. This method tries to access all 
+     * Verifies that the jar archive is correct. This method tries to access all
      * jar archive entries and to load all the classes.
-     * 
+     *
      * @param file Jar archive to check.
-     * @return <code>true</code> is the archive is correct, <code>false</code> 
+     * @return <code>true</code> is the archive is correct, <code>false</code>
      *      otherwise.
      * @throws java.io.IOException if an I/O error occurs.
      */
@@ -268,9 +268,9 @@ public final class Utils {
     }
     
     /**
-     * Fully reads an input stream into a character sequence using the system's 
+     * Fully reads an input stream into a character sequence using the system's
      * default encoding.
-     * 
+     *
      * @param in Input sream to read.
      * @return The read data as a character sequence.
      * @throws java.io.IOException if an I/O error occurs.
@@ -298,7 +298,7 @@ public final class Utils {
      * @throws java.io.IOException if an I/O error occurs.
      */
     public static void copy(
-            final InputStream in, 
+            final InputStream in,
             final OutputStream out) throws IOException {
         byte[] buffer = new byte[102400];
         
@@ -309,13 +309,13 @@ public final class Utils {
     
     /**
      * Unzips a zip archive to the specified directory.
-     * 
+     *
      * @param file Zip archive to extract.
      * @param directory Directory which will be the target for the extraction.
      * @throws java.io.IOException if an I/O error occurs.
      */
     public static void unzip(
-            final File file, 
+            final File file,
             final File directory) throws IOException {
         ZipFile zip = new ZipFile(file);
         
@@ -354,10 +354,41 @@ public final class Utils {
         zip.close();
     }
     
+    public static void nativeUnzip(
+            final File file,
+            final File directory) throws IOException {
+        final String[] command;
+        if (System.getProperty(OS_NAME).contains(WINDOWS)) {
+            command = new String[] {
+                "unzip.exe",
+                file.getAbsolutePath(),
+                "-d",
+                directory.getAbsolutePath()};
+        } else {
+            command = new String[] {
+                "unzip",
+                file.getAbsolutePath(),
+                "-d",
+                directory.getAbsolutePath()};
+        }
+        
+        if (project != null) {
+            project.log("            running command: " + Arrays.asList(command));
+        }
+        
+        final Results results = run(command);
+        
+        if (results.getExitcode() != 0) {
+            System.out.println(results.getStdout());
+            System.out.println(results.getStderr());
+            throw new IOException();
+        }
+    }
+    
     /**
-     * Deletes a file. If the file is a directory its contents are recursively 
+     * Deletes a file. If the file is a directory its contents are recursively
      * deleted.
-     * 
+     *
      * @param file File to be deleted.
      */
     public static void delete(final File file) {
@@ -372,9 +403,9 @@ public final class Utils {
     }
     
     /**
-     * Measures the size of a file. If the file is a directory, its size would be 
+     * Measures the size of a file. If the file is a directory, its size would be
      * equal to the sum of sizes of all its files and subdirectories.
-     * 
+     *
      * @param file File whose size should be measured.
      * @return The size of file.
      */
@@ -391,9 +422,9 @@ public final class Utils {
     }
     
     /**
-     * Converts the given string to its java-style ASCII equivalent, escaping 
+     * Converts the given string to its java-style ASCII equivalent, escaping
      * non ASCII characters with their \\uXXXX sequences.
-     * 
+     *
      * @param string String to escape.
      * @return The escaped string.
      */
@@ -421,13 +452,13 @@ public final class Utils {
     
     /**
      * Writes the given character sequence to the given file.
-     * 
+     *
      * @param file File to which the character sequence should be written.
      * @param chars Character sequence which should be written to the file.
      * @throws java.io.IOException if an I/O error occurs.
      */
     public static void write(
-            final File file, 
+            final File file,
             final CharSequence chars) throws IOException {
         OutputStreamWriter writer =
                 new OutputStreamWriter(new FileOutputStream(file), UTF8);
@@ -437,14 +468,14 @@ public final class Utils {
     
     /**
      * Copies the contents of a file to the given output stream.
-     * 
+     *
      * @param source File whose contents should be copied.
-     * @param target Output stream to which the file's contents should be 
+     * @param target Output stream to which the file's contents should be
      *      transferred.
      * @throws java.io.IOException if an I/O error occurs.
      */
     public static void copy(
-            final File source, 
+            final File source,
             final OutputStream target) throws IOException {
         FileInputStream input = new FileInputStream(source);
         copy(input, target);
@@ -453,13 +484,13 @@ public final class Utils {
     
     /**
      * Copies one file to another.
-     * 
+     *
      * @param source File to be copied.
      * @param target File which should be come the copy of the source one.
      * @throws java.io.IOException if an I/O error occurs.
      */
     public static void copy(
-            final File source, 
+            final File source,
             final File target) throws IOException {
         FileOutputStream out = new FileOutputStream(target);
         copy(source, out);
@@ -468,16 +499,16 @@ public final class Utils {
     
     /**
      * Sends an HTTP POST request to the given URL. The supplied parameters will be
-     * passed as part of the request body according to 
+     * passed as part of the request body according to
      * {@link http://www.faqs.org/rfcs/rfc1945.html}.
-     * 
+     *
      * @param url URL to shich the POST request should be sent.
      * @param args Request parameters.
      * @return The first line of the server response, e.g. "HTTP/1.x 200 OK".
      * @throws java.io.IOException if an I/O error occurs.
      */
     public static String post(
-            final String url, 
+            final String url,
             final Map<String, Object> args) throws IOException {
         final String boundary     = "---------------" + Math.random();
         final byte[] realBoundary = ("--" + boundary).getBytes("UTF-8");
@@ -542,7 +573,7 @@ public final class Utils {
     
     /**
      * Signs the given jar file using the data provided in the given keystore.
-     * 
+     *
      * @param file Jar archive which will be signed.
      * @param keystore Path to the keystore file.
      * @param alias Keystore alias.
@@ -551,9 +582,9 @@ public final class Utils {
      * @throws java.io.IOException if an I/O error occurs.
      */
     public static Results sign(
-            final File file, 
-            final String keystore, 
-            final String alias, 
+            final File file,
+            final String keystore,
+            final String alias,
             final String password) throws IOException {
         String executable = System.getProperty(JAVA_HOME);
         if (System.getProperty(OS_NAME).contains(WINDOWS)) {
@@ -611,18 +642,62 @@ public final class Utils {
         return new Results(stdout, stderr, exitcode);
     }
     
+    public static int getPermissions(final File file) {
+        try {
+            final Results results;
+            if (System.getProperty(OS_NAME).contains(WINDOWS)) {
+                results = run("ls.exe", "-ld", file.getAbsolutePath());
+            } else {
+                results = run("ls", "-ld", file.getAbsolutePath());
+            }
+            
+            final String output = results.getStdout().toString().trim();
+            
+            if (project != null) {
+                project.log("            " + output);
+            } else {
+                System.out.println(output);
+            }
+            
+            int permissions = 0;
+            for (int i = 0; i < 9; i++) {
+                char character = output.charAt(i + 1);
+                
+                if (i % 3 == 0) {
+                    permissions *= 10;
+                }
+                
+                if (character == '-') {
+                    continue;
+                } else if ((i % 3 == 0) && (character == 'r')) {
+                    permissions += 4;
+                } else if ((i % 3 == 1) && (character == 'w')) {
+                    permissions += 2;
+                } else if ((i % 3 == 2) && (character == 'x')) {
+                    permissions += 1;
+                } else {
+                    return -1;
+                }
+            }
+            
+            return permissions;
+        } catch (IOException e) {
+            return -1;
+        }
+    }
+    
     // private //////////////////////////////////////////////////////////////////////
     /**
-     * Calculates the digital digest of the given file's contents using the 
+     * Calculates the digital digest of the given file's contents using the
      * supplied algorithm.
-     * 
+     *
      * @param file File for which the digest should be calculated.
      * @param algorithm Algorithm which should be used for calculating the digest.
      * @return The calculated digest as a string.
      * @throws java.io.IOException if an I/O error occurs.
      */
     private static String getDigest(
-            final File file, 
+            final File file,
             final String algorithm) throws IOException {
         try {
             MessageDigest md = MessageDigest.getInstance(algorithm);
@@ -669,15 +744,15 @@ public final class Utils {
     
     /**
      * Runs the given class in a separate JVM.
-     * 
+     *
      * @param clazz Classname of the class which should be run.
      * @param args Command-line arguments for the class.
-     * @return Results of executing the command (exitcode, stdout and stderr 
+     * @return Results of executing the command (exitcode, stdout and stderr
      *      contents).
      * @throws java.io.IOException if an I/O error occurs.
      */
     private static Results runClass(
-            final String clazz, 
+            final String clazz,
             final String... args) throws IOException {
         final String classPath = project.getProperty(CLASSPATH_VALUE_PROPERTY);
         
@@ -701,9 +776,9 @@ public final class Utils {
     
     /**
      * Runs the specified command using the <code>ProcessBuilder</code> class.
-     * 
+     *
      * @param command Path to the executable and its arguments.
-     * @return Results of executing the command (exitcode, stdout and stderr 
+     * @return Results of executing the command (exitcode, stdout and stderr
      *      contents).
      * @throws java.io.IOException if an I/O error occurs.
      */
@@ -750,7 +825,7 @@ public final class Utils {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     /**
-     * The private default constructor which prevents the class from being 
+     * The private default constructor which prevents the class from being
      * instantiated.
      */
     private Utils() {
@@ -760,10 +835,10 @@ public final class Utils {
     /////////////////////////////////////////////////////////////////////////////////
     // Inner Classes
     /**
-     * This class is a container for the results of executing a process. It keeps 
+     * This class is a container for the results of executing a process. It keeps
      * the values of <code>&lt;stdout&gt;</code>, <code>&lt;stderr&gt;</code> and
      * the exitcode.
-     * 
+     *
      * @author Kirill Sorokin
      */
     public static class Results {
@@ -783,16 +858,16 @@ public final class Utils {
         private int exitcode;
         
         /**
-         * Creates a new instance of <code>Results</code>. The constructor simply 
+         * Creates a new instance of <code>Results</code>. The constructor simply
          * initializes the class properties with the passed-in values.
-         * 
+         *
          * @param stdout Contents of the process's <code>&lt;stdout&gt;</code>.
          * @param stderr Contents of the process's <code>&lt;stderr&gt;</code>.
          * @param exitcode The process's exitcode.
          */
         public Results(
-                final CharSequence stdout, 
-                final CharSequence stderr, 
+                final CharSequence stdout,
+                final CharSequence stderr,
                 final int exitcode) {
             this.stdout = stdout;
             this.stderr = stderr;
@@ -801,7 +876,7 @@ public final class Utils {
         
         /**
          * Getter for the 'stdout' property.
-         * 
+         *
          * @return Value of the 'stdout' property.
          */
         public CharSequence getStdout() {
@@ -810,7 +885,7 @@ public final class Utils {
         
         /**
          * Getter for the 'stderr' property.
-         * 
+         *
          * @return Value of the 'stderr' property.
          */
         public CharSequence getStderr() {
@@ -819,7 +894,7 @@ public final class Utils {
         
         /**
          * Getter for the 'exitcode' property.
-         * 
+         *
          * @return Value of the 'exitcode' property.
          */
         public int getExitcode() {
@@ -833,141 +908,142 @@ public final class Utils {
      * Maximum allowed execution time for a process.
      */
     public static final int MAX_EXECUTION_TIME =
-            300000;                                                         // NOMAGI
+            300000; // NOMAGI
     
     /**
      * Deplay (in milliseconds) which to wait between cheking the process state.
      */
     public static final int DELAY =
-            500;                                                            // NOMAGI
+            500; // NOMAGI
     
     /**
      * Prefix for JVM command-line arguments.
      */
     public static final String ARG_PREFIX =
-            "-J";                                                           // NOI18N
+            "-J"; // NOI18N
     
     /**
      * Maximum heap size command-line argument prefix.
      */
     public static final String XMX_ARG =
-            "-Xmx";                                                         // NOI18N
+            "-Xmx"; // NOI18N
     
     /**
      * PermSize command-line argument prefix.
      */
     public static final String PERM_SIZE_ARG =
-            "-XX:PermSize=";                                                // NOI18N
+            "-XX:PermSize="; // NOI18N
     
     /**
      * MacPermSize command-line argument prefix.
      */
     public static final String MAX_PERM_SIZE_ARG =
-            "-XX:MaxPermSize=";                                             // NOI18N
+            "-XX:MaxPermSize="; // NOI18N
     
     /**
      * Classpath command-line argument prefix.
      */
     public static final String CLASSPATH_ARG =
-            "-cp";                                                          // NOI18N
+            "-cp"; // NOI18N
     
     /**
-     * Classname of the class which should be called to verify the unpacked jar 
+     * Classname of the class which should be called to verify the unpacked jar
      * file.
      */
     public static final String VERIFIER_CLASSNAME =
-            "org.netbeans.installer.infra.build.ant.utils.VerifyFile";      // NOI18N
+            "org.netbeans.installer.infra.build.ant.utils.VerifyFile"; // NOI18N
     
     /**
-     * Name of the ant project's property which contains the classpath which should 
+     * Name of the ant project's property which contains the classpath which should
      * be used for running classes.
      */
     public static final String CLASSPATH_VALUE_PROPERTY =
-            "custom.tasks.cls";                                             // NOI18N
+            "custom.tasks.cls"; // NOI18N
     
     /**
      * MD5 digital digest algorithm code name.
      */
     public static final String MD5 =
-            "MD5";                                                          // NOI18N
+            "MD5"; // NOI18N
     
     /**
      * Extension of jar files.
      */
     public static final String JAR_EXTENSION =
-            ".jar";                                                         // NOI18N
+            ".jar"; // NOI18N
     
     /**
      * Marker file which indicated that the jar file is signed.
      */
     public static final String SUN_MICR_RSA =
-            "META-INF/SUN_MICR.RSA";                                        // NOI18N
+            "META-INF/SUN_MICR.RSA"; // NOI18N
     
     /**
      * Marker file which indicated that the jar file is signed.
      */
     public static final String SUN_MICR_SF =
-            "META-INF/SUN_MICR.SF";                                         // NOI18N
+            "META-INF/SUN_MICR.SF"; // NOI18N
     
     /**
      * A regular expression which matches any line separator.
      */
     public static final String NEWLINE_REGEXP =
-            "(?:\n\r|\r\n|\n|\r)";                                          // NOI18N
+            "(?:\n\r|\r\n|\n|\r)"; // NOI18N
     
     /**
      * Forward slash.
      */
     public static final String SLASH =
-            "/";                                                            // NOI18N
+            "/"; // NOI18N
     
     /**
      * An artificial key name used in converting a string to ASCII.
      */
     public static final String UBERKEY =
-            "uberkey";                                                      // NOI18N
+            "uberkey"; // NOI18N
     
     /**
      * An artificial regular expresion used in converting a string to ASCII.
      */
     public static final String UBERKEY_REGEXP =
-            "uberkey=(.*)$";                                                // NOI18N
+            "uberkey=(.*)$"; // NOI18N
     
     /**
      * Name of the UTF-8 encoding.
      */
     public static final String UTF8 =
-            "UTF-8";                                                        // NOI18N
+            "UTF-8"; // NOI18N
+    
     
     /**
      * Name of the system property which contains the operating system name.
      */
     public static final String OS_NAME =
-            "os.name";                                                      // NOI18N
+            "os.name"; // NOI18N
     
     /**
      * Name of the windows operationg system.
      */
     public static final String WINDOWS =
-            "Windows";                                                      // NOI18N
+            "Windows"; // NOI18N
     
     /**
      * Name of the system property which contains the current java home.
      */
     public static final String JAVA_HOME =
-            "java.home";                                                    // NOI18N
+            "java.home"; // NOI18N
     
     /**
-     * Path to the java executable on non-windows platforms. Relative to the java 
+     * Path to the java executable on non-windows platforms. Relative to the java
      * home.
      */
     public static final String JAVA =
-            "bin/java";                                                     // NOI18N
+            "bin/java"; // NOI18N
     
     /**
-     * Path to the java executable on windows platforms. Relative to the java 
+     * Path to the java executable on windows platforms. Relative to the java
      * home.
      */
     public static final String JAVA_EXE =
-            "bin\\java.exe";                                                // NOI18N
+            "bin\\java.exe"; // NOI18N
 }
