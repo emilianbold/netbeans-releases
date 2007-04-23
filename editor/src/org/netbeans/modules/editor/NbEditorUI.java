@@ -268,14 +268,14 @@ public class NbEditorUI extends ExtEditorUI {
 
         String mimeType = NbEditorUtilities.getMimeType(component);
         
-        Map/*<SideBarPosition, JComponent>*/ sideBars = CustomizableSideBar.createSideBars(component);
+        Map<SideBarPosition, JComponent> sideBars = CustomizableSideBar.getSideBars(component);
         if (listener == null){
             listener = new ChangeListener(){
                 public void stateChanged(javax.swing.event.ChangeEvent e) {
                     if (Utilities.getEditorUI(component) == null) {
                         return; //#63146
                     }
-                    Map newMap = CustomizableSideBar.createSideBars(component);
+                    Map newMap = CustomizableSideBar.getSideBars(component);
                     processSideBars(newMap, scroller, ec);
                     ec.revalidate();
                     ec.repaint();

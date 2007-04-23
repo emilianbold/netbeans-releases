@@ -21,16 +21,21 @@ package org.netbeans.modules.editor.impl;
 
 import org.netbeans.modules.editor.*;
 import java.awt.BorderLayout;
-import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.JTextComponent;
@@ -38,16 +43,11 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.SideBarFactory;
 import org.netbeans.editor.WeakEventListenerList;
-import org.netbeans.spi.editor.mimelookup.InstanceProvider;
 import org.openide.ErrorManager;
-import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.WeakListeners;
 
 /**
  *  Editor Customizable Side Bar.
@@ -55,36 +55,19 @@ import org.openide.util.WeakListeners;
  *
  *  @author  Martin Roskanin
  */
-public final class CustomizableSideBar extends JPanel {
+public final class CustomizableSideBar {
     
-    private static HashMap components = new HashMap(5);
-    private static HashMap lookupResults = new HashMap(5);
-    private static HashMap lookupListeners = new HashMap(5); //<kitClass, WeakListener>    
-    private static HashMap changeListeners = new HashMap(5); //<kitClass, WeakEventListenerList>
+    private static final Logger LOG = Logger.getLogger(CustomizableSideBar.class.getName());
     
-    /** List of the registered changes listeners */
-    //private static final WeakEventListenerList listenerList
-//	= new WeakEventListenerList();
+    private static final Map<JTextComponent, Map<SideBarPosition, Reference<JPanel>>> CACHE = new WeakHashMap<JTextComponent, Map<SideBarPosition, Reference<JPanel>>>(5);
+    private static final Map<String, WeakEventListenerList> LISTENERS = new HashMap<String, WeakEventListenerList>(5);
+
+    private static final Map<MimePath, Lookup.Result<SideBarFactoriesProvider>> LR = new WeakHashMap<MimePath, Lookup.Result<SideBarFactoriesProvider>>(5);
+    private static final Map<Lookup.Result<SideBarFactoriesProvider>, LookupListener> LL = new WeakHashMap<Lookup.Result<SideBarFactoriesProvider>, LookupListener>(5);
     
-    
-    private CustomizableSideBar(List/*<JComponent>*/ components, SideBarPosition position){
-        BoxLayout bl = new javax.swing.BoxLayout(this, position.getAxis());
-        setLayout(bl);
-        
-        for (Iterator i = components.iterator(); i.hasNext(); ){
-            add((JComponent) i.next());
-        }
+    private CustomizableSideBar() {
     }
 
-    
-    private static WeakEventListenerList getListenerList(String mimeType){
-        WeakEventListenerList listenerList;
-        synchronized (changeListeners){
-            listenerList = (WeakEventListenerList)changeListeners.get(mimeType);
-        }
-        return listenerList;
-    }
-    
     /** Add weak listener to listen to change of activity of documents or components.
      * The caller must
      * hold the listener object in some instance variable to prevent it
@@ -92,16 +75,14 @@ public final class CustomizableSideBar extends JPanel {
      * @param l listener to add
      */
     public static void addChangeListener(String mimeType, ChangeListener l) {
-        WeakEventListenerList listenerList;
-        synchronized (changeListeners){
-            listenerList = (WeakEventListenerList)changeListeners.get(mimeType);
-            if (listenerList == null){
+        synchronized (LISTENERS){
+            WeakEventListenerList listenerList = (WeakEventListenerList)LISTENERS.get(mimeType);
+            if (listenerList == null) {
                 listenerList = new WeakEventListenerList();
+                LISTENERS.put(mimeType, listenerList);
             }
-            changeListeners.put(mimeType, listenerList);
+            listenerList.add(ChangeListener.class, l);
         }
-        
-        listenerList.add(ChangeListener.class, l);
     }
 
     /** Remove listener for changes in activity. It's optional
@@ -110,118 +91,166 @@ public final class CustomizableSideBar extends JPanel {
      * @param l listener to remove
      */
     public static void removeChangeListener(String mimeType, ChangeListener l) {
-        WeakEventListenerList listenerList = getListenerList(mimeType);
-        if (listenerList == null){
-            return;
+        synchronized (LISTENERS){
+            WeakEventListenerList listenerList = LISTENERS.get(mimeType);
+            if (listenerList != null) {
+                listenerList.remove(ChangeListener.class, l);
+            }
         }
-        listenerList.remove(ChangeListener.class, l);
     }
 
     private static void fireChange(String mimeType) {
-        WeakEventListenerList listenerList = getListenerList(mimeType);
-        if (listenerList == null){
-            return;
+        ChangeListener[] listeners = null;
+        
+        synchronized (LISTENERS){
+            WeakEventListenerList listenerList = LISTENERS.get(mimeType);
+            if (listenerList != null) {
+                listeners = (ChangeListener[])listenerList.getListeners(ChangeListener.class);
+            }
         }
-	ChangeListener[] listeners
-	    = (ChangeListener[])listenerList.getListeners(ChangeListener.class);
-	ChangeEvent evt = new ChangeEvent(CustomizableSideBar.class);
-	for (int i = 0; i < listeners.length; i++) {
-	    listeners[i].stateChanged(evt);
-	}
+
+        if (listeners != null && listeners.length > 0) {
+            ChangeEvent evt = new ChangeEvent(CustomizableSideBar.class);
+            for (ChangeListener l : listeners) {
+                l.stateChanged(evt);
+            }
+        }
     }
     
-    
-    public static Map/*<SideBarPosition, JComponent>*/ createSideBars(JTextComponent target) {
-        Map/*<SideBarPosition, List<JComponent>>*/ components = getPanelComponents(target);
-        Map/*<SideBarPosition, JComponent>*/ result = new HashMap();
+
+    public static Map<SideBarPosition, JComponent> getSideBars(final JTextComponent target) {
+        final Object [] map = new Object [1];
         
-        for (Iterator entries = components.entrySet().iterator(); entries.hasNext(); ) {
-            Map.Entry entry = (Map.Entry) entries.next();
-            SideBarPosition position = (SideBarPosition) entry.getKey();
+        if (SwingUtilities.isEventDispatchThread()) {
+            getSideBarsInternal(target, map);
+        } else {
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    public void run() {
+                        getSideBarsInternal(target, map);
+                    }
+                });
+            } catch (Exception e) {
+                LOG.log(Level.WARNING, null, e);
+                map[0] = Collections.<SideBarPosition, JComponent>emptyMap();
+            }
+        }
+        
+        @SuppressWarnings("unchecked")
+        Map<SideBarPosition, JComponent> resultMap = (Map<SideBarPosition, JComponent>) map[0];
+        return resultMap;
+    }
+
+    private static void getSideBarsInternal(JTextComponent target, Object[] resultMap) {
+        synchronized (CACHE) {
+            Map<SideBarPosition, Reference<JPanel>> panelsMap = CACHE.get(target);
             
-            result.put(position, new CustomizableSideBar((List) entry.getValue(), position));
-        }
-        
-        return result;
-    }
-        
-    private static Map/*<SideBarPosition, List>*/ getInstanceCookiesPerKitClass(String mimeType){
-        Map result = new HashMap();
-        if (mimeType == null) return result;
-        synchronized (components){
-            if (components.containsKey(mimeType)){
-                return (Map)components.get(mimeType);
-            }else{
-                Lookup lookup = MimeLookup.getLookup(MimePath.parse(mimeType));
+            if (panelsMap != null) {
+                Map<SideBarPosition, JComponent> map = new HashMap<SideBarPosition, JComponent>();
                 
-                Lookup.Result lookupResult;
-                synchronized (lookupResults){
-                    lookupResult = (Lookup.Result)lookupResults.get(mimeType);
-                    if (lookupResult == null){
-                        lookupResult = lookup.lookup(new Lookup.Template(SideBarFactoryProvider.class));
-                        lookupResults.put(mimeType, lookupResult);
-                    }
-                }
-                    
-                Collection instances = lookupResult.allInstances();
-                if (instances.isEmpty()){
-                    return result; //empty
-                }
-                
-                SideBarFactoryProvider provider =  (SideBarFactoryProvider) instances.iterator().next();
-
-                synchronized (lookupListeners){
-                    LookupListener lookupListener = (LookupListener) lookupListeners.get(mimeType);
-                    if (lookupListener == null){
-                        lookupListener = new MyLookupListener(mimeType);
-                        LookupListener weakListener = (LookupListener) WeakListeners.create(
-                                               LookupListener.class, lookupListener, lookupResult);
-                        lookupResult.addLookupListener(weakListener);
-                        lookupListeners.put(mimeType, lookupListener);
+                for(SideBarPosition pos : panelsMap.keySet()) {
+                    Reference<JPanel> ref = panelsMap.get(pos);
+                    if (ref != null) {
+                        JPanel panel = ref.get();
+                        if (panel != null) {
+                            map.put(pos, panel);
+                        } else {
+                            break;
+                        }
                     }
                 }
                 
-                if (provider!=null){
-                    result = provider.getProviders();
+                if (map.size() == panelsMap.size()) {
+                    // All components from the cache
+                    resultMap[0] = map;
+                    return;
                 }
-                
-                if (result!=null){
-                    components.put(mimeType, result);
-                }
-                
-                return result;
             }
+            
+            Map<SideBarPosition, List<JComponent>> sideBarsMap = createSideBarsMap(target);
+
+            panelsMap = new HashMap<SideBarPosition, Reference<JPanel>>();
+            Map<SideBarPosition, JComponent> map = new HashMap<SideBarPosition, JComponent>();
+            
+            for(SideBarPosition pos : sideBarsMap.keySet()) {
+                List<JComponent> sideBars = sideBarsMap.get(pos);
+                
+                JPanel panel = new JPanel();
+                panel.setLayout(new BoxLayout(panel, pos.getAxis()));
+
+                for(JComponent c : sideBars) {
+                    panel.add(c);
+                }
+                
+                panelsMap.put(pos, new WeakReference<JPanel>(panel));
+                map.put(pos, panel);
+            }
+
+            CACHE.put(target, panelsMap);
+            resultMap[0] = map;
         }
     }
     
-    private static Map/*<SideBarPosition, List<JComponent>>*/ getPanelComponents(JTextComponent target){
-        Map result = new HashMap();
-        Map icMap = getInstanceCookiesPerKitClass(NbEditorUtilities.getMimeType(target));
+    private static Map<SideBarPosition, List<JComponent>> createSideBarsMap(JTextComponent target) {
+        String mimeType = NbEditorUtilities.getMimeType(target);
+        Map<SideBarPosition, List<SideBarFactory>> factoriesMap = getFactoriesMap(mimeType);
+        Map<SideBarPosition, List<JComponent>> sideBarsMap = new HashMap<SideBarPosition, List<JComponent>>(factoriesMap.size());
+        
+        // XXX: We should better let clients to register a regexp filter
+        boolean errorStripeOnly = Boolean.TRUE.equals(target.getClientProperty("errorStripeOnly")); //NOI18N
 
-        try{
-            boolean errorStripeOnly = Boolean.TRUE.equals(target.getClientProperty("errorStripeOnly"));
-            for (Iterator entries = icMap.entrySet().iterator(); entries.hasNext(); ) {
-                Map.Entry entry = (Map.Entry) entries.next();
-                List icList = (List) entry.getValue();
-                List retList = new ArrayList();
-                
-                for (int i = 0; i<icList.size(); i++){
-                    InstanceCookie ic = (InstanceCookie)icList.get(i);
-                    Object obj = ic.instanceCreate();
-                    JComponent sideBarObj = ((SideBarFactory)obj).createSideBar(target);
-                    if (sideBarObj!=null && (!errorStripeOnly || "errorStripe".equals(sideBarObj.getName()))) {
-                        retList.add(sideBarObj);
-                    }
-                }
-                result.put(entry.getKey(), retList);
+        for(SideBarPosition pos : factoriesMap.keySet()) {
+            List<SideBarFactory> factoriesList = factoriesMap.get(pos);
+            
+            // Get sideBars list
+            List<JComponent> sideBars = sideBarsMap.get(pos);
+            if (sideBars == null) {
+                sideBars = new ArrayList<JComponent>();
+                sideBarsMap.put(pos, sideBars);
             }
-        }catch(IOException ioe){
-            ioe.printStackTrace();
-        }catch(ClassNotFoundException cnfe){
-            cnfe.printStackTrace();
+            
+            // Create side bars from the factories for this position
+            for(SideBarFactory f : factoriesList) {
+                JComponent sideBar = f.createSideBar(target);
+                if (sideBar == null) {
+                    LOG.fine("Ignoring null side bar created by the factory: " + f); //NOI18N
+                    continue;
+                }
+                
+                if (errorStripeOnly && "errorStripe".equals(sideBar.getName())) { //NOI18N
+                    LOG.fine("Ignoring 'errorStripe' side bar created by the factory: " + f); //NOI18N
+                    continue;
+                }
+                
+                sideBars.add(sideBar);
+            }
         }
         
-        return result;
+        return sideBarsMap;
+    }
+
+    private static Map<SideBarPosition, List<SideBarFactory>> getFactoriesMap(String mimeType) {
+        MimePath mimePath = MimePath.parse(mimeType);
+        
+        Lookup.Result<SideBarFactoriesProvider> lR = LR.get(mimePath);
+        if (lR == null) {
+            lR = MimeLookup.getLookup(mimePath).lookupResult(SideBarFactoriesProvider.class);
+            
+            LookupListener listener = LL.get(lR);
+            if (listener == null) {
+                listener = new MyLookupListener(mimeType);
+                LL.put(lR, listener);
+            }
+            
+            lR.addLookupListener(listener);
+            LR.put(mimePath, lR);
+        }
+        
+        Collection<? extends SideBarFactoriesProvider> providers = lR.allInstances();
+        assert providers.size() == 1 : "There should always be only one SideBarFactoriesProvider"; //NOI18N
+        
+        SideBarFactoriesProvider provider = providers.iterator().next();
+        return provider.getFactories();
     }
     
     public static final class SideBarPosition {
@@ -325,73 +354,35 @@ public final class CustomizableSideBar extends JPanel {
         public String toString() {
             return "[SideBarPosition: scrollable=" + scrollable + ", position=" + position + "]"; // NOI18N
         }
-    }
+    } // End of SideBarPosition class
 
-    public static class SideBarFactoryProvider implements InstanceProvider{
-
-        List ordered;
-
-        public SideBarFactoryProvider(){
-        }
-
-        public SideBarFactoryProvider(List ordered){
-            this.ordered = ordered;
-        }
-
-        public Map getProviders(){
-            Map result = new HashMap();
-            for (int i = 0; i<ordered.size(); i++){
-                FileObject fo = (FileObject) ordered.get(i);
-                
-                DataObject dob;
-                try {
-                    dob = DataObject.find(fo);
-                } catch (DataObjectNotFoundException dnfe) {
-                    // ignore
-                    continue;
-                }
-                
-                InstanceCookie ic = (InstanceCookie)dob.getCookie(InstanceCookie.class);
-                if (ic!=null){
-                        try{
-                            if (SideBarFactory.class.isAssignableFrom(ic.instanceClass() )){
-                                SideBarPosition position = new SideBarPosition(dob.getPrimaryFile());
-                                
-                                List retList = (List) result.get(position);
-                                
-                                if (retList == null) {
-                                    result.put(position, retList = new ArrayList());
-                                }
-                                
-                                retList.add(ic);
-                            }
-                        }catch(IOException ioe){
-                            ioe.printStackTrace();
-                        }catch(ClassNotFoundException cnfe){
-                            cnfe.printStackTrace();
-                        }
-                }
-            }
-            return result;
-        }
-
-        public Object createInstance(List ordered) {
-            return new SideBarFactoryProvider(ordered);
-        }
-    }    
-    
-    private static class MyLookupListener implements LookupListener{
+    private static class MyLookupListener implements LookupListener, Runnable {
         private String mimeType;
-        public MyLookupListener(String mimeType){
+        
+        public MyLookupListener(String mimeType) {
             this.mimeType = mimeType;
         }
         
         public void resultChanged(LookupEvent ev) {
-            synchronized (components){
-                components.remove(mimeType);
+            synchronized (CACHE) {
+                ArrayList<JTextComponent> toRemove = new ArrayList<JTextComponent>();
+                
+                for(JTextComponent jtc : CACHE.keySet()) {
+                    String mimeType = NbEditorUtilities.getMimeType(jtc);
+                    if (mimeType.equals(this.mimeType)) {
+                        toRemove.add(jtc);
+                    }
+                }
+                
+                CACHE.keySet().removeAll(toRemove);
             }
+            
+            SwingUtilities.invokeLater(this);
+        }
+        
+        public void run() {
             fireChange(mimeType);
         }
-    }
+    } // End of MyLookupListener class
 
 }

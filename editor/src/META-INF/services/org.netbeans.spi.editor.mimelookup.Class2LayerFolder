@@ -1,5 +1,5 @@
 org.netbeans.modules.editor.impl.GlyphGutterActionsProvider
 org.netbeans.modules.editor.impl.PopupMenuActionsProvider
-org.netbeans.modules.editor.impl.CustomizableSideBarClass2LayerFolder
+org.netbeans.modules.editor.impl.SideBarFactoriesProvider
 org.netbeans.modules.editor.impl.ToolbarActionsProvider
 org.netbeans.modules.editor.impl.ToolbarActionsProvider$LegacyToolbarActionsProvider
