@@ -445,10 +445,10 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
             if (mIsSchemaOwner) {
                 String newSchemaName = mOutputSchemaNamePanel.getStringValue();
                 String schemaName = mComponent.getProperty(OUTPUT_SCHEMA_ID_KEY).getStringValue();
-                boolean schemaExist = schemaName != null && !schemaName.trim().equals("");
+                Schema schema = plan.getSchema(schemaName);
+                boolean schemaExist = schemaName != null && !schemaName.trim().equals("") && schema != null;
                 List attributes = mSelectPanel.getAttributeMetadataAsList();
                 if (schemaExist) {
-                    Schema schema = plan.getSchema(schemaName);
                     if (!newSchemaName.equals(schemaName)) {
                         newSchema = ModelManager.createSchema(newSchemaName);
                         newSchema.setAttributeMetadataAsList(attributes);

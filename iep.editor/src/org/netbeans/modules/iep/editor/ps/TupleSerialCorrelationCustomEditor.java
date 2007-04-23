@@ -259,6 +259,9 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
             TcgProperty outputSchemaNameProp = mComponent.getProperty(OUTPUT_SCHEMA_ID_KEY);
             String outputSchemaNameStr = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.OUTPUT_SCHEMA_NAME");
             mOutputSchemaNamePanel = PropertyPanel.createSingleLineTextPanel(outputSchemaNameStr, outputSchemaNameProp, false);
+            if (mOutputSchemaNamePanel.getStringValue() == null || mOutputSchemaNamePanel.getStringValue().trim().equals("")) {
+                mOutputSchemaNamePanel.setStringValue(((Plan)mProperty.getNode().getDoc()).getNameForNewSchema());
+            }
             gbc.gridx = 0;
             gbc.gridy = 1;
             gbc.gridwidth = 1;
@@ -432,10 +435,10 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
             try {
                 String newSchemaName = mOutputSchemaNamePanel.getStringValue();
                 String schemaName = mComponent.getProperty(OUTPUT_SCHEMA_ID_KEY).getStringValue();
-                boolean schemaExist = schemaName != null && !schemaName.trim().equals("");
+                Schema schema = plan.getSchema(schemaName);
+                boolean schemaExist = schemaName != null && !schemaName.trim().equals("") && schema != null;
                 List attributes = getAttributeMetadataAsList();
                 if (schemaExist) {
-                    Schema schema = plan.getSchema(schemaName);
                     if (!newSchemaName.equals(schemaName)) {
                         newSchema = ModelManager.createSchema(newSchemaName);
                         newSchema.setAttributeMetadataAsList(attributes);
