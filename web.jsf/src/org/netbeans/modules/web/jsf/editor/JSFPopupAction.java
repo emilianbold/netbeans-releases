@@ -157,18 +157,13 @@ public final class JSFPopupAction extends SystemAction implements Presenter.Popu
                     JSFConfigModel model = ConfigurationUtils.getConfigModel(data.getPrimaryFile(),true);
                     FacesConfig facesConfig = model.getRootComponent();
                     NavigationRule rule = facesConfig.getModel().getFactory().createNavigationRule();
-                    if (dialogPanel.getDescription() == null || "".equals(dialogPanel.getDescription())){
-                        rule.addDescription(null);
-                    } 
-                    else {
+                    String descriptionText = dialogPanel.getDescription();
+                    if (descriptionText != null && descriptionText.trim().length() > 0){
                         Description description = facesConfig.getModel().getFactory().createDescription();
-                        description.setValue(END_LINE + dialogPanel.getDescription() + END_LINE);
+                        description.setValue(END_LINE + descriptionText + END_LINE);
                         rule.addDescription(description);
                     }
-                    if (dialogPanel.getFromView() == null || dialogPanel.getFromView().length() == 0){
-                        rule.setFromViewId(null);
-                    }
-                    else {
+                    if (dialogPanel.getFromView() != null && dialogPanel.getFromView().trim().length() > 0){
                         rule.setFromViewId(dialogPanel.getFromView());
                     }
                     facesConfig.getModel().startTransaction();
