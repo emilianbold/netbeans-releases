@@ -83,6 +83,21 @@ is the proper place.
 
     <changes>
         
+        <change id="runWhenScanFinished">
+            <api name="general"/>
+            <summary>Added a method to run a CancellableTask when the backgound scan is finished.</summary>
+            <version major="0" minor="12"/>
+            <date day="19" month="4" year="2007"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+            <description>
+                The JavaSource.runWhenScanFinished performs the given task either synchronously when no background scan is running. When the background
+                scan is running the task is performed asynchronously when the scan completes.
+            </description>
+            <issue number="91117"/>
+            <issue number="99923"/>
+        </change>
+        
         <change id="dependent-roots">
             <api name="general"/>
             <summary>Added a method which returns all the project source roots depending on a given source root.</summary>

@@ -160,6 +160,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     private Work currentWork;
     private boolean dirty;
     private int noSubmited;
+    private volatile boolean notInitialized;         //Transient state during IDE start
     
     //Preprocessor support
     private final Map<URL, JavaFileFilterImplementation> filters = Collections.synchronizedMap(new HashMap<URL, JavaFileFilterImplementation>());
@@ -170,23 +171,17 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     private boolean recompileScheduled;
     
     /** Creates a new instance of RepositoryUpdater */
-    private RepositoryUpdater() {
-        try {
-            this.scannedRoots = Collections.synchronizedSet(new HashSet<URL>());
-            this.scannedBinaries = Collections.synchronizedSet(new HashSet<URL>());            
-            this.deps = Collections.synchronizedMap(new HashMap<URL,List<URL>>());
-            this.delay = new Delay();
-            this.cpImpl = GlobalSourcePath.getDefault();
-            this.cpImpl.setExcludesListener (this);
-            this.cp = ClassPathFactory.createClassPath (this.cpImpl.getSourcePath());
-            this.cp.addPropertyChangeListener(this);
-            this.ucp = ClassPathFactory.createClassPath (this.cpImpl.getUnknownSourcePath());
-            this.binCp = ClassPathFactory.createClassPath(this.cpImpl.getBinaryPath());
-            this.registerFileSystemListener();
-            submitBatch();
-        } catch (TooManyListenersException e) {
-            throw new IllegalStateException ();
-        }
+    private RepositoryUpdater() {        
+        notInitialized = true;
+        this.scannedRoots = Collections.synchronizedSet(new HashSet<URL>());
+        this.scannedBinaries = Collections.synchronizedSet(new HashSet<URL>());            
+        this.deps = Collections.synchronizedMap(new HashMap<URL,List<URL>>());
+        this.delay = new Delay();
+        this.cpImpl = GlobalSourcePath.getDefault();            
+        this.cp = ClassPathFactory.createClassPath (this.cpImpl.getSourcePath());            
+        this.ucp = ClassPathFactory.createClassPath (this.cpImpl.getUnknownSourcePath());
+        this.binCp = ClassPathFactory.createClassPath(this.cpImpl.getBinaryPath());
+        this.open ();
     }
     
     public ClassPath getScannedSources () {
@@ -201,10 +196,29 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         return new HashMap<URL,List<URL>> (this.deps);
     }
     
-    public void close () {                
-        this.cp.removePropertyChangeListener(this);
-        this.unregisterFileSystemListener();
-        this.delay.cancel();
+    private synchronized void open () throws IllegalStateException {
+        if (notInitialized) {
+            try {
+                this.cpImpl.setExcludesListener (this);
+                this.cp.addPropertyChangeListener(this);
+                this.registerFileSystemListener();
+                submitBatch();
+                notInitialized = false;
+            } catch (TooManyListenersException e) {
+                throw new IllegalStateException ();
+            }
+        }
+    }
+    
+    public void close () {
+        try {
+            this.cpImpl.setExcludesListener(null);       
+            this.cp.removePropertyChangeListener(this);
+            this.unregisterFileSystemListener();
+            this.delay.cancel();
+        } catch (TooManyListenersException e) {
+            throw new IllegalStateException ();
+        }
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
@@ -232,11 +246,11 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     }
     
     public synchronized boolean isScanInProgress() {
-        return this.noSubmited > 0;
+        return notInitialized || this.noSubmited > 0;
     }
     
     public synchronized void waitScanFinished () throws InterruptedException {
-        while (this.noSubmited > 0 ) {
+        while (isScanInProgress()) {
             this.wait();
         }
     }
@@ -440,6 +454,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     public final CountDownLatch scheduleCompilationAndWait (final FileObject folder, final FileObject root) throws IOException {
         CountDownLatch[] latch = new CountDownLatch[1];
         submit(Work.compile (folder,root.getURL(),latch));
+        open();
         return latch[0];
     }
     

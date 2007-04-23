@@ -55,10 +55,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
@@ -113,7 +117,6 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -241,6 +244,7 @@ public final class JavaSource {
     private final static SingleThreadFactory factory = new SingleThreadFactory ();
     private final static CurrentRequestReference currentRequest = new CurrentRequestReference ();
     private final static EditorRegistryListener editorRegistryListener = new EditorRegistryListener ();
+    private final static List<DeferredTask> todo = Collections.synchronizedList(new LinkedList<DeferredTask>());
     //Only single thread can operate on the single javac
     private final static ReentrantLock javacLock = new ReentrantLock (true);
     
@@ -550,6 +554,82 @@ public final class JavaSource {
                 currentRequest.cancelCompleted(request);
             }
         }
+    }
+    
+    
+    /**
+     * Performs the given task when the scan finished. When no background scan is running
+     * it performs the given task synchronously. When the background scan is active it queues
+     * the given task and returns, the task is performed when the background scan completes by
+     * the thread doing the background scan.
+     * @param task to be performed
+     * @param shared if true the java compiler may be reused by other {@link org.netbeans.api.java.source.CancellableTasks},
+     * the value false may have negative impact on the IDE performance.
+     * @return {@link Future} which can be used to find out the sate of the task {@link Future#isDone} or {@link Future#isCancelled}.
+     * The caller may cancel the task using {@link Future#cancel} or wait until the task is performed {@link Future#get}.
+     * @throws IOException encapsulating the exception thrown by {@link CancellableTasks#run}
+     * @since 0.12
+     */
+    public Future<Void> runWhenScanFinished (final CancellableTask<CompilationController> task, final boolean shared) throws IOException {
+        assert task != null;
+        final ScanSync sync = new ScanSync (task);
+        final DeferredTask r = new DeferredTask (this,task,shared,sync);
+        //0) Add speculatively task to be performed at the end of background scan
+        todo.add (r);
+        if (RepositoryUpdater.getDefault().isScanInProgress()) {
+            return sync;
+        }
+        //1) Try to aquire javac lock, if successfull no task is running
+        //   perform the given taks synchronously if it wasn't already performed
+        //   by background scan.
+        final boolean locked = javacLock.tryLock();
+        if (locked) {
+            try {
+                if (todo.remove(r)) {
+                    try {
+                        runUserActionTask(task, shared);
+                    } finally {
+                        sync.taskFinished();
+                    }
+                }
+            } finally {
+                javacLock.unlock();
+            }
+        }
+        else {
+            //Otherwise interrupt currently running task and try to aquire lock
+            do {
+                final JavaSource.Request[] request = new JavaSource.Request[1];
+                boolean isScanner = false;
+                if (request[0] == null) {
+                    isScanner = currentRequest.getUserTaskToCancel(request);
+                }
+                try {
+                    if (isScanner) {
+                        return sync;
+                    }
+                    if (request[0] != null) {
+                        request[0].task.cancel();
+                    }
+                    if (javacLock.tryLock()) {
+                        try {
+                            if (todo.remove(r)) {
+                                try {
+                                    runUserActionTask(task, shared);
+                                } finally {
+                                    sync.taskFinished();
+                                }
+                            }
+                        } finally {
+                            javacLock.unlock();
+                        }
+                    }
+                } finally {
+                    currentRequest.cancelCompleted(request[0]);
+                }
+            } while (true);            
+        }
+        return sync;
     }
        
     /** Runs a task which permits for modifying the sources.
@@ -1143,7 +1223,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 Request otherRequest = (Request) other;
                 return priority == otherRequest.priority
                     && reschedule == otherRequest.reschedule
-                    && phase.equals (otherRequest.phase)
+                    && (phase == null ? otherRequest.phase == null : phase.equals (otherRequest.phase))
                     && task.equals(otherRequest.task);                       
             }
             else {
@@ -1193,7 +1273,25 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                                     assert r.reschedule == false;
                                     javacLock.lock ();
                                     try {
-                                        r.task.run (null);
+                                        try {
+                                            r.task.run (null);
+                                        } finally {
+                                            boolean cancelled = requests.contains(r);
+                                            if (!cancelled) {
+                                                DeferredTask[] _todo;
+                                                synchronized (todo) {
+                                                    _todo = todo.toArray(new DeferredTask[todo.size()]);
+                                                    todo.clear();
+                                                }                                                
+                                                for (DeferredTask rq : _todo) {
+                                                    try {
+                                                        rq.js.runUserActionTask(rq.task, rq.shared);
+                                                    } finally {
+                                                        rq.sync.taskFinished();
+                                                    }
+                                                }
+                                            }
+                                        }
                                     } catch (RuntimeException re) {
                                         Exceptions.printStackTrace(re);
                                     }
@@ -1673,6 +1771,38 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             return request;
         }
         
+        /**
+         * Called by {@link JavaSource#runWhenScanFinished} to find out which
+         * task is currently running. Returns true when the running task in backgroud
+         * scan otherwise returns false. The caller is expected not to call cancel on
+         * the background scanner, so this method do not reset reference and do not set
+         * cancelled flag when running task is background scan. But it sets the canceledReference
+         * to prevent java source thread to dispatch next queued task.
+         * @param request is filled by currently running task or null when there is no running task.
+         * @return true when running task is background scan
+         */
+        public boolean getUserTaskToCancel (JavaSource.Request[] request) {
+            assert request != null;
+            assert request.length == 1;
+            boolean result = false;
+            if (!factory.isDispatchThread(Thread.currentThread())) {                
+                synchronized (this) {
+                     request[0] = this.reference;
+                    if (request[0] != null) {
+                        result = request[0].phase == null;
+                        assert this.canceledReference == null || result;
+                        this.canceledReference = request[0];
+                        if (!result) {
+                            this.reference = null;                        
+                        }
+                        this.canceled = result;
+                        this.cancelTime = System.currentTimeMillis();
+                    }
+                }
+            }
+            return result;
+        }
+        
         public synchronized boolean isCanceled () {
             return this.canceled;
         }
@@ -1689,6 +1819,80 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                     this.notify();
                 }
             }
+        }
+    }
+    
+    
+    static final class ScanSync implements Future<Void> {
+        
+        private CancellableTask<CompilationController> task;
+        private final CountDownLatch sync;
+        private final AtomicBoolean canceled;
+        
+        public ScanSync (final CancellableTask<CompilationController> task) {
+            assert task != null;
+            this.task = task;
+            this.sync = new CountDownLatch (1);
+            this.canceled = new AtomicBoolean (false);
+        }
+
+        public boolean cancel(boolean mayInterruptIfRunning) {
+            if (this.sync.getCount() == 0) {
+                return false;
+            }
+            synchronized (todo) {
+                boolean _canceled = canceled.getAndSet(true);
+                if (!_canceled) {
+                    for (Iterator<DeferredTask> it = todo.iterator(); it.hasNext();) {
+                        DeferredTask task = it.next();
+                        if (task.task == this.task) {
+                            it.remove();
+                            return true;
+                        }
+                    }
+                }
+            }            
+            return false;
+        }
+
+        public boolean isCancelled() {
+            return this.canceled.get();
+        }
+
+        public synchronized boolean isDone() {
+            return this.sync.getCount() == 0;
+        }
+
+        public Void get() throws InterruptedException, ExecutionException {
+            this.sync.await();
+            return null;
+        }
+
+        public Void get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+            this.sync.await(timeout, unit);
+            return null;
+        }
+        
+        private void taskFinished () {
+            this.sync.countDown();
+        }            
+    }
+    
+    static final class DeferredTask {
+        final JavaSource js;
+        final CancellableTask<CompilationController> task;
+        final boolean shared;
+        final ScanSync sync;
+        
+        public DeferredTask (final JavaSource js, final CancellableTask<CompilationController> task, final boolean shared, final ScanSync sync) {
+            assert js != null;
+            assert task != null;
+            assert sync != null;
+            
+            this.js = js;
+            this.task = task;
+            this.shared = shared;
+            this.sync = sync;
         }
     }
     

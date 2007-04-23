@@ -35,6 +35,7 @@ import java.net.URI;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.lang.model.element.Modifier;
@@ -67,6 +68,7 @@ import org.openide.util.lookup.ProxyLookup;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
+import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.classpath.CacheClassPath;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
@@ -1120,6 +1122,99 @@ public class JavaSourceTest extends NbTestCase {
         });
         
         assertEquals(Arrays.asList(test2, test, test), files);
+    }
+    
+    
+    public void testRunWhenScanFinished () throws Exception {        
+        final FileObject testFile1 = createTestFile("Test1");
+        CountDownLatch startL = RepositoryUpdater.getDefault().scheduleCompilationAndWait(testFile1.getParent(), testFile1.getParent());
+        startL.await();        
+        Thread.sleep (1000); //RU task already finished, but we want to wait until JS working thread is waiting on task to dispatch 
+        final ClassPath bootPath = createBootPath();
+        final ClassPath compilePath = createCompilePath();
+        final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath,compilePath,null);
+        final JavaSource js = JavaSource.create(cpInfo,testFile1);        
+        
+        class T implements CancellableTask<CompilationController> {
+            
+            private final CountDownLatch latch;
+            
+            public T (final CountDownLatch latch) {
+                assert latch != null;
+                this.latch = latch;
+            }
+            
+            public void cancel() {
+            }
+
+            public void run(CompilationController parameter) throws Exception {
+                this.latch.countDown();
+            }
+            
+        };
+        
+        class RUT implements CancellableTask<CompilationInfo> {
+            private final CountDownLatch start;
+            private final CountDownLatch latch;
+            
+            public RUT (final CountDownLatch start, final CountDownLatch latch) {
+                assert start != null;
+                assert latch != null;
+                this.start = start;
+                this.latch = latch;
+            }
+
+            public void cancel() {
+            }
+
+            public void run(CompilationInfo parameter) throws Exception {
+                this.start.countDown();
+                this.latch.await();
+            }
+            
+        };
+        
+        CountDownLatch latch = new CountDownLatch (1);
+        Future<Void> res = js.runWhenScanFinished(new T(latch), true);
+        assertEquals(0,latch.getCount());
+        res.get(1,TimeUnit.SECONDS);
+        assertTrue(res.isDone());
+        assertFalse (res.isCancelled());
+        
+        CountDownLatch rutLatch = new CountDownLatch (1);
+        CountDownLatch rutStart = new CountDownLatch (1);        
+        RUT rut = new RUT (rutStart, rutLatch);
+        JavaSourceAccessor.INSTANCE.runSpecialTask(rut, JavaSource.Priority.MAX);
+        latch = new CountDownLatch (1);
+        rutStart.await();
+        res = js.runWhenScanFinished(new T(latch), true);
+        assertEquals(1,latch.getCount());
+        res.get(1,TimeUnit.SECONDS);
+        assertFalse(res.isDone());
+        assertFalse (res.isCancelled());
+        rutLatch.countDown();
+        assertTrue(latch.await(1, TimeUnit.SECONDS));
+        res.get(1,TimeUnit.SECONDS);
+        assertTrue(res.isDone());
+        assertFalse (res.isCancelled());
+        
+        rutLatch = new CountDownLatch (1);
+        rutStart = new CountDownLatch (1);
+        rut = new RUT (rutStart, rutLatch);
+        JavaSourceAccessor.INSTANCE.runSpecialTask(rut, JavaSource.Priority.MAX);
+        latch = new CountDownLatch (1);
+        rutStart.await();
+        res = js.runWhenScanFinished(new T(latch), true);
+        assertEquals(1,latch.getCount());
+        res.get(1,TimeUnit.SECONDS);
+        assertFalse(res.isDone());
+        assertFalse (res.isCancelled());
+        assertTrue (res.cancel(false));
+        rutLatch.countDown();
+        assertFalse(latch.await(3, TimeUnit.SECONDS));
+        res.get(1,TimeUnit.SECONDS);
+        assertFalse(res.isDone());
+        assertTrue (res.isCancelled());
     }
     
     private static class TestProvider implements JavaSource.JavaFileObjectProvider {

@@ -80,7 +80,7 @@ public class GlobalSourcePath {
     
     private final Listener listener;
     
-    private PropertyChangeListener excludesListener;
+    private volatile PropertyChangeListener excludesListener;
 
     /** Creates a new instance of GlobalSourcePath */
     private GlobalSourcePath() {
@@ -98,8 +98,8 @@ public class GlobalSourcePath {
     }
     
     
-    public void setExcludesListener (final PropertyChangeListener listener) throws TooManyListenersException {
-        if (this.excludesListener != null) {
+    public synchronized void setExcludesListener (final PropertyChangeListener listener) throws TooManyListenersException {
+        if (listener != null && this.excludesListener != null) {
             throw new TooManyListenersException ();
         }
         this.excludesListener=listener;
@@ -637,11 +637,13 @@ public class GlobalSourcePath {
                     resetCacheAndFire ();
                 }
                 else if (ClassPath.PROP_INCLUDES.equals(propName)) {
-                    if (excludesListener != null) {
+                    PropertyChangeListener _excludesListener;
+                    _excludesListener = excludesListener;
+                    if (_excludesListener != null) {
                         final Object newPropagationId = evt.getPropagationId();
                         if (newPropagationId == null || lastPropagationId != newPropagationId) {                                                    
                             PropertyChangeEvent event = new PropertyChangeEvent (this,PROP_INCLUDES,evt.getSource(),evt.getSource());
-                            excludesListener.propertyChange(event);
+                            _excludesListener.propertyChange(event);
                         }                        
                         lastPropagationId = newPropagationId;
                     }
