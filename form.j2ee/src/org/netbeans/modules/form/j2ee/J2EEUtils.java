@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.Action;
 import org.netbeans.api.db.explorer.ConnectionManager;
@@ -588,6 +589,7 @@ public class J2EEUtils {
     private static void makeEntityObservable(FileObject entity) {
         JavaSource source = JavaSource.forFileObject(entity);
         try {
+            // PENDING merge into one task once it will be possible
             source.runModificationTask(new CancellableTask<WorkingCopy>() {
 
                 public void run(WorkingCopy wc) throws Exception {
@@ -661,6 +663,86 @@ public class J2EEUtils {
                             }
                         }
                     }
+                    wc.rewrite(clazz, modifiedClass);
+                }
+
+                public void cancel() {
+                }
+
+            }).commit();
+            source.runModificationTask(new CancellableTask<WorkingCopy>() {
+
+                public void run(WorkingCopy wc) throws Exception {
+                    wc.toPhase(JavaSource.Phase.RESOLVED);
+                    CompilationUnitTree cu = wc.getCompilationUnit();
+                    ClassTree clazz = null;
+                    for (Tree typeDecl : cu.getTypeDecls()) {
+                        if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                            clazz = (ClassTree) typeDecl;
+                            break;
+                        }
+                    }
+                    TreeMaker make = wc.getTreeMaker();
+
+                    // addPropertyChange method
+                    ModifiersTree parMods = make.Modifiers(Collections.EMPTY_SET, Collections.EMPTY_LIST);
+                    TypeElement changeListenerElement = wc.getElements().getTypeElement("java.beans.PropertyChangeListener"); // NOI18N
+                    VariableTree par = make.Variable(parMods, "listener", make.QualIdent(changeListenerElement), null); // NOI18N
+                    TypeElement changeSupportElement = wc.getElements().getTypeElement("java.beans.PropertyChangeSupport"); // NOI18N
+                    VariableTree changeSupport = make.Variable(parMods, "changeSupport", make.QualIdent(changeSupportElement), null); // NOI18N
+                    MemberSelectTree addCall = make.MemberSelect(make.Identifier(changeSupport.getName()), "addPropertyChangeListener"); // NOI18N
+                    MethodInvocationTree addInvocation = make.MethodInvocation(Collections.EMPTY_LIST, addCall, Collections.singletonList(make.Identifier(par.getName())));
+                    MethodTree addMethod = make.Method(
+                        make.Modifiers(Modifier.PUBLIC, Collections.EMPTY_LIST),
+                        "addPropertyChangeListener", // NOI18N
+                        make.PrimitiveType(TypeKind.VOID),
+                        Collections.EMPTY_LIST,
+                        Collections.singletonList(par),
+                        Collections.EMPTY_LIST,
+                        make.Block(Collections.singletonList(make.ExpressionStatement(addInvocation)), false),
+                        null
+                    );
+                    ClassTree modifiedClass = make.addClassMember(clazz, addMethod);
+                    wc.rewrite(clazz, modifiedClass);
+                }
+
+                public void cancel() {
+                }
+
+            }).commit();
+            source.runModificationTask(new CancellableTask<WorkingCopy>() {
+
+                public void run(WorkingCopy wc) throws Exception {
+                    wc.toPhase(JavaSource.Phase.RESOLVED);
+                    CompilationUnitTree cu = wc.getCompilationUnit();
+                    ClassTree clazz = null;
+                    for (Tree typeDecl : cu.getTypeDecls()) {
+                        if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                            clazz = (ClassTree) typeDecl;
+                            break;
+                        }
+                    }
+                    TreeMaker make = wc.getTreeMaker();
+
+                    // removePropertyChange method
+                    ModifiersTree parMods = make.Modifiers(Collections.EMPTY_SET, Collections.EMPTY_LIST);
+                    TypeElement changeListenerElement = wc.getElements().getTypeElement("java.beans.PropertyChangeListener"); // NOI18N
+                    VariableTree par = make.Variable(parMods, "listener", make.QualIdent(changeListenerElement), null); // NOI18N
+                    TypeElement changeSupportElement = wc.getElements().getTypeElement("java.beans.PropertyChangeSupport"); // NOI18N
+                    VariableTree changeSupport = make.Variable(parMods, "changeSupport", make.QualIdent(changeSupportElement), null); // NOI18N
+                    MemberSelectTree removeCall = make.MemberSelect(make.Identifier(changeSupport.getName()), "addPropertyChangeListener"); // NOI18N
+                    MethodInvocationTree removeInvocation = make.MethodInvocation(Collections.EMPTY_LIST, removeCall, Collections.singletonList(make.Identifier(par.getName())));
+                    MethodTree removeMethod = make.Method(
+                        make.Modifiers(Modifier.PUBLIC, Collections.EMPTY_LIST),
+                        "removePropertyChangeListener", // NOI18N
+                        make.PrimitiveType(TypeKind.VOID),
+                        Collections.EMPTY_LIST,
+                        Collections.singletonList(par),
+                        Collections.EMPTY_LIST,
+                        make.Block(Collections.singletonList(make.ExpressionStatement(removeInvocation)), false),
+                        null
+                    );
+                    ClassTree modifiedClass = make.addClassMember(clazz, removeMethod);
                     wc.rewrite(clazz, modifiedClass);
                 }
 
