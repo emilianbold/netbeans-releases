@@ -101,8 +101,8 @@ public final class JsfTable implements ActiveEditorDrop {
         }
         stringBuffer.append(MessageFormat.format(BEGIN [formType], new Object [] {variable}));
         
-        FileObject fileObject = JsfForm.getFO(target);
-        JavaSource javaSource = JavaSource.forFileObject(fileObject);
+        FileObject targetJspFO = JsfForm.getFO(target);
+        JavaSource javaSource = JavaSource.create(JsfForm.createClasspathInfo(targetJspFO));
         javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
