@@ -192,7 +192,7 @@ public class JspLexer implements Lexer<JspTokenId> {
             return false;
         }
         
-        for(int i = 0; i < text.length(); i++) {
+        for(int i = 0; i < prefix.length(); i++) {
             if(text.charAt(i) != prefix.charAt(i)) {
                 return false;
             }
