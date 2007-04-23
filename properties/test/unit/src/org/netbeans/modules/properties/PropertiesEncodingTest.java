@@ -263,6 +263,19 @@ public class PropertiesEncodingTest extends NbTestCase {
         compare(decoder.decodeBytesForTests(new byte[] {'\\', 'u', '1', '2', '3'}),
                 "\\u123".toCharArray());
     }
+    
+    public void testCharDecodingErrorRecovery() throws CharacterCodingException {
+        final PropCharsetDecoder decoder
+                = new PropCharsetDecoder(new PropCharset());
+        compare(decoder.decodeBytesForTests(new byte[] {'\\', 'u', 'x', 'y', 'z'}),
+                "\\uxyz".toCharArray());
+        compare(decoder.decodeBytesForTests(new byte[] {'\\', 'u', '1', 'x', 'y', 'z'}),
+                "\\u1xyz".toCharArray());
+        compare(decoder.decodeBytesForTests(new byte[] {'\\', 'u', '1', '2', 'x', 'y', 'z'}),
+                "\\u12xyz".toCharArray());
+        compare(decoder.decodeBytesForTests(new byte[] {'\\', 'u', '1', '2', '3', 'x', 'y', 'z'}),
+                "\\u123xyz".toCharArray());
+    }
 
     private void compare(char[] actual, char[] expected) {
         if (!Arrays.equals(expected, actual)) {
