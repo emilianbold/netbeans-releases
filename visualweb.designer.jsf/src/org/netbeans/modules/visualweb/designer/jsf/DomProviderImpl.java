@@ -1361,13 +1361,13 @@ class DomProviderImpl implements DomProvider {
         JsfSupportUtilities.tcRepaint(designer);
     }
 
-    public boolean tcSeenEscape(Designer designer, ActionEvent evt) {
-        JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);
-        if (jsfMultiViewElement == null) {
-            return false;
-        }
-        return jsfMultiViewElement.getJsfTopComponent().seenEscape(evt.getWhen());
-    }
+//    public boolean tcSeenEscape(Designer designer, ActionEvent evt) {
+//        JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);
+//        if (jsfMultiViewElement == null) {
+//            return false;
+//        }
+//        return jsfMultiViewElement.getJsfTopComponent().seenEscape(evt.getWhen());
+//    }
 
     public void tcDeleteSelection(Designer designer) {
         JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);

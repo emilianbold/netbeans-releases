@@ -3003,9 +3003,9 @@ public class WebForm implements Designer {
         getPane().getPageBox().redoLayout(immediate);
     }
 
-    public void performEscape() {
-        getManager().getMouseHandler().escape();
-    }
+//    public void performEscape() {
+//        getManager().getMouseHandler().escape();
+//    }
 
     
     // XXX
@@ -3057,9 +3057,9 @@ public class WebForm implements Designer {
         domProvider.tcRepaint(this);
     }
     
-    public boolean tcSeenEscape(ActionEvent evt) {
-        return domProvider.tcSeenEscape(this, evt);
-    }
+//    public boolean tcSeenEscape(ActionEvent evt) {
+//        return domProvider.tcSeenEscape(this, evt);
+//    }
     
     public void tcDeleteSelection() {
         domProvider.tcDeleteSelection(this);

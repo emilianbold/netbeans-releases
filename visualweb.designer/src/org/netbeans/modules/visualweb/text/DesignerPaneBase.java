@@ -1741,4 +1741,8 @@ public abstract class DesignerPaneBase extends JComponent implements Scrollable,
             caret.detachDom();
         }
     }
+    
+    /** XXX Escaping.
+     * TODO Revise */
+    public abstract void escape(long when);
 }

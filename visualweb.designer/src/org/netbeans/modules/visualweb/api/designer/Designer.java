@@ -222,8 +222,8 @@ public interface Designer {
     
 //    public void updateGridMode();
     
-    // XXX Get rid of this
-    public void performEscape();
+//    // XXX Get rid of this
+//    public void performEscape();
 
     public void resetAll();
     public void changeNode(Node node, Node parent, boolean wasMove);

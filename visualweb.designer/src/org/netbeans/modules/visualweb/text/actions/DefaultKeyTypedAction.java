@@ -74,6 +74,7 @@ public class DefaultKeyTypedAction extends TextAction {
                 return;
             }
 
+            // XXX TODO This is very suspicious, revise.
             // Escape?
             // TODO - make separate action for this and have separate key binding?
             // This has advantage in that it picks up the key regardless of modifiers
@@ -84,9 +85,10 @@ public class DefaultKeyTypedAction extends TextAction {
                 // during DND etc. in which case this action isn't active
                  */
 //                if (!webform.getTopComponent().seenEscape(e.getWhen())) {
-                if (!webform.tcSeenEscape(e)) {
-                    webform.getManager().getMouseHandler().escape();
-                }
+//                if (!webform.tcSeenEscape(e)) {
+//                    webform.getManager().getMouseHandler().escape();
+//                }
+                target.escape(e.getWhen());
 
                 return;
             }

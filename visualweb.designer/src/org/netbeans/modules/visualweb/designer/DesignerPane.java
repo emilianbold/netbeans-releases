@@ -40,14 +40,21 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.TooManyListenersException;
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
 
 import javax.swing.CellRendererPane;
 import javax.swing.ImageIcon;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
+import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 
@@ -135,9 +142,22 @@ implements /*PropertyChangeListener,*/ PreferenceChangeListener {
 
         this.designerTransferHandler = new DesignerTransferHandler(webform);
         
+        installActions();
 	init();
     }
     
+    
+    private void installActions() {
+        installEscapeAction();
+    }
+    
+    private void installEscapeAction() {
+        InputMap inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap actionMap = getActionMap();
+        
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "escape-multiplex"); // NOI18N
+        actionMap.put("escape-multiplex", new EscapeAction(this));
+    }
     
     private void init() {
         //webform.setPane(this);
@@ -929,4 +949,54 @@ implements /*PropertyChangeListener,*/ PreferenceChangeListener {
         public void dropActionChanged(DropTargetDragEvent dtde) {
         }
     }
+
+    
+    /** Horrible hack necessary because I get notified of the escape key
+     * twice: sometimes by my key handler above, sometimes by the default key
+     * handler, and sometimes by both!
+     * @todo This may no longer be an issue now that I'm using
+     *   a better input map (ANCESTOR_OF.... instead of FOCUSED_)
+     */
+    private long lastEscape = -1;    
+    private boolean seenEscape(long when) {
+        if (lastEscape == when) {
+            return true;
+        }
+
+        lastEscape = when;
+
+        return false;
+    }
+    
+    public void escape(long when) {
+        // XXX Revise this handling, it is very suspicious.
+        if (!seenEscape(when)) {
+//            webform.performEscape();
+            webform.getManager().getMouseHandler().escape();
+        }
+    }
+    
+    private abstract static class DesignerPaneAction extends AbstractAction {
+        private final DesignerPane designerPane;
+        
+        public DesignerPaneAction(DesignerPane designerPane) {
+            this.designerPane = designerPane;
+        }
+        
+        protected DesignerPane getDesignerPane() {
+            return designerPane;
+        }
+    } // End of JsfTopComponentAction.
+    
+    
+    /** */
+    private static class EscapeAction extends DesignerPaneAction {
+        public EscapeAction(DesignerPane designerPane) {
+            super(designerPane);
+        }
+        public void actionPerformed(ActionEvent evt) {
+            getDesignerPane().escape(evt.getWhen());
+        }
+    } // End of EscapeAction.
+    
 }

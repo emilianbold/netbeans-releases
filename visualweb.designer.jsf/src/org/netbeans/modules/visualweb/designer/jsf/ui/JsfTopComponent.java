@@ -143,7 +143,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //    private JToggleButton showVfButton;
 //    private JButton refreshButton;
 //    private JButton previewButton;
-    private long lastEscape = -1;
+//    private long lastEscape = -1;
 
     
 //    private final PropertyChangeListener settingsListener = new SettingsListener(this);
@@ -1344,15 +1344,16 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         ActionMap map = getActionMap();
         
         InputMap keys = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-        keys.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "escape-multiplex"); // NOI18N
-//        map.put("escape-multiplex", // NOI18N
-//            new AbstractAction() {
-//                public void actionPerformed(ActionEvent evt) {
-//                    escape(evt.getWhen());
-//                }
-//            }
-//        );
-        map.put("escape-multiplex", new EscapeAction(this)); // NOI18N
+        
+//        keys.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "escape-multiplex"); // NOI18N
+////        map.put("escape-multiplex", // NOI18N
+////            new AbstractAction() {
+////                public void actionPerformed(ActionEvent evt) {
+////                    escape(evt.getWhen());
+////                }
+////            }
+////        );
+//        map.put("escape-multiplex", new EscapeAction(this)); // NOI18N
 
         keys = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);    
         keys.put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), "edit-value"); // NOI18N
@@ -1437,29 +1438,29 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         return false;
     }
     
-    /** Horrible hack necessary because I get notified of the escape key
-     * twice: sometimes by my key handler above, sometimes by the default key
-     * handler, and sometimes by both!
-     * @todo This may no longer be an issue now that I'm using
-     *   a better input map (ANCESTOR_OF.... instead of FOCUSED_)
-     */
-    public boolean seenEscape(long when) {
-        if (lastEscape == when) {
-            return true;
-        }
-
-        lastEscape = when;
-
-        return false;
-    }
-
-    private void escape(long when) {
-        // Do escape-like things: cancel drag & drop, select parent, etc.
-        if (!seenEscape(when)) {
-//            webform.getManager().getMouseHandler().escape();
-            designer.performEscape();
-        }
-    }
+//    /** Horrible hack necessary because I get notified of the escape key
+//     * twice: sometimes by my key handler above, sometimes by the default key
+//     * handler, and sometimes by both!
+//     * @todo This may no longer be an issue now that I'm using
+//     *   a better input map (ANCESTOR_OF.... instead of FOCUSED_)
+//     */
+//    public boolean seenEscape(long when) {
+//        if (lastEscape == when) {
+//            return true;
+//        }
+//
+//        lastEscape = when;
+//
+//        return false;
+//    }
+//
+//    private void escape(long when) {
+//        // Do escape-like things: cancel drag & drop, select parent, etc.
+//        if (!seenEscape(when)) {
+////            webform.getManager().getMouseHandler().escape();
+//            designer.performEscape();
+//        }
+//    }
     
     private void dumpActivatedMarkupDesignBeansHtml() {
         Node[] nodes = getActivatedNodes();
@@ -2278,14 +2279,14 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         }
     } // End of JsfTopComponentAction.
     
-    private static class EscapeAction extends JsfTopComponentAction {
-        public EscapeAction(JsfTopComponent jsfTopComponent) {
-            super(jsfTopComponent);
-        }
-        public void actionPerformed(ActionEvent evt) {
-            getJsfTopComponent().escape(evt.getWhen());
-        }
-    } // End of EscapeAction.
+//    private static class EscapeAction extends JsfTopComponentAction {
+//        public EscapeAction(JsfTopComponent jsfTopComponent) {
+//            super(jsfTopComponent);
+//        }
+//        public void actionPerformed(ActionEvent evt) {
+//            getJsfTopComponent().escape(evt.getWhen());
+//        }
+//    } // End of EscapeAction.
     
     private static class EditValueAction extends JsfTopComponentAction {
         public EditValueAction(JsfTopComponent jsfTopComponent) {
