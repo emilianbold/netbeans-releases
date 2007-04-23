@@ -30,10 +30,11 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author ChrisWebster
+ * @author Chris Webster
  */
 public class NodeDisplayPanel extends JPanel implements ExplorerManager.Provider {
-    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    
+    private final PropertyChangeSupport pcs;
     private final ExplorerManager manager = new ExplorerManager();
     
     /** Creates a new instance of NodeDisplayPanel */
@@ -56,6 +57,7 @@ public class NodeDisplayPanel extends JPanel implements ExplorerManager.Provider
         add(btv, BorderLayout.CENTER);
         btv.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NodeDisplayPanel.class, "ACSD_NodeTreeView"));
         btv.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NodeDisplayPanel.class, "ACSD_NodeTreeView"));
+        pcs = new PropertyChangeSupport(this);
     }
     
     public void addPropertyChangeListener(PropertyChangeListener listener) {
