@@ -35,6 +35,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
@@ -98,6 +99,8 @@ public class RebuildOraculum {
         return binaryName + ".java";                //NOI18N
     }
     
+    private static final Pattern ANNONYMOUS = Pattern.compile("\\$[0-9]"); //NOI18N
+    
     public List<File> findFilesToRebuild(File root, FileObject file, ClasspathInfo cpInfo, Map<ElementHandle, Collection<String>> currentMembers, Collection<String> possiblyRemovedClasses) {
         Logger.getLogger(RebuildOraculum.class.getName()).log(Level.FINE, "members={0}", getMembers());
         Logger.getLogger(RebuildOraculum.class.getName()).log(Level.FINE, "currentMembers={0}", currentMembers);
@@ -145,7 +148,9 @@ public class RebuildOraculum {
         }
         
         for (String s : removedClasses) {
-            classes.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, s));
+            if (!ANNONYMOUS.matcher(s).find()) {//ignore probable annonymous inner classes/local classes
+                classes.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, s));
+            }
         }
         
         if (classes.isEmpty()) {
