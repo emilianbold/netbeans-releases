@@ -48,6 +48,8 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 //retouche:
+import org.netbeans.junit.ide.ProjectSupport;
+//retouche:
 //import org.netbeans.junit.ide.ProjectSupport;
 
 /**
@@ -137,7 +139,7 @@ public class EditorTestCase extends JellyTestCase {
         
         /* 2. open project */
         //retouche:
-        //        Object prj= ProjectSupport.openProject(projectPath);
+                Object prj= ProjectSupport.openProject(projectPath);
         
     }
     

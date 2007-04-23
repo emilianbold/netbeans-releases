@@ -58,7 +58,6 @@ Go To|Go to Declaration
   Alt+G
 Go To|<unknown>
   Ctrl+G
-Go To|Go to Previous Document
   Ctrl+BACK_QUOTE
 Go To|Go to Source
   Alt+O
@@ -119,6 +118,10 @@ Other|Delete Previous Word
   Ctrl+BACK_SPACE
 Other|Delete Tab
   Shift+TAB
+Other|Delete to Next Camel Case Position
+  Ctrl+Shift+DELETE
+Other|Delete to Previous Camel Case Position
+  Ctrl+Shift+BACK_SPACE
 Other|Extend Selection Back
   Ctrl+Shift+LEFT
 Other|Extend Selection Backward
@@ -139,14 +142,20 @@ Other|Extend Selection to End of Line
   Shift+END
 Other|Extend Selection to Matching Brace
   Ctrl+Shift+OPEN_BRACKET
+Other|Extend Selection to Next Camel Case Position
+  Ctrl+Shift+RIGHT
 Other|Extend Selection to Next Page
   Shift+PAGE_DOWN
 Other|Extend Selection to Next Word
   Ctrl+Shift+RIGHT
+Other|Extend Selection to Previous Camel Case Position
+  Ctrl+Shift+LEFT
 Other|Extend Selection to Previous Page
   Shift+PAGE_UP
 Other|Fast Import
   Alt+Shift+I
+Other|Files
+  Ctrl+2
 Other|Forward
   Alt+L
 Other|Full Screen
@@ -155,6 +164,10 @@ Other|Generate Code
   Alt+INSERT
 Other|HTTP Monitor
   Ctrl+Shift+5
+Other|Incremental Search Backward
+  Ctrl+Shift+I
+Other|Incremental Search Forward
+  Ctrl+I
 Other|Insert Newline
   ENTER
 Other|Insert Tab
@@ -181,28 +194,30 @@ Other|Insertion Point to End of Line
   END
 Other|Insertion Point to End of Word
   Alt+U E
+Other|Insertion Point to Next Camel Case Position
+  Ctrl+RIGHT
 Other|Insertion Point to Next Word
   Ctrl+RIGHT
+Other|Insertion Point to Previous Camel Case Position
+  Ctrl+LEFT
 Other|Insertion Point to Previous Word
   Ctrl+LEFT
 Other|Inspect Hierarchy
-  Alt+Shift+F12
-Other|Inspect Hierarchy
   Alt+F12
-Other|Inspect Members
-  Ctrl+Shift+F12
+Other|Inspect Hierarchy
+  Alt+Shift+F12
 Other|Inspect Members
   Ctrl+F12
+Other|Inspect Members
+  Ctrl+Shift+F12
 Other|Instant Rename
   Ctrl+R
 Other|JUnit Test Results
   Ctrl+Shift+6
 Other|Javadoc Index Search
   Shift+F1
-Other|Jump to Next Edit Cross Window
-  Alt+Shift+L
-Other|Jump to Previous Edit Cross Window
-  Alt+Shift+K
+Other|Last edit
+  Ctrl+Q
 Other|Match Brace
   Ctrl+OPEN_BRACKET
 Other|Modify Profiling...
@@ -223,8 +238,6 @@ Other|Page Up
   PAGE_UP
 Other|Paste Formatted
   Ctrl+Shift+V
-Other|Projects
-  Ctrl+1
 Other|ReRun Last Profiling
   Ctrl+Shift+F2
 Other|Reload Form
@@ -280,8 +293,6 @@ Other|Switch Case
   Alt+U R
 Other|Take Snapshot of Collected Results
   Ctrl+F2
-Other|Test Project
-  Alt+F6
 Other|To Lowercase
   Alt+U L
 Other|To Uppercase
@@ -405,10 +416,10 @@ Window|Sessions
   Alt+Shift+6
 Window|Sources
   Alt+Shift+8
-Window|Threads
-  Alt+Shift+7
 Window|Task List
   Ctrl+6
+Window|Threads
+  Alt+Shift+7
 Window|Watches
   Alt+Shift+2
 XML|XSL Transformation...

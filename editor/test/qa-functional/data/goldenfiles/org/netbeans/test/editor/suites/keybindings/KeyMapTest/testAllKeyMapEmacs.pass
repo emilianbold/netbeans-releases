@@ -138,6 +138,8 @@ Other|Extend Selection to Next Word
   Ctrl+Shift+RIGHT
 Other|Extend Selection to Previous Page
   Shift+PAGE_UP
+Other|Files
+  Ctrl+2
 Other|Full Screen
   Alt+Shift+ENTER
 Other|HTTP Monitor
@@ -183,13 +185,13 @@ Other|Insertion Point to Previous Word
   Alt+B
   Ctrl+LEFT
 Other|Inspect Hierarchy
-  Alt+Shift+F12
-Other|Inspect Hierarchy
   Alt+F12
-Other|Inspect Members
-  Ctrl+Shift+F12
+Other|Inspect Hierarchy
+  Alt+Shift+F12
 Other|Inspect Members
   Ctrl+F12
+Other|Inspect Members
+  Ctrl+Shift+F12
 Other|JUnit Test Results
   Ctrl+Shift+6
 Other|Javadoc Index Search
@@ -202,8 +204,6 @@ Other|Page Down
 Other|Page Up
   Alt+V
   PAGE_UP
-Other|Projects
-  Ctrl+1
 Other|Re-indent Current Line or Selection
   TAB
 Other|ReRun Last Profiling
@@ -252,8 +252,6 @@ Other|Switch Capitalization of Identifier
   Alt+C
 Other|Take Snapshot of Collected Results
   Ctrl+F2
-Other|Test Project
-  Alt+F6
 Other|To Lowercase
   Ctrl+X Ctrl+L
 Other|To Uppercase
@@ -375,10 +373,10 @@ Window|Sessions
   Alt+Shift+6
 Window|Sources
   Alt+Shift+8
-Window|Threads
-  Alt+Shift+7
 Window|Task List
   Ctrl+6
+Window|Threads
+  Alt+Shift+7
 Window|Watches
   Alt+Shift+2
 XML|XSL Transformation...
