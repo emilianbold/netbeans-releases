@@ -25,6 +25,7 @@
 
 package org.netbeans.modules.j2ee.sun.dd.impl.serverresources;
 
+import java.util.ArrayList;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.serverresources.Resources;
 
@@ -37,7 +38,7 @@ public class ResourcesProxy implements Resources {
     private Resources resourcesRoot;
 // !PW If this class is ever ported to derive from RootInterface instead of CommonDDBean, it'll need these.    
 //    private int ddStatus;
-    private java.util.List listeners; 
+    private java.util.List listeners = new ArrayList(); 
     
     /** Creates a new instance of ResourcesProxy */
     public ResourcesProxy(Resources resourcesRoot) {
