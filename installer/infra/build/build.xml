@@ -104,6 +104,7 @@
         <openesb-buildnumber 
             file="${temp.file}" 
             prefix="openesb"/>
+        
         <get
             src="${glassfish.builds.host}/java/re/swdp/1.0/promoted/fcs/latest/bundles/"
             dest="${temp.file}"/>
@@ -146,7 +147,6 @@ sjsas.milestone.number.real=${sjsas.milestone.number.real}
 sjsas.build.type=${sjsas.build.type}
 sjsas.build.number=${sjsas.build.number}
 
-
 openesb.build.number=${openesb.build.number}
 openesb.build.number.real=${openesb.build.number.real}
 
@@ -157,7 +157,6 @@ swdp.milestone.number=${swdp.milestone.number}
 swdp.build.type=${swdp.build.type}
 swdp.build.number=${swdp.build.number}
 swdp.macro.number=${swdp.macro.number}
-
 
 dont.build.custom.tasks=true
 custom.tasks.cls=${custom.tasks.cls}
@@ -497,7 +496,8 @@ jarsigner.storepass=${jarsigner.storepass}
                 name="release.parent.platforms"
                 value=""/>
         </ant>
-<!--        
+        
+        <!--        
         <echo message="BUILDING GLASSFISH ========================================"/>
         <ant dir="${nbi.netbeans.dir}/infra/build/products/glassfish" target="release-all">
             <property 
@@ -517,7 +517,8 @@ jarsigner.storepass=${jarsigner.storepass}
                 name="release.parent.platforms"
                 value=""/>
         </ant>
--->        
+        -->     
+           
 	<echo message="BUILDING SJSAS ========================================"/>
         <ant dir="${nbi.netbeans.dir}/infra/build/products/sjsas" target="release-all">
             <property 
@@ -577,7 +578,8 @@ jarsigner.storepass=${jarsigner.storepass}
                 name="release.parent.platforms"
                 value=""/>
         </ant>
-
+        
+        <!--
         <echo message="BUILDING SWDP ============================================"/>
         <ant dir="${nbi.netbeans.dir}/infra/build/products/swdp" target="release-all">
             <property 
@@ -597,6 +599,7 @@ jarsigner.storepass=${jarsigner.storepass}
                 name="release.parent.platforms"
                 value=""/>
         </ant>
+        -->
         
         <delete dir="${output.dir}"/>
         
@@ -686,8 +689,6 @@ jarsigner.storepass=${jarsigner.storepass}
             dest="${output.dir}/bundles/java-tools-bundle-u3-preview2-nightly-${build.number}-macosx-ppc.command"/>
         -->
 
-
-            
         <get 
             src="http://${glassfish.host}:${glassfish.http.port}${context.path}/download-2/download.html"
             dest="${output.dir}/index.html"/>
@@ -725,17 +726,38 @@ jarsigner.storepass=${jarsigner.storepass}
             src="http://${glassfish.host}:${glassfish.http.port}${context.path}/download-2/img/comment_badge_white.gif"
             dest="${output.dir}/img/comment_badge_white.gif"/>
         <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/download-2/img/bold_comment_badge_text.gif"
+            dest="${output.dir}/img/bold_comment_badge_text.gif"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/download-2/img/bold_comment_badge_header.gif"
+            dest="${output.dir}/img/bold_comment_badge_header.gif"/>
+        <get 
             src="http://${glassfish.host}:${glassfish.http.port}${context.path}/download-2/img/download.gif"
             dest="${output.dir}/img/download.gif"/>
         <get 
             src="http://${glassfish.host}:${glassfish.http.port}${context.path}/download-2/img/download_h.gif"
             dest="${output.dir}/img/download_h.gif"/>
         <get 
-            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/download-2/img/top-menu.gif"
-            dest="${output.dir}/img/top-menu.gif"/>
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/download-2/img/top_menu.gif"
+            dest="${output.dir}/img/top_menu.gif"/>
         <get 
-            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/download-2/img/top-menu-bg.gif"
-            dest="${output.dir}/img/top-menu-bg.gif"/>
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/download-2/img/top_menu_5.5.1.gif"
+            dest="${output.dir}/img/top_menu_5.5.1.gif"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/download-2/img/top_menu_5.5.1_h.gif"
+            dest="${output.dir}/img/top_menu_5.5.1_h.gif"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/download-2/img/top_menu_6.0-m9.gif"
+            dest="${output.dir}/img/top_menu_6.0-m9.gif"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/download-2/img/top_menu_6.0-m9_h.gif"
+            dest="${output.dir}/img/top_menu_6.0-m9_h.gif"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/download-2/img/top_menu_dev.gif"
+            dest="${output.dir}/img/top_menu_dev.gif"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/download-2/img/top_menu_dev_h.gif"
+            dest="${output.dir}/img/top_menu_dev_h.gif"/>
         <get 
             src="http://${glassfish.host}:${glassfish.http.port}${context.path}/download-2/img/warning_badge_beige.gif"
             dest="${output.dir}/img/warning_badge_beige.gif"/>
