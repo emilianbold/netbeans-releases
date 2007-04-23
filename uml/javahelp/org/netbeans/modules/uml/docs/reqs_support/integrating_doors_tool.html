@@ -13,14 +13,13 @@
 <p>Support for Telelogic's DOORS requirements tool (versions 7.0 and 6.0) is available for integration in the IDE. This support lets you drag requirements from the DOORS tool onto UML Modeling Elements, for traceability. The IDE populates the Requirements section in the UML Design Center with a list of DOORS requirements. Note that this tool is only available for the Windows platform. </p>
 <p><b>To integrate support for the DOORS tool:</b></p>
 <ol>
-<li>On a Windows platform, locate the <code>configDoors.vbs</code> script file. <br>
-If you performed a local install of the  UML module, the script file can be found in 
-  <code><i>&lt;NetBeans_IDE_User_Dir&gt;</i>\5.5\modules\DoorsIntegrationFiles\configDoors.vbs</code>.<br>
-  For example, <code>C:\Documents and
-Settings\Administrator\.netbeans\5.5\modules\DoorsIntegrationFiles\configDoors.vbs</code><br>
-  <br>
-  If you perfomed a global install of the UML module, the script file is located in 
-  <code><i>&lt;Netbeans_IDE_Install_Dir&gt;</i>\nb5.5\modules\DoorsIntegrationFiles\configDoors.vbs</code></li>
+<li>On a Windows platform, locate the <code>configDoors.vbs</code> script file.<br>
+  If you installed UML using the NetBeans Installer, the script can be found in 
+    <code><i>&lt;NetBeans_IDE_Install_Dir&gt;</i>\uml4\modules\DoorsIntegrationFiles\configDoors.vbs</code><br>
+    If you installed the  UML Modeling pack outside of the NetBeans Installer, the script file can be found in <code><i>&lt;NetBeans_IDE_User_Dir&gt;</i>\modules\DoorsIntegrationFiles\configDoors.vbs</code>.<br>
+    For example, <code>C:\Documents and
+  Settings\Administrator\.netbeans\dev\modules\DoorsIntegrationFiles\configDoors.vbs</code><br>
+  </li>
 <li>Open a command line window and go to the  directory where the <code>configDoors.vbs</code> script file is located. </li>
 <li>Execute the <tt>configDoors.vbs</tt> script as follows:
   <pre class="examplecode">C:\windows\system32\cscript.exe configDoors.vbs </pre>
