@@ -64,8 +64,12 @@ import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
 import org.netbeans.modules.j2ee.sun.dd.api.DDException;
 import org.netbeans.modules.j2ee.sun.dd.api.RootInterface;
+import org.netbeans.modules.j2ee.sun.dd.api.client.SunApplicationClient;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.CmpResource;
+import org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb;
+import org.netbeans.modules.j2ee.sun.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.MdbConnectionFactory;
+import org.netbeans.modules.j2ee.sun.dd.api.ejb.SunEjbJar;
 import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
 import org.netbeans.modules.j2ee.sun.share.Constants;
 import org.netbeans.modules.j2ee.sun.share.config.ConfigurationStorage;
@@ -2147,20 +2151,206 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
     }
 
     public void bindDatasourceReference(String referenceName, String jndiName) throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException  {
-                
+        // validation
+        if(Utils.strEmpty(referenceName) || Utils.strEmpty(jndiName)) {
+            return;
+        }
+
+        try {
+            FileObject primarySunDDFO = getSunDD(configFiles[0], true);
+            if(primarySunDDFO != null) {
+                RootInterface sunDDRoot = DDProvider.getDefault().getDDRoot(primarySunDDFO);
+                org.netbeans.modules.j2ee.sun.dd.api.common.ResourceRef ref =
+                        findNamedBean(sunDDRoot, referenceName, SunWebApp.RESOURCE_REF, ResourceRef.RES_REF_NAME);
+                if(ref != null) {
+                    // set jndi name of existing reference.
+                    assert referenceName.equals(ref.getResRefName());
+                    ref.setJndiName(jndiName);
+                } else {
+                    // add new resource-ref
+                    if(sunDDRoot instanceof SunWebApp) {
+                        ref = ((SunWebApp) sunDDRoot).newResourceRef();
+                    } else if(sunDDRoot instanceof SunApplicationClient) {
+                        ref = ((SunApplicationClient) sunDDRoot).newResourceRef();
+                    }
+                    ref.setResRefName(referenceName);
+                    ref.setJndiName(jndiName);
+                    sunDDRoot.addValue(SunWebApp.RESOURCE_REF, ref);
+                }
+
+                // if changes, save file.
+                sunDDRoot.write(primarySunDDFO);
+            }
+        } catch(IOException ex) {
+            // This is a legitimate exception that could occur, such as a problem
+            // writing the changed descriptor to disk.
+            String message = NbBundle.getMessage(SunONEDeploymentConfiguration.class, 
+                    "ERR_ExceptionBindingResourceRef", ex.getClass().getSimpleName()); // NOI18N
+            throw new org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException(message, ex);
+        } catch(Exception ex) {
+            // This would probably be a runtime exception due to a bug, but we
+            // must trap it here so it doesn't cause trouble upstream.
+            // We handle it the same as above for now.
+            String message = NbBundle.getMessage(SunONEDeploymentConfiguration.class, 
+                    "ERR_ExceptionBindingResourceRef", ex.getClass().getSimpleName()); // NOI18N
+            throw new org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException(message, ex);
+        }
     }
     
     public String findDatasourceJndiName(String referenceName) throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException  {
-        return null;
+        // validation
+        if(Utils.strEmpty(referenceName)) {
+            return null;
+        }
+
+        String jndiName = null;
+        try {
+            RootInterface sunDDRoot = getSunDDRoot(false);
+            org.netbeans.modules.j2ee.sun.dd.api.common.ResourceRef ref =
+                findNamedBean(sunDDRoot, referenceName, SunWebApp.RESOURCE_REF, ResourceRef.RES_REF_NAME);
+            if(ref != null) {
+                // get jndi name of existing reference.
+                assert referenceName.equals(ref.getResRefName());
+                jndiName = ref.getJndiName();
+            }
+        } catch(IOException ex) {
+            // This is a legitimate exception that could occur, such as a problem
+            // writing the changed descriptor to disk.
+            String message = NbBundle.getMessage(SunONEDeploymentConfiguration.class, 
+                    "ERR_ExceptionReadingResourceRef", ex.getClass().getSimpleName()); // NOI18N
+            throw new org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException(message, ex);
+        } catch(Exception ex) {
+            // This would probably be a runtime exception due to a bug, but we
+            // must trap it here so it doesn't cause trouble upstream.
+            // We handle it the same as above for now.
+            String message = NbBundle.getMessage(SunONEDeploymentConfiguration.class, 
+                    "ERR_ExceptionReadingResourceRef", ex.getClass().getSimpleName()); // NOI18N
+            throw new org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException(message, ex);
+        }
+        
+        return jndiName;
     }
     
     public void bindDatasourceReferenceForEjb(String ejbName, String ejbType, 
             String referenceName, String jndiName) throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException  {
-        
+        // validation
+        if(Utils.strEmpty(ejbName) || Utils.strEmpty(ejbType) || 
+                Utils.strEmpty(referenceName) || Utils.strEmpty(jndiName)) {
+            return;
+        }
+
+        try {
+            FileObject primarySunDDFO = getSunDD(configFiles[0], true);
+            if(primarySunDDFO != null) {
+                RootInterface sunDDRoot = DDProvider.getDefault().getDDRoot(primarySunDDFO);
+                if(sunDDRoot instanceof SunEjbJar) {
+                    SunEjbJar sunEjbJar = (SunEjbJar) sunDDRoot;
+                    EnterpriseBeans eb = sunEjbJar.getEnterpriseBeans();
+                    if(eb == null) {
+                        eb = sunEjbJar.newEnterpriseBeans();
+                        sunEjbJar.setEnterpriseBeans(eb);
+                    }
+                    
+                    Ejb ejb = findNamedBean(eb, ejbName, EnterpriseBeans.EJB, Ejb.EJB_NAME);
+                    if(ejb == null) {
+                        ejb = eb.newEjb();
+                        ejb.setEjbName(ejbName);
+                        eb.addEjb(ejb);
+                    }
+                    
+                    org.netbeans.modules.j2ee.sun.dd.api.common.ResourceRef ref =
+                            findNamedBean(ejb, referenceName, Ejb.RESOURCE_REF, ResourceRef.RES_REF_NAME);
+                    if(ref != null) {
+                        // set jndi name of existing reference.
+                        assert referenceName.equals(ref.getResRefName());
+                        ref.setJndiName(jndiName);
+                    } else {
+                        // add new resource-ref
+                        ref = ejb.newResourceRef();
+                        ref.setResRefName(referenceName);
+                        ref.setJndiName(jndiName);
+                        ejb.addValue(Ejb.RESOURCE_REF, ref);
+                    }
+
+                    // if changes, save file.
+                    sunEjbJar.write(primarySunDDFO);
+                }
+            }
+        } catch(IOException ex) {
+            // This is a legitimate exception that could occur, such as a problem
+            // writing the changed descriptor to disk.
+            String message = NbBundle.getMessage(SunONEDeploymentConfiguration.class, 
+                    "ERR_ExceptionBindingResourceRef", ex.getClass().getSimpleName()); // NOI18N
+            throw new org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException(message, ex);
+        } catch(Exception ex) {
+            // This would probably be a runtime exception due to a bug, but we
+            // must trap it here so it doesn't cause trouble upstream.
+            // We handle it the same as above for now.
+            String message = NbBundle.getMessage(SunONEDeploymentConfiguration.class, 
+                    "ERR_ExceptionBindingResourceRef", ex.getClass().getSimpleName()); // NOI18N
+            throw new org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException(message, ex);
+        }
     }
     
     public String findDatasourceJndiNameForEjb(String ejbName, String referenceName) throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException  {
-        return null;
+        // validation
+        if(Utils.strEmpty(ejbName) || Utils.strEmpty(referenceName)) {
+            return null;
+        }
+
+        String jndiName = null;
+        try {
+            RootInterface sunDDRoot = getSunDDRoot(false);
+            if(sunDDRoot instanceof SunEjbJar) {
+                SunEjbJar sunEjbJar = (SunEjbJar) sunDDRoot;
+                EnterpriseBeans eb = sunEjbJar.getEnterpriseBeans();
+                if(eb != null) {
+                    Ejb ejb = findNamedBean(eb, ejbName, EnterpriseBeans.EJB, Ejb.EJB_NAME);
+                    if(ejb != null) {
+                        org.netbeans.modules.j2ee.sun.dd.api.common.ResourceRef ref =
+                                findNamedBean(ejb, referenceName, Ejb.RESOURCE_REF, ResourceRef.RES_REF_NAME);
+                        if(ref != null) {
+                            // get jndi name of existing reference.
+                            assert referenceName.equals(ref.getResRefName());
+                            jndiName = ref.getJndiName();
+                        }
+                    }
+                }
+                
+            }
+        } catch(IOException ex) {
+            // This is a legitimate exception that could occur, such as a problem
+            // writing the changed descriptor to disk.
+            String message = NbBundle.getMessage(SunONEDeploymentConfiguration.class, 
+                    "ERR_ExceptionBindingResourceRef", ex.getClass().getSimpleName()); // NOI18N
+            throw new org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException(message, ex);
+        } catch(Exception ex) {
+            // This would probably be a runtime exception due to a bug, but we
+            // must trap it here so it doesn't cause trouble upstream.
+            // We handle it the same as above for now.
+            String message = NbBundle.getMessage(SunONEDeploymentConfiguration.class, 
+                    "ERR_ExceptionBindingResourceRef", ex.getClass().getSimpleName()); // NOI18N
+            throw new org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException(message, ex);
+        }
+        
+        return jndiName;
+    }
+    
+    // Could have beanProp & nameProp in db indexed by Class<T>
+    private <T extends CommonDDBean> T findNamedBean(CommonDDBean parentDD, 
+            String referenceName, /*Class<T> c,*/ String beanProp, String nameProp) {
+        T result = null;
+        T [] beans = (T[]) parentDD.getValues(beanProp);
+        if(beans != null) {
+            for(int i = 0; i < beans.length; i++) {
+                String name = (String) beans[0].getValue(nameProp);
+                if(referenceName.equals(name)) {
+                    result = beans[i];
+                    break;
+                }
+            }
+        }
+        return result;
     }
 
     /*****************************  MessageDestinationConfiguration **************************************/
