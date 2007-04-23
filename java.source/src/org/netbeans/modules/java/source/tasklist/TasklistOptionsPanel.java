@@ -24,6 +24,7 @@ import java.util.Map.Entry;
 import java.util.prefs.Preferences;
 import javax.swing.JCheckBox;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.openide.util.ChangeSupport;
 
 /**
@@ -349,6 +350,7 @@ private void enableTasklistStateChanged(javax.swing.event.ChangeEvent evt) {//GE
         for (Entry<JCheckBox, String> e : compilerSettings.entrySet()) {
             p.putBoolean(e.getValue(), e.getKey().isSelected());
         }
+        RepositoryUpdater.getDefault().rebuildAll(false);
     }
     
     private void updateCompilerSettingsEnabled() {

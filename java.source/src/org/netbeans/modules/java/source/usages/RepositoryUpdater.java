@@ -536,7 +536,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         return null;
     }
     
-    public void rebuildAll() {
+    public void rebuildAll(boolean forceClean) {
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "Rebuild All Called", new Exception());
         }
@@ -550,7 +550,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 Exceptions.printStackTrace(e);
             }
         }
-        submit(Work.filterChange(toRebuild));
+        submit(Work.filterChange(toRebuild, forceClean));
     }
     
     private synchronized void assureRecompiled(URL root, Collection<File> files) {
@@ -757,9 +757,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             return new SingleRootWork (WorkType.UPDATE_BINARY, file, root, isFolder, null);
         }
         
-        public static Work filterChange (final List<URL> roots) {
+        public static Work filterChange (final List<URL> roots, boolean forceClean) {
             assert roots != null;
-            return new MultiRootsWork (WorkType.FILTER_CHANGED, roots, null);
+            return new MultiRootsWork (WorkType.FILTER_CHANGED, roots, forceClean, null);
         }
         
         public static Work recompile() {
@@ -798,14 +798,20 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     
     private static class MultiRootsWork extends Work {
         private List<URL> roots;
+        private boolean forceClean;
         
-        public MultiRootsWork (WorkType type, List<URL> roots, CountDownLatch latch) {
+        public MultiRootsWork (WorkType type, List<URL> roots, boolean forceClean, CountDownLatch latch) {
             super (type, latch);
             this.roots = roots;
+            this.forceClean = forceClean;
         }
         
         public List<URL> getRoots () {
             return roots;
+        }
+        
+        public boolean getForceClean() {
+            return forceClean;
         }
     }          
     
@@ -848,7 +854,12 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     try {
                     final WorkType type = work.getType();                        
                     switch (type) {
-                        case FILTER_CHANGED:                            
+                        case FILTER_CHANGED:
+                        {
+                            //the global handle is always null here, isn't it?
+                            ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryUpdater.class,"MSG_BackgroundCompileStart"));
+                            
+                            handle.start();
                             try {
                                 final MultiRootsWork mw = (MultiRootsWork) work;
                                 final List<URL> roots = mw.getRoots();
@@ -860,13 +871,16 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 for (java.util.ListIterator<URL> it = state.listIterator(state.size()); it.hasPrevious(); ) {                
                                     final URL rootURL = it.previous();
                                     it.remove();
-                                    updateFolder (rootURL,rootURL, true, handle);
+                                    updateFolder (rootURL,rootURL, mw.getForceClean(), handle);
                                 }                                
                             } catch (final TopologicalSortException tse) {
                                     final IllegalStateException ise = new IllegalStateException ();                                
                                     throw (IllegalStateException) ise.initCause(tse);
+                            } finally {
+                                handle.finish();
                             }
                             break;
+                        }
                         case COMPILE_BATCH:
                         {
                             assert handle == null;
@@ -1689,16 +1703,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         
         if (sourceLevel != null && !sourceLevel.equals(existingSourceLevel)) {
             LOGGER.log(Level.FINE, "source level change detected (provided={1}, existing={2}), refreshing whole source root ({0})", new Object[] {root.toExternalForm(), sourceLevel, existingSourceLevel});
-            submit(Work.filterChange(Collections.singletonList(root)));
-            return ;
-        }
-        
-        String extraCompilerOptions = CompilerSettings.getCommandLine();
-        String existingExtraCompilerOptions = getAttribute(root, EXTRA_COMPILER_OPTIONS, "");
-        
-        if (!extraCompilerOptions.equals(existingExtraCompilerOptions)) {
-            LOGGER.log(Level.FINE, "extra compiler options change detected (provided={1}, existing={2}), refreshing whole source root ({0})", new Object[] {root.toExternalForm(), extraCompilerOptions, existingExtraCompilerOptions});
-            submit(Work.filterChange(Collections.singletonList(root)));
+            submit(Work.filterChange(Collections.singletonList(root), true));
             return ;
         }
     }
@@ -2369,7 +2374,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         }
                     }
                 }
-                submit(Work.filterChange(dirtyRoots));
+                submit(Work.filterChange(dirtyRoots, true));
             }
         }
     }

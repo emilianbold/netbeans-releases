@@ -47,7 +47,7 @@ public class TasklistSettings {
         if (isTasklistEnabled() != enabled) {
             getPreferencesNode().putBoolean(KEY_ENABLED, enabled);
             if (enabled) {
-                RepositoryUpdater.getDefault().rebuildAll();
+                RepositoryUpdater.getDefault().rebuildAll(true);
             }
             
             ErrorAnnotator an = ErrorAnnotator.getAnnotator();
@@ -84,7 +84,7 @@ public class TasklistSettings {
         if (isDependencyTrackingEnabled() != enabled) {
             getPreferencesNode().putBoolean(KEY_DEPENDENCY_TRACKING, enabled);
             if (enabled) {
-                RepositoryUpdater.getDefault().rebuildAll();
+                RepositoryUpdater.getDefault().rebuildAll(true);
             }
             
             ErrorAnnotator an = ErrorAnnotator.getAnnotator();
