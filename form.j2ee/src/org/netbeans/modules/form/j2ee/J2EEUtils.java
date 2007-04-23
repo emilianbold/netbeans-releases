@@ -85,6 +85,8 @@ import org.netbeans.modules.j2ee.persistence.wizard.fromdb.*;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.FileSensitiveActions;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
@@ -237,7 +239,7 @@ public class J2EEUtils {
 
                 for (int i=0; i<urls.length; i++) {
                     cpTypes[i] = ClassSource.JAR_SOURCE;
-                    cpRoots[i] = urls[i].getPath();
+                    cpRoots[i] = FileUtil.toFile(URLMapper.findFileObject(urls[i])).getAbsolutePath();
                 }
 
                 ClassSource cs = new ClassSource("", cpTypes, cpRoots); // NOI18N
