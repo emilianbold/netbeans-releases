@@ -134,7 +134,7 @@ public class PartitionedWindowCustomEditor extends TcgComponentNodePropertyEdito
                 gbc.weightx = 1.0D;
                 gbc.weighty = 0.3D;
                 gbc.fill = GridBagConstraints.BOTH;
-                mPartitionPanel = new PartitionPanel((Plan)mProperty.getNode().getDoc(), mComponent);
+                mPartitionPanel = new PartitionPanel((Plan)mProperty.getNode().getDoc(), mComponent, false);
                 mPartitionPanel.setPreferredSize(new Dimension(700, 300));
                 attributePane.add(mPartitionPanel, gbc);
                 

@@ -33,7 +33,9 @@ import java.awt.dnd.DragGestureEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,10 +65,12 @@ public class PartitionPanel extends JPanel implements SharedConstants {
     private TcgComponent mComponent;
     private DefaultMoveableRowTableModel mTableModel;
     private MoveableRowTable mTable;
+    private boolean mAllowEmptySelection;
 
-    public PartitionPanel(Plan plan, TcgComponent component) {
+    public PartitionPanel(Plan plan, TcgComponent component, boolean allowEmptySelection) {
         mPlan = plan;
         mComponent = component;
+        mAllowEmptySelection = allowEmptySelection;
         initComponents();
     }
     
@@ -159,6 +163,20 @@ public class PartitionPanel extends JPanel implements SharedConstants {
         topPane.add(pane, BorderLayout.CENTER);
     }
     
+    public List getAttributeList(Set types) {
+        List attributeList = new ArrayList();
+        Vector r = mTableModel.getDataVector();
+        for (int i = 0, I = r.size(); i < I; i++) {
+            Vector c = (Vector) r.elementAt(i);
+            String name = (String)c.elementAt(1);
+            String type = (String)c.elementAt(2);
+            if ( type != null && types.contains(type)) {
+                attributeList.add(name);
+            }
+        }
+        return attributeList;
+    }
+    
     public List getPartitionKey() {
         List partitionKey = new ArrayList();
         Vector r = mTableModel.getDataVector();
@@ -174,7 +192,7 @@ public class PartitionPanel extends JPanel implements SharedConstants {
     public void validateContent(PropertyChangeEvent evt) throws PropertyVetoException {
         List nameList = new ArrayList();
         Vector r = mTableModel.getDataVector();
-        if (r.size() > 0 && getPartitionKey().size() == 0) {
+        if (!mAllowEmptySelection && r.size() > 0 && getPartitionKey().size() == 0) {
             String msg = NbBundle.getMessage(PartitionPanel.class,
                     "PartitionPanel.PARTITION_KEY_MUST_HAVE_AT_LEAST_ONE_ATTRIBUTE");
             throw new PropertyVetoException(msg, evt);
