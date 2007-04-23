@@ -206,8 +206,11 @@ public class DiagramBuilder {
                 int fieldIndex = 0;
                 //
                 for (Object expr: ((XPathOperationOrFuntion) expression).getChildren()){
-                    IFieldNode fn = (IFieldNode)methoidNode.
-                            getInputFieldNodes().get(fieldIndex);
+                    List inputFields = methoidNode.getInputFieldNodes();
+                    if (fieldIndex >= inputFields.size() ){
+                        break;
+                    }
+                    IFieldNode fn = (IFieldNode)inputFields.get(fieldIndex);
                     assert fn != null : "Filed shouldn't be null anyway"; // NOI18N
                     if(!expr.toString().startsWith(BuildExpressionVisitor.UNCONNECTED_INPUT)){
                         Node upstream_node = buildDiagramRecursive((XPathExpression) expr);
