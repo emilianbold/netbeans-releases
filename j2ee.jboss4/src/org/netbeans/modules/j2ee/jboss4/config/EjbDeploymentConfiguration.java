@@ -852,6 +852,10 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
     public void bindEjbReferenceForEjb(String ejbName, String ejbType,
             String referenceName, String referencedEjbName) throws ConfigurationException {
     
+        if (Double.parseDouble(j2eeModule.getModuleVersion()) > 2.1) {
+            return;
+        }
+        
         Set beanNames = new HashSet();
         beanNames.add(ejbName);
         if (org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans.SESSION.equals(ejbType)) {
@@ -941,6 +945,11 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
     }
 
     public void bindMdbToMessageDestination(String mdbName, String name, MessageDestination.Type type) throws ConfigurationException {
+    
+        if (Double.parseDouble(j2eeModule.getModuleVersion()) > 2.1) {
+            return;
+        }
+        
         addMDB(mdbName, name, type);
     }
     

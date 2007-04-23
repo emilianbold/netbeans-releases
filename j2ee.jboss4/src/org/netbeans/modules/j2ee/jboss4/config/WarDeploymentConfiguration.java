@@ -355,6 +355,11 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
     }
     
     public void bindEjbReference(String referenceName, String ejbName) throws ConfigurationException {
+        
+        if (Double.parseDouble(j2eeModule.getModuleVersion()) > 2.4) {
+            return;
+        }
+        
         addEjbReference(referenceName, ejbName);
     }
     
