@@ -67,7 +67,7 @@ public class AddManagedBeanDialog extends javax.swing.JPanel implements Validati
             existingBeans = new Hashtable();
             ManagedBean bean;
             //Iterator iter = JSFConfigUtilities.getAllManagedBeans(config).iterator();
-            FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config.getPrimaryFile(), false).getRootComponent();
+            FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config.getPrimaryFile(), true).getRootComponent();
             Collection<ManagedBean> beans = facesConfig.getManagedBeans();
             for (Iterator<ManagedBean> it = beans.iterator(); it.hasNext();) {
                 ManagedBean managedBean = it.next();
