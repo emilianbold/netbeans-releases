@@ -333,6 +333,9 @@ public class Utilities {
             if (handle != null) {
                 handle.finish ();
             }
+            // XXX: Avoid NPE when called refresh providers on selected units
+            // #101836: OperationContainer.contains() sometimes fails
+            Containers.initNotify ();
             manager.unsetProgressComponent (detailLabel, progressComp);
         }
     }

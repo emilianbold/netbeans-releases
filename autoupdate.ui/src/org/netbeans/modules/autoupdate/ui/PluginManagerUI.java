@@ -265,9 +265,6 @@ private void tpTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:
     }
 
     public void updateUnitsChanged() {
-        // XXX: Avoid NPE when called refresh providers on selected units
-        // #101836: OperationContainer.contains() sometimes fails
-        Containers.initNotify ();
         refreshUnits ();
     }
     
