@@ -31,7 +31,6 @@ import java.nio.charset.CoderResult;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Utilities;
-import sun.security.util.PendingException;
 import static java.lang.Math.min;
 import static java.nio.charset.CoderResult.OVERFLOW;
 import static java.nio.charset.CoderResult.UNDERFLOW;
@@ -120,8 +119,6 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
         private boolean fullOut;
         private boolean emptyInBuf;
         
-        private boolean backslashPending;
-        
         PropCharsetEncoder(Charset charset) {
             this(charset, getDefaultNewLineType());
         }
@@ -142,8 +139,6 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
             emptyIn = false;
             fullOut = false;
             emptyInBuf = true;
-            
-            backslashPending = false;
         }
 
         protected CoderResult encodeLoop(CharBuffer in, ByteBuffer out) {
@@ -157,13 +152,11 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
                         encodeBuf();
                         if (emptyInBuf && !emptyIn) {
                             continue readInLoop;
-                        } else if (emptyIn && hasPendingCharacters()) {
-                            handlePendingCharacters();
                         }
                         flushOutBuf(out);
                         if (fullOut) {
                             return OVERFLOW;
-                        } else if (emptyInBuf && emptyIn && !hasPendingCharacters()) {
+                        } else if (emptyInBuf && emptyIn) {
                             return UNDERFLOW;
                         }
                     }
@@ -178,7 +171,6 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
         }
         
         protected CoderResult implFlush(ByteBuffer out) {
-            handlePendingCharacters();
             return flushOutBuf(out) ? OVERFLOW
                                     : UNDERFLOW;
         }
@@ -241,39 +233,6 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
         }
         
         /**
-         * Are there any pending characters to be sent to the {@code outBuf}?
-         * 
-         * @return  {@code true} if there are any pending characters to be
-         *          written to the {@link #outBuf}, {@code false} otherwise
-         * @see  #handlePendingCharacters
-         */
-        private boolean hasPendingCharacters() {
-            return backslashPending;
-        }
-        
-        /**
-         * Sends all pending characters to the {@link #outBuf} if there is enough
-         * space for them in the buffer.
-         * Success of the operation can be enquired by calling method
-         * {@link #hasPendingCharacters}.
-         * 
-         * @return  number of characters written to the {@link #outBuf}
-         */
-        private int handlePendingCharacters() {
-            if (!hasPendingCharacters()) {
-                return 0;
-            }
-            
-            if (outBufPos <= (outBufSize - 1)) {
-                outBuf[outBufPos++] = '\\';
-                backslashPending = false;
-                return 1;
-            } else {
-                return 0;
-            }
-        }
-        
-        /**
          * Writes as many as possible bytes from the {@code outBuf} to the given
          * {@code ByteBuffer} and removes the written bytes from {@code outBuf}.
          * 
@@ -327,20 +286,6 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
             
             int index;
             
-            if (backslashPending) {
-                backslashPending = false;
-                if (c == '\\') {
-                    outBuf[outBufPos++] = '\\';
-                    return 1;
-                }
-                
-                if (c == 'u') {
-                    /* Add one 'u' to the unicode escape sequence: */
-                    outBuf[outBufPos++] = 'u';
-                    outBuf[outBufPos++] = 'u';
-                    return 2;
-                }
-            }
             if (c == '\n') {
                 if (nlType != NewLineType.LF) {
                     outBuf[outBufPos++] = (byte) '\r';
@@ -348,16 +293,6 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
                 if (nlType != NewLineType.CR) {
                     outBuf[outBufPos++] = (byte) '\n';
                 }
-            } else if (c == '\\') {
-                outBuf[outBufPos++] = (byte) '\\';
-                backslashPending = true;
-                /*
-                 * We do not want to quote the backslash at the end of line.
-                 * Remember that the last character was backslash and wait for
-                 * the following character - if it is not a newline, finish
-                 * quoting the backslash and print the character. If the next
-                 * character is a newline char, do not quote the backslash.
-                 */
             } else if ((index = backslashChars.indexOf(c)) >= 0) {
                 outBuf[outBufPos++] = (byte) '\\';
                 outBuf[outBufPos++] = backslashCharsRepl[index];
@@ -383,7 +318,7 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
         byte[] encodeCharForTests(final char c) {
             reset();
             
-            final int tokenLength = encodeChar(c) + handlePendingCharacters();
+            final int tokenLength = encodeChar(c);
             byte[] result = new byte[tokenLength];
             System.arraycopy(outBuf, 0, result, 0, tokenLength);
             return result;
@@ -416,14 +351,15 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
             UNICODE,
         }
         
-        private static final float avgCharsPerByte = 0.33f;
+        private static final float avgCharsPerByte = 1.00f;
         private static final float maxCharsPerByte = 5.00f;
+        private static final int maxCharsPerByteInt = 5;
         /*
          * Five chars are written to the output when a malformed unicode
          * sequence is detected. Unicode sequences are six bytes long;
          * if the first five bytes formed a valid sequence
          * (e.g. <backslash>, "u", "1", "2", "3") and the sixth byte is not
-         * a hexadecimal digit, we put transform the first five bytes
+         * a hexadecimal digit, we transform the first five bytes
          * of the sequence to (five) characters and send them to the output.
          * (The sixth byte is re-read and handled in the next round
          * of the decoding cycle.)
@@ -488,11 +424,13 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
                         }
                         if (emptyInBuf && !emptyIn) {
                             continue readInLoop;
+                        } else if (emptyIn && hasPendingCharacters()) {
+                            handlePendingCharacters();
                         }
                         flushOutBuf(out);
                         if (fullOut) {
                             return OVERFLOW;
-                        } else if (emptyInBuf && emptyIn) {
+                        } else if (emptyInBuf && emptyIn && !hasPendingCharacters()) {
                             return UNDERFLOW;
                         }
                     }
@@ -506,15 +444,39 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
             }
         }
         
-        protected CoderResult implFlush(CharBuffer out) {
-            
-            if (state == State.CR) {
-                outBuf[outBufPos++] = '\n';
-                nlTypesUsage[NewLineType.CR.ordinal()]++;
+        private boolean hasPendingCharacters() {
+            return state != State.INITIAL;
+        }
+        
+        private void handlePendingCharacters() {
+            if (!hasPendingCharacters()) {
+                return;
             }
-            state = State.INITIAL;
-            return flushOutBuf(out) ? OVERFLOW
-                                    : UNDERFLOW;
+            
+            switch (state) {
+                case INITIAL:
+                    assert false;
+                    break;
+                case CR:
+                    outBuf[outBufPos++] = '\n';
+                    nlTypesUsage[NewLineType.CR.ordinal()]++;
+                    break;
+                case BACKSLASH:
+                    outBuf[outBufPos++] = '\\';
+                    break;
+                case UNICODE:
+                    outBuf[outBufPos++] = '\\';
+                    outBuf[outBufPos++] = 'u';
+                    
+                    assert (unicodeBytesRead >= 0) && (unicodeBytesRead < 4);
+                    for (int i = 0; i < unicodeBytesRead; i++) {
+                        outBuf[outBufPos++] = unicodeValueChars[i];
+                    }
+                    break;
+                default:
+                    assert false;
+                    break;
+            }
         }
         
         /**
@@ -560,7 +522,8 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
             
             CoderResult result = null;
             int decodingInBufPos = 0;
-            while ((decodingInBufPos < inBufPos) && (outBufPos <= outBufSize - 2)) {
+            while ((decodingInBufPos < inBufPos)
+                    && (outBufPos <= outBufSize - maxCharsPerByteInt)) {
                 int decodedChars = decodeByte(inBuf[decodingInBufPos++]);
                 if (decodedChars < 0) {
                     /* put back the character following the broken sequence: */
@@ -683,47 +646,33 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
                     break;
                 case UNICODE:
                     boolean malformed = false;
-                    if (bChar == 'u') {
-                        if (unicodeBytesRead == 0) {
-                            //replace "\\uu...." with "\\u....":
-                            outBuf[outBufPos++] = '\\';
-                            outBuf[outBufPos++] = 'u';
+                    int index = hexadecimalChars.indexOf(bChar);
+                    if (index >= 0) {
+                        if (index > 15) {   //one of [A-F] used
+                            index -= 6;     //transform to lowercase
+                        }
+                        assert index <= 15;
+                        unicodeValue = (unicodeValue << 4) | index;
+                        if (++unicodeBytesRead == 4) {
+                            outBuf[outBufPos++] = (char) unicodeValue;
                             state = State.INITIAL;
                         } else {
-                            malformed = true;
+                            unicodeValueChars[unicodeBytesRead - 1] = bChar;
+                            /* keep the state at UNICODE */
                         }
                     } else {
-                        int index = hexadecimalChars.indexOf(bChar);
-                        if (index >= 0) {
-                            if (index > 15) {   //one of [A-F] used
-                                index -= 6;     //transform to lowercase
-                            }
-                            assert index <= 15;
-                            unicodeValue = (unicodeValue << 4) | index;
-                            if (++unicodeBytesRead == 4) {
-                                outBuf[outBufPos++] = (char) unicodeValue;
-
-                                unicodeBytesRead = 0;
-                                unicodeValue = 0;
-
-                                state = State.INITIAL;
-                            }
-                            /* else: keep the state at UNICODE */
-                        } else {
-                            malformed = true;
+                        malformed = true;
+                        /*
+                         * send the malformed unicode sequence to the output
+                         */
+                        outBuf[outBufPos++] = '\\';
+                        outBuf[outBufPos++] = 'u';
+                        for (int i = 0; i < unicodeBytesRead; i++) {
+                            outBuf[outBufPos++] = unicodeValueChars[i];
                         }
+                        state = State.INITIAL;
                     }
                     if (state != State.UNICODE) {
-                        if (malformed) {
-                            /*
-                             * send the malformed unicode sequence to the output
-                             */
-                            outBuf[outBufPos++] = '\\';
-                            outBuf[outBufPos++] = 'u';
-                            for (int i = 0; i < unicodeBytesRead; i++) {
-                                outBuf[outBufPos++] = unicodeValueChars[i];
-                            }
-                        }
                         unicodeBytesRead = 0;
                         unicodeValue = 0;
                         if (malformed) {
@@ -739,17 +688,17 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
             return outBufPos - oldPos;
         }
         
-        char[] decodeBytesForTests(final byte[] bytes) {
-            reset();
-            
-            int length = 0;
-            for (int i = 0; i < bytes.length; i++) {
-                length += decodeByte(bytes[i]);
+        char[] decodeBytesForTests(final byte[] bytes) throws CharacterCodingException {
+            CharBuffer resultBuf = decode(ByteBuffer.wrap(bytes));
+            char[] resultBufArray = resultBuf.array();
+            int resultBufPos = resultBuf.limit();
+            if (resultBufPos == resultBufArray.length) {
+                return resultBufArray;
+            } else {
+                char[] result = new char[resultBufPos];
+                System.arraycopy(resultBufArray, 0, result, 0, resultBufPos);
+                return result;
             }
-
-            char[] result = new char[length];
-            System.arraycopy(outBuf, 0, result, 0, length);
-            return result;
         }
         
         NewLineType getNewLineType() {
