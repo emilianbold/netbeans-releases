@@ -124,3 +124,4 @@ Microsystems, Inc. All Rights Reserved.
 <replacefilter token="@org-netbeans-modules-editor-settings-storage@" value="${javadoc.docs.org-netbeans-modules-editor-settings-storage}"/>
 <replacefilter token="@org-netbeans-modules-editor-guards@" value="${javadoc.docs.org-netbeans-modules-editor-guards}"/>
 <replacefilter token="@org-netbeans-modules-autoupdate-services@" value="${javadoc.docs.org-netbeans-modules-autoupdate-services}"/>
+<replacefilter token="@org-netbeans-modules-refactoring-api@" value="${javadoc.docs.org-netbeans-modules-refactoring-api}"/>
