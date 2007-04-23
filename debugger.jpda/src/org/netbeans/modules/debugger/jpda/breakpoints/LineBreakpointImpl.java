@@ -99,13 +99,14 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
                     breakpoint.getURL (), 
                     lineNumber
                 );
-                if (className != null) {
+                if (className != null && className.length() > 0) {
                     reader.storeCachedClassName(breakpoint, className);
                 }
             }
         }
-        if (className == null) {
+        if (className == null || className.length() == 0) {
             logger.warning("Class name not defined for breakpoint "+breakpoint);
+            setValidity(Breakpoint.VALIDITY.INVALID, NbBundle.getMessage(LineBreakpointImpl.class, "MSG_NoBPClass"));
             return ;
         }
         logger.fine("LineBreakpoint "+breakpoint+" - setting request for "+className);

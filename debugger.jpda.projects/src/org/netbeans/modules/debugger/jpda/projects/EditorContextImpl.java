@@ -703,8 +703,10 @@ public class EditorContextImpl extends EditorContext {
                         return;
                     
                     Scope scope = ci.getTreeUtilities().scopeFor(offset);
-                    TypeElement te = scope.getEnclosingClass();                    
-                    result[0] = ElementUtilities.getBinaryName(te);
+                    TypeElement te = scope.getEnclosingClass();
+                    if (te != null) {
+                        result[0] = ElementUtilities.getBinaryName(te);
+                    }
                 }
             }, true);
             return result[0];
