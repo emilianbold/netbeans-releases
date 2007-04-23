@@ -250,7 +250,7 @@ public class WLPluginProperties {
                 String level = releaseNodeAttributes.getNamedItem("level").getNodeValue(); // NOI18N
                 String installDir = releaseNodeAttributes.getNamedItem("InstallDir").getNodeValue(); // NOI18N
                 String installDirCanonical = new File(installDir).getCanonicalPath();
-                if (level != null && (level.startsWith("9.") || level.startsWith("9.")) && installDirCanonical.equals(serverRoot.getCanonicalPath())) {
+                if (level != null && (level.startsWith("9.") || level.startsWith("10.")) && installDirCanonical.equals(serverRoot.getCanonicalPath())) {
                     return true;
                 }
             }
