@@ -51,20 +51,17 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
     </folder>  
    
    <folder name="Menu">
-      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.designpattern.Bundle"/>
       <folder name="Window">
-         <folder name="UMLModeling">
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/uml/resources/uml.gif"/>
+         <attr name="Output/Other" boolvalue="true"/>
+         <attr name="Debug/Other" boolvalue="true"/>
+         <attr name="Versioning/Other" boolvalue="true"/>
+         <folder name="Other">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.designpattern.Bundle"/>
-            <file name="org-netbeans-modules-uml-designpattern-DesignCenterAction.instance"/>
-            <!--
+            <attr name="ModelingDocumentation.shadow/DesignCenter.shadow" boolvalue="true"/> 
             <file name="DesignCenter.shadow">
-               <attr name="originalFile" stringvalue="Actions/Modeling/com-sun-tools-ide-modeling-designpattern-DesignCenterAction.instance"/>    		
+               <attr name="originalFile" stringvalue="Actions/Modeling/org-netbeans-modules-uml-designpattern-DesignCenterAction.instance"/>    		
             </file>
-            -->
          </folder>
-         <attr name="ProgressListAction.shadow/UMLModeling" boolvalue="true"/> 
-         <attr name="UMLModeling/Debug" boolvalue="true"/>
       </folder>
    </folder> 
    
