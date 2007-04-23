@@ -45,7 +45,7 @@ public class ResourcePropertyEditor implements ScreenPropertyEditor {
     public JComponent createEditorComponent(ScreenPropertyDescriptor property) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                PropertiesSupport.showPropertyEdiotrForCurrentComponent(propertyName, propertyComponent);
+                PropertiesSupport.showPropertyEditorForCurrentComponent (propertyComponent, propertyName);
             }
         });
         return null;

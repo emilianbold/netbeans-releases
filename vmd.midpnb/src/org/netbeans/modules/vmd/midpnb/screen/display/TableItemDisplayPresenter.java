@@ -19,17 +19,6 @@
 
 package org.netbeans.modules.vmd.midpnb.screen.display;
 
-import java.awt.BasicStroke;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Stroke;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
@@ -41,6 +30,12 @@ import org.netbeans.modules.vmd.midp.screen.display.ScreenSupport;
 import org.netbeans.modules.vmd.midp.screen.display.property.ResourcePropertyEditor;
 import org.netbeans.modules.vmd.midpnb.components.items.TableItemCD;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleTableModelCD;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  *
@@ -82,10 +77,10 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
         
         if (!hasModel) {
             cummulativeY += ScreenSupport.getFontHeight(g, valuesFont);
-            g.drawString("No model specified", CELL_INSETS, cummulativeY);
+            g.drawString("<no table model specified>", CELL_INSETS, cummulativeY);
         } else if  (values == null) {
             cummulativeY += ScreenSupport.getFontHeight(g, valuesFont);
-            g.drawString("Empty model", CELL_INSETS, cummulativeY);
+            g.drawString("<empty table model>", CELL_INSETS, cummulativeY);
         } else {
             Graphics2D g2D = (Graphics2D)g;
             Dimension oldSize = panel.getSize();

@@ -19,11 +19,6 @@
 
 package org.netbeans.modules.vmd.api.properties.common;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyDescriptor;
@@ -42,6 +37,12 @@ import org.openide.nodes.Node.PropertySet;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  *
@@ -96,9 +97,9 @@ public final class PropertiesSupport {
         return sheet;
     }
     //multi selection not supported
-    public static void showPropertyEdiotrForCurrentComponent(String propertyName, DesignComponent component) {
+    public static void showPropertyEditorForCurrentComponent (DesignComponent component, String propertyName) {
         if (component.getDocument().getTransactionManager().isWriteAccess())
-            Debug.warning("Calling PropertiesSupport.showPropertyEdiotrForCurrentComponent form write transaction may generate problems"); //NOI18N
+            Debug.warning("Calling PropertiesSupport.showPropertyEditorForCurrentComponent form write transaction may generate problems"); //NOI18N
         Sheet sheet = createSheet(component);
         for (PropertySet propertySet : sheet.toArray()) {
             for (Property property : propertySet.getProperties()) {

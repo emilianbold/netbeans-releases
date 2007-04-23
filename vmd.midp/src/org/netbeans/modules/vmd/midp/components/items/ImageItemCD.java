@@ -21,10 +21,13 @@ package org.netbeans.modules.vmd.midp.components.items;
 
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.model.*;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
+import org.netbeans.modules.vmd.midp.components.MidpResourcesAcceptTypePresenter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
@@ -33,12 +36,10 @@ import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorComboBox;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
+import org.netbeans.modules.vmd.midp.screen.display.ImageItemDisplayPresenter;
+import org.netbeans.modules.vmd.midp.screen.display.injector.ImageItemInjectorPresenter;
 
 import java.util.*;
-import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
-import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
-import org.netbeans.modules.vmd.midp.components.MidpResourcesAcceptTypePresenter;
-import org.netbeans.modules.vmd.midp.screen.display.ImageItemDisplayPresenter;
 
 /**
  *
@@ -109,11 +110,13 @@ public class ImageItemCD extends ComponentDescriptor {
                 // screen
                 new ImageItemDisplayPresenter(),
                 //accept
-                new MidpResourcesAcceptTypePresenter().addType(ImageCD.TYPEID, PROP_IMAGE)
+                new MidpResourcesAcceptTypePresenter().addType(ImageCD.TYPEID, PROP_IMAGE),
+                // screen
+                new ImageItemInjectorPresenter ()
         );
     }
     
-    public static final Map<String, PropertyValue> getAppearanceValues() {
+    public static Map<String, PropertyValue> getAppearanceValues() {
         if (appearanceValues == null) {
             appearanceValues = new TreeMap<String, PropertyValue>();
             appearanceValues.put("PLAIN", MidpTypes.createIntegerValue(ItemCD.VALUE_PLAIN));         // NOI18N
