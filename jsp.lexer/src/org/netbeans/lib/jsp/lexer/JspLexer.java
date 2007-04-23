@@ -50,6 +50,8 @@ public class JspLexer implements Lexer<JspTokenId> {
     
     private static final int EOF = LexerInput.EOF;
     
+    private static final String JSP_STANDART_TAG_PREFIX = "jsp:";
+    
     private final LexerInput input;
     
     private final InputAttributes inputAttributes;
@@ -168,21 +170,44 @@ public class JspLexer implements Lexer<JspTokenId> {
     }
     
     /** Determines whether a given string is a JSP tag. */
-    private boolean isJspTag(String tagName) {
-        if(tagName.startsWith("jsp:")) { // NOI18N
+    private boolean isJspTag(CharSequence tagName) {
+        if(startsWith(tagName, JSP_STANDART_TAG_PREFIX)) { // NOI18N
             return true;
         }
         
         //TODO handle custom tags from JSP parser here
         if(jspParseData != null) {
-            int colonIndex = tagName.indexOf(':');//NOI18N
+            int colonIndex = indexOf(tagName, ':');//NOI18N
             if(colonIndex != -1) {
-                String prefix = tagName.substring(0, colonIndex);
+                CharSequence prefix = tagName.subSequence(0, colonIndex);
                 return jspParseData.isTagLibRegistered(prefix);
             }
         }
         
         return false;
+    }
+    
+    private boolean startsWith(CharSequence text, CharSequence prefix) {
+        if(text.length() < prefix.length()) {
+            return false;
+        }
+        
+        for(int i = 0; i < text.length(); i++) {
+            if(text.charAt(i) != prefix.charAt(i)) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    private int indexOf(CharSequence text, char ch) {
+        for(int i = 0; i < text.length(); i++) {
+            if(text.charAt(i) == ch) {
+                return i;
+            }
+        }
+        return -1;
     }
     
     private boolean isELIgnored() {
@@ -193,7 +218,7 @@ public class JspLexer implements Lexer<JspTokenId> {
         return jspParseData == null ? false: jspParseData.isXMLSyntax();
     }
     
-    private String getPossibleTagName() {
+    private CharSequence getPossibleTagName() {
         int actChar;
         int prev_read = input.readLength(); //remember the size of the read sequence
         int read = 0;
@@ -209,7 +234,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                     (actChar == '/')) ||
                     (actChar == EOF)) { // EOL or not alpha
                 //end of tagname
-                String tagName = input.readText().toString().substring(prev_read, prev_read + read - 1);
+                CharSequence tagName = input.readText().subSequence(prev_read, prev_read + read - 1);
                 input.backup(read); //put the lookahead text back to the buffer
                 return tagName;
             }
@@ -304,7 +329,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                             (actChar == '_')
                             ) { // possible tag begining
                         input.backup(1); //backup the read letter
-                        String tagName = getPossibleTagName();
+                        CharSequence tagName = getPossibleTagName();
                         if(isJspTag(tagName)) { //test if a jsp tag follows
                             if(input.readLength() > 1) {
                                 //we have something read except the '<' => it's content language
@@ -735,7 +760,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                             break;
                         case '<':
                             //may be end of scriptlet section in JSP document
-                            String tagName = getPossibleTagName();
+                            CharSequence tagName = getPossibleTagName();
                             if("/jsp:scriptlet".equals(tagName) || //NOI18N
                                     "/jsp:declaration".equals(tagName) || //NOI18N
                                     "/jsp:expression".equals(tagName)) { //NOI18N

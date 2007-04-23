@@ -48,7 +48,7 @@ public final class JspParseData {
     
     /** Returns true if the given tag library prefix is known in this page.
      */
-    public boolean isTagLibRegistered(String prefix) {
+    public boolean isTagLibRegistered(CharSequence prefix) {
         if (prefixMap == null) {
             return false;
         }
