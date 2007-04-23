@@ -115,13 +115,13 @@ public final class JSFPopupAction extends SystemAction implements Presenter.Popu
                     FacesConfig facesConfig = ConfigurationUtils.getConfigModel(data.getPrimaryFile(),true).getRootComponent();
                     ManagedBean bean = facesConfig.getModel().getFactory().createManagedBean();
                     
-                    bean.setManagedBeanName(dialogPanel.getName());
+                    bean.setManagedBeanName(dialogPanel.getManagedBeanName());
                     bean.setManagedBeanClass(dialogPanel.getBeanClass());
                     bean.setManagedBeanScope(dialogPanel.getScope());
-                    if (dialogPanel.getDescription() != null &&
-                            !dialogPanel.getDescription().equals("")){
+                    if (dialogPanel.getManagedBeanDescription() != null &&
+                            dialogPanel.getManagedBeanDescription().trim().length() > 0){
                         Description description = facesConfig.getModel().getFactory().createDescription();
-                        description.setValue(END_LINE + dialogPanel.getDescription() + END_LINE);
+                        description.setValue(END_LINE + dialogPanel.getManagedBeanDescription() + END_LINE);
                         bean.addDescription(description);
                     }
                     facesConfig.getModel().startTransaction();

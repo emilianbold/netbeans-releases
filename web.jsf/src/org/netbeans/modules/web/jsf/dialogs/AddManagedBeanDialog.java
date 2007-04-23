@@ -25,7 +25,6 @@ import java.util.Iterator;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.web.jsf.JSFConfigDataObject;
-import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
@@ -62,7 +61,7 @@ public class AddManagedBeanDialog extends javax.swing.JPanel implements Validati
     }
 
     public String validatePanel() {
-        if (getName().length()==0)
+        if (getManagedBeanName().length()==0)
             return NbBundle.getMessage(AddManagedBeanDialog.class,"MSG_AddManagedBean_EmptyName");
         if (existingBeans == null){
             existingBeans = new Hashtable();
@@ -75,7 +74,7 @@ public class AddManagedBeanDialog extends javax.swing.JPanel implements Validati
                 existingBeans.put(managedBean.getManagedBeanName(), "");
             }
         }
-        if (existingBeans.get(getName()) != null)
+        if (existingBeans.get(getManagedBeanName()) != null)
             return NbBundle.getMessage(AddManagedBeanDialog.class,"MSG_AddManagedBean_BeanExist");
         if (getBeanClass().length()==0)
             return NbBundle.getMessage(AddManagedBeanDialog.class,"MSG_AddManagedBean_EmptyClass");
@@ -239,11 +238,11 @@ public class AddManagedBeanDialog extends javax.swing.JPanel implements Validati
         return (ManagedBean.Scope)jComboBoxScope.getSelectedItem();
     }
     
-    public String getDescription(){
+    public String getManagedBeanDescription(){
         return jTextAreaDesc.getText();
     }
     
-    public String getName(){
+    public String getManagedBeanName(){
         return jTextFieldName.getText();
     }
 }
