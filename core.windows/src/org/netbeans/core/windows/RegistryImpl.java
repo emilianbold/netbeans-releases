@@ -27,6 +27,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -42,6 +43,8 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
     // fields
     /** Activated top component */
     private TopComponent activatedTopComponent;
+    /** Previouly activated top component */
+    private WeakReference<TopComponent> previousActivated;
     /** Set of opened TopComponents */
     private final Set<TopComponent> openSet = new WeakSet<TopComponent>(30);
     /** Currently selected nodes. */
@@ -118,6 +121,9 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
         }
         
         final TopComponent old = activatedTopComponent;
+        if (old != null && old.getActivatedNodes() != null) {
+            previousActivated = new WeakReference<TopComponent>(old);
+        }
         activatedTopComponent = tc;
         
         Window w = tc == null ? null : SwingUtilities.windowForComponent(tc);
@@ -187,7 +193,11 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
         //If not ignore event
         if(tc != activatedTopComponent
         && activatedNodes != null) { // When null it means were not inited yet.
-            return;
+            // #82319: update activated nodes from previously active TopComponent 
+            // under special conditions
+            if (!isProperPrevious(tc, newNodes)) {
+                return;
+            }
         }
         //End of bugfix #8933
         
@@ -200,6 +210,24 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
         // fire immediatelly only if window manager in proper state
         tryFireChanges(oldNodes, currentNodes);
     }
+    
+    /** Part of #82319 bugfix.
+     * Returns true if given top component is the one previously selected
+     * and conditions are met to update activated nodes from it.
+     */
+    private boolean isProperPrevious (TopComponent tc, Node[] newNodes) {
+        if (previousActivated == null || newNodes == null) {
+            return false;
+        }
+        
+        TopComponent previousTC = previousActivated.get();
+        if (previousTC == null || !previousTC.equals(tc)) {
+            return false;
+        }
+        
+        return activatedTopComponent.getActivatedNodes() == null;
+    }
+    
     /// notifications of changes from window manager <<<<<
     //////////////////////////////////////////////////////
 
