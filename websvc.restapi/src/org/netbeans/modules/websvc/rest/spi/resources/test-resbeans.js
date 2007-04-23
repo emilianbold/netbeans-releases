@@ -9,8 +9,11 @@ var currentUrl;
 var currentValidUrl;
 var breadCrumbs = new Array();
 var currentContainer;
+var currentMethod;
+var currentMimeType;
 var treeHook;
 var myTree;
+var topUrls = new Array();
 
 var expand = new Image();
 expand.src = "expand.gif";
@@ -48,7 +51,6 @@ function getHttpRequest() {
     return xmlHttpReq;
  }
  function open(method, url, mimeType, paramLen, async) {
-    currentUrl = url;
     var xmlHttpReq = getHttpRequest();
     if(xmlHttpReq == null) {
     	//alert('Error: Cannot create XMLHttpRequest');
@@ -137,14 +139,24 @@ function createTree(wadlDoc) {
         for(i=0;i<rarr.length;i++) {
             var r = rarr[i];   
             var path = r.attributes.getNamedItem('path');
-            var cName = path.nodeValue;
-            if(cName != null && cName.indexOf('/') != -1)
-                cName = cName.substring(1);
-            var start = new item(path.nodeValue, cName, i);
+            var pathVal = path.nodeValue;
+            var cName = trimSeperator(pathVal);
+            topUrls[i] = pathVal;
+            var start = new item(pathVal, cName, i);
             resources.add(start);
         }
     }
     return myTree;
+}
+function trimSeperator(cName) {
+    if(cName != null) {
+        if(cName.substring(0, 1) == '/')
+            cName = cName.substring(1);
+        //alert(cName.substring(cName.length-1, cName.length));
+        if(cName.substring(cName.length-1, cName.length) == '/')
+            cName = cName.substring(0, cName.length-1);
+    }
+    return cName;
 }
 function getMediaType(response) {
     var mediaType = null;                
@@ -166,32 +178,34 @@ function setvisibility(id, state) {
     } catch(e) {}
 }
 function changeMethod()
-{
-    var resource = currentResource;
+{    
     var methodNode = document.getElementById("methodSel");
     var method = methodNode.options[methodNode.selectedIndex].value;
+    var mimeNode = document.getElementById("mimeSel");
+    if(mimeNode == null || mimeNode == undefined) {
+        currentMimeType = getMimeType(method);
+        //alert(currentMimeType);
+    }
+    currentMethod = getMethod(method);
     var formSubmittal = document.getElementById("formSubmittal");
     if(formSubmittal != null) {
         var content = formSubmittal.innerHTML;
         var index = content.indexOf('method');
         if(index != -1) {
             var index2 = content.indexOf('name');
-            formSubmittal.innerHTML = content.substring(0, index)+" method='"+method+"' "+content.substring(index2);
+            formSubmittal.innerHTML = content.substring(0, index)+" method='"+currentMethod+"' "+content.substring(index2);
         }
     }
-    document.getElementById("method").value = method;
+    document.getElementById("method").value = currentMethod;
     var request = null;
+    var resource = currentResource;
     if(resource != null) {
         var m = resource.getElementsByTagName("method")[methodNode.selectedIndex];
         request = m.getElementsByTagName("request");
     }
-    var paramRep = getParamRep(request, method);
+    var paramRep = getParamRep(request, currentMethod);
     document.getElementById("paramHook").innerHTML = paramRep;
-    var mimeType = getDefaultMime();
-    if(method.indexOf("(") != -1)
-        mimeType = method.substring(method.indexOf("(")+1, method.length-1);
-    //alert(mimeType);
-    document.getElementById("mimeType").value = mimeType;
+    document.getElementById("mimeType").value = currentMimeType;
     //alert(formSubmittal.innerHTML);
     updatepage('result', '');
     updatepage('resultheaders', '');
@@ -234,6 +248,26 @@ function getDefaultMime() {
 function getDefaultMethod() {
     return "GET";
 }
+function findResource(uri) {
+    var r = null;
+    var len = baseURL.length;
+    if(uri.length > len) {
+        var u = uri.substring(len, uri.length);
+        var ri = -1;
+        for(i=0;i<topUrls.length;i++) {
+            if(topUrls[i] == u) {                    
+                ri = i;
+                break;                
+            }
+        }
+        if(ri > -1) {
+            var app1 = wadlDoc.documentElement;
+            var rs = app1.getElementsByTagName('resources')[0];
+            r = rs.getElementsByTagName('resource')[ri];
+        }
+    }
+    return r;
+}
 function showContent(path, ri, mi) {
     var app1 = wadlDoc.documentElement;
     var rs = app1.getElementsByTagName('resources')[0];
@@ -249,21 +283,16 @@ function showContent(path, ri, mi) {
     doShowContent2(uri, r);      
 }
 function doShowContent(uri) {
-    var ndx = uri.indexOf('~');
-    if(ndx != -1) {
-        var actualUri = uri.substring(0, ndx);
-        var ri = uri.substring(ndx+1);
+    var r = findResource(uri);
+    if(r != null) {
         var app1 = wadlDoc.documentElement;
-        var rs = app1.getElementsByTagName('resources')[0];
-        var r = rs.getElementsByTagName('resource')[ri];
+        var rs = app1.getElementsByTagName('resources')[0];        
         currentResource = r;
-        doShowContent2(actualUri, r);
+        doShowContent2(uri, r);
     } else {
         currentResource = null;
         doShowContent1(uri, getDefaultMethod(), getDefaultMime());
     }
-
-
 }
 function doShowContent1(uri, mName, mediaType) {
     updatepage('result', '');
@@ -277,7 +306,7 @@ function doShowContent1(uri, mName, mediaType) {
     var str = "<b>Method: </b>";
     str += "<select id='methodSel' name='methodSel' onchange='javascript:changeMethod();'>";
     str += "  <option selected value='GET'>GET</option>";
-    str += "  <option value='PUT'>PUT (application/xml)</option>";
+    str += "  <option value='PUT'>PUT</option>";
     str += "  <option value='DELETE'>DELETE</option>";
     str += "</select>";
     str += "&nbsp;&nbsp;<b>MIME: </b>";
@@ -364,7 +393,7 @@ function showBreadCrumbs(uri) {
 var bcCount = 0;
 function getParamRep(req, mName) {
     var str = "";
-    if(mName.substring(0, 3) == 'GET') {
+    if(mName == 'GET') {
         if(req != null && req.length > 0) {       
             //alert(req.length);             
             for(i=0;i<req.length;i++) {
@@ -382,18 +411,18 @@ function getParamRep(req, mName) {
             str = "";
         }
     }
-    else if(mName.length > 5 &&  mName.substring(0, 5) == 'DELETE')
+    else if(mName == 'DELETE')
         str = "";
     else
-        str = "<textarea id='blobParam' name='params' rows='8' cols='70'></textarea><br/>";        
+        str = "<textarea id='blobParam' name='params' rows='6' cols='70'>MSG_TEST_RESBEANS_Insert</textarea><br/>";        
     if(str != "")
-        str = "<b>MSG_TEST_RESBEANS_ResourceInputs</b><br><br><div style='margin-left:20px'>"+str+"</div><br/>";
+        str = "<b>MSG_TEST_RESBEANS_ResourceInputs</b><br><br><div class='ml20'>"+str+"</div><br/>";
     return str;
 }
 function testResource() {
-    updatepage('result', 'MSG_TEST_RESBEANS_Loading');
-    var mimetype = getRep();
-    var method = getMethod();
+    updatepage('result', 'Loading...');
+    var mimetype = getFormMimeType();
+    var method = getFormMethod();
     //alert('method: '+method+'mimetype: '+mimetype);
     var p = '';
     var path = document.forms[0].path.value;
@@ -444,43 +473,61 @@ function testResource() {
     xmlHttpReq4.onreadystatechange = function() { updateContent(xmlHttpReq4); };
     xmlHttpReq4.send(params);
 }
-function createIFrame(currentValidUrl) {
-    var c = '<iframe src="'+currentValidUrl+'" width="600" height="300" align="left">'+
-            '<p>MSG_TEST_RESBEANS_See <a href="'+currentValidUrl+'">"'+currentValidUrl+'"</a>.</p>'+
+function createIFrame(url) {
+    var c = '<iframe src="'+url+'" width="600" height="300" align="left">'+
+        '<p>See <a href="'+url+'">"'+url+'"</a>.</p>'+
         '</iframe>';
     return c;
 }
-function showTableView(flag) {
-    if(flag == 'false') //This step is needed for Firefox to show content as xml
+function showViews(name) {
+    if(name == 'raw' && currentMethod == 'GET') //This step is needed for Firefox to show content as xml
     	updatepage('rawContent', createIFrame(currentValidUrl));
     var tableNode = document.getElementById('tableContent').style;
     var rawNode = document.getElementById('rawContent').style;
-    var tabs1 = document.getElementById('tabs1').style;
-    var tabs2 = document.getElementById('tabs2').style;
-    if(flag == 'true') {
+    var headerNode = document.getElementById('headerInfo').style;
+    var tabs1 = document.getElementById('table').style;
+    var tabs2 = document.getElementById('raw').style;
+    var tabs3 = document.getElementById('header').style;
+    if(name == 'table') {
         tableNode.display="block";
         rawNode.display="none";
+        headerNode.display="none";
         tabs1.display="block";
         tabs2.display="none";
-    } else {
+        tabs3.display="none";
+    } else if(name == 'raw') {
         tableNode.display="none";
         rawNode.display="block";
+        headerNode.display="none";
         tabs2.display="block";
+        tabs3.display="none";
         tabs1.display="none";
+    } else if(name == 'header') {
+        tableNode.display="none";
+        rawNode.display="none";
+        headerNode.display="block";
+        tabs3.display="block";
+        tabs1.display="none";
+        tabs2.display="none";
     }        
 }
 function updateContent(xmlHttpReq) {
     try {
         if (xmlHttpReq.readyState == 4) {
             var content = xmlHttpReq.responseText;
-            var ndx = content.indexOf('HTTP Status');            
-            if(ndx != -1)
-                alert(content.substring(ndx, ndx+16));
+            var ndx = content.indexOf('HTTP Status');
+            var showRaw = 'false';
+            if(ndx != -1) {
+                showRaw = 'true';
+            }
             var ndx2 = content.indexOf('Caused by: java.lang.');
-            if(ndx2 != -1)
-                alert('MSG_TEST_RESBEANS_ServerError '+content);
-            //alert('result: ['+content+']');
+            if(ndx2 != -1) {
+                showRaw = 'true';
+            }
             if(content != null && content != undefined) {
+                content = content.replace(/'/g,"\'");
+                if(content == '')
+                    content = 'MSG_TEST_RESBEANS_NoContents'
                 try {
                     var tableContent = '';
                     //alert(content);
@@ -492,29 +539,33 @@ function updateContent(xmlHttpReq) {
                             tableContent = cErr;
                     } else {
                         tableContent = cErr;
+                        //showRaw = 'true';
                     }
-                    var rawContent = createIFrame(currentValidUrl);
-                    updatepage('result', '<b>MSG_TEST_RESBEANS_Content</b> '+
-                        '<div id="tabs1">'+'<table class="result"><tr>'+
-                        '<td width=100 class="tbs1"><a href="javascript:showTableView(\'true\')"><span style="color: #ffffff;">MSG_TEST_RESBEANS_TabularView</span></a></td>'+
-                        '<td width=100 class="tbs2"><a href="javascript:showTableView(\'false\')"><span style="color: #000000;">MSG_TEST_RESBEANS_RawView</span></a></td></tr></table>'+
-                        '</div>'+
-                        '<div id="tabs2" style="display: none;">'+'<table class="result"><tr>'+
-                        '<td width=100 class="tbs2"><a href="javascript:showTableView(\'true\')"><span style="color: #000000;">MSG_TEST_RESBEANS_TabularView</span></a></td>'+
-                        '<td width=100 class="tbs1"><a href="javascript:showTableView(\'false\')"><span style="color: #ffffff;">MSG_TEST_RESBEANS_RawView</span></a></td></tr></table>'+
-                        '</div>'+
-                        '<div id="menu_bottom" class="tbs1 tabsbottom"></div>'+
-                        '<div id="tableContent">'+tableContent+'</div>'+
-                        '<div id="rawContent" style="display: none;">'+rawContent+'</div>');
+                    var rawContent = content;
+                    var tableViewStyle = ' ';
+                    var nodisp = ' class="nodisp" ';
+                    var rawViewStyle = nodisp;
+                    var headerViewStyle = nodisp;
+                    if(showRaw == 'true') {
+                        tableViewStyle = nodisp;
+                        rawViewStyle = ' ';
+                        headerViewStyle = nodisp;
+                    }
+                    updatepage('result', '<b>MSG_TEST_RESBEANS_Status</b> '+ xmlHttpReq.status+' ('+xmlHttpReq.statusText+')<br/><br/>'+
+                        '<b>MSG_TEST_RESBEANS_Content</b> '+
+                        getTab('table', tableViewStyle)+getTab('raw', rawViewStyle)+getTab('header', headerViewStyle)+                        
+                        '<div id="menu_bottom" class="stab tabsbottom"></div>'+
+                        '<div id="headerInfo"'+headerViewStyle+'>'+getHeaderAsTable(xmlHttpReq)+'</div>'+
+                        '<div id="tableContent"'+tableViewStyle+'>'+tableContent+'</div>'+
+                        '<div id="rawContent"'+rawViewStyle+'>'+
+                            '<textarea rows=15 cols=72 align=left readonly>'+rawContent+'</textarea></div>');                            
                 } catch( e ) {
-                    //alert('upd err '+e.name+e.mesage);
+                    //alert(e.name+e.message);
                     var c = createIFrame(currentValidUrl);
-                    updatepage('result', '<b>MSG_TEST_RESBEANS_Content</b> '+c);
+                    updatepage('result', '<b>Content:</b> '+c);
+                    updatepage('resultheaders', '<b>Response Headers:</b> '+getHeaderAsTable(xmlHttpReq));                    
                 }  
             }
-            //alert(xmlHttpReq.getAllResponseHeaders());
-            var hTable = getHeaderAsTable(xmlHttpReq.getAllResponseHeaders());
-            updatepage('resultheaders', '<b>MSG_TEST_RESBEANS_ResponseHeaders</b> '+hTable);
         } else {
             log("state: "+xmlHttpReq.readyState);
         }
@@ -522,12 +573,35 @@ function updateContent(xmlHttpReq) {
         alert('Caught Exception; name: [' + e.name + '] message: ]' + e.message+"]");
     }
 } 
-function getHeaderAsTable(header) {
+var viewIds = new Array()
+viewIds[0] = "table"
+viewIds[1] = "raw"
+viewIds[2] = "header"
+var viewNames = new Array()
+viewNames[0] = "MSG_TEST_RESBEANS_TabularView"
+viewNames[1] = "MSG_TEST_RESBEANS_RawView"
+viewNames[2] = "MSG_TEST_RESBEANS_Headers"
+function getTab(id, style) {
+    var c = '<div id="'+id+'"'+style+'><table class="result"><tr>';
+    var style = 'otab';
+    for(i=0;i<viewIds.length;i++) {
+        if(id == viewIds[i])
+            style = 'stab';
+        else
+            style = 'otab';
+        c += '<td width=100 class="'+style+'"><a href="javascript:showViews(\''+
+            viewIds[i]+'\')"><span class="stext">'+viewNames[i]+'</span></a></td>';
+    }
+    c += '</tr></table></div>';
+    return c;
+}
+function getHeaderAsTable(xmlHttpReq) {
     //alert(header);    
+    var header = xmlHttpReq.getAllResponseHeaders();    
     var str = "<table class='results' border='1'>";
     str += "<thead class='resultHeader'>";
     var colNames = new Array()
-    colNames[0] = "header"
+    colNames[0] = "name"
     colNames[1] = "value"
     var colSizes = new Array()
     colSizes[0] = "80"
@@ -540,17 +614,23 @@ function getHeaderAsTable(header) {
     var rows = header.split('\r\n');
     if(rows.length == 1)
         rows = header.split('\n');
+    var count = 0;
     for(i=0;i<rows.length;i++) {
-        //alert(rows[i]);
         var index = rows[i].indexOf(':');
         var name = rows[i].substring(0, index);
+        if(name == '')
+            continue;
+        count++;
         var val = rows[i].substring(index+1);
-        str += "<tr style='font-size: 9px;'>";
+        str += "<tr class='font9'>";
         str += "<td>"+name+"</td>";
         str += "<td>"+val+"</td>";
         str += "</tr>";
-    }
-    str += "</tbody></table>";
+    }    
+    if(count == 0)
+        str = "<textarea rows=15 cols=72 align=left readonly>MSG_TEST_RESBEANS_NoHeaders</textarea>";
+    else
+        str += "</tbody></table>";
     return str;
 }
 function loadXml(xmlStr) {
@@ -572,11 +652,9 @@ function loadXml(xmlStr) {
 }
 function getContainerTable(xmlStr) {
     //alert(xmlStr);
-    var ret = '';  
-    if(xmlStr != null)
-        ret = xmlStr.replace(/~lt~/g, "<");
-    else
-        return ret;
+    var ret = xmlStr;  
+    if(ret == null)
+        return '';
     var doc2 = null;
     try {
         doc2 = loadXml(ret);
@@ -675,21 +753,38 @@ function updatepage(id, str){
 function log(msg) {
     //document.getElementById('log').innerHTML = msg;
 }
-function getRep() {
+function getFormMimeType() {
     var resource = document.getElementById('mimeType');
     if(resource != null)
-        return resource.value;
+        return getMimeType(resource.value);
     else
         return getDefaultMime();
 }
-function getMethod() {
-    var resource = document.getElementById('method');
-    if(resource != null) {
-        var i = resource.value.indexOf('(');
+function getMimeType(mime) {
+    //alert(mime);
+    if(mime != null) {
+        var i = mime.indexOf('(');
         if(i == -1)
-            return resource.value;
+            return mime;
         else
-            return resource.value.substring(0, i);
+            return mime.substring(i+1, mime.length-1);
+    } else
+        return getDefaultMime();
+}
+function getFormMethod() {
+    var resource = document.getElementById('method');
+    if(resource != null)
+        return getMethod(resource.value);
+    else
+        return getDefaultMethod();
+}
+function getMethod(method) {
+    if(method != null) {
+        var i = method.indexOf('(');
+        if(i == -1)
+            return method;
+        else
+            return method.substring(0, i);
     } else
         return getDefaultMethod();
 }
@@ -755,7 +850,7 @@ function writeCategory(){
     categoryString += '><img src="cg.gif" id="I1' + this.id + '" onClick="updateTree(\'' + this.id + '\')">';
     categoryString += '<img src="app.gif" id="I' + this.id + '">';
     if(uri != null)
-        categoryString += "<div class='item2'><a href=javascript:doShowContent('"+uri+"~"+this.ndx+"') >"+ this.text + "</a></div>";
+        categoryString += "<div class='item2'><a href=javascript:doShowContent('"+uri+"') >"+ this.text + "</a></div>";
     else
         categoryString += "<div class='item2'>"+this.text+"</div>";
     categoryString += '</span>';
@@ -781,7 +876,7 @@ function writeItem(){
     var itemString = '<img src="cc.gif" border="0">';
     itemString += '<img src="item.gif" border="0">';
     if(uri != null)
-        itemString += "<a href=javascript:doShowContent('"+uri+"~"+this.ndx+"') >"+ this.text + "</a>";
+        itemString += "<a href=javascript:doShowContent('"+uri+"') >"+ this.text + "</a>";
     else
         itemString += this.text;
     itemString += '<br>';
@@ -833,21 +928,16 @@ function getChildrenContent(xmlHttpReq5) {
     if(content.indexOf('HTTP Status') == -1) {
         var ret = getChildrenAsItems(content);
         //alert(ret);
-        if(ret == null)
-            childrenContent = '';
-        else
-            childrenContent = ret;
+        childrenContent = ret;
     } else {
         childrenContent = '';
     }
 }
 
 function getChildrenAsItems(xmlStr) {
-    var ret = null;  
-    if(xmlStr != null)
-        ret = xmlStr.replace(/~lt~/g, "<");
-    else
-        return ret;
+    var ret = xmlStr;  
+    if(ret == null)
+        return '';
     var doc2 = null;
     try {
         doc2 = loadXml(ret);

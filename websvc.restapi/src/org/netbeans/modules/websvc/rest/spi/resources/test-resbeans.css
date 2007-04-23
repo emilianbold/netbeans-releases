@@ -102,7 +102,7 @@ a{
     border: 1px solid #e0e7ec;
     font-family: verdana, arial;
 }
-.tbs1
+.stab
 {
     border-right: #2574B7 1px solid;
     border-top: #2574B7 1px solid;
@@ -112,7 +112,13 @@ a{
     color: #FFFFFF;
     text-align: center;
 }
-.tbs2
+
+.stext
+{
+    color: #000000;
+}
+
+.otab
 {
     border-right: #2574B7 1px solid;
     border-top: #2574B7 1px solid;
@@ -121,6 +127,11 @@ a{
     background-color: #e1e1e1;
     color: #000000;
     text-align: center;
+}
+
+.otext
+{
+    color: #FFFFFF;
 }
 
 .tabsbottom
@@ -133,4 +144,24 @@ a{
 {
     margin-top: -12px; 
     margin-left: 40px;
+}
+
+.font9
+{
+    font-size: 9px;
+}
+
+.ml20
+{
+    margin-left:20px;
+}
+
+.nodisp
+{
+    display: none;
+}
+
+.hide
+{
+    visibility: hidden;
 }
