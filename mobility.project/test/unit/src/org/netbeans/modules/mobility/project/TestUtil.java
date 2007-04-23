@@ -133,7 +133,7 @@ public class TestUtil extends ProxyLookup {
         /**************/
         
         final String rootIDE=File.separator+"netbeans"+File.separator+"ide8";
-        final String rootAnt=File.separator+"ide8"+File.separator+"ant";
+        final String rootAnt=File.separator+"java1"+File.separator+"ant";
         /* Hack to get ant directories */
         String classPath=System.getProperty("java.class.path");
         int index=classPath.indexOf(rootIDE);
@@ -224,7 +224,7 @@ public class TestUtil extends ProxyLookup {
     
     private static void createPlatform() {
         final String rootWTK=File.separator+"test"+File.separator+"emulators"+File.separator;
-        final String rootMobility=File.separator+rootStr;
+        final String rootMobility=File.separator+rootStr+File.separator;
         String wtkStr="wtk22";
         String destPath=Manager.getWorkDirPath();
         String osarch=System.getProperty("os.name",null);
