@@ -36,7 +36,7 @@ public class PropertiesEncodingTest extends NbTestCase {
         super("Encoding test");
     }
     
-    public void testCharEncodingOfSingleChar() {
+    public void testEncodingOfSingleChar() {
         final PropCharsetEncoder encoder
                 = new PropCharsetEncoder(new PropCharset());
         compare(encoder.encodeCharForTests((char) 0x5c),    /* backslash */
@@ -131,7 +131,7 @@ public class PropertiesEncodingTest extends NbTestCase {
                 new byte[] {'\\', 'u', 'f', 'f', 'f', 'f'});
     }
     
-    public void testCharEncodingOfString() throws CharacterCodingException {
+    public void testEncodingOfString() throws CharacterCodingException {
         final PropCharsetEncoder encoder
                 = new PropCharsetEncoder(new PropCharset());
         compare(encoder.encodeStringForTests(""),
@@ -146,7 +146,7 @@ public class PropertiesEncodingTest extends NbTestCase {
                 new byte[] {'\\', 't'});
     }
     
-    public void testCharDecoding() throws CharacterCodingException {
+    public void testDecodingOfSingleChar() throws CharacterCodingException {
         final PropCharsetDecoder decoder
                 = new PropCharsetDecoder(new PropCharset());
         compare(decoder.decodeBytesForTests(new byte[] {'\\', '\\'}),   /* backslash */
@@ -247,7 +247,7 @@ public class PropertiesEncodingTest extends NbTestCase {
                 new char[] {(char) 0xffff});
     }
     
-    public void testCharDecodingPendingBytes() throws CharacterCodingException {
+    public void testDecodingPendingBytes() throws CharacterCodingException {
         final PropCharsetDecoder decoder
                 = new PropCharsetDecoder(new PropCharset());
         compare(decoder.decodeBytesForTests(new byte[] {'\r'}),
@@ -264,7 +264,7 @@ public class PropertiesEncodingTest extends NbTestCase {
                 "\\u123".toCharArray());
     }
     
-    public void testCharDecodingErrorRecovery() throws CharacterCodingException {
+    public void testDecodingErrorRecovery() throws CharacterCodingException {
         final PropCharsetDecoder decoder
                 = new PropCharsetDecoder(new PropCharset());
         compare(decoder.decodeBytesForTests(new byte[] {'\\', 'u', 'x', 'y', 'z'}),
