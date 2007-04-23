@@ -1301,7 +1301,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
             String jmsName = aoBean.getJndiName();
             String type = aoBean.getResType();
             SunMessageDestination sunMessage = null;
-            if(type.equals(MessageDestination.Type.QUEUE)){
+            if(type.equals(WizardConstants.__QUEUE)){
                 sunMessage = new SunMessageDestination(jmsName, MessageDestination.Type.QUEUE);
             } else {
                 sunMessage = new SunMessageDestination(jmsName, MessageDestination.Type.TOPIC);

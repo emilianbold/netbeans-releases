@@ -1000,9 +1000,7 @@ public class ResourceUtils implements WizardConstants{
         if (holdingProj != null){
             J2eeModuleProvider provider = (J2eeModuleProvider) holdingProj.getLookup().lookup(J2eeModuleProvider.class);
             if(provider != null){
-                File resourceLoc = null;
-                // DDBEAN REMOVAL
-                //resourceLoc = provider.getEnterpriseResourceDirectory ();
+                File resourceLoc = provider.getJ2eeModule().getResourceDirectory();
                 if(resourceLoc != null){
                     if(resourceLoc.exists ()){
                         resourceDir = FileUtil.toFileObject (resourceLoc);
@@ -1011,8 +1009,6 @@ public class ResourceUtils implements WizardConstants{
                         resourceDir = FileUtil.toFileObject (resourceLoc);
                     }
                 }
-            } else { // TODO : retouche migration -- remove when java ee projects come back
-                resourceDir = fo.getFileObject("setup");
             }
         }
         return resourceDir;
@@ -1388,7 +1384,7 @@ public class ResourceUtils implements WizardConstants{
                     String jndiName = (String)mejb.getAttribute(objName, "jndi-name"); //NOI18N
                     String type = (String)mejb.getAttribute(objName, "res-type"); //NOI18N
                     SunMessageDestination sunMessage = null;
-                    if(type.equals(MessageDestination.Type.QUEUE)){
+                    if(type.equals(__QUEUE)){
                         sunMessage = new SunMessageDestination(jndiName, MessageDestination.Type.QUEUE);
                     } else {
                         sunMessage = new SunMessageDestination(jndiName, MessageDestination.Type.TOPIC);
@@ -1403,7 +1399,7 @@ public class ResourceUtils implements WizardConstants{
                         String jndiName = keys[i];
                         String type = (String)aoMap.get(jndiName);
                         SunMessageDestination sunMessage = null;
-                        if(type.equals(MessageDestination.Type.QUEUE)){
+                        if(type.equals(__QUEUE)){
                             sunMessage = new SunMessageDestination(jndiName, MessageDestination.Type.QUEUE);
                         } else {
                             sunMessage = new SunMessageDestination(jndiName, MessageDestination.Type.TOPIC);
