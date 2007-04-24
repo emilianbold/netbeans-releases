@@ -107,11 +107,11 @@ public class WSDLParser {
                 throw new WSDLException( ex );
             }
         } catch( SAXException e ) {
-            e.printStackTrace();
+            throw new WSDLException( e.getCause());
         } catch( ParserConfigurationException e ) {
-            e.printStackTrace();
+            throw new WSDLException( e.getCause());
         } catch( IOException e ) {
-            e.printStackTrace();
+            throw new WSDLException( e.getCause());
         } 
         definition.setSchemaHolder( schemaParser.getSchemaHolder());
         validationResults.addAll( schemaParser.getValidationResults());
