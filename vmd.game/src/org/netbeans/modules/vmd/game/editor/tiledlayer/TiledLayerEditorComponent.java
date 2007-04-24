@@ -500,7 +500,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 					if (e.isControlDown() || e.isMetaDown() || e.isAltDown()) {
 						TiledLayerEditorComponent.this.cellsSelected.remove(cell);
 					}
-					if (e.isShiftDown()) {
+					if (false) {
 						
 						int rowStep = firstDraggedCell.getRow() <= cell.getRow() ? 1 : -1;
 						System.out.println("row step : " + rowStep);
