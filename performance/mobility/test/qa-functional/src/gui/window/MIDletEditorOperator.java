@@ -20,6 +20,7 @@
 package gui.window;
 
 import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.jemmy.operators.JToggleButtonOperator;
 import org.netbeans.jemmy.operators.Operator;
 
 /**
@@ -44,4 +45,26 @@ public class MIDletEditorOperator extends TopComponentOperator {
         return midletOperator;        
     }
     
+    public void switchToSource() {
+         switchToViewByName("Source");        
+    }
+    
+    public void switchToScreen() {
+         switchToViewByName("Screen");          
+    }
+    
+    public void switchToFlow() {
+         switchToViewByName("Flow");        
+    }
+    
+    public void switchToAnalyze() {
+         switchToViewByName("Analyze");
+    }
+    
+    public void switchToViewByName(String viewName) {
+        JToggleButtonOperator viewButton = new JToggleButtonOperator(this,viewName); // NOI18N
+        
+        if(!viewButton.isSelected())
+            viewButton.pushNoBlock();            
+    }
 }
