@@ -140,7 +140,7 @@ public final class AlertCD extends ComponentDescriptor {
             new AlertDisplayPresenter(),
             //accept
             new MidpResourcesAcceptTypePresenter().addType(ImageCD.TYPEID, PROP_IMAGE),
-            FileAcceptPresenter.createImage()
+            FileAcceptPresenter.createImage(ImageCD.PROP_IMAGE, ImageCD.TYPEID, "jpg", "png", "gif")
         );
     }
 

@@ -115,7 +115,7 @@ public class AbstractInfoScreenCD extends ComponentDescriptor {
             new AbstractInfoDisplayPresenter(),
             //accept
             new MidpResourcesAcceptTypePresenter().addType(FontCD.TYPEID, PROP_TEXT_FONT).addType(ImageCD.TYPEID, PROP_IMAGE),
-            FileAcceptPresenter.createImage()
+            FileAcceptPresenter.createImage(ImageCD.PROP_IMAGE, ImageCD.TYPEID, "jpg", "png", "gif") //NOI18N
         );
     }
 

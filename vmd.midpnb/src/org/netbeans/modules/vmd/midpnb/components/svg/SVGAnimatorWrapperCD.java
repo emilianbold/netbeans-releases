@@ -24,6 +24,7 @@ import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.model.*;
+import org.netbeans.modules.vmd.api.model.ComponentProducer.Result;
 import org.netbeans.modules.vmd.api.model.common.AbstractAcceptPresenter;
 import org.netbeans.modules.vmd.api.model.common.AcceptSupport;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
@@ -126,7 +127,7 @@ public class SVGAnimatorWrapperCD extends ComponentDescriptor {
                 // properties
                 createPropertiesPresenter(),
                 // accept
-                new AcceptSVGFilesPresenter(),
+                FileAcceptPresenter.createImage(PROP_SVG_IMAGE, SVGImageCD.TYPEID, "svg"), //NOI18N
                 //accept
                 new MidpResourcesAcceptTypePresenter().addType(SVGImageCD.TYPEID, PROP_SVG_IMAGE),
                 // code
@@ -143,76 +144,6 @@ public class SVGAnimatorWrapperCD extends ComponentDescriptor {
                 new SVGAnimatorWrapperDisplayPresenter()
                 );
     }
-    
-    private static class AcceptSVGFilesPresenter extends AbstractAcceptPresenter {
-        public AcceptSVGFilesPresenter() {
-            super(Kind.TRANSFERABLE);
-        }
-        
-        public boolean isAcceptable(Transferable transferable) {
-            DataFlavor[] df = transferable.getTransferDataFlavors();
-            for (DataFlavor dataFlavor : df) {
-                try {
-                    if (dataFlavor.getMimeType().startsWith("text/uri-list")) { //NOI18N
-                        String path = (String) transferable.getTransferData(dataFlavor);
-                        if (path.trim().endsWith(".svg")) { //NOI18N
-                            return true;
-                        }
-                    }
-                } catch (Exception ex) {
-                    Debug.warning(ex);
-                }
-            }
-            return false;
-        }
-        
-        public ComponentProducer.Result accept(Transferable transferable) {
-            DataFlavor[] df = transferable.getTransferDataFlavors();
-            for (DataFlavor dataFlavor : df) {
-                try {
-                    if (dataFlavor.getMimeType().startsWith("text/uri-list")) { //NOI18N
-                        DesignComponent svgAnimWrapper = getComponent();
-                        DesignDocument document = svgAnimWrapper.getDocument();
-                        String sourcePath = getSourcePath(document);
-                        String srcDir = sourcePath.substring(sourcePath.lastIndexOf('/')); //NOI18N
-                        
-                        String fullPath = (String) transferable.getTransferData(dataFlavor);
-                        String path = fullPath.substring(fullPath.lastIndexOf(srcDir) + srcDir.length()).trim();
-                        
-                        ComponentProducer producer = DocumentSupport.getComponentProducer(SVGImageCD.TYPEID);
-                        if (producer != null) {
-                            DesignComponent category = MidpDocumentSupport.getCategoryComponent(document, ResourcesCategoryCD.TYPEID);
-                            ComponentProducer.Result result = AcceptSupport.accept(category, producer);
-                            DesignComponent svgImage = result != null ? result.getMainComponent() : null;
-                            if (svgImage != null) {
-                                PropertyValue instanceName = InstanceNameResolver.createFromSuggested(svgImage, "svgImage"); //NOI18N
-                                svgImage.writeProperty(ClassCD.PROP_INSTANCE_NAME, instanceName);
-                                svgImage.writeProperty(SVGImageCD.PROP_RESOURCE_PATH, MidpTypes.createStringValue(path));
-                                svgAnimWrapper.writeProperty(PROP_SVG_IMAGE, PropertyValue.createComponentReference(svgImage));
-                                return new ComponentProducer.Result(svgAnimWrapper);
-                            } else {
-                                Debug.warning("Can't create SVGImage component");
-                            }
-                        } else {
-                            Debug.warning("Can't find producer for SVGImage");
-                        }
-                    }
-                } catch (Exception ex) {
-                    Debug.warning(ex);
-                }
-            }
-            return new ComponentProducer.Result();
-        }
-        
-        private static String getSourcePath(DesignDocument document) {
-            DataObjectContext context = ProjectUtils.getDataObjectContextForDocument(document);
-            String srcPath = null;
-            if (context != null) { // document is loading
-                SourceGroup sourceGroup = ProjectUtils.getSourceGroups(context).get(0); // CLDC project has always only one source root
-                srcPath = sourceGroup.getRootFolder().getPath();
-            }
-            return srcPath;
-        }
-    }
+   
 }
 

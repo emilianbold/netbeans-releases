@@ -123,7 +123,7 @@ public final class ChoiceElementCD extends ComponentDescriptor {
             // screen
             new ChoiceElementDisplayPresenter(),
             //accept
-            FileAcceptPresenter.createImage()
+            FileAcceptPresenter.createImage(ImageCD.PROP_IMAGE, ImageCD.TYPEID, "jpg", "png", "gif") //NOI18N
         );
     }
 

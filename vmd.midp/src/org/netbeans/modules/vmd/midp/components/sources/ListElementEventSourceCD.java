@@ -158,7 +158,7 @@ public final class ListElementEventSourceCD extends ComponentDescriptor {
             // screen
             new ListElementEventSourceDisplayPresenter(),
             //accept
-            FileAcceptPresenter.createImage()
+            FileAcceptPresenter.createImage(ImageCD.PROP_IMAGE, ImageCD.TYPEID, "jpg", "png", "gif") //NOI18N
         );
     }
 
