@@ -29,5 +29,5 @@ TOKEN:keyword:( [^"#"] [^ ":" "\n" "\r"]* ):<VALUE>
 
 <IN_VALUE> {
     TOKEN:whitespace:( ["\n" "\r"]+ ):<DEFAULT>
-    TOKEN:identifier:( [^ "\n" "\r"]* )
+    TOKEN:identifier:( ( [^ "\n" "\r"] | "\n " | "\r " | "\r\n " )* )
 }

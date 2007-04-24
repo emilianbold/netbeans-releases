@@ -21,6 +21,7 @@ Microsystems, Inc. All Rights Reserved.
 <MIME-resolver>
     <file>
         <ext name="mf"/>
+        <ext name="MF"/>
         <resolver mime="text/x-manifest"/>
     </file>
 </MIME-resolver>
