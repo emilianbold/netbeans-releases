@@ -591,6 +591,7 @@ public class LayoutModel implements LayoutConstants {
                         removedCompToBounds = new HashMap<LayoutComponent, Rectangle>();
                     }
                     removedCompToBounds.put(comp, bounds);
+                    compToBounds.remove(comp);
                 }
                 Set cutSet = createPossibleCuts(effDim);
                 parts = cutIntoParts(cutSet, effDim);            
