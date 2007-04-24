@@ -11,9 +11,10 @@ if [ -d $DIST ]; then
     rm -rf $DIST
 fi
 
-Clean the leftovers from the last build.
-For more info about "cvspurge" take a look 
-at http://www.red-bean.com/cvsutils/
+#Clean the leftovers from the last build.
+#For more info about "cvspurge" take a look 
+#at http://www.red-bean.com/cvsutils/
+
 for module in `ls | grep -v "CVS"`; do
     cvspurge $module;
     ERROR_CODE=$?
