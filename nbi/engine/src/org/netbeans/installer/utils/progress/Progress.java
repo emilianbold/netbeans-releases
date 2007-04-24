@@ -228,6 +228,21 @@ public class Progress {
     }
     
     /**
+     * Sets the value of the <code>percentage</code> property. This method is the 
+     * same as the {@link #setPercentage(int)} one, with the only difference that
+     * it accepts a <code>long</code> parameter. The parameter is converted to an
+     * <code>int</code> and the corresponding method is called.
+     *
+     * @param percentage The new value for the <code>percentage</code> property.
+     * 
+     * @throws {@link IllegalArgumentException} if the supplied percentage cannot be 
+     *      set.
+     */
+    public void setPercentage(final long percentage) {
+        setPercentage((int) percentage);
+    }
+    
+    /**
      * Adds the specified amount to the <code>percentage</code> property. The added
      * amount can be either positive or negative. Teh percentage value will be
      * updated only if the result of the addition is different from the current

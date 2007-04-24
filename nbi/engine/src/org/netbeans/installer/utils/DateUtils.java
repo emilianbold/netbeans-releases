@@ -28,15 +28,9 @@ import java.util.Date;
  *
  * @author Kirill Sorokin
  */
-public abstract class DateUtils {
-    ////////////////////////////////////////////////////////////////////////////
+public final class DateUtils {
+    /////////////////////////////////////////////////////////////////////////////////
     // Static
-    private static final DateFormat COMPACT_TIMESTAMP =
-            new SimpleDateFormat("yyyyMMddHHmmss");
-    
-    private static final DateFormat DETAILED_TIMESTAMP =
-            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-    
     public static String getTimestamp() {
         return COMPACT_TIMESTAMP.format(new Date());
     }
@@ -44,4 +38,18 @@ public abstract class DateUtils {
     public static String getFormattedTimestamp() {
         return DETAILED_TIMESTAMP.format(new Date());
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Instance
+    private DateUtils() {
+        // does nothing
+    }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final DateFormat COMPACT_TIMESTAMP =
+            new SimpleDateFormat("yyyyMMddHHmmss"); // NOI18N
+    
+    public static final DateFormat DETAILED_TIMESTAMP =
+            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"); // NOI18N
 }

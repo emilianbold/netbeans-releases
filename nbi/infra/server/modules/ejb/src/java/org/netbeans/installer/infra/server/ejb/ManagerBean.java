@@ -191,7 +191,6 @@ public class ManagerBean implements Manager {
             packageRegistry.setFinishHandler(new DummyFinishHandler());
             packageRegistry.loadProductRegistry(packageRegistryXml);
             
-            
             final Queue<RegistryNode> nodes = new LinkedList<RegistryNode>();
             
             for (Product product: packageRegistry.getProducts()) {

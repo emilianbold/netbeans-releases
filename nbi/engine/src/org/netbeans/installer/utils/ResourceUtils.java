@@ -31,68 +31,77 @@ import java.util.ResourceBundle;
  *
  * @author Kirill Sorokin
  */
-public abstract class ResourceUtils {
-    ////////////////////////////////////////////////////////////////////////////
+public final class ResourceUtils {
+    /////////////////////////////////////////////////////////////////////////////////
     // Static
-    private static Map<String, ResourceBundle> loadedBundles = new HashMap<String, ResourceBundle>();
+    private static Map<String, ResourceBundle> loadedBundles = 
+            new HashMap<String, ResourceBundle>();
     
-    private static final int BUF_SIZE=102400;
-    
-    private static ResourceBundle loadBundle(String baseName, Locale locale, ClassLoader loader) {
-        String bundleId = loader.toString() + baseName;
-        
-        ResourceBundle bundle = (ResourceBundle) loadedBundles.get(bundleId);
-        
-        if (bundle == null) {
-            bundle = ResourceBundle.getBundle(baseName, locale, loader);
-            loadedBundles.put(bundleId, bundle);
-        }
-        
-        return bundle;
+    // strings //////////////////////////////////////////////////////////////////////
+    public static String getString(
+            final String baseName, 
+            final String key) {
+        return loadBundle(
+                baseName, 
+                Locale.getDefault(), 
+                ResourceUtils.class.getClassLoader()).getString(key);
     }
     
-    private static ResourceBundle loadBundle(Class clazz, Locale locale) {
-        return loadBundle(clazz.getPackage().getName() + "." + "Bundle", locale, clazz.getClassLoader());
-    }
-    
-    public static String getString(String baseName, String key) {
-        return loadBundle(baseName, Locale.getDefault(), ResourceUtils.class.getClassLoader()).getString(key);
-    }
-    
-    public static String getString(String baseName, String key, Object... arguments) {
+    public static String getString(
+            final String baseName, 
+            final String key, 
+            final Object... arguments) {
         return StringUtils.format(getString(baseName, key), arguments);
     }
     
-    public static String getString(String baseName, String key, ClassLoader loader) {
+    public static String getString(
+            final String baseName, 
+            final String key, 
+            final ClassLoader loader) {
         return loadBundle(baseName, Locale.getDefault(), loader).getString(key);
     }
     
-    public static String getString(String baseName, String key, ClassLoader loader, Object... arguments) {
+    public static String getString(
+            final String baseName, 
+            final String key, 
+            final ClassLoader loader, 
+            final Object... arguments) {
         return StringUtils.format(getString(baseName, key, loader), arguments);
     }
     
-    public static String getString(Class clazz, String key) {
+    public static String getString(
+            final Class clazz, 
+            final String key) {
         return loadBundle(clazz, Locale.getDefault()).getString(key);
     }
     
-    public static String getString(Class clazz, String key, Object... arguments) {
+    public static String getString(
+            final Class clazz, 
+            final String key, 
+            final Object... arguments) {
         return StringUtils.format(getString(clazz, key), arguments);
     }
     
-    public static InputStream getResource(String name) {
+    // resources ////////////////////////////////////////////////////////////////////
+    public static InputStream getResource(
+            final String name) {
         return getResource(name, ResourceUtils.class.getClassLoader());
     }
     
-    public static InputStream getResource(String path, ClassLoader loader) {
+    public static InputStream getResource(
+            final String path, 
+            final ClassLoader loader) {
         return loader.getResourceAsStream(path);
     }
+    
     /**
      * Returns the size of the resource file.
      * @param resource Resource name
      * @return size of the resource or 
      *      <i>-1</i> if the resource was not found or any other error occured
      */
-    public static long getResourceSize(String resource) {
+    public static long getResourceSize(
+            final String resource) {
         InputStream is = null;
         long size = 0;
         try {
@@ -100,7 +109,7 @@ public abstract class ResourceUtils {
             if(is==null) { // resource was not found
                 return -1;
             }
-            byte [] buf = new byte [BUF_SIZE];
+            byte [] buf = new byte [BUFFER_SIZE];
             while(is.available()>0) {
                 size += is.read(buf);
             }
@@ -117,7 +126,48 @@ public abstract class ResourceUtils {
         return size;
     }
     
-    public static String getResourceFileName(String resource) {
+    public static String getResourceFileName(
+            final String resource) {
         return resource.substring(resource.lastIndexOf("/")+1);
     }
+    
+    // private //////////////////////////////////////////////////////////////////////
+    private static ResourceBundle loadBundle(
+            final String baseName, 
+            final Locale locale, 
+            final ClassLoader loader) {
+        final String bundleId = loader.toString() + baseName;
+        
+        ResourceBundle bundle = (ResourceBundle) loadedBundles.get(bundleId);
+        
+        if (bundle == null) {
+            bundle = ResourceBundle.getBundle(baseName, locale, loader);
+            loadedBundles.put(bundleId, bundle);
+        }
+        
+        return bundle;
+    }
+    
+    private static ResourceBundle loadBundle(
+            final Class clazz, 
+            final Locale locale) {
+        return loadBundle(
+                clazz.getPackage().getName() + BUNDLE_FILE_SUFFIX, 
+                locale, 
+                clazz.getClassLoader());
+    }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Instance
+    private ResourceUtils() {
+        // does nothing
+    }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final int BUFFER_SIZE = 
+            40960; // NOMAGI
+    
+    public static final String BUNDLE_FILE_SUFFIX = 
+            ".Bundle"; // NOI18N
 }

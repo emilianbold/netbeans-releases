@@ -51,19 +51,24 @@ import org.netbeans.installer.utils.helper.Platform;
 public abstract class StringUtils {
     ////////////////////////////////////////////////////////////////////////////
     // Static
-    public static String format(String message, Object... arguments) {
+    public static String format(
+            final String message, 
+            final Object... arguments) {
         return MessageFormat.format(message, arguments);
     }
     
-    public static String leftTrim(String string) {
+    public static String leftTrim(
+            final String string) {
         return string.replaceFirst(LEFT_WHITESPACE, EMPTY_STRING);
     }
     
-    public static String rightTrim(String string) {
+    public static String rightTrim(
+            final String string) {
         return string.replaceFirst(RIGHT_WHITESPACE, EMPTY_STRING);
     }
     
-    public static char fetchMnemonic(String string) {
+    public static char fetchMnemonic(
+            final String string) {
         int index = string.indexOf(MNEMONIC_CHAR);
         if ((index != -1) && (index < string.length() - 1)) {
             return string.charAt(index + 1);
@@ -72,36 +77,35 @@ public abstract class StringUtils {
         return NO_MNEMONIC;
     }
     
-    public static String stripMnemonic(String string) {
+    public static String stripMnemonic(
+            final String string) {
         return string.replaceFirst(MNEMONIC, EMPTY_STRING);
     }
     
-    public static String capitalizeFirst(String string) {
+    public static String capitalizeFirst(
+            final String string) {
         return EMPTY_STRING + Character.toUpperCase(string.charAt(0)) + string.substring(1);
     }
     
-    public static String getGetterName(String propertyName) {
+    public static String getGetterName(
+            final String propertyName) {
         return "get" + capitalizeFirst(propertyName);
     }
     
-    public static String getBooleanGetterName(String propertyName) {
+    public static String getBooleanGetterName(
+            final String propertyName) {
         return "is" + capitalizeFirst(propertyName);
     }
     
-    public static String getSetterName(String propertyName) {
+    public static String getSetterName(
+            final String propertyName) {
         return "set" + capitalizeFirst(propertyName);
     }
     
-    public static String asString(Throwable throwable) {
-        StringWriter writer = new StringWriter();
+    public static String getFilenameFromUrl(
+            final String string) {
+        String url = string.trim();
         
-        throwable.printStackTrace(new PrintWriter(writer));
-        
-        return writer.toString();
-    }
-    
-    public static String getFilenameFromUrl(String urlString) {
-        String url = urlString.trim();
         int index = Math.max(
                 url.lastIndexOf(FORWARD_SLASH),
                 url.lastIndexOf(BACK_SLASH));
@@ -110,52 +114,8 @@ public abstract class StringUtils {
             url.substring(index + 1,  length) : null;
     }
     
-    public static String asString(List<? extends Object> objects) {
-        return asString(objects, ", ");
-    }
-    
-    public static String asString(List<? extends Object> objects, String separator) {
-        StringBuilder result = new StringBuilder();
-        
-        for (int i = 0; i < objects.size(); i++) {
-            result.append(objects.get(i).toString());
-            
-            if (i != objects.size() - 1) {
-                result.append(separator);
-            }
-        }
-        
-        return result.toString();
-    }
-    
-    public static String asString(Object[] strings) {
-        return asString(strings, ", ");
-    }
-    
-    public static String asString(Object[] strings, String separator) {
-        StringBuilder result = new StringBuilder();
-        
-        for (int i = 0; i < strings.length; i++) {
-            result.append((strings[i]==null) ? EMPTY_STRING+null :
-                strings[i].toString());
-            
-            if (i != strings.length - 1) {
-                result.append(separator);
-            }
-        }
-        
-        return result.toString();
-    }
-    
-    public static List<String> asList(String string) {
-        return asList(string, ", ");
-    }
-    
-    public static List<String> asList(String string, String separator) {
-        return Arrays.asList(string.split(separator));
-    }
-    
-    public static String formatSize(long longBytes) {
+    public static String formatSize(
+            final long longBytes) {
         StringBuffer result = new StringBuffer();
         
         double bytes = (double) longBytes;
@@ -182,7 +142,8 @@ public abstract class StringUtils {
         return EMPTY_STRING + longBytes + " B";
     }
     
-    public static String asHexString(byte[] bytes) {
+    public static String asHexString(
+            final byte[] bytes) {
         StringBuilder builder = new StringBuilder();
         
         for (int i = 0; i < bytes.length; i++) {
@@ -202,11 +163,163 @@ public abstract class StringUtils {
         return builder.toString();
     }
     
-    public static String base64Encode(String string) throws UnsupportedEncodingException {
+    public static String pad(
+            final String string, 
+            final int number) {
+        StringBuilder builder = new StringBuilder();
+        
+        for (int i = 0; i < number; i++) {
+            builder.append(string);
+        }
+        
+        return builder.toString();
+    }
+    
+    public static String escapeRegExp(
+            final String string) {
+        return string.replace(BACK_SLASH, BACK_SLASH + BACK_SLASH);
+    }
+    
+    public static String readStream(
+            final InputStream stream) throws IOException {
+        StringBuilder builder = new StringBuilder();
+        
+        byte[] buffer = new byte[1024];
+        while (stream.available() > 0) {
+            int read = stream.read(buffer);
+            
+            String readString = new String(buffer, 0, read);
+            for(String string : readString.split(NEW_LINE_PATTERN)) {
+                builder.append(string).append(SystemUtils.getLineSeparator());
+            }
+        }
+        
+        return builder.toString();
+    }
+    
+    public static String httpFormat(
+            final Date date) {
+        return new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z", Locale.US).format(date);
+    }
+    
+    public static String asPath(
+            final Class clazz) {
+        return clazz.getPackage().getName().replace('.', '/');
+    }
+    
+    public static String replace(
+            final String string, 
+            final String replacement, 
+            final int begin, 
+            final int end) {
+        return string.substring(0, begin) + replacement + string.substring(end);
+    }
+    
+    /**
+     * Escapes the path using the platform-specific escape rules.
+     * 
+     * @param path Path to escape.
+     * @return Escaped path.
+     */
+    public static String escapePath(
+            final String path) {
+        String localPath = path;
+        
+        if (localPath.indexOf(' ') > -1) {
+            if (SystemUtils.isWindows()) {
+                localPath = QUOTE + localPath + QUOTE; 
+            } else {
+                localPath = localPath.replace(SPACE, 
+                        BACK_SLASH + SPACE); //NOI18N
+            }
+        }
+        
+        return localPath;
+    }
+    
+    /**
+     * Joins a command string and its arguments into a single string using the
+     * platform-specific rules.
+     * 
+     * @param commandArray The command and its arguments.
+     * @return The joined string.
+     */
+    public static String joinCommand(
+            final String... commandArray) {
+        StringBuffer command = new StringBuffer();
+        
+        for (int i = 0; i < commandArray.length; i++) {
+            command.append(escapePath(commandArray[i]));
+            if (i != commandArray.length - 1) {
+                command.append(SPACE); //NOI18N
+            }
+        }
+        
+        return command.toString();
+    }
+    
+    // object -> string .////////////////////////////////////////////////////////////
+    public static String asString(
+            final Throwable throwable) {
+        StringWriter writer = new StringWriter();
+        
+        throwable.printStackTrace(new PrintWriter(writer));
+        
+        return writer.toString();
+    }
+    
+    public static String asString(
+            final List<? extends Object> objects) {
+        return asString(objects, ", ");
+    }
+    
+    public static String asString(
+            final List<? extends Object> objects, 
+            final String separator) {
+        StringBuilder result = new StringBuilder();
+        
+        for (int i = 0; i < objects.size(); i++) {
+            result.append(objects.get(i).toString());
+            
+            if (i != objects.size() - 1) {
+                result.append(separator);
+            }
+        }
+        
+        return result.toString();
+    }
+    
+    public static String asString(
+            final Object[] strings) {
+        return asString(strings, ", ");
+    }
+    
+    public static String asString(
+            final Object[] strings, 
+            final String separator) {
+        StringBuilder result = new StringBuilder();
+        
+        for (int i = 0; i < strings.length; i++) {
+            result.append((strings[i]==null) ? EMPTY_STRING+null :
+                strings[i].toString());
+            
+            if (i != strings.length - 1) {
+                result.append(separator);
+            }
+        }
+        
+        return result.toString();
+    }
+    
+    // base64 ///////////////////////////////////////////////////////////////////////
+    public static String base64Encode(
+            final String string) throws UnsupportedEncodingException {
         return base64Encode(string, ENCODING_UTF8);
     }
     
-    public static String base64Encode(String string, String charset) throws UnsupportedEncodingException {
+    public static String base64Encode(
+            final String string, 
+            final String charset) throws UnsupportedEncodingException {
         final StringBuilder builder = new StringBuilder();
         final byte[] bytes = string.getBytes(charset);
         
@@ -256,11 +369,14 @@ public abstract class StringUtils {
         return builder.toString();
     }
     
-    public static String base64Decode(String string) throws UnsupportedEncodingException {
+    public static String base64Decode(
+            final String string) throws UnsupportedEncodingException {
         return base64Decode(string, ENCODING_UTF8);
     }
     
-    public static String base64Decode(String string, String charset) throws UnsupportedEncodingException {
+    public static String base64Decode(
+            final String string, 
+            final String charset) throws UnsupportedEncodingException {
         int completeBlocksNumber = string.length() / 4;
         int missingBytesNumber = 0;
         
@@ -307,37 +423,8 @@ public abstract class StringUtils {
         return new String(decodedBytes, charset);
     }
     
-    public static String pad(String string, int number) {
-        StringBuilder builder = new StringBuilder();
-        
-        for (int i = 0; i < number; i++) {
-            builder.append(string);
-        }
-        
-        return builder.toString();
-    }
-    
-    public static String escapeRegExp(String string) {
-        return string.replace(BACK_SLASH, BACK_SLASH + BACK_SLASH);
-    }
-    
-    public static String readStream(InputStream stream) throws IOException {
-        StringBuilder builder = new StringBuilder();
-        
-        byte[] buffer = new byte[1024];
-        while (stream.available() > 0) {
-            int read = stream.read(buffer);
-            
-            String readString = new String(buffer, 0, read);
-            for(String string : readString.split(NEW_LINE_PATTERN)) {
-                builder.append(string).append(SystemUtils.getLineSeparator());
-            }
-        }
-        
-        return builder.toString();
-    }
-    
-    public static String parseAscii(String string) {
+    // normal <-> ascii only ////////////////////////////////////////////////////////
+    public static String parseAscii(final String string) {
         final Properties properties = new Properties();
         
         // we don't really care about enconding here, as the input string is
@@ -354,7 +441,7 @@ public abstract class StringUtils {
         return (String) properties.get("key");
     }
     
-    public static String convertToAscii(String string) {
+    public static String convertToAscii(final String string) {
         final Properties properties = new Properties();
         
         properties.put("uberkey", string);
@@ -380,60 +467,17 @@ public abstract class StringUtils {
         }
     }
     
-    /**
-     * Escapes the path using the platform-specific escape rules.
-     * 
-     * @param path Path to escape.
-     * @return Escaped path.
-     */
-    public static String escapePath(String path) {
-        String localPath = path;
-        
-        if (localPath.indexOf(' ') > -1) {
-            if (SystemUtils.isWindows()) {
-                localPath = QUOTE + localPath + QUOTE; 
-            } else {
-                localPath = localPath.replace(SPACE, 
-                        BACK_SLASH + SPACE); //NOI18N
-            }
-        }
-        
-        return localPath;
+    // string -> object /////////////////////////////////////////////////////////////
+    public static List<String> asList(
+            final String string) {
+        return asList(string, ", ");
     }
     
-    /**
-     * Joins a command string and its arguments into a single string using the
-     * platform-specific rules.
-     * 
-     * @param commandArray The command and its arguments.
-     * @return The joined string.
-     */
-    public static String joinCommand(String... commandArray) {
-        StringBuffer command = new StringBuffer();
-        
-        for (int i = 0; i < commandArray.length; i++) {
-            command.append(escapePath(commandArray[i]));
-            if (i != commandArray.length - 1) {
-                command.append(SPACE); //NOI18N
-            }
-        }
-        
-        return command.toString();
+    public static List<String> asList(
+            final String string, final String separator) {
+        return Arrays.asList(string.split(separator));
     }
     
-    public static String httpFormat(Date date) {
-        return new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z", Locale.US).format(date);
-    }
-    
-    public static String asPath(Class clazz) {
-        return clazz.getPackage().getName().replace('.', '/');
-    }
-    
-    public static String replace(String string, String replacement, int begin, int end) {
-        return string.substring(0, begin) + replacement + string.substring(end);
-    }
-    
-    // parsing //////////////////////////////////////////////////////////////////////
     public static Locale parseLocale(
             final String string) {
         final String[] parts = string.split("_");
@@ -507,31 +551,35 @@ public abstract class StringUtils {
 
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final String BACK_SLASH = "\\"; //NOI18N
-    public static final String FORWARD_SLASH = "/"; //NOI18N
-    public static final String DOUBLE_BACK_SLASH = "\\\\"; //NOI18N
+    public static final String BACK_SLASH = 
+            "\\"; // NOI18N
+    public static final String FORWARD_SLASH = 
+            "/"; // NOI18N
+    public static final String DOUBLE_BACK_SLASH = 
+            "\\\\"; // NOI18N
     
-    public static final String ENCODING_UTF8 = "UTF-8";//NOI18N
+    public static final String ENCODING_UTF8 = 
+            "UTF-8"; // NOI18N
     
-    public static final String CR = "\r";
-    public static final String LF = "\n";
-    public static final String DOT = ".";
-    public static final String EMPTY_STRING = "";
+    public static final String CR = "\r"; // NOI18N
+    public static final String LF = "\n"; // NOI18N
+    public static final String DOT = "."; // NOI18N
+    public static final String EMPTY_STRING = ""; // NOI18N
     public static final String CRLF = CR + LF;
     public static final String CRLFCRLF = CRLF + CRLF;
-    public static final String SPACE = " ";
-    public static final String QUOTE = "\"";
-    public static final String EQUAL = "=";
+    public static final String SPACE = " "; // NOI18N
+    public static final String QUOTE = "\""; // NOI18N
+    public static final String EQUAL = "="; // NOI18N
     
-    public static final String NEW_LINE_PATTERN = "(?:\r\n|\n|\r)";
+    public static final String NEW_LINE_PATTERN = "(?:\r\n|\n|\r)"; // NOI18N
     
-    private static final String LEFT_WHITESPACE  = "^\\s+";
-    private static final String RIGHT_WHITESPACE = "\\s+$";
+    private static final String LEFT_WHITESPACE = "^\\s+"; // NOI18N
+    private static final String RIGHT_WHITESPACE = "\\s+$"; // NOI18N
     
         
-    private static final char   MNEMONIC_CHAR    = '&';
-    private static final String MNEMONIC         = "&";
-    private static final char   NO_MNEMONIC      = '\u0000';
+    private static final char MNEMONIC_CHAR = '&';
+    private static final String MNEMONIC = "&"; // NOI18N
+    private static final char NO_MNEMONIC = '\u0000';
     
     private static final char[] BASE64_TABLE = new char[] {
         'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',

@@ -56,12 +56,6 @@ import org.netbeans.installer.utils.system.launchers.LauncherProperties;
  */
 public final class SystemUtils {
     /////////////////////////////////////////////////////////////////////////////////
-    // Constants
-    public static final long MAX_EXECUTION_TIME = 600000; // 10 minutes
-    public static final int  BUFFER_SIZE        = 4096;   // 4 kilobytes
-    public static final int  DELAY              = 50;     // 50 milliseconds
-    
-    /////////////////////////////////////////////////////////////////////////////////
     // Static
     private static Map<String, String> environment =
             new ProcessBuilder().environment();
@@ -241,6 +235,7 @@ public final class SystemUtils {
         return new File(parsed).getAbsoluteFile();
     }
     
+    // system info //////////////////////////////////////////////////////////////////
     public static File getUserHomeDirectory() {
         return new File(System.getProperty("user.home"));
     }
@@ -678,4 +673,12 @@ public final class SystemUtils {
         }
         return nativeUtils;
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final long MAX_EXECUTION_TIME = 600000;
+    
+    public static final int BUFFER_SIZE = 4096;
+    
+    public static final int DELAY = 50;
 }

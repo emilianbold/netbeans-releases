@@ -250,7 +250,10 @@ public abstract class XMLUtils {
         return count;
     }
     
-    public static Element appendChild(Element element, String name, String text) {
+    public static Element appendChild(
+            final Element element, 
+            final String name, 
+            final String text) {
         final Element child = element.getOwnerDocument().createElement(name);
         
         child.setTextContent(text != null ? text : StringUtils.EMPTY_STRING);

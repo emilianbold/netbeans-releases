@@ -33,17 +33,17 @@ import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.io.Reader;
 import java.nio.charset.Charset;
-import org.netbeans.installer.utils.helper.ErrorLevel;
+import org.netbeans.installer.utils.progress.Progress;
 
 /**
  * @author Danila Dugurov
  * @author Kirill Sorokin
  */
 public class StreamUtils {
-    private static final int BUFFER_SIZE = 128 * 1024; // 128 kilobytes
-    
-    public static void transferData(InputStream in, OutputStream out) throws IOException {
-        final byte[] buffer = new byte[BUFFER_SIZE];
+    public static void transferData(
+            final InputStream in, 
+            final OutputStream out) throws IOException {
+        final byte[] buffer = new byte[FileUtils.BUFFER_SIZE];
         int length = 0;
         while ((length = in.read(buffer)) != -1) {
             out.write(buffer, 0, length);
@@ -51,59 +51,91 @@ public class StreamUtils {
         out.flush();
     }
     
-    public static void transferData(RandomAccessFile in, OutputStream out) throws IOException {
-        final byte[] buffer = new byte[BUFFER_SIZE];
-        int length = 0;
-        while ((length = in.read(buffer)) != -1) {
-            out.write(buffer, 0, length);
-        }
-        out.flush();
+    public static void transferData(
+            final RandomAccessFile in, 
+            final OutputStream out) throws IOException {
+        transferData(in, out, in.length());
     }
     
-    public static void transferData(RandomAccessFile in, OutputStream out, long max) throws IOException {
-        final byte[] buffer = new byte[BUFFER_SIZE];
+    public static void transferData(
+            final RandomAccessFile in, 
+            final OutputStream out,
+            final Progress progress) throws IOException {
+        transferData(in, out, in.length(), progress);
+    }
+    
+    public static void transferData(
+            final RandomAccessFile in, 
+            final OutputStream out, 
+            final long max) throws IOException {
+        transferData(in, out, max, new Progress());
+    }
+    
+    public static void transferData(
+            final RandomAccessFile in, 
+            final OutputStream out, 
+            final long max,
+            final Progress progress) throws IOException {
+        final byte[] buffer = new byte[FileUtils.BUFFER_SIZE];
         
         long total = 0;
         int length = 0;
         
+        progress.setPercentage(Progress.START);
         while (((length = in.read(buffer)) != -1) && (total < max)) {
             total += length;
             out.write(
                     buffer, 
                     0, 
                     (int) (total < max ? length : length - (max - total)));
+            
+            progress.setPercentage(Progress.COMPLETE * total / max);
         }
+        progress.setPercentage(Progress.COMPLETE);
         
         out.flush();
     }
     
-    public static void transferFile(File file, OutputStream out) throws IOException {
-        FileInputStream in = null;
+    public static void transferFile(
+            final File file, 
+            final OutputStream out) throws IOException {
+        transferFile(file, out, new Progress());
+    }
+    
+    public static void transferFile(
+            final File file, 
+            final OutputStream out,
+            final Progress progress) throws IOException {
+        RandomAccessFile in = null;
         
         try {
-            transferData(in = new FileInputStream(file), out);
+            transferData(in = new RandomAccessFile(file, "r"), out, progress);
         } finally {
             if (in != null) {
                 try {
                     in.close();
                 } catch (IOException e) {
-                    ErrorManager.notify(ErrorLevel.DEBUG, e);
+                    ErrorManager.notifyDebug("Cannot close raf", e);
                 }
             }
         }
     }
     
-    public static CharSequence readStream(InputStream input) throws IOException {
+    public static CharSequence readStream(
+            final InputStream input) throws IOException {
         return readStream(input, Charset.forName(StringUtils.ENCODING_UTF8));
     }
     
-    public static CharSequence readStream(InputStream input, Charset charset) throws IOException {
+    public static CharSequence readStream(
+            final InputStream input, 
+            final Charset charset) throws IOException {
         final Reader reader = new BufferedReader(new InputStreamReader(input, charset));
         return readReader(reader);
     }
     
-    public static CharSequence readReader(Reader reader) throws IOException {
-        final char[] buffer = new char[BUFFER_SIZE];
+    public static CharSequence readReader(
+            final Reader reader) throws IOException {
+        final char[] buffer = new char[FileUtils.BUFFER_SIZE];
         final StringBuilder stringBuilder = new StringBuilder();
         int readLength;
         while ((readLength = reader.read(buffer)) != -1) {
@@ -112,7 +144,14 @@ public class StreamUtils {
         return stringBuilder;
     }
     
-    public static CharSequence readFile(File file, Charset charset) throws IOException {
+    public static CharSequence readFile(
+            final File file) throws IOException {
+        return readFile(file, Charset.forName(StringUtils.ENCODING_UTF8));
+    }
+    
+    public static CharSequence readFile(
+            final File file, 
+            final Charset charset) throws IOException {
         final InputStream in = new BufferedInputStream(new FileInputStream(file));
         try {
             return readReader(new InputStreamReader(in, charset));
@@ -123,20 +162,32 @@ public class StreamUtils {
         }
     }
     
-    public static CharSequence readFile(File file) throws IOException {
-        return readFile(file, Charset.forName(StringUtils.ENCODING_UTF8));
-    }
-    
-    public static void writeChars(OutputStream out, CharSequence chars, Charset charset) throws IOException {
-        out.write(chars.toString().getBytes(charset.name()));
-    }
-    
-    public static void writeChars(OutputStream out, CharSequence chars) throws IOException {
+    public static void writeChars(
+            final OutputStream out, 
+            final CharSequence chars) throws IOException {
         writeChars(out, chars, Charset.forName(StringUtils.ENCODING_UTF8));
     }
     
-    public static void writeChars(File file, CharSequence chars, Charset charset) throws IOException {
-        final OutputStream out = new BufferedOutputStream(new FileOutputStream(file));
+    public static void writeChars(
+            final OutputStream out, 
+            final CharSequence chars, 
+            final Charset charset) throws IOException {
+        out.write(chars.toString().getBytes(charset.name()));
+    }
+    
+    public static void writeChars(
+            final File file, 
+            final CharSequence chars) throws IOException {
+        writeChars(file, chars, Charset.forName(StringUtils.ENCODING_UTF8));
+    }
+    
+    public static void writeChars(
+            final File file, 
+            final CharSequence chars, 
+            final Charset charset) throws IOException {
+        final OutputStream out = 
+                new BufferedOutputStream(new FileOutputStream(file));
+        
         try {
             writeChars(out, chars, charset);
         } finally {
@@ -144,9 +195,5 @@ public class StreamUtils {
                 out.close();
             } catch(IOException ignord) {}
         }
-    }
-    
-    public static void writeChars(File file, CharSequence chars) throws IOException {
-        writeChars(file, chars, Charset.forName(StringUtils.ENCODING_UTF8));
     }
 }
