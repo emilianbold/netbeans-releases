@@ -34,7 +34,7 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
     private static final String VISUALWEB_CLUSTER = 
             "{visualweb-cluster}"; // NOI18N
     private static final String ID = 
-            "JAVAEE"; // NOI18N
+            "WEBEE"; // NOI18N
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance

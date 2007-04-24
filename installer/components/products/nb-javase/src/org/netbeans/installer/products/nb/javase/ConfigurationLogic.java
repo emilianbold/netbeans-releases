@@ -36,7 +36,7 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
     private static final String HARNESS_CLUSTER = 
             "{harness-cluster}"; // NOI18N
     private static final String ID = 
-            "JAVASE"; // NOI18N
+            "JAVA"; // NOI18N
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance

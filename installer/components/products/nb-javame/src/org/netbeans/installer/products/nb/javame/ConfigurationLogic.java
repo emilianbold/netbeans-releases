@@ -32,7 +32,7 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
     private static final String MOBILITY_CLUSTER = 
             "{mobility-cluster}"; // NOI18N
     private static final String ID = 
-            "JAVAME"; // NOI18N
+            "MOB"; // NOI18N
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance

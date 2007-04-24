@@ -22,7 +22,9 @@ package org.netbeans.installer.utils.applications;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -76,34 +78,44 @@ public class NetBeansUtils {
     }
     
     public static FilesList addPackId(File nbLocation, String packId) throws IOException {
-        File nbCluster = getNbCluster(nbLocation);
+        final File nbCluster = getNbCluster(nbLocation);
         
         if (nbCluster == null) {
             throw new IOException("The NetBeans branding cluster does not exist");
         }
         
-        File productid = new File(nbCluster, PRODUCT_ID);
+        final File productid = new File(nbCluster, PRODUCT_ID);
         
-        String id;
+        final String id;
         if (!productid.exists()) {
             id = NB_IDE_ID;
         } else {
             id = FileUtils.readFile(productid).trim();
         }
         
-        boolean packExists = false;
-        for (String string: id.split(PACK_ID_SEPARATOR)) {
-            if (string.equals(packId)) {
-                packExists = true;
+        final List<String> ids = 
+                new LinkedList(Arrays.asList(id.split(PACK_ID_SEPARATOR)));
+        
+        boolean packAdded = false;
+        for (int i = 1; i < ids.size(); i++) {
+            if (packId.equals(ids.get(i))) {
+                return new FilesList();
+            }
+            
+            if (packId.compareTo(ids.get(i)) < 0) {
+                ids.add(i, packId);
+                packAdded = true;
                 break;
             }
         }
         
-        if (!packExists) {
-            id += PACK_ID_SEPARATOR + packId;
+        if (!packAdded) {
+            ids.add(packId);
         }
         
-        return FileUtils.writeFile(productid, id);
+        return FileUtils.writeFile(
+                productid, 
+                StringUtils.asString(ids, PACK_ID_SEPARATOR));
     }
     
     public static void removePackId(File nbLocation, String packId) throws IOException {
