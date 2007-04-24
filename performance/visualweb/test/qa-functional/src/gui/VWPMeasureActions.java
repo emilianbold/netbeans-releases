@@ -43,7 +43,7 @@ public class VWPMeasureActions  {
         suite.addTest(new OpenBeanFiles("testSessionBean","Open Session Bean"));
         suite.addTest(new OpenNavigationPage("measureTime","Open Navigation Page"));
         
-	suite.addTest(new CreateWebPackFiles("testCreateCSSTable","Create CSS table"));	
+//TODO Disabled because of bugId #101189	suite.addTest(new CreateWebPackFiles("testCreateCSSTable","Create CSS table"));	
 	suite.addTest(new CreateWebPackFiles("testCreateJSPFragment","Create JSP fragment for VWP project"));
         suite.addTest(new CreateWebPackFiles("testCreateJSPPage","Create JSP page for VWP project"));
 
