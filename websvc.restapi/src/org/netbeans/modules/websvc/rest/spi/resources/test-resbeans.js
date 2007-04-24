@@ -253,11 +253,14 @@ function findResource(uri) {
     var len = baseURL.length;
     if(uri.length > len) {
         var u = uri.substring(len, uri.length);
-        var ri = -1;
-        for(i=0;i<topUrls.length;i++) {
-            if(topUrls[i] == u) {                    
-                ri = i;
-                break;                
+        var ri = lookupIndex(u);
+        if(ri == -1) {//look for reference resource
+            var li = u.lastIndexOf('/');
+            if(li != -1) {
+                var u2 = u.substring(0, li);
+                var li2 = u2.lastIndexOf('/');
+                u = u.substring(li2, u.length);
+                ri = lookupIndex(u);
             }
         }
         if(ri > -1) {
@@ -268,19 +271,16 @@ function findResource(uri) {
     }
     return r;
 }
-function showContent(path, ri, mi) {
-    var app1 = wadlDoc.documentElement;
-    var rs = app1.getElementsByTagName('resources')[0];
-    var r = rs.getElementsByTagName('resource')[ri];
-    var m = r.getElementsByTagName('method')[mi];
-    var mName = m.attributes.getNamedItem("name").nodeValue;
-    var qmName = mName;
-    var request = m.getElementsByTagName('request');
-    var response = m.getElementsByTagName('response');
-    var reqMediaTypes = getMediaType(request);
-    var uri = r.attributes.getNamedItem('path').nodeValue;
-    //alert(r.getElementsByTagName('method')[0].name);
-    doShowContent2(uri, r);      
+function lookupIndex(u)
+{
+    var ri = -1;
+    for(i=0;i<topUrls.length;i++) {
+        if(topUrls[i] == u) {
+            ri = i;
+            break;
+        }
+    }
+    return ri;
 }
 function doShowContent(uri) {
     var r = findResource(uri);
@@ -288,13 +288,13 @@ function doShowContent(uri) {
         var app1 = wadlDoc.documentElement;
         var rs = app1.getElementsByTagName('resources')[0];        
         currentResource = r;
-        doShowContent2(uri, r);
+        doShowStaticResource(uri, r);
     } else {
         currentResource = null;
-        doShowContent1(uri, getDefaultMethod(), getDefaultMime());
+        doShowDynamicResource(uri, getDefaultMethod(), getDefaultMime());
     }
 }
-function doShowContent1(uri, mName, mediaType) {
+function doShowDynamicResource(uri, mName, mediaType) {
     updatepage('result', '');
     updatepage('resultheaders', '');
     var qmName = '';
@@ -324,7 +324,7 @@ function doShowContent1(uri, mName, mediaType) {
     var uriLink = "<a id='"+req+"' href=javascript:doShowContent('"+req+"') >"+getDisplayURL(disp, 80)+"</a>";
     updatepage('request', '<span class=bld>MSG_TEST_RESBEANS_Resource</span> '+uriLink+' <br/>(<a href="'+req+'" target="_blank">'+getDisplayURL(req, 90)+'</a>)');
 }
-function doShowContent2(uri, r) {
+function doShowStaticResource(uri, r) {
     updatepage('result', '');
     updatepage('resultheaders', '');
     showBreadCrumbs(uri);
@@ -529,17 +529,15 @@ function updateContent(xmlHttpReq) {
                 if(content == '')
                     content = 'MSG_TEST_RESBEANS_NoContents'
                 try {
-                    var tableContent = '';
                     //alert(content);
-                    var cErr = '<table border=1><tr><td class=tableW>MSG_TEST_RESBEANS_No_Container</td></tr></table>';
+                    var cErr = '<table border=1><tr><td class=tableW>Content may not have Container-Containee Relationship. See Raw View for content.</td></tr></table>';
+                    var tableContent = cErr;
                     if(content.indexOf("<?xml ") != -1) {
-                        tableContent = getContainerTable(content);
-                        if(tableContent == null || tableContent.length <= 594 || 
-                                tableContent.length == content.length)
-                            tableContent = cErr;
-                    } else {
-                        tableContent = cErr;
-                        //showRaw = 'true';
+                        var tc = getContainerTable(content);
+                        if(tc != null)
+                            tableContent = tc;
+                        else
+                            showRaw = 'true';
                     }
                     var rawContent = content;
                     var tableViewStyle = ' ';
@@ -558,7 +556,11 @@ function updateContent(xmlHttpReq) {
                         '<div id="headerInfo"'+headerViewStyle+'>'+getHeaderAsTable(xmlHttpReq)+'</div>'+
                         '<div id="tableContent"'+tableViewStyle+'>'+tableContent+'</div>'+
                         '<div id="rawContent"'+rawViewStyle+'>'+
-                            '<textarea rows=15 cols=72 align=left readonly>'+rawContent+'</textarea></div>');                            
+                            '<textarea rows=15 cols=72 align=left readonly>'+rawContent+'</textarea></div>');  
+                    if(showRaw == 'true')
+                        showViews('raw');
+                    else
+                        showViews('table');
                 } catch( e ) {
                     //alert(e.name+e.message);
                     var c = createIFrame(currentValidUrl);
@@ -652,18 +654,18 @@ function loadXml(xmlStr) {
 }
 function getContainerTable(xmlStr) {
     //alert(xmlStr);
-    var ret = xmlStr;  
-    if(ret == null)
-        return '';
+    if(xmlStr == null)
+        return null;
+    var ret = null;    
     var doc2 = null;
     try {
-        doc2 = loadXml(ret);
+        doc2 = loadXml(xmlStr);
     } catch(e) {}
     if(doc2 != null && doc2.documentElement.nodeName != 'parsererror') {
         try {
             var container=doc2.documentElement;
             if(container == null || container.nodeName == 'html')
-                return ret;
+                return null;
             var colNames = new Array()
             colNames[0] = "ID"
             colNames[1] = "URI"
@@ -677,7 +679,10 @@ function getContainerTable(xmlStr) {
             }
             str += "</thead>";
             str += "<tbody id='containerTable'>";
-            str += findUri(container);
+            var str2 = findUri(container);
+            if(str2 == null || str2 == '')
+                return null;
+            str += str2;
             str += "</tbody></table>";
             ret = str;
         } catch(e) {
@@ -687,36 +692,28 @@ function getContainerTable(xmlStr) {
     return ret;
 }
 function findUri(container) {
-    var tcStr = getUri(container);
+    tcStr = '';
+    getChildUri(container);
     return tcStr;
 }
-function getUri(ref) {
-    var tcStr = '';
-    var refChilds = ref.childNodes;
-    if(refChilds.length == 0)
+var tcStr = '';
+function getChildUri(refChild) {
+    if(refChild == null)
         return;
-    //alert(ref.nodeName+' str: '+tcStr);
-    for(i=0;i<refChilds.length;i++) {
-        var refChild = refChilds[i];
-        if(refChild.nodeValue == null) {//DOM Elements only
-            if(refChild.attributes != null && refChild.attributes.length > 0 && 
-                    refChild.attributes.getNamedItem('uri') != null) {
-                    tcStr += createRowForUri(refChild);
-            } else {
-                var subChilds = refChild.childNodes;
-                for(j=0;j<subChilds.length;j++) {
-                    var subChild = subChilds[j];          
-                    if(subChild.nodeValue == null) {//DOM Elements only
-                        if(subChild.attributes != null && subChild.attributes.length > 0 && 
-                            subChild.attributes.getNamedItem('uri') != null) {
-                            tcStr += createRowForUri(subChild);    
-                        }
-                    }
-                }            
+    var subChilds = refChild.childNodes;
+    if(subChilds == null || subChilds.length == 0)
+        return;
+    var j = 0;
+    for(j=0;j<subChilds.length;j++) {
+        var subChild = subChilds[j];            
+        if(subChild.nodeValue == null) {//DOM Elements only
+            if(subChild.attributes != null && subChild.attributes.length > 0 && 
+                subChild.attributes.getNamedItem('uri') != null) {
+                tcStr += createRowForUri(subChild);
             }
+            getChildUri(subChild);
         }
     }
-    return tcStr;
 }
 function createRowForUri(refChild) {
     var str = '';    
