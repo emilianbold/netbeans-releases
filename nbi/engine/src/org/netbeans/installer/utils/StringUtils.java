@@ -380,6 +380,47 @@ public abstract class StringUtils {
         }
     }
     
+    /**
+     * Escapes the path using the platform-specific escape rules.
+     * 
+     * @param path Path to escape.
+     * @return Escaped path.
+     */
+    public static String escapePath(String path) {
+        String localPath = path;
+        
+        if (localPath.indexOf(' ') > -1) {
+            if (SystemUtils.isWindows()) {
+                localPath = QUOTE + localPath + QUOTE; 
+            } else {
+                localPath = localPath.replace(SPACE, 
+                        BACK_SLASH + SPACE); //NOI18N
+            }
+        }
+        
+        return localPath;
+    }
+    
+    /**
+     * Joins a command string and its arguments into a single string using the
+     * platform-specific rules.
+     * 
+     * @param commandArray The command and its arguments.
+     * @return The joined string.
+     */
+    public static String joinCommand(String... commandArray) {
+        StringBuffer command = new StringBuffer();
+        
+        for (int i = 0; i < commandArray.length; i++) {
+            command.append(escapePath(commandArray[i]));
+            if (i != commandArray.length - 1) {
+                command.append(SPACE); //NOI18N
+            }
+        }
+        
+        return command.toString();
+    }
+    
     public static String httpFormat(Date date) {
         return new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z", Locale.US).format(date);
     }
