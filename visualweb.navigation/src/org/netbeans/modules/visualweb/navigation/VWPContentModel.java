@@ -16,6 +16,7 @@ import com.sun.rave.designtime.DesignProperty;
 import java.awt.EventQueue;
 import java.awt.Image;
 import java.beans.BeanInfo;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -40,6 +41,7 @@ import org.netbeans.modules.web.jsf.navigation.pagecontentmodel.PageContentModel
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -64,9 +66,15 @@ public class VWPContentModel extends PageContentModel{
     
     @Override
     protected void finalize() throws Throwable {
-        destroyListeners();
+        destroy();
         super.finalize();
     }
+    
+    public void destroy() throws IOException {
+        destroyListeners();
+    }
+    
+    
     
     
     
@@ -504,7 +512,7 @@ public class VWPContentModel extends PageContentModel{
     
     public void deleteCaseOutcome(VWPContentItem item ){
         UndoEvent undo = null;
-//        DesignBean designBean = item.getDesignBean();
+        //        DesignBean designBean = item.getDesignBean();
         String fromOutcome = item.getFromOutcome();
         DesignBean container = facesModel.getRootBean();
         List<DesignBean> beans = new ArrayList<DesignBean>();

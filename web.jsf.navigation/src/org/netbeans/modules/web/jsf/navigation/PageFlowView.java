@@ -466,11 +466,11 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         Collection<NavigationCaseNode> myNavCases = new HashSet<NavigationCaseNode>();
         
         String fromViewId = node.getDisplayName();
-        for( NavigationCaseNode navCase : navCases ){
-            String strToViewId = navCase.getToViewId();
-            String strFromViewId = navCase.getFromViewId();
+        for( NavigationCaseNode navCaseNode : navCases ){
+            String strToViewId = navCaseNode.getToViewId();
+            String strFromViewId = navCaseNode.getFromViewId();
             if( (strToViewId != null && strToViewId.equals(fromViewId)) || (strFromViewId != null && strFromViewId.equals(fromViewId))){
-                myNavCases.add(navCase);
+                myNavCases.add(navCaseNode);
             }
         }
         return myNavCases;

@@ -206,7 +206,8 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
             }
         }
         if( myNewRule != null ){
-            pfc.putNavRule2String(myNewRule, myNewRule.getFromViewId());
+//            pfc.putNavRule2String(myNewRule, myNewRule.getFromViewId());
+            pfc.putNavRule2String(myNewRule, FacesModelUtility.getFromViewIdFiltered(myNewRule));
         }
     }
     

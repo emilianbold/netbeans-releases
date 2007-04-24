@@ -9,6 +9,7 @@
 
 package org.netbeans.modules.web.jsf.navigation.pagecontentmodel;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -42,6 +43,12 @@ public abstract class PageContentModel {
      * @return actions
      */
     public abstract Action[] getActions();
+    
+    /**
+     * Called when the model is no longer needed.
+     * @throws java.io.IOException 
+     */
+    public abstract void destroy() throws IOException;
     
     private Set<? extends PageContentItem> pageContentItems = new HashSet<PageContentItem>();
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);

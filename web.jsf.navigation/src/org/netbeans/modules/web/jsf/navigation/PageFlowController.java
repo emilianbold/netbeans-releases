@@ -167,9 +167,11 @@ public class PageFlowController {
         try {
             if (navRule == null) {
                 navRule = configModel.getFactory().createNavigationRule();
-                navRule.setFromViewId(source.getDisplayName());
+//                navRule.setFromViewId(source.getDisplayName());
+                FacesModelUtility.setFromViewId(navRule, source.getDisplayName());
                 facesConfig.addNavigationRule(navRule);
-                navRule2String.put(navRule, navRule.getFromViewId());
+//                navRule2String.put(navRule, navRule.getFromViewId());
+                navRule2String.put(navRule, FacesModelUtility.getFromViewIdFiltered(navRule));
             } else {
                 caseNum = getNewCaseNumber(navRule);
             }
@@ -181,7 +183,8 @@ public class PageFlowController {
             navCase.setFromOutcome(caseName);
             
             
-            navCase.setToViewId(target.getDisplayName());
+//            navCase.setToViewId(target.getDisplayName());
+            FacesModelUtility.setToViewId(navCase, target.getDisplayName());
             navRule.addNavigationCase(navCase);
         } catch ( Exception e ){
             Exceptions.printStackTrace(e);
@@ -226,13 +229,13 @@ public class PageFlowController {
      * @return the navigation rule.  This will be null if none was found
      **/
     private NavigationRule getRuleWithFromViewID(FacesConfig facesConfig, String fromViewId ){
-        List<NavigationRule> rules = facesConfig.getNavigationRules();
         
-        for( NavigationRule rule : rules ){
-            String rulefromViewId = rule.getFromViewId();
+        for( NavigationRule navRule : facesConfig.getNavigationRules() ){
+//            String rulefromViewId = navRule.getFromViewId();
+            String rulefromViewId = FacesModelUtility.getFromViewIdFiltered(navRule);
             if( rulefromViewId != null && rulefromViewId.equals(fromViewId) ){
                 //  Match Found
-                return rule;
+                return navRule;
             }
         }
         
@@ -275,13 +278,13 @@ public class PageFlowController {
     
     public final boolean isKnownFolder( FileObject folder ){
         /* If it is not a folder return false*/
-         if( !folder.isFolder()  ) {
+        if( !folder.isFolder()  ) {
             return false;
-         }  
-         /* If it does not exist within WebFolder return false */
-         if(  !folder.getPath().contains(getWebFolder().getPath() )){
-             return false;
-         }
+        }
+        /* If it does not exist within WebFolder return false */
+        if(  !folder.getPath().contains(getWebFolder().getPath() )){
+            return false;
+        }
         /* If it exists withing WEB-INF or META-INF return false */
         if( folder.getPath().contains("WEB-INF") ||folder.getPath().contains("META-INF") ) {
             return false;
@@ -314,7 +317,7 @@ public class PageFlowController {
         
         List<NavigationRule> rules = facesConfig.getNavigationRules();
         for( NavigationRule navRule : rules ){
-            navRule2String.put(navRule, navRule.getFromViewId());
+            navRule2String.put(navRule, FacesModelUtility.getFromViewIdFiltered(navRule));
         }
         
         String currentScope = PageFlowUtilities.getInstance().getCurrentScope();
@@ -361,15 +364,16 @@ public class PageFlowController {
     }
     
     
-    private Collection<String> getFacesConfigPageNames(List<NavigationRule>rules) {
+    private Collection<String> getFacesConfigPageNames(List<NavigationRule>navRules) {
         // Get all the pages in the faces config.
         Collection<String> pages = new HashSet<String>();
-        for( NavigationRule rule : rules ){
-            String pageName = rule.getFromViewId();
+        for( NavigationRule navRule : navRules ){
+            String pageName = FacesModelUtility.getFromViewIdFiltered(navRule);
             pages.add(pageName);
-            List<NavigationCase> navCases = rule.getNavigationCases();
+            List<NavigationCase> navCases = navRule.getNavigationCases();
             for( NavigationCase navCase : navCases ){
-                String toPage = navCase.getToViewId();
+                //                String toPage = navCase.getToViewId();
+                String toPage = FacesModelUtility.getToViewIdFiltered(navCase);
                 if( toPage != null ) {
                     pages.add(toPage);
                 }
@@ -551,6 +555,10 @@ public class PageFlowController {
     }
     
     
+    public void renamePageInModel(String oldDisplayName, String newDisplayName){
+        FacesModelUtility.renamePageInModel(configModel, oldDisplayName, newDisplayName);
+    }
+    
     
     public void removeSceneNodeEdges(PageFlowNode pageNode) {
         
@@ -566,37 +574,7 @@ public class PageFlowController {
     }
     
     
-    /**
-     * Renames a page in the faces configuration file.
-     * @param oldDisplayName
-     * @param newDisplayName
-     */
-    public void renamePageInModel(String oldDisplayName, String newDisplayName ) {
-        configModel.startTransaction();
-        FacesConfig facesConfig = configModel.getRootComponent();
-        List<NavigationRule> navRules = facesConfig.getNavigationRules();
-        for( NavigationRule navRule : navRules ){
-            String fromViewId = navRule.getFromViewId();
-            if ( fromViewId != null && fromViewId.equals(oldDisplayName) ){
-                navRule.setFromViewId(newDisplayName);
-            }
-            List<NavigationCase> navCases = navRule.getNavigationCases();
-            for( NavigationCase navCase : navCases ) {
-                String toViewId = navCase.getToViewId();
-                if ( toViewId != null && toViewId.equals(oldDisplayName) ) {
-                    navCase.setToViewId(newDisplayName);
-                }
-            }
-        }
-        
-        configModel.endTransaction();
-        try {
-            configModel.sync();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-    
+
     
     /**
      * Remove all rules and cases with this pagename.
@@ -607,14 +585,15 @@ public class PageFlowController {
         FacesConfig facesConfig = configModel.getRootComponent();
         List<NavigationRule> navRules = facesConfig.getNavigationRules();
         for( NavigationRule navRule : navRules ){
-            String fromViewId = navRule.getFromViewId();
+            String fromViewId = FacesModelUtility.getFromViewIdFiltered(navRule);
             if ( fromViewId != null && fromViewId.equals(displayName) ){
                 //if the rule is removed, don't check the cases.
                 facesConfig.removeNavigationRule(navRule);
             } else {
                 List<NavigationCase> navCases = navRule.getNavigationCases();
                 for( NavigationCase navCase : navCases ) {
-                    String toViewId = navCase.getToViewId();
+                    //                    String toViewId = navCase.getToViewId();
+                    String toViewId = FacesModelUtility.getToViewIdFiltered(navCase);
                     if ( toViewId != null && toViewId.equals(displayName) ) {
                         navRule.removeNavigationCase(navCase);
                     }
@@ -718,4 +697,39 @@ public class PageFlowController {
     public PageFlowView getView() {
         return view;
     }
+    
+    
+    public void setModelNavigationCaseName( NavigationCase navCase, String newName ) {
+        configModel.startTransaction();
+        
+        //By default check from outcome first.  Maybe this should be the expectation.
+        if (navCase.getFromOutcome() != null ) {
+            navCase.setFromOutcome(newName);
+        }
+        if( navCase.getFromAction() != null) {
+            navCase.setFromAction(newName);
+        }
+        configModel.endTransaction();
+        
+        try     {
+            configModel.sync();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
+    public void removeModelNavigationCase( NavigationCase navCase ) throws IOException {
+        configModel.startTransaction();
+        NavigationRule navRule = (NavigationRule)navCase.getParent();
+        if( navRule !=null && navRule.getNavigationCases().contains(navCase) ) {  //Only delete if it is still valid.
+            navRule.removeNavigationCase(navCase);
+            if( navRule.getNavigationCases().size() < 1 ){
+                configModel.removeChildComponent(navRule);  //put this back once you remove hack
+            }
+        }
+        configModel.endTransaction();
+        configModel.sync();
+    }
+    
+
 }
