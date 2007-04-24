@@ -17,7 +17,6 @@
 			</directory>
 			<file title="about_openv.html"/>
 			<file title="about_ops.html"/>
-			<file title="aboutcust.html"/>
 			<file title="aboutdatatypes.html"/>
 			<file title="aboutpalettecan.html"/>
 			<file title="aboutprojects.html"/>
@@ -39,7 +38,6 @@
 			<file title="receivesend.html"/>
 			<file title="relagg_propedit.html"/>
 			<file title="relationout_propedit.html"/>
-			<file title="relinput_prop.html"/>
 			<file title="relmap_prop.html"/>
 			<file title="relstream_propedit.html"/>
 			<file title="saveiepprocess.html"/>
@@ -53,6 +51,7 @@
 			<file title="tableinput_propedit.html"/>
 			<file title="tableout_propedit.html"/>
 			<file title="timebased_propedit.html"/>
+			<file title="timebased_window_propedit.html"/>
 			<file title="tuplebased_propedit.html"/>
 			<file title="tuplebasedagg_propedit.html"/>
 			<file title="tupleser_propedit.html"/>

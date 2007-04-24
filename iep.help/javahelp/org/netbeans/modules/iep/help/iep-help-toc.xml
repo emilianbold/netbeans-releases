@@ -8,9 +8,9 @@
 		<tocitem text="Working with Intelligent Event Processing Module Projects">
 			<tocitem text="About Intelligent Event Processing Projects" target="iep_aboutprojects" />
 			<tocitem text="Saving an IEP Process" target="iep_saveiepprocess" />
-			<tocitem text="Deleting Intelligent Event Processors" target="iep_deleteprocess" />
 			<tocitem text="Working with IEP Operators" target="iep_work_iepops" />
 			<tocitem text="Deploying Intelligent Event Processing Module Projects" target="iep_deployiep" />
+			<tocitem text="Deleting an IEP Process" target="iep_deleteprocess" />
 		</tocitem>
 		<tocitem text="About the IEP Runtime">
 			<tocitem text="Receiving and Sending Events" target="iep_receivesend" />
@@ -29,6 +29,5 @@
 			<tocitem text="Editing IEP Operators" target="iep_editprojects" />
 			<tocitem text="Using Property Editors to Customze IEP Operators" target="iep_usingprop" />
 		</tocitem>
-		<tocitem text="Deleting an IEP Process" target="iep_deleteprocess" />
 	</tocitem>
 </toc>

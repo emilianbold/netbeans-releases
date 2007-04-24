@@ -17,7 +17,6 @@
 	<mapID target="iep_understandprojects" url="understandprojects.html"/>
 	<mapID target="iep_about_openv" url="about_openv.html"/>
 	<mapID target="iep_about_ops" url="about_ops.html"/>
-	<mapID target="iep_aboutcust" url="aboutcust.html"/>
 	<mapID target="iep_attbased_propedit" url="attbased_propedit.html"/>
 	<mapID target="iep_distinct_propedit" url="distinct_propedit.html"/>
 	<mapID target="iep_intersect_propedit" url="intersect_propedit.html"/>
@@ -25,7 +24,6 @@
 	<mapID target="iep_partitionwindow_propedit" url="partitionwindow_propedit.html"/>
 	<mapID target="iep_relagg_propedit" url="relagg_propedit.html"/>
 	<mapID target="iep_relationout_propedit" url="relationout_propedit.html"/>
-	<mapID target="iep_relinput_prop" url="relinput_prop.html"/>
 	<mapID target="iep_relmap_prop" url="relmap_prop.html"/>
 	<mapID target="iep_relstream_propedit" url="relstream_propedit.html"/>
 	<mapID target="iep_streamdel_propedit" url="streamdel_propedit.html"/>
@@ -45,4 +43,5 @@
 	<mapID target="iep_work_iepops" url="work_iepops.html"/>
 	<mapID target="iep_iepprocess" url="iepprocess.html"/>
 	<mapID target="iep_editprojects" url="editprojects.html"/>
+	<mapID target="iep_timebased_window_propedit" url="timebased_window_propedit.html"/>
 </map>
