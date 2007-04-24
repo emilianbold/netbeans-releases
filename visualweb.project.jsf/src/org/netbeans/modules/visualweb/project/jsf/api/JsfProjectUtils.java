@@ -147,27 +147,23 @@ public class JsfProjectUtils {
      * @param fo FileObject to be checked
      */
     public static boolean isJsfProjectFile(FileObject fo) {
-        // XXX No project property "creator" for web project
-        return true;
-
-        /* XXX Should read project.xml instead of project.properties.
         while (fo != null) {
             if (fo.isFolder()) {
-                final FileObject propFile = fo.getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                final FileObject projXml = fo.getFileObject("nbproject/project.xml"); // NOI18N
                 // Found the project root directory
-                if (propFile != null) {
+                if (projXml != null) {
                     try {
-                        String value = (String)ProjectManager.mutex().readAccess(
+                        Node value = (Node) ProjectManager.mutex().readAccess(
                             new Mutex.ExceptionAction() {
                                 public Object run() throws Exception {
-                                    EditableProperties prop = new EditableProperties();
-                                    InputStream is = propFile.getInputStream();
-                            
-                                    prop.load(is);
-                                    is.close();
-
-                                    // Find Creator version by key "creator"
-                                    return prop.getProperty("creator"); // NOI18N
+                                    Document doc = XMLUtil.parse(new InputSource(FileUtil.toFile(projXml).toURI().toString()), false, true, null,
+                                        new EntityResolver() {
+                                            public InputSource resolveEntity(String pubid, String sysid) throws SAXException, IOException {
+                                                return new InputSource(new ByteArrayInputStream(new byte[0]));
+                                            }
+                                        });
+                                    NodeList nlist = doc.getElementsByTagNameNS(RAVE_AUX_NAMESPACE, RAVE_AUX_NAME);
+                                    return nlist.getLength() == 0 ? null : nlist.item(0);
                                 }
                         });
 
@@ -182,7 +178,6 @@ public class JsfProjectUtils {
         }
 
         return false;
-        */
     }
 
     public static String getProjectVersion(Project project) {
