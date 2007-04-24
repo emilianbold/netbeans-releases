@@ -20,12 +20,14 @@
 package org.netbeans.modules.vmd.game.editor.tiledlayer;
 
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
@@ -43,6 +45,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseMotionListener;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -54,6 +57,7 @@ import java.util.TimerTask;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.DebugGraphics;
+import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
@@ -116,6 +120,26 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 	RulerHorizontal rulerHorizontal;
 	RulerVertical rulerVertical;
 	
+	public static final int EDIT_MODE_PAINT = 0;
+	public static final int EDIT_MODE_SELECT = 1;
+	public static final String PAINT_CURSOR_NAME = "CUSTOM_PAINT_CURSOR";
+	
+	private int editMode;
+	
+	private static Cursor paintCursor;
+	private static Cursor selectionCursor;
+	
+	static {
+		//create custom cursors
+		URL cursorUrl = TiledLayerEditorComponent.class.getResource("res/drawing_mode_mouse_16.png");
+		ImageIcon cursorIcon = new ImageIcon(cursorUrl);
+		paintCursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorIcon.getImage(), new Point(4, 0), PAINT_CURSOR_NAME);
+		
+		cursorUrl = TiledLayerEditorComponent.class.getResource("res/select_mode_mouse_16.png");
+		cursorIcon = new ImageIcon(cursorUrl);
+		selectionCursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorIcon.getImage(), new Point(0, 0), PAINT_CURSOR_NAME);
+	}
+			
 	/** Creates a new instance of EditorComponent */
 	public TiledLayerEditorComponent(TiledLayer tiledLayer) {
 		this.setTiledLayer(tiledLayer);
@@ -133,6 +157,9 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		
 		this.rulerHorizontal = new RulerHorizontal();
 		this.rulerVertical = new RulerVertical();
+		
+		
+		this.setEditMode(EDIT_MODE_PAINT);
 	}
 	
 	public Dimension getMaximumSize() {
@@ -359,13 +386,9 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 	
 //----- mouse handling ------
 	
-	public static final int EDIT_MODE_PAINT = 0;
-	public static final int EDIT_MODE_SELECT = 1;
-	
-	private int editMode = EDIT_MODE_PAINT;
-	
 	public void setEditMode(int editMode) {
 		this.editMode = editMode;
+		this.setCursor(editMode == EDIT_MODE_PAINT ? paintCursor : selectionCursor);
 	}
 	private boolean isPaintMode() {
 		return this.editMode == EDIT_MODE_PAINT;

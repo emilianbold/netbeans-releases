@@ -42,15 +42,14 @@ public class PartialImageGridPreview extends JComponent {
 
     public static final boolean DEBUG = false;
     
-	private static final int MAX_PREVIEW_ROWS = 2;
-	private static final int MAX_PREVIEW_COLS = 2;
-	
 	private static final int TILE_GAP = 4;
 	
 	private BufferedImage originalImage;
 	private Image preview;
 	private int tileWidth;
 	private int tileHeight;
+	
+	private boolean partialMode = true;
 	
 	public PartialImageGridPreview () {
 		this.setBorder(BorderFactory.createLineBorder(Color.GRAY));
@@ -78,6 +77,7 @@ public class PartialImageGridPreview extends JComponent {
 		this.originalImage = bufImg;
 		this.tileWidth = originalImage.getWidth(this);
 		this.tileHeight = originalImage.getHeight(this);
+		
 		this.createPreview();
 		this.repaint();
 	}
@@ -87,6 +87,19 @@ public class PartialImageGridPreview extends JComponent {
 	}
 	
 	private void createPreview() {
+		if (this.partialMode) {
+			this.createPartialPreview();
+		}
+		else {
+			this.createWholePreview();
+		}
+	}
+	
+	private void createWholePreview() {
+		//TODO: implement this
+	}
+	
+	private void createPartialPreview() {
 		if (this.originalImage == null)
 			return;
 		

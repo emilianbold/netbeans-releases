@@ -71,6 +71,11 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
 	private GlobalRepository gameDesign;
 	
     private static final Icon ICON_ERROR = new ImageIcon(Utilities.loadImage("org/netbeans/modules/vmd/midp/resources/error.gif"));
+	
+	private static final int DEFAULT_COLS = 20;
+	private static final int DEFAULT_ROWS = 20;
+	private static final int DEFAULT_TILE_WIDTH = 18;
+	private static final int DEFAULT_TILE_HEIGHT = 18;
 
 	/** Creates new form NewTiledLayerDialog */
 	public TiledLayerDialog(GlobalRepository gameDesign) {
@@ -110,10 +115,6 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
         jSeparator1 = new javax.swing.JSeparator();
         panelLayerInfo = new javax.swing.JPanel();
         fieldLayerName = new javax.swing.JTextField();
-        jLabel1 = new javax.swing.JLabel();
-        spinnerRows = new javax.swing.JSpinner();
-        jLabel2 = new javax.swing.JLabel();
-        spinnerCols = new javax.swing.JSpinner();
         jLabel3 = new javax.swing.JLabel();
         jSeparator2 = new javax.swing.JSeparator();
 
@@ -133,7 +134,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
                 .add(panelCustomizerLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(labelImageFile)
                     .add(buttonImportImages)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE))
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE))
                 .addContainerGap())
         );
         panelCustomizerLayout.setVerticalGroup(
@@ -141,10 +142,9 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
             .add(panelCustomizerLayout.createSequentialGroup()
                 .add(labelImageFile)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 226, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(buttonImportImages)
-                .addContainerGap())
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE)
+                .add(18, 18, 18)
+                .add(buttonImportImages))
         );
 
         labelImagePreview.setText("Adjust tile size in pixels:");
@@ -173,23 +173,24 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
                         .add(labelTileHeight)
                         .addContainerGap())
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, panelPreviewLayout.createSequentialGroup()
-                        .add(panelPreviewLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, sliderWidth, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE)
-                            .add(panelImage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE))
+                        .add(panelImage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(sliderHeight, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                        .add(sliderHeight, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(panelPreviewLayout.createSequentialGroup()
+                        .add(sliderWidth, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE)
+                        .add(22, 22, 22))))
         );
         panelPreviewLayout.setVerticalGroup(
             panelPreviewLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, panelPreviewLayout.createSequentialGroup()
                 .add(labelImagePreview)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(panelPreviewLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(sliderHeight, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(panelImage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 191, Short.MAX_VALUE))
+                .add(panelPreviewLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, sliderHeight, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 249, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, panelImage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 249, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(sliderWidth, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 31, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(panelPreviewLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(labelTileWidth, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(labelTileHeight)))
@@ -210,10 +211,6 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
                 .add(labelError, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 27, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
 
-        jLabel1.setText("Number of rows:");
-
-        jLabel2.setText("Number of columns:");
-
         jLabel3.setText("TiledLayer name:");
 
         org.jdesktop.layout.GroupLayout panelLayerInfoLayout = new org.jdesktop.layout.GroupLayout(panelLayerInfo);
@@ -221,38 +218,18 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
         panelLayerInfoLayout.setHorizontalGroup(
             panelLayerInfoLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(panelLayerInfoLayout.createSequentialGroup()
-                .add(panelLayerInfoLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel2)
-                    .add(jLabel1)
-                    .add(jLabel3))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(panelLayerInfoLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(panelLayerInfoLayout.createSequentialGroup()
-                        .add(panelLayerInfoLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, spinnerCols)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, spinnerRows, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 67, Short.MAX_VALUE))
-                        .addContainerGap())
-                    .add(fieldLayerName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 538, Short.MAX_VALUE)))
+                .add(jLabel3)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(fieldLayerName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 553, Short.MAX_VALUE))
         );
-
-        panelLayerInfoLayout.linkSize(new java.awt.Component[] {spinnerCols, spinnerRows}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
         panelLayerInfoLayout.setVerticalGroup(
             panelLayerInfoLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, panelLayerInfoLayout.createSequentialGroup()
-                .addContainerGap(37, Short.MAX_VALUE)
+            .add(panelLayerInfoLayout.createSequentialGroup()
+                .addContainerGap()
                 .add(panelLayerInfoLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(fieldLayerName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel3))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(panelLayerInfoLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
-                    .add(spinnerRows, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(panelLayerInfoLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel2)
-                    .add(spinnerCols, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+                    .add(jLabel3)
+                    .add(fieldLayerName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jSeparator2.setOrientation(javax.swing.SwingConstants.VERTICAL);
@@ -265,15 +242,15 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(panelLayerInfo, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(panelError, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(panelCustomizer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jSeparator2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(panelCustomizer, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(panelPreview, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
-                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 676, Short.MAX_VALUE))
+                        .add(jSeparator2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 8, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(panelPreview, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 676, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, panelError, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -282,15 +259,11 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
                 .add(panelLayerInfo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 13, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(18, 18, 18)
-                        .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(panelPreview, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(panelCustomizer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                    .add(panelCustomizer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
+                    .add(panelPreview, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(panelError, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -302,8 +275,6 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
     private javax.swing.ButtonGroup buttonGroupLayers;
     private javax.swing.JButton buttonImportImages;
     private javax.swing.JTextField fieldLayerName;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
@@ -321,8 +292,6 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
     private javax.swing.JPanel panelPreview;
     private javax.swing.JSlider sliderHeight;
     private javax.swing.JSlider sliderWidth;
-    private javax.swing.JSpinner spinnerCols;
-    private javax.swing.JSpinner spinnerRows;
     // End of variables declaration//GEN-END:variables
 	
 	
@@ -346,19 +315,19 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
 	private void init() {
 		this.labelError.setIcon(ICON_ERROR);
 		
-		SpinnerNumberModel snm1 = new SpinnerNumberModel();
-		snm1.setMinimum(1);
-		snm1.setMaximum(500);
-		snm1.setStepSize(1);
-		snm1.setValue(15);
-		this.spinnerRows.setModel(snm1);
-		
-		SpinnerNumberModel snm2 = new SpinnerNumberModel();
-		snm2.setMinimum(1);
-		snm2.setMaximum(500);
-		snm2.setStepSize(1);
-		snm2.setValue(15);
-		this.spinnerCols.setModel(snm2);
+//		SpinnerNumberModel snm1 = new SpinnerNumberModel();
+//		snm1.setMinimum(1);
+//		snm1.setMaximum(500);
+//		snm1.setStepSize(1);
+//		snm1.setValue(15);
+//		this.spinnerRows.setModel(snm1);
+//		
+//		SpinnerNumberModel snm2 = new SpinnerNumberModel();
+//		snm2.setMinimum(1);
+//		snm2.setMaximum(500);
+//		snm2.setStepSize(1);
+//		snm2.setValue(15);
+//		this.spinnerCols.setModel(snm2);
 		
 		this.panelImage.add(this.imagePreview, BorderLayout.CENTER);
 		this.fieldLayerName.getDocument().addDocumentListener(new LayerFieldListener());
@@ -581,12 +550,18 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
 			this.sliderWidth.setModel(modelWidth);
 			this.sliderHeight.setModel(modelHeight);			
 			
+			this.sliderWidth.setValue(this.tileWidths.indexOf(getNearestValue(DEFAULT_TILE_WIDTH, tileWidths)));
+			this.sliderHeight.setValue(this.tileHeigths.indexOf(getNearestValue(DEFAULT_TILE_HEIGHT, tileHeigths)));
+			
 			//set labels
 			int tileWidth = this.tileWidths.get(((Integer) this.sliderWidth.getValue()).intValue());
 			int tileHeight = this.tileHeigths.get(((Integer) this.sliderHeight.getValue()).intValue());
 			this.labelTileHeight.setText("Tile height: " + tileHeight + " px");
 			this.labelTileWidth.setText("Tile width: " + tileWidth + " px");
 			
+			this.imagePreview.setTileWidth(tileWidth);
+			this.imagePreview.setTileHeight(tileHeight);
+
 			this.repaint();
 			
 			this.sliderWidth.addChangeListener(sliderListener);
@@ -595,6 +570,18 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private static int getNearestValue(int mark, List<Integer> values) {
+		int nearest = Integer.MAX_VALUE;
+		for (Integer value : values) {
+			int nearestDiff = Math.abs(mark - nearest);
+			int valueDiff = Math.abs(mark - value);
+			if (valueDiff < nearestDiff || (valueDiff == nearestDiff && value > nearest)) {
+				nearest = value;
+			}
+		}
+		return nearest;
 	}
 	
 	public void actionPerformed(ActionEvent e) {
@@ -671,10 +658,10 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
 		ImageResource imgRes = this.gameDesign.getImageResource(imageURL, relativeResourcePath);
 		
 		if (this.scene != null) {
-			this.scene.createTiledLayer(name, imgRes, (Integer) this.spinnerRows.getValue(), (Integer) this.spinnerCols.getValue(), tileWidth, tileHeight);
+			this.scene.createTiledLayer(name, imgRes, DEFAULT_ROWS, DEFAULT_COLS, tileWidth, tileHeight);
 		}
 		else {
-			this.gameDesign.createTiledLayer(name, imgRes, (Integer) this.spinnerRows.getValue(), (Integer) this.spinnerCols.getValue(), tileWidth, tileHeight);
+			this.gameDesign.createTiledLayer(name, imgRes, (Integer) DEFAULT_ROWS, DEFAULT_COLS, tileWidth, tileHeight);
 		}
 	}
 	
