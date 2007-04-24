@@ -51,7 +51,9 @@ import org.netbeans.modules.vmd.midp.components.displayables.ScreenCD;
 import org.netbeans.modules.vmd.midp.inspector.controllers.DisplayablePC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
+import org.netbeans.modules.vmd.midp.screen.display.DisplayableDisplayPresenter;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
+import org.openide.util.Utilities;
 
 
 /**
@@ -115,7 +117,9 @@ public final class FileBrowserCD extends ComponentDescriptor {
             // actions
             AddActionPresenter.create(AddActionPresenter.ADD_ACTION, 10, CommandCD.TYPEID),
             //inspector
-            InspectorPositionPresenter.create(new DisplayablePC())
+            InspectorPositionPresenter.create(new DisplayablePC()),
+            //screen
+            new DisplayableDisplayPresenter(Utilities.loadImage(ICON_PATH))
         );
     }
 
@@ -127,6 +131,7 @@ public final class FileBrowserCD extends ComponentDescriptor {
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass(presenters, AddActionPresenter.class);
         DocumentSupport.removePresentersOfClass(presenters, CodeSetterPresenter.class);
+        DocumentSupport.removePresentersOfClass(presenters, DisplayableDisplayPresenter.class);
         super.gatherPresenters(presenters);
     }
 

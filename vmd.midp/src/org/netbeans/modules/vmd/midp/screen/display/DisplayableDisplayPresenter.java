@@ -52,6 +52,11 @@ public class DisplayableDisplayPresenter extends ScreenDisplayPresenter {
         panel.getSignal().setIcon(new ImageIcon(SIGNAL));
     }
     
+     public DisplayableDisplayPresenter(Image image) {
+       this();
+       panel.add(new JLabel(new ImageIcon(image)));
+    }
+     
     public boolean isTopLevelDisplay() {
         return true;
     }
