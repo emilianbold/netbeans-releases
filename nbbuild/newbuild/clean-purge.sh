@@ -7,6 +7,10 @@ source init.sh
 mkdir -p $NB_ALL
 cd  $NB_ALL
 
+if [ -d $DIST ]; then
+    rm -rf $DIST
+fi
+
 Clean the leftovers from the last build.
 For more info about "cvspurge" take a look 
 at http://www.red-bean.com/cvsutils/
