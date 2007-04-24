@@ -70,7 +70,7 @@ public class QBGraphScene extends GraphScene {
 
 	router = RouterFactory.createOrthogonalSearchRouter (mainLayer, connectionLayer);
         getActions().addAction (mouseHoverAction);
-        getActions().addAction(ActionFactory.createZoomAction());
+        // getActions().addAction(ActionFactory.createZoomAction());
 	// ToDo: qbGF has been passed in only to support the menu; eventually, merge QBGF into this
         getActions().addAction(ActionFactory.createPopupMenuAction(qbGF));
     }
