@@ -106,7 +106,7 @@ public class GlassFishUtils {
         
         ExecutionResults results = SystemUtils.executeCommand(location,
                 executable,
-                "start-domain",
+                START_DOMAIN_COMMAND,
                 domainName
                 );
         
@@ -122,7 +122,7 @@ public class GlassFishUtils {
         
         ExecutionResults results = SystemUtils.executeCommand(location,
                 executable,
-                "stop-domain",
+                STOP_DOMAIN_COMMAND,
                 domainName
                 );
         
@@ -142,7 +142,7 @@ public class GlassFishUtils {
         
         ExecutionResults results = SystemUtils.executeCommand(location,
                 executable,
-                "delete-domain",
+                DELETE_DOMAIN_COMMAND,
                 domainName
                 );
         
@@ -432,7 +432,7 @@ public class GlassFishUtils {
     @Deprecated
     public static void addJvmOption(File location, String domainName, String option) throws IOException, XMLException {
         setJvmOption(location, domainName, option);
-    }    
+    }
     
     public static void setJvmOption(File location, String domainName, String option) throws IOException, XMLException {
         final Document document =
@@ -562,17 +562,28 @@ public class GlassFishUtils {
     
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final String INSTALL_ADDON_COMMAND = 
+    public static final String INSTALL_ADDON_COMMAND =
             "install-addon"; // NOI18N
     
-    public static final String UNINSTALL_ADDON_COMMAND = 
+    public static final String UNINSTALL_ADDON_COMMAND =
             "uninstall-addon"; // NOI18N
     
-    public static final String DEFAULT_DOMAIN = 
+    public static final String DEFAULT_DOMAIN =
             "domain1"; // NOI18N
     
-    public static final String CLI_130 = 
+    public static final String CLI_130 =
             "CLI130"; // NOI18N
+    public static final String START_DOMAIN_COMMAND =
+            "start-domain"; //NOI18N
+    public static final String STOP_DOMAIN_COMMAND =
+            "stop-domain"; //NOI18N
+    public static final String DELETE_DOMAIN_COMMAND =
+            "delete-domain";//NOI18N
+    
+    public static final String START_DATABASE_COMMAND = 
+            "start-database"; //NOI18N
+    public static final String STOP_DATABASE_COMMAND = 
+            "stop-database"; //NOI18N
     
     public static final String COULD_NOT_CREATE_DOMAIN_MARKER =
             CLI_130 + " Could not create domain"; // NOI18N
