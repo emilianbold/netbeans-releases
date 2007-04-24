@@ -94,18 +94,13 @@ import org.w3c.dom.Element;
  */
 public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*/ {
 
-    private static final boolean SHOW_RENDER_ERRORS =
-        System.getProperty("rave.hideRenderErrors") == null;
+    // XXX Get rid of this.
+    private static final boolean SHOW_RENDER_ERRORS = System.getProperty("rave.hideRenderErrors") == null;
 
 //    /** Should we show a Tray (like in Reef 1.0) or not? */
 //    static final boolean SHOW_TRAY = (System.getProperty("rave.showTray") != null); // NOI18N
 
-    private static final NavigatorLookupHint NAVIGATOR_HINT = new NavigatorLookupHint() {
-        public String getContentType() {
-            // TODO Find out nice MIME type.
-            return "application/x-designer"; // NOI18N
-        }
-    };
+    private static final NavigatorLookupHint NAVIGATOR_HINT = new DesignerNavigatorLookupHint();
 
 
 //    // XXX Get rid of this suspicious impl.
@@ -136,7 +131,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //    private JComponent html;
     
 //    private JScrollPane scroller = null;
-    private boolean showing = false;
+//    private boolean showing = false;
 
     // <multiview>
     private transient MultiViewElementCallback multiViewElementCallback;
@@ -256,8 +251,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         return PERSISTENCE_NEVER;
     }
 
-    public /* For testsuite
-    protected */ void componentOpened() {
+    protected void componentOpened() {
 //        if (!initialized) {
 //            initialized = true;
 ////            setLayout(new BorderLayout());
@@ -292,7 +286,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         openAdditionalWindows();
     }
 
-    public void componentClosed() {
+    protected void componentClosed() {
 //        DesignContext context = webform.getModel().getLiveUnit();
 //
 //        if ((context != null) && !needListeners) {
@@ -847,7 +841,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 
     /* Activates copy/cut/paste actions.
     */
-    public void componentActivated() {
+    protected void componentActivated() {
 //        OutlineTopComp.getInstance().setCurrent(webform);
 //        OutlineTopComp.getInstance().requestVisible();
 //        selectNewOutline();
@@ -964,19 +958,19 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //        pendingRefreshAll = true;
 //    }
     
-    public /* For testsuite
-    protected */ void componentShowing() {
+    protected void componentShowing() {
 //        // PROJECTTODO: Why is componentShowing occuring before componentOpened, not sure
 //        // THIS is a HACK !EAT
 //        if (!initialized) {
 //            componentOpened();
 //        }
 
-        if (showing) {
-            return;
-        }
-
-        showing = true;
+        // XXX It was here only because of incorrect impl of old rave window system.
+//        if (showing) {
+//            return;
+//        }
+//
+//        showing = true;
 
 //        // XXX
 //        if (pendingRefreshAll) {
@@ -1108,14 +1102,15 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         designer.paneRequestFocus();
     }
 
-    public void componentHidden() {
-        if (!showing) {
-            // For some reason, I'll often get componentHidden
-            // before any componentShowing events. Suppress these.
-            return;
-        }
-
-        showing = false;
+    protected void componentHidden() {
+        // XXX It was here only because of incorrect impl of old rave window system.
+//        if (!showing) {
+//            // For some reason, I'll often get componentHidden
+//            // before any componentShowing events. Suppress these.
+//            return;
+//        }
+//
+//        showing = false;
 
         // Now redundant, see the StatusDisplayer.setStatusText javadoc.
 //        StatusDisplayer.getDefault().setStatusText("");
@@ -2328,4 +2323,12 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
             getJsfTopComponent().dumpActivatedComponentCssBoxes();
         }
     } // End of DumpBoxesAction.
+    
+    
+    private static class DesignerNavigatorLookupHint implements NavigatorLookupHint {
+        public String getContentType() {
+            // TODO Find out nice MIME type.
+            return "application/x-designer"; // NOI18N
+        }
+    } // End of DesignerNavigatorLookupHint.
 }
