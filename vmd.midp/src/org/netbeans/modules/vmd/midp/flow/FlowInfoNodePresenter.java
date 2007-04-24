@@ -138,7 +138,7 @@ public final class FlowInfoNodePresenter extends FlowNodePresenter {
 
         public void accept (FlowDescriptor descriptor, Transferable transferable) {
             ComponentProducer.Result result = AcceptSupport.accept (descriptor.getRepresentedComponent (), transferable);
-            MidpDocumentSupport.selectComponentProducerResult (result);
+            AcceptSupport.selectComponentProducerResult (result);
         }
 
         public boolean isEditable (FlowDescriptor descriptor) {

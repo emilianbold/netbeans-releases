@@ -157,7 +157,7 @@ public abstract class FlowEventSourcePinPresenter extends FlowPinPresenter {
 
         public void accept (FlowDescriptor descriptor, Transferable transferable) {
             ComponentProducer.Result result = AcceptSupport.accept (descriptor.getRepresentedComponent (), transferable);
-            MidpDocumentSupport.selectComponentProducerResult (result);
+            AcceptSupport.selectComponentProducerResult (result);
         }
 
         public boolean isConnectionSource (FlowPinDescriptor pin) {

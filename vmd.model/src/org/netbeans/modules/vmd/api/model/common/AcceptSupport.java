@@ -22,6 +22,7 @@ import org.netbeans.modules.vmd.api.model.ComponentProducer;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 
 import java.awt.datatransfer.Transferable;
+import java.util.Collections;
 
 /**
  * @author David Kaspar
@@ -95,6 +96,12 @@ public final class AcceptSupport {
                     break;
             }
         return null;
+    }
+
+    public static void selectComponentProducerResult (ComponentProducer.Result result) {
+        DesignComponent component = result != null ? result.getMainComponent () : null;
+        if (component != null)
+            component.getDocument ().setSelectedComponents ("accept", Collections.singleton (component)); // NOI18N
     }
     
 }

@@ -135,13 +135,13 @@ public final class RootCD extends ComponentDescriptor {
             DesignComponent categoryComponent = MidpDocumentSupport.getCategoryComponent (descriptor.getRepresentedComponent ().getDocument (), DisplayablesCategoryCD.TYPEID);
             if (AcceptSupport.isAcceptable (categoryComponent, transferable)) {
                 ComponentProducer.Result result = AcceptSupport.accept (categoryComponent, transferable);
-                MidpDocumentSupport.selectComponentProducerResult (result);
+                AcceptSupport.selectComponentProducerResult (result);
                 return;
             }
             categoryComponent = MidpDocumentSupport.getCategoryComponent (descriptor.getRepresentedComponent ().getDocument (), PointsCategoryCD.TYPEID);
             if (AcceptSupport.isAcceptable (categoryComponent, transferable)) {
                 ComponentProducer.Result result = AcceptSupport.accept (categoryComponent, transferable);
-                MidpDocumentSupport.selectComponentProducerResult (result);
+                AcceptSupport.selectComponentProducerResult (result);
             }
         }
 

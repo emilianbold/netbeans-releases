@@ -23,6 +23,7 @@ package org.netbeans.modules.vmd.screen.device;
 import org.netbeans.modules.vmd.api.io.PopupUtil;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.netbeans.modules.vmd.api.model.ComponentProducer;
 import org.netbeans.modules.vmd.api.model.common.AcceptSupport;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsSupport;
@@ -285,7 +286,8 @@ public class TopPanel extends JPanel {
         document.getTransactionManager ().writeAccess (new Runnable() {
             public void run () {
                 DesignComponent component = devicePanel.getDesignComponentAt (point);
-                AcceptSupport.accept (component, transferable);
+                ComponentProducer.Result result = AcceptSupport.accept (component, transferable);
+                AcceptSupport.selectComponentProducerResult (result);
             }
         });
     }

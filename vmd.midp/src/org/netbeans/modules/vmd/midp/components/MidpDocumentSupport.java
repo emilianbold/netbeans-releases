@@ -235,10 +235,4 @@ public final class MidpDocumentSupport {
         return propertyValue.getKind() == PropertyValue.Kind.VALUE  &&  "MIDP-2.0".equals(MidpTypes.getString(propertyValue)) ? 2 : 1;
     }
 
-    public static void selectComponentProducerResult (ComponentProducer.Result result) {
-        DesignComponent component = result != null ? result.getMainComponent () : null;
-        if (component != null)
-            component.getDocument ().setSelectedComponents ("accept", Collections.singleton (component)); // NOI18N
-    }
-
 }
