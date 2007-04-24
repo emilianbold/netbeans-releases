@@ -546,11 +546,7 @@ public class EditVirtualFormsCustomizerPanel
     private void readVFormInfo() {
         formBean = VirtualFormsHelper.findFormBean(beans);
         DesignContext dcontext = formBean.getDesignContext();
-        ComponentGroupHolder[] holders = null;
-        Object dcontextData = dcontext.getContextData(ComponentGroupHolder.CONTEXT_DATA_KEY);
-        if (dcontextData instanceof ComponentGroupHolder[]) {        
-            holders = (ComponentGroupHolder[])dcontextData;
-        }
+        ComponentGroupHolder[] holders = ComponentGroupHelper.getComponentGroupHolders(dcontext);
         ComponentGroupHelper.populateColorMap(dcontext, holders, colorMap);
         Form form = (Form)formBean.getInstance();
         Form.VirtualFormDescriptor[] vforms = form.getVirtualForms();

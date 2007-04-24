@@ -26,6 +26,7 @@ import com.sun.rave.designtime.Result;
 import com.sun.rave.designtime.ext.componentgroup.ColorWrapper;
 import com.sun.rave.designtime.ext.componentgroup.ComponentGroup;
 import com.sun.rave.designtime.ext.componentgroup.ComponentGroupHolder;
+import com.sun.rave.designtime.ext.componentgroup.ComponentGroupDesignInfo;
 import com.sun.rave.designtime.ext.componentgroup.ComponentSubset;
 import com.sun.rave.designtime.ext.componentgroup.util.ComponentGroupHelper;
 import com.sun.rave.designtime.ext.componentgroup.impl.ColorWrapperImpl;
@@ -49,7 +50,7 @@ import org.netbeans.modules.visualweb.web.ui.dt.component.vforms.VirtualFormsHel
  * @author mbohm
  * @author gjmurphy
  */
-public class FormDesignInfo extends AbstractDesignInfo {
+public class FormDesignInfo extends AbstractDesignInfo implements ComponentGroupDesignInfo {
 
     /**
      * <p>The name for any <code>ComponentGroupHolder</code> that holds virtual forms.</p>
@@ -143,55 +144,8 @@ public class FormDesignInfo extends AbstractDesignInfo {
         }
     }
     
-    /**
-     * <p>Add to the design context data a <code>ComponentGroupHolder</code> 
-     * representing the virtual forms on the page, if one is not already 
-     * present.</p> 
-     */ 
-    private void registerComponentGroupHolderIfNecessary(DesignBean bean) {
-        DesignContext dcontext = bean.getDesignContext();
-        ComponentGroupHolder[] holders = null;
-        Object dcontextData = dcontext.getContextData(ComponentGroupHolder.CONTEXT_DATA_KEY);
-        if (dcontextData instanceof ComponentGroupHolder[]) {
-            holders = (ComponentGroupHolder[])dcontextData;
-        }
-                
-        boolean foundSelf = false;
-        if (holders != null) {
-            for (int i = 0; i < holders.length; i++) {
-                if (VIRTUAL_FORM_HOLDER_NAME.equals(holders[i].getName())) {
-                    foundSelf = true;
-                    break;
-                }
-            }
-        }
-        if (!foundSelf) {
-            ComponentGroupHolder[] revisedHolders;
-            if (holders == null) {
-                revisedHolders = new ComponentGroupHolder[]{new VirtualFormHolder()};
-            }
-            else {
-                revisedHolders = new ComponentGroupHolder[holders.length + 1];
-                System.arraycopy(holders, 0, revisedHolders, 0, holders.length);
-                revisedHolders[holders.length] = new VirtualFormHolder();
-            }
-            dcontext.setContextData(ComponentGroupHolder.CONTEXT_DATA_KEY, revisedHolders);
-        }
-    }
-    
-    /**
-     * <p>Setup logic when a <code>Form</code> is dragged from the palette.</p>
-     */ 
-    public Result beanCreatedSetup(DesignBean bean) {
-        registerComponentGroupHolderIfNecessary(bean);
-        return Result.SUCCESS;
-    }
-    
-    /**
-     * <p>Logic invoked when the designer view of the page is activated.</p>
-     */ 
-    public void beanContextActivated(DesignBean bean) {
-        registerComponentGroupHolderIfNecessary(bean);
+    public ComponentGroupHolder[] getComponentGroupHolders() {
+        return new ComponentGroupHolder[]{new VirtualFormHolder()};
     }
     
     /**

@@ -18,17 +18,24 @@
  */
 package com.sun.rave.designtime.ext.componentgroup.util;
 
+import com.sun.rave.designtime.DesignBean;
 import java.awt.Color;
 import java.util.Map;
 import com.sun.rave.designtime.DesignContext;
+import com.sun.rave.designtime.DesignInfo;
 import com.sun.rave.designtime.ext.componentgroup.ColorWrapper;
 import com.sun.rave.designtime.ext.componentgroup.ComponentGroup;
+import com.sun.rave.designtime.ext.componentgroup.ComponentGroupDesignInfo;
 import com.sun.rave.designtime.ext.componentgroup.ComponentGroupHolder;
 import com.sun.rave.designtime.ext.componentgroup.impl.ColorWrapperImpl;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 /**
  * <p>Helper class to paint Component Group colors, etc.</p>
@@ -102,15 +109,37 @@ public class ComponentGroupHelper {
                         color = ((ColorWrapper)o).getColor();
                         if (color != null) {
                             //color will already be in groups[i]
-                            colorMap.put(key, color);
+                            
+                            //check to make sure the color is not already in the map
+                            Collection<Color> values = colorMap.values();
+                            if (values.contains(color)) {
+                                groups[i].setColor(null);
+                                unassignedComponentGroups.add(groups[i]);
+                                unassignedComponentGroupKeys.add(key);
+                            } else {
+                                colorMap.put(key, color);
+                            }
+                        } else {
+                            unassignedComponentGroups.add(groups[i]);
+                            unassignedComponentGroupKeys.add(key);
                         }
                     } else if (o instanceof String) {
                         ColorWrapper cw = new ColorWrapperImpl((String)o);
                         color = cw.getColor();
                         if (color != null) {
                             dcontext.setContextData(key, cw);
+                            
                             //color will already be in groups[i]
-                            colorMap.put(key, color);
+                            
+                            //check to make sure the color is not already in the map
+                            Collection<Color> values = colorMap.values();
+                            if (values.contains(color)) {
+                                groups[i].setColor(null);
+                                unassignedComponentGroups.add(groups[i]);
+                                unassignedComponentGroupKeys.add(key);
+                            } else {
+                                colorMap.put(key, color);
+                            }
                         } else {
                             unassignedComponentGroups.add(groups[i]);
                             unassignedComponentGroupKeys.add(key);
@@ -227,5 +256,37 @@ public class ComponentGroupHelper {
             }
         }
         return leastUsedColor;
+    }
+    
+    /**
+     * <p>Get all the <code>ComponentGroupHolder</code> instances associated
+     * with the supplied <code>DesignContext</code>.</p>
+     * @param dcontext The design context.
+     */ 
+    public static ComponentGroupHolder[] getComponentGroupHolders(DesignContext dcontext) {
+        //get flat list of beans for this dcontext
+        DesignBean[] dcontextBeans = dcontext.getBeans();
+        if (dcontextBeans == null || dcontextBeans.length == 0) {
+            return null;
+        }
+        Set<String> designInfoSet = new HashSet<String>();
+        List<ComponentGroupHolder> holderList = new ArrayList<ComponentGroupHolder>();
+        for (int b = 0; b < dcontextBeans.length; b++) {
+            DesignInfo designInfo = dcontextBeans[b].getDesignInfo();
+            if (! (designInfo instanceof ComponentGroupDesignInfo)) {
+                continue;
+            }
+            String designInfoClassName = designInfo.getClass().getName();
+            if (designInfoSet.contains(designInfoClassName)) {
+                continue;
+            }
+            designInfoSet.add(designInfoClassName);
+            ComponentGroupDesignInfo componentGroupDesignInfo = (ComponentGroupDesignInfo)designInfo;
+            ComponentGroupHolder[] designInfoHolders = componentGroupDesignInfo.getComponentGroupHolders();
+            if (designInfoHolders != null) {
+                holderList.addAll(Arrays.asList(designInfoHolders));
+            }
+        }
+        return holderList.toArray(new ComponentGroupHolder[holderList.size()]);
     }
 }

@@ -29,11 +29,7 @@ import com.sun.rave.designtime.DisplayAction;
  * @author mbohm
  */
 public interface ComponentGroupHolder {
-   /**
-    * <p>The design context data key associated with an array of holders.</p> 
-    */
-   String CONTEXT_DATA_KEY = "com.sun.rave.designtime.ext.componentgroup.holders"; //NOI18N
-   
+  
    /**
     * <p>Prefix used in context data keys associated with component group colors.</p>
     */ 

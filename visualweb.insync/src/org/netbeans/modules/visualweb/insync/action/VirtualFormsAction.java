@@ -27,6 +27,7 @@ import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignContext;
 import com.sun.rave.designtime.DisplayAction;
 import com.sun.rave.designtime.ext.componentgroup.ComponentGroupHolder;
+import com.sun.rave.designtime.ext.componentgroup.util.ComponentGroupHelper;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.visualweb.insync.live.LiveUnit;
@@ -51,11 +52,7 @@ public class VirtualFormsAction extends AbstractDisplayActionAction {
         }
 		
         DesignContext designContext = designBeans[0].getDesignContext();
-        ComponentGroupHolder[] holders = null;
-        Object dcontextData = designContext.getContextData(ComponentGroupHolder.CONTEXT_DATA_KEY);
-        if (dcontextData instanceof ComponentGroupHolder[]) {        
-            holders = (ComponentGroupHolder[])dcontextData;
-        }
+        ComponentGroupHolder[] holders = ComponentGroupHelper.getComponentGroupHolders(designContext);
         if (holders == null || holders.length == 0) {
             return new DisplayAction[0];
         }

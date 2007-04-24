@@ -92,11 +92,7 @@ public class ComponentGroupSupport {
      */
     public static void paint(LiveUnit liveUnit, Designer.RenderContext renderContext, Graphics2D g2d,
     boolean showVirtualForms, boolean showAjaxTransactions) {
-        ComponentGroupHolder[] holders = null;
-        Object dcontextData = liveUnit.getContextData(ComponentGroupHolder.CONTEXT_DATA_KEY);
-        if (dcontextData instanceof ComponentGroupHolder[]) {        
-            holders = (ComponentGroupHolder[])dcontextData;
-        }
+        ComponentGroupHolder[] holders = ComponentGroupHelper.getComponentGroupHolders(liveUnit);
 
         if (holders == null || holders.length == 0) {
             return;
