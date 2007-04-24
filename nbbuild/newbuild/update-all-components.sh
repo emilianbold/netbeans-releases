@@ -31,7 +31,7 @@ if [ $ERROR_CODE != 0 ]; then
     exit $ERROR_CODE;
 fi
 
-CVS_MODULES=`echo ${CVS_MODULES} mobility uml visualweb scripting enterprise print identity | tr " " "\n" | grep -v '^$' | sort | uniq | tr "\n" " "`
+CVS_MODULES=`echo ${CVS_MODULES} mobility uml visualweb scripting enterprise print identity` # | tr " " "\n" | grep -v '^$' | sort | uniq | tr "\n" " "
 
 for module in ${CVS_MODULES}; do
     if [ -d $module ]; then
