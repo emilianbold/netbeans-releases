@@ -369,7 +369,9 @@ private void bAddLocallyDownloadsActionPerformed(java.awt.event.ActionEvent evt)
         categories.addAll(Utilities.makeUpdateCategories(units, true));
         for (UnitCategory c : categories) {
             for (Unit u : c.getUnits ()) {
-                u.setMarked (true);
+                if (! u.isMarked ()) {
+                    u.setMarked (true);
+                }
             }
         }
         model.setData (categories);
