@@ -48,7 +48,8 @@ public class PageFlowDeleteAction extends AbstractAction{
         }
         
         for( Object selectedObj : selectedObjs ){
-            if(!( selectedObj instanceof Node )){
+            /* HACK until PinNode is made a Node */
+            if(!( selectedObj instanceof Node )  && !(selectedObj instanceof PinNode ) ){
                 return false;
             }
         }

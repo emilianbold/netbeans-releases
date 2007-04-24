@@ -48,16 +48,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.border.Border;
 import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
 import org.netbeans.api.visual.action.WidgetAction.Chain;
-import org.netbeans.api.visual.graph.layout.GraphLayoutListener;
-import org.netbeans.api.visual.graph.layout.GridGraphLayout;
-import org.netbeans.api.visual.graph.layout.UniversalGraph;
 import org.netbeans.api.visual.model.ObjectSceneEventType;
 import org.netbeans.api.visual.model.ObjectSceneListener;
 import org.netbeans.api.visual.model.ObjectState;
@@ -71,7 +67,6 @@ import org.netbeans.modules.web.jsf.navigation.PageFlowNode;
 import org.netbeans.modules.web.jsf.navigation.PageFlowView;
 import org.netbeans.modules.web.jsf.navigation.PinNode;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.MapActionUtility;
-import org.netbeans.modules.web.jsf.navigation.graph.actions.MapActionUtility.HandleDeleteAction2;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowAcceptProvider;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowDeleteAction;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowPopupProvider;
@@ -524,10 +519,14 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         public void setText(Widget widget, String newName) {
             
             
-            Node caseNode = (Node)findObject(widget.getParentWidget());
+            NavigationCaseNode caseNode = (NavigationCaseNode)findObject(widget.getParentWidget());
             String oldName = caseNode.getName();
             
             if ( caseNode.canRename() ) {
+                PinNode pin = getEdgeSource(caseNode);
+                if( !pin.isDefault()){
+                    pin.setFromOutcome(newName);
+                }
                 caseNode.setName(newName);
             }
             
