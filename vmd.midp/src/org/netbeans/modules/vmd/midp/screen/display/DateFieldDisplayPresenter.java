@@ -19,17 +19,18 @@
 
 package org.netbeans.modules.vmd.midp.screen.display;
 
-import java.util.Date;
-import javax.swing.JLabel;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.items.DateFieldCD;
 
+import javax.swing.*;
+import java.util.Date;
+import java.text.DateFormat;
+
 /**
  *
- * @author Anton Chechel
- * @version 1.0
+ * @author David Kaspar
  */
 public class DateFieldDisplayPresenter extends ItemDisplayPresenter {
     
@@ -42,12 +43,30 @@ public class DateFieldDisplayPresenter extends ItemDisplayPresenter {
     
     public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
-        
-        PropertyValue pv = getComponent().readProperty(DateFieldCD.PROP_DATE);
-        String text = "<date>"; // NOI18N
-        if (pv.getKind() == PropertyValue.Kind.VALUE) { // not user code
-            text = new Date(MidpTypes.getLong(pv)).toString(); // TODO use formatter
+
+        PropertyValue inputModeValue = getComponent ().readProperty (DateFieldCD.PROP_INPUT_MODE);
+        String text = "<user date time>";
+        DateFormat format = DateFormat.getDateTimeInstance (DateFormat.MEDIUM, DateFormat.MEDIUM);
+        if (inputModeValue.getKind () == PropertyValue.Kind.VALUE) {
+            int inputMode = MidpTypes.getInteger (inputModeValue);
+            switch (inputMode) {
+                case DateFieldCD.VALUE_DATE:
+                    text = "<current date>";
+                    format = DateFormat.getDateInstance (DateFormat.MEDIUM);
+                    break;
+                case DateFieldCD.VALUE_DATE_TIME:
+                    text = "<current date time>";
+                    break;
+                case DateFieldCD.VALUE_TIME:
+                    text = "<current time>";
+                    format = DateFormat.getTimeInstance (DateFormat.MEDIUM);
+                    break;
+            }
         }
+        PropertyValue dateValue = getComponent().readProperty(DateFieldCD.PROP_DATE);
+        if (dateValue.getKind() == PropertyValue.Kind.VALUE)
+            text = format.format (new Date (MidpTypes.getLong (dateValue)));
         label.setText(text);
     }
+
 }
