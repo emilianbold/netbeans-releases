@@ -124,8 +124,11 @@ public class FileProxy {
     }
     
     public File getFile(URI uri, Progress progress, ClassLoader loader, boolean deleteOnExit) throws DownloadException {
-        if (cache.containsKey(uri.toString()) && cache.get(uri.toString()).exists()) {
-            return cache.get(uri.toString());
+        final String cacheKey = uri.toString() + 
+                (loader != null ? "#" + loader.toString() : "");
+        
+        if (cache.containsKey(cacheKey) && cache.get(cacheKey).exists()) {
+            return cache.get(cacheKey);
         }
         if (uri.getScheme().equals("file")) {
             File file = new File(uri);
@@ -149,7 +152,7 @@ public class FileProxy {
                 out = new FileOutputStream(file);
                 if (resource == null) throw new DownloadException(RESOURCE_SCHEME_PREFIX + uri.getSchemeSpecificPart() + " not found");
                 StreamUtils.transferData(resource, out);
-                cache.put(uri.toString(), file);
+                cache.put(cacheKey, file);
                 return file;
             } catch(IOException ex) {
                 throw new DownloadException("I/O error has occures", ex);
@@ -162,7 +165,7 @@ public class FileProxy {
         } else if (uri.getScheme().startsWith("http")) {
             try {
                 final File file = getFile(uri.toURL(), progress, deleteOnExit);
-                cache.put(uri.toString(), file);
+                cache.put(cacheKey, file);
                 return file;
             } catch(MalformedURLException ex) {
                 throw new DownloadException("malformed url: " + uri, ex);
