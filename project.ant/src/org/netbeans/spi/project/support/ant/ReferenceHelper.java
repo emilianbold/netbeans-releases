@@ -952,7 +952,7 @@ public final class ReferenceHelper {
     /**
      * Add extra folder which can be used as base directory (in addition to
      * project base folder) for creating references. Duplicate property names
-     * are not allowed. Any newly created reference to a file lying under an
+     * are ignored. Any newly created reference to a file lying under an
      * extra base directory will be based on that property and will be stored in
      * shared project properties.
      * <p>Acquires write access.
