@@ -36,6 +36,7 @@ import org.netbeans.editor.ext.ExtKit.CommentAction;
 import org.netbeans.editor.ext.ExtKit.PrefixMakerAction;
 import org.netbeans.editor.ext.ExtKit.UncommentAction;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
+import org.netbeans.modules.editor.MainMenuAction;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.java.editor.codegen.GenerateCodeAction;
@@ -619,6 +620,28 @@ public class JavaKit extends NbEditorKit {
                 JavaFixAllImports.getDefault().fixAllImports(fo);
             }
         }
-    }
+        
+        public static final class GlobalAction extends MainMenuAction {
+            private final JMenuItem menuPresenter;
+
+            public GlobalAction() {
+                super();
+                this.menuPresenter = new JMenuItem(getMenuItemText());
+                setMenu();
+            }
+
+            protected String getMenuItemText() {
+                return NbBundle.getBundle(GlobalAction.class).getString("fix-imports-main-menu-source-item"); //NOI18N
+            }
+
+            protected String getActionName() {
+                return fixImportsAction;
+            }
+
+            public JMenuItem getMenuPresenter() {
+                return menuPresenter;
+            }
+        }
+    } // End of JavaFixImports action
     
 }

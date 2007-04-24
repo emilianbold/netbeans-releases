@@ -27,6 +27,10 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaFastOpenAction.getInstance"/>
             </file> -->
         </folder>
+        <folder name="Source">
+            <file name="org-netbeans-modules-java-editor-codegen-GenerateCodeAction$GlobalAction.instance"/>
+            <file name="org-netbeans-modules-editor-java-JavaKit$JavaFixImports$GlobalAction.instance"/>
+        </folder>
     </folder>
 
     <folder name="Menu">
@@ -37,6 +41,17 @@ Microsystems, Inc. All Rights Reserved.
 
             <attr name="org-openide-actions-GotoAction.instance/org-netbeans-modules-editor-java-JavaFastOpenAction.shadow" boolvalue="true"/>           
 
+        </folder>
+        <folder name="Source">
+            <file name="org-netbeans-modules-java-editor-codegen-GenerateCodeAction$GlobalAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Source/org-netbeans-modules-java-editor-codegen-GenerateCodeAction$GlobalAction.instance"/>
+            </file>
+            <attr name="org-netbeans-modules-java-editor-codegen-GenerateCodeAction$GlobalAction.shadow/org-netbeans-modules-editor-java-JavaKit$JavaFixImports$GlobalAction.shadow" boolvalue="true"/>
+
+            <file name="org-netbeans-modules-editor-java-JavaKit$JavaFixImports$GlobalAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Source/org-netbeans-modules-editor-java-JavaKit$JavaFixImports$GlobalAction.instance"/>
+            </file>
+            <attr name="org-netbeans-modules-editor-java-JavaKit$JavaFixImports$GlobalAction.shadow/SeparatorBeforeWordMatchInsert.instance" boolvalue="true"/>
         </folder>
     </folder>
                 

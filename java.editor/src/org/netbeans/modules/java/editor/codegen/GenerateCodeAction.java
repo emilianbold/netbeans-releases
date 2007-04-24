@@ -24,6 +24,7 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.ArrayList;
+import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
@@ -32,6 +33,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.ext.ExtKit;
+import org.netbeans.modules.editor.MainMenuAction;
 import org.netbeans.modules.java.editor.codegen.ui.GenerateCodePanel;
 import org.netbeans.modules.java.editor.overridden.PopupUtil;
 import org.openide.util.Exceptions;
@@ -97,5 +99,29 @@ public class GenerateCodeAction extends BaseAction {
     
     private CodeGenerator.Factory[] getCodeGeneratorFactories() {
         return generators;
-    }    
+    }
+    
+    public static final class GlobalAction extends MainMenuAction {
+
+        private final JMenuItem menuPresenter;
+        
+        public GlobalAction() {
+            super();
+            this.menuPresenter = new JMenuItem(getMenuItemText());
+            setMenu();
+        }
+        
+        protected String getMenuItemText() {
+            return NbBundle.getBundle(GlobalAction.class).getString("generate-code-main-menu-source-item"); //NOI18N
+        }
+
+        protected String getActionName() {
+            return generateCode;
+        }
+
+        public JMenuItem getMenuPresenter() {
+            return menuPresenter;
+        }
+        
+    } // End of GlobalAction class
 }

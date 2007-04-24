@@ -95,17 +95,29 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="GoTo/Source" boolvalue="true" />
         <folder name="Source">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+
+            <file name="SeparatorBeforeWordMatchInsert.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+            <attr name="SeparatorBeforeWordMatchInsert.instance/org-netbeans-modules-editor-MainMenuAction$WordMatchNextAction.instance" boolvalue="true"/>
+
+            <file name="org-netbeans-modules-editor-MainMenuAction$WordMatchNextAction.instance"/>
+            <attr name="org-netbeans-modules-editor-MainMenuAction$WordMatchNextAction.instance/org-netbeans-modules-editor-MainMenuAction$WordMatchPrevAction.instance" boolvalue="true"/>
             
-            <file name="org-netbeans-modules-editor-MainMenuAction$RemoveTrailingSpacesAction.instance"/>
-            <attr name="org-netbeans-modules-editor-MainMenuAction$RemoveTrailingSpacesAction.instance/SeparatorBeforeReformat.instance" boolvalue="true"/>
+            <file name="org-netbeans-modules-editor-MainMenuAction$WordMatchPrevAction.instance"/>
+            <attr name="org-netbeans-modules-editor-MainMenuAction$WordMatchPrevAction.instance/SeparatorBeforeReformat.instance" boolvalue="true"/>
             
             <file name="SeparatorBeforeReformat.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
             </file>
             <attr name="SeparatorBeforeReformat.instance/org-netbeans-modules-editor-MainMenuAction$FormatAction.instance" boolvalue="true"/>
-            <file name="org-netbeans-modules-editor-MainMenuAction$FormatAction.instance"/>
-            <attr name="org-netbeans-modules-editor-MainMenuAction$FormatAction.instance/org-netbeans-modules-editor-MainMenuAction$ShiftLineLeftAction.instance" boolvalue="true"/>
 
+            <file name="org-netbeans-modules-editor-MainMenuAction$FormatAction.instance"/>
+            <attr name="org-netbeans-modules-editor-MainMenuAction$FormatAction.instance/org-netbeans-modules-editor-MainMenuAction$RemoveTrailingSpacesAction.instance" boolvalue="true"/>
+
+            <file name="org-netbeans-modules-editor-MainMenuAction$RemoveTrailingSpacesAction.instance"/>
+            <attr name="org-netbeans-modules-editor-MainMenuAction$RemoveTrailingSpacesAction.instance/org-netbeans-modules-editor-MainMenuAction$ShiftLineLeftAction.instance" boolvalue="true"/>
+            
             <file name="org-netbeans-modules-editor-MainMenuAction$ShiftLineLeftAction.instance"/>
             <attr name="org-netbeans-modules-editor-MainMenuAction$ShiftLineLeftAction.instance/org-netbeans-modules-editor-MainMenuAction$ShiftLineRightAction.instance" boolvalue="true"/>
         
@@ -121,12 +133,6 @@ Microsystems, Inc. All Rights Reserved.
             <file name="SeparatorAfterUncomment.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
             </file>
-                        
-            <attr name="SeparatorAfterUncomment.instance/org-netbeans-modules-editor-MainMenuAction$WordMatchNextAction.instance" boolvalue="true"/>
-            <file name="org-netbeans-modules-editor-MainMenuAction$WordMatchNextAction.instance"/>
-            <attr name="org-netbeans-modules-editor-MainMenuAction$WordMatchNextAction.instance/org-netbeans-modules-editor-MainMenuAction$WordMatchPrevAction.instance" boolvalue="true"/>
-            
-            <file name="org-netbeans-modules-editor-MainMenuAction$WordMatchPrevAction.instance"/>
         </folder>
         <attr name="Source/Refactoring" boolvalue="true" />
         <attr name="Source/BuildProject" boolvalue="true" />
