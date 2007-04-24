@@ -40,6 +40,7 @@ for module in ${CVS_MODULES}; do
     while [ $RUNNING_JOBS_COUNT -ge 10 ]; do
 	#10 or more jobs
 	sleep 10
+	jobs
 	RUNNING_JOBS_COUNT=`jobs | wc -l | tr " " "\n" | grep -v '^$'`
     done
 
@@ -65,5 +66,6 @@ RUNNING_JOBS_COUNT=`jobs | wc -l | tr " " "\n" | grep -v '^$'`
 while [ $RUNNING_JOBS_COUNT -ge 1 ]; do
     #1 or more jobs
     sleep 10
+    jobs
     RUNNING_JOBS_COUNT=`jobs | wc -l | tr " " "\n" | grep -v '^$'`
 done
