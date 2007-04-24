@@ -871,10 +871,6 @@ public abstract class ModelSet implements FileChangeListener {
             return null;
         }
         
-        if (!fileObject.isValid()) {
-            return null;            
-        }
-        
         // What does virtual actually mean, should I handle these as well ?
         if (fileObject.isVirtual())
             return null;
