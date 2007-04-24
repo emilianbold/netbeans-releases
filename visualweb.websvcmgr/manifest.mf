@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.visualweb.websvcmgr/1
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/visualweb/websvcmgr/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0.5
+OpenIDE-Module-Layer: org/netbeans/modules/visualweb/websvcmgr/resources/mf-layer.xml
+OpenIDE-Module-Install: org/netbeans/modules/visualweb/websvcmgr/WebServiceModuleInstaller.class
+
+
