@@ -312,7 +312,11 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     
     private void platformValueItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_platformValueItemStateChanged
         getProperties().setActivePlatform((NbPlatform) platformValue.getSelectedItem());
-        refreshModules();
+        EventQueue.invokeLater(new Runnable() { // #98622: may be in Children.MUTEX read lock here
+            public void run() {
+                refreshModules();
+            }
+        });
         updateJavaPlatformEnabled();
     }//GEN-LAST:event_platformValueItemStateChanged
     
