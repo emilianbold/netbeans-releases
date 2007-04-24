@@ -24,7 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+//import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
@@ -107,9 +107,9 @@ public class IepProjectGenerator {
         ep.setProperty(IcanproProjectProperties.JAR_NAME, name + ".jar");
         ep.setProperty(IcanproProjectProperties.JAR_COMPRESS, "false");
         
-        Deployment deployment = Deployment.getDefault ();
-        String serverInstanceID = deployment.getDefaultServerInstanceID ();
-        ep.setProperty(IcanproProjectProperties.J2EE_SERVER_TYPE, deployment.getServerID (serverInstanceID));
+       // Deployment deployment = Deployment.getDefault ();
+       // String serverInstanceID = deployment.getDefaultServerInstanceID ();
+       // ep.setProperty(IcanproProjectProperties.J2EE_SERVER_TYPE, deployment.getServerID (serverInstanceID));
         ep.setProperty(IcanproProjectProperties.JAVAC_SOURCE, "1.4");
         ep.setProperty(IcanproProjectProperties.JAVAC_DEBUG, "true");
         ep.setProperty(IcanproProjectProperties.JAVAC_DEPRECATION, "false");
@@ -140,7 +140,7 @@ public class IepProjectGenerator {
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         
         ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        ep.setProperty(IcanproProjectProperties.J2EE_SERVER_INSTANCE, serverInstanceID);
+        //ep.setProperty(IcanproProjectProperties.J2EE_SERVER_INSTANCE, serverInstanceID);
         //============= Start of IcanPro========================================//
         ep.setProperty(IcanproProjectProperties.JBI_COMPONENT_CONF_FILE, "ComponentInformation.xml"); // NOI18N
         ep.setProperty(IcanproProjectProperties.JBI_DEPLOYMENT_CONF_FILE, "default.xml"); // NOI18N

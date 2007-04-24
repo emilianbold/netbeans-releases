@@ -120,6 +120,7 @@ class IepProjectActionProvider implements ActionProvider {
         Properties p = null;
         String[] targetNames = (String[])commands.get(command);
         //EXECUTION PART
+// DO we need this .
         if (command.equals (IcanproConstants.COMMAND_DEPLOY) || command.equals (IcanproConstants.COMMAND_REDEPLOY)) {
             if (!isSelectedServer ()) {
                 return;
