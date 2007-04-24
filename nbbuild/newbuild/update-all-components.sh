@@ -34,19 +34,36 @@ fi
 CVS_MODULES=`echo ${CVS_MODULES} mobility uml visualweb scripting enterprise print identity` # | tr " " "\n" | grep -v '^$' | sort | uniq | tr "\n" " "
 
 for module in ${CVS_MODULES}; do
+    #Need to improve the errors checking...
+    RUNNING_JOBS_COUNT=`jobs | wc -l | tr " " "\n" | grep -v '^$'`
+    #Control the number of running updates
+    while [ $RUNNING_JOBS_COUNT -ge 10 ]; do
+	#10 or more jobs
+	sleep 10
+	RUNNING_JOBS_COUNT=`jobs | wc -l | tr " " "\n" | grep -v '^$'`
+    done
+
     if [ -d $module ]; then
 	#Module already checked out - updating
-	cvs -d :pserver:anoncvs@cvs.netbeans.org:/cvs update -dPA -D "$CVS_STAMP" $module >> $CVS_CHECKOUT_LOG 2>&1
+	cvs -z6 -q -d :pserver:anoncvs@cvs.netbeans.org:/cvs update -dPA -D "$CVS_STAMP" $module >> $CVS_CHECKOUT_LOG 2>&1 &
 	if [ $ERROR_CODE != 0 ]; then
 	    echo "ERROR: $ERROR_CODE - Update of ${module} module failed"
 	    exit $ERROR_CODE;
 	fi
     else
 	#Need to checkout
-	cvs -d :pserver:anoncvs@cvs.netbeans.org:/cvs checkout -PA -D "$CVS_STAMP" $module >> $CVS_CHECKOUT_LOG 2>&1
+	cvs -z6 -q  -d :pserver:anoncvs@cvs.netbeans.org:/cvs checkout -PA -D "$CVS_STAMP" $module >> $CVS_CHECKOUT_LOG 2>&1 &
 	if [ $ERROR_CODE != 0 ]; then
 	    echo "ERROR: $ERROR_CODE - Checkout of ${module} module failed"
 	    exit $ERROR_CODE;
 	fi
     fi
+done
+
+RUNNING_JOBS_COUNT=`jobs | wc -l | tr " " "\n" | grep -v '^$'`
+#Wait for the end of all cvs processes to end
+while [ $RUNNING_JOBS_COUNT -ge 1 ]; do
+    #1 or more jobs
+    sleep 10
+    RUNNING_JOBS_COUNT=`jobs | wc -l | tr " " "\n" | grep -v '^$'`
 done
