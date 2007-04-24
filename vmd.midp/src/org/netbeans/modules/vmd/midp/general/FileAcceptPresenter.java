@@ -41,7 +41,6 @@ import org.netbeans.modules.vmd.midp.components.MidpArraySupport;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.categories.ResourcesCategoryCD;
-import org.netbeans.modules.vmd.midp.components.displayables.AlertCD;
 import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -91,7 +90,9 @@ public abstract class FileAcceptPresenter extends AbstractAcceptPresenter {
         String fe = getFileExtension(transferable);
         if (fe == null)
             return false;
+        fe = ignoreExtFileCase(fe);
         TypeID typeID = extensionsMap.get(fe);
+
         if (typeID != null)
             return true;
         return false;
@@ -99,6 +100,7 @@ public abstract class FileAcceptPresenter extends AbstractAcceptPresenter {
     
     public ComponentProducer.Result accept(Transferable transferable) {
         String fe = getFileExtension(transferable);
+        fe = ignoreExtFileCase(fe);
         TypeID typeID = extensionsMap.get(fe);
         String propertyName = propertyNamesMap.get(fe);
         if (propertyName == null)
@@ -179,4 +181,11 @@ public abstract class FileAcceptPresenter extends AbstractAcceptPresenter {
         return null;
     }
     
+    private String ignoreExtFileCase(String fe) {
+        for (String key : extensionsMap.keySet()) {
+            if (key.equalsIgnoreCase(fe))
+                fe = key;
+        }
+        return fe;
+    }
 }
