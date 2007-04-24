@@ -398,7 +398,7 @@ public final class Util {
         assert src != null : "Cannot evaluate src.dir property for " + p;
         File srcF = FileUtil.normalizeFile(new File(projectDir, src));
         FileObject sourceDir = FileUtil.toFileObject(srcF);
-        FileObject manifestFO = FileUtil.toFileObject(new File(projectDir, "manifest.mf")); // NOI18N
+        FileObject manifestFO = FileUtil.toFileObject(FileUtil.normalizeFile(new File(projectDir, "manifest.mf"))); // NOI18N
         
         LocalizedBundleInfo locInfo = null;
         Manifest mf = getManifest(manifestFO);
