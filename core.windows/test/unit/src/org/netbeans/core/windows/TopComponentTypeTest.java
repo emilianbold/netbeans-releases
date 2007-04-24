@@ -85,58 +85,58 @@ public class TopComponentTypeTest extends NbTestCase {
         assertFalse( WindowManagerImpl.getInstance().isEditorTopComponent( tc ) );
     }
      
-    public void testIsEditorTopComponentIsSafeOutsideAWTWhenOpened () throws Exception {
-        final TopComponent tc = new TopComponent ();
-        Mode mode = WindowManagerImpl.getInstance().createMode( "editorMode", Constants.MODE_KIND_EDITOR, Constants.MODE_STATE_JOINED, false, new SplitConstraint[0] );
-        Mode otherEditorMode = WindowManagerImpl.getInstance().createMode( "otherEditorMode", Constants.MODE_KIND_EDITOR, Constants.MODE_STATE_JOINED, false, new SplitConstraint[0] );
-        Logger logger = Logger.getLogger( WindowManagerImpl.class.getName() );
-        final MyHandler handler = new MyHandler();
-        logger.addHandler( handler );
-        
-        assertTrue( WindowManagerImpl.getInstance().isEditorMode( mode ) );
-        assertTrue( WindowManagerImpl.getInstance().isEditorMode( otherEditorMode ) );
-        mode.dockInto( tc );
-        
-        Task t = RequestProcessor.getDefault().post( new Runnable() {
-            public void run() {
-                assertFalse( SwingUtilities.isEventDispatchThread() );
-                WindowManagerImpl.getInstance().isEditorTopComponent( tc );
-            }
-        });
-        t.waitFinished();
-        assertNotNull( handler.latestLogRecord );
-        assertTrue( handler.latestLogRecord.getThrown() instanceof IllegalStateException );
-        assertEquals( Level.WARNING, handler.latestLogRecord.getLevel() );
-        
-        tc.open();
-        assertTrue( tc.isOpened() );
-        handler.latestLogRecord = null;
-        
-        final boolean[] res = new boolean[1]; 
-        t = RequestProcessor.getDefault().post( new Runnable() {
-            public void run() {
-                assertFalse( SwingUtilities.isEventDispatchThread() );
-                res[0] = WindowManagerImpl.getInstance().isEditorTopComponent( tc );
-            }
-        });
-        t.waitFinished();
-        assertNull( handler.latestLogRecord );
-    }
-
-    private class MyHandler extends Handler {
-
-        private LogRecord latestLogRecord;
-        
-        public void publish(LogRecord rec) {
-            this.latestLogRecord = rec;
-        }
-
-        public void flush() {
-        }
-
-        public void close() throws SecurityException {
-        }
-        
-    }
+//    public void testIsEditorTopComponentIsSafeOutsideAWTWhenOpened () throws Exception {
+//        final TopComponent tc = new TopComponent ();
+//        Mode mode = WindowManagerImpl.getInstance().createMode( "editorMode", Constants.MODE_KIND_EDITOR, Constants.MODE_STATE_JOINED, false, new SplitConstraint[0] );
+//        Mode otherEditorMode = WindowManagerImpl.getInstance().createMode( "otherEditorMode", Constants.MODE_KIND_EDITOR, Constants.MODE_STATE_JOINED, false, new SplitConstraint[0] );
+//        Logger logger = Logger.getLogger( WindowManagerImpl.class.getName() );
+//        final MyHandler handler = new MyHandler();
+//        logger.addHandler( handler );
+//        
+//        assertTrue( WindowManagerImpl.getInstance().isEditorMode( mode ) );
+//        assertTrue( WindowManagerImpl.getInstance().isEditorMode( otherEditorMode ) );
+//        mode.dockInto( tc );
+//        
+//        Task t = RequestProcessor.getDefault().post( new Runnable() {
+//            public void run() {
+//                assertFalse( SwingUtilities.isEventDispatchThread() );
+//                WindowManagerImpl.getInstance().isEditorTopComponent( tc );
+//            }
+//        });
+//        t.waitFinished();
+//        assertNotNull( handler.latestLogRecord );
+//        assertTrue( handler.latestLogRecord.getThrown() instanceof IllegalStateException );
+//        assertEquals( Level.WARNING, handler.latestLogRecord.getLevel() );
+//        
+//        tc.open();
+//        assertTrue( tc.isOpened() );
+//        handler.latestLogRecord = null;
+//        
+//        final boolean[] res = new boolean[1]; 
+//        t = RequestProcessor.getDefault().post( new Runnable() {
+//            public void run() {
+//                assertFalse( SwingUtilities.isEventDispatchThread() );
+//                res[0] = WindowManagerImpl.getInstance().isEditorTopComponent( tc );
+//            }
+//        });
+//        t.waitFinished();
+//        assertNull( handler.latestLogRecord );
+//    }
+//
+//    private class MyHandler extends Handler {
+//
+//        private LogRecord latestLogRecord;
+//        
+//        public void publish(LogRecord rec) {
+//            this.latestLogRecord = rec;
+//        }
+//
+//        public void flush() {
+//        }
+//
+//        public void close() throws SecurityException {
+//        }
+//        
+//    }
 }
 
