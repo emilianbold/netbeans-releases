@@ -29,14 +29,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URI;
-import java.util.Collection;
 import javax.swing.text.Document;
 import org.netbeans.modules.websvc.wsitconf.util.TestCatalogModel;
-import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
-import org.netbeans.modules.xml.schema.model.SchemaModel;
-import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileLock;
@@ -86,10 +81,6 @@ public class TestUtil {
     public static WSDLModel createEmptyWSDLModel() throws Exception {
         return loadWSDLModel(EMPTY_XSD);
     }
-    
-    /*public static WSDLModel loadWSDLModel(Document doc) throws Exception {
-        return WSDLModelFactory.getDefault().getModel(doc);
-    }*/
     
     public static void dumpToStream(Document doc, OutputStream out) throws Exception{
         PrintWriter w = new PrintWriter(out);

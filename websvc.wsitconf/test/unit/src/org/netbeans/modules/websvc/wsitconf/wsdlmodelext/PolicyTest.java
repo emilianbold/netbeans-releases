@@ -60,12 +60,12 @@ public class PolicyTest extends TestCase {
         Definitions d = model.getDefinitions();
         Binding b = (Binding) d.getBindings().toArray()[0];
         
-        PolicyModelHelper.createPolicy(b);
+        PolicyModelHelper.createPolicy(b, true);
         
         Collection<BindingOperation> bindingops = b.getBindingOperations();
         for (BindingOperation bo : bindingops) {
-            PolicyModelHelper.createPolicy(bo.getBindingInput());
-            PolicyModelHelper.createPolicy(bo.getBindingOutput());
+            PolicyModelHelper.createPolicy(bo.getBindingInput(), false);
+            PolicyModelHelper.createPolicy(bo.getBindingOutput(), false);
         }
 
         model.endTransaction();
@@ -82,7 +82,7 @@ public class PolicyTest extends TestCase {
         Definitions d = model.getDefinitions();
         Binding b = (Binding) d.getBindings().toArray()[0];
         
-        All all = PolicyModelHelper.createPolicy(b);
+        All all = PolicyModelHelper.createPolicy(b, true);
         assertNotNull("Top Level Policy", all);
         
         Collection<PolicyReference> polRefs = b.getExtensibilityElements(PolicyReference.class);
@@ -91,10 +91,10 @@ public class PolicyTest extends TestCase {
         
         Collection<BindingOperation> bindingops = b.getBindingOperations();
         for (BindingOperation bo : bindingops) {
-            all = PolicyModelHelper.createPolicy(bo.getBindingInput());
+            all = PolicyModelHelper.createPolicy(bo.getBindingInput(), false);
             assertNotNull("Binding Input Policy", all);
             
-            all = PolicyModelHelper.createPolicy(bo.getBindingOutput());
+            all = PolicyModelHelper.createPolicy(bo.getBindingOutput(), false);
             assertNotNull("Binding Output Policy", all);
         }
         
