@@ -39,6 +39,10 @@ public final class MidpProjectPropertiesSupport {
         return MidpProjectPropertiesSupportImpl.evaluateProperty (ep, propertyName, configuration);
     }
 
+    public static String setProperty (EditableProperties ep, String propertyName, String configuration) {
+        return MidpProjectPropertiesSupportImpl.setProperty (ep, propertyName, configuration);
+    }
+
     public static void addDeviceListener (DataObjectContext context, DeviceListener listener) {
         MidpProjectPropertiesSupportImpl.addDeviceListener (context, listener);
     }

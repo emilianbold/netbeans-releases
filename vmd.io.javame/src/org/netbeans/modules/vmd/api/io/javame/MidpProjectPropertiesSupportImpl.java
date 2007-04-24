@@ -128,6 +128,13 @@ public class MidpProjectPropertiesSupportImpl {
         return confs.getActiveConfiguration () != confs.getDefaultConfiguration () ? confs.getActiveConfiguration ().getDisplayName () : null;
     }
 
+    public static void setProperty (EditableProperties ep, String propertyName, String configuration, String propertyValue) {
+        if (configuration == null)
+            ep.put (propertyName, propertyValue);
+        else
+            ep.put ("configs." + configuration + "." + propertyName, propertyValue); // NOI18N
+    }
+
     private static class DeviceAntProjectListener implements AntProjectListener {
 
         private DeviceListener listener;
