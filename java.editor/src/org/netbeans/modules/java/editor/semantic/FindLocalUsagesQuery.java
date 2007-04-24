@@ -62,7 +62,7 @@ public class FindLocalUsagesQuery extends CancellableTreePathScanner<Void, Stack
     }
 
     private Highlight createHighlight(TreePath tree) {
-        return Utilities.createHighlight(info.getCompilationUnit(), info.getTrees().getSourcePositions(), doc, tree, EnumSet.of(ColoringAttributes.MARK_OCCURRENCES), MarkOccurencesHighlighter.ES_COLOR);
+        return Utilities.createHighlight(info.getCompilationUnit(), info.getTrees().getSourcePositions(), doc, tree, EnumSet.of(ColoringAttributes.MARK_OCCURRENCES),MarkOccurrencesHighlighter.ES_COLOR);
     }
     
     private void handlePotentialVariable(TreePath tree) {

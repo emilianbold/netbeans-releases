@@ -92,7 +92,7 @@ public class MethodExitDetector extends CancellableTreePathScanner<Boolean, Stac
                     
                     if (lastBracket != (-1)) {
                         //highlight the "fall over" exitpoint:
-                        result.add(Utilities.createHighlight(cu, info.getTrees().getSourcePositions(), document, lastBracket, lastBracket + 1, EnumSet.of(ColoringAttributes.MARK_OCCURRENCES), MarkOccurencesHighlighter.ES_COLOR));
+                        result.add(Utilities.createHighlight(cu, info.getTrees().getSourcePositions(), document, lastBracket, lastBracket + 1, EnumSet.of(ColoringAttributes.MARK_OCCURRENCES),MarkOccurrencesHighlighter.ES_COLOR));
                     }
                 }
             }
@@ -206,7 +206,7 @@ public class MethodExitDetector extends CancellableTreePathScanner<Boolean, Stac
     }
     
     private Highlight createHighlight(TreePath tree) {
-        return Utilities.createHighlight(info.getCompilationUnit(), info.getTrees().getSourcePositions(), doc, tree, EnumSet.of(ColoringAttributes.MARK_OCCURRENCES), MarkOccurencesHighlighter.ES_COLOR);
+        return Utilities.createHighlight(info.getCompilationUnit(), info.getTrees().getSourcePositions(), doc, tree, EnumSet.of(ColoringAttributes.MARK_OCCURRENCES),MarkOccurrencesHighlighter.ES_COLOR);
     }
     
     @Override

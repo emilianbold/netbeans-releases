@@ -42,7 +42,7 @@ public class MarkOccurrencesHighlighterFactory extends CaretAwareJavaSourceTaskF
         Preferences node = MarkOccurencesSettings.getCurrentNode();
         
         if (node.getBoolean(MarkOccurencesSettings.ON_OFF, true))
-            return new MarkOccurencesHighlighter(file);
+            return new MarkOccurrencesHighlighter(file);
         else
             return new CancellableTask<CompilationInfo>() {
                 public void cancel() {}
