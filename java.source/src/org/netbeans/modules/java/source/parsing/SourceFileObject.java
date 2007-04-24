@@ -61,7 +61,7 @@ public class SourceFileObject implements JavaFileObject, DocumentProvider {
     private final Kind kind;
     private URI uri;        //Cache for URI
     private String text;
-    private TokenHierarchy tokens;
+    private TokenHierarchy<Void> tokens;
     private final JavaFileFilterImplementation filter;
     
     public static SourceFileObject create (final FileObject file) {        
@@ -116,7 +116,7 @@ public class SourceFileObject implements JavaFileObject, DocumentProvider {
         }
     }
     
-    public TokenHierarchy getTokenHierarchy() throws IOException {
+    public TokenHierarchy<Void> getTokenHierarchy() throws IOException {
         if (tokens == null)
             getCharContentImpl();
         
@@ -304,10 +304,10 @@ public class SourceFileObject implements JavaFileObject, DocumentProvider {
     @SuppressWarnings ("unchecked")     // NOI18N
     private EditorCookie isModified () {
         DataObject.Registry regs = DataObject.getRegistry();
-        Set<DataObject> modified = (Set<DataObject>) regs.getModifiedSet();
+        Set<DataObject> modified = regs.getModifiedSet();
         for (DataObject dobj : modified) {
             if (this.file.equals(dobj.getPrimaryFile())) {
-                EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
+                EditorCookie ec = dobj.getCookie(EditorCookie.class);
                 return ec;
             }
         }
@@ -320,7 +320,7 @@ public class SourceFileObject implements JavaFileObject, DocumentProvider {
                 return null;
             }
             DataObject dobj = DataObject.find(this.file);
-            return (EditorCookie) dobj.getCookie(EditorCookie.class);
+            return dobj.getCookie(EditorCookie.class);
         } catch (DataObjectNotFoundException dnf) {
             return null;
         }
