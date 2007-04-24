@@ -9,12 +9,14 @@
 
 package Templates.Classes;
 
+import com.sun.ws.rest.api.NotFoundException;
 import com.sun.ws.rest.api.WebApplicationException;
 import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import javax.xml.bind.JAXBContext;
+import x.service.PersistenceService;
 
 /**
  * Utility class for resolving an uri into an entity.
@@ -30,13 +32,13 @@ public class UriResolver {
     };
     
     private boolean inProgress = false;
-  
+    
     private UriResolver() {
     }
     
     /**
      * Returns an instance of UriResolver.
-     * 
+     *
      * @return an instance of UriResolver.
      */
     public static UriResolver getInstance() {
@@ -49,7 +51,7 @@ public class UriResolver {
     
     /**
      * Returns the entity associated with the given uri.
-     * 
+     *
      * @param type the converter class used to unmarshal the entity from XML
      * @param uri the uri identifying the entity
      * @return the entity associated with the given uri
@@ -60,6 +62,10 @@ public class UriResolver {
         inProgress = true;
         
         try {
+            if (uri == null) {
+                throw new RuntimeException("No uri specified in a reference.");
+            }
+            
             URL url = uri.toURL();
             HttpURLConnection conn = (HttpURLConnection)url.openConnection();
             conn.setRequestMethod("GET");
@@ -70,9 +76,11 @@ public class UriResolver {
                 resolveEntity(obj);
                 
                 return (T) obj;
+            } else {
+                throw new NotFoundException("Resource for " + uri + " does not exist.");
             }
-            
-            return null;
+        } catch (WebApplicationException ex) {
+            throw ex;
         } catch (Exception ex) {
             throw new WebApplicationException(ex);
         } finally {
@@ -80,7 +88,7 @@ public class UriResolver {
         }
     }
     
-     private void resolveEntity(Object obj) {
+    private void resolveEntity(Object obj) {
         try {
             Method method = obj.getClass().getMethod("getEntity");
             Object entity = method.invoke(obj);
@@ -88,7 +96,7 @@ public class UriResolver {
             method = obj.getClass().getMethod("setEntity", entity.getClass());
             method.invoke(obj, entity.getClass().cast(entity));
         } catch (Exception ex) {
-            ex.printStackTrace();
+            throw new WebApplicationException(ex);
         }
     }
 }
