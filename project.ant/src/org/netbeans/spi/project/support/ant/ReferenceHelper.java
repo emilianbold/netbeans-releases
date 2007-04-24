@@ -968,12 +968,10 @@ public final class ReferenceHelper {
             throw new IllegalArgumentException("propertyName is null or such a property does not exist: "+propertyName); // NOI18N
         }
         ProjectManager.mutex().writeAccess(new Runnable() {
-                public void run() {
-                    if (!extraBaseDirectories.add(propertyName)) {
-                        throw new IllegalArgumentException("Already extra base directory property: "+propertyName); // NOI18N
-                    }
-                }
-            });
+            public void run() {
+                extraBaseDirectories.add(propertyName);
+            }
+        });
     }
     
     /**
