@@ -118,7 +118,7 @@ public class PageFlowDeleteAction extends AbstractAction{
     
     private void updateSourcePins(NavigationCaseNode navCaseNode) {
         PinNode source = scene.getEdgeSource(navCaseNode);
-        if( !source.isDefault()) {
+        if( source != null && !source.isDefault()) {
             source.setFromOutcome(null);
         } 
         return;

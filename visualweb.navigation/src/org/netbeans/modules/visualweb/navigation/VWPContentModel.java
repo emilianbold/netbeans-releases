@@ -28,6 +28,7 @@ import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.visualweb.insync.Model;
+import org.netbeans.modules.visualweb.insync.ModelSet;
 import org.netbeans.modules.visualweb.insync.ModelSetListener;
 import org.netbeans.modules.visualweb.insync.UndoEvent;
 import org.netbeans.modules.visualweb.insync.faces.HtmlBean;
@@ -41,7 +42,6 @@ import org.netbeans.modules.web.jsf.navigation.pagecontentmodel.PageContentModel
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -106,9 +106,13 @@ public class VWPContentModel extends PageContentModel{
     }
     
     public void destroyListeners() {
-        if ( msl != null ){
-            facesModel.getFacesModelSet().removeModelSetListener(msl);
-            msl = null;
+        
+        if ( facesModel != null ) {
+            ModelSet set = facesModel.getOwner();
+            if( set != null && msl != null ) {
+                set.removeModelSetListener(msl);
+                msl = null;
+            }
         }
     }
     

@@ -211,7 +211,7 @@ public class WebFolderListener extends FileChangeAdapter{
             return;
         }
         
-        if( oldNode.isRenaming() ){
+        if( oldNode != null && oldNode.isRenaming() ){
             return;
         }
         
