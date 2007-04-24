@@ -3,6 +3,11 @@
                      "http://java.sun.com/products/javahelp/map_1_0.dtd">
 
 <map version="1.0">
+	
+	<mapID target="basics_javaeews_acc_serv_resources" url="basics/javaeews/acc_serv_resources.html"/>
+	<mapID target="basics_javaeews_intro-javaeews" url="basics/javaeews/intro_javaeews.html"/>
+	<mapID target="basics_javaeews_resource_usage" url="basics/javaeews/resource_usage.html"/>
+	<mapID target="basics_javaeews_serv_resources_win" url="basics/javaeews/serv_resources_win.html"/>
 	<mapID target="caps_basics_add_jbi" url="basics/add_jbi_module.html"/>
 	<mapID target="caps_basics_create" url="basics/create_project.html"/>
 	<mapID target="caps_basics_deploy" url="basics/deploy_project.html"/>

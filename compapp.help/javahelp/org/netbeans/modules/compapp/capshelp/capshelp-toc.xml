@@ -9,6 +9,11 @@
 			<tocitem text="Creating Composite Application Projects" target="caps_basics_create" />
 			<tocitem text="Adding JBI Modules to Composite Application Projects" target="caps_basics_add_jbi" />
 			<tocitem text="Deploying Composite Application Projects" target="caps_basics_deploy" />
+			<tocitem text="Integrating a Java EE Web Service into a Composite Application">
+				<tocitem text="About JBI and Java EE Web Services" target="basics_javaeews_intro-javaeews" />
+				<tocitem text="Accessing Java EE Server Resources" target="basics_javaeews_acc_serv_resources" />
+				<tocitem text="Understanding the Java EE Server Resources Window" target="basics_javaeews_serv_resources_win" />
+				<tocitem text="Java EE Server Resource Usage" target="basics_javaeews_resource_usage" />
 		</tocitem>
 		<tocitem text="Working With the CASA Editor">
 			<tocitem text="About the CASA Editor" target="casaeditor_about-casa" />
