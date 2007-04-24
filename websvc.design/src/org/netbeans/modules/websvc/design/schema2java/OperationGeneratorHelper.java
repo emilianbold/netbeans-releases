@@ -40,6 +40,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
+import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
@@ -536,7 +537,7 @@ public class OperationGeneratorHelper {
                     }else{
                         try                     {
                             org.netbeans.modules.websvc.core.MethodGenerator.
-                                    removeMethod(implementationClass,operationName);
+                                    deleteMethod(implementationClass,operationName);
                         } catch (IOException ex) {
                             ErrorManager.getDefault().notify(ex);
                         }

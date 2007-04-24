@@ -91,7 +91,7 @@ public class RemoveOperationAction extends AbstractAction{
     
         } else{
             //WS from Java
-            MethodGenerator.removeMethod(implementationClass, methodName);
+            MethodGenerator.deleteMethod(implementationClass, methodName);
         }
         //save the changes so events will be fired
         

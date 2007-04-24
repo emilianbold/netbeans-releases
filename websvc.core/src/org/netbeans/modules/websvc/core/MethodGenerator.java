@@ -151,6 +151,51 @@ public class MethodGenerator {
         }
     }
     
+    public static void deleteMethod(final FileObject implClass, final String operationName) throws IOException{
+        JavaSource targetSource = JavaSource.forFileObject(implClass);
+        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
+                //workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
+                GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
+                if (genUtils!=null) {
+                    ExecutableElement method = new MethodVisitor(workingCopy).getMethod( operationName);
+                    TreeMaker make  = workingCopy.getTreeMaker();
+                    if(method != null){
+                        ClassTree javaClass = genUtils.getClassTree();
+                        MethodTree methodTree = workingCopy.getTrees().getTree(method);
+                        ClassTree modifiedJavaClass = make.removeClassMember(javaClass, methodTree);
+                        workingCopy.rewrite(javaClass, modifiedJavaClass);
+                        boolean removeImplementsClause = false;
+                        //find out if there are no more exposed operations, if so remove the implements clause
+                        if(! new MethodVisitor(workingCopy).hasPublicMethod()){
+                            removeImplementsClause = true;
+                        }
+                    
+                        if(removeImplementsClause){
+                            //TODO: need to remove implements clause on the SEI
+                            //for now all implements are being remove
+                            List<? extends Tree> implementeds = javaClass.getImplementsClause();
+                            for(Tree implemented : implementeds) {
+                                modifiedJavaClass = make.removeClassImplementsClause(modifiedJavaClass, implemented);
+                            }
+                            workingCopy.rewrite(javaClass, modifiedJavaClass);
+                        }
+                    }
+                }
+            }
+            //}
+            public void cancel() {
+            }
+        };
+        targetSource.runModificationTask(task).commit();
+        DataObject dobj = DataObject.find(implClass);
+        if (dobj!=null) {
+            SaveCookie cookie = dobj.getCookie(SaveCookie.class);
+            if (cookie!=null) cookie.save();
+        }
+    }
+    
     public static void removeMethod(final FileObject implClass, final String operationName) throws IOException {
         JavaSource targetSource = JavaSource.forFileObject(implClass);
         CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
@@ -241,8 +286,13 @@ public class MethodGenerator {
             }
         };
         targetSource.runModificationTask(task).commit();
+        DataObject dobj = DataObject.find(implClass);
+        if (dobj!=null) {
+            SaveCookie cookie = dobj.getCookie(SaveCookie.class);
+            if (cookie!=null) cookie.save();
+        }
     }
- 
+    
     
     private static AnnotationMirror getWebMethodAnnotation(WorkingCopy workingCopy, ExecutableElement method){
         TypeElement methodAnnotationEl = workingCopy.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
