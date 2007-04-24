@@ -106,6 +106,14 @@ public class SearchTest extends EditorTestCase {
         return find;
     }
     
+    private void openFindDialog() {
+        MainWindowOperator mwo = MainWindowOperator.getDefault();
+        mwo.pushKey(KeyEvent.VK_E, KeyEvent.ALT_DOWN_MASK);
+        new EventTool().waitNoEvent(100);
+        mwo.pushKey(KeyEvent.VK_ESCAPE);
+        new FindAction().perform();
+    }
+    
     
     /**
      * TC2 - Find Selection Repeated
@@ -118,7 +126,7 @@ public class SearchTest extends EditorTestCase {
             
             // choose the "public" word
             editor.select(13, 1, 6);
-            new FindAction().perform();
+            openFindDialog();
             Find find = getFindDialog();
             String text = find.cboFindWhat().getTextField().getText();
             // compare
@@ -131,7 +139,7 @@ public class SearchTest extends EditorTestCase {
             
             // choose the "testFindSelectionRepeated" word
             editor.select(13, 14, 38);
-            new FindAction().perform();
+            openFindDialog();
             Find find2 = getFindDialog();
             text = find2.cboFindWhat().getTextField().getText();
             // compare
@@ -160,7 +168,7 @@ public class SearchTest extends EditorTestCase {
             // first search
             editor.setCaretPosition(1, 1);
             new EventTool().waitNoEvent(FIND_TIMEOUT);
-            new FindAction().perform();
+            openFindDialog();
             Find find = getFindDialog();
             find.cboFindWhat().typeText("package");
             find.find();
@@ -170,7 +178,7 @@ public class SearchTest extends EditorTestCase {
             // second search
             editor.setCaretPosition(1, 1);
             new EventTool().waitNoEvent(FIND_TIMEOUT);
-            new FindAction().perform();
+            openFindDialog();
             Find find2 = getFindDialog();
             find2.cboFindWhat().typeText("class");
             find2.find();
@@ -178,7 +186,7 @@ public class SearchTest extends EditorTestCase {
             find2.close();
             
             // search for an item from history - word "package"
-            new FindAction().perform();
+            openFindDialog();
             Find find3 = getFindDialog();
             JComboBoxOperator cbo = find3.cboFindWhat();
             cbo.selectItem(1);
@@ -208,7 +216,7 @@ public class SearchTest extends EditorTestCase {
             // perform search with all options unselected
             editor.setCaretPosition(1, 1);
             new EventTool().waitNoEvent(FIND_TIMEOUT);
-            new FindAction().perform();
+            openFindDialog();
             Find find = getFindDialog();
             find.cboFindWhat().typeText("cLaSs");
             uncheckAll();
@@ -260,7 +268,7 @@ public class SearchTest extends EditorTestCase {
             EditorOperator editor = getDefaultSampleEditorOperator();
             
             // perform case sensitive search - nothing found
-            new FindAction().perform();
+            openFindDialog();
             Find find = getFindDialog();
             find.cboFindWhat().typeText("Package");
             uncheckAll();
@@ -274,7 +282,7 @@ public class SearchTest extends EditorTestCase {
             // perform case sensitive search - package found
             editor.setCaretPosition(1, 1);
             new EventTool().waitNoEvent(FIND_TIMEOUT);
-            new FindAction().perform();
+            openFindDialog();
             Find find2 = getFindDialog();
             find2.cboFindWhat().typeText("package");
             find2.find();
@@ -299,7 +307,7 @@ public class SearchTest extends EditorTestCase {
             EditorOperator editor = getDefaultSampleEditorOperator();
             
             // perform smart case search
-            new FindAction().perform();
+            performFind();
             Find find = new Find();
             find.cboFindWhat().typeText("smarttest");
             uncheckAll();
@@ -312,7 +320,7 @@ public class SearchTest extends EditorTestCase {
             waitForLabel("'smarttest' found at 17:16");
             
             // perform smart case search
-            new FindAction().perform();
+            performFind();
             Find find2 = new Find();
             find2.cboFindWhat().typeText("smarttest");
             find2.find();
@@ -322,7 +330,7 @@ public class SearchTest extends EditorTestCase {
             waitForLabel("'smarttest' found at 18:16");
             
             // perform smart case search
-            new FindAction().perform();
+            performFind();
             Find find3 = new Find();
             find3.cboFindWhat().typeText("smarttest");
             find3.find();
@@ -332,7 +340,7 @@ public class SearchTest extends EditorTestCase {
             waitForLabel("'smarttest' found at 19:16");
             
             // perform smart case search - negative
-            new FindAction().perform();
+            performFind();
             Find find4 = new Find();
             find4.cboFindWhat().typeText("smarttest");
             find4.find();
@@ -357,7 +365,7 @@ public class SearchTest extends EditorTestCase {
             EditorOperator editor = getDefaultSampleEditorOperator();
             
             // perform search for Smarttest (found Smarttest)
-            new FindAction().perform();
+            performFind();
             Find find = new Find();
             uncheckAll();
             // check smart case
@@ -370,7 +378,7 @@ public class SearchTest extends EditorTestCase {
             waitForLabel("'Smarttest' found at 18:16");
             
             // perform smart case search - negative
-            new FindAction().perform();
+            performFind();
             Find find2 = new Find();
             find2.cboFindWhat().typeText("Smarttest");
             find2.find();
@@ -395,7 +403,7 @@ public class SearchTest extends EditorTestCase {
             EditorOperator editor = getDefaultSampleEditorOperator();
             
             // perform search for "word"
-            new FindAction().perform();
+            openFindDialog();
             Find find = getFindDialog();
             uncheckAll();
             find.cbMatchWholeWordsOnly().setSelected(true);
@@ -407,7 +415,7 @@ public class SearchTest extends EditorTestCase {
             waitForLabel("'word' found at 18:16");
             
             // perform search for "word"
-            new FindAction().perform();
+            openFindDialog();
             Find find2 = getFindDialog();
             find2.cboFindWhat().typeText("word");
             find2.find();
@@ -417,7 +425,7 @@ public class SearchTest extends EditorTestCase {
             waitForLabel("'word' found at 18:24");
             
             // perform search for "word"
-            new FindAction().perform();
+            openFindDialog();
             Find find3 = getFindDialog();
             find3.cboFindWhat().typeText("word");
             find3.find();
@@ -427,7 +435,7 @@ public class SearchTest extends EditorTestCase {
             waitForLabel("'word' found at 19:25");
             
             // perform search for "word" - negative
-            new FindAction().perform();
+            openFindDialog();
             Find find4 = getFindDialog();
             find4.cboFindWhat().typeText("word");
             find4.find();
@@ -452,7 +460,7 @@ public class SearchTest extends EditorTestCase {
             EditorOperator editor = getDefaultSampleEditorOperator();
             
             // test search highlighting - only checkbox
-            new FindAction().perform();
+            openFindDialog();
             Find find = getFindDialog();
             uncheckAll();
             find.cbHighlightSearch().setSelected(true);
@@ -485,7 +493,7 @@ public class SearchTest extends EditorTestCase {
             EditorOperator editor = getDefaultSampleEditorOperator();
             
             // perform search searched word, only checks checkbox
-            new FindAction().perform();
+            openFindDialog();
             Find find = getFindDialog();
             uncheckAll();
             find.cbHighlightSearch().setSelected(true);
@@ -513,7 +521,7 @@ public class SearchTest extends EditorTestCase {
             EditorOperator editor = getDefaultSampleEditorOperator();
             
             // perform backward search
-            new FindAction().perform();
+            openFindDialog();
             Find find = getFindDialog();
             uncheckAll();
             find.cboFindWhat().typeText("first");
@@ -550,7 +558,7 @@ public class SearchTest extends EditorTestCase {
             EditorOperator editor = getDefaultSampleEditorOperator();
             
             // perform backward search
-            new FindAction().perform();
+            openFindDialog();
             Find find = getFindDialog();
             uncheckAll();
             find.cbWrapSearch().setSelected(true);
@@ -587,7 +595,7 @@ public class SearchTest extends EditorTestCase {
             
             // search first word
             editor.setCaretPosition(1, 1);
-            new FindAction().perform();
+            openFindDialog();
             Find find = getFindDialog();
             uncheckAll();
             find.cboFindWhat().clearText();
@@ -651,7 +659,7 @@ public class SearchTest extends EditorTestCase {
             // perform selection search
             editor.select(24, 20);
             new EventTool().waitNoEvent(FIND_TIMEOUT);
-            new FindAction().perform();
+            openFindDialog();
             Find find = getFindDialog();
             uncheckAll();
             find.cbIncrementalSearch().setSelected(true);
@@ -680,7 +688,7 @@ public class SearchTest extends EditorTestCase {
             // perform negative selection search
             editor.select(25, 22);
             new EventTool().waitNoEvent(FIND_TIMEOUT);
-            new FindAction().perform();
+            openFindDialog();
             Find find2 = getFindDialog();
             uncheckAll();
             find2.cbIncrementalSearch().setSelected(true);
@@ -708,7 +716,7 @@ public class SearchTest extends EditorTestCase {
             
             // perform simple regexp search
             editor.setCaretPosition(1, 1);
-            new FindAction().perform();
+            openFindDialog();
             Find find = getFindDialog();
             uncheckAll();
             find.cbRegularExpressions().setSelected(true);
@@ -755,7 +763,7 @@ public class SearchTest extends EditorTestCase {
             
             // perform simple regexp search
             editor.setCaretPosition(1, 1);
-            new FindAction().perform();
+            openFindDialog();
             Find find = getFindDialog();
             uncheckAll();
             find.cbRegularExpressions().setSelected(true);

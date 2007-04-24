@@ -25,6 +25,7 @@ import java.awt.event.KeyEvent;
 import lib.EditorTestCase;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.HelpOperator;
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.actions.ReplaceAction;
 import org.netbeans.jellytools.modules.editor.Replace;
 import org.netbeans.jemmy.ComponentChooser;
@@ -51,7 +52,14 @@ public class ReplaceTest extends EditorTestCase {
         super.setUp();
         closeReplaceDialogIfOpened();
     }
-
+    
+    private void openReplaceDialog() {
+        MainWindowOperator mwo = MainWindowOperator.getDefault();
+        mwo.pushKey(KeyEvent.VK_E, KeyEvent.ALT_DOWN_MASK);
+        new EventTool().waitNoEvent(100);
+        mwo.pushKey(KeyEvent.VK_ESCAPE);
+        new ReplaceAction().perform();
+    }
     
     
     /**
@@ -65,7 +73,7 @@ public class ReplaceTest extends EditorTestCase {
             JEditorPaneOperator txtOper = editor.txtEditorPane();
             
             // open replace and close
-            new ReplaceAction().perform();
+            openReplaceDialog();
             txtOper.pushKey(KeyEvent.VK_ESCAPE);
             
             // open replace and open help
@@ -98,7 +106,7 @@ public class ReplaceTest extends EditorTestCase {
             // choose the "testReplaceSelectionRepeated" word
             editor.select(13, 14, 41);
             new EventTool().waitNoEvent(REPLACE_TIMEOUT);
-            new ReplaceAction().perform();
+            openReplaceDialog();
             Replace replace = new Replace();
             
             // check only selected checkboxes
@@ -121,7 +129,7 @@ public class ReplaceTest extends EditorTestCase {
             
             // choose the "testReplaceSelectionRepeated" word
             editor.select(15, 35, 62);
-            new ReplaceAction().perform();
+            openReplaceDialog();
             Replace replace2 = new Replace();
             text = replace2.cboFindWhat().getTextField().getText();
             // compare
@@ -239,7 +247,7 @@ public class ReplaceTest extends EditorTestCase {
             EditorOperator editor = getDefaultSampleEditorOperator();
             
             editor.setCaretPosition(1,1);
-            new ReplaceAction().perform();
+            openReplaceDialog();
             Replace replace = new Replace();
             
             // check only selected checkboxes
@@ -273,7 +281,7 @@ public class ReplaceTest extends EditorTestCase {
             EditorOperator editor = getDefaultSampleEditorOperator();
             
             editor.setCaretPosition(1,1);
-            new ReplaceAction().perform();
+            openReplaceDialog();
             Replace replace = new Replace();
             
             // check only selected checkboxes
@@ -308,7 +316,7 @@ public class ReplaceTest extends EditorTestCase {
             EditorOperator editor = getDefaultSampleEditorOperator();
             
             editor.select(20, 24);
-            new ReplaceAction().perform();
+            openReplaceDialog();
             Replace replace = new Replace();
             
             // check only selected checkboxes
