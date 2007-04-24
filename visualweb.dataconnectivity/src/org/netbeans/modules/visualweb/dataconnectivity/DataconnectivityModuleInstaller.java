@@ -43,6 +43,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject;
 import org.netbeans.modules.visualweb.dataconnectivity.naming.DatabaseSettingsImporter;
+import org.netbeans.modules.visualweb.dataconnectivity.naming.DerbyWaiter;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInstall;
 import org.openide.windows.WindowManager;
@@ -117,14 +118,11 @@ public class DataconnectivityModuleInstaller extends ModuleInstall {
 //         time2 = System.currentTimeMillis();
 //         System.err.println("DataconnectivityModuleInstaller.restored() t2 dt=" + (time2 - time1));
 //        time1 = time2;
-        
-        // Create sample database in Shortfin 
-        SampleDatabaseCreator.createAll("travel", "travel", "travel", "TRAVEL", "modules/ext/travel.zip", false, "localhost", 1527);       
+               
         init();
         
-        // Dataconnectivity implementation to support Project migration of previous releases projects
-        DatabaseSettingsImporter.getInstance().locateAndRegisterDrivers();
-        DatabaseSettingsImporter.getInstance().locateAndRegisterConnections(); 
+
+
         
   
        // Won't include other databases yet
@@ -135,12 +133,21 @@ public class DataconnectivityModuleInstaller extends ModuleInstall {
 //         System.err.println("DataconnectivityModuleInstaller.restored() t3 dt=" + (time2 - time1) + "  Total: " + (time2 - start));
     }
        
-    
+    // Wait for IDE to start before taking care of database registration
     public static void init() {
         WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
             public void run() {
                 // code to be invoked when system UI is ready
                 CurrentProject.getInstance().setup();
+                
+                // Dataconnectivity implementation to support Project migration of previous releases projects
+                // For previous release userdir migration, if no context file then settings haven't been migrated
+                if (DatabaseSettingsImporter.getInstance().locateContextFile() != null)
+                    new DerbyWaiter();  // waits for Derby drivers to be registered before migrating userdir settings
+                
+                // Create sample database in Shortfin
+                SampleDatabaseCreator.createAll("travel", "travel", "travel", "TRAVEL", "modules/ext/travel.zip", false, "localhost", 1527);
+                
             }
         }  );
     }
