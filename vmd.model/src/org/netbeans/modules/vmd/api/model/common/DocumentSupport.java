@@ -28,7 +28,7 @@ import java.util.*;
  * @author David Kaspar
  */
 public class DocumentSupport {
-
+    
     /**
      * Gathers all components in main tree of components in a specific document.
      * It returns a list of components that are or inherits a specific type-id using DescriptorRegistry.isInHierarchy method.
@@ -36,33 +36,33 @@ public class DocumentSupport {
      * @param typeID the required typeid of components
      * @return the filtered list of components
      */
-    public static List<DesignComponent> gatherAllComponentsOfTypeID (DesignDocument document, TypeID typeID) {
+    public static List<DesignComponent> gatherAllComponentsOfTypeID(DesignDocument document, TypeID typeID) {
         ArrayList<DesignComponent> list = new ArrayList<DesignComponent> ();
-        gatherAllComponentsOfTypeID (list, typeID, document.getRootComponent ());
+        gatherAllComponentsOfTypeID(list, typeID, document.getRootComponent());
         return list;
     }
-
+    
     /**
      * Gathers all components in a document that are containing presenter of presenterClass.
      * @param document the document
      * @param presenterClass the presenterClass
      * @return the list of components
      */
-    public static <T extends Presenter> List<DesignComponent> gatherAllComponentsContainingPresenterClass (DesignDocument document, Class<T> presenterClass) {
+    public static <T extends Presenter> List<DesignComponent> gatherAllComponentsContainingPresenterClass(DesignDocument document, Class<T> presenterClass) {
         ArrayList<DesignComponent> list = new ArrayList<DesignComponent> ();
-        DesignComponent rootComponent = document.getRootComponent ();
+        DesignComponent rootComponent = document.getRootComponent();
         if (rootComponent != null)
-            gatherAllComponentsContainingPresenterClass (list, rootComponent, presenterClass);
+            gatherAllComponentsContainingPresenterClass(list, rootComponent, presenterClass);
         return list;
     }
-
-    private static <T extends Presenter> void gatherAllComponentsContainingPresenterClass (ArrayList<DesignComponent> list, DesignComponent component, Class<T> presenterClass) {
-        if (component.getPresenter (presenterClass) != null)
-            list.add (component);
-        for (DesignComponent child : component.getComponents ())
-            gatherAllComponentsContainingPresenterClass (list, child, presenterClass);
+    
+    private static <T extends Presenter> void gatherAllComponentsContainingPresenterClass(ArrayList<DesignComponent> list, DesignComponent component, Class<T> presenterClass) {
+        if (component.getPresenter(presenterClass) != null)
+            list.add(component);
+        for (DesignComponent child : component.getComponents())
+            gatherAllComponentsContainingPresenterClass(list, child, presenterClass);
     }
-
+    
     /**
      * Gathers all components under specified component.
      * It returns a list of components that are or inherits a specific type-id using DescriptorRegistry.isInHierarchy method.
@@ -70,105 +70,119 @@ public class DocumentSupport {
      * @param typeID the required typeid of components
      * @return the filtered list of components
      */
-    public static List<DesignComponent> gatherAllComponentsOfTypeID (DesignComponent component, TypeID typeID) {
+    public static List<DesignComponent> gatherAllComponentsOfTypeID(DesignComponent component, TypeID typeID) {
         ArrayList<DesignComponent> list = new ArrayList<DesignComponent> ();
-        gatherAllComponentsOfTypeID (list, typeID, component);
+        gatherAllComponentsOfTypeID(list, typeID, component);
         return list;
     }
-
-    private static void gatherAllComponentsOfTypeID (Collection<? super DesignComponent> list, TypeID typeID, DesignComponent component) {
-        if (component.getDocument ().getDescriptorRegistry ().isInHierarchy (typeID, component.getType ()))
-            list.add (component);
-        for (DesignComponent child : component.getComponents ())
-            gatherAllComponentsOfTypeID (list, typeID, child);
+    
+    private static void gatherAllComponentsOfTypeID(Collection<? super DesignComponent> list, TypeID typeID, DesignComponent component) {
+        if (component.getDocument().getDescriptorRegistry().isInHierarchy(typeID, component.getType()))
+            list.add(component);
+        for (DesignComponent child : component.getComponents())
+            gatherAllComponentsOfTypeID(list, typeID, child);
     }
-
+    
     /**
      * Takes a specified list of presenters and removed those presenters which are compatible with specified presenter class.
      * @param presenters the list of presenters
      * @param presenterClass the presenter class
      */
-    public static void removePresentersOfClass (ArrayList<? super Presenter> presenters, Class presenterClass) {
-        for (Iterator<? super Presenter> iterator = presenters.iterator (); iterator.hasNext ();) {
-            Object object = iterator.next ();
-            if (presenterClass.isInstance (object))
-                iterator.remove ();
+    public static void removePresentersOfClass(ArrayList<? super Presenter> presenters, Class presenterClass) {
+        for (Iterator<? super Presenter> iterator = presenters.iterator(); iterator.hasNext();) {
+            Object object = iterator.next();
+            if (presenterClass.isInstance(object))
+                iterator.remove();
         }
     }
-
+    
     /**
      * Takes a specified list of presenters and removed those presenters which are compatible with specified presenter id.
      * @param presenters the list of presenters
      * @param presenterID the presenter id
      */
-    public static void removePresentersOfPresenterID (ArrayList<Presenter> presenters, String presenterID) {
+    public static void removePresentersOfPresenterID(ArrayList<Presenter> presenters, String presenterID) {
         if (presenterID == null)
             return;
-        for (Iterator<Presenter> iterator = presenters.iterator (); iterator.hasNext ();) {
-            Presenter presenter = iterator.next ();
+        for (Iterator<Presenter> iterator = presenters.iterator(); iterator.hasNext();) {
+            Presenter presenter = iterator.next();
             if (presenter instanceof IdentifiablePresenter)
-                if (presenterID.equals (((IdentifiablePresenter) presenter).getPresenterID ()))
-                    iterator.remove ();
+                if (presenterID.equals(((IdentifiablePresenter) presenter).getPresenterID()))
+                    iterator.remove();
         }
     }
-
+    
     /**
      * Sorts a list of presenters by their order defined by OrderablePresenter.
      * @param presenters the list of presenters
      */
-    public static void sortPresentersByOrder (ArrayList<? extends OrderablePresenter> presenters) {
-        Collections.sort (presenters, new Comparator<OrderablePresenter>() {
-            public int compare (OrderablePresenter o1, OrderablePresenter o2) {
-                return o1.getOrder () - o2.getOrder ();
+    public static void sortPresentersByOrder(ArrayList<? extends OrderablePresenter> presenters) {
+        Collections.sort(presenters, new Comparator<OrderablePresenter>() {
+            public int compare(OrderablePresenter o1, OrderablePresenter o2) {
+                return o1.getOrder() - o2.getOrder();
             }
         });
     }
-
+    
     /**
      * Returns a list of children components for a specified component. The children components will be only of a specified typeID.
      * @param component the component which children are used
      * @param typeID the type id of found children
      * @return the list of found children components
      */
-    public static List<DesignComponent> gatherSubComponentsOfType (DesignComponent component, TypeID typeID) {
+    public static List<DesignComponent> gatherSubComponentsOfType(DesignComponent component, TypeID typeID) {
         ArrayList<DesignComponent> list = new ArrayList<DesignComponent> ();
-        for (DesignComponent child : component.getComponents ()) {
-            if (typeID.equals (child.getType ()))
-                list.add (child);
+        for (DesignComponent child : component.getComponents()) {
+            if (typeID.equals(child.getType()))
+                list.add(child);
         }
         return list;
     }
-
+    
     /**
      * Gathers all presenters of a specified class that are currently attached to a component in the main tree of components in a specific document.
      * @param document the document
      * @param clazz the presenter class that is searched for
      * @return a collection of found presenters
      */
-    public static <T extends Presenter> Collection<T> gatherAllPresentersOfClass (DesignDocument document, Class<T> clazz) {
+    public static <T extends Presenter> Collection<T> gatherAllPresentersOfClass(DesignDocument document, Class<T> clazz) {
         ArrayList<T> list = new ArrayList<T> ();
-        gatherAllPresentersOfClass (list, document.getRootComponent (), clazz);
+        gatherAllPresentersOfClass(list, document.getRootComponent(), clazz);
         return list;
     }
-
-    private static <T extends Presenter> void gatherAllPresentersOfClass (ArrayList<T> list, DesignComponent component, Class<T> clazz) {
-        list.addAll (component.getPresenters (clazz));
-        for (DesignComponent child : component.getComponents ())
-            gatherAllPresentersOfClass (list, child, clazz);
+    
+    private static <T extends Presenter> void gatherAllPresentersOfClass(ArrayList<T> list, DesignComponent component, Class<T> clazz) {
+        list.addAll(component.getPresenters(clazz));
+        for (DesignComponent child : component.getComponents())
+            gatherAllPresentersOfClass(list, child, clazz);
     }
-
+    
     /**
      * Returns a collection of all presenters of a specified class that are in a specified collection.
      * @param presenters the collec
      * @param clazz the class of presenters to be found
      * @return the collection of found presenters
      */
-    public static <T extends Presenter> Collection<T> filterPresentersForClass (Collection<? extends Presenter> presenters, Class<T> clazz) {
+    public static <T extends Presenter> Collection<T> filterPresentersForClass(Collection<? extends Presenter> presenters, Class<T> clazz) {
         ArrayList<T> list = new ArrayList<T> ();
         for (Presenter presenter : presenters)
-            if (clazz.isInstance (presenter))
-                list.add ((T) presenter);
+            if (clazz.isInstance(presenter))
+                list.add((T) presenter);
         return list;
     }
-
+    /**
+     * Returns a design component producer for given type 
+     * @param type of searching producer
+     * @return the producer or null when producer for given type was not found 
+     */
+    public static ComponentProducer getComponentProducer(TypeID typeID) {
+        DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
+        for (ComponentProducer producer : document.getDescriptorRegistry().getComponentProducers()) {
+            if (producer.getComponentTypeID().equals(typeID))
+                return  producer;
+        }
+        
+        return null;
+    }
+    
 }

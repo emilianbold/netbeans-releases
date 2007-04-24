@@ -49,6 +49,7 @@ import java.util.List;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
+import org.netbeans.modules.vmd.midp.general.FileAcceptPresenter;
 import org.netbeans.modules.vmd.midpnb.screen.display.SVGAnimatorWrapperDisplayPresenter;
 
 /**
@@ -132,10 +133,10 @@ public class SVGAnimatorWrapperCD extends ComponentDescriptor {
                 createSetterPresenter(),
                 MidpCodePresenterSupport.createAddImportPresenter(),
                 new SwitchDisplayableParameterPresenter() {
-            public String generateSwitchDisplayableParameterCode() {
-                return CodeReferencePresenter.generateAccessCode(getComponent()) + ".getSvgCanvas ()"; // NOI18N
-            }
-        },
+                    public String generateSwitchDisplayableParameterCode() {
+                        return CodeReferencePresenter.generateAccessCode(getComponent()) + ".getSvgCanvas ()"; // NOI18N
+                    }
+                },
                 // delete
                 DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_SVG_IMAGE),
                 // screen
@@ -178,7 +179,7 @@ public class SVGAnimatorWrapperCD extends ComponentDescriptor {
                         String fullPath = (String) transferable.getTransferData(dataFlavor);
                         String path = fullPath.substring(fullPath.lastIndexOf(srcDir) + srcDir.length()).trim();
                         
-                        ComponentProducer producer = MidpDocumentSupport.getComponentProducer(SVGImageCD.TYPEID);
+                        ComponentProducer producer = DocumentSupport.getComponentProducer(SVGImageCD.TYPEID);
                         if (producer != null) {
                             DesignComponent category = MidpDocumentSupport.getCategoryComponent(document, ResourcesCategoryCD.TYPEID);
                             ComponentProducer.Result result = AcceptSupport.accept(category, producer);
@@ -188,7 +189,6 @@ public class SVGAnimatorWrapperCD extends ComponentDescriptor {
                                 svgImage.writeProperty(ClassCD.PROP_INSTANCE_NAME, instanceName);
                                 svgImage.writeProperty(SVGImageCD.PROP_RESOURCE_PATH, MidpTypes.createStringValue(path));
                                 svgAnimWrapper.writeProperty(PROP_SVG_IMAGE, PropertyValue.createComponentReference(svgImage));
-                                
                                 return new ComponentProducer.Result(svgAnimWrapper);
                             } else {
                                 Debug.warning("Can't create SVGImage component");

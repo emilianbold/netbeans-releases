@@ -48,6 +48,7 @@ import org.netbeans.modules.vmd.api.inspector.common.RenameAction;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenterForwarder;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteAction;
+import org.netbeans.modules.vmd.midp.general.FileAcceptPresenter;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 import org.netbeans.modules.vmd.midp.screen.display.ListElementEventSourceDisplayPresenter;
 
@@ -155,7 +156,9 @@ public final class ListElementEventSourceCD extends ComponentDescriptor {
                 }
             },
             // screen
-            new ListElementEventSourceDisplayPresenter()
+            new ListElementEventSourceDisplayPresenter(),
+            //accept
+            FileAcceptPresenter.createImage()
         );
     }
 

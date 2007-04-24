@@ -48,5 +48,4 @@ public class DefaultDataFlavor extends DataFlavor {
         }
         return null;
     }
-
 }

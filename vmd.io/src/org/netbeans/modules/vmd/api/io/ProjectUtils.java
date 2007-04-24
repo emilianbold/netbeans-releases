@@ -92,6 +92,16 @@ public final class ProjectUtils {
     }
     
     /**
+     * Returns a project instance for a data object.
+     * @param DesignDocument the DesignDocument
+     * @return the project
+     * @throws NullPointerException when the DesignDocument parameter is null
+     */
+    public static Project getProject(DesignDocument document) {
+        return getProject(IOSupport.getDataObjectForDocument(document));
+    }
+    
+    /**
      * Returns a DataObjectContext for a specific document.
      * It founds a context only for those documents that are active and currently assigned to the context.
      * There is only one active document per each context. Documents, that are loading process, are not claimed at active.

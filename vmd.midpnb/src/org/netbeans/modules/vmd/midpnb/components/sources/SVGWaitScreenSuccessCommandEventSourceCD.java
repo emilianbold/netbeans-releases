@@ -42,7 +42,7 @@ public class SVGWaitScreenSuccessCommandEventSourceCD extends ComponentDescripto
 
 
     public TypeDescriptor getTypeDescriptor () {
-        return new TypeDescriptor(CommandEventSourceCD.TYPEID, TYPEID, true, false);
+        return new TypeDescriptor(AbstractCommandEventSourceCD.TYPEID, TYPEID, true, false);
     }
 
     public VersionDescriptor getVersionDescriptor () {
@@ -53,18 +53,12 @@ public class SVGWaitScreenSuccessCommandEventSourceCD extends ComponentDescripto
         return null;
     }
 
-    protected void gatherPresenters (ArrayList<Presenter> presenters) {
-        DocumentSupport.removePresentersOfClass (presenters, InfoPresenter.class);
-        super.gatherPresenters (presenters);
-    }
-
+  
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
             // info
-            InfoPresenter.createStatic ("SVGWaitScreen.SUCCESS_COMMAND", "Command", CommandCD.ICON_PATH), //NOI18N
-            // delete
-            DeleteDependencyPresenter.createDependentOnParentComponentPresenter (),
-            DeletePresenter.createUserIndeliblePresenter ()
+            InfoPresenter.createStatic ("SVGWaitScreen.SUCCESS_COMMAND", "Command", CommandCD.ICON_PATH) //NOI18N
+            
         );
     }
 

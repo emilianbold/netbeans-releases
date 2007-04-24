@@ -88,7 +88,7 @@ public final class GoToSourceAction extends SystemAction {
                 if (panes == null || panes.length < 1)
                     return;
                 JEditorPane pane = panes[0];
-                
+                pane.show(true);
                 Iterable<GuardedSection> iterable = GuardedSectionManager.getInstance(document).getGuardedSections();
                 for (GuardedSection section : iterable) {
                     if (presenter.matches(section)) {

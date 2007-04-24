@@ -30,6 +30,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
 import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
+import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
+import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
+import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 
 /**
  * @author Karol Harezlak
@@ -54,6 +57,10 @@ public class AbstractCommandEventSourceCD extends ComponentDescriptor {
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass (presenters, InfoPresenter.class);
         DocumentSupport.removePresentersOfClass (presenters, InspectorFolderPresenter.class);
+        DocumentSupport.removePresentersOfClass(presenters, ActionsPresenter.class);
+        MidpActionsSupport.addCommonActionsPresenters(presenters, false, false, false, false, true);
+        MidpActionsSupport.addMoveActionPresenter(presenters, DisplayableCD.PROP_COMMANDS);
+    
         super.gatherPresenters (presenters);
     }
 

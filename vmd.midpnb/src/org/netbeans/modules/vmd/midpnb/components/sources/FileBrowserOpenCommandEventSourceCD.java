@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 
 
+
 /**
  * @author Karol Harezlak
  */
@@ -46,7 +47,7 @@ public final class FileBrowserOpenCommandEventSourceCD extends ComponentDescript
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors () {
         return null;
     }
-
+        
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
             // info

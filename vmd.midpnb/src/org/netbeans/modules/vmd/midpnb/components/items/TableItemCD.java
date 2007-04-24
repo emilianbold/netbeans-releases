@@ -141,5 +141,4 @@ public class TableItemCD extends ComponentDescriptor {
             new MidpResourcesAcceptTypePresenter().addType(SimpleTableModelCD.TYPEID, PROP_MODEL)
         );
     }
-    
 }

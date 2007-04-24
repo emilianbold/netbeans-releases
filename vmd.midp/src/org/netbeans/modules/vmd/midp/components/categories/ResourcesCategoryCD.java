@@ -52,7 +52,7 @@ public final class ResourcesCategoryCD extends ComponentDescriptor {
 
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList (
-            // general
+            // general 
             InfoPresenter.createStatic ("Resources", null, CategorySupport.ICON_PATH_CATEGORY_RESOURCES),
             // accept
             new AcceptTypePresenter (ResourceCD.TYPEID),

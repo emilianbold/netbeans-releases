@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.vmd.midp.components.displayables;
 
+import java.awt.datatransfer.Transferable;
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.codegen.Parameter;
 import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
@@ -48,40 +49,48 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.vmd.api.model.ComponentProducer.Result;
+import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
+import org.netbeans.modules.vmd.midp.components.categories.CategorySupport;
+import org.netbeans.modules.vmd.midp.components.categories.ResourcesCategoryCD;
+import org.netbeans.modules.vmd.midp.components.items.ImageItemCD;
+import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
+import org.netbeans.modules.vmd.midp.components.resources.ResourceCD;
+import org.netbeans.modules.vmd.midp.general.FileAcceptPresenter;
 
 /**
  * @author David Kaspar
  */
 
 public final class FormCD extends ComponentDescriptor {
-
+    
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "javax.microedition.lcdui.Form"); // NOI18N
-
+    
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/form_16.png"; // NOI18N
     public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midp/resources/components/form_64.png"; // NOI18N
-
+    
     public static final String PROP_ITEMS = "items"; //NOI18N
     public static final String PROP_ITEM_STATE_LISTENER = "itemStateListener"; //NOI18N
-
+    
     static {
-        MidpTypes.registerIconResource (TYPEID, ICON_PATH);
+        MidpTypes.registerIconResource(TYPEID, ICON_PATH);
     }
-
+    
     public TypeDescriptor getTypeDescriptor() {
         return new TypeDescriptor(ScreenCD.TYPEID, TYPEID, true, true);
     }
-
+    
     public VersionDescriptor getVersionDescriptor() {
         return MidpVersionDescriptor.MIDP;
     }
-
+    
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList(
-            new PropertyDescriptor(PROP_ITEMS, ItemCD.TYPEID.getArrayType(), PropertyValue.createEmptyArray(ItemCD.TYPEID), true, true, MidpVersionable.MIDP),
-            new PropertyDescriptor(PROP_ITEM_STATE_LISTENER, ItemStateListenerCD.TYPEID, PropertyValue.createNull(), true, true, MidpVersionable.MIDP)
-        );
+                new PropertyDescriptor(PROP_ITEMS, ItemCD.TYPEID.getArrayType(), PropertyValue.createEmptyArray(ItemCD.TYPEID), true, true, MidpVersionable.MIDP),
+                new PropertyDescriptor(PROP_ITEM_STATE_LISTENER, ItemStateListenerCD.TYPEID, PropertyValue.createNull(), true, true, MidpVersionable.MIDP)
+                );
     }
-
+    
     private static Presenter createSetterPresenter() {
         return new CodeSetterPresenter()
                 .addParameters(MidpParameter.create(PROP_ITEMS, PROP_ITEM_STATE_LISTENER))
@@ -91,41 +100,57 @@ public final class FormCD extends ComponentDescriptor {
                 .addSetters(MidpSetter.createSetter("insert", MidpVersionable.MIDP).setArrayParameter(PROP_ITEMS).addParameters(PROP_ITEMS, Parameter.PARAM_INDEX))
                 .addSetters(MidpSetter.createSetter("set", MidpVersionable.MIDP).setArrayParameter(PROP_ITEMS).addParameters(PROP_ITEMS, Parameter.PARAM_INDEX));
     }
-
-
-    protected void gatherPresenters (ArrayList<Presenter> presenters) {
-        DocumentSupport.removePresentersOfClass (presenters, ScreenDisplayPresenter.class);
-        DocumentSupport.removePresentersOfClass (presenters, ScreenResourceCategoriesPresenter.class);
-        super.gatherPresenters (presenters);
-    }
-
-    protected List<? extends Presenter> createPresenters() {
-        return Arrays.asList(
-            // accept
-            new AcceptTypePresenter (ItemCD.TYPEID) {
-                protected void notifyCreated (DesignComponent component) {
-                    super.notifyCreated (component);
-                    MidpArraySupport.append (getComponent (), PROP_ITEMS, component);
-                }
-            },
-            // action
-            AddActionPresenter.create(AddActionPresenter.ADD_ACTION, 10, ItemCD.TYPEID),
-            // inspector
-            InspectorPositionPresenter.create(new DisplayablePC()),
-            MidpInspectorSupport.createComponentElementsCategory("Items",createOrderingArrayController() , ItemCD.TYPEID), //NOI18N
-            // code
-            createSetterPresenter(),
-            // flow
-            new FlowItemCommandPinOrderPresenter (),
-            // delete
-            DeleteDependencyPresenter.createNullableComponentReferencePresenter (PROP_ITEM_STATE_LISTENER),
-            // screen
-            new FormDisplayPresenter (),
-            new FormResourceCategoriesPresenter ()
-        );
+    
+    
+    protected void gatherPresenters(ArrayList<Presenter> presenters) {
+        DocumentSupport.removePresentersOfClass(presenters, ScreenDisplayPresenter.class);
+        DocumentSupport.removePresentersOfClass(presenters, ScreenResourceCategoriesPresenter.class);
+        super.gatherPresenters(presenters);
     }
     
-     private List<InspectorOrderingController> createOrderingArrayController() {
+    protected List<? extends Presenter> createPresenters() {
+        return Arrays.asList(
+                // accept
+                new AcceptTypePresenter(ItemCD.TYPEID) {
+            protected void notifyCreated(DesignComponent component) {
+                super.notifyCreated(component);
+                MidpArraySupport.append(getComponent(), PROP_ITEMS, component);
+            }
+        },
+                // action
+                AddActionPresenter.create(AddActionPresenter.ADD_ACTION, 10, ItemCD.TYPEID),
+                // inspector
+                InspectorPositionPresenter.create(new DisplayablePC()),
+                MidpInspectorSupport.createComponentElementsCategory("Items",createOrderingArrayController() , ItemCD.TYPEID), //NOI18N
+                // code
+                createSetterPresenter(),
+                // flow
+                new FlowItemCommandPinOrderPresenter(),
+                // delete
+                DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_ITEM_STATE_LISTENER),
+                // screen
+                new FormDisplayPresenter(),
+                new FormResourceCategoriesPresenter(),
+                new ImageItemAcceptPresenter().addFileExtensions(FormCD.PROP_ITEMS, ImageItemCD.TYPEID, "jpg", "gif", "png") //NOI1
+                );
+    }
+    
+    private List<InspectorOrderingController> createOrderingArrayController() {
         return Collections.<InspectorOrderingController>singletonList(new ArrayPropertyOrderingController(PROP_ITEMS, 0, ItemCD.TYPEID));
+    }
+
+    private class ImageItemAcceptPresenter extends FileAcceptPresenter {
+        public Result accept(Transferable transferable) {
+            DesignDocument document = getComponent().getDocument();
+            Result result = super.accept(transferable);
+            DesignComponent component = result.getComponents().iterator().next();
+            ComponentProducer ip = DocumentSupport.getComponentProducer(ImageCD.TYPEID);
+            DesignComponent image = ip.createComponent(document).getComponents().iterator().next();
+            component.writeProperty(ImageItemCD.PROP_IMAGE, PropertyValue.createComponentReference(image));
+            image.writeProperty(ImageCD.PROP_RESOURCE_PATH, MidpTypes.createStringValue(getFilePath(transferable)));
+            MidpDocumentSupport.getCategoryComponent(document, ResourcesCategoryCD.TYPEID).addComponent(image);
+            getComponent().addComponent(component);
+            return new Result(component);
+        }
     }
 }
