@@ -209,10 +209,6 @@ sjsas.image.token.hostname.macosx=${sjsas.image.token.hostname.macosx}
 jarsigner.keystore=${jarsigner.keystore}
 jarsigner.alias=${jarsigner.alias}
 jarsigner.storepass=${jarsigner.storepass}
-
-# this will instruct the engine's and components' scripts to place distributives to
-# the output directory so that we can release them to the kits server
-dist.dir=${output.dir}/components
         </echo>
         <replace file="${environment.properties}" token="\" value="/"/>
     </target>
@@ -340,6 +336,10 @@ dist.dir=${output.dir}/components
                 value="${environment.properties}"/>
             
             <property
+                name="dist.dir"
+                value="${output.dir}/components"/>
+                
+            <property
                 name="release.parent.uid"
                 value="nb-ide-group"/>
             <property
@@ -359,6 +359,10 @@ dist.dir=${output.dir}/components
                 name="environment.properties" 
                 value="${environment.properties}"/>
             
+            <property
+                name="dist.dir"
+                value="${output.dir}/components"/>
+                
             <property
                 name="release.parent.uid"
                 value="nb-ide-group"/>
@@ -400,6 +404,10 @@ dist.dir=${output.dir}/components
                 value="${environment.properties}"/>
             
             <property
+                name="dist.dir"
+                value="${output.dir}/components"/>
+                
+            <property
                 name="release.parent.uid"
                 value="nb-addons-group"/>
             <property
@@ -419,6 +427,10 @@ dist.dir=${output.dir}/components
                 name="environment.properties" 
                 value="${environment.properties}"/>
             
+            <property
+                name="dist.dir"
+                value="${output.dir}/components"/>
+                
             <property
                 name="release.parent.uid"
                 value="nb-addons-group"/>
@@ -440,6 +452,10 @@ dist.dir=${output.dir}/components
                 value="${environment.properties}"/>
             
             <property
+                name="dist.dir"
+                value="${output.dir}/components"/>
+                
+            <property
                 name="release.parent.uid"
                 value="nb-addons-group"/>
             <property
@@ -460,6 +476,10 @@ dist.dir=${output.dir}/components
                 value="${environment.properties}"/>
             
             <property
+                name="dist.dir"
+                value="${output.dir}/components"/>
+                
+            <property
                 name="release.parent.uid"
                 value="nb-addons-group"/>
             <property
@@ -479,6 +499,10 @@ dist.dir=${output.dir}/components
                 name="environment.properties" 
                 value="${environment.properties}"/>
             
+            <property
+                name="dist.dir"
+                value="${output.dir}/components"/>
+                
             <property
                 name="release.parent.uid"
                 value="nb-addons-group"/>
@@ -521,6 +545,10 @@ dist.dir=${output.dir}/components
                 value="${environment.properties}"/>
             
             <property
+                name="dist.dir"
+                value="${output.dir}/components"/>
+                
+            <property
                 name="release.parent.uid"
                 value="runtimes-group"/>
             <property
@@ -542,6 +570,10 @@ dist.dir=${output.dir}/components
                 value="${environment.properties}"/>
             
             <property
+                name="dist.dir"
+                value="${output.dir}/components"/>
+                
+            <property
                 name="release.parent.uid"
                 value="runtimes-group"/>
             <property
@@ -561,6 +593,10 @@ dist.dir=${output.dir}/components
                 name="environment.properties" 
                 value="${environment.properties}"/>
             
+            <property
+                name="dist.dir"
+                value="${output.dir}/components"/>
+                
             <property
                 name="release.parent.uid"
                 value="runtimes-group"/>
@@ -582,6 +618,10 @@ dist.dir=${output.dir}/components
                 value="${environment.properties}"/>
             
             <property
+                name="dist.dir"
+                value="${output.dir}/components"/>
+                
+            <property
                 name="release.parent.uid"
                 value="runtimes-group"/>
             <property
@@ -602,6 +642,10 @@ dist.dir=${output.dir}/components
                 name="environment.properties" 
                 value="${environment.properties}"/>
             
+            <property
+                name="dist.dir"
+                value="${output.dir}/components"/>
+                
             <property
                 name="release.parent.uid"
                 value="runtimes-group"/>
