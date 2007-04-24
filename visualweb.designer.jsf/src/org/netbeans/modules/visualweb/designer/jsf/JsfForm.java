@@ -42,8 +42,6 @@ import org.netbeans.modules.visualweb.designer.jsf.text.DomDocumentImpl;
 import org.netbeans.modules.visualweb.insync.live.LiveUnit;
 import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -56,7 +54,6 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
@@ -163,9 +160,9 @@ public class JsfForm {
 
     /** Creates a new instance of JsfForm */
     private JsfForm(FacesModel facesModel, DataObject dataObject) {
-        if (facesModel == null) {
-            throw new NullPointerException("FacesModel may not be null!"); // NOI18N
-        }
+//        if (facesModel == null) {
+//            throw new NullPointerException("FacesModel may not be null!"); // NOI18N
+//        }
         
         if (facesModel.getLiveUnit() == null) {
             log(new NullPointerException("Invalid FacesModel, it has null LiveUnit, facesModel=" + facesModel)); // NOI18N
@@ -178,6 +175,13 @@ public class JsfForm {
 //        }
         setFacesModel(facesModel);
 
+        if (isValid()) {
+            init(dataObject);
+        }
+    }
+    
+    
+    private void init(DataObject dataObject) {
         // XXX This needs to be moved to insync.
         initFragmentProperty(dataObject);
         // XXX This needs to be moved to insync.
@@ -600,35 +604,36 @@ public class JsfForm {
 ////        init(fo);
 //    }
     
-    private void replaceFacesModel(FileObject oldFo, FileObject newFo) {
-        if (oldFo != null) {
-//            designer.destroyDesigner();
-            // XXX There would be weak listeners needed.
-            getDomSynchronizer().unregisterDomListeners();
-        }
-        // XXX Force new DomSynchronizer.
-        domSynchronizer = null;
-        
-        if (newFo != null) {
-//            associateFacesModel(newFo);
-
-            FacesModel newModel = FacesModel.getInstance(newFo);
-            if (newModel == null) {
-                throw new IllegalArgumentException("Null FacesModel for FileObject, fo=" + newFo); // NOI18N
-            }
-////            synchronized (facesModel2jsfForm) {
-//            synchronized (jsfForms) {
-////                facesModel2jsfForm.remove(this.facesModel);
-//                this.facesModel = newModel;
-////                facesModel2jsfForm.put(this.facesModel, this);
+//    private void replaceFacesModel(FileObject oldFo, FileObject newFo) {
+//        if (oldFo != null) {
+////            designer.destroyDesigner();
+//            // XXX There would be weak listeners needed.
+//            getDomSynchronizer().unregisterDomListeners();
+//        }
+//        // XXX Force new DomSynchronizer.
+//        domSynchronizer = null;
+//        
+//        if (newFo != null) {
+////            associateFacesModel(newFo);
+//
+////            FacesModel newModel = FacesModel.getInstance(newFo);
+//            FacesModel newModel = getFacesModel(newFo);
+//            if (newModel == null) {
+//                throw new IllegalArgumentException("Null FacesModel for FileObject, fo=" + newFo); // NOI18N
 //            }
-            setFacesModel(newModel);
-            
-            updateDnDListening();
-            
-            getDomSynchronizer().requestRefresh();
-        }
-    }
+//////            synchronized (facesModel2jsfForm) {
+////            synchronized (jsfForms) {
+//////                facesModel2jsfForm.remove(this.facesModel);
+////                this.facesModel = newModel;
+//////                facesModel2jsfForm.put(this.facesModel, this);
+////            }
+//            setFacesModel(newModel);
+//            
+//            updateDnDListening();
+//            
+//            getDomSynchronizer().requestRefresh();
+//        }
+//    }
     
     private FacesModel getFacesModel() {
 //        synchronized (facesModel2jsfForm) {
@@ -1954,40 +1959,40 @@ public class JsfForm {
 //    }
 
     
-    private static class DataObjectPropertyChangeListener implements PropertyChangeListener {
-        
-        private final JsfForm jsfForm;
-        
-        public DataObjectPropertyChangeListener(JsfForm jsfForm) {
-            this.jsfForm = jsfForm;
-        }
-        
-        public void propertyChange(final PropertyChangeEvent evt) {
-            // Immediately wipe out the paint box
-            if (evt.getPropertyName().equals(DataObject.PROP_PRIMARY_FILE)) {
-//                if ((getPane() != null) && (getPane().getPaneUI() != null)) {
-//                    getPane().getPaneUI().setPageBox(null);
-//                }
-                
-/*//NB6.0
-                // Reconfigure the data object: throw away the old model
-                // and find the new model associated with the new file object.
-//                InSyncServiceProvider.get().doOutsideOfRefactoringSession(new Runnable() {
-                MdrInSyncSynchronizer.get().doOutsideOfRefactoringSession(new Runnable() {
-                    public void run() {
- */
-                // Do the stuff on UI thread as some stuff gets updated that requires to be on UI thread
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        jsfForm.replaceFacesModel((FileObject)evt.getOldValue(), (FileObject)evt.getNewValue());
-                    }
-                });
-/*                  }
-                });
-//*/
-            }
-        }
-    } // End of DataObjectPropertyChangeListener.
+//    private static class DataObjectPropertyChangeListener implements PropertyChangeListener {
+//        
+//        private final JsfForm jsfForm;
+//        
+//        public DataObjectPropertyChangeListener(JsfForm jsfForm) {
+//            this.jsfForm = jsfForm;
+//        }
+//        
+//        public void propertyChange(final PropertyChangeEvent evt) {
+//            // Immediately wipe out the paint box
+//            if (evt.getPropertyName().equals(DataObject.PROP_PRIMARY_FILE)) {
+////                if ((getPane() != null) && (getPane().getPaneUI() != null)) {
+////                    getPane().getPaneUI().setPageBox(null);
+////                }
+//                
+///*//NB6.0
+//                // Reconfigure the data object: throw away the old model
+//                // and find the new model associated with the new file object.
+////                InSyncServiceProvider.get().doOutsideOfRefactoringSession(new Runnable() {
+//                MdrInSyncSynchronizer.get().doOutsideOfRefactoringSession(new Runnable() {
+//                    public void run() {
+// */
+//                // Do the stuff on UI thread as some stuff gets updated that requires to be on UI thread
+//                SwingUtilities.invokeLater(new Runnable() {
+//                    public void run() {
+//                        jsfForm.replaceFacesModel((FileObject)evt.getOldValue(), (FileObject)evt.getNewValue());
+//                    }
+//                });
+///*                  }
+//                });
+////*/
+//            }
+//        }
+//    } // End of DataObjectPropertyChangeListener.
     
 
     private static class JsfDesignContextListener implements DesignContextListener {
