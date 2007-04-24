@@ -67,7 +67,7 @@ public class HyperlinkTest extends NbTestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        Hyperlink.detachAllAnnotations();
+        Hyperlink.hyperlinks.clear();
     }
 
     public void testMovingHyperlinkWithoutSave() throws Exception {

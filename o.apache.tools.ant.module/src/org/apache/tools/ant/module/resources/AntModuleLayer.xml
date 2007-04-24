@@ -79,9 +79,6 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- Lines marked as erroneous: -->
     <folder name="Editors">
-        <folder name="AnnotationTypes">
-            <file name="org-apache-tools-ant-module-error.xml" url="error-annotation.xml"/>
-        </folder>
         <folder name="text">
             <folder name="x-ant+xml">
                 <folder name="Popup"> <!-- #20203 -->

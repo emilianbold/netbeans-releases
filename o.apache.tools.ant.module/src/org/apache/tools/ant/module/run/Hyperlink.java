@@ -20,11 +20,8 @@
 package org.apache.tools.ant.module.run;
 
 import java.awt.Toolkit;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.Set;
 import org.apache.tools.ant.module.AntModule;
 import org.openide.ErrorManager;
@@ -34,8 +31,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.Annotatable;
-import org.openide.text.Annotation;
 import org.openide.text.Line;
 import org.openide.util.WeakSet;
 import org.openide.windows.OutputEvent;
@@ -47,19 +42,9 @@ import org.openide.windows.OutputListener;
  * Careful since org.openide.text seems to assume 0-based line and column numbers.
  * @author Jesse Glick
  */
-public final class Hyperlink extends Annotation implements OutputListener, PropertyChangeListener {
-    
-    // #14804: detach everything before uninstalling module.
-    private static final Set<Hyperlink> hyperlinks = new WeakSet<Hyperlink>();
-    public static void detachAllAnnotations() {
-        synchronized (hyperlinks) {
-            Iterator<Hyperlink> it = hyperlinks.iterator();
-            while (it.hasNext()) {
-                it.next().destroy();
-                it.remove();
-            }
-        }
-    }
+public final class Hyperlink implements OutputListener {
+
+    static final Set<Hyperlink> hyperlinks = new WeakSet<Hyperlink>();
 
     private final URL url;
     private final String message;
@@ -68,10 +53,6 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
     private final int line2;
     private final int col2;
     private Line liveLine;
-    /** #22374: do not double up annotations. (Prefer parser annotations from editor.) */
-    private boolean masked;
-    
-    private boolean dead = false;
     
     public Hyperlink(URL url, String message, int line1, int col1, int line2, int col2) {
         this.url = url;
@@ -95,16 +76,7 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
         }
     }
     
-    void destroy() {
-        doDetach();
-        dead = true;
-        synchronized (hyperlinks) {
-            liveLine = null;
-        }
-    }
-    
     public void outputLineAction(OutputEvent ev) {
-        if (dead) return;
         FileObject file = URLMapper.findFileObject(url);
         if (file == null) { // #13115
             Toolkit.getDefaultToolkit().beep();
@@ -123,7 +95,6 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
                     try {
                         Line line = updateLines(ed);
                         if (!line.isDeleted()) {
-                            attachAsNeeded(line);
                             if (col1 == -1) {
                                 line.show(Line.SHOW_REUSE);
                             } else {
@@ -186,7 +157,6 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
     }
     
     public void outputLineSelected(OutputEvent ev) {
-        if (dead) return;
         FileObject file = URLMapper.findFileObject(url);
         if (file == null) {
             return;
@@ -205,7 +175,6 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
                 if (line1 != -1) {
                     Line line = updateLines(ed);
                     if (!line.isDeleted()) {
-                        attachAsNeeded(line);
                         if (col1 == -1) {
                             line.show(Line.SHOW_TRY_SHOW);
                         } else {
@@ -221,124 +190,10 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
         }
     }
     
-    private synchronized void attachAsNeeded(Line l) {
-        if (getAttachedAnnotatable() == null) {
-            boolean log = AntModule.err.isLoggable(ErrorManager.INFORMATIONAL);
-            // Suppress for lifetime of hyperlink in case problem was fixed by user.
-            masked |= l.getAnnotationCount() > 0;
-            if (masked) {
-                return;
-            }
-            Annotatable ann;
-            // Text of the line, incl. trailing newline.
-            String text = l.getText();
-            if (log) AntModule.err.log("Attaching to line " + l.getDisplayName() + " text=`" + text + "' line1=" + line1 + " line2=" + line2 + " col1=" + col1 + " col2=" + col2);
-            if (text != null && (line2 == -1 || line1 == line2) && col1 != -1) {
-                int new_col1 = convertTabColumnsToCharacterColumns(text, col1 - 1, 8);
-                int new_col2 = convertTabColumnsToCharacterColumns(text, col2 - 1, 8);
-                if (log) AntModule.err.log("\tfits on one line");
-                if (new_col2 != -1 && new_col2 >= new_col1 && new_col2 < text.length()) {
-                    if (log) AntModule.err.log("\tspecified section of the line");
-                    ann = l.createPart(new_col1, new_col2 - new_col1 + 1);
-                } else if (new_col1 < text.length()) {
-                    if (log) AntModule.err.log("\tspecified column to end of line");
-                    ann = l.createPart(new_col1, text.length() - new_col1 - 1);
-                } else {
-                    if (log) AntModule.err.log("\tcolumn numbers are bogus");
-                    ann = l;
-                }
-            } else {
-                if (log) AntModule.err.log("\tmultiple lines, something wrong with line, or no column given");
-                ann = l;
-            }
-            attach(ann);
-            // #17625: detach others however
-            synchronized (hyperlinks) {
-                for (Hyperlink h : hyperlinks) {
-                    if (h != this) {
-                        h.doDetach();
-                    }
-                }
-            }
-            ann.addPropertyChangeListener(this);
-        }
-    }
-
-    // XXX should be handled in StandardLogger, perhaps?
-    private int convertTabColumnsToCharacterColumns(String text, int column, int tabSize) {
-        // #16867 - jikes is right now only compiler which reports column of the error.
-        // If the text contains 'tab' character, the jikes expects
-        // that tab character is defined as 8 spaces, and so it sets the column accordingly.
-        // This method converts jikes columns back to character columns
-        char[] textChars = text.toCharArray();
-        int i;
-        int jikes_column = 0;
-        for (i=0; i<textChars.length && jikes_column<column; i++) {
-            if (textChars[i] == 9) {
-                jikes_column += (tabSize-(jikes_column%tabSize));
-            } else {
-                jikes_column++;
-            }
-        }
-        return i;
-    }
-    
-    private synchronized void doDetach() {
-        Annotatable ann = getAttachedAnnotatable();
-        if (ann != null) {
-            if (AntModule.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                AntModule.err.log("Detaching from " + ann + " `" + ann.getText() + "'");
-            }
-            ann.removePropertyChangeListener(this);
-            detach();
-        }
-    }
-    
     public void outputLineCleared(OutputEvent ev) {
-        doDetach();
         synchronized (hyperlinks) {
             liveLine = null;
         }
-    }
-    
-    public void propertyChange(PropertyChangeEvent ev) {
-        if (dead) return;
-        String prop = ev.getPropertyName();
-        if (prop == null ||
-        prop.equals(Annotatable.PROP_TEXT) ||
-        prop.equals(Annotatable.PROP_DELETED)) {
-            // Affected line has changed.
-            // Assume user has edited & corrected the error.
-            if (AntModule.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                AntModule.err.log("Received Annotatable property change: " + prop);
-            }
-            doDetach();
-        }
-        if (Annotatable.PROP_ANNOTATION_COUNT.equals(prop)) {
-            // #22374 again: detach if another annotation is added to this line after me.
-            Annotatable ann = getAttachedAnnotatable();
-            if (ann != null) {
-                int count = ann.getAnnotationCount();
-                if (ann instanceof Line.Part) {
-                    // Parser annotation may be on line rather than our segment of it.
-                    count += ((Line.Part) ann).getLine().getAnnotationCount();
-                }
-                if (count > 1) {
-                    masked = true;
-                    doDetach();
-                }
-            }
-        }
-    }
-    
-    @Override
-    public String getAnnotationType() {
-        return "org-apache-tools-ant-module-error"; // NOI18N
-    }
-    
-    @Override
-    public String getShortDescription() {
-        return message;
     }
     
     @Override
