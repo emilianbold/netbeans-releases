@@ -59,12 +59,10 @@ public final class ListenerManager {
 
         private final DesignComponent component;
         private final Collection<? extends Presenter> presentersToRemove;
-        private final Collection<Presenter> presentersToAdd;
 
-        PresenterItem (DesignComponent designComponent, Collection<? extends Presenter> presentersToRemove, Collection<Presenter> presentersToAdd) {
+        PresenterItem (DesignComponent designComponent, Collection<? extends Presenter> presentersToRemove) {
             this.component = designComponent;
             this.presentersToRemove = presentersToRemove;
-            this.presentersToAdd = presentersToAdd;
         }
 
     }
@@ -149,7 +147,10 @@ public final class ListenerManager {
     void addComponentDescriptorChanged (DesignComponent component, Collection<? extends Presenter> presentersToRemove, Collection<Presenter> presentersToAdd) {
         assert Debug.isFriend (TransactionManager.class, "componentDescriptorChangeHappened"); // NOI18N
         descriptorChangedComponents.add (component);
-        presenterItems.add (new PresenterItem (component, presentersToRemove, presentersToAdd));
+        if (presentersToAdd != null)
+            for (Presenter presenter : presentersToAdd)
+                presenter.setNotifyAttached (component);
+        presenterItems.add (new PresenterItem (component, presentersToRemove/*, presentersToAdd*/));
     }
 
     void addAffectedDesignComponent (DesignComponent component, String propertyName, PropertyValue oldPropertyValue) {
@@ -288,19 +289,6 @@ public final class ListenerManager {
                 for (Presenter presenter : item.presentersToRemove) {
                     try {
                         presenter.setNotifyDetached (component);
-                    } catch (ThreadDeath td) {
-                        throw td;
-                    } catch (Throwable th) {
-                        ErrorManager.getDefault ().notify (th);
-                    }
-                }
-        }
-        for (PresenterItem item : presenterItems) {
-            DesignComponent component = item.component;
-            if (item.presentersToAdd != null)
-                for (Presenter presenter : item.presentersToAdd) {
-                    try {
-                        presenter.setNotifyAttached (component);
                     } catch (ThreadDeath td) {
                         throw td;
                     } catch (Throwable th) {

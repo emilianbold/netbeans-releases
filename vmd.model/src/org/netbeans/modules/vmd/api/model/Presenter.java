@@ -47,7 +47,7 @@ public abstract class Presenter {
     }
 
     void setNotifyAttached (DesignComponent component) {
-        assert Debug.isFriend (ListenerManager.class, "fireEventCore")  ||  Debug.isFriend (DynamicPresenter.class, "setNotifyAttached"); // NOI18N
+        assert Debug.isFriend (ListenerManager.class, "addComponentDescriptorChanged")  ||  Debug.isFriend (DynamicPresenter.class, "setNotifyAttached"); // NOI18N
         assert this.component == null && component != null;
         this.component = component;
     }
