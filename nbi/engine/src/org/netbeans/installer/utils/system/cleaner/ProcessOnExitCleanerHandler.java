@@ -80,7 +80,7 @@ public abstract class ProcessOnExitCleanerHandler implements OnExitCleanerHandle
             
             List <String> paths = new ArrayList <String> ();
             for(File f : files) {
-                paths.add(f.getCanonicalPath());
+                paths.add(f.getAbsolutePath());
             }
             Collections.sort(paths, Collections.reverseOrder());
             
