@@ -173,9 +173,10 @@ public class JsfForm {
 
 //        associateFacesModel(dataObject.getPrimaryFile());
 //        synchronized (facesModel2jsfForm) {
-        synchronized (jsfForms) {
-            this.facesModel = facesModel;
-        }
+//        synchronized (jsfForms) {
+//            this.facesModel = facesModel;
+//        }
+        setFacesModel(facesModel);
         
         this.dndSupport = new DndSupport(this);
         
@@ -198,6 +199,12 @@ public class JsfForm {
         updateDnDListening();
     }
     
+    
+    private void setFacesModel(FacesModel facesModel) {
+        synchronized (jsfForms) {
+            this.facesModel = facesModel;
+        }
+    }
     
     private static FacesModel getFacesModel(FileObject fileObject) {
         return FacesModel.getInstance(fileObject);
@@ -594,12 +601,14 @@ public class JsfForm {
             if (newModel == null) {
                 throw new IllegalArgumentException("Null FacesModel for FileObject, fo=" + newFo); // NOI18N
             }
-//            synchronized (facesModel2jsfForm) {
-            synchronized (jsfForms) {
-//                facesModel2jsfForm.remove(this.facesModel);
-                this.facesModel = newModel;
-//                facesModel2jsfForm.put(this.facesModel, this);
-            }
+////            synchronized (facesModel2jsfForm) {
+//            synchronized (jsfForms) {
+////                facesModel2jsfForm.remove(this.facesModel);
+//                this.facesModel = newModel;
+////                facesModel2jsfForm.put(this.facesModel, this);
+//            }
+            setFacesModel(newModel);
+            
             updateDnDListening();
             
             getDomSynchronizer().requestRefresh();
@@ -2589,6 +2598,11 @@ public class JsfForm {
     private static void log(Throwable ex) {
         Logger logger = Logger.getLogger(JsfForm.class.getName());
         logger.log(Level.INFO, null, ex);
+    }
+    
+    
+    public boolean isValid() {
+        return getFacesModel() != null;
     }
 }
 

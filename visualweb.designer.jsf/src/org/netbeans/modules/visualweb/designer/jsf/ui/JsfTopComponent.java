@@ -288,7 +288,9 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 ////        }
 //
 //        openAdditionalWindows();
-        designerOpened();
+        if (jsfForm.isValid()) {
+            designerOpened();
+        }
     }
     
     @Override
@@ -316,7 +318,9 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //
 ////        webform.clearHtml();
 //        jsfForm.clearHtml();
-        designerClosed();
+        if (jsfForm.isValid()) {
+            designerClosed();
+        }
     }
     
     // XXX Bad API, why one needs to override the deprecated API?
@@ -868,7 +872,9 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 ////            html.requestFocus();
 ////        }
 //        designer.paneRequestFocus();
-        designerActivated();
+        if (jsfForm.isValid()) {
+            designerActivated();
+        }
     }
     
 //    public PaletteController getPaletteController() {
@@ -1113,7 +1119,9 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //        // after page layout instead.
 ////        html.requestFocus();
 //        designer.paneRequestFocus();
-        designerShowing();
+        if (jsfForm.isValid()) {
+            designerShowing();
+        }
     }
     
     @Override
@@ -1141,7 +1149,9 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         });*/
         // </TEMP>
 //        selectNavigatorWindow();
-        designerHidden();
+        if (jsfForm.isValid()) {
+            designerHidden();
+        }
     }
     
     public CloseOperationState canCloseElement() {
@@ -1876,7 +1886,9 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //        if (designer.getSelectedCount() > 0) {
 //            designer.finishInlineEditing(false);
 //        }
-        designerDeactivated();
+        if (jsfForm.isValid()) {
+            designerDeactivated();
+        }
     }
     
     // Helper methods
