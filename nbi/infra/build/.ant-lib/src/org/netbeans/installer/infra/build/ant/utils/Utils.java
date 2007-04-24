@@ -789,11 +789,23 @@ public final class Utils {
         
         Process process = new ProcessBuilder(command).start();
         
+        boolean doRun = true;
         long running;
-        for (running = 0; running < MAX_EXECUTION_TIME; running += DELAY) {
-            CharSequence string;
+        for (running = 0; doRun && (running < MAX_EXECUTION_TIME); running += DELAY) {
+            try {
+                Thread.sleep(DELAY);
+            }  catch (InterruptedException e) {
+                // do nothing - this may happen every now and then
+            }
             
-            string = read(process.getInputStream());
+            try {
+                errorCode = process.exitValue();
+                doRun = false;
+            } catch (IllegalThreadStateException e) {
+                ; // do nothing - the process is still running
+            }
+            
+            CharSequence string = read(process.getInputStream());
             if (string.length() > 0) {
                 processStdOut.append(string);
             }
@@ -801,19 +813,6 @@ public final class Utils {
             string = read(process.getErrorStream());
             if (string.length() > 0) {
                 processStdErr.append(string);
-            }
-            
-            try {
-                errorCode = process.exitValue();
-                break;
-            } catch (IllegalThreadStateException e) {
-                ; // do nothing - the process is still running
-            }
-            
-            try {
-                Thread.sleep(DELAY);
-            }  catch (InterruptedException e) {
-                // do nothing - this may happen every now and then
             }
         }
         
