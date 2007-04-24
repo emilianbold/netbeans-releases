@@ -209,6 +209,10 @@ sjsas.image.token.hostname.macosx=${sjsas.image.token.hostname.macosx}
 jarsigner.keystore=${jarsigner.keystore}
 jarsigner.alias=${jarsigner.alias}
 jarsigner.storepass=${jarsigner.storepass}
+
+# this will instruct the engine's and components' scripts to place distributives to
+# the output directory so that we can release them to the kits server
+dist.dir=${output.dir}/components
         </echo>
         <replace file="${environment.properties}" token="\" value="/"/>
     </target>
@@ -264,6 +268,15 @@ jarsigner.storepass=${jarsigner.storepass}
     </target>
     
     <target name="-build">
+        <delete dir="${output.dir}"/>
+        
+        <mkdir dir="${output.dir}"/>
+        <mkdir dir="${output.dir}/bundles"/>
+        <mkdir dir="${output.dir}/components"/>
+        <mkdir dir="${output.dir}/img"/>
+        <mkdir dir="${output.dir}/js"/>
+        <mkdir dir="${output.dir}/css"/>
+        
         <property name="engine.dist.file.name" value="nbi-engine.jar"/>
         
         <echo message="BUILDING CORE ENGINE ======================================"/>
@@ -600,14 +613,6 @@ jarsigner.storepass=${jarsigner.storepass}
                 value=""/>
         </ant>
         -->
-        
-        <delete dir="${output.dir}"/>
-        
-        <mkdir dir="${output.dir}"/>
-        <mkdir dir="${output.dir}/bundles"/>
-        <mkdir dir="${output.dir}/img"/>
-        <mkdir dir="${output.dir}/js"/>
-        <mkdir dir="${output.dir}/css"/>
         
         <get 
             src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;component=nb-javase,6.0.0.0.${build.number}&amp;platform=windows"
