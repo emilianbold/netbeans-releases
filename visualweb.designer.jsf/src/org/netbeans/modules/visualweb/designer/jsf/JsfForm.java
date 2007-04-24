@@ -53,6 +53,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
@@ -72,7 +74,6 @@ import org.netbeans.modules.visualweb.insync.faces.FacesBean;
 import org.netbeans.modules.visualweb.insync.faces.FacesPageUnit;
 import org.netbeans.modules.visualweb.insync.faces.MarkupBean;
 import org.netbeans.spi.palette.PaletteController;
-import org.openide.ErrorManager;
 import org.openide.awt.UndoRedo;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
@@ -165,6 +166,10 @@ public class JsfForm {
         if (facesModel == null) {
             throw new NullPointerException("FacesModel may not be null!"); // NOI18N
         }
+        
+        if (facesModel.getLiveUnit() == null) {
+            log(new NullPointerException("Invalid FacesModel, it has null LiveUnit, facesModel=" + facesModel)); // NOI18N
+        }
 
 //        associateFacesModel(dataObject.getPrimaryFile());
 //        synchronized (facesModel2jsfForm) {
@@ -214,8 +219,7 @@ public class JsfForm {
         FacesModel facesModel = getFacesModel(dataObject);
         if (facesModel == null) {
             if (!dataObject.isTemplate()) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                        new IllegalArgumentException("There is no FacesModel available for non-template dataObject=" + dataObject)); // NOI18N
+                log(new IllegalArgumentException("There is no FacesModel available for non-template dataObject=" + dataObject)); // NOI18N
             }
             return null;
         }
@@ -529,7 +533,11 @@ public class JsfForm {
 
     
     private void initDesignProjectListening() {
-        DesignProject designProject = getFacesModel().getLiveUnit().getProject();
+        LiveUnit liveUnit = getFacesModel().getLiveUnit();
+        if (liveUnit == null) {
+            log(new NullPointerException("Invalid FacesModel, it has null LiveUnit, facesModel=" + getFacesModel())); // NOI18N
+        }
+        DesignProject designProject = liveUnit.getProject();
         if (designProject == null) {
             // Log issue?
             return;
@@ -1623,7 +1631,7 @@ public class JsfForm {
         try {
             return DataObject.find(file);
         } catch (DataObjectNotFoundException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            log(ex);
 
             return null;
         }
@@ -1758,8 +1766,7 @@ public class JsfForm {
             return markupUnit.getState() == Unit.State.SOURCEDIRTY;
         } else {
             // XXX #6478973 Model could be corrupted, until #6480764 is fixed.
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                    new IllegalStateException("The FacesModel is corrupted, its markup unit is null, facesModel=" + getFacesModel())); // NOI18N
+            log(new IllegalStateException("The FacesModel is corrupted, its markup unit is null, facesModel=" + getFacesModel())); // NOI18N
         }
         return false;
     }
@@ -2301,8 +2308,8 @@ public class JsfForm {
                         contextJsfForm = getJsfForm(dobj);
                         break;
                     }
-                } catch (DataObjectNotFoundException dnfe) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, dnfe);
+                } catch (DataObjectNotFoundException ex) {
+                    log(ex);
                 }
             }
         }
@@ -2407,9 +2414,8 @@ public class JsfForm {
         DataObject dobj;
         try {
             dobj = DataObject.find(fo);
-        }
-        catch (DataObjectNotFoundException ex) {
-            ErrorManager.getDefault().notify(ex);
+        } catch (DataObjectNotFoundException ex) {
+            log(ex);
             return;
         }
 
@@ -2426,9 +2432,9 @@ public class JsfForm {
             try {
                 ec.openDocument(); // ensure that it has been opened - REDUNDANT?
                 //ec.open();
-            }
-            catch (IOException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            } catch (IOException ex) {
+                log(ex);
+                return;
             }
         }
 
@@ -2571,13 +2577,18 @@ public class JsfForm {
         if (rootBean == null) {
             // XXX If the model is busted then it is supposed to be OK, there is an error, see e.g. #6478860.
             if (!facesModel.isBusted()) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                        new IllegalStateException("Invalid FacesModel, it is not busted and its root design bean is null, facesModel=" + facesModel)); // NOI18N
+                log(new IllegalStateException("Invalid FacesModel, it is not busted and its root design bean is null, facesModel=" + facesModel)); // NOI18N
             }
             return null;
         } else {
             return DesigntimeIdeBridgeProvider.getDefault().getNodeRepresentation(rootBean);
         }
+    }
+    
+    
+    private static void log(Throwable ex) {
+        Logger logger = Logger.getLogger(JsfForm.class.getName());
+        logger.log(Level.INFO, null, ex);
     }
 }
 
