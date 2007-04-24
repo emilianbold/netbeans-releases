@@ -11,13 +11,15 @@
 <body>
 <h2>Using the Relation Output Operator Property Editor </h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>The Relation Output operator sends out groups of tuples that reflect changes in the relation result. Whenever a event triggers a change in the relation result, it sends out records with a tag on the end, which indicate a + or - (records added or deleted, respectively.) </p>
-<p>If a change occurs as a result of the triggering event such that a record changes, the IEP sends a delete record matching the changed record. The IEP feature sends an add record out when there is an updated or new version of that record. The operator only sends out change events rather than repeatedly sending the entire result.</p>
-<p> However, if a triggering event enters into the IEP process, but the result of the final Relation from that event does not change,&nbsp; the relation output is not triggered and no data is sent from the IEP feature.</p>
+<p>The Relation Output operator sends out groups of tuples that reflect changes in the relation result. Whenever a event triggers a change in the relation result, the Relation Output operator sends out records with a tag on the end, which indicate a + or - (records added or deleted, respectively.) </p>
+<p>If a change occurs as a result of the triggering event such that a record changes, the IEP sends a delete record matching the changed record.<br>
+  <br> 
+The IEP feature sends an add record out when there is an updated or new version of that record. The operator only sends  events when there are change events rather than repeatedly sending the entire result.</p>
+<p> However, if a triggering event enters into the IEP process, but the result of the final relation from that event does not change,&nbsp; the relation output is not triggered and the Relation Output operator does not send data. </p>
 <p><strong>To create a Relation Output operator:</strong></p>
 <ol>
   <li>Drag a Relation Output  operator to the Design view.</li>
-  <li>Click the Relation Output  operator icon. </li>
+  <li>Click the Relation Output  operator icon. The property editor opens. </li>
   <li>Click the Include Timestamp checkbox if you want to include a timestamp on the output from the Relation Output.</li>
   <li>Click Ok.</li>
 </ol>
