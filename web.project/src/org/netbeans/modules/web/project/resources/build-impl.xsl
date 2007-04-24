@@ -587,9 +587,10 @@ introduced by support for multiple source roots. -jglick
                     <xsl:for-each select="$jaxws/jaxws:jax-ws/jaxws:services/jaxws:service">
                         <xsl:if test="not(jaxws:wsdl-url)">
                             <xsl:variable name="wsname" select="@name"/>
-                            <xsl:variable name="seiclass" select="jaxws:implementation-class"/>
+                            <xsl:variable name="seiclass" select="jaxws:implementation-class"/>                      
                             <target name="wsgen-{$wsname}-nonJSR109" depends="wsgen-init-nonJSR109">
                                 <wsgen
+                                    fork="true"
                                     xendorsed="true"
                                     sourcedestdir="${{build.generated.dir}}/wsgen/service"
                                     resourcedestdir="${{build.generated.dir}}/wsgen/service"
@@ -599,6 +600,7 @@ introduced by support for multiple source roots. -jglick
                                     sei="{$seiclass}"
                                 >   
                                     <classpath path="${{java.home}}/../lib/tools.jar:${{build.classes.dir.real}}:${{j2ee.platform.wsgen.classpath}}:${{javac.classpath}}"/>
+                                    <jvmarg value="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
                                 </wsgen>
                             </target>
                         </xsl:if>
