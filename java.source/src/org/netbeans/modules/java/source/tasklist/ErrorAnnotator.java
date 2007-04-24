@@ -69,7 +69,9 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
         boolean inError = false;
         
         if (files instanceof NonRecursiveFolder) {
-            inError = TaskCache.getDefault().isInError(((NonRecursiveFolder) files).getFolder(), false);
+            FileObject folder = ((NonRecursiveFolder) files).getFolder();
+            inError = TaskCache.getDefault().isInError(folder, false);
+            knownFiles.add(folder);
         } else {
             for (Object o : files) {
                 if (o instanceof FileObject) {
@@ -77,9 +79,11 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
                     
                     if (f.isFolder()) {
                         knownFiles.add(f);
+                        if (inError)
+                            continue;
                         if (TaskCache.getDefault().isInError(f, true)) {
                             inError = true;
-                            break;
+                            continue;
                         }
                         
                         Project p = FileOwnerQuery.getOwner(f);
@@ -101,9 +105,11 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
                     }else {
                         if (f.isData() && "java".equals(f.getExt())) {
                             knownFiles.add(f);
+                            if (inError)
+                                continue;
                             if (TaskCache.getDefault().isInError(f, true)) {
                                 inError = true;
-                                break;
+                                continue;
                             }
                         }
                     }
@@ -184,7 +190,7 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
         if (fos.isEmpty())
             return ;
         try {
-            fireFileStatusChanged(new FileStatusEvent(fos.iterator().next().getFileSystem()/*, fos*/, true, false));
+            fireFileStatusChanged(new FileStatusEvent(fos.iterator().next().getFileSystem(), fos, true, false));
         } catch (FileStateInvalidException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }

@@ -49,6 +49,7 @@ import org.netbeans.modules.java.source.usages.Index;
 import org.netbeans.spi.tasklist.Task;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 
 /**
  *
@@ -139,7 +140,7 @@ public class TaskCache {
         return result;
     }
     
-    public Set<URL> dumpErrors(URL root, URL file, List<? extends Diagnostic> errors) throws IOException {
+    public Set<URL> dumpErrors(URL root, URL file, File fileFile, List<? extends Diagnostic> errors) throws IOException {
         File[] output = computePersistentFile(root, file);
         boolean containsErrors = false;
         
@@ -175,26 +176,38 @@ public class TaskCache {
         toRefresh.add(file);
         
         File current = output[1].getParentFile();
-        
+        File currentFile = fileFile.getParentFile();
+                
         while (!output[0].equals(current)) {
             if (updateInErrorFolder(current, file, containsErrors, true))
-                toRefresh.add(current.toURL());
+                toRefresh.add(currentFile.toURL());
             current = current.getParentFile();
+            currentFile = currentFile.getParentFile();
         }
         
         if (updateInErrorFolder(current, file, containsErrors, true))
-            toRefresh.add(current.toURL());
+            toRefresh.add(currentFile.toURL());
         
         updateInErrorFolder(output[1].getParentFile(), file, containsErrors, false);
             
-        FileObject rootFO = FileUtil.toFileObject(current);
+        FileObject rootFO = URLMapper.findFileObject(root);
         
         //XXX:
         if (rootFO != null) {
             Project p = FileOwnerQuery.getOwner(rootFO);
             
             if (p != null) {
-                toRefresh.add(p.getProjectDirectory().getURL());
+                FileObject currentFO = rootFO;
+                FileObject projectDirectory = p.getProjectDirectory();
+                
+                if (FileUtil.isParentOf(projectDirectory, rootFO)) {
+                    while (currentFO != null && currentFO != projectDirectory) {
+                        toRefresh.add(currentFO.getURL());
+                        currentFO = currentFO.getParent();
+                    }
+                }
+                
+                toRefresh.add(projectDirectory.getURL());
             }
         }
         

@@ -342,7 +342,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     markRootTasklistDirty(root);
                     submit(Work.delete(fo,root,isFolder));
                     if (TasklistSettings.isTasklistEnabled()) {
-                        Set<URL> toRefresh = TaskCache.getDefault().dumpErrors(root, fo.getURL(), Collections.<Diagnostic>emptyList());
+                        Set<URL> toRefresh = TaskCache.getDefault().dumpErrors(root, fo.getURL(), FileUtil.toFile(fo), Collections.<Diagnostic>emptyList());
                         if (TasklistSettings.isBadgesEnabled()) {
                             ErrorAnnotator an = ErrorAnnotator.getAnnotator();
                             
@@ -1466,7 +1466,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         }
                     }
                     if (TasklistSettings.isTasklistEnabled()) {
-                        Set<URL> toRefresh = TaskCache.getDefault().dumpErrors(root, file, diag);
+                        Set<URL> toRefresh = TaskCache.getDefault().dumpErrors(root, file, fileFile, diag);
                         
                         if (TasklistSettings.isBadgesEnabled()) {
                             //XXX: maybe move to the common path (to be used also in the else branch:
@@ -2110,7 +2110,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             }
                         }
                         if (TasklistSettings.isTasklistEnabled()) {
-                            toRefresh.addAll(TaskCache.getDefault().dumpErrors(rootFo.getURL(), u.toURL(), diag));
+                            toRefresh.addAll(TaskCache.getDefault().dumpErrors(rootFo.getURL(), u.toURL(), activeFile, diag));
                         }
 //                        if (!listener.errors.isEmpty()) {
                             Log.instance(jt.getContext()).nerrors = 0;
