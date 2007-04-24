@@ -242,15 +242,19 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         am.setParent(paneMap);
     }
     
+    
+    @Override
     protected String preferredID() {
         return "DESIGNER"; //NOI18N
     }
 
     // Cheating persistence, designer is opened using 'multi_view' hack.
+    @Override
     public int getPersistenceType() {
         return PERSISTENCE_NEVER;
     }
 
+    @Override
     protected void componentOpened() {
 //        if (!initialized) {
 //            initialized = true;
@@ -270,22 +274,24 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //            initComponent();
 //        }
 
-        // The following will also initialize the context listeners,
-        // provided the context is available
-        updateErrors();
-        
-        // Set listening.
-//        webform.registerListeners();
-        // XXX
-        designer.registerListeners();
-
-//        if (SHOW_TRAY) {
-//            refreshTray(hasTrayBeans(), null);
-//        }
-
-        openAdditionalWindows();
+//        // The following will also initialize the context listeners,
+//        // provided the context is available
+//        updateErrors();
+//        
+//        // Set listening.
+////        webform.registerListeners();
+//        // XXX
+//        designer.registerListeners();
+//
+////        if (SHOW_TRAY) {
+////            refreshTray(hasTrayBeans(), null);
+////        }
+//
+//        openAdditionalWindows();
+        designerOpened();
     }
-
+    
+    @Override
     protected void componentClosed() {
 //        DesignContext context = webform.getModel().getLiveUnit();
 //
@@ -298,20 +304,21 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //                webform.getDomSynchronizer().detachContext();
 //            }
             
-//            webform.detachContext();
-        if (!needListeners) {
-            needListeners = true;
-        }
-        
-        // Stop listening.
-//        webform.unregisterListeners();
-        // XXX
-        designer.unregisterListeners();
-
-//        webform.clearHtml();
-        jsfForm.clearHtml();
+////            webform.detachContext();
+//        if (!needListeners) {
+//            needListeners = true;
+//        }
+//        
+//        // Stop listening.
+////        webform.unregisterListeners();
+//        // XXX
+//        designer.unregisterListeners();
+//
+////        webform.clearHtml();
+//        jsfForm.clearHtml();
+        designerClosed();
     }
-
+    
     // XXX Bad API, why one needs to override the deprecated API?
     @Override
     public void requestFocus() {
@@ -327,6 +334,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         designer.paneRequestFocus();
     }
 
+    @Override
     public void requestVisible() {
         if (multiViewElementCallback != null) {
             multiViewElementCallback.requestVisible();
@@ -335,6 +343,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         }
     }
 
+    @Override
     public void requestActive() {
         if (multiViewElementCallback != null) {
             multiViewElementCallback.requestActive();
@@ -826,11 +835,12 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //        return NbBundle.getMessage(DesignerTopComp.class, "FormView"); // NOI18N
 //    }
 
-    // XXX unused?
-    protected String iconResource() {
-        return "org/netbeans/modules/visualweb/designer/resources/designer.gif"; // NOI18N
-    }
+//    // XXX unused?
+//    protected String iconResource() {
+//        return "org/netbeans/modules/visualweb/designer/resources/designer.gif"; // NOI18N
+//    }
 
+    @Override
     public HelpCtx getHelpCtx() {
         Node[] activatedNodes = getActivatedNodes();
         Node[] nodes = activatedNodes == null ? new Node[0] : activatedNodes;
@@ -841,24 +851,26 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 
     /* Activates copy/cut/paste actions.
     */
+    @Override
     protected void componentActivated() {
-//        OutlineTopComp.getInstance().setCurrent(webform);
-//        OutlineTopComp.getInstance().requestVisible();
-//        selectNewOutline();
-        // XXX Replace with TopComponentGroup.
-        selectNavigator();
-        
-//        webform.getSelection().updateNodes();
-        designer.updateSelectedNodes();
-        
-        super.componentActivated();
-
-//        if (html != null) {
-//            html.requestFocus();
-//        }
-        designer.paneRequestFocus();
+////        OutlineTopComp.getInstance().setCurrent(webform);
+////        OutlineTopComp.getInstance().requestVisible();
+////        selectNewOutline();
+//        // XXX Replace with TopComponentGroup.
+//        selectNavigator();
+//        
+////        webform.getSelection().updateNodes();
+//        designer.updateSelectedNodes();
+//        
+//        super.componentActivated();
+//
+////        if (html != null) {
+////            html.requestFocus();
+////        }
+//        designer.paneRequestFocus();
+        designerActivated();
     }
-
+    
 //    public PaletteController getPaletteController() {
 //        return designerPaletteController;
 //    }
@@ -957,7 +969,8 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //    public static void setPendingRefreshAll() {
 //        pendingRefreshAll = true;
 //    }
-    
+
+    @Override
     protected void componentShowing() {
 //        // PROJECTTODO: Why is componentShowing occuring before componentOpened, not sure
 //        // THIS is a HACK !EAT
@@ -992,116 +1005,118 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //            pendingRefreshAll = false;
 //        } else 
 //        if (webform.isFragment()) {
-        if (jsfForm.isFragment()) {
-            // Ensure that we have current page references
-//            webform.refresh(false);
-//            webform.refreshModel(false);
-            jsfForm.refreshModel(false);
-        }
-
-//        openNewOutline();
-        // XXX Replace with TopComponentGroup.
-        openNavigator();
-        selectAndUpdateOutlineView();
-
-        // XXX #6314795 See below, also this one should be scheduled later.
-        // Remove scheduling when the NB issue fixed.
-        
-        //Removing toolbox from view
-//        SwingUtilities.invokeLater(new Runnable() {
-//                public void run() {
-////                    // #5047873 Select also Toolbox (with palette component).
-////                    com.sun.rave.toolbox.ToolBox.findDefault().requestVisible();
-//                    TopComponent toolbox = WindowManager.getDefault().findTopComponent("toolbox"); // NOI18N
-//                    toolbox.requestVisible();
-//                }
-//            });
-
-//        if (SHOW_TRAY) {
-//            clearTraySelection();
+//        if (jsfForm.isFragment()) {
+//            // Ensure that we have current page references
+////            webform.refresh(false);
+////            webform.refreshModel(false);
+//            jsfForm.refreshModel(false);
 //        }
-
-        // Insync: parse the backing file such that we incorporate
-        // user changes in the backing file (and don't blow them away
-        // in componentHidden when we later flush the model to the doc)
-        //final DataObject dobj = webform.getDataObject();
-//        FacesModel model = webform.getModel();
 //
-//        try {
-//        MarkupUnit markupUnit = model.getMarkupUnit();
-//        if (markupUnit != null) {
-//            if ((markupUnit.getState() == Unit.State.SOURCEDIRTY)
-//        if (webform.isSourceDirty()
-//            && (webform.getPane().getCaret() != null)) {
-//        if (webform.isSourceDirty() && (webform.getPane().hasCaret())) {
-            if (jsfForm.isSourceDirty() && designer.hasPaneCaret()) {
-                // Remove the caret if we do a sync since the caret could be
-                // pointing into an old DOM which causes various ugliness
-//                webform.getPane().setCaretPosition(Position.NONE);
-//                webform.getPane().setCaretPosition(DomPosition.NONE);
-//                webform.getPane().setCaretDot(DomPosition.NONE);
-                designer.setPaneCaret(DomPosition.NONE);
-            }
-
-//            sync();
-//            webform.syncModel();
-            jsfForm.syncModel();
-            
-            // XXX #6474723 If sync was alredy synced we need to assure rebuild the boxes.
-            // FIXME If sync() also rebuilds the model then this is redundant. The boxes
-            // will be rebuild twice. Consider suspending listening during sync() call above.
-//            webform.getPane().getPaneUI().resetPageBox();
-            designer.resetPanePageBox();
-
-            // It's not enough to do showErrors and showTray in contextChanged
-            // because contextChanged is not run when the form is first opened.
-            // XXX perhaps I can do this in componentOpened instead?
-            updateErrors(); // XXX shouldn't the contextChanged ensure this?
-
-            //if (SHOW_TRAY) {
-            //    showTray(hasTrayBeans()); The contextChanged should ensure this!
-            //}
-//        } else {
-//            // XXX #6478973 Model could be corrupted, until #6480764 is fixed.
-//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-//                    new IllegalStateException("The FacesModel is corrupted, its markup unit is null, facesModel=" + model)); // NOI18N
-//        }
-        
-//        } catch (Exception e) {
-//            e.printStackTrace();
+////        openNewOutline();
+//        // XXX Replace with TopComponentGroup.
+//        openNavigator();
+//        selectAndUpdateOutlineView();
 //
-//            // swallow
-//            // temporary hack which allows me to deal with documents
-//            // outside of projects
-//        }
-
-        // Refresh layout for fragments and for pages that contain fragments whenever
-        // they are exposed
-//        if (webform.isFragment() || webform.getDocument().hasCachedFrameBoxes()) {
-//        if (webform.isFragment() || webform.hasCachedFrameBoxes()) {
-            if (jsfForm.isFragment() || jsfForm.hasCachedExternalFrames()) {
-            // Always refresh fragments on expose since whenever they are
-            // rendered as part of other (including) documents those documents
-            // may style our elements and stash box references on the elements
-            // that point to their own box hierarchies
-//            if (html.getPageBox() != null) {
-//                html.getPageBox().redoLayout(true);
+//        // XXX #6314795 See below, also this one should be scheduled later.
+//        // Remove scheduling when the NB issue fixed.
+//        
+//        //Removing toolbox from view
+////        SwingUtilities.invokeLater(new Runnable() {
+////                public void run() {
+//////                    // #5047873 Select also Toolbox (with palette component).
+//////                    com.sun.rave.toolbox.ToolBox.findDefault().requestVisible();
+////                    TopComponent toolbox = WindowManager.getDefault().findTopComponent("toolbox"); // NOI18N
+////                    toolbox.requestVisible();
+////                }
+////            });
+//
+////        if (SHOW_TRAY) {
+////            clearTraySelection();
+////        }
+//
+//        // Insync: parse the backing file such that we incorporate
+//        // user changes in the backing file (and don't blow them away
+//        // in componentHidden when we later flush the model to the doc)
+//        //final DataObject dobj = webform.getDataObject();
+////        FacesModel model = webform.getModel();
+////
+////        try {
+////        MarkupUnit markupUnit = model.getMarkupUnit();
+////        if (markupUnit != null) {
+////            if ((markupUnit.getState() == Unit.State.SOURCEDIRTY)
+////        if (webform.isSourceDirty()
+////            && (webform.getPane().getCaret() != null)) {
+////        if (webform.isSourceDirty() && (webform.getPane().hasCaret())) {
+//            if (jsfForm.isSourceDirty() && designer.hasPaneCaret()) {
+//                // Remove the caret if we do a sync since the caret could be
+//                // pointing into an old DOM which causes various ugliness
+////                webform.getPane().setCaretPosition(Position.NONE);
+////                webform.getPane().setCaretPosition(DomPosition.NONE);
+////                webform.getPane().setCaretDot(DomPosition.NONE);
+//                designer.setPaneCaret(DomPosition.NONE);
 //            }
-                designer.redoPaneLayout(true);
-        }
-
-//        webform.setGridMode(html.getDocument().isGridMode());
-//        webform.updateGridMode();
-//        designer.updateGridMode();
-            designer.setPaneGrid(jsfForm.isGridMode());
-
-        // We cannot set the caret to the document position yet; we need
-        // to do layout before the mapper functions work... This is done
-        // after page layout instead.
-//        html.requestFocus();
-        designer.paneRequestFocus();
+//
+////            sync();
+////            webform.syncModel();
+//            jsfForm.syncModel();
+//            
+//            // XXX #6474723 If sync was alredy synced we need to assure rebuild the boxes.
+//            // FIXME If sync() also rebuilds the model then this is redundant. The boxes
+//            // will be rebuild twice. Consider suspending listening during sync() call above.
+////            webform.getPane().getPaneUI().resetPageBox();
+//            designer.resetPanePageBox();
+//
+//            // It's not enough to do showErrors and showTray in contextChanged
+//            // because contextChanged is not run when the form is first opened.
+//            // XXX perhaps I can do this in componentOpened instead?
+//            updateErrors(); // XXX shouldn't the contextChanged ensure this?
+//
+//            //if (SHOW_TRAY) {
+//            //    showTray(hasTrayBeans()); The contextChanged should ensure this!
+//            //}
+////        } else {
+////            // XXX #6478973 Model could be corrupted, until #6480764 is fixed.
+////            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+////                    new IllegalStateException("The FacesModel is corrupted, its markup unit is null, facesModel=" + model)); // NOI18N
+////        }
+//        
+////        } catch (Exception e) {
+////            e.printStackTrace();
+////
+////            // swallow
+////            // temporary hack which allows me to deal with documents
+////            // outside of projects
+////        }
+//
+//        // Refresh layout for fragments and for pages that contain fragments whenever
+//        // they are exposed
+////        if (webform.isFragment() || webform.getDocument().hasCachedFrameBoxes()) {
+////        if (webform.isFragment() || webform.hasCachedFrameBoxes()) {
+//            if (jsfForm.isFragment() || jsfForm.hasCachedExternalFrames()) {
+//            // Always refresh fragments on expose since whenever they are
+//            // rendered as part of other (including) documents those documents
+//            // may style our elements and stash box references on the elements
+//            // that point to their own box hierarchies
+////            if (html.getPageBox() != null) {
+////                html.getPageBox().redoLayout(true);
+////            }
+//                designer.redoPaneLayout(true);
+//        }
+//
+////        webform.setGridMode(html.getDocument().isGridMode());
+////        webform.updateGridMode();
+////        designer.updateGridMode();
+//            designer.setPaneGrid(jsfForm.isGridMode());
+//
+//        // We cannot set the caret to the document position yet; we need
+//        // to do layout before the mapper functions work... This is done
+//        // after page layout instead.
+////        html.requestFocus();
+//        designer.paneRequestFocus();
+        designerShowing();
     }
-
+    
+    @Override
     protected void componentHidden() {
         // XXX It was here only because of incorrect impl of old rave window system.
 //        if (!showing) {
@@ -1126,8 +1141,9 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         });*/
         // </TEMP>
 //        selectNavigatorWindow();
+        designerHidden();
     }
-
+    
     public CloseOperationState canCloseElement() {
         // XXX I don't understand this yet. Copied from FormDesigner.
         // Returns a placeholder state - to be sure our CloseHandler is called.
@@ -1333,6 +1349,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 
     // </multiview>
     // Extends SelectionTopComp
+    @Override
     protected void installActions() {
         super.installActions();
 
@@ -1849,17 +1866,19 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 
     /* Deactivates copy/cut/paste actions.
     */
-    public void componentDeactivated() {
-        super.componentDeactivated();
-
-//        if (webform.hasSelection()) {
-//            webform.getManager().finishInlineEditing(false);
+    @Override
+    protected void componentDeactivated() {
+//        super.componentDeactivated();
+//
+////        if (webform.hasSelection()) {
+////            webform.getManager().finishInlineEditing(false);
+////        }
+//        if (designer.getSelectedCount() > 0) {
+//            designer.finishInlineEditing(false);
 //        }
-        if (designer.getSelectedCount() > 0) {
-            designer.finishInlineEditing(false);
-        }
+        designerDeactivated();
     }
-
+    
     // Helper methods
 
     /** Opens palette(toolbox), properties, outline and navigator windows. */
@@ -1941,6 +1960,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 
     /** Adds <code>NavigatorLookupHint</code> into the original lookup,
      * for the navigator. */
+    @Override
     public Lookup getLookup() {
         Lookup lookup = lookupWRef.get();
                 
@@ -2331,4 +2351,107 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
             return "application/x-designer"; // NOI18N
         }
     } // End of DesignerNavigatorLookupHint.
+    
+    
+    @Override
+    protected void designerActivated() {
+        // XXX Replace with TopComponentGroup.
+        selectNavigator();
+        
+        designer.updateSelectedNodes();
+        
+        super.designerActivated();
+        
+        designer.paneRequestFocus();
+    }
+
+    @Override
+    protected void designerDeactivated() {
+        super.designerDeactivated();
+
+        if (designer.getSelectedCount() > 0) {
+            designer.finishInlineEditing(false);
+        }
+    }
+
+    private void designerOpened() {
+        // The following will also initialize the context listeners,
+        // provided the context is available
+        updateErrors();
+        
+        // Set listening.
+        // XXX
+        designer.registerListeners();
+        
+        openAdditionalWindows();
+    }
+
+    private void designerClosed() {
+        if (!needListeners) {
+            needListeners = true;
+        }
+        
+        // Stop listening.
+        // XXX
+        designer.unregisterListeners();
+
+        jsfForm.clearHtml();
+    }
+
+    private void designerShowing() {
+        if (jsfForm.isFragment()) {
+            jsfForm.refreshModel(false);
+        }
+
+        // XXX Replace with TopComponentGroup.
+        openNavigator();
+        selectAndUpdateOutlineView();
+
+        // XXX #6314795 See below, also this one should be scheduled later.
+        // Remove scheduling when the NB issue fixed.
+
+        // Insync: parse the backing file such that we incorporate
+        // user changes in the backing file (and don't blow them away
+        // in componentHidden when we later flush the model to the doc)
+        //final DataObject dobj = webform.getDataObject();
+        if (jsfForm.isSourceDirty() && designer.hasPaneCaret()) {
+            // Remove the caret if we do a sync since the caret could be
+            // pointing into an old DOM which causes various ugliness
+            designer.setPaneCaret(DomPosition.NONE);
+        }
+
+        jsfForm.syncModel();
+
+        // XXX #6474723 If sync was alredy synced we need to assure rebuild the boxes.
+        // FIXME If sync() also rebuilds the model then this is redundant. The boxes
+        // will be rebuild twice. Consider suspending listening during sync() call above.
+        designer.resetPanePageBox();
+
+        // It's not enough to do showErrors and showTray in contextChanged
+        // because contextChanged is not run when the form is first opened.
+        // XXX perhaps I can do this in componentOpened instead?
+        updateErrors(); // XXX shouldn't the contextChanged ensure this?
+
+        // Refresh layout for fragments and for pages that contain fragments whenever
+        // they are exposed
+        if (jsfForm.isFragment() || jsfForm.hasCachedExternalFrames()) {
+            // Always refresh fragments on expose since whenever they are
+            // rendered as part of other (including) documents those documents
+            // may style our elements and stash box references on the elements
+            // that point to their own box hierarchies
+            designer.redoPaneLayout(true);
+        }
+
+        designer.setPaneGrid(jsfForm.isGridMode());
+
+        // We cannot set the caret to the document position yet; we need
+        // to do layout before the mapper functions work... This is done
+        // after page layout instead.
+        designer.paneRequestFocus();
+    }   
+
+    private void designerHidden() {
+        // No op.
+    }
+
 }

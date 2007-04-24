@@ -21,7 +21,6 @@ package org.netbeans.modules.visualweb.designer.jsf.ui;
 
 import java.awt.Component;
 import java.awt.EventQueue;
-import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
@@ -42,8 +41,6 @@ import javax.swing.TransferHandler;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.visualweb.api.designer.Designer;
-import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
-import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
 
 import org.openide.ErrorManager;
 import org.openide.awt.UndoRedo;
@@ -57,7 +54,6 @@ import org.openide.util.datatransfer.PasteType;
 import org.openide.windows.TopComponent;
 import org.w3c.dom.Element;
 
-import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 import org.netbeans.modules.visualweb.designer.jsf.JsfForm;
 import org.netbeans.modules.visualweb.designer.jsf.JsfSupportUtilities;
 
@@ -115,8 +111,10 @@ public abstract class AbstractJsfTopComponent extends TopComponent implements Cl
 
     /* Activates copy/cut/paste actions.
     */
-    protected void componentActivated() {
-        super.componentActivated();
+//    @Override
+//    protected void componentActivated() {
+    protected void designerActivated() {
+//        super.componentActivated();
 
         //Log.err.log("Component activated!");
         if (cblistener == null) {
@@ -144,7 +142,9 @@ public abstract class AbstractJsfTopComponent extends TopComponent implements Cl
 
     /* Deactivates copy/cut/paste actions.
     */
-    protected void componentDeactivated() {
+//    @Override
+//    protected void componentDeactivated() {
+    protected void designerDeactivated() {
 //        if (webform != null) {
 ////            webform.getModel().setActivated(false);
 //            webform.setModelActivated(false);
@@ -644,6 +644,7 @@ public abstract class AbstractJsfTopComponent extends TopComponent implements Cl
         return c;
     }
 
+    @Override
     public UndoRedo getUndoRedo() {
 //        if (webform != null) {
 ////            return webform.getModel().getUndoManager();
