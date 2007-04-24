@@ -139,8 +139,8 @@ public class Refactor {
             if(expr.getKind() == Tree.Kind.STRING_LITERAL) {
                 LiteralTree literal = (LiteralTree)expr;
                 if(oldName.equals(literal.getValue())) {
-                    Tree nju = workingCopy.getTreeMaker().Literal(newName);
-                    workingCopy.rewrite(tree, nju);
+                    Tree newLiteral = workingCopy.getTreeMaker().Literal(newName);
+                    workingCopy.rewrite(literal, newLiteral);
                 }           
             }
         }

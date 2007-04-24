@@ -1,10 +1,20 @@
 /*
- * EventMethod.java
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
  *
- * Created on April 13, 2007, 10:19 AM
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
  *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.visualweb.insync.java;
@@ -19,6 +29,7 @@ import javax.lang.model.element.ExecutableElement;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.WorkingCopy;
 import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 /**
  *
  * @author jdeva
@@ -65,7 +76,8 @@ public class EventMethod extends Method{
             public Object run(WorkingCopy wc) {
                 ExecutableElement execElement = execElementHandle.resolve(wc);
                 BlockTree block = wc.getTrees().getTree(execElement).getBody();
-                new Refactor.ReturnStatementLiteralRenamer(wc, oldStr, newStr).scan(block, null);
+                TreePath treePath = TreeUtils.getTreePath(wc, block);
+                new Refactor.ReturnStatementLiteralRenamer(wc, oldStr, newStr).scan(treePath, null);
                 return null;
             }
         }, javaClass.getFileObject());        
