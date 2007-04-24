@@ -4,7 +4,7 @@
  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
  xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
- name="NewWebServiceService" targetNamespace="http://policy/" xmlns:tns="http://policy/" xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy" xmlns:sc="http://schemas.sun.com/2006/03/wss/server" xmlns:wsat="http://schemas.xmlsoap.org/ws/2004/10/wsat" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing/" xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:tc="http://schemas.sun.com/ws/2006/05/trust/client" xmlns:wsrm="http://schemas.xmlsoap.org/ws/2005/02/rm/policy" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:scc="http://schemas.sun.com/ws/2006/05/sc/client" xmlns:t="http://schemas.xmlsoap.org/ws/2005/02/trust" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:sunrmc="http://sun.com/2006/03/rm/client" xmlns:sunrm="http://sun.com/2006/03/rm" xmlns:net="http://schemas.microsoft.com/net/2005/02/rm/policy" xmlns:fi="http://java.sun.com/xml/ns/wsit/2006/09/policy/automaticallyselectfastinfoset" xmlns:wsoma="http://schemas.xmlsoap.org/ws/2004/09/policy/optimizedmimeserialization" xmlns:tcp="http://java.sun.com/xml/ns/wsit/2006/09/policy/soaptcp/service" xmlns:wspp="http://java.sun.com/xml/ns/wsit/policy"
+ name="NewWebServiceService" targetNamespace="http://policy/" xmlns:tns="http://policy/" xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy" xmlns:tc="http://schemas.sun.com/ws/2006/05/trust/server" xmlns:wsat="http://schemas.xmlsoap.org/ws/2004/10/wsat" xmlns:wsrm="http://schemas.xmlsoap.org/ws/2005/02/rm/policy" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:sc="http://schemas.sun.com/2006/03/wss/client" xmlns:scc="http://schemas.sun.com/ws/2006/05/sc/server" xmlns:sc1="http://schemas.sun.com/2006/03/wss/server" xmlns:t="http://schemas.xmlsoap.org/ws/2005/02/trust" xmlns:wsaw="http://www.w3.org/2005/08/addressing" xmlns:sunrmc="http://sun.com/2006/03/rm/client" xmlns:scc1="http://schemas.sun.com/ws/2006/05/sc/client" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing/policy" xmlns:sunrm="http://sun.com/2006/03/rm" xmlns:net="http://schemas.microsoft.com/net/2005/02/rm/policy" xmlns:fi="http://java.sun.com/xml/ns/wsit/2006/09/policy/fastinfoset/service" xmlns:wsoma="http://schemas.xmlsoap.org/ws/2004/09/policy/optimizedmimeserialization" xmlns:tcp="http://java.sun.com/xml/ns/wsit/2006/09/policy/transport/client" xmlns:wspp="http://java.sun.com/xml/ns/wsit/policy" xmlns:tcp1="http://java.sun.com/xml/ns/wsit/2006/09/policy/soaptcp/service" xmlns:tc1="http://schemas.sun.com/ws/2006/05/trust/client" xmlns:wsaws="http://www.w3.org/2006/05/addressing/wsdl" xmlns:fi1="http://java.sun.com/xml/ns/wsit/2006/09/policy/encoding/client"
  >
     <message name="sample_operation"/>
     <message name="sample_operationResponse"/>
@@ -23,19 +23,17 @@
     <service name="NewWebServiceService">
         <port name="NewWebServicePort" binding="tns:NewWebServicePortBinding"/>
     </service>
+    <wsp:Optional/>
     <sp:InclusiveC14N/>
     <sp:MustSupportServerChallenge/>
+    <tc:ServiceProviders/>
     <sp:Basic192Sha256Rsa15/>
-    <sc:TimestampFreshnessLimit/>
     <wsat:ATAlwaysCapability/>
     <sp:STRTransform10/>
     <sp:WssX509PkiPathV1Token11/>
     <sp:WssUsernameToken11/>
-    <wsa:ServiceName/>
     <wsp:PolicyReference/>
     <tc:ServiceProvider/>
-    <sc:maxClockSkew/>
-    <wsa:PortType/>
     <wsrm:RMAssertion/>
     <sp:Basic128/>
     <wsu:Id/>
@@ -45,11 +43,11 @@
     <wsat:ATAssertion/>
     <sp:WssGssKerberosV5ApReqToken11/>
     <sp:Basic256Sha256Rsa15/>
-    <sp:EncryptBeforeSigning/>
     <sc:Validator/>
+    <sp:EncryptBeforeSigning/>
     <sp:WssX509V3Token10/>
     <scc:LifeTime/>
-    <sc:TrustStore/>
+    <sc1:TrustStore/>
     <sp:SpnegoContextToken/>
     <wsrm:AcknowledgementInterval/>
     <sp:EncryptSignature/>
@@ -58,10 +56,10 @@
     <t:KeyType/>
     <sp:IncludeToken/>
     <sp:EndorsingSupportingTokens/>
-    <wsaw:ReferenceProperties/>
     <sp:WssX509PkiPathV1Token10/>
     <sp:MustSupportRefEncryptedKey/>
     <sp:MustSupportIssuedTokens/>
+    <sc:Timestamp/>
     <sp:RequiredElements/>
     <sp:SOAPNormalization10/>
     <wsp:Policy/>
@@ -69,7 +67,9 @@
     <sp:Basic128Sha256Rsa15/>
     <sp:MustSupportRefKeyIdentifier/>
     <sp:Issuer/>
+    <wsaw:Metadata/>
     <sp:RequireExternalUriReference/>
+    <sunrmc:CloseTimeout/>
     <sp:SamlToken/>
     <sp:RelToken/>
     <sp:RequireInternalReference/>
@@ -81,13 +81,14 @@
     <t:TokenType/>
     <sc:CallbackHandlerConfiguration/>
     <sp:WssKerberosV5ApReqToken11/>
-    <scc:LifeTime/>
+    <scc1:LifeTime/>
+    <wsaw:Address/>
     <tc:Contract/>
     <sp:Header/>
+    <wsa:ServiceName/>
     <sp:Basic192Rsa15/>
     <sp:TripleDesRsa15/>
     <sp:Trust10/>
-    <wsaw:Anonymous/>
     <sp:RequireClientEntropy/>
     <sp:RequireDerivedKeys/>
     <sp:Strict/>
@@ -99,22 +100,22 @@
     <sp:XPathFilter20/>
     <sp:HttpsToken/>
     <wsrm:BaseRetransmissionInterval/>
-    <wsa:EndpointReference/>
+    <wsa:Address/>
     <sp:RequestSecurityTokenTemplate/>
     <sp:SignedElements/>
     <sp:WssX509Pkcs7Token10/>
     <t:KeySize/>
+    <sc1:Timestamp/>
     <wsrm:InactivityTimeout/>
     <sp:Wss10/>
     <sp:TransportToken/>
     <sp:MustSupportRefExternalURI/>
     <sp:MustSupportRefEmbeddedToken/>
+    <wsa:ReferenceParameters/>
     <sp:Wss11/>
-    <sc:timestampFreshnessLimit/>
     <sp:EncryptedElements/>
     <sunrm:Ordered/>
     <net:MaxReceiveBufferSize/>
-    <wsa:Address/>
     <sp:WssSamlV11Token10/>
     <net:RmFlowControl/>
     <sp:TripleDesSha256/>
@@ -124,7 +125,6 @@
     <sp:SecurityContextToken/>
     <tc:TokenType/>
     <sp:Basic256Sha256/>
-    <wsaw:Metadata/>
     <sp:UsernameToken/>
     <sp:InitiatorToken/>
     <sp:OnlySignEntireHeadersAndBody/>
@@ -140,16 +140,15 @@
     <sp:WssRelV20Token10/>
     <sp:SC10SecurityContextToken/>
     <sp:LaxTsLast/>
-    <fi:OptimizedFastInfosetSerialization/>
+    <tc:Issuer/>
     <sp:RequireServerEntropy/>
-    <sc:CallbackHandlerConfiguration/>
+    <sc1:CallbackHandlerConfiguration/>
     <wsp:All/>
     <sp:RequireExternalReference/>
     <sp:RequireSignatureConfirmation/>
-    <fi:AutomaticallySelectFastInfoset/>
-    <wsaw:Address/>
-    <sc:ValidatorConfiguration/>
-    <sc:maxClockSkew/>
+    <wsa:ReferenceProperties/>
+    <sc1:ValidatorConfiguration/>
+    <fi:OptimizedFastInfosetSerialization/>
     <sc:CallbackHandler/>
     <sc:ValidatorConfiguration/>
     <sp:AsymmetricBinding/>
@@ -158,34 +157,36 @@
     <sp:IncludeTimestamp/>
     <sp:RequireEmbeddedTokenReference/>
     <sp:MustSupportRefThumbprint/>
-    <sc:KeyStore/>
+    <sc1:KeyStore/>
     <sp:Basic192/>
     <sp:WssX509Pkcs7Token11/>
     <sp:WssSamlV10Token10/>
     <tc:STSConfiguration/>
+    <tc:KeyType/>
     <sp:Basic128Sha256/>
     <sp:TripleDesSha256Rsa15/>
     <sp:WssUsernameToken10/>
     <sp:SymmetricBinding/>
     <tcp:AutomaticallySelectOptimalTransport/>
+    <wsa:PortType/>
     <sp:TripleDes/>
+    <wsaw:ReferenceProperties/>
     <scc:SCConfiguration/>
     <sp:MustSupportRefIssuerSerial/>
     <tc:CertAlias/>
     <sp:EncryptedParts/>
+    <wsaw:Anonymous/>
     <wspp:visibility/>
-    <scc:SCClientConfiguration/>
+    <scc1:SCClientConfiguration/>
     <sc:KeyStore/>
-    <wsa:ReferenceProperties/>
-    <tcp:OptimizedTCPTransport/>
+    <tcp1:OptimizedTCPTransport/>
     <wsrm:ExponentialBackoff/>
-    <tc:PreconfiguredSTS/>
+    <tc1:PreconfiguredSTS/>
     <wsaw:UsingAddressing/>
     <sp:Basic192Sha256/>
-    <sc:Validator/>
+    <sc1:Validator/>
     <sp:WssRelV20Token11/>
     <sp:AlgorithmSuite/>
-    <wsp:optional/>
     <wsaw:EndpointReference/>
     <sp:TransportBinding/>
     <sp:SupportingTokens/>
@@ -194,11 +195,12 @@
     <sp:WssX509V1Token10/>
     <sp:RecipientToken/>
     <sp:WssX509V3Token11/>
-    <sc:CallbackHandler/>
+    <sc1:CallbackHandler/>
     <sp:XPath10/>
     <sp:EncryptionToken/>
     <sp:Lax/>
     <sp:Layout/>
+    <wsa:EndpointReference/>
     <sp:RequireIssuerSerialReference/>
-    <wsa:ReferenceParameters/>
+    <fi1:AutomaticallySelectOptimalEncoding/>
 </definitions>

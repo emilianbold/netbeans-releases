@@ -117,7 +117,10 @@ public class PolicyTest extends NbTestCase {
         
         model.endTransaction();
 
-        File output = new File("C://WSITModelTestOutput.wsdl");
+        File output = new File("WSITModelTestOutput.wsdl");
+        
+        System.out.println("Generating file: " + output.getAbsolutePath());
+        
         File golden = new File(getDataDir().getAbsolutePath() + "/goldenfiles/" + "WSITModelTestOutput.wsdl");
 
         Util.dumpToFile(model.getBaseDocument(), output);
