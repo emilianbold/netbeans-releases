@@ -42,7 +42,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         implements ExplorerManager.Provider, FiltersManager.FilterChangeListener {
     
     private ExplorerManager manager = new ExplorerManager();
-    private BeanTreeView elementView;
+    private MyBeanTreeView elementView;
     private TapPanel filtersPanel;
     private JLabel filtersLbl;
     private Lookup lookup = null; // XXX may need better lookup
@@ -140,7 +140,10 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                 public void run() {
                     elementView.setRootVisible(false);        
                     manager.setRootContext(new ElementNode( description ) );
+                    boolean scrollOnExpand = elementView.getScrollOnExpand();
+                    elementView.setScrollOnExpand( false );
                     elementView.expandAll();
+                    elementView.setScrollOnExpand( scrollOnExpand );
                 }
             } );
             
@@ -205,7 +208,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         }
     }
     
-    private BeanTreeView createBeanTreeView() {
+    private MyBeanTreeView createBeanTreeView() {
 //        ActionMap map = getActionMap();
 //        map.put(DefaultEditorKit.copyAction, ExplorerUtils.actionCopy(manager));
 //        map.put(DefaultEditorKit.cutAction, ExplorerUtils.actionCut(manager));
@@ -213,7 +216,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
 //        map.put("delete", new DelegatingAction(ActionProvider.COMMAND_DELETE, ExplorerUtils.actionDelete(manager, true)));
 //        
         
-        BeanTreeView btv = new BeanTreeView();    // Add the BeanTreeView        
+        MyBeanTreeView btv = new MyBeanTreeView();    // Add the BeanTreeView        
 //      btv.setDragSource (true);        
 //      btv.setRootVisible(false);        
 //      associateLookup( ExplorerUtils.createLookup(manager, map) );        
@@ -229,4 +232,13 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     }
     
     
+    private static class MyBeanTreeView extends BeanTreeView {
+        public boolean getScrollOnExpand() {
+            return tree.getScrollsOnExpand();
+}
+        
+        public void setScrollOnExpand( boolean scroll ) {
+            this.tree.setScrollsOnExpand( scroll );
+        }
+    }
 }
