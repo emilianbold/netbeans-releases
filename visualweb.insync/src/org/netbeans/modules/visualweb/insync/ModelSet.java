@@ -870,12 +870,21 @@ public abstract class ModelSet implements FileChangeListener {
         if(fileObject == null) {
             return null;
         }
+        
+        if (!fileObject.isValid()) {
+            return null;            
+        }
+        
         // What does virtual actually mean, should I handle these as well ?
         if (fileObject.isVirtual())
             return null;
-            
+
+        File file = FileUtil.toFile(fileObject);
+        if (file == null) {
+            return null;
+        }
         //Check if the file is non sharable
-        if (SharabilityQuery.getSharability(FileUtil.toFile(fileObject)) == 
+        if (SharabilityQuery.getSharability(file) ==
                 SharabilityQuery.NOT_SHARABLE) {
             return null;
         }
