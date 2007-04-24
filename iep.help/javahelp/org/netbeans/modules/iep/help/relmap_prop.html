@@ -13,22 +13,19 @@
 <p><small><a href="#seealso">See Also</a></small></p>
 <p> The Relation Map operator performs a select on two or more incoming relations, equivalent to a SQL join view of  a minimum of one relation and additional tables and relations. </p>
 <p>The Relation Map operator can take multiple inputs. You can use a Relation Map to join input from other operator sources, for example, two or more Tuple Based windows, or two or more Partitioned Windows. </p>
-<p><strong>To create a Relation Map Operator</strong></p>
+<p><strong>To create a Relation Map Operator:</strong></p>
 <ol>
   <li>Drag a Relation Map operator from the Palette to the Design view.</li>
   <li>Connect at least two inputs. </li>
-  <li>Click the Relation Map operator icon to examine the Details and Attribute sections in the Property Editor, if needed. </li>
+  <li>Click the Relation Map operator. The property editor opens. </li>
+  <li>Click the Relation Map operator icon to examine the Details and Attribute sections in the property editor, if needed.</li>
+  <li> In the Expression box, enter the expression for the SQL Select statement. Add attribute names, data types and sizes, as applicable. </li>
+  <li>In the From field, define the input on which to perform the selection. </li>
+  <li>In the Where clause field, provide additional search criteria. </li>
   <li>Click OK.</li>
 </ol>
-<p><strong>To define the SQL statements to use with a Relation Map  operator:</strong> </p>
-<ol>
-  <li>In the Expression box, enter the expression for the SQL Select statement. Add attribute names, data types and sizes, as applicable. </li>
-  <li>In the From field, define the input on which to perform the selection. <span class="bold"></span></li>
-  <li>In the Where clause field, provide additional search criteria. </li>
-</ol>
- 
 <dt><a name="seealso">See Also</a></dt>
-<dd><a href="s">Using the Stream Projection and Filter Operator Editor</a></dd>
+<dd><a href="strprj_prop.html">Using the Stream Projection and Filter Operator Editor</a></dd>
  
   
  
