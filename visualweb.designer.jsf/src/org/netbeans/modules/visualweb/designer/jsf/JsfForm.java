@@ -128,17 +128,15 @@ public class JsfForm {
 
     private /*final*/ DesignContextListener designContextListener /*= new JsfDesignContextListener(this)*/;
 
-    private final boolean isFragment;
-    private final boolean isPortlet;
+    private /*final*/ boolean isFragment;
+    private /*final*/ boolean isPortlet;
 
 //    private final EventListenerList listenerList = new EventListenerList();
 
-    private final PaletteController paletteController;
+    private /*final*/ PaletteController paletteController;
 
     private final DomProvider domProvider = new DomProviderImpl(this);
     
-    private final DndSupport dndSupport;
-
     // XXX Bad (old style) error handling.
     private Exception renderFailureException;
     // XXX Bad (old style) error handling.
@@ -160,6 +158,8 @@ public class JsfForm {
     /** XXX Ajax transactions support painting. */
     private boolean ajaxTransactionsSupportEnabled;
     
+    private final DndSupport dndSupport = new DndSupport(this);
+        
 
     /** Creates a new instance of JsfForm */
     private JsfForm(FacesModel facesModel, DataObject dataObject) {
@@ -177,22 +177,37 @@ public class JsfForm {
 //            this.facesModel = facesModel;
 //        }
         setFacesModel(facesModel);
+
+        // XXX This needs to be moved to insync.
+        initFragmentProperty(dataObject);
+        // XXX This needs to be moved to insync.
+        initPortletProperty();
         
-        this.dndSupport = new DndSupport(this);
+        initPaletteController();
         
-        this.paletteController = PaletteControllerFactory.getDefault().createJsfPaletteController(facesModel.getProject());
-        
+        initListening();
+    }
+    
+    private void initFragmentProperty(DataObject dataObject) {
         // Set isFragment/isPortlet fields.
         FileObject fo = dataObject.getPrimaryFile();
         this.isFragment = "jspf".equals(fo.getExt()); // NOI18N
-        if (facesModel.getFacesModelSet() != null) {
-            this.isPortlet = facesModel.getFacesModelSet().getFacesContainer().isPortletContainer();
+    }
+    
+    private void initPortletProperty() {
+        // XXX This needs to be moved to insync.
+        if (getFacesModel().getFacesModelSet() != null) {
+            isPortlet = getFacesModel().getFacesModelSet().getFacesContainer().isPortletContainer();
         } else {
-            this.isPortlet = false;
+            isPortlet = false;
         }
-        
-//        this.designer = DesignerProvider.getDesigner(this);
-
+    }
+    
+    private void initPaletteController() {
+        paletteController = PaletteControllerFactory.getDefault().createJsfPaletteController(getFacesModel().getProject());
+    }
+     
+    private void initListening() {        
 //        // Set listening.
 //        dataObject.addPropertyChangeListener(WeakListeners.propertyChange(dataObjectListener, dataObject));
         initDesignProjectListening();
