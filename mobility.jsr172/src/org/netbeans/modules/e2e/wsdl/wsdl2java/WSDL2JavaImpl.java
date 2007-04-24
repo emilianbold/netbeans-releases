@@ -75,12 +75,21 @@ public class WSDL2JavaImpl implements WSDL2Java {
         try {
             
             definition = wsdlParser.parse( configuration.getWSDLFileName());
-        
-            validate();
+                    
+            // Check for validity of the WSDL
+            boolean valid = true;
+            for( ValidationResult vr: validate()) {
+                if( ValidationResult.ErrorLevel.FATAL.equals( vr.getErrorLevel())) {
+                    valid = false;
+                    break;
+                }
+            }
             
-            generateInterfaces();
-            generateTypes();
-            generateStub();
+            if( valid ) {
+                generateInterfaces();
+                generateTypes();
+                generateStub();
+            }
         } catch( WSDLException e ) {
             e.printStackTrace();
         } catch( Exception e ) {
@@ -495,9 +504,6 @@ public class WSDL2JavaImpl implements WSDL2Java {
                 off.write( "public boolean isReadOnly(String dataItemName) {\n" );
                 off.write( "return false;\n" );
                 off.write( "}\n" );
-                off.write( "\n" );
-                off.write( "public void setOwningDataSource(DataSource ds) {\n" );
-                off.write( "}\n" );
             }            
             off.write( "}\n" );
             off.close();
@@ -655,7 +661,9 @@ public class WSDL2JavaImpl implements WSDL2Java {
                                             if( Type.FLAVOR_PRIMITIVE == t.getFlavor()) {
                                                 off.write( wrapPrimitiveType( t, sce.getName().getLocalPart()));
                                             } else if( Type.FLAVOR_SEQUENCE == t.getFlavor()) {
-                                                String typeName = sce.getType().getName() == null ? sce.getName().getLocalPart() : sce.getType().getName().getLocalPart();                                                
+                                                String typeName = sce.getType().getJavaName();
+                                                if( typeName == null )
+                                                    typeName = sce.getType().getName() == null ? sce.getName().getLocalPart() : sce.getType().getName().getLocalPart();                                                
                                                 off.write( typeName + "_" + ( isArray ? "Array" : "" ) + "toObject( " + sce.getName().getLocalPart() + " )" );
                                                 toObjects.add( sce );
                                             }
@@ -700,18 +708,19 @@ public class WSDL2JavaImpl implements WSDL2Java {
                                         if( !isArray ) {
                                             off.write( "return " + unwrapPrimitiveType( e, "((Object []) resultObj )[0] " ) + ";\n");
                                         } else {
-                                            off.write( "return " + type.getJavaTypeName() + "_ArrayfromObject((Object []) resultObj[0] );\n" );
+                                            off.write( "return " + type.getJavaTypeName().replace( '.', '_' ) + "_ArrayfromObject((Object [])(((Object []) resultObj)[0]));\n" );
                                             fromObjects.add( e );
                                         }
                                     } else if( Type.FLAVOR_SEQUENCE == type.getFlavor()) {
                                         if( type.getSubconstructs().size() == 0 ) {
                                             // void
                                         } else {
-                                            String typeName = e.getType().getName() == null ? e.getName().getLocalPart() : e.getType().getName().getLocalPart();
+                                            String typeName = e.getType().getJavaTypeName();
+                                            if( typeName == null ) typeName = e.getType().getName() == null ? e.getName().getLocalPart() : e.getType().getName().getLocalPart();
                                             if( !isArray ) {
-                                                off.write( "return " + typeName + "_fromObject((Object[]) resultObj );\n" );
+                                                off.write( "return " + typeName.replace( '.', '_' ) + "_fromObject((Object[]) resultObj );\n" );
                                             } else {
-                                                off.write( "return " + typeName + "_ArrayfromObject((Object[]) resultObj );\n" );
+                                                off.write( "return " + typeName.replace( '.', '_' ) + "_ArrayfromObject((Object [])((Object[]) resultObj));\n" );
                                             }
                                             fromObjects.add( e );
                                         }
@@ -809,9 +818,10 @@ public class WSDL2JavaImpl implements WSDL2Java {
                             if( SchemaConstruct.ConstructType.ELEMENT.equals( sc.getConstructType())) {
                                 Element e = (Element) sc;
                                 if( e.getMaxOccurs() > 1 ) isA = true;
-                                if( e.getType().getName() != null ) typeName = e.getType().getName().getLocalPart();
+                                typeName = e.getType().getJavaTypeName();
+                                if( typeName == null && e.getType().getName() != null ) typeName = e.getType().getName().getLocalPart();
                             }
-                            String methodName = typeName + "_" + ( isA ? "Array" : "" )+ "fromObject";
+                            String methodName = typeName.replace( '.', '_') + "_" + ( isA ? "Array" : "" )+ "fromObject";
                             if( usedFromMethods.contains( methodName )) continue; else usedFromMethods.add( methodName );
                             off.write( "\n");
                             off.write( "private static " + typeName + ( isA ? "[]" : "" ) + " " + methodName + "( Object obj[] ) {\n" );
