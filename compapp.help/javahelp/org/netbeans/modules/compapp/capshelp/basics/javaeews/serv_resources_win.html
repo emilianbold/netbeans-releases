@@ -1,0 +1,56 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2007 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Understanding the Java EE Server Resources Window</title>
+</head>
+<body>
+<h2>Understanding the Java EE Server Resources Window</h2>
+<p>The Server Resources window contains the following columns:</p>
+	
+  <ul>
+    <li>Resource Name: Displays the JNDI name, or the resource name if it is a 
+      connection pool.</li>
+    <li>Resource Type: Displays the type (type name of the element when added 
+      to the <tt>sun-resources.xml</tt> file).</li>
+    <li>Annotation Present: Displays whether a @Resource annotation appears in 
+      the EJB or Servlet.</li>
+    <li>Defined in File: Displays whether the resource is being used by the EAR 
+      project. This information is acquired by examining the EAR file for @Resource 
+      annotation and deployment descriptors.</li>
+  </ul>
+  <p>Server resources are created, edited, deleted, or viewed via the Server Resources 
+    window. The following choices are available by either clicking the designated 
+    button, or by right-clicking a resource and selecting a menu item. </p>
+  <ul>
+    <li>Edit - Makes changes to an existing sun-resource. If it does not exist, 
+      then it will be displayed as Create.</li>
+    <li>Create - Creates a resource file. If no sun-resource file exists, then 
+      the server resources window is populated with information from the @Resource 
+      annotation. Select OK on the on the editor dialog box to create the resource 
+      file. </li>
+    <li>Delete - Deletes the corresponding sun-resource file.</li>
+    <li>View Usage - Displays the locations where the selected resource is used. 
+      Each entry in the Resource Usage window can be either a Java source file 
+      or Deployment Descriptor with a line number.</li>
+  </ul>
+  
+  <dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="intro_javaeews.html" title="About JBI and Java EE Web Services">About JBI and Java EE Web Services</a></dd>
+<dd><a href="acc_serv_resources.html" title="Accessing Java EE Server Resources">Accessing Java EE Server Resources</a></dd>
+<dd><a href="resource_usage.html" title="Java EE Server Resource Usage">Java EE Server Resource Usage</a></dd>
+</dl>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

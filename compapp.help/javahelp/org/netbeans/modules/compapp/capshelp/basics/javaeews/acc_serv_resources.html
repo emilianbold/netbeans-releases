@@ -1,0 +1,53 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2007 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Accessing Java EE Server Resources</title>
+</head>
+<body>
+<h2>Accessing Java EE Server Resources</h2>
+<p>Java EE server resources are accessed from the JBI Modules folder in a Composite 
+  Application.</p>
+  <p><b>To access the available server resources:</b></p>
+  <ol>
+    <li>Right-click a JBI module EAR file, and then select the Server Resources 
+      option. Note that this option is not available in the right-click menu of 
+      a stand-alone <tt>.ear</tt> file.</li>
+    
+    <li>The Server Resources window appears. If an <tt>.ear</tt> file has been 
+      created, then the EAR artifact is examined for <tt>@Annotations</tt>, and 
+      any sun-resource files. </li>
+    
+    <p>If the EAR build artifact has not been built, then the resulting dialog 
+      box will only contain information from examination of the sun-resource files, 
+      and a warning message will appear at the bottom of the dialog box. The warning 
+      message states that building the EAR project is necessary to find all resource 
+      dependencies.<br>
+      <br>
+      If it is later found that scanning the EAR file takes too much time, then 
+      [it] can be optimized to generate an <tt>.info</tt> file during the EAR 
+      file build process. The <tt>.info</tt> file can identify the presence and 
+      use of <tt>@Annotations</tt>. This way, when the Server Resources option 
+      is selected, information will be retrieved from the <tt>.info</tt> file 
+      instead of beaming the EAR build artifact. 
+  </ol>
+  
+  <dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="intro_javaeews.html" title="About JBI and Java EE Web Services">About JBI and Java EE Web Services</a></dd>
+<dd><a href="serv_resources_win.html" title="Understanding the Java EE Server Resources Window">Understanding the Java EE Server Resources Window</a></dd>
+<dd><a href="resource_usage.html" title="Java EE Server Resource Usage">Java EE Server Resource Usage</a></dd>
+</dl>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>
