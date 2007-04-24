@@ -41,8 +41,6 @@ cd $TRUNK_NIGHTLY_DIRNAME
 bash build-all-components.sh
 ERROR_CODE=$?
 
-ERROR_CODE=$?
-
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Build failed"
     exit $ERROR_CODE;
