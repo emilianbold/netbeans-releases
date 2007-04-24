@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.compapp.casaeditor.design;
 
+import java.awt.Color;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
@@ -31,8 +32,10 @@ import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetEvent;
 import org.netbeans.api.visual.action.WidgetAction.WidgetKeyEvent;
 import org.netbeans.api.visual.action.WidgetAction.WidgetMouseEvent;
 import org.netbeans.api.visual.widget.ConnectionWidget;
+import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.casaeditor.Constants;
+import org.netbeans.modules.compapp.casaeditor.graph.WaitMessageHandler;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidget;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaPinWidget;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaRegionWidget;
@@ -59,7 +62,6 @@ import org.openide.util.NbBundle;
 public class CasaModelGraphUtilities {
     
     private static final DisablingAction DISABLER = new DisablingAction();
-    
     
     public static void renderModel(final CasaWrapperModel model, final CasaModelGraphScene scene)
     {
@@ -421,7 +423,9 @@ public class CasaModelGraphUtilities {
         Chain priorActions = scene.getPriorActions();
         if (isEnabled) {
             priorActions.removeAction(DISABLER);
+            WaitMessageHandler.removeFromScene(scene);
         } else {
+            WaitMessageHandler.addToScene(scene);
             if (!priorActions.getActions().contains(DISABLER)) {
                 priorActions.addAction(0, DISABLER);
             }
