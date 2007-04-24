@@ -95,7 +95,7 @@ public class JarLauncher extends CommonLauncher {
         return null;
     }
     
-    public String [] getExecutionCommand() throws IOException {
+    public String [] getExecutionCommand() {
         File javaLocation = null;
         for(LauncherResource java : jvms) {
             switch(java.getPathType()) {

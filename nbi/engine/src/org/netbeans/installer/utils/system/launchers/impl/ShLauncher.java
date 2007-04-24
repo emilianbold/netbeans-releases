@@ -206,7 +206,7 @@ public class ShLauncher extends CommonLauncher {
         return outputFile;
     }
     
-    public String[] getExecutionCommand() throws IOException {
+    public String[] getExecutionCommand() {
         return new String [] {outputFile.getAbsolutePath()};
     }
     

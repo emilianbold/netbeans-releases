@@ -37,7 +37,7 @@ public abstract class Launcher extends LauncherProperties {
     }
     public abstract File create(Progress progress) throws IOException;
     public abstract void initialize() throws IOException;
-    public abstract String [] getExecutionCommand() throws IOException;
+    public abstract String [] getExecutionCommand();
     public abstract List <JavaCompatibleProperties> getDefaultCompatibleJava();    
     public abstract String getExtension();
     protected abstract String getI18NResourcePrefix();

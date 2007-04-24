@@ -208,7 +208,7 @@ public class WindowsNativeUtils extends NativeUtils {
         try {
             clSection = registry.canModifyKey(HKCR, "") ? HKCR : HKCU;
             clKey = (result) ? EMPTY_STRING : CURRENT_USER_CLASSES;
-            uninstallSection = registry.canModifyKey(HKLM,UNINSTALL_KEY) ? HKLM : HKCU;
+            uninstallSection = registry.canModifyKey(HKLM,UNINSTALL_KEY) ? HKLM : HKCU;            
         } catch (NativeException ex) {
             LogManager.log(ex);
             clSection = HKCU;
@@ -365,6 +365,25 @@ public class WindowsNativeUtils extends NativeUtils {
     
     public FilesList addComponentToSystemInstallManager(ApplicationDescriptor descriptor) throws NativeException {
         final FilesList list = new FilesList();
+        
+        // create 'uninstaller' and 'modifier'
+        Launcher modifyLauncher = null;
+        Launcher uninstallLauncher = null;        
+        try {
+            if (descriptor.getModifyCommand() != null) {
+                modifyLauncher = createUninstaller(descriptor, false, new Progress());
+                list.add(modifyLauncher.getOutputFile());
+            }
+            if (descriptor.getUninstallCommand() != null) {
+                uninstallLauncher = createUninstaller(descriptor, true, new Progress());
+                list.add(uninstallLauncher.getOutputFile());
+            }
+        } catch (IOException e) {
+            throw new NativeException("Can`t create uninstaller", e);            
+        }
+        
+        //add to add/remove programs
+        
         LogManager.log("adding new Add or Remove Programs entry with id [" + descriptor.getUid() + "]");
         
         final String uid = getVacantUninstallUid(descriptor.getUid());
@@ -389,43 +408,29 @@ public class WindowsNativeUtils extends NativeUtils {
         }
         
         if (descriptor.getModifyCommand() != null) {
-            try {
-                final Launcher launcher = createUninstaller(descriptor, false, new Progress());
-                list.add(launcher.getOutputFile());
-                
-                LogManager.log("Set '" + NO_REPAIR + "' = [" + 1 + "]");
-                registry.set32BitValue(uninstallSection, key, NO_REPAIR, 1);
-                
-                final String command =
-                        QUOTE +
-                        asString(launcher.getExecutionCommand(), QUOTE + SPACE + QUOTE) +
-                        QUOTE;
-                
-                LogManager.log("Set '" + MODIFY_STRING + "' = [" + command + "]");
-                registry.setStringValue(uninstallSection, key, MODIFY_STRING, command, false);
-            } catch (IOException e) {
-                throw new NativeException("Can`t create uninstaller", e);
-            }
+            LogManager.log("Set '" + NO_REPAIR + "' = [" + 1 + "]");
+            registry.set32BitValue(uninstallSection, key, NO_REPAIR, 1);
+            
+            final String command =
+                    QUOTE +
+                    asString(modifyLauncher.getExecutionCommand(), QUOTE + SPACE + QUOTE) +
+                    QUOTE;
+            
+            LogManager.log("Set '" + MODIFY_STRING + "' = [" + command + "]");
+            registry.setStringValue(uninstallSection, key, MODIFY_STRING, command, false);
         } else {
             LogManager.log("Set '" + NO_MODIFY + "' = [" + 1 + "]");
             registry.set32BitValue(uninstallSection, key, NO_MODIFY, 1);
         }
         
         if (descriptor.getUninstallCommand() != null) {
-            try {
-                final Launcher launcher = createUninstaller(descriptor, true, new Progress());
-                list.add(launcher.getOutputFile());
-                
-                final String command =
-                        QUOTE +
-                        asString(launcher.getExecutionCommand(), QUOTE + SPACE + QUOTE) +
-                        QUOTE;
-                
-                LogManager.log("Set '" + UNINSTALL_STRING + "' = [" + command + "]");
-                registry.setStringValue(uninstallSection, key, UNINSTALL_STRING, command, false);
-            } catch (IOException e) {
-                throw new NativeException("Can`t create uninstaller", e);
-            }
+            final String command =
+                    QUOTE +
+                    asString(uninstallLauncher.getExecutionCommand(), QUOTE + SPACE + QUOTE) +
+                    QUOTE;
+            
+            LogManager.log("Set '" + UNINSTALL_STRING + "' = [" + command + "]");
+            registry.setStringValue(uninstallSection, key, UNINSTALL_STRING, command, false);
         }
         
         registry.setAdditionalValues(uninstallSection, key, descriptor.getParameters());
@@ -579,7 +584,7 @@ public class WindowsNativeUtils extends NativeUtils {
         return Arrays.asList(File.listRoots());
     }
     
-    // windows-specific operations //////////////////////////////////////////////////
+// windows-specific operations //////////////////////////////////////////////////
     public WindowsRegistry getWindowsRegistry() {
         return registry;
     }
@@ -607,7 +612,7 @@ public class WindowsNativeUtils extends NativeUtils {
         }
     }
     
-    // private //////////////////////////////////////////////////////////////////////
+// private //////////////////////////////////////////////////////////////////////
     private String getVacantUninstallUid(final String baseUid) throws NativeException {
         String vacantUid = baseUid;
         
@@ -1186,7 +1191,7 @@ public class WindowsNativeUtils extends NativeUtils {
         props.setProperty(EXTENSION_VALUE_NAME + name + DOT + prop, value);
     }
     
-    // native declarations //////////////////////////////////////////////////////////
+// native declarations //////////////////////////////////////////////////////////
     private native boolean isCurrentUserAdmin0();
     
     private native long getFreeSpace0(String string);

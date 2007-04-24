@@ -171,7 +171,7 @@ public class ExeLauncher extends CommonLauncher {
         return outputFile;
     }
     
-    public String[] getExecutionCommand() throws NullPointerException {
+    public String[] getExecutionCommand() {
         return new String [] {outputFile.getAbsolutePath()};
     }
     

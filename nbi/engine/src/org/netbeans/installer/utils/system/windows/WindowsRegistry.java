@@ -21,6 +21,7 @@
 package org.netbeans.installer.utils.system.windows;
 
 import java.util.Map;
+import java.util.Random;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import static org.netbeans.installer.utils.StringUtils.EMPTY_STRING;
@@ -679,7 +680,21 @@ public class WindowsRegistry {
         //validateKey(key);
         try {
             if(keyExists(section,key)) {
-                return checkKeyAccess0(section, key, KEY_MODIFY_LEVEL);
+                boolean check = checkKeyAccess0(section, key, KEY_MODIFY_LEVEL);
+                
+                if(check) { 
+                    // try to create/delete new sub key to be sure that we can modify the parent
+                    // this will require in most cases of vista with UAC enabled
+                    String randomKey = "rndkey" + new Random().nextLong();
+                    try {
+                        createKey0(section, key, randomKey);
+                        deleteKey0(section, key, randomKey);
+                    } catch (NativeException ex) {
+                        check = false;
+                    }
+                }
+                
+                return check;
             } else {
                 return canModifyKey(section,getKeyParent(key));
             }
