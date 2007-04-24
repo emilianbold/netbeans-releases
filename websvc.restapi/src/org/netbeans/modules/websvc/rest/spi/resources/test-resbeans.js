@@ -322,7 +322,7 @@ function doShowDynamicResource(uri, mName, mediaType) {
     var req = uri;
     var disp = getDisplayUri(req);
     var uriLink = "<a id='"+req+"' href=javascript:doShowContent('"+req+"') >"+getDisplayURL(disp, 80)+"</a>";
-    updatepage('request', '<span class=bld>MSG_TEST_RESBEANS_Resource</span> '+uriLink+' <br/>(<a href="'+req+'" target="_blank">'+getDisplayURL(req, 90)+'</a>)');
+    updatepage('request', '<span class=bld>Resource:</span> '+uriLink+' <br/>(<a href="'+req+'" target="_blank"><span class=font10>'+getDisplayURL(req, 90)+'</span></a>)<hr>');
 }
 function doShowStaticResource(uri, r) {
     updatepage('result', '');
@@ -345,7 +345,7 @@ function doShowStaticResource(uri, r) {
     var req = uri;
     var disp = getDisplayUri(req);
     var uriLink = "<a id='"+req+"' href=javascript:doShowContent('"+req+"') >"+getDisplayURL(disp, 80)+"</a>";
-    updatepage('request', '<span class=bld>Resource:</span> '+uriLink+' <br/>(<a href="'+req+'" target="_blank">'+getDisplayURL(req, 90)+'</a>)');
+    updatepage('request', '<span class=bld>Resource:</span> '+uriLink+' <br/>(<a href="'+req+'" target="_blank"><span class=font10>'+getDisplayURL(req, 90)+'</span></a>)<hr>');
 }
 function getFormRep(req, uri, mName, mediaType) {
     if(mName == null || mName == 'undefined')
@@ -360,7 +360,7 @@ function getFormRep(req, uri, mName, mediaType) {
     str += "<input name='path' value='"+uri+"' type='hidden'>";
     str += "<input id='method' name='method' value='"+mName+"' type='hidden'>";
     str += "<input id='mimeType' name='mimeType' value='"+mediaType+"' type='hidden'>";
-    str += "<br/><input value='MSG_TEST_RESBEANS_TestButton' type='button' onclick='testResource()'>";
+    str += "<input value='MSG_TEST_RESBEANS_TestButton' type='button' onclick='testResource()'>";
     str += "</form>";
     str += "</div>";
     return str;
@@ -379,7 +379,7 @@ function showBreadCrumbs(uri) {
         var uriLink = "<a id='"+uri+"' href=javascript:doShowContent('"+uri+"') >"+getDisplayURL(disp, 90)+"</a>";
         if(nav.innerHTML != '') {
             bcCount++;
-            var uriPerLine = 1;
+            var uriPerLine = 4;
             //alert(bcCount);
             //alert(Math.round(bcCount/uriPerLine)+ ' ' + bcCount/uriPerLine);
             if(Math.round(bcCount/uriPerLine) == bcCount/uriPerLine)
@@ -474,7 +474,7 @@ function testResource() {
     xmlHttpReq4.send(params);
 }
 function createIFrame(url) {
-    var c = '<iframe src="'+url+'" class="frame" width="600" height="300" align="left">'+
+    var c = '<iframe src="'+url+'" class="frame" width="600" height="150" align="left">'+
         '<p>See <a href="'+url+'">"'+url+'"</a>.</p>'+
         '</iframe>';
     return c;
@@ -730,7 +730,7 @@ function createRowForUri(refChild) {
     str += "<td>";
     var disp = getDisplayUri(uri);
     str += "<a id='"+uri+"' href=javascript:doShowContent('"+uri+"') >"+getDisplayURL(disp, 70)+"</a>";
-    str += "<br/>(<a href='"+uri+"' target='_blank'>"+getDisplayURL(uri, 70)+"</a>)";
+    str += "<br/>(<a href='"+uri+"' target='_blank'><span class=font10>"+getDisplayURL(uri, 70)+"</span></a>)";
     str += "</td>";
     str += "</tr>";
     return str;
@@ -842,7 +842,7 @@ function listCategories(){
 function writeCategory(){
     var uri = baseURL + this.id;
     if(this.id == 'resources')
-        uri = null;;
+        uri = null;
     var categoryString = '<span class="category"';
     categoryString += '><img src="cg.gif" id="I1' + this.id + '" onClick="updateTree(\'' + this.id + '\')">';
     categoryString += '<img src="app.gif" id="I' + this.id + '">';
