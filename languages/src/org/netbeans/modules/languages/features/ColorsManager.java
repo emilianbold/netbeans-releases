@@ -59,8 +59,6 @@ public class ColorsManager {
     public static final String COLOR = "COLOR";
     
     static List<AttributeSet> getColors(Language l, ASTPath path, Document doc) {
-        String bundleName = getBundleName(l);
-        ResourceBundle bundle = bundleName != null ? NbBundle.getBundle(bundleName) : null;
         List<AttributeSet> result = new ArrayList<AttributeSet> ();
         Context context = SyntaxContext.create(doc, path);
         List<Feature> fs = l.getFeatures(COLOR, path);
@@ -68,7 +66,7 @@ public class ColorsManager {
         while (it.hasNext()) {
             Feature f = it.next();
             if (!f.getBoolean("condition", context, true)) continue;
-            result.add(createColoring(f, bundle));
+            result.add(createColoring(f, null));
         }
         return result;
     }
