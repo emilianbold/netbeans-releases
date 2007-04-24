@@ -88,7 +88,11 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
         
         //#56140
         eval.addPropertyChangeListener(this); //listen for changes of libraries list
-        registerLibraryListeners();
+        ProjectManager.mutex().postWriteRequest(new Runnable() {
+            public void run() {
+                registerLibraryListeners();
+            }
+        });
     }
     
     protected SourceGroup[] getExtensibleSourceGroups() {

@@ -72,7 +72,11 @@ public class AppClientProjectClassPathExtender implements ProjectClassPathExtend
                                         AppClientProjectProperties.LIBRARY_SUFFIX, 
                                         AppClientProjectProperties.ANT_ARTIFACT_PREFIX );
         eval.addPropertyChangeListener(this); //listen for changes of libraries list
-        registerLibraryListeners();
+        ProjectManager.mutex().postWriteRequest(new Runnable() {
+            public void run() {
+                registerLibraryListeners();
+            }
+        });
     }
 
     public boolean addLibrary(final Library library) throws IOException {
