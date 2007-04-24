@@ -107,11 +107,14 @@ public class WSDLParser {
                 throw new WSDLException( ex );
             }
         } catch( SAXException e ) {
-            throw new WSDLException( e.getCause());
+            validationResults.add( new WSDL2Java.ValidationResult(
+                WSDL2Java.ValidationResult.ErrorLevel.FATAL, "Error during parsing : " + e.getMessage()));
         } catch( ParserConfigurationException e ) {
-            throw new WSDLException( e.getCause());
+            validationResults.add( new WSDL2Java.ValidationResult(
+                WSDL2Java.ValidationResult.ErrorLevel.FATAL, "Error during parsing : " + e.getMessage()));
         } catch( IOException e ) {
-            throw new WSDLException( e.getCause());
+            validationResults.add( new WSDL2Java.ValidationResult(
+                WSDL2Java.ValidationResult.ErrorLevel.FATAL, "Communication error : " + e.getMessage()));
         } 
         definition.setSchemaHolder( schemaParser.getSchemaHolder());
         validationResults.addAll( schemaParser.getValidationResults());
