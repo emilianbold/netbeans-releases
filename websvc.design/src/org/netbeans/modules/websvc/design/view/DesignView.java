@@ -23,13 +23,13 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseWheelListener;
 import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
-import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectScene;
@@ -83,8 +83,8 @@ public class DesignView extends JPanel  {
         scene = new ObjectScene();
         zoomer = new ZoomManager(scene);
         // add actions
-        scene.getActions().addAction(ActionFactory.createZoomAction());
-        scene.getActions().addAction(ActionFactory.createPanAction());
+//        scene.getActions().addAction(ActionFactory.createZoomAction());
+//        scene.getActions().addAction(ActionFactory.createPanAction());
         scene.getActions().addAction(ButtonAction.DEFAULT);
         
         mMainLayer = new LayerWidget(scene);
@@ -127,6 +127,7 @@ public class DesignView extends JPanel  {
         contentWidget.addChild(operationsWidget);
         
         JComponent sceneView = scene.createView();
+        sceneView.removeMouseWheelListener((MouseWheelListener)sceneView);
         JScrollPane panel = new JScrollPane(sceneView);
         panel.getVerticalScrollBar().setUnitIncrement(16);
         panel.getHorizontalScrollBar().setUnitIncrement(16);
