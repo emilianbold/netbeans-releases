@@ -36,7 +36,8 @@ public class MPMeasureActions  {
         suite.addTest(new CreateMobilityProject("testCreateMobilityProject", "Create Mobile Application"));  
         suite.addTest(new CreateMobilityProject("testCreateMobilityLibrary", "Create Mobile Class Library"));
         suite.addTest(new OpenMIDletEditor("measureTime","Open a visual MIDlet"));
-      
+        suite.addTest(new CreateVisualMIDlet("measureTime","Create Visual MIDlet"));
+        suite.addTest(new CreateMIDlet("measureTime","Create MIDlet"));
         return suite;
     }
     
