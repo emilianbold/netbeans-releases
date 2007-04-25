@@ -340,15 +340,17 @@ getLauncherLocation() {
 	# if file path is relative then prepend it with current directory
 	if [ 1 -eq `ifPathRelative "$LAUNCHER_NAME"` ] ; then
 		debug "Running launcher with relative path"
-		LAUNCHER_FULL_PATH=`echo $CURRENT_DIRECTORY/$LAUNCHER_NAME | sed 's/\"//g'`			
+		LAUNCHER_FULL_PATH=`echo "$CURRENT_DIRECTORY"/"$LAUNCHER_NAME" | sed 's/\"//g' 2>/dev/null`
 	else 
 		debug "Running launcher with absolute path"
-		LAUNCHER_FULL_PATH=$LAUNCHER_NAME
+		LAUNCHER_FULL_PATH="$LAUNCHER_NAME"
 	fi
-
+	debug "... normalizing full path"
 	LAUNCHER_FULL_PATH=`normalizePath "$LAUNCHER_FULL_PATH"`
+	debug "... getting dirname"
 	LAUNCHER_DIR=`dirname "$LAUNCHER_FULL_PATH"`
-	debug "Full path = $LAUNCHER_FULL_PATH"
+	debug "Full launcher path = $LAUNCHER_FULL_PATH"
+	debug "Launcher directory = $LAUNCHER_DIR"
 }
 
 getLauncherSize() {
@@ -736,21 +738,24 @@ searchJava() {
 						argJavaHome="/"
 					fi
 					# search in all visible child directories
-					debug ".. checking all children of $argJavaHome"
+					
 					if [ -d "$argJavaHome" ] || [ -L "$argJavaHome" ] ; then
-					        debug ".. getting all children ..."
-						children=`ls -d -1 "$argJavaHome"/*/ 2> /dev/null`
-						children=`removeEndSlashes "$children"`
+					        debug "... checking all children of $argJavaHome"
+						children=`ls -d -1 "$argJavaHome"/* 2> /dev/null`
 						child="$children"
 						counter=1
 						while [ -n "$child" ] && [ -z "$LAUNCHER_JAVA_EXE" ] ; do
-							child=`echo "$children" | sed -n "${counter}p"`
-							counter=`expr "$counter" + 1`
+							child=`echo "$children" | sed -n "${counter}p" 2>/dev/null`
+							counter=`expr "$counter" + 1`		
+							child=`removeEndSlashes "$child"`
 							if [ -n "$child" ] ; then
-				                		debug ".... checking child $child"
-								verifyJVM "$child"
+								if [ -d "$child" ] || [ -L "$child" ] ; then
+				                			debug "... checking child : $child"
+									verifyJVM "$child"
+								fi
 							fi					
 						done
+						debug "... all children checked"
 					fi
 				fi
 			fi
@@ -824,7 +829,7 @@ verifyJVM() {
 		verifyJavaHome "$javaTryPath"			
 	fi	
 	
-	if [ $VERIFY_NOJAVA -eq $verifyResult ] ; then
+	if [ $VERIFY_NOJAVA -eq $verifyResult ] ; then                                           
 		verifyResult=$savedResult
 	fi 
     fi
