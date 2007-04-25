@@ -33,6 +33,7 @@ public class MobilityDeploymentManagerAction extends CallableSystemAction {
     
     /** Creates a new instance of MobilityDeploymentManagerAction */
     public MobilityDeploymentManagerAction() {
+        putValue("noIconInMenu", Boolean.TRUE);
     }
     
     public void performAction() {
