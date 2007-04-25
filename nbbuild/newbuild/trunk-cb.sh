@@ -33,6 +33,23 @@ fi
 
 ###################################################################
 #
+# Check if the build is required
+#
+###################################################################
+
+cd $TRUNK_CB_DIRNAME
+bash check-for-update.sh
+RETURN_CODE=$?
+
+if [ $RETURN_CODE -eq 2 ]; then
+    #There were no update, sleep for 10 min and exit
+    sleep 360
+    exit 0;
+fi
+
+
+###################################################################
+#
 # Build all the components
 #
 ###################################################################

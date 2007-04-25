@@ -14,7 +14,7 @@ cd  $NB_ALL
 ###################################################################
 
 #nbbuild module is required for the list of modules
-cvs -d :pserver:anoncvs@cvs.netbeans.org:/cvs checkout -D "$CVS_STAMP" nbbuild > $CVS_CHECKOUT_LOG 2>&1
+cvs -z6 -q -d :pserver:anoncvs@cvs.netbeans.org:/cvs checkout -D "$CVS_STAMP" nbbuild > $CVS_CHECKOUT_LOG 2>&1
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
