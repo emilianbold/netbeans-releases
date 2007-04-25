@@ -38,6 +38,7 @@ import java.awt.*;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 
 /**
  *
@@ -50,11 +51,13 @@ public class ChoiceElementDisplayPresenter extends ScreenDisplayPresenter {
     public static final String ICON_CHECKBOX_PATH = "org/netbeans/modules/vmd/midp/resources/components/element_16.png"; // NOI18N
     public static final String ICON_EMPTY_RADIOBUTTON_PATH = "org/netbeans/modules/vmd/midp/resources/components/empty_radio_16.png"; // NOI18N
     public static final String ICON_RADIOBUTTON_PATH = "org/netbeans/modules/vmd/midp/resources/components/radio_16.png"; // NOI18N
+    public static final String ICON_BROKEN_PATH = "org/netbeans/modules/vmd/midp/resources/components/broken.png"; // NOI18N
     
     public static final Icon ICON_EMPTY_CHECKBOX = new ImageIcon(Utilities.loadImage(ICON_EMPTY_CHECKBOX_PATH));
     public static final Icon ICON_CHECKBOX = new ImageIcon(Utilities.loadImage(ICON_CHECKBOX_PATH));
     public static final Icon ICON_EMPTY_RADIOBUTTON = new ImageIcon(Utilities.loadImage(ICON_EMPTY_RADIOBUTTON_PATH));
     public static final Icon ICON_RADIOBUTTON = new ImageIcon(Utilities.loadImage(ICON_RADIOBUTTON_PATH));
+    public static final Icon ICON_BROKEN = new ImageIcon(Utilities.loadImage(ICON_BROKEN_PATH));
     
     private JPanel view;
     private JLabel state;
@@ -104,9 +107,20 @@ public class ChoiceElementDisplayPresenter extends ScreenDisplayPresenter {
                 break;
         }
 
-        PropertyValue imageValue = getComponent ().readProperty (ChoiceElementCD.PROP_IMAGE);
-        Icon imageIcon = ScreenSupport.getIconFromImageComponent (imageValue.getComponent ());
-        image.setIcon (imageIcon);
+        DesignComponent imageComponent = getComponent().readProperty(ChoiceElementCD.PROP_IMAGE).getComponent();
+        String path = null;
+        if (imageComponent != null)
+            path = (String) imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH).getPrimitiveValue();
+        Icon icon = ScreenSupport.getIconFromImageComponent(imageComponent);
+        if (icon != null) {
+            image.setText(null);
+            image.setIcon(icon);
+        } else if (icon == null && path != null) {
+           image.setIcon(ICON_BROKEN);
+        } else {
+            image.setText(null); //NOI18N 
+            image.setIcon(null);
+        }
 
         String text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(ChoiceElementCD.PROP_STRING));
         label.setText(ScreenSupport.wrapWithHtml(text));
@@ -115,7 +129,6 @@ public class ChoiceElementDisplayPresenter extends ScreenDisplayPresenter {
         label.setFont(ScreenSupport.getFont(deviceInfo, font));
     }
     
-
     public Shape getSelectionShape() {
         return new Rectangle(view.getSize());
     }

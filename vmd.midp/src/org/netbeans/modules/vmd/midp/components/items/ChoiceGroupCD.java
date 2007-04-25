@@ -108,8 +108,6 @@ public class ChoiceGroupCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
                 // properties
-                
-                // properties
                 createPropertiesPresenter(),
                 // code
                 createSetterPresenter(),MidpInspectorSupport.createComponentElementsCategory("Elements",getInspectorOrderingControllers(), ChoiceElementCD.TYPEID), //NOI18N

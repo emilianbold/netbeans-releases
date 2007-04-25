@@ -23,18 +23,24 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.displayables.AlertCD;
+import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
+import org.openide.util.Utilities;
 
 /**
  *
  * @author Anton Chechel
  */
 public class AlertDisplayPresenter extends DisplayableDisplayPresenter {
+    
+    private static final String ICON_BROKEN_PATH = "org/netbeans/modules/vmd/midp/resources/components/broken.png"; // NOI18N
+    private static final Icon ICON_BROKEN = new ImageIcon(Utilities.loadImage(ICON_BROKEN_PATH));
     
     private JLabel imageLabel;
     private JLabel stringLabel;
@@ -64,11 +70,19 @@ public class AlertDisplayPresenter extends DisplayableDisplayPresenter {
     public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
         
-        DesignComponent imageComponent = getComponent().readProperty(AlertCD.PROP_IMAGE).getComponent();
-        Icon icon = ScreenSupport.getIconFromImageComponent(imageComponent);
-        imageLabel.setIcon(icon);
-        
         String text = MidpTypes.getString(getComponent().readProperty(AlertCD.PROP_STRING));
         stringLabel.setText(ScreenSupport.wrapWithHtml(text));
+        
+        DesignComponent imageComponent = getComponent().readProperty(AlertCD.PROP_IMAGE).getComponent();
+        String path = null;
+        if (imageComponent != null)
+            path = (String) imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH).getPrimitiveValue();
+        Icon icon = ScreenSupport.getIconFromImageComponent(imageComponent);
+        if (icon != null) {
+            imageLabel.setIcon(ICON_BROKEN);
+        } else if (icon == null && path != null) {
+            imageLabel.setText("<Wrong image resourc path>"); //NOI18N 
+            imageLabel.setIcon(null);
+        }
     }
 }

@@ -38,13 +38,18 @@ import java.awt.*;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Arrays;
+import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
+import org.openide.util.Utilities;
 
 /**
  *
  * @author Anton Chechel
  */
 public class ListElementEventSourceDisplayPresenter extends ScreenDisplayPresenter {
-
+    
+    private static final String ICON_BROKEN_PATH = "org/netbeans/modules/vmd/midp/resources/components/broken.png"; // NOI18N
+    private static final Icon ICON_BROKEN = new ImageIcon(Utilities.loadImage(ICON_BROKEN_PATH));
+    
     private JPanel view;
     private JLabel state;
     private JLabel image;
@@ -93,9 +98,20 @@ public class ListElementEventSourceDisplayPresenter extends ScreenDisplayPresent
                 break;
         }
 
-        PropertyValue imageValue = getComponent ().readProperty (ListElementEventSourceCD.PROP_IMAGE);
-        Icon imageIcon = ScreenSupport.getIconFromImageComponent (imageValue.getComponent ());
-        image.setIcon (imageIcon);
+        DesignComponent imageComponent = getComponent().readProperty(ChoiceElementCD.PROP_IMAGE).getComponent();
+        String path = null;
+        if (imageComponent != null)
+            path = (String) imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH).getPrimitiveValue();
+        Icon icon = ScreenSupport.getIconFromImageComponent(imageComponent);
+        if (icon != null) {
+            image.setText(null);
+            image.setIcon(icon);
+        } else if (icon == null && path != null) {
+            image.setIcon(ICON_BROKEN);
+        } else {
+            image.setText(null); //NOI18N 
+            image.setIcon(null);
+        }
 
         String text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(ListElementEventSourceCD.PROP_STRING));
         label.setText(ScreenSupport.wrapWithHtml(text));

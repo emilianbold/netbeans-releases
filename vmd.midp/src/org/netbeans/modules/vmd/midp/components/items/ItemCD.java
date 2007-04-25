@@ -199,7 +199,11 @@ public class ItemCD extends ComponentDescriptor {
                 new DisplayableResourceCategoriesPresenter()
         );
     }
-
+    
+    private List<InspectorOrderingController> createOrderingArrayController() {
+        return Collections.<InspectorOrderingController>singletonList(new ArrayPropertyOrderingController(PROP_COMMANDS, 0, ItemCommandEventSourceCD.TYPEID));
+    }
+    
     private static class AcceptItemCommandPresenter extends AbstractAcceptPresenter {
         
         public AcceptItemCommandPresenter() {
@@ -229,8 +233,6 @@ public class ItemCD extends ComponentDescriptor {
 
     }
 
-     private List<InspectorOrderingController> createOrderingArrayController() {
-        return Collections.<InspectorOrderingController>singletonList(new ArrayPropertyOrderingController(PROP_COMMANDS, 0, ItemCommandEventSourceCD.TYPEID));
-    }
+     
 
 }

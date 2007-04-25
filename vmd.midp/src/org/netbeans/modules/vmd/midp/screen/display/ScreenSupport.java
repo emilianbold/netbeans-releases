@@ -36,6 +36,10 @@ import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
 
 /**
  *
@@ -153,7 +157,17 @@ public final class ScreenSupport {
                 if (context != null) { // document is loading
                     SourceGroup sourceGroup = ProjectUtils.getSourceGroups(context).get(0); // CLDC project has always only one source root
                     String srcPath = sourceGroup.getRootFolder().getPath();
-                    icon = new ImageIcon("/"+srcPath + iconPath); //NOI18N
+                    icon = new ImageIcon(); //NOI18N
+                    try {
+                        BufferedImage img = null;
+                        img = ImageIO.read(new File("/"+srcPath + iconPath));
+                        icon = new ImageIcon(img);
+                    } catch (IOException e) {
+                        icon = null;
+                    }
+                    if (icon == null) {
+                        Debug.warning("Resource path property in " + imageComponent + " contains incorrect value"); //NOI18N
+                    }
                 }
             }
         }

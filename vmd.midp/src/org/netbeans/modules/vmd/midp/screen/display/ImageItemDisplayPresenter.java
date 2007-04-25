@@ -24,6 +24,8 @@ import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.midp.components.items.ImageItemCD;
 
 import javax.swing.*;
+import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
+import org.openide.util.Utilities;
 
 
 /**
@@ -32,6 +34,9 @@ import javax.swing.*;
  * @version 1.0
  */
 public class ImageItemDisplayPresenter extends ItemDisplayPresenter {
+    
+    private static final String ICON_BROKEN_PATH = "org/netbeans/modules/vmd/midp/resources/components/broken.png"; // NOI18N
+    private static final Icon ICON_BROKEN = new ImageIcon(Utilities.loadImage(ICON_BROKEN_PATH));
     
     private JLabel label;
     
@@ -42,18 +47,20 @@ public class ImageItemDisplayPresenter extends ItemDisplayPresenter {
     
     public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
-        
         DesignComponent imageComponent = getComponent().readProperty(ImageItemCD.PROP_IMAGE).getComponent();
-        String alternText = (String) getComponent().readProperty(org.netbeans.modules.vmd.midp.components.items.ImageItemCD.PROP_ALT_TEXT).getPrimitiveValue();
+        String path = null;
+        if (imageComponent != null)
+            path = (String) imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH).getPrimitiveValue();
+        String alternText = (String) getComponent().readProperty(ImageItemCD.PROP_ALT_TEXT).getPrimitiveValue();
         Icon icon = ScreenSupport.getIconFromImageComponent(imageComponent);
+        
         if (icon != null) {
             label.setText(null);
             label.setIcon(icon);
-        } else if (alternText!= null) {
-            label.setText(alternText); //NOI18N 
-            label.setIcon(null);
-        } else {
-            label.setText("<no image loaded>"); //NOI18N 
+        } else if (icon == null && path != null) {
+            label.setIcon(ICON_BROKEN);
+        }  else if (alternText != null) {
+            label.setText(alternText); //NOI18N
             label.setIcon(null);
         }
     }
