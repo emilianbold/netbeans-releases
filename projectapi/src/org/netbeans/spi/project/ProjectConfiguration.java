@@ -23,6 +23,9 @@ package org.netbeans.spi.project;
  * Represents one user-selectable configuration of a particular project.
  * For example, it might represent a choice of main class and arguments.
  * Besides the implementor, only the project UI infrastructure is expected to use this class.
+ * <p>An instance of a configuration may be passed in the context argument for
+ * an {@link ActionProvider} when called on a main-project-sensitive action, in which case
+ * the action provider ought to run the action with that configuration temporarily in effect.
  *
  * @author Adam Sotona, Jesse Glick
  * @since org.netbeans.modules.projectapi/1 1.11
