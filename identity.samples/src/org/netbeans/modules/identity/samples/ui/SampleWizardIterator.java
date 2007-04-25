@@ -104,7 +104,8 @@ public class SampleWizardIterator  implements WizardDescriptor.InstantiatingIter
         
         SoaSampleUtils.unZipFile(template.getInputStream(), dir);
         
-        SoaSampleUtils.setProjectName(dir, projectConfigNamespace, name);
+        if (projectConfigNamespace != null)
+            SoaSampleUtils.setProjectName(dir, projectConfigNamespace, name);
  
         Project p = ProjectManager.getDefault().findProject(dir);
         myProject = p;

@@ -56,6 +56,7 @@ public class StockClientSampleWizardIterator extends SampleWizardIterator {
     }
     
     public Set instantiate() throws IOException {
+        setProjectConfigNamespace(null);
         Set resultSet = super.instantiate();
         
         FileObject dirParent = null;
