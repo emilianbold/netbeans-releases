@@ -252,7 +252,7 @@ public final class JavaNode extends DataNode implements ChangeListener {
             public void run() {
                 while (true) {
                     try {
-                        Task t = queue.poll(Long.MAX_VALUE, TimeUnit.SECONDS);
+                        Task t = queue.poll(Integer.MAX_VALUE - 10, TimeUnit.MILLISECONDS);
                         
                         if (t != null) {
                             boolean fire = t.fire;
