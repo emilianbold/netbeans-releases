@@ -22,7 +22,6 @@
 package org.netbeans.modules.uml.ui.support.applicationmanager;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.dom4j.Document;
@@ -57,18 +56,12 @@ import org.netbeans.modules.uml.ui.support.viewfactorysupport.IEventManager;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.TypeConversions;
 import com.tomsawyer.diagramming.TSResizeControl;
 import com.tomsawyer.diagramming.command.TSMoveGroupCommand;
-import com.tomsawyer.drawing.TSDGraphManager;
 import com.tomsawyer.editor.ui.TSENodeUI;
 import com.tomsawyer.editor.TSEGraphManager;
 import com.tomsawyer.editor.TSENode;
 import com.tomsawyer.editor.TSEObjectUI;
-import com.tomsawyer.graph.TSNode;
-//import com.tomsawyer.jnilayout.TSHandleLocation;
-//import com.tomsawyer.util.TSConstPoint;
 import com.tomsawyer.drawing.geometry.TSConstPoint;
-//import com.tomsawyer.util.TSConstRect;
 import com.tomsawyer.drawing.geometry.TSConstRect;
-//import com.tomsawyer.util.TSRect;
 import com.tomsawyer.drawing.geometry.TSRect;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETGraphObject;
 import org.netbeans.modules.uml.ui.support.EdgeKindEnum;
@@ -305,7 +298,7 @@ public class NodePresentation extends ProductGraphPresentation implements INodeP
          if (node.getETUI() instanceof IETNodeUI)
          {
             IETNodeUI nodeUI = (IETNodeUI)node.getETUI();           
-				bounds.inflate(nodeUI.getGrappleSize() + 10);
+            bounds.inflate(nodeUI.getGrappleSize() + 10);
          }
  
          IDrawEngine engine = getDrawEngine();

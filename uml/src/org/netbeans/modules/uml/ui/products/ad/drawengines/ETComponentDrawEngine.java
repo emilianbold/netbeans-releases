@@ -59,7 +59,6 @@ import org.netbeans.modules.uml.ui.support.viewfactorysupport.PresentationHelper
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.TypeConversions;
 import org.netbeans.modules.uml.ui.swing.drawingarea.IDiagramEngine;
 import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
-import com.tomsawyer.editor.TSEFont;
 import com.tomsawyer.editor.TSENode;
 import com.tomsawyer.editor.graphics.TSEGraphics;
 import org.netbeans.modules.uml.ui.support.TSSide;
@@ -262,9 +261,11 @@ public class ETComponentDrawEngine extends ETContainerDrawEngine implements ICom
       switch (nKind)
       {
          case IGraphEventKind.GEK_PRE_MOVE :
+            this.selectAllPorts(true, true, true);
+            break;
          case IGraphEventKind.GEK_PRE_DELETEGATHERSELECTED :
             // Select the ports connected to this component
-            this.selectAllPorts(true, true);
+            this.selectAllPorts(true, false, false);
             break;
          case IGraphEventKind.GEK_POST_MOVE :
          case IGraphEventKind.GEK_DELETECANCELED :
@@ -602,13 +603,13 @@ public class ETComponentDrawEngine extends ETContainerDrawEngine implements ICom
     */
    public void selectAllPorts(boolean bSelect)
    {
-      selectAllPorts(bSelect, false);
+      selectAllPorts(bSelect, false, false);
    }
 
    /* (non-Javadoc)
     * @see org.netbeans.modules.uml.ui.products.ad.drawengines.IComponentDrawEngine#selectAllPorts(boolean)
     */
-   public void selectAllPorts(boolean bSelect, boolean firePreMoveEvent)
+   public void selectAllPorts(boolean bSelect, boolean firePreMoveEvent, boolean includeLollypopInterfaces)
    {
       ETList < IPresentationElement > ports = getPorts();
 
@@ -619,37 +620,38 @@ public class ETComponentDrawEngine extends ETContainerDrawEngine implements ICom
          while (iter.hasNext())
          {
             IPresentationElement thisPort = iter.next();
-
             TSENode portNode = TypeConversions.getOwnerNode(thisPort);
-
             if (portNode != null)
             {				
                portNode.setSelected(bSelect);
-
-               // Now make sure the interface lollypops are selected as well
-               ETList < IETGraphObject > interfaces = getLollypopInterfacesControlledByPort(portNode);
-
-               if (interfaces != null && interfaces.getCount() > 0)
+               
+               if(includeLollypopInterfaces) 
                {
-                  Iterator < IETGraphObject > iterator = interfaces.iterator();
-
-                  while (iterator.hasNext())
+                  // Now make sure the interface lollypops are selected as well
+                  ETList < IETGraphObject > interfaces = getLollypopInterfacesControlledByPort(portNode);
+                  
+                  if (interfaces != null && interfaces.getCount() > 0)
                   {
-                     IETGraphObject etGraphObject = iterator.next();
-
-                     if (etGraphObject != null)
+                     Iterator < IETGraphObject > iterator = interfaces.iterator();
+                     
+                     while (iterator.hasNext())
                      {
-                        TSENode ownerNode = TypeConversions.getOwnerNode(etGraphObject);
-
-                        if (ownerNode != null)
+                        IETGraphObject etGraphObject = iterator.next();
+                        
+                        if (etGraphObject != null)
                         {
-									etGraphObject.getEngine().invalidate();
-                           ownerNode.setSelected(bSelect);
-
-                           if (firePreMoveEvent)
+                           TSENode ownerNode = TypeConversions.getOwnerNode(etGraphObject);
+                           
+                           if (ownerNode != null)
                            {
-                              IETGraphObject interfaceGraphObject = TypeConversions.getETGraphObject(ownerNode);
-                              interfaceGraphObject.onGraphEvent(IGraphEventKind.GEK_PRE_MOVE);
+                              etGraphObject.getEngine().invalidate();
+                              ownerNode.setSelected(bSelect);
+                              
+                              if (firePreMoveEvent)
+                              {
+                                 IETGraphObject interfaceGraphObject = TypeConversions.getETGraphObject(ownerNode);
+                                 interfaceGraphObject.onGraphEvent(IGraphEventKind.GEK_PRE_MOVE);
+                              }
                            }
                         }
                      }
