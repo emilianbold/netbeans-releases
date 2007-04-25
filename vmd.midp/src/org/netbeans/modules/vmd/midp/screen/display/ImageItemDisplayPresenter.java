@@ -25,6 +25,7 @@ import org.netbeans.modules.vmd.midp.components.items.ImageItemCD;
 
 import javax.swing.*;
 
+
 /**
  *
  * @author Anton Chechel
@@ -33,7 +34,7 @@ import javax.swing.*;
 public class ImageItemDisplayPresenter extends ItemDisplayPresenter {
     
     private JLabel label;
-
+    
     public ImageItemDisplayPresenter() {
         label = new JLabel();
         setContentComponent(label);
@@ -43,7 +44,17 @@ public class ImageItemDisplayPresenter extends ItemDisplayPresenter {
         super.reload(deviceInfo);
         
         DesignComponent imageComponent = getComponent().readProperty(ImageItemCD.PROP_IMAGE).getComponent();
+        String alternText = (String) getComponent().readProperty(org.netbeans.modules.vmd.midp.components.items.ImageItemCD.PROP_ALT_TEXT).getPrimitiveValue();
         Icon icon = ScreenSupport.getIconFromImageComponent(imageComponent);
-        label.setIcon(icon);
+        if (icon != null) {
+            label.setText(null);
+            label.setIcon(icon);
+        } else if (alternText!= null) {
+            label.setText(alternText); //NOI18N 
+            label.setIcon(null);
+        } else {
+            label.setText("<no image loaded>"); //NOI18N 
+            label.setIcon(null);
+        }
     }
 }
