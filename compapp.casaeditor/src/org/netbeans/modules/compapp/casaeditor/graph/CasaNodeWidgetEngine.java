@@ -41,12 +41,7 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
     
     public static final int ARROW_PIN_WIDTH           = 25;
     public static final int MARGIN_SE_ROUNDED_RECTANGLE = ARROW_PIN_WIDTH * 77 / 100;
-    
     private static final int PIN_VERTICAL_GAP         = 5;
-    
-    private static final int INVISIBLE_WRAPPER_OFFSET = 10;
-    private static final int MINIMUM_SE_NODE_HEIGHT   = 20;
-    private static final int MINIMUM_SE_NODE_WIDTH    = 120;
     
     // The amount of space below the widget,
     // to help visually separate it from other widgets that might
@@ -54,12 +49,8 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
     private static final int TRAILING_VERTICAL_GAP    = 4;
     
     private CasaEngineTitleWidget mTitleWidget;
-    private String mNodeType;
-    
-    private Dimension mPreviousHolderSize = new Dimension();
     private StateModel mStateModel = new StateModel(2);
     private Anchor mNodeAnchor = new CasaNodeAnchor(this);
-
     private boolean mIsHighlighted;
     
     
@@ -100,12 +91,12 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
             public Rectangle getClipRect() {
                 Rectangle clientArea = mContainerWidget.getClientArea();
                 Rectangle gradientRect = new Rectangle();
-
+                
                 gradientRect.x = clientArea.x + MARGIN_SE_ROUNDED_RECTANGLE;
                 gradientRect.y = clientArea.y ;
                 gradientRect.width = clientArea.width - MARGIN_SE_ROUNDED_RECTANGLE - MARGIN_SE_ROUNDED_RECTANGLE;
                 gradientRect.height = clientArea.height;
-
+                
                 return gradientRect;
             }
             public boolean isRounded() {
@@ -136,9 +127,9 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
                 }
             }
         };
-
+        
         mContainerWidget = new PainterWidget(
-                scene, 
+                scene,
                 new BorderedRectangularPainter(provider, customWidgetPainter));
         mContainerWidget.setOpaque(false);
         mContainerWidget.addChild(mTitleWidget);
@@ -148,7 +139,11 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
                 PIN_VERTICAL_GAP));
         addChild(mContainerWidget);
     }
-
+    
+    
+    private Dimension mPreviousHolderSize = new Dimension();
+    private static final int MINIMUM_SE_NODE_HEIGHT   = 20;
+    private static final int MINIMUM_SE_NODE_WIDTH    = 120;
     
     protected void notifyAdded() {
         super.notifyAdded();
@@ -199,7 +194,7 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
     public Rectangle getEntireBounds() {
         Dimension d = getBounds().getSize();
         return new Rectangle(
-                getLocation(), 
+                getLocation(),
                 new Dimension(d.width, d.height + TRAILING_VERTICAL_GAP));
     }
     
@@ -207,7 +202,6 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
      * Sets all node properties at once.
      */
     public void setNodeProperties(String nodeName, String nodeType) {
-        mNodeType = nodeType;
         boolean hasNodeName = nodeName != null && nodeName.length() > 0;
         boolean hasNodeType = nodeType != null && nodeType.length() > 0;
         if (hasNodeType && hasNodeName) {
@@ -231,17 +225,15 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
         for (Widget child : mContainerWidget.getChildren()) {
             if (child instanceof CasaPinWidget) {
                 ((CasaPinWidget) child).updateBounds(isMinimized);
+            } else if (child instanceof CasaEngineTitleWidget) {
+                ((CasaEngineTitleWidget) child).updateBounds(isMinimized);
             }
         }
-        mTitleWidget.updateBounds(isMinimized);
-        mContainerWidget.setPreferredBounds(null);
-        setPreferredBounds(null);
         mContainerWidget.setPreferredBounds(isMinimized ? mTitleWidget.getPreferredBounds() : null);
-        getScene().revalidate();
+        setPreferredBounds(null);
         getScene().validate();
-        mPreviousHolderSize = new Dimension();
     }
-
+    
     protected Color getBackgroundColor() {
         return CasaFactory.getCasaCustomizer().getCOLOR_REGION_ENGINE();
     }
@@ -265,7 +257,7 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
     public void setTitleColor(Color color) {
         mTitleWidget.setTitleColor(color);
     }
-
+    
     
     public void initializeGlassLayer(LayerWidget layer) {
     }
@@ -288,15 +280,15 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
         setPinColor(getPinColor());
         mContainerWidget.setPreferredBounds(null);
     }
-
+    
     /*
-     * mPinsHolderWidget is having a mTitleWidget followed by Provide and Consume pin widgets, will be ended by cushioning 
+     * mPinsHolderWidget is having a mTitleWidget followed by Provide and Consume pin widgets, will be ended by cushioning
      * widget. CasaPinWidets need to be from 2nd position to the last but one position.
-     * 
+     *
      * Provide need to be added at the last of provide pins and same is true for consume pins.
-     * 
+     *
      * CshioningWidget will be added only when there is a CasaPinWidget, to avoid an empty space when there are no pins.
-     *  
+     *
      */
     private void addPinWithOrdering(CasaPinWidget widget) {
         if(mContainerWidget.getChildren().size() <= 1) {       //Add cushoningWidget only once!
@@ -345,7 +337,7 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
         }
         return anchor;
     }
-
+    
     public boolean getConfigurationStatus(){
         return mTitleWidget.getConfigurationStatus();
     }
@@ -358,7 +350,7 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
         super.setEditable(bValue);
         mTitleWidget.setEditable(bValue);
     }
-
+    
     public Font getPinFont() {
         return null;
     }
@@ -386,7 +378,7 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
             repaint();
         }
     }
-
+    
     public boolean isHighlighted() {
         return mIsHighlighted;
     }

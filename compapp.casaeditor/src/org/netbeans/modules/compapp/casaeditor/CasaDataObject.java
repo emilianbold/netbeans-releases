@@ -30,7 +30,6 @@ import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphUtilities;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiBuildListener;
 import org.netbeans.modules.print.spi.PrintProvider;
@@ -178,11 +177,15 @@ public class CasaDataObject extends MultiDataObject {
                 CasaModelGraphUtilities.setSceneEnabled(editorSupport.getScene(), false);
             }
         }
-        public void buildCompleted() {
+        public void buildCompleted(boolean isSuccessful) {
             mIsBuilding = false;
-            // Do not set the scene enabled at this point, because the build
-            // is still processing the model. We simply set the scene enabled
-            // at render time, which is a safe time to allow editability.
+            if (!isSuccessful) {
+                CasaModelGraphUtilities.setSceneEnabled(editorSupport.getScene(), true);
+            } else {
+                // Do not set the scene enabled at this point, because the build
+                // is still processing the model. We simply set the scene enabled
+                // at render time, which is a safe time to allow editability.
+            }
         }
     }
 }

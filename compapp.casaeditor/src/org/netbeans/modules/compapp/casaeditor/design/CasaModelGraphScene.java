@@ -563,6 +563,10 @@ implements PropertyChangeListener {
         }
         userSelectionSuggested(objectsToSelect, false);
         
+        transferFocusToGraph();
+    }
+    
+    private void transferFocusToGraph() {
         try {
             mIsInternalNodeChange = true;
             // A scene selection should also cause the graph to have focus.
@@ -572,23 +576,19 @@ implements PropertyChangeListener {
             // Otherwise, the user will first need to transfer focus to the graph
             // explicitly, and then the user will be able to access all mouse
             // actions (such as creating connections).
-            transferFocusToGraph();
+            Mode editorMode = WindowManager.getDefault().findMode(CasaDataEditorSupport.EDITOR_MODE);
+            for (TopComponent tc : editorMode.getTopComponents()) {
+                DataObject dataObject = tc.getLookup().lookup(DataObject.class);
+                if (dataObject == mDataObject) {
+                    tc.requestActive();
+                    break;
+                }
+            }
+            if (!getView().hasFocus()) {
+                getView().requestFocusInWindow();
+            }
         } finally {
             mIsInternalNodeChange = false;
-        }
-    }
-    
-    private void transferFocusToGraph() {
-        Mode editorMode = WindowManager.getDefault().findMode(CasaDataEditorSupport.EDITOR_MODE);
-        for (TopComponent tc : editorMode.getTopComponents()) {
-            DataObject dataObject = tc.getLookup().lookup(DataObject.class);
-            if (dataObject == mDataObject) {
-                tc.requestActive();
-                break;
-            }
-        }
-        if (!getView().hasFocus()) {
-            getView().requestFocusInWindow();
         }
     }
     
