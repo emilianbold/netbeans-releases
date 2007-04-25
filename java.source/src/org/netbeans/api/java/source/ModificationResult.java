@@ -30,6 +30,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.cookies.SaveCookie;
 import org.openide.text.PositionRef;
 
 /**
@@ -81,6 +82,12 @@ public final class ModificationResult {
         // found document.
         if (ec != null && out == null) {
             Document doc = ec.getDocument();
+            boolean save = true;
+            if (doc != null) {
+                save = false;
+            } else {
+                doc = ec.openDocument();
+            }
             if (doc != null) {
                 if (doc instanceof BaseDocument)
                     ((BaseDocument)doc).atomicLock();
@@ -110,6 +117,10 @@ public final class ModificationResult {
                 } finally {
                     if (doc instanceof BaseDocument)
                         ((BaseDocument)doc).atomicUnlock();
+                }
+                if (save) {
+                	SaveCookie saveCookie = dObj.getLookup().lookup(SaveCookie.class);
+                	saveCookie.save();
                 }
                 return;
             }
