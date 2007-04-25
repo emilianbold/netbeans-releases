@@ -12,8 +12,9 @@
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  * 
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.compapp.casaeditor.graph;
 
