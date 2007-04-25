@@ -28,11 +28,13 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -92,7 +94,7 @@ public class BinaryAnalyser implements LowMemoryListener {
     private final Map<String,List<String>> refs = new HashMap<String,List<String>>();
     private final Set<String> toDelete = new HashSet<String> ();
     private final AtomicBoolean lowMemory;
-    private boolean cacheCleared;
+    private Continuation cont;
 
     public BinaryAnalyser (Index index) {
        assert index != null;
@@ -104,86 +106,106 @@ public class BinaryAnalyser implements LowMemoryListener {
      * @param URL the classpath root, either a folder or an archive file.
      *     
      */
-    public final void analyse (final URL root, final ProgressHandle handle) throws IOException, IllegalArgumentException  {
+    public final boolean start (final URL root, final ProgressHandle handle, final AtomicBoolean cancel) throws IOException, IllegalArgumentException  {
         assert root != null;        
-            ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void> () {
-                public Void run () throws IOException {                
-                LowMemoryNotifier.getDefault().addLowMemoryListener (BinaryAnalyser.this);
-                try {
-                    String mainP = root.getProtocol();
-                    if ("jar".equals(mainP)) {          //NOI18N
-                        URL innerURL = FileUtil.getArchiveFile(root);
-                        if ("file".equals(innerURL.getProtocol())) {  //NOI18N
-                            //Fast way
-                            File archive = new File (URI.create(innerURL.toExternalForm()));
-                            if (archive.exists() && archive.canRead()) {
-                                if (handle != null) {
-                                    handle.setDisplayName(String.format (NbBundle.getMessage(BinaryAnalyser.class,"MSG_Scannig"),archive.getAbsolutePath()));
-                                }
-                                if (!isUpToDate(null,archive.lastModified())) {
-                                    index.clear();
-                                    if (handle != null) { //Tests don't provide handle
-                                        handle.setDisplayName (String.format(NbBundle.getMessage(RepositoryUpdater.class,"MSG_Analyzing"),archive.getAbsolutePath()));
-                                    }
-                                    final ZipFile zipFile = new ZipFile(archive);
-                                    try {
-                                        prebuildArgs(zipFile, root);
-                                        analyseArchive( zipFile );
-                                    }
-                                    finally {
-                                        zipFile.close();
-                                    }                                    
-                                }
-                            }
+        assert cont == null;
+        LowMemoryNotifier.getDefault().addLowMemoryListener (BinaryAnalyser.this);
+        try {
+            String mainP = root.getProtocol();
+            if ("jar".equals(mainP)) {          //NOI18N
+                URL innerURL = FileUtil.getArchiveFile(root);
+                if ("file".equals(innerURL.getProtocol())) {  //NOI18N
+                    //Fast way
+                    File archive = new File (URI.create(innerURL.toExternalForm()));
+                    if (archive.exists() && archive.canRead()) {
+                        if (handle != null) {
+                            handle.setDisplayName(String.format (NbBundle.getMessage(BinaryAnalyser.class,"MSG_Scannig"),archive.getAbsolutePath()));
                         }
-                        else {
-                            FileObject rootFo =  URLMapper.findFileObject(root);
-                            if (rootFo != null) {
-                                if (handle != null) {
-                                    handle.setDisplayName(String.format (NbBundle.getMessage(BinaryAnalyser.class,"MSG_Scannig"),FileUtil.getFileDisplayName(rootFo)));
-                                }
-                                if (!isUpToDate(null,rootFo.lastModified().getTime())) {
-                                    index.clear();
-                                    if (handle != null) { //Tests don't provide handle
-                                        handle.setDisplayName (String.format(NbBundle.getMessage(RepositoryUpdater.class,"MSG_Analyzing"),FileUtil.getFileDisplayName(rootFo)));
-                                    }
-                                    analyseFileObjects(rootFo);
-                                }
-                            }
-                        }
-                    }
-                    else if ("file".equals(mainP)) {    //NOI18N
-                        //Fast way
-                        File rootFile = new File (URI.create(root.toExternalForm()));
-                        if (rootFile.isDirectory()) {
-                            String path = rootFile.getAbsolutePath ();
-                            if (path.charAt(path.length()-1) != File.separatorChar) {
-                                path = path + File.separatorChar;
-                            }
+                        if (!isUpToDate(null,archive.lastModified())) {
+                            index.clear();
                             if (handle != null) { //Tests don't provide handle
-                                handle.setDisplayName (String.format(NbBundle.getMessage(RepositoryUpdater.class,"MSG_Analyzing"),rootFile.getAbsolutePath()));
+                                handle.setDisplayName (String.format(NbBundle.getMessage(RepositoryUpdater.class,"MSG_Analyzing"),archive.getAbsolutePath()));
                             }
-                            cacheCleared = false;
-                            analyseFolder(rootFile, path);
+                            final ZipFile zipFile = new ZipFile(archive);
+                            prebuildArgs(zipFile, root);
+                            final Enumeration<? extends ZipEntry> e = zipFile.entries();        
+                            cont = new ZipContinuation (zipFile, e, cancel);
+                            return cont.execute();                                        
                         }
                     }
-                    else {
-                        FileObject rootFo =  URLMapper.findFileObject(root);
-                        if (rootFo != null) {
+                }
+                else {
+                    FileObject rootFo =  URLMapper.findFileObject(root);
+                    if (rootFo != null) {
+                        if (handle != null) {
+                            handle.setDisplayName(String.format (NbBundle.getMessage(BinaryAnalyser.class,"MSG_Scannig"),FileUtil.getFileDisplayName(rootFo)));
+                        }
+                        if (!isUpToDate(null,rootFo.lastModified().getTime())) {
+                            index.clear();
                             if (handle != null) { //Tests don't provide handle
                                 handle.setDisplayName (String.format(NbBundle.getMessage(RepositoryUpdater.class,"MSG_Analyzing"),FileUtil.getFileDisplayName(rootFo)));
                             }
-                            index.clear();
-                            analyseFileObjects(rootFo);
+                            Enumeration<? extends FileObject> todo = rootFo.getData(true);
+                            cont = new FileObjectContinuation (todo,cancel);
+                            return cont.execute();
                         }
                     }
-                } finally {
-                    LowMemoryNotifier.getDefault().removeLowMemoryListener(BinaryAnalyser.this);
                 }
-                store();
-                return null;
-            }});
-    }        
+            }
+            else if ("file".equals(mainP)) {    //NOI18N
+                //Fast way
+                File rootFile = new File (URI.create(root.toExternalForm()));
+                if (rootFile.isDirectory()) {
+                    String path = rootFile.getAbsolutePath ();
+                    if (path.charAt(path.length()-1) != File.separatorChar) {
+                        path = path + File.separatorChar;
+                    }
+                    if (handle != null) { //Tests don't provide handle
+                        handle.setDisplayName (String.format(NbBundle.getMessage(RepositoryUpdater.class,"MSG_Analyzing"),rootFile.getAbsolutePath()));
+                    }
+                    LinkedList<File> todo = new LinkedList<File> ();
+                    if (rootFile.isDirectory() && rootFile.canRead()) {
+                        File[] children = rootFile.listFiles();  
+                        if (children != null) {
+                            todo.addAll(Arrays.asList(children));
+                        }
+                    }                    
+                    cont = new FolderContinuation (todo, path, cancel);
+                    return cont.execute();
+                }
+            }
+            else {
+                FileObject rootFo =  URLMapper.findFileObject(root);
+                if (rootFo != null) {
+                    if (handle != null) { //Tests don't provide handle
+                        handle.setDisplayName (String.format(NbBundle.getMessage(RepositoryUpdater.class,"MSG_Analyzing"),FileUtil.getFileDisplayName(rootFo)));
+                    }
+                    index.clear();
+                    Enumeration<? extends FileObject> todo = rootFo.getData(true);
+                    cont = new FileObjectContinuation (todo,cancel);
+                    return cont.execute();
+                }
+            }
+            return true;
+        } finally {
+            LowMemoryNotifier.getDefault().removeLowMemoryListener(BinaryAnalyser.this);
+        }                
+    }
+    
+    public boolean resume () throws IOException {
+        assert cont != null;
+        return cont.execute();
+    }
+    
+    
+    public void finish () throws IOException {
+        if (cont != null) {
+            cont.finish();
+            cont = null;
+        }
+        store();
+    }
+    
     
         /** Analyses a folder 
      *  @param folder to analyze
@@ -191,53 +213,56 @@ public class BinaryAnalyser implements LowMemoryListener {
      *  but the {@link URL#toExternalForm} from some strange reason does not cache result,
      *  the String type is faster.
      */
-    private void analyseFolder (final File  folder, final String rootPath) throws IOException {
-        if (folder.exists() && folder.canRead()) {
-            File[] children = folder.listFiles();  
-            for (File file : children) {
-                if (file.isDirectory()) {
-                    analyseFolder(file, rootPath);
+    private boolean analyseFolder (final LinkedList<File>  todo, final String rootPath, final AtomicBoolean cancel) throws IOException {
+        while (!todo.isEmpty()) {
+            File file = todo.removeFirst();
+            if (file.isDirectory() && file.canRead()) {
+                File[] c = file.listFiles();
+                if (c!= null) {
+                    todo.addAll(Arrays.asList (c));
                 }
-                else if (this.accepts(file.getName())) {
-                    String filePath = file.getAbsolutePath();
-                    long fileMTime = file.lastModified();
-                    int dotIndex = filePath.lastIndexOf('.');
-                    int slashIndex = filePath.lastIndexOf('/');
-                    int endPos;
-                    if (dotIndex>slashIndex) {
-                        endPos = dotIndex;
+            }
+            else if (this.accepts(file.getName())) {
+                String filePath = file.getAbsolutePath();
+                long fileMTime = file.lastModified();
+                int dotIndex = filePath.lastIndexOf('.');
+                int slashIndex = filePath.lastIndexOf('/');
+                int endPos;
+                if (dotIndex>slashIndex) {
+                    endPos = dotIndex;
+                }
+                else {
+                    endPos = filePath.length();
+                }
+                String relativePath = FileObjects.convertFolder2Package (filePath.substring(rootPath.length(), endPos));
+                if (this.accepts(file.getName()) && !isUpToDate (relativePath, fileMTime)) {
+                    this.toDelete.add(relativePath);
+                    InputStream in = new BufferedInputStream (new FileInputStream (file));
+                    try {
+                        analyse (in);
+                    } catch (InvalidClassFormatException icf) {
+                        Logger.getLogger(BinaryAnalyser.class.getName()).info("Invalid class file format: "+file.getAbsolutePath());      //NOI18N
                     }
-                    else {
-                        endPos = filePath.length();
+                    finally {
+                        in.close();
                     }
-                    String relativePath = FileObjects.convertFolder2Package (filePath.substring(rootPath.length(), endPos));
-                    if (this.accepts(file.getName()) && !isUpToDate (relativePath, fileMTime)) {                        
-                        if (!cacheCleared) {
-                            this.index.clear();                            
-                            cacheCleared = true;
-                        }
-                        InputStream in = new BufferedInputStream (new FileInputStream (file));
-                        try {
-                            analyse (in);
-                        } catch (InvalidClassFormatException icf) {
-                            Logger.getLogger(BinaryAnalyser.class.getName()).info("Invalid class file format: "+file.getAbsolutePath());      //NOI18N
-                        }
-                        finally {
-                            in.close();
-                        }
-                        if (this.lowMemory.getAndSet(false)) {
-                            this.store();
-                        }
+                    if (this.lowMemory.getAndSet(false)) {
+                        this.store();
                     }
                 }
             }
+            if (cancel.getAndSet(false)) {
+                this.store();
+                return false;
+            }
         }
+        return true;
     }
     
         //Private helper methods
     /** Analyses a zip file */
-    private void analyseArchive ( ZipFile zipFile ) throws IOException {        
-        for( Enumeration e = zipFile.entries(); e.hasMoreElements(); ) {
+    private boolean analyseArchive (final ZipFile zipFile, final Enumeration<? extends ZipEntry> e, AtomicBoolean cancel) throws IOException {
+        while(e.hasMoreElements()) {
             ZipEntry ze = (ZipEntry)e.nextElement();
             if ( !ze.isDirectory()  && this.accepts(ze.getName()))  {
                 InputStream in = zipFile.getInputStream( ze );
@@ -256,15 +281,18 @@ public class BinaryAnalyser implements LowMemoryListener {
                     this.store();
                 }
             }
-        }        
+            if (cancel.getAndSet(false)) {
+                this.store();
+                return false;
+            }
+        }
+        return true;
     }
     
-    private void analyseFileObjects (FileObject folder) throws IOException {
-        for (FileObject fo : folder.getChildren()) {
-            if (fo.isFolder()) {
-                analyseFileObjects (fo);
-            }
-            else if (this.accepts(fo.getName())) {
+    private boolean analyseFileObjects (final Enumeration<? extends FileObject> todo, final AtomicBoolean cancel) throws IOException {
+        while (todo.hasMoreElements()) {            
+            FileObject fo = todo.nextElement();            
+            if (this.accepts(fo.getName())) {
                 InputStream in = new BufferedInputStream (fo.getInputStream());
                 try {
                     analyse (in);
@@ -278,7 +306,12 @@ public class BinaryAnalyser implements LowMemoryListener {
                     this.store();
                 }
             }
+            if (cancel.getAndSet(false)) {
+                this.store();
+                return false;
+            }
         }
+        return true;
     }
     
     //Cleans up usages of deleted class
@@ -304,7 +337,7 @@ public class BinaryAnalyser implements LowMemoryListener {
         return "CLASS".equalsIgnoreCase(name.substring(index+1));  // NOI18N
     }
     
-    private void analyse (InputStream inputStream ) throws IOException {
+    private void analyse (final InputStream inputStream) throws IOException {
         final ClassFile classFile = new ClassFile(inputStream);
         final ClassName className = classFile.getName ();        
         final String classNameStr = nameToString (className);
@@ -552,4 +585,80 @@ public class BinaryAnalyser implements LowMemoryListener {
             }
         }
     }
+    
+    
+    private static interface Continuation {
+        public boolean execute () throws IOException;
+        
+        public void finish () throws IOException;
+    }
+    
+    private class ZipContinuation implements Continuation {
+        
+        private final ZipFile zipFile;
+        private final Enumeration<? extends ZipEntry> entries;
+        private final AtomicBoolean cancel;
+        
+        public ZipContinuation (final ZipFile zipFile, final Enumeration<? extends ZipEntry> entries, final AtomicBoolean cancel) {
+            assert zipFile != null;
+            assert entries != null;
+            assert cancel != null;
+            this.zipFile = zipFile;
+            this.entries = entries;
+            this.cancel = cancel;
+        }
+        
+        public boolean execute () throws IOException {
+            return analyseArchive(zipFile, entries, cancel);
+        }
+        
+        public void finish () throws IOException {
+            this.zipFile.close();
+        }
+    }
+    
+    private class FolderContinuation implements Continuation {
+        
+        private final LinkedList<File> todo;
+        private final String rootPath;
+        private final AtomicBoolean cancel;
+        
+        public FolderContinuation (final LinkedList<File> todo, final String rootPath, final AtomicBoolean cancel) {
+            assert todo != null;
+            assert rootPath != null;
+            assert cancel != null;
+            this.todo = todo;
+            this.rootPath = rootPath;
+            this.cancel = cancel;
+        }
+        
+        public boolean execute () throws IOException {            
+            return analyseFolder(todo, rootPath, cancel);
+        }
+        
+        public void finish () throws IOException {                        
+        }
+    }
+    
+    private class FileObjectContinuation implements  Continuation {
+        
+        private final Enumeration<? extends FileObject> todo;
+        private final AtomicBoolean cancel;
+        
+        public FileObjectContinuation (final Enumeration<? extends FileObject> todo, final AtomicBoolean cancel) {
+            assert todo != null;
+            assert cancel != null;
+            this.todo = todo;
+            this.cancel = cancel;
+        }
+        
+        public boolean execute () throws IOException {
+            return analyseFileObjects(todo, cancel);
+        }
+        
+        public void finish () throws IOException {
+            
+        }
+    }
+    
 }

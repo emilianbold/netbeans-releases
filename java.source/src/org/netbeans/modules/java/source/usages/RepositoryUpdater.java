@@ -847,6 +847,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         private final Set<URI> dirtyCrossFiles;        
         private final Set<URL> ignoreExcludes;
         private final AtomicBoolean canceled;
+        private BinaryAnalyser activeBinaryAnalyzer;
         
         public CompileWorker (Work work ) {
             assert work != null;
@@ -936,6 +937,23 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         case COMPILE_CONT:
                             boolean completed = false;
                             try {
+                                if (activeBinaryAnalyzer != null) {
+                                    boolean baFinished = true;
+                                    try {
+                                        baFinished = activeBinaryAnalyzer.resume();
+                                    } finally {
+                                        if (baFinished) {
+                                            activeBinaryAnalyzer.finish();
+                                            activeBinaryAnalyzer = null;
+                                        }
+                                        else {
+                                            CompileWorker.this.work = new Work (WorkType.COMPILE_CONT,null);
+                                            JavaSourceAccessor.INSTANCE.runSpecialTask (CompileWorker.this,JavaSource.Priority.MAX);
+                                            continuation = true;
+                                            return null;
+                                        }
+                                    }
+                                }
                                 if (!scanRoots()) {
                                     CompileWorker.this.work = new Work (WorkType.COMPILE_CONT,null);
                                     JavaSourceAccessor.INSTANCE.runSpecialTask (CompileWorker.this,JavaSource.Priority.MAX);
@@ -1148,7 +1166,19 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     final ClassIndexImpl ci = ClassIndexManager.getDefault().createUsagesQuery(rootURL,false);                                        
                     RepositoryUpdater.this.scannedBinaries.add (rootURL);                    
                     long startT = System.currentTimeMillis();
-                    ci.getBinaryAnalyser().analyse(rootURL, handle);
+                    BinaryAnalyser ba = ci.getBinaryAnalyser();
+                    boolean finished = true;
+                    try {
+                        finished = ba.start(rootURL, handle, canceled);
+                    } finally {
+                        if (finished) {
+                            ba.finish();
+                        }
+                        else {
+                            activeBinaryAnalyzer = ba;
+                            return false;
+                        }
+                    }
                     long endT = System.currentTimeMillis();
                     if (PERF_TEST) {
                         try {
@@ -1589,8 +1619,17 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             CachingArchiveProvider.getDefault().clearArchive(root);                       
             File cacheFolder = Index.getClassFolder(root);
             FileObjects.deleteRecursively(cacheFolder);
-            final BinaryAnalyser ba = ClassIndexManager.getDefault().createUsagesQuery(root, false).getBinaryAnalyser();
-            ba.analyse(root, handle);
+            final BinaryAnalyser ba = ClassIndexManager.getDefault().createUsagesQuery(root, false).getBinaryAnalyser();            
+            //todo: may also need interruption.
+            try {
+                boolean finished = ba.start(root, handle, new AtomicBoolean(false));
+                while (!finished) {
+                    finished = ba.resume();
+                }
+            } finally {
+                ba.finish();
+            }
+            
         }                
         
         private void recompile() throws IOException {
@@ -1801,7 +1840,6 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 delay.wait();
             }
         }
-        
         return waited;
     }
     
