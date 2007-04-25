@@ -64,6 +64,9 @@ import org.netbeans.modules.sql.project.dbmodel.DBMetaData;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JFrame;
 import javax.wsdl.Definition;
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -79,9 +82,10 @@ public class GenerateWSDL extends Task {
     private String mSrcDirectoryLocation;
     private String mBuildDirectoryLocation;
     private String dbURL = "";
-	private String jndi_name = "";
+    private String jndi_name = "";
     private static final String CONNECTION_FILE = "connectivityInfo.xml";
     private String engineFileName = null;
+    private JFrame frame;
     DatabaseConnection dbConn = null;
     Connection conn = null;
 
@@ -140,7 +144,42 @@ public class GenerateWSDL extends Task {
     }
 
     public void execute() throws BuildException {
-    	
+    	File srcDir = new File(mSrcDirectoryLocation);
+    	File bldDir = new File(mBuildDirectoryLocation+"/META-INF");
+        
+    	if (!srcDir.exists()) {
+            throw new BuildException("Directory " + mSrcDirectoryLocation + " does not exit.");
+        }
+    	if (!bldDir.exists()) {
+            throw new BuildException("Directory " + mBuildDirectoryLocation + " does not exit. Please generate the WSDL");
+        }
+        String srcDirPath = srcDir.getAbsolutePath();
+        String bldDirPath = bldDir.getAbsolutePath();
+        
+        if (srcDir.isDirectory()) {
+        	String extensions[] = new String[1];
+        	extensions[0]=".wsdl";
+        	FileFilter filter=new ExtensionFilter(extensions);
+        	File[] fileNdirs = srcDir.listFiles(filter);
+            if(fileNdirs.length<=0){
+            	JOptionPane.showMessageDialog(frame,
+                        "Please Generate the WSDL using \"Generate WSDL...\" option, before building the application.",
+                        "Warning",
+                        JOptionPane.WARNING_MESSAGE);
+            }
+        }
+        if (bldDir.isDirectory()) {
+        	String extensions[] = new String[1];
+        	extensions[0]=".xml";
+        	FileFilter filter=new ExtensionFilter(extensions);
+        	File[] fileNdirs = bldDir.listFiles(filter);
+            if(fileNdirs.length<=0){
+            	JOptionPane.showMessageDialog(frame,
+                        "JBI.xml is not generated, please generate the WSDL.",
+                        "Warning",
+                        JOptionPane.WARNING_MESSAGE);
+            }
+        }
     }
     
     public void execute1() throws BuildException {
