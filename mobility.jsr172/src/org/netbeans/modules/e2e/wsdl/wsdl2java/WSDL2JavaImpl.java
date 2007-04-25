@@ -69,7 +69,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
         wsdlParser = new WSDLParser();        
     }
 
-    public void generate() {
+    public boolean generate() {
         uniqueTypeName = new HashMap();
         
         try {
@@ -92,9 +92,12 @@ public class WSDL2JavaImpl implements WSDL2Java {
             }
         } catch( WSDLException e ) {
             e.printStackTrace();
+            return false;
         } catch( Exception e ) {
             e.printStackTrace();
+            return false;
         }
+        return true;
     }
     
     public List<ValidationResult> validate() {

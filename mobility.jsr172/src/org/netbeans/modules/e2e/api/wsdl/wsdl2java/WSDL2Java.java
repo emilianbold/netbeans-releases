@@ -20,7 +20,7 @@ public interface WSDL2Java {
     /**
      *  Processes wsdl and writes output files 
      */
-    public void generate();    
+    public boolean generate();    
     
     /**
      * Returns validation result from validation

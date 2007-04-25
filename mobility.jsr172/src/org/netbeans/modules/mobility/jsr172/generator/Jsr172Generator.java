@@ -101,10 +101,7 @@ public class Jsr172Generator {
             
             final String wsdlUrl = f.toURI().toString();
             System.err.println(" - WSDL url - " + wsdlUrl );
-             
-//            System.setProperty( "http.proxyHost", "webcache.holland.sun.com" );
-//            System.setProperty( "http.proxyPort", "8080" );
-                        
+                                     
             WSDL2Java.Configuration config = new WSDL2Java.Configuration();
             config.setWSDLFileName( wsdlUrl );
             config.setOutputDirectory( sg.getRootFolder().getPath());
@@ -116,106 +113,13 @@ public class Jsr172Generator {
                 config.setGenerateDataBinding( properties.getProperty( "DataBinding" ).equals( "true" ));
             }
             
-            wsdl2java.generate();
-//            File tempFile = null;
-//            FileLock flck = null;
-//            try {
-//                ph.progress(NbBundle.getMessage( Jsr172Generator.class, "MSG_GeneratingTempJsr172" )); //NOI18N
-//                tempFile = File.createTempFile("jsr172compile", "xml"); //NOI18N
-//                final FileObject tempFo = FileUtil.toFileObject(FileUtil.normalizeFile(tempFile));
-//                flck = tempFo.lock();
-//                final BufferedOutputStream bos = new BufferedOutputStream(tempFo.getOutputStream(flck));
-//                bos.write(configFileData.getBytes());
-//                bos.close();
-//            } catch (IOException ex) {
-//                ErrorManager.getDefault().notify(ex);
-//            } finally {
-//                if (flck != null){
-//                    flck.releaseLock();
-//                }
-//            }
-//            
-//            final Properties properties = configuration.getProperties();
-//            boolean cldc10 = false;
-//            if( "true".equals( properties.getProperty( "cldc10" ))) { //NOI18N
-//                cldc10 = true;
-//            }
-//            final String[] input = {
-//                "-gen:client", //NOI18N
-//                "-keep", //NOI18N
-//                "-s", //NOI18N
-//                FileUtil.toFile(sg.getRootFolder()).getAbsolutePath(),
-//                "-d", //NOI18N
-//                tempFile.getParent(),
-//                (!cldc10 ? "-cldc1.1" : "-cldc1.0" ), //NOI18N
-//                "-f:wsi", //NOI18N
-//                "-verbose", //NOI18N
-//                tempFile.getAbsolutePath()
-//            };
-//            ph.progress(NbBundle.getMessage( Jsr172Generator.class, "MSG_GeneratingStubs172" )); //NOI18N
-//            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//            final CompileTool172 c172 = new CT(baos);
-//            c172.run(input);
-//            
-//            final Properties p = new Properties();
-//            baos.reset();
-//            //get the model here
-//            final String[] input2 = {"-gen", tempFile.getAbsolutePath()}; //NOI18N
-//            final WSIValidator wsiValidator = new WSIValidator( baos, "wscompile", p ); //NOI18N
-//            wsiValidator.run( input2 );
-//            baos.close();
-//            baos = null;
-//            
-//            refFolder.refresh(false);
-//            final FileObject[] children = refFolder.getChildren();
-//            JavaModel.getJavaRepository().beginTrans(false);
-//            try {
-//                String expectedName = ""; //NOI18N
-//                if (wsiValidator.getJavaInterfaces().size() > 0){
-//                    final JavaInterface jin = wsiValidator.getJavaInterfaces().iterator().next();
-//                    expectedName = jin.getRealName() + "_Stub"; //NOI18N
-//                }
-//                final List<Method> methods = new ArrayList<Method>();
-//                final List<Type> params = new ArrayList<Type>();
-//                for (FileObject child : children ) {
-//                    child.refresh();
-//                    if ("java".equals(child.getExt())){
-//                        final Resource resource = JavaModel.getResource(child);
-//                        final JavaClass jc = (JavaClass) resource.getClassifiers().get(0);
-//                        if (!jc.getName().equals(expectedName)){
-//                            continue;
-//                        }
-//                        methods.clear();
-//                        for ( final JavaInterface ji : wsiValidator.getJavaInterfaces() ) {
-//                            for ( final JavaMethod jm : (List<JavaMethod>)ji.getMethodsList() ) {
-//                                final String name = jm.getName();
-//                                params.clear();
-//                                for ( final JavaParameter elem : (List<JavaParameter>)jm.getParametersList() ) {
-//                                    params.add(JavaModel.getDefaultExtent().getType().resolve(elem.getType().getName()));
-//                                }
-//                                methods.add(jc.getMethod(name, params, false));
-//                            }
-//                        }
-//                        result = new ServiceGeneratorResult(jc, methods.toArray(new Method[methods.size()]), null );
-//                        break;
-//                    }
-//                }
-//            } catch (Exception ex){
-//                ErrorManager.getDefault().notify(ex);
-//            } finally {
-//                JavaModel.getJavaRepository().endTrans();
-//                if (tempFile != null)
-//                    tempFile.delete();
-//            }
-//            
-//            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Jsr172Generator.class,"MSG_Success")); //NOI18N
-//        } catch (Exception ex) {
-//            ErrorManager.getDefault().notify(ex);
-//            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Jsr172Generator.class,"MSG_Failure")); //NOI18N
-//            return null;
-//        } finally {
+            if( wsdl2java.generate()) {
+                StatusDisplayer.getDefault().setStatusText( NbBundle.getMessage( Jsr172Generator.class,"MSG_Success" )); //NOI18N
+            } else {
+                StatusDisplayer.getDefault().setStatusText( NbBundle.getMessage( Jsr172Generator.class,"MSG_Failure" )); //NOI18N
+            }
+            
             ph.finish();
-//        }
         
         return result;
     }
