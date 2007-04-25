@@ -345,7 +345,7 @@ public class TopPanel extends JPanel {
             return;
 
         JPanel pane = new JPanel ();
-        pane.setBorder (BorderFactory.createBevelBorder (BevelBorder.RAISED));
+        pane.setBorder (BorderFactory.createCompoundBorder (BorderFactory.createBevelBorder (BevelBorder.RAISED), BorderFactory.createEmptyBorder (12, 12, 12, 12)));
         pane.setLayout (new GridBagLayout ());
         for (JComponent view : views)
             pane.add (view, new GridBagConstraints (GridBagConstraints.REMAINDER, 0, 1, 1, 1.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets (0, 0, 0, 0), 0, 6));
