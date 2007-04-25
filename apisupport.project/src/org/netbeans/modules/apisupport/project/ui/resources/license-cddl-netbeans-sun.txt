@@ -1,0 +1,18 @@
+${licenseFirst}
+${licensePrefix}The contents of this file are subject to the terms of the Common Development
+${licensePrefix}and Distribution License (the License). You may not use this file except in
+${licensePrefix}compliance with the License.
+${licensePrefix}
+${licensePrefix}You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+${licensePrefix}or http://www.netbeans.org/cddl.txt.
+${licensePrefix}
+${licensePrefix}When distributing Covered Code, include this CDDL Header Notice in each file
+${licensePrefix}and include the License file at http://www.netbeans.org/cddl.txt.
+${licensePrefix}If applicable, add the following below the CDDL Header, with the fields
+${licensePrefix}enclosed by brackets [] replaced by your own identifying information:
+${licensePrefix}"Portions Copyrighted [year] [name of copyright owner]"
+${licensePrefix}
+${licensePrefix}The Original Software is NetBeans. The Initial Developer of the Original
+${licensePrefix}Software is Sun Microsystems, Inc. Portions Copyright 1997-${date?date?string("yyyy")} Sun
+${licensePrefix}Microsystems, Inc. All Rights Reserved.
+${licenseLast}
