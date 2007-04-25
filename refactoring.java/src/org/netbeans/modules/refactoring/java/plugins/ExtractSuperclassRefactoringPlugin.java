@@ -25,6 +25,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.net.URL;
@@ -430,8 +431,17 @@ public class ExtractSuperclassRefactoringPlugin extends RetoucheRefactoringPlugi
                 if (member.group == ExtractSuperclassRefactoring.MemberInfo.Group.FIELD) {
                     ElementHandle<VariableElement> handle = (ElementHandle<VariableElement>) member.handle;
                     VariableElement elm = handle.resolve(wc);
-                    Tree tree = SourceUtils.treeFor(wc, elm);
-                    members.add(tree);
+                    VariableTree tree = (VariableTree) SourceUtils.treeFor(wc, elm);
+                    // TODO: copying the tree is workaround for the issue #101395
+                    // When issue will be correctly claused, copy can be removed
+                    // and original tree added to members.
+                    VariableTree copy = make.Variable(
+                            make.Modifiers(tree.getModifiers().getFlags(), tree.getModifiers().getAnnotations()),
+                            tree.getName(),
+                            tree.getType(),
+                            tree.getInitializer()
+                    );
+                    members.add(copy);
                 } else if (member.group == ExtractSuperclassRefactoring.MemberInfo.Group.METHOD) {
                     ElementHandle<ExecutableElement> handle = (ElementHandle<ExecutableElement>) member.handle;
                     ExecutableElement elm = handle.resolve(wc);
