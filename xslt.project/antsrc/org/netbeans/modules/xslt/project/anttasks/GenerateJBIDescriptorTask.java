@@ -218,6 +218,12 @@ public class GenerateJBIDescriptorTask extends org.apache.tools.ant.Task {
      */
     public void execute() throws BuildException { 
 
+        if (isOldProject()) {
+            OldProjectTransformer oldProjectTransformer = 
+                    new OldProjectTransformer(getSourceDirectory(), getBuildDirectory());
+            oldProjectTransformer.execute();
+        }
+        
         process();
 //        readAndPackageFromProjectCatalog(new File(getSourceDirectory()));
         try {
@@ -226,6 +232,13 @@ public class GenerateJBIDescriptorTask extends org.apache.tools.ant.Task {
             throw new BuildException(ex);
         }
     }
+    
+    // TODO m | r
+    private boolean isOldProject() {
+        File tMapFile = getTransformmapFile();
+        return tMapFile == null || !tMapFile.isFile();
+    }
+    
     // TODO m | r
     private void readAndPackageFromProjectCatalog(File sourceDir) {
         String projectCatalogLocation = new File(CommandlineXsltProjectXmlCatalogProvider.getInstance().getProjectWideCatalogForWizard()).getAbsolutePath();
@@ -444,14 +457,38 @@ public class GenerateJBIDescriptorTask extends org.apache.tools.ant.Task {
             } 
         }
     }
+
+// TODO a    
+//    private void generateTransformmapFromXsltMap() {
+//        File xsltMapFile = getFileInSrc(XsltproConstants.XSLTMAP_XML);
+//    
+//        if (xsltMapFile != null && xsltMapFile.isFile()) {
+//            
+//        }
+//    }
     
-    private File getTransformmapFile() {
+    private File getFileInSrc(String fileName) {
+        if (fileName == null) {
+            return null;
+        }
+        
         String srcDir = getSourceDirectory();
         if (srcDir == null || "".equals(srcDir)) {
             throw new BuildException("source directory shouldn't be null or empty");
         }
         
-        File transformmapFile = new File(srcDir+"/"+XsltproConstants.TRANSFORMMAP_XML);
+        File file = new File(srcDir+"/"+fileName);
+       
+        return file;
+    }
+    
+    private File getTransformmapFile() {        
+        File transformmapFile = getFileInSrc(XsltproConstants.TRANSFORMMAP_XML);
+        if (transformmapFile == null || !transformmapFile.isFile()) {
+//TODO a            transformmapFile = generateTransformmapFromXsltMap();
+        } 
+        
+        
         return transformmapFile;
     }
     
