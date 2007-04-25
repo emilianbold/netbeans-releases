@@ -1137,6 +1137,48 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
 
+    public void testAddFirstFeatureField() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    boolean prefix;\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree classTree = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                VariableTree vt = make.Variable(
+                    make.Modifiers(EnumSet.noneOf(Modifier.class)),
+                    "prefix",
+                    make.PrimitiveType(TypeKind.BOOLEAN), 
+                    null
+                );
+                ClassTree copy = make.addClassMember(classTree, vt);
+                workingCopy.rewrite(classTree, copy);
+            }
+            
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
     String getGoldenPckg() {
         return "";
     }
