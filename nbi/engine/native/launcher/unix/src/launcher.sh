@@ -161,10 +161,12 @@ parseCommandLineArguments() {
 			fi
 			;;
 		$ARG_EXTRACT)
+			EXTRACT_ONLY=1
 			if [ -n "$2" ] ; then
 				LAUNCHER_EXTRACT_DIR="$2"
-				EXTRACT_ONLY=1
 				shift
+			else
+				LAUNCHER_EXTRACT_DIR="$CURRENT_DIRECTORY"				
 			fi
 			;;
 		$ARG_SILENT)

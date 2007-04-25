@@ -635,11 +635,20 @@ LauncherProperties * createLauncherProperties(WCHARList * commandLine) {
     props->i18nMessages = NULL;
     props->userDefinedJavaHome    = getArgumentValue(props, javaArg, 1);
     props->userDefinedTempDir     = getArgumentValue(props, tempdirArg, 1);
-    props->userDefinedExtractDir  = getArgumentValue(props, extractArg, 1);
+    
+    props->userDefinedExtractDir  = NULL;
+    props->extractOnly = 0;
+    
+    if(argumentExists(props, extractArg, 0)) {
+        props->userDefinedExtractDir = getArgumentValue(props, extractArg, 1);
+        if(props->userDefinedExtractDir==NULL) {
+            props->userDefinedExtractDir = getCurrentDirectory();
+        }
+        props->extractOnly = 1;
+    }
     props->userDefinedOutput      = getArgumentValue(props, outputFileArg, 1);
     props->checkForFreeSpace      = !argumentExists(props, nospaceCheckArg, 1);
     props->silentMode             = argumentExists(props, silentArg, 0);
-    props->extractOnly            = (props->userDefinedExtractDir!=NULL) ? 1 : 0;
     props->launcherSize = getFileSize(props->exePath);
     props->isOnlyStub = (compare(props->launcherSize, STUB_FILL_SIZE) < 0);
     return props;
