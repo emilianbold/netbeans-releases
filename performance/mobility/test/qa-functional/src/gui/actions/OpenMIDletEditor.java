@@ -55,7 +55,7 @@ public class OpenMIDletEditor extends org.netbeans.performance.test.utilities.Pe
      * @param performanceDataName measured values will be saved under this name
      */    
     public OpenMIDletEditor(String testName, String performanceDataName) {
-        super(testName);
+        super(testName,performanceDataName);
         targetProject = "MobileApplicationVisualMIDlet";        
         midletName = "VisualMIDletMIDP20.java";        
         expectedTime = WINDOW_OPEN;
