@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.project.config.ClientAlreadyExistsExeption;
@@ -49,6 +50,8 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 
 /**
@@ -170,26 +173,35 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
 //                        ErrorManager.getDefault().notify(e);
 //                    }
 //                }
-                FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
-                try {
-                    ExecutorTask wsimportTask =
-                            ActionUtils.runTarget(buildImplFo,new String[]{"wsimport-client-"+finalClientName},null); //NOI18N
-                    if (wsimportTask.result()==0) {
-                        if (clientArtifactsFolder==null)
-                            clientArtifactsFolder = project.getProjectDirectory().getFileObject("build/generated/wsimport/client"); //NOI18N
-                        if (clientArtifactsFolder!=null) {
-                            FileObject clientArtifactsFolder1 = clientArtifactsFolder.getFileObject(packageName.replace('.','/'));
-                            if (clientArtifactsFolder1!=null) {
-                                wsimportTask=
-                                    ActionUtils.runTarget(buildImplFo,new String[]{"wsimport-client-compile"},null); //NOI18N
+                final FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
+                final String pkgName = packageName;
+                final String finalName = finalClientName;
+                    try {
+                        ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Boolean>() {
+                            public Boolean run() throws IOException {
+                                ExecutorTask wsimportTask =
+                                        ActionUtils.runTarget(buildImplFo,new String[]{"wsimport-client-"+finalName},null); //NOI18N
+                                if (wsimportTask.result()==0) {
+                                    if (clientArtifactsFolder==null)
+                                        clientArtifactsFolder = project.getProjectDirectory().getFileObject("build/generated/wsimport/client"); //NOI18N
+                                    if (clientArtifactsFolder!=null) {
+                                        FileObject clientArtifactsFolder1 = clientArtifactsFolder.getFileObject(pkgName.replace('.','/'));
+                                        if (clientArtifactsFolder1!=null) {
+                                            wsimportTask=
+                                                ActionUtils.runTarget(buildImplFo,new String[]{"wsimport-client-compile"},null); //NOI18N
+                                        }
+                                    }
+                                    return Boolean.TRUE;
+                                } else {
+                                    ErrorManager.getDefault().log(ErrorManager.ERROR, 
+                                            NbBundle.getMessage(ProjectJAXWSClientSupport.class, "ERR_wsimportNotCreated",finalName));
+                                    return Boolean.FALSE;
+                                }
                             }
-                        }
+                        }).booleanValue();
+                    } catch (MutexException e) {
+                        ErrorManager.getDefault().notify(e);
                     }
-                } catch (IOException ex) {
-                    ErrorManager.getDefault().log(ex.getLocalizedMessage());
-                } catch (IllegalArgumentException ex) {
-                    ErrorManager.getDefault().log(ex.getLocalizedMessage());
-                }
                 return finalClientName;
             }
         }

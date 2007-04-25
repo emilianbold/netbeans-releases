@@ -679,21 +679,15 @@ public final class J2SEProject implements Project, AntProjectListener {
     private class JaxWsListener extends FileChangeAdapter {
         public void fileChanged(FileEvent fe) {
             try {
-                final JaxWsModel newModel = JaxWsModelProvider.getDefault().getJaxWsModel(fe.getFile());
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        if (jaxWsModel!=null && newModel!=null) jaxWsModel.merge(newModel);
-                        try {
-                            genFilesHelper.refreshBuildScript(
-                            GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                            J2SEProject.class.getResource("resources/build-impl.xsl"), // NOI18N
-                            jaxWsFo, false);
-                        } catch (IOException ex) {}
-                    }
-                    
-                });
-                
-            } catch (IOException ex) {}
+                JaxWsModel newModel = JaxWsModelProvider.getDefault().getJaxWsModel(fe.getFile());
+                if (jaxWsModel!=null && newModel!=null) jaxWsModel.merge(newModel);
+                genFilesHelper.refreshBuildScript(
+                GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                J2SEProject.class.getResource("resources/build-impl.xsl"), // NOI18N
+                jaxWsFo, false);
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
         }
     }
 
