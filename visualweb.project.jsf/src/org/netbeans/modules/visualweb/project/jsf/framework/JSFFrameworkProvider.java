@@ -378,10 +378,12 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                         servlet = (Servlet)ddRoot.createBean("Servlet"); // NOI18N
                         servlet.setServletName(panel.getServletName());
                         servlet.setServletClass("javax.faces.webapp.FacesServlet"); // NOI18N    
-                        contextParam = (InitParam)servlet.createBean("InitParam"); // NOI18N
-                        contextParam.setParamName("javax.faces.LIFECYCLE_ID"); // NOI18N
-                        contextParam.setParamValue("com.sun.faces.lifecycle.PARTIAL"); // NOI18N
-                        servlet.addInitParam(contextParam);
+                        if (J2eeModule.JAVA_EE_5.equals(j2eeLevel)) {
+                            contextParam = (InitParam)servlet.createBean("InitParam"); // NOI18N
+                            contextParam.setParamName("javax.faces.LIFECYCLE_ID"); // NOI18N
+                            contextParam.setParamValue("com.sun.faces.lifecycle.PARTIAL"); // NOI18N
+                            servlet.addInitParam(contextParam);
+                        }
                         servlet.setLoadOnStartup(new BigInteger("1"));// NOI18N
                         ddRoot.addServlet(servlet);
                     }
