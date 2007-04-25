@@ -36,14 +36,15 @@ public class FacesModelUtility {
     }
     public static String getToViewIdFiltered( NavigationCase navCase ) {
         String viewId = navCase.getToViewId();
-        if( viewId.charAt(0) == '/') {
-            viewId = viewId.replaceFirst("/", "");
-        }
-        return viewId;
+        return getViewIdFiltiered( viewId );
     }
     
     public static String getFromViewIdFiltered( NavigationRule navRule ){
         String viewId = navRule.getFromViewId();
+        return getViewIdFiltiered( viewId );
+    }
+
+    public static String getViewIdFiltiered( String viewId ){
         if( viewId.charAt(0) == '/') {
             viewId = viewId.replaceFirst("/", "");
         }

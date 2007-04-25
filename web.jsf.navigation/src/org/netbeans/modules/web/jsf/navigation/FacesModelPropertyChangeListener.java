@@ -87,8 +87,8 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
             setupGraphInAWTThread();
         } else if ( ev.getPropertyName() == "from-view-id"  || ev.getPropertyName() == "to-view-id"){
             
-            final String oldName = (String) ev.getOldValue();
-            final String newName = (String) ev.getNewValue();
+            final String oldName = FacesModelUtility.getViewIdFiltiered( (String) ev.getOldValue() );
+            final String newName = FacesModelUtility.getViewIdFiltiered( (String) ev.getNewValue() );
             
             /* This code is only need if refactor calls rename of file before renaming the faces-config.
             if ( managedBeanClassModified && oldManagedBeanInfo != null && newManagedBeanInfo != null ) {
@@ -138,7 +138,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
                 return;
             }
         } */
-        //DO I really ned this isNewPageLinked?
+        //DO I really need this isNewPageLinked?
         if ( oldPageNode != null && !pfc.isPageInFacesConfig(oldName) && !isNewPageLinked ) {
             FileObject fileObj = pfc.getWebFolder().getFileObject(newName);
             if ( fileObj != null && pfc.containsWebFile(fileObj) ){
