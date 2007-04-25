@@ -44,7 +44,7 @@ public class TemplateAttributesProvider implements CreateFromTemplateAttributesP
         EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         String license = props.getProperty("project.license"); // NOI18N
         if (license == null && netBeansOrg) {
-            license = "cddl"; // NOI18N
+            license = "cddl-netbeans-sun"; // NOI18N
         }
         if (license == null) {
             return null;

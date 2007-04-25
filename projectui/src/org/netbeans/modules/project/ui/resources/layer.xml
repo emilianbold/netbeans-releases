@@ -233,7 +233,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateCategory" stringvalue="invisible"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
             </file>
-            <file name="license-cddl.txt" url="license-cddl.txt">
+            <file name="license-cddl-netbeans-sun.txt" url="license-cddl-netbeans-sun.txt">
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="invisible"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
