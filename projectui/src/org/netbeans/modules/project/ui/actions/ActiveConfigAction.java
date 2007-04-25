@@ -402,7 +402,7 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
         });
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") // XXX would not be necessary in case PCP had a method to get run-time type information: Class<C> configurationType();
     private static void setActiveConfiguration(ProjectConfigurationProvider<?> pcp, final ProjectConfiguration pc) throws IOException {
         final ProjectConfigurationProvider _pcp = pcp;
         try {
