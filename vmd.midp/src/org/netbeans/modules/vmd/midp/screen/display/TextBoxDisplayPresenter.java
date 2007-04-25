@@ -19,20 +19,17 @@
 
 package org.netbeans.modules.vmd.midp.screen.display;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.util.Collection;
-import java.util.Collections;
-import javax.swing.BorderFactory;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.border.Border;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.displayables.TextBoxCD;
-import org.netbeans.modules.vmd.midp.screen.display.property.ScreenStringPropertyEditor;
+import org.netbeans.modules.vmd.midp.screen.display.property.ScreenTextAreaPropertyEditor;
+
+import javax.swing.*;
+import javax.swing.border.Border;
+import java.awt.*;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  *
@@ -42,14 +39,15 @@ public class TextBoxDisplayPresenter extends DisplayableDisplayPresenter {
     
     private static final Border LABEL_BORDER = BorderFactory.createLineBorder(Color.GRAY);
     
-    private JLabel label;
+    private JTextArea textBox;
     
     public TextBoxDisplayPresenter() {
-        label = new JLabel();
-        label.setBorder(LABEL_BORDER);
+        textBox = new JTextArea ();
+        textBox.setBorder(LABEL_BORDER);
+        textBox.setEditable (false);
         JPanel contentPanel = getPanel().getContentPanel();
         contentPanel.setLayout(new BorderLayout());
-        contentPanel.add(label, BorderLayout.NORTH);
+        contentPanel.add(textBox, BorderLayout.CENTER);
     }
     
     public void reload(ScreenDeviceInfo deviceInfo) {
@@ -57,15 +55,15 @@ public class TextBoxDisplayPresenter extends DisplayableDisplayPresenter {
         
         String text = MidpTypes.getString(getComponent().readProperty(TextBoxCD.PROP_STRING));
         if (text != null)
-            label.setText(ScreenSupport.wrapWithHtml(text));
-        else 
-            label.setText("<empty text>"); //NOI18N
+            this.textBox.setText(text);
+        else
+            this.textBox.setText("<empty text>"); // NOI18N
     }
     
     public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {
         return Collections.singleton(
-                new ScreenPropertyDescriptor(getComponent(), label, new ScreenStringPropertyEditor(TextBoxCD.PROP_STRING, JTextField.CENTER))
-                );
+            new ScreenPropertyDescriptor(getComponent(), textBox, new ScreenTextAreaPropertyEditor (TextBoxCD.PROP_STRING))
+        );
     }
     
 }
