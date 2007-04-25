@@ -258,11 +258,11 @@ public abstract class MemoryFootprintTestCase extends org.netbeans.performance.t
         String platformString=(System.getProperty("os.name","")+","+System.getProperty("os.arch","")).replace(' ','_');
         if(platformString.equalsIgnoreCase(SUPPORTED_PLATFORMS[8][0])) { // This is Vista
             log("Windows platform = "+platformString);
-            log("Execiting ps_vista...")
+            log("Execiting ps_vista...");
             pslist =  executeNativeCommand(xtestHome+"/ps_vista.exe -m "+pid);
         } else {
             log("Windows platform = "+platformString);
-            log("Execiting pslist...")            
+            log("Execiting pslist...");            
             pslist = executeNativeCommand(xtestHome+"/pslist.exe -m "+pid);
         }
         String pslist_line = getLine(pslist);
