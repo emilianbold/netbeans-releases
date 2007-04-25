@@ -22,7 +22,6 @@ package org.netbeans.modules.vmd.midp.screen.display;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
-import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
@@ -55,7 +54,7 @@ public final class ScreenSupport {
      * @param fontComponent
      * @return font
      */
-    public static final Font getFont(ScreenDeviceInfo deviceInfo, DesignComponent fontComponent) {
+    public static Font getFont(ScreenDeviceInfo deviceInfo, DesignComponent fontComponent) {
         if (fontComponent == null)
             return deviceInfo.getDeviceTheme().getFont(FontType.DEFAULT);
         int kindCode = MidpTypes.getInteger(fontComponent.readProperty(FontCD.PROP_FONT_KIND));
@@ -103,11 +102,11 @@ public final class ScreenSupport {
      * @param text to be wraped
      * @return text
      */
-    public static final String wrapWithHtml(String text) {
+    public static String wrapWithHtml(String text) {
         if (text == null) {
             return text;
         }
-        text.replaceAll("<.*>", ""); // NOI18N
+        text = text.replaceAll("<.*>", ""); // NOI18N
         
         StringBuffer str = new StringBuffer();
         str.append("<html>"); // NOI18N
@@ -123,11 +122,11 @@ public final class ScreenSupport {
      * @param text to be wraped
      * @return text
      */
-    public static final String wrapLinkWithHtml(String text) {
+    public static String wrapLinkWithHtml(String text) {
         if (text == null) {
             return text;
         }
-        text.replaceAll("<.*>", ""); // NOI18N
+        text = text.replaceAll("<.*>", ""); // NOI18N
         
         StringBuffer str = new StringBuffer();
         str.append("<html>"); // NOI18N
@@ -144,7 +143,7 @@ public final class ScreenSupport {
      * @param imageComponent image design component
      * @return icon
      */
-    public static final Icon getIconFromImageComponent(DesignComponent imageComponent) {
+    public static Icon getIconFromImageComponent(DesignComponent imageComponent) {
         Icon icon = null;
         if (imageComponent != null) {
             String iconPath = MidpTypes.getString(imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH));
@@ -155,16 +154,13 @@ public final class ScreenSupport {
                     SourceGroup sourceGroup = ProjectUtils.getSourceGroups(context).get(0); // CLDC project has always only one source root
                     String srcPath = sourceGroup.getRootFolder().getPath();
                     icon = new ImageIcon("/"+srcPath + iconPath); //NOI18N
-                    if (icon == null) {
-                        Debug.warning("Resource path property in " + imageComponent + " contains incorrect value"); //NOI18N
-                    }
                 }
             }
         }
         return icon;
     }
     
-    public static final int getFontHeight(Graphics g, Font f) {
+    public static int getFontHeight(Graphics g, Font f) {
         assert (g != null) && (f != null);
         FontMetrics fm = g.getFontMetrics(f);
         return fm.getHeight();
