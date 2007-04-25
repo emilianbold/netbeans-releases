@@ -84,6 +84,7 @@ public final class GoToSourceAction extends SystemAction {
                 }
                 if (document == null)
                     return;
+                ProjectUtils.requestVisibility("Source"); //NOI18N
                 JEditorPane[] panes = editorSupport[0].getOpenedPanes();
                 if (panes == null || panes.length < 1)
                     return;
@@ -97,6 +98,7 @@ public final class GoToSourceAction extends SystemAction {
                         return;
                     }
                 }
+                
             }
         });
     }
