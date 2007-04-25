@@ -181,14 +181,14 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                                 JVM_OPTION_NAME,
                                 directory.getAbsolutePath(),
                                 true);
-                    }
-                    
-                    // if the IDE was installed in the same session as the 
-                    // appserver, we should add its "product id" to the IDE
-                    if (ide.hasStatusChanged()) {
-                        NetBeansUtils.addPackId(
-                                nbLocation, 
-                                "SJSAS");
+                        
+                        // if the IDE was installed in the same session as the
+                        // appserver, we should add its "product id" to the IDE
+                        if (ide.hasStatusChanged()) {
+                            NetBeansUtils.addPackId(
+                                    nbLocation,
+                                    "SJSAS");
+                        }
                     }
                 }
             }
