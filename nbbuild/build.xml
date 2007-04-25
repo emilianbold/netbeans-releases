@@ -1428,6 +1428,9 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <output type="group-friend-packages" file="${generated.files.dir}/group-friend-packages.txt" />
       <output type="external-libraries" file="${generated.files.dir}/external-libraries.txt" />
     </deps>
+
+    <taskdef name="test-deps" classname="org.netbeans.nbbuild.ModuleTestDependencies" classpath="nbantext.jar"/>
+    <test-deps output="${generated.files.dir}/test-deps.txt"/>
   </target>
   
   <target name="check-public-packages" depends="generate-golden-files" >

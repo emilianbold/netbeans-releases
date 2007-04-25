@@ -1123,7 +1123,7 @@ public final class ParseProjectXml extends Task {
         }
         return testDepsList.toArray(new TestDeps[testDepsList.size()]);
     }
-    private static String findTextOrNull(Element parentElement,String elementName) {
+    static String findTextOrNull(Element parentElement,String elementName) {
         Element el = findNBMElement(parentElement,elementName);
         return (el == null) ? null :
                               XMLUtil.findText(el);
