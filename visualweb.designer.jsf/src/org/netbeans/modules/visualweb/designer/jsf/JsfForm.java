@@ -240,25 +240,29 @@ public class JsfForm {
         
         return getFacesModel(dataObject.getPrimaryFile());
     }
-        
+
+    
+    // XXX TEMP to try out.
+    private static boolean LOAD_MODEL_ASYNCHRONOUSLY = Boolean.getBoolean("vwp.designer.jsf.loadModelAsync"); // NOI18N
+    
     public static JsfForm getJsfForm(DataObject dataObject) {
         if (dataObject == null) {
             return null;
         }
-        
-        FacesModel facesModel = getFacesModel(dataObject);
-        if (facesModel == null) {
-            if (!dataObject.isTemplate()) {
-                log(new IllegalArgumentException("There is no FacesModel available for non-template dataObject=" + dataObject)); // NOI18N
+
+        FacesModel facesModel;
+        if (LOAD_MODEL_ASYNCHRONOUSLY) {
+            // XXX TODO Here should be a method which immediatelly returns FacesModel if it is already created.
+            facesModel = null; // TEMP
+        } else {
+            facesModel = getFacesModel(dataObject);
+            if (facesModel == null) {
+                if (!dataObject.isTemplate()) {
+                    log(new IllegalArgumentException("There is no FacesModel available for non-template dataObject=" + dataObject)); // NOI18N
+                }
+                return null;
             }
-            return null;
         }
-//        FacesModel facesModel = null; // TEMP
-        // XXX This is prepared to handle the not yet loaded FacesModel.
-//        if (facesModel == null && dataObject.isTemplate()) {
-//            // XXX Ignore the templates.
-//            return null;
-//        }
         
         JsfForm jsfForm;
 //        synchronized (facesModel2jsfForm) {

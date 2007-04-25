@@ -255,8 +255,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     }
     
     private JComponent createLoadingComponent() {
-        // TODO Provide some better component.
-        return new JLabel("Loading, please wait...", JLabel.CENTER); // TEMP
+        return new JLabel(NbBundle.getMessage(JsfTopComponent.class, "LBL_LoadingModel"), JLabel.CENTER); // TEMP
     }
     
     @Override
@@ -2007,7 +2006,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //            } else {
 //                lookup = new ProxyLookup(new Lookup[] {superLookup, Lookups.fixed(new Object[] {jspDataObject, NAVIGATOR_HINT, jsfPaletteController})});
 //            }
-            lookup = new ProxyLookup(new Lookup[] {superLookup, jsfLookupProvider.getLookup()});
+            lookup = new ProxyLookup(new Lookup[] {superLookup, Lookups.proxy(jsfLookupProvider)});
             
             lookupWRef = new WeakReference<Lookup>(lookup);
         }
@@ -2484,12 +2483,12 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     }
 
     void modelLoaded() {
-//        System.err.println("\nJsfTC#modelLoaded"); // TEMP
         initDesigner();
         designerOpened();
         designerShowing();
         jsfLookupProvider.refreshLookup();
         
+        revalidate();
         repaint();
     }
     
