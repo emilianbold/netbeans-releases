@@ -19,11 +19,9 @@
 
 package org.netbeans.modules.compapp.casaeditor.design;
 
-import java.awt.Color;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.action.WidgetAction.Chain;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDragEvent;
@@ -32,7 +30,6 @@ import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetEvent;
 import org.netbeans.api.visual.action.WidgetAction.WidgetKeyEvent;
 import org.netbeans.api.visual.action.WidgetAction.WidgetMouseEvent;
 import org.netbeans.api.visual.widget.ConnectionWidget;
-import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.graph.WaitMessageHandler;

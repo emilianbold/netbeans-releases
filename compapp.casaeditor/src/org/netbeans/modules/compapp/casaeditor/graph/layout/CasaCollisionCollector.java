@@ -30,9 +30,6 @@ import java.util.List;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidget;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConnection;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 
 /**
  * Modified to only register CasaNodeWidget widgets as being collisions.
@@ -70,7 +67,8 @@ public class CasaCollisionCollector {
             return;
         }
         
-        CasaEndpointRef[] connectionEndpoints = getEndpoints(connectionWidget);
+        CasaComponent source = scene.getEdgeSource(component);
+        CasaComponent target = scene.getEdgeTarget(component);
         
         for (Widget widget : getWidgets ()) {
             
@@ -88,10 +86,24 @@ public class CasaCollisionCollector {
                     continue;
                 }
                 
-                if (
-                        connectionEndpoints.length > 0 && 
-                        sharesEndpoints(connectionEndpoints, iterConnection)) {
-                    continue;
+                CasaComponent iterComponent = (CasaComponent) scene.findObject(iterConnection);
+                if (iterComponent == null || !iterComponent.isInDocumentModel()) {
+                    return;
+                }
+                
+                // If there are any shared endpoints, then do not register the connection
+                // as colliding with the given iterConnection.
+                if (source != null) {
+                    CasaComponent iterSource = scene.getEdgeSource(iterComponent);
+                    if (source == iterSource) {
+                        continue;
+                    }
+                }
+                if (target != null) {
+                    CasaComponent iterTarget = scene.getEdgeTarget(iterComponent);
+                    if (target == iterTarget) {
+                        continue;
+                    }
                 }
                 
                 List<Point> controlPoints = iterConnection.getControlPoints ();
@@ -127,39 +139,5 @@ public class CasaCollisionCollector {
         for (LayerWidget layer : layers)
             list.addAll (layer.getChildren ());
         return list;
-    }
-
-    private CasaEndpointRef[] getEndpoints(ConnectionWidget connectionWidget) {
-        CasaModelGraphScene scene = (CasaModelGraphScene) connectionWidget.getScene();
-        CasaConnection connection = (CasaConnection) scene.findObject(connectionWidget);
-        if (connection == null) {
-            return new CasaEndpointRef[0];
-        }
-        
-        CasaWrapperModel model = scene.getModel();
-        CasaEndpointRef consumes = model.getCasaEndpointRef(connection, true);
-        CasaEndpointRef provides = model.getCasaEndpointRef(connection, false);
-        if (consumes != null && provides != null) {
-            return new CasaEndpointRef[] { consumes, provides };
-        } else if (consumes != null) {
-            return new CasaEndpointRef[] { consumes };
-        } else if (provides != null) {
-            return new CasaEndpointRef[] { provides };
-        }
-        return new CasaEndpointRef[0];
-    }
-    
-    private boolean sharesEndpoints(CasaEndpointRef[] endpoints, ConnectionWidget connectionWidget) {
-        CasaEndpointRef[] otherEndpoints = getEndpoints(connectionWidget);
-        if (otherEndpoints.length > 0) {
-            for (CasaEndpointRef endpoint : endpoints) {
-                for (CasaEndpointRef iterEndpoint : otherEndpoints) {
-                    if (endpoint == iterEndpoint) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
     }
 }
