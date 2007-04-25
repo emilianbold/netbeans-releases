@@ -100,10 +100,6 @@ public abstract class CasaPinWidget extends Widget {
     protected abstract void setSelected(boolean isSelected);
     
     
-    protected void updateBounds(boolean isMinimized) {
-        // does nothing by deafult
-    }
-    
     /**
      * Called to notify about the change of the widget state.
      * @param previousState the previous state

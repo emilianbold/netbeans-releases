@@ -37,7 +37,8 @@ import org.netbeans.modules.compapp.casaeditor.graph.awt.PainterWidget;
  *
  * @author rdara
  */
-public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.Listener {
+public class CasaNodeWidgetEngine extends CasaNodeWidget 
+        implements StateModel.Listener, CasaMinimizable {
     
     public static final int ARROW_PIN_WIDTH           = 25;
     public static final int MARGIN_SE_ROUNDED_RECTANGLE = ARROW_PIN_WIDTH * 77 / 100;
@@ -80,8 +81,11 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
                 return CasaFactory.getCasaCustomizer().getCOLOR_SU_INTERNAL_BACKGROUND();
             }
             public Rectangle getHeaderRect() {
-                if (mTitleWidget.getBounds() != null) {
-                    return getClipRect().intersection(mTitleWidget.getBounds());
+                Rectangle titleBounds = mTitleWidget.getBounds();
+                if (titleBounds != null) {
+                    Rectangle clipRect = getClipRect();
+                    clipRect.height = titleBounds.height;
+                    return clipRect;
                 }
                 return null;
             }
@@ -108,14 +112,14 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
             public void paint(Graphics2D g) {
                 // Draw a line below the title widget to separate
                 // the title from the pin area.
-                Rectangle rect = mTitleWidget.getBounds();
+                Rectangle rect = provider.getHeaderRect();
                 if (rect != null) {
                     if (getState().isSelected()) {
                         g.setColor(CasaFactory.getCasaCustomizer().getCOLOR_SELECTION());
                     } else {
                         g.setColor(CasaFactory.getCasaCustomizer().getCOLOR_SU_INTERNAL_BORDER());
                     }
-                    g.drawLine(0, rect.height, rect.width, rect.height);
+                    g.drawLine(rect.x, rect.y + rect.height, rect.x + rect.width, rect.y + rect.height);
                 }
                 if (isHighlighted()) {
                     InnerGlowBorderDrawer.paintInnerGlowBorder(
@@ -141,54 +145,10 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
     }
     
     
-    private Dimension mPreviousHolderSize = new Dimension();
-    private static final int MINIMUM_SE_NODE_HEIGHT   = 20;
-    private static final int MINIMUM_SE_NODE_WIDTH    = 120;
-    
     protected void notifyAdded() {
         super.notifyAdded();
         
         notifyStateChanged(ObjectState.createNormal(), ObjectState.createNormal());
-        
-        Widget.Dependency pinSizer = new Widget.Dependency() {
-            // Maintains the height of the vertical text bar.
-            public void revalidateDependency() {
-                if (
-                        getScene().getGraphics() == null || 
-                        getBounds() == null || 
-                        getParentWidget() == null) {
-                    return;
-                }
-                Rectangle bounds = mContainerWidget.getClientArea().getBounds();
-                if (!bounds.getSize().equals(mPreviousHolderSize))
-                {
-                    mPreviousHolderSize = bounds.getSize();
-                    
-                    if (bounds.width < MINIMUM_SE_NODE_WIDTH) {
-                        mPreviousHolderSize.width = MINIMUM_SE_NODE_WIDTH;
-                        bounds.width = MINIMUM_SE_NODE_WIDTH;
-                    }
-                    if (bounds.height < MINIMUM_SE_NODE_HEIGHT) {
-                        mPreviousHolderSize.height = MINIMUM_SE_NODE_HEIGHT;
-                        bounds.height = MINIMUM_SE_NODE_HEIGHT;
-                    }
-                    
-                    mContainerWidget.setPreferredBounds(bounds);
-
-                    /* All pins bounds need to be set so that the Anchor will be calculated correctly */
-                    Rectangle childBounds;
-                    for (Widget child : mContainerWidget.getChildren ()) {
-                        if (child.getBounds() != null) {
-                            childBounds = child.getPreferredBounds();
-                            childBounds.width = bounds.width;
-                            child.setPreferredBounds(childBounds);
-                        }
-                    }
-                }
-            }
-        };
-        
-        getRegistry().registerDependency(pinSizer);
     }
     
     public Rectangle getEntireBounds() {
@@ -211,29 +171,23 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
         } else if (hasNodeName) {
             mTitleWidget.setLabel(nodeName);                            // NOI18N
         }
-        if (getBounds() != null) {
-            readjustBounds();
-        }
-    }
-    
-    public void stateChanged() {
         readjustBounds();
     }
     
-    public void readjustBounds() {
-        boolean isMinimized = mStateModel.getBooleanState();
+    public void stateChanged() {
+        setMinimized(mStateModel.getBooleanState());
+    }
+    
+    public void setMinimized(boolean isMinimized) {
         for (Widget child : mContainerWidget.getChildren()) {
-            if (child instanceof CasaPinWidget) {
-                ((CasaPinWidget) child).updateBounds(isMinimized);
-            } else if (child instanceof CasaEngineTitleWidget) {
-                ((CasaEngineTitleWidget) child).updateBounds(isMinimized);
+            if (child instanceof CasaMinimizable) {
+                ((CasaMinimizable) child).setMinimized(isMinimized);
             }
         }
         mContainerWidget.setPreferredBounds(isMinimized ? mTitleWidget.getPreferredBounds() : null);
-        setPreferredBounds(null);
         getScene().validate();
     }
-    
+
     protected Color getBackgroundColor() {
         return CasaFactory.getCasaCustomizer().getCOLOR_REGION_ENGINE();
     }
@@ -249,9 +203,7 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
     
     public void setTitleFont(Font font) {
         mTitleWidget.setTitleFont(font);
-        if (getBounds() != null) {
-            readjustBounds();
-        }
+        readjustBounds();
     }
     
     public void setTitleColor(Color color) {

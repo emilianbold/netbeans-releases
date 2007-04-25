@@ -24,6 +24,7 @@ import java.awt.Font;
 import java.awt.Image;
 import java.awt.Rectangle;
 import org.netbeans.api.visual.anchor.Anchor;
+import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.ImageWidget;
 import org.netbeans.api.visual.widget.LabelWidget;
@@ -36,7 +37,7 @@ import org.openide.util.NbBundle;
  *
  * @author rdara
  */
-public class CasaPinWidgetEngine extends CasaPinWidget {
+public class CasaPinWidgetEngine extends CasaPinWidget implements CasaMinimizable {
     
     private static final int LABEL_MAX_CHAR = 48;
     private static final int VERTICAL_GAP = 3;
@@ -63,7 +64,7 @@ public class CasaPinWidgetEngine extends CasaPinWidget {
         
         switch(getDirection()) {
             case LEFT :
-                setLayout(LayoutFactory.createHorizontalLayout(LayoutFactory.SerialAlignment.LEFT_TOP, 5));
+                setLayout(RegionUtilities.createHorizontalLayoutWithJustifications(LayoutFactory.SerialAlignment.LEFT_TOP, 5));
                 addChild(mImageWidget);
                 addChild(mNameWidget);
                 addChild(mEmptyWidget);
@@ -101,9 +102,7 @@ public class CasaPinWidgetEngine extends CasaPinWidget {
         while(!(widget instanceof CasaNodeWidgetEngine)) {
             widget = widget.getParentWidget();
         }
-        if (getBounds() != null) {
-            ((CasaNodeWidgetEngine) widget).readjustBounds();
-        }
+        ((CasaNodeWidgetEngine) widget).readjustBounds();
     }
     
     protected Directions getDirection() {
@@ -112,19 +111,6 @@ public class CasaPinWidgetEngine extends CasaPinWidget {
     
     public Anchor getAnchor() {
         return RegionUtilities.createFixedDirectionalAnchor(this, getDirection(), 0);
-    }
-    
-    protected void updateBounds(boolean isMinimized) {
-        Rectangle rect = isMinimized ? new Rectangle() : null;
-        mNameWidget.setPreferredBounds(rect);
-        mImageWidget.setPreferredBounds(rect);
-        setPreferredBounds(rect);
-        
-        if (isMinimized) {
-            mImageWidget.setImage(null);
-        } else {
-            mImageWidget.setImage(mCurrentDisplayedImage);
-        }
     }
     
     public void setLabelFont(Font font) {
@@ -139,4 +125,16 @@ public class CasaPinWidgetEngine extends CasaPinWidget {
         mImageWidget.setToolTipText(strValue);
     }
 
+    public void setMinimized(boolean isMinimized) {
+        Rectangle rect = isMinimized ? new Rectangle() : null;
+        mNameWidget.setPreferredBounds(rect);
+        mImageWidget.setPreferredBounds(rect);
+        setPreferredBounds(rect);
+        
+        if (isMinimized) {
+            mImageWidget.setImage(null);
+        } else {
+            mImageWidget.setImage(mCurrentDisplayedImage);
+        }
+    }
 }

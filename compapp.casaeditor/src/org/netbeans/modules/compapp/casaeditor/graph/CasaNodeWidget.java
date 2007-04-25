@@ -112,4 +112,11 @@ public abstract class CasaNodeWidget extends Widget {
     protected DependenciesRegistry getRegistry() {
         return mDependenciesRegistry;
     }
-} 
+    
+    public void readjustBounds() {
+        if (getBounds() != null) {
+            revalidate();
+            getScene().validate();
+        }
+    }
+}

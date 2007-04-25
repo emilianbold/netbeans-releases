@@ -206,8 +206,10 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
     public void setEndpointLabel(String nodeName) {
         mNameWidget.setToolTipText(nodeName);
         mNameWidget.setLabel(nodeName);
-        // validate to trigger a bounds update
-        getScene().validate();
+        if (getBounds() != null) {
+            mNameWidget.resolveBounds(null, null);
+            readjustBounds();
+        }
     }
     
     /**
@@ -218,11 +220,8 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
      * @param glyphs the node glyphs
      */
     public void setNodeProperties(String nodeName, String nodeType) {
-        mNameWidget.setToolTipText(nodeName);
-        mNameWidget.setLabel(nodeName);
         mVertTextBarText = nodeType;
-        revalidate();
-        getScene().revalidate();
+        setEndpointLabel(nodeName);
     }
     
     public void regenerateHeaderBorder() {

@@ -128,13 +128,26 @@ public final class SerialLayoutWithJustifications implements Layout {
     }
 
     public boolean requiresJustification (Widget widget) {
-       return (alignment == LayoutFactory.SerialAlignment.JUSTIFY) || (alignment == LayoutFactory.SerialAlignment.RIGHT_BOTTOM) ;
+       return true;
     }
     
-    //Right align the children
-
     public void justify (Widget widget) {
         Rectangle bounds = widget.getParentWidget().getClientArea ();
+        
+        if (
+                alignment == LayoutFactory.SerialAlignment.JUSTIFY || 
+                alignment == LayoutFactory.SerialAlignment.RIGHT_BOTTOM) {
+            justifyChildren(widget, bounds);
+        }
+        
+        // Ensure the widget stretches to the width of the parent.
+        Rectangle widgetBounds = widget.getPreferredBounds();
+        widgetBounds.width = bounds.width;
+        widget.resolveBounds(widget.getLocation(), widgetBounds);
+    }
+
+    // right-align the children
+    private void justifyChildren(Widget widget, Rectangle bounds) {
         int childrenWidth = 0 - gap;
         for (Widget child : widget.getChildren ()) {
             childrenWidth += child.getPreferredBounds().width;
@@ -180,5 +193,4 @@ public final class SerialLayoutWithJustifications implements Layout {
             }
         }
     }
-
 }

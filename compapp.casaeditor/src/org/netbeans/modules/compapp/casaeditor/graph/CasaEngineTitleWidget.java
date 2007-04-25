@@ -42,7 +42,7 @@ import org.openide.util.Utilities;
  *
  * @author Josh Sandusky
  */
-public class CasaEngineTitleWidget extends Widget {
+public class CasaEngineTitleWidget extends Widget implements CasaMinimizable {
     
     private static final int   TITLE_GAP          = 3;
     
@@ -150,11 +150,7 @@ public class CasaEngineTitleWidget extends Widget {
         mEditWidget.setImage(bValue ? RegionUtilities.IMAGE_EDIT_16_ICON : null);
     }
     
-    protected void updateBounds(boolean isMinimized) {
-        mTitleWidget.setPreferredBounds(null);
-        mNameWidget.setPreferredBounds(null);
-        setPreferredBounds(null);
-        
+    public void setMinimized(boolean isMinimized) {
         minimizeWidget.setImage(isMinimized ? IMAGE_EXPAND : IMAGE_COLLAPSE);
     }
 
