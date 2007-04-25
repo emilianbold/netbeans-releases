@@ -595,6 +595,7 @@ is divided into following sections:
                     <xsl:if test="jaxws:package-name/@forceReplace">
                         <wsimport
                             fork="true"
+                            xendorsed="true"
                             sourcedestdir="${{build.generated.dir}}/wsimport/client"
                             extension="true"
                             package="{$package_name}"
@@ -618,6 +619,7 @@ is divided into following sections:
                     <xsl:if test="not(jaxws:package-name/@forceReplace)">
                         <wsimport
                             fork="true"
+                            xendorsed="true"
                             sourcedestdir="${{build.generated.dir}}/wsimport/client"
                             destdir="${{build.generated.dir}}/wsimport/binaries"
                             wsdl="${{basedir}}/xml-resources/web-service-references/{$wsname}/wsdl/{$wsdl_url}"
