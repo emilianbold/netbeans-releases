@@ -42,8 +42,6 @@ public class MockChangeListenerTest extends TestCase {
         cs.addChangeListener(l);
     }
 
-    // XXX test expect
-
     public void testBasicUsage() throws Exception {
         l.assertNoEvents();
         l.assertEventCount(0);
@@ -91,6 +89,30 @@ public class MockChangeListenerTest extends TestCase {
         } catch (AssertionFailedError e) {
             assertFalse(String.valueOf(e.getMessage()).contains("stuff"));
         }
+    }
+
+    public void testExpect() throws Exception {
+        l.expectNoEvents(1000);
+        cs.fireChange();
+        l.expectEvent(1000);
+        l.assertNoEvents();
+        new Thread() {
+            @Override public void run() {
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException x) {
+                    assert false;
+                }
+                cs.fireChange();
+            }
+        }.start();
+        try {
+            l.expectEvent(1000);
+            assert false;
+        } catch (AssertionFailedError e) {}
+        l.expectEvent(2000);
+        l.assertNoEvents();
+        l.expectNoEvents(1000);
     }
 
 }

@@ -41,6 +41,7 @@ public class MockChangeListener implements ChangeListener {
 
     public synchronized void stateChanged(ChangeEvent ev) {
         events.add(ev);
+        notifyAll();
     }
 
     /**
