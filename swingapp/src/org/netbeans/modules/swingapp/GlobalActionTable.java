@@ -61,7 +61,7 @@ public class GlobalActionTable extends TopComponent {
     }
     
     private GlobalActionTable() {
-        setName("Application Actions [rename]");
+        setName("Application Actions");
         setLayout(new BorderLayout());
         createComponents();
     }

@@ -550,34 +550,20 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         
         //final CreateNewActionPanel panel = new CreateNewActionPanel(fileInProject);
         final DialogDescriptor dd = new DialogDescriptor(panel,"Create New Action");
-        dd.setOptions(new String[] {"Cancel","Create"});
-        dd.setValue("Create");
-        dd.setModal(true);
-        dd.setOptionsAlign(DialogDescriptor.BOTTOM_ALIGN);
-        dd.setClosingOptions(new String[0]);
-        dd.setLeaf(false);
-        dd.setValue("Create");
-        final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-        dd.setButtonListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if(dd.getValue().equals("Cancel") /*|| panel.validateFields()*/) {
-                    dialog.setVisible(false);
-                } else {
-                    if(panel.canCreateNewAction()) {
-                        dialog.setVisible(false);
-                        editor.setSourceFile(panel.getSelectedSourceFile());
-                        editor.createNewAction();
-                    } else {
-                        //josh: need to update this to handle all of the things that could
-                        // go wrong
-                        JOptionPane.showMessageDialog(dialog, "Method name cannot be empty");
-                    }
-                }
+        Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+        d.setVisible(true);
+        while (dd.getValue() == DialogDescriptor.OK_OPTION) {
+            if(panel.canCreateNewAction()) {
+                editor.setSourceFile(panel.getSelectedSourceFile());
+                editor.createNewAction();
+                break;
+            } else {
+                //josh: need to update this to handle all of the things that could
+                // go wrong
+                JOptionPane.showMessageDialog(d, "Method name cannot be empty");
+                d.setVisible(true);
             }
-        });
-        //panel.setDialog(dialog);
-        dialog.pack();
-        dialog.setVisible(true);
+        }
         
         /*if(panel.isInputIsValid()) {
             ProxyAction act = new ProxyAction(panel.getSelectedClassName(),
