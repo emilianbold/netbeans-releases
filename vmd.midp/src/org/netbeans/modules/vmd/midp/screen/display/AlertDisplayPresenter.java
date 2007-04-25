@@ -79,10 +79,9 @@ public class AlertDisplayPresenter extends DisplayableDisplayPresenter {
             path = (String) imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH).getPrimitiveValue();
         Icon icon = ScreenSupport.getIconFromImageComponent(imageComponent);
         if (icon != null) {
-            imageLabel.setIcon(ICON_BROKEN);
+            imageLabel.setIcon(icon);
         } else if (icon == null && path != null) {
-            imageLabel.setText("<Wrong image resourc path>"); //NOI18N 
-            imageLabel.setIcon(null);
+            imageLabel.setIcon(ICON_BROKEN);
         }
     }
 }
