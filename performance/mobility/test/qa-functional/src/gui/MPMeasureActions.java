@@ -19,9 +19,8 @@
 
 package gui;
 
-
-import org.netbeans.junit.NbTestSuite;
 import gui.actions.*;
+import org.netbeans.junit.NbTestSuite;
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
@@ -36,7 +35,7 @@ public class MPMeasureActions  {
         // TODO add some test cases
         suite.addTest(new CreateMobilityProject("testCreateMobilityProject", "Create Mobile Application"));  
         suite.addTest(new CreateMobilityProject("testCreateMobilityLibrary", "Create Mobile Class Library"));
-        suite.addTest(new OpenMIDletEditor("measureTime","Open a visual MIDlet time"));
+        suite.addTest(new OpenMIDletEditor("measureTime","Open a visual MIDlet"));
       
         return suite;
     }

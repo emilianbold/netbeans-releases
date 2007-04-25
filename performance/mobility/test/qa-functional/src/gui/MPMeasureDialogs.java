@@ -19,11 +19,7 @@
 
 package gui;
 
-import gui.window.MobilityDeploymentManagerDialog;
-import gui.window.NewConfigurationDialog;
-import gui.window.ProjectPropertiesDialog;
-import gui.window.QuickRunDialog;
-import gui.window.SecurityManagerDialog;
+import gui.window.*;
 import org.netbeans.junit.NbTestSuite;
 
 /**
@@ -37,11 +33,11 @@ public class MPMeasureDialogs  {
         NbTestSuite suite = new NbTestSuite();
             
         // TODO add some test cases
-        suite.addTest(new MobilityDeploymentManagerDialog("measureTime","Mobility Deployment Manager dialog time"));
-        suite.addTest(new NewConfigurationDialog("measureTime","New Project Configuration dialog time"));
-        suite.addTest(new SecurityManagerDialog("measureTime","Security Manager dialog time"));
-        suite.addTest(new QuickRunDialog("measureTime","Quick Run dialog time"));
-        suite.addTest(new ProjectPropertiesDialog("measureTime","Mobility project properties dialog"));
+        suite.addTest(new MobilityDeploymentManagerDialog("measureTime","Mobility Deployment Manager dialog open"));
+        suite.addTest(new NewConfigurationDialog("measureTime","New Project Configuration dialog open"));
+        suite.addTest(new SecurityManagerDialog("measureTime","Security Manager dialog open"));
+        suite.addTest(new QuickRunDialog("measureTime","Quick Run dialog open"));
+        suite.addTest(new ProjectPropertiesDialog("measureTime","Mobility project properties dialog open"));
         return suite;
     }
     
