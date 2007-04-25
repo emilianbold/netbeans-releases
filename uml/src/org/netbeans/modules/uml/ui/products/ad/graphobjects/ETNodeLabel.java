@@ -59,12 +59,10 @@ import com.tomsawyer.editor.TSENode;
 import com.tomsawyer.editor.TSENodeLabel;
 import com.tomsawyer.editor.TSEObject;
 import com.tomsawyer.editor.TSEObjectUI;
-//import com.tomsawyer.editor.state.TSEMoveSelectedState;
 import com.tomsawyer.editor.tool.TSEMoveSelectedTool;
 import com.tomsawyer.editor.ui.TSELabelUI;
 import com.tomsawyer.editor.ui.TSELabelUI;
 import com.tomsawyer.graph.TSGraphObject;
-import org.openide.ErrorManager;
 
 public class ETNodeLabel extends TSENodeLabel implements IETLabel {
 
@@ -413,7 +411,7 @@ public class ETNodeLabel extends TSENodeLabel implements IETLabel {
 		if (pProductArchive != null) {
 			String reloadedXMIID = getReloadedPresentationXMIID();
 			IProductArchiveElement foundEle = null;
-			if (reloadedXMIID.length() > 0) {
+			if (reloadedXMIID != null && reloadedXMIID.length() > 0) {
 				foundEle = pProductArchive.getElement(reloadedXMIID);
 			}
 			if (foundEle != null) {
