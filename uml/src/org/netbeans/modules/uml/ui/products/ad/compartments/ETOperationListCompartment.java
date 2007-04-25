@@ -133,7 +133,7 @@ public class ETOperationListCompartment extends ETNamedElementListCompartment im
                                     {
                                         DuplicateElementRenameDescriptor descr =
                                             showDuplicateElementRenameDialog(
-                                            sourceFeature.getName());
+                                                targetClassifier, sourceFeature);
                                         
                                         if (descr.getValue() == NotifyDescriptor.OK_OPTION)
                                         {

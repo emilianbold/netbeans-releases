@@ -26,9 +26,13 @@ import java.io.*;
 import java.lang.reflect.*;
 import java.text.*;
 import java.net.*;
+import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
+import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguage;
+import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguageManager;
 import org.netbeans.modules.uml.core.support.umlsupport.Log;
+import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
@@ -1141,11 +1145,10 @@ public class Util
     
     /**
      * Determines if the passed in type is a known Collection data type.
-     * @param <code>type</code> the data type to be tested
-     * @return <code>boolean</code> true if java.util.Collection is assignable
-     *   from (is a superclass instance of) the parameter <code>type</code>
-     *   that is passed in; false otherwise, including in the event of an
-     *   exception.
+     * @param type the data type to be tested
+     * @return true if java.util.Collection is assignable
+     *   from (is a superclass instance of) the parameter type that is passed 
+     *   in; false otherwise, including in the event of an exception.
      */
     public static boolean isValidCollectionDataType(String type)
     {
@@ -1169,6 +1172,11 @@ public class Util
         return false;
     }
     
+    /**
+     * 
+     * @param diagramName diagram name to check for validity
+     * @return true if valid diagram name; false otherwise
+     */
     public static boolean isDiagramNameValid(String diagramName)
     {
         if (diagramName == null || diagramName.trim().length() == 0)
@@ -1197,6 +1205,136 @@ public class Util
         //        }
         //        return true;
     }
+    
+    /**
+     * 
+     * @param name Name to check for identifier validity
+     * @return true if invalid identifier; false otherwise
+     */
+    public static boolean invalidIdentifier(String name)
+    {
+        boolean retval = true;
+        
+        // Before we look for more complex problems, make sure that this
+        // name is not a keyword.
+        retval = isKeyword( name );
+        
+        if ( !retval )
+        {
+            // First character must be alpha, underscore, or dollar
+            // Rest of characters must be alphanum, underscore, or dollar
+            
+            // isJavaIdentifierStart and isJavaIdentifierPart will support unicode in JDK1.5
+            if ( name != null && name.length() > 0 )
+            {
+                if (Locale.getDefault().getDisplayLanguage().equals("English"))
+                {
+                    retval = true;
+                    char firstchar = name.charAt(0);
+                    if ( Character.isJavaIdentifierStart(firstchar))
+                    {
+                        retval = false;
+                        for ( int i = 1; i<name.length() && retval == false; i++ )
+                        {
+                            char namechar = name.charAt(i);
+                            if (!Character.isJavaIdentifierPart(namechar))
+                                retval = true;
+                        }
+                    }
+                }
+                else
+                {
+                    retval = true;
+                    char firstchar = name.charAt(0);
+                    if (Character.isLetter(firstchar) || firstchar=='_' || firstchar=='$')
+                    {
+                        retval = false;
+                        for ( int i = 1; i<name.length() && retval == false; i++ )
+                        {
+                            char namechar = name.charAt(i);
+                            if (!(Character.isLetterOrDigit(namechar) || namechar=='_' || namechar=='$'))
+                            {
+                                retval = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        return retval;
+    }
+    
+    
+    
+   /**
+    *
+    * Is the name a keyword in this language
+    *
+    * @param name [in] The name
+    *
+    * @return true if the name is a language keyword.
+    *
+    */
+    public static boolean isKeyword(String name)
+    {
+        boolean retval = false;
+        
+        try
+        {
+            ILanguage pLang = getLanguage2();
+            
+            if (pLang != null)
+                retval = pLang.isKeyword(name);
+        }
+
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        
+        return retval;
+    }
+    
+    
+    /**
+     *
+     * Retrieves the language this processor supports.
+     *
+     * @return pLang[out] The actual ILanguage associated with this processor
+     */
+    public static ILanguage getLanguage2()
+    {
+        ILanguage language = null;
+        
+        try
+        {
+            if (language == null)
+            {
+                String mylang = "Java"; // NOI18N
+                
+                ICoreProduct pProduct = ProductRetriever.retrieveProduct();
+                
+                if (pProduct != null)
+                {
+                    ILanguageManager pManager =
+                            pProduct.getLanguageManager();
+                    
+                    if (pManager != null)
+                        language = pManager.getLanguage(mylang);
+                }
+            }
+        }
+        
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return language;
+    }
+    
     
 //    public static String[] IDS_INVALID_CHARS = {"\\",  "/",  "*", ":", "?", ".", "&"};
     

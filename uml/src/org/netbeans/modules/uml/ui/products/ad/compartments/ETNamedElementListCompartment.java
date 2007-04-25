@@ -22,6 +22,8 @@
 package org.netbeans.modules.uml.ui.products.ad.compartments;
 
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartment;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.IDrawEngine;
 import org.openide.DialogDescriptor;
@@ -96,10 +98,10 @@ public class ETNamedElementListCompartment extends ETListCompartment implements 
 	}
         
     protected DuplicateElementRenameDescriptor showDuplicateElementRenameDialog(
-            String dupeName)
+            INamespace targetNS, INamedElement sourceElement)
     {
-        DuplicateElementRenamePanel derPanel = 
-            new DuplicateElementRenamePanel(dupeName);
+        DuplicateElementRenamePanel derPanel = new DuplicateElementRenamePanel(
+            targetNS, sourceElement, sourceElement.getName());
         
         DuplicateElementRenameDescriptor derDesc = 
             new DuplicateElementRenameDescriptor(

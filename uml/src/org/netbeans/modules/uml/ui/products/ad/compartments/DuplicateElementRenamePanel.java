@@ -24,7 +24,11 @@ import java.awt.event.ActionListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
+import org.netbeans.modules.uml.common.Util;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 import org.openide.util.NbBundle;
 
 
@@ -35,9 +39,23 @@ import org.openide.util.NbBundle;
 public class DuplicateElementRenamePanel extends javax.swing.JPanel
     implements DocumentListener, ActionListener
 {
+    private INamespace targetNamespace = null;
+    private INamedElement sourceElement = null;
     
-    public DuplicateElementRenamePanel(String dupeName)
+    /**
+     * 
+     * @param targetNamespace The target parent element being dropped on.
+     * @param sourceElement The element being DnD'ed.
+     * @param dupeName The offending, duplicated name of the element being DnD'ed.
+     */
+    public DuplicateElementRenamePanel(
+        INamespace targetNamespace,
+        INamedElement sourceElement,
+        String dupeName)
     {
+        this.targetNamespace = targetNamespace;
+        this.sourceElement = sourceElement;
+        
         initComponents();
         newNameText.getDocument().addDocumentListener(this);
         newNameText.setText(dupeName);
@@ -45,9 +63,6 @@ public class DuplicateElementRenamePanel extends javax.swing.JPanel
         messageLabel.setText(NbBundle.getMessage(
             DuplicateElementRenamePanel.class, 
             "MSG_DuplicateElementRenameMessage", dupeName));
-        
-//        messageLabel.setText("An element named \"" + dupeName +
-//            "\" already exists. To continue, please enter a new name.");
     }
 
     
@@ -66,7 +81,7 @@ public class DuplicateElementRenamePanel extends javax.swing.JPanel
         newNameText = new javax.swing.JTextField();
         statusLabel = new javax.swing.JLabel();
 
-        messageLabel.setText("(Duplicate Renam Message)");
+        messageLabel.setText("(Duplicate Rename Message)");
 
         newNameLabel.setLabelFor(newNameText);
         org.openide.awt.Mnemonics.setLocalizedText(newNameLabel, org.openide.util.NbBundle.getMessage(DuplicateElementRenamePanel.class, "LBL_TargetProject")); // NOI18N
@@ -103,8 +118,11 @@ public class DuplicateElementRenamePanel extends javax.swing.JPanel
                 .add(statusLabel))
         );
 
+        messageLabel.getAccessibleContext().setAccessibleDescription("");
         newNameLabel.getAccessibleContext().setAccessibleName("");
         newNameLabel.getAccessibleContext().setAccessibleDescription(null);
+        newNameText.getAccessibleContext().setAccessibleName("");
+        newNameText.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DuplicateElementRenamePanel.class, "ACSD_NewName")); // NOI18N
         statusLabel.getAccessibleContext().setAccessibleName("Dialog field validation message");
         statusLabel.getAccessibleContext().setAccessibleDescription("Reports the validation messages for all of the input fields of this dialog.");
     }// </editor-fold>//GEN-END:initComponents
@@ -183,6 +201,10 @@ public class DuplicateElementRenamePanel extends javax.swing.JPanel
 //        }
     }
 
+    /**
+     * 
+     * @return The new name provided by the user.
+     */
     public String getNewName()
     {
         return newNameText.getText();
@@ -194,13 +216,20 @@ public class DuplicateElementRenamePanel extends javax.swing.JPanel
         enable = true;
         statusMsg = " "; // NOI18N
         
-        if (newNameText.getText() == null)
+        if (newNameText.getText() == null || 
+            newNameText.getText().trim().equals("") ||
+            Util.invalidIdentifier(newNameText.getText()))
         {
             enable = Boolean.FALSE;
-            // statusMsg = "MSG_STATUS_ProjectExists"; // NOI18N
-            statusMsg = "not a valid element name"; // NOI18N
-            
-            return notifyPropertyListeners();
+            statusMsg = "ERR_INVALID_NAME"; // NOI18N
+        }
+
+        else if (Util.containsSimilarElement(
+            targetNamespace, newNameText.getText(), 
+            sourceElement.getElementType(), sourceElement))
+        {
+            enable = Boolean.FALSE;
+            statusMsg = "ERR_SimilarElement"; // NOI18N
         }
         
         return notifyPropertyListeners();

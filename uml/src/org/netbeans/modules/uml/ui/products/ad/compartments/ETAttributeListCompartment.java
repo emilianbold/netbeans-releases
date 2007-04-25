@@ -149,7 +149,7 @@ public class ETAttributeListCompartment extends ETNamedElementListCompartment
                                 {
                                     DuplicateElementRenameDescriptor descr = 
                                         showDuplicateElementRenameDialog(
-                                            sourceFeature.getName());
+                                            targetClassifier, sourceFeature);
                                     
                                     if (descr.getValue() == NotifyDescriptor.OK_OPTION) 
                                     {

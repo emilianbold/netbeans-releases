@@ -52,8 +52,11 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="messageLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="(Duplicate Renam Message)"/>
+        <Property name="text" type="java.lang.String" value="(Duplicate Rename Message)"/>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value=""/>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JLabel" name="newNameLabel">
       <Properties>
@@ -75,6 +78,12 @@
       </AuxValues>
     </Component>
     <Component class="javax.swing.JTextField" name="newNameText">
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/uml/ui/products/ad/compartments/Bundle.properties" key="ACSD_NewName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JLabel" name="statusLabel">
       <Properties>
