@@ -40,6 +40,7 @@ import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
@@ -195,12 +196,14 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         
         setName("Visual Design"); // NOI18N
         setDisplayName(NbBundle.getMessage(JsfTopComponent.class, "LBL_JsfDisplayName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(JsfTopComponent.class, "ACSD_DesignerTopComp"));
 
-        initA11Y();
-        
-        initComponent();
-        
-        initListeners();
+        if (jsfForm.isValid()) {
+            initDesigner();
+        } else {
+            // XXX Model not available yet.
+            initLoadingComponent();
+        }
     }
 
     
@@ -211,13 +214,13 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     Designer getDesigner() {
         return designer;
     }
-    
-    private void initA11Y() {
-        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(JsfTopComponent.class,
-                "ACSD_DesignerTopComp"));
-    }
 
-    private void initListeners() {
+    private void initDesigner() {
+        initDesignerComponent();
+        initDesignerListeners();
+    }
+    
+    private void initDesignerListeners() {
 //        DesignerSettings.getInstance().addPropertyChangeListener(
 //                WeakListeners.propertyChange(settingsListener, DesignerSettings.getInstance()));
 //        DesignerSettings.getInstance().addWeakPreferenceChangeListener(settingsListener);
@@ -228,7 +231,8 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         designer.addDesignerListener(WeakListeners.create(DesignerListener.class, designerListener, designer));
     }
 
-    private void initComponent() {
+    private void initDesignerComponent() {
+        removeAll();
         setLayout(new BorderLayout());
         createDesignerPane();
 
@@ -244,6 +248,16 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         am.setParent(paneMap);
     }
     
+    private void initLoadingComponent() {
+        removeAll();
+        setLayout(new BorderLayout());
+        add(createLoadingComponent(), BorderLayout.CENTER);
+    }
+    
+    private JComponent createLoadingComponent() {
+        // TODO Provide some better component.
+        return new JLabel("Loading, please wait..."); // TEMP
+    }
     
     @Override
     protected String preferredID() {
@@ -2470,6 +2484,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     }
 
     void modelLoaded() {
+        initDesigner();
         designerOpened();
         designerShowing();
         jsfLookupProvider.refreshLookup();
