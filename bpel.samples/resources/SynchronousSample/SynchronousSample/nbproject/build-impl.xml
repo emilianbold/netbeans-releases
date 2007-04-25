@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-*** GENERATED FROM project.xml - DO NOT EDIT  ***
-***         EDIT ../build.xml INSTEAD         ***
+        *** GENERATED FROM project.xml - DO NOT EDIT  ***
+        ***         EDIT ../build.xml INSTEAD         ***
 
-For the purpose of easier reading the script
-is divided into following sections:
+        For the purpose of easier reading the script
+        is divided into following sections:
 
-  - initialization
-  - compilation
-  - dist
-  - execution
-  - debugging
-  - javadoc
-  - cleanup
+        - initialization
+        - compilation
+        - dist
+        - execution
+        - debugging
+        - javadoc
+        - cleanup
 
--->
+        -->
 <project name="-impl" default="build" basedir="..">
     <target name="default" depends="dist,javadoc" description="Build whole project."/>
     <!-- 
-    ======================
-    INITIALIZATION SECTION 
-    ======================
-    -->
+                ======================
+                INITIALIZATION SECTION 
+                ======================
+            -->
     <target name="pre-init">
         <!-- Empty placeholder for easier customization. -->
         <!-- You can override this target in the ../build.xml file. -->
@@ -101,10 +101,10 @@ is divided into following sections:
     </target>
     <target name="init" depends="pre-init,init-private,init-userdir,init-user,init-project,do-init,post-init,init-check,init-taskdefs"/>
     <!--
-    ===================
-    COMPILATION SECTION
-    ===================
-    -->
+                ===================
+                COMPILATION SECTION
+                ===================
+            -->
     <target name="deps-jar" depends="init" unless="${no.dependencies}"/>
     <target name="pre-pre-compile" depends="init,deps-jar">
         <mkdir dir="${build.classes.dir}"/>
@@ -143,10 +143,10 @@ is divided into following sections:
     </target>
     <target name="compile-single" depends="init,deps-jar,pre-pre-compile,pre-compile-single,do-compile-single,post-compile-single"/>
     <!--
-    ====================
-    DIST BUILDING SECTION
-    ====================
-    -->
+                ====================
+                DIST BUILDING SECTION
+                ====================
+            -->
     <target name="pre-dist">
         <!-- Empty placeholder for easier customization. -->
         <!-- You can override this target in the ../build.xml file. -->
@@ -155,8 +155,10 @@ is divided into following sections:
         <BpelProjectValidate buildDirectory="${basedir}/${build.dir}" sourceDirectory="${basedir}/${src.dir}" projectClassPath="${javac.classpath}" buildDependentProjectDir="${basedir}/${build.dir}/dependentProjectFiles" classpathRef="ant.task.classpath.validation" allowBuildWithError="${allow.build.with.error}"/>
         <!-- copy all files from project source directory to build directory. -->
         <copy todir="${build.dir}" preservelastmodified="true">
-            <fileset includes="**/*.bpel,**/*.wsdl,**/*.xsd" dir="${src.dir}"/>
+            <fileset includes="**/*.bpel,**/*.wsdl,**/*.xsd, **/*.xsl, **/*.xslt" dir="${src.dir}"/>
         </copy>
+        <!-- build sub-projects and copy them to the build dir -->
+        <antcall target="deps-sub-project" inheritAll="true"/>
         <antcall target="PackageRetrievedFiles" inheritAll="true"/>
         <!-- generate portmap.xml in build directory. -->
         <BpelProjectJBIGen buildDirectory="${basedir}/${build.dir}" sourceDirectory="${basedir}/${src.dir}" projectClassPath="${javac.classpath}" classpathRef="ant.task.classpath.models"/>
@@ -164,6 +166,8 @@ is divided into following sections:
         <delete dir="${build.dir}/dependentProjectFiles"/>
         <mkdir dir="${build.dir}/dependentProjectFiles"/>
     </target>
+    <!-- BUILD ALL SUB-PROJECTS and copy xsd/wsdl files-->
+    <target name="deps-sub-project" depends="init" unless="${no.dependencies}"/>
     <target name="PackageRetrievedFiles" if="retrieved.exists">
         <copy todir="${build.dir}/META-INF" preservelastmodified="true" failonerror="false">
             <fileset dir="${src.dir}/../retrieved"/>
@@ -171,7 +175,7 @@ is divided into following sections:
     </target>
     <target name="dist_se" depends="init,pre-dist">
         <jar compress="${jar.compress}" jarfile="${build.dir}/SEDeployment.jar">
-            <fileset includes="**/*.bpel,**/*.wsdl,**/*.xsd" dir="${basedir}/${build.dir}"/>
+            <fileset includes="**/*.bpel,**/*.wsdl,**/*.xsd, **/*.xsl, **/*.xslt" dir="${basedir}/${build.dir}"/>
             <fileset dir="${basedir}/${build.dir}">
                 <include name="**/jbi.xml"/>
                 <include name="**/catalog.xml"/>
@@ -189,10 +193,10 @@ is divided into following sections:
     </target>
     <target name="dist" depends="init,pre-dist,do-dist,post-dist" description="Build distribution (JAR)."/>
     <!--
-    =================
-    DEBUGGING SECTION
-    =================
-    -->
+                =================
+                DEBUGGING SECTION
+                =================
+            -->
     <target name="debug" description="Debug project in IDE." depends="init,compile" if="netbeans.home">
         <nbdeploy debugmode="true" clientUrlPart="${client.urlPart}"/>
         <nbjpdaconnect name="${name}" host="${jpda.host}" address="${jpda.address}" transport="${jpda.transport}">
@@ -213,10 +217,10 @@ is divided into following sections:
     </target>
     <target name="debug-fix" if="netbeans.home" depends="init,pre-debug-fix,do-debug-fix"/>
     <!--
-    ===============
-    JAVADOC SECTION
-    ===============
-    -->
+                ===============
+                JAVADOC SECTION
+                ===============
+            -->
     <target name="javadoc-build" depends="init">
         <mkdir dir="${dist.javadoc.dir}"/>
         <javadoc destdir="${dist.javadoc.dir}" source="${javac.source}" notree="${javadoc.notree}" use="${javadoc.use}" nonavbar="${javadoc.nonavbar}" noindex="${javadoc.noindex}" splitindex="${javadoc.splitindex}" author="${javadoc.author}" version="${javadoc.version}" windowtitle="${javadoc.windowtitle}" private="${javadoc.private}">
@@ -234,10 +238,10 @@ is divided into following sections:
     </target>
     <target name="javadoc" depends="init,javadoc-build,javadoc-browse" description="Build Javadoc."/>
     <!--
-    ===============
-    CLEANUP SECTION
-    ===============
-    -->
+                ===============
+                CLEANUP SECTION
+                ===============
+            -->
     <target name="deps-clean" depends="init" unless="${no.dependencies}"/>
     <target name="do-clean" depends="init">
         <delete dir="${build.dir}"/>
