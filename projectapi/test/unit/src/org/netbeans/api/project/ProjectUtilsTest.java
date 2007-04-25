@@ -30,6 +30,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.test.MockLookup;
 
 /**
  * Test {@link ProjectUtils}.
@@ -38,9 +39,7 @@ import org.openide.util.lookup.Lookups;
 public class ProjectUtilsTest extends NbTestCase {
 
     static {
-        TestUtil.setLookup(new Object[] {
-            TestUtil.testProjectFactory(),
-        });
+        MockLookup.setInstances(TestUtil.testProjectFactory());
     }
     
     public ProjectUtilsTest(String name) {

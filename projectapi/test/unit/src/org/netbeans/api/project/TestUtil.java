@@ -38,47 +38,34 @@ import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
+import org.openide.util.test.MockLookup;
 
 /**
  * Help set up org.netbeans.api.project.*Test.
  * @author Jesse Glick
  */
-public final class TestUtil extends ProxyLookup {
+public final class TestUtil {
     
-    static {
-        TestUtil.class.getClassLoader().setDefaultAssertionStatus(true);
-        System.setProperty("org.openide.util.Lookup", TestUtil.class.getName());
-        Assert.assertEquals(TestUtil.class, Lookup.getDefault().getClass());
-    }
-    
-    private static TestUtil DEFAULT;
-    /** Do not call directly */
-    public TestUtil() {
-        Assert.assertNull(DEFAULT);
-        DEFAULT = this;
-        setLookup(new Object[0]);
-    }
+    private TestUtil() {}
     
     /**
      * Set the global default lookup.
      * Caution: if you don't include Lookups.metaInfServices, you may have trouble,
      * e.g. {@link #makeScratchDir} will not work.
+     * @deprecated Use {@link MockLookup} instead.
      */
+    @Deprecated
     public static void setLookup(Lookup l) {
-        DEFAULT.setLookups(l);
+        MockLookup.setLookup(l);
     }
     
     /**
      * Set the global default lookup with some fixed instances including META-INF/services/*.
+     * @deprecated Use {@link MockLookup} instead.
      */
+    @Deprecated
     public static void setLookup(Object... instances) {
-        ClassLoader l = TestUtil.class.getClassLoader();
-        DEFAULT.setLookups(
-            Lookups.fixed(instances),
-            Lookups.metaInfServices(l),
-            Lookups.singleton(l));
+        MockLookup.setInstances(instances);
     }
     
     private static boolean warned = false;

@@ -32,6 +32,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
 // To debug tests add to nbproject/private/private.properties:
+import org.openide.util.test.MockLookup;
 // test-unit-sys-prop.org.netbeans.api.project.ProjectManager.LOG_WARN=true
 
 /* XXX tests needed:
@@ -75,7 +76,7 @@ public class ProjectManagerTest extends NbTestCase {
         badproject = scratch.createFolder("bad");
         badproject.createFolder("testproject").createData("broken");
         mysteryproject = scratch.createFolder("mystery");
-        TestUtil.setLookup(new Object[] {TestUtil.testProjectFactory()});
+        MockLookup.setInstances(TestUtil.testProjectFactory());
         pm = ProjectManager.getDefault();
         pm.reset();
         TestUtil.BROKEN_PROJECT_LOAD_LOCK = null;

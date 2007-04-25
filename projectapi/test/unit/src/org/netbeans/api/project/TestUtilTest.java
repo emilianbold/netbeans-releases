@@ -37,20 +37,6 @@ public class TestUtilTest extends NbTestCase {
         super(name);
     }
 
-    protected void tearDown() throws Exception {
-        TestUtil.setLookup(new Object[0]);
-        super.tearDown();
-    }
-    
-    public void testSetLookup() throws Exception {
-        TestUtil.setLookup(Lookups.singleton("hello"));
-        assertEquals("initial lookup works", "hello", Lookup.getDefault().lookup(String.class));
-        TestUtil.setLookup(Lookups.singleton("goodbye"));
-        assertEquals("modified lookup works", "goodbye", Lookup.getDefault().lookup(String.class));
-        TestUtil.setLookup(Lookup.EMPTY);
-        assertEquals("cleared lookup works", null, Lookup.getDefault().lookup(String.class));
-    }
-    
     public void testCreateFileFromContent() throws Exception {
         URL content = TestUtilTest.class.getResource("TestUtilTest.class");
         assertNotNull("have TestUtilTest.class", content);

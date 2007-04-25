@@ -18,6 +18,7 @@
  */
 
 package org.netbeans.api.project;
+
 import java.io.OutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -30,6 +31,7 @@ import org.netbeans.modules.projectapi.TimedWeakReference;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.test.MockLookup;
 
 /**
  * Test functionality of FileOwnerQuery.
@@ -57,9 +59,7 @@ public class FileOwnerQueryTest extends NbTestCase {
     private FileObject zippedfile;
     
     protected void setUp() throws Exception {
-        TestUtil.setLookup(new Object[] {
-            TestUtil.testProjectFactory(),
-        });
+        MockLookup.setInstances(TestUtil.testProjectFactory());
         ProjectManager.getDefault().reset();
         FileOwnerQuery.reset();
         scratch = TestUtil.makeScratchDir(this);
