@@ -661,6 +661,16 @@ public class JaxWsUtils {
         }
         return false;
     }
+
+    public static boolean isCarProject(Project project) {
+        ProjectInfo projectInfo = new ProjectInfo(project);
+        return isCarProject(projectInfo);
+    }
+    
+    public static boolean isCarProject(ProjectInfo projectInfo) {
+        int projectType = projectInfo.getProjectType();
+        return projectType == ProjectInfo.CAR_PROJECT_TYPE;
+    }
     
     private static final Lookup.Result<MultiViewCookieProvider> multiviewCookieProviders =
         Lookup.getDefault().lookup(new Lookup.Template<MultiViewCookieProvider>(MultiViewCookieProvider.class));

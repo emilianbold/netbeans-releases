@@ -625,7 +625,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         if (projectType > 0) {
             jLabelJaxVersion.setEnabled(false);
             jComboBoxJaxVersion.setEnabled(false);
-            if (Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project)) //NOI18N
+            if (projectType==3 || Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project)) //NOI18N
                 jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_WS);
             else{
                 if((!jsr109OldSupported && !jsr109Supported)

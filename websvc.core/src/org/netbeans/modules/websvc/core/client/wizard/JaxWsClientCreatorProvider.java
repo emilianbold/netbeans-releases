@@ -42,6 +42,9 @@ public class JaxWsClientCreatorProvider implements ClientCreatorProvider {
         if (JaxWsUtils.isEjbJavaEE5orHigher(project)) {
             return new JaxWsClientCreator(project, wiz);
         }
+        if (JaxWsUtils.isCarProject(project)) {
+            return new JaxWsClientCreator(project, wiz);
+        }
         return null;
     }
 
