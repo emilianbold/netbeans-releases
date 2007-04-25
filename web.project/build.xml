@@ -26,11 +26,7 @@ Microsystems, Inc. All Rights Reserved.
         <javac srcdir="antsrc" destdir="build/antclasses" source="1.4" debug="true" deprecation="true">
             <classpath>
                 <path refid="cp"/>
-                <pathelement location="${ant.jar}"/>
-                <pathelement location="${tools.jar}"/>
-                <pathelement location="../external/servlet2.5-jsp2.1-api.jar"/>
-                <pathelement location="../external/glassfish-jspparser.jar"/>
-                <pathelement location="../../libs/external/commons-logging-1.0.4.jar"/>
+                <pathelement path="${antsrc.cp.extra}"/>
             </classpath>
         </javac>
         <copy todir="build/antclasses">

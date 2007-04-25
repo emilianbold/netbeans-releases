@@ -429,7 +429,7 @@ Microsystems, Inc. All Rights Reserved.
             </friend-packages>
             <extra-compilation-unit>
                 <package-root>antsrc</package-root>
-                <classpath>${module.classpath}:${ant.jar}</classpath>
+                <classpath>${module.classpath}:${antsrc.cp.extra}</classpath>
                 <built-to>build/antclasses</built-to>
                 <built-to>${cluster}/ant/nblib/${code.name.base.dashes}.jar</built-to>
             </extra-compilation-unit>
