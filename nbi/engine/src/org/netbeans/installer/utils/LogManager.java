@@ -36,27 +36,17 @@ import org.netbeans.installer.utils.helper.ErrorLevel;
  */
 public final class LogManager {
     /////////////////////////////////////////////////////////////////////////////////
-    // Constants
-    public static final String LOG_LEVEL_PROPERTY      = "nbi.utils.log.level";
-    public static final String LOG_TO_CONSOLE_PROPERTY = "nbi.utils.log.to.console";
-    
-    public static final String INDENT = "    ";
-    
-    public static final int     DEFAULT_LOG_LEVEL      = ErrorLevel.DEBUG;
-    public static final boolean DEFAULT_LOG_TO_CONSOLE = true;
-    
-    /////////////////////////////////////////////////////////////////////////////////
     // Static
-    private static File         logFile      = null;
-    private static PrintWriter  logWriter    = null;
-    private static int          logLevel     = DEFAULT_LOG_LEVEL;
-    private static boolean      logToConsole = DEFAULT_LOG_TO_CONSOLE;
+    private static File logFile;
+    private static PrintWriter logWriter;
+    private static int logLevel;
+    private static boolean logToConsole;
     
-    private static int          indent       = 0;
+    private static int indent;
     
-    private static boolean      started      = false;
+    private static boolean started = false;
     
-    private static List<String> logCache     = new LinkedList<String>();
+    private static List<String> logCache = new LinkedList<String>();
     
     public static synchronized void start() {
         // check for custom log level
@@ -212,4 +202,19 @@ public final class LogManager {
     private LogManager() {
         // does nothing
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final String LOG_LEVEL_PROPERTY = 
+            "nbi.utils.log.level"; // NOI18N
+    public static final String LOG_TO_CONSOLE_PROPERTY = 
+            "nbi.utils.log.to.console"; // NOI18N
+    
+    public static final String INDENT = 
+            "    "; // NOI18N
+    
+    public static final int DEFAULT_LOG_LEVEL = 
+            ErrorLevel.DEBUG;
+    public static final boolean DEFAULT_LOG_TO_CONSOLE = 
+            false;
 }

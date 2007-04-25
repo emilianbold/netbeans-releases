@@ -292,7 +292,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                     }
                 } else if (node instanceof Group) {
                     final RegistryFilter filter = new AndFilter(
-                            new ProductFilter(true), 
+                            new ProductFilter(true),
                             new OrFilter(
                             new ProductFilter(Status.TO_BE_INSTALLED),
                             new ProductFilter(Status.INSTALLED)));
@@ -443,6 +443,8 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         }
         
         private void populateList(List<RegistryNode> list, RegistryNode parent) {
+            final List<RegistryNode> groups = new LinkedList<RegistryNode>();
+            
             for (RegistryNode node: parent.getChildren()) {
                 if (!node.isVisible()) {
                     continue;
@@ -453,8 +455,15 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                             SystemUtils.getCurrentPlatform())) {
                         continue;
                     }
+                    list.add(node);
                 }
                 
+                if (node instanceof Group) {
+                    groups.add(node);
+                }
+            }
+            
+            for (RegistryNode node: groups) {
                 list.add(node);
                 populateList(list, node);
             }
@@ -595,7 +604,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             "error.not.enough.space.to.download"; // NOI18N
     public static final String ERROR_NO_ENOUGH_SPACE_TO_EXTRACT_PROPERTY =
             "error.not.enough.space.to.extract"; // NOI18N
-    public static final String ERROR_EVERYTHING_IS_INSTALLED_PROPERTY = 
+    public static final String ERROR_EVERYTHING_IS_INSTALLED_PROPERTY =
             "error.everything.is.installed"; // NOI18N
     
     public static final String DEFAULT_ERROR_NO_CHANGES =

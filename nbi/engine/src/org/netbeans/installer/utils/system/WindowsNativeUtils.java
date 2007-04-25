@@ -237,7 +237,7 @@ public class WindowsNativeUtils extends NativeUtils {
         if (defaultApplicationsLocation == null) {
             defaultApplicationsLocation = SystemUtils.getUserHomeDirectory();
             
-            String path = SystemUtils.getEnvironmentVariable("ProgramFiles");
+            final String path = SystemUtils.getEnvironmentVariable("ProgramFiles");
             
             if (path != null) {
                 defaultApplicationsLocation = new File(path).getAbsoluteFile();

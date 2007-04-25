@@ -60,14 +60,17 @@ public class NbiLabel extends JLabel {
             this.text = DEFAULT_TEXT;
             
             super.setText(DEFAULT_TEXT);
-            super.setDisplayedMnemonic(DEFAULT_MNEMONIC_CHAR);
+            super.setDisplayedMnemonic(DEFAULT_MNEMONIC);
             super.setToolTipText(DEFAULT_TOOLTIP_TEXT);
         } else {
             this.text = text;
             
             super.setText(StringUtils.stripMnemonic(this.text));
-            super.setDisplayedMnemonic(StringUtils.fetchMnemonic(this.text));
             super.setToolTipText(StringUtils.stripMnemonic(this.text));
+            
+            if (!SystemUtils.isMacOS()) {
+                super.setDisplayedMnemonic(StringUtils.fetchMnemonic(this.text));
+            }
         }
     }
     
@@ -83,18 +86,18 @@ public class NbiLabel extends JLabel {
             int stringWidth = getStringBounds(graphics).width;
             int index = string.lastIndexOf(separator, lastIndex - 1);
             
-            // we should continue while there is at least one separator 
+            // we should continue while there is at least one separator
             // (lastIndex > -1), there is a previous separator (index > -1) and
-            // the redered string width exceeds the bounds 
+            // the rendered string width exceeds the bounds
             // (stringWidth > boundsWidth)
-            // note: if there are no separators in the string, it will not be 
-            // shortened at all and the default shortening procedure will take 
+            // note: if there are no separators in the string, it will not be
+            // shortened at all and the default shortening procedure will take
             // place, also if collapsing a path does not help completely, additional
             // shortening will be performed by the default procedure
-            while ((lastIndex != -1) && 
-                    (index != -1) && 
+            while ((lastIndex != -1) &&
+                    (index != -1) &&
                     (stringWidth > boundsWidth)) {
-                final String shortenedString = 
+                final String shortenedString =
                         StringUtils.replace(string, "...", index + 1, lastIndex);
                 
                 super.setText(shortenedString);
@@ -116,8 +119,10 @@ public class NbiLabel extends JLabel {
     // Constants
     public static final String DEFAULT_TEXT =
             " "; // NOI18N
+    
     public static final String DEFAULT_TOOLTIP_TEXT =
             null;
-    public static final char DEFAULT_MNEMONIC_CHAR =
-            '\u0000'; // NOI18N
+    
+    public static final char DEFAULT_MNEMONIC =
+            '\u0000'; // NOMAGI
 }

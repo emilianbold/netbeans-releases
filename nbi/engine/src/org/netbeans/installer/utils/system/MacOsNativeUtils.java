@@ -86,6 +86,18 @@ public class MacOsNativeUtils extends UnixNativeUtils {
     }
     
     // NativeUtils implementation/override //////////////////////////////////////////
+    public File getDefaultApplicationsLocation() {
+        File applications = new File("/Applications");
+        
+        if (applications.exists() && 
+                applications.isDirectory() && 
+                FileUtils.canWrite(applications)) {
+            return applications;
+        } else {
+            return SystemUtils.getUserHomeDirectory();
+        }
+    }
+    
     public File getShortcutLocation(Shortcut shortcut, ShortcutLocationType locationType) {
         String fileName = shortcut.getFileName();
         

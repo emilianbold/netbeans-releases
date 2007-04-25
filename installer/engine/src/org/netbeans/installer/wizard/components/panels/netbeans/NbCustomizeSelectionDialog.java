@@ -21,6 +21,7 @@
 package org.netbeans.installer.wizard.components.panels.netbeans;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -187,11 +188,15 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         
         // componentsScrollPane /////////////////////////////////////////////////////
         componentsScrollPane = new NbiScrollPane(componentsList);
+        componentsScrollPane.setVerticalScrollBarPolicy(
+                NbiScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         
         // descriptionPane //////////////////////////////////////////////////////////
         descriptionPane = new NbiTextPane();
         descriptionPane.setBorder(
                 new EmptyBorder(5, 5, 5, 5));
+        descriptionPane.setPreferredSize(new Dimension(150, 10));
+        descriptionPane.setMinimumSize(new Dimension(150, 10));
         
         // descriptionScrollPane ////////////////////////////////////////////////////
         descriptionScrollPane = new NbiScrollPane(descriptionPane);
@@ -262,9 +267,9 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         getContentPane().add(descriptionScrollPane, new GridBagConstraints(
                 1, 1,                             // x, y
                 1, 1,                             // width, height
-                0.6, 1.0,                         // weight-x, weight-y
+                0.0, 1.0,                         // weight-x, weight-y
                 GridBagConstraints.PAGE_START,    // anchor
-                GridBagConstraints.BOTH,          // fill
+                GridBagConstraints.VERTICAL,      // fill
                 new Insets(6, 6, 0, 11),          // padding
                 0, 0));                           // padx, pady - ???
         getContentPane().add(sizesLabel, new GridBagConstraints(
@@ -510,7 +515,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         setVisible(false);
     }
     
-    public boolean isThereAnythingVisibleToInstall() {
+    private boolean isThereAnythingVisibleToInstall() {
         final Registry registry = Registry.getInstance();
         
         final List<Product> toInstall = new LinkedList<Product>();
@@ -526,7 +531,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         return false;
     }
     
-    public boolean isThereAnythingVisibleToUninstall() {
+    private boolean isThereAnythingVisibleToUninstall() {
         final Registry registry = Registry.getInstance();
         
         final List<Product> toUninstall = new LinkedList<Product>();
@@ -655,52 +660,6 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
             initComponents();
         }
         
-        // private //////////////////////////////////////////////////////////////////
-        private void initComponents() {
-            // panel ////////////////////////////////////////////////////////////////
-            panel = new NbiPanel();
-            panel.setLayout(new GridBagLayout());
-            panel.setOpaque(false);
-            panel.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseReleased(MouseEvent event) {
-                    if (checkBox.isVisible() &&
-                            checkBox.getBounds().contains(event.getPoint())) {
-                        ComponentsListModel model =
-                                (ComponentsListModel) componentsList.getModel();
-                        
-                        model.toggleSelection(currentIndex);
-                    }
-                }
-            });
-            
-            // checkBox /////////////////////////////////////////////////////////////
-            checkBox = new NbiCheckBox();
-            checkBox.setOpaque(false);
-            
-            // titleLabel ///////////////////////////////////////////////////////////
-            titleLabel = new NbiLabel();
-            titleLabel.setFocusable(false);
-            
-            // panel ////////////////////////////////////////////////////////////////
-            panel.add(checkBox, new GridBagConstraints(
-                    0, 0,                             // x, y
-                    1, 1,                             // width, height
-                    0.0, 0.0,                         // weight-x, weight-y
-                    GridBagConstraints.CENTER,        // anchor
-                    GridBagConstraints.BOTH,          // fill
-                    new Insets(0, 0, 0, 0),           // padding
-                    0, 0));                           // padx, pady - ???);
-            panel.add(titleLabel, new GridBagConstraints(
-                    1, 0,                             // x, y
-                    1, 1,                             // width, height
-                    1.0, 0.0,                         // weight-x, weight-y
-                    GridBagConstraints.LINE_START,    // anchor
-                    GridBagConstraints.VERTICAL,      // fill
-                    new Insets(0, 0, 0, 0),           // padding
-                    0, 0));                           // padx, pady - ???);
-        }
-        
         public Component getListCellRendererComponent(
                 JList list,
                 Object value,
@@ -767,6 +726,59 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
             }
             
             return panel;
+        }
+        
+        // private //////////////////////////////////////////////////////////////////
+        private void initComponents() {
+            // panel ////////////////////////////////////////////////////////////////
+            panel = new NbiPanel();
+            panel.setLayout(new GridBagLayout());
+            panel.setOpaque(false);
+            panel.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseReleased(MouseEvent event) {
+                    if (checkBox.isVisible() &&
+                            checkBox.getBounds().contains(event.getPoint())) {
+                        ComponentsListModel model =
+                                (ComponentsListModel) componentsList.getModel();
+                        
+                        model.toggleSelection(currentIndex);
+                    }
+                }
+            });
+            
+            // checkBox /////////////////////////////////////////////////////////////
+            checkBox = new NbiCheckBox();
+            checkBox.setOpaque(false);
+            
+            final Dimension preferredSize = checkBox.getPreferredSize();
+            preferredSize.height = preferredSize.height - 2;
+            preferredSize.width = preferredSize.width - 2;
+            
+            checkBox.setPreferredSize(preferredSize);
+            
+            // titleLabel ///////////////////////////////////////////////////////////
+            titleLabel = new NbiLabel();
+            titleLabel.setFocusable(false);
+            titleLabel.setPreferredSize(preferredSize);
+            
+            // panel ////////////////////////////////////////////////////////////////
+            panel.add(checkBox, new GridBagConstraints(
+                    0, 0,                             // x, y
+                    1, 1,                             // width, height
+                    0.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(0, 0, 0, 0),           // padding
+                    0, 0));                           // padx, pady - ???);
+            panel.add(titleLabel, new GridBagConstraints(
+                    1, 0,                             // x, y
+                    1, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.LINE_START,    // anchor
+                    GridBagConstraints.HORIZONTAL,    // fill
+                    new Insets(0, 0, 0, 0),           // padding
+                    0, 0));                           // padx, pady - ???);
         }
     }
     

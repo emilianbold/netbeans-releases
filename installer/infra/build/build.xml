@@ -306,6 +306,7 @@ jarsigner.storepass=${jarsigner.storepass}
                 value="${nbi.core.dir}/infra/build/engine/dist/${engine.dist.file.name}"/>
         </ant>
         
+        <!--
         <echo message="BUILDING NB-IDE-GROUP ====================================="/>
         <ant dir="${nbi.netbeans.dir}/infra/build/groups/nb-ide-group" target="release-all">
             <property 
@@ -325,6 +326,7 @@ jarsigner.storepass=${jarsigner.storepass}
                 name="release.parent.platforms"
                 value=""/>
         </ant>
+        -->
         
         <echo message="BUILDING NB-BASE =========================================="/>
         <ant dir="${nbi.netbeans.dir}/infra/build/products/nb-base" target="release-all">
@@ -341,7 +343,7 @@ jarsigner.storepass=${jarsigner.storepass}
                 
             <property
                 name="release.parent.uid"
-                value="nb-ide-group"/>
+                value=""/>
             <property
                 name="release.parent.version"
                 value=""/>
@@ -365,7 +367,7 @@ jarsigner.storepass=${jarsigner.storepass}
                 
             <property
                 name="release.parent.uid"
-                value="nb-ide-group"/>
+                value=""/>
             <property
                 name="release.parent.version"
                 value=""/>
@@ -374,6 +376,7 @@ jarsigner.storepass=${jarsigner.storepass}
                 value=""/>
         </ant>
         
+        <!--
         <echo message="BUILDING NB-ADDONS-GROUP =================================="/>
         <ant dir="${nbi.netbeans.dir}/infra/build/groups/nb-addons-group" target="release-all">
             <property 
@@ -393,6 +396,7 @@ jarsigner.storepass=${jarsigner.storepass}
                 name="release.parent.platforms"
                 value=""/>
         </ant>
+        -->
         
         <echo message="BUILDING NB-JAVA-EE ======================================="/>
         <ant dir="${nbi.netbeans.dir}/infra/build/products/nb-javaee" target="release-all">
@@ -409,7 +413,7 @@ jarsigner.storepass=${jarsigner.storepass}
                 
             <property
                 name="release.parent.uid"
-                value="nb-addons-group"/>
+                value=""/>
             <property
                 name="release.parent.version"
                 value=""/>
@@ -433,7 +437,7 @@ jarsigner.storepass=${jarsigner.storepass}
                 
             <property
                 name="release.parent.uid"
-                value="nb-addons-group"/>
+                value=""/>
             <property
                 name="release.parent.version"
                 value=""/>
@@ -457,7 +461,7 @@ jarsigner.storepass=${jarsigner.storepass}
                 
             <property
                 name="release.parent.uid"
-                value="nb-addons-group"/>
+                value=""/>
             <property
                 name="release.parent.version"
                 value=""/>
@@ -481,7 +485,7 @@ jarsigner.storepass=${jarsigner.storepass}
                 
             <property
                 name="release.parent.uid"
-                value="nb-addons-group"/>
+                value=""/>
             <property
                 name="release.parent.version"
                 value=""/>
@@ -505,7 +509,7 @@ jarsigner.storepass=${jarsigner.storepass}
                 
             <property
                 name="release.parent.uid"
-                value="nb-addons-group"/>
+                value=""/>
             <property
                 name="release.parent.version"
                 value=""/>
@@ -853,70 +857,46 @@ jarsigner.storepass=${jarsigner.storepass}
             src="http://${glassfish.host}:${glassfish.http.port}${context.path}/download-2/img/warning_badge_white_solaris-sparc.gif"
             dest="${output.dir}/img/warning_badge_white_solaris-sparc.gif"/>
         
-        <chmod perm="ugo+x">
-            <fileset dir="${output.dir}/bundles">
-                <include name="*.command"/>
-                </fileset>
-            </chmod>
-        
-        <tar tarfile="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-basic-macosx-x86.tar">
-            <tarfileset dir="${output.dir}/bundles/">
+        <tar tarfile="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-basic-macosx-x86.tgz" 
+            compression="gzip">
+            <tarfileset dir="${output.dir}/bundles/" mode="755">
                 <include name="netbeans-6.0-nightly-${build.number}-basic-macosx-x86.command"/>
             </tarfileset>
         </tar>
-        <gzip 
-            src="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-basic-macosx-x86.tar"
-            destfile="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-basic-macosx-x86.tgz"/>
-            
-        <tar tarfile="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-basic-macosx-ppc.tar">
-            <tarfileset dir="${output.dir}/bundles/">
+        <tar tarfile="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-basic-macosx-ppc.tgz" 
+            compression="gzip">
+            <tarfileset dir="${output.dir}/bundles/" mode="755" >
                 <include name="netbeans-6.0-nightly-${build.number}-basic-macosx-ppc.command"/>
             </tarfileset>
         </tar>
-        <gzip 
-            src="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-basic-macosx-ppc.tar"
-            destfile="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-basic-macosx-ppc.tgz"/>
-        
-        <tar tarfile="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-standard-macosx-x86.tar">
-            <tarfileset dir="${output.dir}/bundles/">
+        <tar tarfile="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-standard-macosx-x86.tgz" 
+            compression="gzip">
+            <tarfileset dir="${output.dir}/bundles/" mode="755">
                 <include name="netbeans-6.0-nightly-${build.number}-standard-macosx-x86.command"/>
             </tarfileset>
         </tar>
-        <gzip 
-            src="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-standard-macosx-x86.tar"
-            destfile="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-standard-macosx-x86.tgz"/>
-            
-        <tar tarfile="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-standard-macosx-ppc.tar">
-            <tarfileset dir="${output.dir}/bundles/">
+        <tar tarfile="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-standard-macosx-ppc.tgz" 
+            compression="gzip">
+            <tarfileset dir="${output.dir}/bundles/" mode="755">
                 <include name="netbeans-6.0-nightly-${build.number}-standard-macosx-ppc.command"/>
             </tarfileset>
         </tar>
-        <gzip 
-            src="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-standard-macosx-ppc.tar"
-            destfile="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-standard-macosx-ppc.tgz"/>
-        
-        <tar tarfile="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-full-macosx-x86.tar">
-            <tarfileset dir="${output.dir}/bundles/">
+        <tar tarfile="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-full-macosx-x86.tgz" 
+            compression="gzip">
+            <tarfileset dir="${output.dir}/bundles/" mode="755">
                 <include name="netbeans-6.0-nightly-${build.number}-full-macosx-x86.command"/>
             </tarfileset>
         </tar>
-        <gzip 
-            src="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-full-macosx-x86.tar"
-            destfile="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-full-macosx-x86.tgz"/>
-            
-        <tar tarfile="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-full-macosx-ppc.tar">
-            <tarfileset dir="${output.dir}/bundles/">
+        <tar tarfile="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-full-macosx-ppc.tgz" 
+            compression="gzip">
+            <tarfileset dir="${output.dir}/bundles/" mode="755">
                 <include name="netbeans-6.0-nightly-${build.number}-full-macosx-ppc.command"/>
             </tarfileset>
         </tar>
-        <gzip 
-            src="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-full-macosx-ppc.tar"
-            destfile="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-full-macosx-ppc.tgz"/>
-            
+        
         <delete>
             <fileset dir="${output.dir}/bundles">
                 <include name="*.command"/>
-                <include name="*.tar"/>
             </fileset>
         </delete>
     </target>

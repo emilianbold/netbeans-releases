@@ -22,18 +22,35 @@ package org.netbeans.installer.utils.helper.swing;
 
 import javax.swing.JCheckBox;
 import org.netbeans.installer.utils.StringUtils;
+import org.netbeans.installer.utils.SystemUtils;
 
 /**
  *
  * @author Kirill Sorokin
  */
 public class NbiCheckBox extends JCheckBox {
+    /////////////////////////////////////////////////////////////////////////////////
+    // Instance
     public NbiCheckBox() {
         super();
+        
+        setText(DEFAULT_TEXT);
+        setMnemonic(DEFAULT_MNEMONIC);
     }
     
     public void setText(String text) {
         super.setText(StringUtils.stripMnemonic(text));
-        super.setMnemonic(StringUtils.fetchMnemonic(text));
+        
+        if (!SystemUtils.isMacOS()) {
+            super.setMnemonic(StringUtils.fetchMnemonic(text));
+        }
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final String DEFAULT_TEXT =
+            ""; // NOI18N
+    
+    public static final char DEFAULT_MNEMONIC =
+            '\u0000';
 }

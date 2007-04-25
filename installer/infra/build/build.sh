@@ -59,6 +59,8 @@
 #SJSAS_IMAGE_HOSTNAME_SOLARIS_SPARC=
 #SJSAS_IMAGE_HOSTNAME_MACOSX=
 #
+#ADDITIONAL_PARAMETERS=
+#
 ################################################################################
 
 ################################################################################
@@ -132,6 +134,7 @@ ant build \
         \"-Dsjsas.image.token.hostname.solaris-x86=${SJSAS_IMAGE_HOSTNAME_SOLARIS_X86}\" \
         \"-Dsjsas.image.token.hostname.solaris-sparc=${SJSAS_IMAGE_HOSTNAME_SOLARIS_SPARC}\" \
         \"-Dsjsas.image.token.hostname.macosx=${SJSAS_IMAGE_HOSTNAME_MACOSX}\" \
+        ${ADDITIONAL_PARAMETERS} \
         $* 2>&1 |tee ${LOG_FILE}
 
 ################################################################################

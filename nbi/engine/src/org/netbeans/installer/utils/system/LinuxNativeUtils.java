@@ -20,6 +20,10 @@
  */
 package org.netbeans.installer.utils.system;
 
+import java.io.File;
+import org.netbeans.installer.utils.FileUtils;
+import org.netbeans.installer.utils.SystemUtils;
+
 /**
  *
  * @author Kirill Sorokin
@@ -30,8 +34,21 @@ public class LinuxNativeUtils extends UnixNativeUtils {
             "linux/" + //NOI18N
             "linux.so"; //NO18N
     public static final String[] FORBIDDEN_DELETING_FILES_LINUX = {};
+    
     LinuxNativeUtils() {
         loadNativeLibrary(LIBRARY_PATH_LINUX);
         initializeForbiddenFiles(FORBIDDEN_DELETING_FILES_LINUX);
+    }
+    
+    public File getDefaultApplicationsLocation() {
+        File usrlocal = new File("/usr/local");
+        
+        if (usrlocal.exists() && 
+                usrlocal.isDirectory() && 
+                FileUtils.canWrite(usrlocal)) {
+            return usrlocal;
+        } else {
+            return SystemUtils.getUserHomeDirectory();
+        }
     }
 }

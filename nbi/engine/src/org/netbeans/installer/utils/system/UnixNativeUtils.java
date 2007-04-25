@@ -318,7 +318,7 @@ public abstract class UnixNativeUtils extends NativeUtils {
     }
     
     public void setEnvironmentVariable(String name, String value, EnvironmentScope scope, boolean flag) throws NativeException {
-        if(EnvironmentScope.PROCESS == scope) {
+        if (EnvironmentScope.PROCESS == scope) {
             SystemUtils.getEnvironment().put(name, value);
         } else {
             try {
@@ -376,7 +376,13 @@ public abstract class UnixNativeUtils extends NativeUtils {
     }
     
     public File getDefaultApplicationsLocation() {
-        return SystemUtils.getUserHomeDirectory();
+        File opt = new File("/opt");
+        
+        if (opt.exists() && opt.isDirectory() && FileUtils.canWrite(opt)) {
+            return opt;
+        } else {
+            return SystemUtils.getUserHomeDirectory();
+        }
     }
     
     public boolean isPathValid(String path) {
@@ -438,23 +444,46 @@ public abstract class UnixNativeUtils extends NativeUtils {
     }
     
     public List<File> getFileSystemRoots() throws IOException {
-        final String stdout = SystemUtils.executeCommand("df", "-h").getStdOut();
-        final String[] lines = stdout.split(StringUtils.NEW_LINE_PATTERN);
-        final int index = lines[0].indexOf("Mounted on");
-        
-        final List<File> roots = new LinkedList<File>();
-        for (int i = 1; i < lines.length; i++) {
-            if (lines[i].length() > index) {
-                final String path = lines[i].substring(index);
-                final File file = new File(path);
-                
-                if (path.startsWith("/") && !roots.contains(file)) {
-                    roots.add(file);
+        try {
+            setEnvironmentVariable(
+                    "LANG", "C", EnvironmentScope.PROCESS, false);
+            
+            setEnvironmentVariable(
+                    "LC_COLLATE", "C", EnvironmentScope.PROCESS, false);
+            setEnvironmentVariable(
+                    "LC_CTYPE", "C", EnvironmentScope.PROCESS, false);
+            setEnvironmentVariable(
+                    "LC_MESSAGES", "C", EnvironmentScope.PROCESS, false);
+            setEnvironmentVariable(
+                    "LC_MONETARY", "C", EnvironmentScope.PROCESS, false);
+            setEnvironmentVariable(
+                    "LC_NUMERIC", "C", EnvironmentScope.PROCESS, false);
+            setEnvironmentVariable(
+                    "LC_TIME", "C", EnvironmentScope.PROCESS, false);
+            
+            final String stdout = SystemUtils.executeCommand("df", "-h").getStdOut();
+            final String[] lines = stdout.split(StringUtils.NEW_LINE_PATTERN);
+            final int index = lines[0].indexOf("Mounted on");
+            
+            final List<File> roots = new LinkedList<File>();
+            for (int i = 1; i < lines.length; i++) {
+                if (lines[i].length() > index) {
+                    final String path = lines[i].substring(index);
+                    final File file = new File(path);
+                    
+                    if (path.startsWith("/") && !roots.contains(file)) {
+                        roots.add(file);
+                    }
                 }
             }
+            
+            return roots;
+        } catch (NativeException e) {
+            final IOException ioException = 
+                    new IOException("Cannot define the environment");
+            
+            throw (IOException) ioException.initCause(e);
         }
-        
-        return roots;
     }
     
     // native declarations //////////////////////////////////////////////////////////
