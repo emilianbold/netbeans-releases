@@ -35,5 +35,5 @@ public interface JbiBuildListener {
     /**
      * Notified after a compapp's build-related Ant task is compleleted.
      */
-    void buildCompleted();
+    void buildCompleted(boolean isSuccessful);
 }

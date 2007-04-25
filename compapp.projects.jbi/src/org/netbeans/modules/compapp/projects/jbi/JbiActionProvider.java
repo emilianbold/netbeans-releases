@@ -256,11 +256,11 @@ public class JbiActionProvider implements ActionProvider {
         }
 
         try {
-            final ExecutorTask task = ActionUtils.runTarget(findBuildXml(), targetNames, p);
+            final ExecutorTask executorTask = ActionUtils.runTarget(findBuildXml(), targetNames, p);
             if (jbiBuildListener != null) {
-                task.addTaskListener(new TaskListener() {
+                executorTask.addTaskListener(new TaskListener() {
                     public void taskFinished(org.openide.util.Task task) {
-                        jbiBuildListener.buildCompleted();
+                        jbiBuildListener.buildCompleted(executorTask.result() == 0);
                     }
                 });
             }
