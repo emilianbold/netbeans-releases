@@ -82,6 +82,8 @@ public class AlertDisplayPresenter extends DisplayableDisplayPresenter {
             imageLabel.setIcon(icon);
         } else if (icon == null && path != null) {
             imageLabel.setIcon(ICON_BROKEN);
+        } else {
+            imageLabel.setIcon(null);
         }
     }
 }

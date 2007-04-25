@@ -23,20 +23,26 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.netbeans.modules.vmd.midp.screen.display.DisplayableDisplayPresenter;
 import org.netbeans.modules.vmd.midp.screen.display.ScreenSupport;
 import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScreenCD;
+import org.openide.util.Utilities;
 
 /**
  *
  * @author Anton Chechel
  */
 public class AbstractInfoDisplayPresenter extends DisplayableDisplayPresenter {
+    
+    private static final String ICON_BROKEN_PATH = "org/netbeans/modules/vmd/midpnb/resources/broken.png"; // NOI18N
+    private static final Icon ICON_BROKEN = new ImageIcon(Utilities.loadImage(ICON_BROKEN_PATH));
     
     private JLabel imageLabel;
     private JLabel stringLabel;
@@ -67,9 +73,20 @@ public class AbstractInfoDisplayPresenter extends DisplayableDisplayPresenter {
         super.reload(deviceInfo);
         
         DesignComponent imageComponent = getComponent().readProperty(AbstractInfoScreenCD.PROP_IMAGE).getComponent();
+        String path = null;
+        if (imageComponent != null)
+            path = (String) imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH).getPrimitiveValue();
         Icon icon = ScreenSupport.getIconFromImageComponent(imageComponent);
-        imageLabel.setIcon(icon);
-
+        if (icon != null) {
+            imageLabel.setIcon(icon);
+        } else if (icon == null && path != null) {
+            imageLabel.setText(null);
+            imageLabel.setIcon(ICON_BROKEN);
+        } else {
+            imageLabel.setIcon(null);
+            imageLabel.setText("<image not specified>"); //NOI18N
+        }
+        
         String text = MidpTypes.getString(getComponent().readProperty(AbstractInfoScreenCD.PROP_TEXT));
         stringLabel.setText(ScreenSupport.wrapWithHtml(text));
     }
