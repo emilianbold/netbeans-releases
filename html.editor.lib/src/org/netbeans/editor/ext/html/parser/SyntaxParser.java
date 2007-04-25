@@ -341,6 +341,10 @@ public final class SyntaxParser {
                         break;
                     }
                 }
+                if(offset == nonHtmlBlockEnd) {
+                    return null;
+                }
+                
                 return new SyntaxElement(this, offset, nonHtmlBlockEnd, SyntaxElement.TYPE_UNKNOWN);
             }
             
