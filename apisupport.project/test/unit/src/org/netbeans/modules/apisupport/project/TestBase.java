@@ -269,7 +269,7 @@ import org.openide.util.Lookup;
                 doCopy(new File(from, kids[i]), new File(to, kids[i]));
             }
         } else {
-            assert from.isFile();
+            assert from.isFile() : from;
             InputStream is = new FileInputStream(from);
             try {
                 OutputStream os = new FileOutputStream(to);
