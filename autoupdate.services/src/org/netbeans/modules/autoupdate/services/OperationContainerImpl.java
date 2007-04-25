@@ -219,7 +219,15 @@ public final class OperationContainerImpl<Support> {
             return Utils.findBrokenDependencies(getUpdateElement());
         }*/
         public Set<String> getBrokenDependencies (){
-            return Utils.getBrokenDependencies (getUpdateElement());
+            List<ModuleInfo> moduleInfos = new ArrayList<ModuleInfo>();
+            for (OperationContainer.OperationInfo oii : listAll ()) {
+                UpdateElementImpl impl = Trampoline.API.impl(oii.getUpdateElement());
+                ModuleInfo info = impl.getModuleInfo();
+                assert info != null : "ModuleInfo for UpdateElement " + oii.getUpdateElement () + " found.";
+                moduleInfos.add(info);
+            }
+            
+            return Utils.getBrokenDependencies (getUpdateElement(), moduleInfos);
         }
     }
     

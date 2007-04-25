@@ -245,7 +245,7 @@ public abstract class Unit {
             this.isNbms = isNbms;
             this.updateUnit = unit;
             // XXX: find highest version
-            this.updateEl = unit.getAvailableUpdates().get(unit.getAvailableUpdates().size()-1);
+            this.updateEl = unit.getAvailableUpdates().get(0);
             assert updateEl != null : "Updateable UpdateUnit " + unit + " has UpdateElement for update.";
         }
 

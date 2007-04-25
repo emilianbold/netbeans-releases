@@ -79,7 +79,7 @@ public class UpdateUnitFactory {
             Exceptions.printStackTrace(iex);
             return new HashMap<String, UpdateUnit>();
         }
-        Map<String, UpdateUnit> temp  = appendUpdateItems (getUpdateUnits(), provider);
+        Map<String, UpdateUnit> temp  = appendUpdateItems (appendInstalldeModules (new HashMap<String, UpdateUnit> ()), provider);
         Map<String, UpdateUnit> retval = new HashMap<String, UpdateUnit>();
         assert items != null;
         for (UpdateItem updateItem : items) {
