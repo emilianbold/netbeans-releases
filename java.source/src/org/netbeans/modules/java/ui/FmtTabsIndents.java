@@ -67,7 +67,6 @@ public class FmtTabsIndents extends javax.swing.JPanel {
                 new String[] { FmtOptions.wrapIfStatement, WrapStyle.WRAP_ALWAYS.name() },
                 new String[] { FmtOptions.wrapMethodCallArgs, WrapStyle.WRAP_ALWAYS.name() },
                 new String[] { FmtOptions.wrapMethodParams, WrapStyle.WRAP_ALWAYS.name() },
-                new String[] { FmtOptions.wrapModifiers, WrapStyle.WRAP_ALWAYS.name() },
                 new String[] { FmtOptions.wrapTernaryOps, WrapStyle.WRAP_ALWAYS.name() },
                 new String[] { FmtOptions.wrapThrowsKeyword, WrapStyle.WRAP_ALWAYS.name() },
                 new String[] { FmtOptions.wrapThrowsList, WrapStyle.WRAP_ALWAYS.name() },

@@ -255,6 +255,10 @@ public final class CodeStyle {
         return preferences.getBoolean(placeFinallyOnNewLine, false);
     }
     
+    public boolean placeNewLineAfterModifiers() {
+        return preferences.getBoolean(placeNewLineAfterModifiers, false);
+    }
+
     // Wrapping ----------------------------------------------------------------
     
     public WrapStyle wrapExtendsImplementsKeyword() {
@@ -289,11 +293,6 @@ public final class CodeStyle {
 
     public WrapStyle wrapChainedMethodCalls() {
         String wrap = preferences.get(wrapChainedMethodCalls, null);
-        return wrap != null ? WrapStyle.valueOf(wrap): CodeStyle.WrapStyle.WRAP_NEVER;
-    }
-
-    public WrapStyle wrapModifiers() {
-        String wrap = preferences.get(wrapModifiers, null);
         return wrap != null ? WrapStyle.valueOf(wrap): CodeStyle.WrapStyle.WRAP_NEVER;
     }
 

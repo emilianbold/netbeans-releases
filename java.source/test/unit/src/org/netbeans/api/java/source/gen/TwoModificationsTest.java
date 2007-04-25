@@ -211,7 +211,7 @@ public class TwoModificationsTest extends GeneratorTest {
             "    public String getText() {\n" +
             "    }\n" +
             "    \n" +
-            "    public void setText() {" +
+            "    public void setText() {\n" +
             "        System.out.println(\"Test\");\n" +
             "        System.out.println(\"Text\");\n" +
             "        System.out.println(\"Test\");\n" +

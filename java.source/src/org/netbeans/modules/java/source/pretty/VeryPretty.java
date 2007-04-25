@@ -112,7 +112,7 @@ public final class VeryPretty extends JCTree.Visitor {
 
     public void newline() {
 	if(pendingAppendComment != null) {
-	    printComment(pendingAppendComment, true, false);
+	    printComment(pendingAppendComment, true);
 	    pendingAppendComment = null;
 	}
 	out.nlTerm();
@@ -175,8 +175,6 @@ public final class VeryPretty extends JCTree.Visitor {
             }
             print(tree.restype, tree.sym != null && tree.sym.type!=null ? tree.sym.type.getReturnType() : null);
             s = replace(s, UiUtils.PrintPart.TYPE);
-//TODO: DB            
-//            if(options.methodNamesStartLine) { newline(); out.toLeftMargin(); } else needSpace();
             out.clear();
             print(tree.name);
             s = replace(s, UiUtils.PrintPart.NAME);
@@ -354,19 +352,36 @@ public final class VeryPretty extends JCTree.Visitor {
         if (cs.spaceBeforeClassDeclLeftBrace())
             needSpace();
 	print('{');
-	if (!tree.defs.isEmpty()) {
+	if (tree.defs.nonEmpty()) {
 	    blankLines(cs.getBlankLinesAfterClassHeader());
             if ((tree.mods.flags & ENUM) != 0) {
                 boolean first = true;
                 boolean hasNonEnumerator = false;
                 for (List<JCTree> l = tree.defs; l.nonEmpty(); l = l.tail) {
                     if (isEnumerator(l.head)) {
-                        if (!first) {
-                            print(", ");
+                        if (first) {
+                            toColExactly(out.leftMargin);
+                            first = false;
+                        } else {
+                            print(cs.spaceBeforeComma() ? " ," : ",");
+                            switch(cs.wrapEnumConstants()) {
+                            case WRAP_IF_LONG:
+                                int rm = cs.getRightMargin();
+                                if (widthEstimator.estimateWidth(l.head, rm - out.col) + out.col + 1 <= rm) {
+                                    if (cs.spaceAfterComma())
+                                        print(' ');
+                                    break;
+                                }
+                            case WRAP_ALWAYS:
+                                toColExactly(out.leftMargin);
+                                break;
+                            case WRAP_NEVER:
+                                if (cs.spaceAfterComma())
+                                    print(' ');
+                                break;
+                            }
                         }
-                        toColExactly(out.leftMargin);
                         printStat(l.head);
-                        first = false;
                     } else if (!isSynthetic(l.head))
                         hasNonEnumerator = true;
                 }
@@ -454,12 +469,6 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     public void visitVarDef(JCVariableDecl tree) {
-	if (commentHandler != null && commentHandler.hasComments(tree)) {
-            if (prec == TreeInfo.notExpression) { // ignore for parameters.
-                newline();
-                out.toLeftMargin();
-            }
-	}
 	if ((tree.mods.flags & ENUM) != 0)
 	    print(tree.name);
 	else {
@@ -553,6 +562,7 @@ public final class VeryPretty extends JCTree.Visitor {
         print(cs.spaceBeforeForParen() ? " (" : "(");
         if (cs.spaceWithinForParens())
             print(' ');
+        int col = out.col;
 	if (tree.init.nonEmpty()) {
 	    if (tree.init.head.tag == JCTree.VARDEF) {
 		printNoParenExpr(tree.init.head);
@@ -567,15 +577,43 @@ public final class VeryPretty extends JCTree.Visitor {
 	}
         String sep = cs.spaceBeforeSemi() ? " ;" : ";";
 	print(sep);
-	if (tree.cond != null) {
-            if (cs.spaceAfterSemi())
-                print(' ');
+        if (tree.cond != null) {
+            switch(cs.wrapFor()) {
+            case WRAP_IF_LONG:
+                int rm = cs.getRightMargin();
+                if (widthEstimator.estimateWidth(tree.cond, rm - out.col) + out.col + 1 <= rm) {
+                    if (cs.spaceAfterSemi())
+                        print(' ');
+                    break;
+                }
+            case WRAP_ALWAYS:
+                toColExactly(cs.alignMultilineFor() ? col : out.leftMargin + cs.getContinuationIndentSize());
+                break;
+            case WRAP_NEVER:
+                if (cs.spaceAfterSemi())
+                    print(' ');
+                break;
+            }
 	    printNoParenExpr(tree.cond);
         }
 	print(sep);
         if (tree.step.nonEmpty()) {
-            if (cs.spaceAfterSemi())
-                print(' ');
+            switch(cs.wrapFor()) {
+            case WRAP_IF_LONG:
+                int rm = cs.getRightMargin();
+                if (widthEstimator.estimateWidth(tree.step, rm - out.col) + out.col + 1 <= rm) {
+                    if (cs.spaceAfterSemi())
+                        print(' ');
+                    break;
+                }
+            case WRAP_ALWAYS:
+                toColExactly(cs.alignMultilineFor() ? col : out.leftMargin + cs.getContinuationIndentSize());
+                break;
+            case WRAP_NEVER:
+                if (cs.spaceAfterSemi())
+                    print(' ');
+                break;
+            }
             printExprs(tree.step);
         }
 	print(cs.spaceWithinForParens() ? " )" : ")");
@@ -620,7 +658,7 @@ public final class VeryPretty extends JCTree.Visitor {
         if (cs.spaceBeforeSwitchLeftBrace())
             needSpace();
 	print('{');
-        if (!tree.cases.isEmpty()) {
+        if (tree.cases.nonEmpty()) {
             newline();
             printStats(tree.cases);
             toColExactly(bcol);
@@ -688,42 +726,43 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     public void visitConditional(JCConditional tree) {
-	int condWidth = 0;
-	final int maxCondWidth = 40;
-//TODO: DB        
-//	if (options.forceCondExprWrap) {
-//	    JCConditional t = tree;
-//	    while (true) {
-//		int thisWidth = widthEstimator.estimateWidth(t.cond, maxCondWidth);
-//		if (thisWidth > condWidth)
-//		    condWidth = thisWidth;
-//		if (!(t.falsepart instanceof JCConditional))
-//		    break;
-//		t = (JCConditional) t.falsepart;
-//	    }
-//	    if (condWidth >= maxCondWidth)
-//		condWidth = cs.getContinuationIndentSize();
-//	}
-	int col0 = out.col;
-	while (true) {
-	    printExpr(tree.cond, treeinfo.condPrec - 1);
-	    out.toColExactly(col0 + condWidth + 1);
-	    print("? ");
-	    printExpr(tree.truepart, treeinfo.condPrec);
-//TODO: DB            
-//	    if (options.forceCondExprWrap)
-//		if (tree.falsepart instanceof JCConditional) {
-//		    tree = (JCConditional) tree.falsepart;
-//		    toColExactly(col0 - 3);
-//		    print(" : ");
-//		    continue;
-//		} else
-//		    toColExactly(col0 + condWidth+1);
-//	    else needSpace();
-	    print(": ");
-	    printExpr(tree.falsepart, treeinfo.condPrec);
-	    break;
-	}
+        printExpr(tree.cond, treeinfo.condPrec - 1);
+        switch(cs.wrapTernaryOps()) {
+        case WRAP_IF_LONG:
+            int rm = cs.getRightMargin();
+            if (widthEstimator.estimateWidth(tree.truepart, rm - out.col) + out.col + 1 <= rm) {
+                if (cs.spaceAroundTernaryOps())
+                    print(' ');
+                break;
+            }
+        case WRAP_ALWAYS:
+            toColExactly(out.leftMargin + cs.getContinuationIndentSize());
+            break;
+        case WRAP_NEVER:
+            if (cs.spaceAroundTernaryOps())
+                print(' ');
+            break;
+        }
+        print(cs.spaceAroundTernaryOps() ? "? " : "?"); 
+        printExpr(tree.truepart, treeinfo.condPrec);
+        switch(cs.wrapTernaryOps()) {
+        case WRAP_IF_LONG:
+            int rm = cs.getRightMargin();
+            if (widthEstimator.estimateWidth(tree.falsepart, rm - out.col) + out.col + 1 <= rm) {
+                if (cs.spaceAroundTernaryOps())
+                    print(' ');
+                break;
+            }
+        case WRAP_ALWAYS:
+            toColExactly(out.leftMargin + cs.getContinuationIndentSize());
+            break;
+        case WRAP_NEVER:
+            if (cs.spaceAroundTernaryOps())
+                print(' ');
+            break;
+        }
+        print(cs.spaceAroundTernaryOps() ? ": " : ":"); 
+        printExpr(tree.falsepart, treeinfo.condPrec);
     }
 
     public void visitIf(JCIf tree) {
@@ -798,30 +837,59 @@ public final class VeryPretty extends JCTree.Visitor {
 	print("assert ");
 	printExpr(tree.cond);
 	if (tree.detail != null) {
-	    print(" : ");
+            print(cs.spaceBeforeColon() ? " :" : ":");
+            switch(cs.wrapAssert()) {
+            case WRAP_IF_LONG:
+                int rm = cs.getRightMargin();
+                if (widthEstimator.estimateWidth(tree.detail, rm - out.col) + out.col + 1 <= rm) {
+                    if (cs.spaceAfterColon())
+                        print(' ');
+                    break;
+                }
+            case WRAP_ALWAYS:
+                toColExactly(out.leftMargin + cs.getContinuationIndentSize());
+                break;
+            case WRAP_NEVER:
+                if (cs.spaceAfterColon())
+                    print(' ');
+                break;
+            }
 	    printExpr(tree.detail);
 	}
 	print(';');
     }
     
     public void visitApply(JCMethodInvocation tree) {
-	if (!tree.typeargs.isEmpty()) {
-	    int prevPrec = prec;
-	    this.prec = treeinfo.postfixPrec;
-	    if (tree.meth.tag == JCTree.SELECT) {
-		JCFieldAccess left = (JCFieldAccess)tree.meth;
-		printExpr(left.selected);
-                print('.');
+        int prevPrec = this.prec;
+        this.prec = treeinfo.postfixPrec;
+        if (tree.meth.tag == JCTree.SELECT) {
+            JCFieldAccess left = (JCFieldAccess)tree.meth;
+            printExpr(left.selected);
+            print('.');
+            if (left.selected.tag == JCTree.APPLY) {
+                switch(cs.wrapChainedMethodCalls()) {
+                case WRAP_IF_LONG:
+                    int rm = cs.getRightMargin();
+                    int estWidth = left.name.length();
+                    if (tree.typeargs.nonEmpty())
+                        estWidth += widthEstimator.estimateWidth(tree.typeargs, rm - out.col - estWidth) + 2;
+                    estWidth += widthEstimator.estimateWidth(tree.args, rm - out.col - estWidth) + 2;
+                    if (estWidth + out.col <= rm)
+                        break;
+                case WRAP_ALWAYS:
+                    toColExactly(out.leftMargin + cs.getContinuationIndentSize());
+                    break;
+                }
+            }
+            if (tree.typeargs.nonEmpty())
                 printTypeArguments(tree.typeargs);
-                print(left.name.toString());
-	    } else {
+            print(left.name);
+        } else {
+            if (tree.typeargs.nonEmpty())
                 printTypeArguments(tree.typeargs);
-		printExpr(tree.meth);
-	    }
-	    this.prec = prevPrec;
-	} else {
-	    printExpr(tree.meth, treeinfo.postfixPrec);
-	}
+            printExpr(tree.meth);
+        }
+        this.prec = prevPrec;
 	print(cs.spaceBeforeMethodCallParen() ? " (" : "(");
         if (cs.spaceWithinMethodCallParens())
             print(' ');
@@ -836,7 +904,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	    print('.');
 	}
 	print("new ");
-        if (!tree.typeargs.isEmpty()) {
+        if (tree.typeargs.nonEmpty()) {
             print("<");
             printExprs(tree.typeargs);
             print(">");
@@ -881,7 +949,9 @@ public final class VeryPretty extends JCTree.Visitor {
                 print(cs.spaceWithinArrayInitBrackets() ? "[ ]" : "[]");
 	}
 	if (tree.elems != null) {
-	    print(cs.spaceBeforeArrayInitLeftBrace() ? " {" : "{");
+            if (cs.spaceBeforeArrayInitLeftBrace())
+                needSpace();
+	    print('{');
             if (cs.spaceWithinBraces())
                 print(' ');
 	    wrapTrees(tree.elems, cs.wrapArrayInit(), cs.alignMultilineArrayInit()
@@ -1222,14 +1292,26 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     private void printAnnotations(List<JCAnnotation> annotations) {
-        while (!annotations.isEmpty()) {
+        while (annotations.nonEmpty()) {
 	    printNoParenExpr(annotations.head);
-            if (annotations.tail != null) {
-                newline();
+            if (annotations.tail != null && annotations.tail.nonEmpty()) {
+                switch(cs.wrapAnnotations()) {
+                case WRAP_IF_LONG:
+                    int rm = cs.getRightMargin();
+                    if (widthEstimator.estimateWidth(annotations.tail.head, rm - out.col) + out.col + 1 <= rm) {
+                        print(' ');
+                        break;
+                    }
+                case WRAP_ALWAYS:
+                    toColExactly(out.leftMargin);
+                    break;
+                case WRAP_NEVER:
+                    print(' ');
+                    break;
+                }
+            } else { 
                 toColExactly(out.leftMargin);
             }
-            else 
-                needSpace();
             annotations = annotations.tail;
         }
     }
@@ -1240,8 +1322,12 @@ public final class VeryPretty extends JCTree.Visitor {
     
     private void printFlags(long flags, boolean addSpace) {
 	print(treeinfo.flagNames(flags));
-	if (addSpace && (flags & StandardFlags) != 0)
-	    needSpace();
+        if ((flags & StandardFlags) != 0) {
+            if (cs.placeNewLineAfterModifiers())
+                toColExactly(out.leftMargin);
+            else if (addSpace)
+	        needSpace();
+        }
     }
 
     private void printExpr(JCTree tree) {
@@ -1300,7 +1386,7 @@ public final class VeryPretty extends JCTree.Visitor {
         case ELIMINATE:
 	    while(tree instanceof JCBlock) {
 		List<JCStatement> t = ((JCBlock) tree).stats;
-		if(t.isEmpty() || !t.tail.isEmpty()) break;
+		if(t.isEmpty() || t.tail.nonEmpty()) break;
 		if (t.head instanceof JCVariableDecl)
 		    // bogus code has a variable declaration -- leave alone.
 		    break;
@@ -1308,10 +1394,19 @@ public final class VeryPretty extends JCTree.Visitor {
 		tree = t.head;
 	    }
         case LEAVE_ALONE:
-            int old = out.leftMargin;
-            if (!(tree instanceof JCBlock))
-                indent();
-            if (wrapStat == WrapStyle.WRAP_IF_LONG) {
+            if (tree instanceof JCBlock) {
+                printBlock(tree, cs.getOtherBracePlacement(), spaceBeforeLeftBrace);
+                return;
+            }
+            int old = indent();
+            switch(wrapStat) {
+            case WRAP_NEVER:
+                if (spaceBeforeLeftBrace)
+                    needSpace();
+                printStat(tree);
+                undent(old);
+                return;
+            case WRAP_IF_LONG:
                 int oldhm = out.harden();
                 int oldc = out.col;
                 int oldu = out.used;
@@ -1329,17 +1424,13 @@ public final class VeryPretty extends JCTree.Visitor {
                     out.used = oldu;
                     out.leftMargin = oldm;
                 }
-            }
-            if (out.hasMargin() || tree instanceof JCBlock && cs.getOtherBracePlacement() == BracePlacement.SAME_LINE) {
-                if (spaceBeforeLeftBrace)
-                    needSpace();
-            } else {
+            case WRAP_ALWAYS:
                 if (out.col > 0)
                     newline();
                 toLeftMargin();
+                printStat(tree);
+                undent(old);
             }
-            printStat(tree);
-            undent(old);
 	}
     }
 
@@ -1384,7 +1475,7 @@ public final class VeryPretty extends JCTree.Visitor {
         if (spaceBeforeLeftBrace)
             needSpace();
 	print('{');
-	if (!stats.isEmpty()) {
+	if (stats.nonEmpty()) {
 	    newline();
 	    printStats(stats);
         }
@@ -1413,14 +1504,14 @@ public final class VeryPretty extends JCTree.Visitor {
         if (!commentSet.hasComments())
             return;
         for (Comment c : commentSet.getPrecedingComments())
-            printComment(c, false, false/*TODO: DB: options.moveAppendedComments*/);
+            printComment(c, false);
     }
 
     private void printTrailingComments(CommentSet commentSet) {
         if (!commentSet.hasComments())
             return;
         for (Comment c : commentSet.getTrailingComments())
-            printComment(c, true, false);
+            printComment(c, true);
     }
 
     /** Print documentation and other preceding comments, if any exist
@@ -1430,7 +1521,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	if(tree==lastCommentCheck) return;
 	lastCommentCheck = tree;
 	if(pendingAppendComment!=null) {
-	    printComment(pendingAppendComment, true, false);
+	    printComment(pendingAppendComment, true);
 	    pendingAppendComment = null;
 	}
 	if (commentHandler != null) {
@@ -1439,7 +1530,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	}
     }
 
-    private void printComment(Comment comment, boolean appendOnly, boolean makePrepend) {
+    private void printComment(Comment comment, boolean appendOnly) {
 	String body = comment.getText();
 	int col = comment.indent();
 	int stpos = -1;
@@ -1489,47 +1580,12 @@ public final class VeryPretty extends JCTree.Visitor {
 
 	boolean docComment = comment.isDocComment();
 
-//TODO: DB        
-//	int style = (docComment ? options.docCommentStyle
-//		     : root.next==null ? options.smallCommentStyle
-//		     : options.blockCommentStyle).value;
-        int style = 1;
-	int col0 = out.col;
+	int style = docComment ? 0 : root.next==null ? 1 : 0;
 	boolean start = true;
 	int leftMargin = out.leftMargin;
-	if (/*dc.isAppendPrevious()*/false && !makePrepend) {
-	    if(!appendOnly) {
-		if(pendingAppendComment==null)
-		    pendingAppendComment = comment;
-		return;
-	    }
-	    if (style != 3)
-		style = 0;
-// TODO: DB            
-//	    leftMargin += options.appendCommentCol;
-	    if (leftMargin < col0 + 1)
-		leftMargin = col0 + 1;
-	} else if(appendOnly) return;
-	else {
-//TODO: DB            
-//	    if (options.blankLineBeforeAllComments ||
-//		options.blankLineBeforeDocComments && docComment)
-//		out.blankline();
-//	    if(!docComment) leftMargin -= options.unindentDisplace;
-	}
+	if(appendOnly) return;
 	switch (style) {
-	case 0:	// compact
-	    for (CommentLine cl = root; cl!=null; cl = cl.next) {
-		out.toColExactly(leftMargin);
-		out.append(start ? docComment ? "/**" : "/*" : " *");
-		start = false;
-		cl.print(leftMargin+3);
-		if (cl.next==null)
-		    out.append(" */");
-		out.nlTerm();
-	    }
-	    break;
-	case 1:	// K&R
+	case 0:	// K&R
 	    out.toColExactly(leftMargin);
 	    out.append(docComment ? "/**" : "/*");
 	    for (CommentLine cl = root; cl!=null; cl = cl.next) {
@@ -1542,33 +1598,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	    out.append("*/");
 	    out.nlTerm();
 	    break;
-	case 2:	// boxed
-	    int w = 0;
-	    for (CommentLine cl = root; cl!=null; cl = cl.next) {
-		int tw = cl.length+cl.startColumn;
-		if (tw > w)
-		    w = tw;
-	    }
-	    out.toColExactly(leftMargin);
-	    out.append(docComment ? "/**" : "/* ");
-	    for (int i = w + 2; --i >= 0;)
-		out.append('*');
-	    out.nlTerm();
-	    for (CommentLine cl = root; cl!=null; cl = cl.next) {
-		out.toColExactly(leftMargin);
-		out.append(" *");
-		cl.print(leftMargin+3);
-		out.toCol(leftMargin + w + 4);
-		out.append('*');
-		out.nlTerm();
-	    }
-	    out.toColExactly(leftMargin + 1);
-	    for (int i = w + 4; --i >= 0;)
-		out.append('*');
-	    out.append('/');
-	    out.nlTerm();
-	    break;
-	case 3:	// double slash
+	case 1:	// double slash
 	    for (CommentLine cl = root; cl!=null; cl = cl.next) {
 		out.toColExactly(leftMargin);
 		out.append(start && docComment ? "//*" : "//");

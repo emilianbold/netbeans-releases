@@ -20,6 +20,7 @@ package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.SourcePositions;
+import com.sun.tools.javac.code.Flags;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,7 +50,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTestSuite(FormatingTest.class);
-//        suite.addTest(new FormatingTest("testStaticBlock"));
+//        suite.addTest(new FormatingTest("testEnum"));
         return suite;
     }
 
@@ -184,6 +185,101 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "        Serializable {\n\n" +
             "    public void run() {\n" +
             "    }\n" +
+            "}\n";
+        assertEquals(golden, res);
+    }
+    
+    public void testEnum() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, " ");
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        final int[] counter = new int[] {0};
+        Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
+        preferences.putInt("rightMargin", 20);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker maker = workingCopy.getTreeMaker();
+                String name = "Test" + counter[0]++;
+                List<Tree> members = new ArrayList<Tree>();
+                ModifiersTree mods = maker.Modifiers(Flags.PUBLIC | Flags.STATIC | Flags.FINAL | Flags.ENUM, Collections.<AnnotationTree>emptyList());
+                IdentifierTree type = maker.Identifier(name);
+                members.add(maker.Variable(mods, "NORTH", type, maker.NewClass(null, Collections.<ExpressionTree>emptyList(), type, Collections.singletonList(maker.Identifier("NORTH")), null)));
+                members.add(maker.Variable(mods, "EAST", type, maker.NewClass(null, Collections.<ExpressionTree>emptyList(), type, Collections.singletonList(maker.Identifier("EAST")), null)));
+                members.add(maker.Variable(mods, "SOUTH", type, maker.NewClass(null, Collections.<ExpressionTree>emptyList(), type, Collections.singletonList(maker.Identifier("SOUTH")), null)));
+                members.add(maker.Variable(mods, "WEST", type, maker.NewClass(null, Collections.<ExpressionTree>emptyList(), type, Collections.singletonList(maker.Identifier("WEST")), null)));
+                ClassTree clazz = maker.Enum(maker.Modifiers(Collections.<Modifier>emptySet()), name, Collections.<Tree>emptyList(), members);
+                if (counter[0] == 1)
+                    workingCopy.rewrite(workingCopy.getCompilationUnit(), maker.CompilationUnit(maker.Identifier("hierbas.del.litoral"), Collections.<ImportTree>emptyList(), Collections.singletonList(clazz), workingCopy.getCompilationUnit().getSourceFile()));
+                else
+                    workingCopy.rewrite(workingCopy.getCompilationUnit(), maker.addCompUnitTypeDecl(workingCopy.getCompilationUnit(), clazz));
+            }            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+
+        preferences.putBoolean("spaceBeforeClassDeclLeftBrace", false);
+        testSource.runModificationTask(task).commit();
+        preferences.putBoolean("spaceBeforeClassDeclLeftBrace", true);
+
+        preferences.put("classDeclBracePlacement", CodeStyle.BracePlacement.NEW_LINE.name());
+        testSource.runModificationTask(task).commit();
+
+        preferences.put("classDeclBracePlacement", CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        testSource.runModificationTask(task).commit();
+
+        preferences.put("classDeclBracePlacement", CodeStyle.BracePlacement.NEW_LINE_INDENTED.name());
+        testSource.runModificationTask(task).commit();
+        preferences.put("classDeclBracePlacement", CodeStyle.BracePlacement.SAME_LINE.name());
+
+        preferences.putBoolean("indentTopLevelClassMembers", false);
+        testSource.runModificationTask(task).commit();
+        preferences.putBoolean("indentTopLevelClassMembers", true);
+
+        preferences.put("wrapEnumConstants", CodeStyle.WrapStyle.WRAP_IF_LONG.name());
+        testSource.runModificationTask(task).commit();
+
+        preferences.put("wrapEnumConstants", CodeStyle.WrapStyle.WRAP_ALWAYS.name());
+        testSource.runModificationTask(task).commit();
+        preferences.put("wrapEnumConstants", CodeStyle.WrapStyle.WRAP_NEVER.name());
+        preferences.putInt("rightMargin", 120);
+
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+
+        String golden = 
+            "package hierbas.del.litoral;\n\n" +
+            "enum Test0 {\n\n" +
+            "    NORTH, EAST, SOUTH, WEST\n" +
+            "}\n\n" +
+            "enum Test1{\n\n" +
+            "    NORTH, EAST, SOUTH, WEST\n" +
+            "}\n\n" +
+            "enum Test2\n" +
+            "{\n\n" +
+            "    NORTH, EAST, SOUTH, WEST\n" +
+            "}\n\n" +
+            "enum Test3\n" +
+            "  {\n\n" +
+            "    NORTH, EAST, SOUTH, WEST\n" +
+            "  }\n\n" +
+            "enum Test4\n" +
+            "    {\n\n" +
+            "    NORTH, EAST, SOUTH, WEST\n" +
+            "    }\n\n" +
+            "enum Test5 {\n\n" +
+            "NORTH, EAST, SOUTH, WEST\n" +
+            "}\n\n" +
+            "enum Test6 {\n\n" +
+            "    NORTH, EAST,\n" +
+            "    SOUTH, WEST\n" +
+            "}\n\n" +
+            "enum Test7 {\n\n" +
+            "    NORTH,\n" +
+            "    EAST,\n" +
+            "    SOUTH,\n" +
+            "    WEST\n" +
             "}\n";
         assertEquals(golden, res);
     }
@@ -365,7 +461,11 @@ public class FormatingTest extends GeneratorTestMDRCompat {
 
         preferences.put("redundantForBraces", CodeStyle.BracesGenerationStyle.ELIMINATE.name());
         testSource.runModificationTask(task).commit();
+
+        preferences.put("wrapForStatement", CodeStyle.WrapStyle.WRAP_NEVER.name());
+        testSource.runModificationTask(task).commit();
         preferences.put("redundantForBraces", CodeStyle.BracesGenerationStyle.GENERATE.name());
+        preferences.put("wrapForStatement", CodeStyle.WrapStyle.WRAP_ALWAYS.name());
 
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
@@ -394,6 +494,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "            }\n" +
             "        for (int i = 0; i < 10; i++)\n" +
             "            System.out.println(\"TRUE\");\n" +
+            "        for (int i = 0; i < 10; i++) System.out.println(\"TRUE\");\n" +
             "    }\n" +
             "}\n";
         assertEquals(golden, res);

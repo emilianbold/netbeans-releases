@@ -114,6 +114,7 @@ public class FmtOptions {
     public static final String placeWhileOnNewLine = "placeWhileOnNewLine"; //NOI18N
     public static final String placeCatchOnNewLine = "placeCatchOnNewLine"; //NOI18N
     public static final String placeFinallyOnNewLine = "placeFinallyOnNewLine"; //NOI18N
+    public static final String placeNewLineAfterModifiers = "placeNewLineAfterModifiers"; //NOI18N
     
     public static final String wrapExtendsImplementsKeyword = "wrapExtendsImplementsKeyword"; //NOI18N
     public static final String wrapExtendsImplementsList = "wrapExtendsImplementsList"; //NOI18N
@@ -122,7 +123,6 @@ public class FmtOptions {
     public static final String wrapThrowsList = "wrapThrowsList"; //NOI18N
     public static final String wrapMethodCallArgs = "wrapMethodCallArgs"; //NOI18N
     public static final String wrapChainedMethodCalls = "wrapChainedMethodCalls"; //NOI18N
-    public static final String wrapModifiers = "wrapModifiers"; //NOI18N
     public static final String wrapArrayInit = "wrapArrayInit"; //NOI18N
     public static final String wrapFor = "wrapFor"; //NOI18N
     public static final String wrapForStatement = "wrapForStatement"; //NOI18N
@@ -327,6 +327,7 @@ public class FmtOptions {
             { placeWhileOnNewLine, FALSE}, //NOI18N
             { placeCatchOnNewLine, TRUE}, //NOI18N
             { placeFinallyOnNewLine, TRUE}, //NOI18N
+            { placeNewLineAfterModifiers, FALSE}, //NOI18N
 
             { wrapExtendsImplementsKeyword, WRAP_NEVER}, //NOI18N
             { wrapExtendsImplementsList, WRAP_NEVER}, //NOI18N
@@ -335,13 +336,12 @@ public class FmtOptions {
             { wrapThrowsList, WRAP_NEVER}, //NOI18N
             { wrapMethodCallArgs, WRAP_NEVER}, //NOI18N
             { wrapChainedMethodCalls, WRAP_NEVER}, //NOI18N
-            { wrapModifiers, WRAP_NEVER}, //NOI18N
             { wrapArrayInit, WRAP_NEVER}, //NOI18N
             { wrapFor, WRAP_NEVER}, //NOI18N
-            { wrapForStatement, WRAP_NEVER}, //NOI18N
-            { wrapIfStatement, WRAP_NEVER}, //NOI18N
-            { wrapWhileStatement, WRAP_NEVER}, //NOI18N
-            { wrapDoWhileStatement, WRAP_NEVER}, //NOI18N
+            { wrapForStatement, WRAP_ALWAYS}, //NOI18N
+            { wrapIfStatement, WRAP_ALWAYS}, //NOI18N
+            { wrapWhileStatement, WRAP_ALWAYS}, //NOI18N
+            { wrapDoWhileStatement, WRAP_ALWAYS}, //NOI18N
             { wrapAssert, WRAP_NEVER}, //NOI18N
             { wrapEnumConstants, WRAP_NEVER}, //NOI18N
             { wrapAnnotations, WRAP_ALWAYS}, //NOI18N
@@ -374,7 +374,7 @@ public class FmtOptions {
             { spaceBeforeSwitchParen, TRUE}, //NOI18N
             { spaceBeforeSynchronizedParen, TRUE}, //NOI18N
             { spaceBeforeAnnotationParen, FALSE}, //NOI18N    
-            { spaceAroundUnaryOps, TRUE}, //NOI18N
+            { spaceAroundUnaryOps, FALSE}, //NOI18N
             { spaceAroundBinaryOps, TRUE}, //NOI18N
             { spaceAroundTernaryOps, TRUE}, //NOI18N
             { spaceAroundAssignOps, TRUE}, //NOI18N

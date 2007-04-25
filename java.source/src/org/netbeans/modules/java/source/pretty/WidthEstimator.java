@@ -51,6 +51,15 @@ public class WidthEstimator extends Visitor {
     public int estimateWidth(JCTree t) {
 	return estimateWidth(t,100);
     }
+    public int estimateWidth(List<? extends JCTree> t, int maxwidth) {
+	width = 0;
+	this.maxwidth = maxwidth;
+        while(t.nonEmpty() && this.width < this.maxwidth) {
+	    t.head.accept(this);
+            t = t.tail;
+        }
+	return width;
+    }
     private void open(int contextPrec, int ownPrec) {
 	if (ownPrec < contextPrec)
 	    width += 2;
@@ -176,14 +185,16 @@ System.err.println("Need width calc for "+tree);
     }
     public void visitVarDef(JCVariableDecl tree) {
         widthAnnotations(tree.mods.annotations);
-	widthFlags(tree.mods.flags);
-	width(tree.vartype, tree.type);
-	width++;
-	width(tree.name);
-	if (tree.init != null) {
-	    width+=3;
-	    width(tree.init);
-	}
+        if ((tree.mods.flags & Flags.ENUM) == 0) {
+            widthFlags(tree.mods.flags);
+            width(tree.vartype, tree.type);
+            width++;
+        }
+        width(tree.name);
+        if (tree.init != null && (tree.mods.flags & Flags.ENUM) == 0) {
+            width+=3;
+            width(tree.init);
+        }
     }
     public void visitConditional(JCConditional tree) {
 	open(prec, TreeInfo.condPrec);

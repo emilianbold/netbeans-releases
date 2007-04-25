@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.java.ui;
 
+import org.netbeans.api.java.source.CodeStyle;
 import static org.netbeans.modules.java.ui.FmtOptions.*;
 import static org.netbeans.modules.java.ui.FmtOptions.CategorySupport.OPTION_ID;
 import org.netbeans.modules.java.ui.FmtOptions.CategorySupport;
@@ -45,7 +46,6 @@ public class FmtWrapping extends javax.swing.JPanel {
         chainedMethodCallsCombo.putClientProperty(OPTION_ID, wrapChainedMethodCalls);
         throwsKeywordCombo.putClientProperty(OPTION_ID, wrapThrowsKeyword);
         throwsListCombo.putClientProperty(OPTION_ID, wrapThrowsList);
-        modifiersCombo.putClientProperty(OPTION_ID, wrapModifiers);
         arrayInitCombo.putClientProperty(OPTION_ID, wrapArrayInit);
         forCombo.putClientProperty(OPTION_ID, wrapFor);
         forStatementCombo.putClientProperty(OPTION_ID, wrapForStatement );
@@ -64,7 +64,12 @@ public class FmtWrapping extends javax.swing.JPanel {
         return new CategorySupport("LBL_Wrapping", // NOI18N
                 new FmtWrapping(),
                 NbBundle.getMessage(FmtWrapping.class, "SAMPLE_Wrapping"),
-                new String[] { FmtOptions.rightMargin, "30" } ); // NOI18N
+                new String[] { FmtOptions.rightMargin, "30" },
+                new String[] { FmtOptions.redundantDoWhileBraces, CodeStyle.BracesGenerationStyle.LEAVE_ALONE.name() },
+                new String[] { FmtOptions.redundantForBraces, CodeStyle.BracesGenerationStyle.LEAVE_ALONE.name() },
+                new String[] { FmtOptions.redundantIfBraces, CodeStyle.BracesGenerationStyle.LEAVE_ALONE.name() },
+                new String[] { FmtOptions.redundantWhileBraces, CodeStyle.BracesGenerationStyle.LEAVE_ALONE.name() }
+        ); // NOI18N
     }
     
     /** This method is called from within the constructor to
@@ -92,8 +97,6 @@ public class FmtWrapping extends javax.swing.JPanel {
         throwsKeywordCombo = new javax.swing.JComboBox();
         throwsListLabel = new javax.swing.JLabel();
         throwsListCombo = new javax.swing.JComboBox();
-        modifiersLabel = new javax.swing.JLabel();
-        modifiersCombo = new javax.swing.JComboBox();
         arrayInitLabel = new javax.swing.JLabel();
         arrayInitCombo = new javax.swing.JComboBox();
         forLabel = new javax.swing.JLabel();
@@ -225,20 +228,6 @@ public class FmtWrapping extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
         panel1.add(throwsListCombo, gridBagConstraints);
-
-        modifiersLabel.setLabelFor(modifiersCombo);
-        org.openide.awt.Mnemonics.setLocalizedText(modifiersLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_modifiers")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
-        panel1.add(modifiersLabel, gridBagConstraints);
-
-        modifiersCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
-        panel1.add(modifiersCombo, gridBagConstraints);
 
         arrayInitLabel.setLabelFor(arrayInitCombo);
         org.openide.awt.Mnemonics.setLocalizedText(arrayInitLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_arrayInit")); // NOI18N
@@ -453,8 +442,6 @@ public class FmtWrapping extends javax.swing.JPanel {
     private javax.swing.JLabel methodCallArgsLabel;
     private javax.swing.JComboBox methodParamsCombo;
     private javax.swing.JLabel methodParamsLabel;
-    private javax.swing.JComboBox modifiersCombo;
-    private javax.swing.JLabel modifiersLabel;
     private javax.swing.JPanel panel1;
     private javax.swing.JScrollPane scrollPane;
     private javax.swing.JPanel spacerPanel1;

@@ -48,6 +48,7 @@ public class FmtAlignmentBraces extends javax.swing.JPanel {
         nlWhileCheckBox.putClientProperty(OPTION_ID, placeWhileOnNewLine);
         nlCatchCheckBox.putClientProperty(OPTION_ID, placeCatchOnNewLine);
         nlFinallyCheckBox.putClientProperty(OPTION_ID, placeFinallyOnNewLine);
+        nlModifiersCheckBox.putClientProperty(OPTION_ID, placeNewLineAfterModifiers);
         amMethodParamsCheckBox.putClientProperty(OPTION_ID, alignMultilineMethodParams);
         amCallArgsCheckBox.putClientProperty(OPTION_ID, alignMultilineCallArgs);
         amImplementsCheckBox.putClientProperty(OPTION_ID, alignMultilineImplements);
@@ -80,7 +81,6 @@ public class FmtAlignmentBraces extends javax.swing.JPanel {
                 new String[] { FmtOptions.wrapIfStatement, WrapStyle.WRAP_ALWAYS.name() },
                 new String[] { FmtOptions.wrapMethodCallArgs, WrapStyle.WRAP_ALWAYS.name() },
                 new String[] { FmtOptions.wrapMethodParams, WrapStyle.WRAP_ALWAYS.name() },
-                new String[] { FmtOptions.wrapModifiers, WrapStyle.WRAP_ALWAYS.name() },
                 new String[] { FmtOptions.wrapTernaryOps, WrapStyle.WRAP_ALWAYS.name() },
                 new String[] { FmtOptions.wrapThrowsKeyword, WrapStyle.WRAP_ALWAYS.name() },
                 new String[] { FmtOptions.wrapThrowsList, WrapStyle.WRAP_ALWAYS.name() },
@@ -119,6 +119,7 @@ public class FmtAlignmentBraces extends javax.swing.JPanel {
         nlWhileCheckBox = new javax.swing.JCheckBox();
         nlCatchCheckBox = new javax.swing.JCheckBox();
         nlFinallyCheckBox = new javax.swing.JCheckBox();
+        nlModifiersCheckBox = new javax.swing.JCheckBox();
         multilineAlignmentPanel = new javax.swing.JPanel();
         amMethodParamsCheckBox = new javax.swing.JCheckBox();
         amCallArgsCheckBox = new javax.swing.JCheckBox();
@@ -320,10 +321,18 @@ public class FmtAlignmentBraces extends javax.swing.JPanel {
         nlFinallyCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
+        newLinesPanel.add(nlFinallyCheckBox, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(nlModifiersCheckBox, org.openide.util.NbBundle.getMessage(FmtAlignmentBraces.class, "LBL_nl_Modifiers")); // NOI18N
+        nlModifiersCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        nlModifiersCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weighty = 1.0;
-        newLinesPanel.add(nlFinallyCheckBox, gridBagConstraints);
+        newLinesPanel.add(nlModifiersCheckBox, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -466,6 +475,7 @@ public class FmtAlignmentBraces extends javax.swing.JPanel {
     private javax.swing.JCheckBox nlCatchCheckBox;
     private javax.swing.JCheckBox nlElseCheckBox;
     private javax.swing.JCheckBox nlFinallyCheckBox;
+    private javax.swing.JCheckBox nlModifiersCheckBox;
     private javax.swing.JCheckBox nlWhileCheckBox;
     private javax.swing.JComboBox otherCombo;
     private javax.swing.JLabel otherLabel;

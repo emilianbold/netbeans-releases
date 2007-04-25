@@ -488,7 +488,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
         String golden =
                 "package hierbas.del.litoral;\n\n" +
                 "public class Test {\n\n" +
-                "    public class X {\n" +
+                "    public class X {\n\n" +
                 "        private int i;\n\n" +
                 "        public void newlyCreatedMethod(int a, float b) throws java.io.IOException {\n" +
                 "        }\n" +
