@@ -67,7 +67,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     
     // configuration logic implementation ///////////////////////////////////////////
     public void install(final Progress progress)
-    throws InstallationException {
+            throws InstallationException {
         final File directory = getProduct().getInstallationLocation();
         
         final String username  = getProperty(ASPanel.USERNAME_PROPERTY);
@@ -182,6 +182,14 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                                 directory.getAbsolutePath(),
                                 true);
                     }
+                    
+                    // if the IDE was installed in the same session as the 
+                    // appserver, we should add its "product id" to the IDE
+                    if (ide.hasStatusChanged()) {
+                        NetBeansUtils.addPackId(
+                                nbLocation, 
+                                "SJSAS");
+                    }
                 }
             }
         } catch (IOException e) {
@@ -207,7 +215,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     }
     
     public void uninstall(final Progress progress)
-    throws UninstallationException {
+            throws UninstallationException {
         File directory = getProduct().getInstallationLocation();
         
         /////////////////////////////////////////////////////////////////////////////
@@ -395,8 +403,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         return shortcut;
     }
     
-/////////////////////////////////////////////////////////////////////////////////
-// Constants
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
     public static final String WIZARD_COMPONENTS_URI =
             FileProxy.RESOURCE_SCHEME_PREFIX +
             "org/netbeans/installer/products/sjsas/wizard.xml"; // NOI18N
