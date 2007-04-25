@@ -50,7 +50,7 @@ public class WaitMessageHandler {
             WaitMessageWidget messageWidget = new WaitMessageWidget(scene);
             scene.getDragLayer().addChild(messageWidget);
             scene.validate();
-        }
+        } 
     }
     
     public static void removeFromScene(CasaModelGraphScene scene) {
@@ -60,7 +60,6 @@ public class WaitMessageHandler {
             scene.validate();
         }
     }
-    
     
     private static class WaitMessageWidget extends LabelWidget {
         
@@ -102,14 +101,14 @@ public class WaitMessageHandler {
         private void center() {
             Rectangle bounds = getPreferredBounds();
             CasaModelGraphScene scene = (CasaModelGraphScene) getScene();
-            Rectangle layerBounds = scene.getBounds();
+            Rectangle layerBounds = scene.getView().getVisibleRect();
             if (
                     getParentWidget() == scene.getDragLayer() &&
                     bounds != null &&
                     layerBounds != null) {
                 Point location = new Point(
-                        (layerBounds.width - bounds.width) / 2,
-                        (layerBounds.height - bounds.height) / 2);
+                        layerBounds.x + (layerBounds.width - bounds.width) / 2,
+                        layerBounds.y + (layerBounds.height - bounds.height) / 2);
                 setPreferredLocation(location);
             }
         }
