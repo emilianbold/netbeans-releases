@@ -21,13 +21,18 @@ package org.netbeans.modules.vmd.midp.screen.display;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.util.Collection;
+import java.util.Collections;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.border.Border;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
+import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.displayables.TextBoxCD;
+import org.netbeans.modules.vmd.midp.screen.display.property.ScreenStringPropertyEditor;
 
 /**
  *
@@ -36,7 +41,7 @@ import org.netbeans.modules.vmd.midp.components.displayables.TextBoxCD;
 public class TextBoxDisplayPresenter extends DisplayableDisplayPresenter {
     
     private static final Border LABEL_BORDER = BorderFactory.createLineBorder(Color.GRAY);
-
+    
     private JLabel label;
     
     public TextBoxDisplayPresenter() {
@@ -51,7 +56,16 @@ public class TextBoxDisplayPresenter extends DisplayableDisplayPresenter {
         super.reload(deviceInfo);
         
         String text = MidpTypes.getString(getComponent().readProperty(TextBoxCD.PROP_STRING));
-        label.setText(ScreenSupport.wrapWithHtml(text));
+        if (text != null)
+            label.setText(ScreenSupport.wrapWithHtml(text));
+        else 
+            label.setText("<empty text>"); //NOI18N
+    }
+    
+    public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {
+        return Collections.singleton(
+                new ScreenPropertyDescriptor(getComponent(), label, new ScreenStringPropertyEditor(TextBoxCD.PROP_STRING, JTextField.CENTER))
+                );
     }
     
 }
