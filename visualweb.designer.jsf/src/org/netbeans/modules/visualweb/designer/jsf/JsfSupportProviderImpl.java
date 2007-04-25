@@ -32,7 +32,7 @@ public class JsfSupportProviderImpl implements FacesModel.JsfSupportProvider {
     }
 
     public FacesModel.JsfSupport getDndSupport(FacesModel facesModel) {
-        JsfForm jsfForm = JsfForm.findJsfForm(facesModel);
+        JsfForm jsfForm = JsfForm.findJsfFormForFacesModel(facesModel);
         if (jsfForm == null) {
             // Log it?
             return new FacesModel.DummyJsfSupport();

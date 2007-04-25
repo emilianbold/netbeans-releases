@@ -51,6 +51,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
@@ -249,12 +253,17 @@ public class JsfForm {
             }
             return null;
         }
+        // XXX This is prepared to handle the not yet loaded FacesModel.
+//        if (facesModel == null && dataObject.isTemplate()) {
+//            // XXX Ignore the templates.
+//            return null;
+//        }
         
         JsfForm jsfForm;
 //        synchronized (facesModel2jsfForm) {
         synchronized (jsfForms) {
 //            jsfForm = facesModel2jsfForm.get(facesModel);
-            jsfForm = findJsfForm(facesModel);
+            jsfForm = findJsfFormForFacesModel(facesModel);
             
             if (jsfForm == null) {
                 jsfForm = new JsfForm(facesModel, dataObject);
@@ -262,6 +271,13 @@ public class JsfForm {
                 jsfForms.add(jsfForm);
             }
         }
+
+        // XXX FacesModel was not loaded, do it now.
+        if (facesModel == null) {
+            // XXX Invoke the model creation.
+            jsfForm.initFacesModel(dataObject);
+        }
+        
         return jsfForm;
     }
     
@@ -438,7 +454,7 @@ public class JsfForm {
         if (facesModel == null) {
             return null;
         }
-        return findJsfForm(facesModel);
+        return findJsfFormForFacesModel(facesModel);
     }
     
 //    static JsfForm findJsfForm(FacesModel facesModel) {
@@ -454,7 +470,7 @@ public class JsfForm {
         if (facesModel == null) {
             return null;
         }
-        return findJsfForm(facesModel);
+        return findJsfFormForFacesModel(facesModel);
     }
     
     /*private*/public static JsfForm findJsfForm(DesignContext designContext) {
@@ -466,7 +482,7 @@ public class JsfForm {
         if (facesModel == null) {
             return null;
         }
-        return findJsfForm(facesModel);
+        return findJsfFormForFacesModel(facesModel);
     }
     
     private static JsfForm findJsfForm(Element element) {
@@ -478,7 +494,7 @@ public class JsfForm {
         return findJsfForm(designContext);
     }
     
-    /*private*/ static JsfForm findJsfForm(FacesModel facesModel) {
+    /*private*/ static JsfForm findJsfFormForFacesModel(FacesModel facesModel) {
         if (facesModel == null) {
             return null;
         }
@@ -2623,6 +2639,45 @@ public class JsfForm {
     
     public boolean isValid() {
         return getFacesModel() != null;
+    }
+
+    
+    // XXX Are we still supposed to use the RequestProcessor.
+    private static final ExecutorService LOAD_EXECUTOR_SERVICE = new ThreadPoolExecutor(
+            0, 5, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>());
+    
+    /** Asynchronously loads the FacesModel. */
+    private void initFacesModel(final DataObject dataObject) {
+        // XXX The FacesModel is null, init it.
+        LOAD_EXECUTOR_SERVICE.execute(new Runnable() {
+            public void run() {
+                loadFacesModel(dataObject);
+            }
+        });
+    }
+    
+    private void loadFacesModel(DataObject dataObject) {
+        FacesModel facesModel = getFacesModel(dataObject);
+        if (facesModel == null) {
+            log(new NullPointerException("No FacesModel for DataObject, dataObject=" + dataObject));
+            return;
+        }
+        
+        setFacesModel(facesModel);
+        init(dataObject);
+        
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                notifyViewsModelLoaded();
+            }
+        });
+    }
+    
+    private void notifyViewsModelLoaded() {
+        JsfMultiViewElement[] jsfMultiViewElements = findJsfMultiViewElements(this);
+        for (JsfMultiViewElement jsfMultiViewElement : jsfMultiViewElements) {
+            jsfMultiViewElement.modelLoaded();
+        }
     }
 }
 

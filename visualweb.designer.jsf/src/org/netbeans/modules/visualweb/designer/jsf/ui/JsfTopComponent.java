@@ -148,6 +148,8 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 
     private final DesignerListener designerListener = new JsfDesignerListener(this);
 //    private final PaletteController designerPaletteController;
+    
+    private final JsfLookupProvider jsfLookupProvider = new JsfLookupProvider(this);
 
     
     public JsfTopComponent(/*WebForm webform*/ JsfForm jsfForm, Designer designer) {
@@ -1979,18 +1981,19 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         if (lookup == null) {
             Lookup superLookup = super.getLookup();
 
-            // XXX Needed in order to close the component automatically by project close.
-//            DataObject jspDataObject = webform.getJspDataObject();
-            DataObject jspDataObject = jsfForm.getJspDataObject();
-
-//            PaletteController jsfPaletteController = webform.getPaletteController();
-            PaletteController jsfPaletteController = jsfForm.getPaletteController();
-            
-            if (jsfPaletteController == null) {
-                lookup = new ProxyLookup(new Lookup[] {superLookup, Lookups.fixed(new Object[] {jspDataObject, NAVIGATOR_HINT})});
-            } else {
-                lookup = new ProxyLookup(new Lookup[] {superLookup, Lookups.fixed(new Object[] {jspDataObject, NAVIGATOR_HINT, jsfPaletteController})});
-            }
+//            // XXX Needed in order to close the component automatically by project close.
+////            DataObject jspDataObject = webform.getJspDataObject();
+//            DataObject jspDataObject = jsfForm.getJspDataObject();
+//
+////            PaletteController jsfPaletteController = webform.getPaletteController();
+//            PaletteController jsfPaletteController = jsfForm.getPaletteController();
+//            
+//            if (jsfPaletteController == null) {
+//                lookup = new ProxyLookup(new Lookup[] {superLookup, Lookups.fixed(new Object[] {jspDataObject, NAVIGATOR_HINT})});
+//            } else {
+//                lookup = new ProxyLookup(new Lookup[] {superLookup, Lookups.fixed(new Object[] {jspDataObject, NAVIGATOR_HINT, jsfPaletteController})});
+//            }
+            lookup = new ProxyLookup(new Lookup[] {superLookup, jsfLookupProvider.getLookup()});
             
             lookupWRef = new WeakReference<Lookup>(lookup);
         }
@@ -2466,4 +2469,44 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         // No op.
     }
 
+    void modelLoaded() {
+        designerOpened();
+        designerShowing();
+        jsfLookupProvider.refreshLookup();
+    }
+    
+    
+    private static class JsfLookupProvider implements Lookup.Provider {
+        private final JsfTopComponent jsfTopComponent;
+        private Lookup lookup;
+        
+        public JsfLookupProvider(JsfTopComponent jsfTopComponent) {
+            this.jsfTopComponent = jsfTopComponent;
+        }
+        
+        public synchronized Lookup getLookup() {
+            if (lookup == null) {
+                lookup = createLookup();
+            }
+            return lookup;
+        }
+        
+        private Lookup createLookup() {
+            List<Object> objects = new ArrayList<Object>();
+            DataObject jsfDobj = jsfTopComponent.getJsfForm().getJspDataObject();
+            if (jsfDobj != null) {
+                objects.add(jsfDobj);
+            }
+            objects.add(jsfTopComponent.NAVIGATOR_HINT);
+            PaletteController paletteController = jsfTopComponent.getJsfForm().getPaletteController();
+            if (paletteController != null) {
+                objects.add(paletteController);
+            }
+            return Lookups.fixed(objects.toArray());
+        }
+        
+        public synchronized void refreshLookup() {
+            lookup = null;
+        }
+    } // End of JsfLookupProvider.
 }

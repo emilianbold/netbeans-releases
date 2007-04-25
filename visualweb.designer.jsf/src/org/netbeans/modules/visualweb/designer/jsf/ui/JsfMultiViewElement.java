@@ -192,5 +192,8 @@ public class JsfMultiViewElement implements MultiViewElement {
     public void closeMultiView() {
         jsfTopComponent.closeMultiView();
     }
-            
+
+    public void modelLoaded() {
+        jsfTopComponent.modelLoaded();
+    }
 }
