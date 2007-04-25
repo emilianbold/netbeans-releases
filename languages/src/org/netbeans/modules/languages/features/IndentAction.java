@@ -35,6 +35,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.languages.Context;
+import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -70,7 +71,7 @@ public class IndentAction extends InsertBreakAction {
                     ts.move (caret.getDot ());
                     if (!ts.moveNext ()) break;
                 }
-            Language l = LanguagesManager.getDefault ().getLanguage (ts.language ().mimeType ());
+                Language l = LanguagesManager.getDefault ().getLanguage (ts.language ().mimeType ());
             Token token = ts.token ();
             Object indentValue = getIndentProperties (l);
 
@@ -121,6 +122,10 @@ public class IndentAction extends InsertBreakAction {
                 Feature m = (Feature) indentValue;
                 m.getValue (Context.create (doc, ts));
             }
+            
+        } catch (LanguageDefinitionNotFoundException ldnfe) {
+            //no language found - this might happen when some of the embedded languages are not schliemann based,
+            //so just ignore and do nothing - no indent
         } catch (Exception ex) {
             ErrorManager.getDefault ().notify (ex);
         }
