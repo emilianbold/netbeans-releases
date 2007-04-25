@@ -649,7 +649,7 @@ Microsystems, Inc. All Rights Reserved.
                             </xsl:if>
                         </wsimport> 
                        </xsl:otherwise>
-                      </xsl:choose>>
+                      </xsl:choose>
                     </xsl:if>
                     <xsl:if test="not(jaxws:package-name/@forceReplace)">
                       <xsl:choose>
