@@ -83,21 +83,21 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
         addListener();
     }
 
-//    // Create the popup menu:
-//    public Action[] getActions(boolean context) {
-//        return new Action[] {
-//            SystemAction.get(ResolveProjectDataSourceAction.class),
+    // Create the popup menu:
+    public Action[] getActions(boolean context) {
+        return new Action[] {
+            SystemAction.get(ResolveProjectDataSourceAction.class),
 //            SystemAction.get(RefreshProjectDataSourceAction.class)
-//        };
-//    }
-
-//    public Action getPreferredAction() {
-//        return SystemAction.get(ResolveProjectDataSourceAction.class);
-//    }
-
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx("projrave_ui_elements_project_nav_data_source_ref_node"); // NOI18N
+        };
     }
+
+    public Action getPreferredAction() {
+        return SystemAction.get(ResolveProjectDataSourceAction.class);
+    }
+
+//    public HelpCtx getHelpCtx() {
+//        return new HelpCtx("projrave_ui_elements_project_nav_data_source_ref_node"); // NOI18N
+//    }
 
     public org.netbeans.api.project.Project getNbProject(){
         return nbProject;
@@ -138,13 +138,15 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
             // ignore
         }
        
-        boolean isBroken = false;
+//        boolean isBroken = false;
+        boolean isBroken = true;
         // Check if Data Source Reference node has any child nodes, if it does, check if any data sources are missing
 //        if (this.getChildren().getNodes().length > 0)
 //            if (BrokenDataSourceSupport.isBroken(nbProject))
 //                isBroken = true;
         
-        return isBroken ? "<font color=\"#A40000\">" + dispName + "</font>" : null; //NOI18N;
+//        return isBroken ? "<font color=\"#A40000\">" + dispName + "</font>" : null; //NOI18N;
+          return isBroken ? dispName + "</font>" : null; //NOI18N;
     }
     
     public void dataSourcesChange(ProjectDataSourcesChangeEvent evt) {
