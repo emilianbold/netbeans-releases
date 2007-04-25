@@ -517,7 +517,9 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         }
         
         public void setText(Widget widget, String newName) {
-            
+            if (newName.equals("")){
+                return;
+            }
             
             NavigationCaseNode caseNode = (NavigationCaseNode)findObject(widget.getParentWidget());
             String oldName = caseNode.getName();
