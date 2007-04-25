@@ -161,9 +161,11 @@ public class WidgetMover implements MoveStrategy, MoveProvider {
         mIsWidgetFronted = false;
         
         // Widget not moved, ignore.
-        if (widget.getPreferredLocation().equals(tmpOriginalLocation)) {
+        Point location = widget.getPreferredLocation();
+        if (location.equals(tmpOriginalLocation)) {
             return;
         }
+        scene.persistLocation((CasaNodeWidget) widget, location);
         
         CasaNodeWidget moveWidget = (CasaNodeWidget) widget;
         CasaNodeWidget overlappedWidget = getOverlappedWidget(
@@ -214,7 +216,6 @@ public class WidgetMover implements MoveStrategy, MoveProvider {
         Rectangle widgetBounds = widget.getBounds();
         
         widget.setPreferredLocation(location);
-        ((CasaModelGraphScene) widget.getScene()).persistLocation((CasaNodeWidget) widget, location);
         
         boolean needsWidthStretch = false;
         boolean needsHeightStretch = false;
