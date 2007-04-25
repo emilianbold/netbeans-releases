@@ -121,6 +121,9 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.clearcase</friend>
+                <friend>org.netbeans.modules.mercurial</friend>
+                <friend>org.netbeans.modules.perforce</friend>
                 <friend>org.netbeans.modules.versioning.system.cvss</friend>
                 <friend>org.netbeans.modules.subversion</friend>
                 <friend>org.netbeans.modules.localhistory</friend>
