@@ -207,6 +207,7 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.ruby.rhtml</friend>
                 <friend>org.netbeans.modules.web.core.syntax</friend>
                 <package>org.netbeans.modules.editor.html</package>
+                <package>org.netbeans.modules.html.editor</package>
                 <package>org.netbeans.modules.html.editor.coloring</package>
                 <package>org.netbeans.modules.html.editor.options</package>
             </friend-packages>

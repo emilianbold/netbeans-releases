@@ -41,6 +41,7 @@ attribute = <ARGUMENT> <OPERATOR,'='> <VALUE>;
 # AST generator
 AST {
     process:org.netbeans.modules.html.editor.HTML.process;
+    process_embedded: "false";
 }
 
 ########### indentation ########################################################

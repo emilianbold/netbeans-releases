@@ -24,9 +24,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
 import org.netbeans.api.languages.ASTItem;
+import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTToken;
+import org.netbeans.modules.html.editor.HTML;
 
 
 /**
@@ -37,7 +39,7 @@ import org.netbeans.api.languages.ASTToken;
 public class JSP {
     
     private static final int MAX_PRINT_CHARS = 30; //max. length of scriptlet code shown in navigator
-    
+     
     public static String navigatorDisplayName(SyntaxContext context) {
         ASTItem item = context.getASTPath().getLeaf();
         if(item instanceof ASTNode) {
@@ -67,10 +69,9 @@ public class JSP {
     }
     
     public static ASTNode process (SyntaxContext context) {
-        ASTNode n = (ASTNode) context.getASTPath ().getRoot ();
-        List l = new ArrayList ();
-        resolve (n, new Stack (), l, true);
-        return ASTNode.create (n.getMimeType (), n.getNT (), l, n.getOffset ());
+        ASTPath astPath = context.getASTPath ();
+        ASTNode n = (ASTNode) astPath.getRoot ();
+        return resolveRoot (n, new Stack (), new ArrayList(), true);
     }
     
     // private methods .........................................................
@@ -97,10 +98,14 @@ public class JSP {
         Iterator<ASTItem> it = token.getChildren ().iterator ();
         while (it.hasNext ()) {
             ASTItem item = it.next ();
-            if (item instanceof ASTNode)
-                children.add (clone ((ASTNode) item));
-            else
+            if (item instanceof ASTNode) {
+                ASTNode n = (ASTNode)item;
+                if(!n.getNT().equals("S") && n.getMimeType().equals("text/html")) {
+                    children.add (clone ((ASTNode) item)); //do not clone html nodes
+                }
+            } else {
                 children.add (clone ((ASTToken) item));
+            }
         }
         return ASTToken.create (
             token.getMimeType (),
@@ -116,8 +121,118 @@ public class JSP {
         return clone (n.getMimeType (), nt, n.getOffset (), n.getChildren ());
     }
     
+    private static void collectHtmlNodes(List<ASTItem> l, ASTNode node) {
+        //check if the node may contain an html nodes - just etext and ERROR nodes may contain it
+        for(ASTItem itm : node.getChildren()) {
+            if(itm instanceof ASTNode && "text/x-jsp".equals(itm.getMimeType())) {
+                ASTNode n = (ASTNode)itm;
+                if("etext".equals(n.getNT()) || "ERROR".equals(n.getNT())) {
+                    ASTToken t = n.getTokenType("TEXT");
+                    if(t != null) {
+                        ASTNode htmlS = (ASTNode)t.getChildren().get(0); //find S nonterminal node
+                        for(ASTItem i : htmlS.getChildren()) {
+                            ASTNode nn = (ASTNode)i;
+                            //fix ERROR nonterminal to etext - see issue #102285
+                            Iterator<ASTItem> itr = nn.getChildren().iterator();
+                            while(itr.hasNext()) {
+                                ASTItem it = itr.next();
+                                if(it instanceof ASTNode) {
+                                    ASTNode nod = (ASTNode)it;
+                                    //if the last element in the children list is ERROR, switch it to etext
+                                    //note: may 'fix' real errors :-|
+                                    if(nod.getNT().equals("ERROR") && !itr.hasNext()) {
+                                        l.add(ASTNode.create(nod.getMimeType(), "etext", nod.getChildren(), nod.getOffset()));
+                                    } else {
+                                        l.add(nod);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    collectHtmlNodes(l, n);
+                }
+            }
+        }
+    }
+    
+    private static ASTNode resolveRoot(ASTNode n, Stack s, List l, boolean findUnpairedTags) {
+        //find all html root nodes (S nonterminal node) and join their content into one html root node
+        List<ASTItem> nodes = new ArrayList();
+        collectHtmlNodes(nodes, n);
+        
+        int firstChildOffset = nodes.get(0).getOffset();
+        ASTNode tagsnode = ASTNode.create("text/html", "tags", nodes, firstChildOffset);
+        List<ASTItem> schildren = new ArrayList();
+        schildren.add(tagsnode);
+        ASTNode html_S_node = ASTNode.create("text/html", "S", schildren , firstChildOffset);
+
+        //resolve the joined HTML AST
+        List<ASTItem> ll = new ArrayList();
+        HTML.resolve(html_S_node, new Stack(), ll, findUnpairedTags);
+        
+        //OK, now we have the joined resolved html AST, lets merge it with the JSP one...
+        html_S_node = ASTNode.create (html_S_node.getMimeType (), html_S_node.getNT (), ll, html_S_node.getOffset ());
+        
+//        //resolve the JSP AST
+//        resolve(n, s, l, findUnpairedTags);
+//        n = ASTNode.create (n.getMimeType (), n.getNT (), l, n.getOffset ());
+//        
+//        //now merge the trees
+//        simpleMerge(html_S_node, n);
+//        //return the merged AST
+        
+        return html_S_node; 
+    }
+    
+    private static void simpleMerge(ASTNode html_root_node, ASTNode jsp_root_node) {
+        //generate a list of important nodes:
+        // startTag, simpleTag, ...
+        List<ASTNode> importantTagsList = new ArrayList();
+        findImportantTags(jsp_root_node, importantTagsList);
+        
+        //put the nodes into the html AST
+        for(ASTNode in : importantTagsList) {
+            int offset = in.getOffset();
+            ASTNode found = findNode(html_root_node, offset);
+            //find a place where to put the node
+            int insert_index = 0;
+            for(ASTItem i : found.getChildren()) {
+                if(i.getOffset() > offset) {
+                    break;
+                }
+                insert_index++;
+            }
+            found.getChildren().add(insert_index, in);
+        }
+    }
+    
+     private static ASTNode findNode (ASTNode node, int offset) {
+        for(ASTItem it : node.getChildren()) {
+            if (it instanceof ASTNode && "text/html".equals(it.getMimeType())) {
+                ASTNode n = (ASTNode) it;
+                if (n.getOffset () <= offset &&
+                    offset < n.getEndOffset ()) {
+                     return findNode (n, offset);
+                }
+            }
+        }
+        return node;
+    }
+    
+    private static void findImportantTags(ASTNode node, List<ASTNode> list) {
+        for(ASTItem i : node.getChildren()) {
+            if(i instanceof ASTNode) {
+                String nn = ((ASTNode)i).getNT();
+                if("startTag".equals(nn) || "simpleTag".equals(nn)) {
+                    list.add((ASTNode)i);
+                }
+                findImportantTags((ASTNode)i, list);
+            }
+        }
+    }
+    
     private static void resolve (ASTNode n, Stack s, List l, boolean findUnpairedTags) {
-//        System.out.println("JSP:resolving node " + n.toString());
         Iterator<ASTItem> it = n.getChildren ().iterator ();
         while (it.hasNext ()) {
             ASTItem item = it.next ();

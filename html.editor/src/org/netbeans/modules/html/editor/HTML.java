@@ -361,7 +361,7 @@ public class HTML {
         return clone (n.getMimeType (), nt, n.getOffset (), n.getChildren ());
     }
     
-    private static void resolve (ASTNode n, Stack s, List l, boolean findUnpairedTags) {
+    public static void resolve (ASTNode n, Stack s, List l, boolean findUnpairedTags) {
         Iterator<ASTItem> it = n.getChildren ().iterator ();
         while (it.hasNext ()) {
             ASTItem item = it.next ();
