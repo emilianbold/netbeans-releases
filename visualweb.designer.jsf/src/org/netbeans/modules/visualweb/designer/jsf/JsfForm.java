@@ -168,9 +168,9 @@ public class JsfForm {
 //            throw new NullPointerException("FacesModel may not be null!"); // NOI18N
 //        }
         
-        if (facesModel.getLiveUnit() == null) {
-            log(new NullPointerException("Invalid FacesModel, it has null LiveUnit, facesModel=" + facesModel)); // NOI18N
-        }
+//        if (facesModel.getLiveUnit() == null) {
+//            log(new NullPointerException("Invalid FacesModel, it has null LiveUnit, facesModel=" + facesModel)); // NOI18N
+//        }
 
 //        associateFacesModel(dataObject.getPrimaryFile());
 //        synchronized (facesModel2jsfForm) {
@@ -253,6 +253,7 @@ public class JsfForm {
             }
             return null;
         }
+//        FacesModel facesModel = null; // TEMP
         // XXX This is prepared to handle the not yet loaded FacesModel.
 //        if (facesModel == null && dataObject.isTemplate()) {
 //            // XXX Ignore the templates.

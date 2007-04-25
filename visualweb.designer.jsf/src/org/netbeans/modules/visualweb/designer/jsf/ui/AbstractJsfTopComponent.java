@@ -652,7 +652,7 @@ public abstract class AbstractJsfTopComponent extends TopComponent implements Cl
 //        }
 //
 //        return super.getUndoRedo();
-        return jsfForm.getUndoManager();
+        return jsfForm.isValid() ? jsfForm.getUndoManager() : UndoRedo.NONE;
     }
 
     /** Remove any items from the list that are children of any other

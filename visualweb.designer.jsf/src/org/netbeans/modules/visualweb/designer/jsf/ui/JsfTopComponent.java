@@ -256,7 +256,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     
     private JComponent createLoadingComponent() {
         // TODO Provide some better component.
-        return new JLabel("Loading, please wait..."); // TEMP
+        return new JLabel("Loading, please wait...", JLabel.CENTER); // TEMP
     }
     
     @Override
@@ -2484,10 +2484,13 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     }
 
     void modelLoaded() {
+//        System.err.println("\nJsfTC#modelLoaded"); // TEMP
         initDesigner();
         designerOpened();
         designerShowing();
         jsfLookupProvider.refreshLookup();
+        
+        repaint();
     }
     
     
@@ -2508,14 +2511,22 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         
         private Lookup createLookup() {
             List<Object> objects = new ArrayList<Object>();
-            DataObject jsfDobj = jsfTopComponent.getJsfForm().getJspDataObject();
-            if (jsfDobj != null) {
-                objects.add(jsfDobj);
+            
+            boolean isJsfFormValid = jsfTopComponent.getJsfForm().isValid();
+            if (isJsfFormValid) {
+                DataObject jsfDobj = jsfTopComponent.getJsfForm().getJspDataObject();
+                if (jsfDobj != null) {
+                    objects.add(jsfDobj);
+                }
             }
+            
             objects.add(jsfTopComponent.NAVIGATOR_HINT);
-            PaletteController paletteController = jsfTopComponent.getJsfForm().getPaletteController();
-            if (paletteController != null) {
-                objects.add(paletteController);
+            
+            if (isJsfFormValid) {
+                PaletteController paletteController = jsfTopComponent.getJsfForm().getPaletteController();
+                if (paletteController != null) {
+                    objects.add(paletteController);
+                }
             }
             return Lookups.fixed(objects.toArray());
         }

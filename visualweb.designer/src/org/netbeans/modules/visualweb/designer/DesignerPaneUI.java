@@ -747,21 +747,21 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
             editor.setOpaque(false);
             editor.setAutoscrolls(true);
             
-            // attach to the model and editor
-            //editor.addPropertyChangeListener(updateHandler);
-//            Document doc = editor.getDocument();
-            
-//            if (doc == null) {
-//                // no model, create a default one.  This will
-//                // fire a notification to the updateHandler
-//                // which takes care of the rest.
-//                Thread.dumpStack();
-//                throw new RuntimeException("Not yet implemented");
-//                
-//                //editor.setDocument(getEditorKit(editor).createDefaultDocument());
-//            } else {
-                resetPageBox();
-//            }
+//            // attach to the model and editor
+//            //editor.addPropertyChangeListener(updateHandler);
+////            Document doc = editor.getDocument();
+//            
+////            if (doc == null) {
+////                // no model, create a default one.  This will
+////                // fire a notification to the updateHandler
+////                // which takes care of the rest.
+////                Thread.dumpStack();
+////                throw new RuntimeException("Not yet implemented");
+////                
+////                //editor.setDocument(getEditorKit(editor).createDefaultDocument());
+////            } else {
+//                resetPageBox();
+////            }
             
             //            if (DesignerPane.debugclip) {
             //                editor.addKeyListener(updateHandler);
