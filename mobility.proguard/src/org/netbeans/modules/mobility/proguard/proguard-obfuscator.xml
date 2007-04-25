@@ -23,10 +23,6 @@ Microsystems, Inc. All Rights Reserved.
     <name>proguard</name>
     <type>j2se</type>
     <localizing-bundle>org.netbeans.modules.mobility.proguard.Bundle</localizing-bundle>
-    <volume>
-        <type>src</type>
-        <resource>jar:nbinst:///external/proguard/proguard3.7-src.zip!/</resource>
-    </volume>
     <volume>    
         <type>classpath</type>
         <resource>jar:nbinst:///external/proguard/proguard3.7.jar!/</resource>
