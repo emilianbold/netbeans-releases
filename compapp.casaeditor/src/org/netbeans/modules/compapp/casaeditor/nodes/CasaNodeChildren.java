@@ -35,12 +35,21 @@ public abstract class CasaNodeChildren extends Children.Keys {
     
     protected CasaNodeFactory mNodeFactory;
     private WeakReference mDataReference;
+    private Object mHardInitializationReference;
     
     
     public CasaNodeChildren(Object data, CasaNodeFactory factory) {
         super();
-        mDataReference = new WeakReference(data);
         mNodeFactory = factory;
+        
+        // for casual data references, use a weak reference which allows our
+        // reference to be garbage collected when no longer needed
+        mDataReference = new WeakReference(data);
+        
+        // for initialization purposes, use a hard reference. we manually
+        // control when this reference is set to null. initialization needs
+        // a preserved handle to the data, even though the model may not.
+        mHardInitializationReference = data;
     }
     
     
@@ -78,8 +87,15 @@ public abstract class CasaNodeChildren extends Children.Keys {
         initialize();
     }
     
+    @Override
+    protected void removeNotify() {
+        super.removeNotify();
+        
+        mHardInitializationReference = null;
+    }
+    
     private void initialize()  {
-        Object data = getData();
+        Object data = mHardInitializationReference;
         if (data == null) {
             return;
         }
@@ -91,5 +107,7 @@ public abstract class CasaNodeChildren extends Children.Keys {
         } else {
             setKeys(Collections.emptyList());
         }
+        // We initialized, so we don't need the initialization reference anymore.
+        mHardInitializationReference = null;
     }
 }
