@@ -160,17 +160,6 @@ public class RaveFacesContext extends FacesContext {
             
             setCurrentInstance(this);
                        
-            // Set the ExternalContext in the ThreadLocal storage. The
-            // ApplicationAssociate looks for this and throws an exception
-            // if not found.
-            // NOTE - This is really a hack to initialize the RI!!
-            ThreadLocal tls = getConfigureListenerThreadLocalExternalContext();
-            
-            if (tls != null) {
-                tls.set(getExternalContext());
-            } else {
-                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "RaveFacesContext.resetApplication() tls == null");
-            }
             
             // This hack is to fix the bug  NPE from com.sun.faces.spi.InjectionProviderFactory.findProviderClass()
             // Once we set the ThreadLocal<ExternalContext>, it is being looked for instance of WebConfiguration
