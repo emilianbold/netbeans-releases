@@ -217,8 +217,8 @@ public final class CustomizableSideBar {
                     continue;
                 }
                 
-                if (errorStripeOnly && "errorStripe".equals(sideBar.getName())) { //NOI18N
-                    LOG.fine("Ignoring 'errorStripe' side bar created by the factory: " + f); //NOI18N
+                if (errorStripeOnly && !"errorStripe".equals(sideBar.getName())) { //NOI18N
+                    LOG.fine("Error stripe sidebar only. Ignoring '" + sideBar.getName() + "' side bar created by the factory: " + f); //NOI18N
                     continue;
                 }
                 
