@@ -103,6 +103,11 @@
             name="javaeesdk-firstcup-buildnumber" 
             classpath="${custom.tasks.cls}" 
             classname="org.netbeans.installer.infra.build.ant.BuildNumberFirstCup"/>
+	<taskdef 
+            name="javaeesdk-blueprints-buildnumber" 
+            classpath="${custom.tasks.cls}" 
+            classname="org.netbeans.installer.infra.build.ant.BuildNumberBluePrints"/>
+
         <taskdef 
             name="if" 
             classpath="${custom.tasks.cls}" 
@@ -150,6 +155,9 @@
 	<javaeesdk-firstcup-buildnumber 
             file="${temp.file}" 
             prefix="javaeesdk-firstcup"/>
+	<javaeesdk-blueprints-buildnumber 
+            file="${temp.file}" 
+            prefix="javaeesdk-blueprints"/>
 	
         <!--
         <get
@@ -213,6 +221,10 @@ javaeesdk-firstcup.milestone.number=${javaeesdk-firstcup.milestone.number}
 javaeesdk-firstcup.build.number=${javaeesdk-firstcup.build.number}
 javaeesdk-firstcup.macro.number=${javaeesdk-firstcup.macro.number}
 javaeesdk-firstcup.micro.number=${javaeesdk-firstcup.micro.number}
+
+
+javaeesdk-blueprints.milestone.number=${javaeesdk-blueprints.milestone.number}
+javaeesdk-blueprints.build.number=${javaeesdk-blueprints.build.number}
 
 
 dont.build.custom.tasks=true
@@ -767,6 +779,31 @@ jarsigner.storepass=${jarsigner.storepass}
                 name="release.parent.platforms"
                 value=""/>
         </ant>
+
+        <echo message="BUILDING JAVAEESDK:BLUEPRINTS ============================================"/>
+        <ant dir="${nbi.netbeans.dir}/infra/build/products/javaeesdk-blueprints" target="release-all">
+            <property 
+                name="basedir" 
+                value="${nbi.netbeans.dir}/infra/build/products/javaeesdk-blueprints"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            
+            <property
+                name="dist.dir"
+                value="${output.dir}/components"/>
+                
+            <property
+                name="release.parent.uid"
+                value="runtimes-group"/>
+            <property
+                name="release.parent.version"
+                value=""/>
+            <property
+                name="release.parent.platforms"
+                value=""/>
+        </ant>
+
         -->
 
         <get 
@@ -829,24 +866,25 @@ jarsigner.storepass=${jarsigner.storepass}
 	<!-- Java Tools Bundle deliverables --> 
 	<!-- Turned off now since it should not be published on the public site  -->
 	
+
 	<!--
         <get 
-            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;component=nb-javase,6.0.0.0.${build.number}&amp;component=nb-javaee,6.0.0.0.${build.number}&amp;component=nb-javame,6.0.0.0.${build.number}&amp;component=nb-soa,6.0.0.0.${build.number}&amp;component=nb-uml,6.0.0.0.${build.number}&amp;component=nb-ruby,6.0.0.0.${build.number}&amp;component=sjsas,9.1.0.${sjsas.milestone.number}.${sjsas.build.number}&amp;component=openesb,5.0.3.0.${openesb.build.number}&amp;component=sjsam,5.0.3.${sjsam.milestone.number}.${sjsam.build.number}&amp;component=swdp,${swdp.macro.number}.0.0.${swdp.milestone.number}.${swdp.build.number}&amp;component=portletcontainer,${portletcontainer.macro.number}.${portletcontainer.micro.number}.0.${portletcontainer.milestone.number}.${portletcontainer.build.number}&amp;component=javaeesdk-firstcup,${javaeesdk-firstcup.macro.number}.${javaeesdk-firstcup.micro.number}.0.${javaeesdk-firstcup.milestone.number}.${javaeesdk-firstcup.build.number}&amp;platform=windows"
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;component=nb-javase,6.0.0.0.${build.number}&amp;component=nb-javaee,6.0.0.0.${build.number}&amp;component=nb-javame,6.0.0.0.${build.number}&amp;component=nb-soa,6.0.0.0.${build.number}&amp;component=nb-uml,6.0.0.0.${build.number}&amp;component=nb-ruby,6.0.0.0.${build.number}&amp;component=sjsas,9.1.0.${sjsas.milestone.number}.${sjsas.build.number}&amp;component=openesb,5.0.3.0.${openesb.build.number}&amp;component=sjsam,5.0.3.${sjsam.milestone.number}.${sjsam.build.number}&amp;component=swdp,${swdp.macro.number}.0.0.${swdp.milestone.number}.${swdp.build.number}&amp;component=portletcontainer,${portletcontainer.macro.number}.${portletcontainer.micro.number}.0.${portletcontainer.milestone.number}.${portletcontainer.build.number}&amp;component=javaeesdk-firstcup,${javaeesdk-firstcup.macro.number}.${javaeesdk-firstcup.micro.number}.0.${javaeesdk-firstcup.milestone.number}.${javaeesdk-firstcup.build.number}&amp;component=javaeesdk-blueprints,1.0.0.${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}&amp;platform=windows"
             dest="${output.dir}/bundles/java-tools-bundle-u3-preview2-nightly-${build.number}-windows.exe"/>		
         <get 
-            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;component=nb-javase,6.0.0.0.${build.number}&amp;component=nb-javaee,6.0.0.0.${build.number}&amp;component=nb-javame,6.0.0.0.${build.number}&amp;component=nb-soa,6.0.0.0.${build.number}&amp;component=nb-uml,6.0.0.0.${build.number}&amp;component=nb-ruby,6.0.0.0.${build.number}&amp;component=sjsas,9.1.0.${sjsas.milestone.number}.${sjsas.build.number}&amp;component=openesb,5.0.3.0.${openesb.build.number}&amp;component=sjsam,5.0.3.${sjsam.milestone.number}.${sjsam.build.number}&amp;component=swdp,${swdp.macro.number}.0.0.${swdp.milestone.number}.${swdp.build.number}&amp;component=portletcontainer,${portletcontainer.macro.number}.${portletcontainer.micro.number}.0.${portletcontainer.milestone.number}.${portletcontainer.build.number}&amp;component=javaeesdk-firstcup,${javaeesdk-firstcup.macro.number}.${javaeesdk-firstcup.micro.number}.0.${javaeesdk-firstcup.milestone.number}.${javaeesdk-firstcup.build.number}&amp;platform=linux"
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;component=nb-javase,6.0.0.0.${build.number}&amp;component=nb-javaee,6.0.0.0.${build.number}&amp;component=nb-javame,6.0.0.0.${build.number}&amp;component=nb-soa,6.0.0.0.${build.number}&amp;component=nb-uml,6.0.0.0.${build.number}&amp;component=nb-ruby,6.0.0.0.${build.number}&amp;component=sjsas,9.1.0.${sjsas.milestone.number}.${sjsas.build.number}&amp;component=openesb,5.0.3.0.${openesb.build.number}&amp;component=sjsam,5.0.3.${sjsam.milestone.number}.${sjsam.build.number}&amp;component=swdp,${swdp.macro.number}.0.0.${swdp.milestone.number}.${swdp.build.number}&amp;component=portletcontainer,${portletcontainer.macro.number}.${portletcontainer.micro.number}.0.${portletcontainer.milestone.number}.${portletcontainer.build.number}&amp;component=javaeesdk-firstcup,${javaeesdk-firstcup.macro.number}.${javaeesdk-firstcup.micro.number}.0.${javaeesdk-firstcup.milestone.number}.${javaeesdk-firstcup.build.number}&amp;component=javaeesdk-blueprints,1.0.0.${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}&amp;platform=linux"
             dest="${output.dir}/bundles/java-tools-bundle-u3-preview2-nightly-${build.number}-linux.sh"/>
         <get 
-            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;component=nb-javase,6.0.0.0.${build.number}&amp;component=nb-javaee,6.0.0.0.${build.number}&amp;component=nb-soa,6.0.0.0.${build.number}&amp;component=nb-uml,6.0.0.0.${build.number}&amp;component=nb-ruby,6.0.0.0.${build.number}&amp;component=sjsas,9.1.0.${sjsas.milestone.number}.${sjsas.build.number}&amp;component=openesb,5.0.3.0.${openesb.build.number}&amp;component=sjsam,5.0.3.${sjsam.milestone.number}.${sjsam.build.number}&amp;component=swdp,${swdp.macro.number}.0.0.${swdp.milestone.number}.${swdp.build.number}&amp;component=portletcontainer,${portletcontainer.macro.number}.${portletcontainer.micro.number}.0.${portletcontainer.milestone.number}.${portletcontainer.build.number}&amp;component=javaeesdk-firstcup,${javaeesdk-firstcup.macro.number}.${javaeesdk-firstcup.micro.number}.0.${javaeesdk-firstcup.milestone.number}.${javaeesdk-firstcup.build.number}&amp;platform=solaris-x86"
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;component=nb-javase,6.0.0.0.${build.number}&amp;component=nb-javaee,6.0.0.0.${build.number}&amp;component=nb-soa,6.0.0.0.${build.number}&amp;component=nb-uml,6.0.0.0.${build.number}&amp;component=nb-ruby,6.0.0.0.${build.number}&amp;component=sjsas,9.1.0.${sjsas.milestone.number}.${sjsas.build.number}&amp;component=openesb,5.0.3.0.${openesb.build.number}&amp;component=sjsam,5.0.3.${sjsam.milestone.number}.${sjsam.build.number}&amp;component=swdp,${swdp.macro.number}.0.0.${swdp.milestone.number}.${swdp.build.number}&amp;component=portletcontainer,${portletcontainer.macro.number}.${portletcontainer.micro.number}.0.${portletcontainer.milestone.number}.${portletcontainer.build.number}&amp;component=javaeesdk-firstcup,${javaeesdk-firstcup.macro.number}.${javaeesdk-firstcup.micro.number}.0.${javaeesdk-firstcup.milestone.number}.${javaeesdk-firstcup.build.number}&amp;component=javaeesdk-blueprints,1.0.0.${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}&amp;platform=solaris-x86"
             dest="${output.dir}/bundles/java-tools-bundle-u3-preview2-nightly-${build.number}-solaris-x86.sh"/>
         <get 
-            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;component=nb-javase,6.0.0.0.${build.number}&amp;component=nb-javaee,6.0.0.0.${build.number}&amp;component=nb-soa,6.0.0.0.${build.number}&amp;component=nb-uml,6.0.0.0.${build.number}&amp;component=nb-ruby,6.0.0.0.${build.number}&amp;component=sjsas,9.1.0.${sjsas.milestone.number}.${sjsas.build.number}&amp;component=openesb,5.0.3.0.${openesb.build.number}&amp;component=sjsam,5.0.3.${sjsam.milestone.number}.${sjsam.build.number}&amp;component=swdp,${swdp.macro.number}.0.0.${swdp.milestone.number}.${swdp.build.number}&amp;component=portletcontainer,${portletcontainer.macro.number}.${portletcontainer.micro.number}.0.${portletcontainer.milestone.number}.${portletcontainer.build.number}&amp;component=javaeesdk-firstcup,${javaeesdk-firstcup.macro.number}.${javaeesdk-firstcup.micro.number}.0.${javaeesdk-firstcup.milestone.number}.${javaeesdk-firstcup.build.number}&amp;platform=solaris-sparc"
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;component=nb-javase,6.0.0.0.${build.number}&amp;component=nb-javaee,6.0.0.0.${build.number}&amp;component=nb-soa,6.0.0.0.${build.number}&amp;component=nb-uml,6.0.0.0.${build.number}&amp;component=nb-ruby,6.0.0.0.${build.number}&amp;component=sjsas,9.1.0.${sjsas.milestone.number}.${sjsas.build.number}&amp;component=openesb,5.0.3.0.${openesb.build.number}&amp;component=sjsam,5.0.3.${sjsam.milestone.number}.${sjsam.build.number}&amp;component=swdp,${swdp.macro.number}.0.0.${swdp.milestone.number}.${swdp.build.number}&amp;component=portletcontainer,${portletcontainer.macro.number}.${portletcontainer.micro.number}.0.${portletcontainer.milestone.number}.${portletcontainer.build.number}&amp;component=javaeesdk-firstcup,${javaeesdk-firstcup.macro.number}.${javaeesdk-firstcup.micro.number}.0.${javaeesdk-firstcup.milestone.number}.${javaeesdk-firstcup.build.number}&amp;component=javaeesdk-blueprints,1.0.0.${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}&amp;platform=solaris-sparc"
             dest="${output.dir}/bundles/java-tools-bundle-u3-preview2-nightly-${build.number}-solaris-sparc.sh"/>
         <get 
-            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;component=nb-javase,6.0.0.0.${build.number}&amp;component=nb-javaee,6.0.0.0.${build.number}&amp;component=nb-soa,6.0.0.0.${build.number}&amp;component=nb-uml,6.0.0.0.${build.number}&amp;component=nb-ruby,6.0.0.0.${build.number}&amp;component=sjsas,9.1.0.${sjsas.milestone.number}.${sjsas.build.number}&amp;component=openesb,5.0.3.0.${openesb.build.number}&amp;component=sjsam,5.0.3.${sjsam.milestone.number}.${sjsam.build.number}&amp;component=swdp,${swdp.macro.number}.0.0.${swdp.milestone.number}.${swdp.build.number}&amp;component=portletcontainer,${portletcontainer.macro.number}.${portletcontainer.micro.number}.0.${portletcontainer.milestone.number}.${portletcontainer.build.number}&amp;component=javaeesdk-firstcup,${javaeesdk-firstcup.macro.number}.${javaeesdk-firstcup.micro.number}.0.${javaeesdk-firstcup.milestone.number}.${javaeesdk-firstcup.build.number}&amp;platform=macosx-x86"
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;component=nb-javase,6.0.0.0.${build.number}&amp;component=nb-javaee,6.0.0.0.${build.number}&amp;component=nb-soa,6.0.0.0.${build.number}&amp;component=nb-uml,6.0.0.0.${build.number}&amp;component=nb-ruby,6.0.0.0.${build.number}&amp;component=sjsas,9.1.0.${sjsas.milestone.number}.${sjsas.build.number}&amp;component=openesb,5.0.3.0.${openesb.build.number}&amp;component=sjsam,5.0.3.${sjsam.milestone.number}.${sjsam.build.number}&amp;component=swdp,${swdp.macro.number}.0.0.${swdp.milestone.number}.${swdp.build.number}&amp;component=portletcontainer,${portletcontainer.macro.number}.${portletcontainer.micro.number}.0.${portletcontainer.milestone.number}.${portletcontainer.build.number}&amp;component=javaeesdk-firstcup,${javaeesdk-firstcup.macro.number}.${javaeesdk-firstcup.micro.number}.0.${javaeesdk-firstcup.milestone.number}.${javaeesdk-firstcup.build.number}&amp;component=javaeesdk-blueprints,1.0.0.${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}&amp;platform=macosx-x86"
             dest="${output.dir}/bundles/java-tools-bundle-u3-preview2-nightly-${build.number}-macosx-x86.command"/>
         <get 
-            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;component=nb-javase,6.0.0.0.${build.number}&amp;component=nb-javaee,6.0.0.0.${build.number}&amp;component=nb-soa,6.0.0.0.${build.number}&amp;component=nb-uml,6.0.0.0.${build.number}&amp;component=nb-ruby,6.0.0.0.${build.number}&amp;component=sjsas,9.1.0.${sjsas.milestone.number}.${sjsas.build.number}&amp;component=openesb,5.0.3.0.${openesb.build.number}&amp;component=sjsam,5.0.3.${sjsam.milestone.number}.${sjsam.build.number}&amp;component=swdp,${swdp.macro.number}.0.0.${swdp.milestone.number}.${swdp.build.number}&amp;component=portletcontainer,${portletcontainer.macro.number}.${portletcontainer.micro.number}.0.${portletcontainer.milestone.number}.${portletcontainer.build.number}&amp;component=javaeesdk-firstcup,${javaeesdk-firstcup.macro.number}.${javaeesdk-firstcup.micro.number}.0.${javaeesdk-firstcup.milestone.number}.${javaeesdk-firstcup.build.number}&amp;platform=macosx-ppc"
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;component=nb-javase,6.0.0.0.${build.number}&amp;component=nb-javaee,6.0.0.0.${build.number}&amp;component=nb-soa,6.0.0.0.${build.number}&amp;component=nb-uml,6.0.0.0.${build.number}&amp;component=nb-ruby,6.0.0.0.${build.number}&amp;component=sjsas,9.1.0.${sjsas.milestone.number}.${sjsas.build.number}&amp;component=openesb,5.0.3.0.${openesb.build.number}&amp;component=sjsam,5.0.3.${sjsam.milestone.number}.${sjsam.build.number}&amp;component=swdp,${swdp.macro.number}.0.0.${swdp.milestone.number}.${swdp.build.number}&amp;component=portletcontainer,${portletcontainer.macro.number}.${portletcontainer.micro.number}.0.${portletcontainer.milestone.number}.${portletcontainer.build.number}&amp;component=javaeesdk-firstcup,${javaeesdk-firstcup.macro.number}.${javaeesdk-firstcup.micro.number}.0.${javaeesdk-firstcup.milestone.number}.${javaeesdk-firstcup.build.number}&amp;component=javaeesdk-blueprints,1.0.0.${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}&amp;platform=macosx-ppc"
             dest="${output.dir}/bundles/java-tools-bundle-u3-preview2-nightly-${build.number}-macosx-ppc.command"/>
         -->
 
