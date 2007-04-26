@@ -583,6 +583,7 @@ public class JsfForm {
         LiveUnit liveUnit = getFacesModel().getLiveUnit();
         if (liveUnit == null) {
             log(new NullPointerException("Invalid FacesModel, it has null LiveUnit, facesModel=" + getFacesModel())); // NOI18N
+            return;
         }
         DesignProject designProject = liveUnit.getProject();
         if (designProject == null) {
