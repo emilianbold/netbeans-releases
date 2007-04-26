@@ -330,32 +330,33 @@ public class MasterPanel implements WizardDescriptor.Panel {
     private void tableComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tableComboActionPerformed
         String table = getTable();
         DatabaseConnection connection = getConnection();
-        Connection con = connection.getJDBCConnection();
+        Connection con = (connection == null) ? null : connection.getJDBCConnection();
         try {
             DefaultListModel model = (DefaultListModel)availableList.getModel();
             model.clear();
             model = (DefaultListModel)includeList.getModel();
             model.clear();
-            ResultSet rs = con.getMetaData().getColumns(con.getCatalog(), connection.getSchema(), table, "%"); // NOI18N
-            while (rs.next()) {
-                String columnName = rs.getString("COLUMN_NAME"); // NOI18N
-                model.addElement(columnName);
+            if (con != null) {
+                ResultSet rs = con.getMetaData().getColumns(con.getCatalog(), connection.getSchema(), table, "%"); // NOI18N
+                while (rs.next()) {
+                    String columnName = rs.getString("COLUMN_NAME"); // NOI18N
+                    model.addElement(columnName);
+                }
+                rs.close();
             }
-            rs.close();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }//GEN-LAST:event_tableComboActionPerformed
 
     private void connectionComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectionComboActionPerformed
-        Object selItem = connectionCombo.getSelectedItem();
-        if (selItem instanceof DatabaseConnection) {
-            DatabaseConnection connection = (DatabaseConnection)selItem;
+        DatabaseConnection connection = getConnection();
+        if (connection != null) {
             Connection con = J2EEUtils.establishConnection(connection);
             if (con == null) return; // User canceled the connection dialog
             fillTableCombo(connection);
         } else {
-            assert (selItem == null);
+            fillTableCombo(null);
         }
     }//GEN-LAST:event_connectionComboActionPerformed
 
@@ -365,7 +366,8 @@ public class MasterPanel implements WizardDescriptor.Panel {
      * @return selected database connection.
      */
     private DatabaseConnection getConnection() {
-        return (DatabaseConnection)connectionCombo.getSelectedItem();
+        Object selItem = connectionCombo.getSelectedItem();
+        return (selItem instanceof DatabaseConnection) ? (DatabaseConnection)selItem : null;
     }
 
     /**
@@ -394,8 +396,10 @@ public class MasterPanel implements WizardDescriptor.Panel {
      */
     private void fillTableCombo(DatabaseConnection connection) {
         DefaultComboBoxModel model = new DefaultComboBoxModel();
-        for (String tableName : J2EEUtils.tableNamesForConnection(connection)) {
-            model.addElement(tableName);
+        if (connection != null) {
+            for (String tableName : J2EEUtils.tableNamesForConnection(connection)) {
+                model.addElement(tableName);
+            }
         }
         tableCombo.setModel(model);
         tableCombo.setEnabled(tableCombo.getModel().getSize() != 0);
