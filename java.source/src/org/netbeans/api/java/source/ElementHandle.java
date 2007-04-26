@@ -98,10 +98,10 @@ public final class ElementHandle<T extends Element> {
     @SuppressWarnings ("unchecked")     // NOI18N
     public T resolve (final CompilationInfo compilationInfo) {
         assert compilationInfo != null;
-        return resolve (compilationInfo.getJavacTask());
+        return resolveImpl (compilationInfo.getJavacTask());
     }
     
-    private T resolve (final JavacTaskImpl jt) {
+    private T resolveImpl (final JavacTaskImpl jt) {
                 
         switch (this.kind) {
             case PACKAGE:
@@ -447,7 +447,7 @@ public final class ElementHandle<T extends Element> {
         }
 
         public <T extends Element> T resolve(ElementHandle<T> handle, JavacTaskImpl jti) {
-            return handle.resolve (jti);
+            return handle.resolveImpl (jti);
         }
     }
     
