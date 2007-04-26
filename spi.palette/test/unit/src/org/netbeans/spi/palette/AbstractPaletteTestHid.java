@@ -18,11 +18,14 @@
  */
 
 package org.netbeans.spi.palette;
+import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import junit.framework.*;
-import org.openide.filesystems.FileLock;
+import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataLoaderPool;
@@ -35,7 +38,7 @@ import org.openide.nodes.Node;
  *
  * @author Stanislav Aubrecht
  */
-public abstract class AbstractPaletteTestHid extends TestCase {
+public abstract class AbstractPaletteTestHid extends NbTestCase {
 
     protected FileObject paletteRootFolder;
     private static final String PALETTE_ROOT_FOLDER_NAME = "test_palette_folder";
@@ -51,6 +54,9 @@ public abstract class AbstractPaletteTestHid extends TestCase {
     }
     
     protected void setUp() throws Exception {
+        System.setProperty ("org.openide.util.Lookup", "org.netbeans.spi.palette.AbstractPaletteTestHid$Lkp");
+//        assertEquals ("Our lookup is installed", Lookup.getDefault ().getClass (), Lkp.class);
+        
         FileSystem fs = Repository.getDefault().getDefaultFileSystem();
 //        paletteRootFolder = fs.findResource( PALETTE_ROOT_FOLDER_NAME );
 //        if( null != paletteRootFolder )
@@ -64,21 +70,26 @@ public abstract class AbstractPaletteTestHid extends TestCase {
             myDummyLoader = new DummyItemLoader();
         
         createDefaultPaletteContentInFolder( paletteRootFolder );
-            }
+    }
+
+    @Override
+    protected boolean runInEQ() {
+        return false;
+    }
 
     protected void tearDown() throws Exception {
-        if( null != paletteRootFolder ) {
-            FileLock lock = null;
-            try {
-                if( paletteRootFolder.isValid() ) {
-                    lock = paletteRootFolder.lock();
-                    paletteRootFolder.delete( lock );
-                }
-            } finally {
-                if( null != lock )
-                    lock.releaseLock();
-            }
-        }
+//        if( null != paletteRootFolder ) {
+//            FileLock lock = null;
+//            try {
+//                if( paletteRootFolder.isValid() ) {
+//                    lock = paletteRootFolder.lock();
+//                    paletteRootFolder.delete( lock );
+//                }
+//            } finally {
+//                if( null != lock )
+//                    lock.releaseLock();
+//            }
+//        }
     }
     
     protected void createDefaultPaletteContentInFolder( FileObject rootFolder ) throws IOException {
@@ -135,5 +146,72 @@ public abstract class AbstractPaletteTestHid extends TestCase {
             fail( "Item data object '" + itemName + "' not found." );
         }
         return dobj.getNodeDelegate();
+    }
+
+    
+    //
+    // Our fake lookup
+    //
+    public static final class Lkp extends org.openide.util.lookup.AbstractLookup {
+        public Lkp () throws Exception {
+            this (new org.openide.util.lookup.InstanceContent ());
+        }
+        
+        private Lkp (org.openide.util.lookup.InstanceContent ic) throws Exception {
+            super (ic);
+            
+            ic.add (new Repository (createLocalFileSystem (Lkp.class.getName()+System.currentTimeMillis(), new String[0])));
+        }
+    }
+
+    public static FileSystem createLocalFileSystem(String name, String[] resources) throws IOException {
+        File f = File.createTempFile (name, ".tmp");
+        f.delete ();
+        f = new File (f.getParent (), name);
+        f.mkdirs ();
+        return createLocalFileSystem (f, resources);
+    }
+
+    public static FileSystem createLocalFileSystem(File mountPoint, String[] resources) throws IOException {
+        mountPoint.mkdir();
+        
+        for (int i = 0; i < resources.length; i++) {                        
+            File f = new File (mountPoint,resources[i]);
+            if (f.isDirectory() || resources[i].endsWith("/")) {
+                f.mkdirs();
+            }
+            else {
+                f.getParentFile().mkdirs();
+                try {
+                    f.createNewFile();
+                } catch (IOException iex) {
+                    throw new IOException ("While creating " + resources[i] + " in " + mountPoint.getAbsolutePath() + ": " + iex.toString() + ": " + f.getAbsolutePath() + " with resource list: " + Arrays.asList(resources));
+                }
+            }
+        }
+        
+        LocalFileSystem lfs = new StatusFileSystem();
+        try {
+        lfs.setRootDirectory(mountPoint);
+        } catch (Exception ex) {}
+        
+        return lfs;
+    }
+
+    static class StatusFileSystem extends LocalFileSystem {
+        Status status = new Status () {
+            public String annotateName (String name, java.util.Set files) {
+                return name;
+            }
+
+            public java.awt.Image annotateIcon (java.awt.Image icon, int iconType, java.util.Set files) {
+                return icon;
+            }
+        };        
+        
+        public org.openide.filesystems.FileSystem.Status getStatus() {
+            return status;
+        }
+        
     }
 }

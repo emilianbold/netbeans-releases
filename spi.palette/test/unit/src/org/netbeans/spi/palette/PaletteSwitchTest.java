@@ -76,6 +76,11 @@ public class PaletteSwitchTest extends AbstractPaletteTestHid {
         
         dummyDocumentFile = fs.getRoot().createData( "dummyDocumentFile" + System.currentTimeMillis(), DUMMY_DOCUMENT_FILE_EXTENSION );
     }
+
+    @Override
+    protected boolean runInEQ() {
+        return true;
+    }
     
     public void testNoLookupPalette() throws IOException {
         TopComponent tc = createTopComponentWithPalette( null );
