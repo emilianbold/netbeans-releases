@@ -97,6 +97,7 @@ implements PropertyChangeListener {
 
     private Router mOrthogonalRouter;
     private Router mDirectRouter = RouterFactory.createDirectRouter();
+    private Router mCurrentRouter = mDirectRouter;
 
     private WidgetAction mPopupMenuAction = new CasaPopupMenuAction(new CasaPopupMenuProvider());
     private WidgetAction mMoveControlPointAction = ActionFactory.createOrthogonalMoveControlPointAction ();
@@ -301,15 +302,23 @@ implements PropertyChangeListener {
     }
     
     public void updateEdgeRouting() {
-        if (getEdges().size() <= CasaCollisionCollector.MAX_ORTHOGONAL_CONNECTIONS) {
-            for (CasaComponent component : getEdges()) {
-                ConnectionWidget connectionWidget = (ConnectionWidget) findWidget(component);
-                connectionWidget.setRouter(mOrthogonalRouter);
+        if (
+                getEdges().size() <= CasaCollisionCollector.MAX_ORTHOGONAL_CONNECTIONS &&
+                getNodes().size() <= CasaCollisionCollector.MAX_ORTHOGONAL_NODES) {
+            if (mCurrentRouter != mOrthogonalRouter) {
+                mCurrentRouter = mOrthogonalRouter;
+                for (CasaComponent component : getEdges()) {
+                    ConnectionWidget connectionWidget = (ConnectionWidget) findWidget(component);
+                    connectionWidget.setRouter(mOrthogonalRouter);
+                }
             }
         } else {
-            for (CasaComponent component : getEdges()) {
-                ConnectionWidget connectionWidget = (ConnectionWidget) findWidget(component);
-                connectionWidget.setRouter(mDirectRouter);
+            if (mCurrentRouter != mDirectRouter) {
+                mCurrentRouter = mDirectRouter;
+                for (CasaComponent component : getEdges()) {
+                    ConnectionWidget connectionWidget = (ConnectionWidget) findWidget(component);
+                    connectionWidget.setRouter(mDirectRouter);
+                }
             }
         }
     }

@@ -99,13 +99,16 @@ public class CasaNavigatorView implements LookupListener, NavigatorPanel {
     }
     
     public void resultChanged(LookupEvent ev) {
-        Collection selected = mLookupResult.allInstances();
-        if (selected.size() == 1) {
-            Object result = selected.iterator().next();
-            if (result instanceof CasaDataObject) {
-                mNavigatorPanel.navigate((CasaDataObject) result);
-            } else {
-                mNavigatorPanel.navigate(null);
+        // lookup result may be null
+        if (mLookupResult != null) {
+            Collection selected = mLookupResult.allInstances();
+            if (selected.size() == 1) {
+                Object result = selected.iterator().next();
+                if (result instanceof CasaDataObject) {
+                    mNavigatorPanel.navigate((CasaDataObject) result);
+                } else {
+                    mNavigatorPanel.navigate(null);
+                }
             }
         }
     }
