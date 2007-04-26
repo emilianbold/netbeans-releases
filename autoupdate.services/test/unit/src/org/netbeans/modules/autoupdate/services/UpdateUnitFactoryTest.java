@@ -123,7 +123,7 @@ public class UpdateUnitFactoryTest extends NbTestCase {
         UpdateElement el = u.getAvailableUpdates ().get (0);
         assertEquals ("org.yourorghere.depending", el.getCodeName ());
         assertEquals ("1.0", el.getSpecificationVersion ());
-        assertEquals (0, el.getDownloadSize ());
+        assertEquals (NBM_FILE.length(), el.getDownloadSize ());
     }
     
     public static class MyProvider extends AutoupdateCatalog {

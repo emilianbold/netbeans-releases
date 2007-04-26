@@ -61,7 +61,7 @@ public class AutoupdateInfoParser {
             Document doc = getAutoupdateInfo (nbmFile);
             SimpleItem simple = createSimpleItem (doc, false);
             assert ! (simple instanceof SimpleItem.License) : simple + " is not instanceof License.";
-            UpdateItem update = simple.toUpdateItem (getLicenses (nbmFile));
+            UpdateItem update = simple.toUpdateItem (getLicenses (nbmFile), nbmFile);
             items.put (simple.getId (), update);
         } catch (IOException ex) {
             ERR.log (Level.INFO, ex.getMessage(), ex);

@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.autoupdate.updateprovider;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -55,6 +56,9 @@ public abstract class SimpleItem {
     }
     
     public abstract UpdateItem toUpdateItem (Map<String, String> licenses);
+    public UpdateItem toUpdateItem (Map<String, String> licenses, File nbm) {
+        throw new UnsupportedOperationException();
+    }
     public abstract String getId ();
         
     public static class Feature extends SimpleItem {
@@ -156,6 +160,10 @@ public abstract class SimpleItem {
         }
         
         public UpdateItem toUpdateItem (Map<String, String> licenses) {
+            return toUpdateItem(licenses, null);
+        }
+        
+        public UpdateItem toUpdateItem(Map<String, String> licenses, File nbm) {
             assert declaratingNode != null : "declaratingNode must be declared";
             
             moduleCodeName = getModuleCodeName (declaratingNode);
@@ -194,7 +202,7 @@ public abstract class SimpleItem {
             String global = getAttribute (declaratingNode, IS_GLOBAL);
             String targetcluster = getAttribute (declaratingNode, TARGET_CLUSTER);
             String homepage = getAttribute (declaratingNode, HOMEPAGE);
-            String downloadSize = getAttribute (declaratingNode, DOWNLOAD_SIZE);
+            String downloadSize = (nbm != null && nbm.exists()) ? String.valueOf(nbm.length()) :  getAttribute (declaratingNode, DOWNLOAD_SIZE);
             String author = getAttribute (declaratingNode, MODULE_AUTHOR);
             
             URL distributionURL = null;
@@ -234,7 +242,7 @@ public abstract class SimpleItem {
             
             return res;
         }
-
+        
         public String getId() {
             return moduleCodeName + '_' + specVersion;
         }
