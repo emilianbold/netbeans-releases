@@ -19,9 +19,11 @@
 package org.netbeans.modules.compapp.casaeditor.graph;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.widget.LabelWidget;
@@ -47,7 +49,13 @@ public class WaitMessageHandler {
     
     public static void addToScene(CasaModelGraphScene scene) {
         if (getBuildMessageWidget(scene) == null) {
-            WaitMessageWidget messageWidget = new WaitMessageWidget(scene);
+            WaitMessageWidget messageWidget = new WaitMessageWidget(
+                    scene,
+                    NbBundle.getMessage(WaitMessageHandler.class, "LBL_WaitMessage0"));
+            messageWidget.setAnimationText(
+                    NbBundle.getMessage(WaitMessageHandler.class, "LBL_WaitMessage1"),
+                    NbBundle.getMessage(WaitMessageHandler.class, "LBL_WaitMessage2"),
+                    NbBundle.getMessage(WaitMessageHandler.class, "LBL_WaitMessage3"));
             scene.getDragLayer().addChild(messageWidget);
             scene.validate();
         } 
@@ -64,24 +72,36 @@ public class WaitMessageHandler {
     private static class WaitMessageWidget extends LabelWidget {
         
         private static final Font FONT_MESSAGE = 
-                new Font("SansSerif", Font.BOLD, 18);
+                new Font("SansSerif", Font.BOLD, 16);
         
         private static final Border BORDER = 
                 BorderFactory.createCompositeBorder(
-                BorderFactory.createLineBorder(2, Color.WHITE),
+                // outer border
+                BorderFactory.createLineBorder(2, new Color(255, 255, 255, 10)),
+                // round-rect line
                 BorderFactory.createRoundedBorder(8, 8, null, Color.LIGHT_GRAY),
+                // inner border
                 BorderFactory.createLineBorder(4, 8, 4, 8, Color.WHITE));
         
         private DependenciesRegistry mDependenciesRegistry;
+        private String[] mAnimationText;
+        private boolean mIsLockPosition;
         
-        public WaitMessageWidget(Scene scene) {
+        private Runnable mCurrentAnimator;
+        
+        
+        public WaitMessageWidget(Scene scene, String label) {
             super(scene);
+            setLabel(label);
             setBorder(BORDER);
             setFont(FONT_MESSAGE);
-            setLabel(NbBundle.getMessage(WaitMessageHandler.class, "LBL_WaitMessage"));
-            setForeground(Color.GRAY);
-            setBackground(Color.WHITE);
+            setForeground(Color.DARK_GRAY);
+            setBackground(new Color(255, 255, 255, 200));
             setOpaque(true);
+        }
+        
+        public void setAnimationText(String... text) {
+            mAnimationText = text;
         }
         
         protected void notifyAdded() {
@@ -89,13 +109,69 @@ public class WaitMessageHandler {
             
             mDependenciesRegistry = new DependenciesRegistry(getParentWidget());
             
+            Rectangle preferredBounds = getPreferredBounds();
+            setMinimumSize(new Dimension(preferredBounds.width + 20, preferredBounds.height));
+            
             center();
             Widget.Dependency centerer = new Widget.Dependency() {
                 public void revalidateDependency() {
-                    center();
+                    if (!mIsLockPosition) {
+                        center();
+                    }
                 }
             };
             getRegistry().registerDependency(centerer);
+            
+            startAnimation();
+        }
+        
+        private void startAnimation() {
+            if (mAnimationText != null) {
+                Runnable animator = new Runnable() {
+                    private int mAnimationIndex = 0;
+                    public void run() {
+                        do {
+                            try {
+                                Thread.sleep(800);
+                                if (mCurrentAnimator == this) {
+                                    SwingUtilities.invokeLater(new Runnable() {
+                                        public void run() {
+                                            updateLabel();
+                                        }
+                                    });
+                                }
+                            } catch (Throwable t) {
+                                t.printStackTrace(System.err);
+                            }
+                        }
+                        while (mCurrentAnimator == this);
+                    }
+                    private void updateLabel() {
+                        try {
+                            mIsLockPosition = true;
+                            setLabel(mAnimationText[mAnimationIndex]);
+                            getScene().revalidate();
+                            getScene().validate();
+                            mAnimationIndex = (mAnimationIndex + 1) % mAnimationText.length;
+                        } finally {
+                            mIsLockPosition = false;
+                        }
+                    }
+                };
+                mCurrentAnimator = animator;
+                new Thread(animator).start();
+            }
+        }
+        
+        protected void notifyRemoved() {
+            super.notifyRemoved();
+            
+            mCurrentAnimator = null;
+            
+            if (getRegistry() != null) {
+                getRegistry().removeAllDependencies();
+            }
+            mDependenciesRegistry = null;
         }
         
         private void center() {
@@ -111,15 +187,6 @@ public class WaitMessageHandler {
                         layerBounds.y + (layerBounds.height - bounds.height) / 2);
                 setPreferredLocation(location);
             }
-        }
-        
-        protected void notifyRemoved() {
-            super.notifyRemoved();
-            
-            if (getRegistry() != null) {
-                getRegistry().removeAllDependencies();
-            }
-            mDependenciesRegistry = null;
         }
         
         private DependenciesRegistry getRegistry() {
