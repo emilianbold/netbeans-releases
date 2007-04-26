@@ -104,7 +104,8 @@ public final class FileBrowserCD extends ComponentDescriptor {
             .addSetters (MidpSetter.createSetter("setTicker", MidpVersionable.MIDP).addParameters(DisplayableCD.PROP_TICKER))
             .addSetters (MidpSetter.createSetter("setCommandListener", MidpVersionable.MIDP).addParameters(DisplayableCD.PROP_COMMAND_LISTENER))
             .addSetters(MidpSetter.createSetter("setFilter", MidpVersionable.MIDP).addParameters(PROP_FILTER))
-            .addSetters (MidpSetter.createConstructor (TYPEID, MidpVersionable.MIDP_2).addParameters (MidpCustomCodePresenterSupport.PARAM_DISPLAY));
+            .addSetters (MidpSetter.createConstructor (TYPEID, MidpVersionable.MIDP_2).addParameters (MidpCustomCodePresenterSupport.PARAM_DISPLAY))
+            .addSetters (MidpSetter.createSetter ("addCommand", MidpVersionable.MIDP).setArrayParameter (DisplayableCode.PARAM_COMMAND).addParameters (DisplayableCode.PARAM_COMMAND));
     }
 
     protected List<? extends Presenter> createPresenters() {
