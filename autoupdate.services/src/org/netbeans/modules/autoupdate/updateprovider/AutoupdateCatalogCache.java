@@ -52,7 +52,7 @@ public class AutoupdateCatalogCache {
         return INSTANCE;
     }
     
-    public File getCatalogCache () {
+    public synchronized File getCatalogCache () {
         assert cacheDir != null && cacheDir.exists ();
         return cacheDir;
     }
@@ -71,7 +71,7 @@ public class AutoupdateCatalogCache {
         return;
     }
     
-    public URL writeCatalogToCache (String codeName, URL original) throws IOException {
+    public synchronized URL writeCatalogToCache (String codeName, URL original) throws IOException {
         URL url = null;
         File dir = getCatalogCache ();
         assert dir != null && dir.exists () : "Cache directory must exist.";
@@ -89,7 +89,7 @@ public class AutoupdateCatalogCache {
         return url;
     }
     
-    public URL getCatalogURL (String codeName) {
+    public synchronized URL getCatalogURL (String codeName) {
         File dir = getCatalogCache ();
         assert dir != null && dir.exists () : "Cache directory must exist.";
         File cache = new File (dir, codeName);
