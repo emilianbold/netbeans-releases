@@ -6,8 +6,6 @@ import com.toy.anagrams.lib.WordLibrary;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Toolkit;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowListener;
 import javax.swing.JFrame;
 
 /**
@@ -200,7 +198,8 @@ public class Anagrams extends JFrame {
     }//GEN-LAST:event_nextTrialActionPerformed
 
     private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
-        System.exit(0);
+        this.setVisible(false);
+        this.dispose();
     }//GEN-LAST:event_exitMenuItemActionPerformed
 
     private void guessedWordActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_guessedWordActionPerformed
@@ -216,7 +215,8 @@ public class Anagrams extends JFrame {
     }//GEN-LAST:event_guessedWordActionPerformed
 
     private void exitForm(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_exitForm
-        System.exit(0);
+        this.setVisible(false);
+        this.dispose();
     }//GEN-LAST:event_exitForm
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
