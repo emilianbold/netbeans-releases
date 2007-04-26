@@ -263,8 +263,31 @@ public class HTML {
 
     // marks ...................................................................
     
+    private static TokenSequence findTokenSequence(TokenSequence ts) {
+        if("html/text".equals(ts.language().mimeType())) {
+            return ts;
+        } else {
+            TokenSequence em = ts.embedded();
+            if(em == null) {
+                return null; //no embedded token sequence
+            } else {
+                em.move(ts.offset());
+                if(em.moveNext() || em.movePrevious()) {
+                    return findTokenSequence(em);
+                } else {
+                    return null; //no token
+                }
+            }
+        }
+    }
+    
     public static boolean isDeprecatedAttribute (Context context) {
-        Token t = context.getTokenSequence ().token ();
+        //TokenSequence ts = findTokenSequence(context.getTokenSequence());
+        TokenSequence ts = context.getTokenSequence ();
+        if(!ts.language().mimeType().equals("text/html")) {
+            return false;
+        }
+        Token t = ts.token ();
         if (t == null) return false;
         String attribName = t.text ().toString ().toLowerCase ();
         String tagName = tagName (context.getTokenSequence ());
@@ -273,14 +296,22 @@ public class HTML {
     }
 
     public static boolean isDeprecatedTag (Context context) {
-        Token t = context.getTokenSequence ().token ();
+        TokenSequence ts = context.getTokenSequence ();
+        if(!ts.language().mimeType().equals("text/html")) {
+            return false;
+        }
+        Token t = ts.token ();
         if (t == null) return false;
         String tagName = t.text ().toString ().toLowerCase ();
         return "true".equals (getLibrary ().getProperty ("TAG", tagName, "deprecated"));
     }
 
     public static boolean isEndTagRequired (Context context) {
-        Token t = context.getTokenSequence ().token ();
+        TokenSequence ts = context.getTokenSequence ();
+        if(!ts.language().mimeType().equals("text/html")) {
+            return false;
+        }
+        Token t = ts.token ();
         if (t == null) return false;
         return isEndTagRequired (t.id ().name ().toLowerCase ());
     }
