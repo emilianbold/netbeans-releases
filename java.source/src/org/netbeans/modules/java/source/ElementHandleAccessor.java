@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.java.source;
 
+import com.sun.tools.javac.api.JavacTaskImpl;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import org.netbeans.api.java.source.ElementHandle;
 
@@ -45,6 +47,8 @@ public abstract class ElementHandleAccessor {
     
     
     public abstract ElementHandle create (ElementKind kind, String... descriptors);
+    
+    public abstract <T extends Element> T resolve (ElementHandle<T> handle, JavacTaskImpl jti);
         
     
 }
