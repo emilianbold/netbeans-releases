@@ -463,16 +463,23 @@ public abstract class UnixNativeUtils extends NativeUtils {
             
             final String stdout = SystemUtils.executeCommand("df", "-h").getStdOut();
             final String[] lines = stdout.split(StringUtils.NEW_LINE_PATTERN);
-            final int index = lines[0].indexOf("Mounted on");
             
+            // a quick and dirty solution - we assume that % is present only once in 
+            // each line - in the part where the percentage is reported, hence we 
+            // look for the percentage sign and then for the first slash
             final List<File> roots = new LinkedList<File>();
             for (int i = 1; i < lines.length; i++) {
-                if (lines[i].length() > index) {
-                    final String path = lines[i].substring(index);
-                    final File file = new File(path);
+                int index = lines[i].indexOf("%");
+                if (index != -1) {
+                    index = lines[i].indexOf("/", index);
                     
-                    if (path.startsWith("/") && !roots.contains(file)) {
-                        roots.add(file);
+                    if (index != -1) {
+                        final String path = lines[i].substring(index);
+                        final File file = new File(path);
+                        
+                        if (!roots.contains(file)) {
+                            roots.add(file);
+                        }
                     }
                 }
             }
