@@ -20,7 +20,6 @@
  */
 package org.netbeans.installer.wizard.components.panels.netbeans;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -42,6 +41,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JList;
+import javax.swing.JRootPane;
 import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
@@ -322,6 +322,14 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
             }
         });
         getRootPane().setDefaultButton(okButton);
+        getRootPane().getInputMap(JRootPane.WHEN_IN_FOCUSED_WINDOW).put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true),
+                CANCEL_ACTION_NAME);
+        getRootPane().getActionMap().put(CANCEL_ACTION_NAME, new AbstractAction(){
+            public void actionPerformed(ActionEvent e) {
+                cancelButtonPressed();
+            }
+        });
         
         // l&f-specific tweaks //////////////////////////////////////////////////////
         if (UIManager.getLookAndFeel().getID().equals("GTK")) {
@@ -522,7 +530,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
     }
     
     private void cancelButtonPressed() {
-        final ComponentsListModel model = 
+        final ComponentsListModel model =
                 (ComponentsListModel) componentsList.getModel();
         
         model.cancelChanges();
@@ -800,7 +808,11 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
     // Constants
     public static final String KEYBOARD_TOGGLE_ACTION_NAME =
             "checkbox.update"; // NOI18N
-    public static final String FEATURE_DESCRIPTION_TITLE = 
-             ResourceUtils.getString(NbCustomizeSelectionDialog.class,
+    
+    public static final String FEATURE_DESCRIPTION_TITLE =
+            ResourceUtils.getString(NbCustomizeSelectionDialog.class,
             "NCSD.feature.description.title"); // NOI18N
+    
+    private static final String CANCEL_ACTION_NAME =
+            "evaluate.cancel"; // NOI18N
 }

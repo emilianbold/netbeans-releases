@@ -459,7 +459,9 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                 }
                 
                 if (node instanceof Group) {
-                    groups.add(node);
+                    if (node.hasChildren(new ProductFilter(true))) {
+                        groups.add(node);
+                    }
                 }
             }
             

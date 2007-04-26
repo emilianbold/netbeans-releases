@@ -21,6 +21,7 @@ package org.netbeans.installer.wizard.containers;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -33,7 +34,11 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.net.MalformedURLException;
 import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
 import javax.swing.ImageIcon;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
+import javax.swing.JRootPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import org.netbeans.installer.utils.ErrorManager;
@@ -218,7 +223,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
         getRootPane().setDefaultButton(currentUi.getDefaultEnterButton());
         
         // handle the default buttons - Escape
-        getRootPane().getInputMap().put(
+        getRootPane().getInputMap(JRootPane.WHEN_IN_FOCUSED_WINDOW).put(
                 KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true),
                 CANCEL_ACTION_NAME);
         getRootPane().getActionMap().put(CANCEL_ACTION_NAME, new AbstractAction() {
