@@ -44,7 +44,7 @@
     -->
     <target name="-pre-package">
         <if property="instrument.jars" value="true">
-            <if property="i" value="1">
+            <if property="i" value="2">
                 <mkdir 
                     dir="${data.directory}/emma-lib"/>
                 <copy 
