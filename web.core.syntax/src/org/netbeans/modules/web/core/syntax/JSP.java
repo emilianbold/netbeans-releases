@@ -20,6 +20,7 @@
 package org.netbeans.modules.web.core.syntax;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
@@ -160,6 +161,11 @@ public class JSP {
         //find all html root nodes (S nonterminal node) and join their content into one html root node
         List<ASTItem> nodes = new ArrayList();
         collectHtmlNodes(nodes, n);
+        
+        if(nodes.isEmpty()) {
+            //no html code in the page - return node with no children
+            return ASTNode.create(n.getMimeType(), n.getNT(), Collections.EMPTY_LIST, n.getOffset());
+        }
         
         int firstChildOffset = nodes.get(0).getOffset();
         ASTNode tagsnode = ASTNode.create("text/html", "tags", nodes, firstChildOffset);
