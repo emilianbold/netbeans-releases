@@ -177,7 +177,7 @@ public class Actions extends JellyTestCase {
             //run
             ContainerOperator tbrop = MainWindowOperator.getDefault().getToolbar(Bundle.getString("org.netbeans.modules.project.ui.Bundle", "Toolbars/Build"));
             assertTrue(MainWindowOperator.getDefault().getToolbarButton(tbrop, Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_DebugMainProjectAction_Name")).isEnabled());
-            assertTrue(MainWindowOperator.getDefault().getToolbarButton(tbrop, Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Connect")).isEnabled());
+            //assertTrue(MainWindowOperator.getDefault().getToolbarButton(tbrop, Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Connect")).isEnabled());
             
             eo.close();
         } catch (Throwable th) {
@@ -252,6 +252,8 @@ public class Actions extends JellyTestCase {
             assertTrue(MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper,
                     Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Step_over_action_name")).isEnabled());
             assertTrue(MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper,
+                    Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Step_operation_action_name")).isEnabled());
+            assertTrue(MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper,
                     Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Step_into_action_name")).isEnabled());
             assertTrue(MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper,
                     Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Step_out_action_name")).isEnabled());
@@ -260,11 +262,11 @@ public class Actions extends JellyTestCase {
                     Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Run_to_cursor_action_name")).isEnabled());
             assertTrue(MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper,
                     Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Fix_action_name")).isEnabled());
-            assertTrue(MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper,
-                    Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_New_Watch")).isEnabled());
+            //assertTrue(MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper,
+                    //Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_New_Watch")).isEnabled());
             
             //remove breakpoint
-            Utilities.toggleBreakpoint(eo, 104, false);
+            Utilities.deleteAllBreakpoints();
             //finish debugging
             Utilities.endAllSessions();
             //close sources
