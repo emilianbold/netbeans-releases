@@ -79,7 +79,6 @@ public class CommentsTest extends GeneratorTest {
             "    void method() {\n" +
             "        // test\n" +
             "        int a;\n" +
-            "\n" +
             "        /**\n" +
             "         * becko\n" +
             "         */\n" +
