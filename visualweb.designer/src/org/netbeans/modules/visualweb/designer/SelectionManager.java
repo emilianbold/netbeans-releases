@@ -166,7 +166,7 @@ public class SelectionManager {
 //            updateSelection();
             updateNodes();
 //            webform.getTopComponent().disableCutCopyDelete(); // not true for paste
-            webform.tcDisableCutCopyDelete();
+//            webform.tcDisableCutCopyDelete();
             webform.getPane().repaint();
         }
     }
@@ -192,7 +192,7 @@ public class SelectionManager {
 
         updateSelectionImmediate();
 //        webform.getTopComponent().disableCutCopyDelete(); // not true for paste
-        webform.tcDisableCutCopyDelete();
+//        webform.tcDisableCutCopyDelete();
         webform.getPane().repaint();
     }
     
@@ -319,7 +319,7 @@ public class SelectionManager {
             // XXX why are we disabling cut copy paste? That depends on the
             // selection, doesn't it?
 //            webform.getTopComponent().disableCutCopyDelete(); // not true for paste
-            webform.tcDisableCutCopyDelete();
+//            webform.tcDisableCutCopyDelete();
         }
     }
 
@@ -413,7 +413,7 @@ public class SelectionManager {
         if (wasEmpty) {
             // Enable Cut, Copy, Delete
 //            webform.getTopComponent().enableCutCopyDelete();
-            webform.tcEnableCutCopyDelete();
+//            webform.tcEnableCutCopyDelete();
         }
     }
 
@@ -509,7 +509,7 @@ public class SelectionManager {
 //        if (wasEmpty && (selected.size() == 0)) { // removed last component
         if (wasEmpty && selectedComponents.isEmpty()) { // removed last component
 //            webform.getTopComponent().disableCutCopyDelete(); // not true for paste
-            webform.tcDisableCutCopyDelete();
+//            webform.tcDisableCutCopyDelete();
         }
     }
 
@@ -752,7 +752,7 @@ public class SelectionManager {
 //        if (selected.size() > 0) {
         if (!selectedComponents.isEmpty()) {
 //            webform.getTopComponent().enableCutCopyDelete();
-            webform.tcEnableCutCopyDelete();
+//            webform.tcEnableCutCopyDelete();
         }
 
         webform.getPane().repaint();

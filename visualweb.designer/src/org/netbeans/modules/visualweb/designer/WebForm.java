@@ -146,8 +146,8 @@ public class WebForm implements Designer {
 //    private final Map<Element, CssBox> element2cssBox = new WeakHashMap<Element, CssBox>();
     private static final String KEY_CSS_BOX = "vwpCssBox"; // NOI18N
     
-    // XXX Suspicious listener, it should be removed.
-    private JspDataObjectListener jspDataObjectListener;
+//    // XXX Suspicious listener, it should be removed.
+//    private JspDataObjectListener jspDataObjectListener;
 
     // XXX Moved from Document.
     private ImageCache imageCache;
@@ -156,33 +156,33 @@ public class WebForm implements Designer {
     private final EventListenerList listenerList = new EventListenerList();
     
     
-    private static class JspDataObjectListener implements PropertyChangeListener {
-        private final WebForm webForm;
-        public JspDataObjectListener(WebForm webForm) {
-            this.webForm = webForm;
-        }
-        public void propertyChange(final PropertyChangeEvent evt) {
-            // Immediately wipe out the paint box
-            if (evt.getPropertyName().equals(DataObject.PROP_PRIMARY_FILE)) {
-                if ((webForm.getPane() != null) && (webForm.getPane().getPaneUI() != null)) {
-                    webForm.getPane().getPaneUI().setPageBox(null);
-                }
-
-//                    // Reconfigure the data object: throw away the old model
-//                    // and find the new model associated with the new file object.
-//                    InSyncService.getProvider().doOutsideOfRefactoringSession(new Runnable() {
-//                        public void run() {
-//                            // Do the stuff on UI thread as some stuff gets updated that requires to be on UI thread
-//                            SwingUtilities.invokeLater(new Runnable() {
-//                                public void run() {
-//                                    replaceModel((FileObject)evt.getOldValue(), (FileObject)evt.getNewValue());
-//                                }
-//                            });
-//                        }
-//                    });
-            }
-        }
-    } // End of JspDataObjectListener.
+//    private static class JspDataObjectListener implements PropertyChangeListener {
+//        private final WebForm webForm;
+//        public JspDataObjectListener(WebForm webForm) {
+//            this.webForm = webForm;
+//        }
+//        public void propertyChange(final PropertyChangeEvent evt) {
+//            // Immediately wipe out the paint box
+//            if (evt.getPropertyName().equals(DataObject.PROP_PRIMARY_FILE)) {
+//                if ((webForm.getPane() != null) && (webForm.getPane().getPaneUI() != null)) {
+//                    webForm.getPane().getPaneUI().setPageBox(null);
+//                }
+//
+////                    // Reconfigure the data object: throw away the old model
+////                    // and find the new model associated with the new file object.
+////                    InSyncService.getProvider().doOutsideOfRefactoringSession(new Runnable() {
+////                        public void run() {
+////                            // Do the stuff on UI thread as some stuff gets updated that requires to be on UI thread
+////                            SwingUtilities.invokeLater(new Runnable() {
+////                                public void run() {
+////                                    replaceModel((FileObject)evt.getOldValue(), (FileObject)evt.getNewValue());
+////                                }
+////                            });
+////                        }
+////                    });
+//            }
+//        }
+//    } // End of JspDataObjectListener.
 
     
 //    private boolean cisClosing = false;
@@ -1813,29 +1813,29 @@ public class WebForm implements Designer {
 //        destroy();
 //    }
 
-    public void registerListeners() {
-//        domProviderListener = new DomProviderListener(this);
-//        domProvider.addDomProviderListener((DomProvider.DomProviderListener)WeakListeners.create(
-//                DomProvider.DomProviderListener.class, domProviderListener, domProvider));
-        
-//        // XXX FIXME There are more calls then needed. This is a hack to avoid multiple registering.
-//        domProvider.removeDomProviderListener(domProviderListener);
-//        domProvider.addDomProviderListener(domProviderListener);
-                
-        DataObject jspDataObject = getJspDataObject();
-        if (jspDataObject != null) {
-            jspDataObjectListener = new JspDataObjectListener(this);
-            jspDataObject.addPropertyChangeListener(WeakListeners.propertyChange(jspDataObjectListener, jspDataObject));
-        }
-    }
-
-    public void unregisterListeners() {
-//        // XXX Or don't use weak listener, and remove it explicitely.
-////        domProviderListener = null;
-//        domProvider.removeDomProviderListener(domProviderListener);
-        
-        jspDataObjectListener = null;
-    }
+//    public void registerListeners() {
+////        domProviderListener = new DomProviderListener(this);
+////        domProvider.addDomProviderListener((DomProvider.DomProviderListener)WeakListeners.create(
+////                DomProvider.DomProviderListener.class, domProviderListener, domProvider));
+//        
+////        // XXX FIXME There are more calls then needed. This is a hack to avoid multiple registering.
+////        domProvider.removeDomProviderListener(domProviderListener);
+////        domProvider.addDomProviderListener(domProviderListener);
+//                
+//        DataObject jspDataObject = getJspDataObject();
+//        if (jspDataObject != null) {
+//            jspDataObjectListener = new JspDataObjectListener(this);
+//            jspDataObject.addPropertyChangeListener(WeakListeners.propertyChange(jspDataObjectListener, jspDataObject));
+//        }
+//    }
+//
+//    public void unregisterListeners() {
+////        // XXX Or don't use weak listener, and remove it explicitely.
+//////        domProviderListener = null;
+////        domProvider.removeDomProviderListener(domProviderListener);
+//        
+//        jspDataObjectListener = null;
+//    }
 
     public URL getBaseUrl() {
         return domProvider.getBaseUrl();
@@ -3013,13 +3013,13 @@ public class WebForm implements Designer {
         return domProvider.isRenderedNode(node);
     }
     
-    // XXX
-    public void tcEnableCutCopyDelete() {
-        domProvider.tcEnableCutCopyDelete(this);
-    }
-    public void tcDisableCutCopyDelete() {
-        domProvider.tcDisableCutCopyDelete(this);
-    }
+//    // XXX
+//    public void tcEnableCutCopyDelete() {
+//        domProvider.tcEnableCutCopyDelete(this);
+//    }
+//    public void tcDisableCutCopyDelete() {
+//        domProvider.tcDisableCutCopyDelete(this);
+//    }
     
     public void tcSetActivatedNodes(org.openide.nodes.Node[] nodes) {
         domProvider.tcSetActivatedNodes(this, nodes);

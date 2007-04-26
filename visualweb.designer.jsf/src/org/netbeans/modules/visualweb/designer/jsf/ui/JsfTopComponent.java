@@ -957,7 +957,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         }
     }
     */
-    void createDesignerPane() {
+    private void createDesignerPane() {
 //        sync();
 //        webform.syncModel();
         jsfForm.syncModel();
@@ -1695,10 +1695,10 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     }
 // </actions from layer>
 
-    protected boolean isSelectionEmpty() {
-//        return webform.getSelection().isSelectionEmpty();
-        return designer.getSelectedCount() == 0;
-    }
+//    protected boolean isSelectionEmpty() {
+////        return webform.getSelection().isSelectionEmpty();
+//        return designer.getSelectedCount() == 0;
+//    }
 
 //    protected DesignBean getPasteParent() {
     public /*protected*/ Element getPasteParentComponent() {
@@ -2407,9 +2407,9 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         // provided the context is available
         updateErrors();
         
-        // Set listening.
-        // XXX
-        designer.registerListeners();
+//        // Set listening.
+//        // XXX
+//        designer.registerListeners();
         
         openAdditionalWindows();
     }
@@ -2419,9 +2419,9 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
             needListeners = true;
         }
         
-        // Stop listening.
-        // XXX
-        designer.unregisterListeners();
+//        // Stop listening.
+//        // XXX
+//        designer.unregisterListeners();
 
         jsfForm.clearHtml();
     }
@@ -2482,10 +2482,20 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         // No op.
     }
 
+    private boolean isActivated() {
+        MultiViewElementCallback callback = multiViewElementCallback;
+        return callback == null 
+                ? false
+                : callback.isSelectedElement() && callback.getTopComponent() == TopComponent.getRegistry().getActivated();
+    }
+    
     void modelLoaded() {
         initDesigner();
         designerOpened();
         designerShowing();
+        if (isActivated()) {
+            designerActivated();
+        }
         jsfLookupProvider.refreshLookup();
         
         revalidate();

@@ -543,8 +543,8 @@ public interface DomProvider {
     public void tcRequestActive(Designer designer);
     
     // XXX
-    public void tcEnableCutCopyDelete(Designer designer);
-    public void tcDisableCutCopyDelete(Designer designer);
+//    public void tcEnableCutCopyDelete(Designer designer);
+//    public void tcDisableCutCopyDelete(Designer designer);
     public void tcSetActivatedNodes(Designer designer, org.openide.nodes.Node[] nodes);
     public org.openide.nodes.Node[] tcGetActivatedNodes(Designer designer);
     public void tcShowPopupMenu(Designer designer, int x, int y);

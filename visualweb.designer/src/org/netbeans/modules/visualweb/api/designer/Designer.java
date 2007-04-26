@@ -198,8 +198,8 @@ public interface Designer {
     // XXX Make not weak, and also add removal
     public void addWeakPreferenceChangeListener(PreferenceChangeListener l);
     
-    public void registerListeners();
-    public void unregisterListeners();
+//    public void registerListeners();
+//    public void unregisterListeners();
     
     public ActionMap getPaneActionMap();
     public void paneRequestFocus();

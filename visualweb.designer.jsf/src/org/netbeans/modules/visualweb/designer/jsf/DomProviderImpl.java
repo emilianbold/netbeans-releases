@@ -1235,21 +1235,21 @@ class DomProviderImpl implements DomProvider {
         jsfMultiViewElement.getJsfTopComponent().requestActive();
     }
 
-    public void tcEnableCutCopyDelete(Designer designer) {
-        JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);
-        if (jsfMultiViewElement == null) {
-            return;
-        }
-        jsfMultiViewElement.getJsfTopComponent().enableCutCopyDelete();
-    }
+//    public void tcEnableCutCopyDelete(Designer designer) {
+//        JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);
+//        if (jsfMultiViewElement == null) {
+//            return;
+//        }
+//        jsfMultiViewElement.getJsfTopComponent().enableCutCopyDelete();
+//    }
 
-    public void tcDisableCutCopyDelete(Designer designer) {
-        JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);
-        if (jsfMultiViewElement == null) {
-            return;
-        }
-        jsfMultiViewElement.getJsfTopComponent().disableCutCopyDelete();
-    }
+//    public void tcDisableCutCopyDelete(Designer designer) {
+//        JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);
+//        if (jsfMultiViewElement == null) {
+//            return;
+//        }
+//        jsfMultiViewElement.getJsfTopComponent().disableCutCopyDelete();
+//    }
 
     public void tcSetActivatedNodes(Designer designer, org.openide.nodes.Node[] nodes) {
         JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);

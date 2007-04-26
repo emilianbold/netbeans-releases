@@ -131,7 +131,8 @@ public abstract class AbstractJsfTopComponent extends TopComponent implements Cl
 //        if (webform != null) {
 //            activateActions();
 //        }
-        activateActions();
+//        activateActions();
+        updatePasteAction();
 
 //        if (webform != null) {
 //            webform.getModel().setActivated(true);
@@ -171,7 +172,7 @@ public abstract class AbstractJsfTopComponent extends TopComponent implements Cl
         // currently selected component
     }
 
-    protected abstract boolean isSelectionEmpty();
+//    protected abstract boolean isSelectionEmpty();
 
     protected abstract void deleteSelection();
 
@@ -254,18 +255,18 @@ public abstract class AbstractJsfTopComponent extends TopComponent implements Cl
      */
     protected abstract void showKeyboardPopup();
 
-    /** Called when this window is activated: make cut, copy, paste and delete
-        sensitive based on whether or not anything is selected and whether
-        the clipboard contains something we can absorb. */
-    public void activateActions() {
-        if (isSelectionEmpty()) {
-            disableCutCopyDelete();
-        } else {
-            enableCutCopyDelete();
-        }
-
-        updatePasteAction();
-    }
+//    /** Called when this window is activated: make cut, copy, paste and delete
+//        sensitive based on whether or not anything is selected and whether
+//        the clipboard contains something we can absorb. */
+//    public void activateActions() {
+//        if (isSelectionEmpty()) {
+//            disableCutCopyDelete();
+//        } else {
+//            enableCutCopyDelete();
+//        }
+//
+//        updatePasteAction();
+//    }
 
     /** Called when the when the component is deactivated. We no longer
         allow our paste types to be invoked so clear it - get rid of
@@ -281,32 +282,32 @@ public abstract class AbstractJsfTopComponent extends TopComponent implements Cl
         //        }
     }
 
-    private boolean isActivated() {
-        return this == TopComponent.getRegistry().getActivated();
-    }
+//    private boolean isActivated() {
+//        return this == TopComponent.getRegistry().getActivated();
+//    }
 
-    /** Called when the selection is non zero and the component is active:
-        enable cut, copy and delete */
-    public void enableCutCopyDelete() {
-        if (!isActivated()) {
-            return;
-        }
-
-        copyActionPerformer.setEnabled(true);
-        cutActionPerformer.setEnabled(true);
-        deleteActionPerformer.setEnabled(true);
-    }
-
-    /** Called when the selection is removed: disable copy, cut, delete */
-    public void disableCutCopyDelete() {
-        if (!isActivated()) {
-            return;
-        }
-
-        copyActionPerformer.setEnabled(false);
-        cutActionPerformer.setEnabled(false);
-        deleteActionPerformer.setEnabled(false);
-    }
+//    /** Called when the selection is non zero and the component is active:
+//        enable cut, copy and delete */
+//    public void enableCutCopyDelete() {
+//        if (!isActivated()) {
+//            return;
+//        }
+//
+//        copyActionPerformer.setEnabled(true);
+//        cutActionPerformer.setEnabled(true);
+//        deleteActionPerformer.setEnabled(true);
+//    }
+//
+//    /** Called when the selection is removed: disable copy, cut, delete */
+//    public void disableCutCopyDelete() {
+//        if (!isActivated()) {
+//            return;
+//        }
+//
+//        copyActionPerformer.setEnabled(false);
+//        cutActionPerformer.setEnabled(false);
+//        deleteActionPerformer.setEnabled(false);
+//    }
 
 //    /** Paste the beans in the given transferable to the given parent
 //     * and markup position.
