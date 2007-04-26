@@ -429,17 +429,22 @@ public class MasterDetailGenerator {
         Map map = new HashMap();
         map.put("_masterClass_", masterClass); // NOI18N
         map.put("_masterEntity_", masterEntity); // NOI18N
-        map.put("_masterEntityInitial_", ""+Character.toLowerCase(masterEntity.charAt(0))); // NOI18N
+        char masterInitial = Character.toLowerCase(masterEntity.charAt(0));
         map.put("_unitName_", unit); // NOI18N
         if (detailClass != null) {
             map.put("_detailClass_", detailClass); // NOI18N
             map.put("_detailEntity_", detailEntity); // NOI18N
-            map.put("_detailEntityInitial_", ""+Character.toLowerCase(detailEntity.charAt(0))); // NOI18N
+            char detailInitial = Character.toLowerCase(detailEntity.charAt(0));
+            map.put("_detailEntityInitial_", Character.toString(detailInitial)); // NOI18N
+            if (detailInitial == masterInitial) {
+                masterInitial = Character.toUpperCase(masterInitial);
+            }
             // PENDING find correct mapping
             map.put("_joinCollection_", Character.toLowerCase(detailEntity.charAt(0)) + detailEntity.substring(1) + "Collection"); // NOI18N
             map.put("_joinCollectionCapital_", detailEntity + "Collection"); // NOI18N
             map.put("_joinCapital_", Character.toUpperCase(joinField.charAt(0)) + joinField.substring(1)); // NOI18N
         }
+        map.put("_masterEntityInitial_", Character.toString(masterInitial)); // NOI18N
         return map;
     }
 
