@@ -154,7 +154,8 @@ public class EntityClassInfo {
         }
         
         public boolean isRelationship() {
-            return isOneToOne() || isOneToMany() || isManyToOne();
+            return isOneToOne() || isOneToMany() || isManyToOne() ||
+                    isManyToMany();
         }
         
         public boolean isOneToOne() {
@@ -169,6 +170,10 @@ public class EntityClassInfo {
             return matchAnnotation("@javax.persistence.ManyToOne");
         }
         
+         public boolean isManyToMany() {
+            return matchAnnotation("@javax.persistence.ManyToMany");
+        }
+         
         private boolean matchAnnotation(String annotation) {
             for (String a : annotations) {
                 if (a.startsWith(annotation))
