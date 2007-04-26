@@ -308,8 +308,6 @@ public final class CompletionLayout {
                     }
                 );
                 
-                completionScrollPane.getViewport().getView().setFont(getEditorComponent().getFont());
-                
                 if (showShortcutHints) {
                     JPanel panel = new JPanel();
                     panel.setLayout(new BorderLayout());
