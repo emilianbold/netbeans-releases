@@ -17,15 +17,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
- * CasaNodeChildren.java
- *
- * Created on November 2, 2006, 9:21 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
 package org.netbeans.modules.compapp.casaeditor.nodes;
 
 import java.lang.ref.WeakReference;
@@ -38,7 +29,7 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author Josh
+ * @author Josh Sandusky
  */
 public abstract class CasaNodeChildren extends Children.Keys {
     
@@ -50,7 +41,6 @@ public abstract class CasaNodeChildren extends Children.Keys {
         super();
         mDataReference = new WeakReference(data);
         mNodeFactory = factory;
-        reloadFrom(data);
     }
     
     
@@ -79,6 +69,14 @@ public abstract class CasaNodeChildren extends Children.Keys {
         }
         return children;
     }
+
+    @Override
+    protected void addNotify() {
+        super.addNotify();
+        // lazy initialization
+        reloadFrom(getData());
+    }
+    
     
     public void reloadFrom(Object data)  {
         if (data == null) {

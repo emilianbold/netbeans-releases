@@ -301,25 +301,29 @@ implements PropertyChangeListener {
         return mModel;
     }
     
-    public void updateEdgeRouting() {
+    public void updateEdgeRouting(ConnectionWidget singleWidgetUpdate) {
+        boolean updateAll = false;
         if (
                 getEdges().size() <= CasaCollisionCollector.MAX_ORTHOGONAL_CONNECTIONS &&
                 getNodes().size() <= CasaCollisionCollector.MAX_ORTHOGONAL_NODES) {
             if (mCurrentRouter != mOrthogonalRouter) {
                 mCurrentRouter = mOrthogonalRouter;
-                for (CasaComponent component : getEdges()) {
-                    ConnectionWidget connectionWidget = (ConnectionWidget) findWidget(component);
-                    connectionWidget.setRouter(mOrthogonalRouter);
-                }
+                updateAll = true;
             }
         } else {
             if (mCurrentRouter != mDirectRouter) {
                 mCurrentRouter = mDirectRouter;
-                for (CasaComponent component : getEdges()) {
-                    ConnectionWidget connectionWidget = (ConnectionWidget) findWidget(component);
-                    connectionWidget.setRouter(mDirectRouter);
-                }
+                updateAll = true;
             }
+        }
+        
+        if (updateAll) {
+            for (CasaComponent component : getEdges()) {
+                ConnectionWidget connectionWidget = (ConnectionWidget) findWidget(component);
+                connectionWidget.setRouter(mCurrentRouter);
+            }
+        } else if (singleWidgetUpdate != null) {
+            singleWidgetUpdate.setRouter(mCurrentRouter);
         }
     }
     

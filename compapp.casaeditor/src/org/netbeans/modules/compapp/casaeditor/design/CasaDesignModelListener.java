@@ -119,7 +119,7 @@ public class CasaDesignModelListener implements PropertyChangeListener {
     private void removeConnection(CasaConnection connection) {
         if (mScene.findWidget(connection) != null) {
             mScene.removeEdge(connection);
-            mScene.updateEdgeRouting();
+            mScene.updateEdgeRouting(null);
             // validate
             mScene.validate();
         }

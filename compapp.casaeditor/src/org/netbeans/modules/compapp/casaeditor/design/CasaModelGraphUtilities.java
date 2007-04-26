@@ -130,7 +130,7 @@ public class CasaModelGraphUtilities {
                 scene.getEngineRegion(),
                 scene.getExternalRegion(),
                 scene.getConnectionLayer())));
-        scene.updateEdgeRouting();
+        scene.updateEdgeRouting(null);
         scene.validate();
     }
 
@@ -350,7 +350,7 @@ public class CasaModelGraphUtilities {
         scene.setEdgeSource (connection, source);
         scene.setEdgeTarget (connection, target);
         if (doUpdate) {
-            scene.updateEdgeRouting();
+            scene.updateEdgeRouting(widget);
             scene.validate();
         }
         return widget;
