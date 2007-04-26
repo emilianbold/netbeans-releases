@@ -2637,8 +2637,17 @@ public class JsfForm {
     
     
     private static void log(Throwable ex) {
-        Logger logger = Logger.getLogger(JsfForm.class.getName());
+        Logger logger = getLogger();
         logger.log(Level.INFO, null, ex);
+    }
+    
+    private static void notify(Throwable ex) {
+        Logger logger = getLogger();
+        logger.log(Level.SEVERE, null, ex);
+    }
+    
+    private static Logger getLogger() {
+        return Logger.getLogger(JsfForm.class.getName());
     }
     
     
@@ -2662,9 +2671,16 @@ public class JsfForm {
     }
     
     private void loadFacesModel(DataObject dataObject) {
-        FacesModel facesModel = getFacesModel(dataObject);
+        FacesModel facesModel;
+        try {
+            facesModel = getFacesModel(dataObject);
+        // XXX FacesModel throws runtime exceptions, which is wrong.    
+        } catch (Exception ex) {
+            loadingFailed(new IllegalStateException("FacesModel was not loaded for DataObject, dataObject=" + dataObject, ex));
+            return;
+        }
         if (facesModel == null) {
-            log(new NullPointerException("No FacesModel for DataObject, dataObject=" + dataObject));
+            loadingFailed(new NullPointerException("No FacesModel for DataObject, dataObject=" + dataObject));
             return;
         }
         
@@ -2678,11 +2694,28 @@ public class JsfForm {
         });
     }
     
+    private void loadingFailed(Exception ex) {
+        notify(ex);
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                notifyViewsModelLoadingFailed();
+            }
+        });
+    }
+    
     private void notifyViewsModelLoaded() {
         JsfMultiViewElement[] jsfMultiViewElements = findJsfMultiViewElements(this);
         for (JsfMultiViewElement jsfMultiViewElement : jsfMultiViewElements) {
             jsfMultiViewElement.modelLoaded();
         }
     }
+    
+    private void notifyViewsModelLoadingFailed() {
+        JsfMultiViewElement[] jsfMultiViewElements = findJsfMultiViewElements(this);
+        for (JsfMultiViewElement jsfMultiViewElement : jsfMultiViewElements) {
+            jsfMultiViewElement.closeMultiView();
+        }
+    }
+    
 }
 
