@@ -191,7 +191,7 @@ public final class JDBCDriverManager {
             listenersCopy = new ArrayList(listeners);
         }
         
-        for (Iterator i= listeners.iterator(); i.hasNext();) {
+        for (Iterator i= listenersCopy.iterator(); i.hasNext();) {
             JDBCDriverListener listener = (JDBCDriverListener)i.next();
             listener.driversChanged();
         }
