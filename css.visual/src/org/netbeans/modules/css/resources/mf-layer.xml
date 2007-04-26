@@ -37,6 +37,18 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>-->
     
+    <folder name="Templates">
+        <folder name="JSP_Servlet">
+            <attr name="XHtml.xhtml/CascadeStyleSheet.css" boolvalue="true"/>
+            <file name="CascadeStyleSheet.css" url="CascadeStyleSheet.css.template">
+                <attr name="template" boolvalue="true" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.css.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/css/resources/css.gif" />
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/css/resources/CSS_template.html" />
+            </file>
+        </folder>
+    </folder>
+    
     <folder name="Services">
         <folder name="MIMEResolver">
             <file name="CssResolver.xml" url="CssResolver.xml">

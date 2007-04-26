@@ -114,12 +114,13 @@ prio = "!" "important";
  
 COLOR:selector: {
     default_coloring: "identifier";
+    foreground_color: "#007c00";
+    font_type:"bold";
 } 
  
 COLOR:key: {
     default_coloring: "keyword";
-    foreground_color:"#000099";
-    font_type:"bold";
+    foreground_color:"blue";
 } 
 
 ########### code folding #######################################################
