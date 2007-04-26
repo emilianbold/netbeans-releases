@@ -58,6 +58,7 @@ import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.MasterPasswordInputDialog;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
@@ -67,6 +68,7 @@ import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.netbeans.modules.j2ee.sun.api.SunServerStateInterface;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.Util;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
 /**
@@ -828,20 +830,22 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
     private boolean applySettingsToDomain(ProfilerServerSettings settings) {
         boolean retVal;
         SunDeploymentManagerInterface sunDm = (SunDeploymentManagerInterface)this.dm;
-        String ext = (File.separatorChar == '/' ? "conf" : "bat");          // NOI18N
+        String ext = (Utilities.isWindows() ? "bat" : "conf");          // NOI18N
         File asenv = new File(sunDm.getPlatformRoot(),"config/asenv."+ext);            // NOI18N
         Asenv asenvContent = new Asenv(asenv);
-        String currentJdkRoot = "\""+asenvContent.get(Asenv.AS_JAVA)+"\"";
+        String currentJdkRoot = asenvContent.get(Asenv.AS_JAVA);
+        if (!Utilities.isWindows()) {
+            currentJdkRoot = "\""+currentJdkRoot+"\"";
+        }
         String newJdkRoot = currentJdkRoot;
         Iterator<FileObject>  iter = settings.getJavaPlatform().getInstallFolders().iterator();
-        FileObject fo;
         if (iter.hasNext()) {
-            fo = iter.next();
-            //newJdkRoot = fo.getPath();
-            if (File.pathSeparatorChar == ':') {
-                newJdkRoot = "\"/"+fo.getPath()+"\"";
+            FileObject fo = iter.next();
+            String jdkPath = FileUtil.toFile(fo).getAbsolutePath();
+            if (Utilities.isWindows()) {
+                newJdkRoot = jdkPath;
             } else {
-                newJdkRoot = "\""+fo.getPath()+"\"";
+                newJdkRoot = "\""+jdkPath+"\"";
             }
         }
         retVal = ConfigureProfiler.modifyAsEnvScriptFile(dm, newJdkRoot);
@@ -856,7 +860,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
     private void resetProfiler() {
         ConfigureProfiler.removeProfilerFromDomain(dm);
         if (oldJdkRoot != null) {
-            if (ConfigureProfiler.modifyAsEnvScriptFile(dm, oldJdkRoot)) {
+            if (!ConfigureProfiler.modifyAsEnvScriptFile(dm, oldJdkRoot)) {
                 Logger.getLogger(StartSunServer.class.getName()).warning("Environment rewrite failed");  // NOI18N
             } else {
                 oldJdkRoot = null;
