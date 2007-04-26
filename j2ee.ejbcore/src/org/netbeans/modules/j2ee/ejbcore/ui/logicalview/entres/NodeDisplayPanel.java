@@ -34,7 +34,7 @@ import org.openide.nodes.Node;
  */
 public class NodeDisplayPanel extends JPanel implements ExplorerManager.Provider {
     
-    private final PropertyChangeSupport pcs;
+    private PropertyChangeSupport pcs;
     private final ExplorerManager manager = new ExplorerManager();
     
     /** Creates a new instance of NodeDisplayPanel */
@@ -57,15 +57,14 @@ public class NodeDisplayPanel extends JPanel implements ExplorerManager.Provider
         add(btv, BorderLayout.CENTER);
         btv.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NodeDisplayPanel.class, "ACSD_NodeTreeView"));
         btv.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NodeDisplayPanel.class, "ACSD_NodeTreeView"));
-        pcs = new PropertyChangeSupport(this);
     }
     
     public void addPropertyChangeListener(PropertyChangeListener listener) {
-        pcs.addPropertyChangeListener(listener);
+        getPropertyChangeSupport().addPropertyChangeListener(listener);
     }
     
     private void firePropertyChange() {
-        pcs.firePropertyChange(ExplorerManager.PROP_NODE_CHANGE, null, null);
+        getPropertyChangeSupport().firePropertyChange(ExplorerManager.PROP_NODE_CHANGE, null, null);
     }
     
     public Node[] getSelectedNodes() {
@@ -76,6 +75,15 @@ public class NodeDisplayPanel extends JPanel implements ExplorerManager.Provider
         return manager;
     }
     
-    
+    /**
+     * See issue #101804, addPropertyChangeListener was called by the superclass constructor,
+     * that is, before the pcs field was initialized
+     */
+    private synchronized PropertyChangeSupport getPropertyChangeSupport() {
+        if (pcs == null) {
+            pcs = new PropertyChangeSupport(this);
+        }
+        return pcs;
+    }
     
 }
