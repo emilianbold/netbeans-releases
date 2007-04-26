@@ -794,25 +794,25 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //        return newOutline;
 //    }
     
-    // XXX Implement TopComponentGroup.
-    private static void openNavigator() {
-        TopComponent navigator = findNavigator();
-        if (navigator != null && !navigator.isOpened()) {
-            // FIXME XXX Just for now to fake the old kind of behaviour. Use TopComponentGroup to fix it.
-            navigator.open();
-        }
-    }
+//    // XXX Implement TopComponentGroup.
+//    private static void openNavigator() {
+//        TopComponent navigator = findNavigator();
+//        if (navigator != null && !navigator.isOpened()) {
+//            // FIXME XXX Just for now to fake the old kind of behaviour. Use TopComponentGroup to fix it.
+//            navigator.open();
+//        }
+//    }
     
-    private static void selectNavigator() {
-        TopComponent navigator = findNavigator();
-        if (navigator != null) {
-            // XXX #6392131 -> NB #62329.
-            if (!Boolean.TRUE.equals(navigator.getClientProperty("isSliding"))) { // NOI18N
-                // FIXME XXX Just for now to fake the old kind of behaviour. Use TopComponentGroup to fix it.
-                navigator.requestVisible();
-            }
-        }
-    }
+//    private static void selectNavigator() {
+//        TopComponent navigator = findNavigator();
+//        if (navigator != null) {
+//            // XXX #6392131 -> NB #62329.
+//            if (!Boolean.TRUE.equals(navigator.getClientProperty("isSliding"))) { // NOI18N
+//                // FIXME XXX Just for now to fake the old kind of behaviour. Use TopComponentGroup to fix it.
+//                navigator.requestVisible();
+//            }
+//        }
+//    }
     
     private static TopComponent findNavigator() {
         TopComponent navigator = WindowManager.getDefault().findTopComponent("navigatorTC"); // NOI18N
@@ -1952,23 +1952,23 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         }
     }
 
-    private void selectAndUpdateOutlineView() {
-//        OutlineTopComp.getInstance().setCurrent(webform);
-//        OutlineTopComp.getInstance().requestVisible();
-//        selectNewOutline();
-        // XXX Replace with TopComponentGroup.
-        selectNavigator();
-
-        // #6318513 It doesn't keep selection expanded, when switching.
-//        WebForm wf = webform;
+//    private void selectAndUpdateOutlineView() {
+////        OutlineTopComp.getInstance().setCurrent(webform);
+////        OutlineTopComp.getInstance().requestVisible();
+////        selectNewOutline();
+//        // XXX Replace with TopComponentGroup.
+//        selectNavigator();
 //
-//        if (wf != null) {
-//            // XXX Updates outline selection!
-//            wf.getSelection().updateSelection();
-//        }
-//        designer.updateSelection();
-        designer.updateSelectedNodes();
-    }
+//        // #6318513 It doesn't keep selection expanded, when switching.
+////        WebForm wf = webform;
+////
+////        if (wf != null) {
+////            // XXX Updates outline selection!
+////            wf.getSelection().updateSelection();
+////        }
+////        designer.updateSelection();
+//        designer.updateSelectedNodes();
+//    }
 
 //    /** Selects the navigator window. */
 //    private static void selectNavigatorWindow() {
@@ -2383,8 +2383,8 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     
     @Override
     protected void designerActivated() {
-        // XXX Replace with TopComponentGroup.
-        selectNavigator();
+//        // XXX Replace with TopComponentGroup.
+//        selectNavigator();
         
         designer.updateSelectedNodes();
         
@@ -2403,14 +2403,15 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     }
 
     private void designerOpened() {
-        // The following will also initialize the context listeners,
-        // provided the context is available
-        updateErrors();
+//        // The following will also initialize the context listeners,
+//        // provided the context is available
+//        updateErrors();
+//        
+////        // Set listening.
+////        // XXX
+////        designer.registerListeners();
         
-//        // Set listening.
-//        // XXX
-//        designer.registerListeners();
-        
+        // XXX Implement TopComponentGroup.
         openAdditionalWindows();
     }
 
@@ -2431,9 +2432,9 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
             jsfForm.refreshModel(false);
         }
 
-        // XXX Replace with TopComponentGroup.
-        openNavigator();
-        selectAndUpdateOutlineView();
+//        // XXX Replace with TopComponentGroup.
+//        openNavigator();
+//        selectAndUpdateOutlineView();
 
         // XXX #6314795 See below, also this one should be scheduled later.
         // Remove scheduling when the NB issue fixed.
@@ -2472,10 +2473,11 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 
         designer.setPaneGrid(jsfForm.isGridMode());
 
-        // We cannot set the caret to the document position yet; we need
-        // to do layout before the mapper functions work... This is done
-        // after page layout instead.
-        designer.paneRequestFocus();
+        // XXX This was wrong, showing doesn't necessarily mean activated.
+//        // We cannot set the caret to the document position yet; we need
+//        // to do layout before the mapper functions work... This is done
+//        // after page layout instead.
+//        designer.paneRequestFocus();
     }   
 
     private void designerHidden() {
