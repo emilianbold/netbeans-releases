@@ -207,6 +207,20 @@ public class CommentEdgePresentation extends EdgePresentation implements ICommen
                      bIsValid = true;
                   }
                }
+               else if((pAnnotatedElement instanceof IComment) && 
+                       (pComment instanceof INamedElement))
+               {
+                   IComment temp = (IComment)pAnnotatedElement;
+                   pAnnotatedElement = (INamedElement)pComment;
+                   pComment = temp;
+                   
+                   if (pComment != null && pEdgeElement.isSame(pComment)) {
+                       // Make sure the other end is in the annotated list
+                       if (pAnnotatedElement != null && pComment.getIsAnnotatedElement(pAnnotatedElement)) {
+                           bIsValid = true;
+                       }
+                   }
+               }
             }
          }
          else

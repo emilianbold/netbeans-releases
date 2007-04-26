@@ -327,6 +327,7 @@ import org.netbeans.modules.uml.ui.swing.testbed.addin.menu.TestBedMenuManager;
 import org.netbeans.modules.uml.ui.swing.trackbar.JTrackBar;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -505,8 +506,6 @@ public class ADDrawingAreaControl extends ApplicationView
    private List m_selectedNodesGroup = new ArrayList();
    private List tempList = new ArrayList(); //temp list for use in fireSelectEvent
    private String mSelectedPaletteBttn;
-
-   
    public static String DIRTYSTATE = "dirty"; // NOI18N;
 
    public ADDrawingAreaControl()
@@ -1254,7 +1253,7 @@ public class ADDrawingAreaControl extends ApplicationView
                      timeStart = System.currentTimeMillis();
                      
                      readFromArchive(pArchive);
-                     
+                                          
                      timeFinish = System.currentTimeMillis();
                      tsDelta = timeFinish - timeStart;
                      ETSystem.out.println("ADDrawingAreaControl.readFromArchive() completed in ( " + StringUtilities.timeToString(tsDelta, 3) + " )");
@@ -1509,6 +1508,7 @@ public class ADDrawingAreaControl extends ApplicationView
     * to create toolbars from the resources.
     */
    private void createToolbars()
+
    {
       // create the toolbars used by the application
       this.mainToolBar = this.addToolBar("toolbar.main");
@@ -2910,8 +2910,21 @@ public class ADDrawingAreaControl extends ApplicationView
                // without user's knowledge? Shouldn't we just display it in a state when 
                // user saved it?
                // The answer is yes we do.  See issue 91395.  
-               postLoadVerification();
-               
+               boolean temp = postLoadVerification();
+               //Jyothi: #91395 Inform the user that the diagram has changed.
+                     if (temp) {
+                         SwingUtilities.invokeLater(new Runnable() {
+                             public void run() {
+                                 System.err.println("The diagram is being modified based on the changes in the model");
+                                 NotifyDescriptor d =
+                                         new NotifyDescriptor.Message(
+                                         "The diagram is being modified based on the changes in the model",
+                                         NotifyDescriptor.INFORMATION_MESSAGE);
+                                 DialogDisplayer.getDefault().notify(d);
+                             }
+                         });                                                 
+                     }
+ 
                // Clear our load list
                m_ViewsReadWriteFromETLFile.clear();
             } else
@@ -3041,8 +3054,10 @@ public class ADDrawingAreaControl extends ApplicationView
    /**
     *
     */
-   private void postLoadVerification()
+   private boolean postLoadVerification()
    {
+      boolean modifiedDiagram = false;
+      
       ETList<IETGraphObject> etGraphObjects = getAllItems6();
       
       int count = etGraphObjects != null ? etGraphObjects.getCount() : 0;
@@ -3117,12 +3132,13 @@ public class ADDrawingAreaControl extends ApplicationView
                deleteThese.add(etGraphObject);
                
                removeGraphObjects(deleteThese, false);
+               modifiedDiagram = true;
             }
          }
          
          if (peRemoved == false && etGraphObject != null)
          {
-            boolean wasDeleted = etGraphObject.getWasModelElementDeleted();
+//            boolean wasDeleted = etGraphObject.getWasModelElementDeleted();
             
             if(etGraphObject.getWasModelElementDeleted())
             {
@@ -3130,6 +3146,8 @@ public class ADDrawingAreaControl extends ApplicationView
                deleteThese.add(etGraphObject);
                
                removeGraphObjects(deleteThese, false);
+               modifiedDiagram = true;
+               
                     /*
                     TSEEdge tseEdge = TypeConversions.getOwnerEdge(etGraphObject);
                     TSENode tseNode = TypeConversions.getOwnerNode(etGraphObject);
@@ -3177,7 +3195,7 @@ public class ADDrawingAreaControl extends ApplicationView
          //			SendMessage(MT_DEBUG,IDS_DRAWENGINESREST);
          setIsDirty(true);
       }
-      
+      return modifiedDiagram;
    }
    
    /**
@@ -11170,7 +11188,7 @@ public class ADDrawingAreaControl extends ApplicationView
             }
          }
          
-         setIsDirty(true);
+         setIsDirty(true);         
       }
    }
    

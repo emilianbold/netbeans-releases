@@ -171,7 +171,7 @@ public class DiagramTopComponent extends CloneableTopComponent
     
     
     private DiagramDataObject getDiagramDO()
-    {
+    {  
         if (diagramDO == null)
         {
             String file = getDrawingAreaControl().getFilename();   
@@ -436,6 +436,7 @@ public class DiagramTopComponent extends CloneableTopComponent
         {
             retVal = new ADDrawingAreaControl();
             retVal.addPropertyChangeListener(listener);
+            mControl = retVal;
             retVal.load(filename);
         }
         
