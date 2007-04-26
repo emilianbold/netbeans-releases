@@ -145,6 +145,7 @@ public class DatasourceSupport {
                 // create jboss-ds.xml if it does not exist yet
                 datasources = new Datasources();
                 ResourceConfigurationHelper.writeFile(datasourcesFile, datasources);
+                ensureDatasourcesFOExists();
             }
         } catch (ConfigurationException ce) {
             ErrorManager.getDefault().notify(ce);
