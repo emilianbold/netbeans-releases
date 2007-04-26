@@ -33,9 +33,12 @@ import org.netbeans.api.java.source.ElementHandle;
  *
  * @author Andrei Badea
  */
-public class PersistentObjectManager<T extends PersistentObject> {
+public class PersistentObjectManager<T extends PersistentObject> implements JavaContextListener {
 
     private static final Logger LOGGER = Logger.getLogger(PersistentObjectManager.class.getName());
+    // private static final boolean VOLATILE = Boolean.getBoolean("netbeans.metadata.model.volatile"); // NOI18N
+    // XXX for M9 only
+    private static final boolean VOLATILE = true;
 
     private final AnnotationModelHelper helper;
     private final ObjectProvider<T> provider;
@@ -43,7 +46,16 @@ public class PersistentObjectManager<T extends PersistentObject> {
 
     private boolean initialized = false;
 
-    PersistentObjectManager(AnnotationModelHelper helper, ObjectProvider<T> provider) {
+    static <V extends PersistentObject> PersistentObjectManager<V> newInstance(AnnotationModelHelper helper, ObjectProvider<V> provider) {
+        PersistentObjectManager<V> newInstance = new PersistentObjectManager<V>(helper, provider);
+        if (VOLATILE) {
+            LOGGER.log(Level.FINE, "creating a volatile manager"); // NOI18N
+            helper.addJavaContextListener(newInstance);
+        }
+        return newInstance;
+    }
+
+    private PersistentObjectManager(AnnotationModelHelper helper, ObjectProvider<T> provider) {
         this.helper = helper;
         this.provider = provider;
     }
@@ -63,6 +75,11 @@ public class PersistentObjectManager<T extends PersistentObject> {
         }
     }
 
+    private void deinitialize() {
+        initialized = false;
+        objects.clear();
+    }
+
     public Collection<T> getObjects() {
         ensureInitialized();
         Collection<T> values = objects.values();
@@ -71,6 +88,10 @@ public class PersistentObjectManager<T extends PersistentObject> {
     }
 
     void typesAdded(Iterable<? extends ElementHandle<TypeElement>> typeHandles) {
+        // XXX assert not in AMH java context
+        if (!initialized) {
+            return;
+        }
         LOGGER.log(Level.FINE, "typesAdded called with {0}", typeHandles); // NOI18N
         List<TypeElement> types = new ArrayList<TypeElement>();
         for (ElementHandle<TypeElement> typeHandle : typeHandles) {
@@ -87,6 +108,10 @@ public class PersistentObjectManager<T extends PersistentObject> {
     }
 
     void typesRemoved(Iterable<? extends ElementHandle<TypeElement>> typeHandles) {
+        // XXX assert not in AMH java context
+        if (!initialized) {
+            return;
+        }
         LOGGER.log(Level.FINE, "typesRemoved called with {0}", typeHandles); // NOI18N
         for (ElementHandle<TypeElement> typeHandle : typeHandles) {
             T object = objects.remove(typeHandle);
@@ -97,6 +122,10 @@ public class PersistentObjectManager<T extends PersistentObject> {
     }
 
     void typesChanged(Iterable<? extends ElementHandle<TypeElement>> typeHandles) {
+        // XXX assert not in AMH java context
+        if (!initialized) {
+            return;
+        }
         LOGGER.log(Level.FINE, "typesChanged called with {0}", typeHandles); // NOI18N
         for (ElementHandle<TypeElement> typeHandle : typeHandles) {
             T object = objects.get(typeHandle);
@@ -122,8 +151,14 @@ public class PersistentObjectManager<T extends PersistentObject> {
     }
 
     void rootsChanged() {
+        // XXX assert not in AMH java context
         LOGGER.log(Level.FINE, "rootsChanged called"); // NOI18N
-        initialized = false;
-        objects.clear();
+    }
+
+    public void javaContextLeft() {
+        if (VOLATILE) {
+            LOGGER.log(Level.FINE, "discarding"); // NOI18N
+            deinitialize();
+        }
     }
 }
