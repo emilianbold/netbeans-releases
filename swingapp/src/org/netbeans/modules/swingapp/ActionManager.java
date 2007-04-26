@@ -35,6 +35,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
@@ -44,7 +45,6 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.awt.Toolkit;
-import java.beans.PropertyVetoException;
 import java.io.IOException;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -57,6 +57,9 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.form.FormEditorSupport;
@@ -373,19 +376,31 @@ public class ActionManager {
             
             StringBuilder buf = new StringBuilder();
             String indent = "    "; // NOI18N
+            String taskName = action.isTaskEnabled() ? taskNameForAction(action) : null;
             buf.append(indent);
             buf.append(getAnnotationCode(action));
             buf.append("\n"); // NOI18N
             buf.append(indent);
             buf.append("public "); // NOI18N
-            buf.append(action.isTaskEnabled() ? "application.Task " : "void "); // NOI18N
+            buf.append(taskName != null ? "application.Task " : "void "); // NOI18N
             buf.append(action.getId());
             buf.append("() {\n"); // NOI18N
             buf.append(indent).append(indent);
-            buf.append("// put your action code here\n"); // NOI18N
+            if (taskName != null) {
+                buf.append("return new ");
+                buf.append(taskName);
+                buf.append("();\n");
+                taskName = getNonExistingTaskName(action.getClassname(), taskName);
+            } else {
+                buf.append("// put your action code here\n"); // NOI18N
+            }
             buf.append(indent);
             buf.append("}\n\n"); // NOI18N
 
+            if (taskName != null) {
+                buf.append(getTaskClassImplCode(taskName, null));
+                buf.append("\n"); // NOI18N
+            }
             doc.insertString(pos, buf.toString(), null);
             return true;
         } catch (Exception ex) {
@@ -447,6 +462,62 @@ public class ActionManager {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
         return false; */
+    }
+
+    private static String taskNameForAction(ProxyAction action) {
+        String actionName = action.getId();
+        return actionName.substring(0, 1).toUpperCase() + actionName.substring(1) + "Task"; // NOI18N
+    }
+
+    private String getNonExistingTaskName(String className, final String taskName) {
+        FileObject sourceFile = getFileForClass(className);
+        try {
+            Object result = new ClassTask(sourceFile) {
+                Object run(CompilationController controller, ClassTree classTree, TypeElement classElement) {
+                    for (TypeElement el: ElementFilter.typesIn(classElement.getEnclosedElements())) {
+                        if (el.getSimpleName().toString().equals(taskName)) {
+                            return null;
+                        }
+                    }
+                    // TODO check if found type is really a Task, find free name
+                    return taskName;
+                }
+            }.execute();
+            return (String) result;
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            return taskName;
+        }
+    }
+
+    private static String getTaskClassImplCode(String taskName, String ctorCode) {
+        String clsCode =
+            "    private class MyTask extends Task {\n" // NOI18N
+          + "        MyTask() {\n" // NOI18N
+          + "            // Runs on the EDT.  Copy GUI state that\n" // NOI18N
+          + "            // doInBackground() depends on from parameters\n" // NOI18N
+          + "            // to MyTask fields, here.\n" // NOI18N
+          + "__CTOR_CODE__" // NOI18N
+          + "        }\n" // NOI18N
+          + "        @Override protected Object doInBackground() {\n" // NOI18N
+          + "            // Your Task's code here.  This method runs\n" // NOI18N
+          + "            // on a background thread, so don't reference\n" // NOI18N
+          + "            // the Swing GUI from here.\n" // NOI18N
+          + "            return null;  // return your result\n" // NOI18N
+          + "        }\n" // NOI18N
+          + "        @Override protected void succeeded(Object result) {\n" // NOI18N
+          + "            // Runs on the EDT.  Update the GUI based\n" // NOI18N
+          + "            // the result computed by doInBackground().\n" // NOI18N
+          + "        }\n" // NOI18N
+          + "    }\n"; // NOI18N
+        if (ctorCode == null) {
+            ctorCode = "";
+        }
+        if (ctorCode.length() > 0 && !ctorCode.endsWith("\n")) { // NOI18N
+            ctorCode = ctorCode + "\n"; // NOI18N
+        }
+        return clsCode.replace("__CTOR_CODE__", ctorCode) // NOI18N
+                .replace("MyTask", taskName); // NOI18N
     }
 
     public List<RADComponent> getBoundComponents(ProxyAction act) {
@@ -524,12 +595,86 @@ public class ActionManager {
         }
     }
     
-    private static void updateActionMethod(ProxyAction action, FileObject sourceFile) {
+    private void updateActionMethod(final ProxyAction action, final FileObject sourceFile) {
         try {
             int[] positions = getAnnotationPositions(action, sourceFile);
             if (positions == null) {
                 return;
             }
+
+            // update the method signature and body
+            final String taskName = taskNameForAction(action);
+            final String newTaskName = getNonExistingTaskName(action.getClassname(), taskName);
+            final String[] oldBodyText = new String[1];
+            JavaSource js = JavaSource.forFileObject(sourceFile);
+            ModificationResult result = js.runModificationTask(new CancellableTask<WorkingCopy>() {
+                public void cancel() {
+                }
+                public void run(WorkingCopy workingCopy) throws Exception {
+                    workingCopy.toPhase(JavaSource.Phase.RESOLVED);
+                    CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                    for (Tree t: cut.getTypeDecls()) {
+                        if (t.getKind() == Tree.Kind.CLASS) {
+                            ClassTree classT = (ClassTree) t;
+                            if (sourceFile.getName().equals(classT.getSimpleName().toString())) {
+                                Trees trees = workingCopy.getTrees();
+                                TreePath classTPath = trees.getPath(cut, classT);
+                                TypeElement classEl = (TypeElement) trees.getElement(classTPath);
+                                for (ExecutableElement el : ElementFilter.methodsIn(classEl.getEnclosedElements())) {
+                                    if (el.getSimpleName().toString().equals(action.getId())
+                                            && el.getModifiers().contains(Modifier.PUBLIC)) {
+                                        if (isAsyncActionMethod(el) != action.isTaskEnabled()) {
+                                            MethodTree method = trees.getTree(el);
+                                            MethodTree modified;
+                                            TreeMaker make = workingCopy.getTreeMaker();
+                                            BlockTree body = method.getBody();
+                                            SourcePositions sp = trees.getSourcePositions();
+                                            int start = (int) sp.getStartPosition(cut, body);
+                                            int end = (int) sp.getEndPosition(cut, body);
+                                            String bodyText = getMethodBodyWithoutBraces(workingCopy.getText().substring(start, end));
+                                            if (action.isTaskEnabled()) { // switch to Task
+                                                String genTaskName;
+                                                if (newTaskName != null) {
+                                                    genTaskName = newTaskName;
+                                                    oldBodyText[0] = bodyText;
+                                                    bodyText = ""; // NOI18N
+                                                } else {
+                                                    genTaskName = taskName;
+                                                    bodyText = getCommentedBodyText(bodyText);
+                                                }
+
+                                                modified = make.Method(
+                                                        method.getModifiers(),
+                                                        method.getName(),
+                                                        make.QualIdent(workingCopy.getElements().getTypeElement("application.Task")), // NOI18N
+                                                        method.getTypeParameters(),
+                                                        method.getParameters(),
+                                                        method.getThrows(),
+                                                        "{\nreturn new " + genTaskName + "();\n" + bodyText + "}", // NOI18N
+                                                        null);
+                                            } else { // switch to void
+                                                modified = make.Method(
+                                                        method.getModifiers(),
+                                                        method.getName(),
+                                                        make.PrimitiveType(TypeKind.VOID),
+                                                        method.getTypeParameters(),
+                                                        method.getParameters(),
+                                                        method.getThrows(),
+                                                        "{\n" + getCommentedBodyText(bodyText) + "}", // NOI18N
+                                                        null);
+                                            }
+                                            workingCopy.rewrite(method, modified);
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            result.commit();
+
             DataObject dobj = DataObject.find(sourceFile);
             EditorCookie ec = (EditorCookie)dobj.getCookie(EditorCookie.class);
             if (ec == null) {
@@ -540,6 +685,24 @@ public class ActionManager {
                 ec.openDocument();
             }
             Document doc = ec.getDocument();
+
+            if (newTaskName != null) { // generate Task impl class
+                Integer methodEndPosition = (Integer) new ActionMethodTask(sourceFile, action.getId()) {
+                    Object run(CompilationController controller, MethodTree methodTree, ExecutableElement methodElement) {
+                        return (int) controller.getTrees().getSourcePositions().getEndPosition(
+                                controller.getCompilationUnit(), methodTree);
+                    }
+                }.execute();
+                javax.swing.text.Element docRoot = doc.getDefaultRootElement();
+                int pos = docRoot.getElement(docRoot.getElementIndex(methodEndPosition.intValue()) + 1)
+                        .getStartOffset();
+                doc.insertString(pos,
+                                 "\n" + getTaskClassImplCode(newTaskName, oldBodyText[0]), // NOI18N
+                                 null);
+            }
+
+            // update the annotation attributes
+            // (the task class was generated below, so the annotation position is not affected)
             int startPos = positions[0];
             int endPos = positions[1];
             doc.remove(startPos, endPos-startPos);
@@ -636,6 +799,49 @@ public class ActionManager {
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         } */
+    }
+
+    private static String getCommentedBodyText(String bodyText) {
+        bodyText = getMethodBodyWithoutBraces(bodyText);
+        StringBuilder buf = new StringBuilder();
+        int lineStart = 0;
+        for (int i=0; i < bodyText.length(); i++) {
+            char c = bodyText.charAt(i);
+            if (c == '\n' || i+1 == bodyText.length()) {
+                buf.append("// "); // NOI18N
+                buf.append(bodyText.substring(lineStart, i+1));
+                lineStart = i + 1;
+            }
+        }
+        return buf.toString();
+    }
+
+    private static String getMethodBodyWithoutBraces(String bodyText) {
+        int first = -1;
+        int last = -1;
+        for (int i=0; i < bodyText.length(); i++) {
+            char c = bodyText.charAt(i);
+            if (c > ' ' && (c != '{' || first >= 0)) {
+                break;
+            } else if (c == '\n' && first >= 0) {
+                first = i + 1;
+                break;
+            } else if (c == '{') {
+                first = i + 1;
+            }
+        }
+        for (int i=bodyText.length()-1; i >= 0 ; i--) {
+            char c = bodyText.charAt(i);
+            if (c > ' ' && (c != '}' || last >= 0)) {
+                break;
+            } else if (c == '\n' && first >= 0) {
+                last = i;
+                break;
+            } else if (c == '}') {
+                last = i;
+            }
+        }
+        return bodyText.substring(first >= 0 ? first : 0, last >= 0 ? last : bodyText.length());
     }
 
     private static int[] getAnnotationPositions(ProxyAction action, FileObject sourceFile) throws IOException {
@@ -901,8 +1107,17 @@ public class ActionManager {
     }
     
     static void initActionFromSource(ProxyAction action, ExecutableElement methodElement, application.Action annotation) {
+        boolean returnsTask = isAsyncActionMethod(methodElement);
+        action.setTaskEnabled(returnsTask);
+        action.setEnabledName(annotation.enabledProperty());
+        action.setSelectedName(annotation.selectedProperty());
+        action.setBlockingType(ProxyAction.BlockingType.valueOf(annotation.block().toString()));
+        // TBD 'name' attr
+    }
+
+    private static boolean isAsyncActionMethod(ExecutableElement methodElement) {
         TypeMirror retType = methodElement.getReturnType();
-        boolean returnsTask = (retType.getKind() != TypeKind.VOID);
+        return (retType.getKind() != TypeKind.VOID);
         // [TODO we need a precise way to determine that a Task or its subclass is returned]
         //        boolean returnsTask = false;
         //        if (retType.getKind() == TypeKind.DECLARED) {
@@ -912,13 +1127,8 @@ public class ActionManager {
         //                returnsTask = true; // [does not cover if Task implementation is used as return type]
         //            }
         //        }
-        action.setTaskEnabled(returnsTask);
-        action.setEnabledName(annotation.enabledProperty());
-        action.setSelectedName(annotation.selectedProperty());
-        action.setBlockingType(ProxyAction.BlockingType.valueOf(annotation.block().toString()));
-        // TBD 'name' attr
     }
-    
+
     private void deleteAction(final ProxyAction action, final FormModel mod) throws InvocationTargetException, IllegalArgumentException, IllegalAccessException {
         // remove the entry from the form file
         List<RADComponent> comps = mod.getComponentList();

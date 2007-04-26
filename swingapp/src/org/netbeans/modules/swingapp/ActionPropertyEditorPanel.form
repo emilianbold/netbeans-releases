@@ -105,11 +105,11 @@
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="tooltipField" alignment="0" pref="208" max="32767" attributes="2"/>
-                                  <Component id="textField" alignment="0" pref="208" max="32767" attributes="2"/>
+                                  <Component id="tooltipField" alignment="0" pref="256" max="32767" attributes="2"/>
+                                  <Component id="textField" alignment="0" pref="256" max="32767" attributes="2"/>
                                   <Group type="102" alignment="1" attributes="0">
                                       <Component id="acceleratorText" min="-2" pref="114" max="-2" attributes="2"/>
-                                      <EmptySpace pref="19" max="32767" attributes="0"/>
+                                      <EmptySpace pref="83" max="32767" attributes="0"/>
                                       <Component id="clearAccelButton" min="-2" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
@@ -145,7 +145,7 @@
                           <Component id="iconButtonLarge" min="-2" pref="76" max="-2" attributes="1"/>
                           <Component id="jLabel5" alignment="0" min="-2" max="-2" attributes="1"/>
                       </Group>
-                      <EmptySpace max="32767" attributes="0"/>
+                      <EmptySpace pref="63" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -245,12 +245,12 @@
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="jLabel8" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="36" max="-2" attributes="0"/>
-                              <Component id="enabledTextfield" pref="128" max="32767" attributes="1"/>
+                              <Component id="enabledTextfield" pref="186" max="32767" attributes="1"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="jLabel11" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="33" max="-2" attributes="0"/>
-                              <Component id="selectedTextfield" pref="128" max="32767" attributes="1"/>
+                              <Component id="selectedTextfield" pref="186" max="32767" attributes="1"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
@@ -261,8 +261,8 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="blockingType" alignment="0" min="-2" pref="128" max="-2" attributes="0"/>
-                                  <Component id="blockingDialogText" pref="128" max="32767" attributes="0"/>
-                                  <Component id="blockingDialogTitle" alignment="0" pref="128" max="32767" attributes="1"/>
+                                  <Component id="blockingDialogText" pref="206" max="32767" attributes="0"/>
+                                  <Component id="blockingDialogTitle" alignment="0" pref="206" max="32767" attributes="1"/>
                               </Group>
                           </Group>
                       </Group>
@@ -298,7 +298,7 @@
                           <Component id="jLabel6" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="blockingDialogText" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="25" max="32767" attributes="0"/>
+                      <EmptySpace pref="74" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>

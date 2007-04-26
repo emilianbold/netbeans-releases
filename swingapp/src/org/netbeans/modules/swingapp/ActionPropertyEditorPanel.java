@@ -182,8 +182,8 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
             scopeCombo.setVisible(false);
             methodLabel.setVisible(true);
             methodField.setVisible(false);
-            backgroundTaskLabel.setVisible(true);
-            backgroundTaskCheckbox.setVisible(false);
+            backgroundTaskLabel.setVisible(false);
+            backgroundTaskCheckbox.setVisible(true);
             resetFields();
         }
         if(mode == Mode.NewActionForm) {
@@ -257,6 +257,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
             methodLabel.setText(sig.toString());
             classLabel.setText(act.getClassname());
             backgroundTaskLabel.setText(act.isTaskEnabled() ? "yes" : "no");
+            backgroundTaskCheckbox.setSelected(act.isTaskEnabled());
         }
 
         smallIconName = (String) act.getValue(Action.SMALL_ICON +".IconName"); // NOTI18N
@@ -771,6 +772,9 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
             act.putValue(Action.ACCELERATOR_KEY,key);
         } else {
             act.putValue(Action.ACCELERATOR_KEY,null);
+        }
+        if (backgroundTaskCheckbox.isVisible()) {
+            act.setTaskEnabled(backgroundTaskCheckbox.isSelected());
         }
         if(act.isTaskEnabled()) {
             act.setBlockingType(getSelectedBlockingType());
