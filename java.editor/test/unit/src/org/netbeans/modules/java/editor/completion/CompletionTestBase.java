@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
@@ -129,7 +130,7 @@ public class CompletionTestBase extends NbTestCase {
         for (ClassPath.Entry entry : bootPath.entries()) {
             URL url = entry.getURL();
             ClassIndexImpl cii = mgr.createUsagesQuery(url, false);            
-            cii.getBinaryAnalyser().analyse(url, null);
+            cii.getBinaryAnalyser().start(url, null, new AtomicBoolean(false));
             
         }                
         ClassPathProvider cpp = new ClassPathProvider() {

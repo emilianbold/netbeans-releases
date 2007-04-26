@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.TypeElement;
 import javax.swing.text.Document;
 import junit.framework.Test;
@@ -92,7 +93,7 @@ public class ComputeImportsTest extends NbTestCase {
             for (URL u : SourceUtilsTestUtil.getBootClassPath()) {
                 final ClassIndexImpl ci = ClassIndexManager.getDefault().createUsagesQuery(u, false);
                 ProgressHandle handle = ProgressHandleFactory.createHandle("cache creation");
-                ci.getBinaryAnalyser().analyse(u, handle);
+                ci.getBinaryAnalyser().start(u, handle, new AtomicBoolean(false));
             }
         }
     }
