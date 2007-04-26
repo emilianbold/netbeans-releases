@@ -20,16 +20,17 @@ public class OverallTest extends TestCase {
     }
 
     /** Method called before each test case method. */
-    protected void setUp() throws Exception {
+    protected void setUp() {
         System.out.println("### "+getName()+" ###");
     }
 
     /** Method called after each test case method. */
-    protected void tearDown() throws Exception {
+    protected void tearDown() {
     }
     
     /** Define test cases to be included and optionally do some initialization
      * for whole suite.
+     * @return test suite
      */
     public static Test suite() {
         new Anagrams().setVisible(true);
