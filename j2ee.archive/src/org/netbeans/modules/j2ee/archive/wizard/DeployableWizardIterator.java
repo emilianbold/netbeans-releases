@@ -705,6 +705,7 @@ public class DeployableWizardIterator implements WizardDescriptor.InstantiatingI
             createData.setServerInstanceID(sid); // (String) app.get(ArchiveProjectProperties.J2EE_SERVER_INSTANCE)
             createData.setBuildfile(GeneratedFilesHelper.BUILD_XML_PATH);
             createData.setJavaSourceBased(false);
+            createData.setWebInfFolder(webInf);
             return WebProjectUtilities.importProject(createData);
         }
         
