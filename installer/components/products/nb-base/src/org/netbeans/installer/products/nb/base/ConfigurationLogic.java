@@ -178,6 +178,16 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             progress.setDetail(getString("CL.install.netbeans.conf")); // NOI18N
             
             NetBeansUtils.updateNetBeansHome(installLocation);
+            
+            final long xmx = NetBeansUtils.getJvmMemorySize(
+                    installLocation, 
+                    NetBeansUtils.MEMORY_XMX);
+            if (xmx < REQUIRED_XMX_VALUE) {
+                NetBeansUtils.setJvmMemorySize(
+                        installLocation,
+                        NetBeansUtils.MEMORY_XMX,
+                        REQUIRED_XMX_VALUE);
+            }
         } catch (IOException e) {
             throw new InstallationException(
                     getString("CL.install.error.netbeans.conf"),  // NOI18N
@@ -387,4 +397,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     
     public static final String JVM_OPTION_NAME =
             "-Dcom.sun.aas.installRoot"; // NOI18N
+    
+    public static final long REQUIRED_XMX_VALUE = 
+            192 * NetBeansUtils.M;
 }
