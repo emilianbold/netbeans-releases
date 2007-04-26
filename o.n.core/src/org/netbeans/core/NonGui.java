@@ -99,9 +99,6 @@ implements Runnable, org.netbeans.core.startup.RunLevel {
         
         StartLog.logProgress ("Security managers installed"); // NOI18N
         Splash.getInstance().increment(1);
-        
-        
-        InstalledFileLocatorImpl.discardCache();
     }
 
 

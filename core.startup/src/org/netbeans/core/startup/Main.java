@@ -250,7 +250,7 @@ public final class Main extends Object {
     
     
 
-    org.netbeans.core.startup.InstalledFileLocatorImpl.prepareCache();
+    InstalledFileLocatorImpl.prepareCache();
 
     // Initialize beans - [PENDING - better place for this ?]
     //                    [PENDING - can PropertyEditorManager garbage collect ?]
@@ -306,15 +306,12 @@ public final class Main extends Object {
     CoreBridge.getDefault().loadSettings();
     StartLog.logProgress ("IDE settings loaded"); // NOI18N
     
-    {
-        Iterator it = Lookup.getDefault().lookupAll(RunLevel.class).iterator();
-        
-        while (it.hasNext ()) {
-            RunLevel level = (RunLevel)it.next ();
-            level.run ();
-        }
+    for (RunLevel level : Lookup.getDefault().lookupAll(RunLevel.class)) {
+        level.run();
     }
-    
+
+    InstalledFileLocatorImpl.discardCache();
+
     org.netbeans.Main.finishInitialization();
     StartLog.logProgress("Ran any delayed command-line options"); // NOI18N
 
