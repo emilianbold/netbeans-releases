@@ -122,6 +122,9 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
 
             for (int j=0; j  < free.length; j++)
                 if (free[j].equals(str)) {
+                    if (isAWTContainer()) {
+                        str = (String) toAbsolute(str);
+                    }
                     assistantParams = str;
                     return new BorderConstraints(str);
                 }
@@ -129,13 +132,27 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
             if (component != null) {
                 int idx = getComponentOnPosition(str);
                 if (containerDelegate.getComponent(idx) == component) {
+                    if (isAWTContainer()) {
+                        str = (String) toAbsolute(str);
+                    }
                     assistantParams = str;
                     return new BorderConstraints(str);
                 }
             }
         }
+        if (isAWTContainer()) {
+            free[0] = (String) toAbsolute(free[0]);
+        }
         assistantParams = free[0];
         return new BorderConstraints(free[0]);
+    }
+
+    private boolean isAWTContainer() {
+        // hack for CDC: only use absolute constraints for AWT components
+        Container cont = getLayoutContext().getPrimaryContainer();
+        return cont != null
+               && !(cont instanceof javax.swing.JComponent)
+               && !(cont instanceof javax.swing.RootPaneContainer);
     }
 
     private String assistantParams;
@@ -182,14 +199,14 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
         int marginW = getMargin(contSize.width - contInsets.left - contInsets.right);
         int marginH = getMargin(contSize.height - contInsets.top - contInsets.bottom);
 
-        if (BorderLayout.PAGE_START.equals(position)) {
+        if (BorderLayout.PAGE_START.equals(position) || BorderLayout.NORTH.equals(position)) {
             x1 = contInsets.left;
             x2 = contSize.width - contInsets.right;
             y1 = contInsets.top;
             y2 = contInsets.top + (compPrefSize.height > 0 ?
                                    compPrefSize.height : marginH);
         }
-        else if (BorderLayout.PAGE_END.equals(position)) {
+        else if (BorderLayout.PAGE_END.equals(position) || BorderLayout.SOUTH.equals(position)) {
             x1 = contInsets.left;
             x2 = contSize.width - contInsets.right;
             y1 = contSize.height - contInsets.bottom
@@ -197,12 +214,12 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
             y2 = contSize.height - contInsets.bottom;
         }
         else { // LINE_START, LINE_END or CENTER
-            if (BorderLayout.LINE_START.equals(position)) {
+            if (BorderLayout.LINE_START.equals(position) || BorderLayout.WEST.equals(position)) {
                 x1 = contInsets.left;
                 x2 = contInsets.left + (compPrefSize.width > 0 ?
                                         compPrefSize.width : marginW);
             }
-            else if (BorderLayout.LINE_END.equals(position)) {
+            else if (BorderLayout.LINE_END.equals(position) || BorderLayout.EAST.equals(position)) {
                 x1 = contSize.width - contInsets.right
                        - (compPrefSize.width > 0 ? compPrefSize.width : marginW);
                 x2 = contSize.width - contInsets.right;
@@ -299,7 +316,11 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
      * @return the default LayoutConstraints object for the supported layout
      */
     protected LayoutConstraints createDefaultConstraints() {
-        return new BorderConstraints(findFreePositions()[0]);
+        String pos = findFreePositions()[0];
+        if (isAWTContainer()) {
+            pos = (String) toAbsolute(pos);
+        }
+        return new BorderConstraints(pos);
     }
 
     // ----------------
