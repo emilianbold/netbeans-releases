@@ -20,11 +20,13 @@
 package org.netbeans.modules.project.ui.actions;
 
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.prefs.Preferences;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
@@ -32,6 +34,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.project.ui.NewProjectWizard;
 import org.netbeans.modules.project.ui.OpenProjectList;
+import org.netbeans.modules.project.ui.OpenProjectListSettings;
 import org.netbeans.modules.project.ui.ProjectUtilities;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.ErrorManager;
@@ -40,6 +43,7 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
@@ -111,6 +115,17 @@ public class NewProject extends BasicAction {
                 try {
                     
                     Set newObjects = wizard.instantiate();
+                    // #75960 - test if any folder was created during the wizard and if yes and it's empty delete it
+                    Preferences prefs = NbPreferences.forModule(OpenProjectListSettings.class);
+                    String nbPrjDirPath = prefs.get(OpenProjectListSettings.PROP_CREATED_PROJECTS_FOLDER, null);
+                    prefs.remove(OpenProjectListSettings.PROP_CREATED_PROJECTS_FOLDER);
+                    if (nbPrjDirPath != null) {
+                        File prjDir = new File(nbPrjDirPath);
+                        if (prjDir.exists() && prjDir.isDirectory() && prjDir.listFiles() != null && prjDir.listFiles().length == 0) {
+                            prjDir.delete();
+                        }
+                    }
+                    
                     Object mainProperty = wizard.getProperty( /* XXX Define somewhere */ "setAsMain" ); // NOI18N
                     boolean setFirstMain = true;
                     if ( mainProperty instanceof Boolean ) {

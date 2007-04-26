@@ -51,6 +51,7 @@ public class OpenProjectListSettings {
     private static final String RECENT_PROJECTS_URLS = "recentProjectsURLs"; //NOI18N List of URLs
     private static final String RECENT_TEMPLATES = "recentTemplates"; // NOI18N -List of Strings
     
+    public static final String PROP_CREATED_PROJECTS_FOLDER = "createdProjectsFolderInWizard"; // NOI18N
     
     private OpenProjectListSettings() {
     }
@@ -267,7 +268,12 @@ public class OpenProjectListSettings {
                     return nbPrjDir;
                 } else {
                     boolean created = create && nbPrjDir.mkdir();
-                    if (created) return nbPrjDir; 
+                    if (created) {
+                        // #75960 - using Preferences to temporarily save created projects folder path,
+                        // folder will be deleted after wizard is finished if nothing was created in it
+                        getPreferences().put(PROP_CREATED_PROJECTS_FOLDER, nbPrjDir.getAbsolutePath());
+                        return nbPrjDir;
+                    } 
                 }
             }
             result = System.getProperty("user.home");   //NOI18N
