@@ -263,17 +263,17 @@ public class HTML {
 
     // marks ...................................................................
     
-    private static TokenSequence findTokenSequence(TokenSequence ts) {
-        if("html/text".equals(ts.language().mimeType())) {
+    private static TokenSequence findTokenSequence(int offset, TokenSequence ts) {
+        if("text/html".equals(ts.language().mimeType())) {
             return ts;
         } else {
             TokenSequence em = ts.embedded();
             if(em == null) {
                 return null; //no embedded token sequence
             } else {
-                em.move(ts.offset());
+                em.move(offset);
                 if(em.moveNext() || em.movePrevious()) {
-                    return findTokenSequence(em);
+                    return findTokenSequence(offset, em);
                 } else {
                     return null; //no token
                 }
@@ -282,11 +282,13 @@ public class HTML {
     }
     
     public static boolean isDeprecatedAttribute (Context context) {
-        //TokenSequence ts = findTokenSequence(context.getTokenSequence());
-        TokenSequence ts = context.getTokenSequence ();
-        if(!ts.language().mimeType().equals("text/html")) {
-            return false;
+        if(!(context instanceof SyntaxContext)) {
+            return false; //no AST
         }
+        SyntaxContext scontext = (SyntaxContext)context;
+        int item_offset = scontext.getASTPath().getLeaf().getOffset();
+        TokenSequence ts = findTokenSequence(item_offset, context.getTokenSequence());
+        if(ts == null) return false;
         Token t = ts.token ();
         if (t == null) return false;
         String attribName = t.text ().toString ().toLowerCase ();
@@ -296,10 +298,13 @@ public class HTML {
     }
 
     public static boolean isDeprecatedTag (Context context) {
-        TokenSequence ts = context.getTokenSequence ();
-        if(!ts.language().mimeType().equals("text/html")) {
-            return false;
+        if(!(context instanceof SyntaxContext)) {
+            return false; //no AST
         }
+        SyntaxContext scontext = (SyntaxContext)context;
+        int item_offset = scontext.getASTPath().getLeaf().getOffset();
+        TokenSequence ts = findTokenSequence(item_offset, context.getTokenSequence());
+        if(ts == null) return false;
         Token t = ts.token ();
         if (t == null) return false;
         String tagName = t.text ().toString ().toLowerCase ();

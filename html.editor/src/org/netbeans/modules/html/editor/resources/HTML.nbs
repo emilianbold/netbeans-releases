@@ -101,7 +101,11 @@ COLOR:attribute: {
     strike_through_color:"black";
     condition:org.netbeans.modules.html.editor.HTML.isDeprecatedAttribute;
 }
-COLOR:tag: {
+COLOR:startTag: {
+    strike_through_color:"blue";
+    condition:org.netbeans.modules.html.editor.HTML.isDeprecatedTag;
+}
+COLOR:endTag: {
     strike_through_color:"blue";
     condition:org.netbeans.modules.html.editor.HTML.isDeprecatedTag;
 }
