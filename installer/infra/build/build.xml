@@ -1001,7 +1001,20 @@ jarsigner.storepass=${jarsigner.storepass}
                 <include name="netbeans-6.0-nightly-${build.number}-full-macosx-ppc.command"/>
             </tarfileset>
         </tar>
-        
+        <!--
+	<tar tarfile="${output.dir}/bundles/java-tools-bundle-u3-preview2-nightly-${build.number}-macosx-x86.tgz" 
+            compression="gzip">
+            <tarfileset dir="${output.dir}/bundles/" mode="755">
+                <include name="java-tools-bundle-u3-preview2-nightly-${build.number}-macosx-x86.command"/>
+            </tarfileset>
+        </tar>        
+	<tar tarfile="${output.dir}/bundles/java-tools-bundle-u3-preview2-nightly-${build.number}-macosx-ppc.tgz" 
+            compression="gzip">
+            <tarfileset dir="${output.dir}/bundles/" mode="755">
+                <include name="java-tools-bundle-u3-preview2-nightly-${build.number}-macosx-ppc.command"/>
+            </tarfileset>
+        </tar>
+        -->
         <delete>
             <fileset dir="${output.dir}/bundles">
                 <include name="*.command"/>
