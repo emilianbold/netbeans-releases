@@ -32,19 +32,39 @@ import org.openide.util.NbBundle;
  */
 /* package */ abstract class AbstractCamelCasePosition extends BaseAction {
 
-    public AbstractCamelCasePosition(String name) {
+    private Action originalAction;
+    
+    public AbstractCamelCasePosition(String name, Action originalAction) {
         super(name);
+        
+        if (originalAction != null) {
+            Object nameObj = originalAction.getValue(Action.NAME);
+            if (nameObj instanceof String) {
+                // We will be wrapping around the original action, use its name
+                putValue(NAME, nameObj);
+                this.originalAction = originalAction;
+            }
+        }
+        
         String desc = getShortDescription();
         if (desc != null) {
             putValue(SHORT_DESCRIPTION, desc);
         }
     }
 
-    public void actionPerformed(ActionEvent evt, JTextComponent target) {
+    public final void actionPerformed(ActionEvent evt, JTextComponent target) {
         if (target != null) {
-            int offset = newOffset(target);
-            if (offset != -1) {
-                moveToNewOffset(target, offset);
+            if (originalAction != null && !isUsingCamelCase()) {
+                if (originalAction instanceof BaseAction) {
+                    ((BaseAction) originalAction).actionPerformed(evt, target);
+                } else {
+                    originalAction.actionPerformed(evt);
+                }
+            } else {
+                int offset = newOffset(target);
+                if (offset != -1) {
+                    moveToNewOffset(target, offset);
+                }
             }
         }
     }
@@ -62,5 +82,9 @@ import org.openide.util.NbBundle;
             shortDesc = name;
         }
         return shortDesc;
+    }
+    
+    private boolean isUsingCamelCase() {
+        return !Boolean.getBoolean("no-java-camel-case-style-navigation");
     }
 }

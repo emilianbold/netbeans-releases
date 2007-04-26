@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.editor.java;
 
+import javax.swing.Action;
 import javax.swing.text.JTextComponent;
 
 /**
@@ -27,12 +28,12 @@ import javax.swing.text.JTextComponent;
  */
 /* package */ class SelectPreviousCamelCasePosition extends PreviousCamelCasePosition {
 
-    public SelectPreviousCamelCasePosition() {
-        this(JavaKit.selectPreviousCamelCasePosition);
+    public SelectPreviousCamelCasePosition(Action originalAction) {
+        this(JavaKit.selectPreviousCamelCasePosition, originalAction);
     }
     
-    protected SelectPreviousCamelCasePosition(String name) {
-        super(name);
+    protected SelectPreviousCamelCasePosition(String name, Action originalAction) {
+        super(name, originalAction);
     }
     
     protected void moveToNewOffset(JTextComponent textComponent, int offset) {

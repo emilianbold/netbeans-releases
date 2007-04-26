@@ -202,6 +202,7 @@ public class JavaKit extends NbEditorKit {
       }
 
     protected Action[] createActions() {
+        Action[] superActions = super.createActions();
         Action[] javaActions = new Action[] {
                                    new JavaDefaultKeyTypedAction(),
                                    new PrefixMakerAction(makeGetterAction, "get", getSetIsPrefixes), // NOI18N
@@ -225,19 +226,31 @@ public class JavaKit extends NbEditorKit {
                                    new GenerateCodeAction(),
                                    new SelectCodeElementAction(selectNextElementAction, true),
                                    new SelectCodeElementAction(selectPreviousElementAction, false),
-                                   new NextCamelCasePosition(),
-                                   new PreviousCamelCasePosition(),
-                                   new SelectNextCamelCasePosition(),
-                                   new SelectPreviousCamelCasePosition(),
-                                   new DeleteToNextCamelCasePosition(),
-                                   new DeleteToPreviousCamelCasePosition(),
+                                   
+                                   new NextCamelCasePosition(findAction(superActions, nextWordAction)),
+                                   new PreviousCamelCasePosition(findAction(superActions, previousWordAction)),
+                                   new SelectNextCamelCasePosition(findAction(superActions, selectionNextWordAction)),
+                                   new SelectPreviousCamelCasePosition(findAction(superActions, selectionPreviousWordAction)),
+                                   new DeleteToNextCamelCasePosition(findAction(superActions, removeNextWordAction)),
+                                   new DeleteToPreviousCamelCasePosition(findAction(superActions, removePreviousWordAction)),
+                                   
                                    new FastImportAction(),
                                    new GoToSuperTypeAction(),
                                };
                                
-        return TextAction.augmentList(super.createActions(), javaActions);
+        return TextAction.augmentList(superActions, javaActions);
     }
 
+    private static Action findAction(Action [] actions, String name) {
+        for(Action a : actions) {
+            Object nameObj = a.getValue(Action.NAME);
+            if (nameObj instanceof String && name.equals(nameObj)) {
+                return a;
+            }
+        }
+        return null;
+    }
+    
     public static class JavaDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
 
         protected void insertString(BaseDocument doc, int dotPos,
