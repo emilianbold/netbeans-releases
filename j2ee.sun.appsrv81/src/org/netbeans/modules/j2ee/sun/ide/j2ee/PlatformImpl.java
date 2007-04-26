@@ -87,9 +87,9 @@ public class PlatformImpl extends J2eePlatformImpl {
     private static final String WEBSERVICES_TOOLS_JAR = "lib/webservices-tools.jar"; //NOI18N
     
     private static final String[] SWDP_JARS = new String[] {
-            "lib/addons/restbeans-api.jar",
-            "lib/addons/restbeans-impl.jar",
-            "lib/addons/wadl2java.jar"
+            "restbeans-api.jar",
+            "restbeans-impl.jar",
+            "wadl2java.jar"
     };
     
     private static final String[] TRUSTSTORE_LOCATION = new String[] {
@@ -290,9 +290,17 @@ public class PlatformImpl extends J2eePlatformImpl {
     }
     
     private List<URL> getSwdpJarURLs() throws MalformedURLException {
+        List<URL> ret = getSwdpJarURLs(new File(new File(dmProps.getLocation(), dmProps.getDomainName()), "lib")); //NOI18N
+        if (ret == null) {
+            ret = getSwdpJarURLs(new File(root, "lib/addons")); //NOI18N
+        }
+        return ret;
+    }
+    
+    private List<URL> getSwdpJarURLs(File libDir) throws MalformedURLException {
         ArrayList<URL> ret = new ArrayList<URL>();
         for (String jarName : SWDP_JARS) {
-            File jarFile = new File(root, jarName);
+            File jarFile = new File(libDir, jarName);
             if (jarFile.isFile()) {
                 ret.add(fileToUrl(jarFile));
             } else {
@@ -301,7 +309,7 @@ public class PlatformImpl extends J2eePlatformImpl {
         }
         return ret;
     }
-    
+
     /**
      * Return platform's libraries.
      *
