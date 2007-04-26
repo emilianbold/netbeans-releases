@@ -73,12 +73,13 @@ public abstract class CasaNodeChildren extends Children.Keys {
     @Override
     protected void addNotify() {
         super.addNotify();
+        
         // lazy initialization
-        reloadFrom(getData());
+        initialize();
     }
     
-    
-    public void reloadFrom(Object data)  {
+    private void initialize()  {
+        Object data = getData();
         if (data == null) {
             return;
         }
