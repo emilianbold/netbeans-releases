@@ -37,8 +37,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.xml.resolver.CatalogManager;
-import org.apache.xml.resolver.tools.CatalogResolver;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.SAXParseException;
@@ -179,6 +178,14 @@ public class WsdlModeler {
                 wsdlModel=new WsdlModel(tmpModel);
                 fireWsdlModelChanged(oldWsdlModel, wsdlModel);
                 creationException=null;
+            } else {
+                WsdlModel oldWsdlModel = wsdlModel;
+                wsdlModel=null;
+                if (oldWsdlModel!=null) {
+                    fireWsdlModelChanged(oldWsdlModel, null);
+                }
+                creationException = new Exception(NbBundle.getMessage(WsdlModeler.class,"ERR_CannotGenerateModel",wsdlUrl.toExternalForm()));
+                Logger.getLogger(this.getClass().getName()).log(Level.FINE, "WsdlModeler.generateWsdlModel", creationException); //NOI18N
             }
         } catch (Exception ex){
             wsdlModel=null;
