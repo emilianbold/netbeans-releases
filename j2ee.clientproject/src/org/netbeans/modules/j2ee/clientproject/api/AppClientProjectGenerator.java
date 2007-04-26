@@ -81,7 +81,6 @@ public class AppClientProjectGenerator {
     public static final String MINIMUM_ANT_VERSION = "1.6.5"; // NOI18N
     
     private static final String MANIFEST_FILE = "MANIFEST.MF"; // NOI18N
-    private static final String J2EE_PLATFORM_WSIMPORT_CLASSPATH="j2ee.platform.wsimport.classpath"; //NOI18N
     
     private AppClientProjectGenerator() {}
     
@@ -470,7 +469,7 @@ public class AppClientProjectGenerator {
         // set j2ee.platform.wsimport.classpath
         if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIMPORT)) { 
             File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSIMPORT);
-            ep.setProperty(J2EE_PLATFORM_WSIMPORT_CLASSPATH, 
+            ep.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH, 
                     Utils.toClasspathString(wsClasspath));
         }
         //WORKAROUND for --retrieve option in asadmin deploy command
