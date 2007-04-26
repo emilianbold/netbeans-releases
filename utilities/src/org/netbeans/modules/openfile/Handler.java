@@ -28,6 +28,8 @@ import org.netbeans.api.sendopts.CommandException;
 import org.netbeans.spi.sendopts.Env;
 import org.netbeans.spi.sendopts.Option;
 import org.netbeans.spi.sendopts.OptionProcessor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /**
@@ -72,11 +74,19 @@ public class Handler extends OptionProcessor {
         
         File curDir = env.getCurrentDirectory ();
 
+        StringBuffer failures = new StringBuffer();
+        String sep = "";
         for (int i = 0; i < argv.length; i++) {
-            int res = openFile (curDir, env, argv[i]);
-            if (res != 0) {
-                throw new CommandException(res);
+            String error = openFile (curDir, env, argv[i]);
+            if (error != null) {
+                failures.append(sep);
+                failures.append(error);
+                sep = "\n";
             }
+        }
+        if (failures.length() > 0) {
+            DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(failures.toString()));
+            throw new CommandException(1, failures.toString());
         }
     }
 
@@ -88,7 +98,7 @@ public class Handler extends OptionProcessor {
         return f;
     }
     
-    private int openFile (File curDir, Env args, String s) {
+    private String openFile (File curDir, Env args, String s) {
         int line = -1;
         File f = findFile (curDir, s);
         if (!f.exists()) {
@@ -104,7 +114,6 @@ public class Handler extends OptionProcessor {
             }
         }
         // Just make sure it was opened, then exit.
-        boolean success = OpenFile.openFile(f, line);
-        return success ? 0 : 1;
+        return OpenFile.openFile(f, line);
     }
 }

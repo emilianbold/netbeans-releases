@@ -41,15 +41,17 @@ public final class OpenFile {
     /**
      * Open a file (object) at the beginning.
      * @param fileObject the file to open
+     * @param line 
+     * @return error message or null on success
      * @usecase  API
      */
-    public static boolean open(FileObject fileObject, int line) {
+    public static String open(FileObject fileObject, int line) {
         for (OpenFileImpl impl : Lookup.getDefault().lookupAll(OpenFileImpl.class)) {
             if (impl.open(fileObject, line)) {
-                return true;
+                return null;
             }
         }
-        return false;
+        return NbBundle.getMessage(OpenFile.class, "MSG_FileIsNotPlainFile", fileObject);
     }
     
     /**
@@ -58,12 +60,13 @@ public final class OpenFile {
      * @param  file  file to open (must exist)
      * @param  line  line number to try to open to (starting at zero),
      *               or <code>-1</code> to ignore
-     * @return true on success, false on failure
+     * @return null on success, otherwise the error message
      * @usecase CallbackImpl, OpenFileAction
      */
-    static boolean openFile(File file, int line) {
-        if (!checkFileExists(file)) {
-            return false;
+    static String openFile(File file, int line) {
+        String msg = checkFileExists(file);
+        if (msg != null) {
+            return msg;
         }
                               
         FileObject fileObject;
@@ -71,7 +74,7 @@ public final class OpenFile {
         if (fileObject != null) {
             return open(fileObject, line);
         }
-        return false;
+        return NbBundle.getMessage(OpenFile.class, "MSG_FileDoesNotExist", file);
     }
     
     /**
@@ -82,10 +85,9 @@ public final class OpenFile {
      * so that it does not block the current thread.
      *
      * @param  file  file to check for existence
-     * @return  <code>true</code> if the file exists and is a plain file,
-     *          <code>false</code> otherwise
+     * @return  null on success, otherwise the error message
      */
-    private static boolean checkFileExists(File file) {
+    private static String checkFileExists(File file) {
         final String errMsgKey;
         if (!file.exists()) {
             errMsgKey = "MSG_fileNotFound";                             //NOI18N
@@ -94,15 +96,14 @@ public final class OpenFile {
         } else if (!file.isFile() && !file.isDirectory()) {
             errMsgKey = "MSG_fileNotFound";                             //NOI18N
         } else {
-            return true;
+            return null;
         }
         
         final String fileName = file.toString();
         final String msg = NbBundle.getMessage(OpenFile.class,
                                                errMsgKey,
                                                fileName);
-        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(msg));
-        return false;
+        return msg;
     }
 
     /**
