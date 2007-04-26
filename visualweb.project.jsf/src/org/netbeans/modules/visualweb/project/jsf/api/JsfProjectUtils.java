@@ -150,7 +150,7 @@ public class JsfProjectUtils {
         while (fo != null) {
             if (fo.isFolder()) {
                 final FileObject projXml = fo.getFileObject("nbproject/project.xml"); // NOI18N
-                // Found the project root directory
+                // Found the project root directory and got the project.xml file
                 if (projXml != null) {
                     try {
                         Node value = (Node) ProjectManager.mutex().readAccess(
@@ -164,6 +164,32 @@ public class JsfProjectUtils {
                                         });
                                     NodeList nlist = doc.getElementsByTagNameNS(RAVE_AUX_NAMESPACE, RAVE_AUX_NAME);
                                     return nlist.getLength() == 0 ? null : nlist.item(0);
+                                }
+                        });
+
+                        if (value != null) {
+                            return true;
+			}
+                    } catch (Exception e) {
+                        // Try the old Creator format later
+                    }
+                }
+
+                final FileObject propFile = fo.getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                // Found the project root directory and got the project.properties file
+                if (propFile != null) {
+                    try {
+                        String value = (String) ProjectManager.mutex().readAccess(
+                            new Mutex.ExceptionAction() {
+                                public Object run() throws Exception {
+                                    EditableProperties prop = new EditableProperties();
+                                    InputStream is = propFile.getInputStream();
+                            
+                                    prop.load(is);
+                                    is.close();
+
+                                    // Check Creator property
+                                    return prop.getProperty("jsf.pagebean.package"); // NOI18N
                                 }
                         });
 
