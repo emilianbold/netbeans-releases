@@ -85,15 +85,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.print.api</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.projectapi</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -161,14 +152,14 @@
                         <release-version>1</release-version>
                     </run-dependency>
                 </dependency>
-		<dependency>
-		    <code-name-base>org.netbeans.modules.xml.wsdl.extensions</code-name-base>
-			    <build-prerequisite/>
-		    <compile-dependency/>
-		    <run-dependency>
-			<specification-version>1.0</specification-version>
-		    </run-dependency>
-		</dependency>
+        <dependency>
+            <code-name-base>org.netbeans.modules.xml.wsdl.extensions</code-name-base>
+                <build-prerequisite/>
+            <compile-dependency/>
+            <run-dependency>
+            <specification-version>1.0</specification-version>
+            </run-dependency>
+        </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.xml.xam</code-name-base>
                     <build-prerequisite/>
@@ -267,20 +258,20 @@
                         <specification-version>6.2</specification-version>
                     </run-dependency>
                 </dependency>
-		<dependency>
-		    <code-name-base>org.netbeans.modules.xml.schema.model</code-name-base>
-		    <build-prerequisite/>
-		    <compile-dependency/>
-		    <run-dependency>
-			<release-version>1</release-version>
-		    </run-dependency>
-		</dependency>
-		<dependency>
-		    <code-name-base>org.netbeans.modules.xml.schema.completion</code-name-base>
-		    <build-prerequisite/>
-		    <compile-dependency/>
-		    <run-dependency/>
-		</dependency>
+        <dependency>
+            <code-name-base>org.netbeans.modules.xml.schema.model</code-name-base>
+            <build-prerequisite/>
+            <compile-dependency/>
+            <run-dependency>
+            <release-version>1</release-version>
+            </run-dependency>
+        </dependency>
+        <dependency>
+            <code-name-base>org.netbeans.modules.xml.schema.completion</code-name-base>
+            <build-prerequisite/>
+            <compile-dependency/>
+            <run-dependency/>
+        </dependency>
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.bpel.debugger.ui</friend>
