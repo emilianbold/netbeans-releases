@@ -612,7 +612,7 @@ introduced by support for multiple source roots. -jglick
                                     <xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
                                     <xsl:text>wsgen-</xsl:text><xsl:value-of select="@name"/><xsl:text>-nonJSR109</xsl:text>
                                 </xsl:for-each>
-                                <xsl:if test="count(*[not(jaxws:wsdl-url)]) > 0">
+                                <xsl:if test="count($jaxws/jaxws:jax-ws/jaxws:services/jaxws:service[not(jaxws:wsdl-url)]) > 0">
                                     <xsl:text>, wsgen-service-compile</xsl:text>
                                 </xsl:if>
                             </xsl:attribute>
@@ -751,9 +751,9 @@ introduced by support for multiple source roots. -jglick
                             <xsl:with-param name="wsdlUrl" select="$wsdl_url"/>
                             <xsl:with-param name="Catalog" select="$catalog"/>  
                         </xsl:call-template>
-                       <copy todir="${{build.web.dir.real}}/WEB-INF/wsdl/{$wsname}">
-                        <fileset dir="${{basedir}}/${{conf.dir}}/xml-resources/web-services/{$wsname}/wsdl/" />
-                       </copy>                            
+                        <copy todir="${{build.web.dir.real}}/WEB-INF/wsdl/{$wsname}">
+                            <fileset dir="${{basedir}}/${{conf.dir}}/xml-resources/web-services/{$wsname}/wsdl/" />
+                        </copy>                            
                     </target>
                     <target name="wsimport-service-clean-{$wsname}" depends="-init-project">
                         <delete dir="${{build.generated.dir}}/wsimport/service/{$package_path}"/>
@@ -981,15 +981,15 @@ introduced by support for multiple source roots. -jglick
             </target>
             
             <target name="-init-rest" if="rest.support.on">
-                 <taskdef name="restapt" classname="com.sun.ws.rest.tools.ant.RestBeansProcessorTask">
-                     <classpath><path path="${{j2ee.platform.classpath}}"/></classpath>
-                 </taskdef>
+                <taskdef name="restapt" classname="com.sun.ws.rest.tools.ant.RestBeansProcessorTask">
+                    <classpath><path path="${{j2ee.platform.classpath}}"/></classpath>
+                </taskdef>
             </target>
             <target name="-rest-pre-compile" depends="-init-rest" if="rest.support.on">
                 <mkdir dir="${{build.generated.dir}}/rest-gen"/>
                 <restapt fork="true" xEndorsed="true" sourcePath="${{src.dir}}" nocompile="false"
-                     destdir="${{build.classes.dir.real}}" 
-                     sourcedestdir="${{build.generated.dir}}/rest-gen">
+                         destdir="${{build.classes.dir.real}}" 
+                         sourcedestdir="${{build.generated.dir}}/rest-gen">
                     <classpath>
                         <path path="${{javac.classpath}}"/>
                         <path path="${{libs.jaxws20.classpath}}"/>
@@ -2216,8 +2216,11 @@ introduced by support for multiple source roots. -jglick
         <xsl:param name="wsdlUrlActual"/>
         <xsl:param name="Catalog"/>
         <wsimport>
-            <xsl:if test="$isJaxws21 and $isJSR109">
+            <xsl:if test="$isJaxws21 or $isJSR109 = 'false'">
                 <xsl:attribute name="xendorsed">true</xsl:attribute>  
+            </xsl:if>
+            <xsl:if test="$isJSR109 = 'false'">
+                <xsl:attribute name="fork">true</xsl:attribute>  
             </xsl:if>
             <xsl:if test="$forceReplace">
                 <xsl:attribute name="package"><xsl:value-of select="$packageName"/></xsl:attribute>
@@ -2262,6 +2265,9 @@ introduced by support for multiple source roots. -jglick
                         </xsl:for-each>
                     </xsl:attribute>
                 </binding>
+            </xsl:if>
+            <xsl:if test="$isJSR109 = 'false'">
+                <jvmarg value="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
             </xsl:if>
         </wsimport>
     </xsl:template>   
