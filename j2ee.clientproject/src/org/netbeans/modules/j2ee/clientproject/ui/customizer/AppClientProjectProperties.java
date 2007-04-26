@@ -708,7 +708,7 @@ public class AppClientProjectProperties {
             //projectProps.setProperty(J2EE_SERVER_TYPE, Deployment.getDefault().getServerID(newServInstID));
             // update j2ee.server.instance
             privateProps.setProperty(J2EE_SERVER_INSTANCE, newServInstID);
-            
+            privateProps.remove(WebServicesClientConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH);
             privateProps.remove(WebServicesClientConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH);
             privateProps.remove(DEPLOY_ANT_PROPS_FILE);
             privateProps.remove("wa.copy.client.jar.from"); // NOI18N
@@ -746,7 +746,14 @@ public class AppClientProjectProperties {
             }
             projectProps.put(CLIENT_NAME, mainClassArgs);
         }
-        
+        // update j2ee.platform.wsimport.classpath
+        if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIMPORT)) {
+            File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSIMPORT);
+            privateProps.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH, 
+                    Utils.toClasspathString(wsClasspath));
+        } else {
+            privateProps.remove(WebServicesClientConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH);
+        }      
         // update j2ee.platform.wscompile.classpath
         if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE)) {
             File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSCOMPILE);

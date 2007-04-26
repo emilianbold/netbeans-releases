@@ -44,6 +44,7 @@ public class WebServicesClientConstants {
     public static final String WSCOMPILE_TOOLS_CLASSPATH = "wscompile.tools.classpath"; //NOI18N
     public static final String WEBSVC_GENERATED_DIR = "websvc.generated.dir"; // NOI18N
     public static final String J2EE_PLATFORM_WSCOMPILE_CLASSPATH="j2ee.platform.wscompile.classpath"; //NOI18N
+    public static final String J2EE_PLATFORM_WSIMPORT_CLASSPATH="j2ee.platform.wsimport.classpath"; //NOI18N
     public static final String [] WSCOMPILE_JARS = {
         "${" + J2EE_PLATFORM_WSCOMPILE_CLASSPATH + "}", //NOI18N
         "${wscompile.tools.classpath}" //NOI18N
