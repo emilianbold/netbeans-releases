@@ -33,6 +33,7 @@ import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.exceptions.UninstallationException;
 import org.netbeans.installer.utils.helper.Dependency;
+import org.netbeans.installer.utils.helper.RemovalMode;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.wizard.Wizard;
 import org.netbeans.installer.wizard.components.WizardComponent;
@@ -75,5 +76,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     
     public boolean registerInSystem() {
         return false;
+    }
+    @Override
+    public RemovalMode getRemovalMode() {
+        return RemovalMode.LIST;
     }
 }
