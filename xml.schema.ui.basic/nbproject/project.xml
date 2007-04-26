@@ -289,6 +289,7 @@
                 <friend>org.netbeans.modules.xml.schema.ui.analysis</friend>
                 <friend>org.netbeans.modules.xml.wsdlui</friend>
                 <friend>org.netbeans.modules.xslt.project</friend>
+				<friend>org.netbeans.modules.script.project</friend>
                 <package>org.netbeans.modules.xml.schema.ui.basic</package>
                 <package>org.netbeans.modules.xml.schema.ui.basic.spi</package>
                 <package>org.netbeans.modules.xml.schema.ui.nodes</package>
