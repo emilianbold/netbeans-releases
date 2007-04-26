@@ -72,15 +72,6 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
         if (nbLocation != null) {
             progress.setDetail(getString("CL.install.netbeans.conf")); // NOI18N
             try {
-                final long xmx = NetBeansUtils.getJvmMemorySize(
-                        nbLocation, 
-                        NetBeansUtils.MEMORY_XMX);
-                if (xmx < XMX_VALUE_REQUIRED) {
-                    NetBeansUtils.setJvmMemorySize(nbLocation,
-                            NetBeansUtils.MEMORY_XMX,
-                            XMX_VALUE_REQUIRED);
-                }
-                
                 if (SystemUtils.isMacOS()) {
                     final File javaHome = 
                             new File(NetBeansUtils.getJavaHome(nbLocation));
@@ -267,7 +258,6 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
             "{uml-cluster}"; // NOI18N
     public static final String ID =
             "UML"; // NOI18N
-    private static final long XMX_VALUE_REQUIRED = 512 * NetBeansUtils.M;
     
     private static final String MACOSX_QUARTZ_OPTION_NAME =
             "-Dapple.awt.graphics.UseQuartz"; // NOI18N
