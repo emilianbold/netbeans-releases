@@ -941,7 +941,7 @@ public final class DocumentModel {
         
         //note: document change events are fired from the leafs to root
         private boolean removeDE(DocumentElement de) {
-            System.out.println("[DTM] removing " + de);
+            if(debug) System.out.println("[DTM] removing " + de);
             DocumentElement parent = null;
             //remove the element itself. Do not do so if the element is root element
             if(isRootElement(de)) return false;
@@ -957,7 +957,7 @@ public final class DocumentModel {
             //get children of the element to be removed
             Iterator/*<DocumentElement>*/ childrenIterator = de.getChildren().iterator();
             
-            System.out.println("[DMT] removed element " + de + " ;parent = " + parent);
+            if(debug) System.out.println("[DMT] removed element " + de + " ;parent = " + parent);
             
                 /* events firing:
                  * If the removed element had a children, we have to fire add event
