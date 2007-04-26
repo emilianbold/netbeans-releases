@@ -69,6 +69,7 @@ import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.TooManyListenersException;
+import java.util.WeakHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -143,6 +144,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     static final String DIRTY_ROOT = "dirty"; //NOI18N
     static final String SOURCE_LEVEL_ROOT = "sourceLevel"; //NOI18N
     static final String EXTRA_COMPILER_OPTIONS = "extraCompilerOptions"; //NOI18N
+    static final String CLASSPATH_ATTRIBUTE = "classPath"; //NOI18N
     
     //non-final, non-private for tests...
     static int DELAY = Utilities.isWindows() ? 2000 : 1000;
@@ -161,6 +163,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     private boolean dirty;
     private int noSubmited;
     private volatile boolean notInitialized;         //Transient state during IDE start
+    private Map<ClassPath, URL> classPath2Root;
     
     //Preprocessor support
     private final Map<URL, JavaFileFilterImplementation> filters = Collections.synchronizedMap(new HashMap<URL, JavaFileFilterImplementation>());
@@ -178,9 +181,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         this.deps = Collections.synchronizedMap(new HashMap<URL,List<URL>>());
         this.delay = new Delay();
         this.cpImpl = GlobalSourcePath.getDefault();            
-        this.cp = ClassPathFactory.createClassPath (this.cpImpl.getSourcePath());            
+        this.cp = ClassPathFactory.createClassPath (this.cpImpl.getSourcePath());
         this.ucp = ClassPathFactory.createClassPath (this.cpImpl.getUnknownSourcePath());
         this.binCp = ClassPathFactory.createClassPath(this.cpImpl.getBinaryPath());
+        this.classPath2Root = Collections.synchronizedMap(new WeakHashMap<ClassPath, URL>());
         this.open ();
     }
     
@@ -222,17 +226,41 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
+        LOGGER.log(Level.FINER, "propertyChange from ClassPath: evt={0}, property name={1}", new Object[] {evt, evt.getPropertyName()});
         if (ClassPath.PROP_ROOTS.equals(evt.getPropertyName())) {
-            submitBatch();
+            if (evt.getSource() == this.cp) {
+                submitBatch();
+            } else {
+                if (TasklistSettings.isTasklistEnabled()) {
+                    ClassPath changedCp = (ClassPath) evt.getSource();
+                    assert changedCp != null;
+                    LOGGER.log(Level.FINER, "modified roots changedCp={0}", changedCp);
+                    
+                    URL root = classPath2Root.get(changedCp);
+                    
+                    if (root != null) {
+                        scheduleCompilation(root,root, true);
+                    }
+                }
+            }
+            return ;
         }
-        else if (GlobalSourcePath.PROP_INCLUDES.equals(evt.getPropertyName())) {            
+        
+        if (   GlobalSourcePath.PROP_INCLUDES.equals(evt.getPropertyName())
+            && (   evt.getSource() == this.cpImpl
+                || /*XXX: jlahoda: should not be necessary, IMO*/evt.getSource() == this.cp)) {
             ClassPath changedCp = (ClassPath) evt.getNewValue();
             assert changedCp != null;
+            LOGGER.log(Level.FINER, "changedCp={0}", changedCp);
             for (ClassPath.Entry e : changedCp.entries()) {
                 URL root = e.getURL();
                 scheduleCompilation(root,root, true);
             }
+            
+            return ;
         }
+        
+        
     }
     
     private synchronized void submitBatch () {
@@ -1272,9 +1300,13 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 
                 clean |= ensureAttributeValue(root, EXTRA_COMPILER_OPTIONS, extraCompilerOptions, true);
                 
-                if (TasklistSettings.isTasklistEnabled() && TasklistSettings.isDependencyTrackingEnabled()) {
+                if (TasklistSettings.isTasklistEnabled()) {
+                    clean |= ensureAttributeValue(root, CLASSPATH_ATTRIBUTE, classPathToString(ClasspathInfo.create(bootPath, compilePath, sourcePath)), true);
+                    
+                    if (TasklistSettings.isDependencyTrackingEnabled()) {
                     clean |= ensureAttributeValue(root, CONTAINS_TASKLIST_DATA, "true", true);
                     clean |= ensureAttributeValue(root, CONTAINS_TASKLIST_DEPENDENCY_DATA, "true", true);
+                    }
                 } else {
                     ensureAttributeValue(root, CONTAINS_TASKLIST_DATA, null, false);
                     ensureAttributeValue(root, CONTAINS_TASKLIST_DEPENDENCY_DATA, null, false);
@@ -1294,6 +1326,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             Charset encoding = FileEncodingQuery.getEncoding(rootFo);
             Set<ElementHandle<TypeElement>> removed = isInitialCompilation ? null : new HashSet<ElementHandle<TypeElement>> ();
             Set<ElementHandle<TypeElement>> added =   isInitialCompilation ? null : new HashSet<ElementHandle<TypeElement>> ();
+            Set<URL> errorBadgesToRefresh = new HashSet<URL>();
             for (File child : children) {
                 String offset = FileObjects.getRelativePath(rootFile,child);
                 if (entry == null || entry.includes(offset.replace(File.separatorChar,'/'))) {
@@ -1329,6 +1362,11 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             }
                         }
                     }
+                } else {
+                    if (TasklistSettings.isTasklistEnabled()) {
+                        //excluded file, make sure any errors attached to it are deleted:
+                        errorBadgesToRefresh.addAll(TaskCache.getDefault().dumpErrors(root, child.toURL(), child, Collections.<Diagnostic>emptyList()));
+                    }
                 }
             }
             for (List<File> files : resources.values()) {
@@ -1350,13 +1388,24 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     final String message = String.format (NbBundle.getMessage(RepositoryUpdater.class,"MSG_BackgroundCompile"),rootFile.getAbsolutePath());
                     handle.setDisplayName(message);
                 }
-                batchCompile(toCompile, rootFo, cpInfo, sa, dirtyCrossFiles, compiledFiles, compiledFiles != null ? canceled : null, added);
+                errorBadgesToRefresh.addAll(batchCompile(toCompile, rootFo, cpInfo, sa, dirtyCrossFiles, compiledFiles, compiledFiles != null ? canceled : null, added));
             }
             sa.store();
             synchronized (RepositoryUpdater.this) {
                 if (url2Recompile.get(root) == null) {
                     setAttribute(root, DIRTY_ROOT, null); //NOI18N
                 }
+            }
+            if (TasklistSettings.isTasklistEnabled()) {
+                if (TasklistSettings.isBadgesEnabled() && !errorBadgesToRefresh.isEmpty()) {
+                    ErrorAnnotator an = ErrorAnnotator.getAnnotator();
+                    
+                    if (an != null) {
+                        an.updateInError(errorBadgesToRefresh);
+                    }
+                }
+                
+                JavaTaskProvider.refresh(rootFo);
             }
             if (added != null) {
                 assert removed != null;
@@ -1382,7 +1431,16 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             }            
             final ClassPath sourcePath = ClassPath.getClassPath(rootFo,ClassPath.SOURCE);
             final ClassPath bootPath = ClassPath.getClassPath(rootFo, ClassPath.BOOT);
-            final ClassPath compilePath = ClassPath.getClassPath(rootFo, ClassPath.COMPILE);            
+            final ClassPath compilePath = ClassPath.getClassPath(rootFo, ClassPath.COMPILE);
+            //listen on the particular boot&compile classpaths:
+            if (!classPath2Root.containsKey(bootPath)) {
+                bootPath.addPropertyChangeListener(RepositoryUpdater.this);
+                classPath2Root.put(bootPath, root);
+            }
+            if (!classPath2Root.containsKey(compilePath)) {
+                compilePath.addPropertyChangeListener(RepositoryUpdater.this);
+                classPath2Root.put(compilePath, root);
+            }
             final boolean isInitialCompilation = folder.equals(root);            
             if (sourcePath == null || bootPath == null || compilePath == null) {
                 LOGGER.warning("Ignoring root with no ClassPath: " + FileUtil.getFileDisplayName(rootFo));    // NOI18N
@@ -1720,7 +1778,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 files.removeAll(compiledFiles);
                 
                 if (!files.isEmpty()) {
-                    url2Recompile.put(root, files);
+                    toRecompile.put(root, files);
                     break;
                 } else {
                     it.remove();
@@ -1752,6 +1810,29 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         }
     }        
     
+     private static String classPathToString(ClasspathInfo info) throws FileStateInvalidException {
+         ClassPath bootPath = ClasspathInfoAccessor.INSTANCE.getCachedClassPath(info, ClasspathInfo.PathKind.BOOT);
+         ClassPath compilePath = ClasspathInfoAccessor.INSTANCE.getCachedClassPath(info, ClasspathInfo.PathKind.COMPILE);
+         ClassPath sourcePath = ClasspathInfoAccessor.INSTANCE.getCachedClassPath(info, ClasspathInfo.PathKind.SOURCE);
+
+         StringBuilder sb = new StringBuilder();
+
+         for (FileObject f : bootPath.getRoots()) {
+             sb.append(f.getURL().toExternalForm());
+             sb.append(':');
+         }
+         for (FileObject f : compilePath.getRoots()) {
+             sb.append(f.getURL().toExternalForm());
+             sb.append(':');
+         }
+         for (FileObject f : sourcePath.getRoots()) {
+             sb.append(f.getURL().toExternalForm());
+             sb.append(':');
+         }
+
+         return sb.toString();
+     }
+
     public void verifySourceLevel(URL root, String sourceLevel) throws IOException {
         String existingSourceLevel = getAttribute(root, SOURCE_LEVEL_ROOT, null);
         
@@ -1990,7 +2071,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     
     static Callback CALLBACK = null;
     
-    public static void batchCompile (final LinkedList<Pair> toCompile, final FileObject rootFo, final ClasspathInfo cpInfo, final SourceAnalyser sa, final Set<URI> dirtyFiles, Set<File> compiledFiles, AtomicBoolean canceled, final Set<? super ElementHandle<TypeElement>> added) throws IOException {
+    public static Set<URL> batchCompile (final LinkedList<Pair> toCompile, final FileObject rootFo, final ClasspathInfo cpInfo, final SourceAnalyser sa, final Set<URI> dirtyFiles, Set<File> compiledFiles, AtomicBoolean canceled, final Set<? super ElementHandle<TypeElement>> added) throws IOException {
         assert toCompile != null;
         assert rootFo != null;
         assert cpInfo != null;
@@ -2010,7 +2091,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 final String sourceLevel = SourceLevelQuery.getSourceLevel(rootFo);
                 while (!toCompile.isEmpty() || !bigFiles.isEmpty() || active != null) {
                     if (canceled != null && canceled.getAndSet(false)) {
-                        return ;
+                        return toRefresh;
                     }
                     try {
                         if (listener.lowMemory.getAndSet(false)) {
@@ -2211,15 +2292,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             LowMemoryNotifier.getDefault().removeLowMemoryListener(listener);
         }
         
-        if (TasklistSettings.isTasklistEnabled() && TasklistSettings.isBadgesEnabled()) {
-            ErrorAnnotator an = ErrorAnnotator.getAnnotator();
-            
-            if (an != null) {
-                an.updateInError(toRefresh);
-            }
-            
-            JavaTaskProvider.refresh(rootFo);
-        }
+        return toRefresh;
     }
     
     

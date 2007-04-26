@@ -642,7 +642,7 @@ public class GlobalSourcePath {
                     if (_excludesListener != null) {
                         final Object newPropagationId = evt.getPropagationId();
                         if (newPropagationId == null || lastPropagationId != newPropagationId) {                                                    
-                            PropertyChangeEvent event = new PropertyChangeEvent (this,PROP_INCLUDES,evt.getSource(),evt.getSource());
+                            PropertyChangeEvent event = new PropertyChangeEvent (GlobalSourcePath.this,PROP_INCLUDES,evt.getSource(),evt.getSource());
                             _excludesListener.propertyChange(event);
                         }                        
                         lastPropagationId = newPropagationId;
