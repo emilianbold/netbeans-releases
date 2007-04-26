@@ -50,11 +50,12 @@ public class __NAME__ extends JPanel {
         Collection<_detailClass_> _detailEntityInitial_s = _masterEntityInitial_.get_joinCollectionCapital_();
         int[] selected = detailTable.getSelectedRows();
         List<_detailClass_> toRemove = new ArrayList<_detailClass_>(selected.length);
-        int count = 0;
+        int count = -1;
         Iterator<_detailClass_> iter = _detailEntityInitial_s.iterator();
-        for (int i=0; i<selected.length; i++) {
+        for (int idx=0; idx<selected.length; idx++) {
             _detailClass_ _detailEntityInitial_ = iter.next();
-            while (count < selected[i]) {
+            count++;
+            while (count < selected[idx]) {
                 _detailEntityInitial_ = iter.next();
                 count++;
             }
@@ -96,8 +97,8 @@ public class __NAME__ extends JPanel {
 
     private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
         int[] selected = masterTable.getSelectedRows();
-        for (int i=selected.length-1; i>=0; i--) {
-            _masterClass_ _masterEntityInitial_ = list.remove(selected[i]);
+        for (int idx=selected.length-1; idx>=0; idx--) {
+            _masterClass_ _masterEntityInitial_ = list.remove(selected[idx]);
             entityManager.remove(_masterEntityInitial_);
         }
     }//GEN-LAST:event_deleteButtonActionPerformed
