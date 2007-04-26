@@ -231,7 +231,6 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
             <file name="license-default.txt" url="license-default.txt">
                 <attr name="template" boolvalue="true"/>
-                <attr name="templateCategory" stringvalue="invisible"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
             </file>
         </folder>
