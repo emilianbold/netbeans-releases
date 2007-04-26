@@ -439,6 +439,11 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         }
         
         DataFolder f = (DataFolder) folder;
+        if (!OpenProjectList.isRecommended(p, f.getPrimaryFile())) {
+            // Eg. Licenses folder.
+            //see #102508
+            return false;
+        }
         DataObject[] ch = f.getChildren ();
         boolean ok = false;
         for (int i = 0; i < ch.length; i++) {
