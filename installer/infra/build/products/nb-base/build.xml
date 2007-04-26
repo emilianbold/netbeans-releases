@@ -57,7 +57,7 @@
                     value="netbeans_default_options=&quot;--cp:p &quot;${NETBEANS_HOME}/emma-lib/emma.jar&quot; -J-Dnetbeans.security.nocheck=true "/>
             </if>
             
-            <exec executable="bash.exe" failonerror="true" dir="${data.directory}">
+            <exec executable="${bash.executable}" failonerror="true" dir="${data.directory}">
                 <arg value="${emma.sh.file}"/>
                 <arg value="."/>
                 <arg value="${emma.txt.file}"/>

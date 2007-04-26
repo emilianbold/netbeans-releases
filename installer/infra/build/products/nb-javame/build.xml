@@ -137,7 +137,7 @@
         </if>
         
         <if property="instrument.jars" value="true">
-            <exec executable="bash.exe" failonerror="true" dir="${data.directory}">
+            <exec executable="${bash.executable}" failonerror="true" dir="${data.directory}">
                 <arg value="${emma.sh.file}"/>
                 <arg value="."/>
                 <arg value="${emma.txt.file}"/>
