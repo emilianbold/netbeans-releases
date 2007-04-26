@@ -20,6 +20,7 @@
  */
 package org.netbeans.installer.wizard.components.panels.netbeans;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -93,6 +94,8 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
     
     private NbiTextPane descriptionPane;
     private NbiScrollPane descriptionScrollPane;
+    
+    private NbiPanel componentPanel;
     
     private NbiLabel sizesLabel;
     
@@ -205,6 +208,25 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         descriptionScrollPane.setBorder(
                 new TitledBorder(FEATURE_DESCRIPTION_TITLE));
         
+        // componentPanel ///////////////////////////////////////////////////////////
+        componentPanel = new NbiPanel();
+        componentPanel.add(componentsScrollPane, new GridBagConstraints(
+                0, 0,                             // x, y
+                1, 1,                             // width, height
+                1.0, 1.0,                         // weight-x, weight-y
+                GridBagConstraints.PAGE_START,    // anchor
+                GridBagConstraints.BOTH,          // fill
+                new Insets(0, 0, 0, 0),           // padding
+                0, 0));                           // padx, pady - ???
+        componentPanel.add(descriptionScrollPane, new GridBagConstraints(
+                1, 0,                             // x, y
+                1, 1,                             // width, height
+                0.0, 1.0,                         // weight-x, weight-y
+                GridBagConstraints.PAGE_START,    // anchor
+                GridBagConstraints.VERTICAL,      // fill
+                new Insets(0, 6, 0, 0),           // padding
+                0, 0));                           // padx, pady - ???
+        
         // sizesLabel ///////////////////////////////////////////////////////////////
         sizesLabel = new NbiLabel();
         sizesLabel.setFocusable(true);
@@ -250,31 +272,23 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         // getContentPane() /////////////////////////////////////////////////////////
         getContentPane().add(messageLabel, new GridBagConstraints(
                 0, 0,                             // x, y
-                2, 1,                             // width, height
+                1, 1,                             // width, height
                 1.0, 0.0,                         // weight-x, weight-y
                 GridBagConstraints.LINE_START,    // anchor
                 GridBagConstraints.BOTH,          // fill
                 new Insets(11, 11, 0, 11),        // padding
                 0, 0));                           // padx, pady - ???
-        getContentPane().add(componentsScrollPane, new GridBagConstraints(
+        getContentPane().add(componentPanel, new GridBagConstraints(
                 0, 1,                             // x, y
                 1, 1,                             // width, height
                 1.0, 1.0,                         // weight-x, weight-y
                 GridBagConstraints.PAGE_START,    // anchor
                 GridBagConstraints.BOTH,          // fill
-                new Insets(6, 11, 0, 0),          // padding
-                0, 0));                           // padx, pady - ???
-        getContentPane().add(descriptionScrollPane, new GridBagConstraints(
-                1, 1,                             // x, y
-                1, 1,                             // width, height
-                0.0, 1.0,                         // weight-x, weight-y
-                GridBagConstraints.PAGE_START,    // anchor
-                GridBagConstraints.VERTICAL,      // fill
-                new Insets(6, 6, 0, 11),          // padding
+                new Insets(6, 11, 0, 11),          // padding
                 0, 0));                           // padx, pady - ???
         getContentPane().add(sizesLabel, new GridBagConstraints(
                 0, 2,                             // x, y
-                2, 1,                             // width, height
+                1, 1,                             // width, height
                 1.0, 0.0,                         // weight-x, weight-y
                 GridBagConstraints.LINE_START,    // anchor
                 GridBagConstraints.HORIZONTAL,    // fill
@@ -282,7 +296,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
                 0, 0));                           // padx, pady - ???
         getContentPane().add(errorLabel, new GridBagConstraints(
                 0, 3,                             // x, y
-                2, 1,                             // width, height
+                1, 1,                             // width, height
                 1.0, 0.0,                         // weight-x, weight-y
                 GridBagConstraints.LINE_START,    // anchor
                 GridBagConstraints.HORIZONTAL,    // fill
@@ -290,7 +304,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
                 0, 0));                           // padx, pady - ???
         getContentPane().add(buttonsPanel, new GridBagConstraints(
                 0, 4,                             // x, y
-                2, 1,                             // width, height
+                1, 1,                             // width, height
                 1.0, 0.0,                         // weight-x, weight-y
                 GridBagConstraints.CENTER,        // anchor
                 GridBagConstraints.BOTH,          // fill
