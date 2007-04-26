@@ -935,8 +935,8 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             private String getRelationshipFieldType(RelationshipRole role, String pkg) {
                 RelationshipRole rA = role.getParent().getRoleA();
                 RelationshipRole rB = role.getParent().getRoleB();
-                RelationshipRole otherRole = role.equals(rA) ? rB : rA;
-                return pkg + "." + otherRole.getEntityName(); // NOI18N
+                RelationshipRole otherRole = role.equals(rA) ? rB : rA;                
+                return pkg.length() == 0 ? otherRole.getEntityName() : pkg + "." + otherRole.getEntityName(); // NOI18N
             }
 
             private void makeReadOnlyIfNecessary(List<String> pkColumnNames, String testColumnName, List<ExpressionTree> attrs) {
