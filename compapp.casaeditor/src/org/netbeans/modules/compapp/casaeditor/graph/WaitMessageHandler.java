@@ -77,11 +77,11 @@ public class WaitMessageHandler {
         private static final Border BORDER = 
                 BorderFactory.createCompositeBorder(
                 // outer border
-                BorderFactory.createLineBorder(2, new Color(255, 255, 255, 10)),
+                BorderFactory.createLineBorder(2, Color.LIGHT_GRAY),
                 // round-rect line
                 BorderFactory.createRoundedBorder(8, 8, null, Color.LIGHT_GRAY),
                 // inner border
-                BorderFactory.createLineBorder(4, 8, 4, 8, Color.WHITE));
+                BorderFactory.createLineBorder(4, 8, 4, 8, new Color(255, 255, 255, 200)));
         
         private DependenciesRegistry mDependenciesRegistry;
         private String[] mAnimationText;
