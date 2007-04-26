@@ -114,16 +114,24 @@ public class CompletionProviderImpl implements CompletionProvider {
         }
 
         public void refresh (CompletionResultSet resultSet) {
-            //S ystem.out.println("CodeCompletion: refresh " + resultSet);
             if (resultSet == null) return;
             
+            doc = component.getDocument ();
+            TokenHierarchy tokenHierarchy = TokenHierarchy.get (doc);
+            TokenSequence tokenSequence = tokenHierarchy.tokenSequence ();
+            int offset = component.getCaret ().getDot ();
+            refresh (tokenSequence, offset, resultSet);
+            resultSet.finish();
+        }
+        
+        private void refresh (TokenSequence tokenSequence, int offset, CompletionResultSet resultSet) {
             try {
-                TokenHierarchy tokenHierarchy = TokenHierarchy.get (doc);
-                TokenSequence tokenSequence = tokenHierarchy.tokenSequence ();
-                int offset = component.getCaret ().getDot ();
+                if (tokenSequence == null) {
+                    return;
+                }
+                
                 tokenSequence.move (offset - 1);
                 if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()) {
-                    resultSet.finish ();
                     return;
                 }
                 String mimeType = tokenSequence.language ().mimeType ();
@@ -136,7 +144,6 @@ public class CompletionProviderImpl implements CompletionProvider {
                 if ("operator".equals (type) && 
                     offset < tokenOffset + token.length ()
                 ) {
-                    resultSet.finish ();
                     return;
                 }
                 String start = ("operator".equals (type) || "whitespace".equals (type)) ? 
@@ -152,7 +159,9 @@ public class CompletionProviderImpl implements CompletionProvider {
                     if (s.startsWith (start))
                         resultSet.addItem (item);
                 }
-                resultSet.finish ();
+                if(feature == null) {
+                    refresh(tokenSequence.embedded(), offset, resultSet);
+                }
                 //compute (resultSet);
             } catch (ParseException e) {
             }
