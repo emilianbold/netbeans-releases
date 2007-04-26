@@ -141,15 +141,20 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
         String displayName = null;
         if (dep != null && dep.startsWith ("module")) { // NOI18N
             String codeName = dep.substring (6).trim ();
-            int end = codeName.indexOf (' '); // NOI18N
+            int end = codeName.indexOf ('/'); // NOI18N
+            if (end == -1) {
+                end = codeName.indexOf (' '); // NOI18N
+            }
             if (end != -1) {
                 codeName = codeName.substring (0, end);
                 for (UpdateUnit u : UpdateManager.getDefault ().getUpdateUnits ()) {
                     if (codeName.equals (u.getCodeName ())) {
                         if (u.getInstalled () != null) {
                             displayName = u.getInstalled ().getDisplayName ();
+                            break;
                         } else if (u.getAvailableUpdates ().size () > 0) {
                             displayName = u.getAvailableUpdates ().get (0).getDisplayName ();
+                            break;
                         }
                     }
                 }
