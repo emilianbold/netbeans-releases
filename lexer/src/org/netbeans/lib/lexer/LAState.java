@@ -19,8 +19,6 @@
 
 package org.netbeans.lib.lexer;
 
-import java.util.List;
-
 /**
  * A structure holding lookahead and state of a token list.
  *
@@ -131,11 +129,12 @@ public abstract class LAState {
 
     public final void remove(int index, int count) {
         moveGap(index + count);
+        removeUpdate(index, count); // Perform fully below gap
         gapStart -= count;
         gapLength += count;
     }
 
-    protected void removeUpdate(int index, int length) {
+    protected void removeUpdate(int index, int count) {
         // Do nothing
     }
 
@@ -398,9 +397,10 @@ public abstract class LAState {
             return null;
         }
 
-        protected void removeUpdate(int index, int length) {
-            while (--length >= 0) {
-                states[index + length] = null; // clear the state to allow its gc
+        @Override
+        protected void removeUpdate(int index, int count) {
+            while (--count >= 0) {
+                states[index + count] = null; // clear the state to allow its gc
             }
         }
 

@@ -113,6 +113,12 @@ public final class TokenListChange<T extends TokenId> {
         return addedTokensOrBranches;
     }
     
+    public void removeLastAddedToken() {
+        int lastIndex = addedTokensOrBranches.size() - 1;
+        addedTokensOrBranches.remove(lastIndex);
+        laState.remove(lastIndex, 1);
+    }
+    
     public AbstractToken<T> addedToken(int index) {
         return LexerUtilsConstants.token(addedTokensOrBranches.get(0));
     }

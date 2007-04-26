@@ -336,6 +336,8 @@ public final class TokenListUpdater {
 
                 relexOffset += token.length();
                 // Remove obsolete tokens that would cover the area of just lexed token
+                // 'index' will point to the last token that was removed
+                // 'matchOffset' will point to the end of the last removed token
                 if (relexOffset > matchOffset && index < tokenCount) {
                     attemptValidation = false;
                     do {
@@ -364,50 +366,54 @@ public final class TokenListUpdater {
                     && (index < tokenCount)
                     && LexerUtilsConstants.statesEqual(state, tokenList.state(index))
                 ) {
-                    // Check whether lookaheads stored in the subsequent tokens in the chain
-                    // reflect the lookahead of the just relexed token. Otherwise the algorithm
-                    // would not work properly.
-                    // See initial part of SimpleRandomTest.test() verifies this.
-                    //
-                    // The algorithm also attempts to have the same lookaheads in tokens
-                    // like the regular batch scanning would produce.
-                    // Although this is probably not strictly necessary requirement
-                    // it helps to simplify the debugging in case the lexer does not work
-                    // well in the incremental setup.
-                    // The following code checks that the lookahead of the original match token
-                    // (i.e. the token right before matchOffset) does "end" inside
-                    // the next token - if not then relexing the next token is done.
-                    // The second part of SimpleRandomTest.test() verifies this.
+                    // Here it's a potential match and the relexing could end.
+                    // However there are additional conditions that need to be checked.
+                    // 1. Check whether lookahead of the last relexed token
+                    //  does not exceed length plus LA of the subsequent (original) token.
+                    //  See initial part of SimpleRandomTest.test() verifies this.
+                    // 2. Algorithm attempts to have the same lookaheads in tokens
+                    //  like the regular batch scanning would produce.
+                    //  Although not strictly necessary requirement
+                    //  it helps to simplify the debugging in case the lexer does not work
+                    //  well in the incremental setup.
+                    //  The following code checks that the lookahead of the original match token
+                    //  (i.e. the token right before matchOffset) does "end" inside
+                    //  the next token - if not then relexing the next token is done.
+                    //  The second part of SimpleRandomTest.test() verifies this.
+
+                    // 'index' points to the last token that was removed
                     int matchTokenLookahead = tokenList.lookahead(index);
-                    boolean lookaheadOK = true;
+                    // Optimistically suppose that the relexing will end
+                    relex = false;
                     // When assuming non-empty tokens the lookahead 1
                     // just reaches the end of the next token
                     // so lookhead < 1 is always fine from this point of view.
                     if (matchTokenLookahead > 1 || lookahead > 1) {
-                        int laCheckIndex = index + 1;
-                        int laCheckTokenOffset = matchOffset;
-                        while (laCheckIndex < tokenCount) {
-                            int laCheckTokenLength = token(tokenList, laCheckIndex).length();
-                            lookahead -= laCheckTokenLength;
-                            matchTokenLookahead -= laCheckTokenLength;
-                            laCheckTokenOffset += laCheckTokenLength;
+                        // Start with token right after the last removed token starting at matchOffset
+                        int i = index + 1;
+                        // Process additional removals by increasing 'index'
+                        // 'lookahead' holds
+                        while (i < tokenCount) {
+                            int tokenLength = token(tokenList, i).length();
+                            lookahead -= tokenLength; // decrease extra lookahead
+                            matchTokenLookahead -= tokenLength;
                             if (lookahead <= 0 && matchTokenLookahead <=0) {
                                 break; // No more work
                             }
-                            if (lookahead != tokenList.lookahead(laCheckIndex)
+                            if (lookahead != tokenList.lookahead(i)
                                     || matchTokenLookahead > 0
                             ) {
                                 // This token must be relexed
-                                index = laCheckIndex;
-                                matchOffset = laCheckTokenOffset;
-                                lookaheadOK = false;
+                                index = i;
+                                matchOffset += tokenLength;
+                                relex = true;
                                 // Continue - further tokens may be affected
                             }
-                            laCheckIndex++;
+                            i++;
                         }
                     }
 
-                    if (lookaheadOK) {
+                    if (!relex) {
                         if (attemptValidation) {
 //                            if (modToken.id() == token.id()
 //                                    && tokenList.lookahead(index) == lookahead
@@ -425,11 +431,37 @@ public final class TokenListUpdater {
 //                            }
                             attemptValidation = false;
                         }
-                        break;
                     }
                 }
-            } while (relex);
+            } while (relex); // End of the relexing loop
             lexerInputOperation.release();
+
+            // If at least two tokens were lexed it's possible that e.g. the last added token
+            // will be the same like the last removed token and in such case
+            // the addition of the last token should be 'undone'.
+            // This all may happen due to the fact that for larger lookaheads
+            // the algorithm must relex the token(s) within lookahead (see the code above).
+            int lastAddedTokenIndex = change.addedTokensOrBranches().size() - 1;
+            // There should remain at least one added token since that one
+            // may not be the same like the original removed one because
+            // token lengths would differ because of the input source modification.
+            while (lastAddedTokenIndex >= 1 && index > relexIndex) {
+                AbstractToken<T> addedToken = LexerUtilsConstants.token(
+                        change.addedTokensOrBranches().get(lastAddedTokenIndex));
+                AbstractToken<T> removedToken = token(tokenList, index);
+                if (addedToken.id() != removedToken.id()
+                    || addedToken.length() != removedToken.length()
+                    || change.laState().lookahead(lastAddedTokenIndex) != tokenList.lookahead(index)
+                    || !LexerUtilsConstants.statesEqual(change.laState().state(lastAddedTokenIndex),
+                        tokenList.state(index))
+                )
+                    break;
+                // Last removed and added tokens are the same so undo the addition
+                lastAddedTokenIndex--;
+                index--;
+                relexOffset -= addedToken.length();
+                change.removeLastAddedToken();
+            }
         }
 
         // Now ensure that the original tokens will be replaced by the relexed ones.
