@@ -31,10 +31,12 @@ import javax.swing.ComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
+import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.utils.helper.swing.NbiComboBox;
 import org.netbeans.installer.utils.helper.swing.NbiTextField;
@@ -143,6 +145,8 @@ public class NbBasePanel extends DestinationPanel {
         
         private JFileChooser fileChooser;
         
+        private boolean defaultInstallationLocationCorrected;
+        
         public NbBaseDestinationPanelSwingUi(
                 final NbBasePanel panel,
                 final SwingContainer container) {
@@ -150,13 +154,36 @@ public class NbBasePanel extends DestinationPanel {
             
             this.panel = panel;
             
+            defaultInstallationLocationCorrected = false;
+            
             initComponents();
         }
         
         // protected ////////////////////////////////////////////////////////////////
         @Override
         protected void initialize() {
-            super.initialize();
+            // correct the installation location
+            if (!defaultInstallationLocationCorrected) {
+                if (SystemUtils.isMacOS()) {
+                    final String location = component.getWizard().getProperty(
+                            Product.INSTALLATION_LOCATION_PROPERTY + ".macosx");
+                    
+                    component.getWizard().setProperty(
+                        Product.INSTALLATION_LOCATION_PROPERTY,
+                        location);
+                }
+                
+                if (SystemUtils.isWindows()) {
+                    final String location = component.getWizard().getProperty(
+                            Product.INSTALLATION_LOCATION_PROPERTY + ".windows");
+                    
+                    component.getWizard().setProperty(
+                        Product.INSTALLATION_LOCATION_PROPERTY,
+                        location);
+                }
+                
+                defaultInstallationLocationCorrected = true;
+            }
             
             jdkLocationLabel.setText(
                     panel.getProperty(JDK_LOCATION_LABEL_TEXT_PROPERTY));
@@ -192,6 +219,8 @@ public class NbBasePanel extends DestinationPanel {
             
             browseButton.setText(
                     panel.getProperty(BROWSE_BUTTON_TEXT_PROPERTY));
+            
+            super.initialize();
         }
         
         @Override
