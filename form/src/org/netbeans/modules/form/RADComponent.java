@@ -1350,6 +1350,15 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
                 else normalProps.add(prop);
             }
             catch (IntrospectionException ex) {} // should not happen
+        } else if (getBeanInstance() instanceof javax.swing.JTable) {
+            try {
+                PropertyDescriptor pd = new PropertyDescriptor("rowHeight", javax.swing.JTable.class); // NOI18N
+                RADProperty prop = createBeanProperty(pd, null, null);
+                nameToProperty.put("rowHeight", prop); // NOI18N
+                normalProps.add(prop);
+            } catch (IntrospectionException ex) {
+                ex.printStackTrace();
+            }
         }
         
         // PENDING improve performance - keep lookup result, listen on it etc.
