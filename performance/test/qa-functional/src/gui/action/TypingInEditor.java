@@ -95,7 +95,7 @@ public class TypingInEditor extends org.netbeans.performance.test.utilities.Perf
         caretPositionY = 9;
         kitClass = org.netbeans.modules.web.core.syntax.JSPKit.class;
         optionsClass = org.netbeans.modules.web.core.syntax.settings.JSPOptions.class;
-        fileToBeOpened = new Node(new WebPagesNode("PerformanceTestData"), fileName);
+        fileToBeOpened = new Node(new WebPagesNode("PerformanceTestWebApplication"), fileName);
         doMeasurement();
     }
    

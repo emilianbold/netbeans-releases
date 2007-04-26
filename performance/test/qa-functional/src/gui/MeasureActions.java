@@ -66,7 +66,7 @@ public class MeasureActions  {
         
         suite.addTest(new TypingInEditor("testJavaEditor", "Type a character in Java Editor"));
         suite.addTest(new TypingInEditor("testTxtEditor", "Type a character in Txt Editor"));
-        suite.addTest(new TypingInEditor("testJspEditor", "Type a character in Jsp Editor"));
+//TODO no tomcat - see issue 101104        suite.addTest(new TypingInEditor("testJspEditor", "Type a character in Jsp Editor"));
         
         
         suite.addTest(new CloseEditor("testClosing20kBJavaFile", "Close Java file (20kB)"));
