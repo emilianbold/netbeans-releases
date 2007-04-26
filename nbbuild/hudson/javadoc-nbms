@@ -5,7 +5,7 @@ if [ `ant -f nbbuild/build.xml -Dmoduleconfig=daily-alpha-nbms print-cvs-modules
 then
     echo "Set of modules changed, getting fresh checkout..."
     rm -rf `ls | fgrep -v nbbuild`
-    ant -f nbbuild/build.xml -Dmoduleconfig=daily-alpha-nbms cvs-clean checkout || exit
+    ant -f nbbuild/build.xml -Dmoduleconfig=daily-alpha-nbms checkout cvs-clean || exit
 elif [ builds/`ls -1 ../builds | tail -2 | head -1` '!=' `readlink ../lastSuccessful` ]
 then
     echo "Previous build failed, running clean build this time..."
