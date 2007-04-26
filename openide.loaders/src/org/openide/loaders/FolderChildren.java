@@ -73,7 +73,13 @@ implements PropertyChangeListener, ChangeListener {
         this.refreshRunnable = new ChildrenRefreshRunnable();
         this.refreshTask = refRP.create(refreshRunnable);
         this.listener = org.openide.util.WeakListeners.propertyChange(this, folder);
-        err = Logger.getLogger("org.openide.loaders.FolderChildren." + f.getPrimaryFile().getPath().replace('/','.')); // NOI18N
+        String log;
+        if (f.getPrimaryFile().isRoot()) {
+            log = "org.openide.loaders.FolderChildren"; // NOI18N
+        } else {
+            log = "org.openide.loaders.FolderChildren." + f.getPrimaryFile().getPath().replace('/','.'); // NOI18N
+        }
+        err = Logger.getLogger(log);
     }
     
     /** used from DataFolder */

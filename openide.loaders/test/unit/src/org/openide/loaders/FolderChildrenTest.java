@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.*;
 import java.lang.ref.WeakReference;
+import java.util.logging.LogManager;
 import javax.swing.event.ChangeListener;
 
 import org.openide.filesystems.*;
@@ -55,6 +56,18 @@ public class FolderChildrenTest extends LoggingTestCaseHid {
         FileObject[] arr = Repository.getDefault().getDefaultFileSystem().getRoot().getChildren();
         for (int i = 0; i < arr.length; i++) {
             arr[i].delete();
+        }
+    }
+    
+    public void testCorrectLoggerName() throws Exception {
+        FileObject fo = Repository.getDefault ().getDefaultFileSystem().getRoot();
+        Node n = DataFolder.findFolder(fo).getNodeDelegate();
+        Enumeration<String> en = java.util.logging.LogManager.getLogManager().getLoggerNames();
+        while(en.hasMoreElements()) {
+            String log = en.nextElement();
+            if (log.startsWith("org.openide.loaders.FolderChildren")) {
+                assertEquals("org.openide.loaders.FolderChildren", log);
+            }
         }
     }
     
