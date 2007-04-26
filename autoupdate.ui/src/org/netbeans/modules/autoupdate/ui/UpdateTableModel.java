@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.List;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
+import org.netbeans.api.autoupdate.UpdateUnit;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -36,8 +37,12 @@ public class UpdateTableModel extends UnitCategoryTableModel {
     private OperationContainer<InstallSupport> container = Containers.forUpdate();
     
     /** Creates a new instance of InstalledTableModel */
-    public UpdateTableModel (List<UnitCategory> categories) {
-        super (categories);
+    public UpdateTableModel (List<UpdateUnit> units) {
+        setUnits(units);
+    }
+    
+    public final void setUnits (List<UpdateUnit> units) {    
+        setData(Utilities.makeUpdateCategories (units, false));
     }
     
     @Override

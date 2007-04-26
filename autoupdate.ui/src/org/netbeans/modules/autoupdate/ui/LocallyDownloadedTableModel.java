@@ -37,14 +37,16 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
     private LocalDownloadSupport localDownloadSupport = null;
         
     /** Creates a new instance of InstalledTableModel */
-    public LocallyDownloadedTableModel () {
-        super (new ArrayList<UnitCategory> ());        
-        setData(init());
+    public LocallyDownloadedTableModel (List<UpdateUnit> units) {
+        setUnits(units);
+    }
+    
+    public final void setUnits (List<UpdateUnit> units) {
+        setData(makeCategories(units));
     }
 
-    private List<UnitCategory> init() {
-        final List<UnitCategory> categories = new ArrayList<UnitCategory>();
-        List<UpdateUnit> units = getLocalDownloadSupport().getUpdateUnits();
+    private List<UnitCategory> makeCategories(List<UpdateUnit> units) {
+        final List<UnitCategory> categories = new ArrayList<UnitCategory>();        
         categories.addAll(Utilities.makeAvailableCategories(units, true));
         categories.addAll(Utilities.makeUpdateCategories(units, true));
         for (UnitCategory c : categories) {

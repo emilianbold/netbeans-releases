@@ -22,6 +22,7 @@ package org.netbeans.modules.autoupdate.ui;
 import java.util.Comparator;
 import java.util.List;
 import org.netbeans.api.autoupdate.OperationContainer;
+import org.netbeans.api.autoupdate.UpdateUnit;
 import org.openide.util.NbBundle;
 
 /**
@@ -33,8 +34,12 @@ public class AvailableTableModel extends UnitCategoryTableModel {
     private OperationContainer container = Containers.forAvailable();
     
     /** Creates a new instance of InstalledTableModel */
-    public AvailableTableModel (List<UnitCategory> categories) {
-        super (categories);    
+    public AvailableTableModel (List<UpdateUnit> units) {
+        setUnits(units);
+    }
+    
+    public final void setUnits (List<UpdateUnit> units) {
+        setData(Utilities.makeAvailableCategories (units, false));
     }
     
     @Override

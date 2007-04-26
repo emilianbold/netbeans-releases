@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.autoupdate.ui;
 
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,7 +32,10 @@ import javax.swing.table.AbstractTableModel;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.UpdateElement;
-
+import org.netbeans.api.autoupdate.UpdateUnit;
+import static org.netbeans.modules.autoupdate.ui.Utilities.LIBRARIES_CATEGORY;
+import static org.netbeans.modules.autoupdate.ui.Utilities.BRIDGES_CATEGORY;
+import static org.netbeans.modules.autoupdate.ui.Utilities.UNSORTED_CATEGORY;
 /**
  *
  * @author Jiri Rechtacek, Radek Matous
@@ -45,7 +49,7 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
     private Comparator<Unit> unitCmp;
     private Comparator<UnitCategory> categoryCmp;
     private boolean showCategories = true;
-
+    
     
     public static enum Type {
         INSTALLED,
@@ -55,8 +59,7 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
     }
     
     /** Creates a new instance of CategoryTableModel */
-    public UnitCategoryTableModel (List<UnitCategory> categories) {
-        setData(categories);
+    public UnitCategoryTableModel () {
     }
 
     public abstract Object getValueAt (int row, int col);
@@ -65,11 +68,58 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
     public abstract boolean isSortAllowed (Object columnIdentifier);
     public abstract OperationContainer getContainer ();
     protected abstract Comparator<Unit> getComparator(final Object columnIdentifier, final boolean sortAscending);
+    public abstract void setUnits (List<UpdateUnit> units);
 
     protected Comparator<Unit> getDefaultComparator() {
         return new Comparator<Unit>(){
             public int compare(Unit o1, Unit o2) {
                 return Unit.compareDisplayNames(o1, o2);
+            }
+        };
+    }
+    protected Comparator<UnitCategory> getDefaultCategoryComparator() {
+        return new Comparator<UnitCategory> () {
+            public int compare (UnitCategory uc1, UnitCategory uc2) {
+                    String o1 = uc1.getCategoryName ();
+                    String o2 = uc2.getCategoryName ();
+                    // Libraries always put in the last place.
+                    if (LIBRARIES_CATEGORY == o1) {
+                        if (LIBRARIES_CATEGORY == o2) {
+                            return 0;
+                        } else {
+                            return 1;
+                        }
+                    } else {
+                        if (o2 == LIBRARIES_CATEGORY) {
+                            return -1;
+                        }
+                        // Eager modules come between categories and libraries.
+                        if (BRIDGES_CATEGORY == o1) {
+                            if (BRIDGES_CATEGORY == o2) {
+                                return 0;
+                            } else {
+                                return 1;
+                            }
+                        } else {
+                            if (BRIDGES_CATEGORY == o2) {
+                                return -1;
+                            }
+                            // Eager modules come between categories and libraries.
+                            if (UNSORTED_CATEGORY == o1) {
+                                if (UNSORTED_CATEGORY == o2) {
+                                    return 0;
+                                } else {
+                                    return 1;
+                                }
+                            } else {
+                                if (UNSORTED_CATEGORY == o2) {
+                                    return -1;
+                                }
+                            }
+
+                            return Collator.getInstance().compare (o1, o2);
+                        }
+                    }
             }
         };
     }
@@ -83,10 +133,9 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
         fireTableDataChanged();
     }
     
-    public final void setData (List<UnitCategory> data, boolean showCategories, Comparator<UnitCategory> categoryCmp, Comparator<Unit> unitCmp) {
-        //TODO: if null cmpput in default one
-        this.categoryCmp = categoryCmp;
-        this.unitCmp = unitCmp;
+    private final void setData (List<UnitCategory> data, boolean showCategories, Comparator<UnitCategory> categoryCmp, Comparator<Unit> unitCmp) {
+        this.categoryCmp = categoryCmp != null ? categoryCmp : getDefaultCategoryComparator();
+        this.unitCmp = unitCmp != null ? unitCmp : getDefaultComparator();
         this.showCategories = showCategories;
         this.data = data;
         this.unitData = Collections.emptyList();

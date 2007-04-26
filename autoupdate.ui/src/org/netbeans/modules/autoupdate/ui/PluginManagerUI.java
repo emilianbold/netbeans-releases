@@ -21,7 +21,6 @@ package org.netbeans.modules.autoupdate.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.JButton;
@@ -175,10 +174,10 @@ private void tpTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:
     
     private void postInitComponents () {
         Containers.initNotify();        
-        installedTable = new UnitTable (new InstalledTableModel (Utilities.makeInstalledCategories (units)));
-        updateTable = new UnitTable (new UpdateTableModel (Utilities.makeUpdateCategories (units, false)));
-        availableTable = new UnitTable (new AvailableTableModel (Utilities.makeAvailableCategories (units, false)));
-        localTable = new UnitTable (new LocallyDownloadedTableModel ());
+        installedTable = new UnitTable (new InstalledTableModel (units));
+        updateTable = new UnitTable (new UpdateTableModel (units));
+        availableTable = new UnitTable (new AvailableTableModel (units));
+        localTable = new UnitTable (new LocallyDownloadedTableModel (units));
         selectFirstRow(installedTable);
         selectFirstRow(updateTable);
         selectFirstRow(availableTable);
@@ -245,9 +244,9 @@ private void tpTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:
         UnitCategoryTableModel availableTableModel = ((UnitCategoryTableModel)availableTable.getModel ());
         UnitCategoryTableModel localTableModel = ((UnitCategoryTableModel)localTable.getModel ());
         
-        updateTableModel.setData (Utilities.makeUpdateCategories (units, false));        
-        installTableModel.setData (Utilities.makeInstalledCategories (units));
-        availableTableModel.setData (Utilities.makeAvailableCategories (units, false));
+        updateTableModel.setUnits(units);
+        installTableModel.setUnits(units);
+        availableTableModel.setUnits(units);
         
         selectFirstRow(installedTable);
         selectFirstRow(updateTable);

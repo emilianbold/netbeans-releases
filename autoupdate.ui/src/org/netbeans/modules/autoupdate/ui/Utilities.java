@@ -53,9 +53,9 @@ import org.openide.util.NbBundle;
  */
 public class Utilities {
     private static Logger logger = Logger.getLogger(Utilities.class.getName());     
-    private static final String UNSORTED_CATEGORY = NbBundle.getMessage (Utilities.class, "Utilities_Unsorted_Category");
-    private static final String LIBRARIES_CATEGORY = NbBundle.getMessage (Utilities.class, "Utilities_Libraries_Category");
-    private static final String BRIDGES_CATEGORY = NbBundle.getMessage (Utilities.class, "Utilities_Bridges_Category");
+    static final String UNSORTED_CATEGORY = NbBundle.getMessage (Utilities.class, "Utilities_Unsorted_Category");
+    static final String LIBRARIES_CATEGORY = NbBundle.getMessage (Utilities.class, "Utilities_Libraries_Category");
+    static final String BRIDGES_CATEGORY = NbBundle.getMessage (Utilities.class, "Utilities_Bridges_Category");
     
     @SuppressWarnings ("deprecation")
     public static List<UnitCategory> makeInstalledCategories (List<UpdateUnit> units) {
@@ -85,7 +85,6 @@ public class Utilities {
                     }
                 }
             }
-            sort (res);                   
             logger.log(Level.FINER, "makeInstalledCategories (" + units.size() + ") returns " + res.size());
             return res;
         };
@@ -122,7 +121,6 @@ public class Utilities {
                 }
             }
         }
-        sort (res);                           
         logger.log(Level.FINER, "makeUpdateCategories (" + units.size () + ") returns " + res.size ());
         return res;
         };
@@ -160,35 +158,10 @@ public class Utilities {
                 }
             }
         }
-        sort (res);
         logger.log(Level.FINER, "makeAvailableCategories (" + units.size () + ") returns " + res.size ());
 
         return res;
         };
-
-        //candidate to delete
-    /*public static List<UnitCategory> makeLocalCategories (final List<UpdateUnit> units) {
-        List<UnitCategory> res = new ArrayList<UnitCategory> ();
-        List<String> names = new ArrayList<String> ();
-        for (UpdateUnit u : units) {
-            List<UpdateElement> updates = u.getAvailableUpdates ();
-            UpdateElement upEl = updates.get (0);
-            String catName = upEl.getCategory ();
-            if (names.contains (catName)) {
-                UnitCategory cat = res.get (names.indexOf (catName));
-                cat.addUnit (new Unit.Available (u));
-            } else {
-                UnitCategory cat = new UnitCategory (catName);
-                cat.addUnit (new Unit.Available (u));
-                res.add (cat);
-                names.add (catName);
-            }
-        }
-        sort (res);
-        logger.log(Level.FINER, "makeAvailableCategories (" + units.size () + ") returns " + res.size ());
-
-        return res;
-        };*/
 
     public static void showURL (URL href) {
         HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault ();
@@ -208,67 +181,7 @@ public class Utilities {
         }
         return reqs;
     }        
-    
-    private static void sort (List<UnitCategory> res) {
-        final Collator collator = Collator.getInstance ();
-        final Comparator<String> comparator = new Comparator<String> () {
-            public int compare (String o1, String o2) {
-                    // Libraries always put in the last place.
-                    if (LIBRARIES_CATEGORY == o1) {
-                        if (LIBRARIES_CATEGORY == o2) {
-                            return 0;
-                        } else {
-                            return 1;
-                        }
-                    } else {
-                        if (o2 == LIBRARIES_CATEGORY) {
-                            return -1;
-                        }
-                        // Eager modules come between categories and libraries.
-                        if (BRIDGES_CATEGORY == o1) {
-                            if (BRIDGES_CATEGORY == o2) {
-                                return 0;
-                            } else {
-                                return 1;
-                            }
-                        } else {
-                            if (BRIDGES_CATEGORY == o2) {
-                                return -1;
-                            }
-                            // Eager modules come between categories and libraries.
-                            if (UNSORTED_CATEGORY == o1) {
-                                if (UNSORTED_CATEGORY == o2) {
-                                    return 0;
-                                } else {
-                                    return 1;
-                                }
-                            } else {
-                                if (UNSORTED_CATEGORY == o2) {
-                                    return -1;
-                                }
-                            }
-
-                            return collator.compare (o1, o2);
-                        }
-                    }
-            }
-        };
         
-        Collections.sort (res, new Comparator<UnitCategory> () {
-            public int compare (UnitCategory o1, UnitCategory o2) {
-                return comparator.compare (o1.getCategoryName (), o2.getCategoryName ());
-            }
-        });
-            
-        for (UnitCategory unitCategory : res) {
-            Collections.sort (unitCategory.units, new Comparator<Unit> () {
-                public int compare (Unit u1, Unit u2) {
-                    return collator.compare (u1.getDisplayName (), u2.getDisplayName ());
-                }
-            });
-        }
-    }
-    
     public static boolean isGtk () {
         return "GTK".equals (UIManager.getLookAndFeel ().getID ()); // NOI18N
     }

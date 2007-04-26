@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationSupport;
+import org.netbeans.api.autoupdate.UpdateUnit;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -41,10 +42,14 @@ public class InstalledTableModel extends UnitCategoryTableModel {
     private final Logger err = Logger.getLogger ("org.netbeans.modules.autoupdate.ui.InstalledTableModel");
     
     /** Creates a new instance of InstalledTableModel */
-    public InstalledTableModel(List<UnitCategory> categories) {
-        super(categories);
+    public InstalledTableModel(List<UpdateUnit> units) {
+        setUnits(units);
     }
     
+    public final void setUnits (List<UpdateUnit> units) {    
+        setData(Utilities.makeInstalledCategories (units));
+    }
+                       
     @Override
     public void setValueAt (Object anValue, int row, int col) {
         super.setValueAt(anValue, row, col);
