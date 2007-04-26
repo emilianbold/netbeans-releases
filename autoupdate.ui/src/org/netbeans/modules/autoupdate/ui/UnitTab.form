@@ -17,7 +17,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="lTabActionDescription" pref="375" max="32767" attributes="0"/>
+                      <Component id="lTabActionDescription" pref="418" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
@@ -45,7 +45,7 @@
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="spUnitTable" pref="375" max="32767" attributes="1"/>
+                      <Component id="spUnitTable" pref="418" max="32767" attributes="1"/>
                       <EmptySpace min="12" pref="12" max="12" attributes="0"/>
                   </Group>
               </Group>
@@ -56,10 +56,12 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="lSearch" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="tfSearch" alignment="3" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="lTabActionDescription" alignment="1" pref="27" max="32767" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="lSearch" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="tfSearch" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="spUnitTable" pref="21" max="32767" attributes="0"/>

@@ -178,7 +178,7 @@ private void tpTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:
         installedTable = new UnitTable (new InstalledTableModel (Utilities.makeInstalledCategories (units)));
         updateTable = new UnitTable (new UpdateTableModel (Utilities.makeUpdateCategories (units, false)));
         availableTable = new UnitTable (new AvailableTableModel (Utilities.makeAvailableCategories (units, false)));
-        localTable = new UnitTable (new LocallyDownloadedTableModel (new ArrayList<UnitCategory> ()));
+        localTable = new UnitTable (new LocallyDownloadedTableModel ());
         selectFirstRow(installedTable);
         selectFirstRow(updateTable);
         selectFirstRow(availableTable);
@@ -198,8 +198,8 @@ private void tpTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:
         SplittedUnitTab installedTab = new SplittedUnitTab(installedTable, new UnitDetails (), this);
         installedTab.addUpdateUnitListener (this);
         tpTabs.add (NbBundle.getMessage(PluginManagerUI.class, "PluginManagerUI_UnitTab_Installed_Title"), installedTab);
-        settingTab = new SettingsTab(this);
-        tpTabs.add (settingTab.getDisplayName(), settingTab);
+        settingTab = new SettingsTab(this, new DetailsPanel());        
+        tpTabs.add (settingTab.getDisplayName(), new SplittedUnitTab(settingTab, settingTab.details, this));
         
         decorateTitle (0, updateTable, NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Update_Title"));
         decorateTitle (1, availableTable, NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Available_Title"));
@@ -248,7 +248,6 @@ private void tpTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:
         updateTableModel.setData (Utilities.makeUpdateCategories (units, false));        
         installTableModel.setData (Utilities.makeInstalledCategories (units));
         availableTableModel.setData (Utilities.makeAvailableCategories (units, false));
-        //localTableModel.setData (new ArrayList<UnitCategory> ());
         
         selectFirstRow(installedTable);
         selectFirstRow(updateTable);

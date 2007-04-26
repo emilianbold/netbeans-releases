@@ -51,7 +51,6 @@ public class UnitTab extends javax.swing.JPanel {
     private DocumentListener dlForSearch;
     private String filter = "";
     private PluginManagerUI manager = null;
-    private LocalDownloadSupport localDownloadSupport = null;
     private static final RequestProcessor RP = new RequestProcessor();
     private final RequestProcessor.Task searchTask = RP.create(new Runnable(){
         public void run() {
@@ -142,7 +141,7 @@ public class UnitTab extends javax.swing.JPanel {
                 refreshState();
             }
         });
-        bTabAction.setEnabled(false);
+        bTabAction.setEnabled(model.getMarkedUnits().size() > 0);
     }
     
     private void setTabActionDescription(String key) {
@@ -358,24 +357,35 @@ public class UnitTab extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
     
 private void bAddLocallyDownloadsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bAddLocallyDownloadsActionPerformed
-    
-    try {
+       try {
         table.setEnabled(false);
         bAddLocallyDownloads.setEnabled(false);
-        bTabAction.setEnabled(false);            
-        List<UpdateUnit> units = getLocalDownloadSupport ().getUpdateUnits ();
-        List<UnitCategory> categories = new ArrayList<UnitCategory>();
-        categories.addAll(Utilities.makeAvailableCategories(units, true));
-        categories.addAll(Utilities.makeUpdateCategories(units, true));
-        for (UnitCategory c : categories) {
-            for (Unit u : c.getUnits ()) {
-                if (! u.isMarked ()) {
-                    u.setMarked (true);
+        bTabAction.setEnabled(false);   
+        final List<UnitCategory> categories = new ArrayList<UnitCategory>();
+        final Runnable addUpdates = new Runnable(){
+            public void run() {
+                LocalDownloadSupport lDSupport = getLocalDownloadSupport();
+                lDSupport.selectNbmFiles();
+                List<UpdateUnit> units = lDSupport.getUpdateUnits();
+                categories.addAll(Utilities.makeAvailableCategories(units, true));
+                categories.addAll(Utilities.makeUpdateCategories(units, true));
+                for (UnitCategory c : categories) {
+                    for (Unit u : c.getUnits()) {
+                        if (! u.isMarked()) {
+                            u.setMarked(true);
+                        }
+                    }
                 }
+                
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        model.setData(categories);
+                        model.fireUpdataUnitChange();
+                    }
+                });
             }
-        }
-        model.setData (categories);
-        fireUpdataUnitChange ();
+        };
+    RequestProcessor.getDefault().post(addUpdates);
     } finally {
         table.setEnabled(true);
         bAddLocallyDownloads.setEnabled(true);
@@ -439,21 +449,19 @@ private void bTabActionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         } finally {
             cont.removeAll();
             List<UnitCategory> categories = model.data;
+            LocalDownloadSupport lDSupport = getLocalDownloadSupport();
             for (Iterator<UnitCategory> categoryIt = categories.iterator(); categoryIt.hasNext();) {
                 UnitCategory unitCategory = categoryIt.next();
                 List<Unit> units = unitCategory.getUnits();
                 for (Iterator<Unit> it = units.iterator(); it.hasNext();) {
                     Unit unit = it.next();
                     if (unit.updateUnit.getInstalled() != null) {
-                        it.remove();
-            }
+                        lDSupport.remove(unit.updateUnit);
+                    }
                 }
-                if (units.size() == 0) {
-                    categoryIt.remove();
-                }                
-            }            
-            model.setData (categories);            
-            refresh (false);
+            }
+            model.setData(categories);
+            refresh(false);
             //fireUpdataUnitChange();
         }
     }
@@ -464,9 +472,10 @@ private void bRefreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     refresh (true);
 }//GEN-LAST:event_bRefreshActionPerformed
 
-private LocalDownloadSupport getLocalDownloadSupport () {
-    if (localDownloadSupport == null) {
-        localDownloadSupport = new LocalDownloadSupport ();
+private LocalDownloadSupport getLocalDownloadSupport () {     
+    LocalDownloadSupport localDownloadSupport = null; 
+    if (model instanceof LocallyDownloadedTableModel) {         
+        localDownloadSupport = ((LocallyDownloadedTableModel)model).getLocalDownloadSupport();
     }
     return localDownloadSupport;
 }

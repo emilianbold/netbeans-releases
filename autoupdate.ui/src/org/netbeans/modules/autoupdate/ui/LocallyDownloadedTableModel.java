@@ -19,10 +19,12 @@
 
 package org.netbeans.modules.autoupdate.ui;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
+import org.netbeans.api.autoupdate.UpdateUnit;
 import org.openide.util.NbBundle;
 
 /**
@@ -32,12 +34,36 @@ import org.openide.util.NbBundle;
 public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
     private OperationContainer<InstallSupport> availableNbmsContainer = Containers.forAvailableNbms();
     private OperationContainer<InstallSupport> updateNbmsContainer = Containers.forUpdateNbms();
+    private LocalDownloadSupport localDownloadSupport = null;
         
     /** Creates a new instance of InstalledTableModel */
-    public LocallyDownloadedTableModel (List<UnitCategory> categories) {
-        super (categories);
+    public LocallyDownloadedTableModel () {
+        super (new ArrayList<UnitCategory> ());        
+        setData(init());
+    }
+
+    private List<UnitCategory> init() {
+        final List<UnitCategory> categories = new ArrayList<UnitCategory>();
+        List<UpdateUnit> units = getLocalDownloadSupport().getUpdateUnits();
+        categories.addAll(Utilities.makeAvailableCategories(units, true));
+        categories.addAll(Utilities.makeUpdateCategories(units, true));
+        for (UnitCategory c : categories) {
+            for (Unit u : c.getUnits()) {
+                if (! u.isMarked()) {
+                    u.setMarked(true);
+                }
+            }
+        }
+        return categories;
     }
     
+    LocalDownloadSupport getLocalDownloadSupport() {
+        if (localDownloadSupport == null) {
+            localDownloadSupport = new LocalDownloadSupport();
+        }
+        return localDownloadSupport;
+    }
+        
     @Override
     public void setValueAt(Object anValue, int row, int col) {
         super.setValueAt (anValue, row, col);
@@ -157,7 +183,8 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
     public boolean isSortAllowed(Object columnIdentifier) {
         boolean isInstall = getColumnName(0).equals(columnIdentifier);
         boolean isRating = getColumnName(4).equals(columnIdentifier);                
-        return isInstall ||  isRating ? false : true;
+        boolean isSize = getColumnName(3).equals(columnIdentifier);                        
+        return isInstall ||  isRating || isSize ? false : true;
     }
 
     protected Comparator<Unit> getComparator(final Object columnIdentifier, final boolean sortAscending) {
@@ -172,7 +199,7 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
                 } else if (getColumnName(2).equals(columnIdentifier)) {
                     return Unit.compareDisplayVersions(unit1, unit2);
                 } else if (getColumnName(3).equals(columnIdentifier)) {
-                    return Unit.compareCompleteSizes(unit1, unit2);
+                    assert false : columnIdentifier.toString();
                 } else if (getColumnName(4).equals(columnIdentifier)) {
                     assert false : columnIdentifier.toString();
                 }                

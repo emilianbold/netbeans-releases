@@ -47,7 +47,7 @@ import org.openide.util.RequestProcessor;
  * @author  Radek Matous
  */
 public class SettingsTab extends javax.swing.JPanel {
-    private final DetailsPanel details;
+    final DetailsPanel details;
     private Listener listener;
     private static final RequestProcessor RP = new RequestProcessor();
     private final RequestProcessor.Task searchTask = RP.create(new Runnable(){
@@ -59,12 +59,12 @@ public class SettingsTab extends javax.swing.JPanel {
         }
     });
     /** Creates new form SettingsTab */
-    public SettingsTab (PluginManagerUI manager) {
+    public SettingsTab (PluginManagerUI manager, DetailsPanel details) {
         initComponents();
         getSettingsTableModel ().setPluginManager (manager);
         TableColumn activeColumn = jTable1.getColumnModel().getColumn(0);
         activeColumn.setMaxWidth(jTable1.getTableHeader().getHeaderRect(0).width);
-        jScrollPane2.setViewportView(details = new DetailsPanel());
+        this.details = details;
         addListener();
     }
     
@@ -123,7 +123,6 @@ public class SettingsTab extends javax.swing.JPanel {
         bNew = new javax.swing.JButton();
         bRemove = new javax.swing.JButton();
         bProxy = new javax.swing.JButton();
-        jScrollPane2 = new javax.swing.JScrollPane();
 
         lHeader.setLabelFor(jTable1);
         org.openide.awt.Mnemonics.setLocalizedText(lHeader, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.lHeader.text")); // NOI18N
@@ -169,12 +168,11 @@ public class SettingsTab extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 639, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(layout.createSequentialGroup()
                                 .add(lHeader)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 49, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 60, Short.MAX_VALUE)
                                 .add(lSearch)
                                 .add(4, 4, 4)
                                 .add(tfSearch, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 114, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -209,9 +207,7 @@ public class SettingsTab extends javax.swing.JPanel {
                     .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(bProxy)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 105, Short.MAX_VALUE)
-                .addContainerGap())
+                .add(20, 20, 20))
         );
 
         lHeader.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.lHeader.adesc")); // NOI18N
@@ -424,7 +420,6 @@ private void bProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     private javax.swing.JButton bProxy;
     private javax.swing.JButton bRemove;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable jTable1;
     private javax.swing.JLabel lHeader;
     private javax.swing.JLabel lSearch;
