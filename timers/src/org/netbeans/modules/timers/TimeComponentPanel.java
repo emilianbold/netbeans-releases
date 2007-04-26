@@ -27,6 +27,8 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -146,14 +148,17 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
     private Map<String, Integer> key2RowNumber;
     
     private void fillTimeTable() {
-        Object fo = jList1.getSelectedValue();
-        DefaultTableModel model = (DefaultTableModel) times.getModel();
+        Reference ref = (Reference)jList1.getSelectedValue();
+        Object fo = ref == null ? null : ref.get();
         
+        // clear the table
+        DefaultTableModel model = (DefaultTableModel) times.getModel();
         while (model.getRowCount() > 0) {
             model.removeRow(0);
         }
-        
         key2RowNumber.clear();
+        
+        if (fo == null) return;
         
         Collection<String> keys = TimesCollectorPeer.getDefault().getKeysForFile(fo);
         synchronized(keys) {
@@ -204,7 +209,7 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
         model.removeAllElements();
 
         for (Object f : TimesCollectorPeer.getDefault().getFiles()) {
-            model.addElement(f);
+            model.addElement(new WeakReference(f));
         }
     }
 
@@ -215,7 +220,7 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
                     DefaultListModel model = (DefaultListModel) jList1.getModel();
                     
                     if (evt.getNewValue() != null) {
-                        model.addElement(evt.getNewValue());
+                        model.addElement(new WeakReference(evt.getNewValue()));
                     } else {
                         fillIn();
                     }
@@ -224,16 +229,23 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
                 if ("PROP".equals(evt.getPropertyName())) {
                     Object fo  = evt.getOldValue();
                     String     key = (String) evt.getNewValue();
-                    
-                    if (fo == jList1.getSelectedValue() || fo == null) {
+                    Reference ref = (Reference)jList1.getSelectedValue();
+                    if (fo == null || (ref != null && ref.get() == fo)) {
                         changeRow(fo, key);
                     }
                 }
                 
                 if ("selected".equals(evt.getPropertyName())) {
                     Object fo = evt.getNewValue();
-                    
-                    jList1.setSelectedValue(fo, true);
+                    ListModel dm = jList1.getModel();
+                    for(int i=0; i < dm.getSize(); i++) {
+                        if(fo.equals(((WeakReference)dm.getElementAt(i)).get())) {
+                            jList1.setSelectedIndex(i);
+                            jList1.ensureIndexIsVisible(i);
+                            repaint();
+                            break;
+                        }
+                    }
                 }
             }
         });
@@ -274,7 +286,9 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
             r = new NodeRenderer();
         }
         
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        public Component getListCellRendererComponent(JList list, Object wr, int index, boolean isSelected, boolean cellHasFocus) {
+            Object value = ((WeakReference)wr).get();
+            
             if (value instanceof FileObject) {
                 try {
                     FileObject fo = (FileObject) value;
@@ -283,7 +297,8 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
                     
                     return r.getListCellRendererComponent(list, node, index, isSelected, cellHasFocus);
                 } catch (IOException e) {
-                    value = "<error>";
+                    FileObject fo = (FileObject) value;
+                    value = "FO: " + fo;
                 }
             }
             
@@ -347,26 +362,27 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
         }
         
         void createPopup(int x, int y, int row) {
-            final Object[] fo = new Object[] {jList1.getSelectedValue()};
-            if (! (fo[0] instanceof FileObject)) return;
+            final WeakReference wr = (WeakReference)jList1.getSelectedValue();
+            if (! (wr.get() instanceof FileObject)) return;
 
             JPopupMenu popup = new JPopupMenu();
             popup.add(new AbstractAction("Find refs") {
 
                 public void actionPerformed(ActionEvent arg0) {
                     try {
-                        FileObject f = (FileObject)fo[0];
-
-                        fo[0] = null;
+                        FileObject f = (FileObject)wr.get();
+                        if (f == null) return;
+                        DataObject dobj = DataObject.find(f);
+                        f = null;
                         // hack - DO.find, we'not really interrested in
                         // the FileObject reachability
                         // This will go away for general key type
-                        dumpRoots(Collections.singleton(DataObject.find(f)));
+                        dumpRoots(Collections.singleton(dobj));
                     }
                     catch (DataObjectNotFoundException ex) {
-                        java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
-                                                                         ex.getMessage(),
-                                                                         ex);
+                        // OK, the DO is not ready, FO invalid or whatever.
+                        // Trace the invalid FO instead 
+                        dumpRoots(Collections.singleton(wr.get()));
                     }
                 }
             });
