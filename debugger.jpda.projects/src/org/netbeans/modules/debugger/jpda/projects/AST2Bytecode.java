@@ -132,6 +132,7 @@ class AST2Bytecode {
                     Tree identifier;
                     String methodName;
                     String methodClassType;
+                    boolean getStartPosFromMethodLength = false;
                     if (kind.equals(Tree.Kind.NEW_CLASS)) {
                         identifier = ((NewClassTree) node).getIdentifier();
                         methodName = "<init>";
@@ -150,6 +151,7 @@ class AST2Bytecode {
                             methodClassType = ElementUtilities.getBinaryName(te);
                         } else {
                             methodName = ((MemberSelectTree) identifier).getIdentifier().toString();
+                            getStartPosFromMethodLength = true;
                             ExpressionTree exp = ((MemberSelectTree) identifier).getExpression();
                             TreePath expPath = TreePath.getPath(cu, exp);
                             TypeMirror type = trees.getTypeMirror(expPath);
@@ -158,15 +160,19 @@ class AST2Bytecode {
                             methodClassType = ElementUtilities.getBinaryName(te);
                         }
                     }
-                    pos = (int) sp.getStartPosition(cu, identifier);
-                    EditorContext.Position methodStartPosition =
+                    pos = (int) sp.getEndPosition(cu, identifier);
+                    EditorContext.Position methodEndPosition =
                             opCreationDelegate.createPosition(
                                     pos,
                                     (int) lineMap.getLineNumber(pos),
                                     (int) lineMap.getColumnNumber(pos)
                             );
-                    pos = (int) sp.getEndPosition(cu, identifier);
-                    EditorContext.Position methodEndPosition =
+                    if (getStartPosFromMethodLength) {
+                        pos = pos - methodName.length();
+                    } else {
+                        pos = (int) sp.getStartPosition(cu, identifier);
+                    }
+                    EditorContext.Position methodStartPosition =
                             opCreationDelegate.createPosition(
                                     pos,
                                     (int) lineMap.getLineNumber(pos),
