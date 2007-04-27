@@ -447,6 +447,10 @@ public class EditBinding extends JPanel implements TableModelListener {
         public boolean equals(Object obj) {
             return this == obj;
         }
+
+        public int hashCode() {
+            return 17 + 30 * (sortNames ? 1 : 0);
+        }
     }
     
     private static String getMethodName(Message m) {

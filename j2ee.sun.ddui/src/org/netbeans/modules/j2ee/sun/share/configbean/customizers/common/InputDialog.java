@@ -288,7 +288,7 @@ public abstract class InputDialog extends JDialog implements HelpCtx.Provider {
         // clear existing errors first.
         messagePanel.removeAll();
         
-        if(warningList != null & warningList.size() > 0) {
+        if(warningList != null && warningList.size() > 0) {
             hasWarnings = true;
             
             for(Iterator iter = warningList.iterator(); iter.hasNext();) {
@@ -310,7 +310,7 @@ public abstract class InputDialog extends JDialog implements HelpCtx.Provider {
             }
         }
 
-        if(errorList != null & errorList.size() > 0) {
+        if(errorList != null && errorList.size() > 0) {
             hasErrors = true;
             for(Iterator iter = errorList.iterator(); iter.hasNext();) {
                 String message = iter.next().toString();

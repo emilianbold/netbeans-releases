@@ -316,7 +316,7 @@ public class MessageSecurityEntryPanel extends JPanel implements GenericTableDia
 	}
     
     private String normalizeBlank(String value) {
-        return (value != "") ? value : null;
+        return (!value.equals("")) ? value : null;
     }
     
 	private TextMapping getAuthMapping(String xmlKey, final TextMapping [] authMap) {

@@ -679,7 +679,7 @@ public class CachePolicyPanel extends JPanel implements TableModelListener {
 	}
 
     private String normalizeBlank(String value) {
-        return (value != "") ? value : null;
+        return (!value.equals("")) ? value : null;
     }
     
 	/** ----------------------------------------------------------------------- 

@@ -74,7 +74,7 @@ public abstract class AbstractDesignEditor extends TopComponent implements Panel
     
     
     /** The icon for ComponentInspector */
-    protected static String iconURL = "/org/netbeans/modules/form/resources/inspector.gif"; // NOI18N
+    protected static final String iconURL = "/org/netbeans/modules/form/resources/inspector.gif"; // NOI18N
     
     protected static final long serialVersionUID =1L;
     

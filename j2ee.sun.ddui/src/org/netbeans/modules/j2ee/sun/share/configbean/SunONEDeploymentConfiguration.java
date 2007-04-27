@@ -740,10 +740,10 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
             if(ip != null) {
                 dm = ip.getDeploymentManager();
             } else {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new NullPointerException("Null Server InstanceProperties: " + ip));
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new NullPointerException("Null Server InstanceProperties"));
             }
         } else {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new NullPointerException("Null J2eeModuleProvider: " + provider));
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new NullPointerException("Null J2eeModuleProvider"));
         }
         return dm;
     }

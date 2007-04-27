@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 import javax.swing.table.AbstractTableModel;
-import javax.swing.event.EventListenerList;
 
 import org.netbeans.modules.j2ee.sun.dd.api.web.CacheMapping;
 import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
@@ -62,9 +61,6 @@ public class CacheMappingTableModel extends AbstractTableModel {
 		webappBundle.getString("LBL_CacheHelperReference"),		// NOI18N
 		webappBundle.getString("LBL_CachePolicyDefinition"),	// NOI18N
 	};
-
-	/** List of listeners */
-	protected EventListenerList listenerList = new EventListenerList();
 
 	/** List of CacheMapping objects */
 	private List rows;

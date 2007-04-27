@@ -80,11 +80,11 @@ public final class ValidationError implements Comparable {
 	 *  @return true if equal, false otherwise.
 	 */
 	public boolean equals(Object obj) {
-		boolean result;
+		boolean result = false;
 		
 		if(this == obj) {
 			result = true;
-		} else {
+		} else if(obj instanceof ValidationError) {
 			ValidationError target = (ValidationError) obj;
 			result = partition.equals(target.partition) && fieldId.equals(target.fieldId);
 		}

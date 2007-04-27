@@ -255,20 +255,19 @@ public class MDEjb extends BaseEjb {
 
     public void removeActivationConfigProperty(ActivationConfigProperty property){
         if(null != mdbResourceAdapter){
-            ActivationConfig activationCfg = 
-                mdbResourceAdapter.getActivationConfig();
+            ActivationConfig activationCfg = mdbResourceAdapter.getActivationConfig();
             if(null != activationCfg){
                 activationCfg.removeActivationConfigProperty(property);
-            }
-            if(activationCfg.sizeActivationConfigProperty() < 1){
-                activationCfg.setActivationConfigProperty(null);
-            }
-            if(null == activationCfg.getDescription()){
-                mdbResourceAdapter.setActivationConfig(null);
-                if(null == mdbResourceAdapter.getResourceAdapterMid()){
-                    try{
-                        setMdbResourceAdapter(null);
-                    }catch(java.beans.PropertyVetoException exception){
+                if(activationCfg.sizeActivationConfigProperty() < 1){
+                    activationCfg.setActivationConfigProperty(null);
+                }
+                if(null == activationCfg.getDescription()){
+                    mdbResourceAdapter.setActivationConfig(null);
+                    if(null == mdbResourceAdapter.getResourceAdapterMid()){
+                        try{
+                            setMdbResourceAdapter(null);
+                        }catch(java.beans.PropertyVetoException exception){
+                        }
                     }
                 }
             }

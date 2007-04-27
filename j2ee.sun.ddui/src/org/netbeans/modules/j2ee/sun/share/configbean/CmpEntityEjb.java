@@ -315,13 +315,13 @@ public class CmpEntityEjb extends EntityEjb {
 			OneOneFinders oneOneFinders = cmp.getOneOneFinders();
 			if(null != oneOneFinders){
 				oneOneFinders.removeFinder(finder);
+				try {
+					if(oneOneFinders.sizeFinder() < 1){
+						setCmp(null);
+					}
+				}catch(java.beans.PropertyVetoException ex){
+				}
 			}
-                    try{
-                        if(oneOneFinders.sizeFinder() < 1){
-                            setCmp(null);
-                        }
-                    }catch(java.beans.PropertyVetoException ex){
-                    }
 		}
 	}
 

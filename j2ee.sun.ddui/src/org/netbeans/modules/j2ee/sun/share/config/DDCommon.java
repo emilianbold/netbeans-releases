@@ -138,24 +138,31 @@ abstract public class DDCommon implements DDBean {
         xpath = ModuleDDSupport.normalizePath(xpath);
         //        System.out.println("Now " + xpath);
         DDCommon searchRoot = this;
-        if(xpath == null || xpath.equals("") || xpath.equals(".")) // NOI18N
+        if(xpath == null || xpath.equals("") || xpath.equals(".")) { // NOI18N
             return new StandardDDImpl[] { container };
-            if(xpath.startsWith("/")) { // NOI18N
-                searchRoot = ((DDRoot)getRoot()).proxy;
-                xpath = xpath.substring(xpath.indexOf("/") + 1); // NOI18N
-            } else if (xpath.equals("..")) {
-                if(parent == null) return null;
-                else return new StandardDDImpl[] { parent.container };
-            } else while (xpath.startsWith("../") && searchRoot != null) {
+        }
+        
+        if(xpath.startsWith("/")) { // NOI18N
+            searchRoot = ((DDRoot)getRoot()).proxy;
+            xpath = xpath.substring(xpath.indexOf("/") + 1); // NOI18N
+        } else if (xpath.equals("..")) {
+            if(parent == null) {
+                return null;
+            } else {
+                return new StandardDDImpl[] { parent.container };
+            }
+        } else {
+            while (xpath.startsWith("../") && searchRoot != null) {
                 searchRoot = searchRoot.parent;
                 xpath = xpath.substring(3);
             }
-            
-            Collection ret = searchRoot.search(xpath,true);
-            
-            StandardDDImpl[] arr = new StandardDDImpl[ret.size()];
-            ret.toArray(arr);
-            return arr;
+        }
+
+        Collection ret = searchRoot != null ? searchRoot.search(xpath,true) : Collections.EMPTY_LIST;
+
+        StandardDDImpl[] arr = new StandardDDImpl[ret.size()];
+        ret.toArray(arr);
+        return arr;
     }
     
     Collection search(String xpath,boolean addCurrent) {

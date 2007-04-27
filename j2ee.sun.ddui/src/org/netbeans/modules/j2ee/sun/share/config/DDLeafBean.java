@@ -76,6 +76,14 @@ public class DDLeafBean extends DDCommon {
         }
         return false;
     }
+
+    public int hashCode() {
+        int hash = 7;
+        hash = 17 * hash + (this.prop != null ? this.prop.hashCode() : 0);
+        hash = 17 * hash + this.index;
+        hash = 17 * hash + (this.indexed ? 1 : 0);
+        return hash;
+    }
     
 }
 
