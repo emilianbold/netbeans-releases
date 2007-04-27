@@ -260,8 +260,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-openide-actions-UndoAction.instance"/>
             <attr name="org-openide-actions-UndoAction.instance/org-openide-actions-RedoAction.instance" boolvalue="true"/>
             <file name="org-openide-actions-RedoAction.instance"/>
-            <attr name="org-openide-actions-RedoAction.instance/org-openide-actions-FindAction.instance" boolvalue="true"/>
-            <file name="org-openide-actions-FindAction.instance"/>
+            <!-- #100902: Find action removed upon usability expert request -->
         </folder>
         <folder name="File">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
