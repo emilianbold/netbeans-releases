@@ -29,8 +29,10 @@ import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
-import javax.swing.JDialog;
+import java.util.Set;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
@@ -51,7 +53,6 @@ import org.openide.loaders.FileEntry;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.util.Enumerations;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -223,6 +224,30 @@ public class SCFTHandlerTest extends NbTestCase {
          
      }
     
+    public void testTemplateWizardCopiesItsPropertiesToMapForOverridenEntryOnMoreEntries() throws Exception {
+        FileObject root = FileUtil.createMemoryFileSystem().getRoot();
+        FileObject fo = FileUtil.createData(root, "simpleObject.java");
+        FileObject fo2 = FileUtil.createData(root, "simpleObject.form");
+        fo.setAttribute("javax.script.ScriptEngine", "freemarker");
+        fo2.setAttribute("javax.script.ScriptEngine", "freemarker");
+        
+        
+        DataObject obj = DataObject.find(fo);
+        assertEquals(TwoPartObject.class, obj.getClass());
+        
+        DataFolder folder = DataFolder.findFolder(FileUtil.createFolder(root, "target"));
+        
+        Map<String,String> parameters = Collections.singletonMap("type", "empty");
+        
+        DataObject n = obj.createFromTemplate(folder, "complex", parameters);
+        Integer cnt = TwoPartLoader.queried.get(n.getPrimaryFile());
+        assertEquals("No query", null, cnt);
+        
+        assertEquals("Created in right place", folder, n.getFolder());
+        assertEquals("Created with right name", "complex", n.getName());
+        
+    }
+     
     public static final class DD extends DialogDisplayer {
         public Object notify(NotifyDescriptor descriptor) {
             throw new UnsupportedOperationException("Not supported yet.");
@@ -269,7 +294,10 @@ public class SCFTHandlerTest extends NbTestCase {
     
     public static final class Pool extends DataLoaderPool {
         protected Enumeration<DataLoader> loaders() {
-            return Enumerations.<DataLoader>singleton(SimpleLoader.getLoader(SimpleLoader.class));
+            return Enumerations.<DataLoader>array(new DataLoader[] { 
+                TwoPartLoader.getLoader(TwoPartLoader.class),
+                SimpleLoader.getLoader(SimpleLoader.class),
+            });
         }
     }
     
@@ -319,6 +347,41 @@ public class SCFTHandlerTest extends NbTestCase {
         
         public String getName() {
             return getPrimaryFile().getNameExt();
+        }
+    }
+
+    public static final class TwoPartLoader extends MultiFileLoader {
+        static Map<FileObject,Integer> queried = new HashMap<FileObject,Integer>();
+        
+        public TwoPartLoader() {
+            super(TwoPartObject.class.getName ());
+        }
+        protected String displayName() {
+            return "TwoPart";
+        }
+        protected FileObject findPrimaryFile(FileObject fo) {
+            Integer i = queried.get(fo);
+            queried.put(fo, i == null ? 1 : i + 1);
+            
+            if (fo.hasExt("java") || fo.hasExt("form")) {
+                return org.openide.filesystems.FileUtil.findBrother(fo, "java");
+            } else {
+                return null;
+            }
+        }
+        protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
+            return new TwoPartObject(this, primaryFile);
+        }
+        protected MultiDataObject.Entry createPrimaryEntry(MultiDataObject obj, FileObject primaryFile) {
+            return new FE(obj, primaryFile);
+        }
+        protected MultiDataObject.Entry createSecondaryEntry(MultiDataObject obj, FileObject secondaryFile) {
+            return new FE(obj, secondaryFile);
+        }
+    }
+    public static final class TwoPartObject extends MultiDataObject {
+        public TwoPartObject(TwoPartLoader l, FileObject folder) throws DataObjectExistsException {
+            super(folder, l);
         }
     }
     

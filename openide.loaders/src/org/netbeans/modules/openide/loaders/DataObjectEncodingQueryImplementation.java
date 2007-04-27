@@ -30,13 +30,21 @@ import org.openide.util.Exceptions;
  * @author Tomas Zezula
  */
 public class DataObjectEncodingQueryImplementation extends FileEncodingQueryImplementation {
+    private static ThreadLocal<? extends Object> constCheck;
     
     /** Creates a new instance of DataObjectEncodingQueryImplementation */
     public DataObjectEncodingQueryImplementation() {
     }
     
+    public static void assignConstructorCheck(ThreadLocal<? extends Object> local) {
+        constCheck = local;
+    }
+    
     public Charset getEncoding(FileObject file) {
         assert file != null;
+        if (constCheck.get() != null) {
+            return null;
+        }
         try {
             DataObject dobj = DataObject.find(file);
             FileEncodingQueryImplementation impl = dobj.getLookup().lookup (FileEncodingQueryImplementation.class);

@@ -24,6 +24,7 @@ import java.lang.ref.*;
 import java.util.*;
 import java.util.logging.*;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.openide.loaders.DataObjectEncodingQueryImplementation;
 import org.openide.filesystems.*;
 import org.openide.util.*;
 
@@ -39,6 +40,10 @@ implements ChangeListener {
      * shall be notified.
      */
     private static final ThreadLocal<Collection<Item>> FIND = new ThreadLocal<Collection<Item>>();
+    static {
+        DataObjectEncodingQueryImplementation.assignConstructorCheck(FIND);
+    }
+    
     /** validator */
     private static final Validator VALIDATOR = new Validator ();
 
