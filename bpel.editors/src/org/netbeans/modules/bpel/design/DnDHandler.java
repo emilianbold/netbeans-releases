@@ -118,6 +118,10 @@ public class DnDHandler implements DragSourceListener , DragGestureListener, Dro
 
     
     public void dragDropEnd(DragSourceDropEvent dsde) {
+        getGhostSelection().clear();
+        getPlaceHolderManager().clear();
+        getFlowLinkTool().clear();
+        
 //      System.out.println("DragSource.dragDropEnd");
         if (dsde.getDropAction() == DnDConstants.ACTION_MOVE) {
 //            BpelEntity be = getBpelEntity(dsde.getDragSourceContext().getTransferable());
@@ -167,7 +171,6 @@ public class DnDHandler implements DragSourceListener , DragGestureListener, Dro
     
     public void dragEnter(DropTargetDragEvent dtde) {
 //      System.out.println("DropTarget.DragEnter, flavor[0] = " + dtde.getTransferable().getTransferDataFlavors()[0].getDefaultRepresentationClass());
-        
         
         Transferable tr = dtde.getTransferable();
         
