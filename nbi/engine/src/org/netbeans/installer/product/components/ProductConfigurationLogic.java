@@ -110,11 +110,19 @@ public abstract class ProductConfigurationLogic {
         return null;
     }
     
+    public Text getThirdPartyLicense() {
+        return null;
+    }
+    
     public Text getReleaseNotes() {
         return null;
     }
     
     public Text getReadme() {
+        return null;
+    }
+    
+    public Text getDistributionReadme() {
         return null;
     }
     

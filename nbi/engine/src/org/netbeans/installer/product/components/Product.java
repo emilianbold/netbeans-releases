@@ -952,6 +952,16 @@ public final class Product extends RegistryNode {
             installedFiles.add(file);
         }
         
+        final Text thirdPartyLicense = configurationLogic.getThirdPartyLicense();
+        if (thirdPartyLicense != null) {
+            final File file = new File(
+                    getInstallationLocation(),
+                    "THIRDPARTYLICENSE-" + uid + thirdPartyLicense.getContentType().getExtension());
+            
+            FileUtils.writeFile(file, thirdPartyLicense.getText());
+            installedFiles.add(file);
+        }
+        
         final Text releaseNotes = configurationLogic.getReleaseNotes();
         if (releaseNotes != null) {
             final File file = new File(
@@ -969,6 +979,16 @@ public final class Product extends RegistryNode {
                     "README-" + uid + readme.getContentType().getExtension());
             
             FileUtils.writeFile(file, readme.getText());
+            installedFiles.add(file);
+        }
+        
+        final Text distributionReadme = configurationLogic.getDistributionReadme();
+        if (distributionReadme != null) {
+            final File file = new File(
+                    getInstallationLocation(),
+                    "DISTRIBUTION-" + uid + distributionReadme.getContentType().getExtension());
+            
+            FileUtils.writeFile(file, distributionReadme.getText());
             installedFiles.add(file);
         }
     }
