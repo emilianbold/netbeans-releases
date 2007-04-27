@@ -62,8 +62,8 @@ public class MapperMultiViewElementDesc implements MultiViewDescription,
         return NbBundle.getBundle(getClass()).getString(LBL_MAPPER);
     }
     
-    public org.openide.util.HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
+        public HelpCtx getHelpCtx() {
+        return new HelpCtx("xslt_editor_design_about"); //NOI18N
     }
     
     public Image getIcon() {

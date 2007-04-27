@@ -69,7 +69,7 @@ public class XSLTSourceMultiViewElementDesc
     }
     
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(XSLTDataObject.class);
+        return new HelpCtx("xslt_editor_source"); //NOI18N
     }
     
     public Image getIcon() {
