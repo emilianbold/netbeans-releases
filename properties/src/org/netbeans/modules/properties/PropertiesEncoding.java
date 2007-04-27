@@ -41,6 +41,14 @@ import static java.nio.charset.CoderResult.UNDERFLOW;
  */
 final class PropertiesEncoding extends FileEncodingQueryImplementation {
     
+    /*
+     * TO DO:
+     * 
+     * DECODER
+     * - leave some characters in the form of escape sequence, e.g. 0x00 - 0x1f
+     * - allow decoding of supplementary characters (?)
+     */
+    
     private final Charset encoding;
     
     /** Creates a new instance of PropertiesEncoding */
