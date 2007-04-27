@@ -20,7 +20,6 @@
 package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb;
 
 import java.io.IOException;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.MessageGenerator;
 import java.util.Collections;
 import java.util.NoSuchElementException;
@@ -35,8 +34,6 @@ import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.j2ee.common.Util;
-import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
-import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.openide.WizardDescriptor;
@@ -76,27 +73,6 @@ public final class MessageEJBWizard implements WizardDescriptor.InstantiatingIte
         Util.hideLabelAndLabelFor(jComponent, NbBundle.getMessage(MessageEJBWizard.class, "LBL_JavaTargetChooserPanelGUI_CreatedFile_Label"));
         panels = new WizardDescriptor.Panel[] {wizardPanel};
         Utils.mergeSteps(wiz, panels, SESSION_STEPS);
-        
-if (System.getProperties().getProperty("resource-api-redesign") != null) {
-    J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
-    try {
-        Set<MessageDestination> moduleDestinations = provider.getConfigSupport().getMessageDestinations();
-        for (MessageDestination md : moduleDestinations) {
-            System.out.println(md.getName() + " ~ " + md.getType());
-        }
-        if (provider.getConfigSupport().supportsCreateMessageDestination()) {
-            MessageDestination dest = provider.getConfigSupport().createMessageDestination("TestMsgDest01", MessageDestination.Type.TOPIC);
-        }
-        Set<MessageDestination> serverDestinations = provider.getConfigSupport().getServerMessageDestinations();
-        for (MessageDestination md : serverDestinations) {
-            System.out.println(md.getName() + " ~ " + md.getType());
-        }
-    }
-    catch (ConfigurationException ce) {
-
-    }
-}
-
     }
 
     public Set instantiate() throws IOException {
@@ -108,7 +84,7 @@ if (System.getProperties().getProperty("resource-api-redesign") != null) {
         MessageGenerator generator = MessageGenerator.create(
                 Templates.getTargetName(wiz),
                 pkg,
-                ejbPanel.isQueue(),
+                ejbPanel.getDestination(),
                 isSimplified,
                 !isSimplified // TODO: UI - add checkbox for option XML (not annotation) usage
                 );

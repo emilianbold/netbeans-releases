@@ -13,30 +13,29 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import javax.swing.event.ChangeEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 public class MessageEJBWizardPanel implements WizardDescriptor.FinishablePanel {
     
-    private MessageEJBVisualPanel wizardPanel;
-    private final List<ChangeListener> changeListeners = new ArrayList<ChangeListener>();
+    private MessageEJBWizardVisualPanel wizardPanel;
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final WizardDescriptor wizardDescriptor;
     //TODO: RETOUCHE
 //    private boolean isWaitingForScan = false;
@@ -46,12 +45,16 @@ public class MessageEJBWizardPanel implements WizardDescriptor.FinishablePanel {
     }
 
     public void addChangeListener(ChangeListener changeListener) {
-        changeListeners.add(changeListener);
+        changeSupport.addChangeListener(changeListener);
+    }
+    
+    public void removeChangeListener(ChangeListener changeListener) {
+        changeSupport.removeChangeListener(changeListener);
     }
     
     public boolean isValid() {
         Project project = Templates.getProject(wizardDescriptor);
-        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup ().lookup (J2eeModuleProvider.class);
+        J2eeModuleProvider j2eeModuleProvider = project.getLookup ().lookup (J2eeModuleProvider.class);
         String j2eeVersion = j2eeModuleProvider.getJ2eeModule().getModuleVersion();
         if (!EjbJar.VERSION_3_0.equals(j2eeVersion) && !EjbJar.VERSION_2_1.equals(j2eeVersion)) {
             wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(MessageEJBWizardPanel.class,"MSG_WrongJ2EESpecVersion")); //NOI18N
@@ -77,14 +80,26 @@ public class MessageEJBWizardPanel implements WizardDescriptor.FinishablePanel {
         // p.getName = valid NmToken
         // p.getName not already in module
         // remote and or local is selected
+        
+        // component/panel validation
+        getComponent();
+        if (wizardPanel.getDestination() == null) {
+            wizardDescriptor.putProperty(
+                    "WizardPanel_errorMessage", //NOI18N
+                    NbBundle.getMessage(MessageEJBWizardPanel.class,"ERR_NoDestinationSelected"));
+            return false;
+        }
+        // XXX warn about missing server (or error? or not needed?)
+        if (!wizardPanel.isDestinationCreationSupportedByServerPlugin()) {
+            wizardDescriptor.putProperty(
+                    "WizardPanel_errorMessage", //NOI18N
+                    NbBundle.getMessage(MessageEJBWizardPanel.class,"ERR_MissingServer"));
+            //return false;
+        }
         return true;
     }
     
     public void readSettings(Object settings) {
-    }
-    
-    public void removeChangeListener(ChangeListener changeListener) {
-        changeListeners.remove(changeListener);
     }
     
     public void storeSettings(Object settings) {
@@ -96,14 +111,7 @@ public class MessageEJBWizardPanel implements WizardDescriptor.FinishablePanel {
     }
     
     protected final void fireChangeEvent() {
-        Iterator<ChangeListener> iterator;
-        synchronized (changeListeners) {
-            iterator = new HashSet<ChangeListener>(changeListeners).iterator();
-        }
-        ChangeEvent changeEvent = new ChangeEvent(this);
-        while (iterator.hasNext()) {
-            iterator.next().stateChanged(changeEvent);
-        }
+        changeSupport.fireChange();
     }
 
     public org.openide.util.HelpCtx getHelp() {
@@ -112,15 +120,27 @@ public class MessageEJBWizardPanel implements WizardDescriptor.FinishablePanel {
 
     public java.awt.Component getComponent() {
         if (wizardPanel == null) {
-            wizardPanel = new MessageEJBVisualPanel();
-            // add listener to events which could cause valid status to change
+            Project project = Templates.getProject(wizardDescriptor);
+            J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+            MessageDestinationUiSupport.DestinationsHolder holder = MessageDestinationUiSupport.getDestinations(j2eeModuleProvider);
+            wizardPanel = MessageEJBWizardVisualPanel.newInstance(
+                    j2eeModuleProvider,
+                    holder.getModuleDestinations(),
+                    holder.getServerDestinations());
+            wizardPanel.addPropertyChangeListener(MessageEJBWizardVisualPanel.CHANGED,
+                    new PropertyChangeListener() {
+                        public void propertyChange(PropertyChangeEvent event) {
+                            fireChangeEvent();
+                        }
+                    });
         }
         return wizardPanel;
     }
 
-    public boolean isQueue() {
-        return wizardPanel.isQueue();
+    /**
+     * @see MessageDestinationPanel#getDestination()
+     */
+    public MessageDestination getDestination() {
+        return wizardPanel.getDestination();
     }
-
 }
-

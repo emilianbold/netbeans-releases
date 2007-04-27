@@ -25,7 +25,7 @@ import java.util.Map;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.source.GenerationUtils;
-import org.netbeans.modules.j2ee.dd.api.common.MessageDestination;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.ejb.ActivationConfig;
 import org.netbeans.modules.j2ee.dd.api.ejb.ActivationConfigProperty;
@@ -55,7 +55,7 @@ public final class MessageGenerator {
 
     // informations collected in wizard
     private final FileObject pkg;
-    private final boolean isQueue;
+    private final MessageDestination messageDestination;
     private final boolean isSimplified;
     private final boolean isXmlBased;
 
@@ -70,13 +70,13 @@ public final class MessageGenerator {
     
     private final Map<String, String> templateParameters;
 
-    public static MessageGenerator create(String wizardTargetName, FileObject pkg, boolean isQueue, boolean isSimplified, boolean isXmlBased) {
-        return new MessageGenerator(wizardTargetName, pkg, isQueue, isSimplified, isXmlBased);
+    public static MessageGenerator create(String wizardTargetName, FileObject pkg, MessageDestination messageDestination, boolean isSimplified, boolean isXmlBased) {
+        return new MessageGenerator(wizardTargetName, pkg, messageDestination, isSimplified, isXmlBased);
     }
     
-    private MessageGenerator(String wizardTargetName, FileObject pkg, boolean isQueue, boolean isSimplified, boolean isXmlBased) {
+    private MessageGenerator(String wizardTargetName, FileObject pkg, MessageDestination messageDestination, boolean isSimplified, boolean isXmlBased) {
         this.pkg = pkg;
-        this.isQueue = isQueue;
+        this.messageDestination = messageDestination;
         this.isSimplified = isSimplified;
         this.isXmlBased = isXmlBased;
         this.ejbNameOptions = new EJBNameOptions();
@@ -107,22 +107,16 @@ public final class MessageGenerator {
                 }
             }
 
-if (System.getProperties().getProperty("resource-api-redesign") != null) {
-    try {
-        Project project = FileOwnerQuery.getOwner(pkg);
-        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
-        if (isQueue) {
-            j2eeModuleProvider.getConfigSupport().bindMdbToMessageDestination(ejbName, "MyQueue", org.netbeans.modules.j2ee.deployment.common.api.MessageDestination.Type.QUEUE);
-        }
-        else {
-            j2eeModuleProvider.getConfigSupport().bindMdbToMessageDestination(ejbName, "MyTopic", org.netbeans.modules.j2ee.deployment.common.api.MessageDestination.Type.TOPIC);
-        }
-    }
-    catch (ConfigurationException ce) {
-        // TODO inform user
-    }
-}        
-            
+            try {
+                Project project = FileOwnerQuery.getOwner(pkg);
+                J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+                j2eeModuleProvider.getConfigSupport().bindMdbToMessageDestination(
+                        ejbName,
+                        messageDestination.getName(),
+                        messageDestination.getType());
+            } catch (ConfigurationException ce) {
+                ErrorManager.getDefault().notify(ce);
+            }
         }
         return resultFileObject;
     }
@@ -131,14 +125,18 @@ if (System.getProperties().getProperty("resource-api-redesign") != null) {
         FileObject resultFileObject = GenerationUtils.createClass(EJB21_EJBCLASS,  pkg, ejbClassName, null, templateParameters);
         ///
         Project project = FileOwnerQuery.getOwner(pkg);
-        J2eeModuleProvider pwm = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider pwm = project.getLookup().lookup(J2eeModuleProvider.class);
         pwm.getConfigSupport().ensureConfigurationReady();
         ///
         return resultFileObject;
     }
     
+    private boolean isQueue() {
+        return MessageDestination.Type.QUEUE.equals(messageDestination.getType());
+    }
+    
     private FileObject generateEJB30Classes() throws IOException {
-        String ejbClassTemplate = isQueue ? EJB30_QUEUE_EJBCLASS : EJB30_TOPIC_EJBCLASS;
+        String ejbClassTemplate = isQueue() ? EJB30_QUEUE_EJBCLASS : EJB30_TOPIC_EJBCLASS;
         FileObject resultFileObject = GenerationUtils.createClass(ejbClassTemplate,  pkg, ejbClassName, null, templateParameters);
 
         //TODO: RETOUCHE we don't have model for annotations yet
@@ -182,7 +180,7 @@ if (System.getProperties().getProperty("resource-api-redesign") != null) {
         ackProp.setActivationConfigPropertyName("acknowledgeMode"); // NOI18N
         ackProp.setActivationConfigPropertyValue("Auto-acknowledge"); // NOI18N
         config.addActivationConfigProperty(ackProp);
-        if (isQueue) {
+        if (isQueue()) {
             String queue = "javax.jms.Queue"; // NOI18N
             messageDriven.setMessageDestinationType(queue);
             destProp.setActivationConfigPropertyValue(queue);
@@ -220,7 +218,7 @@ if (System.getProperties().getProperty("resource-api-redesign") != null) {
             assemblyDescriptor = ejbJar.newAssemblyDescriptor();
             ejbJar.setAssemblyDescriptor(assemblyDescriptor);
         }
-        MessageDestination messageDestination = assemblyDescriptor.newMessageDestination();
+        org.netbeans.modules.j2ee.dd.api.common.MessageDestination messageDestination = assemblyDescriptor.newMessageDestination();
         String destinationLink = ejbName + "Destination"; //NOI18N
         messageDestination.setDisplayName("Destination for " + displayName);
         messageDestination.setMessageDestinationName(destinationLink);
@@ -236,7 +234,7 @@ if (System.getProperties().getProperty("resource-api-redesign") != null) {
         assemblyDescriptor.addContainerTransaction(containerTransaction);
         ejbJar.write(ejbModule.getDeploymentDescriptor());
         Project project = FileOwnerQuery.getOwner(pkg);
-        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
         try {
 	    // TODO: temporary using ejbName as the JNDI name, what should be correct?
             j2eeModuleProvider.getConfigSupport().ensureResourceDefinedForEjb(ejbName, "message-driven", ejbName); //NOI18N
