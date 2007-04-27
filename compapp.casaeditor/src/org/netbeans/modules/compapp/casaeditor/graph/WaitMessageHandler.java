@@ -19,7 +19,6 @@
 package org.netbeans.modules.compapp.casaeditor.graph;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -51,7 +50,7 @@ public class WaitMessageHandler {
         if (getBuildMessageWidget(scene) == null) {
             WaitMessageWidget messageWidget = new WaitMessageWidget(
                     scene,
-                    NbBundle.getMessage(WaitMessageHandler.class, "LBL_WaitMessage0"));
+                    NbBundle.getMessage(WaitMessageHandler.class, "LBL_WaitMessage3"));
             messageWidget.setAnimationText(
                     NbBundle.getMessage(WaitMessageHandler.class, "LBL_WaitMessage1"),
                     NbBundle.getMessage(WaitMessageHandler.class, "LBL_WaitMessage2"),
@@ -77,7 +76,7 @@ public class WaitMessageHandler {
         private static final Border BORDER = 
                 BorderFactory.createCompositeBorder(
                 // outer border
-                BorderFactory.createLineBorder(2, Color.LIGHT_GRAY),
+                BorderFactory.createLineBorder(2, new Color(220, 220, 200)),
                 // round-rect line
                 BorderFactory.createRoundedBorder(8, 8, null, Color.LIGHT_GRAY),
                 // inner border
@@ -90,6 +89,13 @@ public class WaitMessageHandler {
         private Runnable mCurrentAnimator;
         
         
+        /**
+         * Creates a new wait message widget with the given initial label.
+         * If animation text is set, for best results, the label passed into
+         * the constructor should be as long or longer than the longest
+         * animation text - otherwise the widget will change its size
+         * to accomodate longer text, which is not as visibly pleasing.
+         */
         public WaitMessageWidget(Scene scene, String label) {
             super(scene);
             setLabel(label);
@@ -100,8 +106,17 @@ public class WaitMessageHandler {
             setOpaque(true);
         }
         
+        /**
+         * Sets the animation text.
+         * The animation must be set before the widget is added to a parent.
+         */
         public void setAnimationText(String... text) {
             mAnimationText = text;
+            if (getParentWidget() != null) {
+                // This method must be called before the widget is
+                // added to a parent.
+                throw new IllegalStateException();
+            }
         }
         
         protected void notifyAdded() {
@@ -109,8 +124,7 @@ public class WaitMessageHandler {
             
             mDependenciesRegistry = new DependenciesRegistry(getParentWidget());
             
-            Rectangle preferredBounds = getPreferredBounds();
-            setMinimumSize(new Dimension(preferredBounds.width + 20, preferredBounds.height));
+            setMinimumSize(getPreferredBounds().getSize());
             
             center();
             Widget.Dependency centerer = new Widget.Dependency() {
