@@ -75,7 +75,6 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
             public FileObject[] getRoots() {
                 FileObject[] fo = cache;
                 if (fo == null) {
-                    cache = new FileObject[0];
                     fo = createRoots();
                     synchronized (lock) {
                         if (cache != null) cache = fo;
