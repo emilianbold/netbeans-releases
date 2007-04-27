@@ -153,8 +153,19 @@ public final class GenCodeUtil
         String lowerStr = mult.getRanges().get(0).getLower();
         String upperStr = mult.getRanges().get(0).getUpper();
         
-        return upperStr.equals(ASTERIK) || lowerStr.equals(ASTERIK) || 
-                Long.valueOf(upperStr).intValue() > 1;
+	boolean result = upperStr.equals(ASTERIK) || lowerStr.equals(ASTERIK);
+	if (! result) 
+	{
+	    try 
+	    {		
+		result = Long.valueOf(upperStr).intValue() > 1;
+	    } 
+	    catch (NumberFormatException nfe) 
+	    {
+		// do nothing as it is just happens to be not a number 
+	    }
+	}
+	return result;
     }
 
     public static String removeGenericType(String type)
@@ -368,11 +379,15 @@ public final class GenCodeUtil
 		IMultiplicityRange range = iter.next();
 		if (range != null) {
 		    type = range.getCollectionType(false);
+		    type = JavaClassUtils.convertUMLtoJava(type);
 		}	        
 	    }
-	    if (type == null || type.trim().equals("") ) {
-		type = UMLSupport.getUMLSupport().getCollectionOverride();		
-	    }
+	    // as there is always a value set at the attribute/parameter level
+	    // whereis empty means "AsArray"
+	    // then there isn't need for the global one
+	    //if (type == null || type.trim().equals("") ) {
+	    //	type = UMLSupport.getUMLSupport().getCollectionOverride();		
+	    //}
 	    if (! fullyQualified) {
 		type = JavaClassUtils.getShortClassName(type);
 	    }
