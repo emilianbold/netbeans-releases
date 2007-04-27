@@ -122,7 +122,7 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
     public boolean isVerticallyResizable() {
         return false;
     }
-
+    
     public String getAsText() {
         String superText = super.getAsText();
         if (superText != null) {
@@ -132,7 +132,7 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
         PropertyValue value = (PropertyValue) super.getValue();
         for (String key : values.keySet()) {
             PropertyValue tmpValue = values.get(key);
-            if (value.getPrimitiveValue ().equals(tmpValue.getPrimitiveValue ())) {
+            if (value.getPrimitiveValue().equals(tmpValue.getPrimitiveValue())) {
                 return key;
             }
         }
@@ -146,7 +146,7 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
     public String getText() {
         return null;
     }
-
+    
     public void setPropertyValue(PropertyValue value) {
         if (isCurrentValueANull() || value == null) {
             // clear customEditor if needed
@@ -181,6 +181,12 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
         for (String valueAsText : values.keySet()) {
             tags[i++] = valueAsText;
         }
+    }
+    
+   public Boolean canEditAsText() {
+        if (getTags() == null)
+            return super.canEditAsText();
+        return null;
     }
     
     public boolean canWrite() {
@@ -220,7 +226,7 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
         
         public void setValue(PropertyValue value) {
             for (String key : values.keySet()) {
-                if (values.get(key).getPrimitiveValue ().equals(value.getPrimitiveValue ())) {
+                if (values.get(key).getPrimitiveValue().equals(value.getPrimitiveValue())) {
                     combobox.setSelectedItem(key);
                     break;
                 }
