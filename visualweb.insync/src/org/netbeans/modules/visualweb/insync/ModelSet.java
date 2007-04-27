@@ -49,7 +49,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.visualweb.classloaderprovider.CommonClassloaderProvider;
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
-import org.netbeans.modules.visualweb.insync.models.FacesModel;
+import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
@@ -111,15 +111,12 @@ public abstract class ModelSet implements FileChangeListener {
                 DataObject dataObject = (DataObject) node.getCookie(DataObject.class);
                 if (dataObject != null) {
                     FileObject fileObject = dataObject.getPrimaryFile();
-                    ModelSet modelSet = ModelSet.getInstance(fileObject, null);
-                    if (modelSet != null) {
-                        // Get the model corresponding to the fileObject
-                        Model model = modelSet.getModel(fileObject);
-                        // Well, if its not a model, lets not forget that ModeSet breaks up config models and "document" models
-                        // sync model if the top component is losing focus
-                        if (model != null && !makeActive) {
-                            model.sync();
-                        }
+                    // Get the model corresponding to the fileObject
+                    Model model = FacesModelSet.getFacesModelIfAvailable(fileObject);
+                    // Well, if its not a model, lets not forget that ModeSet breaks up config models and "document" models
+                    // sync model if the top component is losing focus
+                    if (model != null && !makeActive) {
+                        model.sync();
                     }
                 }
             }
@@ -133,7 +130,7 @@ public abstract class ModelSet implements FileChangeListener {
                 if (topComponent == previousTopComponent)
                     return;
                 previousTopComponent = topComponent;
-                boolean isTopComponentEditor = topComponent instanceof CloneableEditor;
+                boolean isTopComponentEditor = WindowManager.getDefault().isEditorTopComponent(topComponent);
                 Node[] nodes;
                 nodes = (Node[]) event.getOldValue();
                 processNodes(nodes, false);
@@ -203,6 +200,7 @@ public abstract class ModelSet implements FileChangeListener {
             return null;
         }
 
+        
         // XXX NB#49507 Hack until multiview will be able to provide its selected (all) components
         protected Component[] findDescendantsOfClass(Container parent, Class clazz) {
             List list = new ArrayList();
@@ -221,6 +219,8 @@ public abstract class ModelSet implements FileChangeListener {
         }
         // </HACK>
     }
+    
+    private static WindowManagerPropertyRegistry windowManagerPropertyRegistry = new WindowManagerPropertyRegistry();
     
     protected static class OpenProjectsListener implements PropertyChangeListener {
 
@@ -266,7 +266,7 @@ public abstract class ModelSet implements FileChangeListener {
     }
 
     static {
-        WindowManager.getDefault().getRegistry().addPropertyChangeListener(new WindowManagerPropertyRegistry());
+//        WindowManager.getDefault().getRegistry().addPropertyChangeListener(new WindowManagerPropertyRegistry());
         OpenProjects.getDefault().addPropertyChangeListener(new OpenProjectsListener());
     }
 
@@ -310,20 +310,23 @@ public abstract class ModelSet implements FileChangeListener {
         return Lookup.getDefault().lookup(new Lookup.Template(Model.Factory.class)).allInstances();
     }
 
+    protected static void startModeling(final Project project, final Class ofType) {
+        if (project == null)
+            return;
+        ModelSet set = getModelSet(project);
+        if (set == null) {
+            new Thread(new Runnable() {
+                public void run() {
+                    getInstance(project, ofType);
+                }}, "Loading ModelSet for " + project.getProjectDirectory().getName()).start(); // NOI18N
+        }
+    }
+    
     protected static ModelSet getInstance(FileObject file, Class ofType) {
         Project project = FileOwnerQuery.getOwner(file);
         return getInstance(project, ofType);
     }
 
-    protected static ModelSet getModelSet(FileObject file) {
-        Project project = FileOwnerQuery.getOwner(file);
-        ModelSet set = null;
-        synchronized (sets) {
-            set = (ModelSet)sets.get(project);
-        }
-        return set;
-    }
-    
     /**
      * Helper method for sub-classes to be able to get access to a ModelSet of their own specific type.
      * @param project
@@ -338,15 +341,52 @@ public abstract class ModelSet implements FileChangeListener {
         }
         if (set == null && ofType != null) {
             try {
+                WindowManager.getDefault().getRegistry().removePropertyChangeListener(windowManagerPropertyRegistry);
                 Constructor constructor = ofType.getConstructor(new Class[] {Project.class});
                 set = (ModelSet) constructor.newInstance(new Object[] {project});
+                set.setInitialized();
+                // This should be fired after the ModelSet is fully constructed
+                // and initial syncall has happened.  
+                fireModelSetAdded(set);
             } catch (Exception e) {
                 throw new RuntimeException(e);
+            } finally {
+                WindowManager.getDefault().getRegistry().addPropertyChangeListener(windowManagerPropertyRegistry);
             }
         }
         return set;
     }
+    
+    protected static ModelSet getModelSet(FileObject file) {
+        return getModelSet(FileOwnerQuery.getOwner(file));
+    }
+    
+    protected static ModelSet getModelSet(Project project) {
+        ModelSet set = null;
+        synchronized (sets) {
+            set = (ModelSet)sets.get(project);
+        }
+        return set;
+    }
+    
+    public static Model getModelIfAvailable(FileObject fileObject) {
+        ModelSet modelSet = getModelSet(fileObject);   
+        if (modelSet instanceof ModelSet && modelSet.isInitialized()) {
+            return modelSet.getModel(fileObject);
+        }
+        return null;
+    }
+    
+    private boolean initialized;
+        
+    public boolean isInitialized() {
+        return initialized;
+    }
 
+    public void setInitialized() {
+        this.initialized = true;
+    }
+    
     //--------------------------------------------------------------------------------- Construction
 
     protected final ClassLoader parentClassLoader;  // classloader to parent the project classloader to
@@ -414,8 +454,6 @@ public abstract class ModelSet implements FileChangeListener {
         // XXX NB issue #81746.
  	    DataLoaderPool.getDefault().addOperationListener(
  	    (OperationListener)WeakListeners.create(OperationListener.class, operationListener, DataLoaderPool.getDefault()));
-
-        fireModelSetAdded(this);
     }
 
     protected List getSourceRoots() {

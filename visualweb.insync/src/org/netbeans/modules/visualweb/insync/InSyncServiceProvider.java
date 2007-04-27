@@ -186,7 +186,7 @@ public class InSyncServiceProvider extends InSyncService {
             return;
         }
 
-        FacesModel facesModel = FacesModel.getInstance(dobj.getPrimaryFile());
+        FacesModel facesModel = FacesModelSet.getFacesModelIfAvailable(dobj.getPrimaryFile());
 
         if (facesModel != null) {
             SourceMonitor sm = SourceMonitor.getSourceMonitorForFacesModel(facesModel);
@@ -199,7 +199,7 @@ public class InSyncServiceProvider extends InSyncService {
             return;
         }
 
-        FacesModel facesModel = FacesModel.getInstance(dobj.getPrimaryFile());
+        FacesModel facesModel = FacesModelSet.getFacesModelIfAvailable(dobj.getPrimaryFile());
 
         if (facesModel != null) {
             SourceMonitor sm = SourceMonitor.getSourceMonitorForFacesModel(facesModel);
@@ -212,7 +212,7 @@ public class InSyncServiceProvider extends InSyncService {
             return;
         }
 
-        FacesModel facesModel = FacesModel.getInstance(dobj.getPrimaryFile());
+        FacesModel facesModel = FacesModelSet.getFacesModelIfAvailable(dobj.getPrimaryFile());
 
         if (facesModel != null) {
             SourceMonitor sm = SourceMonitor.getSourceMonitorForFacesModel(facesModel);

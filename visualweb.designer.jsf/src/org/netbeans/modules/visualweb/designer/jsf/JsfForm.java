@@ -42,6 +42,8 @@ import org.netbeans.modules.visualweb.designer.jsf.text.DomDocumentImpl;
 import org.netbeans.modules.visualweb.insync.live.LiveUnit;
 import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
+import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -58,6 +60,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
+
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
@@ -67,6 +71,8 @@ import org.netbeans.modules.visualweb.designer.jsf.ui.ErrorPanelImpl;
 import org.netbeans.modules.visualweb.designer.jsf.ui.JsfMultiViewElement;
 import org.netbeans.modules.visualweb.designer.jsf.ui.NotAvailableMultiViewElement;
 import org.netbeans.modules.visualweb.designer.jsf.ui.RenderErrorPanelImpl;
+import org.netbeans.modules.visualweb.insync.ModelSet;
+import org.netbeans.modules.visualweb.insync.ModelSetsListener;
 import org.netbeans.modules.visualweb.insync.ResultHandler;
 import org.netbeans.modules.visualweb.insync.UndoEvent;
 import org.netbeans.modules.visualweb.insync.Unit;
@@ -245,7 +251,7 @@ public class JsfForm {
     // XXX TEMP to try out.
     private static boolean LOAD_MODEL_ASYNCHRONOUSLY = Boolean.getBoolean("vwp.designer.jsf.loadModelAsync"); // NOI18N
     
-    public static JsfForm getJsfForm(DataObject dataObject) {
+    public static JsfForm getJsfForm(final DataObject dataObject) {
         if (dataObject == null) {
             return null;
         }
@@ -253,7 +259,7 @@ public class JsfForm {
         FacesModel facesModel;
         if (LOAD_MODEL_ASYNCHRONOUSLY) {
             // XXX TODO Here should be a method which immediatelly returns FacesModel if it is already created.
-            facesModel = null; // TEMP
+            facesModel = FacesModelSet.getFacesModelIfAvailable(dataObject.getPrimaryFile());
         } else {
             facesModel = getFacesModel(dataObject);
             if (facesModel == null) {
@@ -277,10 +283,24 @@ public class JsfForm {
             }
         }
 
+        final JsfForm finalJsfForm = jsfForm;
         // XXX FacesModel was not loaded, do it now.
         if (facesModel == null) {
-            // XXX Invoke the model creation.
-            jsfForm.initFacesModel(dataObject);
+            ModelSet.addModelSetsListener(new ModelSetsListener() {
+                public void modelSetAdded(ModelSet modelSet) {
+                    Project project = modelSet.getProject();
+                    FileObject fileObject = dataObject.getPrimaryFile();
+                    Project jsfProject = FileOwnerQuery.getOwner(fileObject);
+                    if (project == jsfProject) {
+                        finalJsfForm.loadFacesModel(dataObject);                        
+                        ModelSet.removeModelSetsListener(this);
+                    }
+                }
+
+                public void modelSetRemoved(ModelSet modelSet) {
+                }        
+            });
+            FacesModelSet.startModeling(dataObject.getPrimaryFile());            
         }
         
         return jsfForm;
@@ -2658,21 +2678,6 @@ public class JsfForm {
         return getFacesModel() != null;
     }
 
-    
-    // XXX Are we still supposed to use the RequestProcessor.
-    private static final ExecutorService LOAD_EXECUTOR_SERVICE = new ThreadPoolExecutor(
-            0, 5, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>());
-    
-    /** Asynchronously loads the FacesModel. */
-    private void initFacesModel(final DataObject dataObject) {
-        // XXX The FacesModel is null, init it.
-        LOAD_EXECUTOR_SERVICE.execute(new Runnable() {
-            public void run() {
-                loadFacesModel(dataObject);
-            }
-        });
-    }
-    
     private void loadFacesModel(DataObject dataObject) {
         FacesModel facesModel;
         try {

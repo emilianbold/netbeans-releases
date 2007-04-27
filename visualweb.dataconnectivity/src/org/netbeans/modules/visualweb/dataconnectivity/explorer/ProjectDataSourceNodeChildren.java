@@ -34,6 +34,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourceListener;
 import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourceChangeEvent;
+import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
 import java.awt.Image;
 import java.io.CharConversionException;
 import org.openide.util.Utilities;
@@ -59,8 +60,12 @@ public class ProjectDataSourceNodeChildren extends Children.Keys implements Proj
         updateKeys();
 
         // make sure insync has done it's stuff so that we know the datasources.
-        org.netbeans.modules.visualweb.insync.models.FacesModelSet.getInstance(nbProject) ;
-
+		if (Boolean.getBoolean("vwp.designer.jsf.loadModelAsync")) { // NOI18N
+			FacesModelSet.startModeling(nbProject);
+		} else {
+			FacesModelSet.getInstance(nbProject);			
+		}
+		
         ProjectDataSourceTracker.addListener( nbProject,this);
 
     }

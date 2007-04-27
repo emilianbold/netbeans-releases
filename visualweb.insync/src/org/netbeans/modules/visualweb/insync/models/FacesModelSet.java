@@ -42,6 +42,7 @@ import javax.swing.event.ChangeListener;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -300,6 +301,18 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
     }        
     
     //--------------------------------------------------------------------------------- Construction
+    
+    public static void startModeling(FileObject file) {
+        Project project = FileOwnerQuery.getOwner(file);
+        if (project == null) {
+            return;
+        }
+        startModeling(project);
+    }
+    
+    public static void startModeling(Project project) {
+        ModelSet.startModeling(project, FacesModelSet.class);
+    }
 
     public static FacesModelSet getInstance(FileObject file) {
         return (FacesModelSet) ModelSet.getInstance(file, FacesModelSet.class);
@@ -312,6 +325,14 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
      */
     public static FacesModelSet getInstance(Project project) {
         return (FacesModelSet) ModelSet.getInstance(project, FacesModelSet.class);
+    }
+    
+    public static FacesModel getFacesModelIfAvailable(FileObject fileObject) {
+        Model model = ModelSet.getModelIfAvailable(fileObject);   
+        if (model instanceof FacesModel) {
+            return (FacesModel) model;
+        }
+        return null;
     }
 
     private FacesContainer facesContainer;
