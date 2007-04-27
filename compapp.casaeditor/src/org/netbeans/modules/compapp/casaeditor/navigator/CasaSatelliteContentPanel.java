@@ -20,10 +20,10 @@
 package org.netbeans.modules.compapp.casaeditor.navigator;
 
 import java.awt.BorderLayout;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.compapp.casaeditor.CasaDataObject;
-import org.netbeans.modules.visual.widget.SatelliteComponent;
 
 /**
  *
@@ -58,7 +58,7 @@ public class CasaSatelliteContentPanel extends JPanel {
             if (
                     !mTracker.hasSatelliteComponent() ||
                     isSceneChanged) {
-                SatelliteComponent satellite = mTracker.newSatelliteComponent(scene);
+                JComponent satellite = mTracker.newSatelliteComponent(scene);
                 add(satellite, BorderLayout.CENTER);
                 revalidate();
             }
@@ -68,16 +68,17 @@ public class CasaSatelliteContentPanel extends JPanel {
     
     private static class SatelliteTracker {
         private Scene mScene;
-        private SatelliteComponent mSatelliteComponent;
+        private JComponent mSatelliteComponent;
         public boolean isSameScene(Scene scene) {
             return mScene != null && mScene == scene;
         }
         public boolean hasSatelliteComponent() {
             return mSatelliteComponent != null;
         }
-        public SatelliteComponent newSatelliteComponent(Scene scene) {
+        public JComponent newSatelliteComponent(Scene scene) {
             mScene = scene;
-            mSatelliteComponent = new SatelliteComponent(scene);
+            mSatelliteComponent = mScene.createSatelliteView();
+                    
             return mSatelliteComponent;
         }
     }
