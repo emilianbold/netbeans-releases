@@ -636,7 +636,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         int cnt = 1;
                         sb.append("${PAR"); //NOI18N
                         sb.append(cnt++);
-                        if (type.getKind() != TypeKind.ERROR) {
+                        if (type.getKind() != TypeKind.ERROR && EnumSet.range(ElementKind.PACKAGE, ElementKind.INTERFACE).contains(elem.getEnclosingElement().getKind())) {
                             sb.append(" type=\""); //NOI18N
                             sb.append(elem.getQualifiedName());
                         } else {

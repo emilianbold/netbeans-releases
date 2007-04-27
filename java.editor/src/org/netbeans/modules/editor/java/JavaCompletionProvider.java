@@ -3730,9 +3730,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 last = st;
                         }
                     }
-                    scope = tu.attributeTreeTo(block, scope, last);
+                    scope = tu.reattributeTreeTo(block, scope, last);
                 } else {
-                    tu.attributeTreeTo(block, scope, block);
+                    tu.reattributeTreeTo(block, scope, block);
                 }
                 return new Env(offset, prefix, controller, path, sourcePositions, scope);
             } else if (grandParent != null && grandParent.getKind() == Tree.Kind.CLASS &&
@@ -3758,9 +3758,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                 Scope scope = controller.getTrees().getScope(path);
                 path = tu.pathFor(new TreePath(pPath, fake), offset, sourcePositions);
                 if (upToOffset && sp[0].getEndPosition(root, init) + initPos > offset) {
-                    scope = tu.attributeTreeTo(init, scope, path.getLeaf());
+                    scope = tu.reattributeTreeTo(init, scope, path.getLeaf());
                 } else {
-                    tu.attributeTree(init, scope);
+                    tu.reattributeTree(init, scope);
                 }
                 return new Env(offset, prefix, controller, path, sourcePositions, scope);
             } else if (parent != null && parent.getKind() == Tree.Kind.CLASS && tree.getKind() == Tree.Kind.VARIABLE &&
@@ -3786,12 +3786,12 @@ public class JavaCompletionProvider implements CompletionProvider {
                 };
                 sourcePositions = new SourcePositionsImpl(fake, sourcePositions, sp[0], initPos, offset);
                 path = tu.pathFor(new TreePath(path, fake), offset, sourcePositions);
-                tu.attributeTree(init, scope);
+                tu.reattributeTree(init, scope);
                 return new Env(offset, prefix, controller, path, sourcePositions, scope);
             }
             return null;
         }
-
+        
         private class SourcePositionsImpl extends TreeScanner<Void, Tree> implements SourcePositions {
             
             private Tree root;

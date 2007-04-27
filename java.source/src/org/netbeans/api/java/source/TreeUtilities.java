@@ -23,12 +23,16 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.api.JavacScope;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.comp.AttrContext;
+import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.comp.Resolve;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import java.util.*;
 import javax.lang.model.element.*;
@@ -274,6 +278,18 @@ public final class TreeUtilities {
         return info.getJavacTask().attributeTreeTo((JCTree)tree, ((JavacScope)scope).getEnv(), (JCTree)to);
     }
     
+    public TypeMirror reattributeTree(Tree tree, Scope scope) {
+        Env<AttrContext> env = ((JavacScope)scope).getEnv();
+        copyInnerClassIndexes(env.tree, tree);
+        return info.getJavacTask().attributeTree((JCTree)tree, env);
+    }
+    
+    public Scope reattributeTreeTo(Tree tree, Scope scope, Tree to) {
+        Env<AttrContext> env = ((JavacScope)scope).getEnv();
+        copyInnerClassIndexes(env.tree, tree);
+        return info.getJavacTask().attributeTreeTo((JCTree)tree, env, (JCTree)to);
+    }
+    
     public TokenSequence<JavaTokenId> tokensFor(Tree tree) {
         return tokensFor(tree, info.getTrees().getSourcePositions());
     }
@@ -352,6 +368,34 @@ public final class TreeUtilities {
             default:
                 throw new IllegalArgumentException("Unsupported kind: " + leaf.getKind());
         }
+    }
+
+    private void copyInnerClassIndexes(Tree from, Tree to) {
+        final int[] fromIdx = {-2};
+        TreeScanner<Void, Void> scanner = new TreeScanner<Void, Void>() {
+            @Override
+            public Void scan(Tree node, Void p) {
+                if (fromIdx[0] < -1)
+                    super.scan(node, p);
+                return null;
+            }            
+            @Override
+            public Void visitClass(ClassTree node, Void p) {
+                fromIdx[0] = ((JCClassDecl)node).index;
+                return super.visitClass(node, p);
+            }
+        };
+        scanner.scan(from, null);
+        scanner = new TreeScanner<Void, Void>() {
+            @Override
+            public Void visitClass(ClassTree node, Void p) {
+                ((JCClassDecl)node).index = fromIdx[0]++;
+                return super.visitClass(node, p);
+            }
+        };
+        scanner.scan(to, null);
+        if (fromIdx[0] < -1)
+            return;
     }
 
     private static class UncaughtExceptionsVisitor extends TreePathScanner<Void, Set<TypeMirror>> {
