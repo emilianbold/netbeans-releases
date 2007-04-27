@@ -355,7 +355,7 @@ final class QuietEditorPane extends JEditorPane {
 
         public void drop(DropTargetDropEvent e) {
             ExternalDropHandler handler = (ExternalDropHandler)Lookup.getDefault().lookup( ExternalDropHandler.class );
-            if( handler.canDrop( e ) ) {
+            if( null != handler && handler.canDrop( e ) ) {
                 e.acceptDrop( DnDConstants.ACTION_COPY );
 
                 e.dropComplete( handler.handleDrop( e ) );
