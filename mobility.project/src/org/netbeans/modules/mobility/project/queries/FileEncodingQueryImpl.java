@@ -45,20 +45,21 @@ public class FileEncodingQueryImpl extends FileEncodingQueryImplementation imple
         hlp.addAntProjectListener(this);
     }
     
-    public synchronized Charset getEncoding(FileObject file) {
-        if (ch == null) try {
+    public Charset getEncoding(FileObject file) {
+        Charset c = ch;
+        if (c == null) try {
             String enc = J2MEProjectUtils.evaluateProperty(hlp, DefaultPropertiesDescriptor.JAVAC_ENCODING);
-            ch = enc == null ? FileEncodingQuery.getDefaultEncoding() : Charset.forName(enc);
+            ch = c = enc == null ? FileEncodingQuery.getDefaultEncoding() : Charset.forName(enc);
         } catch (IllegalCharsetNameException exception) {
             return null;
         }
-        return ch;
+        return c;
     }
 
     public void configurationXmlChanged(AntProjectEvent ev) {
     }
 
-    public synchronized void propertiesChanged(AntProjectEvent ev) {
+    public void propertiesChanged(AntProjectEvent ev) {
         ch = null;
     }
     

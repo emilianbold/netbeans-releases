@@ -71,10 +71,9 @@ public class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplement
                 helper.addAntProjectListener(antProjectListener);
             }
             
-            public synchronized URL[] getRoots() {
+            public URL[] getRoots() {
                 URL [] urls = cache;
                 if (urls == null) {
-                    cache = new URL[0];
                     urls = createRoots();
                     synchronized (lock) {
                         if (cache != null) cache = urls;

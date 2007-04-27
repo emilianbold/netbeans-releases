@@ -43,6 +43,7 @@ import org.openide.util.WeakListeners;
 
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
+import org.openide.util.RequestProcessor;
 
 public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImplementation {
     
@@ -71,7 +72,7 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
                 helper.addAntProjectListener(antProjectListener);
             }
             
-            public synchronized FileObject[] getRoots() {
+            public FileObject[] getRoots() {
                 FileObject[] fo = cache;
                 if (fo == null) {
                     cache = new FileObject[0];
@@ -137,13 +138,17 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
             }
             
             private void fireChanged() {
-                synchronized (listeners) {
-                    final ChangeEvent event=new ChangeEvent(this);
-                    for (int i = 0; i < listeners.size(); i++) {
-                        final ChangeListener changeListener = listeners.get(i);
-                        changeListener.stateChanged(event);
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        synchronized (listeners) {
+                            final ChangeEvent event=new ChangeEvent(this);
+                            for (int i = 0; i < listeners.size(); i++) {
+                                final ChangeListener changeListener = listeners.get(i);
+                                changeListener.stateChanged(event);
+                            }
+                        }
                     }
-                }
+                });
             }
             
             public void configurationXmlChanged(@SuppressWarnings("unused") AntProjectEvent event) {

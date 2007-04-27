@@ -69,8 +69,11 @@ public class FileBuiltQueryImpl implements FileBuiltQueryImplementation, Propert
         return srcRoot;
     }
     
-    public synchronized FileBuiltQuery.Status getStatus(final FileObject file) {
-        final Object o = statuses.get(file);
+    public FileBuiltQuery.Status getStatus(final FileObject file) {
+        Object o;
+        synchronized (statuses) {
+            o = statuses.get(file);
+        }
         if (o == NONE) {
             return null;
         }
@@ -78,10 +81,12 @@ public class FileBuiltQueryImpl implements FileBuiltQueryImplementation, Propert
         StatusImpl status = (r != null) ? (StatusImpl)r.get() : null;
         if (status == null) {
             status = createStatus(file);
-            if (status != null) {
-                statuses.put(file, new WeakReference<StatusImpl>(status));
-            } else {
-                statuses.put(file, NONE);
+            synchronized (statuses) {
+                if (status != null) {
+                    statuses.put(file, new WeakReference<StatusImpl>(status));
+                } else {
+                    statuses.put(file, NONE);
+                }
             }
         }
         return status;
@@ -94,7 +99,7 @@ public class FileBuiltQueryImpl implements FileBuiltQueryImplementation, Propert
     
     public void run() {
         FileObject files[];
-        synchronized (this) {
+        synchronized (statuses) {
             files = statuses.keySet().toArray(new FileObject[statuses.size()]);
         }
         for (int i=0; i<files.length; i++) {
@@ -154,7 +159,7 @@ public class FileBuiltQueryImpl implements FileBuiltQueryImplementation, Propert
         public boolean isBuilt() {
             boolean doFire = false;
             boolean b;
-            synchronized (FileBuiltQueryImpl.this) {
+            synchronized (StatusImpl.this) {
                 b = isReallyBuilt();
                 if (built != null && built.booleanValue() != b) {
                     doFire = true;
