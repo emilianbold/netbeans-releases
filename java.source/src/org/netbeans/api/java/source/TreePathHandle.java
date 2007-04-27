@@ -26,7 +26,10 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.logging.Logger;                                                                                                                                                                                                    
 import javax.lang.model.element.Element;                                                                                                                                                                                       
+import javax.lang.model.element.ElementKind;
 import javax.swing.text.Position.Bias;                                                                                                                                                                                         
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;                                                                                                                                                                                     
 import org.openide.filesystems.URLMapper;
@@ -76,7 +79,8 @@ public final class TreePathHandle {
     private KindPath kindPath;                                                                                                                                                                                                 
     private FileObject file;                                                                                                                                                                                                   
     private ElementHandle enclosingElement;                                                                                                                                                                                    
-    private boolean enclElIsCorrespondingEl;                                                                                                                                                                                   
+    private boolean enclElIsCorrespondingEl;
+    private Tree.Kind kind;
                                                                                                                                                                                                                                
     /**                                                                                                                                                                                                                        
      * getter for FileObject from give TreePathHandle                                                                                                                                                                          
@@ -128,15 +132,19 @@ public final class TreePathHandle {
         TreePath tp = null;                                                                                                                                                                                                    
         IllegalStateException ise = null;
         try {
-            if (info.getFileObject().equals(this.file)) {
+            if ((this.file!=null && info.getFileObject()!=null) && info.getFileObject().equals(this.file)) {
                 tp = this.resolve(info);
             }
         } catch (IllegalStateException i) {
             ise=i;
         }
         if (tp==null) {                                                                                                                                                                                                        
-            if (enclElIsCorrespondingEl) {                                                                                                                                                                                     
-                return enclosingElement.resolve(info);                                                                                                                                                                         
+            if (enclElIsCorrespondingEl) {
+                Element e = enclosingElement.resolve(info);
+                if (e==null) {
+                    Logger.getLogger(TreePathHandle.class.getName()).fine("Cannot resolve" + enclosingElement + " in " + info.getClasspathInfo());    //NOI18N
+                }
+                return e;                                                                                                                                                                         
             } else {
                 if (ise==null)
                     return null;
@@ -147,7 +155,11 @@ public final class TreePathHandle {
         if (el==null) {
             Logger.getLogger(TreePathHandle.class.toString()).fine("info.getTrees().getElement(tp) returned null for " + tp);
             if (enclElIsCorrespondingEl) {
-                return enclosingElement.resolve(info);  
+                Element e = enclosingElement.resolve(info);
+                if (e==null) {
+                    Logger.getLogger(TreePathHandle.class.getName()).fine("Cannot resolve" + enclosingElement + " in " + info.getClasspathInfo());    //NOI18N
+                }
+                return e;                                                                                                                                                                         
             } else {
                 return null;
             }
@@ -157,14 +169,14 @@ public final class TreePathHandle {
     }                                                                                                                                                                                                                          
                                                                                                                                                                                                                                
     /**                                                                                                                                                                                                                        
-     * Returns the {@link Tree.Kind} of this element handle,                                                                                                                                                                   
-     * it enclElIsCorrespondingEl the kind of the {@link Tree} from which the handle                                                                                                                                           
+     * Returns the {@link Tree.Kind} of this TreePathHandle,                                                                                                                                                                   
+     * it returns the kind of the {@link Tree} from which the handle                                                                                                                                           
      * was created.                                                                                                                                                                                                            
      *                                                                                                                                                                                                                         
      * @return {@link Tree.Kind}                                                                                                                                                                                               
      */                                                                                                                                                                                                                        
     public Tree.Kind getKind() {                                                                                                                                                                                               
-        return kindPath.kindPath.get(0);                                                                                                                                                             
+        return kind;                                                                                                                                                             
     }                                                                                                                                                                                                                          
                                                                                                                                                                                                                                
     private TreePathHandle(PositionRef position, KindPath kindPath, FileObject file, ElementHandle element, boolean enclElIsCorrespondingEl) {                                                                                 
@@ -172,16 +184,30 @@ public final class TreePathHandle {
         this.position = position;                                                                                                                                                                                              
         this.file = file;                                                                                                                                                                                                      
         this.enclosingElement = element;                                                                                                                                                                                       
-        this.enclElIsCorrespondingEl = enclElIsCorrespondingEl;                                                                                                                                                                
-    }                                                                                                                                                                                                                          
-                                                                                                                                                                                                                               
+        this.enclElIsCorrespondingEl = enclElIsCorrespondingEl;
+        if (kindPath!=null)
+            this.kind = kindPath.kindPath.get(0);
+        else {
+            if (enclElIsCorrespondingEl) {
+                ElementKind k = element.getKind();
+                if (k.isClass() || k.isInterface()) {
+                    kind = Tree.Kind.CLASS;
+                } else if (k.isField()) {
+                    kind = Tree.Kind.VARIABLE;
+                } else if (k==ElementKind.METHOD || k==ElementKind.CONSTRUCTOR) {
+                    kind = Tree.Kind.METHOD;
+                }
+            }
+        } 
+    }
+    
     /**                                                                                                                                                                                                                        
      * Factory method for creating {@link TreePathHandle}.                                                                                                                                                                     
      *                                                                                                                                                                                                                         
      * @param treePath for which the {@link TrePathHandle} should be created.                                                                                                                                                  
+     * @param info 
      * @return a new {@link TreePathHandle}                                                                                                                                                                                    
-     * @throws {@link IllegalArgumentException} if the element enclElIsCorrespondingEl of not supported                                                                                                                        
-     * {@link Tree.Kind}.                                                                                                                                                                                                      
+     * @throws java.lang.IllegalArgumentException if arguments are not supported
      */                                                                                                                                                                                                                        
     public static TreePathHandle create (final TreePath treePath, CompilationInfo info) throws IllegalArgumentException {                                                                                                      
         FileObject file;
@@ -205,6 +231,26 @@ public final class TreePathHandle {
         } while ((element == null || !isSupported(element)) && current !=null);                                                                                                                                                
         return new TreePathHandle(pos, new KindPath(treePath), file,ElementHandle.create(element), enclElIsCorrespondingEl);                                                                                   
     }          
+    
+    /**                                                                                                                                                                                                                        
+     * Factory method for creating {@link TreePathHandle}.                                                                                                                                                                     
+     *                                                                                                                                                                                                                         
+     * @param element for which the {@link TrePathHandle} should be created.                                                                                                                                                  
+     * @param info 
+     * @return a new {@link TreePathHandle}                                                                                                                                                                                    
+     * @throws java.lang.IllegalArgumentException if arguments are not supported
+     */                                                                                                                                                                                                                        
+    public static TreePathHandle create(Element element, CompilationInfo info) throws IllegalArgumentException {
+        FileObject file = SourceUtils.getFile(element, info.getClasspathInfo());
+        if (file==null) {
+            //source does not exist
+            ElementHandle eh = ElementHandle.create(element);
+            return new TreePathHandle(null, null, null, eh, true);
+        } else {
+            TreePath treePath = SourceUtils.pathFor(info, element);
+            return create(treePath, info);
+        }
+    }
     
     private static boolean isSupported(Element el) {                                                                                                                                                                           
         switch (el.getKind()) {                                                                                                                                                                                                
