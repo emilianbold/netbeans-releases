@@ -212,8 +212,12 @@ public class RetoucheUtils {
         return false;
     }
     public static boolean isFromLibrary(Element element, ClasspathInfo info) {
-        SourceUtils.getFile(element, info);
-        return FileUtil.getArchiveFile(SourceUtils.getFile(element, info))!=null;
+        FileObject file = SourceUtils.getFile(element, info);
+        if (file==null) {
+            //no source for given element. Element is from library
+            return true;
+        }
+        return FileUtil.getArchiveFile(file)!=null;
     }
 
     public static boolean isValidPackageName(String name) {
@@ -478,6 +482,9 @@ public class RetoucheUtils {
             if (p!=null) {
                 URL sourceRoot = URLMapper.findURL(ClassPath.getClassPath(fo, ClassPath.SOURCE).findOwnerRoot(fo), URLMapper.INTERNAL);
                 dependentRoots.addAll(SourceUtils.getDependentRoots(sourceRoot));
+                for (SourceGroup root:ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+                    dependentRoots.add(URLMapper.findURL(root.getRootFolder(), URLMapper.INTERNAL));
+                }
             } else {
                 for(ClassPath cp: GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {
                     for (FileObject root:cp.getRoots()) {
@@ -488,8 +495,10 @@ public class RetoucheUtils {
         }
         
         ClassPath rcp = ClassPathSupport.createClassPath(dependentRoots.toArray(new URL[dependentRoots.size()]));
-        ClassPath nullPath = ClassPathSupport.createClassPath(new FileObject[0]);
-        ClasspathInfo cpInfo = ClasspathInfo.create(nullPath, nullPath, rcp);
+//        ClassPath nullPath = ClassPathSupport.createClassPath(new FileObject[0]);
+        ClassPath boot = ClassPath.getClassPath(files[0], ClassPath.BOOT);
+        ClassPath compile = ClassPath.getClassPath(files[0], ClassPath.COMPILE);
+        ClasspathInfo cpInfo = ClasspathInfo.create(boot, compile, rcp);
         return cpInfo;
     }
     
