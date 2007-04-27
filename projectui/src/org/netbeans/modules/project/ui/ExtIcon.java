@@ -21,23 +21,15 @@ package org.netbeans.modules.project.ui;
 
 import java.awt.Image;
 import java.awt.Toolkit;
-import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
-import java.awt.image.ImageConsumer;
 import java.awt.image.ImageObserver;
 import java.awt.image.MemoryImageSource;
 import java.awt.image.PixelGrabber;
-import java.io.ByteArrayOutputStream;
 
-import java.io.Externalizable;
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.util.Hashtable;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JPanel;
 import org.openide.util.Utilities;
 
 /**
@@ -46,7 +38,7 @@ import org.openide.util.Utilities;
  */
 public class ExtIcon  {
     
-    private Image image;
+    Image image;
     
     public ExtIcon() {
     }
@@ -54,9 +46,11 @@ public class ExtIcon  {
     public ExtIcon(byte[] content) {
         Toolkit toolkit = Toolkit.getDefaultToolkit();
         ColorModel cm = ColorModel.getRGBdefault();
-        image = toolkit.createImage(new MemoryImageSource(16, 16, cm, content, 0, 16 * 4));
+        byte w = content[0];
+        byte h = content[1];
+        image = toolkit.createImage(new MemoryImageSource(w, h, cm, content, 2, w));
     }
-        
+    
     public void setIcon(Icon icn) {
         image = icn != null ? Utilities.icon2Image(icn) : null;
     }
@@ -70,7 +64,10 @@ public class ExtIcon  {
         if (image == null) {
             return null;
         }
-        PixelGrabber pg = new PixelGrabber(image, 0, 0, 16, 16, false);
+        Icon icn = getIcon();
+        byte h = (byte)icn.getIconHeight();
+        byte w = (byte)icn.getIconWidth();
+        PixelGrabber pg = new PixelGrabber(image, 0, 0, w, h, true);
         try {
             pg.grabPixels();
             if ((pg.getStatus() & ImageObserver.ABORT) != 0) {
@@ -81,16 +78,25 @@ public class ExtIcon  {
         }
         Object obj = pg.getPixels();
         if (obj instanceof byte[]) {
-            return (byte[])obj;
+            byte[] data = (byte[])obj;
+            byte[] toRet = new byte[data.length + 2];
+            toRet[0] = w;
+            toRet[1] = h;
+            for (int i = 0; i < data.length; i++) {
+                toRet[i + 2] = data[i];
+            }
+            return toRet;
         } else {
-            return intToByteArray((int[])obj);
+            return intToByteArray((int[])obj, w, h);
         }
     }
     
-    public static byte[] intToByteArray(int[] value) {
-        byte[] b = new byte[value.length * 4];
-        for (int j = 0; j < b.length; j = j + 4) {
-            int val = value[j / 4];
+    public static byte[] intToByteArray(int[] value, byte w, byte h) {
+        byte[] b = new byte[value.length * 4 + 2];
+        b[0] = w;
+        b[1] = h;
+        for (int j = 2; j < b.length; j = j + 4) {
+            int val = value[(j - 2) / 4];
             b[j] = (byte)(val >>> 24);
             b[j + 1] = (byte)(val >> 16 & 0xff);
             b[j + 2] = (byte)(val >> 8 & 0xff);
