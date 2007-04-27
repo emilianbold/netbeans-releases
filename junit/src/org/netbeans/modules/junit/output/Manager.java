@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -37,6 +37,10 @@ import org.openide.util.NbBundle;
  * @author Marian Petras
  */
 final class Manager {
+    
+    /** */
+    private static final String LATE_PROMOTION_SWITCH
+            = "org.netbeans.modules.junit.lateResultsActivation";       //NOI18N
     
     /**
      * reference to the singleton of this class.
@@ -62,6 +66,12 @@ final class Manager {
      */
     private final Map<AntSession, TaskType> junitSessions
             = new WeakHashMap<AntSession, TaskType>(5);
+    
+    /**
+     * if {@code true}, the window will only be promoted
+     * at the end of Ant session
+     */
+    private final boolean lateWindowPromotion;
 
     
     /**
@@ -77,6 +87,17 @@ final class Manager {
             instanceRef = new WeakReference<Manager>(instance);
         }
         return instance;
+    }
+    
+    private Manager() {
+        String value = System.getProperty(LATE_PROMOTION_SWITCH);
+        if (value != null) {
+            lateWindowPromotion = value.equalsIgnoreCase("true")
+                                  || value.equalsIgnoreCase("yes")
+                                  || value.equals("1");
+        } else {
+            lateWindowPromotion = false;
+        }
     }
     
     /**
@@ -100,7 +121,7 @@ final class Manager {
             return;
         }
         
-        displayMessage(session, sessionType, null);     //updates the display
+        displayMessage(session, sessionType, null, true);  //updates the display
         junitSessions.remove(session);   //must be after displayMessage(...)
                                          //otherwise the window would get
                                          //activated
@@ -244,12 +265,26 @@ final class Manager {
     private void displayMessage(final AntSession session,
                                 final TaskType sessionType,
                                 final String message) {
+        displayMessage(session, sessionType, message, false);
+    }
+    
+    /**
+     * Displays a message in the JUnit results window.
+     * If this is the first display in the window, it also promotes
+     * (displays, activates) it.
+     *
+     * @param  message  message to be displayed
+     */
+    private void displayMessage(final AntSession session,
+                                final TaskType sessionType,
+                                final String message,
+                                final boolean sessionEnd) {
 
         /* Called from the AntLogger's thread */
 
         final ResultDisplayHandler displayHandler = getDisplayHandler(session);
         displayHandler.displayMessage(message);
-        displayInWindow(session, sessionType, displayHandler);
+        displayInWindow(session, sessionType, displayHandler, sessionEnd);
         
         //<editor-fold defaultstate="collapsed" desc="disabled code">
         /*
@@ -311,9 +346,20 @@ final class Manager {
     private void displayInWindow(final AntSession session,
                                  final TaskType sessionType,
                                  final ResultDisplayHandler displayHandler) {
+         displayInWindow(session, sessionType, displayHandler, false);
+    }
+    
+    /**
+     */
+    private void displayInWindow(final AntSession session,
+                                 final TaskType sessionType,
+                                 final ResultDisplayHandler displayHandler,
+                                 final boolean sessionEnd) {
+        final boolean firstDisplay = (junitSessions.put(session, sessionType) == null);
         final boolean promote =
-                (junitSessions.put(session, sessionType) == null)
-                && (sessionType == TaskType.TEST_TASK);
+                lateWindowPromotion
+                        ? sessionEnd
+                        : firstDisplay && (sessionType == TaskType.TEST_TASK);
         
         int displayIndex = getDisplayIndex(session);
         if (displayIndex == -1) {
