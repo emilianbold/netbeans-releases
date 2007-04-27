@@ -1648,7 +1648,9 @@ public class JsfForm {
     
     public /*private*/ void syncModel() {
 //        domProvider.syncModel();
-        getFacesModel().sync();
+        if (isValid()) {
+            getFacesModel().sync();
+        }
     }
     
     public void setModelActivated(boolean activated) {
