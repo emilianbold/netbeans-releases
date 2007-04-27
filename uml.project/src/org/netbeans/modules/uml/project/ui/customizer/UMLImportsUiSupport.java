@@ -75,6 +75,7 @@ public class UMLImportsUiSupport
     // current object.toString
     
     private UMLImportsSupport importSupport;
+    private ImportListener impListener;
     public static final int COL_UML_PROJECT_NAME = 0;
     public static final int COL_UML_PROJECT_FOLDER = 1;
     
@@ -108,7 +109,7 @@ public class UMLImportsUiSupport
     public void initializeProject()
     {
 //        System.err.println("UMLImportsUiSupport:Loading");
-        ImportListener impListener = new ImportListener();
+        impListener = new ImportListener();
         IElementChangeEventDispatcher disp = null;
         IElementLifeTimeEventDispatcher lifeTimeDisp = null;
         EventDispatchRetriever ret = EventDispatchRetriever.instance();
@@ -116,6 +117,17 @@ public class UMLImportsUiSupport
         lifeTimeDisp = (IElementLifeTimeEventDispatcher)ret.getDispatcher(EventDispatchNameKeeper.lifeTime());
         disp.registerForImportEventsSink(impListener);
         lifeTimeDisp.registerForLifeTimeEvents(impListener);
+    }
+
+    public void unInitializeProject()
+    {
+        IElementChangeEventDispatcher disp = null;
+        IElementLifeTimeEventDispatcher lifeTimeDisp = null;
+        EventDispatchRetriever ret = EventDispatchRetriever.instance();
+        disp = (IElementChangeEventDispatcher)ret.getDispatcher(EventDispatchNameKeeper.modifiedName());
+        lifeTimeDisp = (IElementLifeTimeEventDispatcher)ret.getDispatcher(EventDispatchNameKeeper.lifeTime());
+        disp.revokeImportEventsSink(impListener);
+        lifeTimeDisp.revokeLifeTimeSink(impListener);
     }
     
     public void addImportElementListener(ImportElementListener listener)

@@ -52,7 +52,8 @@ public class PaletteSupport {
     }
     
     private PaletteController pController = null;
-    
+    private PalettePropertyChangeListener propertyChangeListener = null;
+
     public PaletteController getPalette(IDrawingAreaControl drawingAreaControl) {
         
         // get a string representing the diagram kind given a drawingAreaControl object
@@ -60,7 +61,7 @@ public class PaletteSupport {
         pController = UMLPaletteFactory.getPalette(paletteFolderName);
         
         // registers a PropertyChangeListner to the palette controller object
-        PalettePropertyChangeListener propertyChangeListener = new PalettePropertyChangeListener(drawingAreaControl);
+        propertyChangeListener = new PalettePropertyChangeListener(drawingAreaControl);
         pController.addPropertyChangeListener(propertyChangeListener);
         initPaletteSettings();
         
@@ -69,6 +70,11 @@ public class PaletteSupport {
         return pController;
     }
     
+    public void unregisterListeners() {
+        if (pController != null) {
+	    pController.removePropertyChangeListener(propertyChangeListener);
+	}
+    }
     
     private String findPaletteRepository(int diagramType) {
         String repository = null;

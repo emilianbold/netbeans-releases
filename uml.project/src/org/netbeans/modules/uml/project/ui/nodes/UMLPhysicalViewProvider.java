@@ -146,6 +146,11 @@ public class UMLPhysicalViewProvider implements LogicalViewProvider
         
         return this.node;
     }
+
+    public void detachLogicalView()
+    {
+	this.node = null;
+    }
     
     public org.openide.nodes.Node findPath( Node root, Object target )
     {

@@ -507,6 +507,7 @@ public class ADDrawingAreaControl extends ApplicationView
    private List tempList = new ArrayList(); //temp list for use in fireSelectEvent
    private String mSelectedPaletteBttn;
    public static String DIRTYSTATE = "dirty"; // NOI18N;
+   private DiagramKeyboardAccessProvider kbAccessProvider = null;
 
    public ADDrawingAreaControl()
    {
@@ -814,8 +815,7 @@ public class ADDrawingAreaControl extends ApplicationView
     */
    public void registerKeyCommands(JComponent component)
    {
-       DiagramKeyboardAccessProvider kbAccessProvider = 
-                DiagramKeyboardAccessProvider.getInstance(this);
+       kbAccessProvider = DiagramKeyboardAccessProvider.getInstance(this);
        kbAccessProvider.registerKeyCommands(component);
    }
    
@@ -8045,6 +8045,12 @@ public class ADDrawingAreaControl extends ApplicationView
       IOSemaphore.startInstance();
       try
       {
+	 if (kbAccessProvider != null) {
+	     if (kbAccessProvider.getDiagramDrawingCtrl() == this) {
+		 kbAccessProvider.setDiagramDrawingCtrl(null);
+	     }
+	     kbAccessProvider = null;
+	 }									      
          // Use a null graph ui, so no threads can draw the graph.
          this.getCurrentGraph().setUI(new ETNullGraphUI());
          
@@ -8123,6 +8129,7 @@ public class ADDrawingAreaControl extends ApplicationView
           }         
           
          //         m_PresentationsTypesMgr = null;
+
       }
       finally
       {

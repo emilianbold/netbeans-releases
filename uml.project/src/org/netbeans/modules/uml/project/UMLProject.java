@@ -639,10 +639,28 @@ public class UMLProject implements Project, AntProjectListener
             
             return filename;
         }
-        
-        
-        protected void projectClosed()
-        {                
+             
+   
+        protected void projectClosed()	    
+        {               
+	    if (mImportSupport != null) 
+		mImportSupport.unInitializeProject();
+
+	    if (mHelper != null) 
+	    {
+		// save==false as it has been already taken care for 
+		// by the newly implemented save fucntionality, and
+		// now we just need to correctly revoke all listeners, etc..
+		mHelper.closeProject(false);
+	    }     
+	    Lookup l = UMLProject.this.getLookup();
+	    if (l != null) 
+	    {
+		UMLPhysicalViewProvider physicalViewProvider =
+                    (UMLPhysicalViewProvider)l.lookup(UMLPhysicalViewProvider.class);
+		if (physicalViewProvider != null) 
+		    physicalViewProvider.detachLogicalView();
+	    }	    
         }
         
         /* listen to IProject change event, and modify project file data object

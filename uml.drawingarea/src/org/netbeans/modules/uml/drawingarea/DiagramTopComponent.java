@@ -118,7 +118,8 @@ public class DiagramTopComponent extends CloneableTopComponent
     private DiagramChangeListener listener = new DiagramChangeListener();
     
     private PaletteController paletteContrl;
-    
+    private PaletteSupport paletteSupport;
+ 
     /**
      * Creates a new drawing area TopComponent.  The drawing area component is
      * initialized with the information in the file.
@@ -531,6 +532,7 @@ public class DiagramTopComponent extends CloneableTopComponent
         removeBasicActionCallbacks();
         isHidden = true;
         unregisterListeners();
+	detachAssociatedPalette();
     }
     
     
@@ -954,12 +956,21 @@ public class DiagramTopComponent extends CloneableTopComponent
     
     private PaletteController getAssociatedPalette()
     {
-        PaletteSupport paletteSupport = new PaletteSupport();
-        
+        if (paletteSupport == null) {
+	    paletteSupport = new PaletteSupport();
+        }
         PaletteController pController =
                 paletteSupport.getPalette(getDrawingAreaControl());
         
         return pController;
+    }
+
+    private void detachAssociatedPalette()
+    {
+        if (paletteSupport != null) {
+	    paletteSupport.unregisterListeners();
+	}
+	paletteContrl = null;
     }
     
     

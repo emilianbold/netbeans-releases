@@ -22,6 +22,7 @@ package org.netbeans.modules.uml.core.eventframework;
 
 import org.netbeans.modules.uml.common.ETSystem;
 
+import java.lang.ref.WeakReference;
 import java.util.Vector;
 import org.openide.ErrorManager;
 
@@ -32,17 +33,19 @@ import org.openide.ErrorManager;
  */
 public class EventManager<Element>
 {
-	private Vector<Object> m_listeners = new Vector<Object>();
+        private Vector<WeakReference<Object>> m_listeners = new Vector<WeakReference<Object>>();
 	private IEventDispatcher m_dispatcher = null;
 	private IValidationSink m_Validator = null;
-	
+
+
 	public void addListener(Element obj, IValidationSink<Element> sink)
 	{
             // conover - duplicate listeners were being registered, and this
             // will prevent that from happening
-            if (!m_listeners.contains(obj))
+	    //if (!m_listeners.contains(obj))
+            if (! (indexOf(obj) > -1))
             {
-		m_listeners.addElement(obj);
+		m_listeners.addElement(new WeakReference(obj));
     
                 if (sink != null)
                     setValidator(sink);
@@ -58,9 +61,46 @@ public class EventManager<Element>
 	
 	public void removeListener(Element sink)
 	{
-		m_listeners.removeElement(sink);
+	        int index = indexOf(sink);
+	        if (index > -1) {
+		    m_listeners.remove(index);
+		}
+	    
 	}
 	
+        private int indexOf(Element obj) 
+        {
+	    if (obj != null) 
+	    {
+		for (int i = 0 ; i < m_listeners.size() ; i++) 
+		{
+		    WeakReference<Object> ref = m_listeners.elementAt(i);
+		    if (ref == null) 
+		    {
+			m_listeners.remove(i);
+			continue;
+		    } 
+		    else 
+		    {
+			Object elem = ref.get();
+			if (elem == null) 
+			{
+			    m_listeners.remove(i);
+			    continue;			
+			} 
+			else 
+			{
+			    if (obj.equals(elem)) 
+			    {
+				return i;
+			    }
+			}
+		    }
+		}
+	    }
+	    return -1;
+	}
+
 	public void setDispatcher(IEventDispatcher disp)
 	{
 		m_dispatcher = disp;
@@ -94,7 +134,7 @@ public class EventManager<Element>
 			try
 			{
 				//if (validateSink(obj);
-				func.execute(m_listeners.elementAt(i));
+				func.execute(m_listeners.elementAt(i).get());
 			}
 			
 			catch (Exception e)
@@ -116,7 +156,7 @@ public class EventManager<Element>
 			try
 			{
 				//validateSink(obj);
-				func.execute(params, m_listeners.elementAt(i));
+				func.execute(params, m_listeners.elementAt(i).get());
 			}
 			
 			catch (Exception e)
@@ -139,7 +179,7 @@ public class EventManager<Element>
 			try
 			{
 				//validateSink(obj);
-				func.execute(m_listeners.elementAt(i));
+				func.execute(m_listeners.elementAt(i).get());
 				//check the result and if required call dispatchCancelEvent
 				
 				if (!func.isResultOK())

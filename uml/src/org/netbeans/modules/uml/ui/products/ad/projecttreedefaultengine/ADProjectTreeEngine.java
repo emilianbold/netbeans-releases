@@ -36,6 +36,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Enumeration;
+import java.lang.ref.WeakReference;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IEnumerationLiteral;
@@ -195,7 +196,7 @@ public class ADProjectTreeEngine
    private final int PTEAV_N       = -3;
    private final int PTEAV_X       = -4;
 
-   private HashMap < String, ITreeItem > m_IDLookup = new HashMap < String, ITreeItem >();
+   private HashMap < String, WeakReference<ITreeItem >> m_IDLookup = new HashMap < String, WeakReference<ITreeItem >>();
 
    //**************************************************
    // Sinks
@@ -1116,7 +1117,7 @@ public class ADProjectTreeEngine
                if(createdItem != null)
                {
                   addToTree(createdItem, thisItem);
-				  m_IDLookup.put(elementAdded.getXMIID(), createdItem); 
+				  m_IDLookup.put(elementAdded.getXMIID(), new WeakReference(createdItem)); 
                   IProjectTreeModel model = getTreeModel();
 //                  int[] childIndices = { model.getIndexOfChild(thisItem, createdItem) };
 //                  model.notifyOfAddedChildren(thisItem, childIndices);
@@ -1136,7 +1137,7 @@ public class ADProjectTreeEngine
                   treeElement.setElement(elementAdded);
                   treeElement.setName(name);
                   addToTree(treeElement, thisItem);
-				  m_IDLookup.put(elementAdded.getXMIID(), treeElement); 
+				  m_IDLookup.put(elementAdded.getXMIID(), new WeakReference(treeElement)); 
                   IProjectTreeModel model = getTreeModel();
                   int[] childIndices = { model.getIndexOfChild(thisItem, treeElement) };
                   //model.notifyOfAddedChildren(thisItem, childIndices);
@@ -1599,7 +1600,7 @@ public class ADProjectTreeEngine
              if (!isHidden2(diagramHidingStr))
              {
                 m_IDLookup.put(
-                    diagramItem.getDiagram().getFilename(), diagramItem);
+                    diagramItem.getDiagram().getFilename(), new WeakReference(diagramItem));
 
                 diagramItem.setDiagramType(diagramTypeStr);
                 m_TreeModel.addItem(parent, diagramItem);
@@ -1684,7 +1685,7 @@ public class ADProjectTreeEngine
 
          if(isHidden2(diagramHidingStr) == false)
          {
-            m_IDLookup.put(diagramItem.getDiagram().getFilename(), diagramItem);
+            m_IDLookup.put(diagramItem.getDiagram().getFilename(), new WeakReference(diagramItem));
 
             diagramItem.setDiagramType(diagramTypeStr);
             //m_TreeModel.insertItem(parent, diagramItem, index);
@@ -1820,7 +1821,7 @@ public class ADProjectTreeEngine
 
          if(isHidden == false)
          {
-            m_IDLookup.put(folder.getID(), folder);
+            m_IDLookup.put(folder.getID(), new WeakReference(folder));
             //m_TreeModel.insertItem(parent, folder, index);
             m_TreeModel.addItem(parent, folder);
             retVal = true;
@@ -1846,7 +1847,7 @@ public class ADProjectTreeEngine
       boolean retVal = false;
       if ( (isHidden2(type) == false) || (isDesignCenter()) )
       {
-         m_IDLookup.put(element.getXMIID(), element);
+         m_IDLookup.put(element.getXMIID(), new WeakReference(element));
          if(addOnlyThisType.equals(type) == true)
          {
             addToTree(element, parentItem);
@@ -1880,7 +1881,7 @@ public class ADProjectTreeEngine
 
       if(isHidden2(type) == false)
       {
-         m_IDLookup.put(element.getXMIID(), element);
+         m_IDLookup.put(element.getXMIID(), new WeakReference(element));
          if(addOnlyThisType.equals(type) == true)
          {
             addToTree(element, parentItem, index);
