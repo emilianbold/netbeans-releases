@@ -23,10 +23,17 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -213,18 +220,58 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
         Set resultSet = new HashSet();
         Set subResults = null;
 
-        // let the app shell wizard do the additional configuration
-        if (appShellIterator != null) {
-            subResults = appShellIterator.instantiate();
+        final ClassPath srcPath = ClassPath.getClassPath(mainFrameFO, ClassPath.SOURCE);
+        assert srcPath != null;
+        final ClassPath compilePath = ClassPath.getClassPath(mainFrameFO, ClassPath.COMPILE);
+        assert compilePath != null;
+        final ClassPath bootPath = ClassPath.getClassPath(mainFrameFO, ClassPath.BOOT);
+        assert bootPath != null;
+        
+        final GlobalPathRegistry regs = GlobalPathRegistry.getDefault();
+        assert regs != null;
+        regs.register(ClassPath.SOURCE, new ClassPath[] {srcPath});
+        try {
+            regs.register(ClassPath.COMPILE, new ClassPath[] {compilePath});
+            try {
+                regs.register(ClassPath.BOOT, new ClassPath[] {bootPath});
+                try {
+                    //This is waiting to the end of the scan of the added path
+                    //I am not sure if it's needed. The form alredy provided some
+                    //kind of such a waiting.
+                    final CountDownLatch condition = new CountDownLatch (1);
+                    JavaSource.forFileObject(mainFrameFO).runWhenScanFinished(new CancellableTask<CompilationController>() {
+                        public void run (final CompilationController c) {
+                            condition.countDown();
+                        }
+                        
+                        public void cancel () {}
+                    },true);
+                    try {
+                        condition.await(360, TimeUnit.SECONDS);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    // let the app shell wizard do the additional configuration
+                    if (appShellIterator != null) {
+                        subResults = appShellIterator.instantiate();
+                    }
+
+                    resultSet.add(projectFolderFO);
+                    if (subResults != null)
+                        resultSet.addAll(subResults);
+                    if (mainFrameFO != null)
+                        resultSet.add(mainFrameFO);
+
+                    return resultSet;
+                } finally {
+                    regs.unregister(ClassPath.BOOT, new ClassPath[] {bootPath});
+                }
+            } finally {
+                regs.unregister(ClassPath.COMPILE, new ClassPath[] {compilePath});
+            }
+        } finally {
+            regs.unregister(ClassPath.SOURCE, new ClassPath[] {srcPath});
         }
-
-        resultSet.add(projectFolderFO);
-        if (subResults != null)
-            resultSet.addAll(subResults);
-        if (mainFrameFO != null)
-            resultSet.add(mainFrameFO);
-
-        return resultSet;
     }
 
     public void uninitialize(WizardDescriptor wiz) {
