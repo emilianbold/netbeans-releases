@@ -2025,7 +2025,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         }
     }
 
-    private static Reference<CloneableTopComponent> lastReusable = new WeakReference(null);
+    private static Reference<CloneableTopComponent> lastReusable = new WeakReference<CloneableTopComponent>(null);
 
     private static void replaceTc(TopComponent orig, TopComponent open) {
         int pos = orig.getTabPosition ();
@@ -2072,7 +2072,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             } else {
                 ctc.open();
             }
-            lastReusable = new WeakReference(ctc);
+            lastReusable = new WeakReference<CloneableTopComponent>(ctc);
         } else {
             ctc.open();
         }
