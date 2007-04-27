@@ -1,0 +1,11 @@
+<xsl:comment>nsicom-create-manifest</xsl:comment>
+
+    <target name="nsicom-create-manifest" if="nsicom-platform.trigger">
+        <!-- it is alway fat jar for this platform -->
+<!--        <xsl:attribute name="if">manifest.available+main.class+fat.jar</xsl:attribute> -->
+        <jar jarfile="${{dist.dir}}/${{dist.jar}}" compress="${{jar.compress}}" update="true">
+            <manifest>
+                <attribute name="Main-Class" value="${{main.class}}"/>
+            </manifest>
+        </jar>                    
+    </target>

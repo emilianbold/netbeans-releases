@@ -1,0 +1,14 @@
+<xsl:comment>nsicom-init</xsl:comment>
+
+    <target name="nsicom-pre-init" if="cdc-platform.trigger">
+        <condition property="nsicom-platform.trigger">
+            <equals arg1="nsicom" arg2="${{platform.type}}" casesensitive="false"/>
+        </condition>
+    </target>
+    <target name="nsicom-init" depends="nsicom-pre-init" if="nsicom-platform.trigger">
+        <property name="deployment.dir" location="${{dist.dir}}"/>
+        <patternset id="deployment.patternset">
+            <include name="${{dist.jar}}"/>
+        </patternset>
+    </target>
+    

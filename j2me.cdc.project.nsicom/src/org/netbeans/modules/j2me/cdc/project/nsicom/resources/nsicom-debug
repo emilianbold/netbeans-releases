@@ -1,0 +1,7 @@
+<xsl:comment>nsicom-debug</xsl:comment>
+
+    <target name="nsicom-debug" if="nsicom-platform.trigger">
+        <fail message="Debugging is not supported in this NSIcom VM version. Use monitoring facility instead!"/>
+    </target>
+    
+ 

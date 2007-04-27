@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copy
+ righted [year] [name of copyright owner]"
+
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Buildsystem">
+        <folder name="org.netbeans.modules.kjava.j2meproject">
+            <folder name="nbproject">
+                <folder name="build-impl.xml">
+                    <folder name="init-subtargets">
+                        <attr name="nokiaS80-init/nsicom-init" boolvalue="true"/>
+                        <file name="nsicom-init" url="nsicom-init"/>
+                    </folder>
+                    <folder name="jar-subtargets">
+                        <attr name="do-jar/nsicom-create-manifest" boolvalue="true"/>
+                        <file name="nsicom-create-manifest" url="nsicom-create-manifest"/>
+                        <attr name="nsicom-create-manifest/post-jar" boolvalue="true"/>
+                    </folder>
+                    <folder name="run-subtargets">
+                        <attr name="nokiaS80-run/nsicom-run" boolvalue="true"/>
+                        <file name="nsicom-run" url="nsicom-run"/>
+                    </folder>
+                    <folder name="debug-subtargets">
+                        <attr name="nokiaS80-debug/nsicom-debug" boolvalue="true"/>
+                        <file name="nsicom-debug" url="nsicom-debug"/>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="Customizer">
+        <folder name="org.netbeans.modules.kjava.j2meproject">
+            <folder name="Jad">
+                <attr name="CDCGeneral/NSIcom" boolvalue="true"/>
+                <file name="NSIcom">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.nsicom.Bundle"/>
+                    <attr name="customizerPanelClass" newvalue="org.netbeans.modules.j2me.cdc.project.nsicom.NSIcomProjectCategoryCustomizer"/>
+                    <attr name="triggerPropertyName" stringvalue="platform.type"/>
+                    <attr name="triggerPropertyValue" stringvalue="NSIcom"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="MainTemplates">
+        <folder name="org.netbeans.modules.kjava.j2meproject">
+            <file name="nsicom">
+                <attr name="templateName" stringvalue="Templates/CDC/JFrame.java"/>
+                <attr name="templateType" stringvalue="main"/>
+            </file>
+        </folder>
+    </folder>    
+    <folder name="org-netbeans-api-project-libraries">
+        <folder name="Libraries">
+            <file name="nsicom-ant-utils.xml" url="Utils.xml"/>
+        </folder>
+    </folder>
+</filesystem>
+
