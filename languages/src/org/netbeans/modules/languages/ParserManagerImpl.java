@@ -79,9 +79,9 @@ public class ParserManagerImpl extends ParserManager {
     public ParserManagerImpl (Document doc) {
         this.doc = doc;
         tokenHierarchy = TokenHierarchy.get (doc);
+        String mimeType = (String) doc.getProperty ("mimeType");        
         if (tokenHierarchy == null) {
             // for tests only....
-            String mimeType = (String) doc.getProperty ("mimeType");
             if (mimeType != null) {
                 doc.putProperty (
                     org.netbeans.api.lexer.Language.class, 
@@ -92,9 +92,11 @@ public class ParserManagerImpl extends ParserManager {
         }
         new DocListener (this, tokenHierarchy);
         if (state == State.NOT_PARSED) {
-            DataObject dobj = NbEditorUtilities.getDataObject(doc);
-            if (dobj instanceof LanguagesDataObject) {
+            try {
+                LanguagesManager.getDefault().getLanguage(mimeType);
                 startParsing();
+            } catch (LanguageDefinitionNotFoundException e) {
+                //not supported language
             }
         }
     }
