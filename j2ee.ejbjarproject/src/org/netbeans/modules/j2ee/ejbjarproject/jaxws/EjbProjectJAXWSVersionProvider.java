@@ -13,6 +13,8 @@ import java.io.File;
 import java.util.Map;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.modules.websvc.api.jaxws.project.JAXWSVersionProvider;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -30,10 +32,19 @@ public class EjbProjectJAXWSVersionProvider implements JAXWSVersionProvider{
     }
     
     public String getJAXWSVersion(){
-         File appSvrRoot = null;
+        File appSvrRoot = null;
         Map properties = h.getStandardPropertyEvaluator().getProperties();
         if(properties != null){
             String serverInstance = (String)properties.get("j2ee.server.instance"); //NOI18N
+            if(serverInstance == null){
+                String serverType = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(EjbJarProjectProperties.J2EE_SERVER_TYPE);
+                if (serverType != null) {
+                    String[] servInstIDs = Deployment.getDefault().getInstancesOfServer(serverType);
+                    if (servInstIDs.length > 0) {
+                        serverInstance = servInstIDs[0];
+                    }
+                }
+            }
             if (serverInstance != null) {
                 J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstance);
                 if (j2eePlatform != null) {
