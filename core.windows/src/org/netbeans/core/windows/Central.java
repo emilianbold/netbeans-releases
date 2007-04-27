@@ -1788,16 +1788,22 @@ final class Central implements ControllerHandler {
 
     public void userClosedTopComponent(ModeImpl mode, TopComponent tc) {
 //        debugLog("userClosedTopComponent");
+        if( mode == getCurrentMaximizedMode() && isViewMaximized() ) {
+            switchMaximizedMode( null );
+            for(Iterator it = getModes().iterator(); it.hasNext(); ) {
+                ModeImpl newMode = (ModeImpl)it.next();
+
+                if(newMode.containsTopComponent(tc)) {
+                    userClosedTopComponent( newMode, tc );
+                    return;
+                }
+            }
+        }
+        
         if(WindowManagerImpl.getInstance().isTopComponentPersistentWhenClosed(tc)) {
             addModeClosedTopComponent(mode, tc);
         } else {
             removeModeTopComponent(mode, tc);
-        }
-
-        // Unmaximize if necessary.
-        if(mode.getOpenedTopComponents().isEmpty()
-        && mode == getCurrentMaximizedMode()) {
-            switchMaximizedMode(null);
         }
     }
     
