@@ -30,6 +30,8 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -46,6 +48,7 @@ import org.openide.awt.UndoRedo;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
+import org.openide.cookies.OpenCookie;
 import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileChangeAdapter;
@@ -57,7 +60,9 @@ import org.openide.filesystems.FileStatusListener;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.SaveAsCapable;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
@@ -78,7 +83,10 @@ import org.openide.windows.TopComponent;
  * @see org.openide.text.CloneableEditorSupport
  */
 public class PropertiesEditorSupport extends CloneableEditorSupport 
-implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serializable {
+implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serializable, SaveAsCapable {
+    
+    /** error manager for CloneableEditorSupport logging and error reporting */
+    static final Logger ERR = Logger.getLogger("org.netbeans.modules.properties.PropertiesEditorSupport"); // NOI18N
     
     /** */
     private FileStatusListener fsStatusListener;
@@ -484,6 +492,112 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         }
     }
     
+    /**
+     * Save the document under a new file name and/or extension.
+     * @param folder New folder to save the DataObject to.
+     * @param fileName New file name to save the DataObject to.
+     * @throws java.io.IOException If the operation failed
+     * @since 6.3
+     */
+    public void saveAs( FileObject folder, String fileName ) throws IOException {
+        //ask the user for a new file name to save to
+        String newExtension = FileUtil.getExtension( fileName );
+
+        DataObject newDob = null;
+        DataObject currentDob = myEntry.getDataObject();
+        if( !currentDob.isModified() || null == getDocument() ) {
+            //the document is not modified on disk, we copy/rename the file
+            DataFolder df = DataFolder.findFolder( folder );
+
+            FileObject newFile = folder.getFileObject(fileName);
+            if( null != newFile ) {
+                //remove the target file if it already exists
+                newFile.delete();
+            }
+
+            newFile = myEntry.copyRename(df.getPrimaryFile(), getFileNameNoExtension(fileName), newExtension);
+            if( null != newFile )
+                newDob = DataObject.find( newFile );
+        } else {
+            //the document is modified in editor, we need to save the editor kit instead
+            FileObject newFile = FileUtil.createData( folder, fileName );
+            saveDocumentAs( newFile.getOutputStream() );
+            currentDob.setModified( false );
+            newDob = DataObject.find( newFile );
+        }
+
+        if( null != newDob ) {
+            OpenCookie c = newDob.getCookie( OpenCookie.class );
+            if( null != c ) {
+                //close the original document
+                close( false );
+                //open the new one
+                c.open();
+            }
+        }
+    }
+    
+    private String getFileNameNoExtension(String fileName) {
+        int index = fileName.lastIndexOf("."); // NOI18N
+
+        if (index == -1) {
+            return fileName;
+        } else {
+            return fileName.substring(0, index);
+        }
+    }
+
+    
+    /** 
+     * Save the document to a new file.
+     * @param output 
+     * @exception IOException on I/O error
+     * @since 6.3
+     */
+    private void saveDocumentAs( final OutputStream output ) throws IOException {
+
+        final StyledDocument myDoc = getDocument();
+        
+        // save the document as a reader
+        class SaveAsWriter implements Runnable {
+            private IOException ex;
+
+            public void run() {
+                try {
+                    OutputStream os = null;
+
+                    try {
+                        os = new BufferedOutputStream( output );
+                        EditorKit kit = createEditorKit();
+                        saveFromKitToStream( myDoc, kit, os );
+
+                        os.close(); // performs firing
+                        os = null;
+
+                    } catch( BadLocationException ex ) {
+                        ERR.log( Level.INFO, null, ex );
+                    } finally {
+                        if (os != null) { // try to close if not yet done
+                            os.close();
+                        }
+                    }
+                } catch (IOException e) {
+                    this.ex = e;
+                }
+            }
+
+            public void after() throws IOException {
+                if (ex != null) {
+                    throw ex;
+                }
+            }
+        }
+
+        SaveAsWriter saveAsWriter = new SaveAsWriter();
+        myDoc.render(saveAsWriter);
+        saveAsWriter.after();
+    }
+
     /** Helper method. 
      * @return whether there is an table view opened */
     public synchronized boolean hasOpenedTableComponent() {
