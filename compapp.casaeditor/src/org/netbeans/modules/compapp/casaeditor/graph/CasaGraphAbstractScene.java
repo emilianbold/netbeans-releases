@@ -21,9 +21,11 @@ package org.netbeans.modules.compapp.casaeditor.graph;
 
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.visual.util.GeomUtil;
+import org.netbeans.modules.compapp.casaeditor.Utilities;
 
 import java.util.*;
+
+
 
 /**
  * This class holds and manages graph-oriented model.
@@ -258,7 +260,7 @@ public abstract class CasaGraphAbstractScene<N, E, P> extends ObjectScene {
         if (sourcePin != null)
             assert pins.contains(sourcePin);
         P oldPin = edgeSourcePins.put(edge, sourcePin);
-        if (GeomUtil.equals(oldPin, sourcePin))
+        if (Utilities.equals(oldPin, sourcePin))
             return;
         if (oldPin != null)
             pinOutputEdges.get(oldPin).remove(edge);
@@ -278,7 +280,7 @@ public abstract class CasaGraphAbstractScene<N, E, P> extends ObjectScene {
         if (targetPin != null)
             assert pins.contains(targetPin);
         P oldPin = edgeTargetPins.put(edge, targetPin);
-        if (GeomUtil.equals(oldPin, targetPin))
+        if (Utilities.equals(oldPin, targetPin))
             return;
         if (oldPin != null)
             pinInputEdges.get(oldPin).remove(edge);

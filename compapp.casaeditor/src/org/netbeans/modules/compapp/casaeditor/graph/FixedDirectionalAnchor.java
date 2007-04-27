@@ -35,8 +35,8 @@ import org.netbeans.api.visual.anchor.Anchor.Direction;
 import org.netbeans.api.visual.anchor.Anchor.Entry;
 import org.netbeans.api.visual.anchor.Anchor.Result;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.compapp.casaeditor.Utilities;
 import org.netbeans.modules.compapp.casaeditor.graph.RegionUtilities.Directions;
-import org.netbeans.modules.visual.util.GeomUtil;
 
 /**
  *
@@ -59,7 +59,7 @@ public final class FixedDirectionalAnchor extends Anchor {
 
         Widget widget = getRelatedWidget();
         Rectangle bounds = widget.convertLocalToScene(widget.getBounds());
-        Point center = GeomUtil.center (bounds);
+        Point center = Utilities.center (bounds);
 
         switch (kind) {
             case LEFT:

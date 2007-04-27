@@ -28,6 +28,7 @@ import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.compapp.casaeditor.Utilities;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.openide.util.NbBundle;
 
@@ -196,9 +197,7 @@ public class WaitMessageHandler {
                     getParentWidget() == scene.getDragLayer() &&
                     bounds != null &&
                     layerBounds != null) {
-                Point location = new Point(
-                        layerBounds.x + (layerBounds.width - bounds.width) / 2,
-                        layerBounds.y + (layerBounds.height - bounds.height) / 2);
+                Point location = Utilities.center(bounds, layerBounds);
                 setPreferredLocation(location);
             }
         }
