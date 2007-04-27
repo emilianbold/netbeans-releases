@@ -180,7 +180,9 @@ public class CasaDataObject extends MultiDataObject {
         public void buildCompleted(boolean isSuccessful) {
             mIsBuilding = false;
             if (!isSuccessful) {
-                CasaModelGraphUtilities.setSceneEnabled(editorSupport.getScene(), true);
+                if (editorSupport != null && editorSupport.getScene() != null) {
+                    CasaModelGraphUtilities.setSceneEnabled(editorSupport.getScene(), true);
+                }
             } else {
                 // Do not set the scene enabled at this point, because the build
                 // is still processing the model. We simply set the scene enabled
