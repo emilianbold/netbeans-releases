@@ -62,10 +62,10 @@ public class UnitDetails extends DetailsPanel{
         } else {
             String text;
             try {
-                text = "<h2>" + XMLUtil.toElementContent(u.getDisplayName()) + "</h2>"; // NOI18N
-                text += "<b>UpdateVersion: </b>" + u.getDisplayVersion() + "<br>";
-                text += "<b>Author: </b>" + (u.getAuthor () == null ? "" : u.getAuthor ()) + "<br>";
-                text += "<b>Source: </b>" + u.getSource() + "<br>";
+                text = "<h2>" + u.annotate(XMLUtil.toElementContent(u.getDisplayName())) + "</h2>"; // NOI18N
+                text += "<b>UpdateVersion: </b>" + u.annotate(u.getDisplayVersion()) + "<br>";
+                text += "<b>Author: </b>" + (u.getAuthor () == null ? "" : u.annotate(u.getAuthor ())) + "<br>";
+                text += "<b>Source: </b>" + u.annotate(u.getSource()) + "<br>";
                 
                 // XXX: Temporary only for development
                 if (u.updateUnit != null && u.updateUnit.getInstalled() != null) {
@@ -78,7 +78,7 @@ public class UnitDetails extends DetailsPanel{
                     } else {
                         c = OperationContainer.createForEnable();
                     }
-                    text += "<br><b>CodeName: </b>" + u.updateUnit.getCodeName() + "<br>";
+                    text += "<br><b>CodeName: </b>" + u.annotate(u.updateUnit.getCodeName()) + "<br>";
                     text += u.updateUnit.isAutoload () ? "<b>Autoload </b>" : "";
                     text += u.updateUnit.isEager () ? "<b>Eager </b>" : "";
                     text += u.updateUnit.isFixed () ? "<b>Fixed</b>" : "";
@@ -100,10 +100,10 @@ public class UnitDetails extends DetailsPanel{
                     }
                 }
                 if (u.getHomepage() != null && u.getHomepage().length() > 0) {
-                    text += "<b>Homepage: </b><a href=\"" + u.getHomepage() + "\">" + u.getHomepage() + "</a><br>";
+                    text += "<b>Homepage: </b><a href=\"" + u.getHomepage() + "\">" + u.annotate(u.getHomepage()) + "</a><br>";
                 }
                 text += "<h3>Plugin Description</h3>";
-                text += (u.getDescription() == null ? "" : XMLUtil.toElementContent(u.getDescription()));
+                text += (u.getDescription() == null ? "" : u.annotate(XMLUtil.toElementContent(u.getDescription())));
             } catch (CharConversionException e) {
                 err.log (Level.WARNING, null, e);
                 return;

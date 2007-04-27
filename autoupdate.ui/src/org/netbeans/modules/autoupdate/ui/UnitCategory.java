@@ -30,6 +30,8 @@ public class UnitCategory {
     final String name;
     boolean isExpanded = true;
     List<Unit> units = new ArrayList<Unit> ();
+    private boolean isVisible;
+    private String filter;
 
     /** Creates a new instance of UpdateCategory */
     public UnitCategory (String name) {
@@ -46,18 +48,23 @@ public class UnitCategory {
 
     public final boolean isVisible(final String filter) {
         assert filter != null;
-        assert getCategoryName () != null;
-        boolean retval = filter.length() == 0 || getCategoryName ().toLowerCase().contains(filter);
-        if (!retval) {
-            List<Unit> allUnits = getUnits ();
-            for (Unit unit : allUnits) {
-                if (unit.isVisible(filter)) {
-                    retval = true;
-                    break;
+        assert getCategoryName () != null;        
+        if (this.filter != null && this.filter.equals(filter)) {
+            return isVisible;
+        } else {
+            this.filter = filter;
+            isVisible = filter.length() == 0 || getCategoryName().toLowerCase().contains(filter);
+            if (!isVisible) {
+                List<Unit> allUnits = getUnits();
+                for (Unit unit : allUnits) {
+                    if (unit.isVisible(filter)) {
+                        isVisible = true;
+                        break;
+                    }
                 }
             }
         }
-        return  retval;
+        return  isVisible;
     }
 
     public List<Unit> getVisibleUnits (String filter, boolean orMarked) {

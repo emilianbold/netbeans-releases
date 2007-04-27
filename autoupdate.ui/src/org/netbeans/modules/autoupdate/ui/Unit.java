@@ -20,6 +20,9 @@
 package org.netbeans.modules.autoupdate.ui;
 
 import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
@@ -36,6 +39,8 @@ import org.openide.modules.SpecificationVersion;
  */
 public abstract class Unit {
     UpdateUnit updateUnit = null;
+    private boolean isVisible;
+    private String filter;
     
     protected abstract UpdateElement getRelevantElement();
     public abstract boolean isMarked();
@@ -47,7 +52,69 @@ public abstract class Unit {
     }
     
     public final boolean isVisible(final String filter) {
-        return filter.length() == 0 || getDisplayName().toLowerCase().contains(filter);
+        if (this.filter != null && this.filter.equals(filter)) {
+            return isVisible;
+        } 
+        this.filter = filter;
+        Iterable<String> iterable = details();
+        for (String detail : iterable) {
+            isVisible = filter.length() == 0 || detail.toLowerCase().contains(filter);    
+            if (isVisible) break;
+        }        
+        return isVisible;
+    }
+    
+    private Iterable<String> details() {
+        Iterable<String> retval = new Iterable<String>(){
+            public Iterator<String> iterator() {
+                return new Iterator<String>() {
+                    int step = 0;
+                    public boolean hasNext() {
+                        return step <= 6;
+                    }
+                    
+                    public String next() {
+                        String next = null;
+                        switch(step++) {
+                        case 0:
+                            next = getDisplayName();break;
+                        case 1:
+                            next = getDescription();break;
+                        case 2:
+                            next = updateUnit.getCodeName();break;
+                        case 3:
+                            next = getDisplayVersion();break;
+                        case 4:
+                            next = getAuthor();break;
+                        case 5:
+                            next = getHomepage();break;
+                        case 6:
+                            next = getSource();break;
+                        }
+                        return next != null ? next : "";//NOI18N
+                    }
+                    
+                    public void remove() {
+                        throw new UnsupportedOperationException("Not supported yet.");
+                    }
+                };
+            }
+        };        
+        return retval;
+    }
+    
+    public String annotate(String toAnnotate) {
+        if (isVisible && filter.length() != 0) {
+            int startIdx = toAnnotate.toLowerCase().indexOf(filter);
+            if (startIdx > -1) {
+                StringBuffer sb = new StringBuffer();
+                sb.append(toAnnotate.substring(0, startIdx));
+                sb.append("<font bgcolor=\"yellow\">"+toAnnotate.substring(startIdx,startIdx+filter.length())+"</font>");
+                sb.append(toAnnotate.substring(startIdx+filter.length()));
+                return sb.toString();
+            }
+        }
+        return toAnnotate;
     }
     
     public String getDescription() {
