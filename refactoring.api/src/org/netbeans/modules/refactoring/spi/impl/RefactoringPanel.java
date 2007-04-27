@@ -685,16 +685,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                         public void run() {
                             if (tree == null) {
                                 // add panel with appropriate content
-                                tree = new JTree(root) {
-                                    public TreePath getNextMatch(String prefix, int startingRow, Position.Bias bias) {
-                                        try {
-                                            return super.getNextMatch(prefix,startingRow, bias);
-                                        } catch (NullPointerException e) {
-                                            //Work around for 43112
-                                        }
-                                        return null;
-                                    }
-                                };
+                                tree = new JTree(root);
                                 ToolTipManager.sharedInstance().registerComponent(tree);
                                 tree.setCellRenderer(new CheckRenderer(isQuery));
                                 String s = NbBundle.getMessage(RefactoringPanel.class, "ACSD_usagesTree"); // NOI18N
@@ -952,6 +943,9 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         }
         cleanupTreeElements();
         PreviewManager.getDefault().clean(this);
+        tree = null;
+        session =null;
+        parametersPanel = null;
         //super.closeNotify();
     }
     

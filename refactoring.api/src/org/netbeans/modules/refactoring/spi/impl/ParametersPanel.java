@@ -483,7 +483,9 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         }
         if (!cancelRequest)
             task.waitFinished(); 
-        return result;
+        RefactoringSession temp = result;
+        result=null;
+        return temp;
     }
     
     private final void setCancelStuff() {
