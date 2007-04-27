@@ -50,8 +50,8 @@
 
     <folder name="SeeBeyondJbiComponents">
         <!-- JBI Component -->
-        <file name="com.sun.javaeese">
-            <attr name="id" stringvalue="JavaEEServiceEngine"/>
+        <file name="sun-javaee-engine">
+            <attr name="id" stringvalue="sun-javaee-engine"/>
             <attr name="description" stringvalue="Java EE service engine."/>
             <attr name="type" stringvalue="Engine"/>
         </file>

@@ -111,7 +111,7 @@ public class JbiProjectConstants {
     // End Test Framework
 
     // J2EE add-on...
-    public static final String JAVA_EE_SE_COMPONENT_NAME = "JavaEEServiceEngine" ; // No I18N
+    public static final String JAVA_EE_SE_COMPONENT_NAME = "sun-javaee-engine" ; // No I18N
     public static final List<String> JAVA_EE_AA_TYPES = new ArrayList<String>();
     static {
         JbiProjectConstants.JAVA_EE_AA_TYPES.add("j2ee_archive");  // No I18N

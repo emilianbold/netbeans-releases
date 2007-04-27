@@ -51,6 +51,7 @@ public class ComponentHelper {
         seNameChangeMap.put("com.sun.workflowse", "sun-workflow-engine");    // NOI18N
         seNameChangeMap.put("com.sun.xsltse", "sun-xslt-engine");    // NOI18N
         seNameChangeMap.put("com.sun.sqlse", "sun-sql-engine");    // NOI18N
+        seNameChangeMap.put("JavaEEServiceEngine", "sun-javaee-engine");    // NOI18N
     }
     
     private List<String> componentNames = new ArrayList<String>();

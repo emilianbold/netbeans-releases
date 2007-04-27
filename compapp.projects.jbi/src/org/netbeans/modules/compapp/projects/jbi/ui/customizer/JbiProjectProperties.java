@@ -1276,7 +1276,7 @@ public class JbiProjectProperties {
             fixNeeded = true;
         } else {
             for (String targetID : targetIDs) {
-                if (targetID.startsWith("com.sun.")) { // NOI18N
+                if (targetID.startsWith("com.sun.") || targetID.equals("JavaEEServiceEngine")) { // NOI18N
                     fixNeeded = true;
                     break;
                 }
