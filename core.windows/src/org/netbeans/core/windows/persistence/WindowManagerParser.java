@@ -128,7 +128,7 @@ public class WindowManagerParser {
             }
             FileObject modesModuleFolder = null;
             try {
-                pm.getModesModuleFolder();
+                modesModuleFolder = pm.getModesModuleFolder();
             } catch (IOException exc) {
                 PersistenceManager.LOG.log(Level.WARNING,
                     "[WinSys.WindowManagerParser.addMode]" // NOI18N
@@ -179,7 +179,7 @@ public class WindowManagerParser {
             groupParser = new GroupParser(groupName);
             FileObject groupsModuleFolder = null;
             try {
-                pm.getGroupsModuleFolder();
+                groupsModuleFolder = pm.getGroupsModuleFolder();
             } catch (IOException exc) {
                 PersistenceManager.LOG.log(Level.WARNING,
                     "[WinSys.WindowManagerParser.addGroup]" // NOI18N
