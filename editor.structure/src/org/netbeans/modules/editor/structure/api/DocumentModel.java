@@ -278,25 +278,23 @@ public final class DocumentModel {
             }
             //there cannot normally by two elements with the same start or end offsets (boundaries)
             //the only exception where startoffset and endoffset can be the some is root elements =>
-            if(ancestor == getRootElement()) return true;
+            if(isRootElement(ancestor)) return true;
             
-            //performance optimalization
-            int ancestorSO = ancestor.getStartOffset();
-            int descendantSO = descendant.getStartOffset();
-            int ancestorEO = ancestor.getEndOffset();
-            int descendantEO = descendant.getEndOffset();
-            
-            if(!descendant.isEmpty()) {
-                if((ancestorSO == descendantSO && ancestorEO > descendantEO)
-                        || (ancestorEO == descendantEO && ancestorSO < descendantSO))
-                    return true;
-            }
-            
-            return (ancestorSO < descendantSO && ancestorEO > descendantEO);
+            return isDescendantOf(ancestor.getStartOffset(), ancestor.getEndOffset(), 
+                    descendant.getStartOffset(), descendant.getEndOffset());
             
         }finally{
             readUnlock();
         }
+    }
+    
+    private static boolean isDescendantOf(int ancestorSO, int ancestorEO, int descendantSO, int descendantEO) {
+        if(descendantEO != descendantSO) {
+            if((ancestorSO == descendantSO && ancestorEO > descendantEO)
+                    || (ancestorEO == descendantEO && ancestorSO < descendantSO))
+                return true;
+        }
+        return (ancestorSO < descendantSO && ancestorEO > descendantEO);
     }
     
     /** Returns a leaf element from the hierarchy which contains the
@@ -525,31 +523,34 @@ public final class DocumentModel {
             
             if(index < 0) {
                 if(debug) System.out.println("Warning: DocumentModel.getChildren(...) called for " + de + " which has already been removed!");
-                return Collections.emptyList(); //do not cache
+                return Collections.emptyList();
             }
+
+            //assert elements.get(index) == de;
             
             //there is a problem with empty elements - if an element is removed its boundaries
             //are the some and the standart getParent/getChildren algorith fails.
             //the root element can be empty however it has to return children (also empty)
-            if(!isRootElement(de) && de.isEmpty()) return Collections.emptyList();
-            
-            //if the root element is empty the rest of elements is also empty and
-            //has to be returned as children
-            if(isRootElement(de) && de.isEmpty()) {
-                //ommit the root elemnent which is always first
-                if(elements.size() > 1) {
-                    return Arrays.asList(elements.subarray(1, elements.size()));
+            if(de.isEmpty()) {
+                //if the root element is empty the rest of elements is also empty and
+                //has to be returned as children
+                if(isRootElement(de)) {
+                    //ommit the root element which is always first
+                    if(elements.size() > 1) {
+                        return Arrays.asList(elements.subarray(1, elements.size()));
+                    } else {
+                        //just root element exists
+                        return Collections.emptyList();
+                    }
                 } else {
-                    //just root element exists
+                    //empty element has no children
                     return Collections.emptyList();
                 }
             }
             
             ArrayList<DocumentElement> children = new ArrayList<DocumentElement>();
             //get all elements with startOffset >= de.getStartOffset()
-            
-            assert elements.get(index) == de;
-            
+
             index++;//skip the first element - this is the given element
             
             //is there any other elements behind the 'de' element?
@@ -559,19 +560,19 @@ public final class DocumentModel {
                 DocumentElement firstChild = elements.get(index);
                 children.add(firstChild);
                 if(!isDescendantOf(de, firstChild)) {
-                    return Collections.<DocumentElement>emptyList();
+                    return Collections.emptyList();
                 } else {
                     //the element is a child
                     //check the other elements - find first element which has startOffset > firstChild.endOffset
                     DocumentElement nextChild = firstChild;
                     for(int i = index + 1; i < elements.size(); i++) {
                         DocumentElement docel = elements.get(i);
-                        
+                        int docel_so = docel.getStartOffset();
                         //test whether we didn't overpal the given 'de' endOffset
-                        if(docel.getStartOffset() > de.getEndOffset()) break;
+                        if(docel_so > de.getEndOffset()) break;
                         
                         //test if the element is the first next child which has startOffset > previous child endOffset
-                        if(docel.getStartOffset() >= nextChild.getEndOffset() ) {
+                        if(docel_so >= nextChild.getEndOffset() ) {
                             //found a next child
                             children.add(docel);
                             nextChild = docel;
@@ -580,9 +581,6 @@ public final class DocumentModel {
                     }
                 }
             }
-            
-            //check whether I am returning myself as a child of me :-(
-            assert !children.contains(de) : "getChildren(de) contains the de itself!";
             
             return children;
             
@@ -595,25 +593,26 @@ public final class DocumentModel {
         readLock();
         checkDocumentDirty();
         try {
-            if(!elements.contains(de)) {
-                debugElements();
-                throw new IllegalArgumentException("getParent() called for " + de + " which is not in the elements list!");
-            }
-            
-            if(isRootElement(de)) return null;
-            
-            //get all elements with startOffset <= de.getStartOffset()
             int index = elements.indexof(de);
             if(index < 0) {
-                return null;//this should happen only for root element
+                //the element is not in the list
+                throw new IllegalArgumentException("getParent() called for " + de + " which is not in the elements list!");
             }
+            if(index == 0) {
+                //root element has no parent
+                return null;
+            }
+            //get all elements with startOffset <= de.getStartOffset()
             //scan the elements in reversed order
+            int de_so = de.getStartOffset();
+            int de_eo = de.getEndOffset();
             for(int i = index - 1; i >= 0; i--) {
                 DocumentElement el = elements.get(i);
                 //test whether the element is empty - if so, get next one etc...
                 //if(!isEmpty(el) && el.getStartOffset() < de.getStartOffset() && isDescendantOf(el,de)) return cacheParent(de, el);
-                if(!el.isEmpty() && isDescendantOf(el,de) && el.getStartOffset() < de.getStartOffset()) {
-                    //                    return cacheParent(de, el);
+                int el_so = el.getStartOffset();
+                int el_eo = el.getEndOffset();
+                if(el_so < de_so && el_so != el_eo && isDescendantOf(el_so, el_eo, de_so, de_eo)) {
                     return el;
                 }
             }
@@ -916,16 +915,14 @@ public final class DocumentModel {
         }
         
         private void fireElementAddedEvent(DocumentElement de) {
-            List children = de.getChildren();
             DocumentElement parent = (DocumentElement)de.getParentElement();
-            
-                /* events firing:
-                 * If the added element has a children, we have to fire remove event
-                 * to their previous parents (it is the added element's parent)
-                 * and fire add event to the added element for all its children
-                 */
-            
+            /* events firing:
+             * If the added element has a children, we have to fire remove event
+             * to their previous parents (it is the added element's parent)
+             * and fire add event to the added element for all its children
+             */
             if(parent != null) {//root element doesn't have any parent
+                List children = de.getChildren();
                 //fire add event for the new document element itself
                 parent.childAdded(de);
                 //fire events for all affected children
@@ -942,38 +939,31 @@ public final class DocumentModel {
         //note: document change events are fired from the leafs to root
         private boolean removeDE(DocumentElement de) {
             if(debug) System.out.println("[DTM] removing " + de);
-            DocumentElement parent = null;
-            //remove the element itself. Do not do so if the element is root element
-            if(isRootElement(de)) return false;
             
-            //do not try to remove already removed element
-            if(!elements.contains(de)) {
-                return false;
+            int index = elements.indexof(de);
+            if(index <= 0) {
+                return false; //element not found or root element (cannot be removed)
             }
-            
+
             //I need to get the parent before removing from the list!
-            parent = getParent(de);
-            
-            //get children of the element to be removed
-            Iterator/*<DocumentElement>*/ childrenIterator = de.getChildren().iterator();
-            
-            if(debug) System.out.println("[DMT] removed element " + de + " ;parent = " + parent);
-            
-                /* events firing:
-                 * If the removed element had a children, we have to fire add event
-                 * to the parent of the removed element for each child.
-                 */
+            DocumentElement parent = getParent(de);
             if(parent == null) {
                 System.out.println("[DTM] WARNING: element has no parent (no events are fired to it!!!) " + de);
                 System.out.println("[DTM] Trying to recover by returning root element...");
                 parent = getRootElement();
             }
             
-            elements.remove(de);
+            //get children of the element to be removed
+            List<DocumentElement> children = de.isEmpty() ? Collections.EMPTY_LIST : de.getChildren();
+            
+            /* events firing:
+             * If the removed element had a children, we have to fire add event
+             * to the parent of the removed element for each child.
+             */
+            elements.remove(index);
             
             //fire events for all affected children
-            while(childrenIterator.hasNext()) {
-                DocumentElement child = (DocumentElement)childrenIterator.next();
+            for(DocumentElement child : children) {
                 if(debug) System.out.println("switching child " + child + "from removed " + de + "to parent " + parent);
                 de.childRemoved(child);
                 parent.childAdded(child);
@@ -983,6 +973,8 @@ public final class DocumentModel {
             if(parent != null) parent.childRemoved(de);
             
             fireDocumentModelEvent(de, ELEMENT_REMOVED);
+            
+            if(debug) System.out.println("[DMT] removed element " + de + " ;parent = " + parent);
             
             return true;
         }
@@ -1240,10 +1232,8 @@ public final class DocumentModel {
             size++;
         }
         
-        /* ~ log(n) peformance */
-        public void remove(DocumentElement de) {
+        public void remove(int index) {
             checkIntegrity();
-            int index = indexof(de);
             if(index < 0) {
                 return ; //nothing to remove, no update
             }
@@ -1254,6 +1244,12 @@ public final class DocumentModel {
                 System.arraycopy(elements, index+1, elements, index, move);
             }
             elements[--size] = null;
+        } 
+        
+        /* ~ log(n) peformance */
+        public void remove(DocumentElement de) {
+            checkIntegrity();
+            remove(indexof(de));
         }
         
         /* ~ log(n) peformance */
