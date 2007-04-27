@@ -75,7 +75,14 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
         final ClassIndex idx = cpInfo.getClassIndex();
         final Set<FileObject> set = new HashSet<FileObject>();
                 
-        JavaSource source = JavaSource.create(cpInfo, new FileObject[]{tph.getFileObject()});
+        final FileObject file = tph.getFileObject();
+        JavaSource source;
+        if (file!=null) {
+           set.add(file);
+            source = JavaSource.create(cpInfo, new FileObject[]{tph.getFileObject()});
+        } else {
+            source = JavaSource.create(cpInfo);
+        }
         //XXX: This is slow!
         CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
             public void cancel() {
@@ -83,7 +90,6 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
             
             public void run(CompilationController info) throws Exception {
                 info.toPhase(Phase.RESOLVED);
-                set.add(tph.getFileObject());
                 final Element el = tph.resolveElement(info);
                 if (el.getKind().isField()) {
                     //get field references from index

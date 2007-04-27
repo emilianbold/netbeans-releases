@@ -114,9 +114,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                             methodDeclaringSuperClass = getSimpleName(((ExecutableElement) overridens.iterator().next()).getEnclosingElement())
                         }
                         );
-                         final ElementHandle eh = ElementHandle.create(el);
-                        TreePath tp = SourceUtils.pathFor(info, eh.resolve(info));
-                        newElement = TreePathHandle.create(tp, info);
+                        newElement = TreePathHandle.create(el, info);
 
                     }
                 } else if (element.getKind().isClass() || element.getKind().isInterface()) {
