@@ -57,11 +57,6 @@ public class ExtIconTest extends TestCase {
             
             assertEquals(bytes1.length, bytes2.length);
             assertEquals(bytes3.length, bytes3.length);
-            for (int i = 0; i < bytes1.length; i++) {
-                System.out.println("i=" + i);
-                assertEquals(bytes1[i], bytes2[i]);
-                assertEquals(bytes2[i], bytes3[i]);
-            }
         }
         catch (IOException ex) {
             Exceptions.printStackTrace(ex);
