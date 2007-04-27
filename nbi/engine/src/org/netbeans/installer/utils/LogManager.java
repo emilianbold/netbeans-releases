@@ -37,10 +37,15 @@ import org.netbeans.installer.utils.helper.ErrorLevel;
 public final class LogManager {
     /////////////////////////////////////////////////////////////////////////////////
     // Static
+    public static final int DEFAULT_LOG_LEVEL = 
+            ErrorLevel.DEBUG;
+    public static final boolean DEFAULT_LOG_TO_CONSOLE = 
+            true;
+    
     private static File logFile;
     private static PrintWriter logWriter;
-    private static int logLevel;
-    private static boolean logToConsole;
+    private static int logLevel = DEFAULT_LOG_LEVEL;
+    private static boolean logToConsole = DEFAULT_LOG_TO_CONSOLE;
     
     private static int indent;
     
@@ -211,10 +216,6 @@ public final class LogManager {
             "nbi.utils.log.to.console"; // NOI18N
     
     public static final String INDENT = 
-            "    "; // NOI18N
-    
-    public static final int DEFAULT_LOG_LEVEL = 
-            ErrorLevel.DEBUG;
-    public static final boolean DEFAULT_LOG_TO_CONSOLE = 
-            false;
+            "    "; // NOI18N    
+   
 }
