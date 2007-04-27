@@ -75,7 +75,7 @@ public final class SunDDWizardIterator implements WizardDescriptor.Instantiating
                 if (c instanceof JComponent) { // assume Swing components
                     JComponent jc = (JComponent) c;
                     // Sets step number of a component
-                    jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
+                    jc.putClientProperty("WizardPanel_contentSelectedIndex", Integer.valueOf(i)); // NOI18N
                     // Sets steps names for a panel
                     jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
                     // Turn on subtitle creation on each step

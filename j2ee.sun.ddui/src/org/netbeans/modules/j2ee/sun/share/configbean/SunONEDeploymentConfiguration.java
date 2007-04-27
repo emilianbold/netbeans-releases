@@ -936,7 +936,6 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
                             dp = DeploymentPlan.createGraph();
                             FileEntry fe = new FileEntry();
                             fe.setName("sun-web.xml");
-                            String s = new String();
                             java.io.StringWriter strWriter = new java.io.StringWriter();
                             sunW.write(strWriter);
                             fe.setContent(strWriter.toString());
@@ -1090,15 +1089,15 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
             
             // combine the sun-XXX deployment descriptor bean graphs
             // in a deployment plan file graph.
-            Set keys = outputGraphs.keySet();
-            Iterator iter = keys.iterator();
+            Set entrySet = outputGraphs.entrySet();
+            Iterator iter = entrySet.iterator();
             DeploymentPlan dp = new DeploymentPlan();
             CommonDDBean bean = null;
             while (iter.hasNext()) {
-                Object k = iter.next();
-                bean = (CommonDDBean) outputGraphs.get(k);
+                Map.Entry entry = (Map.Entry) iter.next();
+                bean = (CommonDDBean) entry.getValue();
                 if (null != bean) {
-                    String keyString = (String) k;
+                    String keyString = (String) entry.getKey();
                     String uri = Utils.getUriFromKey(keyString);
                     String fname = Utils.getFilenameFromKey(keyString);
                     FileEntry fe = new FileEntry();
@@ -1106,25 +1105,24 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
                     if (useUriDataAtSave && uri.length() > 0) {
                         fe.setUri(uri);
                     }
-                    String s = new String();
                     java.io.StringWriter strWriter = new java.io.StringWriter();
                     bean.write(strWriter);
                     fe.setContent(strWriter.toString());
                     dp.addFileEntry(fe);
                 } else {
-                    jsr88Logger.warning("no bean for key: " + k);
+                    jsr88Logger.warning("no bean for key: " + entry.getKey());
                 }
             }
             
             // !PW FIXME also add cmp graphs
-            keys = cmpGraphs.keySet();
-            iter = keys.iterator();
+            entrySet = cmpGraphs.entrySet();
+            iter = entrySet.iterator();
             while (iter.hasNext()) {
-                Object k = iter.next();
+                Map.Entry entry = (Map.Entry) iter.next();
                 org.netbeans.modules.schema2beans.BaseBean cmpRoot = 
-                    (org.netbeans.modules.schema2beans.BaseBean) cmpGraphs.get(k);
+                    (org.netbeans.modules.schema2beans.BaseBean) entry.getValue();
                 if (null != cmpRoot) {
-                    String keyString = (String) k;
+                    String keyString = (String) entry.getKey();
                     String uri = Utils.getUriFromKey(keyString);
                     String fname = Utils.getFilenameFromKey(keyString);
                     FileEntry fe = new FileEntry();
@@ -1137,7 +1135,7 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
                     fe.setContent(strWriter.toString());
                     dp.addFileEntry(fe);
                 } else {
-                    jsr88Logger.warning("no bean for key: " + k);
+                    jsr88Logger.warning("no bean for key: " + entry.getKey());
                 }
             }
             
@@ -1821,12 +1819,12 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
             
             // combine the sun-XXX deployment descriptor bean graphs
             // in a deployment plan file graph.
-            Set keys = outputGraphs.keySet();
-            Iterator iter = keys.iterator();
+            Set entrySet = outputGraphs.entrySet();
+            Iterator iter = entrySet.iterator();
             DeploymentPlan dp = new DeploymentPlan();
             while (iter.hasNext()) {
-                Object k = iter.next();
-                CommonDDBean bean = (CommonDDBean) outputGraphs.get(k);
+                Map.Entry entry = (Map.Entry) iter.next();
+                CommonDDBean bean = (CommonDDBean) entry.getValue();
                 if (null != bean) {
                     /*String keyString = (String) k;
                     String uri = Utils.getUriFromKey(keyString);
@@ -1840,27 +1838,27 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
                     ByteArrayOutputStream baos = 
                         new ByteArrayOutputStream();
                     bean.write(baos);
-                    contentMap.put(k, baos.toByteArray());
+                    contentMap.put(entry.getKey(), baos.toByteArray());
                     //fe.setContent(strWriter.toString());
                     //dp.addFileEntry(fe);
                 } else {
-                    jsr88Logger.warning("no bean for key: " + k); // NOI18N
+                    jsr88Logger.warning("no bean for key: " + entry.getKey()); // NOI18N
                 }
             }
 
             // !PW FIXME write out cmp graphs too.
-            keys = cmpGraphs.keySet();
-            iter = keys.iterator();
+            entrySet = cmpGraphs.entrySet();
+            iter = entrySet.iterator();
             while (iter.hasNext()) {
-                Object k = iter.next();
+                Map.Entry entry = (Map.Entry) iter.next();
                 org.netbeans.modules.schema2beans.BaseBean cmpRoot = 
-                    (org.netbeans.modules.schema2beans.BaseBean) cmpGraphs.get(k);
+                    (org.netbeans.modules.schema2beans.BaseBean) entry.getValue();
                 if (null != cmpRoot) {
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     cmpRoot.write(baos);
-                    contentMap.put(k, baos.toByteArray());
+                    contentMap.put(entry.getKey(), baos.toByteArray());
                 } else {
-                    jsr88Logger.warning("no bean for key: " + k); // NOI18N
+                    jsr88Logger.warning("no bean for key: " + entry.getKey()); // NOI18N
                 }
             }
             

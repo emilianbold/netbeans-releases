@@ -130,14 +130,14 @@ public class WebAppRef extends BaseModuleRef {
         }
         if (newContextRoot!=null){ //see bug 56280
             try{
-                String result="";
+                StringBuilder resultBuilder = new StringBuilder(newContextRoot.length()+25);
                 String s[] = newContextRoot.split("/");
                 for (int i=0;i<s.length;i++){
-                    result=result+java.net.URLEncoder.encode(s[i], "UTF-8");
+                    resultBuilder.append(java.net.URLEncoder.encode(s[i], "UTF-8"));
                     if (i!=s.length -1)
-                        result=result+"/";
+                        resultBuilder.append('/');
                 }
-                newContextRoot= result;
+                newContextRoot= resultBuilder.toString();
             }
             catch (Exception e){
 

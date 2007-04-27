@@ -94,15 +94,14 @@ public class InConstraint extends ConstraintUtils implements Constraint {
 
                 String format = BundleReader.getValue(
                     "MSG_InConstraint_Failure");                        //NOI18N
-                String set = "";                                        //NOI18N
+                StringBuilder setBuilder = new StringBuilder(128);
                 Iterator iterator = enumeration.iterator();
-                String member;
                 while(iterator.hasNext()){
-                    member = (String)iterator.next();
-                    set = set + " " + member;                           //NOI18N
+                    setBuilder.append(' '); // NOI18N
+                    setBuilder.append((String) iterator.next());
                 }
 
-                Object[] arguments = new Object[]{set};
+                Object[] arguments = new Object[]{setBuilder.toString()};
 
                 String genericFailureMessage = 
                     MessageFormat.format(format, arguments);
@@ -146,9 +145,14 @@ public class InConstraint extends ConstraintUtils implements Constraint {
         super.print();
         String format = BundleReader.getValue("Name_Value_Pair_Format");//NOI18N
         Iterator iterator = enumeration.iterator();
-        String values = "";
-        while(iterator.hasNext()){
-            values = values + "  " + (String)iterator.next();           //NOI18N
+        String values = null;
+        if(iterator.hasNext()) {
+            StringBuilder valuesBuilder = new StringBuilder(128);
+            while(iterator.hasNext()){
+                valuesBuilder.append("  "); // NOI18N
+                valuesBuilder.append((String) iterator.next());
+            }
+            values = valuesBuilder.toString();
         }
 
         if(values != null){

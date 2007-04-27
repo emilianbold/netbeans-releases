@@ -67,7 +67,7 @@ public class ListMapping {
 	
 	private void buildDisplayText() {
 		listSize = (theList != null) ? theList.size() : 0;
-		Object [] args = { new Integer(listSize) };
+		Object [] args = { Integer.valueOf(listSize) };
 		displayText = MessageFormat.format(formatPattern, args);
 	}
 	

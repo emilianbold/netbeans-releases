@@ -362,10 +362,12 @@ public class WebAppCache {
 	 *
 	 */
 	public void setCacheEnabled(String newCacheEnabled) throws java.beans.PropertyVetoException {
-		String oldClassLoader = cacheEnabled;
-		getVCS().fireVetoableChange("cacheEnabled", new Boolean(oldClassLoader), new Boolean(newCacheEnabled));	// NOI18N
+		String oldCacheEnabled = cacheEnabled;
+		Boolean oldCE = Boolean.valueOf(oldCacheEnabled);
+		Boolean newCE = Boolean.valueOf(newCacheEnabled);
+		getVCS().fireVetoableChange("cacheEnabled", oldCE, newCE); // NOI18N
 		cacheEnabled = newCacheEnabled;
-		getPCS().firePropertyChange("cacheEnabled", new Boolean(oldClassLoader), new Boolean(cacheEnabled));	// NOI18N
+		getPCS().firePropertyChange("cacheEnabled", oldCE, newCE); // NOI18N
 	}
 	
 	/** Getter for property Property.

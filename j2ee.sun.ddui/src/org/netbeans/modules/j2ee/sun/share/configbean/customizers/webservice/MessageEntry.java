@@ -43,8 +43,8 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.Generic
  */
 public class MessageEntry extends GenericTableModel.TableEntry {
 
-    public static String OPERATION_ENTRY = "OperationName"; // NOI18N
-    public static String METHOD_ENTRY = "MethodName"; // NOI18N
+    public static final String OPERATION_ENTRY = "OperationName"; // NOI18N
+    public static final String METHOD_ENTRY = "MethodName"; // NOI18N
     
     private static final ResourceBundle webserviceBundle = ResourceBundle.getBundle(
         "org.netbeans.modules.j2ee.sun.share.configbean.customizers.webservice.Bundle"); // NOI18N
@@ -53,7 +53,7 @@ public class MessageEntry extends GenericTableModel.TableEntry {
      *  This simply breaks the string up on whitespace, commas, left/right parentheses
      *  and left/right square brackets.
      */
-    public static Pattern methodSplitter = Pattern.compile("[\\s,\\(\\)\\[\\]]+"); // NOI18N
+    public static final Pattern methodSplitter = Pattern.compile("[\\s,\\(\\)\\[\\]]+"); // NOI18N
     
     private boolean saveAsOperation;
     

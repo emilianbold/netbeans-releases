@@ -171,10 +171,10 @@ public abstract class MethodTableModel extends AbstractTableModel {
                 //Enability Flag
                 if(methodToDDMethodMap != null){
                     if(methodToDDMethodMap.containsKey(methods.get(row))){
-                        return new Boolean("true");                     //NOI18N
+                        return Boolean.TRUE;
                     }
                 }
-                return new Boolean("false");                            //NOI18N
+                return Boolean.FALSE;
             } 
             default: {
                    if(methodToDDMethodMap != null){ 

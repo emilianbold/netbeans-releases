@@ -376,20 +376,20 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
     }
     
     public static String getRelativePath(FileObject from, FileObject to) {
-        String path = "";
+        StringBuilder pathBuilder = new StringBuilder(160);
         //up
         while (!FileUtil.isParentOf(from, to) || from.equals(to)) {
             if (from.equals(to)) {
                 break;
             }
-            path = path + "../";
+            pathBuilder.append("../");
             from = from.getParent();
         }
         //down
         if (!from.equals(to)) {
-            path = path + FileUtil.getRelativePath(from, to);
+            pathBuilder.append(FileUtil.getRelativePath(from, to));
         }
-        return path;
+        return pathBuilder.toString();
     }
     
     public void resetChanged() {

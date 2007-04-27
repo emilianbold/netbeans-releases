@@ -816,7 +816,7 @@ public class ValidationManager {
         Constructor constructor =
             utils.getConstructor(CARDINAL_CONSTRAINT_CLASS, argumentTypes);
 
-        Integer parameter = new Integer(cardinal);
+        Integer parameter = Integer.valueOf(cardinal);
         Object[] argumentValues = new Object[] {parameter};
 
         return (CardinalConstraint) utils.createObject(constructor,

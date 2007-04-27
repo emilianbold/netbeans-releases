@@ -173,18 +173,20 @@ public class PrefetchDisabledPanel extends MethodTablePanel {
     private String getMethodSignature(ConfigQuery.MethodData method){
         String signature = method.getOperationName();
         if(signature != null){
-            signature = signature + "(";                                    //NOI18N
+            StringBuilder signatureBuilder = new StringBuilder(150);
+            signatureBuilder.append(signature);
+            signatureBuilder.append('('); //NOI18N
             List params = method.getParameters();
             if(params != null){
                 for(int i=0; i<params.size(); i++){
                     if(i > 0 ){
-                        signature = signature + "," + params.get(i);        //NOI18N
-                    }else{
-                        signature = signature + params.get(i);              //NOI18N
+                        signatureBuilder.append(','); //NOI18N
                     }
+                    signatureBuilder.append(params.get(i)); //NOI18N
                 }
             }
-            signature = signature + ")";                                    //NOI18N
+            signatureBuilder.append(')'); //NOI18N
+            signature = signatureBuilder.toString();
         }
         return signature;
     }

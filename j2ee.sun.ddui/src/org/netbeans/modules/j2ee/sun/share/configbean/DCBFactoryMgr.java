@@ -104,8 +104,8 @@ public class DCBFactoryMgr {
 		
 		if(xpath.startsWith(beanBaseXpath)) {
 			result = xpath.substring(beanBaseXpath.length());
-		} else if(!xpath.startsWith("/")) {	// NOI18N
-			result = xpath;
+//		} else if(!xpath.startsWith("/")) {	// NOI18N
+//			result = xpath;
 		} else {
 			result = xpath;
 		}

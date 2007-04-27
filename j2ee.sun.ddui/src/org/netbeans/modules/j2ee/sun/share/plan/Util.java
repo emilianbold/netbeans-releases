@@ -79,7 +79,6 @@ public class Util {
                 dp = DeploymentPlan.createGraph();
                 FileEntry fe = new FileEntry();
                 fe.setName("sun-web.xml");
-                String s = new String();
                 java.io.StringWriter strWriter = new java.io.StringWriter();
                 swa.write(strWriter);
                 fe.setContent(strWriter.toString());

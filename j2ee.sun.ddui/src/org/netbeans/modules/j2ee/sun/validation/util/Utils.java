@@ -38,7 +38,7 @@ import org.netbeans.modules.j2ee.sun.validation.util.BundleReader;
  */
 public class Utils {
 
-    private final String GET_PREFIX = "get";                     //NOI18N
+    private static final String GET_PREFIX = "get";                     //NOI18N
 
 
     /** Creates a new instance of Utils */
@@ -542,7 +542,7 @@ public class Utils {
        getMethod = getMethod(getClass(object), methodName,
                 argumentTypes);
 
-       Integer in = new Integer(index);
+       Integer in = Integer.valueOf(index);
        Object[] argumentValues = new Object[] {in};
        return invoke(object, getMethod, argumentValues);
     }
