@@ -441,7 +441,9 @@ public final class TokenListUpdater {
             // the addition of the last token should be 'undone'.
             // This all may happen due to the fact that for larger lookaheads
             // the algorithm must relex the token(s) within lookahead (see the code above).
-            int lastAddedTokenIndex = change.addedTokensOrBranches().size() - 1;
+            int lastAddedTokenIndex = (change.addedTokensOrBranches() != null)
+                    ? (change.addedTokensOrBranches().size() - 1)
+                    : 0;
             // There should remain at least one added token since that one
             // may not be the same like the original removed one because
             // token lengths would differ because of the input source modification.
