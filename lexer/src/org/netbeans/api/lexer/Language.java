@@ -47,7 +47,7 @@ import org.netbeans.spi.lexer.LanguageHierarchy;
  * An input source may be lexed by using an existing language
  * - see {@link TokenHierarchy} which is an entry point into the Lexer API.
  * <br>
- * Language hierarchy is represented by an unmodifiable set of {@link TokenId}s
+ * Language hierarchy is represented by an set of {@link TokenId}s
  * that can be retrieved by {@link #tokenIds()} and token categories
  * {@link #tokenCategories()}.
  *
@@ -72,21 +72,23 @@ public final class Language<T extends TokenId> {
     
     private final LanguageHierarchy<T> languageHierarchy;
     
-    private String mimeType;
+    private final Object LOCK = new String("Language.LOCK");
     
-    private final int maxOrdinal;
+    private final String mimeType;
+    
+    private int maxOrdinal; // assigned by reinit()
 
-    private final Set<T> ids;
+    private Set<T> ids; // assigned by reinit()
 
     /** Lazily inited indexed ids for quick translation of ordinal to token id. */
     private TokenIdSet<T> indexedIds;
 
-    private final Map<String,T> idName2id;
+    private Map<String,T> idName2id; // assigned by reinit()
     
     /**
      * Map of category to ids that it contains.
      */
-    private final Map<String,Set<T>> cat2ids;
+    private Map<String,Set<T>> cat2ids; // assigned by reinit()
     
     /**
      * Lists of token categories for particular id.
@@ -150,6 +152,12 @@ public final class Language<T extends TokenId> {
         this.languageHierarchy = languageHierarchy;
         mimeType = LexerSpiPackageAccessor.get().mimeType(languageHierarchy);
         checkMimeTypeValid(mimeType);
+        synchronized (LOCK) {
+            reinit();
+        }
+    }
+
+    private void reinit() {
         // Create ids and find max ordinal
         Collection<T> createdIds = LexerSpiPackageAccessor.get().createTokenIds(languageHierarchy);
         if (createdIds == null)
@@ -213,7 +221,9 @@ public final class Language<T extends TokenId> {
      * @return unmodifiable set of ids contained in this language.
      */
     public Set<T> tokenIds() {
-        return ids;
+        synchronized (LOCK) {
+            return ids;
+        }
     }
     
     /**
@@ -231,7 +241,7 @@ public final class Language<T extends TokenId> {
      *  &lt;0 or higher than {@link #maxOrdinal()}.
      */
     public T tokenId(int ordinal) {
-        synchronized (idName2id) {
+        synchronized (LOCK) {
             if (indexedIds == null) {
                 if (ids instanceof EnumSet) {
                     indexedIds = new TokenIdSet<T>(ids, maxOrdinal, false);
@@ -272,7 +282,9 @@ public final class Language<T extends TokenId> {
      * @return tokenId with the requested name or null if it does not exist.
      */
     public T tokenId(String name) {
-        return idName2id.get(name);
+        synchronized (LOCK) {
+            return idName2id.get(name);
+        }
     }
     
     /**
@@ -294,7 +306,9 @@ public final class Language<T extends TokenId> {
      *  or <code>-1</code> if the language contains no token ids.
      */
     public int maxOrdinal() {
-        return maxOrdinal;
+        synchronized (LOCK) {
+            return maxOrdinal;
+        }
     }
 
     /**
@@ -304,7 +318,9 @@ public final class Language<T extends TokenId> {
      *  contained in this language.
      */
     public Set<String> tokenCategories() {
-        return Collections.unmodifiableSet(cat2ids.keySet());
+        synchronized (LOCK) {
+            return Collections.unmodifiableSet(cat2ids.keySet());
+        }
     }
 
     /**
@@ -314,7 +330,9 @@ public final class Language<T extends TokenId> {
      * @return set of token ids belonging to the given category.
      */
     public Set<T> tokenCategoryMembers(String tokenCategory) {
-        return Collections.unmodifiableSet(cat2ids.get(tokenCategory));
+        synchronized (LOCK) {
+            return Collections.unmodifiableSet(cat2ids.get(tokenCategory));
+        }
     }
     
     /**
@@ -328,8 +346,8 @@ public final class Language<T extends TokenId> {
      *  to this language.
      */
     public List<String> tokenCategories(T tokenId) {
-        checkMemberId(tokenId);
-        synchronized (idName2id) {
+        synchronized (LOCK) {
+            checkMemberId(tokenId);
             if (id2cats == null) {
                 buildTokenIdCategories();
             }
@@ -351,8 +369,8 @@ public final class Language<T extends TokenId> {
      *  to this language.
      */
     public List<String> nonPrimaryTokenCategories(T tokenId) {
-        checkMemberId(tokenId);
-        synchronized (idName2id) {
+        synchronized (LOCK) {
+            checkMemberId(tokenId);
             if (id2nonPrimaryCats == null) {
                 buildTokenIdCategories();
             }
@@ -370,15 +388,17 @@ public final class Language<T extends TokenId> {
      * @return set of token ids indexed by their ordinal number.
      */
     public Set<T> merge(Collection<T> tokenIds1, Collection<T> tokenIds2) {
-        TokenIdSet.checkIdsFromLanguage(tokenIds1, ids);
-        // Cannot retain EnumSet as tokenIds will already be wrapped
-        // by unmodifiableSet()
-        Set<T> ret = new TokenIdSet<T>(tokenIds1, maxOrdinal, false);
-        if (tokenIds2 != null) {
-            TokenIdSet.checkIdsFromLanguage(tokenIds2, ids);
-            ret.addAll(tokenIds2);
+        synchronized (LOCK) {
+            TokenIdSet.checkIdsFromLanguage(tokenIds1, ids);
+            // Cannot retain EnumSet as tokenIds will already be wrapped
+            // by unmodifiableSet()
+            Set<T> ret = new TokenIdSet<T>(tokenIds1, maxOrdinal, false);
+            if (tokenIds2 != null) {
+                TokenIdSet.checkIdsFromLanguage(tokenIds2, ids);
+                ret.addAll(tokenIds2);
+            }
+            return ret;
         }
-        return ret;
     }
 
     /**
@@ -388,6 +408,24 @@ public final class Language<T extends TokenId> {
      */
     public String mimeType() {
         return mimeType;
+    }
+    
+    /**
+     * Rebuild contents of this language (token ids, token categories etc.)
+     * by calling {@link LanguageHierarchy#createTokenIds()}
+     * and {@link LanguageHierarchy#createTokenCategories()}.
+     * <br/>
+     * This method may need to be called when developing a testing a new language
+     * framework in a live IDE.
+     */
+    public void refresh() {
+        synchronized (LOCK) {
+            // First clear lazily initialized vars
+            indexedIds = null;
+            id2cats = null;
+            id2nonPrimaryCats = null;
+            reinit();
+        }
     }
     
     /** The languages are equal only if they are the same objects. */
