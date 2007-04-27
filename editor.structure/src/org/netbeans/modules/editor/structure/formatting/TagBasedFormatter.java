@@ -129,6 +129,11 @@ public abstract class TagBasedFormatter extends ExtFormatter  {
                         
                         String tagName = extractTagName(token);
                         int tagEndOffset = getTagEndOffset(token);
+                        
+                        if (tagEndOffset == -1){
+                            break; // incomplete closing tag
+                        }
+                        
                         int lastTagLine = Utilities.getLineOffset(doc, tagEndOffset);
                         
                         if (isOpenTag){
