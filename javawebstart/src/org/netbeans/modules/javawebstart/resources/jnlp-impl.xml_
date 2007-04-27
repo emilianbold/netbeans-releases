@@ -327,7 +327,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="jws-run" depends="jar,-verify-jnlp-enabled,generate-jnlp,-verify-codebase" description="Start javaws execution">
         <exec executable="${java.home}/bin/javaws">
-            <arg line="${jnlp.dest.dir}/${launch.jnlp.file}"/>
+            <arg line="&quot;${jnlp.dest.dir}/${launch.jnlp.file}&quot;"/>
         </exec>
     </target>
     
@@ -337,7 +337,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="-debug-javaws-debuggee">
         <exec executable="${java.home}/bin/javaws">
             <env key="JAVAWS_VM_ARGS" value="-Xdebug -Xnoagent -Djava.compiler=none -Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
-            <arg line="${jnlp.dest.dir}/${launch.jnlp.file}"/>
+            <arg line="&quot;${jnlp.dest.dir}/${launch.jnlp.file}&quot;"/>
         </exec>
     </target>
     
