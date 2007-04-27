@@ -19,37 +19,46 @@
 
 package org.netbeans.modules.visualweb.dataconnectivity.naming;
 
-import org.netbeans.api.db.explorer.ConnectionListener;
-import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverListener;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
-import org.openide.ErrorManager;
-import org.openide.util.RequestProcessor;
+import org.openide.util.Exceptions;
 
 
 /**
  * Waits for the JDBCDriverManager to register the Derby driver
  * @author John Baker
  */
-public class DerbyWaiter {    
+public class DerbyWaiter {
 
-    private ConnectionListener connectionListener = new ConnectionListener() {
-        public void connectionsChanged() {
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {                    
-                    registerConnections();                    
-                }
-            });            
+    private static final String DRIVER_CLASS_NET = "org.apache.derby.jdbc.ClientDriver"; // NOI18N[
+
+    private boolean registered;       
+    
+    private final JDBCDriverListener jdbcDriverListener = new JDBCDriverListener() {
+        public void driversChanged() {
+            registerConnections();
         }
     };
     
-    public  DerbyWaiter() {
-         ConnectionManager.getDefault().addConnectionListener(connectionListener);
+    public DerbyWaiter() {
+        JDBCDriverManager.getDefault().addDriverListener(jdbcDriverListener);
     }
     
     private synchronized void registerConnections() {
-        DatabaseSettingsImporter.getInstance().locateAndRegisterDrivers();
-        DatabaseSettingsImporter.getInstance().locateAndRegisterConnections(); 
-        ConnectionManager.getDefault().removeConnectionListener(connectionListener);        
+        if (registered) {
+            return;
+        }
+        JDBCDriver[] drvsArray = JDBCDriverManager.getDefault().getDrivers(DRIVER_CLASS_NET);
+        if (drvsArray.length > 0) {
+            DatabaseSettingsImporter.getInstance().locateAndRegisterDrivers();
+            DatabaseSettingsImporter.getInstance().locateAndRegisterConnections();
+            registered = true;
+            JDBCDriverManager.getDefault().removeDriverListener(jdbcDriverListener);            
+        }
     }
 }
+
+  
+
