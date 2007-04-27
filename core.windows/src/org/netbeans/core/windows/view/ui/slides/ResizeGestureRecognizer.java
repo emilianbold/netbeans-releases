@@ -28,7 +28,6 @@ import java.awt.event.AWTEventListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
@@ -141,7 +140,9 @@ public class ResizeGestureRecognizer implements AWTEventListener {
     }
     
     public void eventDispatched(java.awt.AWTEvent aWTEvent) {
-        if (comp == null || side == null) {
+        if (comp == null || side == null 
+         || SwingUtilities.getRoot(comp) == null
+         || SwingUtilities.getWindowAncestor( SwingUtilities.getRoot(comp) ) == null) {
             state = STATE_NOOP;
             resetState();
             return;
