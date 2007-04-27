@@ -91,10 +91,6 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
     /** */
     private FileStatusListener fsStatusListener;
     
-    /** The type of new lines. */
-    private PropertiesEncoding.NewLineType newLineType
-            = PropertiesEncoding.getDefaultNewLineType();
-    
     /** Visible view of underlying file entry */
     transient PropertiesFileEntry myEntry;
     
@@ -245,7 +241,6 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         
         try {
             editorKit.read(reader, document, 0);
-            newLineType = decoder.getNewLineType();
         } finally {
             reader.close();
         }
@@ -264,7 +259,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
     protected void saveFromKitToStream(StyledDocument document, EditorKit editorKit, OutputStream outputStream)
     throws IOException, BadLocationException {
         final PropCharsetEncoder encoder
-                = new PropCharsetEncoder(new PropCharset(), newLineType);
+                = new PropCharsetEncoder(new PropCharset());
         final Writer writer
                 = new BufferedWriter(new OutputStreamWriter(outputStream, encoder));
         

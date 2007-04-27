@@ -30,7 +30,6 @@ import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Utilities;
 import static java.lang.Math.min;
 import static java.nio.charset.CoderResult.OVERFLOW;
 import static java.nio.charset.CoderResult.UNDERFLOW;
@@ -62,23 +61,6 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
     
     Charset getEncoding() {
         return encoding;
-    }
-    
-    /**
-     */
-    static enum NewLineType {
-        
-        /* the order of elements is significant - see method getNewLineType() */
-        
-        CR_LF,
-        LF,
-        CR
-    }
-    
-    /**
-     */
-    static NewLineType getDefaultNewLineType() {
-        return Utilities.isWindows() ? NewLineType.CR_LF : NewLineType.LF;
     }
     
     /**
@@ -119,8 +101,6 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
         private final char[] inBuf = new char[inBufSize];
         private final byte[] outBuf = new byte[outBufSize];
         
-        private final NewLineType nlType;
-        
         private int inBufPos, outBufPos;
         
         private boolean emptyIn;
@@ -128,12 +108,7 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
         private boolean emptyInBuf;
         
         PropCharsetEncoder(Charset charset) {
-            this(charset, getDefaultNewLineType());
-        }
-        
-        PropCharsetEncoder(Charset charset, NewLineType nlType) {
             super(charset, avgEncodedTokenLen, maxEncodedTokenLen);
-            this.nlType = nlType;
         }
         
         {
@@ -294,13 +269,8 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
             
             int index;
             
-            if (c == '\n') {
-                if (nlType != NewLineType.LF) {
-                    outBuf[outBufPos++] = (byte) '\r';
-                }
-                if (nlType != NewLineType.CR) {
-                    outBuf[outBufPos++] = (byte) '\n';
-                }
+            if ((c == '\r') || (c == '\n')) {
+                outBuf[outBufPos++] = (byte) c;
             } else if ((index = backslashChars.indexOf(c)) >= 0) {
                 outBuf[outBufPos++] = (byte) '\\';
                 outBuf[outBufPos++] = backslashCharsRepl[index];
@@ -354,7 +324,6 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
 
         private static enum State {
             INITIAL,
-            CR,
             BACKSLASH,
             UNICODE,
         }
@@ -378,8 +347,6 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
         
         private final byte[] inBuf = new byte[inBufSize];
         private final char[] outBuf = new char[outBufSize];
-        
-        private int[] nlTypesUsage = new int[NewLineType.values().length];
         
         private int inBufPos, outBufPos;
         
@@ -412,10 +379,6 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
             
             state = State.INITIAL;
             unicodeBytesRead = 0;
-            
-            for (NewLineType nlType : NewLineType.values()) {
-                nlTypesUsage[nlType.ordinal()] = 0;
-            }
         }
 
         protected CoderResult decodeLoop(ByteBuffer in, CharBuffer out) {
@@ -464,10 +427,6 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
             switch (state) {
                 case INITIAL:
                     assert false;
-                    break;
-                case CR:
-                    outBuf[outBufPos++] = '\n';
-                    nlTypesUsage[NewLineType.CR.ordinal()]++;
                     break;
                 case BACKSLASH:
                     outBuf[outBufPos++] = '\\';
@@ -606,49 +565,15 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
             
             switch (state) {
                 case INITIAL:
-                    if (bChar == '\r') {
-                        state = State.CR;
-                    } else if (bChar == '\\') {
+                    if (bChar == '\\') {
                         state = State.BACKSLASH;
-                    } else if (bChar == '\n') {
-                        outBuf[outBufPos++] = bChar;
-                        nlTypesUsage[NewLineType.LF.ordinal()]++;
-                        /* keep the state at INITIAL */
                     } else {
                         outBuf[outBufPos++] = bChar;
                         /* keep the state at INITIAL */
-                    }
-                    break;
-                case CR:
-                    if (bChar == '\r') {
-                        outBuf[outBufPos++] = '\n';
-                        nlTypesUsage[NewLineType.CR.ordinal()]++;
-                        /* keep the state at CR */
-                    } else if (bChar == '\n') {
-                        outBuf[outBufPos++] = '\n';
-                        nlTypesUsage[NewLineType.CR_LF.ordinal()]++;
-                        state = State.INITIAL;
-                    } else if (bChar == '\\') {
-                        outBuf[outBufPos++] = '\n';
-                        nlTypesUsage[NewLineType.CR.ordinal()]++;
-                        state = State.BACKSLASH;
-                    } else {
-                        outBuf[outBufPos++] = '\n';
-                        outBuf[outBufPos++] = bChar;
-                        nlTypesUsage[NewLineType.CR.ordinal()]++;
-                        state = State.INITIAL;
                     }
                     break;
                 case BACKSLASH:
-                    if (bChar == '\r') {
-                        outBuf[outBufPos++] = '\\';
-                        state = State.CR;
-                    } else if (bChar == '\n') {
-                        outBuf[outBufPos++] = '\\';
-                        outBuf[outBufPos++] = '\n';
-                        nlTypesUsage[NewLineType.LF.ordinal()]++;
-                        state = State.INITIAL;
-                    } else if (bChar == 'u') {
+                    if (bChar == 'u') {
                         state = State.UNICODE;
                     } else {
                         outBuf[outBufPos++] = '\\';
@@ -711,20 +636,6 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
                 System.arraycopy(resultBufArray, 0, result, 0, resultBufPos);
                 return result;
             }
-        }
-        
-        NewLineType getNewLineType() {
-            NewLineType nlType = getDefaultNewLineType();
-            int nlTypeUsage = nlTypesUsage[nlType.ordinal()];
-            
-            for (NewLineType testNlType : NewLineType.values()) {
-                if (nlTypesUsage[testNlType.ordinal()] > nlTypeUsage) {
-                    nlType = testNlType;
-                    nlTypeUsage = nlTypesUsage[nlType.ordinal()];
-                }
-            }
-            
-            return nlType;
         }
         
     }
