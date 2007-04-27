@@ -82,7 +82,7 @@ public class Utils {
                     BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                     try {
                         // request
-                        out.println("GET /netbeans-tomcat-status-test HTTP/1.1\n"); // NOI18N
+                        out.println("HEAD /netbeans-tomcat-status-test HTTP/1.1\nHost: localhost:" + port + "\n"); // NOI18N
 
                         // response
                         String text = in.readLine();
