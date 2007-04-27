@@ -45,7 +45,7 @@ public class XPathTreeCompiler extends TreeCompiler {
 	public Object number(String value) {
 		//distinguish between Long and Double 
 		try {
-			int intVal = Integer.parseInt(value);
+			long intVal = Long.parseLong(value);
 			return new Constant(new Long(value));
 		} catch(NumberFormatException ex) {
 			//Do Nothing
