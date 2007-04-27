@@ -27,8 +27,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
@@ -66,7 +64,6 @@ import org.openide.loaders.DataObject;
 public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
     
     private static final long serialVersionUID = 1L;
-    private static final Logger LOGGER = Logger.getLogger(NewWebProjectWizardIterator.class.getName());
     
     static final String PROP_NAME_INDEX = "nameIndex"; //NOI18N
 
@@ -158,28 +155,9 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
             }
         }
 
-        try {
-            WebApp ddRoot = DDProvider.getDefault().getDDRoot(apiWebModule.getDeploymentDescriptor());
-            WelcomeFileList welcomeFiles = ddRoot.getSingleWelcomeFileList();
-            if (welcomeFiles == null) {
-                LOGGER.log(Level.INFO, "no welcome file list");
-                welcomeFiles = (WelcomeFileList) ddRoot.createBean("WelcomeFileList");
-                ddRoot.setWelcomeFileList(welcomeFiles);
-            }
-            if (welcomeFiles.sizeWelcomeFile() == 0) {
-                LOGGER.log(Level.INFO, "welcome file list empty");
-                FileObject webRoot = h.getProjectDirectory().getFileObject("web");//NOI18N
-                //create default index.jsp
-                FileObject indexJSPFo = createIndexJSP(webRoot);
-                assert indexJSPFo != null : "webRoot: " + webRoot + ", defaultJSP: index";//NOI18N
-                // Returning FileObject of main class, will be called its preferred action
-                resultSet.add (indexJSPFo);
-                welcomeFiles.addWelcomeFile("index.jsp"); //NOI18N
-                ddRoot.write(apiWebModule.getDeploymentDescriptor());
-            }
-        } catch (ClassNotFoundException cnfe) {
-            LOGGER.log(Level.SEVERE, cnfe.getLocalizedMessage(), cnfe);
-        }
+        FileObject webRoot = h.getProjectDirectory().getFileObject("web");//NOI18N
+        resultSet.addAll(WebProjectUtilities.ensureWelcomePage(webRoot, apiWebModule.getDeploymentDescriptor()));
+        
         handle.progress(NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NewWebProjectWizardIterator_WizardProgress_PreparingToOpen"), 4);
 
         // Returning set of FileObject of project diretory. 
@@ -270,16 +248,5 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
         // ignore unvalid mainClass ???
         
         return webRoot.getFileObject (indexJSP, "jsp"); // NOI18N
-}
-    private static FileObject createIndexJSP(FileObject webFolder) throws IOException {
-        FileObject jspTemplate = Repository.getDefault().getDefaultFileSystem().findResource( "Templates/JSP_Servlet/JSP.jsp" ); // NOI18N
-
-        if (jspTemplate == null)
-            return null; // Don't know the template
-                
-        DataObject mt = DataObject.find(jspTemplate);        
-        DataFolder webDf = DataFolder.findFolder(webFolder);        
-        return mt.createFromTemplate(webDf, "index").getPrimaryFile(); // NOI18N
     }
-
 }

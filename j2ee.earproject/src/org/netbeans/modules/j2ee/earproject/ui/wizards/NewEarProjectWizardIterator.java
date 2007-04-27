@@ -42,6 +42,7 @@ import org.netbeans.modules.j2ee.earproject.ui.FoldersListSettings;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.j2ee.earproject.util.EarProjectUtil;
 import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectGenerator;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.api.WebProjectCreateData;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -166,12 +167,15 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
             createData.setSourceLevel(sourceLevel);
             if (handle != null)
                 handle.progress(NbBundle.getMessage(NewEarProjectWizardIterator.class, "LBL_NewEarProjectWizardIterator_WizardProgress_WAR"), 3);
-            AntProjectHelper webHelper = WebProjectUtilities.createProject(createData);           
+            AntProjectHelper webHelper = WebProjectUtilities.createProject(createData);
             if (handle != null)
                 handle.progress(4);
 
             FileObject webAppDirFO = FileUtil.toFileObject(FileUtil.normalizeFile(webAppDir));
             webProject = ProjectManager.getDefault().findProject(webAppDirFO);
+            WebModule wm = WebModule.getWebModule(webAppDirFO);
+            WebProjectUtilities.ensureWelcomePage(wm.getDocumentBase(), wm.getDeploymentDescriptor());
+            
             epp.addJ2eeSubprojects(new Project[] { webProject });
             resultSet.add(webAppDirFO);
         }

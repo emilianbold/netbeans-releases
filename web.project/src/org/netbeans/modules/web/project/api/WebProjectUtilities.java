@@ -48,15 +48,24 @@ import org.w3c.dom.Element;
 
 import java.io.*;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.web.project.classpath.ClassPathSupport;
 import org.netbeans.modules.web.project.classpath.WebProjectClassPathExtender;
 import org.netbeans.modules.web.project.ui.customizer.PlatformUiSupport;
 import org.netbeans.modules.j2ee.common.FileSearchUtility;
+import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.modules.SpecificationVersion;
 import org.w3c.dom.NodeList;
 
@@ -93,6 +102,8 @@ public class WebProjectUtilities {
     
     public static final String MINIMUM_ANT_VERSION = "1.6";
 
+    private static final Logger LOGGER = Logger.getLogger(WebProjectUtilities.class.getName());
+    
     private WebProjectUtilities() {}
 
     /**
@@ -257,6 +268,42 @@ public class WebProjectUtilities {
         return h;
     }
 
+    public static Set<FileObject> ensureWelcomePage(FileObject webRoot, FileObject dd) throws IOException {
+        Set resultSet = new HashSet();
+        try {
+            WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
+            WelcomeFileList welcomeFiles = ddRoot.getSingleWelcomeFileList();
+            if (welcomeFiles == null) {
+                welcomeFiles = (WelcomeFileList) ddRoot.createBean("WelcomeFileList");
+                ddRoot.setWelcomeFileList(welcomeFiles);
+            }
+            if (welcomeFiles.sizeWelcomeFile() == 0) {
+                //create default index.jsp
+                FileObject indexJSPFo = createIndexJSP(webRoot);
+                assert indexJSPFo != null : "webRoot: " + webRoot + ", defaultJSP: index";//NOI18N
+                // Returning FileObject of main class, will be called its preferred action
+                resultSet.add (indexJSPFo);
+                welcomeFiles.addWelcomeFile("index.jsp"); //NOI18N
+                ddRoot.write(dd);
+            }
+        } catch (ClassNotFoundException cnfe) {
+            LOGGER.log(Level.SEVERE, cnfe.getLocalizedMessage(), cnfe);
+        }
+        return resultSet;
+    }
+
+    private static FileObject createIndexJSP(FileObject webFolder) throws IOException {
+        FileObject jspTemplate = Repository.getDefault().getDefaultFileSystem().findResource( "Templates/JSP_Servlet/JSP.jsp" ); // NOI18N
+
+        if (jspTemplate == null)
+            return null; // Don't know the template
+                
+        DataObject mt = DataObject.find(jspTemplate);        
+        DataFolder webDf = DataFolder.findFolder(webFolder);        
+        return mt.createFromTemplate(webDf, "index").getPrimaryFile(); // NOI18N
+    }
+
+    
     /**
      * Creates a web project from esisting sources.
      *
@@ -306,7 +353,7 @@ public class WebProjectUtilities {
     }
 
     /**
-     * Creates a web project from esisting sources.
+     * Creates a web project from existing sources.
      * @param createData the object encapsulating necessary data to create the project
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
