@@ -79,6 +79,7 @@ import org.netbeans.modules.languages.javascript.api.JSParser;
 import org.netbeans.modules.languages.javascript.api.JSVariable;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -361,115 +362,92 @@ public class JavaScript {
         return false;
     }
     
-    public static void performRun (ASTNode node, JTextComponent comp) {
-        ClassLoader cl = JavaScript.class.getClassLoader ();
-        InputOutput io = null;
-        FileObject fo = null;
-        try {
-//        ScriptEngineManager manager = new ScriptEngineManager ();
-//        ScriptEngine engine = manager.getEngineByMimeType ("text/javascript");
-            Class managerClass = cl.loadClass ("javax.script.ScriptEngineManager");
-            Object manager = managerClass.newInstance();
-            Method getEngineByMimeType = managerClass.getMethod ("getEngineByMimeType", new Class[] {String.class});
-            Object engine = getEngineByMimeType.invoke (manager, new Object[] {"text/javascript"});
-            
-            Document doc = comp.getDocument ();
-            DataObject dob = NbEditorUtilities.getDataObject (doc);
-            String name = dob.getPrimaryFile ().getNameExt ();
-            fo = dob.getPrimaryFile();
-            SaveCookie saveCookie = (SaveCookie) dob.getLookup ().lookup (SaveCookie.class);
-            if (saveCookie != null)
+    public static void performRun (final ASTNode node, final JTextComponent comp) {
+        RequestProcessor.getDefault().post(new Runnable () {
+            public void run() {
+                ClassLoader cl = JavaScript.class.getClassLoader ();
+                InputOutput io = null;
+                FileObject fo = null;
                 try {
-                    saveCookie.save ();
-                } catch (IOException ex) {
+        //        ScriptEngineManager manager = new ScriptEngineManager ();
+        //        ScriptEngine engine = manager.getEngineByMimeType ("text/javascript");
+                    Class managerClass = cl.loadClass ("javax.script.ScriptEngineManager");
+                    Object manager = managerClass.newInstance();
+                    Method getEngineByMimeType = managerClass.getMethod ("getEngineByMimeType", new Class[] {String.class});
+                    Object engine = getEngineByMimeType.invoke (manager, new Object[] {"text/javascript"});
+
+                    Document doc = comp.getDocument ();
+                    DataObject dob = NbEditorUtilities.getDataObject (doc);
+                    String name = dob.getPrimaryFile ().getNameExt ();
+                    fo = dob.getPrimaryFile();
+                    SaveCookie saveCookie = (SaveCookie) dob.getLookup ().lookup (SaveCookie.class);
+                    if (saveCookie != null)
+                        try {
+                            saveCookie.save ();
+                        } catch (IOException ex) {
+                            ErrorManager.getDefault ().notify (ex);
+                        }
+
+        //            ScriptContext context = engine.getContext ();
+                    Class engineClass = cl.loadClass ("javax.script.ScriptEngine");
+                    Method getContext = engineClass.getMethod ("getContext", new Class[] {});
+                    Object context = getContext.invoke (engine, new Object[] {});
+                    Method put = engineClass.getMethod ("put", new Class[] {String.class, Object.class});
+                    put.invoke(engine, new Object[] {"javax.script.filename", fo.getPath()});
+
+                    io = IOProvider.getDefault ().getIO ("Run " + name, false);
+
+        //            context.setWriter (io.getOut ());
+        //            context.setErrorWriter (io.getErr ());
+        //            context.setReader (io.getIn ());
+                    Class contextClass = cl.loadClass("javax.script.ScriptContext");
+                    Method setWriter = contextClass.getMethod ("setWriter", new Class[] {Writer.class});
+                    Method setErrorWriter = contextClass.getMethod ("setErrorWriter", new Class[] {Writer.class});
+                    Method setReader = contextClass.getMethod ("setReader", new Class[] {Reader.class});
+                    setWriter.invoke (context, new Object[] {io.getOut ()});
+                    setErrorWriter.invoke (context, new Object[] {io.getErr ()});
+                    setReader.invoke (context, new Object[] {io.getIn ()});
+
+                    io.getOut().reset ();
+                    io.select ();
+
+        //            Object o = engine.eval (doc.getText (0, doc.getLength ()));
+                    Method eval = engineClass.getMethod ("eval", new Class[] {String.class});
+                    Object o = eval.invoke (engine, new Object[] {doc.getText (0, doc.getLength ())});
+
+                    if (o != null)
+                        DialogDisplayer.getDefault ().notify (new NotifyDescriptor.Message ("Result: " + o));
+
+                } catch (InvocationTargetException ex) {
+                    try {
+                        Class scriptExceptionClass = cl.loadClass("javax.script.ScriptException");
+                        if (ex.getCause () != null && 
+                            scriptExceptionClass.isAssignableFrom (ex.getCause ().getClass ())
+                        )
+                            if (io != null) {
+                                String msg = ex.getCause ().getMessage ();
+                                int line = 0;
+                                if (msg.startsWith("sun.org.mozilla")) { //NOI18N
+                                    msg = msg.substring(msg.indexOf(':') + 1);
+                                    msg = msg.substring(0, msg.lastIndexOf('(')).trim() + " " + msg.substring(msg.lastIndexOf(')') + 1).trim();
+                                    try {
+                                        line = Integer.valueOf(msg.substring(msg.lastIndexOf("number") + 7)); //NOI18N
+                                    } catch (NumberFormatException nfe) {
+                                        //cannot parse, jump at line zero
+                                    }
+                                }
+                                io.getOut().println(msg, new OutputProcessor(fo, line));
+                            }
+                        else
+                            ErrorManager.getDefault ().notify (ex);
+                    } catch (Exception ex2) {
+                        ErrorManager.getDefault ().notify (ex2);
+                    }
+                } catch (Exception ex) {
                     ErrorManager.getDefault ().notify (ex);
                 }
-            
-//            ScriptContext context = engine.getContext ();
-            Class engineClass = cl.loadClass ("javax.script.ScriptEngine");
-            Method getContext = engineClass.getMethod ("getContext", new Class[] {});
-            Object context = getContext.invoke (engine, new Object[] {});
-            Method put = engineClass.getMethod ("put", new Class[] {String.class, Object.class});
-            put.invoke(engine, new Object[] {"javax.script.filename", fo.getPath()});
-            
-            io = IOProvider.getDefault ().getIO ("Run " + name, false);
-            
-//            context.setWriter (io.getOut ());
-//            context.setErrorWriter (io.getErr ());
-//            context.setReader (io.getIn ());
-            Class contextClass = cl.loadClass("javax.script.ScriptContext");
-            Method setWriter = contextClass.getMethod ("setWriter", new Class[] {Writer.class});
-            Method setErrorWriter = contextClass.getMethod ("setErrorWriter", new Class[] {Writer.class});
-            Method setReader = contextClass.getMethod ("setReader", new Class[] {Reader.class});
-            setWriter.invoke (context, new Object[] {io.getOut ()});
-            setErrorWriter.invoke (context, new Object[] {io.getErr ()});
-            setReader.invoke (context, new Object[] {io.getIn ()});
-            
-            io.getOut().reset ();
-            io.select ();
-            
-//            Object o = engine.eval (doc.getText (0, doc.getLength ()));
-            Method eval = engineClass.getMethod ("eval", new Class[] {String.class});
-            Object o = eval.invoke (engine, new Object[] {doc.getText (0, doc.getLength ())});
-            
-            if (o != null)
-                DialogDisplayer.getDefault ().notify (new NotifyDescriptor.Message ("Result: " + o));
-            
-        } catch (InvocationTargetException ex) {
-            try {
-                Class scriptExceptionClass = cl.loadClass("javax.script.ScriptException");
-                if (ex.getCause () != null && 
-                    scriptExceptionClass.isAssignableFrom (ex.getCause ().getClass ())
-                )
-                    if (io != null) {
-                        String msg = ex.getCause ().getMessage ();
-                        int line = 0;
-                        if (msg.startsWith("sun.org.mozilla")) { //NOI18N
-                            msg = msg.substring(msg.indexOf(':') + 1);
-                            msg = msg.substring(0, msg.lastIndexOf('(')).trim() + " " + msg.substring(msg.lastIndexOf(')') + 1).trim();
-                            try {
-                                line = Integer.valueOf(msg.substring(msg.lastIndexOf("number") + 7)); //NOI18N
-                            } catch (NumberFormatException nfe) {
-                                //cannot parse, jump at line zero
-                            }
-                        }
-                        io.getOut().println(msg, new OutputProcessor(fo, line));
-                    }
-                else
-                    ErrorManager.getDefault ().notify (ex);
-            } catch (Exception ex2) {
-                ErrorManager.getDefault ().notify (ex2);
             }
-        } catch (Exception ex) {
-            ErrorManager.getDefault ().notify (ex);
-        }
-//        ScriptEngineManager manager = new ScriptEngineManager ();
-//        ScriptEngine engine = manager.getEngineByMimeType ("text/javascript");
-//        Document doc = comp.getDocument ();
-//        DataObject dob = NbEditorUtilities.getDataObject (doc);
-//        String name = dob.getPrimaryFile ().getNameExt ();
-//        SaveCookie saveCookie = (SaveCookie) dob.getLookup ().lookup (SaveCookie.class);
-//        if (saveCookie != null)
-//            try {
-//                saveCookie.save ();
-//            } catch (IOException ex) {
-//                ErrorManager.getDefault ().notify (ex);
-//            }
-//        try {
-//            ScriptContext context = engine.getContext ();
-//            InputOutput io = IOProvider.getDefault ().getIO ("Run " + name, false);
-//            context.setWriter (io.getOut ());
-//            context.setErrorWriter (io.getErr ());
-//            context.setReader (io.getIn ());
-//            io.select ();
-//            Object o = engine.eval (doc.getText (0, doc.getLength ()));
-//            if (o != null)
-//                DialogDisplayer.getDefault ().notify (new NotifyDescriptor.Message ("Result: " + o));
-//        } catch (BadLocationException ex) {
-//            ErrorManager.getDefault ().notify (ex);
-//        } catch (ScriptException ex) {
-//            DialogDisplayer.getDefault ().notify (new NotifyDescriptor.Message (ex.getMessage ()));
-//        }
+        });
     }
 
     public static boolean enabledRun (ASTNode node, JTextComponent comp) {
