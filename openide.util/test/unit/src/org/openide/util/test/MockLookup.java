@@ -61,6 +61,14 @@ public class MockLookup extends ProxyLookup {
     }
 
     /**
+     * Just ensures that this lookup is default lookup, but does not actually change its content.
+     * Useful mainly if you have some test utility method which calls foreign code which might use default lookup,
+     * and you want to ensure that any users of mock lookup will see the correct default lookup right away,
+     * even if they have not yet called {@link #setLookup} or {@link #setInstances}.
+     */
+    public static void init() {}
+
+    /**
      * Sets the global default lookup with zero or more delegate lookups.
      * Caution: if you don't include Lookups.metaInfServices, you may have trouble,
      * e.g. {@link #makeScratchDir} will not work.

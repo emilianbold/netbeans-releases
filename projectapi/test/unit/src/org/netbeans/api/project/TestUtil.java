@@ -78,6 +78,7 @@ public final class TestUtil {
         test.clearWorkDir();
         File root = test.getWorkDir();
         assert root.isDirectory() && root.list().length == 0;
+        MockLookup.init(); // URLMapper asks for default lookup
         FileObject fo = FileUtil.toFileObject(root);
         if (fo != null) {
             return fo;
