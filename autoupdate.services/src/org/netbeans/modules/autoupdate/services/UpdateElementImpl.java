@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.autoupdate.services;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
@@ -41,6 +43,7 @@ public class UpdateElementImpl extends Object {
     private final Union2<? extends UpdateItemImpl,ModuleInfo> itemOrInfo;
     private Boolean isModule;
     private String providerName;
+    private Logger log = null;
     
     /** Creates a new instance of ElementImpl */
     public UpdateElementImpl (ModuleInfo info) {
@@ -61,7 +64,11 @@ public class UpdateElementImpl extends Object {
         specVersion = new SpecificationVersion (impl.getSpecificationVersion ());
         source = providerName;
         installInfo = new InstallInfo (impl);
-        displayName = impl.getManifest ().getMainAttributes ().getValue ("OpenIDE-Module-Name");
+        String dn = impl.getManifest ().getMainAttributes ().getValue ("OpenIDE-Module-Name");
+        if (dn == null) {
+            getLogger ().log (Level.WARNING, "Module " + codeName + " doesn't provider display name. Value of \"OpenIDE-Module-Name\" cannot be null.");
+        }
+        displayName = dn == null ? codeName : dn;
         description = impl.getManifest ().getMainAttributes ().getValue ("OpenIDE-Module-Long-Description");
         category = impl.getManifest ().getMainAttributes ().getValue ("OpenIDE-Module-Display-Category");
         author = impl.getAuthor ();
@@ -202,6 +209,13 @@ public class UpdateElementImpl extends Object {
                (this.specVersion != null ? this.specVersion.hashCode()
                                          : 0);
         return hash;
+    }
+    
+    private Logger getLogger () {
+        if (log == null) {
+            log = Logger.getLogger (UpdateElementImpl.class.getName ());
+        }
+        return log;
     }
 
 
