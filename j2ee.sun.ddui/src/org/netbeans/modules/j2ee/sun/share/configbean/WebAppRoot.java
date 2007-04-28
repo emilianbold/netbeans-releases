@@ -452,7 +452,7 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
         }
     }
 	
-	private class WebAppRootFinder implements ConfigFinder {
+	private static class WebAppRootFinder implements ConfigFinder {
 		public Object find(Object obj) {
 			SunWebApp result = null;
 			

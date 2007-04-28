@@ -210,7 +210,7 @@ public class EjbRef extends Base {
 		return snippets;
 	}
 
-	private class EjbRefFinder extends NameBasedFinder {
+	private static class EjbRefFinder extends NameBasedFinder {
 		public EjbRefFinder(String beanName) {
 			super(org.netbeans.modules.j2ee.sun.dd.api.common.EjbRef.EJB_REF_NAME,
 			      beanName, org.netbeans.modules.j2ee.sun.dd.api.common.EjbRef.class);

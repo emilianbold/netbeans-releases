@@ -217,7 +217,7 @@ public class ServiceRef extends Base {
 		return snippets;
 	}
 	
-	private class ServiceRefFinder extends NameBasedFinder {
+	private static class ServiceRefFinder extends NameBasedFinder {
 		public ServiceRefFinder(String beanName) {
 			super(org.netbeans.modules.j2ee.sun.dd.api.common.ServiceRef.SERVICE_REF_NAME,
 				beanName, org.netbeans.modules.j2ee.sun.dd.api.common.ServiceRef.class);

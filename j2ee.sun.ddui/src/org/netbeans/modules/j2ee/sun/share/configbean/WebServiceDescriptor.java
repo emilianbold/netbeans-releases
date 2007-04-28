@@ -404,7 +404,7 @@ public class WebServiceDescriptor extends Base {
 		}
 	}
 
-	private class RootFinder implements ConfigFinder {
+	private static class RootFinder implements ConfigFinder {
 		public Object find(Object obj) {
 			RootInterface result = null;
 

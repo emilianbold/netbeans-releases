@@ -214,7 +214,7 @@ public abstract class BaseEjb extends Base {
 		}
 	}
  */
-	private class EjbFinder extends NameBasedFinder {
+	private static class EjbFinder extends NameBasedFinder {
 		public EjbFinder(String beanName) {
 			super(Ejb.EJB_NAME, beanName, Ejb.class);
 		}

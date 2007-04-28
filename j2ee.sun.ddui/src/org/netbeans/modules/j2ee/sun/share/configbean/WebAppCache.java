@@ -646,7 +646,7 @@ public class WebAppCache {
 		return snippets;	
 	}
 		
-	private class CacheFinder implements ConfigFinder {
+	private static class CacheFinder implements ConfigFinder {
 		public Object find(Object obj) {
 			Cache result = null;
 			

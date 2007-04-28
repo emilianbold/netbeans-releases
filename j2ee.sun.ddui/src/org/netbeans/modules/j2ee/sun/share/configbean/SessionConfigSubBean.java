@@ -360,7 +360,7 @@ public class SessionConfigSubBean {
 		return snippets;	
 	}
 		
-	private class SessionConfigFinder implements ConfigFinder {
+	private static class SessionConfigFinder implements ConfigFinder {
 		public Object find(Object obj) {
 			SessionConfig result = null;
 			

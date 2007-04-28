@@ -330,7 +330,7 @@ public class ResourceRef extends Base {
 	}	
 */
 
-	private class ResourceRefFinder extends NameBasedFinder {
+	private static class ResourceRefFinder extends NameBasedFinder {
 		public ResourceRefFinder(String beanName) {
 			super(org.netbeans.modules.j2ee.sun.dd.api.common.ResourceRef.RES_REF_NAME,
 				beanName, org.netbeans.modules.j2ee.sun.dd.api.common.ResourceRef.class);

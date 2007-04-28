@@ -776,7 +776,7 @@ public class ModuleDDSupport implements PropertyChangeListener {
 
     }
 
-    private class XpathListenerStorage {
+    private static class XpathListenerStorage {
         private DDCommon bean = null;
         private String xpath;
         private boolean xpathRelative;
@@ -810,7 +810,7 @@ public class ModuleDDSupport implements PropertyChangeListener {
         public boolean equals(Object o) {
             if(o instanceof XpathListenerStorage) {
                 XpathListenerStorage x = (XpathListenerStorage) o;
-                return (x.bean == bean) && (x.xpath == xpath) && (x.listen == listen);
+                return (x.bean == bean) && (x.xpath.equals(xpath)) && (x.listen == listen);
             }
             return false;
         }

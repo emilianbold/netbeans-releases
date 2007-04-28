@@ -284,7 +284,7 @@ public class ServletRef extends Base {
 		return snippets;
 	}
 	
-	private class ServletRefFinder extends NameBasedFinder {
+	private static class ServletRefFinder extends NameBasedFinder {
 		public ServletRefFinder(String beanName) {
 			super(Servlet.SERVLET_NAME, beanName, Servlet.class);
 		}

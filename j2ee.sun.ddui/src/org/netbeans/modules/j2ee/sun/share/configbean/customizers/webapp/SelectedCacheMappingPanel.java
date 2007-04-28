@@ -576,7 +576,7 @@ public class SelectedCacheMappingPanel extends javax.swing.JPanel {
 	 *  switches the mapping from policy to helper.  Then if the user switches
 	 *  back to policy, the former policy can be restored.
 	 */
-	private class PolicyStorage {
+	private static class PolicyStorage {
 		private String timeoutName;
 		private String timeoutValue;
 		private String timeoutScope;

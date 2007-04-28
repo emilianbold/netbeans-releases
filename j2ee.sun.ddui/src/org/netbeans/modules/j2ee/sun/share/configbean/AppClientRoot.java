@@ -299,7 +299,7 @@ public class AppClientRoot extends BaseRoot {
         }
     }
 
-    public class AppClientRootFinder implements ConfigFinder {
+    public static class AppClientRootFinder implements ConfigFinder {
         public Object find(Object obj) {
             SunApplicationClient result = null;
             if(obj instanceof SunApplicationClient) {

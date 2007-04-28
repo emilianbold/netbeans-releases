@@ -207,7 +207,7 @@ public class MessageDestinationRef extends Base {
 		return snippets;
 	}
 
-	private class MessageDestinationRefFinder extends NameBasedFinder {
+	private static class MessageDestinationRefFinder extends NameBasedFinder {
 		public MessageDestinationRefFinder(String beanName) {
 			super(org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef.MESSAGE_DESTINATION_REF_NAME,
 			      beanName, org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef.class);

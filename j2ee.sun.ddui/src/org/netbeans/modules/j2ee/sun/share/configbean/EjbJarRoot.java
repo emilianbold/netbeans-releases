@@ -565,7 +565,7 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
         }
     }
 
-    public class EjbJarRootFinder implements ConfigFinder {
+    public static class EjbJarRootFinder implements ConfigFinder {
         public Object find(Object obj) {
             SunEjbJar retVal = (SunEjbJar) obj;
             return retVal;
@@ -573,7 +573,7 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
     }
 
     // methods used to read a DConfigBean from a deployment plan
-    public class SunCmpMappingsParser implements ConfigParser {
+    public static class SunCmpMappingsParser implements ConfigParser {
         public Object parse(java.io.InputStream stream) throws IOException, SAXException, DDException {
             SunCmpMappings result = null;
 
@@ -601,7 +601,7 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
         }
     }
 
-    public class SunCmpMappingsRootFinder implements ConfigFinder {
+    public static class SunCmpMappingsRootFinder implements ConfigFinder {
         public Object find(Object obj) {
             SunCmpMappings retVal = (SunCmpMappings) obj;
             return retVal;

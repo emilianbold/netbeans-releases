@@ -192,7 +192,7 @@ public class WebServices extends BaseRoot {
 //		return bean;
 //	}
     
-    private class RootFinder implements ConfigFinder {
+    private static class RootFinder implements ConfigFinder {
         public Object find(Object obj) {
             RootInterface result = null;
             

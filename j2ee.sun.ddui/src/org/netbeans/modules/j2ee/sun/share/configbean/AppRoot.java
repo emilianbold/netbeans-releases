@@ -230,7 +230,7 @@ public class AppRoot extends BaseRoot {
         }
     }
 	
-	public class AppRootFinder implements ConfigFinder {
+	public static class AppRootFinder implements ConfigFinder {
 		public Object find(Object obj) {
 			Object result = null;
 			if(obj instanceof SunApplication) {

@@ -246,7 +246,7 @@ public abstract class AbstractDesignEditor extends TopComponent implements Panel
         }
     }
     
-    class PropertiesDisplayListener implements PropertyChangeListener {
+    static class PropertiesDisplayListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
             if (PropertySheet.PROPERTY_DISPLAY_WRITABLE_ONLY.equals(
             evt.getPropertyName())) {

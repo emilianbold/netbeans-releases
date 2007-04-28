@@ -243,7 +243,7 @@ public class ResourceEnvRef extends Base {
 	}
  */
 	
-	private class ResourceEnvRefFinder extends NameBasedFinder {
+	private static class ResourceEnvRefFinder extends NameBasedFinder {
 		public ResourceEnvRefFinder(String beanName) {
 			super(org.netbeans.modules.j2ee.sun.dd.api.common.ResourceEnvRef.RESOURCE_ENV_REF_NAME,
 				beanName, org.netbeans.modules.j2ee.sun.dd.api.common.ResourceEnvRef.class);

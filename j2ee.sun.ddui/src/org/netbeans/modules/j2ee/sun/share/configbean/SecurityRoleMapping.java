@@ -256,7 +256,7 @@ public class SecurityRoleMapping extends Base {
 		return snippets;
 	}
 	
-	private class SecurityRoleMappingFinder extends NameBasedFinder {
+	private static class SecurityRoleMappingFinder extends NameBasedFinder {
 		public SecurityRoleMappingFinder(String beanName) {
 			super(org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping.ROLE_NAME,
 				beanName, org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping.class);
