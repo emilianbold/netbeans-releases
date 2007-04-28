@@ -26,7 +26,8 @@
 #include "ProcessUtils.h"
 #include "Launcher.h"
 
-const DWORD JAVA_VERSION_PROCESS_TIMEOUT = 5000; // 5sec
+const DWORD JAVA_VERIFICATION_PROCESS_TIMEOUT = 10000; // 10sec
+const DWORD JAVA_VERIFICATION_PROCESS_PRIORITY = NORMAL_PRIORITY_CLASS;
 const DWORD MAX_LEN_VALUE_NAME = 16383;
 const WCHAR * JAVA_EXE_SUFFIX = L"\\bin\\java.exe";
 const WCHAR * JAVA_LIB_SUFFIX = L"\\lib";
@@ -216,12 +217,12 @@ DWORD getJavaPropertiesFromOutput(LauncherProperties * props, char *str, JavaPro
             string = javaVersion;
         }
     }
-    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "getting java version from string : ", 0);
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... getting java version from string : ", 0);
     writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, string, 1);
     
     JavaVersion * vers = getJavaVersionFromString(string, & result);
     if(javaProps != NULL) {
-        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, ".. some java  there", 1);
+        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... some java there", 1);
         * javaProps = (JavaProperties *) malloc(sizeof(JavaProperties));
         (*javaProps)->version = vers;
         (*javaProps)->vendor   = javaVendor;
@@ -230,7 +231,7 @@ DWORD getJavaPropertiesFromOutput(LauncherProperties * props, char *str, JavaPro
         (*javaProps)->javaHome = NULL;
         (*javaProps)->javaExe  = NULL;
     } else {
-        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, ".. no java  there", 1);
+        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... no java  there", 1);
         FREE(javaVendor);
         FREE(osName);
         FREE(osArch);
@@ -248,7 +249,7 @@ void getJavaProperties(WCHAR * location, LauncherProperties * props, JavaPropert
     WCHAR *libDirectory   = getJavaResource(location, JAVA_LIB_SUFFIX);
     
     if(fileExists(javaExecutable) && testJavaClass!=NULL && isDirectory(libDirectory)) {
-        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "java hierarchy there...", 1);
+        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... java hierarchy there", 1);
         // <location>\bin\java.exe exists
         WCHAR * command = NULL;
         
@@ -261,7 +262,7 @@ void getJavaProperties(WCHAR * location, LauncherProperties * props, JavaPropert
         HANDLE hWrite;
         CreatePipe(&hRead, &hWrite, NULL, 0);
         // Start the child process.        
-        executeCommand(props, command, NULL, JAVA_VERSION_PROCESS_TIMEOUT, hWrite, hWrite, NORMAL_PRIORITY_CLASS);
+        executeCommand(props, command, NULL, JAVA_VERIFICATION_PROCESS_TIMEOUT, hWrite, hWrite, JAVA_VERIFICATION_PROCESS_PRIORITY);
         if(props->status!= ERROR_ON_EXECUTE_PROCESS && props->status!= ERROR_PROCESS_TIMEOUT) {
             char * output = readHandle(hRead);
             writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "           output :\n", 0);
@@ -273,6 +274,9 @@ void getJavaProperties(WCHAR * location, LauncherProperties * props, JavaPropert
                 (*javaProps)->javaExe  = appendStringW(NULL, javaExecutable);
             }
             FREE(output);
+        } else if(props->status == ERROR_PROCESS_TIMEOUT) {
+            // java verification process finished by time out
+            props->status = ERROR_INPUTOUPUT;
         }
         free(command);
         CloseHandle(hWrite);
