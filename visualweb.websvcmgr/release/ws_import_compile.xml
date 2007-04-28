@@ -112,7 +112,7 @@
                   extension="true" 
                   package="${packageName}" 
                   destdir="${jaxws.base}/build" 
-                  wsdl="${wsdlFileName}"/>
+                  wsdl="${wsdlFileName}" xendorsed="true"/>
     </target>
     
     <target name="client-dt-wsimport" depends="-init-wsimport">
