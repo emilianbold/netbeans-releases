@@ -23,8 +23,10 @@ package org.netbeans.modules.templates;
 import java.awt.Dialog;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.util.Collections;
@@ -43,6 +45,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataLoader;
@@ -225,19 +228,35 @@ public class SCFTHandlerTest extends NbTestCase {
      }
     
     public void testTemplateWizardCopiesItsPropertiesToMapForOverridenEntryOnMoreEntries() throws Exception {
-        FileObject root = FileUtil.createMemoryFileSystem().getRoot();
+        LocalFileSystem fs = new LocalFileSystem();
+        fs.setRootDirectory(getWorkDir());
+        
+        FileObject root = fs.getRoot();
         FileObject fo = FileUtil.createData(root, "simpleObject.java");
         FileObject fo2 = FileUtil.createData(root, "simpleObject.form");
         fo.setAttribute("javax.script.ScriptEngine", "freemarker");
         fo2.setAttribute("javax.script.ScriptEngine", "freemarker");
+
+        Charset set = Charset.forName("iso-8859-2");
+        OutputStream os = fo2.getOutputStream();
+        OutputStreamWriter w = new OutputStreamWriter(os, set);
+        String txt = "skvělej tým, co nikdy neusíná";
+        w.write(txt);
+        w.close();
         
         
         DataObject obj = DataObject.find(fo);
         assertEquals(TwoPartObject.class, obj.getClass());
+        TwoPartObject tpo = (TwoPartObject)obj;
+        tpo.encoding = set;
         
-        DataFolder folder = DataFolder.findFolder(FileUtil.createFolder(root, "target"));
+        FileObject root2 = FileUtil.createMemoryFileSystem().getRoot();
+        DataFolder folder = DataFolder.findFolder(FileUtil.createFolder(root2, "target"));
         
         Map<String,String> parameters = Collections.singletonMap("type", "empty");
+        
+        FEQI.fs = root2.getFileSystem();
+        FEQI.result = Charset.forName("UTF-8");
         
         DataObject n = obj.createFromTemplate(folder, "complex", parameters);
         Integer cnt = TwoPartLoader.queried.get(n.getPrimaryFile());
@@ -246,6 +265,16 @@ public class SCFTHandlerTest extends NbTestCase {
         assertEquals("Created in right place", folder, n.getFolder());
         assertEquals("Created with right name", "complex", n.getName());
         
+        InputStream is = n.getPrimaryFile().getInputStream();
+        InputStreamReader r = new InputStreamReader(is, "UTF-8");
+        char[] cbuf = new char[1024];
+        int len = r.read(cbuf);
+        if (len == -1) {
+            fail("no input stream for " + n.getPrimaryFile());
+        }
+        String read = new String(cbuf, 0, len);
+        
+        assertEquals(txt, read);
     }
      
     public static final class DD extends DialogDisplayer {
@@ -382,7 +411,16 @@ public class SCFTHandlerTest extends NbTestCase {
     public static final class TwoPartObject extends MultiDataObject {
         public TwoPartObject(TwoPartLoader l, FileObject folder) throws DataObjectExistsException {
             super(folder, l);
+            getCookieSet().assign(FileEncodingQueryImplementation.class, eq);
         }
+        private Charset encoding;
+        private FileEncodingQueryImplementation eq = new FileEncodingQueryImplementation() {
+
+            public Charset getEncoding(FileObject file) {
+                return encoding;
+            }
+            
+        };
     }
     
 }

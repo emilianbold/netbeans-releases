@@ -21,6 +21,7 @@ package org.netbeans.modules.openide.loaders;
 import java.nio.charset.Charset;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
@@ -30,19 +31,26 @@ import org.openide.util.Exceptions;
  * @author Tomas Zezula
  */
 public class DataObjectEncodingQueryImplementation extends FileEncodingQueryImplementation {
-    private static ThreadLocal<? extends Object> constCheck;
+    private static ThreadLocal<DataFolder> TARGET = new ThreadLocal<DataFolder>();
     
     /** Creates a new instance of DataObjectEncodingQueryImplementation */
     public DataObjectEncodingQueryImplementation() {
     }
     
-    public static void assignConstructorCheck(ThreadLocal<? extends Object> local) {
-        constCheck = local;
+    public static DataFolder enterIgnoreTargetFolder(DataFolder df) {
+        DataFolder prev = TARGET.get();
+        TARGET.set(df);
+        return prev;
+    }
+    public static void exitIgnoreTargetFolder(DataFolder prev) {
+        TARGET.set(prev);
     }
     
     public Charset getEncoding(FileObject file) {
         assert file != null;
-        if (constCheck.get() != null) {
+        DataFolder df = TARGET.get();
+        if (df != null && df.getPrimaryFile().equals(file.getParent())) {
+            // do not create new data objects
             return null;
         }
         try {

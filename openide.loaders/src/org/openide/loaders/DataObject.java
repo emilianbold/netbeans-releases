@@ -28,6 +28,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.*;
 import org.netbeans.modules.openide.loaders.DataObjectAccessor;
+import org.netbeans.modules.openide.loaders.DataObjectEncodingQueryImplementation;
 import org.openide.filesystems.*;
 import org.openide.nodes.*;
 import org.openide.util.*;
@@ -1191,11 +1192,13 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
         }
         
         public void run () throws IOException {
+            DataFolder prevFold = DataObjectEncodingQueryImplementation.enterIgnoreTargetFolder(f);
             CreateAction prev = CURRENT.get();
             try {
                 CURRENT.set(this);
                 result = orig.handleCreateFromTemplate(f, name);
             } finally {
+                DataObjectEncodingQueryImplementation.exitIgnoreTargetFolder(prevFold);
                 CURRENT.set(prev);
             }
         }
