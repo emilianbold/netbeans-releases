@@ -601,6 +601,11 @@ public class PropertyElementCustomizer extends JPanel implements EnhancedCustomP
                     String value = PropertyDataFormatter.translateToFullyQualifiedName((String)aValue);
                     element.setValue(value);
                 }
+                else 
+                {  
+                   // Fixed IZ=102600
+                   element.setValue((String)aValue);
+                }
             }          
         }
         
