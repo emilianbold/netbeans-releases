@@ -281,7 +281,7 @@ public class NBFileUtils
     public static JavaSource findResource(String filename)
     {
         Log.entry("Entering function NBFileUtils::findResource(String)");
-        
+
         if(filename == null || filename.length() <= 0) return null;
         
         filename = normalizeFile(filename);
@@ -597,10 +597,9 @@ public class NBFileUtils
 
         String fileName = clazz.getFilename();
         
-        if (clazz.getChangeType() != ClassInfo.DELETE)
-        {
-            if (fileName == null || fileName.length() == 0)
+	if (fileName == null || fileName.length() == 0) {
                 clazz.updateFilename(null);
+		fileName = clazz.getFilename();
         }
         
 	ClassInfo outerClass = clazz.getOuterClass();
