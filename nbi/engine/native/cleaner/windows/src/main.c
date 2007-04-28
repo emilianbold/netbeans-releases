@@ -29,8 +29,9 @@ typedef VOID  (WINAPI * EXIT_PROC)(DWORD);
 typedef VOID  (WINAPI * SLEEP_PROC)(DWORD);
 
 const DWORD SLEEP_DELAY   = 200;
-const DWORD MAX_ATTEPTS   = 20;
-const DWORD INITIAL_DELAY = 3000; // 3 seconds is seems to be enough to finish java process
+const DWORD MAX_ATTEPTS   = 15;
+const DWORD THREAD_FINISHED = 100;
+const DWORD INITIAL_DELAY = 2000; // 2 seconds is seems to be enough to finish java process
 const WCHAR * LINE_SEPARATOR = L"\r\n";
 
 
@@ -196,7 +197,7 @@ void getLines(WCHAR *str, WCHAR *** list, DWORD * number) {
                 memset((*list)[counter ], 0, sizeof(WCHAR) * (length +1) );
                 wcsncat((*list) [counter ], ptr, length);
                 ptr = ptr2;
-            } else if((length = wcslen(ptr)) > 0) {                
+            } else if((length = wcslen(ptr)) > 0) {
                 (*list)[counter ] = (WCHAR*) malloc((sizeof(WCHAR*)*(length+1)));
                 memset((*list)[counter ], 0, sizeof(WCHAR) * (length +1) );
                 wcsncat((*list) [counter ], ptr, length);
@@ -223,70 +224,100 @@ void readStringList(HANDLE fileHandle, WCHAR *** list, DWORD *number) {
     free(charBuffer);
 }
 
-DWORD fileExists(WCHAR *path) {
-    WIN32_FILE_ATTRIBUTE_DATA attrs;
-    return GetFileAttributesExW(path, GetFileExInfoStandard, &attrs);
-}
-
-DWORD isDirectory(WCHAR *path) {
-    WIN32_FILE_ATTRIBUTE_DATA attrs;
-    if(GetFileAttributesExW(path, GetFileExInfoStandard, &attrs)) {
-        return (attrs.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
-    }
-    else {
-        return 0;
-    }
-}
-
-
 void deleteFile(WCHAR * file) {
-    DWORD count = 0 ;    
-     if(fileExists(file)) {
-        //SetFileAttributesW(file, FILE_ATTRIBUTE_NORMAL);
-        if(isDirectory(file)) {
-            while((!RemoveDirectoryW(file) || fileExists(file)) && ((count++) < MAX_ATTEPTS)) {
+    DWORD count = 0 ;
+    WIN32_FILE_ATTRIBUTE_DATA attrs;
+    if(GetFileAttributesExW(file, GetFileExInfoStandard, &attrs)) {
+        if(attrs.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+            while((!RemoveDirectoryW(file) || GetFileAttributesExW(file,GetFileExInfoStandard, &attrs)) && 
+            ((count++) < MAX_ATTEPTS))
                 Sleep(SLEEP_DELAY);
-            }
+        else
+            while((!DeleteFileW(file) || GetFileAttributesExW(file,GetFileExInfoStandard, &attrs)) && 
+            ((count++) < MAX_ATTEPTS))
+                Sleep(SLEEP_DELAY);
+    }
+}
+
+DWORD WINAPI deleteFileThread(void * ptr) {
+    WCHAR * file = (WCHAR*) ptr;
+    deleteFile(file);
+    return THREAD_FINISHED;
+}
+
+DWORD getFreeIndexForNextThread(HANDLE * list, DWORD max, DWORD * counter) {
+    DWORD code = 0;
+    DWORD maxReached = 0;
+    
+    while(1) {
+        if((*counter)==max) {
+            maxReached = 1;
+            *counter = 0;
+        }
+        code = 0;
+        if(list[*counter]==INVALID_HANDLE_VALUE) {
+            break;
+        } else if(GetExitCodeThread(list[*counter], &code)!=0 && code==THREAD_FINISHED) {
+            break;
         } else {
-            while((!DeleteFileW(file) || fileExists(file)) && ((count++) < MAX_ATTEPTS)) {
-                Sleep(SLEEP_DELAY);
+            *counter = (*counter) + 1;
+            if((*counter)==max && maxReached == 1) {
+                *counter = WaitForMultipleObjects(max, list, FALSE, INFINITE) - WAIT_OBJECT_0;
             }
         }
-    } 
+    }
 }
+// should be less or equals to MAXIMUM_WAIT_OBJECTS
+#define MAXIMUM_THREADS MAXIMUM_WAIT_OBJECTS
 
-int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hi, PSTR pszCmdLine, int nCmdShow) {    
+int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hi, PSTR pszCmdLine, int nCmdShow) {
     int argumentsNumber = 0;
-    DWORD i=0;    
+    DWORD i=0;
+    DWORD  threadCounter = 0;
+    DWORD dwThread;
+    HANDLE * runningThreads = (HANDLE *) malloc(sizeof(HANDLE) * MAXIMUM_THREADS);
+    
+    for(i=0;i<MAXIMUM_THREADS;i++) {
+        runningThreads[i] = INVALID_HANDLE_VALUE;
+    }
+    
     WCHAR ** commandLine = CommandLineToArgvW(GetCommandLineW(), &argumentsNumber);
     if(argumentsNumber==2) {
         WCHAR * filename = commandLine[1];
         HANDLE fileList = CreateFileW(filename, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, 0, OPEN_EXISTING, FILE_FLAG_DELETE_ON_CLOSE, 0);
         if(fileList!=0) {
-            Sleep(INITIAL_DELAY);
             WCHAR ** files = NULL;
             DWORD number = 0;
+            DWORD allThreadsUsed=0;
             readStringList(fileList, &files, &number);
-            CloseHandle(fileList);            
-            if(files!=NULL) {
+            CloseHandle(fileList);
+            
+            if(files!=NULL) {                
+                Sleep(INITIAL_DELAY);
                 for(i=0;i<number;i++) {
                     WCHAR * file = files[i];
                     if(file!=NULL) {
                         if(wcslen(file)>0)  {
-                            deleteFile(file);                            
+                            getFreeIndexForNextThread(runningThreads, MAXIMUM_THREADS, &threadCounter);
+                            runningThreads [threadCounter] = CreateThread( NULL, 0, &deleteFileThread, (LPVOID) file, 0, &dwThread );
+                            threadCounter++;
+                            if(threadCounter==MAXIMUM_THREADS) allThreadsUsed = 1;
                         }
                     }
                 }
+                DWORD objectsToWait = allThreadsUsed ? MAXIMUM_THREADS : threadCounter;
+                WaitForMultipleObjects(objectsToWait, runningThreads, TRUE, INFINITE);
                 
                 for(i=0;i<number;i++) {
                     if(files[i]!=NULL) free(files[i]);
                 }
                 
                 free(files);
-            }            
+            }
         }
     }
     LocalFree(commandLine);
+    free(runningThreads);
     removeItself();
     return 0;
 }
