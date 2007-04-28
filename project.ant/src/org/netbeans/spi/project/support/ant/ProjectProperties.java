@@ -76,14 +76,6 @@ final class ProjectProperties {
     public ProjectProperties(AntProjectHelper helper) {
         this.helper = helper;
     }
-
-    /**
-     * Reclaim some memory by discarding cache.
-     * @see "issue #90195"
-     */
-    public void clear() {
-        properties.clear();
-    }
     
     /**
      * Get properties from a given path.
