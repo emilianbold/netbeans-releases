@@ -52,7 +52,7 @@ public class UpdateElementImpl extends Object {
         displayName = info.getDisplayName ();
         specVersion = info.getSpecificationVersion ();
         description = (String) info.getLocalizedAttribute("OpenIDE-Module-Long-Description");
-        source = "NetBeans 6.0"; // XXX: Read from some bundle
+        source = Utils.getProductVersion (); // XXX: #102330 - need to distinguish module from original distribution and modules from UC
         category = (String) info.getLocalizedAttribute ("OpenIDE-Module-Display-Category");
         isModule = true;
         itemOrInfo = Union2.createSecond(info);
@@ -82,7 +82,7 @@ public class UpdateElementImpl extends Object {
         this.providerName = providerName;        
         codeName = impl.getCodeName ();
         specVersion = new SpecificationVersion (impl.getSpecificationVersion ());
-        source = "NetBeans 6.0";
+        source = providerName;
         installInfo = new InstallInfo (impl);
         displayName = impl.getLocalizedModuleName ();
         description = impl.getLocalizedModuleDescription ();
@@ -93,7 +93,7 @@ public class UpdateElementImpl extends Object {
         this.providerName = providerName;                
         codeName = impl.getCodeName ();
         specVersion = new SpecificationVersion (impl.getSpecificationVersion ());
-        source = "NetBeans 6.0";
+        source = providerName;
         installInfo = new InstallInfo (impl);
         displayName = impl.getDisplayName ();
         description = impl.getDescription ();
@@ -105,7 +105,7 @@ public class UpdateElementImpl extends Object {
         this.providerName = providerName;                
         codeName = impl.getCodeName ();
         specVersion = new SpecificationVersion (impl.getSpecificationVersion ());
-        source = "NetBeans 6.0";
+        source = providerName;
         installInfo = new InstallInfo (impl);
         displayName = impl.getDisplayName ();
         description = impl.getDescription ();

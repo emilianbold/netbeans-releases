@@ -158,11 +158,6 @@ public class AutoupdateCatalogParser {
         
     }
     
-    private static String getAttribute (Node node, String attribute) {
-        Node attr = node.getAttributes ().getNamedItem (attribute);
-        return attr == null ? null : attr.getNodeValue ();
-    }
-    
     /** Entity resolver that knows about AU DTDs, so no network is needed.
      * @author Jesse Glick
      */
