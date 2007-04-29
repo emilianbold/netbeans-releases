@@ -113,7 +113,6 @@ public final class ModuleUpdater extends Thread {
                     installFiles.addAll (ut.getModulesToInstall ());
                 }
                 deleteInstall_Later (cluster);
-                deleteAdditionalInfo (cluster);
             }
 
             if (installOnly != null) {
@@ -132,6 +131,10 @@ public final class ModuleUpdater extends Thread {
             checkStop();
 
             unpack();
+            
+            for (File cluster: UpdateTracking.clusters (true)) {
+                deleteAdditionalInfo (cluster);
+            }
 
         } catch (Exception x) {
             x.printStackTrace ();
