@@ -48,7 +48,7 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
     private UnitTable updateTable;
     private UnitTable localTable;
     private JButton closeButton;
-    private SettingsTab settingTab;
+    private SplittedUnitTab settingTab;
     
     /** Creates new form PluginManagerUI */
     public PluginManagerUI (JButton closeButton) {
@@ -161,7 +161,7 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
 
 private void tpTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_tpTabsStateChanged
     if (((JTabbedPane) evt.getSource ()).getSelectedComponent ().equals (settingTab)) {
-        settingTab.getSettingsTableModel ().refreshModel ();
+        settingTab.refreshState ();
     }
 }//GEN-LAST:event_tpTabsStateChanged
     
@@ -197,8 +197,10 @@ private void tpTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:
         SplittedUnitTab installedTab = new SplittedUnitTab(installedTable, new UnitDetails (), this);
         installedTab.addUpdateUnitListener (this);
         tpTabs.add (NbBundle.getMessage(PluginManagerUI.class, "PluginManagerUI_UnitTab_Installed_Title"), installedTab);
-        settingTab = new SettingsTab(this, new DetailsPanel());        
-        tpTabs.add (settingTab.getDisplayName(), new SplittedUnitTab(settingTab, settingTab.details, this));
+        
+        SettingsTab tab = new SettingsTab(this, new DetailsPanel());
+        settingTab = new SplittedUnitTab (tab, tab.details);
+        tpTabs.add (tab.getDisplayName(), settingTab);
         
         decorateTitle (0, updateTable, NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Update_Title"));
         decorateTitle (1, availableTable, NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Available_Title"));
