@@ -76,7 +76,7 @@ public abstract class OperationSupportImpl {
                 List<? extends OperationInfo> elements = container.listAll();
                 for (OperationInfo operationInfo : elements) {
                     UpdateElement updateElement = operationInfo.getUpdateElement();
-                    Module m = Utils.toModule(updateElement.getCodeName (), updateElement.getSpecificationVersion ());
+                    Module m = Utilities.toModule(updateElement.getCodeName (), updateElement.getSpecificationVersion ());
                     modules.add(m);
                     if (mm == null) {
                         mm = m.getManager();
@@ -118,7 +118,7 @@ public abstract class OperationSupportImpl {
                 List<? extends OperationInfo> elements = container.listAll();
                 for (OperationInfo operationInfo : elements) {
                     UpdateElement updateElement = operationInfo.getUpdateElement();
-                    Module m = Utils.toModule(updateElement.getCodeName (), updateElement.getSpecificationVersion ());
+                    Module m = Utilities.toModule(updateElement.getCodeName (), updateElement.getSpecificationVersion ());
                     modules.add(m);
                     if (mm == null) {
                         mm = m.getManager();
@@ -147,7 +147,7 @@ public abstract class OperationSupportImpl {
                 for (OperationInfo operationInfo : elements) {
                     UpdateElement updateElement = operationInfo.getUpdateElement();
                     UpdateUnit u = UpdateManagerImpl.getInstance().getUpdateUnit(updateElement.getCodeName());
-                    modules.add(Utils.toModule(u));
+                    modules.add(Utilities.toModule(u));
                 }
                 try {
                     deleter.delete((Module[])modules.toArray(new Module[modules.size()]));

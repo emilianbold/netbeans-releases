@@ -70,11 +70,11 @@ public class RequiredElementsForUninstallTest extends OperationsTestImpl {
         installModule(engineUnit, null);
         installModule(dependingUnit, null);
 
-        Module independentModule = org.netbeans.modules.autoupdate.services.Utils.toModule(independentUnit.getCodeName(), null);
+        Module independentModule = org.netbeans.modules.autoupdate.services.Utilities.toModule(independentUnit.getCodeName(), null);
         assertTrue(independentModule.isEnabled());        
-        Module engineModule = org.netbeans.modules.autoupdate.services.Utils.toModule(engineUnit.getCodeName(), null);
+        Module engineModule = org.netbeans.modules.autoupdate.services.Utilities.toModule(engineUnit.getCodeName(), null);
         assertTrue(engineModule.isEnabled());
-        Module dependingModule = org.netbeans.modules.autoupdate.services.Utils.toModule(dependingUnit.getCodeName(), null);
+        Module dependingModule = org.netbeans.modules.autoupdate.services.Utilities.toModule(dependingUnit.getCodeName(), null);
         assertTrue(dependingModule.isEnabled());
         OperationContainer<OperationSupport> uninstallContainer = OperationContainer.createForUninstall();
         independentInfo = uninstallContainer.add(independentUnit.getInstalled());

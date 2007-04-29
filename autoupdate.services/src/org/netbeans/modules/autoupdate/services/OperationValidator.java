@@ -100,20 +100,20 @@ abstract class OperationValidator {
     
     private static class InstallValidator extends OperationValidator {
         boolean isValidOperationImpl(UpdateUnit unit, UpdateElement uElement) {
-            Module m =  Utils.toModule (unit.getCodeName(), uElement.getSpecificationVersion ());
+            Module m =  Utilities.toModule (unit.getCodeName(), uElement.getSpecificationVersion ());
             return m == null && unit.getInstalled() == null && containsElement (uElement, unit);
         }
         
         List<UpdateElement> getRequiredElementsImpl(UpdateElement uElement, List<ModuleInfo> moduleInfos) {
-            return Utils.findRequiredModules(uElement, moduleInfos);
+            return Utilities.findRequiredModules(uElement, moduleInfos);
         }
     }
     
     private static class UninstallValidator extends OperationValidator {
         boolean isValidOperationImpl(UpdateUnit unit, UpdateElement uElement) {
-            Module m =  Utils.toModule (unit.getCodeName (), uElement.getSpecificationVersion ());
+            Module m =  Utilities.toModule (unit.getCodeName (), uElement.getSpecificationVersion ());
             return m != null && unit.getInstalled() != null &&
-                    ModuleDeleterImpl.getInstance().canDelete(Utils.toModule(unit));
+                    ModuleDeleterImpl.getInstance().canDelete(Utilities.toModule(unit));
         }
         
         
@@ -122,7 +122,7 @@ abstract class OperationValidator {
             ModuleManager mm = null;
             final Set<Module> modules = new LinkedHashSet<Module>();
             for (ModuleInfo moduleInfo : moduleInfos) {
-                Module m = Utils.toModule(moduleInfo.getCodeNameBase(), moduleInfo.getSpecificationVersion ().toString ());
+                Module m = Utilities.toModule(moduleInfo.getCodeNameBase(), moduleInfo.getSpecificationVersion ().toString ());
                 if (m.isEnabled()) {
                     modules.add(m);
                 }
@@ -135,7 +135,7 @@ abstract class OperationValidator {
                 List<Module> toUninstall = requiredForUninstall(new ArrayList<Module>(),modules,mm.getEnabledModules(), mm);
                 for (Module module : toUninstall) {
                     if (!modules.contains(module) &&  !module.isFixed()) {
-                        retval.add(Utils.toUpdateUnit(module).getInstalled());
+                        retval.add(Utilities.toUpdateUnit(module).getInstalled());
                     }
                 }
             }                        
@@ -197,7 +197,7 @@ abstract class OperationValidator {
     private static class UpdateValidator extends OperationValidator {
         boolean isValidOperationImpl(UpdateUnit unit, UpdateElement uElement) {
             // module with UpdateElement specificationVersion cannot exist
-            Module m =  Utils.toModule (unit.getCodeName(), uElement.getSpecificationVersion ());
+            Module m =  Utilities.toModule (unit.getCodeName(), uElement.getSpecificationVersion ());
             return m == null && unit.getInstalled() != null && containsElement (uElement, unit);
         }
         
@@ -212,7 +212,7 @@ abstract class OperationValidator {
     
     private static class EnableValidator extends OperationValidator {
         boolean isValidOperationImpl(UpdateUnit unit, UpdateElement uElement) {
-            Module m =  Utils.toModule (unit.getCodeName (), uElement.getSpecificationVersion ());
+            Module m =  Utilities.toModule (unit.getCodeName (), uElement.getSpecificationVersion ());
             return  (unit.getInstalled() != null) && m != null && !m.isEnabled() &&
                     !m.isFixed() && !m.isAutoload() && !m.isEager();
         }
@@ -222,7 +222,7 @@ abstract class OperationValidator {
             ModuleManager mm = null;
             final Set<Module> modules = new LinkedHashSet<Module>();
             for (ModuleInfo moduleInfo : moduleInfos) {
-                Module m = Utils.toModule (moduleInfo.getCodeNameBase (), moduleInfo.getSpecificationVersion ().toString ());
+                Module m = Utilities.toModule (moduleInfo.getCodeNameBase (), moduleInfo.getSpecificationVersion ().toString ());
                 modules.add(m);
                 if (mm == null) {
                     mm = m.getManager();
@@ -233,7 +233,7 @@ abstract class OperationValidator {
                 List<Module> toDisable = mm.simulateEnable(modules);
                 for (Module module : toDisable) {
                     if (!modules.contains(module) && !module.isAutoload() && !module.isEager() && !module.isFixed()) {
-                        retval.add(Utils.toUpdateUnit(module).getInstalled());
+                        retval.add(Utilities.toUpdateUnit(module).getInstalled());
                     }
                 }
             }
@@ -243,7 +243,7 @@ abstract class OperationValidator {
     
     private static class DisableValidator extends OperationValidator {
         boolean isValidOperationImpl(UpdateUnit unit, UpdateElement uElement) {
-            Module m =  Utils.toModule (unit.getCodeName (), uElement.getSpecificationVersion ());
+            Module m =  Utilities.toModule (unit.getCodeName (), uElement.getSpecificationVersion ());
             return  (unit.getInstalled() != null) && m != null && m.isEnabled() &&
                     !m.isFixed() && !m.isAutoload() && !m.isEager();
         }
@@ -252,7 +252,7 @@ abstract class OperationValidator {
             ModuleManager mm = null;
             final Set<Module> modules = new LinkedHashSet<Module>();
             for (ModuleInfo moduleInfo : moduleInfos) {
-                Module m = Utils.toModule (moduleInfo.getCodeNameBase (), moduleInfo.getSpecificationVersion ().toString ());
+                Module m = Utilities.toModule (moduleInfo.getCodeNameBase (), moduleInfo.getSpecificationVersion ().toString ());
                 modules.add(m);
                 if (mm == null) {
                     mm = m.getManager();
@@ -263,7 +263,7 @@ abstract class OperationValidator {
                 List<Module> toDisable = mm.simulateDisable(modules);
                 for (Module module : toDisable) {
                     if (!modules.contains(module) && !module.isAutoload() && !module.isEager() && !module.isFixed()) {
-                        retval.add(Utils.toUpdateUnit(module).getInstalled());
+                        retval.add(Utilities.toUpdateUnit(module).getInstalled());
                     }
                 }
             }

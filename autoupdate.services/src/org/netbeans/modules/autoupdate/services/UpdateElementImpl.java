@@ -54,7 +54,7 @@ public class UpdateElementImpl extends Object {
         description = (String) info.getLocalizedAttribute("OpenIDE-Module-Long-Description");
         source = Utilities.readSourceFromUpdateTracking (info);
         if (source == null) {
-            source = Utils.getProductVersion ();
+            source = Utilities.getProductVersion ();
         }
         category = (String) info.getLocalizedAttribute ("OpenIDE-Module-Display-Category");
         isModule = true;
@@ -224,6 +224,6 @@ public class UpdateElementImpl extends Object {
 
     
     /*public boolean isAutomaticallyEnabled() {
-        return Utils.isAutomaticallyEnabled(codeName);
+        return Utilities.isAutomaticallyEnabled(codeName);
     }*/
 }

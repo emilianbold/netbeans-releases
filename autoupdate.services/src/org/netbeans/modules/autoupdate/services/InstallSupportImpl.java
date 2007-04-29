@@ -300,11 +300,11 @@ public class InstallSupportImpl {
                             th.join();
                             int rerunWaitCount = 0;
                             for (OperationInfo info : infos) {
-                                Module module = Utils.toModule(info.getUpdateElement().getCodeName(),
+                                Module module = Utilities.toModule(info.getUpdateElement().getCodeName(),
                                         null);
                                 for (; rerunWaitCount < 100 && (module == null || !module.isEnabled()); rerunWaitCount++) {
                                     Thread.currentThread().sleep(100);
-                                    module = Utils.toModule(info.getUpdateElement().getCodeName(), null);
+                                    module = Utilities.toModule(info.getUpdateElement().getCodeName(), null);
                                 }
                             }
                         } catch(InterruptedException ie) {

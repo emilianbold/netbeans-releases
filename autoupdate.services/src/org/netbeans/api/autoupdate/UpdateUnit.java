@@ -22,7 +22,7 @@ package org.netbeans.api.autoupdate;
 import java.util.List;
 import org.netbeans.modules.autoupdate.services.Trampoline;
 import org.netbeans.modules.autoupdate.services.UpdateUnitImpl;
-import org.netbeans.modules.autoupdate.services.Utils;
+import org.netbeans.modules.autoupdate.services.Utilities;
 
 /** Instances provided by the <code>UpdateManager</code> which represents wrapper of
  * <code>UpdateElement</code>. The one unit contains all avaliable elements of
@@ -45,17 +45,17 @@ public final class UpdateUnit {
 
     @Deprecated // Will be removed !!!
     public boolean isAutoload() {
-        return Utils.toModule(getCodeName (), null) == null ? false : Utils.toModule(getCodeName (), null).isAutoload ();
+        return Utilities.toModule(getCodeName (), null) == null ? false : Utilities.toModule(getCodeName (), null).isAutoload ();
     }
 
     @Deprecated // Will be removed !!!
     public boolean isEager() {
-        return Utils.toModule(getCodeName (), null) == null ? false : Utils.toModule(getCodeName (), null).isEager ();
+        return Utilities.toModule(getCodeName (), null) == null ? false : Utilities.toModule(getCodeName (), null).isEager ();
     }
     
     @Deprecated // Will be removed !!!
     public boolean isFixed() {
-        return Utils.toModule(getCodeName (), null) == null ? false : Utils.toModule(getCodeName (), null).isFixed ();
+        return Utilities.toModule(getCodeName (), null) == null ? false : Utilities.toModule(getCodeName (), null).isFixed ();
     }
     
     

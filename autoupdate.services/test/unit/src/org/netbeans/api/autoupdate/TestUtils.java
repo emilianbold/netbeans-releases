@@ -26,6 +26,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import org.netbeans.ModuleManager;
+import org.netbeans.core.startup.Main;
 import org.netbeans.spi.autoupdate.CustomInstaller;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.autoupdate.UpdateLicense;
@@ -37,15 +39,28 @@ import org.netbeans.spi.autoupdate.UpdateProvider;
 public class TestUtils {
     
     private static UpdateItem item = null;
+    private static ModuleManager mgr = null;
         
     public static void setUserDir(String path) {    
         System.setProperty ("netbeans.user", path);
+    }
+    
+    /** Returns the platform installatiion directory.
+     * @return the File directory.
+     */
+    public static File getPlatformDir () {
+        return new File (System.getProperty ("netbeans.home")); // NOI18N
     }
     
     public static void setPlatformDir (String path) {    
         System.setProperty ("netbeans.home", path);
     }
         
+    public static void testInit() {
+        mgr = Main.getModuleSystem().getManager();
+        assert mgr != null;
+    }
+    
     public static class CustomItemsProvider implements UpdateProvider {
         public String getName() {
             return "items-with-custom-installer";

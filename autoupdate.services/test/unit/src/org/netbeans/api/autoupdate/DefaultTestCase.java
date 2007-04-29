@@ -71,7 +71,7 @@ public class DefaultTestCase extends NbTestCase {
         populateCatalog(TestUtils.class.getResourceAsStream("data/updates.xml"));
         
         TestUtils.setUserDir (getWorkDirPath ());
-        org.netbeans.modules.autoupdate.services.Utils.testInit();
+        TestUtils.testInit();
         MockServices.setServices(MyProvider.class, CustomItemsProvider.class);
         assert Lookup.getDefault().lookup(MyProvider.class) != null;
         assert Lookup.getDefault().lookup(CustomItemsProvider.class) != null;

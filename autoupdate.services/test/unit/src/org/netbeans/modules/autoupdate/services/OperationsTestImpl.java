@@ -131,7 +131,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
         
         assertNotNull(toInstall);
         
-        assertSame(toInstall, Utils.toUpdateUnit(toInstall.getCodeName()));
+        assertSame(toInstall, Utilities.toUpdateUnit(toInstall.getCodeName()));
         
         OperationContainer container2 = null;
         InstallSupport.Restarter r = null;
@@ -211,8 +211,8 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
             ModuleInfo info = getModuleInfos().get(toInstallUnit.getCodeName());
             assertNotNull(info);
             assertTrue(info.getCodeNameBase(), info.isEnabled());
-            assertNotNull(Utils.toModule(toInstallUnit.getCodeName(), null));
-            assertTrue(Utils.toModule(toInstallUnit.getCodeName(), null).isEnabled());
+            assertNotNull(Utilities.toModule(toInstallUnit.getCodeName(), null));
+            assertTrue(Utilities.toModule(toInstallUnit.getCodeName(), null).isEnabled());
         }
         return installElement;
     }
@@ -238,7 +238,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
         
         assertNotNull(toUpdate);
         
-        assertSame(toUpdate, Utils.toUpdateUnit(toUpdate.getCodeName()));
+        assertSame(toUpdate, Utilities.toUpdateUnit(toUpdate.getCodeName()));
         
         UpdateElement upEl =  toUpdate.getAvailableUpdates().get(0);
         assertNotSame(toUpdate.getInstalled(), upEl);
@@ -287,8 +287,8 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
             ModuleInfo info = getModuleInfos().get(toUpdateUnit.getCodeName());
             assertNotNull(info);
             assertTrue(info.isEnabled());
-            assertNotNull(Utils.toModule(toUpdateUnit.getCodeName(), null));
-            assertTrue(Utils.toModule(toUpdateUnit.getCodeName(), null).isEnabled());
+            assertNotNull(Utilities.toModule(toUpdateUnit.getCodeName(), null));
+            assertTrue(Utilities.toModule(toUpdateUnit.getCodeName(), null).isEnabled());
         }
         
         return upEl;
@@ -305,7 +305,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
         
         assertNotNull(toDisable);
         
-        assertSame(toDisable, Utils.toUpdateUnit(toDisable.getCodeName()));
+        assertSame(toDisable, Utilities.toUpdateUnit(toDisable.getCodeName()));
         
         OperationContainer<OperationSupport> container = OperationContainer.createForDisable();
         assertNotNull(container.add(toDisable.getInstalled()));
@@ -323,8 +323,8 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
         ModuleInfo info = getModuleInfos().get(toDisable.getCodeName());
         assertNotNull(info);
         assertFalse(info.isEnabled());
-        assertNotNull(Utils.toModule(toDisable.getCodeName(), null));
-        assertFalse(Utils.toModule(toDisable.getCodeName(), null).isEnabled());
+        assertNotNull(Utilities.toModule(toDisable.getCodeName(), null));
+        assertFalse(Utilities.toModule(toDisable.getCodeName(), null).isEnabled());
     }
     
     void enableModule(UpdateUnit toEnable) throws Exception {
@@ -338,7 +338,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
         
         assertNotNull(toEnable);
         
-        assertSame(toEnable, Utils.toUpdateUnit(toEnable.getCodeName()));
+        assertSame(toEnable, Utilities.toUpdateUnit(toEnable.getCodeName()));
         
         OperationContainer<OperationSupport> container = OperationContainer.createForEnable();
         assertNotNull(container.add(toEnable.getInstalled()));
@@ -357,8 +357,8 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
         ModuleInfo info = getModuleInfos().get(toEnable.getCodeName());
         assertNotNull(info);
         assertTrue(info.isEnabled());
-        assertNotNull(Utils.toModule(toEnable.getCodeName(), null));
-        assertTrue(Utils.toModule(toEnable.getCodeName(), null).isEnabled());
+        assertNotNull(Utilities.toModule(toEnable.getCodeName(), null));
+        assertTrue(Utilities.toModule(toEnable.getCodeName(), null).isEnabled());
     }
     
     
@@ -379,7 +379,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
         
         assertNotNull(toUnInstall);
         
-        assertSame(toUnInstall, Utils.toUpdateUnit(toUnInstall.getCodeName()));
+        assertSame(toUnInstall, Utilities.toUpdateUnit(toUnInstall.getCodeName()));
         
         OperationContainer<OperationSupport> container = OperationContainer.createForUninstall();
         OperationContainer.OperationInfo operationInfo = container.add(toUnInstall.getInstalled());
@@ -408,6 +408,6 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
         //Thread.sleep(3000);
         ModuleInfo info = getModuleInfos().get(toUnInstall.getCodeName());
         assertNull(info);
-        assertNull(Utils.toModule(toUnInstall.getCodeName(), null));
+        assertNull(Utilities.toModule(toUnInstall.getCodeName(), null));
     }
 }

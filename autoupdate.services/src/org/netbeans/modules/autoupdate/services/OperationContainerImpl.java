@@ -216,7 +216,7 @@ public final class OperationContainerImpl<Support> {
         }
         /*
         public Set<Dependency> getBrokenDependencies(){
-            return Utils.findBrokenDependencies(getUpdateElement());
+            return Utilities.findBrokenDependencies(getUpdateElement());
         }*/
         public Set<String> getBrokenDependencies (){
             List<ModuleInfo> moduleInfos = new ArrayList<ModuleInfo>();
@@ -227,7 +227,7 @@ public final class OperationContainerImpl<Support> {
                 moduleInfos.add(info);
             }
             
-            return Utils.getBrokenDependencies (getUpdateElement(), moduleInfos);
+            return Utilities.getBrokenDependencies (getUpdateElement(), moduleInfos);
         }
     }
     
