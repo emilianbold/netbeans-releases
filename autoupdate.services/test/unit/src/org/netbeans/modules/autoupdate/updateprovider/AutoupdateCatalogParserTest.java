@@ -23,11 +23,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
-import java.util.jar.Attributes;
-import java.util.jar.Manifest;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.autoupdate.UpdateItem;
-import org.netbeans.spi.autoupdate.UpdateLicense;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 

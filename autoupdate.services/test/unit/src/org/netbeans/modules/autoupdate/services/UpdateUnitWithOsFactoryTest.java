@@ -55,7 +55,7 @@ public class UpdateUnitWithOsFactoryTest extends NbTestCase {
         System.setProperty ("netbeans.user", getWorkDirPath ());
         Lookup.getDefault ().lookup (ModuleInfo.class);
         String catalog =    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + 
-                            "<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 3.0//EN\" \"file:/space/source/nb_all/autoupdate/libsrc/org/netbeans/updater/resources/autoupdate-catalog-3_0.dtd\">" +
+                            "<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 3.0//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-3_0.dtd\">" +
                             "<module_updates timestamp=\"00/00/19/08/03/2006\">" +
                             "<module codenamebase=\"com.sun.collablet\" homepage=\"http://collab.netbeans.org/\" distribution=\"http://www.netbeans.org/download/nbms/alpha/dev/1.18/com-sun-collablet.nbm\" license=\"standard-nbm-license.txt\" downloadsize=\"30732\" needsrestart=\"false\" moduleauthor=\"\" releasedate=\"2006/02/23\">" +
                             "<manifest OpenIDE-Module=\"com.sun.collablet/1\" OpenIDE-Module-Display-Category=\"Collaboration\" OpenIDE-Module-Implementation-Version=\"200602231900\" OpenIDE-Module-Long-Description=\"Core multi-user collaboration API &amp; SPI\" OpenIDE-Module-Module-Dependencies=\"org.openide.filesystems &gt; 6.2, org.openide.util &gt; 6.2, org.openide.modules &gt; 6.2, org.openide.nodes &gt; 6.2, org.openide.loaders, org.openide.io\" OpenIDE-Module-Name=\"Collablet Core &amp; API\" OpenIDE-Module-Requires=\"org.openide.windows.IOProvider, org.openide.modules.ModuleFormat1\" OpenIDE-Module-Specification-Version=\"1.3\"/>" +
