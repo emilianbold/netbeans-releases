@@ -311,6 +311,7 @@ class Utils {
             break;
 
         case PARAMETER:
+        case LOCAL_VARIABLE:
             VariableElement variableElement = (VariableElement) element;
             formatTypeMirror(variableElement.asType(), stringBuilder);
             stringBuilder.append(" ");

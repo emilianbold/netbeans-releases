@@ -110,15 +110,25 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
             case FIELD:
             case ENUM_CONSTANT:
                 lastEh = ElementHandle.create(element);
-                // Diferent element clear data
+                // Different element clear data
                 setDeclaration(""); // NOI18N
                 setJavadoc("", ""); // NOI18N
                 break;
+            case PARAMETER:
+                lastEh = null; // ElementHandle not supported 
+                setDeclaration(""); // NOI18N
+                setJavadoc("", ""); // NOI18N
+                break;
+            case LOCAL_VARIABLE:
+                lastEh = null; // ElementHandle not supported 
+                setDeclaration(Utils.format(element)); // NOI18N
+                setJavadoc("", ""); // NOI18N
+                return;
             default:
                 // clear
                 setDeclaration(""); // NOI18N
                 setJavadoc("", ""); // NOI18N
-                break;
+                return;
             }
         }
             
