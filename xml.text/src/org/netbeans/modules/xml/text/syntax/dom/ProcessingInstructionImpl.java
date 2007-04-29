@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.xml.text.syntax.dom;
 
+import javax.swing.text.BadLocationException;
 import org.w3c.dom.*;
 
 import org.netbeans.editor.TokenItem;
@@ -32,13 +33,13 @@ import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
  * @author  Petr Kuzel
  */
 public final class ProcessingInstructionImpl extends SyntaxNode {
-
-
+    
+    
     /** Creates a new instance of ProcessingInstructionImpl */
     public ProcessingInstructionImpl(XMLSyntaxSupport syntax, TokenItem from, int to) {
         super(syntax, from, to);
     }
-
+    
     /**
      * A code representing the type of the underlying object, as defined above.
      */
@@ -47,33 +48,33 @@ public final class ProcessingInstructionImpl extends SyntaxNode {
     }
     
     /**
-     * The target of this processing instruction. XML defines this as being 
-     * the first token following the markup that begins the processing 
+     * The target of this processing instruction. XML defines this as being
+     * the first token following the markup that begins the processing
      * instruction.
      * @return implementation may return "xml" as it consider it a PI
      */
     public String getTarget() {
-        TokenItem target = first.getNext();
+        TokenItem target = first().getNext();
         if (target != null) {
             return target.getImage();
         } else {
             return "";  //??? or null
         }
     }
-
+    
     public String getNodeName() {
         return getTarget();
     }
     
     /**
-     * The content of this processing instruction. This is from the first non 
-     * white space character after the target to the character immediately 
+     * The content of this processing instruction. This is from the first non
+     * white space character after the target to the character immediately
      * preceding the <code>?&gt;</code>.
      * @return may return ""
      */
     public String getData() {
         StringBuffer buf = new StringBuffer();
-        TokenItem next = first.getNext();
+        TokenItem next = first().getNext();
         while (next != null && next.getTokenID() != XMLDefaultTokenContext.PI_CONTENT) {
             next = next.getNext();
         }
@@ -84,7 +85,7 @@ public final class ProcessingInstructionImpl extends SyntaxNode {
         } while (next != null && next.getTokenID() == XMLDefaultTokenContext.PI_CONTENT);
         return buf.toString();
     }
-
+    
     public String getNodeValue() {
         return getData();
     }
@@ -95,5 +96,5 @@ public final class ProcessingInstructionImpl extends SyntaxNode {
     public void setData(String data) throws DOMException {
         throw new ROException();
     }
-
+    
 }

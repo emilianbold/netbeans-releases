@@ -275,7 +275,7 @@ public class AttrImpl extends AbstractNode implements Attr, XMLTokenIDs {
     }
     
     public Element getOwnerElement() {
-        ((Tag)parent).retokenizeObject();
+//        ((Tag)parent).retokenizeObject();
         return parent;
     }
     

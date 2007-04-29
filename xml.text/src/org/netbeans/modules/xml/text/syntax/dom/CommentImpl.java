@@ -59,7 +59,7 @@ public class CommentImpl extends SyntaxNode implements Comment {
      * @return data without delimiters
      */
     public String getData() {
-        String data = first.getImage();  //??? it is always one image
+        String data = first().getImage();  //??? it is always one image
         return data.substring(("<!--".length() - 1) , (data.length() - "-->".length() -1 ));  //NOI18N        
     }
 

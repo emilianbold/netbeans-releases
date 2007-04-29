@@ -40,7 +40,7 @@ public final class EntityReferenceImpl extends SyntaxNode implements EntityRefer
     }
 
     public String getNodeName() {
-        TokenItem target = first.getNext();
+        TokenItem target = first().getNext();
         if (target != null) {
             String tokenImage = target.getImage();
             return tokenImage.substring(1, tokenImage.length()-1);

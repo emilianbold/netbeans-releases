@@ -40,6 +40,7 @@ public class DocumentTypeImpl extends SyntaxNode implements DocumentType, XMLTok
     }
         
     public String getPublicId() {
+        TokenItem first = first();
         String doctype = first.getImage();
         if (doctype.indexOf("PUBLIC") != -1) {                                  // NOI18N
             TokenItem next = first.getNext();
@@ -57,7 +58,7 @@ public class DocumentTypeImpl extends SyntaxNode implements DocumentType, XMLTok
     
     public String getName() {
         //<!DOCTYPE id ...
-        String docType = first.getImage();
+        String docType = first().getImage();
         int idIndex = docType.indexOf(' ');
         if(idIndex > 0) {
             int idEndIndex = docType.indexOf(' ', idIndex + 1);
@@ -73,6 +74,7 @@ public class DocumentTypeImpl extends SyntaxNode implements DocumentType, XMLTok
     }
     
     public String getSystemId() {
+        TokenItem first = first();
         String doctype = first.getImage();
         if (doctype.indexOf("PUBLIC") != -1) {                                  // NOI18N
             TokenItem next = first.getNext();

@@ -70,7 +70,7 @@ public abstract class Tag extends SyntaxNode implements Element, XMLTokenIDs {
         Map map = new HashMap(3);
         
         SCAN_LOOP:
-            for (TokenItem next = first.getNext(); next != null; next = next.getNext()) {
+            for (TokenItem next = first().getNext(); next != null; next = next.getNext()) {
                 TokenID id = next.getTokenID();
                 String name;
                 String value;
@@ -133,7 +133,7 @@ public abstract class Tag extends SyntaxNode implements Element, XMLTokenIDs {
             int insertStart = offset + length - 1;
             
             SCAN_LOOP:
-                for (TokenItem next = first.getNext(); next != null; next = next.getNext()) {
+                for (TokenItem next = first().getNext(); next != null; next = next.getNext()) {
                     TokenID id = next.getTokenID();
                     if (id == ARGUMENT) {
                         while (next.getTokenID() != VALUE) {
@@ -189,7 +189,7 @@ public abstract class Tag extends SyntaxNode implements Element, XMLTokenIDs {
         }
         
         // Update this object's member variables
-        retokenizeObject();
+//        retokenizeObject();
     }
     
     public final void removeAttribute(String name) {
@@ -300,14 +300,14 @@ public abstract class Tag extends SyntaxNode implements Element, XMLTokenIDs {
         throw new UOException();
     }
     
-    public void retokenizeObject() {
-        // Update this object's member variables
-        try {
-            first = support.getTokenChain(offset, support.getDocument().getLength());
-        } catch (BadLocationException e) {
-            throw new DOMException(DOMException.INVALID_STATE_ERR , e.getMessage());
-        }
-    }
+//    public void retokenizeObject() {
+//        // Update this object's member variables
+//        try {
+//            first = support.getTokenChain(offset, support.getDocument().getLength());
+//        } catch (BadLocationException e) {
+//            throw new DOMException(DOMException.INVALID_STATE_ERR , e.getMessage());
+//        }
+//    }
 
     /**
      * We guarantee DOM Node equality by using Java Object's equals.

@@ -101,7 +101,7 @@ public class EndTag extends Tag {
     }
     
     public String toString() {
-        return "EndTag(\"" + name + "\") " + first;
+        return "EndTag(\"" + name + "\") " + first();
     }
     
 }

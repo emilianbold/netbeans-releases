@@ -88,7 +88,7 @@ public class TextImpl extends SyntaxNode implements Text {
     }
  
     public String getData() {
-        return first.getImage();
+        return first().getImage();
     }
 
     public void setData(String data) {

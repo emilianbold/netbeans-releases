@@ -87,7 +87,7 @@ public class StartTag extends Tag {
     public String toString() {
         StringBuffer ret = new StringBuffer( "StartTag(\"" + name + "\" " );
         ret.append(getAttributes().toString());
-        return ret.toString() + " " + first + ")";
+        return ret.toString() + " " + first() + ")";
     }
     
 }

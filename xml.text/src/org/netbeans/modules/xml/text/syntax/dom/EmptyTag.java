@@ -51,7 +51,7 @@ public class EmptyTag extends Tag {
     public String toString() {
         StringBuffer ret = new StringBuffer( "EmptyTag(\"" + name + "\" " );
         ret.append(getAttributes().toString());
-        return ret.toString() + " " + first + ")";
+        return ret.toString() + " " + first() + ")";
     }
     
 }
