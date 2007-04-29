@@ -38,32 +38,38 @@ import org.xml.sax.InputSource;
  * @author  Ales Kemr
  */
 public final class UpdateTracking {
-    private static final String ELEMENT_MODULES = "installed_modules"; // NOI18N
-    private static final String ELEMENT_MODULE = "module"; // NOI18N
-    private static final String ATTR_CODENAMEBASE = "codename"; // NOI18N
-    private static final String ELEMENT_VERSION = "module_version"; // NOI18N
-    private static final String ATTR_VERSION = "specification_version"; // NOI18N
-    private static final String ATTR_ORIGIN = "origin"; // NOI18N
-    private static final String ATTR_LAST = "last"; // NOI18N
-    private static final String ATTR_INSTALL = "install_time"; // NOI18N
-    private static final String ELEMENT_FILE = "file"; // NOI18N
-    private static final String ATTR_FILE_NAME = "name"; // NOI18N
-    private static final String ATTR_CRC = "crc"; // NOI18N
+    public static final String ELEMENT_MODULES = "installed_modules"; // NOI18N
+    public static final String ELEMENT_MODULE = "module"; // NOI18N
+    public static final String ATTR_CODENAMEBASE = "codename"; // NOI18N
+    public static final String ELEMENT_VERSION = "module_version"; // NOI18N
+    public static final String ATTR_VERSION = "specification_version"; // NOI18N
+    public static final String ATTR_LAST = "last"; // NOI18N
+    public static final String ATTR_INSTALL = "install_time"; // NOI18N
+    public static final String ELEMENT_FILE = "file"; // NOI18N
+    public static final String ATTR_FILE_NAME = "name"; // NOI18N
+    public static final String ATTR_ORIGIN = "origin"; // NOI18N
+    public static final String UPDATER_ORIGIN = "updater"; // NOI18N
+    public static final String INSTALLER_ORIGIN = "installer"; // NOI18N
     
+    private static final String ATTR_CRC = "crc"; // NOI18N    
     private static final String NBM_ORIGIN = "nbm"; // NOI18N
-    // XXX: used also in org.netbeans.modules.autoupate.ModuleDeleterImpl
-    private static final String INST_ORIGIN = "updater"; // NOI18N
-
+    
+    public static final String ELEMENT_ADDITIONAL = "module_additional"; // NOI18N
+    public static final String ELEMENT_ADDITIONAL_MODULE = "module"; // NOI18N
+    public static final String ATTR_ADDITIONAL_NBM_NAME = "nbm_name"; // NOI18N
+    public static final String ATTR_ADDITIONAL_SOURCE = "source-display-name"; // NOI18N
+    
     /** Platform dependent file name separator */
     private static final String FILE_SEPARATOR = System.getProperty ("file.separator");
     private static final String LOCALE_DIR = FILE_SEPARATOR + "locale" + FILE_SEPARATOR; // NOI18N
 
-    /** The name of the install_later file */
     public static final String TRACKING_FILE_NAME = "update_tracking"; // NOI18N
+    public static final String ADDITIONAL_INFO_FILE_NAME = "additional_information.xml"; // NOI18N
     private static final String XML_EXT = ".xml"; // NOI18N
 
     /** maps root of clusters to tracking files. (File -> UpdateTracking) */
-    private static final Map trackings = new HashMap ();
+    private static final Map<File, UpdateTracking> trackings = new HashMap<File, UpdateTracking> ();
+    private static final Map<File, UpdateTracking.AdditionalInfo> infos = new HashMap<File, UpdateTracking.AdditionalInfo> ();
     
     /** Mapping from files defining modules to appropriate modules objects.
      * (File, Module)
@@ -77,11 +83,6 @@ public final class UpdateTracking {
     private String origin = NBM_ORIGIN;
 
     
-    public UpdateTracking () {
-        // XXX should be deleted I think
-        this (null);
-    }
-
     /** Private constructor.
      */
     private UpdateTracking( File nbPath ) {
@@ -89,7 +90,7 @@ public final class UpdateTracking {
         
         trackingFile = new File( nbPath + FILE_SEPARATOR + TRACKING_FILE_NAME);
         directory = nbPath;
-        origin = INST_ORIGIN;
+        origin = UPDATER_ORIGIN;
     }
     
     
@@ -154,7 +155,7 @@ public final class UpdateTracking {
         }
      
         synchronized (trackings) {
-            UpdateTracking track = (UpdateTracking)trackings.get (path);
+            UpdateTracking track = trackings.get (path);
             if (track == null) {
                 File utFile = new File (path, TRACKING_FILE_NAME);
                 if (!createIfDoesNotExists && !utFile.isDirectory ()) {
@@ -180,6 +181,36 @@ public final class UpdateTracking {
     }
     
 
+    /** Finds update tracking for given cluster root.
+     * @path root of a cluster
+     * @return the additional information for that cluster
+     */    
+    public static UpdateTracking.AdditionalInfo getAdditionalInformation (File path) {
+        try {
+            path = path.getCanonicalFile ();
+        } catch (java.io.IOException ex) {
+            IllegalStateException ill = new IllegalStateException (ex.getMessage ());
+            ill.initCause (ex);
+            throw ill;
+        }
+     
+        synchronized (infos) {
+            UpdateTracking.AdditionalInfo additionalInfo = infos.get (path);
+            if (additionalInfo == null) {
+                getTracking (path, false);
+                File downloadDir = new File (path, ModuleUpdater.DOWNLOAD_DIR);
+                if (downloadDir.exists () && downloadDir.isDirectory ()) {
+                    File addInfo = new File (downloadDir, ADDITIONAL_INFO_FILE_NAME);
+                    if (addInfo.exists ()) {
+                        additionalInfo = new UpdateTracking.AdditionalInfo (addInfo);
+                    }
+                }
+            }
+            return additionalInfo;
+        }
+    }
+    
+
     /** Returns the platform installatiion directory.
      * @return the File directory.
      */
@@ -192,7 +223,7 @@ public final class UpdateTracking {
      * @param includeUserDir whether to include also user dir
      * @return List<File>
      */
-    public static List clusters (boolean includeUserDir) {
+    public static List<File> clusters (boolean includeUserDir) {
         ArrayList files = new ArrayList ();
         
         if (includeUserDir) {
@@ -346,7 +377,7 @@ public final class UpdateTracking {
     }
     
     /** Scan through org.w3c.dom.Element named module_version. */
-    void scanElement_module_version(org.w3c.dom.Element element, Module module) { // <module_version>
+    private void scanElement_module_version(org.w3c.dom.Element element, Module module) { // <module_version>
         Version version = new Version();        
         org.w3c.dom.NamedNodeMap attrs = element.getAttributes();
         for (int i = 0; i < attrs.getLength(); i++) {
@@ -630,7 +661,7 @@ public final class UpdateTracking {
             this.file = file;
         }
         
-        public Version addNewVersion( String spec_version ) {
+        public Version addNewVersion( String spec_version, String origin ) {
             if ( lastVersion != null )
                 lastVersion.setLast ( false );
             Version version = new Version();        
@@ -1124,6 +1155,77 @@ public final class UpdateTracking {
 
         public void fatalError (org.xml.sax.SAXParseException e) {
             pError = true;
+        }
+    }
+    
+    public static class AdditionalInfo extends Object {
+        private Map<String, String> sources;
+        
+        private AdditionalInfo (File additionalInfoFile) {
+            sources = readAdditionalInfoFile (additionalInfoFile);
+        }
+        
+        public String getSource (String nbmFileName) {
+            return sources != null ? sources.get (nbmFileName) : null;
+        }
+        
+        private Map<String, String> readAdditionalInfoFile (File f) {
+            if (f == null || ! f.exists ()) {
+                throw new IllegalArgumentException ("AdditionalInfo file " + f + " must exists.");
+            }
+
+            Map<String, String> res = null;
+
+            /** org.w3c.dom.Document document */
+            org.w3c.dom.Document document;
+
+            InputStream is = null;
+            try {
+                is = new FileInputStream (f);
+                document = XMLUtil.parse (new InputSource (is), false, false, null, null);
+            } catch (org.xml.sax.SAXException e) {
+                System.out.println ("Bad " + UpdateTracking.ADDITIONAL_INFO_FILE_NAME + " " + f); // NOI18N
+                e.printStackTrace ();
+                return res;
+            } catch (java.io.IOException e) {
+                System.out.println ("Missing " + UpdateTracking.ADDITIONAL_INFO_FILE_NAME + " " + f); // NOI18N
+                e.printStackTrace ();
+                return res;
+            } finally {
+                if (is != null) {
+                    try {
+                        is.close ();
+                    } catch (IOException ioe) {
+                        System.out.println ("Cannot close stream for file " + f); // NOI18N
+                        ioe.printStackTrace ();
+                        return res;
+                    }
+                }
+            }
+
+            org.w3c.dom.Element element = document.getDocumentElement ();
+            if ((element != null) && element.getTagName ().equals (ELEMENT_ADDITIONAL)) {
+                res = scanModuleAdditional (element);
+            }         
+
+            return res;
+        }
+        
+        private Map<String, String> scanModuleAdditional (org.w3c.dom.Element element) {
+            Map<String, String> res = new HashMap<String, String> ();
+            org.w3c.dom.NodeList nodes = element.getChildNodes ();
+            for (int i = 0; i < nodes.getLength (); i++) {
+                org.w3c.dom.Node node = nodes.item (i);
+                if (node.getNodeType () == org.w3c.dom.Node.ELEMENT_NODE) {
+                    org.w3c.dom.Element nodeElement = (org.w3c.dom.Element) node;
+                    if (nodeElement.getTagName ().equals (ELEMENT_ADDITIONAL_MODULE)) {
+                        String fileSpec = nodeElement.getAttribute (ATTR_ADDITIONAL_NBM_NAME);
+                        String source = nodeElement.getAttribute (ATTR_ADDITIONAL_SOURCE);
+                        res.put (fileSpec, source);
+                    }                
+                }
+            }
+            return res;
         }
     }
     

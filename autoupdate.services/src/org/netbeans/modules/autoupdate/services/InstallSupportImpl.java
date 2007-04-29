@@ -280,6 +280,9 @@ public class InstallSupportImpl {
                     }
                 }
                 
+                // store source of installed files
+                Utilities.writeAdditionalInformation (element2Clusters);
+                
                 if (! needsRestart) {
                     synchronized(this) {
                         if (currentStep == STEP.CANCEL) return false;
@@ -656,5 +659,5 @@ public class InstallSupportImpl {
             }
         }
         return cluster;
-    }
+    }    
 }

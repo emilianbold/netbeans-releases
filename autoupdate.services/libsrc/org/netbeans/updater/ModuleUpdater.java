@@ -113,6 +113,7 @@ public final class ModuleUpdater extends Thread {
                     installFiles.addAll (ut.getModulesToInstall ());
                 }
                 deleteInstall_Later (cluster);
+                deleteAdditionalInfo (cluster);
             }
 
             if (installOnly != null) {
@@ -143,6 +144,13 @@ public final class ModuleUpdater extends Thread {
         File later = new File (cluster, FILE_SEPARATOR + DOWNLOAD_DIR + FILE_SEPARATOR + LATER_FILE_NAME);
         if ( later.exists() ) {
             later.delete();
+        }
+    }
+
+    private void deleteAdditionalInfo (File cluster) {
+        File additional = new File (cluster, FILE_SEPARATOR + DOWNLOAD_DIR + FILE_SEPARATOR + UpdateTracking.ADDITIONAL_INFO_FILE_NAME);
+        if (additional != null && additional.exists ()) {
+            additional.delete ();
         }
     }
 
@@ -230,7 +238,7 @@ public final class ModuleUpdater extends Thread {
 
     /** Unpack the distribution files into update directory */
 
-    void unpack ()  {
+    private void unpack ()  {
         long bytesRead = 0L;
         boolean hasMainClass;
 
@@ -282,7 +290,11 @@ public final class ModuleUpdater extends Thread {
                     l10ns.put( mu, version );
                 } else {
                     modtrack = tracking.readModuleTracking( ! fromInstall, mu.getCodenamebase(), true );
-                    version = modtrack.addNewVersion( mu.getSpecification_version() );
+                    // find origin for file
+                    UpdateTracking.AdditionalInfo info = UpdateTracking.getAdditionalInformation (cluster);
+                    String origin = info != null && info.getSource (nbmFiles [i].getName ()) != null ?
+                        info.getSource (nbmFiles [i].getName ()) : UpdateTracking.UPDATER_ORIGIN;
+                    version = modtrack.addNewVersion (mu.getSpecification_version (), origin);
                 }
                 // input streams should be released, but following is needed
                 System.gc();

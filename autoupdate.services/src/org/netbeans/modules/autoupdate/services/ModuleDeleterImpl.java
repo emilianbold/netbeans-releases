@@ -33,6 +33,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Level;
+import org.netbeans.updater.UpdateTracking;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
@@ -61,8 +62,6 @@ public final class ModuleDeleterImpl  {
     private static final String ATTR_ORIGIN = "origin"; // NOI18N
     private static final String ATTR_LAST = "last"; // NOI18N
     private static final String ATTR_FILE_NAME = "name"; // NOI18N
-    private static final String UPDATE_TRACKING = "update_tracking"; // NOI18N
-    private static final String INST_ORIGIN = "updater"; // NOI18N
     private static final boolean ONLY_FROM_AUTOUPDATE = false;
     private static final int TIME_TO_CHECK = 2000;
     private static final int MAX_CHECKS_OF_STATE = 50;
@@ -135,13 +134,8 @@ public final class ModuleDeleterImpl  {
         }
     }
     
-    private File locateUpdateTracking (Module m) {
-        String fileNameToFind = UPDATE_TRACKING + '/' + m.getCodeNameBase ().replace ('.', '-') + ".xml"; // NOI18N
-        return InstalledFileLocator.getDefault ().locate (fileNameToFind, m.getCodeNameBase (), false);
-    }
-    
     private boolean findUpdateTracking (Module module, boolean checkIfFromAutoupdate) {
-        File updateTracking = locateUpdateTracking (module);
+        File updateTracking = Utilities.locateUpdateTracking (module);
         if (updateTracking != null && updateTracking.exists ()) {
             //err.log ("Find UPDATE_TRACKING: " + updateTracking + " found.");
             // check the write permission
@@ -173,13 +167,13 @@ public final class ModuleDeleterImpl  {
         Node attrOrigin = moduleNode.getAttributes ().getNamedItem (ATTR_ORIGIN);
         assert attrOrigin != null : "ELEMENT_VERSION must contain ATTR_ORIGIN attribute.";
         String origin = attrOrigin.getNodeValue ();
-        return INST_ORIGIN.equals (origin);
+        return UpdateTracking.UPDATER_ORIGIN.equals (origin);
     }
     
     private void removeModuleFiles (Module m) throws IOException {
         err.log (Level.FINE, "Entry removing files of module " + m);
         File updateTracking = null;
-        while ((updateTracking = locateUpdateTracking (m)) != null) {
+        while ((updateTracking = Utilities.locateUpdateTracking (m)) != null) {
             removeModuleFilesInCluster (m, updateTracking);
         }
         err.log (Level.FINE, "Exit removing files of module " + m);

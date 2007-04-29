@@ -52,7 +52,10 @@ public class UpdateElementImpl extends Object {
         displayName = info.getDisplayName ();
         specVersion = info.getSpecificationVersion ();
         description = (String) info.getLocalizedAttribute("OpenIDE-Module-Long-Description");
-        source = Utils.getProductVersion (); // XXX: #102330 - need to distinguish module from original distribution and modules from UC
+        source = Utilities.readSourceFromUpdateTracking (info);
+        if (source == null) {
+            source = Utils.getProductVersion ();
+        }
         category = (String) info.getLocalizedAttribute ("OpenIDE-Module-Display-Category");
         isModule = true;
         itemOrInfo = Union2.createSecond(info);

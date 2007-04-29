@@ -27,6 +27,7 @@ import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.UpdateElement;
+import org.netbeans.updater.UpdateTracking;
 import org.openide.modules.InstalledFileLocator;
 
 /**
@@ -54,7 +55,7 @@ public class InstallManager {
                 // does have a target cluster?
                 String targetCluster = update.getInstallInfo ().getTargetCluster ();
                 File firstPossible = null;
-                for (File cluster : Utilities.clusters (false)) {
+                for (File cluster : UpdateTracking.clusters (false)) {
                     if (firstPossible == null && cluster.isDirectory () && cluster.canWrite ()) {
                         firstPossible = cluster;
                     }

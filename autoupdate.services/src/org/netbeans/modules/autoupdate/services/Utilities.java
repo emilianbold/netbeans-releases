@@ -31,14 +31,16 @@ import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
-import org.netbeans.api.autoupdate.UpdateElement;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.spi.autoupdate.KeyStoreProvider;
+import org.netbeans.updater.UpdateTracking;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
+import org.openide.modules.ModuleInfo;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -46,6 +48,10 @@ import org.openide.util.LookupListener;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -54,6 +60,7 @@ import org.w3c.dom.Element;
 public class Utilities {
     
     private static Lookup.Result<KeyStoreProvider> result;
+    private static Logger err = null;
     
     public static Collection<KeyStore> getKeyStore () {
         if (result == null) {            
@@ -93,39 +100,6 @@ public class Utilities {
         return new File (System.getProperty ("netbeans.home")); // NOI18N
     }
     
-    /** Returns enumeration of Files that represent each possible install
-     * directory.
-     * @param includeUserDir whether to include also user dir
-     * @return List<File>
-     */
-    public static List<File> clusters (boolean includeUserDir) {
-        List<File> files = new ArrayList<File> ();
-        
-        if (includeUserDir) {
-            File ud = new File (System.getProperty ("netbeans.user"));  // NOI18N
-            files.add (ud);
-        }
-        
-        
-        String dirs = System.getProperty("netbeans.dirs"); // NOI18N
-        if (dirs != null) {
-            Enumeration en = new StringTokenizer (dirs, File.pathSeparator);
-            while (en.hasMoreElements ()) {
-                File f = new File ((String) en.nextElement ());
-                files.add (f);
-            }
-        }
-        
-        
-        File id = getPlatformDir ();
-        files.add (id);
-        
-        return Collections.unmodifiableList (files);
-    }
-    
-    private static final String ELEMENT_MODULES = "module_updates"; // NOI18N
-    private static final String ELEMENT_MODULE = "module"; // NOI18N
-    private static final String ATTR_CODENAMEBASE = "codenamebase"; // NOI18N
     private static final String ATTR_NAME = "name"; // NOI18N
     private static final String ATTR_SPEC_VERSION = "specification_version"; // NOI18N
     private static final String ATTR_SIZE = "size"; // NOI18N
@@ -146,7 +120,7 @@ public class Utilities {
     }
 
     public static void deleteInstall_Later() {
-        List/*<File>*/ clusters = clusters(true);
+        List<File> clusters = UpdateTracking.clusters(true);
         assert clusters != null : "Clusters cannot be empty."; // NOI18N
         Iterator iter =  clusters.iterator();
         while (iter.hasNext()) {
@@ -159,7 +133,7 @@ public class Utilities {
     
     public static void writeInstall_Later(Map<UpdateElementImpl,File> updates) {
         // loop for all clusters and write if needed
-        List/*<File>*/ clusters = clusters(true);
+        List<File> clusters = UpdateTracking.clusters(true);
         assert clusters != null : "Clusters cannot be empty."; // NOI18N
         Iterator iter =  clusters.iterator();
         while (iter.hasNext()) {
@@ -168,7 +142,7 @@ public class Utilities {
     }
     
     private static void writeToCluster (File cluster, Map<UpdateElementImpl,File> updates) {
-        Document document = XMLUtil.createDocument(ELEMENT_MODULES, null, null, null);                
+        Document document = XMLUtil.createDocument(UpdateTracking.ELEMENT_MODULES, null, null, null);                
         
         Element root = document.getDocumentElement();
         Element module = null;
@@ -180,8 +154,8 @@ public class Utilities {
             File c = updates.get(elementImpl);
             // pass this module to given cluster ?
             if (cluster.equals (c)) {
-                module = document.createElement(ELEMENT_MODULE);
-                module.setAttribute(ATTR_CODENAMEBASE, elementImpl.getCodeName());
+                module = document.createElement(UpdateTracking.ELEMENT_MODULE);
+                module.setAttribute(UpdateTracking.ATTR_CODENAMEBASE, elementImpl.getCodeName());
                 module.setAttribute(ATTR_NAME, elementImpl.getDisplayName());
                 module.setAttribute(ATTR_SPEC_VERSION, elementImpl.getSpecificationVersion().toString());
                 module.setAttribute(ATTR_SIZE, Long.toString(elementImpl.getDownloadSize()));
@@ -230,4 +204,145 @@ public class Utilities {
             
         }
     
+    public static void writeAdditionalInformation (Map<UpdateElementImpl, File> updates) {
+        // loop for all clusters and write if needed
+        List<File> clusters = UpdateTracking.clusters (true);
+        assert clusters != null : "Clusters cannot be empty."; // NOI18N
+        Iterator iter =  clusters.iterator ();
+        while (iter.hasNext ()) {
+            writeAdditionalInformationToCluster ((File) iter.next (), updates);
+        }
+    }
+    
+    public static File locateUpdateTracking (ModuleInfo m) {
+        String fileNameToFind = UpdateTracking.TRACKING_FILE_NAME + '/' + m.getCodeNameBase ().replace ('.', '-') + ".xml"; // NOI18N
+        return InstalledFileLocator.getDefault ().locate (fileNameToFind, m.getCodeNameBase (), false);
+    }
+    
+    public static String readSourceFromUpdateTracking (ModuleInfo m) {
+        String res = null;
+        File ut = locateUpdateTracking (m);
+        if (ut != null) {
+            Node n = getModuleConfiguration (ut);
+            if (n != null) {
+                Node attrOrigin = n.getAttributes ().getNamedItem (UpdateTracking.ATTR_ORIGIN);
+                assert attrOrigin != null : "ELEMENT_VERSION must contain ATTR_ORIGIN attribute.";
+                if (! (UpdateTracking.UPDATER_ORIGIN.equals (attrOrigin.getNodeValue ()) ||
+                        UpdateTracking.INSTALLER_ORIGIN.equals (attrOrigin.getNodeValue ()))) {
+                    // ignore default value
+                    res = attrOrigin.getNodeValue ();
+                }
+            }
+        }
+        return res;
+    }
+    
+    private static Node getModuleConfiguration (File moduleUpdateTracking) {
+        Document document = null;
+        InputStream is;
+        try {
+            is = new FileInputStream (moduleUpdateTracking);
+            InputSource xmlInputSource = new InputSource (is);
+            document = XMLUtil.parse (xmlInputSource, false, false, null, org.openide.xml.EntityCatalog.getDefault ());
+            if (is != null) {
+                is.close ();
+            }
+        } catch (SAXException saxe) {
+            getLogger ().log (Level.WARNING, null, saxe);
+            return null;
+        } catch (IOException ioe) {
+            getLogger ().log (Level.WARNING, null, ioe);
+        }
+
+        assert document.getDocumentElement () != null : "File " + moduleUpdateTracking + " must contain <module> element.";
+        return getModuleElement (document.getDocumentElement ());
+    }
+    
+    private static Node getModuleElement (Element element) {
+        Node lastElement = null;
+        assert UpdateTracking.ELEMENT_MODULE.equals (element.getTagName ()) : "The root element is: " + UpdateTracking.ELEMENT_MODULE + " but was: " + element.getTagName ();
+        NodeList listModuleVersions = element.getElementsByTagName (UpdateTracking.ELEMENT_VERSION);
+        for (int i = 0; i < listModuleVersions.getLength (); i++) {
+            lastElement = getModuleLastVersion (listModuleVersions.item (i));
+            if (lastElement != null) {
+                break;
+            }
+        }
+        return lastElement;
+    }
+    
+    private static Node getModuleLastVersion (Node version) {
+        Node attrLast = version.getAttributes ().getNamedItem (UpdateTracking.ATTR_LAST);
+        assert attrLast != null : "ELEMENT_VERSION must contain ATTR_LAST attribute.";
+        if (Boolean.valueOf (attrLast.getNodeValue ()).booleanValue ()) {
+            return version;
+        } else {
+            return null;
+        }
+    }
+    
+    private static File getAdditionalInformation (File root) {
+        File file = new File (root.getPath () + FILE_SEPARATOR + DOWNLOAD_DIR + 
+                FILE_SEPARATOR + UpdateTracking.ADDITIONAL_INFO_FILE_NAME);
+        return file;
+    }
+
+    private static void writeAdditionalInformationToCluster (File cluster, Map<UpdateElementImpl, File> updates) {
+        if (updates.isEmpty ()) {
+            return ;
+        }
+        Document document = XMLUtil.createDocument (UpdateTracking.ELEMENT_ADDITIONAL, null, null, null);                
+        Element root = document.getDocumentElement ();
+        for (UpdateElementImpl impl : updates.keySet ()) {
+            File c = updates.get (impl);
+            // pass this module to given cluster ?
+            if (cluster.equals (c)) {
+                Element module = document.createElement (UpdateTracking.ELEMENT_ADDITIONAL_MODULE);
+                module.setAttribute(ATTR_NBM_NAME,
+                        InstallSupportImpl.getDestination (cluster, impl.getCodeName(), true).getName ());
+                module.setAttribute (UpdateTracking.ATTR_ADDITIONAL_SOURCE, impl.getSource ());
+                root.appendChild( module );
+            }
+        }
+
+        document.getDocumentElement ().normalize ();
+                
+        File additionalFile = getAdditionalInformation (cluster);
+        additionalFile.getParentFile ().mkdirs ();
+        InputStream is = null;
+        ByteArrayOutputStream  bos = new ByteArrayOutputStream ();        
+        OutputStream fos = null;            
+        try {
+            try {
+                XMLUtil.write (document, bos, "UTF-8"); // NOI18N
+                fos = new FileOutputStream (additionalFile);
+                is = new ByteArrayInputStream (bos.toByteArray ());
+                FileUtil.copy (is, fos);
+            } finally {
+                if (is != null) is.close();
+                if (fos != null) fos.close();
+                if (bos != null) bos.close();
+            }                
+        } catch (java.io.FileNotFoundException fnfe) {
+            Exceptions.printStackTrace(fnfe);
+        } catch (java.io.IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        } finally {
+            if (bos != null) {
+                try {
+                    bos.close();
+                } catch (Exception x) {
+                    Exceptions.printStackTrace(x);
+                }
+            }
+        }
+
+    }
+    
+    private static Logger getLogger () {
+        if (err == null) {
+            err = Logger.getLogger (Utilities.class.getName ());
+        }
+        return err;
+    }
 }
