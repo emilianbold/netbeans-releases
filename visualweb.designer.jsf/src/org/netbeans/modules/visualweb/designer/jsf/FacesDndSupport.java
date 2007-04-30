@@ -304,7 +304,7 @@ class FacesDndSupport {
             // XXX What was before in SelectionTopComp.
             if (importFlavor.getMimeType().startsWith("application/x-creator-")) { // NOI18N
 //                /*return*/ webform.tcImportComponentData(comp, t);
-                return importComponentData(designer, comp, t);
+                return importComponentData(designer, comp, t, location.getCoordinates());
             } // TEMP
 
             Class rc = importFlavor.getRepresentationClass();
@@ -3781,7 +3781,7 @@ linkCheckFinished:
     } // End of DropInfo.
 
     
-    private boolean importComponentData(Designer designer, JComponent comp, Transferable t) {
+    private boolean importComponentData(Designer designer, JComponent comp, Transferable t, Point dropPoint) {
 //        JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);
 //        if (jsfMultiViewElement == null) {
 //            return false;
@@ -3800,11 +3800,14 @@ linkCheckFinished:
             return false;
         }
 
+        // XXX This shouldn't be needed here again (it was already processed before - see call stack).
 //                DesignBean parent = selectionTopComp.getPasteParent();
         Element parentComponentRootElement = jsfTopComponent.getPasteParentComponent();
 //                MarkupPosition pos = selectionTopComp.getPasteMarkupPosition();
 //        Point location = jsfTopComponent.getPastePosition();
-        Point location = designer.getPastePoint();
+//        Point location = designer.getPastePoint();
+        Point location = dropPoint;
+        
 //                DesignBean[] beans = selectionTopComp.pasteBeans(webform, t, parent, pos, location);
 //                Element[] componentRootElements = SelectionTopComp.pasteComponents(webform, t, parentComponentRootElement, location);
 
