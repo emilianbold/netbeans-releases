@@ -43,15 +43,21 @@ public class EntityImplTest extends EntityMappingsTestCase {
                 "   @Id()" +
                 "   private int id;" +
                 "}");
-        TestUtilities.copyStringToFileObject(srcFO, "Employeee.java",
+        TestUtilities.copyStringToFileObject(srcFO, "Employee.java",
                 "import javax.persistence.*;" +
                 "@Entity()" +
+                "@IdClass(EmployeeId.class)" +
                 "public class Employee {" +
                 "   private int id;" +
                 "   @Id()" +
                 "   public int getId() {" +
                 "       return id;" +
                 "   }" +
+                "}");
+        TestUtilities.copyStringToFileObject(srcFO, "EmployeeId.java",
+                "import javax.persistence.*;" +
+                "public class EmployeeId {" +
+                "   private int id;" +
                 "}");
         createModel().runReadAction(new MetadataModelAction<EntityMappingsMetadata, Void>() {
             public Void run(EntityMappingsMetadata metadata) {
@@ -60,6 +66,7 @@ public class EntityImplTest extends EntityMappingsTestCase {
                 assertEquals(Entity.FIELD_ACCESS, entity.getAccess());
                 entity = getEntityByName(entityList, "Employee");
                 assertEquals(Entity.PROPERTY_ACCESS, entity.getAccess());
+                assertEquals("EmployeeId", entity.getIdClass().getClass2());
                 return null;
             }
         });

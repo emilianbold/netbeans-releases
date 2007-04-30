@@ -19,15 +19,37 @@
 
 package org.netbeans.modules.j2ee.persistenceapi.metadata.orm.annotation;
 
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.*;
 
 public class IdClassImpl implements IdClass {
+
+    private final EntityImpl entity;
+    private String class2;
+
+    public IdClassImpl(EntityImpl entity) {
+        this.entity = entity;
+        TypeElement mainElement = entity.getSourceElement();
+        if (mainElement == null) {
+            // entity was removed, we should get an event soon
+            // XXX log
+            return;
+        }
+        AnnotationModelHelper helper = entity.getRoot().getHelper();
+        AnnotationMirror idClassAnn = helper.getAnnotationsByType(mainElement.getAnnotationMirrors()).get("javax.persistence.IdClass"); // NOI18N
+        AnnotationParser parser = AnnotationParser.create(helper);
+        parser.expectClass("value", null); // NOI18N
+        class2 = parser.parse(idClassAnn).get("value", String.class); // NOI18N
+    }
 
     public void setClass2(String value) {
         throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
     }
 
     public String getClass2() {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+        return class2;
     }
 }

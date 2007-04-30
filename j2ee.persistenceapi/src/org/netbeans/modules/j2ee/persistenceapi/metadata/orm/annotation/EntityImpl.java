@@ -38,7 +38,8 @@ public class EntityImpl extends PersistentObject implements Entity, JavaContextL
     private String class2;
     private Table table;
 
-    // transient
+    // transient: set to null in javaContextLeft()
+    private IdClassImpl idClass;
     private AttributesImpl attributes;
 
     public EntityImpl(AnnotationModelHelper helper, EntityMappingsImpl root, TypeElement sourceElement) {
@@ -73,6 +74,7 @@ public class EntityImpl extends PersistentObject implements Entity, JavaContextL
 
     public void javaContextLeft() {
         attributes = null;
+        idClass = null;
     }
 
     EntityMappingsImpl getRoot() {
@@ -200,7 +202,10 @@ public class EntityImpl extends PersistentObject implements Entity, JavaContextL
     }
 
     public IdClass getIdClass() {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+        if (idClass == null) {
+            idClass = new IdClassImpl(this);
+        }
+        return idClass;
     }
 
     public IdClass newIdClass() {
