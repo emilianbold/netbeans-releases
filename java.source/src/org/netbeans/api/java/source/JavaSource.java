@@ -194,6 +194,7 @@ public final class JavaSource {
     private static final int UPDATE_INDEX = RESCHEDULE_FINISHED_TASKS<<1;
     
     private static final Pattern excludedTasks;
+    private static final Pattern includedTasks;
     /**Limit for task to be marked as a slow one, in ms*/
     private static final int SLOW_CANCEL_LIMIT = 50;
     
@@ -235,6 +236,17 @@ public final class JavaSource {
             e.printStackTrace();
         }
         excludedTasks = _excludedTasks;
+        Pattern _includedTasks = null;
+        try {
+            String includedValue= System.getProperty("org.netbeans.api.java.source.JavaSource.includedTasks");      //NOI18N
+            if (includedValue != null) {
+                _includedTasks = Pattern.compile(includedValue);
+            }
+        } catch (PatternSyntaxException e) {
+            e.printStackTrace();
+        }
+        includedTasks = _includedTasks;
+        
     }    
                             
     private final static PriorityBlockingQueue<Request> requests = new PriorityBlockingQueue<Request> (10, new RequestComparator());
@@ -791,7 +803,9 @@ public final class JavaSource {
         if (priority == null) {
             throw new IllegalArgumentException ("The priority cannot be null");    //NOI18N
         }
-        if (excludedTasks != null && excludedTasks.matcher(task.getClass().getName()).matches()) {
+        final String taskClassName = task.getClass().getName();
+        if (excludedTasks != null && excludedTasks.matcher(taskClassName).matches()) {
+            if (includedTasks == null || !includedTasks.matcher(taskClassName).matches())
             return;
         }
         CompilationInfo currentInfo;
@@ -813,8 +827,11 @@ public final class JavaSource {
      * @task The task to remove.
      */
     void removePhaseCompletionTask( CancellableTask<CompilationInfo> task ) {
-        if (excludedTasks != null && excludedTasks.matcher(task.getClass().getName()).matches()) {
-            return;
+        final String taskClassName = task.getClass().getName();
+        if (excludedTasks != null && excludedTasks.matcher(taskClassName).matches()) {
+            if (includedTasks == null || !includedTasks.matcher(taskClassName).matches()) {
+                return;
+            }
         }
         synchronized (JavaSource.class) {
             toRemove.add (task);
