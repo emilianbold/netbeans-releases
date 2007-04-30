@@ -52,6 +52,7 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
+import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputWriter;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -73,6 +74,7 @@ import org.netbeans.modules.visualweb.insync.ParserAnnotation;
 import org.netbeans.modules.visualweb.insync.SourceUnit;
 import org.netbeans.modules.visualweb.insync.UndoManager;
 import org.netbeans.modules.visualweb.insync.markup.JspxSerializer;
+import org.openide.windows.OutputListener;
 import org.w3c.dom.UserDataHandler;
 
 /**
@@ -1147,7 +1149,18 @@ public class MarkupUnit extends SourceUnit implements org.w3c.dom.events.EventLi
         OutputWriter out = io.getOut();
         try {
             out.reset();
-            out.println(error, null);
+            // XXX #102988 There can't be null listener now.
+            out.println(error,new OutputListener() {
+                public void outputLineSelected(OutputEvent evt) {
+                    // No op.
+                }
+                public void outputLineAction(OutputEvent evt) {
+                    // No op.
+                }
+                public void outputLineCleared(OutputEvent evt) {
+                    // No op.
+                }
+            });
         }
         catch (IOException ex) {
             // This is lame - our own output window shouldn't throw
