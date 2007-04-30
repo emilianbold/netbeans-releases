@@ -191,10 +191,7 @@ public class FileWizardIterator implements TemplateWizard.Iterator {
                     ErrorManager.USER, null, message,
                     null, null);
         
-        DataObject fromTemplate = tpl.createFromTemplate (target, name);
-        fromTemplate.getPrimaryFile ().getParent ().refresh (true);
-        fromTemplate = DataObject.find (fromTemplate.getPrimaryFile ());
-        return fromTemplate;
+        return tpl.createFromTemplate (target, name);
     }
     
     private static boolean isValidPackageName(final String s) {
