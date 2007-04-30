@@ -53,6 +53,7 @@ import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.JavaDataObject.JavaEditorSupport;
+import org.netbeans.modules.java.source.usages.BinaryAnalyser;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.IndexUtil;
@@ -129,9 +130,11 @@ public class CompletionTestBase extends NbTestCase {
         final ClassPath bootPath = createClassPath(System.getProperty("sun.boot.class.path"));
         for (ClassPath.Entry entry : bootPath.entries()) {
             URL url = entry.getURL();
-            ClassIndexImpl cii = mgr.createUsagesQuery(url, false);            
-            cii.getBinaryAnalyser().start(url, null, new AtomicBoolean(false));
+            ClassIndexImpl cii = mgr.createUsagesQuery(url, false);
+            BinaryAnalyser ba = cii.getBinaryAnalyser();
             
+            ba.start(url, null, new AtomicBoolean(false));
+            ba.finish();
         }                
         ClassPathProvider cpp = new ClassPathProvider() {
             public ClassPath findClassPath(FileObject file, String type) {

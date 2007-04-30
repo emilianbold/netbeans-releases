@@ -46,6 +46,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.editor.overridden.IsOverriddenAnnotationCreatorTest;
 import org.netbeans.modules.java.editor.imports.ComputeImports.Pair;
 import org.netbeans.modules.java.source.TestUtil;
+import org.netbeans.modules.java.source.usages.BinaryAnalyser;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.IndexUtil;
@@ -93,7 +94,10 @@ public class ComputeImportsTest extends NbTestCase {
             for (URL u : SourceUtilsTestUtil.getBootClassPath()) {
                 final ClassIndexImpl ci = ClassIndexManager.getDefault().createUsagesQuery(u, false);
                 ProgressHandle handle = ProgressHandleFactory.createHandle("cache creation");
-                ci.getBinaryAnalyser().start(u, handle, new AtomicBoolean(false));
+                BinaryAnalyser ba = ci.getBinaryAnalyser();
+                
+                ba.start(u, handle, new AtomicBoolean(false));
+                ba.finish();
             }
         }
     }
