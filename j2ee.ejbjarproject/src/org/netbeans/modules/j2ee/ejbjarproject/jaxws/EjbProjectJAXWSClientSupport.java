@@ -67,15 +67,7 @@ public class EjbProjectJAXWSClientSupport extends ProjectJAXWSClientSupport/* im
     }
 
     public String addServiceClient(String clientName, String wsdlUrl, String packageName, boolean isJsr109) {
-        // create jax-ws.xml if necessary
-        FileObject fo = project.findJaxWsFileObject();
-        if (fo==null) {
-            try {
-                project.createJaxWsFileObject();
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
-            }
-        }
+
         String finalClientName = super.addServiceClient(clientName, wsdlUrl, packageName, isJsr109);
         
         // copy resources to META-INF/wsdl/client/${clientName}

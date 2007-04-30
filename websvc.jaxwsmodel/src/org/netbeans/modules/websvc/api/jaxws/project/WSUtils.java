@@ -341,4 +341,26 @@ public class WSUtils {
         }
         return null;
     }
+    
+    public static FileObject findJaxWsFileObject(Project project) {
+        return project.getProjectDirectory().getFileObject("nbproject/jax-ws.xml");
+    }
+    
+    /** copy jax-ws.xml from default filesystem to nbproject directory,
+     *  generate JaxWsModel,
+     *  add FileChangeListener to jax-ws.xml file object
+     */
+    public static FileObject createJaxWsFileObject(Project project) throws IOException {
+        WSUtils.retrieveJaxWsFromResource(project.getProjectDirectory());
+        FileObject jaxWsFo = findJaxWsFileObject(project);
+        assert jaxWsFo != null : "Cannot find jax-ws.xml in project's nbproject directory"; //NOI18N
+        if (jaxWsFo!=null) {
+            //jaxWsListener = new JaxWsListener();
+            //jaxWsFo.addFileChangeListener(jaxWsListener);
+            JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
+            if (jaxWsModel!=null) jaxWsModel.setJaxWsFile(jaxWsFo);
+            //else jaxWsModel = JaxWsModelProvider.getDefault().getJaxWsModel(jaxWsFo);
+        }
+        return jaxWsFo;
+    }
 }

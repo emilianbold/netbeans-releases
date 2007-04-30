@@ -22,7 +22,7 @@ package org.netbeans.modules.java.j2seproject;
 import java.io.IOException;
 import javax.swing.JButton;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
-import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;

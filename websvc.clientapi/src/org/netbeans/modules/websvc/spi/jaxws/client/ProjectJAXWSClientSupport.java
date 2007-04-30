@@ -84,6 +84,17 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
     }
     
     public String addServiceClient(String clientName, String wsdlUrl, String packageName, boolean isJsr109) {
+        
+        // create jax-ws.xml if necessary
+        FileObject fo = WSUtils.findJaxWsFileObject(project);
+        if (fo==null) {
+            try {
+                WSUtils.createJaxWsFileObject(project);
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
+        }
+        
         if(!isJsr109){
             try{
                 addJaxWs20Library();

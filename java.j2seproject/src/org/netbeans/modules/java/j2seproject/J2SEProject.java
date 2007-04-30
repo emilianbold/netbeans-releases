@@ -55,10 +55,6 @@ import org.netbeans.modules.java.j2seproject.queries.BinaryForSourceQueryImpl;
 import org.netbeans.modules.java.j2seproject.wsclient.J2SEProjectWebServicesSupportProvider;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
-import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
-import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
-import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
-import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModelProvider;
 import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportFactory;
 import org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientSupportFactory;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
@@ -73,6 +69,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.FilterPropertyProvider;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
@@ -85,14 +82,12 @@ import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
@@ -124,8 +119,6 @@ public final class J2SEProject implements Project, AntProjectListener {
     private J2SEProjectJAXWSClientSupport j2seJAXWSClientSupport;
     private WebServicesClientSupport apiWebServicesClientSupport;
     private JAXWSClientSupport apiJaxwsClientSupport;
-    private JaxWsModel jaxWsModel;
-    private JaxWsListener jaxWsListener;
     private FileObject jaxWsFo;
     private AntBuildExtender buildExtender;
 
@@ -228,8 +221,6 @@ public final class J2SEProject implements Project, AntProjectListener {
     private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
         final J2SEProjectClassPathModifier cpMod = new J2SEProjectClassPathModifier(this, this.updateHelper, eval, refHelper);
-        final JaxWsModel jaxWsModel = getJaxWsModel();
-        assert jaxWsModel != null;
         ClassPathProviderImpl cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()); //Does not use APH to get/put properties/cfgdata
         Lookup base = Lookups.fixed(new Object[] {
             J2SEProject.this,
@@ -261,7 +252,6 @@ public final class J2SEProject implements Project, AntProjectListener {
             new J2SEConfigurationProvider(this),
             new J2SEProjectWebServicesSupportProvider(),
             new J2SEPersistenceProvider(this, cpProvider),
-            jaxWsModel,
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
             LookupProviderSupport.createSourcesMerger(),
@@ -406,12 +396,10 @@ public final class J2SEProject implements Project, AntProjectListener {
                 genFilesHelper.refreshBuildScript(
                     GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                     J2SEProject.class.getResource("resources/build-impl.xsl"),
-                    jaxWsFo,
                     false);
                 genFilesHelper.refreshBuildScript(
                     GeneratedFilesHelper.BUILD_XML_PATH,
                     J2SEProject.class.getResource("resources/build.xsl"),
-                    jaxWsFo,
                     false);
             }
         }
@@ -430,12 +418,10 @@ public final class J2SEProject implements Project, AntProjectListener {
                     genFilesHelper.refreshBuildScript(
                         GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                         J2SEProject.class.getResource("resources/build-impl.xsl"),
-                        jaxWsFo,
                         true);
                     genFilesHelper.refreshBuildScript(
                         GeneratedFilesHelper.BUILD_XML_PATH,
                         J2SEProject.class.getResource("resources/build.xsl"),
-                        jaxWsFo,
                         true);
                 }                
             } catch (IOException e) {
@@ -461,7 +447,7 @@ public final class J2SEProject implements Project, AntProjectListener {
                     ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N
                     
                     // set jaxws.endorsed.dir property (for endorsed mechanism to be used with wsimport, wsgen)
-                    WSUtils.setJaxWsEndorsedDirProperty(ep);
+                    setJaxWsEndorsedDirProperty(ep);
                     
                     updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
                     ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -518,8 +504,6 @@ public final class J2SEProject implements Project, AntProjectListener {
                 mainClassUpdater.unregister ();
                 mainClassUpdater = null;
             }
-            
-            if (jaxWsFo!=null) jaxWsFo.removeFileChangeListener(jaxWsListener);
         }
         
     }
@@ -629,67 +613,6 @@ public final class J2SEProject implements Project, AntProjectListener {
             return evaluator;
         }
     }
-    
-    private FileObject getJaxWsFileObject() throws IOException {
-        if (jaxWsFo==null) {
-            jaxWsFo = findJaxWsFileObject();
-            if (jaxWsFo!=null) {
-                jaxWsListener = new JaxWsListener();
-                jaxWsFo.addFileChangeListener(jaxWsListener);
-            }
-        }
-        return jaxWsFo;
-    }
-    
-    /** copy jax-ws.xml from default filesystem to nbproject directory,
-     *  generate JaxWsModel,
-     *  add FileChangeListener to jax-ws.xml file object
-     */
-    public void createJaxWsFileObject() throws IOException {
-        WSUtils.retrieveJaxWsFromResource(helper.getProjectDirectory());
-        jaxWsFo = findJaxWsFileObject();
-        assert jaxWsFo != null : "Cannot find jax-ws.xml in project's nbproject directory"; //NOI18N
-        if (jaxWsFo!=null) {
-            jaxWsListener = new JaxWsListener();
-            jaxWsFo.addFileChangeListener(jaxWsListener);
-            if (jaxWsModel!=null) jaxWsModel.setJaxWsFile(jaxWsFo);
-            else jaxWsModel = JaxWsModelProvider.getDefault().getJaxWsModel(jaxWsFo);
-        }
-    }
-    
-    public FileObject findJaxWsFileObject() {
-        return helper.getProjectDirectory().getFileObject(GeneratedFilesHelper.JAX_WS_XML_PATH);
-    }
-    
-    private JaxWsModel getJaxWsModel() {
-        if (jaxWsModel==null)
-            try {
-                FileObject fo = getJaxWsFileObject();
-                if (fo==null)
-                    jaxWsModel = JaxWsModelProvider.getDefault().getJaxWsModel(
-                            WSUtils.class.getResourceAsStream("/org/netbeans/modules/websvc/jaxwsmodel/resources/jax-ws.xml"));//NOI18N
-                else
-                    jaxWsModel = JaxWsModelProvider.getDefault().getJaxWsModel(fo);
-            } catch (IOException ex) {
-    
-            }
-        return jaxWsModel;
-    }
-    
-    private class JaxWsListener extends FileChangeAdapter {
-        public void fileChanged(FileEvent fe) {
-            try {
-                JaxWsModel newModel = JaxWsModelProvider.getDefault().getJaxWsModel(fe.getFile());
-                if (jaxWsModel!=null && newModel!=null) jaxWsModel.merge(newModel);
-                genFilesHelper.refreshBuildScript(
-                GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                J2SEProject.class.getResource("resources/build-impl.xsl"), // NOI18N
-                jaxWsFo, false);
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
-            }
-        }
-    }
 
     private class J2SEExtenderImplementation implements AntBuildExtenderImplementation {
         //add targets here as required by the external plugins..
@@ -704,6 +627,33 @@ public final class J2SEProject implements Project, AntProjectListener {
             return J2SEProject.this;
         }
 
+    }
+    
+    private static final String ENDORSED_DIR_PROPERTY="jaxws.endorsed.dir"; //NOI18N
+    
+    /** Set jaxws.endorsed.dir property for wsimport, wsgen tasks
+     *  to specify jvmarg value : -Djava.endorsed.dirs=${jaxws.endorsed.dir}"
+     */
+    public static void setJaxWsEndorsedDirProperty(EditableProperties ep) {
+        String oldJaxWsEndorsedDirs = ep.getProperty(ENDORSED_DIR_PROPERTY);
+        String javaVersion = System.getProperty("java.specification.version"); //NOI18N
+        if ("1.6".equals(javaVersion)) { //NOI18N
+            String jaxWsEndorsedDirs = getJaxWsApiDir();
+            if (jaxWsEndorsedDirs!=null && !jaxWsEndorsedDirs.equals(oldJaxWsEndorsedDirs))
+                ep.setProperty(ENDORSED_DIR_PROPERTY, jaxWsEndorsedDirs);
+        } else {
+            if (oldJaxWsEndorsedDirs!=null) {
+                ep.remove(ENDORSED_DIR_PROPERTY);
+            }
+        }
+    }
+    
+    private static String getJaxWsApiDir() {
+        File file = InstalledFileLocator.getDefault().locate("modules/ext/jaxws21/api/jaxws-api.jar", null, false); // NOI18N
+        if (file!=null) {
+            return file.getParent();
+        }
+        return null;
     }
 
 }
