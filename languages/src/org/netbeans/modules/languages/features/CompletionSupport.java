@@ -94,6 +94,7 @@ public class CompletionSupport implements org.netbeans.spi.editor.completion.Com
         
         String color = "000000";
         CompletionItem.Type type = item.getType ();
+        if (type == null) type = CompletionItem.Type.FIELD;
         boolean bold = false;
         String key = item.getText ();
         switch (type) {
