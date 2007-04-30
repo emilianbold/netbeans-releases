@@ -26,12 +26,12 @@ import org.netbeans.editor.TokenContextPath;
 import org.netbeans.editor.Utilities;
 
 /**
-* Tokens used in formatting
-*
-* @author Miloslav Metelka
-* @version 1.00
-*/
-
+ * Tokens used in formatting
+ *
+ * @author Miloslav Metelka
+ * @deprecated If you need this class you are doing something wrong, 
+ *   please ask on nbdev@netbeans.org.
+ */
 public class PlainTokenContext extends TokenContext {
 
     // Numeric-ids for token-ids

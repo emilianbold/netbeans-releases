@@ -19,22 +19,11 @@
 
 package org.netbeans.editor.ext.java;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.event.KeyEvent;
-import java.awt.event.InputEvent;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.TreeMap;
-import org.netbeans.editor.Coloring;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.SettingsNames;
-import org.netbeans.editor.SettingsDefaults;
-import org.netbeans.editor.MultiKeyBinding;
-import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.TokenContext;
-import org.netbeans.editor.TokenContextPath;
 import org.netbeans.editor.ext.ExtSettingsNames;
 
 /**
@@ -68,19 +57,7 @@ public class JavaSettingsInitializer extends Settings.AbstractInitializer {
     *   that updates it or if no previous initializers updated it.
     */
     public void updateSettingsMap(Class kitClass, Map settingsMap) {
-
-        // Update java colorings
-        if (kitClass == BaseKit.class) {
-
-            new JavaSettingsDefaults.JavaTokenColoringInitializer().updateSettingsMap(kitClass, settingsMap);
-            new JavaSettingsDefaults.JavaLayerTokenColoringInitializer().updateSettingsMap(kitClass, settingsMap);
-
-        }
-
         if (kitClass == javaKitClass) {
-
-            SettingsUtil.updateListSetting(settingsMap, SettingsNames.KEY_BINDING_LIST,
-                JavaSettingsDefaults.getJavaKeyBindings());
 
             SettingsUtil.updateListSetting(settingsMap, SettingsNames.TOKEN_CONTEXT_LIST,
                 new TokenContext[] {

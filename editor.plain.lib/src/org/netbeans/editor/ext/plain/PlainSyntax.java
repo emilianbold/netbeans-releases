@@ -23,12 +23,12 @@ import org.netbeans.editor.Syntax;
 import org.netbeans.editor.TokenID;
 
 /**
-* Lexical analyzer for the plain text.
-*
-* @author Miloslav Metelka
-* @version 1.00
-*/
-
+ * Lexical analyzer for the plain text.
+ *
+ * @author Miloslav Metelka
+ * @deprecated If you need this class you are doing something wrong, 
+ *   please ask on nbdev@netbeans.org.
+ */
 public class PlainSyntax extends Syntax {
 
     /* Internal states used internally by analyzer. There
@@ -43,18 +43,22 @@ public class PlainSyntax extends Syntax {
         tokenContextPath = PlainTokenContext.contextPath;
     }
 
-    /** This is core function of analyzer and it returns one of following numbers:
-    * a) token number of next token from scanned text
-    * b) EOL when end of line was found in scanned buffer
-    * c) EOT when there is no more chars available in scanned buffer.
-    *
-    * The function scans the active character and does one or more
-    * of the following actions:
-    * 1. change internal analyzer state (state = new-state)
-    * 2. return token ID (return token-ID)
-    * 3. adjust current position to signal different end of token;
-    *    the character that offset points to is not included in the token
-    */
+    /** 
+     * This is core function of analyzer and it returns one of following numbers:
+     * 
+     * a) token number of next token from scanned text
+     * b) EOL when end of line was found in scanned buffer
+     * c) EOT when there is no more chars available in scanned buffer.
+     *
+     * The function scans the active character and does one or more
+     * of the following actions:
+     * 1. change internal analyzer state (state = new-state)
+     * 2. return token ID (return token-ID)
+     * 3. adjust current position to signal different end of token;
+     *    the character that offset points to is not included in the token
+     * 
+     * @return See above.
+     */
     protected TokenID parseToken() {
         // The main loop that reads characters one by one follows
         while (offset < stopOffset) {

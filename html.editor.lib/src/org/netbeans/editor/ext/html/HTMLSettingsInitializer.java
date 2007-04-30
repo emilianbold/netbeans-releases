@@ -19,21 +19,13 @@
 
 package org.netbeans.editor.ext.html;
 
-import java.awt.Color;
-import java.awt.Font;
 import java.util.Map;
-import java.util.HashMap;
 import org.netbeans.editor.Acceptor;
 import org.netbeans.editor.AcceptorFactory;
-import org.netbeans.editor.Coloring;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
-import org.netbeans.editor.SettingsDefaults;
 import org.netbeans.editor.SettingsUtil;
-import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.TokenContext;
-import org.netbeans.editor.TokenContextPath;
-import org.netbeans.editor.TokenCategory;
 
 /**
 * Extended settings provide the settings for the extended editor features
@@ -75,13 +67,6 @@ public class HTMLSettingsInitializer extends Settings.AbstractInitializer {
     *   that updates it or if no previous initializers updated it.
     */
     public void updateSettingsMap(Class kitClass, Map settingsMap) {
-
-        if (kitClass == BaseKit.class)  {
-
-            new HTMLTokenColoringInitializer().updateSettingsMap(kitClass, settingsMap);
-
-        }
-
         if (kitClass == htmlKitClass) {
 
             SettingsUtil.updateListSetting(settingsMap, SettingsNames.TOKEN_CONTEXT_LIST,
@@ -97,76 +82,5 @@ public class HTMLSettingsInitializer extends Settings.AbstractInitializer {
                             HTMLSettingsDefaults.defaultCompletionLowerCase);
             
         }
-
     }
-
-    static class HTMLTokenColoringInitializer
-    extends SettingsUtil.TokenColoringInitializer {
-
-        Font boldFont = SettingsDefaults.defaultFont.deriveFont(Font.BOLD);
-        Font italicFont = SettingsDefaults.defaultFont.deriveFont(Font.ITALIC);
-        Settings.Evaluator boldSubst = new SettingsUtil.FontStylePrintColoringEvaluator(Font.BOLD);
-        Settings.Evaluator italicSubst = new SettingsUtil.FontStylePrintColoringEvaluator(Font.ITALIC);
-        Settings.Evaluator lightGraySubst = new SettingsUtil.ForeColorPrintColoringEvaluator(Color.lightGray);
-
-        public HTMLTokenColoringInitializer() {
-            super(HTMLTokenContext.context);
-        }
-
-        public Object getTokenColoring(TokenContextPath tokenContextPath,
-        TokenCategory tokenIDOrCategory, boolean printingSet) {
-            if (!printingSet) {
-                switch (tokenIDOrCategory.getNumericID()) {
-                    case HTMLTokenContext.TEXT_ID:
-                    case HTMLTokenContext.WS_ID:
-                        return SettingsDefaults.emptyColoring;
-
-                    case HTMLTokenContext.ERROR_ID:
-                        return new Coloring(null, Color.white, Color.red);
-
-                    case HTMLTokenContext.TAG_CATEGORY_ID:
-                        return new Coloring(null, Color.blue, null);
-
-                    case HTMLTokenContext.ARGUMENT_ID:
-                        return new Coloring(null, Color.green.darker().darker(), null);
-
-                    case HTMLTokenContext.OPERATOR_ID:
-                        return new Coloring(null, Color.green.darker().darker(), null);
-
-                    case HTMLTokenContext.VALUE_ID:
-                        return new Coloring(null, new Color(153, 0, 107), null);
-
-                    case HTMLTokenContext.BLOCK_COMMENT_ID:
-                        // #48502 - comment changed to non-italic font style
-                        return new Coloring(null, Color.gray, null);
-
-                    case HTMLTokenContext.SGML_COMMENT_ID:
-                        return new Coloring( null, Color.gray, null );
-
-                    case HTMLTokenContext.DECLARATION_ID:
-                        return new Coloring(null, new Color(191, 146, 33), null);
-
-                    case HTMLTokenContext.CHARACTER_ID:
-                        return new Coloring(null, Color.red.darker(), null);
-                        
-                }
-
-            } else { // printing set
-                switch (tokenIDOrCategory.getNumericID()) {
-                    case HTMLTokenContext.BLOCK_COMMENT_ID:
-                    case HTMLTokenContext.SGML_COMMENT_ID:
-                        return lightGraySubst;
-
-                    default:
-                         return SettingsUtil.defaultPrintColoringEvaluator;
-                }
-
-            }
-
-            return null;
-
-        }
-
-    }
-     
 }
