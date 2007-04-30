@@ -201,7 +201,7 @@ public class TomcatInstallUtil {
     }
     
     private static boolean isHttpConnector(String protocol, String scheme, String secure) {
-        return (protocol == null || protocol.length() == 0 || protocol.toLowerCase().equals(HTTP))
+        return (protocol == null || protocol.length() == 0 || protocol.toLowerCase().startsWith(HTTP))
                 && (scheme == null || !scheme.toLowerCase().equals(HTTPS))
                 && (secure == null || !secure.toLowerCase().equals(TRUE));
     }
