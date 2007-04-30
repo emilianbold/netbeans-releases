@@ -13,3 +13,9 @@ cd NBI
 unset LD_PRELOAD
 
 bash build.sh > $INSTALLER_LOG 2>&1 
+ERROR_CODE=$?
+
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - NBI installers build failed"
+    exit $ERROR_CODE;
+fi

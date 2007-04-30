@@ -76,6 +76,12 @@ scp -P 222 -q -r -v $DIST/* $DIST_SERVER:$DIST_SERVER_PATH/$DATESTAMP > $SCP_LOG
 
 cd $TRUNK_NIGHTLY_DIRNAME
 bash build-nbi.sh
+ERROR_CODE=$?
+
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - NBI installers build failed"
+    exit $ERROR_CODE;
+fi
 
 scp -P 222 -q -r -v $DIST/installers $DIST_SERVER:$DIST_SERVER_PATH/$DATESTAMP > $SCP_LOG 2>&1
 ssh -p 222 $DIST_SERVER rm $DIST_SERVER_PATH/latest.old
