@@ -157,7 +157,7 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
 
     public void javaContextLeft() {
         if (VOLATILE) {
-            LOGGER.log(Level.FINE, "discarding"); // NOI18N
+            LOGGER.log(Level.FINE, "discarding volatile manager"); // NOI18N
             deinitialize();
         }
     }
