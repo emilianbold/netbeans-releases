@@ -33,6 +33,7 @@ public class AttributesImpl implements Attributes {
 
     private final EntityImpl entity;
 
+    private boolean fieldAccess;
     private EmbeddedId embeddedId;
     private final List<Id> idList = new ArrayList<Id>();
     private final List<Basic> basicList = new ArrayList<Basic>();
@@ -52,7 +53,7 @@ public class AttributesImpl implements Attributes {
         AnnotationModelHelper helper = entity.getRoot().getHelper();
 
         List<? extends Element> elements = mainElement.getEnclosedElements();
-        boolean fieldAccess = EntityMappingsUtilities.hasFieldAccess(helper, elements);
+        fieldAccess = EntityMappingsUtilities.hasFieldAccess(helper, elements);
 
         // handle this entity's attributes
         for (Element element : elements) {
@@ -113,6 +114,10 @@ public class AttributesImpl implements Attributes {
                 }
             }
         }
+    }
+
+    boolean hasFieldAccess() {
+        return fieldAccess;
     }
 
     public void setId(int index, Id value) {

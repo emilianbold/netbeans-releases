@@ -39,7 +39,7 @@ public class EntityImpl extends PersistentObject implements Entity, JavaContextL
     private Table table;
 
     // transient
-    private Attributes attributes;
+    private AttributesImpl attributes;
 
     public EntityImpl(AnnotationModelHelper helper, EntityMappingsImpl root, TypeElement sourceElement) {
         super(helper, sourceElement);
@@ -100,7 +100,7 @@ public class EntityImpl extends PersistentObject implements Entity, JavaContextL
     }
 
     public String getAccess() {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+        return getAttributes().hasFieldAccess() ? FIELD_ACCESS : PROPERTY_ACCESS;
     }
 
     public void setMetadataComplete(boolean value) {
@@ -543,7 +543,7 @@ public class EntityImpl extends PersistentObject implements Entity, JavaContextL
         throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
     }
 
-    public Attributes getAttributes() {
+    public AttributesImpl getAttributes() {
         if (attributes == null) {
             attributes = new AttributesImpl(this);
         }
