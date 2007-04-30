@@ -51,53 +51,47 @@ public class TransformerUtils {
     /** xsl transformation utility for generating jaxws-build.xml script
     */ 
     public static void transformClients(final FileObject projectDirectory, final String jaxws_stylesheet_resource) throws java.io.IOException {
-        projectDirectory.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-            public void run() throws IOException {
+        FileObject jaxws_xml = projectDirectory.getFileObject(JAX_WS_XML_PATH);
+        final FileObject jaxWsBuildScriptXml = FileUtil.createData(projectDirectory, JAXWS_BUILD_XML_PATH);
+        byte[] projectXmlData;
+        InputStream is = jaxws_xml.getInputStream();
+        try {
+            projectXmlData = load(is);
+        } finally {
+            is.close();
+        }
+        URL stylesheet = TransformerUtils.class.getResource(jaxws_stylesheet_resource);
+        byte[] stylesheetData;
+        is = stylesheet.openStream();
+        try {
+            stylesheetData = load(is);
+        } finally {
+            is.close();
+        }
+        final byte[] resultData;
 
-                FileObject jaxws_xml = projectDirectory.getFileObject(JAX_WS_XML_PATH);
-                final FileObject jaxWsBuildScriptXml = FileUtil.createData(projectDirectory, JAXWS_BUILD_XML_PATH);
-                byte[] projectXmlData;
-                InputStream is = jaxws_xml.getInputStream();
-                try {
-                    projectXmlData = load(is);
-                } finally {
-                    is.close();
-                }
-                URL stylesheet = TransformerUtils.class.getResource(jaxws_stylesheet_resource);
-                byte[] stylesheetData;
-                is = stylesheet.openStream();
-                try {
-                    stylesheetData = load(is);
-                } finally {
-                    is.close();
-                }
-                final byte[] resultData;
-
-                TransformerFactory tf = TransformerFactory.newInstance();
-                try {
-                    StreamSource stylesheetSource = new StreamSource(
-                            new ByteArrayInputStream(stylesheetData), stylesheet.toExternalForm());
-                    Transformer t = tf.newTransformer(stylesheetSource);
-                    File jaxws_xml_F = FileUtil.toFile(jaxws_xml);
-                    assert jaxws_xml_F != null;
-                    StreamSource jaxWsSource = new StreamSource(
-                            new ByteArrayInputStream(projectXmlData), jaxws_xml_F.toURI().toString());
-                    ByteArrayOutputStream result = new ByteArrayOutputStream();
-                    t.transform(jaxWsSource, new StreamResult(result));
-                    resultData = result.toByteArray();
-                } catch (TransformerException e) {
-                    throw (IOException)new IOException(e.toString()).initCause(e);
-                }
-                FileLock lock1 = jaxWsBuildScriptXml.lock();
-                try {
-                    OutputStream os = jaxWsBuildScriptXml.getOutputStream(lock1);
-                    os.write(resultData);
-                } finally {
-                    lock1.releaseLock();
-                }           
-                
-            }
-        });
+        TransformerFactory tf = TransformerFactory.newInstance();
+        try {
+            StreamSource stylesheetSource = new StreamSource(
+                    new ByteArrayInputStream(stylesheetData), stylesheet.toExternalForm());
+            Transformer t = tf.newTransformer(stylesheetSource);
+            File jaxws_xml_F = FileUtil.toFile(jaxws_xml);
+            assert jaxws_xml_F != null;
+            StreamSource jaxWsSource = new StreamSource(
+                    new ByteArrayInputStream(projectXmlData), jaxws_xml_F.toURI().toString());
+            ByteArrayOutputStream result = new ByteArrayOutputStream();
+            t.transform(jaxWsSource, new StreamResult(result));
+            resultData = result.toByteArray();
+        } catch (TransformerException e) {
+            throw (IOException)new IOException(e.toString()).initCause(e);
+        }
+        FileLock lock1 = jaxWsBuildScriptXml.lock();
+        try {
+            OutputStream os = jaxWsBuildScriptXml.getOutputStream(lock1);
+            os.write(resultData);
+        } finally {
+            lock1.releaseLock();
+        }
         
     }
             
