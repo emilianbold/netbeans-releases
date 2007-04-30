@@ -41,9 +41,13 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.jpa.model.JPAAnnotations;
 import org.netbeans.modules.j2ee.jpa.model.JPAHelper;
+import org.netbeans.modules.j2ee.jpa.model.ModelUtils;
 import org.netbeans.modules.j2ee.jpa.verification.common.Utilities;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScopes;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.openide.filesystems.FileAttributeEvent;
@@ -69,33 +73,52 @@ public abstract class JPAProblemFinder {
         this.file = file;
     }
     
-    public void run(CompilationInfo info) throws Exception{
+    public void run(final CompilationInfo info) throws Exception{
         // the 'cancelled' flag must be reset as the instance of JPAProblemFinder is reused
         cancelled = false;
-        List<ErrorDescription> problemsFound = new ArrayList<ErrorDescription>();
+        final List<ErrorDescription> problemsFound = new ArrayList<ErrorDescription>();
         createPersistenceScopesListener(file, info.getDocument());
+        Project project = FileOwnerQuery.getOwner(file);
+        PersistenceScopes scopes = PersistenceScopes.getPersistenceScopes(project);
         
-        for (Tree tree : info.getCompilationUnit().getTypeDecls()){
-            if (isCancelled()){
-                break;
-            }
-            
-            if (tree.getKind() == Tree.Kind.CLASS){
-                TreePath path = info.getTrees().getPath(info.getCompilationUnit(), tree);
-                TypeElement javaClass = (TypeElement) info.getTrees().getElement(path);
-                LOG.fine("processing class " + javaClass.getSimpleName());
-                context = findProblemContext(info, javaClass, false);
-                JPARulesEngine rulesEngine = new JPARulesEngine();
-                javaClass.accept(rulesEngine, context);
-                problemsFound.addAll(rulesEngine.getProblemsFound());
-                
-                problemsFound.addAll(processIdClassAnnotation(info, javaClass));
-                
-                synchronized(cancellationLock){
-                    context = null;
-                }
-            }
+        //TODO: a workaround for 102643, remove it when the issue is fixed
+        if (scopes.getPersistenceScopes().length == 0){
+            return;
         }
+        
+        PersistenceScope scope = scopes.getPersistenceScopes()[0];
+        // end of workround for 102643
+        
+        MetadataModel<EntityMappingsMetadata> emModel = scope.getEntityMappingsModel(null);
+        emModel.runReadAction(new MetadataModelAction<EntityMappingsMetadata, Void>() {
+            public Void run(EntityMappingsMetadata metadata) {
+                for (Tree tree : info.getCompilationUnit().getTypeDecls()){
+                    if (isCancelled()){
+                        break;
+                    }
+                    
+                    if (tree.getKind() == Tree.Kind.CLASS){
+                        TreePath path = info.getTrees().getPath(info.getCompilationUnit(), tree);
+                        TypeElement javaClass = (TypeElement) info.getTrees().getElement(path);
+                        LOG.fine("processing class " + javaClass.getSimpleName());
+                        context = findProblemContext(info, javaClass, metadata, false);
+                        JPARulesEngine rulesEngine = new JPARulesEngine();
+                        javaClass.accept(rulesEngine, context);
+                        problemsFound.addAll(rulesEngine.getProblemsFound());
+                        
+                        problemsFound.addAll(processIdClassAnnotation(info, javaClass, metadata));
+                        
+                        synchronized(cancellationLock){
+                            context = null;
+                        }
+                    }
+                }
+                
+                return null;
+            }
+        });
+        
+        
         
         //TODO: should we really reset the errors if the task is cancelled?
         LOG.log(Level.FINE, "resetting errors, current number of errors in file: {0}", problemsFound.size());
@@ -106,7 +129,10 @@ public abstract class JPAProblemFinder {
      * If there is IdClassAnotation present run the rules on the pointed class and show
      * found errors locally
      */
-    private List<ErrorDescription> processIdClassAnnotation(CompilationInfo info, TypeElement javaClass){
+    private List<ErrorDescription> processIdClassAnnotation(CompilationInfo info, TypeElement javaClass,
+            EntityMappingsMetadata metadata){
+        
+        //TODO: use model
         AnnotationMirror annIdClass = Utilities.findAnnotation(javaClass, JPAAnnotations.ID_CLASS);
         
         if (annIdClass != null){
@@ -117,7 +143,7 @@ public abstract class JPAProblemFinder {
                 TypeElement idClass = info.getElements().getTypeElement(rawIdClass.toString());
                 
                 if (idClass != null){
-                    JPAProblemContext context = findProblemContext(info, idClass, true);
+                    JPAProblemContext context = findProblemContext(info, idClass, metadata, true);
                     context.setElementToAnnotate(info.getTrees().getTree(javaClass, annIdClass, annValue));
                     JPARulesEngine rulesEngine = new JPARulesEngine();
                     idClass.accept(rulesEngine, context);
@@ -130,38 +156,38 @@ public abstract class JPAProblemFinder {
     }
     
     private JPAProblemContext findProblemContext(CompilationInfo info,
-            TypeElement javaClass, boolean idClass){
+            TypeElement javaClass, EntityMappingsMetadata metadata, boolean idClass){
         
         JPAProblemContext context = new JPAProblemContext();
-        
+        context.setMetaData(metadata);
+         
         if (!idClass){
-            AnnotationMirror annEntity = Utilities.findAnnotation(javaClass, JPAAnnotations.ENTITY);
+            Object modelElement = ModelUtils.getEntity(metadata, javaClass);
             
-            if (annEntity != null){
+            if (modelElement != null){
                 context.setEntity(true);
-                context.setElementToAnnotate(info.getTrees().getTree(javaClass, annEntity));
+            } else{
+                modelElement = ModelUtils.getEmbeddable(metadata, javaClass);
+                
+                if (modelElement != null){
+                    context.setEmbeddable(true);
+                } else{
+                    modelElement = ModelUtils.getMappedSuperclass(metadata, javaClass);
+                    
+                    if (modelElement != null){
+                        context.setMappedSuperClass(true);
+                    }
+                }
             }
             
-            AnnotationMirror annEmbeddable = Utilities.findAnnotation(javaClass, JPAAnnotations.EMBEDDABLE);
-            
-            if (annEmbeddable != null){
-                context.setEmbeddable(true);
-                context.setElementToAnnotateOrNullIfExists(info.getTrees().getTree(javaClass, annEmbeddable));
-            }
-            
-            AnnotationMirror annMappedSuperClass = Utilities.findAnnotation(javaClass, JPAAnnotations.MAPPED_SUPERCLASS);
-            
-            if (annMappedSuperClass != null){
-                context.setMappedSuperClass(true);
-                context.setElementToAnnotateOrNullIfExists(info.getTrees().getTree(javaClass, annMappedSuperClass));
-            }
+            context.setModelElement(modelElement);
         }
         context.setIdClass(idClass);
         context.setFileObject(file);
         context.setCompilationInfo(info);
         
         if (context.isJPAClass()){
-            context.setAccessType(JPAHelper.findAccessType(javaClass));
+            context.setAccessType(JPAHelper.findAccessType(javaClass, context.getModelElement()));
         }
         
         return context;

@@ -51,7 +51,7 @@ public class IdDefinedInHierarchy extends JPAClassRule {
         TypeElement javaClass = subject;
         
         do{
-            if (JPAHelper.isAnyMemberAnnotatedAsIdOrEmbeddedId(javaClass)){
+            if (JPAHelper.isAnyMemberAnnotatedAsIdOrEmbeddedId(ctx.getModelElement())){
                 return null; // OK
             }
             

@@ -21,6 +21,7 @@ package org.netbeans.modules.j2ee.jpa.verification;
 
 import org.netbeans.modules.j2ee.jpa.model.AccessType;
 import org.netbeans.modules.j2ee.jpa.verification.common.ProblemContext;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 
 /**
  * @see ProblemContext
@@ -33,6 +34,7 @@ public class JPAProblemContext extends ProblemContext {
     private boolean idClass;
     private boolean mappedSuperClass;
     private AccessType accessType;
+    private EntityMappingsMetadata metadata;
     
     public boolean isEntity(){
         return entity;
@@ -72,6 +74,14 @@ public class JPAProblemContext extends ProblemContext {
     
     public void setAccessType(AccessType accessType){
         this.accessType = accessType;
+    }
+    
+    public EntityMappingsMetadata getMetaData(){
+        return metadata;
+    }
+    
+    public void setMetaData(EntityMappingsMetadata metadata){
+        this.metadata = metadata;
     }
     
     public boolean isJPAClass(){

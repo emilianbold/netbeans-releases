@@ -34,6 +34,7 @@ public class ProblemContext {
     private CompilationInfo info;
     private boolean cancelled = false;
     private Tree elementToAnnotate;
+    private Object modelElement;
     
     public FileObject getFileObject(){
         return fileObject;
@@ -77,5 +78,13 @@ public class ProblemContext {
         else{
             setElementToAnnotate(null);
         }
+    }
+    
+    public Object getModelElement(){
+        return modelElement;
+    }
+    
+    public void setModelElement(Object modelElement){
+        this.modelElement = modelElement;
     }
 }

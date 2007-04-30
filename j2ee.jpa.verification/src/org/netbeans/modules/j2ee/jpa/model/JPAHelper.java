@@ -28,6 +28,8 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.modules.j2ee.jpa.verification.common.Utilities;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Attributes;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 
 /**
  * Utility methods for discovering various facts
@@ -46,17 +48,23 @@ public class JPAHelper {
      * @param javaClass JavaClass whose members will be inspected.
      * @return returns true if atleast one member is annotated as Id or EmbeddedId
      */
-    public static boolean isAnyMemberAnnotatedAsIdOrEmbeddedId(TypeElement javaClass) {
-        for (Element classElement : javaClass.getEnclosedElements()) {
-            
-            if (Utilities.findAnnotation(classElement, JPAAnnotations.ID) != null){
+    public static boolean isAnyMemberAnnotatedAsIdOrEmbeddedId(Object modelObject) {
+        Attributes attrs = null;
+        
+        if (modelObject instanceof Entity){
+            attrs = ((Entity)modelObject).getAttributes();
+        }
+        
+        if (attrs != null){
+            if (attrs.getEmbeddedId() != null){
                 return true;
             }
             
-            if (Utilities.findAnnotation(classElement, JPAAnnotations.EMBEDDED_ID) != null){
+            if (attrs.getId().length > 0){
                 return true;
             }
         }
+        
         return false;
     }
     
@@ -70,8 +78,7 @@ public class JPAHelper {
         
         if (nameAttrValue != null){
             name = nameAttrValue.getValue().toString();
-        }
-        else {
+        } else {
             AnnotationMirror annEntity = Utilities.findAnnotation(entityClass, JPAAnnotations.ENTITY);
             nameAttrValue = Utilities.getAnnotationAttrValue(annEntity, JPAAnnotations.NAME_ATTR);
             
@@ -104,8 +111,15 @@ public class JPAHelper {
     /**
      *
      */
-    public static AccessType findAccessType(TypeElement entityClass){
+    public static AccessType findAccessType(TypeElement entityClass, Object modelElement){
         AccessType accessType = AccessType.INDETERMINED;
+        
+        String accessDef = null;
+        
+        if (modelElement instanceof Entity){
+            //TODO: use model, depends on issue 102952
+            //accessDef = ((Entity)modelElement).getAccess();
+        }
         
         // look for the first element annotated with a JPA field annotation
         for (Element element : entityClass.getEnclosedElements()){
@@ -127,8 +141,7 @@ public class JPAHelper {
             
             if (accessType == AccessType.FIELD){
                 otherElems = ElementFilter.methodsIn(entityClass.getEnclosedElements());
-            }
-            else{
+            } else{
                 otherElems = ElementFilter.fieldsIn(entityClass.getEnclosedElements());
             }
             
