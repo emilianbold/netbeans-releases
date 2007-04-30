@@ -120,8 +120,7 @@ public class J2seJaxWsLookupProvider implements LookupProvider {
                             if (nbprojectDir!=null) {
                                 jaxWsCreationListener = new FileChangeAdapter() {
                                     public void fileDataCreated(FileEvent fe) {
-                                        System.out.println("fileDataCreated "+fe.getFile().getNameExt());
-                                        if ("jax-ws.xml".equals(fe.getFile().getNameExt())) {
+                                        if ("jax-ws.xml".equals(fe.getFile().getNameExt())) { //NOI18N
                                             FileObject jaxws_fo = getJaxWsFileObject(prj);
                                             if (jaxws_fo!=null) {
                                                 jaxWsListener = new FileChangeAdapter() {
