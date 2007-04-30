@@ -1796,7 +1796,9 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
 
                                     if (tag == HtmlTag.FORM) {
     //                                    pb = currentBox.getBox(j);
-                                        parent = currentBox.getSourceElement();
+//                                        parent = currentBox.getSourceElement();
+                                        // #102848 Get the form (not body).
+                                        parent = child.getSourceElement();
 
                                         break;
                                     }
