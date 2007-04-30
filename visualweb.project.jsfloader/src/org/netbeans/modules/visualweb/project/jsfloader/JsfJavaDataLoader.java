@@ -105,7 +105,7 @@ public class JsfJavaDataLoader extends MultiFileLoader {
         // Needs to check whether the file belongs to the Creator JSF project,
         // The file in NB project has to fall back to NB loaders.
         // XXX Workaround for NB issue #78424
-        if (!JsfProjectUtils.isJsfProjectFile(primaryFile) && (primaryFile.getAttribute("template") != Boolean.TRUE)) {
+        if (!JsfProjectUtils.isJsfProjectFile(primaryFile) && !Utils.isTemplateFileObject(primaryFile)) {
             return null;
         }
 

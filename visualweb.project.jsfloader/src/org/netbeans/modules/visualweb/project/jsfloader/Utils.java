@@ -20,6 +20,7 @@
 
 package org.netbeans.modules.visualweb.project.jsfloader;
 
+import java.beans.PropertyVetoException;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 
 import org.openide.ErrorManager;
@@ -187,9 +188,15 @@ final class Utils {
                 if(dob instanceof JsfJavaDataObject) {
                     return (JsfJavaDataObject)dob;
                 } else {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                        new IllegalStateException("Corresponding java data object is not jsf " + dob)); // NOI18N
-                    return null;
+                    try {
+                        dob.setValid(false);
+                        dob = DataObject.find(javaFile);
+                    }catch (PropertyVetoException ex) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                                new IllegalStateException("Corresponding java data object is not jsf " + dob)); // NOI18N
+                    }
+                    
+                    return (dob instanceof JsfJavaDataObject) ? (JsfJavaDataObject)dob : null;
                 }
             } catch(DataObjectNotFoundException dnfe) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, dnfe);
