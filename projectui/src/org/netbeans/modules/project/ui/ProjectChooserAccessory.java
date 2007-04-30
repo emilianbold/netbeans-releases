@@ -68,8 +68,8 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
 
     private RequestProcessor.Task updateSubprojectsTask;
     private RequestProcessor RP;
-    private ModelUpdater modelUpdater;
-
+    
+    ModelUpdater modelUpdater;  //#101227 -> non-private
     private Boolean tempSetAsMain;
 
     private Map<Project,Set<? extends Project>> subprojectsCache = new HashMap<Project,Set<? extends Project>>(); // #59098
@@ -621,8 +621,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
 
     }
 
-    private class ModelUpdater implements Runnable, Cancellable {
-
+    class ModelUpdater implements Runnable, Cancellable { //#101227 -> non-private
         // volatile Project project;
         volatile List<Project> projects;
         private DefaultListModel subprojectsToSet;

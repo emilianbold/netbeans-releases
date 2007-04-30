@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.swing.JFileChooser;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
@@ -49,7 +50,6 @@ public class ProjectChooserAccessoryTest extends NbTestCase {
     /**The cycles in project dependencies should be handled gracefully:
      */
     public void testAddSubprojects() {
-        /* XXX #101227: uncompilable
         ChangeableLookup l1 = new ChangeableLookup();
         ChangeableLookup l2 = new ChangeableLookup();
         Project p1 = new TestProject(l1);
@@ -65,11 +65,11 @@ public class ProjectChooserAccessoryTest extends NbTestCase {
         l2.change(new SubprojectProviderImpl(subprojects2));
         
         List<Project> result = new ArrayList<Project>();
-        
-        ProjectChooserAccessory.addSubprojects(p1, result, new HashMap<Project,Set<? extends Project>>());
+        //#101227
+        ProjectChooserAccessory acc = new ProjectChooserAccessory(new JFileChooser(), false, false);
+        acc.modelUpdater.addSubprojects(p1, result, new HashMap<Project,Set<? extends Project>>());
         
         assertTrue(new HashSet<Project>(Arrays.asList(p1, p2)).equals(new HashSet<Project>(result)));
-         */
     }
     
     private final class TestProject implements Project {
