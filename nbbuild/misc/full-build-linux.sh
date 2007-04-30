@@ -282,6 +282,7 @@ if [ $update = yes ]
 then
     echo "----------UPDATING SOURCES----------" 1>&2
     (cd $sources; cvs -q update |tee $CVSLOG)
+    # XXX how to check exit status of cvs? (do not care much about status of tee!)
 
     if [ `grep -c '^[MAR] ' $CVSLOG` -ne 0 ]
     then
