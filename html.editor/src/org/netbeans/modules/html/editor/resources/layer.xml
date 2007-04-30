@@ -98,13 +98,23 @@ Microsystems, Inc. All Rights Reserved.
                 
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.editor.resources.Bundle"/>
                 <folder name="NetBeans">
-                    <folder name="Defaults">
-                        <file name="coloring.xml" url="fontsColors.xml">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.editor.resources.Bundle"/>
-                        </file>
+                    <folder name="FontsColors">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-html-editor-coloring.xml" url="fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.editor.resources.Bundle"/>
+                            </file>
+                        </folder>
                     </folder>
                 </folder>
-            
+
+                <folder name="NetBeans">
+                    <folder name="Keybindings">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-html-editor-keybindings.xml" url="keybindings.xml"/>
+                        </folder>
+                    </folder>
+                </folder>
+                
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-editor-html-HTMLCompletionProvider.instance"/>
                 </folder>

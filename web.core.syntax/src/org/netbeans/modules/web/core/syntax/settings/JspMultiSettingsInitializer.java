@@ -22,15 +22,10 @@ package org.netbeans.modules.web.core.syntax.settings;
 import org.netbeans.modules.web.core.syntax.settings.JspSettings;
 import org.netbeans.modules.web.core.syntax.*;
 import java.awt.Toolkit;
-import java.awt.event.KeyEvent;
-import java.awt.event.InputEvent;
-import javax.swing.KeyStroke;
 import java.util.*;
 import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.ext.html.HTMLSettingsInitializer;
-import org.netbeans.editor.MultiKeyBinding;
 import org.netbeans.editor.ext.java.JavaSettingsDefaults;
 import org.netbeans.editor.ext.java.JavaSettingsNames;
 import org.netbeans.modules.editor.java.JavaKit;
@@ -40,11 +35,6 @@ public class JspMultiSettingsInitializer extends Settings.AbstractInitializer {
     /** Name assigned to initializer */
     public static final String NAME = "jsp-multi-settings-initializer"; // NOI18N
 
-    private static final int ALT_MASK = System.getProperty("mrj.version") != null ?
-        InputEvent.CTRL_MASK : InputEvent.ALT_MASK;
-    
-    private static boolean isMac = System.getProperty("mrj.version") != null;
-    
     public JspMultiSettingsInitializer() {
         super(NAME);
     }
@@ -59,24 +49,6 @@ public class JspMultiSettingsInitializer extends Settings.AbstractInitializer {
         
         // Jsp Settings
         if (kitClass == JSPKit.class) {
-            SettingsUtil.updateListSetting(settingsMap, SettingsNames.KEY_BINDING_LIST,
-                    new MultiKeyBinding[] {
-                        new MultiKeyBinding(
-                           KeyStroke.getKeyStroke(KeyEvent.VK_O, ALT_MASK),
-                            JavaKit.gotoSourceAction
-                        ),
-                        new MultiKeyBinding(
-                            KeyStroke.getKeyStroke(KeyEvent.VK_G, ALT_MASK | (isMac ? InputEvent.SHIFT_MASK : 0)),
-                            org.netbeans.editor.ext.ExtKit.gotoDeclarationAction
-                        ),
-                        new MultiKeyBinding(
-                            KeyStroke.getKeyStroke(KeyEvent.VK_B,
-                            mask),
-                            JavaKit.gotoSuperImplementationAction
-                        )
-            }
-            );
-            
             settingsMap.put(JavaSettingsNames.PAIR_CHARACTERS_COMPLETION,
                         JavaSettingsDefaults.defaultPairCharactersCompletion);
 

@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The contents of this file are subject to the terms of the Common Development
 and Distribution License (the License). You may not use this file except in
@@ -14,19 +14,18 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<!DOCTYPE bindings PUBLIC "-//NetBeans//DTD Editor KeyBindings settings 1.0//EN"
-                          "http://www.netbeans.org/dtds/EditorKeyBindings-1_0.dtd">
-
-<!-- 
-    IMPORTANT:  To handle Apple-specific keybindings, some of the keybindings
-    added here are modified in DefaultKeyBindings-Mac.xml.
--->
+<!DOCTYPE bindings PUBLIC "-//NetBeans//DTD Editor KeyBindings settings 1.1//EN" "http://www.netbeans.org/dtds/EditorKeyBindings-1_1.dtd">
 
 <bindings>
-    <bind actionName="goto-source" key="O-O"/>
-    <bind actionName="goto-super-implementation" key="D-B"/>
-    <bind actionName="goto-declaration" key="O-G"/>    
+    <!-- 
+        XXX: There are two things wrong with this keybinding.
+        First, the same keybindings is already defined in the editor module
+        and second S-ENTER is also bound to 'start-new-line' action, which
+        takes precedence, because it's added from BaseKit. So, this probably
+        has never worked and can be deleted altogether with HTMLKit.HTMLShiftBreakAction.
+     -->
+    <bind actionName="shift-insert-break" key="S-ENTER"/>
 </bindings>

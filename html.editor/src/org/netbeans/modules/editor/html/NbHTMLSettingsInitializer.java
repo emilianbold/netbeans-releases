@@ -19,14 +19,9 @@
 
 package org.netbeans.modules.editor.html;
 
-import java.awt.event.KeyEvent;
-import java.awt.event.InputEvent;
 import java.util.Map;
-import java.util.HashMap;
-import javax.swing.KeyStroke;
 import org.netbeans.editor.MultiKeyBinding;
 import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.ext.html.HTMLSettingsDefaults;
 import org.netbeans.editor.ext.html.HTMLSettingsNames;
@@ -62,20 +57,13 @@ public class NbHTMLSettingsInitializer extends Settings.AbstractInitializer {
             settingsMap.put(HTMLSettingsNames.CODE_FOLDING_UPDATE_TIMEOUT,
                             HTMLSettingsDefaults.defaultCodeFoldingUpdateInterval);
             
-            SettingsUtil.updateListSetting(settingsMap, SettingsNames.KEY_BINDING_LIST, getHTMLKeyBindings());
-            
-            
         }
-
     }
 
+    /**
+     * @deprecated Keybindings are registered in module XML layers, use Editor Settings API.
+     */
     public MultiKeyBinding[] getHTMLKeyBindings() {
-        return new MultiKeyBinding[] {
-            new MultiKeyBinding(
-                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.SHIFT_MASK),
-                HTMLKit.shiftInsertBreakAction
-            )
-        };
+        return new MultiKeyBinding[0];
     }
-
 }

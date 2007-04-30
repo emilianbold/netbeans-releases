@@ -31,12 +31,26 @@ Microsystems, Inc. All Rights Reserved.
                     
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.syntax.resources.Bundle"/>
                 <folder name="NetBeans">
-                    <folder name="Defaults">
-                        <file name="coloring.xml" url="fontsColors.xml">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.syntax.resources.Bundle"/>
-                        </file>
+                    <folder name="FontsColors">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-web-core-syntax-coloring.xml" url="fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.syntax.resources.Bundle"/>
+                            </file>
+                        </folder>
                     </folder>
                 </folder>
+                
+                <folder name="NetBeans">
+                    <folder name="Keybindings">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-web-core-syntax-keybindings.xml" url="DefaultKeyBindings.xml"/> 
+                            <file name="org-netbeans-modules-web-core-syntax-keybindings-mac.xml" url="DefaultKeyBindings-Mac.xml"> 
+                                <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC" />
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+                
                 <folder name="UpToDateStatusProvider">
                     <file name="org-netbeans-modules-web-core-syntax-JspUpToDateStatusProviderFactory.instance"/>
                 </folder>
@@ -54,7 +68,6 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="Settings.settings" url="../settings/JSPOptions.settings"/>
                 <folder name="Defaults">
                     <file name="abbreviations.xml" url="DefaultAbbrevs.xml"/>
-                    <file name="keybindings.xml" url="DefaultKeyBindings.xml"/> 
                 </folder>
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.syntax.JSPKit"/>
@@ -123,10 +136,12 @@ Microsystems, Inc. All Rights Reserved.
                 
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.syntax.resources.Bundle"/>
                 <folder name="NetBeans">
-                    <folder name="Defaults">
-                        <file name="coloring.xml" url="fontsColors.xml">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.syntax.resources.Bundle"/>
-                        </file>
+                    <folder name="FontsColors">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-web-core-syntax-coloring.xml" url="fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.syntax.resources.Bundle"/>
+                            </file>
+                        </folder>
                     </folder>
                 </folder>
                 

@@ -18,19 +18,14 @@
  */
 package org.netbeans.modules.xml.text.syntax;
 
-import java.awt.Color;
 import java.util.*;
 
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.SettingsNames;
-import org.netbeans.editor.Coloring;
-import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Acceptor;
 import org.netbeans.editor.AcceptorFactory;
-import org.netbeans.editor.TokenCategory;
 import org.netbeans.editor.TokenContext;
-import org.netbeans.editor.TokenContextPath;
 import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
 
 /**
@@ -50,15 +45,6 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
     public void updateSettingsMap (Class kitClass, Map settingsMap) {
         // editor breaks the contact, handle it somehow
         if (kitClass == null) return;
-
-        if (kitClass == BaseKit.class) {
-
-            new XMLTokenColoringInitializer().updateSettingsMap(kitClass, settingsMap);
-
-            new DTDTokenColoringInitializer().updateSettingsMap(kitClass, settingsMap);
-        }
-
-
 
         /** Add editor actions to DTD Kit. */
         if (kitClass == DTDKit.class) {
@@ -164,34 +150,4 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
             }
         };
     }
-
-    
-    /** XML colorings */
-    static class XMLTokenColoringInitializer
-    extends SettingsUtil.TokenColoringInitializer {
-
-        public XMLTokenColoringInitializer() {
-            super(XMLDefaultTokenContext.context);
-        }
-
-        public Object getTokenColoring(TokenContextPath tokenContextPath, TokenCategory tokenIDOrCategory, boolean printingSet) {
-            // see XML_fontsColors.xml for actual values
-            return new Coloring (null, Color.BLACK, null);
-        }
-    }
-
-    /** DTD colorings */
-    static class DTDTokenColoringInitializer
-        extends SettingsUtil.TokenColoringInitializer {
-
-        public DTDTokenColoringInitializer() {
-            super(DTDTokenContext.context);
-        }
-
-        public Object getTokenColoring(TokenContextPath tokenContextPath, TokenCategory tokenIDOrCategory, boolean printingSet) {
-            // see DTD_fontsColors.xml for actual values
-            return new Coloring (null, Color.BLACK, null);
-        }
-    }
-
 }

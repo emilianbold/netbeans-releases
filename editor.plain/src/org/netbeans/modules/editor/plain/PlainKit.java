@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.editor.plain;
 
-import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Syntax;
@@ -29,12 +28,12 @@ import org.netbeans.editor.ext.plain.PlainSyntax;
 import org.netbeans.modules.editor.NbEditorKit;
 
 /**
-* Editor kit used to edit the plain text.
-*
-* @author Miloslav Metelka
-* @version 1.00
-*/
-
+ * Editor kit used to edit the plain text.
+ *
+ * @author Miloslav Metelka
+ * @deprecated If you need this class you are doing something wrong, 
+ *   please ask on nbdev@netbeans.org.
+ */
 public class PlainKit extends NbEditorKit {
 
     public static final String PLAIN_MIME_TYPE = "text/plain"; // NOI18N
