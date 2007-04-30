@@ -322,21 +322,19 @@ public class LLSyntaxAnalyser {
         int i = 1;
         while (true) {
             ASTToken token = input.next (i);
-            if (token == null /*|| !mimeType.equals (token.getMimeType ())*/) {
-                Set result = (Set) (Set) m.get ("#");
-                if (result == null || result.size () > 1) return -1;
-                return ((Integer) result.iterator ().next ()).intValue ();
-            }
-            T t = new T (token);
-            Map r = (Map) m.get (t);
-            if (r == null) {
-                t.type = null;
+            Map r = null;
+            if (token != null) {
+                T t = new T (token);
                 r = (Map) m.get (t);
-            }
-            if (r == null) {
-                t.type = token.getType ();
-                t.identifier = null;
-                r = (Map) m.get (t);
+                if (r == null) {
+                    t.type = null;
+                    r = (Map) m.get (t);
+                }
+                if (r == null) {
+                    t.type = token.getType ();
+                    t.identifier = null;
+                    r = (Map) m.get (t);
+                }
             }
             if (r == null) {
                 Set s = (Set) m.get ("#");
