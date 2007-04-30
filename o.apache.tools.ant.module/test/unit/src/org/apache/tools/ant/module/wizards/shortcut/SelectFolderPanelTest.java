@@ -40,18 +40,14 @@ public final class SelectFolderPanelTest extends ShortcutWizardTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        wiz.putProperty(ShortcutWizard.PROP_SHOW_MENU, Boolean.TRUE);
-        wiz.putProperty(ShortcutWizard.PROP_SHOW_TOOL, Boolean.TRUE);
         iter.nextPanel();
-        iter.current().readSettings(wiz);
+        wiz.putProperty(ShortcutWizard.PROP_SHOW_MENU, true);
+        wiz.putProperty(ShortcutWizard.PROP_SHOW_TOOL, true);
         menuPanel = (SelectFolderPanel.SelectFolderWizardPanel)iter.current();
         menuListModel = menuPanel.getPanel().getModel();
-        iter.current().storeSettings(wiz);
         iter.nextPanel();
-        iter.current().readSettings(wiz);
         toolbarsPanel = (SelectFolderPanel.SelectFolderWizardPanel)iter.current();
         toolbarsListModel = toolbarsPanel.getPanel().getModel();
-        iter.current().storeSettings(wiz);
     }
     
     public void testFolderListDisplay() throws Exception {
