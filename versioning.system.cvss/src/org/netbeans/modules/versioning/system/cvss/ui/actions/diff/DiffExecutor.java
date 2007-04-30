@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -81,13 +81,13 @@ public class DiffExecutor {
     }
 
     public void showDiff(File file, String rev1, String rev2) {
-        DiffMainPanel panel = new DiffMainPanel(file, rev1, rev2);
+        MultiDiffPanel panel = new MultiDiffPanel(file, rev1, rev2);
         openDiff(panel, null);
     }
 
     private void showDiff(int type, ExecutorGroup group) {
         VersionsCache.getInstance().purgeVolatileRevisions();
-        DiffMainPanel panel = new DiffMainPanel(context, type, contextName, group); // spawns bacground DiffPrepareTask
+        MultiDiffPanel panel = new MultiDiffPanel(context, type, contextName, group); // spawns bacground DiffPrepareTask
         openDiff(panel, group);
     }
     
@@ -147,7 +147,7 @@ public class DiffExecutor {
         }
         
         public UndoRedo getUndoRedo() {
-            DiffMainPanel mainPanel = ((DiffMainPanel) getComponent(0));
+            MultiDiffPanel mainPanel = (MultiDiffPanel) getComponent(0);
             return mainPanel.getUndoRedo();
         }
 
@@ -156,7 +156,7 @@ public class DiffExecutor {
         }
 
         protected void componentClosed() {
-            ((DiffMainPanel) getComponent(0)).componentClosed();
+            ((MultiDiffPanel) getComponent(0)).componentClosed();
             super.componentClosed();
         }
 
@@ -170,7 +170,7 @@ public class DiffExecutor {
 
         protected void componentActivated() {
             super.componentActivated();
-            DiffMainPanel mainPanel = ((DiffMainPanel) getComponent(0));
+            MultiDiffPanel mainPanel = (MultiDiffPanel) getComponent(0);
             mainPanel.requestActive();
         }
 
@@ -186,7 +186,7 @@ public class DiffExecutor {
         }
 
         public void setGroup(ExecutorGroup group) {
-            DiffMainPanel mainPanel = ((DiffMainPanel) getComponent(0));
+            MultiDiffPanel mainPanel = (MultiDiffPanel) getComponent(0);
             mainPanel.setGroup(group);
         }
     }

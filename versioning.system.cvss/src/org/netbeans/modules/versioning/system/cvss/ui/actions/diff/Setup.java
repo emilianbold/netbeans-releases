@@ -24,6 +24,7 @@ import org.netbeans.api.diff.DiffController;
 import org.netbeans.modules.versioning.system.cvss.*;
 import org.netbeans.lib.cvsclient.admin.Entry;
 import org.openide.util.NbBundle;
+import org.openide.nodes.Node;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,17 +48,19 @@ public final class Setup {
     private final File      baseFile;
     private final String    firstRevision;
     private final String    secondRevision;
+    private FileInformation info;
 
     private DiffStreamSource    firstSource;
     private DiffStreamSource    secondSource;
 
     private DiffController view;
+    private Node           node;
 
     private String    title;
 
     public Setup(File baseFile, int type) {
         this.baseFile = baseFile;
-        FileInformation info = CvsVersioningSystem.getInstance().getStatusCache().getStatus(baseFile);
+        info = CvsVersioningSystem.getInstance().getStatusCache().getStatus(baseFile);
         int status = info.getStatus();
         Entry entry = info.getEntry(baseFile);
         String revision = entry != null ? entry.getRevision() : null;
@@ -123,6 +126,18 @@ public final class Setup {
         this.secondRevision = secondRevision;
         firstSource = new DiffStreamSource(baseFile, firstRevision, firstRevision);
         secondSource = new DiffStreamSource(baseFile, secondRevision, secondRevision);
+    }
+
+    public FileInformation getInfo() {
+        return info;
+    }
+
+    public Node getNode() {
+        return node;
+    }
+
+    public void setNode(Node node) {
+        this.node = node;
     }
 
     public File getBaseFile() {
