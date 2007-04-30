@@ -1593,7 +1593,7 @@ public class ContainerBox extends CssBox {
 
         //in case the box is clear box, we also need to look for a previous 
         //float box
-        if(box.isClearBox() && LineBoxGroup.findClearContainer(box) == null) {
+        if(box.isClearBox()/* && LineBoxGroup.findClearContainer(box) == null*/) {
             CssBox prevFloatBox = context.getPrevFloatingForClear(box);
             if (prevFloatBox != null) {
                 int newY = context.adjustY(prevFloatBox.getHeight() + 

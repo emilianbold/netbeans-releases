@@ -540,7 +540,7 @@ public class LineBoxGroup extends ContainerBox {
                 //if the line box is not the first one, and there's space 
                 //for a float in the one above, shift the float up 
                 //if(linebox != null)
-                if(box.isClearBox() && findClearContainer(box) == null) {
+                if(box.isClearBox()/* && findClearContainer(box) == null*/) {
                     //"clear" float box needs to be positioned below any floating box
                     //on the left/right/both depending on the "clear" property value
                     //so, let's find the floating box positioned previously
@@ -593,19 +593,19 @@ public class LineBoxGroup extends ContainerBox {
         floats = null;
     }
     
-    static CssBox findClearContainer(CssBox box) {
-        CssBox parent = box;
-        while((parent = parent.getParent()) != null) {
-            CssValue cssClear = CssProvider.getEngineService().
-                    getComputedValueForElement(parent.getElement(), XhtmlCss.CLEAR_INDEX);
-            
-            if(CssProvider.getValueService().isBothValue(cssClear) ||
-                    CssProvider.getValueService().isLeftValue(cssClear) ||
-                    CssProvider.getValueService().isRightValue(cssClear))
-                return(parent);
-        }
-        return(null);
-    }
+//    static CssBox findClearContainer(CssBox box) {
+//        CssBox parent = box;
+//        while((parent = parent.getParent()) != null) {
+//            CssValue cssClear = CssProvider.getEngineService().
+//                    getComputedValueForElement(parent.getElement(), XhtmlCss.CLEAR_INDEX);
+//            
+//            if(CssProvider.getValueService().isBothValue(cssClear) ||
+//                    CssProvider.getValueService().isLeftValue(cssClear) ||
+//                    CssProvider.getValueService().isRightValue(cssClear))
+//                return(parent);
+//        }
+//        return(null);
+//    }
 
     // XXX why isn't this reusing the ContainerBox positionFloatBox code?
     private void positionFloatBox(int py, CssBox box, FormatContext context) {

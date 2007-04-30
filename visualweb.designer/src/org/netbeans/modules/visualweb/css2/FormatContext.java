@@ -422,11 +422,14 @@ public class FormatContext {
             return null;
         }
 
+        CssBox clearContainerBox = findClearContainer(box);
+        
         int maxNextPosition=Integer.MIN_VALUE; int yAdj;
         CssBox yBox, result = null;
         for (int i = 0; i < n; i++) {
             FloatingBoxInfo info = floats.get(i);
-            if(info.box == box || parentOf(box, info.box)) {
+            if(info.box == box || parentOf(box, info.box)
+            || (clearContainerBox != null && parentOf(info.box, clearContainerBox))) {
                 return(result);
             }
             if(canAdjustY(info.box, box.getPositionedBy())) {
@@ -440,6 +443,20 @@ public class FormatContext {
             }
         }
         return(result);
+    }
+    
+    private static CssBox findClearContainer(CssBox box) {
+        CssBox parent = box;
+        while((parent = parent.getParent()) != null) {
+            CssValue cssClear = CssProvider.getEngineService().
+                    getComputedValueForElement(parent.getElement(), XhtmlCss.CLEAR_INDEX);
+            
+            if(CssProvider.getValueService().isBothValue(cssClear) ||
+                    CssProvider.getValueService().isLeftValue(cssClear) ||
+                    CssProvider.getValueService().isRightValue(cssClear))
+                return(parent);
+        }
+        return(null);
     }
     
     private CssBox getLowestTop(CssBox box) {

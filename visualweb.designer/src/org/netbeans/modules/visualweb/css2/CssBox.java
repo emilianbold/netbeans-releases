@@ -1075,10 +1075,11 @@ public class CssBox implements Box {
         return "pos=" + x + ":" + y + "," // NOI18N
                 + "element=" + element // NOI18N
 //                + ", markupDesignBean=" + getMarkupDesignBeanForCssBox(this) // NOI18N
-                + ", componentRootElement=" + getElementForComponentRootCssBox(this) // NOI18N
-                + ", size=" + width + ":" + height // NOI18N
-                + ", contentWidth=" + contentWidth // NOI18N
-                + ", containingBlockWidth=" + containingBlockWidth; // NOI18N
+//                + ", componentRootElement=" + getElementForComponentRootCssBox(this) // NOI18N
+//                + ", size=" + width + ":" + height // NOI18N
+//                + ", contentWidth=" + contentWidth // NOI18N
+//                + ", containingBlockWidth=" + containingBlockWidth
+                ; // NOI18N
     }
 
     public void paint(Graphics g, int px, int py) {
