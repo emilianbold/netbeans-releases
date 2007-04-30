@@ -405,6 +405,10 @@ public class InstallSupportImpl {
         
         // find target dir
         File targetCluster = getTargetCluster (installed, toUpdateImpl);
+        assert targetCluster != null : "Target cluster for " + info.getUpdateElement () + " must exist.";
+        if (targetCluster == null) {
+            targetCluster = InstallManager.getUserDir ();
+        }
 
         URL source = toUpdateImpl.getInstallInfo().getDistribution();
         err.log (Level.FINE, "Source URL for " + toUpdateImpl.getCodeName () + " is " + source);

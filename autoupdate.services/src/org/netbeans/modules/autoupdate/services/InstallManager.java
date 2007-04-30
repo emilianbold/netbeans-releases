@@ -26,8 +26,11 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.Module;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.updater.UpdateTracking;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 
 /**
@@ -51,7 +54,9 @@ public class InstallManager {
             // new one or update?
             if (installed != null) {
                 res = getInstallDir (installed);
-            } else {
+                // XXX: can be null for fixed modules
+            }
+            if (res == null) {
                 // does have a target cluster?
                 String targetCluster = update.getInstallInfo ().getTargetCluster ();
                 File firstPossible = null;
@@ -86,13 +91,16 @@ public class InstallManager {
         if (i.isModule ()) {
             String configFile = "config" + '/' + "Modules" + '/' + installed.getCodeName ().replace ('.', '-') + ".xml"; // NOI18N
             res = InstalledFileLocator.getDefault ().locate (configFile, installed.getCodeName (), false);
+            // only fixed module cannot be located
+            assert res != null || 
+                    Utilities.toModule (installed.getCodeName (), installed.getSpecificationVersion ()).isFixed () : "Install cluster exists for UpdateElementImpl " + installed;
         } else {
             assert false : "Unkown for Features now."; // XXX
         }
         return res;
     }
     
-    private static File getUserDir () {
+    static File getUserDir () {
         File userDir = new File (System.getProperty ("netbeans.user"));
         userDir = new File(userDir.toURI ().normalize ()).getAbsoluteFile ();
         
