@@ -228,7 +228,7 @@ final class SelectFolderPanel extends JPanel implements DocumentListener {
     private javax.swing.JTextArea hintsArea;
     // End of variables declaration//GEN-END:variables
 
-    public static class SelectFolderWizardPanel implements WizardDescriptor.Panel {
+    public static class SelectFolderWizardPanel implements WizardDescriptor.Panel<ShortcutWizard> {
 
         private SelectFolderPanel panel;
 
@@ -279,16 +279,14 @@ final class SelectFolderPanel extends JPanel implements DocumentListener {
             cs.fireChange();
         }
 
-        public void readSettings (Object settings) {
-            WizardDescriptor wiz = (WizardDescriptor) settings;
+        public void readSettings(ShortcutWizard wiz) {
             getPanel().setFolder((DataFolder)wiz.getProperty(getPanel().prop));
             String dn = (String)wiz.getProperty(ShortcutWizard.PROP_DISPLAY_NAME);
             getPanel().displayNameField.setText(dn != null ? dn : ""); // NOI18N
         }
         
-        public void storeSettings (Object settings) {
+        public void storeSettings(ShortcutWizard wiz) {
             DataFolder folder = getPanel().getFolder();
-            WizardDescriptor wiz = (WizardDescriptor) settings;
             wiz.putProperty(getPanel().prop, folder);
             wiz.putProperty(ShortcutWizard.PROP_DISPLAY_NAME, getPanel().displayNameField.getText());
         }

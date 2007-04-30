@@ -151,7 +151,7 @@ final class IntroPanel extends javax.swing.JPanel {
     private javax.swing.JCheckBox toolbarCheck;
     // End of variables declaration//GEN-END:variables
 
-    public static class IntroWizardPanel implements WizardDescriptor.Panel {
+    public static class IntroWizardPanel implements WizardDescriptor.Panel<ShortcutWizard> {
     
         private IntroPanel panel = null;
         private ShortcutWizard wiz = null;
@@ -196,11 +196,17 @@ final class IntroPanel extends javax.swing.JPanel {
             cs.fireChange();
         }
 
-        public void readSettings (Object settings) {
-            // XXX should read checkboxes from settings... skip for now.
+        public void readSettings(ShortcutWizard wiz) {
+            getPanel().customizeCheck.setSelected(flag(ShortcutWizard.PROP_SHOW_CUST));
+            getPanel().menuCheck.setSelected(flag(ShortcutWizard.PROP_SHOW_MENU));
+            getPanel().toolbarCheck.setSelected(flag(ShortcutWizard.PROP_SHOW_TOOL));
+            getPanel().keyboardCheck.setSelected(flag(ShortcutWizard.PROP_SHOW_KEYB));
         }
-        public void storeSettings (Object settings) {
-            WizardDescriptor wiz = (WizardDescriptor) settings;
+        private boolean flag(String prop) {
+            Boolean val = (Boolean) wiz.getProperty(ShortcutWizard.PROP_SHOW_KEYB);
+            return val != null ? val : false;
+        }
+        public void storeSettings(ShortcutWizard wiz) {
             wiz.putProperty(ShortcutWizard.PROP_SHOW_CUST, getPanel().customizeCheck.isSelected() ? Boolean.TRUE : Boolean.FALSE);
             wiz.putProperty(ShortcutWizard.PROP_SHOW_MENU, getPanel().menuCheck.isSelected() ? Boolean.TRUE : Boolean.FALSE);
             wiz.putProperty(ShortcutWizard.PROP_SHOW_TOOL, getPanel().toolbarCheck.isSelected() ? Boolean.TRUE : Boolean.FALSE);

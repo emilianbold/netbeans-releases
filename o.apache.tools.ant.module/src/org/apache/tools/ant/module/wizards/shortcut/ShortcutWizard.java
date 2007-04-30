@@ -88,11 +88,11 @@ public final class ShortcutWizard extends WizardDescriptor {
     private final ShortcutIterator it;
 
     ShortcutWizard(AntProjectCookie project, Element target, ShortcutIterator it) {
-        super(it);
         this.project = project;
         this.target = target;
         this.it = it;
         it.initialize(this);
+        setPanelsAndSettings(it, this);
         setTitle(NbBundle.getMessage(ShortcutWizard.class, "TITLE_wizard"));
         putProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N
         putProperty("WizardPanel_contentDisplayed", Boolean.TRUE); // NOI18N

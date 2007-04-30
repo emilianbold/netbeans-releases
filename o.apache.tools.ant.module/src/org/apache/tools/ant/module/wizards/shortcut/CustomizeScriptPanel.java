@@ -98,7 +98,7 @@ final class CustomizeScriptPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     
-    public static class CustomizeScriptWizardPanel implements WizardDescriptor.Panel {
+    public static class CustomizeScriptWizardPanel implements WizardDescriptor.Panel<ShortcutWizard> {
 
         private CustomizeScriptPanel panel = null;
 
@@ -127,13 +127,11 @@ final class CustomizeScriptPanel extends javax.swing.JPanel {
         public final void addChangeListener (ChangeListener l) {}
         public final void removeChangeListener (ChangeListener l) {}
 
-        public void readSettings (Object settings) {
-            ShortcutWizard wiz = (ShortcutWizard) settings;
+        public void readSettings(ShortcutWizard wiz) {
             String contents = wiz.getContents();
             getPanel().scriptPane.setText(contents);
         }
-        public void storeSettings (Object settings) {
-            ShortcutWizard wiz = (ShortcutWizard) settings;
+        public void storeSettings(ShortcutWizard wiz) {
             wiz.putContents(getPanel().scriptPane.getText());
         }
     }

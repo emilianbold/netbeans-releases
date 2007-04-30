@@ -20,6 +20,8 @@
 package org.apache.tools.ant.module.wizards.shortcut;
 
 import java.awt.Component;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
@@ -29,30 +31,30 @@ import org.openide.loaders.DataFolder;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
-final class ShortcutIterator implements WizardDescriptor.Iterator {
+final class ShortcutIterator implements WizardDescriptor.Iterator<ShortcutWizard> {
 
     ShortcutIterator() {}
 
     // You should define what panels you want to use here:
 
-    private WizardDescriptor.Panel[] createPanels () {
-        return new WizardDescriptor.Panel[] {
-            new IntroPanel.IntroWizardPanel (),
-            new SelectFolderPanel.SelectFolderWizardPanel(
+    private List<WizardDescriptor.Panel<ShortcutWizard>> createPanels() {
+        List<WizardDescriptor.Panel<ShortcutWizard>> panels = new ArrayList<WizardDescriptor.Panel<ShortcutWizard>>();
+        panels.add(new IntroPanel.IntroWizardPanel());
+        panels.add(new SelectFolderPanel.SelectFolderWizardPanel(
                 NbBundle.getMessage(ShortcutIterator.class, "SI_LBL_select_menu_to_add_to"),
                 NbBundle.getMessage(ShortcutIterator.class, "SI_TEXT_menu_locn"),
                 NbBundle.getMessage(ShortcutIterator.class, "SI_LBL_display_name_for_menu"),
                 DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().findResource("Menu")), // NOI18N
-                true, ShortcutWizard.PROP_FOLDER_MENU),
-            new SelectFolderPanel.SelectFolderWizardPanel(
+                true, ShortcutWizard.PROP_FOLDER_MENU));
+        panels.add(new SelectFolderPanel.SelectFolderWizardPanel(
                 NbBundle.getMessage(ShortcutIterator.class, "SI_LBL_select_toolbar"),
                 NbBundle.getMessage(ShortcutIterator.class, "SI_TEXT_toolbar_locn"),
                 NbBundle.getMessage(ShortcutIterator.class, "SI_LBL_display_name_for_toolbar"),
                 DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().findResource("Toolbars")), // NOI18N
-                false, ShortcutWizard.PROP_FOLDER_TOOL),
-            new SelectKeyboardShortcutPanel.SelectKeyboardShortcutWizardPanel (),
-            new CustomizeScriptPanel.CustomizeScriptWizardPanel (),
-        };
+                false, ShortcutWizard.PROP_FOLDER_TOOL));
+        panels.add(new SelectKeyboardShortcutPanel.SelectKeyboardShortcutWizardPanel());
+        panels.add(new CustomizeScriptPanel.CustomizeScriptWizardPanel());
+        return panels;
     }
 
     // And the list of step names:
@@ -68,7 +70,7 @@ final class ShortcutIterator implements WizardDescriptor.Iterator {
     }
     
     private transient int index;
-    private transient WizardDescriptor.Panel[] panels;
+    private transient List<WizardDescriptor.Panel<ShortcutWizard>> panels;
     private transient ShortcutWizard wiz;
 
     // You can keep a reference to the TemplateWizard which can
@@ -81,11 +83,11 @@ final class ShortcutIterator implements WizardDescriptor.Iterator {
         panels = createPanels ();
         // #44409: make sure IntroWizardPanel knows about wiz
         // XXX workaround should no longer be necessary...
-        ((IntroPanel.IntroWizardPanel) panels[0]).initialize(wiz);
+        ((IntroPanel.IntroWizardPanel) panels.get(0)).initialize(wiz);
         // Make sure list of steps is accurate.
         String[] steps = createSteps ();
-        for (int i = 0; i < panels.length; i++) {
-            Component c = panels[i].getComponent ();
+        for (int i = 0; i < panels.size(); i++) {
+            Component c = panels.get(i).getComponent();
             if (steps[i] == null) {
                 // Default step name to component name of panel.
                 // Mainly useful for getting the name of the target
@@ -106,7 +108,7 @@ final class ShortcutIterator implements WizardDescriptor.Iterator {
 
     public String name () {
         return NbBundle.getMessage (ShortcutIterator.class, "TITLE_x_of_y",
-            new Integer (index + 1), new Integer (panels.length));
+            index + 1, panels.size());
     }
 
     boolean showing(String prop) {
@@ -130,7 +132,7 @@ final class ShortcutIterator implements WizardDescriptor.Iterator {
         }
     }
     public boolean hasNext () {
-        for (int i = index + 1; i < panels.length; i++) {
+        for (int i = index + 1; i < panels.size(); i++) {
             if (showing (i)) {
                 return true;
             }
@@ -158,8 +160,8 @@ final class ShortcutIterator implements WizardDescriptor.Iterator {
         index--;
         while (! showing (index)) index--;
     }
-    public WizardDescriptor.Panel current () {
-        return panels[index];
+    public WizardDescriptor.Panel<ShortcutWizard> current() {
+        return panels.get(index);
     }
 
     private transient ChangeSupport cs = new ChangeSupport(this);

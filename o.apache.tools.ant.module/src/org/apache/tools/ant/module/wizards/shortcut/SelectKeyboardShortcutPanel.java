@@ -112,7 +112,7 @@ final class SelectKeyboardShortcutPanel extends javax.swing.JPanel implements Ke
         e.consume ();
     }
     
-    public static class SelectKeyboardShortcutWizardPanel implements WizardDescriptor.Panel {
+    public static class SelectKeyboardShortcutWizardPanel implements WizardDescriptor.Panel<ShortcutWizard> {
 
         private SelectKeyboardShortcutPanel panel = null;
         private FileObject shortcutsFolder = null;
@@ -151,11 +151,10 @@ final class SelectKeyboardShortcutPanel extends javax.swing.JPanel implements Ke
             cs.fireChange();
         }
 
-        public void readSettings (Object settings) {
+        public void readSettings(ShortcutWizard wiz) {
             // XXX later...
         }
-        public void storeSettings (Object settings) {
-            WizardDescriptor wiz = (WizardDescriptor) settings;
+        public void storeSettings(ShortcutWizard wiz) {
             wiz.putProperty(ShortcutWizard.PROP_STROKE, getPanel().stroke);
         }
     }
