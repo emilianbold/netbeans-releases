@@ -103,7 +103,8 @@ public class LocalDownloadSupport {
             File [] nbms = new File[files.size()];        
             files.toArray(nbms);
             for (File file : nbms) {
-                List<UpdateUnit> temp = UpdateUnitProviderFactory.getDefault ().create ("local-downloaded", new File[]{file}).getUpdateUnits (); // NOI18N
+                String fileName = file.getName ();
+                List<UpdateUnit> temp = UpdateUnitProviderFactory.getDefault ().create (fileName, new File[] {file}).getUpdateUnits ();
                 retval.addAll(temp);
                 for (UpdateUnit updateUnit : temp) {
                     units2file.put(updateUnit, file);
