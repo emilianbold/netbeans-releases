@@ -476,9 +476,6 @@ Microsystems, Inc. All Rights Reserved.
             <file name="DS-0.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-search-ResultViewOpenAction.instance"/>
             </file>
-            <file name="D-P.shadow">
-                <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PrintAction.instance"/>
-            </file>
             <file name="D-F.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-FindAction.instance"/>
             </file>

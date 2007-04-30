@@ -139,7 +139,7 @@ Microsystems, Inc. All Rights Reserved.
     <bind actionName="to-upper-case" key="O-U$U"/>
     <bind actionName="toggle-highlight-search" key="OS-H"/>
     <bind actionName="toggle-typing-mode" key="INSERT"/>
-    <bind actionName="tooltip-show" key="O-P"/>
+    <bind actionName="tooltip-show" key="D-P"/>
     <bind actionName="undo" key="UNDO"/>
     <bind actionName="undo" key="D-Z"/>
     <bind actionName="word-match-next" key="D-L"/>
