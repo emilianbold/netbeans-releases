@@ -19,10 +19,10 @@
 
 package org.netbeans.modules.visualweb.insync.faces.refactoring;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -30,16 +30,10 @@ import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.visualweb.insync.faces.FacesUnit;
-import org.netbeans.modules.visualweb.insync.faces.refactoring.FacesRefactoringUtils.ManagedBeanNameItem;
-import org.netbeans.modules.visualweb.insync.faces.refactoring.FacesRefactoringUtils.NavigationToViewIdItem;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
-import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
-import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
-import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
-import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -137,6 +131,11 @@ public class FacesJspFileRenameRefactoringPlugin extends FacesRefactoringPlugin 
                         RenameRefactoring javaRenameRefactoring = new RenameRefactoring(Lookups.singleton(javaFileObject));
                         javaRenameRefactoring.setNewName(newName);
                         javaRenameRefactoring.setSearchInComments(getRenameRefactoring().isSearchInComments());
+
+                        // Set ClasspathInfo
+                        ClasspathInfo classpathInfo = FacesRefactoringUtils.getClasspathInfoFor(javaFileObject);                        
+                        javaRenameRefactoring.getContext().add(classpathInfo);
+                        
                         // Indicate delegation
                         javaRenameRefactoring.getContext().add(FacesRefactoringsPluginFactory.DELEGATED_REFACTORING);
                         Problem problem = javaRenameRefactoring.prepare(refactoringSession);
@@ -167,11 +166,11 @@ public class FacesJspFileRenameRefactoringPlugin extends FacesRefactoringPlugin 
                         FileObject[] configs = ConfigurationUtils.getFacesConfigFiles(webModule);
                         
                         if (configs != null){
-                            List <FacesRefactoringUtils.OccurrenceItem> items = FacesRefactoringUtils.getAllFromViewIdOccurrences(webModule, oldRelativePagePath, newRelativePagePath);
+                            List <FacesRefactoringUtils.OccurrenceItem> items = FacesRefactoringUtils.getAllFromViewIdOccurrences(webModule, "/" + oldRelativePagePath, "/" + newRelativePagePath);
                             for (FacesRefactoringUtils.OccurrenceItem item : items) {
                                 refactoringElements.add(getRefactoring(), new JSFConfigRenameFromViewIdElement(item));
                             }
-                            items = FacesRefactoringUtils.getAllToViewOccurrences(webModule, oldRelativePagePath, newRelativePagePath);
+                            items = FacesRefactoringUtils.getAllToViewOccurrences(webModule, "/" + oldRelativePagePath, "/" + newRelativePagePath);
                             for (FacesRefactoringUtils.OccurrenceItem item : items) {
                                 refactoringElements.add(getRefactoring(), new JSFConfigRenameToViewIdElement(item));
                             }

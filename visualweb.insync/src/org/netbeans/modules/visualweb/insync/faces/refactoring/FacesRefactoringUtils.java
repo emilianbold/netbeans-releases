@@ -19,26 +19,27 @@
 
 package org.netbeans.modules.visualweb.insync.faces.refactoring;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Dictionary;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Position.Bias;
-
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.TokenItem;
-import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.modules.visualweb.insync.java.JavaClass;
 import org.netbeans.modules.visualweb.insync.java.JavaUnit;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
@@ -49,19 +50,14 @@ import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
-import org.netbeans.modules.xml.xam.dom.DocumentComponent;
-import org.netbeans.modules.xml.xam.dom.DocumentModel;
-import org.openide.ErrorManager;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
-import org.openide.text.PositionBounds;
-import org.openide.text.PositionRef;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Task;
 
@@ -207,6 +203,36 @@ final class FacesRefactoringUtils {
         if (dict==null) 
             return null;
         return (String) dict.get("name"); //NOI18N
+    }
+    
+    public static ClasspathInfo getClasspathInfoFor(FileObject ... files) {
+        assert files.length >0;
+        Set<URL> dependentRoots = new HashSet();
+        for (FileObject fo: files) {
+            Project p = null;
+            if (fo!=null)
+                p=FileOwnerQuery.getOwner(fo);
+            if (p!=null) {
+                URL sourceRoot = URLMapper.findURL(ClassPath.getClassPath(fo, ClassPath.SOURCE).findOwnerRoot(fo), URLMapper.INTERNAL);
+                dependentRoots.addAll(SourceUtils.getDependentRoots(sourceRoot));
+                for (SourceGroup root:ProjectUtils.getSources(p).getSourceGroups("java")) {
+                    dependentRoots.add(URLMapper.findURL(root.getRootFolder(), URLMapper.INTERNAL));
+                }
+            } else {
+                for(ClassPath cp: GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {
+                    for (FileObject root:cp.getRoots()) {
+                        dependentRoots.add(URLMapper.findURL(root, URLMapper.INTERNAL));
+                    }
+                }
+            }
+        }
+        
+        ClassPath rcp = ClassPathSupport.createClassPath(dependentRoots.toArray(new URL[dependentRoots.size()]));
+//        ClassPath nullPath = ClassPathSupport.createClassPath(new FileObject[0]);
+        ClassPath boot = ClassPath.getClassPath(files[0], ClassPath.BOOT);
+        ClassPath compile = ClassPath.getClassPath(files[0], ClassPath.COMPILE);
+        ClasspathInfo cpInfo = ClasspathInfo.create(boot, compile, rcp);
+        return cpInfo;
     }
     
     /**

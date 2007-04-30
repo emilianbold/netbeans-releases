@@ -26,6 +26,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
@@ -230,6 +231,10 @@ public class FacesJspFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
                             ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
                         }
                         
+                        // Set ClasspathInfo
+                        ClasspathInfo classpathInfo = FacesRefactoringUtils.getClasspathInfoFor(javaFileObject);                        
+                        javaMoveRefactoring.getContext().add(classpathInfo);
+                        
                         // Indicate delegation
                         javaMoveRefactoring.getContext().add(FacesRefactoringsPluginFactory.DELEGATED_REFACTORING);
                         Problem problem = javaMoveRefactoring.prepare(refactoringSession);
@@ -267,11 +272,11 @@ public class FacesJspFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
                         FileObject[] configs = ConfigurationUtils.getFacesConfigFiles(webModule);
                         
                         if (configs != null){
-                            List <FacesRefactoringUtils.OccurrenceItem> items = FacesRefactoringUtils.getAllFromViewIdOccurrences(webModule, oldRelativePagePath, newRelativePagePath);
+                            List <FacesRefactoringUtils.OccurrenceItem> items = FacesRefactoringUtils.getAllFromViewIdOccurrences(webModule, "/" + oldRelativePagePath, "/" + newRelativePagePath);
                             for (FacesRefactoringUtils.OccurrenceItem item : items) {
                                 refactoringElements.add(getRefactoring(), new JSFConfigRenameFromViewIdElement(item));
                             }
-                            items = FacesRefactoringUtils.getAllToViewOccurrences(webModule, oldRelativePagePath, newRelativePagePath);
+                            items = FacesRefactoringUtils.getAllToViewOccurrences(webModule, "/" + oldRelativePagePath, "/" + newRelativePagePath);
                             for (FacesRefactoringUtils.OccurrenceItem item : items) {
                                 refactoringElements.add(getRefactoring(), new JSFConfigRenameToViewIdElement(item));
                             }
