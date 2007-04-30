@@ -86,6 +86,12 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
         return false;
     }
     
+    public Boolean canEditAsText() {
+        if (getTags() == null)
+            return super.canEditAsText();
+        return null;
+    }
+    
     public String getAsText() {
         if (isCurrentValueAUserCodeType()) {
             return USER_CODE_TEXT;

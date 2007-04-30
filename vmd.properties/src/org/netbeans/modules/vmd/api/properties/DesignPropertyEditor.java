@@ -63,7 +63,7 @@ public abstract class DesignPropertyEditor extends PropertyEditorSupport impleme
      * @return the state of property in-place editor in the advanced property sheet
      */
     public Boolean canEditAsText() {
-        return Boolean.TRUE;
+        return null;
     }
     /**
      * Test whether the property is writable.
