@@ -249,7 +249,7 @@ public class JsfForm {
 
     
     // XXX TEMP to try out.
-    private static boolean LOAD_MODEL_ASYNCHRONOUSLY = Boolean.getBoolean("vwp.designer.jsf.loadModelAsync"); // NOI18N
+    private static boolean LOAD_MODEL_SYNCHRONOUSLY = Boolean.getBoolean("vwp.designer.jsf.loadModelSync"); // NOI18N
     
     public static JsfForm getJsfForm(final DataObject dataObject) {
         if (dataObject == null) {
@@ -257,10 +257,7 @@ public class JsfForm {
         }
 
         FacesModel facesModel;
-        if (LOAD_MODEL_ASYNCHRONOUSLY) {
-            // XXX TODO Here should be a method which immediatelly returns FacesModel if it is already created.
-            facesModel = FacesModelSet.getFacesModelIfAvailable(dataObject.getPrimaryFile());
-        } else {
+        if (LOAD_MODEL_SYNCHRONOUSLY) {
             facesModel = getFacesModel(dataObject);
             if (facesModel == null) {
                 if (!dataObject.isTemplate()) {
@@ -268,6 +265,9 @@ public class JsfForm {
                 }
                 return null;
             }
+        } else {
+            // XXX TODO Here should be a method which immediatelly returns FacesModel if it is already created.
+            facesModel = FacesModelSet.getFacesModelIfAvailable(dataObject.getPrimaryFile());
         }
         
         JsfForm jsfForm;

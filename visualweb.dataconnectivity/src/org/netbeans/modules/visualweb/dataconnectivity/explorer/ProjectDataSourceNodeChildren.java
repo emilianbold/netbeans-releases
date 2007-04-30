@@ -60,10 +60,10 @@ public class ProjectDataSourceNodeChildren extends Children.Keys implements Proj
         updateKeys();
 
         // make sure insync has done it's stuff so that we know the datasources.
-		if (Boolean.getBoolean("vwp.designer.jsf.loadModelAsync")) { // NOI18N
-			FacesModelSet.startModeling(nbProject);
-		} else {
+		if (Boolean.getBoolean("vwp.designer.jsf.loadModelSync")) { // NOI18N
 			FacesModelSet.getInstance(nbProject);			
+		} else {
+			FacesModelSet.startModeling(nbProject);
 		}
 		
         ProjectDataSourceTracker.addListener( nbProject,this);

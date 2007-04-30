@@ -30,6 +30,7 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -41,6 +42,7 @@ import java.util.Set;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
@@ -49,6 +51,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.visualweb.classloaderprovider.CommonClassloaderProvider;
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
+import org.netbeans.modules.visualweb.insync.java.ReadTaskWrapper;
 import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.openide.ErrorManager;
@@ -317,7 +320,29 @@ public abstract class ModelSet implements FileChangeListener {
         if (set == null) {
             new Thread(new Runnable() {
                 public void run() {
-                    getInstance(project, ofType);
+                    FileObject sourceRootFileObject = JsfProjectUtils.getSourceRoot(project);
+                    Enumeration<? extends FileObject> sourceFileObjects = sourceRootFileObject.getChildren(true);
+                    FileObject anyJavaFile = null;
+                    while (sourceFileObjects.hasMoreElements()) {
+                        FileObject aSourceFileObject = sourceFileObjects.nextElement();
+                        if (aSourceFileObject.getMIMEType().equals("text/x-java")) { // NOI18N
+                            anyJavaFile = aSourceFileObject;
+                            break;
+                        }
+                    }
+
+                    if (anyJavaFile == null) {
+                        // Can't use wrapper task to ensure background scaning
+                        // stopped while modeling.
+                        getInstance(project, ofType);
+                    } else {                    
+                        ReadTaskWrapper.execute(
+                                    new ReadTaskWrapper.Read() {
+                                        public Object run(CompilationInfo cinfo){
+                                            return getInstance(project, ofType);
+                                        }
+                                    }, anyJavaFile);                        
+                    }
                 }}, "Loading ModelSet for " + project.getProjectDirectory().getName()).start(); // NOI18N
         }
     }

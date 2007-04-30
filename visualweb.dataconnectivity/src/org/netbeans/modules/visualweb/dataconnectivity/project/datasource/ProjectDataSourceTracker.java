@@ -547,10 +547,10 @@ public class ProjectDataSourceTracker{
         throws NamingException {            
             
             // make sure insync has processed all files for dynamic datasources.
-			if (Boolean.getBoolean("vwp.designer.jsf.loadModelAsync")) { // NOI18N
-				FacesModelSet.startModeling(project);
-			} else {
+			if (Boolean.getBoolean("vwp.designer.jsf.loadModelSync")) { // NOI18N
 				FacesModelSet.getInstance(project);
+			} else {
+				FacesModelSet.startModeling(project);
 			}
             
             TreeSet namesList = new TreeSet();
