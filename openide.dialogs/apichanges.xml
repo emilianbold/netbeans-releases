@@ -23,6 +23,20 @@ Microsystems, Inc. All Rights Reserved.
 <apidef name="dialogs">Dialogs API</apidef>
 </apidefs>
 <changes>
+    <change id="default-constructor-for-wizarddescriptor">
+           <api name="dialogs"/>
+           <summary>New <code>WizardDescriptor</code> constructor.</summary>
+           <version major="7" minor="4"/>
+           <date day="30" month="4" year="2007"/>
+           <author login="jtulach"/>
+           <compatibility addition="yes" binary="compatible" semantic="compatible" source="compatible" deprecation="no" deletion="no" modification="no"/>
+           <description>
+            New <code>WizardDescriptor</code> constructor for subclasses. 
+            It allows to eliminate unchecked warnings.
+           </description>
+           <class package="org.openide" name="WizardDescriptor"/>
+           <issue number="102261"/>
+    </change>
     <change id="notifyLater_improved">
            <api name="dialogs"/>
            <summary>Method notifyLater improved to work before main window is opened</summary>

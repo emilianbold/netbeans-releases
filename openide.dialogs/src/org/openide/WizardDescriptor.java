@@ -338,6 +338,17 @@ public class WizardDescriptor extends DialogDescriptor {
         this(new SettingsAndIterator<Data>(panels, settings));
     }
     
+    /** Constructor for subclasses. The expected use is to call this
+     * constructor and then call {@link #setPanelsAndSettings} to provide
+     * the right iterator, panels and data the wizard should use. This 
+     * allows to eliminate unchecked warnings as described in 
+     * <a href="http://www.netbeans.org/issues/show_bug.cgi?id=102261">issue 102261</a>.
+     * @since 7.4
+     */
+    protected WizardDescriptor() {
+        this(SettingsAndIterator.empty());
+    }
+    
     private <Data> WizardDescriptor(SettingsAndIterator<Data> data) {
         super("", "", true, DEFAULT_OPTION, null, CLOSE_PREVENTER); // NOI18N
         
@@ -2721,6 +2732,9 @@ public class WizardDescriptor extends DialogDescriptor {
         public static SettingsAndIterator<WizardDescriptor> create(Iterator<WizardDescriptor> iterator) {
             return new SettingsAndIterator<WizardDescriptor>(iterator, null, true);
         }
+        public static SettingsAndIterator<Void> empty() {
+            return new SettingsAndIterator(new EmptyPanel(), (Void)null);
+        }
 
         public Iterator<Data> getIterator(WizardDescriptor caller) {
             return panels;
@@ -2736,4 +2750,52 @@ public class WizardDescriptor extends DialogDescriptor {
             return s;
         }
     }
+    
+    private static final class EmptyPanel implements Panel<Void>, Iterator<Void> {
+        public Component getComponent() {
+            return new JPanel();
+        }
+
+        public HelpCtx getHelp() {
+            return HelpCtx.DEFAULT_HELP;
+        }
+
+        public void readSettings(Void settings) {
+        }
+
+        public void storeSettings(Void settings) {
+        }
+
+        public boolean isValid() {
+            return true;
+        }
+
+        public void addChangeListener(ChangeListener l) {
+        }
+
+        public void removeChangeListener(ChangeListener l) {
+        }
+
+        public Panel<Void> current() {
+            return this;
+        }
+
+        public String name() {
+            return ""; // NORTH
+        }
+
+        public boolean hasNext() {
+            return false;
+        }
+
+        public boolean hasPrevious() {
+            return false;
+        }
+
+        public void nextPanel() {
+        }
+
+        public void previousPanel() {
+        }
+    } // end of EmptyPanel
 }
