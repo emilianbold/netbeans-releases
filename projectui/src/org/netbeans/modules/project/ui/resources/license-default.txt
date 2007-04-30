@@ -3,6 +3,6 @@ ${licensePrefix}${name}.java
 ${licensePrefix}
 ${licensePrefix}Created on ${date}, ${time}
 ${licensePrefix}
-${licensePrefix}To change this template, choose Tools | Template Manager
+${licensePrefix}To change this template, choose Tools | Templates
 ${licensePrefix}and open the template in the editor.
 ${licenseLast}
