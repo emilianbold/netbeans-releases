@@ -125,7 +125,7 @@ public class JSP {
     private static void collectHtmlNodes(List<ASTItem> l, ASTNode node) {
         //check if the node may contain an html nodes - just etext and ERROR nodes may contain it
         for(ASTItem itm : node.getChildren()) {
-            if(itm instanceof ASTNode && "text/x-jsp".equals(itm.getMimeType())) {
+            if(itm instanceof ASTNode && ("text/x-jsp".equals(itm.getMimeType()) || "text/x-tag".equals(itm.getMimeType()))) {
                 ASTNode n = (ASTNode)itm;
                 if("etext".equals(n.getNT()) || "ERROR".equals(n.getNT())) {
                     ASTToken t = n.getTokenType("TEXT");
