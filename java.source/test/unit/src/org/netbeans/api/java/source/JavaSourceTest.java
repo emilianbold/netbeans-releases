@@ -22,6 +22,8 @@ package org.netbeans.api.java.source;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.TreeScanner;
 import java.io.File;
@@ -48,6 +50,8 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.swing.text.BadLocationException;
@@ -1215,6 +1219,63 @@ public class JavaSourceTest extends NbTestCase {
         res.get(1,TimeUnit.SECONDS);
         assertFalse(res.isDone());
         assertTrue (res.isCancelled());
+    }
+    
+    
+    public void testNested2 () throws Exception {
+        final FileObject testFile1 = createTestFile("Test1");
+        final ClassPath bootPath = createBootPath();
+        final ClassPath compilePath = createCompilePath();
+        final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath,compilePath,null);
+        final JavaSource js = JavaSource.create(cpInfo,testFile1);
+        js.runUserActionTask(new CancellableTask<CompilationController>() {
+            public void cancel() {
+            }
+
+            public void run(CompilationController c) throws Exception {
+                c.toPhase(Phase.RESOLVED);
+                CompilationUnitTree ct = c.getCompilationUnit();
+                List <? extends Tree> trees = ct.getTypeDecls();
+                assertEquals (1,trees.size());
+                                
+                js.runModificationTask(new CancellableTask<WorkingCopy>() {
+                    public void cancel() {
+                    }
+
+                    public void run(WorkingCopy c) throws Exception {
+                        c.toPhase(Phase.RESOLVED);
+                        CompilationUnitTree oldTree = c.getCompilationUnit();
+                        TreeMaker tm = c.getTreeMaker();
+                        ClassTree cls = tm.Class(tm.Modifiers(EnumSet.of(Modifier.STATIC)), "NewClass", Collections.<TypeParameterTree>emptyList(),
+                                null, Collections.<Tree>emptyList(), Collections.<Tree>emptyList());
+                        List<Tree> decls = new LinkedList<Tree> ();
+                        decls.addAll (oldTree.getTypeDecls());
+                        decls.add (cls);
+                        CompilationUnitTree newTree = tm.CompilationUnit(oldTree.getPackageName(), oldTree.getImports(),decls, oldTree.getSourceFile());
+                        c.rewrite(oldTree, newTree);
+                    }
+                }).commit();
+                                
+                c.toPhase(Phase.RESOLVED);
+                ct = c.getCompilationUnit();
+                trees = ct.getTypeDecls();
+                assertEquals (1, trees.size());
+                                               
+                js.runUserActionTask(new CancellableTask<CompilationController>() {
+                    public void cancel() {
+                    }
+
+                    public void run(CompilationController c) throws Exception {
+                        c.toPhase(Phase.RESOLVED);
+                        CompilationUnitTree ct = c.getCompilationUnit();
+                        List <? extends Tree> trees = ct.getTypeDecls();
+                        assertEquals (2, trees.size());
+                    }
+                    
+                }, true);
+            }
+            
+        }, true);
     }
     
     private static class TestProvider implements JavaSource.JavaFileObjectProvider {
