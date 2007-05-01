@@ -21,6 +21,7 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
@@ -72,14 +73,14 @@ public class SuiteCustomizerModuleListTest extends TestBase {
         
         String c1 = doDisableCluster(1, true);
         String c2 = doDisableCluster(2, false);
-        HashSet c = new HashSet();
+        Set<String> c = new HashSet<String>();
         c.add(c1);
         c.add(c2);
         
         String[] xyz = suite1Props.getEnabledClusters();
         //assertEquals("Two clusters disabled", ???, xyz.length);
         
-        HashSet real = new HashSet(Arrays.asList(xyz));
+        Set<String> real = new HashSet<String>(Arrays.asList(xyz));
         assertFalse(real.containsAll(c));
     }
     
@@ -135,12 +136,10 @@ public class SuiteCustomizerModuleListTest extends TestBase {
     }
     
     private static void assertNodeEnabled(Node n, Boolean value) throws Exception {
-        org.openide.nodes.Node.PropertySet[] arr = n.getPropertySets();
-        for (int i = 0; i < arr.length; i++) {
-            org.openide.nodes.Node.Property[] x = arr[i].getProperties();
-            for (int j = 0; j < x.length; j++) {
-                if (x[j].getName().equals("enabled")) {
-                    Object o = x[j].getValue();
+        for (Node.PropertySet ps : n.getPropertySets()) {
+            for (Node.Property<?> prop : ps.getProperties()) {
+                if (prop.getName().equals("enabled")) {
+                    Object o = prop.getValue();
                     assertEquals("Node is correctly enabled/disabled: " + n, value, o);
                     return;
                 }
@@ -149,12 +148,12 @@ public class SuiteCustomizerModuleListTest extends TestBase {
         fail("No enabled property found: " + n);
     }
     private static void setNodeEnabled(Node n, boolean value) throws Exception {
-        org.openide.nodes.Node.PropertySet[] arr = n.getPropertySets();
-        for (int i = 0; i < arr.length; i++) {
-            org.openide.nodes.Node.Property[] x = arr[i].getProperties();
-            for (int j = 0; j < x.length; j++) {
-                if (x[j].getName().equals("enabled")) {
-                    x[j].setValue(Boolean.valueOf(value));
+        for (Node.PropertySet ps : n.getPropertySets()) {
+            for (Node.Property<?> prop : ps.getProperties()) {
+                if (prop.getName().equals("enabled")) {
+                    @SuppressWarnings("unchecked") // value type is Boolean.TYPE, not Boolean.class, so Class.<T>cast will not help
+                    Node.Property<Boolean> _prop = (Node.Property<Boolean>) prop;
+                    _prop.setValue(value);
                     return;
                 }
             }
@@ -164,14 +163,11 @@ public class SuiteCustomizerModuleListTest extends TestBase {
 
     private void enableAllClusters(boolean enableModulesAsWell) throws Exception {
         Node n = customizer.getExplorerManager().getRootContext();
-        Node[] clusters = n.getChildren().getNodes();
-        
-        for (int i = 0; i < clusters.length; i++) {
-            setNodeEnabled(clusters[i], true);
+        for (Node cluster : n.getChildren().getNodes()) {
+            setNodeEnabled(cluster, true);
             if (enableModulesAsWell) {
-                Node[] modules = clusters[i].getChildren().getNodes();
-                for (int j = 0; j < modules.length; j++) {
-                    setNodeEnabled(modules[j], true);
+                for (Node module : cluster.getChildren().getNodes()) {
+                    setNodeEnabled(module, true);
                 }
             }
         }
