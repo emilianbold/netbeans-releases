@@ -7,21 +7,14 @@
 package org.netbeans.modules.uml.propertysupport.options;
 
 import java.awt.BorderLayout;
-import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
+import org.netbeans.modules.uml.propertysupport.options.api.UMLOptionsPanel;
 
 /**
  *
  * @author  krichard
  */
-public class UMLMiscOptionsPanelForm extends javax.swing.JPanel implements ActionListener {
+public class UMLMiscOptionsPanelForm extends JPanel {
     
     /** Creates new form UMLMiscOptionsPanelForm */
     public UMLMiscOptionsPanelForm() {
@@ -29,78 +22,7 @@ public class UMLMiscOptionsPanelForm extends javax.swing.JPanel implements Actio
 
         super (new BorderLayout()) ;
         
-        String[] petStrings = { "Trey", "Kris", "Eric", "Alex" };
-
-        //Create the combo box, select the item at index 4.
-        //Indices start at 0, so 4 specifies the pig.
-        JComboBox petList = new JComboBox(petStrings);
-        petList.setSelectedIndex(0);
-        petList.addActionListener(this);
-
-        //Set up the picture.
-        picture = new JLabel();
-        picture.setFont(picture.getFont().deriveFont(Font.ITALIC));
-        picture.setHorizontalAlignment(JLabel.CENTER);
-        updateLabel(petStrings[petList.getSelectedIndex()]);
-        picture.setBorder(BorderFactory.createEmptyBorder(10,0,0,0));
-
-        //The preferred size is hard-coded to be the width of the
-        //widest image and the height of the tallest image + the border.
-        //A real program would compute this.
-        //picture.setPreferredSize(new Dimension(177, 122+10));
-
-        //Lay out the demo.
-        add(petList, BorderLayout.NORTH);
-        add(picture, BorderLayout.CENTER);
-        setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
         
-        JPanel bottom = new JPanel ();
-        bottom.add(new JLabel ("Use current image as:")) ;
-        
-        JRadioButton back = new JRadioButton ("Background") ;
-        JRadioButton litter = new JRadioButton ("Line Litter Box") ;
-        
-        JRadioButton grad = new JRadioButton ("Gradient") ;
-                
-        ButtonGroup group = new ButtonGroup();
-        group.add(back);
-        group.add(litter);
-        group.add(grad);
-
-        bottom.add (back);
-        bottom.add (litter);
-        bottom.add (grad);
-        
-        add (bottom, BorderLayout.SOUTH);
-        
-    }
-    
-    JLabel picture;
-
-
-    /** Listens to the combo box. */
-    public void actionPerformed(ActionEvent e) {
-        JComboBox cb = (JComboBox)e.getSource();
-        String petName = (String)cb.getSelectedItem();
-        updateLabel(petName);
-    }
-
-    protected void updateLabel(String name) {
-        JLabel icon = createImageIcon(name);
-        picture.setIcon(null);
-        picture.setToolTipText("A drawing of a " + name.toLowerCase());
-        if (icon != null) {
-            picture.setText(null);
-        } else {
-            picture.setText("Image not found");
-        }
-    }
-
-    /** Returns an ImageIcon, or null if the path was invalid. */
-    protected static JLabel createImageIcon(String path) {
-        JLabel label = new JLabel (path) ;
-        
-        return label ;
     }
 
     
@@ -112,20 +34,39 @@ public class UMLMiscOptionsPanelForm extends javax.swing.JPanel implements Actio
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jTabbedPane1 = new javax.swing.JTabbedPane();
+
+        jTabbedPane1.setTabPlacement(javax.swing.JTabbedPane.BOTTOM);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(0, 400, Short.MAX_VALUE)
+            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(layout.createSequentialGroup()
+                    .add(0, 0, Short.MAX_VALUE)
+                    .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(0, 0, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(0, 300, Short.MAX_VALUE)
+            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(layout.createSequentialGroup()
+                    .add(0, 0, Short.MAX_VALUE)
+                    .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(0, 0, Short.MAX_VALUE)))
         );
     }// </editor-fold>//GEN-END:initComponents
     
+    public void addTab (UMLOptionsPanel panel) {
+        if (panel != null)
+            jTabbedPane1.addTab(panel.getDisplayName(), panel.create());
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTabbedPane jTabbedPane1;
     // End of variables declaration//GEN-END:variables
     
 }

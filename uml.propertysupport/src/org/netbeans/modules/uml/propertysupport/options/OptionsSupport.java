@@ -27,28 +27,52 @@ public class OptionsSupport {
     
     private final boolean debug = true ;
     private Vector<UMLOptionsPanel> umlOptionPanels = new Vector() ;
+    private Vector<UMLOptionsPanel> miscOptionPanels = new Vector() ;
     
     /** Creates a new instance of OptionsSupport */
     public OptionsSupport() {
         this.gatherUMLOptionPanels() ;
     }
     
-    private void gatherUMLOptionPanels() {
-        log("gatherUMLOptionPanel");
+    private Iterator getPanels(String path) {
         
         FileSystem fs = Repository.getDefault().getDefaultFileSystem() ;
-        if (fs == null) return ;
+        if (fs == null) return null;
         
-        FileObject fo = fs.findResource("UML/UMLOptions/Panels");
+        FileObject fo = fs.findResource(path);
+        if (fo == null) return null;
         
         Lookup lookup = new FolderLookup(DataFolder.findFolder(fo)).getLookup();
         Iterator it = lookup.lookup(new Lookup.Template(UMLOptionsPanel.class)).
                 allInstances().iterator();
         
+        return it ;
+        
+    }
+    
+    private void gatherUMLOptionPanels() {
+        log("gatherUMLOptionPanel");
+        
+        
+        // Get the main panels that have been defined in the layer files of the
+        // required modules.
+        Iterator it = getPanels ("UML/UMLOptions/Panels") ;        
+        
+        //if it == null then no panels were found. This would be bad. 
         while (it.hasNext()) {
             UMLOptionsPanel option = (UMLOptionsPanel) it.next();
             umlOptionPanels.addElement(option);
         }
+        
+        // Now add the misc panels, also declared in the layer files, to the misc panel.
+        it = getPanels ("UML/UMLOptions/Misc") ;        
+        
+        //it is possible to have no Misc panels so check for null.
+        if (it != null)
+            while (it.hasNext()) {
+                UMLOptionsPanel option = (UMLOptionsPanel) it.next();
+                miscOptionPanels.addElement(option);
+            }
         
         //
         //        if (fo == null) return;
@@ -90,8 +114,11 @@ public class OptionsSupport {
         
     }
     
-    protected Vector<UMLOptionsPanel> panels() {
+    protected Vector<UMLOptionsPanel> getMainPanels() {
         return umlOptionPanels ;
+    }
+    protected Vector<UMLOptionsPanel> getMiscPanels() {
+        return miscOptionPanels ;
     }
     
     private void log(String s) {

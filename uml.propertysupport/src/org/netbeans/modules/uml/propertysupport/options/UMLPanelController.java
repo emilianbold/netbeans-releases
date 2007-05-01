@@ -84,9 +84,19 @@ public class UMLPanelController extends OptionsPanelController {
         
         OptionsSupport support = new OptionsSupport() ;
         
-        for (UMLOptionsPanel panel:support.panels()) {
+        for (UMLOptionsPanel panel:support.getMainPanels()) {
             pane.addTab(panel.getDisplayName(), panel.create()) ;
         }
+        
+        MiscOptionsPanel misc = new MiscOptionsPanel() ;
+        UMLMiscOptionsPanelForm miscPanel = (UMLMiscOptionsPanelForm) misc.create() ;        
+        
+        pane.addTab(misc.getDisplayName(), miscPanel) ;
+                
+        for (UMLOptionsPanel panel:support.getMiscPanels()) {
+            miscPanel.addTab(panel) ;
+        }
+        
         
         return pane ;
         

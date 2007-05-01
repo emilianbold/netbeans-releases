@@ -9,54 +9,37 @@
 
 package org.netbeans.modules.uml.propertysupport.options;
 
-import org.netbeans.modules.uml.propertysupport.options.api.UMLOptionsPanel;
-import java.util.Hashtable;
-import javax.swing.JComponent;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author krichard
  */
-public class MiscOptionsPanel implements UMLOptionsPanel {
+public class MiscOptionsPanel {
     
   
     private final boolean debug = true ;
-    private JComponent form = null ;
+    private UMLMiscOptionsPanelForm form = null ;
     
     /** Creates a new instance of OptionsPanel */
     public MiscOptionsPanel() {
         log("MiscOptionsPanel");
     }
     
-    public void applyChanges() {
-        Hashtable updates = this.getUpdatedValues() ;
-        if (getCurrentValues().equals ( updates )  ) return ;
-        
-//        settings.applyChanges ( updates ) ;
-    }
     
-    public JComponent create() {
-        form = new UMLMiscOptionsPanelForm() ;
+    public UMLMiscOptionsPanelForm create() {
+        if (form != null) 
+            return form;
+        else
+            form = new UMLMiscOptionsPanelForm() ;
         
         return form ;
     }
     
-    public Hashtable getCurrentValues() {
-        Hashtable p = new Hashtable() ;
-        
-//        p = settings.getProperties() ;
-        
-        return p ;
+    public UMLMiscOptionsPanelForm getPanel() {
+        return create();
     }
     
-    public Hashtable getUpdatedValues() {
-        Hashtable p = new Hashtable() ;
-        
-        //p = form.getProperties() ;
-        
-        return p ;
-    }
     
     public String getDisplayName() {
         return loc("MISC_OPTIONS") ;
