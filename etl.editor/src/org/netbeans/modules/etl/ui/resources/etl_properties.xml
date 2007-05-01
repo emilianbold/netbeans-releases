@@ -20,12 +20,12 @@
 <TemplateGroup>
     <Template name="SourceTable">
         <PropertyGroup name="default" position="0" >
-            <OptionProperty name="extractionType" valueType="java.lang.String" position="0"  default="true" defaultOption="0" editorClass="com.sun.jbi.ui.devtool.sql.framework.ui.editor.property.impl.OptionListEditor">
+            <OptionProperty name="extractionType" valueType="java.lang.String" position="0"  default="true" defaultOption="0" editorClass="org.netbeans.modules.sql.framework.ui.editor.property.impl.OptionListEditor">
                 <Option name="full" value="full" />
                 <Option name="conditional" value="conditional" />
             </OptionProperty>
-            <Property name="extractionCondition" valueType ="com.sun.jbi.ui.devtool.sql.framework.model.SQLCondition" position="1"  customEditor ="true"  />
-            <Property name="validationCondition" valueType ="com.sun.jbi.ui.devtool.sql.framework.model.SQLCondition" position="2"  customEditor ="true"  />
+            <Property name="extractionCondition" valueType ="org.netbeans.modules.sql.framework.model.SQLCondition" position="1"  customEditor ="true"  />
+            <Property name="validationCondition" valueType ="org.netbeans.modules.sql.framework.model.SQLCondition" position="2"  customEditor ="true"  />
             <Property name="selectDistinct" valueType="java.lang.Boolean" position="3"  />
             <Property name="displayName" valueType="java.lang.String" position="4" readOnly="true" />
             <Property name="schema" valueType="java.lang.String" position="5" readOnly="true" />
@@ -52,15 +52,15 @@
 
     <Template name="TargetTable">
         <PropertyGroup name="default" position="0" >
-            <OptionProperty name="strStatementType" valueType="java.lang.String" position="0" default="true" defaultOption="0" editorClass="com.sun.jbi.ui.devtool.sql.framework.ui.editor.property.impl.OptionListEditor">
+            <OptionProperty name="strStatementType" valueType="java.lang.String" position="0" default="true" defaultOption="0" editorClass="org.netbeans.modules.sql.framework.ui.editor.property.impl.OptionListEditor">
                 <Option name="insert" value="insert" />
                 <Option name="insert_update" value="insert_update" />
                 <Option name="update" value="update" />
                 <Option name="delete" value="delete" />
             </OptionProperty>
-            <Property name="joinCondition" valueType ="com.sun.jbi.ui.devtool.sql.framework.model.SQLCondition" position="1"  customEditor ="true" />
-            <Property name="filterCondition" valueType ="com.sun.jbi.ui.devtool.sql.framework.model.SQLCondition" position="2"  customEditor ="true" />
-            <Property name="SQLGroupBy" valueType="com.sun.jbi.ui.devtool.sql.framework.model.SQLGroupBy" position="3"  customEditor ="true" />
+            <Property name="joinCondition" valueType ="org.netbeans.modules.sql.framework.model.SQLCondition" position="1"  customEditor ="true" />
+            <Property name="filterCondition" valueType ="org.netbeans.modules.sql.framework.model.SQLCondition" position="2"  customEditor ="true" />
+            <Property name="SQLGroupBy" valueType="org.netbeans.modules.sql.framework.model.SQLGroupBy" position="3"  customEditor ="true" />
             <Property name="displayName" valueType="java.lang.String" position="4" readOnly="true" />
             <Property name="schema" valueType="java.lang.String" position="5" readOnly="true" />
             <Property name="catalog" valueType="java.lang.String" position="6" readOnly="true" />
@@ -84,12 +84,12 @@
     
     <Template name="FFSourceTable">
         <PropertyGroup name="default" position="0" >
-            <OptionProperty name="extractionType" valueType="java.lang.String" position="0"  default="true" defaultOption="0" editorClass="com.sun.jbi.ui.devtool.sql.framework.ui.editor.property.impl.OptionListEditor">
+            <OptionProperty name="extractionType" valueType="java.lang.String" position="0"  default="true" defaultOption="0" editorClass="org.netbeans.modules.sql.framework.ui.editor.property.impl.OptionListEditor">
                 <Option name="full" value="full" />
                 <Option name="conditional" value="conditional" />
             </OptionProperty>
-            <Property name="extractionCondition" valueType ="com.sun.jbi.ui.devtool.sql.framework.model.SQLCondition" position="1"  customEditor ="true"  />
-            <Property name="validationCondition" valueType ="com.sun.jbi.ui.devtool.sql.framework.model.SQLCondition" position="2"  customEditor ="true"  />
+            <Property name="extractionCondition" valueType ="org.netbeans.modules.sql.framework.model.SQLCondition" position="1"  customEditor ="true"  />
+            <Property name="validationCondition" valueType ="org.netbeans.modules.sql.framework.model.SQLCondition" position="2"  customEditor ="true"  />
             <Property name="selectDistinct" valueType="java.lang.Boolean" position="3"  />
             <Property name="displayName" valueType="java.lang.String" position="4" readOnly="true" />
             <Property name="modelName" valueType="java.lang.String" position="5" readOnly="true" />
@@ -109,15 +109,15 @@
 
     <Template name="FFTargetTable">
         <PropertyGroup name="default" position="0" >
-            <OptionProperty name="strStatementType" valueType="java.lang.String" position="0" default="true" defaultOption="0" editorClass="com.sun.jbi.ui.devtool.sql.framework.ui.editor.property.impl.OptionListEditor">
+            <OptionProperty name="strStatementType" valueType="java.lang.String" position="0" default="true" defaultOption="0" editorClass="org.netbeans.modules.sql.framework.ui.editor.property.impl.OptionListEditor">
                 <Option name="insert" value="insert" />
                 <Option name="insert_update" value="insert_update" />
                 <Option name="update" value="update" />
                 <Option name="delete" value="delete" />
             </OptionProperty>
-            <Property name="joinCondition" valueType ="com.sun.jbi.ui.devtool.sql.framework.model.SQLCondition" position="1"  customEditor ="true" />
-            <Property name="filterCondition" valueType ="com.sun.jbi.ui.devtool.sql.framework.model.SQLCondition" position="2"  customEditor ="true" />            
-      		<Property name="SQLGroupBy" valueType="com.sun.jbi.ui.devtool.sql.framework.model.SQLGroupBy" position="3"  customEditor ="true" />
+            <Property name="joinCondition" valueType ="org.netbeans.modules.sql.framework.model.SQLCondition" position="1"  customEditor ="true" />
+            <Property name="filterCondition" valueType ="org.netbeans.modules.sql.framework.model.SQLCondition" position="2"  customEditor ="true" />            
+      		<Property name="SQLGroupBy" valueType="org.netbeans.modules.sql.framework.model.SQLGroupBy" position="3"  customEditor ="true" />
             <Property name="displayName" valueType="java.lang.String" position="4" readOnly="true" />
             <Property name="modelName" valueType="java.lang.String" position="5" readOnly="true" />
             <Property name="primaryKeys" valueType="java.lang.String" position="6" readOnly="true" default="true" customEditor="true" />
@@ -135,7 +135,7 @@
     <Template name="Collaboration">
         <PropertyGroup name="default" position="0" >
             <Property name="displayName" valueType="java.lang.String" position="0" readOnly="true" />
-            <OptionProperty name="executionStrategyCode" valueType="java.lang.Integer" position="1" defaultOption="0" editorClass="com.sun.jbi.ui.devtool.sql.framework.ui.editor.property.impl.OptionListEditor">
+            <OptionProperty name="executionStrategyCode" valueType="java.lang.Integer" position="1" defaultOption="0" editorClass="org.netbeans.modules.sql.framework.ui.editor.property.impl.OptionListEditor">
                 <Option name="Best Fit" value="0" />
                 <Option name="Pipeline" value="1" />
                 <Option name="Staging" value="2" />
@@ -148,7 +148,7 @@
         <PropertyGroup name ="default" position="0" >
             <Property name="connectionURL"  valueType ="java.lang.String" position="1"/>
             <Property name="userName"  valueType ="java.lang.String" position="2"/>
-            <Property name="password"  valueType ="java.lang.String" position="3" editorClass="com.sun.jbi.ui.devtool.sql.framework.ui.editor.property.impl.DefaultPropertyEditor$PasswordTextEditor"/>
+            <Property name="password"  valueType ="java.lang.String" position="3" editorClass="org.netbeans.modules.sql.framework.ui.editor.property.impl.DefaultPropertyEditor$PasswordTextEditor"/>
         </PropertyGroup>
     </Template>
 
