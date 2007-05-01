@@ -193,6 +193,13 @@ public class LiveUnit implements Unit, DesignContext, FacesDesignContext {
         if (lookFor == null) {
             return null;
         }
+        
+        // #102260 The bean is still alive, return it immediately.
+        if (liveBeanList.contains(lookFor)) {
+            return lookFor;
+        }
+
+        // XXX This is not fully working solution.
         // I-m using name here, but that may not be good enough.  What
         // if the bean is in a sub page ?  May need to do some hierarchy
         // based lookup, but for now this will do
