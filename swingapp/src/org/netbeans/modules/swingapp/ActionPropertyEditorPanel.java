@@ -204,8 +204,8 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
             scopeCombo.setVisible(false);
             methodLabel.setVisible(true);
             methodField.setVisible(false);
-            backgroundTaskLabel.setVisible(true);
-            backgroundTaskCheckbox.setVisible(false);
+            backgroundTaskLabel.setVisible(false);
+            backgroundTaskCheckbox.setVisible(true);
         }
         if(mode == Mode.NewActionGlobal) {
             newAction = new ProxyAction();
