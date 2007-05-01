@@ -177,7 +177,7 @@ public final class BrokenPlatformReferenceTest extends NbTestCase {
         TestBase.delete(sd);
         NbModuleProject p = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(d));
         ModuleEntry e = p.getModuleList().getEntry("core");
-        assertNotNull("#67148: can find core.jar from default platform", e);
+        assertNotNull("#67148: can find core.jar from default platform in " + p, e);
         assertEquals("correct JAR path", new File(new File(new File(install, "platform"), "core"), "core.jar"), e.getJarLocation());
         p.open(); // check for errors
     }
