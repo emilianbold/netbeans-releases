@@ -38,8 +38,8 @@ Microsystems, Inc. All Rights Reserved.
     </folder>-->
     
     <folder name="Templates">
-        <folder name="JSP_Servlet">
-            <attr name="XHtml.xhtml/CascadeStyleSheet.css" boolvalue="true"/>
+        <folder name="Other">
+            <attr name="xhtml.xhtml/CascadeStyleSheet.css" boolvalue="true"/>
             <file name="CascadeStyleSheet.css" url="CascadeStyleSheet.css.template">
                 <attr name="template" boolvalue="true" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.css.resources.Bundle" />

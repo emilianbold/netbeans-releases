@@ -83,6 +83,10 @@ public class PageIterator implements TemplateWizard.Iterator {
 	return new PageIterator(FileType.XHTML); 
     }
     
+    public static PageIterator createXCssIterator() { 
+	return new PageIterator(FileType.CSS); 
+    }
+    
     private PageIterator(FileType fileType) { 
 	this.fileType = fileType; 
     } 
@@ -99,7 +103,7 @@ public class PageIterator implements TemplateWizard.Iterator {
                 folderPanel
             };
         }
-        else if (fileType.equals(FileType.HTML) || fileType.equals(FileType.XHTML)) {
+        else if (fileType.equals(FileType.HTML) || fileType.equals(FileType.XHTML) || fileType.equals(FileType.CSS)) {
             SourceGroup[] docRoot = sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
             SourceGroup[] srcRoots = Util.getJavaSourceGroups(project);
             if (docRoot != null && srcRoots != null) {

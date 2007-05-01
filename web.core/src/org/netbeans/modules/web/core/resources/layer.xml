@@ -36,6 +36,7 @@ Microsystems, Inc. All Rights Reserved.
       <attr name="TagLibrary.tld/TagFile.tag" boolvalue="true"/>
       <attr name="TagFile.tag/TagHandler.java" boolvalue="true"/>
       <attr name="TagHandler.java/Html.html" boolvalue="true"/>
+      <attr name="XHtml.xhtml/CascadeStyleSheet.css" boolvalue="true"/>
       <file name="JSP.jsp" url="templates/JSP.template">
         <attr name="template" boolvalue="true"/>
         <attr name="templateWizardURL" 
@@ -93,6 +94,16 @@ Microsystems, Inc. All Rights Reserved.
                 methodvalue="org.netbeans.modules.web.wizards.PageIterator.createXHtmlIterator"/>
          <attr name="templateCategory" stringvalue="web-types"/>
       </file>
+      <file name="CascadeStyleSheet.css" url="nbresloc:/org/netbeans/modules/css/resources/CascadeStyleSheet.css.template">
+         <attr name="template" boolvalue="true" />
+         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/css/resources/CSS_template.html" />
+         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/css/resources/css.gif" />
+         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
+         <attr name="templateWizardIterator" 
+                methodvalue="org.netbeans.modules.web.wizards.PageIterator.createXCssIterator"/>
+         <attr name="templateCategory" stringvalue="web-types"/>
+      </file>
+
       <!-- Servlet Listener --> 
       <file name="ServletListener.java" url="templates/ServletListener.template">
           <attr name="template" boolvalue="true"/>

@@ -64,5 +64,7 @@ class FileType {
     public static final FileType XHTML = 
 	new FileType("xhtml", "xhtml"); 
 
+    public static final FileType CSS = 
+	new FileType("css", "css"); 
 } 
 

@@ -447,6 +447,14 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
                     changedUpdate(null);
                 }
             });
+        } else if (fileType.equals(FileType.CSS)) {
+            nameLabel.setText(NbBundle.getMessage(TargetChooserPanelGUI.class, "LBL_CssName"));
+            //listener to update fileTextField
+            locationCB.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                    changedUpdate(null);
+                }
+            });
         } else if (fileType.equals(FileType.XHTML)) {
             nameLabel.setText(NbBundle.getMessage(TargetChooserPanelGUI.class, "LBL_XHtmlName"));
             //listener to update fileTextField

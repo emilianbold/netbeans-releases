@@ -207,6 +207,9 @@ final class TargetChooserPanel implements WizardDescriptor.Panel {
             else if (FileType.HTML.equals(fileType))
                 templateWizard.putProperty ("NewFileWizard_Title", // NOI18N
                     NbBundle.getMessage(TargetChooserPanel.class, "TITLE_HTML"));
+            else if (FileType.CSS.equals(fileType))
+                templateWizard.putProperty ("NewFileWizard_Title", // NOI18N
+                    NbBundle.getMessage(TargetChooserPanel.class, "TITLE_CSS"));
             else if (FileType.XHTML.equals(fileType))
                 templateWizard.putProperty ("NewFileWizard_Title", // NOI18N
                     NbBundle.getMessage(TargetChooserPanel.class, "TITLE_XHTML"));
