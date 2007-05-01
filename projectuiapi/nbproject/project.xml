@@ -122,6 +122,10 @@ Microsystems, Inc. All Rights Reserved.
                       <test/>
                   </test-dependency>
                   <test-dependency>
+                      <code-name-base>org.openide.util</code-name-base>
+                      <test/>
+                  </test-dependency>
+                  <test-dependency>
                       <code-name-base>org.openide.options</code-name-base>
                   </test-dependency>
                   <test-dependency>
