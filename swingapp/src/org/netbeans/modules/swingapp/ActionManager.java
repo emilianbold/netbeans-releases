@@ -490,9 +490,8 @@ public class ActionManager {
         }
     }
 
-    private static String getTaskClassImplCode(String taskName, String ctorCode) {
-        String clsCode =
-            "    private class MyTask extends Task {\n" // NOI18N
+    private static final String TASK_CLASS_TEMPLATE =
+            "    private class MyTask extends Task<Object, Void> {\n" // NOI18N
           + "        MyTask() {\n" // NOI18N
           + "            // Runs on the EDT.  Copy GUI state that\n" // NOI18N
           + "            // doInBackground() depends on from parameters\n" // NOI18N
@@ -510,13 +509,38 @@ public class ActionManager {
           + "            // the result computed by doInBackground().\n" // NOI18N
           + "        }\n" // NOI18N
           + "    }\n"; // NOI18N
+
+    private static String getTaskClassImplCode(String taskName, String ctorCode) {
         if (ctorCode == null) {
             ctorCode = "";
         }
         if (ctorCode.length() > 0 && !ctorCode.endsWith("\n")) { // NOI18N
             ctorCode = ctorCode + "\n"; // NOI18N
         }
-        return clsCode.replace("__CTOR_CODE__", ctorCode) // NOI18N
+        if (ctorCode.length() > 0) { // provisional indentation, PENDING...
+            StringBuilder buf = new StringBuilder();
+            String indent = "            "; // NOI18N
+            int index = 0;
+            boolean lineStart = true;
+            for (int i=0; i < ctorCode.length(); i++) {
+                char c = ctorCode.charAt(i);
+                if (c == '\n') {
+                    if (lineStart) {
+                        buf.append("\n"); // NOI18N
+                    } else {
+                        buf.append(ctorCode.substring(index, i+1));
+                    }
+                    lineStart = true;
+                    index = i + 1;
+                } else if (c > ' ' && lineStart) {
+                    buf.append(indent);
+                    lineStart = false;
+                    index = i;
+                }
+            }
+            ctorCode = buf.toString();
+        }
+        return TASK_CLASS_TEMPLATE.replace("__CTOR_CODE__", ctorCode) // NOI18N
                 .replace("MyTask", taskName); // NOI18N
     }
 
