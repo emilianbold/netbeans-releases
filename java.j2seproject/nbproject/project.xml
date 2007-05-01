@@ -294,6 +294,7 @@ Microsystems, Inc. All Rights Reserved.
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.openide.util</code-name-base>
+                        <test/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.openide.actions</code-name-base>
