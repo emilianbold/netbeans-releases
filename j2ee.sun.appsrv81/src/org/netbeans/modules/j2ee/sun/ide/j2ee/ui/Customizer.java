@@ -13,13 +13,11 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.j2ee.sun.ide.j2ee.ui;
-
-
 
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.swing.JTabbedPane;
@@ -37,6 +35,7 @@ public class Customizer extends JTabbedPane {
 
     private final DeploymentManager dmp;
     private ConnectionTabVisualPanel ctvp;
+    private OptionTabVisualPanel otvp;
 
     public Customizer(DeploymentManager dmp) {
         
@@ -62,6 +61,10 @@ public class Customizer extends JTabbedPane {
                              break;
                     case 3 : helpID = "appsrv81_customizer_javadoc";    // NOI18N
                              break;
+                    case 4 : helpID = "appsrv81_customizer_options";    // NOI18N
+                             break;
+                    default: helpID = "appsrv81_customizer_connection"; // NOI18N
+                             break;
                 }
                 putClientProperty("HelpID", helpID); // NOI18N
             }
@@ -70,6 +73,7 @@ public class Customizer extends JTabbedPane {
 
         CustomizerDataSupport custData = new CustomizerDataSupport(dmpr);
         ctvp = new ConnectionTabVisualPanel(dmp);
+        otvp = new OptionTabVisualPanel(dmp);
         addTab(NbBundle.getMessage(Customizer.class,"TXT_Connection"), ctvp);
         addTab(NbBundle.getMessage(Customizer.class,"TXT_Tab_Classes"), 
                CustomizerSupport.createClassesCustomizer(custData.getClassModel()));
@@ -77,5 +81,6 @@ public class Customizer extends JTabbedPane {
                 CustomizerSupport.createSourcesCustomizer(custData.getSourceModel(), null));
         addTab(NbBundle.getMessage(Customizer.class,"TXT_Tab_Javadoc"), 
                 CustomizerSupport.createJavadocCustomizer(custData.getJavadocsModel(), null));
+        addTab(NbBundle.getMessage(Customizer.class,"TXT_Options"), otvp);
     }
 }

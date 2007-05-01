@@ -13,13 +13,8 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- */
-/*
- * ConnectionTabVisualPanel.java
- *
- * Created on January 7, 2004
  */
 
 package org.netbeans.modules.j2ee.sun.ide.j2ee.ui;
@@ -42,10 +37,12 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
      * use this handle to do so.
      */
     
-    private final DeploymentManagerProperties targetData;
-    private final SunDeploymentManagerInterface dm;
+    transient private final DeploymentManagerProperties targetData;
+    transient private final SunDeploymentManagerInterface dm;
     
-    /** Create the wizard panel and set up some basic properties. */
+    /** Create the wizard panel and set up some basic properties. 
+     * @param dm 
+     */
     public ConnectionTabVisualPanel( DeploymentManager dm) {
         
         this.dm = (SunDeploymentManagerInterface)dm;
@@ -263,7 +260,7 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
 //        dm.setUserName(userName);
         
     }//GEN-LAST:event_userNameFieldKeyReleased
-    /* store username and passord in the model
+    /** store username and passord in the model
      * called when the tab is gone
      **/
     public void syncUpWithModel(){
@@ -275,23 +272,6 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
         targetData.setPassword(adminPassword);
         dm.setPassword(adminPassword);
     }
-    
-    public boolean isValid(){
-        boolean retVal = true;
-        if((userNameField.getText() == null) || (userNameField.getText().trim().equals(""))) {//NOI18N
-            msgLabel.setText(NbBundle.getMessage(ConnectionTabVisualPanel.class, "Msg_ValidUser"));
-            retVal = false;
-        } //else {
-        
-//        char[] passWd = passwordField.getPassword();
-//        String userPassword = new String(passWd);
-        return retVal;
-    }
-    
-    
-    
-    
-    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField domainField;

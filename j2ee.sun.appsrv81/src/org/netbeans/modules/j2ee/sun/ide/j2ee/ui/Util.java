@@ -13,17 +13,15 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * Util.java
- *
- * Created on February 12, 2004, 10:52 AM
- */
+
 package org.netbeans.modules.j2ee.sun.ide.j2ee.ui;
 
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.text.PlainDocument;
 import javax.swing.text.AttributeSet;
@@ -56,7 +54,7 @@ public class Util {
         return new NumericDocument();
     }
     public static class NumericDocument extends PlainDocument {
-        private Toolkit toolkit = Toolkit.getDefaultToolkit();
+        final private Toolkit toolkit = Toolkit.getDefaultToolkit();
         
         public void insertString(int offs, String str, AttributeSet a)
         throws BadLocationException {
@@ -180,7 +178,8 @@ public class Util {
         // prune out unusable entries...
         int realCount = 0;
         for (int i = 0; i < possibles.length; i++) {
-            if (rootOfUsableDomain(possibles[i])) {
+            String mess = rootOfUsableDomain(possibles[i]);
+            if (null == mess) {
                 realCount++;
             } else {
                 possibles[i] = null;
@@ -199,17 +198,22 @@ public class Util {
     
     /** 
      */
-    public static boolean rootOfUsableDomain(File f) {
-        File testFile = new File(f,"logs");
+    static String rootOfUsableDomain(File f) {
+        if (!f.exists()) {
+            return NbBundle.getMessage(Util.class, "ERROR_DOMAIN_ROOT_DOES_NOT_EXIST");
+        }
+        File testFile = new File(f,"config");
+        File testFile2 = new File(testFile,"domain.xml");
+        if (!testFile2.exists())
+            return NbBundle.getMessage(Util.class, "ERROR_CANNOT_FIND_DOMAIN");
+        if (!testFile2.canWrite())
+            return NbBundle.getMessage(Util.class, "ERROR_CANNOT_WRITE_TO_DOMAIN");
         if (!testFile.exists() || !testFile.isDirectory() || !testFile.canWrite())
-            return false;
-        testFile = new File(f,"config");
+            return NbBundle.getMessage(Util.class, "ERROR_CANNOT_WRITE_TO_CONFIG");
+        testFile = new File(f,"logs");
         if (!testFile.exists() || !testFile.isDirectory() || !testFile.canWrite())
-            return false;
-        testFile = new File(testFile,"domain.xml");
-        if (!testFile.exists() || !testFile.canWrite())
-            return false;
-        return true;
+            return NbBundle.getMessage(Util.class, "ERROR_CANNOT_WRITE_TO_LOG");
+        return null;
     }
     
     public static String getHostPort(File domainDir, File platformDir){
@@ -233,6 +237,8 @@ public class Util {
                 java.lang.reflect.Method getHostPort = cc.getMethod("getHostPort", argClass);//NOI18N
                 adminHostPort = (String)getHostPort.invoke(null, argObject);
             }
+        } catch (RuntimeException re) {
+            Logger.getLogger(Util.class.getName()).log(Level.WARNING,"",re);
         }catch(Exception ex){
             //Suppressing exception while trying to obtain admin host port value
         }

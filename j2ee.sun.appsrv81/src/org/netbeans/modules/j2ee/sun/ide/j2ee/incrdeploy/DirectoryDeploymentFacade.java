@@ -36,6 +36,7 @@ import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
 import org.netbeans.modules.j2ee.sun.api.ServerInterface;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.DeploymentManagerProperties;
 
 /**
  *
@@ -45,8 +46,7 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
     
     Object inner = null;
     private File[] resourceDirs = null;
-    private SunDeploymentManagerInterface dm;
-    
+    private DeploymentManager dm;
     
     /** Creates a new instance of DirectoryDeploymentFacade */
     public DirectoryDeploymentFacade(DeploymentManager dm) {
@@ -76,7 +76,7 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
         }
         
         if (manager instanceof SunDeploymentManagerInterface)
-            this.dm = (SunDeploymentManagerInterface) manager;
+            this.dm = manager;
         else
             throw new IllegalArgumentException("setDeploymentManager: Invalid manager type, expecting SunDeploymentManager and got "+manager.getClass().getName());
     }
@@ -108,10 +108,10 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
         //Relying on the assumption that canFileDeploy() is & *will* always get
         //called with appropriate DeployableObject before this method.
         if((resourceDirs != null) && (dm != null)){
-            Utils.registerResources(resourceDirs, (ServerInterface)dm.getManagement());
+            Utils.registerResources(resourceDirs, (ServerInterface)((SunDeploymentManagerInterface)dm).getManagement());
         }
         if (null!=dm){
-            ViewLogAction.viewLog(dm);
+            ViewLogAction.viewLog((SunDeploymentManagerInterface)dm);
         }
         
         return ((IncrementalDeployment)inner).incrementalDeploy(module, changes);
@@ -129,10 +129,10 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
         //Register resources if any
         File[] resourceDirs = Utils.getResourceDirs(app);
         if((resourceDirs != null) && (dm != null)) {
-            Utils.registerResources(resourceDirs, (ServerInterface)dm.getManagement());
+            Utils.registerResources(resourceDirs, (ServerInterface)((SunDeploymentManagerInterface)dm).getManagement());
         }
         if (null != dm){
-            ViewLogAction.viewLog(dm);
+            ViewLogAction.viewLog((SunDeploymentManagerInterface)dm);
         }
         return ((IncrementalDeployment)inner).initialDeploy(target,app,configuration, dir);
     }
@@ -146,9 +146,6 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
     public boolean canFileDeploy(Target target, J2eeModule module) {
         boolean retVal = true;
         if (null == dm){
-            retVal = false;
-        }
-        if (org.netbeans.modules.j2ee.sun.ide.j2ee.PluginProperties.getDefault().isIncrementalDeploy()==false){
             retVal = false;
         }
         if (null == target){
@@ -165,9 +162,14 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
                 retVal = false;
             }
             if (retVal) {
-                retVal = dm.isLocal();
+                retVal = ((SunDeploymentManagerInterface)dm).isLocal();
             }
         }
+        DeploymentManagerProperties dmp = new DeploymentManagerProperties(dm);
+        if (!dmp.isDirectoryDeploymentPossible()) {
+            return false;
+        }
+        
         return retVal;
     }
     

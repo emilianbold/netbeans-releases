@@ -13,13 +13,12 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.j2ee.sun.ide.j2ee;
 import java.util.ResourceBundle;
-import org.openide.nodes.BeanNode;
 import org.openide.util.HelpCtx;
 
 /**
@@ -27,7 +26,6 @@ import org.openide.util.HelpCtx;
  * @author Andrei Badea
  */
 public class PluginOptions  {
-    private static final PluginOptions INSTANCE = new PluginOptions();
 
     public String displayName() {
         return  ResourceBundle.getBundle(
@@ -37,26 +35,6 @@ public class PluginOptions  {
     public HelpCtx getHelpCtx() {
         return null; // new HelpCtx ("AS_RTT_Plugin"); //NOI18N
     } 
-    
-    // !PW Disable visibility of these properties for now.  Edit them via the
-    // security-role-mapping customizer in any project.
-//    public String[] getUserList() {
-//        return PluginProperties.getDefault().getUserList();
-//    }
-//    
-//    public void setUserList(String [] list) {
-//        PluginProperties.getDefault().setUserList(list);
-//       firePropertyChange("displayPreference",null, list);
-//    }
-//    
-//    public String[] getGroupList() {
-//        return PluginProperties.getDefault().getGroupList();
-//    }
-//    
-//    public void setGroupList(String [] list) {
-//        PluginProperties.getDefault().setGroupList(list);
-//       firePropertyChange("groupList",null, list);
-//    }
     
     public String getLogLevel() {
         return PluginProperties.getDefault().getLogLevel();
@@ -74,15 +52,4 @@ public class PluginOptions  {
         PluginProperties.getDefault().setCharsetDisplayPreference(displayPreference);
     }
     
-    public Boolean getIncrementalDeploy(){
-        return PluginProperties.getDefault().getIncrementalDeploy();
-    }
-    
-    public void setIncrementalDeploy(Boolean b) {
-        PluginProperties.getDefault().setIncrementalDeploy(b);
-    }
-
-    private static BeanNode createViewNode() throws java.beans.IntrospectionException {
-        return new BeanNode(INSTANCE);
-    }             
 }

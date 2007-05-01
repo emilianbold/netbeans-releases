@@ -33,7 +33,7 @@ import org.openide.util.NbBundle;
 
 public final class AddInstanceVisualDirectoryPanel extends JPanel {
 
-    private boolean createPersonalInstance;
+    final private boolean createPersonalInstance;
 
     /**
      * Creates new form AddInstanceVisualDirectoryPanel
@@ -82,17 +82,17 @@ public final class AddInstanceVisualDirectoryPanel extends JPanel {
     // Event handling
     //
     private final Set/*<ChangeListener>*/ listeners = new HashSet/*<ChangeListener>*/(1);
-    public final void addChangeListener(ChangeListener l) {
+    public void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
-    public final void removeChangeListener(ChangeListener l) {
+    public void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
         }
     }
-    protected final void fireChangeEvent() {
+    protected void fireChangeEvent() {
         Iterator/*<ChangeListener>*/ it;
         synchronized (listeners) {
             it = new HashSet/*<ChangeListener>*/(listeners).iterator();
@@ -110,7 +110,7 @@ public final class AddInstanceVisualDirectoryPanel extends JPanel {
     
     private String browseDomainLocation(){
         String insLocation = null;
-        JFileChooser chooser = null;
+        JFileChooser chooser;
         if (createPersonalInstance) {
             chooser = new JFileChooser();
         }
@@ -130,11 +130,11 @@ public final class AddInstanceVisualDirectoryPanel extends JPanel {
         return insLocation;
     }
     
-    private class DomainChooser extends JFileChooser {
+    static private class DomainChooser extends JFileChooser {
         public void approveSelection() {
             File dir = FileUtil.normalizeFile(getSelectedFile());
-            
-            if ( Util.rootOfUsableDomain(dir) ) {
+            String mess = Util.rootOfUsableDomain(dir);
+            if (null == mess) {
                 super.approveSelection();
             }
             else {

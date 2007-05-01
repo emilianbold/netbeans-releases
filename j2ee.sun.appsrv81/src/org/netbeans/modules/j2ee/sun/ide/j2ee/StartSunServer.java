@@ -59,6 +59,7 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
@@ -102,9 +103,9 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
     private static final int CMD_RESTART = 3;
     
     /** For how long should we keep trying to get response from the server. */
-    private static final long TIMEOUT_DELAY = 300000;   // 5 minutes
+    //private static final long TIMEOUT_DELAY = 300000;   // 5 minutes
     //longer for profiler mode...
-    private static final long PROFILER_TIMEOUT_DELAY = 600000; //10 minutes
+    //private static final long PROFILER_TIMEOUT_DELAY = 600000; //10 minutes
     private static Map debugInfoMap = Collections.synchronizedMap((Map)new HashMap(2,1));
     private String httpPort =null; //null for not known yet...
     /** Normal mode */
@@ -550,13 +551,15 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
                     // options are used...
                     //
                     try {
-                        Thread.sleep(3000);
-                        
+                        Thread.sleep(3000);                        
                     } catch (Exception e) {
                         Logger.getLogger(StartSunServer.class.getName()).log(Level.FINE,"",e);
                     }
-                                        
-                    if (hasCommandSucceeded()){
+                    
+                    int startupLimit = dmProps.getStartupTimeout();
+                    startupLimit *= 1000;
+                    startupLimit -= 3000;
+                    if (hasCommandSucceeded(startupLimit)){
                         return 0;
                     } else {
                         if (null != io)
@@ -564,6 +567,29 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
                         return -1;
                     }
                 } else {
+                    
+                    // startup timeout support
+                    new Thread(new Runnable() {
+
+                        public void run() {
+                            try {
+                                java.lang.Thread.sleep(dmProps.getStartupTimeout() *
+                                        1000);
+                            } catch (InterruptedException ex) {
+                                // do something here?
+                            }
+                            try {
+                                //process.
+                                int foo = process.exitValue();
+                            } catch (IllegalThreadStateException itse) {
+                                process.destroy();
+                            }
+                        }
+                        
+                    
+                        
+                    });
+
                     // use the return value to determine if we want to make 
                     // sure the command has been successful...  
                     //
@@ -680,14 +706,17 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
      * @return <code>true</code> if START/STOP command completion was verified,
      *         <code>false</code> if time-out ran out.
      */
-    private boolean hasCommandSucceeded() {
+    private boolean hasCommandSucceeded(int timeLeft) {
         SunDeploymentManagerInterface sunDm = (SunDeploymentManagerInterface)this.dm;
-        long to =TIMEOUT_DELAY;
-        if(currentMode==MODE_PROFILE){
-            to = PROFILER_TIMEOUT_DELAY;
-        }
+//        long to =TIMEOUT_DELAY;
+//        if(currentMode==MODE_PROFILE){
+//            to = PROFILER_TIMEOUT_DELAY;
+//        }
         
-        long timeout = System.currentTimeMillis() + to;
+        long timeout = System.currentTimeMillis();
+        if (timeLeft > 0) {
+            timeout += timeLeft;
+        }
         try {
             
             while (true) {
@@ -720,7 +749,11 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
                     return false;
                 }
                 try {
-                    Thread.sleep(1000); // take a nap before next retry
+                    if (timeLeft > 1000) {
+                        Thread.sleep(1000); // take a nap before next retry
+                    } else {
+                        Thread.sleep(timeLeft);
+                    }
                 } catch(InterruptedException ie) {}
             }
         } catch (RuntimeException e) {

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -29,7 +29,6 @@ import java.util.logging.Level;
 
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.sun.api.Asenv;
-import org.netbeans.modules.j2ee.sun.ide.Installer;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.api.SunURIManager;
 import org.netbeans.modules.j2ee.sun.ide.editors.CharsetDisplayPreferenceEditor;
@@ -55,9 +54,8 @@ public class PluginProperties  {
         java.util.logging.Logger.getLogger("com.sun.enterprise.tools.jsr88.spi");
     
     private  String logLevel = null;
-    private  boolean incrementalDeployPossible = true; //now on by default
     
-    private  FileObject propertiesFile = null;
+    final private  FileObject propertiesFile;
     /* for handling import issues between 5.0 and 5.5. Now we know which IDE the options are from in import.
      **/
     private static final String PLUGIN_PROPERTIES_VERSION = "version"; // NOI18N
@@ -66,12 +64,11 @@ public class PluginProperties  {
      *
      **/
     private static final String PLUGIN_CURRENT_VERSION = "5.5"; // NOI18N
-    private static final String INCREMENTAL = "incrementalDeploy"; // NOI18N
     private static final String PRINCIPAL_PREFIX = "principalEntry."; // NOI18N
     private static final String GROUP_PREFIX = "groupEntry."; // NOI18N
     private static final String LOG_LEVEL_KEY = "logLevel";  // NOI18N
     private static final String CHARSET_DISP_PREF_KEY = "charsetDisplayPreference"; // NOI18N
-    public static final String INSTALL_ROOT_PROP_NAME = "com.sun.aas.installRoot"; //NOI18N
+    private static final String INSTALL_ROOT_PROP_NAME = "com.sun.aas.installRoot"; //NOI18N
     
     public static final String COBUNDLE_DEFAULT_INSTALL_PATH ="AS9.0";  //NOI18N
     public static final String COBUNDLE_DEFAULT_INSTALL_PATH2 ="AS8.2";  //NOI18N
@@ -91,19 +88,19 @@ public class PluginProperties  {
     
     private  PluginProperties(){
         java.io.InputStream inStream = null;
+        propertiesFile = getPropertiesFile();
         try {
             try {
-                propertiesFile = getPropertiesFile();
                 if (null != propertiesFile){
                     inStream = propertiesFile.getInputStream();
                 }
             } catch (java.io.FileNotFoundException fnfe) {
                 Constants.pluginLogger.info(NbBundle.getMessage(PluginProperties.class, "INFO_NO_PROPERTY_FILE")); //NOI18N
-            } catch (java.io.IOException ioe) {
+            } catch (java.io.IOException ioe) {                
                 Constants.pluginLogger.info(NbBundle.getMessage(PluginProperties.class, "ERR_READING_PROPERTIES")); //NOI18N
                 Constants.pluginLogger.throwing(PluginProperties.class.getName(), "<init>", //NOI18N
                         ioe);
-            } finally {
+            } finally {               
                 Properties inProps = new Properties();
                 if (null != inStream){
                     inProps.load(inStream);
@@ -117,15 +114,20 @@ public class PluginProperties  {
         
     }
     
-    private FileObject getPropertiesFile() throws java.io.IOException {
+    private FileObject getPropertiesFile() { // throws java.io.IOException {
         FileSystem fs = Repository.getDefault().getDefaultFileSystem();
         FileObject dir = fs.findResource("J2EE");
         FileObject retVal = null;
         if (null != dir) {
             retVal = dir.getFileObject("platform","properties"); // NOI18N
             if (null == retVal) {
-                retVal = dir.createData("platform","properties"); //NOI18N
-                               
+                try {
+                    retVal = dir.createData("platform","properties"); //NOI18N
+                } catch (IOException ioe) {
+                    Constants.pluginLogger.info(NbBundle.getMessage(PluginProperties.class, "ERR_READING_PROPERTIES")); //NOI18N
+                    Constants.pluginLogger.throwing(PluginProperties.class.getName(), "<init>", //NOI18N
+                            ioe);
+                }
             }
         }
         return retVal;
@@ -139,8 +141,6 @@ public class PluginProperties  {
         String[] inputGroups = getArrayPropertyValue(inProps, GROUP_PREFIX);
         
         setCharsetDisplayPreferenceStatic(Integer.valueOf(inProps.getProperty(CHARSET_DISP_PREF_KEY, "1")));
-        String b= inProps.getProperty(INCREMENTAL,"true");//true by default
-        incrementalDeployPossible = b.equals("true");
         String version = inProps.getProperty(PLUGIN_PROPERTIES_VERSION);//old style 5.0: we need to import and refresh
         boolean needToRegisterDefaultServer = false;
 
@@ -184,24 +184,7 @@ public class PluginProperties  {
         PluginProperties.getDefault();//call needed for init for this
 
     }
-    
-    public void setIncrementalDeploy(Boolean b){
         
-        incrementalDeployPossible = b.booleanValue();
-        saveProperties();
-        
-    }
-    public Boolean getIncrementalDeploy(){
-        return Boolean.valueOf(incrementalDeployPossible);
-        
-    }
-    
-    public  boolean isIncrementalDeploy(){
-        return incrementalDeployPossible;
-        
-    }
-    
-    
     /** Getter for property userList.
      * @return Value of property userList.
      *
@@ -360,7 +343,6 @@ public class PluginProperties  {
         setArrayPropertyValue(outProp, PRINCIPAL_PREFIX, getUserList());
         
         setArrayPropertyValue(outProp, GROUP_PREFIX, getGroupList());
-        outProp.setProperty(INCREMENTAL, ""+incrementalDeployPossible);
         
         if (!logLevel.equals(Level.OFF.toString())){
             outProp.setProperty(LOG_LEVEL_KEY, logLevel);
@@ -397,8 +379,6 @@ public class PluginProperties  {
         } catch (java.io.IOException ioe) {
             Constants.pluginLogger.throwing(PluginProperties.class.toString(), "saveChange",ioe);
         }
-        
-        
     }
     
 
@@ -407,13 +387,11 @@ public class PluginProperties  {
     
     public  static String getDefaultInstallRoot() {
         String candidate = System.getProperty(INSTALL_ROOT_PROP_NAME); //NOI18N
-        if (null != candidate){
-            
+        if (null != candidate){            
             File f = new File(candidate);
             if (f.exists()){
                 return candidate;
-            }
-            
+            }            
         }
         
         File ff = new File(System.getProperty("netbeans.home"));

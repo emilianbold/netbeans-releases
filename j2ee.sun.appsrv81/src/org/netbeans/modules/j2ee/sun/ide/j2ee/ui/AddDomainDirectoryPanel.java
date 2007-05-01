@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -42,7 +42,7 @@ class AddDomainDirectoryPanel implements WizardDescriptor.FinishablePanel,
      */
     private AddInstanceVisualDirectoryPanel component;
     private WizardDescriptor wiz;
-    private boolean creatingPersonalInstance;
+    final private boolean creatingPersonalInstance;
     
     AddDomainDirectoryPanel(boolean creatingPersonalInstance) {
         this.creatingPersonalInstance = creatingPersonalInstance;
@@ -73,32 +73,34 @@ class AddDomainDirectoryPanel implements WizardDescriptor.FinishablePanel,
      * 
      */
     public boolean isValid() {
-        File domainDir = new File(component.getInstanceDirectory());
+        if (null == wiz) {
+            return false;
+        }
+        File domainDir = new File(((AddInstanceVisualDirectoryPanel)getComponent()).getInstanceDirectory());
         if (!creatingPersonalInstance) {
-            if (component.getInstanceDirectory().length() < 1) {
+            if (((AddInstanceVisualDirectoryPanel)getComponent()).getInstanceDirectory().length() < 1) {
                 wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
                         NbBundle.getMessage(AddDomainDirectoryPanel.class,
                         "Msg_EneterValidDomainDir",                                 //NOI18N
-                        component.getInstanceDirectory()));
-                component.setAdminPort("");
+                        ((AddInstanceVisualDirectoryPanel)getComponent()).getInstanceDirectory()));
+                ((AddInstanceVisualDirectoryPanel)getComponent()).setAdminPort("");
                 return false;                
             }
-            if (!Util.rootOfUsableDomain(domainDir)) {
+            String mess = Util.rootOfUsableDomain(domainDir);
+            if (null != mess) {
                 wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
-                        NbBundle.getMessage(AddDomainDirectoryPanel.class,
-                        "Msg_InValidDomainDir",                                 //NOI18N
-                        component.getInstanceDirectory()));
-                component.setAdminPort("");                                     // NOI18N
+                        mess);
+                ((AddInstanceVisualDirectoryPanel)getComponent()).setAdminPort("");                                     // NOI18N
                 return false;
             }
             Util.fillDescriptorFromDomainXml(wiz, domainDir);
             String port = (String)wiz.getProperty(AddDomainWizardIterator.PORT);
-            component.setAdminPort(port);
+            ((AddInstanceVisualDirectoryPanel)getComponent()).setAdminPort(port);
             if ("".equals(port)) {                                              // NOI18N
                 wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
                         NbBundle.getMessage(AddDomainDirectoryPanel.class,
                         "Msg_UnsupportedDomain",                                 //NOI18N
-                        component.getInstanceDirectory()));   
+                        ((AddInstanceVisualDirectoryPanel)getComponent()).getInstanceDirectory()));   
                 return false;
             }
             return true;
@@ -115,7 +117,7 @@ class AddDomainDirectoryPanel implements WizardDescriptor.FinishablePanel,
                 wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
                         NbBundle.getMessage(AddDomainDirectoryPanel.class,
                         "Msg_InValidDomainDir",                                 //NOI18N
-                        component.getInstanceDirectory()));
+                        ((AddInstanceVisualDirectoryPanel)getComponent()).getInstanceDirectory()));
                 return false;
             }
             if (!parent.exists()) {

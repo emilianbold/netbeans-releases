@@ -1,3 +1,4 @@
+// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
@@ -16,11 +17,7 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * DeploymentManagerProperties.java
- *
- * Created on January 5, 2004, 3:47 PM
- */
+// </editor-fold>
 
 package org.netbeans.modules.j2ee.sun.ide.j2ee;
 import java.io.File;
@@ -33,7 +30,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationException;
 
 import javax.enterprise.deploy.spi.DeploymentManager;
-import org.netbeans.modules.j2ee.sun.api.Asenv;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.netbeans.modules.j2ee.sun.api.SunURIManager;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.CustomizerSupport;
@@ -94,39 +90,36 @@ public class DeploymentManagerProperties {
     private static final String PROP_SOURCES       = "sources";         // NOI18N
     private static final String PROP_JAVADOCS      = "javadocs";        // NOI18N
     
-    private InstanceProperties instanceProperties;
-    private SunDeploymentManagerInterface SunDM;
-    
+    final private InstanceProperties instanceProperties;
+    final private SunDeploymentManagerInterface sunDM;
+
     /** Creates a new instance of DeploymentManagerProperties */
     public DeploymentManagerProperties(DeploymentManager deploymentManager) {
-        SunDM = (SunDeploymentManagerInterface)deploymentManager;
-        instanceProperties = SunURIManager.getInstanceProperties(SunDM.getPlatformRoot(),SunDM.getHost(),SunDM.getPort());
-        String httpport =  SunDM.getNonAdminPortNumber();
+        sunDM = (SunDeploymentManagerInterface)deploymentManager;
+        InstanceProperties ip = SunURIManager.getInstanceProperties(sunDM.getPlatformRoot(),
+                sunDM.getHost(),sunDM.getPort());
+        String httpport =  sunDM.getNonAdminPortNumber();
         if (httpport==null){
             httpport ="8080";//hard code //NOI18N
         }
-        if (instanceProperties==null){
-            try {
-                
-                instanceProperties = SunURIManager.createInstanceProperties(SunDM.getPlatformRoot(),SunDM.getHost(),""+SunDM.getPort(), SunDM.getUserName(),SunDM.getPassword() , SunDM.getHost()+":"+SunDM.getPort() );
-                setHttpPortNumber( httpport);
-                
-                
+        if (ip==null){
+            try {                
+                ip = 
+                        SunURIManager.createInstanceProperties(sunDM.getPlatformRoot(),
+                            sunDM.getHost(),""+sunDM.getPort(), sunDM.getUserName(),
+                            sunDM.getPassword() , sunDM.getHost()+":"+sunDM.getPort() );
+                if (null != ip) {
+                    ip.setProperty(HTTP_PORT_NUMBER_ATTR, httpport);
+                }
             } catch (InstanceCreationException e){
-                
             }
         }
-        if (instanceProperties.getProperty(HTTP_PORT_NUMBER_ATTR)==null){
-            instanceProperties.setProperty(HTTP_PORT_NUMBER_ATTR, httpport);
-            
+        if (ip != null && ip.getProperty(HTTP_PORT_NUMBER_ATTR)==null){
+            ip.setProperty(HTTP_PORT_NUMBER_ATTR, httpport);            
         }
+        instanceProperties = ip;
     }
     
-    /** Creates a new instance of DeploymentManagerProperties via a URI for deployment MAnager */
-//    public DeploymentManagerProperties(String uri) {
-//        instanceProperties = InstanceProperties.getInstanceProperties(uri);
-//
-//    }
     /**
      * Getter for property domainName. Should never be null
      * @return Value of property domainName.
@@ -156,7 +149,7 @@ public class DeploymentManagerProperties {
      * @return Value of property location.
      */
     public java.lang.String getLocation() {
-        java.io.File irf = SunDM.getPlatformRoot();
+        java.io.File irf = sunDM.getPlatformRoot();
         String installRoot = null;
         if (null != irf && irf.exists()){
             installRoot = irf.getAbsolutePath();
@@ -201,22 +194,7 @@ public class DeploymentManagerProperties {
         instanceProperties.setProperty(InstanceProperties.PASSWORD_ATTR, password);
         
     }
-    
-    /**
-     * Getter for property port.
-     * @return Value of property port.
-     */
-    //   public int getPort() {
-    //       return 0;
-    //   }
-    
-    /**
-     * Setter for property port.
-     * @param port New value of property port.
-     */
-    //  public void setPort(int port) {
-    //  }
-    
+        
     /**
      * Getter for property UserName. can be null for a disconnected DM.
      * @return Value of property UserName.
@@ -296,28 +274,28 @@ public class DeploymentManagerProperties {
     public void setAVKOn(boolean AVKOn) {
         instanceProperties.setProperty(AVK_INSTRUMENTED_ATTR, Boolean.toString(AVKOn));
     }
-
+    
     public void setJavadocs(List<URL> path) {
         instanceProperties.setProperty(PROP_JAVADOCS, CustomizerSupport.buildPath(path));
-        PlatformImpl platform = (PlatformImpl) new PlatformFactory().getJ2eePlatformImpl((DeploymentManager) SunDM); 
+        PlatformImpl platform = (PlatformImpl) new PlatformFactory().getJ2eePlatformImpl((DeploymentManager) sunDM);
         platform.notifyLibrariesChanged();
     }
-
+    
     public void setSources(List<URL> path) {
         instanceProperties.setProperty(PROP_SOURCES, CustomizerSupport.buildPath(path));
-        PlatformImpl platform = (PlatformImpl) new PlatformFactory().getJ2eePlatformImpl((DeploymentManager) SunDM); 
+        PlatformImpl platform = (PlatformImpl) new PlatformFactory().getJ2eePlatformImpl((DeploymentManager) sunDM);
         platform.notifyLibrariesChanged();
     }
-
+    
     public List<URL> getClasses() {
         List data = new ArrayList();
-        PlatformImpl platform = (PlatformImpl) new PlatformFactory().getJ2eePlatformImpl((DeploymentManager) SunDM); 
+        PlatformImpl platform = (PlatformImpl) new PlatformFactory().getJ2eePlatformImpl((DeploymentManager) sunDM);
         for (LibraryImplementation libImpl : platform.getLibraries()) {
             data.addAll(libImpl.getContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH));
         }
         return data;
     }
-
+    
     public List<URL> getSources() {
         String path = instanceProperties.getProperty(PROP_SOURCES);
         if (path == null) {
@@ -325,12 +303,12 @@ public class DeploymentManagerProperties {
         }
         return CustomizerSupport.tokenizePath(path);
     }
-
+    
     public List<URL> getJavadocs() {
         String path = instanceProperties.getProperty(PROP_JAVADOCS);
-        if (path == null) {                
+        if (path == null) {
             ArrayList<URL> list = new ArrayList<URL>();
-            try {                
+            try {
                 File j2eeDoc = InstalledFileLocator.getDefault().locate("docs/javaee5-doc-api.zip", null, false); // NOI18N
                 if (j2eeDoc != null) {
                     list.add(fileToUrl(j2eeDoc));
@@ -352,17 +330,18 @@ public class DeploymentManagerProperties {
         return url;
     }
     
-    /*
+    /**
      * return true is the IDE needs to sync up this instance with the same proxies as the IDE
      * true by default
      **/
-        public boolean isSyncHttpProxyOn() {
+    public boolean isSyncHttpProxyOn() {
         if (instanceProperties == null){
             return true;//true by default
         }
         String s = instanceProperties.getProperty(HTTP_PROXY_SYNCHED_ATTR);
         if (s == null){
-            return true;//true by default
+            instanceProperties.setProperty(HTTP_PROXY_SYNCHED_ATTR,"true");     // NOI18N
+            s = instanceProperties.getProperty(HTTP_PROXY_SYNCHED_ATTR);
         }
         return Boolean.valueOf(s).booleanValue();
     }
@@ -371,21 +350,70 @@ public class DeploymentManagerProperties {
         instanceProperties.setProperty(HTTP_PROXY_SYNCHED_ATTR, Boolean.toString(syncHttpProxyOn));
     }
     
-    /*
+    /**
      * return true is this instance can utilized directory deployment for Web Apps (for now)
      * true by default
-     **/
-        public boolean isDirectoryDeploymentPossible() {
+     ** @return 
+     */
+    public boolean isDirectoryDeploymentPossible() {
         if (instanceProperties == null){
             return true;//true by default
         }
         String s = instanceProperties.getProperty(DIRDEPLOYMENT_POSSIBLE_ATTR);
         if (s == null){
-            return true;//true by default
+            instanceProperties.setProperty(DIRDEPLOYMENT_POSSIBLE_ATTR, sunDM.isLocal()+"");
+            s = instanceProperties.getProperty(DIRDEPLOYMENT_POSSIBLE_ATTR);
         }
         return Boolean.valueOf(s).booleanValue();
     }
     
+    /**
+     * 
+     * @param dirpossible 
+     */
     public void setDirectoryDeploymentPossible(boolean dirpossible) {
         instanceProperties.setProperty(DIRDEPLOYMENT_POSSIBLE_ATTR, Boolean.toString(dirpossible));
-    }}
+    }
+    
+    /**
+     * 
+     * @return 
+     */
+    public int getDeploymentTimeout() {
+        String s = instanceProperties.getProperty(InstanceProperties.DEPLOYMENT_TIMEOUT);
+        if (s == null){
+            instanceProperties.setProperty(InstanceProperties.DEPLOYMENT_TIMEOUT, Integer.toString(144));
+            s = instanceProperties.getProperty(InstanceProperties.DEPLOYMENT_TIMEOUT);
+        }
+        return Integer.parseInt(s);
+    }
+    
+    /**
+     * 
+     * @param newVal 
+     */
+    public void setDeploymentTimeout(int newVal) {
+        instanceProperties.setProperty(InstanceProperties.DEPLOYMENT_TIMEOUT, Integer.toString(newVal));
+    }
+    
+    /**
+     * 
+     * @return 
+     */
+    public int getStartupTimeout() {
+        String s = instanceProperties.getProperty(InstanceProperties.STARTUP_TIMEOUT);
+        if (s == null){
+            instanceProperties.setProperty(InstanceProperties.STARTUP_TIMEOUT, Integer.toString(288));
+            s = instanceProperties.getProperty(InstanceProperties.STARTUP_TIMEOUT);
+        }
+        return Integer.parseInt(s);
+    }
+    
+    /**
+     * 
+     * @param newVal 
+     */
+    public void setStartupTimeout(int newVal) {
+        instanceProperties.setProperty(InstanceProperties.STARTUP_TIMEOUT, Integer.toString(newVal));
+    }
+}

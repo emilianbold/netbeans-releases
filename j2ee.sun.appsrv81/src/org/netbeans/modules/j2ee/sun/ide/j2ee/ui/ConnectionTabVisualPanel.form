@@ -36,14 +36,14 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="domainField" alignment="0" pref="358" max="32767" attributes="0"/>
-                          <Component id="domainLocField" alignment="1" pref="358" max="32767" attributes="0"/>
+                          <Component id="domainField" alignment="0" pref="378" max="32767" attributes="0"/>
+                          <Component id="domainLocField" alignment="1" pref="378" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="socketField" pref="358" max="32767" attributes="1"/>
+                              <Component id="socketField" pref="378" max="32767" attributes="1"/>
                           </Group>
-                          <Component id="passwordField" alignment="0" pref="358" max="32767" attributes="2"/>
-                          <Component id="userNameField" alignment="0" pref="358" max="32767" attributes="1"/>
+                          <Component id="passwordField" alignment="0" pref="378" max="32767" attributes="2"/>
+                          <Component id="userNameField" alignment="0" pref="378" max="32767" attributes="1"/>
                       </Group>
                   </Group>
               </Group>

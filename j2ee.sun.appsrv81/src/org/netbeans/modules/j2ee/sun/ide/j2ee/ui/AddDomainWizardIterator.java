@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.j2ee.sun.ide.j2ee.ui;
@@ -22,7 +22,6 @@ import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
 import java.text.MessageFormat;
 import java.util.HashSet;
@@ -53,6 +52,11 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 
+/**
+ * Iterator for registering an SJSAS/GF domain
+ * 
+ * @author vkraemer
+ */
 public final class AddDomainWizardIterator implements
         WizardDescriptor.InstantiatingIterator,ChangeListener {
     
@@ -70,6 +74,7 @@ public final class AddDomainWizardIterator implements
     final static String PLATFORM_LOCATION = "platform_location";                //NOI18N
     final static String INSTALL_LOCATION = "install_location";                  //NOI18N
     final static String DOMAIN = "domain";                                      //NOI18N
+    final static String PROFILE = "profile";                                    //NOI18N
     final static String INSTANCE_PORT = "instance_port";                        //NOI18N
     final static String JMS_PORT = "jms_port";                                  //NOI18N
     final static String ORB_LISTENER_PORT = "orb_listener_port";                //NOI18N
@@ -82,32 +87,32 @@ public final class AddDomainWizardIterator implements
     final static String PROP_DISPLAY_NAME = "ServInstWizard_displayName";       // NOI18N
     
     
-    private AddDomainHostPortPanel hppanel =
+    final private AddDomainHostPortPanel hppanel =
             new AddDomainHostPortPanel();
-    private AddDomainDirectoryPanel domainDirPanel =
+    final private AddDomainDirectoryPanel domainDirPanel =
             new AddDomainDirectoryPanel(false);
-    private AddDomainDirectoryPanel personalDirPanel =
+    final private AddDomainDirectoryPanel personalDirPanel =
             new AddDomainDirectoryPanel(true);
-    private AddDomainPlatformPanel platformPanel =
+    final private AddDomainPlatformPanel platformPanel =
             new AddDomainPlatformPanel();
-    private AddDomainNamePasswordPanel unamePanel =
+    final private AddDomainNamePasswordPanel unamePanel =
             new AddDomainNamePasswordPanel();
-    private AddDomainPortsDefPanel portsPanel =
+    final private AddDomainPortsDefPanel portsPanel =
             new AddDomainPortsDefPanel();
     
-    private WizardDescriptor.Panel[] defaultFlow = {
+    final private WizardDescriptor.Panel[] defaultFlow = {
         platformPanel, /*defaultPanel,*/ unamePanel
     };
     
-    private WizardDescriptor.Panel[] remoteFlow = {
+    final private WizardDescriptor.Panel[] remoteFlow = {
         platformPanel, hppanel, unamePanel
     };
     
-    private WizardDescriptor.Panel[] localFlow = {
+    final private WizardDescriptor.Panel[] localFlow = {
         platformPanel, domainDirPanel, unamePanel
     };
     
-    private WizardDescriptor.Panel[] personalFlow = {
+    final private WizardDescriptor.Panel[] personalFlow = {
         platformPanel, personalDirPanel, unamePanel, portsPanel
     };
     /**
@@ -160,18 +165,18 @@ public final class AddDomainWizardIterator implements
     // the number of panels changes in response to user input, then uncomment
     // the following and call when needed: fireChangeEvent();
     //
-    private transient Set/*<ChangeListener>*/ listeners = new HashSet/*<ChangeListener>*/(1);
-    public final void addChangeListener(ChangeListener l) {
+    private Set/*<ChangeListener>*/ listeners = new HashSet/*<ChangeListener>*/(1);
+    public void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
-    public final void removeChangeListener(ChangeListener l) {
+    public void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
         }
     }
-    protected final void fireChangeEvent() {
+    protected void fireChangeEvent() {
         Iterator/*<ChangeListener>*/ it;
         synchronized (listeners) {
             it = new HashSet/*<ChangeListener>*/(listeners).iterator();
@@ -184,6 +189,9 @@ public final class AddDomainWizardIterator implements
     }
     
     public void stateChanged(ChangeEvent e) {
+        if (null == wizard) {
+            return;
+        }
         if (wizard.getProperty(TYPE) == REMOTE) { //  && panels != remoteFlow) {
             panels = remoteFlow;
             decoratePanels(remoteFlow);
@@ -201,8 +209,8 @@ public final class AddDomainWizardIterator implements
             decoratePanels(personalFlow);
             fireChangeEvent();
         } else {
-            System.out.println("THIS CANNOT BE TRUE!");
             panels = defaultFlow;
+            decoratePanels(defaultFlow);
             fireChangeEvent();
         }
     }
@@ -217,7 +225,7 @@ public final class AddDomainWizardIterator implements
                 JComponent jc = (JComponent) c;
                 // Sets step number of a component
                 jc.putClientProperty("WizardPanel_contentSelectedIndex",        //NOI18N
-                        new Integer(i));
+                        Integer.valueOf(i));
                 // Sets steps names for a panel
                 jc.putClientProperty("WizardPanel_contentData", steps);         //NOI18N
                 // Turn on subtitle creation on each step
@@ -241,6 +249,7 @@ public final class AddDomainWizardIterator implements
     }
     
     public void uninitialize(WizardDescriptor wizard) {
+        this.wizard = wizard;
     }
     
     private WizardDescriptor  wizard;
@@ -250,7 +259,10 @@ public final class AddDomainWizardIterator implements
     }
     
     public java.util.Set instantiate() {
-        InstanceProperties ip = createInstance();
+        InstanceProperties ip = null;
+        if (null != wizard) {
+            ip = createInstance();
+        }
         Set result = new HashSet();
         if (ip != null) {
             result.add(ip);
@@ -363,9 +375,9 @@ public final class AddDomainWizardIterator implements
         
     private class CreateDomain extends Thread {
         
-        private String uname;
+        final private String uname;
         
-        private String pword;
+        final private String pword;
         
         CreateDomain(String uname, String pword) {
             this.uname = uname;
@@ -384,7 +396,7 @@ public final class AddDomainWizardIterator implements
                         File.separator +
                         "asadmin";                                                  //NOI18N
                 
-                if (File.separator.equals("\\")) {                                  //NOI18N
+                if ("\\".equals(File.separator)) {                                  //NOI18N
                     asadminCmd = asadminCmd + ".bat";                               //NOI18N
                 }
                 String domain = (String) wizard.getProperty(DOMAIN);
@@ -420,6 +432,21 @@ public final class AddDomainWizardIterator implements
                         ((String)wizard.getProperty(ADMIN_JMX_PORT)).trim(),
                 domain
                 };
+                Integer detectedVersion = 
+                        ServerLocationManager.getAppServerPlatformVersion(irf);
+                // stop a warning about deprecated options...
+                if (detectedVersion.equals((Integer) ServerLocationManager.GF_V2)) {
+                    arrnd[6] = "--user";
+                }
+                Profile selectedProfile  = (Profile) wizard.getProperty(PROFILE);
+                if (selectedProfile != Profile.DEFAULT) {
+                    String arrnd2[] = new String[arrnd.length+2];
+                    System.arraycopy(arrnd, 0, arrnd2, 0, arrnd.length);
+                    arrnd2[arrnd2.length-1] = arrnd2[arrnd2.length-3];
+                    arrnd2[arrnd2.length-3] = "--profile";
+                    arrnd2[arrnd2.length-2] = selectedProfile.value();
+                    arrnd = arrnd2;
+                }
                 ProgressHandle ph = null;
                 try {
                     ExecSupport ee= new ExecSupport();
@@ -461,13 +488,13 @@ public final class AddDomainWizardIterator implements
                 }
                 
                 if (null != pdcan) {
-                    if (0 != retVal && pdcan.notFired()) {
+                    if (0 != retVal && pdcan.isNotFired()) {
                         Util.showError(NbBundle.getMessage(this.getClass(),
                                 "WARN_DELETE_INSTANCE",                                 //NOI18N
                                 (String)wizard.getProperty(PROP_DISPLAY_NAME)),
                                 NbBundle.getMessage(this.getClass(),
                                 "WARN_DELETE_INSTANCE_TITLE"));                         //NOI18N
-                    } else if (pdcan.notFired()) {
+                    } else if (pdcan.isNotFired()) {
                         try {
                             createIP(uname,pword);
                         } catch (InstanceCreationException ex) {
@@ -485,9 +512,9 @@ public final class AddDomainWizardIterator implements
     
     static class PDCancel implements Cancellable {
         
-        private Process p;
+        final private Process p;
         
-        private String dirname;
+        final private String dirname;
         
         private boolean notFired = true;
         
@@ -496,7 +523,7 @@ public final class AddDomainWizardIterator implements
             this.dirname = newDirName;
         }
         
-        synchronized public boolean notFired() {
+        synchronized public boolean isNotFired() {
             return notFired;
         }
         
@@ -526,14 +553,12 @@ public final class AddDomainWizardIterator implements
         /** Generated serialVersionUID */
         static final long serialVersionUID = 1555749205340031767L;
         
-        java.util.ResourceBundle bundle = org.openide.util.NbBundle.getBundle(AdminAuthenticator.class);
-        
         /** Creates new form PasswordPanel */
         public PasswordPanel() {
             initComponents();
             
-            usernameField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_UserNameField"));
-            passwordField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_PasswordField"));
+            usernameField.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(AdminAuthenticator.class).getString("ACSD_UserNameField"));
+            passwordField.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(AdminAuthenticator.class).getString("ACSD_PasswordField"));
         }
         
         public java.awt.Dimension getPreferredSize() {
@@ -565,7 +590,7 @@ public final class AddDomainWizardIterator implements
             
             jLabel1 = new javax.swing.JLabel();
             org.openide.awt.Mnemonics.setLocalizedText(jLabel1, 
-                    bundle.getString("LAB_AUTH_User_Name")); // NOI18N            
+                    NbBundle.getBundle(AdminAuthenticator.class).getString("LAB_AUTH_User_Name")); // NOI18N            
             gridBagConstraints1 = new java.awt.GridBagConstraints();
             gridBagConstraints1.insets = new java.awt.Insets(0, 0, 5, 12);
             gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
@@ -586,7 +611,7 @@ public final class AddDomainWizardIterator implements
             
             jLabel2 = new javax.swing.JLabel();
             org.openide.awt.Mnemonics.setLocalizedText(jLabel2, 
-                    bundle.getString("LAB_AUTH_Password")); // NOI18N            
+                    NbBundle.getBundle(AdminAuthenticator.class).getString("LAB_AUTH_Password")); // NOI18N            
             gridBagConstraints1 = new java.awt.GridBagConstraints();
             gridBagConstraints1.insets = new java.awt.Insets(0, 0, 0, 12);
             gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
@@ -632,7 +657,7 @@ public final class AddDomainWizardIterator implements
         void setPrompt( String prompt ) {
             if ( prompt == null ) {
                 promptLabel.setVisible( false );
-                getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_NbAuthenticatorPasswordPanel"));
+                getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(AdminAuthenticator.class).getString("ACSD_NbAuthenticatorPasswordPanel"));
             } else {
                 promptLabel.setVisible( true );
                 promptLabel.setText( prompt );
