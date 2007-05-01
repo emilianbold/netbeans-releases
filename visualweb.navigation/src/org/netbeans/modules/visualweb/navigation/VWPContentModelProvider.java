@@ -25,7 +25,7 @@ public class VWPContentModelProvider implements PageContentModelProvider{
     
     /** Creates a new instance of PageContentProviderImpl */
     public VWPContentModelProvider() {
-        System.out.println("You found me.");
+//        System.out.println("You found me.");
     }
     
     public PageContentModel getPageContentModel(FileObject fileObject) {
