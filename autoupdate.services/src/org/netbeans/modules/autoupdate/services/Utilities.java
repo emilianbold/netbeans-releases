@@ -257,6 +257,7 @@ public class Utilities {
         return takeModuleInfo (el).getDependencies();
     }
     
+    @SuppressWarnings ("deprecation") //Dependency.TYPE_IDE must be handled for backward compatability
     private static UpdateElement findRequiredModule (Dependency dep, List<ModuleInfo> installedModules) {
         switch (dep.getType ()) {
             case (Dependency.TYPE_REQUIRES) :

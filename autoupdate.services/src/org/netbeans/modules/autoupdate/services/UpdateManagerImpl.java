@@ -52,7 +52,7 @@ public class UpdateManagerImpl extends Object {
             tmpUpdateUnits = updateUnits;
         }        
         if (tmpUpdateUnits == null || tmpUpdateUnits.get() == null) {
-            tmpUpdateUnits = new WeakReference(UpdateUnitFactory.getDefault().getUpdateUnits());
+            tmpUpdateUnits = new WeakReference<Map<String, UpdateUnit>> (UpdateUnitFactory.getDefault().getUpdateUnits());
             synchronized(UpdateManagerImpl.class) {
                 updateUnits = tmpUpdateUnits;
             }
@@ -64,7 +64,7 @@ public class UpdateManagerImpl extends Object {
         final Map<String, UpdateUnit> m = reference.get();
         List<UpdateUnit>  retval = null;
         if (m != null) {
-            retval = new ArrayList(m.values()) {
+            retval = new ArrayList<UpdateUnit> (m.values()) {
                 Map<String, UpdateUnit> keepIt = m;
                 //Collections.list(Collections.enumeration(m.values()));
             };
