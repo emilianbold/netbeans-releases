@@ -21,6 +21,7 @@ package org.netbeans.modules.java.navigation;
 
 import com.sun.javadoc.Doc;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -51,6 +52,7 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
     private boolean canceled;
     
     private ElementHandle<Element> lastEh;
+    private ElementHandle<Element> lastEhForNavigator;
     
     CaretListeningTask(CaretListeningFactory whichElementJavaSourceTaskFactory,FileObject fileObject) {
         this.caretListeningFactory = whichElementJavaSourceTaskFactory;
@@ -60,13 +62,16 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
     public void run(CompilationInfo compilationInfo) {
         resume();
         
-        boolean navigatorShouldUpdate = false;
+        boolean navigatorShouldUpdate = ClassMemberPanel.getInstance() != null; // XXX set by navigator visible
         boolean javadocShouldUpdate = JavadocTopComponent.shouldUpdate();
         boolean declarationShouldUpdate = DeclarationTopComponent.shouldUpdate();
         
         if ( isCancelled() || ( !navigatorShouldUpdate && !javadocShouldUpdate && !declarationShouldUpdate ) ) {
             return;
         }
+        
+        // XXX Test for the token and increment the position if in whitespace and
+        // next token is something interesting.
         
         // Find the TreePath for the caret position
         TreePath tp =
@@ -76,20 +81,16 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
             return;
         }
         
+        // Update the navigator
+        if ( navigatorShouldUpdate ) {
+            updateNavigatorSelection(compilationInfo, tp); 
+        }
+        
         // Get Element
         Element element = compilationInfo.getTrees().getElement(tp);
                        
         // if cancelled or no element, return
         if (isCancelled() || element == null ) {
-            return;
-        }
-        
-        // Update the navigator
-        if ( navigatorShouldUpdate ) {
-            updateNavigatorSelection(); 
-        }
-                
-        if ( isCancelled() ) {            
             return;
         }
         
@@ -132,6 +133,7 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
             }
         }
             
+        
         // Compute and set javadoc
         if ( javadocShouldUpdate ) {
             computeAndSetJavadoc(compilationInfo, element);
@@ -263,8 +265,44 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
                 
     }
     
-    private void updateNavigatorSelection() {
-        // If navigator is visible ...
+    private void updateNavigatorSelection(CompilationInfo ci, TreePath tp) {
+        
+        // Try to find the declaration we are in
+        
+        Element e = null;
+        
+        while (tp != null) {
+            
+            switch( tp.getLeaf().getKind()) {
+                case METHOD:
+                case CLASS:
+                case VARIABLE:
+                case COMPILATION_UNIT:
+                    e = ci.getTrees().getElement(tp);
+                    break;
+            }                        
+            if ( e != null ) {
+                break;
+            }
+            tp = tp.getParentPath();
+        }
+        
+        if ( e != null ) {
+            final ElementHandle eh = ElementHandle.create(e);
+            
+            if ( lastEhForNavigator != null && eh.signatureEquals(lastEhForNavigator)) {
+                return;
+            }
+            
+            lastEhForNavigator = eh;
+            
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    ClassMemberPanel.getInstance().selectElement(eh);
+                }                
+            });
+        }
         
     }
     

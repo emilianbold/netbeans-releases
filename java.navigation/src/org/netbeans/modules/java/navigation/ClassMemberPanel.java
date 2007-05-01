@@ -20,6 +20,7 @@
 package org.netbeans.modules.java.navigation;
 
 import javax.swing.JComponent;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -32,7 +33,10 @@ public class ClassMemberPanel implements NavigatorPanel {
 
     private ClassMemberPanelUI component;
 
+    private static ClassMemberPanel INSTANCE;
+    
     public ClassMemberPanel() {
+        this.INSTANCE = this;
     }
 
     public void panelActivated(Lookup context) {
@@ -63,11 +67,18 @@ public class ClassMemberPanel implements NavigatorPanel {
         return getClassMemberPanelUI();
     }
 
+    public void selectElement(ElementHandle eh) {
+        getClassMemberPanelUI().selectElementNode(eh);
+    }
+    
     private synchronized ClassMemberPanelUI getClassMemberPanelUI() {
         if (this.component == null) {
             this.component = new ClassMemberPanelUI();
         }
         return this.component;
     }
-        
+    
+    public static ClassMemberPanel getInstance() {
+        return INSTANCE;
+    }    
 }

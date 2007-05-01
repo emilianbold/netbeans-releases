@@ -12,11 +12,13 @@ import javax.swing.Action;
 import javax.swing.KeyStroke;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
+import java.beans.PropertyVetoException;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.java.navigation.ClassMemberFilters;
 import org.netbeans.modules.java.navigation.ElementNode;
 import org.netbeans.modules.java.navigation.ElementNode.Description;
@@ -32,6 +34,7 @@ import org.netbeans.modules.java.navigation.base.TapPanel;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -117,6 +120,21 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                manager.setRootContext(ElementNode.getWaitNode());
             } 
         });
+    }
+    
+    public void selectElementNode( ElementHandle eh ) {
+        ElementNode node = getRootNode().getNodeForElement(eh);
+        try {
+            manager.setSelectedNodes(new Node[]{ node == null ? getRootNode() : node });
+        } catch (PropertyVetoException propertyVetoException) {
+            Exceptions.printStackTrace(propertyVetoException);
+        }
+//        SwingUtilities.invokeLater(new Runnable() {
+//            public void run() {
+//                
+//            }
+//            
+//        });
     }
 
     public void refresh( final Description description ) {

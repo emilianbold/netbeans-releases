@@ -132,6 +132,26 @@ public class ElementNode extends AbstractNode {
         }        
     }
     
+    public ElementNode getNodeForElement( ElementHandle eh ) {
+        
+        if ( getDescritption().elementHandle != null &&
+             eh.signatureEquals(getDescritption().elementHandle)) {
+            return this;
+        }
+        
+        Children ch = getChildren();
+        if ( ch instanceof ElementChilren ) {
+           for( Node sub : ch.getNodes() ) {
+               ElementNode result = ((ElementNode)sub).getNodeForElement(eh);
+               if ( result != null ) {
+                   return result;
+               }
+           }
+        }
+        
+        return null;
+    }
+    
     public void updateRecursively( Description newDescription ) {
         Children ch = getChildren();
         if ( ch instanceof ElementChilren ) {           
