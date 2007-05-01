@@ -69,7 +69,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
                     for (CsmUID<CsmFile> out : outLink){
                         NodeLink pair = graph.get(out);
                         if (pair != null){
-                            pair.removeInLink(out);
+                            pair.removeInLink(key);
                         }
                     }
                     outLink.clear();
@@ -102,7 +102,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
                 for (CsmFile out : outLink){
                     NodeLinkOld pair = graphOld.get(out);
                     if (pair != null){
-                        pair.removeInLink(out);
+                        pair.removeInLink(master);
                     }
                 }
                 outLink.clear();
@@ -147,7 +147,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
                     for (CsmUID<CsmFile> in : inLink){
                         NodeLink pair = graph.get(in);
                         if (pair != null){
-                            pair.removeOutLink(in);
+                            pair.removeOutLink(key);
                         }
                     }
                     inLink.clear();
@@ -155,7 +155,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
                     for (CsmUID<CsmFile> out : outLink){
                         NodeLink pair = graph.get(out);
                         if (pair != null){
-                            pair.removeInLink(out);
+                            pair.removeInLink(key);
                         }
                     }
                     outLink.clear();
@@ -173,7 +173,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
                 for (CsmFile in : inLink){
                     NodeLinkOld pair = graphOld.get(in);
                     if (pair != null){
-                        pair.removeOutLink(in);
+                        pair.removeOutLink(master);
                     }
                 }
                 inLink.clear();
@@ -181,7 +181,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
                 for (CsmFile out : outLink){
                     NodeLinkOld pair = graphOld.get(out);
                     if (pair != null){
-                        pair.removeInLink(out);
+                        pair.removeInLink(master);
                     }
                 }
                 outLink.clear();
@@ -250,7 +250,8 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
                     List<CsmUID<CsmFile>> list = new ArrayList<CsmUID<CsmFile>>(res);
                     res.clear();
                     for(CsmUID<CsmFile> uid : list){
-                        if (graph.get(uid).getInLinks().size()==0){
+                        NodeLink link = graph.get(uid);
+                        if (link != null && link.getInLinks().size()==0){
                             res.add(uid);
                         }
                     }
@@ -267,7 +268,8 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
                 }
                 res.clear();
                 for(CsmFile uid : list){
-                    if (graphOld.get(uid).getInLinks().size()==0){
+                    NodeLinkOld link = graphOld.get(uid);
+                    if (link != null && link.getInLinks().size()==0){
                         res.add(uid);
                     }
                 }

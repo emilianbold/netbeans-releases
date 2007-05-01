@@ -13,16 +13,18 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.cnd.completion.cplusplus;
+import java.util.Set;
 import org.netbeans.modules.cnd.completion.csm.CsmProjectContentResolver;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -112,31 +114,24 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
     
     private CsmNamespace resolveNamespace(String namespaceName, boolean caseSensitive) {
 	CsmModel model = CsmModelAccessor.getModel();
+        Set libraries = new HashSet();
         for (Iterator it = model.projects().iterator(); it.hasNext();) {
             CsmProject prj = (CsmProject) it.next();
             CsmNamespace ns = prj.findNamespace(namespaceName);
             if (ns != null) {
                 return ns;
             }
+            // remember libs
+            libraries.addAll(prj.getLibraries());
+        }
+        for (Iterator it = libraries.iterator(); it.hasNext();) {
+            CsmProject lib = (CsmProject) it.next();
+            CsmNamespace ns = lib.findNamespace(namespaceName);
+            if (ns != null) {
+                return ns;
+            }            
         }
         return null;
-//	CsmProject prg = model.projects().size() > 0 ? (CsmProject) model.projects().iterator().next() : null;
-//	if (prg != null) {
-//	    return prg.getGlobalNamespace();
-//	}
-//        JavaPackageClass pkgProxy = CsmUtil.getModel();
-//
-//        //if (caseSensitive) { // [TODO] implement case insensitive search
-//        if (fo!=null){
-//            JavaModel.setClassPath(fo);
-//            CsmNamespace nmsp = pkgProxy.resolvePackage(packageName);
-//            if (nmsp!=null){
-//                return nmsp;
-//            }
-//        }else{
-//            return pkgProxy.resolvePackage(packageName);
-//        }
-//        return null;
     }
     
     public CsmNamespace getExactNamespace(String namespaceName) {
@@ -723,5 +718,12 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
 //        CsmVisibility vis = CsmInheritanceUtilities.getContextVisibility(contextClass, clazz);
         List classFields = contResolver.getMethods(clazz, contextDeclaration, name, staticOnly, exactMatch, inspectParentClasses);
         return classFields;          
+    }
+
+    public List findNestedClassifiers(CsmOffsetableDeclaration contextDeclaration, CsmClass c, String name, boolean exactMatch, boolean inspectParentClasses, boolean sort) {
+        CsmClass clazz = c;
+        CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive());
+        List classClassifiers = contResolver.getNestedClassifiers(clazz, contextDeclaration, name, exactMatch, inspectParentClasses);
+        return classClassifiers; 
     }
 }

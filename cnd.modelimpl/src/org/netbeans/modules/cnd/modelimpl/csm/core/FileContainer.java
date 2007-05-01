@@ -97,23 +97,25 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
         if (f == null){
             return;
         }
-        if (f.state == null){
-            f.state = state;
-        } else {
-            if (f.state.isStateCorrect()) {
-                if (state.isStateCorrect()) {
-                    f.state = state;
-                } else {
-                    if (TRACE_PP_STATE_OUT) {
-                        System.err.println("Do not reset correct state to incorrect "+file.getAbsolutePath());
-                    }
-                }
+        synchronized (getLock(file)) {
+            if (f.state == null){
+                f.state = state;
             } else {
-                if (state.isStateCorrect()){
-                    f.state = state;
+                if (f.state.isStateCorrect()) {
+                    if (state.isStateCorrect()) {
+                        f.state = state;
+                    } else {
+                        if (TRACE_PP_STATE_OUT) {
+                            System.err.println("Do not reset correct state to incorrect "+file.getAbsolutePath());
+                        }
+                    }
                 } else {
-                    if (TRACE_PP_STATE_OUT) {
-                        System.err.println("Do not reset incorrect state to incorrect state "+file.getAbsolutePath());
+                    if (state.isStateCorrect()){
+                        f.state = state;
+                    } else {
+                        if (TRACE_PP_STATE_OUT) {
+                            System.err.println("Do not reset incorrect state to incorrect state "+file.getAbsolutePath());
+                        }
                     }
                 }
             }

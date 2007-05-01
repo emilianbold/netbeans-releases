@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -154,7 +154,9 @@ public final class ProjectImpl extends ProjectBase {
                         Object stateLock = fileContainer.getLock(parentImpl.getBuffer().getFile());
                         synchronized (stateLock) {
                             APTPreprocState.State state = getPreprocStateState(parentImpl.getBuffer().getFile());
-                            state.invalidate();
+                            if (state != null) {
+                                state.invalidate();
+                            }
                         }
                         parentImpl.stateChanged(false);
                         if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
@@ -209,7 +211,9 @@ public final class ProjectImpl extends ProjectBase {
                             Object stateLock = fileContainer.getLock(parentImpl.getBuffer().getFile());
                             synchronized (stateLock) {
                                 state = getPreprocStateState(parentImpl.getBuffer().getFile());
-                                state.invalidate();
+                                if (state != null) {
+                                    state.invalidate();
+                                }
                             }
                             parentImpl.stateChanged(false);
                             if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
@@ -251,7 +255,9 @@ public final class ProjectImpl extends ProjectBase {
                                 Object stateLock = fileContainer.getLock(parentImpl.getBuffer().getFile());
                                 synchronized (stateLock) {
                                     APTPreprocState.State state = getPreprocStateState(parentImpl.getBuffer().getFile());
-                                    state.invalidate();
+                                    if (state != null) {
+                                        state.invalidate();
+                                    }
                                 }
                                 parentImpl.stateChanged(false);
                                 if (TraceFlags.USE_DEEP_REPARSING_TRACE) {

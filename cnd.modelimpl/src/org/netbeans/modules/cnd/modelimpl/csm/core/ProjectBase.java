@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -586,21 +586,26 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
      *          false if file was included before
      */
     public FileImpl onFileIncluded(String file, APTPreprocState preprocState, int mode) throws IOException {
-        FileImpl csmFile = findFile(new File(file), FileImpl.HEADER_FILE, preprocState, false, null);
-        
-        APTPreprocState.State state = updateFileStateIfNeeded(csmFile, preprocState);
-        
-        // gather macro map from all includes
-        APTFile aptLight = getAPTLight(csmFile);
-        if (aptLight != null) {
-            APTParseFileWalker walker = new APTParseFileWalker(aptLight, csmFile, preprocState);
-            walker.visit();
-        }
-        
-        if (state != null) {
-            scheduleIncludedFileParsing(csmFile, state);
-        }
-        return csmFile;
+	synchronized (disposeLock) {
+	    if( isProjectDisposed ) {
+		return null;
+	    }
+	    FileImpl csmFile = findFile(new File(file), FileImpl.HEADER_FILE, preprocState, false, null);
+
+	    APTPreprocState.State state = updateFileStateIfNeeded(csmFile, preprocState);
+
+	    // gather macro map from all includes
+	    APTFile aptLight = getAPTLight(csmFile);
+	    if (aptLight != null) {
+		APTParseFileWalker walker = new APTParseFileWalker(aptLight, csmFile, preprocState);
+		walker.visit();
+	    }
+
+	    if (state != null) {
+		scheduleIncludedFileParsing(csmFile, state);
+	    }
+	    return csmFile;
+	}
     }
     
 //    protected boolean needScheduleParsing(FileImpl file, APTPreprocState preprocState) {
@@ -625,7 +630,9 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         }
         if( update ) {
             state = preprocState.getState();
-            putPreprocStateState(file, state);
+            // need to prevent corrupting shared object => copy
+            APTPreprocState.State copy = state.copy();                
+            putPreprocStateState(file, copy);
         }
         return state;
     }
@@ -772,7 +779,9 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         sysAPTData = new APTSystemStorage();
         unresolved = null;
         uid = null;
-        RepositoryUtils.closeUnit(getUID());
+        if (TraceFlags.USE_REPOSITORY) {
+            RepositoryUtils.closeUnit(getUID());
+        }
     }
     
     private void _clearClassifiers() {
@@ -958,7 +967,8 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
                     if (state2Clean.equals(rememberedState)) {
                         if (!rememberedState.isCleaned()) {
                             if (TRACE_PP_STATE_OUT) System.err.println("cleaning for " + file.getAbsolutePath());
-                            rememberedState.cleanExceptIncludeStack();
+                            state2Clean.cleanExceptIncludeStack();
+                            putPreprocStateState(file, state2Clean);
                         } else {
                             if (TRACE_PP_STATE_OUT) System.err.println("not need cleaning for " + file.getAbsolutePath());
                         }

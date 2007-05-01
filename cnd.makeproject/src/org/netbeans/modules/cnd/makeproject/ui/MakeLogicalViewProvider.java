@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -37,8 +37,8 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Vector;
@@ -121,9 +121,6 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     private final PropertyEvaluator evaluator;
     private final SubprojectProvider spp;
     private final ReferenceHelper resolver;
-    
-    private static Project currentProject = null;
-    private static Folder currentFolder = null;
     
     private static final MessageFormat ITEM_VIEW_FLAVOR = new MessageFormat("application/x-org-netbeans-modules-cnd-makeproject-uidnd; class=org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider$ViewItemNode; mask={0}"); // NOI18N
     static final String PRIMARY_TYPE = "application"; // NOI18N
@@ -422,11 +419,9 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
         
         private void updateAnnotationFiles() {
-            Vector vec = new Vector();
-            FileObject[]  fos = project.getProjectDirectory().getChildren();
-            for (int i = 0; i < fos.length; i++)
-                vec.add(fos[i]);
-            setFiles(new LinkedHashSet(vec));
+            HashSet set = new HashSet();
+            set.add(project.getProjectDirectory());
+            setFiles(set);
             Vector allFolders = new Vector();
             allFolders.add(folder);
             allFolders.addAll(folder.getAllFolders(true));
@@ -469,8 +464,11 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
         
         public Action[] getActions( boolean context ) {
-            currentProject = project;
-            currentFolder = getMakeConfigurationDescriptor().getLogicalFolders();
+            // TODO: not clear if we need to call the following method at all
+            // but we need to remove remembering the output to prevent memory leak;
+            // I think it could be removed
+            getMakeConfigurationDescriptor().getLogicalFolders();
+            
             Vector actions = new Vector();
             // Add standard actions
             Action[] standardActions = getAdditionalActions();
@@ -855,7 +853,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 this.logicalFolderNode = logicalFolderNode;
             }
             public void run() {
-                setFiles(folder.getAllItemsAsFileObjectSet(true));
+                setFiles(Collections.EMPTY_SET /*folder.getAllItemsAsFileObjectSet(true)*/); // See IZ 100394 for details 
                 Vector allFolders = new Vector();
                 allFolders.add(folder);
                 allFolders.addAll(folder.getAllFolders(true));
@@ -966,8 +964,6 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
         
         public Action[] getActions( boolean context ) {
-            currentProject = project;
-            currentFolder = folder;
             return new Action[] {
                 CommonProjectActions.newFileAction(),
                 SystemAction.get(AddExistingItemAction.class),
@@ -1118,8 +1114,6 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
         
         public Action[] getActions( boolean context ) {
-            currentProject = project;
-            currentFolder = null;
             return new Action[] {
                 new AddExternalItemAction(project),
                 null,

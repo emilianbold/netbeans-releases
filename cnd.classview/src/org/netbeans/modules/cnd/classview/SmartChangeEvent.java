@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -56,9 +56,9 @@ public class SmartChangeEvent {
     }
     
     public boolean addChangeEvent(SmartChangeEvent e){
-        for(Storage storage : e.getChangedProjects().values()){
+        for(Storage storage : getChangedProjects().values()){
             if (storage.getRemovedDeclarations().size() > 0 ||
-                    storage.getRemovedNamespaces().size() > 0){
+                storage.getRemovedNamespaces().size() > 0){
                 return false;
             }
         }

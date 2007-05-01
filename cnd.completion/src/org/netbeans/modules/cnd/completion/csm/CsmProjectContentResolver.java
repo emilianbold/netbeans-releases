@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -471,6 +471,21 @@ public final class CsmProjectContentResolver {
             if (sort && res != null) {
                 CsmSortUtilities.sortMembers(res, isCaseSensitive());
             }
+        }
+        return res;
+    }
+
+    public List/*<CsmField>*/ getNestedClassifiers(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, String strPrefix, boolean match, boolean inspectParentClasses) {
+        CsmDeclaration.Kind memberKinds[] = {
+            CsmDeclaration.Kind.TYPEDEF,
+            CsmDeclaration.Kind.UNION,
+            CsmDeclaration.Kind.STRUCT,
+            CsmDeclaration.Kind.CLASS,
+            CsmDeclaration.Kind.ENUM
+        };
+        List res = getClassMembers(clazz, contextDeclaration, memberKinds, strPrefix, false, match, inspectParentClasses);
+        if (res != null && this.isSortNeeded()) {
+            CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
         }
         return res;
     }

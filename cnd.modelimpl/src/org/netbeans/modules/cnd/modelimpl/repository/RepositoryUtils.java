@@ -27,7 +27,6 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.apt.debug.DebugUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-import org.netbeans.modules.cnd.modelimpl.uid.KeyBasedUID;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
@@ -170,11 +169,11 @@ public class RepositoryUtils {
     }
 
     public static void closeUnit(CsmUID uid) {
-        if (uid instanceof KeyBasedUID) {
-            String unitName = (((KeyBasedUID)uid).getKey()).getUnit();
-            RepositoryAccessor.getRepository().closeUnit(unitName);
-            KeyUtilities.closeUnit(unitName);
-        }
+        Key key = UIDtoKey(uid);
+        assert key != null;
+        String unitName = key.getUnit();
+        RepositoryAccessor.getRepository().closeUnit(unitName);
+        KeyUtilities.closeUnit(unitName);
     }
 }
 

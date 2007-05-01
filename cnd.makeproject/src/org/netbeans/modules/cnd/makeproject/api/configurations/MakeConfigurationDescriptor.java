@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -100,7 +100,19 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
         if (project == null) {
             String location = FilePathAdaptor.mapToLocal(getBaseDir()); // PC path
             try {
-                FileObject fo = FileUtil.toFileObject(new File(location).getCanonicalFile());
+                // convert base path into file object
+                // we can't use canonical path here, because descriptor created with path like
+                // /set/ide/mars/... will be changed by canonization into
+                // /net/endif/export/home1/deimos/dev/...
+                // and using the canonical path based FileObject in the ProjectManager.getDefault().findProject(fo);
+                // will cause creating new MakeProject project
+                // because there are no opened /net/endif/export/home1/deimos/dev/... project in system
+                // there is only /set/ide/mars/... project in system
+                // 
+                // in fact ProjectManager should solve such problems in more general way 
+                // because even for java it's possible to open the same project from two different 
+                // locations /set/ide/mars/... and /net/endif/export/home1/deimos/dev/...
+                FileObject fo = FileUtil.toFileObject(new File(location));
                 project = ProjectManager.getDefault().findProject(fo);
             } catch (Exception e) {
                 // Should not happen

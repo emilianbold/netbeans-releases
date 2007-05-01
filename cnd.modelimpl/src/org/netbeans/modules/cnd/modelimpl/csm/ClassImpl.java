@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -281,7 +281,10 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
     
     public List/*<CsmMember>*/ getMembers() {
         if (TraceFlags.USE_REPOSITORY) {
-            List<CsmMember> out = UIDCsmConverter.UIDsToDeclarations(members);
+            List<CsmMember> out;
+            synchronized (members) {
+                out = UIDCsmConverter.UIDsToDeclarations(members);
+            }
             return out;
         } else {
             return membersOLD;
@@ -300,7 +303,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         if (TraceFlags.USE_REPOSITORY) {
             CsmUID<CsmMember> uid = RepositoryUtils.put(member);
             assert uid != null;
-            members.add(uid);            
+            synchronized (members) {
+                members.add(uid);       
+            }
         } else {
             membersOLD.add(member);
         }
@@ -328,7 +333,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         List<CsmMember> members2dispose = getMembers();
         Utils.disposeAll(members2dispose);
         if (TraceFlags.USE_REPOSITORY) {
-            RepositoryUtils.remove(this.members);
+            synchronized (members) {
+                RepositoryUtils.remove(this.members);
+            }
         } else {
             membersOLD.clear();
         }        

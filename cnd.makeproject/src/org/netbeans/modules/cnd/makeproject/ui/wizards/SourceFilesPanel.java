@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -63,15 +63,16 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         
         // File type filters
         filterComboBox.removeAllItems();
-        filterComboBox.addItem(CSourceFileFilter.getInstance());
-        filterComboBox.addItem(CCSourceFileFilter.getInstance());
-        filterComboBox.addItem(HeaderSourceFileFilter.getInstance());
+        filterComboBox.addItem(CSourceFileFilter.getInstance().getSuffixesAsString());
+        filterComboBox.addItem(CCSourceFileFilter.getInstance().getSuffixesAsString());
+        filterComboBox.addItem(HeaderSourceFileFilter.getInstance().getSuffixesAsString());
         if (CppSettings.getDefault().isFortranEnabled())
-            filterComboBox.addItem(FortranSourceFileFilter.getInstance());
-        filterComboBox.addItem(ResourceFileFilter.getInstance());
-        filterComboBox.addItem(AllSourceFileFilter.getInstance());
-        filterComboBox.addItem(AllFileFilter.getInstance());
-        filterComboBox.setSelectedItem(AllSourceFileFilter.getInstance());
+            filterComboBox.addItem(FortranSourceFileFilter.getInstance().getSuffixesAsString());
+        filterComboBox.addItem(ResourceFileFilter.getInstance().getSuffixesAsString());
+        filterComboBox.addItem(AllSourceFileFilter.getInstance().getSuffixesAsString());
+        filterComboBox.addItem(AllFileFilter.getInstance().getSuffixesAsString());
+        
+        filterComboBox.setSelectedItem(AllSourceFileFilter.getInstance().getSuffixesAsString());
         
         getAccessibleContext().setAccessibleDescription(getString("SourceFilesPanelAD"));
         addButton.getAccessibleContext().setAccessibleDescription(getString("AddButtonAD"));
@@ -319,12 +320,6 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         add(filterText, gridBagConstraints);
 
         filterComboBox.setEditable(true);
-        filterComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                filterComboBoxActionPerformed(evt);
-            }
-        });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -334,18 +329,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         add(filterComboBox, gridBagConstraints);
 
     }// </editor-fold>//GEN-END:initComponents
-    
-    private void filterComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterComboBoxActionPerformed
-        JComboBox cb = (JComboBox)evt.getSource();
-        if (cb.getSelectedItem() instanceof SourceFileFilter) {
-            SourceFileFilter fileFilter = (SourceFileFilter)cb.getSelectedItem();
-            if (fileFilter != null) {
-                String suffixes = fileFilter.getSuffixesAsString();
-                cb.setSelectedItem(suffixes);
-            }
-        }
-    }//GEN-LAST:event_filterComboBoxActionPerformed
-    
+        
     private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
         int index = sourceFileTable.getSelectedRow();
         if (index < 0 || index >= data.size())

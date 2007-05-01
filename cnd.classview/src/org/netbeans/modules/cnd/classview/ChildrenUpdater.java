@@ -48,7 +48,15 @@ public class ChildrenUpdater {
     private Map<CsmProject, Map<PersistentKey, UpdatebleHost>> map =
             new HashMap<CsmProject, Map<PersistentKey, UpdatebleHost>>();
     
-    public  ChildrenUpdater() {
+    public ChildrenUpdater() {
+    }
+    
+    public Object getLock(CsmProject project){
+        Object lock = map.get(project);
+        if (lock == null) {
+            return this;
+        }
+        return lock;
     }
     
     public void register(CsmProject project, PersistentKey host, UpdatebleHost children){
@@ -94,8 +102,10 @@ public class ChildrenUpdater {
         for (Map.Entry<CsmProject,SmartChangeEvent.Storage> entry : e.getChangedProjects().entrySet()){
             CsmProject project = entry.getKey();
             if (map.containsKey(project) && project.isValid()) {
-                SmartChangeEvent.Storage storage = entry.getValue();
-                update(project, storage);
+                synchronized (getLock(project)) {
+                    SmartChangeEvent.Storage storage = entry.getValue();
+                    update(project, storage);
+                }
             }
         }
     }

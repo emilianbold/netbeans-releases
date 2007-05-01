@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -125,12 +125,14 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 	this(fileBuffer, project, UNDEFINED_FILE, (APTPreprocState)null);
     }
     
-    private ProjectBase _getProject() {
+    private ProjectBase _getProject(boolean assertNotNull) {
         ProjectBase prj = this.projectRef;
         if (prj == null) {
             if (TraceFlags.USE_REPOSITORY) {
                 prj = (ProjectBase)UIDCsmConverter.UIDtoProject(this.projectUID);
-                assert (prj != null || this.projectUID == null) : "empty project for UID " + this.projectUID;
+		if( assertNotNull ) {
+		    assert (prj != null || this.projectUID == null) : "empty project for UID " + this.projectUID;
+		}
             }    
         }
         return prj;
@@ -402,20 +404,27 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             if( ast != null ) {
                 Diagnostic.StopWatch sw2 = TraceFlags.TIMING_PARSE_PER_FILE_DEEP ? new Diagnostic.StopWatch() : null;
                 //Notificator.instance().startTransaction();
-                render(ast);
-                if (TraceFlags.TIMING_PARSE_PER_FILE_DEEP) sw2.stopAndReport("Rendering of " + fileBuffer.getFile().getName() + " took \t"); // NOI18N
+		if( isValid() ) {   // FIXUP: use a special lock here
+		    render(ast);
+		    if (TraceFlags.TIMING_PARSE_PER_FILE_DEEP) sw2.stopAndReport("Rendering of " + fileBuffer.getFile().getName() + " took \t"); // NOI18N
+		}
                 return ast;
             }
         } finally {
-            if (TraceFlags.USE_REPOSITORY) {
+            if (TraceFlags.USE_REPOSITORY && isValid()) {   // FIXUP: use a special lock here
                 RepositoryUtils.put(this);
             }
-            if (TraceFlags.USE_DEEP_REPARSING) {
+            if (TraceFlags.USE_DEEP_REPARSING && isValid()) {	// FIXUP: use a special lock here
                 getProjectImpl().getGraph().putFile(this);
             }
-            //Notificator.instance().endTransaction();
-            Notificator.instance().registerChangedFile(this);
-            Notificator.instance().flush();
+            if( isValid() ) {   // FIXUP: use a special lock here
+		Notificator.instance().registerChangedFile(this);
+		Notificator.instance().flush();
+	    }
+	    else {
+		// FIXUP: there should be a notificator per project instead!
+		Notificator.instance().reset();
+	    }
         }
         return null;
     }
@@ -628,12 +637,12 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
     
     public CsmProject getProject() {
-        return _getProject();
+        return _getProject(true);
     }
 
     /** Just a convenient shortcut to eliminate casts */
     public ProjectBase getProjectImpl() {
-        return _getProject();
+        return _getProject(true);
     }
 
     public String getName() {
@@ -790,7 +799,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
     
     public boolean isValid() {
-        CsmProject project = getProject();
+        CsmProject project = _getProject(false);
         return project != null && project.isValid();    
     }
 

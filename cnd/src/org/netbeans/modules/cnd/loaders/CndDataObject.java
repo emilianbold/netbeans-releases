@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -181,7 +181,7 @@ public abstract class CndDataObject extends MultiDataObject {
      *  was created are stored in the queue. This information is used by the
      *  ElfTaster in computing its Dynamic tasting policy.
      */
-    public class CircularQueue {
+    public static class CircularQueue {
 
 	/** Store times last n DataObjects were created */
 	private Long[] queue;

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -37,7 +37,12 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
  */
 public class Notificator {
     
-    private static Notificator instance =  new Notificator();
+    private static ThreadLocal<Notificator> instance =  new ThreadLocal<Notificator>() {
+        protected Notificator initialValue() {
+            return new Notificator();
+        }
+    };
+    
     private int transactionLevel = 0;
     private ChangeEventImpl currEvent;
     private ModelImpl model;
@@ -49,7 +54,7 @@ public class Notificator {
     }
     
     public static Notificator instance() {
-        return instance;
+        return instance.get();
     }
     
     private String getCurrThreadString() {
@@ -90,6 +95,13 @@ public class Notificator {
     
     private void resetEvent() {
         currEvent = null;
+    }
+    
+    // FIXUP: there should be a notificator per project instead!
+    public void reset() {
+	synchronized (this) {
+	    resetEvent();
+	}
     }
     
     private boolean isEventEmpty() {

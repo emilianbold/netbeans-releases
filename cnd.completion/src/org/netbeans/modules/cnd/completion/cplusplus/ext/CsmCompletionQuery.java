@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -370,6 +370,25 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 //        return ret;
 //    }
     
+    static List findNestedClassifiers(CsmFinder finder, CsmOffsetableDeclaration context, CsmClassifier classifier, String name,
+                                     boolean exactMatch, boolean inspectParentClasses, boolean sort) {
+        // Find inner classes
+        List ret = new ArrayList();
+        classifier = CsmBaseUtilities.getOriginalClassifier(classifier);
+        if (!CsmKindUtilities.isClass(classifier)) {
+            return ret;
+        }
+        CsmClass cls = (CsmClass)classifier;
+
+        // Add fields
+        List res = finder.findNestedClassifiers(context, cls, name, exactMatch, inspectParentClasses, sort);
+        if (res != null) {
+            ret.addAll(res);
+        }
+        
+        return ret;
+    }
+    
     static List findFieldsAndMethods(CsmFinder finder, CsmOffsetableDeclaration context, CsmClassifier classifier, String name,
                                      boolean exactMatch, boolean staticOnly, boolean inspectOuterClasses, boolean inspectParentClasses, boolean sort) {
         // Find inner classes
@@ -677,10 +696,12 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 //                            res = findFieldsAndMethods(finder, curCls == null ? null : getNamespaceName(curCls), 
 //                                    cls, "", false, staticOnly, false); // NOI18N
                             res = findFieldsAndMethods(finder, contextElement, cls, "", false, staticOnly, false, false, sort); // NOI18N
+                            List nestedClassifiers = findNestedClassifiers(finder, contextElement, cls, "", false, true, sort);
+                            res.addAll(nestedClassifiers);                            
                         }
                         // Get all fields and methods of the cls
                         result = new CsmCompletionResult(component, res, formatType(lastType, true, true, true),
-                                                exp, substPos, 0, cls.getName().length() + 1, isProjectBeeingParsed());
+                                                exp, substPos, 0, 0/*cls.getName().length() + 1*/, isProjectBeeingParsed());
                     } else { // Found package (otherwise ok would be false)
                         String searchPkg = lastNamespace.getName() + CsmCompletion.SCOPE;
                         List res;
@@ -894,13 +915,16 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                     } else { // Array of some depth
                                         cls = CsmCompletion.OBJECT_CLASS_ARRAY; // Use Object in this case
                                     }
+                                    List res = findFieldsAndMethods(finder, contextElement, cls, var, false, staticOnly, false, true, sort);
+                                    List nestedClassifiers = findNestedClassifiers(finder, contextElement, cls, var, false, true, sort);
+                                    res.addAll(nestedClassifiers);
                                     result = new CsmCompletionResult(
                                                  component,
 //                                                 findFieldsAndMethods(finder, curCls == null ? null : getNamespaceName(curCls), cls, var, false, staticOnly, false),
-                                                 findFieldsAndMethods(finder, contextElement, cls, var, false, staticOnly, false, true, sort),
+                                                 res,
                                                  formatType(lastType, true, true, false) + var + '*',
                                                  item,
-                                                 cls.getName().length() + 1,
+                                                 0/*cls.getName().length() + 1*/,
                                                  isProjectBeeingParsed());
                                 }
                             } else { // currently package

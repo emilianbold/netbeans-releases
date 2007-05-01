@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -71,9 +71,9 @@ class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener
         // FIXUP: gross hack 
         // The logic in this file doesn't work if there is only one file in a folder!
         // Add an extra file to work aroud this ...
-        if (files.size() == 1) {
-            files.add(((FileObject)files.iterator().next()).getParent());
-        }
+//        if (files.size() == 1) {
+//            files.add(((FileObject)files.iterator().next()).getParent());
+//        }
         FileObject fo = (FileObject) files.iterator().next();
         try {
             fs = fo.getFileSystem();

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -266,7 +266,8 @@ public class APTParseFileWalker extends APTWalker {
                 getIncludeHandler().popInclude();
             }
         }
-        
+        // TODO: removedFile should not be used anymore, 
+        // because deleting of files is triggered by dependency graph
         if (needMacroAndIncludes() || removedFile) {
             file.addInclude(createInclude(apt, included));
         }

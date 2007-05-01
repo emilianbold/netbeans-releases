@@ -32,6 +32,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
  * utilities to convert between CsmUID and CsmObjects
@@ -117,6 +118,7 @@ public class UIDCsmConverter {
     }
     
     private static <T extends CsmIdentifiable> List<T> UIDsToList(Collection<CsmUID<T>> uids, boolean allowNullsAndSkip) {
+        allowNullsAndSkip |= TraceFlags.SAFE_UID_ACCESS;
         List<T> out = new ArrayList<T>(uids.size());
         for (CsmUID<T> uid : uids) {
             assert uid != null;

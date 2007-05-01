@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -298,7 +298,11 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         if (TraceFlags.USE_REPOSITORY) {
             CsmUID<CsmOffsetableDeclaration> uid = declarations.get(uniqueName);
             oldDecl = UIDCsmConverter.UIDtoDeclaration(uid);
-            assert oldDecl != null || uid == null : "no object for UID " + uid;
+            // use TraceFlags.SAFE_UID_ACCESS as workaround
+            // see IZ#101952
+            if (!TraceFlags.SAFE_UID_ACCESS ) {
+                assert (oldDecl != null || uid == null): "no object for UID " + uid;
+            }
         } else {
             oldDecl = (CsmOffsetableDeclaration) declarationsOLD.get(uniqueName);
         }

@@ -13,17 +13,19 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.cnd.makeproject.api.compilers;
 
+import java.io.File;
 import java.util.List;
 import java.util.Vector;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
+import org.openide.filesystems.FileUtil;
 
 public class BasicCompiler extends Tool {
     
@@ -68,5 +70,11 @@ public class BasicCompiler extends Tool {
      */
     public boolean setSystemIncludeDirectories(Platform platform, List values) {
         return false;
+    }
+    
+    protected void normalizePaths(List<String> paths) {
+	for (int i = 0; i < paths.size(); i++) {
+	    paths.set(i, FileUtil.normalizeFile(new File(paths.get(i))).getAbsolutePath());
+	}
     }
 }

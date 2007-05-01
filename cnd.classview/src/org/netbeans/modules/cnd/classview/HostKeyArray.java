@@ -379,21 +379,25 @@ abstract public class HostKeyArray extends Children.Keys implements UpdatebleHos
     }
     
     protected void addNotify() {
-        if (isNamespace()){ //isGlobalNamespace()) {
-            myKeys = new HashMap<PersistentKey,SortedName>();
-            myKeys.put(PersistentKey.createKey(getProject()), new SortedName(0,"",0)); // NOI18N
-        } else {
-            myKeys = getMembers();
+        synchronized (childrenUpdater.getLock(getProject())) {
+            if (isNamespace()){ //isGlobalNamespace()) {
+                myKeys = new HashMap<PersistentKey,SortedName>();
+                myKeys.put(PersistentKey.createKey(getProject()), new SortedName(0,"",0)); // NOI18N
+            } else {
+                myKeys = getMembers();
+            }
+            myChanges = new HashMap<PersistentKey,ChangeListener>();
+            isInited = true;
+            resetKeys();
         }
-        myChanges = new HashMap<PersistentKey,ChangeListener>();
-        isInited = true;
-        resetKeys();
         super.addNotify();
         if (isNamespace()){ //isGlobalNamespace()) {
             RequestProcessor.getDefault().post(new Runnable(){
                 public void run() {
-                    myKeys = getMembers();
-                    resetKeys();
+                    synchronized (childrenUpdater.getLock(getProject())) {
+                        myKeys = getMembers();
+                        resetKeys();
+                    }
                 }
             });
         }
@@ -428,10 +432,12 @@ abstract public class HostKeyArray extends Children.Keys implements UpdatebleHos
         if (!isInited || project != getProject()){
             return;
         }
-        PersistentKey key = PersistentKey.createKey(project);
-        if (myKeys.containsKey(key)){
-            myKeys.remove(key);
-            resetKeys();
+        synchronized (childrenUpdater.getLock(getProject())) {
+            PersistentKey key = PersistentKey.createKey(project);
+            if (myKeys.containsKey(key)){
+                myKeys.remove(key);
+                resetKeys();
+            }
         }
     }
     

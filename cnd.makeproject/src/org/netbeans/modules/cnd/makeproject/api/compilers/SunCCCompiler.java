@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -141,6 +141,7 @@ public class SunCCCompiler extends CCCCompiler {
             return systemIncludeDirectoriesList;
         
         getSystemIncludesAndDefines(platform);
+	normalizePaths(systemIncludeDirectoriesList);
         return systemIncludeDirectoriesList;
     }
     
@@ -215,7 +216,9 @@ public class SunCCCompiler extends CCCCompiler {
                     int spaceIndex = line.indexOf(" ", includeIndex + 1); // NOI18N
                     if (spaceIndex > 0) {
                         token = line.substring(includeIndex+2, spaceIndex);
-                        systemIncludeDirectoriesList.add(token);
+			if ( ! token.equals("-xbuiltin")) { //NOI18N
+			    systemIncludeDirectoriesList.add(token);
+			}
                         if (token.endsWith("Cstd")) { // NOI18N
                             // See 89872 "Parser Settings" for Sun Compilers Collection are incorrect
                             systemIncludeDirectoriesList.add(token.substring(0, token.length()-4) + "std"); // NOI18N

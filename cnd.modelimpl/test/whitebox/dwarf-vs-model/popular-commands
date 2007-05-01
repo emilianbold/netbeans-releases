@@ -1,3 +1,4 @@
+# NOCDDL
 clear; time ant -f build_cli.xml run  -Dargs="-c ${TEST_CODE}/_initdata/clucene/clucene-0.9.10.gcc  -t /tmp/clucene.1"  
 clear; time ant -f build_cli.xml run  -Dargs="-c ${TEST_CODE}/_initdata/clucene/1.gcc  -t /tmp/1" -Djvmargs="-Dtrace.counter=true"
 clear; time ant -f build_cli.xml run  -Dargs="-c ${TEST_CODE}/_initdata/boost/all.gcc  -t res/boost.1" -Djvmargs="-Dtrace.counter=true -Xmx1536M"

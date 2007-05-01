@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -119,4 +119,18 @@ public interface CsmFinder {
     */
     public List findMethods(CsmOffsetableDeclaration contextDeclaration, CsmClass c, String name, boolean exactMatch,
                             boolean staticOnly, boolean inspectOuterClasses, boolean inspectParentClasses, boolean sort);    
+    
+    /** Find nested classifiers by name in a given class.
+    * @param contextDeclaration declaration which defines context (class or function)
+    * @param c class which is searched for the nested classifiers.
+    * @param name start of the name of the nested classifiers
+    * @param exactMatch whether the given name of the nested classifiers is exact
+    * @param staticOnly whether search for the static nested classifiers only
+    * @param inspectParentClasses if the given class is inner class of some
+    *   outer class, whether the classifiers of the outer class should be possibly
+    *   added or not
+    * @return list of the matching nested classifiers
+    */
+    public List findNestedClassifiers(CsmOffsetableDeclaration contextDeclaration, CsmClass c, String name, boolean exactMatch,
+                            boolean inspectParentClasses, boolean sort);      
 }

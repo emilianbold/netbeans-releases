@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -70,10 +70,14 @@ public class ParserThread implements Runnable {
                     }
                     finally {
                         if( stw != null ) stw.stopAndReport("parsing " + file.getAbsolutePath()); // NOI18N
-                        queue.onFileParsingFinished(file);
-                        if( TraceFlags.TRACE_PARSER_QUEUE ) trace("parsing done: " + file.getAbsolutePath()); // NOI18N
-                        Notificator.instance().flush();
-                        if( TraceFlags.TRACE_PARSER_QUEUE ) trace("model event flushed"); // NOI18N
+			try {
+                            queue.onFileParsingFinished(file);
+                            if( TraceFlags.TRACE_PARSER_QUEUE ) trace("parsing done: " + file.getAbsolutePath()); // NOI18N
+			    Notificator.instance().flush();
+			    if( TraceFlags.TRACE_PARSER_QUEUE ) trace("model event flushed"); // NOI18N
+			} catch( Throwable thr ) {
+			    thr.printStackTrace(System.err);
+			}
                     }
                 }
             } catch (InterruptedException ex) {

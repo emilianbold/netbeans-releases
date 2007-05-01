@@ -23,6 +23,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -42,17 +43,17 @@ public class VersionCommand implements Runnable {
     /**
      * Creates a new instance of VersionCommand
      */
-    public VersionCommand(String flavor, String name, String path) {
+    public VersionCommand(CompilerFlavor flavor, String name, String path) {
         String option = null;
         
         this.name = name;
         this.path = path;
         
-        if (flavor.equals("GNU")) { // NOI18N
+        if (flavor.isGnuCompiler()) { 
             option = "--version"; // NOI18N
-        } else if (flavor.equals("Sun")) { // NOI18N
+        } else if (flavor.isSunCompiler()) {
             option = "-V"; // NOI18N
-        } else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) { // NOI18N
+        } else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
             if (path.endsWith("/sfw/bin/gmake")) { // NOI18N
                 option = "--version"; // NOI18N
             } else if (path.equals("/usr/ccs/bin/make") || path.equals("/usr/xpg4/bin/make")) { // NOI18N

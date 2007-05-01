@@ -247,6 +247,14 @@ public class CompilerSet {
                 return new CompilerSet(CompilerFlavor.Sun, directory);
             } else if (isSunUCBCompilerDirectory(directory)) { 
                 return new CompilerSet(CompilerFlavor.SunUCB, directory);
+            } else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS &&
+                    (directory.equals("/usr/bin") || directory.equals("/bin"))) { // NOI18N
+                for (int i = 0; i < list.length; i++) {
+                    if (list[i].equals("cc") || list[i].equals("CC")) { // NOI18N
+                        // Can't verify version, so just return Sun
+                        return new CompilerSet(CompilerFlavor.Sun, directory);
+                    }
+                }
             }
         }
         

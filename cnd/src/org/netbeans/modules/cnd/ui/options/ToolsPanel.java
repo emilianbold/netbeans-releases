@@ -647,11 +647,24 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         return changed;
     }
     
+    /**
+     * Post version information for tools not considered part of a CompilerSet (make and gdb).
+     *
+     * @param name The name of the tool (no directory information)
+     * @param path The absolute path of the tool
+     */
     private void postVersionInfo(String name, String path) {
-        postVersionInfo("", name, path);
+        postVersionInfo(CompilerFlavor.Unknown, name, path);
     }
     
-    private void postVersionInfo(String flavor, String name, String path) {
+    /**
+     * Display version information for a program pointed to by "path".
+     *
+     * @param flavor The type of CompilerSet (unknown if we don't care)
+     * @param name The name of the tool (no directory information)
+     * @param path The absolute path of the tool
+     */
+    private void postVersionInfo(CompilerFlavor flavor, String name, String path) {
         File file = new File(path);
         if (file.exists()) {
             FileObject fo = FileUtil.toFileObject(file);
@@ -835,13 +848,13 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                 } else if (o == btGdbVersion) {
                     postVersionInfo(tfGdbCommand.getText(), tfGdbPath.getText());
                 } else if (o == btCVersion && cbCCommand.getSelectedItem() != null) {
-                    postVersionInfo(flavor.toString(), cbCCommand.getSelectedItem().toString(),
+                    postVersionInfo(flavor, cbCCommand.getSelectedItem().toString(),
                             tfCPath.getText());
                 } else if (o == btCppVersion && cbCppCommand.getSelectedItem() != null) {
-                    postVersionInfo(flavor.toString(), cbCppCommand.getSelectedItem().toString(),
+                    postVersionInfo(flavor, cbCppCommand.getSelectedItem().toString(),
                             tfCppPath.getText());
                 } else if (o == btFortranVersion && cbFortranCommand.getSelectedItem() != null) {
-                    postVersionInfo(flavor.toString(), cbFortranCommand.getSelectedItem().toString(),
+                    postVersionInfo(flavor, cbFortranCommand.getSelectedItem().toString(),
                             tfFortranPath.getText());
                 }
             }

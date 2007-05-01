@@ -490,7 +490,7 @@ public class KeyUtilities {
         }
         
         protected String getFileName() {
-            return FilePathCache.getString(KeyUtilities.unitNamesCache.getFileNames(unitIndex).getValueById(this.fileNameIndex));
+            return KeyUtilities.unitNamesCache.getFileNames(unitIndex).getValueById(this.fileNameIndex);
         }
         
         public int getDepth() {
@@ -518,15 +518,16 @@ public class KeyUtilities {
             }
         }
         
+        /**
+         * synchronization is controlled by calling getId() method
+         */
         protected int makeId(String value) {
             int id = cache.indexOf(null);
             if (id == -1) {
-                synchronized (this) {
-                    id = super.makeId(value);
-                    //fileNamesCaches.ensureCapacity(id+1);
-                    //fileNamesCaches.set(id, new IntToStringCache());
-                    fileNamesCaches.add(new IntToStringCache());
-                }
+                id = super.makeId(value);
+                //fileNamesCaches.ensureCapacity(id+1);
+                //fileNamesCaches.set(id, new IntToStringCache());
+                fileNamesCaches.add(new IntToStringCache());
             } else {
                 cache.set(id, value);
                 fileNamesCaches.set(id, new IntToStringCache());
@@ -534,6 +535,11 @@ public class KeyUtilities {
             return id;
         }
         
+        /**
+         * no synchronization is set to speed up processing
+         * this call is safe due to add-only way of work with
+         * List
+         */
         public IntToStringCache getFileNames(int unitId) {
             return fileNamesCaches.get(unitId);
         }
@@ -552,15 +558,16 @@ public class KeyUtilities {
             }
         }
         
+        /**
+         * synchronization is controlled by calling getId() method
+         */
         protected int makeId(String value) {
             cache.add(value);
             return cache.indexOf(value);
         }
         
         public String getValueById(int id) {
-            synchronized (cache) {
-                return cache.get(id);
-            }
+            return cache.get(id);
         }
     }
     
@@ -617,7 +624,7 @@ public class KeyUtilities {
         
         public String getUnit() {
             // having this functionality here to be sure unit is the same thing as project
-            return ProjectNameCache.getString(KeyUtilities.unitNamesCache.getValueById(this.unitIndex));
+            return KeyUtilities.unitNamesCache.getValueById(this.unitIndex);
         }
     }
     
