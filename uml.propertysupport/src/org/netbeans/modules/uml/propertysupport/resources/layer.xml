@@ -45,12 +45,23 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
             </file>
         </folder> 
     </folder>
- 
-    <folder name="OptionsDialog">
+     <folder name="OptionsDialog">
         <file name="UMLOptionsPanel.instance">
-            <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.propertysupport.options.UMLOptionsPanel"/>
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.propertysupport.options.UMLOptions"/>
         </file>
-        <attr boolvalue="true" name="UMLOptionsPanel.instance/Advanced.instance"/>
+        <attr boolvalue="true" name="UMLOptions.instance/Advanced.instance"/>
+    </folder>
+    <folder name="UML">
+        <folder name="UMLOptions">
+            <folder name="Panels">
+            <file name="DefaultOptionsPanel.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.propertysupport.options.DefaultOptionsPanel"/>
+            </file>
+            <file name="MiscOptionsPanel.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.propertysupport.options.MiscOptionsPanel"/>
+            </file>
+            </folder>
+        </folder>
     </folder>
     
 </filesystem>
