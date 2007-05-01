@@ -82,6 +82,11 @@ public class UMLPanelController extends OptionsPanelController {
         if (debug) log("getComponent");
         JTabbedPane pane = new JTabbedPane() ;
         
+        DefaultOptionsPanel defaultPanel = new DefaultOptionsPanel() ;
+        DefaultOptionsPanelForm defaultForm = (DefaultOptionsPanelForm) defaultPanel.create() ;        
+        
+        pane.addTab(defaultPanel.getDisplayName(), defaultForm) ;
+        
         OptionsSupport support = new OptionsSupport() ;
         
         for (UMLOptionsPanel panel:support.getMainPanels()) {
