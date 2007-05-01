@@ -52,7 +52,7 @@ public class UnitDetails extends DetailsPanel{
     @SuppressWarnings ("deprecation")
     public void setUnit(Unit u) {
         if (u == null) {
-            getDetails ().setText (getBundle ("UnitDetails_Category_NoDescription")); // NOI18N
+            getDetails ().setText ("<i>" + getBundle ("UnitDetails_Category_NoDescription") + "</i>"); // NOI18N
         } else {
             String text;
             try {
