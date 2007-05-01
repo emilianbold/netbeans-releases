@@ -57,6 +57,7 @@ Microsystems, Inc. All Rights Reserved.
             </class-path-extension>
             <friend-packages>
                 <friend>org.netbeans.modules.uml</friend>
+                <friend>org.netbeans.modules.uml.codegen</friend>
                 <friend>org.netbeans.modules.uml.designpattern</friend>
                 <friend>org.netbeans.modules.uml.integration</friend>
                 <friend>org.netbeans.modules.uml.kit</friend>

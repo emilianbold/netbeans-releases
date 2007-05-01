@@ -5361,6 +5361,10 @@ public class UMLParsingIntegrator
     
     public void removeTokenDescriptors(Node node, boolean all)
     {
+	// temporary for current codegen/merge work
+	if (System.getProperty("uml.codegen.merge") != null) {
+	    return; 
+	}
         try
         {
             List descriptors = null;

@@ -48,6 +48,8 @@ import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
 
 import org.netbeans.modules.uml.integration.ide.events.ClassInfo;
 
+import org.netbeans.modules.uml.codegen.java.merging.Merger;
+
 
 public class JavaCodegen implements ICodeGenerator {
 
@@ -75,6 +77,14 @@ public class JavaCodegen implements ICodeGenerator {
 
     
     public void generate(IClassifier classifier, String targetFolderName, boolean backup) {
+
+	// temporary detour to not mess up with codegen now,
+	// will be refactored back soon
+	if (System.getProperty("uml.codegen.merge") != null) {
+	    generate_merge(classifier, targetFolderName, backup); 
+	    return;
+	}
+
 
 	try {
 	    
@@ -141,6 +151,117 @@ public class JavaCodegen implements ICodeGenerator {
 			parameters.put("classInfo", clinfo);
 			parameters.put("modelElement", classifier);
 			DataObject n = obj.createFromTemplate(folder, clinfo.getName(), parameters);
+
+			try {
+			    // TBD codegen inteface returning associative map 
+			    // (classifier, generated files) that makes sense in that type 
+			    // of codegen; 
+			    // the codegen client to decide what type of sources / of what codegen, 
+			    // to associate, if any, with the element
+			    List<IElement> sourceFiles =  classifier.getSourceFiles();
+			    if (sourceFiles != null) {
+				for(IElement src : sourceFiles) {
+				    if (src instanceof ISourceFileArtifact) {
+					classifier.removeSourceFile(((ISourceFileArtifact)src).getSourceFile());
+				    }
+				}
+			    }
+			    classifier.addSourceFileNotDuplicate(sourceFile.getCanonicalPath());
+			} catch (IOException ex) {
+			    ex.printStackTrace();
+			}
+		    } else {
+			// TBD - couldn't create the package directory for some reason
+			;			
+		    }
+		} catch (Exception e) {
+		    e.printStackTrace();		
+		}
+	    }
+	} catch (Exception e) {
+	    e.printStackTrace();		
+	}
+
+    }
+    
+    public void generate_merge(IClassifier classifier, String targetFolderName, boolean backup) {
+
+	try {
+	    
+	    
+	    ClassInfo clinfo = new ClassInfo(classifier);
+
+	    // skip inner class/interface/enumeration elements
+	    // as they are taken care of by their outer class code gen
+	    if (clinfo.getOuterClass() != null)
+		return;
+        
+	    clinfo.setMethodsAndMembers(classifier);
+	    clinfo.setExportSourceFolderName(targetFolderName);
+	    clinfo.setComment(classifier.getDocumentation());
+
+	    // TODO sourceFile name determination and thus existence 
+	    //should be moved below to be done based on the templates descs
+	    File sourceFile = sourceFile(targetFolderName, classifier);
+	    File newSourceFile = null;
+	    String newTargetFolderName = null;
+	    if (sourceFile.exists()) {
+
+		newTargetFolderName = "/tmp/generated_"+((int)(Math.random() * 10000));
+		new File(newTargetFolderName).mkdirs();		
+		clinfo.setExportSourceFolderName(new File(newTargetFolderName).getAbsolutePath());
+		newSourceFile = sourceFile(newTargetFolderName, classifier);
+
+		if (backup) {
+		    FileObject buFileObj = backupFile(sourceFile);		
+		    if (buFileObj != null) {
+			FileObject efo = FileUtil.toFileObject(sourceFile);
+			if (efo != null) 
+			    ; //efo.delete();
+		    }
+		}		
+		try {
+		    //clinfo.updateFilename(sourceFile.getCanonicalPath());
+		} catch (Exception ex) {
+		    ex.printStackTrace();
+		}
+	    } 
+                
+	    // 2 possible places to get templates from - 
+	    // registry and teplates subdir of the project 
+            FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
+	    FileObject root = fs.getRoot().getFileObject("Templates/UML/CodeGeneration/Java");
+	    String projTemplPath = clinfo.getOwningProject().getBaseDirectory()+File.separator+"templates"+File.separator+"java";
+
+	    List<TemplateDesc> templateDescs = templatesToUse(clinfo);
+	    Iterator<TemplateDesc> iterDescs = templateDescs.iterator();
+	    while(iterDescs.hasNext()) {
+		TemplateDesc templDesc = iterDescs.next();	    		
+		try {
+		    FileObject tfo;
+		    File tf = new File(projTemplPath + File.separator + templDesc.templateName);
+		    if (tf.exists()) {
+			tfo = FileUtil.toFileObject(tf);
+		    } else {
+			tfo = root.getFileObject(templDesc.templateName);
+		    }
+		    
+		    tfo.setAttribute("javax.script.ScriptEngine", "freemarker");
+		    DataObject obj = DataObject.find(tfo);
+	    		    
+		    FileObject dfo = clinfo.getExportPackageFileObject();
+		    if (dfo != null) {
+		
+			DataFolder folder = DataFolder.findFolder(dfo);
+			//Map parameters = Collections.singletonMap("classInfo", clinfo);
+			HashMap parameters = new HashMap();
+			parameters.put("classInfo", clinfo);
+			parameters.put("modelElement", classifier);
+			DataObject n = obj.createFromTemplate(folder, clinfo.getName(), parameters);
+
+			if (newSourceFile != null) {
+			    new Merger(newSourceFile.getAbsolutePath(), sourceFile.getAbsolutePath()).merge();
+			}
 
 			try {
 			    // TBD codegen inteface returning associative map 
