@@ -70,56 +70,62 @@ class ProjectClassLoader extends ClassLoader {
             }
         }
         Class c = null;
-        String filename = name.replace('.', '/').concat(".class"); // NOI18N
-        URL url = projectClassLoaderDelegate.getResource(filename);
-        if (url != null) {
-            try {
-                InputStream is = url.openStream();
-                byte[] data = null;
-                int first;
-                int available = is.available();
-                while ((first = is.read()) != -1) {
-                    int length = is.available();
-                    if (length != available) { // Workaround for issue 4401122
-                        length++;
-                    }
-                    byte[] b = new byte[length];
-                    b[0] = (byte) first;
-                    int count = 1;
-                    while (count < length) {
-                        int read = is.read(b, count, length - count);
-                        assert (read != -1);
-                        count += read;
-                    }
-                    if (data == null) {
-                        data = b;
-                    }
-                    else {
-                        byte[] temp = new byte[data.length + count];
-                        System.arraycopy(data, 0, temp, 0, data.length);
-                        System.arraycopy(b, 0, temp, data.length, count);
-                        data = temp;
-                    }
-                }
-                int dot = name.lastIndexOf('.');
-                if (dot != -1) { // Is there anything we should do for the default package?
-                    String packageName = name.substring(0, dot);
-                    Package pakcage = getPackage(packageName);
-                    if (pakcage == null) {
-                        // PENDING are we able to determine the attributes somehow?
-                        definePackage(packageName, null, null, null, null, null, null, null);
-                    }
-                }
-                c = defineClass(name, data, 0, data.length);
-            }
-            catch (Exception ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-            }
-        }
-        else if (ClassPathUtils.getClassLoadingType(name) == ClassPathUtils.SYSTEM_CLASS) {
-            // fallback to system classloader for indirectly loaded classes
-            // e.g. if a bean uses GroupLayout then supply it automatically
+        if (ClassPathUtils.getClassLoadingType(name) == ClassPathUtils.SYSTEM_CLASS) {
+            // This gets called if some class from user project needs a class that
+            // is defined as system (example: a custom binding converter).
+            // [Previously (5.5) this was used only as fallback if not found in
+            // the project. Changed due to the beans binding. So now it is not
+            // possible to load such a class from project. If we find a case
+            // when the project class needs to be preferred over the system,
+            // we'll need an additional category to SYSTEM_CLASS.]
             c = systemClassLoader.loadClass(name);
+        } else {
+            String filename = name.replace('.', '/').concat(".class"); // NOI18N
+            URL url = projectClassLoaderDelegate.getResource(filename);
+            if (url != null) {
+                try {
+                    InputStream is = url.openStream();
+                    byte[] data = null;
+                    int first;
+                    int available = is.available();
+                    while ((first = is.read()) != -1) {
+                        int length = is.available();
+                        if (length != available) { // Workaround for issue 4401122
+                            length++;
+                        }
+                        byte[] b = new byte[length];
+                        b[0] = (byte) first;
+                        int count = 1;
+                        while (count < length) {
+                            int read = is.read(b, count, length - count);
+                            assert (read != -1);
+                            count += read;
+                        }
+                        if (data == null) {
+                            data = b;
+                        }
+                        else {
+                            byte[] temp = new byte[data.length + count];
+                            System.arraycopy(data, 0, temp, 0, data.length);
+                            System.arraycopy(b, 0, temp, data.length, count);
+                            data = temp;
+                        }
+                    }
+                    int dot = name.lastIndexOf('.');
+                    if (dot != -1) { // Is there anything we should do for the default package?
+                        String packageName = name.substring(0, dot);
+                        Package pakcage = getPackage(packageName);
+                        if (pakcage == null) {
+                            // PENDING are we able to determine the attributes somehow?
+                            definePackage(packageName, null, null, null, null, null, null, null);
+                        }
+                    }
+                    c = defineClass(name, data, 0, data.length);
+                }
+                catch (Exception ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                }
+            }
         }
         if (c == null)
             throw new ClassNotFoundException(name);
