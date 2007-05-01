@@ -1132,8 +1132,12 @@ public class CasaWrapperModel extends CasaModelImpl {
                 "#xpointer(/definitions/service[@name='" + // NOI18N
                 newServiceName + "']/port[@name='" + newPortName + "'])"; // NOI18N
                 
+        String tns = casaWSDLModel.getDefinitions().getTargetNamespace(); 
+
         return addCasaPortToModel(componentName, 
-                 newServiceName, newPortName, portHref, null, x, y);
+                new QName(""),  // empty interface qname
+                new QName(tns, newServiceName), 
+                newPortName, portHref, null, x, y);
     }
     
     private String getCasaWSDLFileName() {
@@ -1193,7 +1197,7 @@ public class CasaWrapperModel extends CasaModelImpl {
 
             String componentName = bi.getBcName();
             String newServiceName = ((Service) (port.getParent())).getName();
-            String newPortName = port.getName();
+            String newPortName = port.getName();            
             int x = 0;
             int y = 0;
             String fname = wsdlFile.getCanonicalPath();
@@ -1211,9 +1215,13 @@ public class CasaWrapperModel extends CasaModelImpl {
                 }
             }
             
-            assert false;
-//            return addCasaPortToModel(componentName, 
-//                    newServiceName, newPortName, portHref, port, x, y);
+            Definitions definitions = port.getModel().getDefinitions();
+            String tns = definitions.getTargetNamespace();
+            String newInterfaceName = port.getBinding().get().getType().get().getName();
+            return addCasaPortToModel(componentName, 
+                    new QName(tns, newInterfaceName),
+                    new QName(tns, newServiceName), 
+                    newPortName, portHref, port, x, y);
         } catch (Exception ex) {
             // add failed...
             ex.printStackTrace();
@@ -1223,13 +1231,11 @@ public class CasaWrapperModel extends CasaModelImpl {
     }
     
     private CasaPort addCasaPortToModel(String componentName,
-            String newServiceName, String newPortName,
+            QName newInterfaceQName,
+            QName newServiceQName, String newPortName,
             String portHref, Port port, int x, int y) {
         CasaComponentFactory casaFactory = getFactory();
         CasaEndpoint newEndpoint;
-        
-        String newServiceNamespace = 
-                getCasaWSDLModel(false).getDefinitions().getTargetNamespace(); // ???
         
         CasaEndpoints endpoints = getRootComponent().getEndpoints();
         startTransaction();
@@ -1239,8 +1245,8 @@ public class CasaWrapperModel extends CasaModelImpl {
             String newEndpointID = getUniqueEndpointID(this);
             newEndpoint.setName(newEndpointID);
             newEndpoint.setEndpointName(newPortName); 
-            newEndpoint.setInterfaceQName(new QName(""));
-            newEndpoint.setServiceQName(new QName(newServiceNamespace, newServiceName));
+            newEndpoint.setInterfaceQName(newInterfaceQName);
+            newEndpoint.setServiceQName(newServiceQName);
             
             endpoints.addEndpoint(-1, newEndpoint);
         } finally {
