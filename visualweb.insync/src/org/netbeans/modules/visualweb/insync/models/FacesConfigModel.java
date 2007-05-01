@@ -56,10 +56,20 @@ public class FacesConfigModel extends Model{
         webModule = WebModule.getWebModule(owner.getProject().getProjectDirectory());
     }
     
-    private JSFConfigModel getDefaultFacesConfigModel() {
+    /**
+     * @return default configuration file for the project
+     */ 
+    public FileObject getFile() {
         FileObject[] configFiles = ConfigurationUtils.getFacesConfigFiles(webModule);
-        assert Trace.trace("insync.faces.model", "FCM.FacesConfigModel file:" + configFiles[0]);
-        return ConfigurationUtils.getConfigModel(configFiles[0], true);
+        if(configFiles.length > 0) {
+            assert Trace.trace("insync.faces.model", "FCM.FacesConfigModel file:" + configFiles[0]);
+            return configFiles[0];
+        }
+        return null;
+    }
+    
+    private JSFConfigModel getDefaultFacesConfigModel() {
+        return ConfigurationUtils.getConfigModel(getFile(), true);
     }
     
     //--------------------------------------------------------------------------------- MBean access
@@ -171,10 +181,12 @@ public class FacesConfigModel extends Model{
         DataObject dObj = (DataObject)model.getModelSource().getLookup().lookup(DataObject.class);
         if (dObj != null) {
             SaveCookie saveCookie = (SaveCookie)dObj.getLookup().lookup(SaveCookie.class);
-            try {
-                saveCookie.save();
-            } catch (IOException ioe) {
-                throw new RuntimeException(ioe);
+            if(saveCookie != null) {
+                try {
+                    saveCookie.save();
+                } catch (IOException ioe) {
+                    throw new RuntimeException(ioe);
+                }
             }
         }
     }
@@ -190,13 +202,6 @@ public class FacesConfigModel extends Model{
         return false;
     }
     
-    private URL url;
-    {
-        try {
-        url = new URL("xxxxx");
-        }catch( MalformedURLException e){
-        }
-    }
     private boolean isBusted(JSFConfigModel model) {
         return model.getState() != State.VALID ? true : false;
     }

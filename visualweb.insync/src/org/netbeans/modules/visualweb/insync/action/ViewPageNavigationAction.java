@@ -76,7 +76,7 @@ public class ViewPageNavigationAction  extends AbstractDesignBeanAction {
         DesignContext context = designBeans[0].getDesignContext();
         // XXX Casting is error-prone.
         FacesModel facesModel = ((LiveUnit)context).getModel();
-        FileObject navigationFile = JsfProjectUtils.getNavigationFile(facesModel.getProject());
+        FileObject navigationFile = facesModel.getOwner().getConfigModel().getFile();
         if (navigationFile == null) {
             return null;
         }
