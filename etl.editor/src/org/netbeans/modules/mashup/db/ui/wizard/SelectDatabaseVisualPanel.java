@@ -1,0 +1,209 @@
+/*
+ * SelectDatabaseVisualPanel.java
+ *
+ * Created on October 17, 2006, 3:27 PM
+ */
+
+package org.netbeans.modules.mashup.db.ui.wizard;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.Set;
+import javax.swing.ButtonGroup;
+import javax.swing.JComboBox;
+import javax.swing.JRadioButton;
+
+import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.modules.mashup.db.ui.AxionDBConfiguration;
+import org.netbeans.modules.sql.framework.common.utils.DBExplorerConnectionUtil;
+
+
+/**
+ * Visual panel which displays the available mashup databases.
+ *
+ * @author  ks161616
+ */
+public class SelectDatabaseVisualPanel extends javax.swing.JPanel {
+    
+    private boolean populated;
+    private SelectDatabasePanel owner;
+    
+    private String selectedDB;
+    
+    private String tableType;
+    
+    class CustomItemListener implements ItemListener {
+        public void itemStateChanged(ItemEvent e) {
+            JComboBox combo = (JComboBox)e.getSource();
+            if((selectedDB = (String) combo.getSelectedItem()) != null) {
+                SelectDatabaseVisualPanel.this.owner.fireChangeEvent();
+            }
+        }
+    }
+    
+    /** Creates new form SelectDatabaseVisualPanel */
+    public SelectDatabaseVisualPanel() {
+        initComponents();
+        databasesCombo.removeAllItems();
+        populateDBList();
+    }
+    
+    public SelectDatabaseVisualPanel(SelectDatabasePanel panel) {
+        this();
+        this.owner = panel;
+        databasesCombo.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e) {
+                JComboBox combo = (JComboBox)e.getSource();
+                if((selectedDB = (String) combo.getSelectedItem()) != null) {
+                    SelectDatabaseVisualPanel.this.owner.fireChangeEvent();
+                }
+            }
+        });
+        if(databasesCombo.getItemCount() != 0) {
+            databasesCombo.setSelectedIndex(0);
+        }
+    }
+    
+    public String getName() {
+        return "Choose Mashup Database";
+    }
+    
+    public String getSelectedDatabase() {
+        return selectedDB;
+    }
+    
+    private void populateDBList(){
+        Set<String> urls = new HashSet<String>();
+        String workDir = getDefaultWorkingFolder();
+        File f = new File(workDir);
+        File[] db = null;
+        if(f.exists()) {
+            db = f.listFiles();
+            for(int i = 0; i < db.length; i++) {
+                String ver = null;
+                try {
+                    ver = db[i].getCanonicalPath() + "\\" + db[i].getName().toUpperCase() + ".VER";
+                    File version = new File(ver);
+                    if(version.exists()) {
+                        String url = "jdbc:axiondb:" + db[i].getName()+ ":" + getDefaultWorkingFolder() + db[i].getName();
+                        urls.add(url);
+                        DatabaseConnection con = ConnectionManager.getDefault().getConnection(url);
+                        if(con == null) {
+                            DBExplorerConnectionUtil.createConnection("org.axiondb.jdbc.AxionDriver", url, "sa", "sa");
+                        }
+                    }
+                } catch (Exception ex) {
+                    //ignore
+                }
+            }
+        }
+        DatabaseConnection[] dbconns = ConnectionManager.getDefault().getConnections();
+        for (int i=0; i < dbconns.length; i++) {
+            if (dbconns[i].getDriverClass().equals("org.axiondb.jdbc.AxionDriver")) {
+                urls.add(dbconns[i].getDatabaseURL());
+            }
+        }
+        for(String url: urls) {
+            databasesCombo.addItem(url);
+        }
+        if(databasesCombo.getItemCount() != 0 ) {
+            this.populated = true;
+        } else {
+            error.setText("No Mashup Database found.");
+            this.populated = false;
+        }
+    }
+    
+    private String getDefaultWorkingFolder() {
+        File conf = AxionDBConfiguration.getConfigFile();
+        Properties prop = new Properties();
+        try {
+            FileInputStream in = new FileInputStream(conf);
+            prop.load(in);
+        } catch (FileNotFoundException ex) {
+            //ignore
+        } catch (IOException ex) {
+            //ignore
+        }
+        return prop.getProperty(AxionDBConfiguration.PROP_DB_LOC);
+    }
+    
+    public boolean isPopulated() {
+        return this.populated;
+    }
+    
+    /** This method is called from within the constructor to
+     * initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is
+     * always regenerated by the Form Editor.
+     */
+    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    private void initComponents() {
+        buttonGroup1 = new javax.swing.ButtonGroup();
+        jPanel1 = new javax.swing.JPanel();
+        databasesCombo = new javax.swing.JComboBox();
+        error = new javax.swing.JLabel();
+
+        setMaximumSize(new java.awt.Dimension(500, 200));
+        setMinimumSize(new java.awt.Dimension(50, 50));
+        setPreferredSize(new java.awt.Dimension(390, 160));
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Available Databases"));
+        databasesCombo.setToolTipText("Available Databases");
+        databasesCombo.setAutoscrolls(true);
+
+        error.setForeground(new java.awt.Color(255, 0, 0));
+
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                .add(org.jdesktop.layout.GroupLayout.LEADING, error, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(org.jdesktop.layout.GroupLayout.LEADING, databasesCombo, 0, 347, Short.MAX_VALUE))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(databasesCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(error, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 12, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(65, Short.MAX_VALUE))
+        );
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 367, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(13, Short.MAX_VALUE))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+    }// </editor-fold>//GEN-END:initComponents
+    
+    
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.JComboBox databasesCombo;
+    private javax.swing.JLabel error;
+    private javax.swing.JPanel jPanel1;
+    // End of variables declaration//GEN-END:variables
+}

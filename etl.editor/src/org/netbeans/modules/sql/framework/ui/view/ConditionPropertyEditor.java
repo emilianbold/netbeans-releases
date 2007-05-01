@@ -1,0 +1,239 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ * 
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+package org.netbeans.modules.sql.framework.ui.view;
+
+import java.awt.Component;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.beans.PropertyEditorSupport;
+import java.util.List;
+
+import org.netbeans.modules.sql.framework.model.RuntimeDatabaseModel;
+import org.netbeans.modules.sql.framework.model.RuntimeInput;
+import org.netbeans.modules.sql.framework.model.SQLCondition;
+import org.netbeans.modules.sql.framework.model.SQLConstants;
+import org.netbeans.modules.sql.framework.model.SQLDBTable;
+import org.netbeans.modules.sql.framework.model.SQLDefinition;
+import org.netbeans.modules.sql.framework.model.SQLObject;
+import org.netbeans.modules.sql.framework.model.SQLPredicate;
+import org.netbeans.modules.sql.framework.model.SourceTable;
+import org.netbeans.modules.sql.framework.model.TargetTable;
+import org.netbeans.modules.sql.framework.model.utils.ConditionUtil;
+import org.netbeans.modules.sql.framework.model.utils.SQLObjectUtil;
+import org.netbeans.modules.sql.framework.ui.editor.property.IProperty;
+import org.netbeans.modules.sql.framework.ui.editor.property.IPropertyEditor;
+import org.netbeans.modules.sql.framework.ui.view.conditionbuilder.ConditionBuilderUtil;
+import org.netbeans.modules.sql.framework.ui.view.conditionbuilder.ConditionBuilderView;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
+
+import com.sun.sql.framework.utils.Logger;
+
+/**
+ * @author Ritesh Adval
+ * @author Jonathan Giron
+ * @version $Revision$
+ */
+
+public class ConditionPropertyEditor extends PropertyEditorSupport implements IPropertyEditor {
+
+    public static class Validation extends ConditionPropertyEditor {
+        public Validation(IGraphViewContainer editor, SQLDBTable table) {
+            super(editor, table);
+        }
+
+        protected Component getCustomEditorForSource() {
+            return ConditionBuilderUtil.getValidationConditionBuilderView((SourceTable) table, editor);
+        }
+
+        protected Component getCustomEditorForTarget() {
+            throw new UnsupportedOperationException("Validation Condition is not supported for target table");
+        }
+    }
+    
+    public static class OuterFilter extends ConditionPropertyEditor {
+        public OuterFilter(IGraphViewContainer editor, SQLDBTable table) {
+            super(editor, table);
+        }
+
+        protected Component getCustomEditorForSource() {
+        	throw new UnsupportedOperationException("Validation Condition is not supported for target table");
+        }
+
+        protected Component getCustomEditorForTarget() {
+        	return ConditionBuilderUtil.getFilterConditionBuilderView((TargetTable) table, editor);
+        }
+    }
+
+    /* log4j logger category */
+    private static final String LOG_CATEGORY = ConditionPropertyEditor.class.getName();
+
+    protected ConditionBuilderView cView;
+    protected IGraphViewContainer editor;
+    protected SQLDBTable table;
+
+    private SQLCondition conditionContainer;
+    private PropertyChangeSupport iPropertyChange = new PropertyChangeSupport(this);
+    private IProperty property;
+
+    /** Creates a new instance of ConditionPropertyEditor */
+    public ConditionPropertyEditor(IGraphViewContainer editor, SQLDBTable table) {
+        this.editor = editor;
+        this.table = table;
+    }
+
+    /**
+     * Register a listener for the PropertyChange event. The class will fire a
+     * PropertyChange value whenever the value is updated.
+     * 
+     * @param listener An object to be invoked when a PropertyChange event is fired.
+     */
+    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+        iPropertyChange.addPropertyChangeListener(listener);
+    }
+
+    public String getAsText() {
+        String sql = "";
+        String text = conditionContainer != null ? conditionContainer.getConditionText() : null;
+
+        return text != null ? text : sql;
+    }
+
+    public Component getCustomEditor() {
+        if (table.getObjectType() == SQLConstants.TARGET_TABLE) {
+            return getCustomEditorForTarget();
+        }
+        return getCustomEditorForSource();
+    }
+
+    public String getJavaInitializationString() {
+        return super.getJavaInitializationString();
+    }
+
+    public IProperty getProperty() {
+        return property;
+    }
+
+    public Object getValue() {
+        return this.conditionContainer;
+    }
+
+    /**
+     * Remove a listener for the PropertyChange event.
+     * 
+     * @param listener The PropertyChange listener to be removed.
+     */
+    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+        iPropertyChange.removePropertyChangeListener(listener);
+    }
+
+    /**
+     * Sets the property value by parsing a given String. May raise
+     * java.lang.IllegalArgumentException if either the String is badly formatted or if
+     * this kind of property can't be expressed as text.
+     * 
+     * @param text The string to be parsed.
+     */
+    public void setAsText(String text) {
+        String oldText = this.conditionContainer.getConditionText();
+        if (this.conditionContainer != null && text != null && !text.equals(oldText)) {
+            try {
+                this.conditionContainer = (SQLCondition) conditionContainer.cloneSQLObject();
+            } catch (CloneNotSupportedException ex) {
+                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "setAsText", "error cloning the condition ", ex);
+                return;
+            }
+
+            this.conditionContainer.setConditionText(text);
+            SQLDefinition def = SQLObjectUtil.getAncestralSQLDefinition((SQLObject) conditionContainer.getParent());
+            try {
+                SQLObject obj = ConditionUtil.parseCondition(text, def);
+                conditionContainer.removeAllObjects();
+                ConditionUtil.populateCondition(conditionContainer, obj);
+                // if we do not get a predicate then the condition is invalid
+                // and if text is not empty string
+                if (!(obj instanceof SQLPredicate) && !text.trim().equals("")) {
+                    warnForInvalidCondition();
+                }
+            } catch (Exception ex) {
+                Logger.printThrowable(Logger.WARN, LOG_CATEGORY, "setAsText", "Error finding root predicate from text condition " + text, ex);
+                warnForInvalidCondition();
+            }
+
+            // if user modified text then change the gui mode
+            this.conditionContainer.setGuiMode(SQLCondition.GUIMODE_SQLCODE);
+            try {
+                if (this.property != null) {
+                    this.property.setValue(this.conditionContainer);
+                }
+            } catch (Exception ex) {
+                Logger.printThrowable(Logger.WARN, LOG_CATEGORY, "setAsText", "Error occurred in setting the property value for condition " + text,
+                    ex);
+            }
+        }
+    }
+
+    public void setProperty(IProperty property) {
+        this.property = property;
+    }
+
+    public void setValue(Object value) {
+        this.conditionContainer = (SQLCondition) value;
+    }
+
+    public boolean supportsCustomEditor() {
+        return true;
+    }
+
+    protected void addRuntimeInput(List tables) {
+        // add the runtime arguments also.
+        RuntimeInput rInput = getRuntimeInput();
+        if (rInput != null) {
+            tables.add(rInput);
+        }
+    }
+
+    protected Component getCustomEditorForSource() {
+        return ConditionBuilderUtil.getConditionBuilderView((SourceTable) table, editor);
+    }
+
+    protected Component getCustomEditorForTarget() {
+        return ConditionBuilderUtil.getJoinConditionBuilderView((TargetTable) table, editor);
+    }
+
+    protected RuntimeInput getRuntimeInput() {
+        SQLDefinition sqlDefinition = SQLObjectUtil.getAncestralSQLDefinition(table);
+        if (sqlDefinition != null) {
+            RuntimeDatabaseModel runModel = sqlDefinition.getRuntimeDbModel();
+            if (runModel != null) {
+                RuntimeInput rInput = runModel.getRuntimeInput();
+                return rInput;
+            }
+        }
+
+        return null;
+    }
+
+    private void warnForInvalidCondition() {
+        DialogDisplayer.getDefault().notify(
+            new NotifyDescriptor.Message(NbBundle.getMessage(ConditionPropertyEditor.class, "ERR_condition_invalid"),
+                NotifyDescriptor.WARNING_MESSAGE));
+    }
+}

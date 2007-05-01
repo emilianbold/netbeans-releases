@@ -1,0 +1,376 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ * 
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+package org.netbeans.modules.sql.framework.model;
+
+import java.util.List;
+
+import org.netbeans.modules.model.database.DBColumn;
+import org.netbeans.modules.model.database.DBConnectionDefinition;
+import org.netbeans.modules.model.database.DBTable;
+import org.netbeans.modules.model.database.DatabaseModel;
+import org.netbeans.modules.sql.framework.common.jdbc.SQLDBConnectionDefinition;
+import org.w3c.dom.Element;
+
+import com.sun.sql.framework.exception.BaseException;
+import com.sun.sql.framework.utils.Logger;
+
+/**
+ * SQL Framework Object factory
+ * 
+ * @author Ritesh Adval
+ * @version $Revision$
+ */
+public abstract class SQLModelObjectFactory {
+
+    private static SQLModelObjectFactory instance = null;
+    private static final String LOG_CATEGORY = SQLModelObjectFactory.class.getName();
+
+    /**
+     * Returns Singlton-instance of SQL Framework Object factory
+     * 
+     * @return SQLModelObjectFactory factory instance
+     */
+    public static SQLModelObjectFactory getInstance() {
+        if (instance == null) {
+            try {
+                Class implClass = Class.forName("org.netbeans.modules.sql.framework.model.impl.SQLModelObjectFactoryImpl");
+                instance = (SQLModelObjectFactory) implClass.newInstance();
+            } catch (Exception ex) {
+                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, null, "Can't instantiate factory class", ex);
+            }
+        }
+        return instance;
+    }
+
+    /**
+     * Create a ConditionColumn
+     * 
+     * @return ConditionColumn
+     */
+    public abstract ColumnRef createColumnRef();
+
+    /**
+     * Create a ConditionColumn for a SQLDBColumn
+     * 
+     * @param column
+     * @return ConditionColumn
+     */
+    public abstract ColumnRef createColumnRef(SQLDBColumn column);
+
+    /**
+     * Create an extended DB Connection Definition
+     * 
+     * @return SQLDBConnectionDefinition
+     */
+    public abstract SQLDBConnectionDefinition createDBConnectionDefinition();
+
+    public abstract SQLDBConnectionDefinition createDBConnectionDefinition(DBConnectionDefinition conf);
+
+    public abstract SQLDBConnectionDefinition createDBConnectionDefinition(String name,
+                                                                           String dbType,     
+                                                                           String driverClass, 
+                                                                           String url,
+                                                                           String user,
+                                                                           String password,
+                                                                           String description);
+    /**
+     * Create an extended DB Connection Definition from a given XML Element that hold the
+     * connection informations.
+     * 
+     * @param element XML Element
+     * @return SQLDBConnectionDefinition
+     * @throws BaseException
+     */
+    public abstract SQLDBConnectionDefinition createDBConnectionDefinition(Element element) throws BaseException;
+
+    /**
+     * Create a DBModel Object
+     * 
+     * @return SQLDBModel
+     */
+    public abstract SQLDBModel createDBModel(int type);
+
+    /**
+     * create a DBModel Object
+     * 
+     * @param src DatabaseModel
+     * @param modelType int
+     * @param sqlParent SQLFrameworkParentObject
+     * @return SQLDBModel
+     */
+    public abstract SQLDBModel createDBModel(DatabaseModel src, int modelType, SQLFrameworkParentObject sqlParent);
+
+    /**
+     * Create a SQLGroupBy Object
+     * 
+     * @return SQLGroupBy
+     */
+    public abstract SQLGroupBy createGroupBy();
+
+    /**
+     * Create a SQLGroupBy Object
+     * 
+     * @param columns List of columns
+     * @param parent Table that holds the GroupBy object
+     * @return SQLGroupBy
+     */
+    public abstract SQLGroupBy createGroupBy(List columns, Object parent);
+
+    /**
+     * Create a SQLFilter that accepts a single input (e.g., IS NULL, IS NOT NULL).
+     * 
+     * @return
+     */
+    public abstract SQLFilter createLeftUnarySQLFilter();
+
+    /**
+     * Create a SQLFilter that accepts a single input (e.g., NOT).
+     * 
+     * @return
+     */
+    public abstract SQLFilter createRightUnarySQLFilter();
+
+    public abstract RuntimeDatabaseModel createRuntimeDatabaseModel();
+
+    public abstract RuntimeInput createRuntimeInput();
+
+    public abstract RuntimeInput createRuntimeInput(RuntimeInput rinput);
+
+    public abstract RuntimeOutput createRuntimeOutput();
+
+    public abstract RuntimeOutput createRuntimeOutput(RuntimeOutput routput);
+
+    /**
+     * Create a Source Column for a given DB Column
+     * 
+     * @param src DBColumn
+     * @return SourceColumn
+     */
+    public abstract SourceColumn createSourceColumn(DBColumn src);
+
+    /**
+     * Create a Source Column
+     * 
+     * @param colName String
+     * @param sqlJdbcType int
+     * @param colScale int
+     * @param colPrecision int
+     * @param isNullable boolean
+     * @return SourceColumn
+     */
+    public abstract SourceColumn createSourceColumn(String colName, int sqlJdbcType, int colScale, int colPrecision, boolean isNullable);
+
+    /**
+     * Create a Source Column
+     * 
+     * @param colName String
+     * @param sqlJdbcType int
+     * @param colScale int
+     * @param colPrecision int
+     * @param isPrimaryKey boolean
+     * @param isForeignKey boolean
+     * @param isIndexed boolean
+     * @param isNullable boolean
+     * @return SourceColumn
+     */
+    public abstract SourceColumn createSourceColumn(String colName, int sqlJdbcType, int colScale, int colPrecision, boolean isPrimaryKey,
+            boolean isForeignKey, boolean isIndexed, boolean isNullable);
+
+    /**
+     * Create a SourceTable
+     * 
+     * @param source DBTable
+     * @return SourceTable
+     */
+    public abstract SourceTable createSourceTable(DBTable source);
+
+    /**
+     * Create a SourceTable
+     * 
+     * @param name String
+     * @param schema String
+     * @param catalog String
+     * @return SourceTable
+     */
+    public abstract SourceTable createSourceTable(String name, String schema, String catalog);
+
+    /**
+     * Create a SQLCondition Object
+     * 
+     * @param conditionName String
+     * @return SQLCondition
+     */
+    public abstract SQLCondition createSQLCondition(String conditionName);
+
+    /**
+     * Creates an empty SQL Definition Object
+     * 
+     * @return SQLDefinition
+     */
+    public abstract SQLDefinition createSQLDefinition();
+
+    /**
+     * Creates a SQL Definition Object for a given XML Element, that hold the definition
+     * information
+     * 
+     * @return SQLDefinition
+     */
+    public abstract SQLDefinition createSQLDefinition(Element element) throws BaseException;
+
+    /**
+     * Creates a SQL Definition Object for a given XML Element, that hold the definition
+     * information and links itself to the container/parent
+     * 
+     * @param element
+     * @param parent SQLFrameworkParentObject
+     * @return SQLDefinition
+     * @throws BaseException
+     */
+    public abstract SQLDefinition createSQLDefinition(Element element, SQLFrameworkParentObject parent) throws BaseException;
+
+    /**
+     * Creates a named empty SQL Definition Object
+     * 
+     * @return SQLDefinition
+     */
+    public abstract SQLDefinition createSQLDefinition(String defName);
+
+    /**
+     * Create a SQLFilter
+     * 
+     * @return SQLFilter
+     */
+    public abstract SQLFilter createSQLFilter();
+
+    /**
+     * Create SQLFilter for a given XML Element
+     * 
+     * @param element
+     * @return SQLFilter
+     * @throws BaseException
+     */
+    public abstract SQLFilter createSQLFilter(Element element) throws BaseException;
+
+    /**
+     * @return
+     */
+    public abstract SQLJoinOperator createSQLJoinOperator();
+
+    /**
+     * Create a SQLJoinTable
+     * 
+     * @param source SourceTable
+     * @return SQLJoinTable
+     */
+    public abstract SQLJoinTable createSQLJoinTable(SourceTable source);
+
+    public abstract SQLJoinView createSQLJoinView();
+
+    /**
+     * Create a SQLLiteral
+     * 
+     * @param name String
+     * @param value String
+     * @param jdbcType int
+     * @return SQLLiteral
+     * @throws BaseException
+     */
+    public abstract SQLLiteral createSQLLiteral(String name, String value, int jdbcType) throws BaseException;
+
+    /**
+     * Create a SQLPredicate
+     * 
+     * @return SQLPredicate
+     */
+    public abstract SQLPredicate createSQLPredicate();
+
+    /**
+     * Create a Target Column for a given DB Column
+     * 
+     * @param src DBColumn
+     * @return TargetColumn
+     */
+    public abstract TargetColumn createTargetColumn(DBColumn src);
+
+    /**
+     * Create a Target Column
+     * 
+     * @param colName String
+     * @param sqlJdbcType int
+     * @param colScale int
+     * @param colPrecision int
+     * @param isNullable boolean
+     * @return TargetColumn
+     */
+    public abstract TargetColumn createTargetColumn(String colName, int sqlJdbcType, int colScale, int colPrecision, boolean isNullable);
+
+    /**
+     * Create a Target Column
+     * 
+     * @param colName String
+     * @param sqlJdbcType int
+     * @param colScale int
+     * @param colPrecision int
+     * @param isPrimaryKey boolean
+     * @param isForeignKey boolean
+     * @param isIndexed boolean
+     * @param isNullable boolean
+     * @return TargetColumn
+     */
+    public abstract TargetColumn createTargetColumn(String colName, int sqlJdbcType, int colScale, int colPrecision, boolean isPrimaryKey,
+            boolean isForeignKey, boolean isIndexed, boolean isNullable);
+
+    /**
+     * Create a TargetTable
+     * 
+     * @param source DBTable
+     * @return TargetTable
+     */
+    public abstract TargetTable createTargetTable(DBTable source);
+
+    /**
+     * Create a TargetTable
+     * 
+     * @param name String
+     * @param schema String
+     * @param catalog String
+     * @return TargetTable
+     */
+    public abstract TargetTable createTargetTable(String name, String schema, String catalog);
+
+    public abstract ValidationInfo createValidationInfo(Object obj, String description, int vType);
+
+    /**
+     * Create a SQLVisibleLiteral
+     * 
+     * @param name String
+     * @param value String
+     * @param jdbcType int
+     * @return SQLLiteral
+     * @throws BaseException
+     */
+    public abstract VisibleSQLLiteral createVisibleSQLLiteral(String name, String value, int jdbcType) throws BaseException;
+
+    /**
+     * Create a VisibleSQLPredicate
+     * 
+     * @return VisibleSQLPredicate
+     */
+    public abstract VisibleSQLPredicate createVisibleSQLPredicate();
+}

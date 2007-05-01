@@ -1,0 +1,202 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ * 
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.modules.sql.framework.model.visitors;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+
+import org.netbeans.modules.sql.framework.model.SQLCaseOperator;
+import org.netbeans.modules.sql.framework.model.SQLCondition;
+import org.netbeans.modules.sql.framework.model.SQLConstants;
+import org.netbeans.modules.sql.framework.model.SQLDefinition;
+import org.netbeans.modules.sql.framework.model.SQLJoinOperator;
+import org.netbeans.modules.sql.framework.model.SQLJoinView;
+import org.netbeans.modules.sql.framework.model.SQLWhen;
+import org.netbeans.modules.sql.framework.model.SourceTable;
+import org.netbeans.modules.sql.framework.model.TargetTable;
+import org.netbeans.modules.sql.framework.model.ValidationInfo;
+import org.netbeans.modules.sql.framework.model.impl.ValidationInfoImpl;
+import org.openide.util.NbBundle;
+
+import com.sun.sql.framework.utils.Logger;
+
+/**
+ * @author Girish Patil
+ * @version $Revision$
+ */
+public class SQLOperatorInfoVisitor {
+    private static final String LOG_CATEGORY = SQLOperatorInfoVisitor.class.getName();
+
+    private boolean foundJavaOperator = false;
+    private boolean foundUserFunction = false;
+    private boolean foundValidationCondition = false;
+    private boolean pipelineForced = false;
+
+    // TODO Add flag to warn when Hex operator is being used on SQLServer or Sybase.
+
+    private boolean validate = false;
+    private List validationInfoList = new ArrayList();
+
+    public SQLOperatorInfoVisitor() {
+    }
+
+    public SQLOperatorInfoVisitor(boolean validate) {
+        this.validate = true;
+    }
+
+    public List getValidationInfoList() {
+        return this.validationInfoList;
+    }
+
+    public boolean isJavaOperatorFound() {
+        return this.foundJavaOperator;
+    }
+
+    public boolean isPipelineForced() {
+        return this.pipelineForced;
+    }
+
+    public boolean isUserFunctionFound() {
+        return this.foundUserFunction;
+    }
+
+    public boolean isValidationConditionFound() {
+        return this.foundValidationCondition;
+    }
+
+    public void visit(SourceTable sourceTable) {
+        SQLCondition eCondition = sourceTable.getExtractionCondition();
+        visit(eCondition);
+
+        SQLCondition vCondition = sourceTable.getDataValidationCondition();
+        if (vCondition != null && vCondition.isConditionDefined() && vCondition.getRootPredicate() != null) {
+            this.foundValidationCondition = true;
+            visit(vCondition);
+        }
+    }
+
+    public void visit(SQLCaseOperator caseop) {
+        Iterator whenIter = caseop.getWhenList().iterator();
+        while (whenIter.hasNext()) {
+            SQLWhen when = (SQLWhen) whenIter.next();
+            visit(when);
+        }
+    }
+
+    public void visit(SQLCondition condition) {
+        if (condition != null && condition.isConditionDefined()) {
+            if (condition.isContainsJavaOperators()) {
+                foundJavaOperator = true;
+            }
+
+            Collection uFunctions = condition.getObjectsOfType(SQLConstants.CUSTOM_OPERATOR);
+            if ((uFunctions != null) && (uFunctions.size() > 0)) {
+                this.foundUserFunction = true;
+            }
+        }
+    }
+
+    public void visit(SQLDefinition definition) {
+
+        if (definition.isContainsJavaOperators()) {
+            this.foundJavaOperator = true;
+        }
+
+        if (SQLDefinition.EXECUTION_STRATEGY_PIPELINE == definition.getExecutionStrategyCode().intValue()) {
+            this.pipelineForced = true;
+        }
+
+        Iterator it = definition.getTargetTables().iterator();
+        while (it.hasNext()) {
+            TargetTable targetTable = (TargetTable) it.next();
+            visit(targetTable);
+        }
+
+        it = definition.getObjectsOfType(SQLConstants.CASE).iterator();
+        while (it.hasNext()) {
+            SQLCaseOperator caseop = (SQLCaseOperator) it.next();
+            visit(caseop);
+        }
+
+        if (this.validate) {
+            if (this.pipelineForced || this.foundValidationCondition || this.foundJavaOperator) {
+                // Pipeline required
+                if (this.foundUserFunction) {
+                    String desc = NbBundle.getMessage(SQLOperatorInfoVisitor.class, "ERROR_can_not_use_userfx_in_pipeline");
+                    ValidationInfoImpl validationInfo = new ValidationInfoImpl(definition, desc, ValidationInfo.VALIDATION_ERROR);
+                    validationInfoList.add(validationInfo);
+                }
+            } else {
+                if (this.foundUserFunction) {
+                    String desc = NbBundle.getMessage(SQLOperatorInfoVisitor.class, "WARNING_userfx_usage");
+                    ValidationInfoImpl validationInfo = new ValidationInfoImpl(definition, desc, ValidationInfo.VALIDATION_WARNING);
+                    validationInfoList.add(validationInfo);
+                }
+            }
+        }
+    }
+
+    public void visit(SQLJoinOperator operator) {
+        SQLCondition condition = operator.getJoinCondition();
+        visit(condition);
+    }
+
+    public void visit(SQLJoinView joinView) {
+        SQLJoinOperator jOperator = joinView.getRootJoin();
+        if (jOperator != null) {
+            visit(jOperator);
+        }
+    }
+
+    public void visit(SQLWhen when) {
+        SQLCondition condition = when.getCondition();
+        visit(condition);
+    }
+
+    public void visit(TargetTable targetTable) {
+        // Visit Target Join Condition
+        SQLCondition joinCondition = targetTable.getJoinCondition();
+        visit(joinCondition);
+        
+        // Visit Target Filter Condition
+        SQLCondition filterCondition = targetTable.getFilterCondition();
+        visit(filterCondition);
+
+        // Visit view
+        SQLJoinView joinView = targetTable.getJoinView();
+        if (joinView != null) {
+            visit(joinView);
+        }
+
+        // Visit Source Tables
+        try {
+            Iterator itr = targetTable.getSourceTableList().iterator();
+            while (itr.hasNext()) {
+                SourceTable sourceTable = (SourceTable) itr.next();
+                visit(sourceTable);
+            }
+        } catch (Exception ex) {
+            Logger.printThrowable(Logger.DEBUG, LOG_CATEGORY, "targetTable.getSourceTableList()",
+                "Could not find source tables for this target table", ex);
+        }
+    }
+}

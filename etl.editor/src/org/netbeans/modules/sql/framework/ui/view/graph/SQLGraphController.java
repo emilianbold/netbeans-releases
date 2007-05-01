@@ -1,0 +1,622 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ * 
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+package org.netbeans.modules.sql.framework.ui.view.graph;
+
+import java.awt.BorderLayout;
+import java.awt.Dialog;
+import java.awt.Point;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DnDConstants;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.MissingResourceException;
+
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+
+import org.netbeans.modules.model.database.DBTable;
+import org.netbeans.modules.model.database.DBTableCookie;
+import org.netbeans.modules.sql.framework.common.utils.TagParserUtility;
+import org.netbeans.modules.sql.framework.model.GUIInfo;
+import org.netbeans.modules.sql.framework.model.SQLCanvasObject;
+import org.netbeans.modules.sql.framework.model.SQLCastOperator;
+import org.netbeans.modules.sql.framework.model.SQLConnectableObject;
+import org.netbeans.modules.sql.framework.model.SQLConstants;
+import org.netbeans.modules.sql.framework.model.SQLInputObject;
+import org.netbeans.modules.sql.framework.model.SQLObject;
+import org.netbeans.modules.sql.framework.model.SQLOperator;
+import org.netbeans.modules.sql.framework.model.SQLOperatorArg;
+import org.netbeans.modules.sql.framework.model.SQLPredicate;
+import org.netbeans.modules.sql.framework.model.TargetColumn;
+import org.netbeans.modules.sql.framework.model.VisibleSQLLiteral;
+import org.netbeans.modules.sql.framework.model.impl.SQLCustomOperatorImpl;
+import org.netbeans.modules.sql.framework.ui.graph.IGraphController;
+import org.netbeans.modules.sql.framework.ui.graph.IGraphLink;
+import org.netbeans.modules.sql.framework.ui.graph.IGraphNode;
+import org.netbeans.modules.sql.framework.ui.graph.IGraphPort;
+import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
+import org.netbeans.modules.sql.framework.ui.graph.IOperatorXmlInfo;
+import org.netbeans.modules.sql.framework.ui.graph.impl.CustomOperatorNode;
+import org.netbeans.modules.sql.framework.ui.model.SQLUIModel;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
+import org.openide.windows.WindowManager;
+
+import com.sun.sql.framework.exception.BaseException;
+import com.sun.sql.framework.utils.Logger;
+
+/**
+ * @author Ritesh Adval
+ * @version $Revision$
+ */
+public class SQLGraphController implements IGraphController {
+
+    private static final String NETBEANS_NODE_MIMETYPE = "application/x-java-openide-nodednd; class=org.openide.nodes.Node";
+
+    private static final String LOG_CATEGORY = SQLGraphController.class.getName();
+
+    private static DataFlavor[] mDataFlavorArray = new DataFlavor[1];
+
+    static {
+        try {
+            mDataFlavorArray[0] = new DataFlavor(NETBEANS_NODE_MIMETYPE);
+        } catch (ClassNotFoundException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    protected SQLUIModel collabModel;
+    protected IGraphView viewC;
+
+    private String srcParam = null;
+    private String destParam = null;
+
+    private transient int tableTypeSelected = SQLConstants.SOURCE_TABLE;
+
+    /** Creates a new instance of SQLGraphController */
+    public SQLGraphController() {
+    }
+
+    /**
+     * Handle drop.
+     * 
+     * @param e DropTargetDropEvent
+     */
+    public void handleDrop(java.awt.dnd.DropTargetDropEvent e) {
+        if (!isEditAllowed()) {
+            return;
+        }
+
+        Point loc = e.getLocation();
+        if (e.isDataFlavorSupported(mDataFlavorArray[0])) {
+            try {
+                Transferable t = e.getTransferable();
+                Object o = t.getTransferData(mDataFlavorArray[0]);
+                if (o instanceof Node) {
+                    Node.Cookie tableCookie = ((Node) o).getCookie(DBTableCookie.class);
+                    if (tableCookie != null) {
+                        DBTable nodeTable = ((DBTableCookie) tableCookie).getDBTable();
+
+                        String dlgTitle = null;
+                        try {
+                            dlgTitle = NbBundle.getMessage(SQLGraphController.class, "TITLE_dlg_table_type");
+                        } catch (MissingResourceException mre) {
+                            dlgTitle = "Add a table";
+                        }
+
+                        // Recall and use most recently selected table type.
+                        TypeSelectorPanel selectorPnl = new TypeSelectorPanel(tableTypeSelected);
+                        DialogDescriptor dlgDesc = new DialogDescriptor(selectorPnl, dlgTitle, true, NotifyDescriptor.OK_CANCEL_OPTION,
+                            NotifyDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
+                        Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
+                        dlg.show();
+
+                        if (NotifyDescriptor.OK_OPTION == dlgDesc.getValue()) {
+                            tableTypeSelected = selectorPnl.getSelectedType();
+                            if (SQLConstants.SOURCE_TABLE == tableTypeSelected) {
+                                collabModel.addSourceTable(nodeTable, loc);
+                            } else {
+                                collabModel.addTargetTable(nodeTable, loc);
+                            }
+
+                            e.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
+                        } else {
+                            e.rejectDrop();
+                        }
+                    }
+                }
+            } catch (IOException ex) {
+                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught IOException while handling DnD.", ex);
+                e.rejectDrop();
+            } catch (UnsupportedFlavorException ex) {
+                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught UnsupportedFlavorException while handling DnD.", ex);
+                e.rejectDrop();
+            } catch (BaseException ex) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.WARNING_MESSAGE));
+                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught BaseException while handling DnD.", ex);
+                e.rejectDrop();
+            }
+        } else {
+            e.rejectDrop();
+        }
+    }
+
+    /**
+     * Handle drop of arbitrary object.
+     * 
+     * @param obj Object dropped onto canvas
+     */
+    public void handleObjectDrop(Object obj) {
+        if (!isEditAllowed()) {
+            return;
+        }
+    }
+
+    /**
+     * handle new link
+     * 
+     * @param from IGraphPort
+     * @param to IGraphPort
+     */
+    public void handleLinkAdded(IGraphPort from, IGraphPort to) {
+        if (!isEditAllowed()) {
+            return;
+        }
+
+        IGraphNode srcGraphNode = null;
+        IGraphNode destGraphNode = null;
+
+        srcGraphNode = from.getDataNode();
+        destGraphNode = to.getDataNode();
+
+        if (srcGraphNode != null && destGraphNode != null && srcGraphNode.equals(destGraphNode)) {
+            return;
+        }
+
+        setParameters(from, to, srcGraphNode, destGraphNode);
+
+        SQLCanvasObject srcObj = (SQLCanvasObject) srcGraphNode.getDataObject();
+        SQLConnectableObject destObj = (SQLConnectableObject) destGraphNode.getDataObject();
+
+        if (srcObj == null && destObj == null) {
+            return;
+        }
+
+        SQLInputObject inputObj = destObj.getInput(destParam);
+        SQLObject existing = (inputObj != null) ? inputObj.getSQLObject() : null;
+        if (existing instanceof TargetColumn) {
+            existing = ((TargetColumn) existing).getValue();
+        }
+
+        if (existing != null) {
+            return;
+        }
+
+        try {
+            boolean userResponse = doTypeChecking(srcObj, destObj, srcParam, destParam);
+
+            if (srcObj != null && destObj != null && userResponse) {
+                collabModel.createLink(srcObj, srcParam, destObj, destParam);
+            }
+        } catch (Exception sqle) {
+            NotifyDescriptor d = new NotifyDescriptor.Message(sqle.toString(), NotifyDescriptor.INFORMATION_MESSAGE);
+            DialogDisplayer.getDefault().notify(d);
+        }
+    }
+
+    private boolean doTypeChecking(SQLCanvasObject srcObj, SQLConnectableObject destObj, String srcParam1, String destParam1) throws BaseException {
+        // Ignore join for type checking purposes.
+        //        if (srcObj.getObjectType() == SQLConstants.JOIN
+        //                || destObj instanceof SQLJoinOperator) {
+        //            return true;
+        //        }
+
+        String msg = null;
+        SQLObject input = srcObj;
+
+        //get the specific sub object from srcObj which we are trying to link
+        input = srcObj.getOutput(srcParam1);
+        // Obtain SourceColumn (an SQLObject) if srcObj is a source table.
+        //        if (srcObj.getObjectType() == SQLConstants.SOURCE_TABLE) {
+        //            DBColumn srcColumn = ((SourceTable) srcObj).getColumn(srcParam1);
+        //            if (srcColumn instanceof SourceColumn) {
+        //                input = (SourceColumn) srcColumn;
+        //            }
+        //        }
+
+        if (!destObj.isInputValid(destParam1, input)) {
+            try {
+                String srcObjType = TagParserUtility.getDisplayStringFor(input.getObjectType());
+                String destObjType = TagParserUtility.getDisplayStringFor(destObj.getObjectType());
+                String srcName = destObj.getDisplayName();
+
+                if (srcName != null && destParam1 != null) {
+                    msg = NbBundle.getMessage(SQLGraphController.class, "ERR_object_check_incompatible_with_argnames", new String[] { srcObjType,
+                            destObjType, destObj.getDisplayName(), destParam1});
+                } else {
+                    msg = NbBundle.getMessage(SQLGraphController.class, "ERR_object_check_incompatible_no_argnames", srcObjType, destObjType);
+                }
+            } catch (Exception e) {
+                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught Exception while resolving error message.", e);
+                msg = "Cannot link these objects together.";
+            }
+
+            NotifyDescriptor.Message m = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
+
+            DialogDisplayer.getDefault().notify(m);
+            return false;
+        }
+
+        switch (destObj.isInputCompatible(destParam1, input)) {
+            case SQLConstants.TYPE_CHECK_INCOMPATIBLE:
+                try {
+                    msg = NbBundle.getMessage(SQLGraphController.class, "ERR_type_check_incompatible");
+                } catch (MissingResourceException e) {
+                    msg = "Incompatible source and target datatypes.";
+                }
+
+                NotifyDescriptor.Message m = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
+
+                DialogDisplayer.getDefault().notify(m);
+                return false;
+
+            case SQLConstants.TYPE_CHECK_DOWNCAST_WARNING:
+                try {
+                    msg = NbBundle.getMessage(SQLGraphController.class, "ERR_type_check_downcast");
+                } catch (MissingResourceException e) {
+                    msg = "Connecting these datatypes may result in a loss of " + "precision or data truncation in the target.  Continue?";
+                }
+
+                String title = null;
+                try {
+                    title = NbBundle.getMessage(SQLGraphController.class, "TITLE_dlg_type_check_confirm");
+                } catch (MissingResourceException e) {
+                    title = "Datatype conversion";
+                }
+
+                NotifyDescriptor.Confirmation d = new NotifyDescriptor.Confirmation(msg, title, NotifyDescriptor.OK_CANCEL_OPTION,
+                    NotifyDescriptor.QUESTION_MESSAGE);
+
+                return (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION);
+
+            case SQLConstants.TYPE_CHECK_COMPATIBLE:
+            default:
+                return true;
+        }
+    }
+
+    private void setParameters(IGraphPort from, IGraphPort to, IGraphNode srcGraphNode, IGraphNode destGraphNode) {
+        if (srcGraphNode != null && destGraphNode != null) {
+            srcParam = srcGraphNode.getFieldName(from);
+            destParam = destGraphNode.getFieldName(to);
+        }
+    }
+
+    /**
+     * handle link deletion
+     * 
+     * @param link IGraphLink
+     */
+    public void handleLinkDeleted(IGraphLink link) {
+        if (!isEditAllowed()) {
+            return;
+        }
+
+        IGraphPort from = link.getFromGraphPort();
+        IGraphPort to = link.getToGraphPort();
+        IGraphNode srcGraphNode = from.getDataNode();
+        IGraphNode destGraphNode = to.getDataNode();
+
+        setParameters(from, to, srcGraphNode, destGraphNode);
+
+        //source is always canvas object and destination is always expression object
+        SQLCanvasObject srcObj = (SQLCanvasObject) srcGraphNode.getDataObject();
+        SQLConnectableObject destObj = (SQLConnectableObject) destGraphNode.getDataObject();
+
+        if (srcObj == null && destObj == null) {
+            return;
+        }
+
+        try {
+            collabModel.removeLink(srcObj, srcParam, destObj, destParam);
+        } catch (Exception e) {
+            NotifyDescriptor d = new NotifyDescriptor.Message(e.toString(), NotifyDescriptor.INFORMATION_MESSAGE);
+            DialogDisplayer.getDefault().notify(d);
+        }
+    }
+
+    /**
+     * handle node add
+     * 
+     * @param xmlInfo IOperatorXmlInfo
+     * @param dropLocation dropLocation
+     */
+    public void handleNodeAdded(IOperatorXmlInfo xmlInfo, Point dropLocation) {
+        if (!isEditAllowed()) {
+            return;
+        }
+
+        //what object type is dropped
+        String className = xmlInfo.getObjectClassName();
+
+        try {
+            //create object
+            SQLCanvasObject sqlObj = collabModel.createObject(className);
+            sqlObj.setDisplayName(xmlInfo.getName());
+
+            GUIInfo guiInfo = sqlObj.getGUIInfo();
+            guiInfo.setX(dropLocation.x);
+            guiInfo.setY(dropLocation.y);
+
+            //do special processing for following objects
+            switch (sqlObj.getObjectType()) {
+                case SQLConstants.CAST_OPERATOR:
+                    CastAsDialog castDlg = new CastAsDialog(WindowManager.getDefault().getMainWindow(), 
+                        NbBundle.getMessage(SQLGraphController.class, "TITLE_new_castas"), true);
+                    castDlg.show();
+                    if (castDlg.isCanceled()) {
+                        return;
+                    }
+                
+                    SQLCastOperator castOp = (SQLCastOperator) sqlObj;
+                    castOp.setOperatorXmlInfo(xmlInfo);
+                    
+                    castOp.setJdbcType(castDlg.getJdbcType());
+                    
+                    int precision = castDlg.getPrecision();
+                    castOp.setPrecision(precision);
+                    
+                    int scale = castDlg.getScale();
+                    castOp.setScale(scale);                    
+                    
+                    break;                  
+                
+                case SQLConstants.CUSTOM_OPERATOR:
+                    CustomOperatorPane customOptPane = new CustomOperatorPane(new ArrayList());
+                    String title = NbBundle.getMessage(BasicSQLGraphController.class, "TITLE_user_function");
+                    DialogDescriptor dlgDesc = new DialogDescriptor(customOptPane, title, true, NotifyDescriptor.OK_CANCEL_OPTION,
+                        NotifyDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
+                    Dialog customOptDialog = DialogDisplayer.getDefault().createDialog(dlgDesc);
+                    customOptDialog.setVisible(true);
+                    if (NotifyDescriptor.CANCEL_OPTION == dlgDesc.getValue()) {
+                        return;
+                    }
+                    List inputArgs = customOptPane.getArgList();
+                    SQLOperatorArg retType = customOptPane.getReturnType();
+                    CustomOperatorNode customOptNode = new CustomOperatorNode(xmlInfo, inputArgs, retType);
+                    SQLCustomOperatorImpl custOp = (SQLCustomOperatorImpl) sqlObj;
+                    custOp.setOperatorXmlInfo(customOptNode);
+                    custOp.setCustomOperatorName(customOptPane.getFunctionName());
+                    custOp.getOperatorDefinition().setArgList(inputArgs);
+                    custOp.initializeInputs(inputArgs.size());
+                    /**
+                	CustomOperatorDialog custOprDlg = new CustomOperatorDialog(WindowManager.getDefault().getMainWindow(), NbBundle.getMessage(
+                        BasicSQLGraphController.class, "TITLE_user_function"), true);
+                    custOprDlg.show();
+                    if (custOprDlg.isCanceled()) {
+                        return;
+                    }
+
+                    SQLCustomOperatorImpl custOp = (SQLCustomOperatorImpl) sqlObj;
+                    custOp.setOperatorXmlInfo(xmlInfo);
+                    custOp.setCustomOperatorName(custOprDlg.getFunctionName());
+                    custOp.initializeInputs(custOprDlg.getNumberOfArguments());
+                     */
+                    break;
+
+                case SQLConstants.VISIBLE_PREDICATE:
+                    ((SQLPredicate) sqlObj).setOperatorXmlInfo(xmlInfo);
+                    // fall through to set XML info (using common SQLOperator interface)
+
+                case SQLConstants.GENERIC_OPERATOR:
+                case SQLConstants.DATE_ARITHMETIC_OPERATOR:
+                    //for operator we need to set the type of operator
+                    // ((SQLGenericOperator) sqlObj).setOperatorType(xmlInfo.getName());
+                    ((SQLOperator) sqlObj).setOperatorXmlInfo(xmlInfo);
+                    sqlObj.setDisplayName(xmlInfo.getDisplayName());
+                    break;
+
+                case SQLConstants.VISIBLE_LITERAL:
+                    LiteralDialog dlg = new LiteralDialog(WindowManager.getDefault().getMainWindow(), 
+                        NbBundle.getMessage(SQLGraphController.class, "TITLE_new_literal"), true);
+                    dlg.show();
+
+                    // OK button is not pressed so return
+                    if (dlg.isCanceled()) {
+                        return;
+                    }
+
+                    String value = dlg.getLiteral();
+                    VisibleSQLLiteral lit = (VisibleSQLLiteral) sqlObj;
+                    lit.setJdbcType(dlg.getType());
+                    lit.setValue(value);
+                    lit.setDisplayName(xmlInfo.getDisplayName());
+
+                    break;
+            }
+
+            //now add the object
+            collabModel.addObject(sqlObj);
+            //also flag if java operators are to be used
+        } catch (BaseException e) {
+            NotifyDescriptor d = new NotifyDescriptor.Message(e.toString(), NotifyDescriptor.INFORMATION_MESSAGE);
+            DialogDisplayer.getDefault().notify(d);
+        }
+    }
+
+    /**
+     * handle node deletion
+     * 
+     * @param node IGraphNode
+     */
+    public void handleNodeRemoved(IGraphNode node) {
+        if (!isEditAllowed()) {
+            return;
+        }
+
+        try {
+            IGraphNode pNode = node.getParentGraphNode();
+            //if node has a parent then we should delete it from parent and return
+            //we do not need to go to collaboration as node is contained within
+            //its parent and deleting it from its parent should remove it
+            if (pNode != null) {
+                pNode.removeChildNode(node);
+                return;
+            }
+
+            SQLCanvasObject sqlObj = (SQLCanvasObject) node.getDataObject();
+            if (sqlObj != null) {
+                collabModel.removeObject(sqlObj);
+            }
+        } catch (Exception e) {
+            Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught exception while removing object.", e);
+
+            NotifyDescriptor d = new NotifyDescriptor.Message(e.toString(), NotifyDescriptor.INFORMATION_MESSAGE);
+            DialogDisplayer.getDefault().notify(d);
+        }
+    }
+
+    /**
+     * Sets the data model which this controller modifies
+     * 
+     * @param newModel new data model
+     */
+    public void setDataModel(Object newModel) {
+        collabModel = (SQLUIModel) newModel;
+
+    }
+
+    public Object getDataModel() {
+        return collabModel;
+    }
+
+    class TypeSelectorPanel extends JPanel {
+        private ButtonGroup bg;
+        private JRadioButton source;
+        private JRadioButton target;
+
+        public TypeSelectorPanel() {
+            this(SQLConstants.SOURCE_TABLE);
+        }
+
+        public TypeSelectorPanel(int newType) {
+            super();
+            setLayout(new BorderLayout());
+
+            JPanel insetPanel = new JPanel();
+            insetPanel.setLayout(new BoxLayout(insetPanel, BoxLayout.PAGE_AXIS));
+            insetPanel.setBorder(BorderFactory.createEmptyBorder(10, 15, 0, 15));
+
+            String title = "";
+            try {
+                title = NbBundle.getMessage(SQLGraphController.class, "TITLE_panel_table_type");
+            } catch (MissingResourceException mre) {
+                title = "Specify table type:";
+            }
+
+            insetPanel.add(new JLabel(title));
+
+            String sourceLabel = "";
+            try {
+                sourceLabel = NbBundle.getMessage(SQLGraphController.class, "BTN_table_type_source");
+            } catch (MissingResourceException mre) {
+                sourceLabel = "Source table";
+            }
+
+            String targetLabel = "";
+            try {
+                targetLabel = NbBundle.getMessage(SQLGraphController.class, "BTN_table_type_target");
+            } catch (MissingResourceException mre) {
+                targetLabel = "Target table";
+            }
+
+            source = new JRadioButton(sourceLabel);
+            target = new JRadioButton(targetLabel);
+
+            insetPanel.add(source);
+            insetPanel.add(target);
+            add(insetPanel, BorderLayout.CENTER);
+
+            bg = new ButtonGroup();
+            bg.add(source);
+            bg.add(target);
+
+            setSelectedType(newType);
+        }
+
+        public void setSelectedType(int type) {
+            switch (type) {
+                case SQLConstants.TARGET_TABLE:
+                    bg.setSelected(target.getModel(), true);
+                    break;
+
+                case SQLConstants.SOURCE_TABLE:
+                default:
+                    bg.setSelected(source.getModel(), true);
+            }
+        }
+
+        public int getSelectedType() {
+            return target.isSelected() ? SQLConstants.TARGET_TABLE : SQLConstants.SOURCE_TABLE;
+        }
+
+        public void addNotify() {
+            super.addNotify();
+
+            switch (getSelectedType()) {
+                case SQLConstants.TARGET_TABLE:
+                    target.requestFocusInWindow();
+                    break;
+
+                case SQLConstants.SOURCE_TABLE:
+                default:
+                    source.requestFocusInWindow();
+                    break;
+            }
+        }
+    }
+
+    protected boolean isEditAllowed() {
+        if (viewC != null) {
+            return viewC.canEdit();
+        }
+
+        return true;
+    }
+
+    /**
+     * set the view from which this controller interacts
+     * 
+     * @param view view
+     */
+    public void setView(Object view) {
+        viewC = (IGraphView) view;
+    }
+}
+

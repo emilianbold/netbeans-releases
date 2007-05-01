@@ -1,0 +1,450 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ * 
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+package org.netbeans.modules.etl.ui.view.wizards;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.MissingResourceException;
+import java.util.Set;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.Properties;
+import javax.swing.SwingUtilities;
+
+import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.netbeans.modules.etl.ui.ETLDataObject;
+import org.netbeans.modules.mashup.db.ui.AxionDBConfiguration;
+import org.netbeans.modules.sql.framework.common.utils.DBExplorerConnectionUtil;
+import org.netbeans.modules.sql.framework.model.SQLJoinView;
+import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.openide.WizardDescriptor;
+import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
+
+import com.sun.sql.framework.utils.Logger;
+
+/**
+ * Wizard to collect name and participating tables information to be used in creating a
+ * new ETL collaboration.
+ */
+public class ETLCollaborationWizard extends ETLWizard {
+    
+    public ETLCollaborationWizard() {
+        initialize();
+    }
+    
+    class Descriptor extends ETLWizardDescriptor {
+        public Descriptor(WizardDescriptor.Iterator iter) {
+            super(iter, context);
+        }
+    }
+    
+    class WizardIterator extends ETLWizardIterator {
+        private WizardDescriptor.Panel collaborationNamePanel;
+        
+        private ETLCollaborationWizardJoinFinishPanel joinSelectionPanel;
+        private List panels;
+        private ETLCollaborationWizardTransferFinishPanel sourceTableSelectionPanel;
+        private ETLCollaborationWizardTransferFinishPanel targetTableSelectionPanel;
+        
+        private ETLCollaborationWizard mWizard;
+        public WizardIterator(ETLCollaborationWizard wizard) {
+            this.mWizard = wizard;
+            //
+            // NOTE: If the order of source and target panels are changed, please update
+            // the values of SOURCE_PANEL_INDEX and TARGET_PANEL_INDEX appropriately.
+            //
+            // These variables are used to determine how to skip past the join panel
+            // between source and target panels if fewer than two source tables are
+            // selected.
+            //
+            collaborationNamePanel = new ETLCollaborationWizardNameFinishPanel(ETLCollaborationWizard.this, NbBundle.getMessage(
+                    ETLCollaborationWizard.class, "TITLE_tblwizard_name"));
+        }
+        
+        public String name() {
+            return "";
+        }
+        
+        public void initialize(WizardDescriptor wiz) {
+            this.mWizard.setDescriptor(wiz);
+            super.initialize(wiz);
+        }
+        
+        /**
+         * Overrides parent implementation to test for duplicate collab name before
+         * advancing to next panel, and skip join panel if fewer than two source tables
+         * are selected.
+         *
+         * @see org.openide.WizardDescriptor.Iterator#nextPanel
+         */
+        public void nextPanel() {
+            if ( current().equals(sourceTableSelectionPanel) ) { // Currently in source OTDs panel.
+                ETLCollaborationWizardTransferPanel xferPanel = (ETLCollaborationWizardTransferPanel) current();
+                
+                // Skip join panel if we don't have two or more tables selected,
+                // and no joins have been created.
+                
+                if (!xferPanel.hasEnoughTablesForJoin() && descriptor.getProperty(ETLCollaborationWizard.JOIN_VIEW) == null) {
+                    super.nextPanel();
+                    super.nextPanel();
+                    return;
+                }
+            }
+            
+            super.nextPanel(); // Otherwise allow advance.
+        }
+        
+        /**
+         * Overrides parent implementation to skip join panel if fewer than two source
+         * tables are selected.
+         *
+         * @see org.openide.WizardDescriptor.Iterator#previousPanel
+         */
+        public void previousPanel() {
+            if (current().equals(targetTableSelectionPanel)) {
+                
+                // Skip join panel if we don't have two or more tables selected in the
+                // source panel, and no joins have been created.
+                if (!sourceTableSelectionPanel.hasEnoughTablesForJoin() && descriptor.getProperty(ETLCollaborationWizard.JOIN_VIEW) == null) {
+                    super.previousPanel();
+                    super.previousPanel();
+                    return;
+                }
+            }
+            
+            super.previousPanel(); // Otherwise use parent implementation.
+        }
+        
+        private List getModelConnections() {
+            List model = new ArrayList();
+            
+            // add flatfile databases to db explorer.
+            String workDir = getDefaultWorkingFolder();
+            File f = new File(workDir);
+            File[] db = null;
+            if(f.exists()) {
+                db = f.listFiles();
+                for(int i = 0; i < db.length; i++) {
+                    String ver = null;
+                    try {
+                        ver = db[i].getCanonicalPath() + "\\" + db[i].getName().toUpperCase() + ".VER";
+                        File version = new File(ver);
+                        if(version.exists()) {
+                            String url = "jdbc:axiondb:" + db[i].getName()+ ":" + getDefaultWorkingFolder() + db[i].getName();
+                            DatabaseConnection con = ConnectionManager.getDefault().getConnection(url);
+                            if(con == null) {
+                                DBExplorerConnectionUtil.createConnection("org.axiondb.jdbc.AxionDriver", url, "sa", "sa");
+                            }
+                        }
+                    } catch (Exception ex) {
+                        //ignore
+                    }
+                }
+            }
+            
+            DatabaseConnection[] conns = ConnectionManager.getDefault()
+            .getConnections();
+            if (conns.length > 0) {
+                for (int i = 0; i < conns.length; i++) {
+                    if (conns[i] == null) {
+                        Logger.print(Logger.INFO, LOG_CATEGORY, null,
+                                "Got Null connection.");
+                        model.add("<NULL>");
+                    } else {
+                        model.add(conns[i]);
+                    }
+                }
+            } else {
+                model.add("<None>");
+            }
+            
+            return model;
+        }
+        
+        protected List createPanels(WizardDescriptor wiz) {
+            List srcModel = new ArrayList();
+            List destModel = new ArrayList();
+            
+            List dbModels = getModelConnections();
+            storeSettings(wiz,dbModels);
+            
+            Project project = Templates.getProject(wiz);
+            if(project != null) {
+                Sources sources = ProjectUtils.getSources(project);
+                SourceGroup[] groups = sources.getSourceGroups(
+                        Sources.TYPE_GENERIC
+                        );
+                
+                if ((groups == null) || (groups.length < 1)) {
+                    groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+                }
+                
+                collaborationNamePanel = new SimpleTargetChooserPanel(project, groups, null, false);
+            }
+            
+            sourceTableSelectionPanel = new ETLCollaborationWizardTransferFinishPanel(NbBundle.getMessage(ETLCollaborationWizard.class,
+                    "TITLE_tblwizard_selectsources"), dbModels, srcModel, true);
+            joinSelectionPanel = new ETLCollaborationWizardJoinFinishPanel(ETLCollaborationWizard.this, NbBundle.getMessage(
+                    ETLCollaborationWizard.class, "TITLE_tblwizard_join"), null);
+            
+            targetTableSelectionPanel = new ETLCollaborationWizardTransferFinishPanel(NbBundle.getMessage(ETLCollaborationWizard.class,
+                    "TITLE_tblwizard_selecttargets"), dbModels, destModel, false);
+            
+            panels = new ArrayList(4);
+            if(collaborationNamePanel != null) {
+                panels.add(collaborationNamePanel);
+            }
+            
+            panels.add(sourceTableSelectionPanel);
+            panels.add(joinSelectionPanel);
+            panels.add(targetTableSelectionPanel);
+            return Collections.unmodifiableList(panels);
+        }
+        
+        public void storeSettings(Object settings, List models) {
+            WizardDescriptor wd = null;
+            if (settings instanceof ETLWizardContext) {
+                ETLWizardContext wizardContext = (ETLWizardContext) settings;
+                wd = (WizardDescriptor) wizardContext
+                        .getProperty(ETLWizardContext.WIZARD_DESCRIPTOR);
+                
+            } else if (settings instanceof WizardDescriptor) {
+                wd = (WizardDescriptor) settings;
+            }
+            
+            if (wd != null) {
+                // Don't commit if user didn't click next.
+                // if (wd.getValue() != WizardDescriptor.NEXT_OPTION) {
+                // return;
+                // }
+                wd.putProperty(ETLCollaborationWizard.DATABASE_SOURCES, models
+                        .toArray());
+                wd.putProperty(ETLCollaborationWizard.DATABASE_TARGETS, models
+                        .toArray());
+            }
+        }
+        
+        protected String[] createSteps() {
+            try {
+                return new String[] {
+                    //TODO - need make wizard steps text match actual panel being viewed
+                    "Choose File Type", //TODO - use bundle property
+                    NbBundle.getMessage(ETLCollaborationWizard.class, "STEP_tblwizard_name"),
+                    //NbBundle.getMessage(ETLCollaborationWizard.class, "STEP_tblwizard_select"),
+                    NbBundle.getMessage(ETLCollaborationWizard.class, "STEP_tblwizard_sources"),
+                    NbBundle.getMessage(ETLCollaborationWizard.class, "STEP_tblwizard_join"),
+                    NbBundle.getMessage(ETLCollaborationWizard.class, "STEP_tblwizard_targets")};
+            } catch (MissingResourceException e) {
+                Logger.printThrowable(Logger.DEBUG, LOG_CATEGORY, "createPanelTitles()", "Could not locate steps strings.", e);
+                return new String[] {};
+            }
+        }
+        
+        public Set instantiate() throws IOException {
+            commit();
+            
+            FileObject dir = Templates.getTargetFolder( descriptor );
+            if(dir != null) {
+                DataFolder df = DataFolder.findFolder( dir );
+                FileObject template = Templates.getTemplate( descriptor );
+                
+                DataObject dTemplate = DataObject.find( template );
+                DataObject dobj = dTemplate.createFromTemplate( df, Templates.getTargetName( descriptor )  );
+                if(dobj instanceof  ETLDataObject) {
+                    final ETLDataObject etlDataObj = (ETLDataObject) dobj;
+                    Runnable run = new Runnable() {
+                        public void run() {
+                            etlDataObj.initialize(descriptor);
+                            if (etlDataObj.getNodeDelegate() != null) {
+                                OpenCookie openCookie = (OpenCookie) etlDataObj.getNodeDelegate().getCookie(OpenCookie.class);
+                                openCookie.open();
+                            }
+                        }
+                    };
+                    
+                    SwingUtilities.invokeLater(run);
+                }
+                
+                return Collections.singleton(dobj.getPrimaryFile());
+            }
+            return new HashSet();
+        }
+    }
+    
+    /** Key name used to reference database sources in wizard context. */
+    public static final String DATABASE_SOURCES = "database_sources";
+    
+    /** Key name used to reference database sources in wizard context. */
+    public static final String DATABASE_TARGETS = "database_targets";
+    
+    /** Key name used to reference collaboration name in wizard context. */
+    public static final String COLLABORATION_NAME = "collaboration_name";
+    
+    /** Key name used to reference List of destination OTDs in wizard context. */
+    public static final String TARGET_DB = "destination_otds";
+    
+    /** Key name used to reference List of destination tables in wizard context. */
+    public static final String DESTINATION_TABLES = "destination_tables";
+    
+    /** Key name used to reference SQLJoinView if any created by user */
+    public static final String JOIN_VIEW = "join_view";
+    
+    /** Key name used to reference List of visible columns selected by user */
+    public static final String JOIN_VIEW_VISIBLE_COLUMNS = "join_view_visible_columns";
+    
+    /** Key name used to reference Project in wizard context. */
+    public static final String PROJECT = "project";
+    
+    /** Key name used to reference Collection of runtime input args in wizard context. */
+    public static final String RUNTIME_INPUTS = "runtime_inputs";
+    
+    /** Key name used to reference List of source OTDs in wizard context. */
+    public static final String SOURCE_DB = "source_otds";
+    
+    public static final int SOURCE_PANEL_INDEX = 2;
+    
+    /** Key name used to reference List of source tables in wizard context. */
+    public static final String SOURCE_TABLES = "source_tables";
+    
+    public static final int TARGET_PANEL_INDEX = 4;
+    
+    /* Log4J category string */
+    private static final String LOG_CATEGORY = ETLCollaborationWizard.class.getName();
+    
+    /* Defines panels to be displayed */
+    private WizardDescriptor descriptor;
+    
+    /* Wizard iterator; handles display and movement among wizard panels */
+    private ETLWizardIterator iterator;
+    
+    public static WizardDescriptor.Iterator newTemplateIterator() {
+        ETLCollaborationWizard wizard = new ETLCollaborationWizard();
+        return wizard.getIterator();
+    }
+    
+    /**
+     * @see ETLWizard#getDescriptor
+     */
+    public WizardDescriptor getDescriptor() {
+        if(descriptor == null) {
+            descriptor = new Descriptor(iterator);
+        }
+        return descriptor;
+    }
+    
+    public void setDescriptor(WizardDescriptor wd) {
+        this.descriptor = wd;
+    }
+    /**
+     * @see ETLWizard#getIterator
+     */
+    public WizardDescriptor.Iterator getIterator() {
+        return iterator;
+    }
+    
+    /**
+     * Gets List of destination OTDs as selected by user.
+     *
+     * @return List (possibly empty) of selected destination OTDs
+     */
+    public List getSelectedDestinationOtds() {
+        return getSelectedOtdsOfType(ETLCollaborationWizard.TARGET_DB);
+    }
+    
+    /**
+     * Gets List of source OTDs as selected by user.
+     *
+     * @return List (possibly empty) of selected source OTDs
+     */
+    public List getSelectedSourceOtds() {
+        return getSelectedOtdsOfType(ETLCollaborationWizard.SOURCE_DB);
+    }
+    
+    public SQLJoinView getSQLJoinView() {
+        return (SQLJoinView) descriptor.getProperty(JOIN_VIEW);
+    }
+    
+    public List getTableColumnNodes() {
+        return (List) descriptor.getProperty(JOIN_VIEW_VISIBLE_COLUMNS);
+    }
+    
+    /**
+     * Initializes iterator and descriptor for this wizard.
+     */
+    public void initialize() {
+        iterator = new WizardIterator(this);
+    }
+    
+    /**
+     * Performs processing to handle cancellation of this wizard.
+     */
+    protected void cancel() {
+    }
+    
+    /**
+     * Performs processing to cleanup any resources used by this wizard.
+     */
+    protected void cleanup() {
+    }
+    
+    /**
+     * Performs processing to handle committal of data gathered by this wizard.
+     */
+    protected void commit() {
+    }
+    
+    /**
+     * @see org.netbeans.modules.etl.ui.view.wizards.ETLWizard#getDialogTitle()
+     */
+    protected String getDialogTitle() {
+        return NbBundle.getMessage(ETLCollaborationWizard.class, "TITLE_dlg_new_collab");
+    }
+    
+    private List getSelectedOtdsOfType(String typeKey) {
+        return (List) descriptor.getProperty(typeKey);
+    }
+    
+    private String getDefaultWorkingFolder() {
+        File conf = AxionDBConfiguration.getConfigFile();
+        Properties prop = new Properties();
+        try {
+            FileInputStream in = new FileInputStream(conf);
+            prop.load(in);
+        } catch (FileNotFoundException ex) {
+            //ignore
+        } catch (IOException ex) {
+            //ignore
+        }
+        return prop.getProperty(AxionDBConfiguration.PROP_DB_LOC);
+    }
+}
+
