@@ -29,6 +29,7 @@ import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
+import org.openide.util.Utilities;
 
 /** Checks the behaviour of enabled module list.
  *
@@ -45,6 +46,17 @@ public class SuiteCustomizerModuleListTest extends TestBase {
     
     public SuiteCustomizerModuleListTest(String testName) {
         super(testName);
+    }
+
+    @Override
+    public boolean canRun() {
+        // On Windows XP, under JDK 6 (but, oddly, not 5), get apparent path length limit violations:
+        // java.lang.AssertionError: E:\space\test4u\builds\bindist_netbeans_Dev_daily_latest\ unit\apisupport1\org-netbeans-modules-apisupport-project\work\sys\data\example-external-projects\.\suite1\support\lib-project\test\ unit\src\org\netbeans\examples\modules\lib\LibClassTest.java
+        //         at org.netbeans.modules.apisupport.project.TestBase.doCopy(TestBase.java:272)
+        //         at org.netbeans.modules.apisupport.project.TestBase.doCopy(TestBase.java:269)
+        //         [....]
+        // See e.g.: http://beetle.czech.sun.com/automatedtests/xtest/netbeans_dev/200704301800/qa-unit_stable/qa-t4u-xp2_1/testrun_070501-125959/testbag_111/htmlresults/suites/TEST-org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerModuleListTest.html
+        return super.canRun() && !Utilities.isWindows();
     }
 
     protected void setUp() throws Exception {
