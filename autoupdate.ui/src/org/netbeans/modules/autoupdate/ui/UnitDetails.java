@@ -27,6 +27,7 @@ import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.openide.modules.ModuleInfo;
+import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
 
 /**
@@ -41,16 +42,9 @@ public class UnitDetails extends DetailsPanel{
     }
 
     public void setUnitCategory(UnitCategory unitCategory) {
-        String text = "<b>Category: </b>" + unitCategory.getCategoryName() + "<br>";
+        String text = "<b>" + getBundle ("UnitDetails_Category") + "</b>" + unitCategory.getCategoryName() + "<br>"; // NOI18N
         
         
-        /*List<Unit> units = unitCategory.getUnits();
-        String pom ="";
-        for (Unit unit : units) {
-            pom += unit.getDisplayName()+", ";
-        }
-        text = text + "<b>Units: </b>" + pom + "<br>";
-         */
         getDetails().setText(text);
         getDetails().setCaretPosition(0);        
     }
@@ -58,15 +52,17 @@ public class UnitDetails extends DetailsPanel{
     @SuppressWarnings ("deprecation")
     public void setUnit(Unit u) {
         if (u == null) {
-            getDetails().setText("No description.");
+            getDetails ().setText (getBundle ("UnitDetails_Category_NoDescription")); // NOI18N
         } else {
             String text;
             try {
-                text = "<h2>" + u.annotate(XMLUtil.toElementContent(u.getDisplayName())) + "</h2>"; // NOI18N
-                text += "<b>UpdateVersion: </b>" + u.annotate(u.getDisplayVersion()) + "<br>";
-                text += "<b>Author: </b>" + (u.getAuthor () == null ? "" : u.annotate(u.getAuthor ())) + "<br>";
-                text += "<b>Source: </b>" + u.annotate(u.getSource()) + "<br>";
-                
+                text = "<h3>" + u.annotate(XMLUtil.toElementContent(u.getDisplayName())) + "</h3>"; // NOI18N
+                text += "<b>" + getBundle ("UnitDetails_Plugin_Version") + "</b>" + u.annotate(u.getDisplayVersion()) + "<br>"; // NOI18N
+                if (u.getAuthor () != null && u.getAuthor ().length () > 0) {
+                    text += "<b>" + getBundle ("UnitDetails_Plugin_Author") + "</b>" + u.annotate(u.getAuthor ()) + "<br>"; // NOI18N
+                }
+                text += "<b>" + getBundle ("UnitDetails_Plugin_Source") + "</b>" + u.annotate(u.getSource()) + "<br>"; // NOI18N
+
                 // XXX: Temporary only for development
                 if (u.updateUnit != null && u.updateUnit.getInstalled() != null) {
                     UpdateElement elem = u.updateUnit.getInstalled();
@@ -78,10 +74,15 @@ public class UnitDetails extends DetailsPanel{
                     } else {
                         c = OperationContainer.createForEnable();
                     }
-                    text += "<br><b>CodeName: </b>" + u.annotate(u.updateUnit.getCodeName()) + "<br>";
-                    text += u.updateUnit.isAutoload () ? "<b>Autoload </b>" : "";
-                    text += u.updateUnit.isEager () ? "<b>Eager </b>" : "";
-                    text += u.updateUnit.isFixed () ? "<b>Fixed</b>" : "";
+                    text += "<b>" + getBundle ("UnitDetails_Plugin_CodeName") + "</b>" + u.annotate(u.updateUnit.getCodeName()); // NOI18N
+                    if (u.updateUnit.isAutoload() || u.updateUnit.isEager () || u.updateUnit.isFixed ()) {
+                        text += " (";
+                        text += u.updateUnit.isAutoload () ? "<i>" + getBundle ("UnitDetails_Plugin_Autoload") + "</i>" : ""; // NOI18N
+                        text += u.updateUnit.isEager () ? "<i>" + getBundle ("UnitDetails_Plugin_Eager") + "</i>" : ""; // NOI18N
+                        text += u.updateUnit.isFixed () ? "<i>" + getBundle ("UnitDetails_Plugin_Fixed") + "</i>" : ""; // NOI18N
+                        text += ")";
+                    }
+                    text += "<br>";
                     if (c.canBeAdded (u.updateUnit, elem)) {
                         List<UpdateElement> elems = Utilities.getRequiredElements(u.updateUnit, elem, c);
                         if (elems.size() > 0) {
@@ -91,19 +92,21 @@ public class UnitDetails extends DetailsPanel{
                             }
                             
                             if (isEnabled) {
-                                text += "<b>Required by: </b>" + pom + "<br>";
+                                text += "<b>" + getBundle ("UnitDetails_Plugin_RequiredBy") + "</b>" + pom + "<br>"; // NOI18N
                             } else {
-                                text += "<b>Requires: </b>" + pom + "<br>";
+                                text += "<b>" + getBundle ("UnitDetails_Plugin_Requires") + "</b>" + pom + "<br>"; // NOI18N
                             }
                         }
                         
                     }
                 }
                 if (u.getHomepage() != null && u.getHomepage().length() > 0) {
-                    text += "<b>Homepage: </b><a href=\"" + u.getHomepage() + "\">" + u.annotate(u.getHomepage()) + "</a><br>";
+                    text += "<b>" + getBundle ("UnitDetails_Plugin_Homepage") + "</b><a href=\"" + u.getHomepage() + "\">" + u.annotate(u.getHomepage()) + "</a><br>"; // NOI18N
                 }
-                text += "<h3>Plugin Description</h3>";
-                text += (u.getDescription() == null ? "" : u.annotate(XMLUtil.toElementContent(u.getDescription())));
+                if (u.getDescription() != null && u.getDescription().length () > 0) {
+                    text += "<h4>" + getBundle ("UnitDetails_Plugin_Description") + "</h4>"; // NOI18N
+                    text += (u.getDescription() == null ? "" : u.annotate(XMLUtil.toElementContent(u.getDescription())));
+                }
             } catch (CharConversionException e) {
                 err.log (Level.WARNING, null, e);
                 return;
@@ -111,5 +114,10 @@ public class UnitDetails extends DetailsPanel{
             getDetails().setText(text);
             getDetails().setCaretPosition(0);
         }
-    }    
+    }
+    
+    private static String getBundle (String key) {
+        return NbBundle.getMessage (UnitDetails.class, key);
+    }
+    
 }
