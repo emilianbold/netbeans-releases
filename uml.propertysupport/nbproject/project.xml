@@ -2,27 +2,9 @@
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
-        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.uml.propertysupport</code-name-base>
             <module-dependencies>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.uml</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <!--dependency>
-                    <code-name-base>javax.jmi.reflect</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.5.1</specification-version>
-                    </run-dependency>
-                </dependency-->
                 <dependency>
                     <code-name-base>org.jdesktop.layout</code-name-base>
                     <build-prerequisite/>
@@ -39,6 +21,15 @@
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.0.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.uml</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -63,6 +54,22 @@
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>6.3.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.filesystems</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.loaders</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.4</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -91,11 +98,16 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.uml.codegen</friend>
+                <friend>org.netbeans.modules.uml.drawingarea</friend>
+                <friend>org.netbeans.modules.uml.integration</friend>
                 <friend>org.netbeans.modules.uml.kit</friend>
                 <friend>org.netbeans.modules.uml.project</friend>
                 <package>org.netbeans.modules.uml.propertysupport</package>
                 <package>org.netbeans.modules.uml.propertysupport.customizers</package>
                 <package>org.netbeans.modules.uml.propertysupport.nodes</package>
+                <package>org.netbeans.modules.uml.propertysupport.options</package>
+                <package>org.netbeans.modules.uml.propertysupport.options.api</package>
             </friend-packages>
         </data>
     </configuration>
