@@ -86,9 +86,10 @@ public class ExtIcon  {
                 toRet[i + 2] = data[i];
             }
             return toRet;
-        } else {
+        } else if (obj instanceof int[]){
             return intToByteArray((int[])obj, w, h);
         }
+        return null;
     }
     
     public static byte[] intToByteArray(int[] value, byte w, byte h) {
