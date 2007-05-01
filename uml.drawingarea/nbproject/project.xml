@@ -78,6 +78,15 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.uml.propertysupport</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.uml.tomsawyer</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -188,6 +197,7 @@ Microsystems, Inc. All Rights Reserved.
             <friend-packages>
                 <friend>org.netbeans.modules.uml.kit</friend>
                 <package>org.netbeans.modules.uml.drawingarea</package>
+                <package>org.netbeans.modules.uml.drawingarea.options</package>
             </friend-packages>
         </data>
     </configuration>
