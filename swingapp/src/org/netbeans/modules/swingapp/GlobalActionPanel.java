@@ -95,6 +95,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
         
         actionTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         actionTable.setDefaultRenderer(Icon.class, new IconTableCellRenderer());
+        actionTable.setRowHeight(18);
         actionTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         
         actionTable.addMouseListener(new MouseAdapter() {

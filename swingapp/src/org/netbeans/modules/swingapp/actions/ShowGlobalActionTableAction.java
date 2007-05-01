@@ -41,7 +41,7 @@ public class ShowGlobalActionTableAction extends AbstractAction {
     
     /** Creates a new instance of ShowGlobalActionTableAction */
     public ShowGlobalActionTableAction() {
-        putValue(NAME, "Application Actions [rename]");
+        putValue(NAME, "Application Actions");
     }
     
     public void actionPerformed(ActionEvent e) {
