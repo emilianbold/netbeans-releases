@@ -23,7 +23,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.NbBundle;
 import org.openide.util.Union2;
 /**
  *
@@ -42,12 +41,10 @@ public class UpdateElementImpl extends Object {
     private InstallInfo installInfo;
     private final Union2<? extends UpdateItemImpl,ModuleInfo> itemOrInfo;
     private Boolean isModule;
-    private String providerName;
     private Logger log = null;
     
     /** Creates a new instance of ElementImpl */
     public UpdateElementImpl (ModuleInfo info) {
-        this.providerName = NbBundle.getMessage(UpdateElementImpl.class, "UpdateElementImpl_ProviderName_ForModuleInfo");//NOI18N
         codeName = info.getCodeNameBase();
         displayName = info.getDisplayName ();
         specVersion = info.getSpecificationVersion ();
@@ -62,7 +59,6 @@ public class UpdateElementImpl extends Object {
     }
         
     public UpdateElementImpl (ModuleItem impl, String providerName) {
-        this.providerName = providerName;
         codeName = impl.getCodeName ();
         specVersion = new SpecificationVersion (impl.getSpecificationVersion ());
         source = providerName;
@@ -82,7 +78,6 @@ public class UpdateElementImpl extends Object {
     }
     
     public UpdateElementImpl (LocalizationItem impl, String providerName) {
-        this.providerName = providerName;        
         codeName = impl.getCodeName ();
         specVersion = new SpecificationVersion (impl.getSpecificationVersion ());
         source = providerName;
@@ -93,7 +88,6 @@ public class UpdateElementImpl extends Object {
     }
     
     public UpdateElementImpl (FeatureItem impl, String providerName) {
-        this.providerName = providerName;                
         codeName = impl.getCodeName ();
         specVersion = new SpecificationVersion (impl.getSpecificationVersion ());
         source = providerName;
@@ -105,7 +99,6 @@ public class UpdateElementImpl extends Object {
     }
     
     public UpdateElementImpl (NativeComponentItem impl, String providerName) {
-        this.providerName = providerName;                
         codeName = impl.getCodeName ();
         specVersion = new SpecificationVersion (impl.getSpecificationVersion ());
         source = providerName;
@@ -146,9 +139,6 @@ public class UpdateElementImpl extends Object {
     
     public String getSource () {
         return source;
-    }
-    public String getProviderName() {
-        return providerName;
     }
     
     public String getCategory () {
