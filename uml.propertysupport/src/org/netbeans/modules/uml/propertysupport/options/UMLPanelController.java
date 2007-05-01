@@ -29,7 +29,8 @@
 package org.netbeans.modules.uml.propertysupport.options;
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
-import org.netbeans.spi.options.OptionsCategory;
+import javax.swing.JTabbedPane;
+import org.netbeans.modules.uml.propertysupport.options.api.UMLOptionsPanel;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -76,9 +77,19 @@ public class UMLPanelController extends OptionsPanelController {
         return changed ;
     }
     
-    public JComponent getComponent() {
+    public JComponent getComponent(Lookup lookup) {
+        
         if (debug) log("getComponent");
-        return new UMLOptionsPanelForm() ;
+        JTabbedPane pane = new JTabbedPane() ;
+        
+        OptionsSupport support = new OptionsSupport() ;
+        
+        for (UMLOptionsPanel panel:support.panels()) {
+            pane.addTab(panel.getDisplayName(), panel.create()) ;
+        }
+        
+        return pane ;
+        
     }
     
     public HelpCtx getHelpCtx() {
@@ -98,10 +109,6 @@ public class UMLPanelController extends OptionsPanelController {
     
     private static void log(String s) {
         System.out.println("MyPanelController::"+s);
-    }
-
-    public JComponent getComponent(Lookup lookup) {
-        return this.getComponent() ;
     }
     
 }
