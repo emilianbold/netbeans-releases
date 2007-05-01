@@ -47,8 +47,10 @@ public abstract class AbstractTestCase extends TestCase {
         this.instanceResourcePath = path;
         this.instanceFileObject = Util.getResourceAsFileObject(path);
         this.instanceDocument = Util.getResourceAsDocument(path);
-        instanceDocument.remove(0, instanceDocument.getLength());
-        instanceDocument.insertString(0, buffer.toString(), null);
+        if(buffer != null) {
+            instanceDocument.remove(0, instanceDocument.getLength());
+            instanceDocument.insertString(0, buffer.toString(), null);
+        }
     }
     
     /**
