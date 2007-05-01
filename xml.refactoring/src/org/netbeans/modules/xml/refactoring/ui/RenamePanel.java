@@ -68,6 +68,8 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
     }
     
     public void requestFocus() {
+        nameField.setText(oldName);
+        nameField.selectAll();
         nameField.requestFocus();
     }
     
