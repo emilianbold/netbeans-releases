@@ -37,6 +37,10 @@ import org.openide.util.Utilities;
  */
 public class SuiteCustomizerModuleListTest extends TestBase {
 
+    static {
+        SuiteCustomizerLibraries.TEST = true;
+    }
+
     private FileObject suiteRepoFO;
     private SuiteProject suite1Prj;
     private SuiteProperties suite1Props;

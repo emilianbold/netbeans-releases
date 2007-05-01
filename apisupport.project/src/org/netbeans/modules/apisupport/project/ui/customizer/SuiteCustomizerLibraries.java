@@ -79,6 +79,7 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     private ExplorerManager manager;
     private ModuleEntry[] platformModules;
     private ProjectCustomizer.Category cat;
+    static boolean TEST = false;
     
     /**
      * Creates new form SuiteCustomizerLibraries
@@ -111,11 +112,16 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     void refresh() {
         refreshJavaPlatforms();
         refreshPlatforms();
-        RequestProcessor.getDefault().post(new Runnable() {
+        Runnable r = new Runnable() {
             public void run() {
                 refreshModules();
             }
-        });
+        };
+        if (TEST) {
+            r.run();
+        } else {
+            RequestProcessor.getDefault().post(r);
+        }
         updateJavaPlatformEnabled();
     }
     
