@@ -20,6 +20,7 @@
 package org.netbeans.modules.java.j2seproject.queries;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.Collections;
 import java.util.Properties;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -33,6 +34,7 @@ import org.netbeans.modules.java.platform.JavaPlatformProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.TestUtil;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
@@ -154,7 +156,7 @@ public class SourceLevelQueryImplTest extends NbTestCase {
         }
 
         public ClassPath getStandardLibraries() {
-            return null;
+            return ClassPathSupport.createClassPath(new URL[0]);
         }
 
         public Specification getSpecification() {
@@ -182,7 +184,7 @@ public class SourceLevelQueryImplTest extends NbTestCase {
         }
 
         public ClassPath getBootstrapLibraries() {
-            return null;
+            return ClassPathSupport.createClassPath(new URL[0]);
         }
 
     }

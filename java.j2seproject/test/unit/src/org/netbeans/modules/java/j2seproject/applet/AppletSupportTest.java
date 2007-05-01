@@ -41,6 +41,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 import org.netbeans.modules.java.platform.JavaPlatformProvider;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 public class AppletSupportTest extends NbTestCase {
 
@@ -171,11 +172,11 @@ public class AppletSupportTest extends NbTestCase {
         }
 
         public ClassPath getBootstrapLibraries() {
-            return null;
+            return ClassPathSupport.createClassPath(new URL[0]);
         }
 
         public ClassPath getStandardLibraries() {
-            return null;
+            return ClassPathSupport.createClassPath(new URL[0]);
         }
 
         public String getVendor() {

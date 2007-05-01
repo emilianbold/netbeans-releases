@@ -61,7 +61,9 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
             if (jp != null) {
                 //TODO: May also listen on CP, but from Platform it should be fixed.
                 List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
-                for (ClassPath.Entry entry : jp.getBootstrapLibraries().entries()) {
+                ClassPath cp = jp.getBootstrapLibraries();
+                assert cp != null : jp;
+                for (ClassPath.Entry entry : cp.entries()) {
                     result.add(ClassPathSupport.createResource(entry.getURL()));
                 }
                 resourcesCache = Collections.unmodifiableList (result);

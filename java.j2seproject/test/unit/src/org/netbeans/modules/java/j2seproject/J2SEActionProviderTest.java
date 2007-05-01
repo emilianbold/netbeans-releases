@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -41,6 +42,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.TestUtil;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileUtil;
@@ -735,16 +737,16 @@ public class J2SEActionProviderTest extends NbTestCase {
             return "Default Platform";
         }
 
-        public org.netbeans.api.java.classpath.ClassPath getBootstrapLibraries() {
+        public ClassPath getBootstrapLibraries() {
+            return ClassPathSupport.createClassPath(new URL[0]);
+        }
+
+        public Collection<FileObject> getInstallFolders() {
             return null;
         }
 
-        public java.util.Collection getInstallFolders() {
-            return null;
-        }
-
-        public org.netbeans.api.java.classpath.ClassPath getStandardLibraries() {
-            return null;
+        public ClassPath getStandardLibraries() {
+            return ClassPathSupport.createClassPath(new URL[0]);
         }
 
         public String getVendor() {
