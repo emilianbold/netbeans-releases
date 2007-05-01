@@ -19,6 +19,9 @@
 
 package org.netbeans.modules.autoupdate.services;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -32,8 +35,7 @@ import org.netbeans.spi.autoupdate.UpdateProvider;
 public class UpdateManagerImpl extends Object {
     private static final UpdateManagerImpl INSTANCE = new UpdateManagerImpl();
     
-    private Map<String, UpdateUnit> updateUnits = null;
-    private List<UpdateUnit> units = null;
+    private Reference<Map<String, UpdateUnit>> updateUnits = null;
     
     // package-private for tests only
     
@@ -44,21 +46,45 @@ public class UpdateManagerImpl extends Object {
     /** Creates a new instance of UpdateManagerImpl */
     private UpdateManagerImpl () {}
     
-    public List<UpdateUnit> getUpdateUnits() {
-        
-        Map<String, UpdateUnit> tmpUpdateUnits = null;
+    public List<UpdateUnit> getUpdateUnits() {        
+        Reference<Map<String, UpdateUnit>> tmpUpdateUnits = null;
         synchronized(UpdateManagerImpl.class) {
             tmpUpdateUnits = updateUnits;
         }        
-        if (tmpUpdateUnits == null) {
-            tmpUpdateUnits = UpdateUnitFactory.getDefault().getUpdateUnits();
+        if (tmpUpdateUnits == null || tmpUpdateUnits.get() == null) {
+            tmpUpdateUnits = new WeakReference(UpdateUnitFactory.getDefault().getUpdateUnits());
             synchronized(UpdateManagerImpl.class) {
                 updateUnits = tmpUpdateUnits;
-                units = Collections.list(Collections.enumeration(updateUnits.values()));
             }
         }
-        return units;
+        return unitsFromReference(tmpUpdateUnits);
     }
+    
+    private static List<UpdateUnit> unitsFromReference(Reference<Map<String, UpdateUnit>> reference) {
+        final Map<String, UpdateUnit> m = reference.get();
+        List<UpdateUnit>  retval = null;
+        if (m != null) {
+            retval = new ArrayList(m.values()) {
+                Map<String, UpdateUnit> keepIt = m;
+                //Collections.list(Collections.enumeration(m.values()));
+            };
+        } else {    
+            retval = Collections.emptyList();
+        }        
+        return retval;        
+    }
+    
+    private static Map<String, UpdateUnit> mapFromReference(Reference<Map<String, UpdateUnit>> reference) {
+        Map<String, UpdateUnit> retval = null;
+        if (reference != null) {
+            retval = reference.get();
+        } 
+        if (retval == null) {
+            retval = Collections.emptyMap(); 
+        }
+        return retval;        
+    }
+    
             
     public UpdateUnit getUpdateUnit (String moduleCodeName) {
         // trim release impl.
@@ -68,7 +94,7 @@ public class UpdateManagerImpl extends Object {
         }
         if (updateUnits == null) {getUpdateUnits ();}
         assert updateUnits != null : "updateUnits must be initialized.";        
-        return updateUnits.get(moduleCodeName);
+        return mapFromReference(updateUnits).get(moduleCodeName);
     }
     
     public List<UpdateUnit> getUpdateUnits (UpdateProvider provider) {

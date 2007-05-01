@@ -160,9 +160,9 @@ public abstract class OperationSupportImpl {
                     UpdateElement updateElement = operationInfo.getUpdateElement();
                     UpdateUnit u = UpdateManagerImpl.getInstance().getUpdateUnit(updateElement.getCodeName());
                     assert u.getInstalled() != null;
-                    UpdateUnitImpl impl = Trampoline.API.impl(u);
-                    impl.setAsUninstalled();
-                }                
+                        UpdateUnitImpl impl = Trampoline.API.impl(u);
+                        impl.setAsUninstalled();
+                    }
             } finally {
                 if (progress != null) {
                     progress.finish();

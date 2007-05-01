@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.util.List;
 import org.netbeans.api.autoupdate.TestUtils.CustomItemsProvider;
 import org.netbeans.junit.MockServices;
 import org.netbeans.modules.autoupdate.services.*;
@@ -40,6 +41,7 @@ import org.openide.util.Lookup;
 public class DefaultTestCase extends NbTestCase {
     private static File catalogFile;
     private static URL catalogURL;
+    List<UpdateUnit> keepItNotToGC;
     public DefaultTestCase(String testName) {
         super(testName);
     }
@@ -81,6 +83,7 @@ public class DefaultTestCase extends NbTestCase {
         pf.mkdirs ();
         new File (pf, "config").mkdir();
         TestUtils.setPlatformDir (pf.toString ());
+        keepItNotToGC = UpdateManager.getDefault().getUpdateUnits();
     }
 
     protected void tearDown() throws Exception {
