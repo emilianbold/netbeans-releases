@@ -20,17 +20,19 @@
 package org.netbeans.modules.j2ee.jpa.verification.rules.entity;
 
 import java.util.Collections;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
+import java.util.HashSet;
+import java.util.Set;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import org.netbeans.modules.j2ee.jpa.model.JPAAnnotations;
+import org.netbeans.modules.j2ee.jpa.model.ModelUtils;
 import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule;
 import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule.ClassConstraints;
+import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
 import org.netbeans.modules.j2ee.jpa.verification.common.ProblemContext;
-import org.netbeans.modules.j2ee.jpa.verification.common.Utilities;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Id;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
 
@@ -51,15 +53,27 @@ public class NoIdClassOnEntitySubclass extends JPAClassRule {
     }
     
     @Override public ErrorDescription[] apply(TypeElement subject, ProblemContext ctx){
-        if (!Utilities.hasAnnotation(subject, JPAAnnotations.ID_CLASS)){
-            
+        Entity entity = (Entity)ctx.getModelElement();
+        if (entity.getIdClass() == null){
             TypeMirror superClassType = subject.getSuperclass();
             
             if (superClassType.getKind() == TypeKind.DECLARED){
-                Element superClassElem = ((DeclaredType)superClassType).asElement();
+                TypeElement superClassElem = (TypeElement)((DeclaredType) superClassType).asElement();
+                Entity parentEntity = ModelUtils.getEntity(((JPAProblemContext)ctx).getMetaData(), superClassElem);
                 
-                if (Utilities.hasAnnotation(superClassElem, JPAAnnotations.ENTITY)){
-                    return new ErrorDescription[]{createProblem(subject, ctx)};
+                if (parentEntity != null){
+                    Set<String> parentEntityIds = new HashSet<String>(1);
+                    
+                    for (Id id: parentEntity.getAttributes().getId()){
+                        parentEntityIds.add(id.getName());
+                    }
+                    
+                    for (Id id : entity.getAttributes().getId()){
+                        if (!parentEntityIds.contains(id.getName())){
+                            // Found id defined directly on the child entity
+                            return new ErrorDescription[]{createProblem(subject, ctx)};
+                        }
+                    }
                 }
             }
         }

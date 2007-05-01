@@ -79,6 +79,11 @@ public abstract class JPAProblemFinder {
         final List<ErrorDescription> problemsFound = new ArrayList<ErrorDescription>();
         createPersistenceScopesListener(file, info.getDocument());
         Project project = FileOwnerQuery.getOwner(file);
+        
+        if (project == null){
+            return; // the source file doesn't belong to any project, skip all checks
+        }
+        
         PersistenceScopes scopes = PersistenceScopes.getPersistenceScopes(project);
         
         //TODO: a workaround for 102643, remove it when the issue is fixed
@@ -167,12 +172,14 @@ public abstract class JPAProblemFinder {
             if (modelElement != null){
                 context.setEntity(true);
             } else{
-                modelElement = ModelUtils.getEmbeddable(metadata, javaClass);
+                //TODO: uncomment when #103058 is fixed
+                //modelElement = ModelUtils.getEmbeddable(metadata, javaClass);
                 
                 if (modelElement != null){
                     context.setEmbeddable(true);
                 } else{
-                    modelElement = ModelUtils.getMappedSuperclass(metadata, javaClass);
+                    //TODO: uncomment when #103059 is fixed
+                    //modelElement = ModelUtils.getMappedSuperclass(metadata, javaClass);
                     
                     if (modelElement != null){
                         context.setMappedSuperClass(true);

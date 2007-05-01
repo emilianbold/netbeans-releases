@@ -25,6 +25,7 @@ import org.netbeans.modules.db.api.sql.SQLKeywords;
 import org.netbeans.modules.j2ee.jpa.model.JPAHelper;
 import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule;
 import org.netbeans.modules.j2ee.jpa.verification.common.ProblemContext;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.dd.JavaPersistenceQLKeywords;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Severity;
@@ -45,7 +46,7 @@ public class ValidPrimaryTableName extends JPAClassRule {
     }
     
     @Override public ErrorDescription[] apply(TypeElement subject, ProblemContext ctx){
-        String entityName = JPAHelper.getPrimaryTableName(subject);
+        String entityName = JPAHelper.getPrimaryTableName((Entity)ctx.getModelElement());
         
         if (entityName.length() == 0){ //TODO: 
             severity = Severity.ERROR;

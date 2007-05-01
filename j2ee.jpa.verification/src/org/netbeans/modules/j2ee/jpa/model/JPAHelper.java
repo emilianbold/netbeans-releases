@@ -22,12 +22,10 @@ package org.netbeans.modules.j2ee.jpa.model;
 
 import java.util.Collection;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
-import org.netbeans.modules.j2ee.jpa.verification.common.Utilities;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Attributes;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 
@@ -71,27 +69,8 @@ public class JPAHelper {
     /**
      * @return name of the primary table that will be mapped to given entity class
      */
-    public static String getPrimaryTableName(TypeElement entityClass){
-        String name = null;
-        AnnotationMirror annTable = Utilities.findAnnotation(entityClass, JPAAnnotations.TABLE);
-        AnnotationValue nameAttrValue = Utilities.getAnnotationAttrValue(annTable, JPAAnnotations.NAME_ATTR);
-        
-        if (nameAttrValue != null){
-            name = nameAttrValue.getValue().toString();
-        } else {
-            AnnotationMirror annEntity = Utilities.findAnnotation(entityClass, JPAAnnotations.ENTITY);
-            nameAttrValue = Utilities.getAnnotationAttrValue(annEntity, JPAAnnotations.NAME_ATTR);
-            
-            if (nameAttrValue == null){
-                name = entityClass.getSimpleName().toString();
-            } else{
-                name = nameAttrValue.getValue().toString();
-            }
-        }
-        
-        assert name != null;
-        
-        return name;
+    public static String getPrimaryTableName(Entity entity){
+        return entity.getTable().getName();
     }
     
     public static AnnotationMirror getFirstAnnotationFromGivenSet(Element element,
@@ -114,11 +93,15 @@ public class JPAHelper {
     public static AccessType findAccessType(TypeElement entityClass, Object modelElement){
         AccessType accessType = AccessType.INDETERMINED;
         
-        String accessDef = null;
-        
         if (modelElement instanceof Entity){
-            //TODO: use model, depends on issue 102952
-            //accessDef = ((Entity)modelElement).getAccess();
+            String accessDef = ((Entity)modelElement).getAccess();
+            
+            if (Entity.FIELD_ACCESS.equals(accessDef)){
+                accessType = AccessType.FIELD;
+            }
+            else if (Entity.PROPERTY_ACCESS.equals(accessDef)){
+                accessType = AccessType.PROPERTY;
+            }
         }
         
         // look for the first element annotated with a JPA field annotation
