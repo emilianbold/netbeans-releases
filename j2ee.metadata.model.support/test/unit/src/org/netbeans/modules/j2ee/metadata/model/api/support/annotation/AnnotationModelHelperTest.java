@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.JavaSource;
@@ -129,5 +130,40 @@ public class AnnotationModelHelperTest extends PersistenceTestCase {
                 return  null;
             }
         });
+    }
+
+    public void testGetJavaSourceFromAnotherThread() throws Exception {
+        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        ClasspathInfo cpi = ClasspathInfo.create(srcFO);
+        final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
+        final CountDownLatch latch1 = new CountDownLatch(1);
+        final CountDownLatch latch2 = new CountDownLatch(1);
+        Thread t = new Thread(new Runnable() {
+            public void run() {
+                try {
+                    latch1.await();
+                } catch (InterruptedException e) {}
+                try {
+                    helper.getJavaSource();
+                    fail();
+                } catch (IllegalStateException e) {}
+                try {
+                    helper.getCompilationController();
+                    fail();
+                } catch (IllegalStateException e) {}
+                latch2.countDown();
+            }
+        });
+        t.start();
+        helper.userActionTask(new Callable<Void>() {
+            public Void call() throws Exception {
+                latch1.countDown();
+                try {
+                    latch2.await();
+                } catch (InterruptedException e) {}
+                return null;
+            }
+        });
+        t.join();
     }
 }
