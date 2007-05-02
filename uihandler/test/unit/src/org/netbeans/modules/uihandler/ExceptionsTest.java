@@ -28,7 +28,7 @@ import org.netbeans.modules.exceptions.ReportPanel;
 
 /**
  *
- * @author jindra
+ * @author Jindrich Sedek
  */
 public class ExceptionsTest extends NbTestCase {
     
@@ -58,10 +58,12 @@ public class ExceptionsTest extends NbTestCase {
         LogRecord log1 = new LogRecord(Level.SEVERE, "TESTING MESSAGE");
         LogRecord log2 = new LogRecord(Level.SEVERE, "TESTING MESSAGE");
         LogRecord log3 = new LogRecord(Level.SEVERE, "NO EXCEPTION LOG");
+        LogRecord log4 = new LogRecord(Level.INFO, "INFO");
         Throwable t1 = new NullPointerException("TESTING THROWABLE");
         Throwable t2 = new UnknownError("TESTING ERROR");
         log1.setThrown(t1);
         log2.setThrown(t2);
+        log4.setThrown(t2);
         Installer installer = Installer.findObject(Installer.class, true);
         assertNotNull(installer);
         installer.restored();
@@ -87,6 +89,14 @@ public class ExceptionsTest extends NbTestCase {
         assertEquals(14, installer.getLogsSize());
         if (installer.getThrown().getMessage().indexOf("TESTING THROWABLE") == -1) {
             fail("Wrong message " + installer.getThrown().getMessage());
+        }
+        uiLogger.log(log4);
+        assertEquals(15, installer.getLogsSize());
+        if (installer.getThrown().getMessage().indexOf("TESTING THROWABLE") == -1){
+            fail("Wrong message " + installer.getThrown().getMessage());
+        }
+        if (installer.getThrown().getMessage().contains("WARNING")){
+            fail("Message should not contain warnings" + installer.getThrown().getMessage());
         }
     }
 }

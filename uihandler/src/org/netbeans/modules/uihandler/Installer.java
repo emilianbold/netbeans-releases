@@ -334,7 +334,11 @@ public class Installer extends ModuleInstall {
         List<LogRecord> list = getLogs();
         ListIterator<LogRecord> it = list.listIterator(list.size());
         while (it.hasPrevious()){
-            Throwable t = it.previous().getThrown();
+            LogRecord previous = it.previous();
+            Throwable t = null;
+            if (previous.getLevel().intValue() >= Level.WARNING.intValue()){
+                t = previous.getThrown();// ignore info messages
+            }
             // find first exception from end
             if (t != null) return t;
         }
@@ -795,7 +799,12 @@ public class Installer extends ModuleInstall {
                 nextURL = uploadLogs(u, findIdentity(), Collections.<String,String>emptyMap(), recs);
             } catch (IOException ex) {
                 LOG.log(Level.INFO, null, ex);
-                String txt = NbBundle.getMessage(Installer.class, "MSG_ConnetionFailed", u.getHost(), u.toExternalForm());
+                String txt;
+                if (!report){
+                    txt = NbBundle.getMessage(Installer.class, "MSG_ConnetionFailed", u.getHost(), u.toExternalForm());
+                }else{
+                    txt = NbBundle.getMessage(Installer.class, "MSG_ConnetionFailedReport", u.getHost(), u.toExternalForm());
+                }
                 NotifyDescriptor dd = new NotifyDescriptor.Message(txt, NotifyDescriptor.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notifyLater(dd);
             }
