@@ -68,9 +68,15 @@ public class UpdateFromNbmTest extends OperationsTestImpl {
         assertTrue(independentFile.exists());
         
         String source = "local-downloaded";
-        List<UpdateUnit> units =  UpdateUnitProviderFactory.getDefault ().create (source, new File[] {engineFile, independentFile}).getUpdateUnits ();
+        List<UpdateUnit> units =  UpdateUnitProviderFactory.getDefault ().create (source, new File[] {engineFile, independentFile}).getUpdateUnits (true);
         assertEquals(2, units.size());
-        UpdateUnit nbmsEngine =  units.get(0);
+        UpdateUnit nbmsEngine =  null;
+        if (units.get(0).getCodeName().indexOf("engine") != -1) {
+            nbmsEngine = units.get (0);
+        } else if (units.get(1).getCodeName().indexOf("engine") != -1) {
+            nbmsEngine = units.get (1);
+        }
+        assertNotNull (nbmsEngine);
         assertNotNull(nbmsEngine.getInstalled());        
         assertEquals(1, nbmsEngine.getAvailableUpdates().size());
         UpdateElement engine1_2 = nbmsEngine.getAvailableUpdates().get(0);
@@ -83,7 +89,13 @@ public class UpdateFromNbmTest extends OperationsTestImpl {
         String brokenDep = (String)info.getBrokenDependencies().toArray()[0];
         assertEquals("module org.yourorghere.independent > 1.1",brokenDep);
         assertEquals(0, info.getRequiredElements().size());
-        UpdateUnit independentEngine =  units.get(1);
+        UpdateUnit independentEngine =  null;
+        if (units.get(0).getCodeName().indexOf("independent") != -1) {
+            independentEngine = units.get (0);
+        } else if (units.get(1).getCodeName().indexOf("independent") != -1) {
+            independentEngine = units.get (1);
+        }
+        assertNotNull (independentEngine);
         assertNotNull(independentEngine.getInstalled());        
         
         UpdateElement independent1_1 = independentEngine.getAvailableUpdates().get(0);
