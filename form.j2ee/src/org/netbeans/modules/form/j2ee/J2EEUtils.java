@@ -34,6 +34,8 @@ import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.net.URL;
@@ -62,6 +64,7 @@ import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.form.FormEditor;
 import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.FormProperty;
@@ -88,6 +91,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
@@ -351,27 +355,42 @@ public class J2EEUtils {
      * of the entity classes for related tables (if <code>relatedTableNames</code>
      * parameter was non-<code>null</code>).
      */
-    public static String[] generateEntityClass(Project project, SourceGroup location, String packageName, DatabaseConnection dbconn, List tableNames, PersistenceUnit unit) {
+    public static String[] generateEntityClass(final Project project, SourceGroup location, String packageName, DatabaseConnection dbconn, List tableNames, PersistenceUnit unit) {
         try {
             EntitiesFromDBGenerator generator = new EntitiesFromDBGenerator(tableNames, true, packageName, location, dbconn, project, unit);
             // PENDING
-            Set<FileObject> entities = generator.generate(AggregateProgressFactory.createProgressContributor("PENDING"));
+            final Set<FileObject> entities = generator.generate(AggregateProgressFactory.createProgressContributor("PENDING"));
 
             for (FileObject fob : entities) {
                 makeEntityObservable(fob);
             }
             
             // Compile generated bean
-            Action action = FileSensitiveActions.fileCommandAction(ActionProvider.COMMAND_COMPILE_SINGLE, "", null); // NOI18N
-            if (action instanceof ContextAwareAction) {
-                DataObject[] dobs = new DataObject[entities.size()];
-                int count = 0;
-                for (FileObject fob : entities) {
-                    dobs[count++] = DataObject.find(fob);
+            OpenProjects.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    try {
+                        for (Project p : OpenProjects.getDefault().getOpenProjects()) {
+                            if (p.equals(project)) {
+                                Action action = FileSensitiveActions.fileCommandAction(ActionProvider.COMMAND_COMPILE_SINGLE, "", null); // NOI18N
+                                if (action instanceof ContextAwareAction) {
+                                    DataObject[] dobs = new DataObject[entities.size()];
+                                    int count = 0;
+                                    for (FileObject fob : entities) {
+                                        dobs[count++] = DataObject.find(fob);
+                                    }
+                                    Lookup lookup = Lookups.fixed((Object[])dobs);
+                                    ((ContextAwareAction)action).createContextAwareInstance(lookup).actionPerformed(new ActionEvent(new Object(), 0, null));
+                                }
+                                break;
+                            } // else something went wrong - don't attempt to compile
+                        }
+                    } catch (DataObjectNotFoundException dnfex) {
+                        dnfex.printStackTrace();
+                    } finally {
+                        OpenProjects.getDefault().removePropertyChangeListener(this);
+                    }
                 }
-                Lookup lookup = Lookups.fixed((Object[])dobs);
-                ((ContextAwareAction)action).createContextAwareInstance(lookup).actionPerformed(new ActionEvent(new Object(), 0, null));
-            }
+            });
 
             String[] result = new String[entities.size()];
             int count = 0;
