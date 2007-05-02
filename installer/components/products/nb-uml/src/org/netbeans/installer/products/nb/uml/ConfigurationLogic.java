@@ -69,47 +69,22 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
         final File nbLocation = sources.get(0).getInstallationLocation();
         dependencies.get(0).setVersionResolved(sources.get(0).getVersion());
         
-        if (nbLocation != null) {
-            progress.setDetail(getString("CL.install.netbeans.conf")); // NOI18N
+        /////////////////////////////////////////////////////////////////////////////
+        // telelogic doors integration
+        if(SystemUtils.isWindows()) {
             try {
-                if (SystemUtils.isMacOS()) {
-                    final File javaHome = 
-                            new File(NetBeansUtils.getJavaHome(nbLocation));
-                    final Version javaVersion = 
-                            JavaUtils.getInfo(javaHome).getVersion();
-                    
-                    if (javaVersion.olderThan(
-                            Version.getVersion(MACOSX_QUARTZ_JAVA_VERSION))) {
-                        NetBeansUtils.setJvmOption(
-                                nbLocation, 
-                                MACOSX_QUARTZ_OPTION_NAME, 
-                                MACOSX_QUARTZ_OPTION_VALUE);
-                    }
-                }
+                LogManager.indent();
+                progress.setDetail(
+                        getString("CL.install.telelogic.integration")); // NOI18N
+                configureTelelogicDoors(nbLocation, progress, true);
             } catch (IOException ex) {
                 throw new InstallationException(
-                        getString("CL.install.error.netbeans.conf"),
+                        getString("CL.install.error.telelogic.integration"),
                         ex);
+            } finally {
+                LogManager.unindent();
             }
-            
-            /////////////////////////////////////////////////////////////////////////////
-            // Integrate with Telelogic Doors
-            if(SystemUtils.isWindows()) {
-                try {
-                    LogManager.indent();
-                    progress.setDetail(
-                            getString("CL.install.telelogic.integration")); // NOI18N
-                    configureTelelogicDoors(nbLocation, progress, true);
-                } catch (IOException ex) {
-                    throw new InstallationException(
-                            getString("CL.install.error.telelogic.integration"),
-                            ex);
-                } finally {
-                    LogManager.unindent();
-                }
-            }
-            
-        }        
+        }
     }
     
     public void uninstall(final Progress progress) throws UninstallationException {
@@ -122,17 +97,6 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
         
         // pick the first one and integrate with it
         final File nbLocation = sources.get(0).getInstallationLocation();
-        
-        /////////////////////////////////////////////////////////////////////////////
-        try {
-            progress.setDetail(getString("CL.uninstall.netbeans.conf")); // NOI18N
-            
-            NetBeansUtils.removeJvmOption(nbLocation, MACOSX_QUARTZ_OPTION_NAME);
-        } catch (IOException e) {
-            throw new UninstallationException(
-                    getString("CL.uninstall.error.netbeans.conf"), // NOI18N
-                    e);
-        }
         
         /////////////////////////////////////////////////////////////////////////////
         if(SystemUtils.isWindows()) {            
@@ -259,13 +223,6 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
     public static final String ID =
             "UML"; // NOI18N
     
-    private static final String MACOSX_QUARTZ_OPTION_NAME =
-            "-Dapple.awt.graphics.UseQuartz"; // NOI18N
-    private static final String MACOSX_QUARTZ_OPTION_VALUE =
-            "false"; // NOI18N
-    private static final String MACOSX_QUARTZ_JAVA_VERSION =
-            "1.6.0.0.0"; // NOI18N
-            
     private static final String PATH_ENV = "PATH"; // NOI18N
     
     private static final String CONFIG_DOORS_LOCATION =            
