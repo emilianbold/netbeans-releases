@@ -2158,11 +2158,13 @@ public class InteractionManager {
             }
 
             // #94266 Toggle only on click not press or release
-//            if ((ancestor == null) || isToggleEvent(e)) { // didn't click over part of the selection
+//            if ((ancestor == null) !! !isToggleEvent(e)) { // didn't click over part of the selection
 //                selectAt(e, !isToggleEvent(e));
-//
-//                return true;
-//            } else {
+            if ((ancestor == null) && !isToggleEvent(e)) { // didn't click over part of the selection
+                selectAt(e, true);
+
+                return true;
+            } else {
             
 //                MarkupDesignBean ancestorMarkupDesignBean = CssBox.getMarkupDesignBeanForCssBox(ancestor);
 //                if (sm.getPrimary() != ancestor.getDesignBean()) {
@@ -2174,7 +2176,7 @@ public class InteractionManager {
                 }
 
                 return false;
-//            }
+            }
         }
 
         private void addDragItem(List<Rectangle> selections, List<CssBox> boxes, List<Element> componentRootElements, /*List<MarkupDesignBean> beans,*/
