@@ -86,6 +86,10 @@ public abstract class JPAProblemFinder {
         
         PersistenceScopes scopes = PersistenceScopes.getPersistenceScopes(project);
         
+        if (scopes == null){
+            return; // project of this type doesn't provide a list of persistence scopes
+        }
+        
         //TODO: a workaround for 102643, remove it when the issue is fixed
         if (scopes.getPersistenceScopes().length == 0){
             return;
