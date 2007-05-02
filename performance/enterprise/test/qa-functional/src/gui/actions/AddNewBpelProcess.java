@@ -69,7 +69,7 @@ public class AddNewBpelProcess extends org.netbeans.performance.test.utilities.P
         EPUtilities.getProcessFilesNode("BPELTestProject").select();
         
         NewFileWizardOperator wizard = NewFileWizardOperator.invoke();
-        wizard.selectCategory("Service Oriented Architecture"); //NOI18N
+        wizard.selectCategory("SOA"); //NOI18N
         wizard.selectFileType("BPEL Process"); //NOI18N
         wizard.next();
         
