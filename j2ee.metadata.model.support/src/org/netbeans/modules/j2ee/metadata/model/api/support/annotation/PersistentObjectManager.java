@@ -38,6 +38,7 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
     private static final Logger LOGGER = Logger.getLogger(PersistentObjectManager.class.getName());
     // private static final boolean VOLATILE = Boolean.getBoolean("netbeans.metadata.model.volatile"); // NOI18N
     // XXX for M9 only
+    // XXX causes PersistentObjectManagerTest to fail; currently excluded in test/cfg-unit.xml
     private static final boolean VOLATILE = true;
 
     private final AnnotationModelHelper helper;
