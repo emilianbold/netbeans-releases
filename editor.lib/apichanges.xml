@@ -82,6 +82,22 @@ is the proper place.
 
     <changes>
 
+        <change id="ExtCaret-matchBraceOffset">
+            <summary>Adding ExtCaret.get/setMatchBraceOffset</summary>
+            <version major="1" minor="14"/>
+            <date day="2" month="5" year="2007"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" />
+            <description>
+                <p>
+                    The <code>ExtCaret.setMatchBraceOffset</code> and the <code>MATCH_BRACE_*</code>
+                    constants can be used for customizing the algorithm for
+                    finding a matching bracket. The options are: match a breacket
+                    before caret, after caret or either side.
+                </p>
+            </description>
+        </change>
+        
         <change id="JumpList-final">
             <summary>Making JumpList final</summary>
             <version major="1" minor="13"/>
