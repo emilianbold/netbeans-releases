@@ -20,13 +20,11 @@
 package org.netbeans.modules.java.j2seproject.queries;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.charset.Charset;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
@@ -38,51 +36,33 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
+import org.openide.util.test.MockLookup;
 
-/**
- * Tests for FileEncodingQuery
- *
- * @author Tomas Zezula
- */
-public class FileEncodingQueryTest extends NbTestCase {        
+public class FileEncodingQueryTest extends NbTestCase {
 
     public FileEncodingQueryTest(String testName) {
-        super(testName);        
+        super(testName);
     }
-    
+
     private FileObject scratch;
     private FileObject projdir;
     private FileObject sources;
     private AntProjectHelper helper;
     private J2SEProject prj;
 
-    protected void setUp() throws Exception {        
+    protected void setUp() throws Exception {
         ClassLoader l = this.getClass().getClassLoader();
-        TestUtil.setLookup(new ProxyLookup (new Lookup[]{
-            Lookups.fixed(l, new DummyXMLEncodingImpl ()),
-            Lookups.metaInfServices(l),            
-        }));        
-        super.setUp();        
+        MockLookup.setLookup(
+                Lookups.fixed(l, new DummyXMLEncodingImpl()),
+                Lookups.metaInfServices(l));
+        super.setUp();
         this.clearWorkDir();
-    }
-
-    protected void tearDown() throws Exception {
-        scratch = null;
-        projdir = null;
-        prj = null;
-        super.tearDown();
-    }
-
-
-    private void prepareProject () throws IOException {
         File wd = getWorkDir();
         scratch = FileUtil.toFileObject(wd);
         assertNotNull(wd);
-        projdir = scratch.createFolder("proj");        
+        projdir = scratch.createFolder("proj");
         J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
         helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj",null,null);
         Project p = FileOwnerQuery.getOwner(projdir);
@@ -93,7 +73,6 @@ public class FileEncodingQueryTest extends NbTestCase {
     }
 
     public void testFileEncodingQuery () throws Exception {
-        this.prepareProject();
         final Charset UTF8 = Charset.forName("UTF-8");
         final Charset ISO15 = Charset.forName("ISO-8859-15");
         final Charset CP1252 = Charset.forName("CP1252");
@@ -104,25 +83,23 @@ public class FileEncodingQueryTest extends NbTestCase {
         enc = FileEncodingQuery.getEncoding(xml);
         assertEquals(ISO15,enc);
         ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-            public Void run() throws Exception {        
+            public Void run() throws Exception {
                 EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                 ep.setProperty(J2SEProjectProperties.SOURCE_ENCODING, CP1252.name());
                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
                 ProjectManager.getDefault().saveProject(prj);
                 return null;
             }
-        });        
+        });
         enc = FileEncodingQuery.getEncoding(java);
         assertEquals(CP1252,enc);
         FileObject standAloneJava = scratch.createData("b.java");
         enc = FileEncodingQuery.getEncoding(standAloneJava);
-        assertEquals(UTF8,enc);
+        assertEquals(Charset.defaultCharset(), enc);
     }
 
-
     public static class DummyXMLEncodingImpl extends FileEncodingQueryImplementation {
-               
-                            
+
         public Charset getEncoding(FileObject file) {
             if ("xml".equals(file.getExt())) {
                 return Charset.forName("ISO-8859-15");
@@ -132,7 +109,5 @@ public class FileEncodingQueryTest extends NbTestCase {
             }
         }
     }
-
-
 
 }
