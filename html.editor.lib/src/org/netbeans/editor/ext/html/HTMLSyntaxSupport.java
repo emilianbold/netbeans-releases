@@ -253,7 +253,9 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
             }
             
             ts.move(offset); //reset the token sequence to the original position
-            ts.moveNext();
+            if(!(ts.moveNext() || ts.movePrevious())) {
+                return null; //no token
+            }
             token = ts.token();
             
             //match html comments
