@@ -382,28 +382,7 @@ public class OutputDocumentTest extends NbTestCase {
         
         assertEquals ("getText for first two strings should be \"" + expected + "\" but was \"" + received + "\"", expected, received);
     }
-    
-    public void testInsertString() {
-        System.out.println("testInsertString");
-        OutWriter ow = new OutWriter ();
-        OutputDocument doc = new OutputDocument (ow);
-        String first = "This is the first string";
-        ow.println(first);
-        ow.flush();
-        
-        UnsupportedOperationException uoe = null;
-        try {
-            doc.insertString(5, "Foo", null);
-        } catch (UnsupportedOperationException e) {
-            uoe = e;
-        } catch (BadLocationException e) {
-            fail ("Bad location exception thrown - should have been UnsupportedOperationException");
-        }
-        assertNotNull ("insertString should throw an unsupportedOperationException ", uoe);
-        
-    }
-
-     
+         
     public void testRender() {
         System.out.println("testRender");
 

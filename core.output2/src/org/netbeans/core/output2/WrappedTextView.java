@@ -20,7 +20,6 @@ package org.netbeans.core.output2;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.*;
@@ -328,13 +327,13 @@ public class WrappedTextView extends View {
         
         Rectangle vis = comp.getVisibleRect();
         
-        OutputDocument d = odoc();
-        if (d != null) {
+        OutputDocument doc = odoc();
+        if (doc != null) {
             Rectangle clip = g.getClipBounds();
             clip.y = Math.max (0, clip.y - charHeight());
             clip.height += charHeight() * 2;
 
-            int lineCount = d.getElementCount();
+            int lineCount = doc.getElementCount();
             if (lineCount == 0) {
                 return;
             }
@@ -342,7 +341,7 @@ public class WrappedTextView extends View {
             int charsPerLine = getCharsPerLine();
             int physicalLine = clip.y / charHeight;
             ln[0] = physicalLine;
-            d.getLines().toLogicalLineIndex(ln, charsPerLine);
+            doc.getLines().toLogicalLineIndex(ln, charsPerLine);
 
             int firstline = ln[0];
             int count = (lineCount - firstline);
@@ -355,14 +354,14 @@ public class WrappedTextView extends View {
             
             try {
                 for (int i=0; i < count; i++) {
-                    int lineStart = d.getLineStart(i + firstline);
-                    int lineEnd = d.getLineEnd (i + firstline);
+                    int lineStart = doc.getLineStart(i + firstline);
+                    int lineEnd = doc.getLineEnd (i + firstline);
                     int length = lineEnd - lineStart;
 
-                    g.setColor(getColorForLocation(lineStart, d, true)); //XXX should not always be 'true'
+                    g.setColor(getColorForLocation(lineStart, doc, true)); //XXX should not always be 'true'
 
                     //Get the text to print into the segment's array
-                    d.getText(lineStart, length, seg);
+                    doc.getText(lineStart, length, seg);
 
                     //Get the number of logical lines this physical line contains
                     int logicalLines = seg.count <= charsPerLine ? 1 :  1 + (length / charsPerLine);
@@ -574,7 +573,7 @@ public class WrappedTextView extends View {
             }
 
             int lineStart = od.getLineStart(logicalLine);
-            int lineLength = od.getLines().length(logicalLine);
+            int lineLength = od.getLineEnd(logicalLine);
 
             int column = (ix / charWidth());
             if (column > lineLength-1) {

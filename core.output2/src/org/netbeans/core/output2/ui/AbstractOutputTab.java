@@ -201,19 +201,20 @@ public abstract class AbstractOutputTab extends JComponent implements ActionList
         if (val == isInputVisible()) {
             return;
         }
-        if (val) {
-            if (input == null) {
-                input = new InputPanel();
-                input.addActionListener(this);
-            }
-            if (input.getParent() != this) {
-                add (input);
-                validate();
-            }
-        }
-        input.setVisible (val);
+        this.outputPane.textView.setEditable(val);
+//            if (input == null) {
+//                input = new InputPanel();
+//                input.addActionListener(this);
+//            }
+//            if (input.getParent() != this) {
+//                add (input);
+//                validate();
+//            }
+//        }
+//        input.setVisible (val);
         validate();
         getOutputPane().ensureCaretPosition();
+        getOutputPane().requestFocusInWindow();
     }
     
     public void actionPerformed(ActionEvent ae) {

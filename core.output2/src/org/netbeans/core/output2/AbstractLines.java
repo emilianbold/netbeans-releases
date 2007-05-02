@@ -659,6 +659,12 @@ abstract class AbstractLines implements Lines, Runnable {
     void markDirty() {
         dirty = true;
     }
+    
+    boolean isLastLineFinished() {
+        return lastLineFinished;
+    }
+    
+    private boolean lastLineFinished = true;
 
     public void lineStarted(int start) {
         if (Controller.VERBOSE) Controller.log("AbstractLines.lineStarted " + start); //NOI18N
@@ -669,6 +675,7 @@ abstract class AbstractLines implements Lines, Runnable {
             lineStartList.add(start);
             matcher = null;
             lineCount = lineStartList.size();
+            lastLineFinished = false;
         }
         if (lineCount == 20 || lineCount == 10 || lineCount == 1) {
             //Fire again after the first 20 lines
@@ -685,6 +692,7 @@ abstract class AbstractLines implements Lines, Runnable {
             matcher = null;
             
             int lineCount = lineStartList.size();
+            lastLineFinished = true;
             //This is the index of the getLine we just added
             int lastline = lineCount-1;
             checkLogicalLineCount(lastline);
@@ -731,6 +739,7 @@ abstract class AbstractLines implements Lines, Runnable {
             matcher = null;
             
             lineCount = lineStartList.size();
+            lastLineFinished = true;
             //This is the index of the getLine we just added
             int lastline = lineCount-1;
             checkLogicalLineCount(lastline);

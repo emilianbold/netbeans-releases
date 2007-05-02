@@ -28,9 +28,11 @@ import javax.swing.*;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
+import org.netbeans.core.output2.NbIO.IOReader;
 import org.openide.util.NbPreferences;
 
 
@@ -246,6 +248,24 @@ class OutputPane extends AbstractOutputPane implements ComponentListener {
         myMap.setParent(map);
         result.setInputMap(result.WHEN_FOCUSED, myMap);
         
+        Action act = new AbstractAction() {
+            public void actionPerformed(ActionEvent arg0) {
+                OutputDocument od =(OutputDocument)((JEditorPane)arg0.getSource()).getDocument();
+                findOutputTab().inputSent(od.sendLine());
+            }
+        };
+        result.getActionMap().put("SENDLINE", act);
+        
+        act = new AbstractAction() {
+            public void actionPerformed(ActionEvent arg0) {
+                OutputDocument od =(OutputDocument)((JEditorPane)arg0.getSource()).getDocument();
+                findOutputTab().inputSent(od.sendLine());
+                findOutputTab().inputEof();
+            }
+        };
+        result.getActionMap().put("EOF", act);
+        
+        
         return result;
     }
     
@@ -264,6 +284,16 @@ class OutputPane extends AbstractOutputPane implements ComponentListener {
             stroke = KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, Event.CTRL_MASK);
             if (keyStroke.equals(stroke)) {
                 return null;
+            }
+            
+            stroke = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+            if (keyStroke.equals(stroke)) {
+                return "SENDLINE";
+            }
+            
+            stroke = KeyStroke.getKeyStroke(KeyEvent.VK_D, Event.CTRL_MASK);
+            if (keyStroke.equals(stroke)) {
+                return "EOF";
             }
             Object retValue;
             retValue = super.get(keyStroke);

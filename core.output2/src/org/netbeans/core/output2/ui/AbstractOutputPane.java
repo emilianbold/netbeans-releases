@@ -439,6 +439,9 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         //Ensure it is consumed
         e.getLength();
         documentChanged();
+        if (e.getOffset() > getCaretPos()) {
+            getCaret().setDot(e.getOffset() + e.getLength());
+        }
     }
 
     public final void removeUpdate(DocumentEvent e) {

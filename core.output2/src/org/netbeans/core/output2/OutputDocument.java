@@ -16,18 +16,12 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * OutputDocument.java
- *
- * Created on March 20, 2004, 8:35 PM
- */
 
 package org.netbeans.core.output2;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.Mutex;
-
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.text.*;
@@ -44,11 +38,14 @@ import org.openide.util.Exceptions;
  *
  * @author  Tim Boudreau, Jesse Glick
  */
-class OutputDocument implements Document, Element, ChangeListener, ActionListener, Runnable {
+public class OutputDocument implements Document, Element, ChangeListener, ActionListener, Runnable {
     private List dlisteners = new ArrayList();
     private volatile Timer timer = null;
 
     private OutWriter writer;
+    
+    private StringBuffer inBuffer;
+    private boolean lastInput;
    
     /** Creates a new instance of OutputDocument */
     OutputDocument(OutWriter writer) {
@@ -57,6 +54,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
         }
         this.writer = writer;
         getLines().addChangeListener(this);
+        inBuffer = new StringBuffer();
     }
 
     /**
@@ -94,9 +92,10 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
     }
     
     public Position createPosition(int offset) throws BadLocationException {
-        if (offset < 0 || offset > getLines().getCharCount()) {
+        if (offset < 0 || offset > getLines().getCharCount() + inBuffer.length()) {
             throw new BadLocationException ("Bad position", offset); //NOI18N
         }
+        //TODO
         return new ODPosition (offset);
     }
     
@@ -109,7 +108,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
     }
     
     public int getLength() {
-        return getLines().getCharCount();
+        return getLines().getCharCount() + inBuffer.length();
     }
     
     public Object getProperty(Object obj) {
@@ -125,7 +124,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
     }
     
     public String getText(int offset, int length) throws BadLocationException {
-        if (offset < 0 || offset > getLines().getCharCount() || length < 0) {
+        if (offset < 0 || offset > getLines().getCharCount() + inBuffer.length() || length < 0) {
             throw new BadLocationException ("Bad: " + offset + "," +  //NOI18N
                 length, offset);
         }
@@ -134,7 +133,13 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
         }
         String result;
         synchronized (getLines().readLock()) {
-            result = getLines().getText(offset,offset + length);
+            int linesOffset = Math.min(getLines().getCharCount(), offset);
+            int linesEnd = Math.min(getLines().getCharCount(), offset + length);
+            result = getLines().getText(linesOffset, linesEnd);
+            if (offset + length > getLines().getCharCount()) {
+                int inEnd = offset + length - getLines().getCharCount();
+                result = result + inBuffer.substring(0, inEnd);
+            }
         }
         return result;
     }
@@ -162,7 +167,16 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
             reusableSubrange = new char[length];
         }
         try {
-            char[] chars = getLines().getText(offset, offset + length, reusableSubrange);
+            int linesOffset = Math.min(getLines().getCharCount(), offset);
+            int linesEnd = Math.min(getLines().getCharCount(), offset + length);
+            char[] chars = getLines().getText(linesOffset, linesEnd, reusableSubrange);
+            if (offset + length >= getLines().getCharCount()) {
+                int inEnd = offset - getLines().getCharCount() + length;
+                int inStart = Math.max(0, offset - getLines().getCharCount());
+                // calling Math.min to prevent nasty AOOBE wich seem to come out of nowhere..
+                inBuffer.getChars(Math.min(inStart, inBuffer.length()), Math.min(inEnd, inBuffer.length()), 
+                        chars, linesEnd - linesOffset);
+            }
             txt.array = chars;
             txt.offset = 0;
             txt.count = Math.min(length, chars.length);
@@ -177,16 +191,97 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
         }
     }
     
-    public void insertString(int param, String str, AttributeSet attributeSet) throws BadLocationException {
-        throw new UnsupportedOperationException();
+    public void insertString(int offset, String str, AttributeSet attributeSet) throws BadLocationException {
+        final int off = Math.max(offset, getLength() - inBuffer.length());
+        final int len = str.length();
+        inBuffer.insert(off - (getLength() - inBuffer.length()), str);
+        DocumentEvent ev = new DocumentEvent() {
+            public int getOffset() {
+                return off;
+            }
+
+            public int getLength() {
+                return len;
+            }
+
+            public Document getDocument() {
+                return OutputDocument.this;
+            }
+
+            public EventType getType() {
+                return EventType.INSERT;
+            }
+
+            public ElementChange getChange(Element arg0) {
+                return null;
+            }
+        };
+        fireDocumentEvent(ev);
+    }
+    
+    public String sendLine() {
+        final int off = getLength() - inBuffer.length();
+        final int len = inBuffer.length();
+        String toReturn = inBuffer.toString();
+        inBuffer = new StringBuffer();
+        DocumentEvent ev = new DocumentEvent() {
+            public int getOffset() {
+                return off;
+            }
+
+            public int getLength() {
+                return len;
+            }
+
+            public Document getDocument() {
+                return OutputDocument.this;
+            }
+
+            public EventType getType() {
+                return EventType.REMOVE;
+            }
+
+            public ElementChange getChange(Element arg0) {
+                return null;
+            }
+        };
+        fireDocumentEvent(ev);
+        return toReturn;
     }
     
     public void putProperty(Object obj, Object obj1) {
         //do nothing
     }
     
-    public void remove(int param, int param1) throws BadLocationException {
-        throw new UnsupportedOperationException ("Read only buffer"); //NOI18N
+    public void remove(int offset, int length) throws BadLocationException {
+        int startOff = getLength() - inBuffer.length();
+        final int off = Math.max(startOff, offset);
+        final int len = Math.min(length, inBuffer.length());
+        if (off - startOff + len <= getLength()) {
+            inBuffer.delete(off - startOff, off - startOff + len);
+            DocumentEvent ev = new DocumentEvent() {
+            public int getOffset() {
+                return off - len;
+            }
+
+            public int getLength() {
+                return len;
+            }
+
+            public Document getDocument() {
+                return OutputDocument.this;
+            }
+
+            public EventType getType() {
+                return EventType.REMOVE;
+            }
+
+            public ElementChange getChange(Element arg0) {
+                return null;
+            }
+            };
+            fireDocumentEvent(ev);
+        }
     }
     
     public synchronized void removeDocumentListener(DocumentListener documentListener) {
@@ -213,7 +308,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
         }
         int endOffset;
         if (lineIndex >= getLines().getLineCount()-1) {
-            endOffset = getLines().getCharCount();
+            endOffset = getLines().getCharCount() + inBuffer.length();
         } else {
             endOffset = getLines().getLineStart(lineIndex+1);
         }
@@ -306,7 +401,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
             boolean noPostedLine = lastPostedLine == - 1;
 
             int lineCount = getLines().getLineCount();
-            int size = getLines().getCharCount();
+            int size = getLines().getCharCount() + inBuffer.length();
             lastPostedLine = lineCount;
             lastPostedLength = size;
             
@@ -387,7 +482,13 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
         Iterator i = new ArrayList(dlisteners).iterator();
         while (i.hasNext()) {
             DocumentListener dl = (DocumentListener) i.next();
-            dl.insertUpdate(de);
+            if (de.getType() == DocumentEvent.EventType.REMOVE) {
+                dl.removeUpdate(de);
+            } else if (de.getType() == DocumentEvent.EventType.CHANGE) {
+                dl.changedUpdate(de);
+            } else {
+                dl.insertUpdate(de);
+            }
         }
     }
 
@@ -414,7 +515,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
     
     final class ODEndPosition implements Position {
         public int getOffset() {
-            return getLines().getCharCount();
+            return getLines().getCharCount() + inBuffer.length();
         }
         
         private Document doc() {
@@ -510,7 +611,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
                 if (startOffset == -1) {
                     startOffset = getLines().getLineCount() > 0 ? getLines().getLineStart(lineIndex) : 0;
                     if (lineIndex >= getLines().getLineCount()-1) {
-                        endOffset = getLines().getCharCount();
+                        endOffset = getLines().getCharCount() + inBuffer.length();
                     } else {
                         endOffset = getLines().getLineStart(lineIndex+1);
                     }
@@ -518,7 +619,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
                         + " with lines " + getLines() + " or writer has been reset";
                 } else if (lineIndex >= getLines().getLineCount()-1) {
                     //always recalculate the last line...
-                    endOffset = getLines().getCharCount();
+                    endOffset = getLines().getCharCount() + inBuffer.length();
                 }
             }
         }
@@ -614,7 +715,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
 //                synchronized (writer) {
                     consumed = true;
                     if (Controller.VERBOSE) Controller.log ("EVENT CONSUMED: " + start);
-                int charsWritten = getLines().getCharCount();
+                    int charsWritten = getLines().getCharCount() + inBuffer.length();
                     if (initial) {
                         first = 0;
                         offset = 0;
