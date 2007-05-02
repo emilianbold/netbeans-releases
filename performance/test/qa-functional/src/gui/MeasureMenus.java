@@ -58,7 +58,7 @@ public class MeasureMenus  {
         suite.addTest(new MainSubMenus("testVersLocalHistoryMenu", "Versioning | Local History main menu"));
         suite.addTest(new MainSubMenus("testVersSubversionMenu", "Versioning | Subversion main menu"));
         suite.addTest(new MainSubMenus("testToolsI18nMenu", "Tools | Internationalization main menu"));
-        suite.addTest(new MainSubMenus("testToolsJavaDBMenu", "Tools | Java DB Database main menu"));
+        suite.addTest(new MainSubMenus("testToolsPaletteMenu", "Tools | Palette main menu"));
         suite.addTest(new MainSubMenus("testWinDebuggingMenu", "Window | Debugging main menu"));
         suite.addTest(new MainSubMenus("testWinVersioningMenu", "Window | Versioning main menu"));
         suite.addTest(new MainSubMenus("testWinProfilingMenu", "Window | Profiling main menu"));

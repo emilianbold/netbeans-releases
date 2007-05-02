@@ -116,8 +116,8 @@ public class MainSubMenus extends org.netbeans.performance.test.utilities.Perfor
         testSubMenu("org.netbeans.modules.versioning.Bundle","Menu/Versioning", "org.netbeans.modules.subversion.Bundle", "CTL_Subversion_MainMenu");
     }
         
-    public void testToolsJavaDBMenu(){
-        testSubMenu("org.netbeans.core.Bundle","Menu/Tools", "org.netbeans.modules.derby.Bundle", "LBL_DerbyDatabase");
+    public void testToolsPaletteMenu(){
+        testSubMenu("org.netbeans.core.Bundle","Menu/Tools", "org.netbeans.modules.palette.Bundle", "CTL_PaletteAction");
     }
     
     public void testToolsI18nMenu(){
