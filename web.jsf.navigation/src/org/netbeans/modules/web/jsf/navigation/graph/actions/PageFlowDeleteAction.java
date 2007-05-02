@@ -17,7 +17,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
 import javax.swing.AbstractAction;
-import org.netbeans.modules.web.jsf.navigation.NavigationCaseNode;
+import org.netbeans.modules.web.jsf.navigation.NavigationCaseEdge;
 import org.netbeans.modules.web.jsf.navigation.PinNode;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 import org.netbeans.modules.web.jsf.navigation.graph.PageSceneElement;
@@ -102,8 +102,8 @@ public class PageFlowDeleteAction extends AbstractAction{
                     for( PageSceneElement deleteNode : myDeleteNodes ){
                         if( deleteNode.canDestroy() ){
                             
-                            if( deleteNode instanceof NavigationCaseNode ){
-                                updateSourcePins((NavigationCaseNode)deleteNode);
+                            if( deleteNode instanceof NavigationCaseEdge ){
+                                updateSourcePins((NavigationCaseEdge)deleteNode);
                             }
                             
                             
@@ -117,7 +117,7 @@ public class PageFlowDeleteAction extends AbstractAction{
         });
     }
     
-    private void updateSourcePins(NavigationCaseNode navCaseNode) {
+    private void updateSourcePins(NavigationCaseEdge navCaseNode) {
         PinNode source = scene.getEdgeSource(navCaseNode);
         if( source != null && !source.isDefault()) {
             source.setFromOutcome(null);

@@ -62,7 +62,7 @@ import org.netbeans.api.visual.vmd.VMDConnectionWidget;
 import org.netbeans.api.visual.vmd.VMDPinWidget;
 import org.netbeans.api.visual.widget.ImageWidget;
 import org.netbeans.api.visual.widget.LabelWidget;
-import org.netbeans.modules.web.jsf.navigation.NavigationCaseNode;
+import org.netbeans.modules.web.jsf.navigation.NavigationCaseEdge;
 import org.netbeans.modules.web.jsf.navigation.Page;
 import org.netbeans.modules.web.jsf.navigation.PageFlowView;
 import org.netbeans.modules.web.jsf.navigation.PinNode;
@@ -89,7 +89,7 @@ import org.openide.util.actions.SystemAction;
  * @author Joelle Lam
  */
 // TODO - remove popup menu action
-public class PageFlowScene extends GraphPinScene<Page, NavigationCaseNode, PinNode> {
+public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge, PinNode> {
     
     private LayerWidget backgroundLayer = new LayerWidget(this);
     private LayerWidget mainLayer = new LayerWidget(this);
@@ -407,7 +407,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseNode, PinNo
      * @param edge
      * @return the widget attached to the edge
      */
-    protected Widget attachEdgeWidget(NavigationCaseNode edge) {
+    protected Widget attachEdgeWidget(NavigationCaseEdge edge) {
         assert edge != null;
         
         VMDConnectionWidget connectionWidget = new VMDConnectionWidget(this, router);
@@ -439,7 +439,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseNode, PinNo
      * @param oldSourcePin the old source pin
      * @param sourcePin the new source pin
      */
-    protected void attachEdgeSourceAnchor(NavigationCaseNode edge, PinNode oldSourcePin, PinNode sourcePin) {
+    protected void attachEdgeSourceAnchor(NavigationCaseEdge edge, PinNode oldSourcePin, PinNode sourcePin) {
         ((ConnectionWidget) findWidget(edge)).setSourceAnchor(getPinAnchor(sourcePin));
     }
     
@@ -451,7 +451,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseNode, PinNo
      * @param oldTargetPin the old target pin
      * @param targetPin the new target pin
      */
-    protected void attachEdgeTargetAnchor(NavigationCaseNode edge, PinNode oldTargetPin, PinNode targetPin) {
+    protected void attachEdgeTargetAnchor(NavigationCaseEdge edge, PinNode oldTargetPin, PinNode targetPin) {
         ((ConnectionWidget) findWidget(edge)).setTargetAnchor(getPinAnchor(targetPin));
     }
     
@@ -510,7 +510,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseNode, PinNo
         }
         
         public String getText(Widget widget) {
-            NavigationCaseNode caseNode = (NavigationCaseNode)findObject(widget.getParentWidget());
+            NavigationCaseEdge caseNode = (NavigationCaseEdge)findObject(widget.getParentWidget());
             return ((LabelWidget)widget).getLabel();
         }
         
@@ -519,7 +519,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseNode, PinNo
                 return;
             }
             
-            NavigationCaseNode caseNode = (NavigationCaseNode)findObject(widget.getParentWidget());
+            NavigationCaseEdge caseNode = (NavigationCaseEdge)findObject(widget.getParentWidget());
             String oldName = caseNode.getName();
             
             if ( caseNode.canRename() ) {                

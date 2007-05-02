@@ -49,7 +49,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
-import org.netbeans.modules.web.jsf.navigation.NavigationCaseNode;
+import org.netbeans.modules.web.jsf.navigation.NavigationCaseEdge;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import java.util.*;
@@ -64,7 +64,7 @@ public class PageFlowController {
     private Collection<FileObject> webFiles;
     private DataObject configDataObj;
     
-    private final HashMap<NavigationCase,NavigationCaseNode> case2Node = new HashMap<NavigationCase,NavigationCaseNode>();
+    private final HashMap<NavigationCase,NavigationCaseEdge> case2Node = new HashMap<NavigationCase,NavigationCaseEdge>();
     
     //This should always match what is inside the scene.
     private HashMap<NavigationRule,String> navRule2String = new HashMap<NavigationRule,String>();
@@ -342,7 +342,7 @@ public class PageFlowController {
         for( NavigationRule rule : rules ) {
             List<NavigationCase> navCases = rule.getNavigationCases();
             for( NavigationCase navCase : navCases ){
-                NavigationCaseNode node = new NavigationCaseNode(this, navCase);
+                NavigationCaseEdge node = new NavigationCaseEdge(this, navCase);
                 case2Node.put(navCase, node);
                 
                 createEdge(node);
@@ -350,7 +350,7 @@ public class PageFlowController {
         }
     }
     
-    public void createEdge(NavigationCaseNode caseNode ){
+    public void createEdge(NavigationCaseEdge caseNode ){
         String fromPage = caseNode.getFromViewId();
         String toPage = caseNode.getToViewId();
         if( getPageName2Node(fromPage) == null || getPageName2Node(toPage) == null ){
@@ -562,8 +562,8 @@ public class PageFlowController {
     
     public void removeSceneNodeEdges(Page pageNode) {
         
-        Collection<NavigationCaseNode> navCaseNodes = view.getNodeEdges(pageNode);
-        for( NavigationCaseNode navCaseNode : navCaseNodes ){
+        Collection<NavigationCaseEdge> navCaseNodes = view.getNodeEdges(pageNode);
+        for( NavigationCaseEdge navCaseNode : navCaseNodes ){
             try         {
                 navCaseNode.destroy();
             } catch (IOException ex) {
@@ -677,11 +677,11 @@ public class PageFlowController {
     //    }
     
     // case2Node Wrappers
-    public final void putCase2Node(NavigationCase navCase, NavigationCaseNode navCaseNode ){
+    public final void putCase2Node(NavigationCase navCase,NavigationCaseEdge navCaseNode ){
         case2Node.put(navCase, navCaseNode);
     }
     
-    public final NavigationCaseNode removeCase2Node(NavigationCase navCase ){
+    public final NavigationCaseEdge removeCase2Node(NavigationCase navCase ){
         return case2Node.remove(navCase);
     }
     

@@ -268,7 +268,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
      * @param fromPageNode
      * @param toPageNode
      */
-    protected void createEdge(  NavigationCaseNode navCaseNode,Page fromPageNode,Page toPageNode  ) {
+    protected void createEdge(  NavigationCaseEdge navCaseNode,Page fromPageNode,Page toPageNode    ) {
         assert fromPageNode.getDisplayName() != null;
         assert toPageNode.getDisplayName() != null;
         
@@ -277,7 +277,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         setEdgeTargePin( navCaseNode, toPageNode );
     }
     
-    private void setEdgeSourcePin(  NavigationCaseNode navCaseNode,Page fromPageNode  ){
+    private void setEdgeSourcePin(  NavigationCaseEdge navCaseNode,Page fromPageNode    ){
         PinNode sourcePin = scene.getDefaultPin( fromPageNode);
         Collection<PinNode> pinNodes = scene.getPins();
         for (PinNode pinNode : pinNodes ){
@@ -286,8 +286,8 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
                     pinNode.getFromOutcome().equals(navCaseNode.getFromOuctome()) ) {
                 sourcePin = pinNode;
                 /* Remove any old navigation case nodes coming from this source */
-                Collection<NavigationCaseNode> oldNavCaseNodes = scene.findPinEdges(sourcePin, true, false);
-                for( NavigationCaseNode oldNavCaseNode : oldNavCaseNodes ) {
+                Collection<NavigationCaseEdge> oldNavCaseNodes = scene.findPinEdges(sourcePin, true, false);
+                for( NavigationCaseEdge oldNavCaseNode : oldNavCaseNodes ) {
                     scene.setEdgeSource(oldNavCaseNode, scene.getDefaultPin(fromPageNode));
                 }
             }
@@ -296,7 +296,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         scene.setEdgeSource(navCaseNode,  sourcePin );
     }
     
-    private void setEdgeTargePin(  NavigationCaseNode navCaseNode,Page toPageNode ){
+    private void setEdgeTargePin(  NavigationCaseEdge navCaseNode,Page toPageNode  ){
         PinNode targetPin = scene.getDefaultPin(toPageNode);
         //I need to remove extension so it matches the DataNode's pins.
         scene.setEdgeTarget(navCaseNode,  targetPin);
@@ -388,7 +388,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
      * Remove the Edge from the scene.
      * @param node
      */
-    public void removeEdge( NavigationCaseNode node ){
+    public void removeEdge( NavigationCaseEdge node ){
         if( scene.getEdges().contains(node)) {
             scene.removeEdge(node);
         }
@@ -438,13 +438,13 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     
     private void redrawPinsAndEdges(Page pageNode ) {
         /* Gather the Edges */
-        Collection<NavigationCaseNode> redrawCaseNodes = new ArrayList<NavigationCaseNode>();
+        Collection<NavigationCaseEdge> redrawCaseNodes = new ArrayList<NavigationCaseEdge>();
         Collection<PinNode> pinNodes = new ArrayList<PinNode>( scene.getPins() );
         for( PinNode pinNode : pinNodes ){
             if( pinNode.getPageFlowNode() == pageNode ){
                 assert pinNode.getPageFlowNode().getDisplayName().equals(pageNode.getDisplayName());
                 
-                Collection<NavigationCaseNode> caseNodes = scene.findPinEdges(pinNode, true, false);
+                Collection<NavigationCaseEdge> caseNodes = scene.findPinEdges(pinNode, true, false);
                 redrawCaseNodes.addAll(caseNodes);
                 if( !pinNode.isDefault()) {
                     scene.removePin(pinNode);
@@ -458,17 +458,17 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
             setupPinsInNode(pageNode);
         }
         
-        for( NavigationCaseNode caseNode : redrawCaseNodes ){
+        for( NavigationCaseEdge caseNode : redrawCaseNodes ){
             setEdgeSourcePin(caseNode, pageNode);
         }
     }
     
-    public Collection<NavigationCaseNode>  getNodeEdges(Page node ){
-        Collection<NavigationCaseNode> navCases = scene.getEdges();
-        Collection<NavigationCaseNode> myNavCases = new HashSet<NavigationCaseNode>();
+    public Collection<NavigationCaseEdge>  getNodeEdges(Page node ){
+        Collection<NavigationCaseEdge> navCases = scene.getEdges();
+        Collection<NavigationCaseEdge> myNavCases = new HashSet<NavigationCaseEdge>();
         
         String fromViewId = node.getDisplayName();
-        for( NavigationCaseNode navCaseNode : navCases ){
+        for( NavigationCaseEdge navCaseNode : navCases ){
             String strToViewId = navCaseNode.getToViewId();
             String strFromViewId = navCaseNode.getFromViewId();
             if( (strToViewId != null && strToViewId.equals(fromViewId)) || (strFromViewId != null && strFromViewId.equals(fromViewId))){

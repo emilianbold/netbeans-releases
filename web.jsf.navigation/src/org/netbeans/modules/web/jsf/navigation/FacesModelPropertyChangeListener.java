@@ -163,12 +163,12 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
     private final void navigationCaseEventHandler(NavigationCase myNewCase, NavigationCase myOldCase) {
         
         if( myNewCase != null ){
-            NavigationCaseNode node = new NavigationCaseNode(view.getPageFlowController(), myNewCase);
+            NavigationCaseEdge node = new NavigationCaseEdge(view.getPageFlowController(), myNewCase);
             pfc.putCase2Node(myNewCase, node);//     case2Node.put(myNewCase, node);
             pfc.createEdge(node);
         }
         if ( myOldCase != null ){
-            NavigationCaseNode caseNode = pfc.removeCase2Node(myOldCase);
+            NavigationCaseEdge caseNode = pfc.removeCase2Node(myOldCase);
             if( caseNode != null ) {
                 view.removeEdge(caseNode);
                 
