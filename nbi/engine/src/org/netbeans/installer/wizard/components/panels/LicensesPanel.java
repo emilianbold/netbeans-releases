@@ -37,6 +37,7 @@ import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.helper.swing.NbiCheckBox;
 import org.netbeans.installer.utils.helper.swing.NbiScrollPane;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
+import org.netbeans.installer.utils.helper.Text;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.wizard.ui.SwingUi;
 import org.netbeans.installer.wizard.ui.WizardUi;
@@ -136,20 +137,21 @@ public class LicensesPanel extends WizardPanel {
             if (!products.equals(currentProducts)) {
                 final StringBuilder text = new StringBuilder();
                 for (Product product: currentProducts) {
-                    if(product.getLogic().getLicense()!=null) {
-                        text.append("-------------------------------------------------");
-                        text.append(StringUtils.CRLF);
-                        text.append(product.getDisplayName() + ":");
-                        text.append(StringUtils.CRLFCRLF);
-                        try {
-                            text.append(product.getLogic().getLicense().getText());
-                        } catch (InitializationException e) {
-                            ErrorManager.notifyError(
-                                    "Could not access configuration logic",
-                                    e);
-                        }
-                        text.append(StringUtils.CRLFCRLF);
+                    text.append("-------------------------------------------------");
+                    text.append(StringUtils.CRLF);
+                    text.append(product.getDisplayName() + ":");
+                    text.append(StringUtils.CRLFCRLF);
+                    try {
+                        Text license = product.getLogic().getLicense();
+			if(license!=null) {
+				text.append(license.getText());
+			}
+                    } catch (InitializationException e) {
+                        ErrorManager.notifyError(
+                                "Could not access configuration logic",
+                                e);
                     }
+                    text.append(StringUtils.CRLFCRLF);
                 }
                 
                 licensePane.setText(text);
