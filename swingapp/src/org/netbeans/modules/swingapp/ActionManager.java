@@ -491,7 +491,7 @@ public class ActionManager {
     }
 
     private static final String TASK_CLASS_TEMPLATE =
-            "    private class MyTask extends Task<Object, Void> {\n" // NOI18N
+            "    private class MyTask extends application.Task<Object, Void> {\n" // NOI18N
           + "        MyTask() {\n" // NOI18N
           + "            // Runs on the EDT.  Copy GUI state that\n" // NOI18N
           + "            // doInBackground() depends on from parameters\n" // NOI18N
@@ -505,7 +505,7 @@ public class ActionManager {
           + "            return null;  // return your result\n" // NOI18N
           + "        }\n" // NOI18N
           + "        @Override protected void succeeded(Object result) {\n" // NOI18N
-          + "            // Runs on the EDT.  Update the GUI based\n" // NOI18N
+          + "            // Runs on the EDT.  Update the GUI based on\n" // NOI18N
           + "            // the result computed by doInBackground().\n" // NOI18N
           + "        }\n" // NOI18N
           + "    }\n"; // NOI18N
