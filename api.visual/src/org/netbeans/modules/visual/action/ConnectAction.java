@@ -78,8 +78,9 @@ public class ConnectAction extends WidgetAction.LockedAdapter {
         Point point = event.getPoint ();
         boolean state = move (widget, point);
         if (state) {
-            if (Math.abs (startingPoint.x - point.x) >= MIN_DIFFERENCE  ||  Math.abs (startingPoint.y - point.y) >= MIN_DIFFERENCE)
-                provider.createConnection (sourceWidget, targetWidget);
+            if (targetWidget != null)
+                if (Math.abs (startingPoint.x - point.x) >= MIN_DIFFERENCE  ||  Math.abs (startingPoint.y - point.y) >= MIN_DIFFERENCE)
+                    provider.createConnection (sourceWidget, targetWidget);
             sourceWidget = null;
             targetWidget = null;
             startingPoint = null;
