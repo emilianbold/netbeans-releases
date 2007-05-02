@@ -293,12 +293,20 @@ public final class SystemUtils {
     }
     
     public static long getFreeSpace(File file) throws NativeException {
+        LogManager.log("[SystemUtils] getFreeSpace");
+        LogManager.indent();
+        LogManager.log(ErrorLevel.DEBUG, 
+                "... getting free space [requested path]  : " + file.getPath());
         File directory = file;
         while (!directory.exists() || !directory.isDirectory()) {
             directory = directory.getParentFile();
         }
-        
-        return getNativeUtils().getFreeSpace(directory);
+        LogManager.log(ErrorLevel.DEBUG, 
+                "... getting free space [existing parent] : " + directory.getPath());
+        long space = getNativeUtils().getFreeSpace(directory);
+        LogManager.unindent();
+        LogManager.log(ErrorLevel.DEBUG, "... free space is : " + space);        
+        return space;
     }
     
     public static ExecutionResults executeCommand(String... command) throws IOException {
