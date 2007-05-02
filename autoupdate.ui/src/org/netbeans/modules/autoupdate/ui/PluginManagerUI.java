@@ -68,6 +68,15 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
         });        
     }
     
+    public void unitilialize() {
+        units = Collections.emptyList ();
+        installedTable = null;
+        availableTable = null;
+        updateTable = null;
+        localTable = null;
+        settingTab = null;
+    }
+    
     void setProgressComponent (final JLabel detail, final JComponent progressComponent) {
         if (SwingUtilities.isEventDispatchThread ()) {
             setProgressComponentInAwt (detail, progressComponent);

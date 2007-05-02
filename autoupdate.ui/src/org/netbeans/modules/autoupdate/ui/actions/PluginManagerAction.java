@@ -35,8 +35,9 @@ public final class PluginManagerAction extends CallableSystemAction {
         JButton close = new JButton ();
         close.setDefaultCapable(false);
         Mnemonics.setLocalizedText (close,NbBundle.getMessage (PluginManagerAction.class, "PluginManager_CloseButton_Name"));
+        PluginManagerUI pluginManagerUI = new PluginManagerUI (close);
         DialogDescriptor dd = new DialogDescriptor (
-                                    new PluginManagerUI (close),
+                                    pluginManagerUI,
                                     NbBundle.getMessage (PluginManagerAction.class, "PluginManager_Panel_Name"),
                                     true, 
                                     new JButton[] { close },
@@ -48,6 +49,8 @@ public final class PluginManagerAction extends CallableSystemAction {
         
         Dialog d = DialogDisplayer.getDefault ().createDialog (dd);
         d.setVisible (true);
+        //workaround of #96282 - Memory leak in org.netbeans.core.windows.services.NbPresenter 
+        pluginManagerUI.unitilialize();
     }
     
     public String getName () {
