@@ -214,12 +214,14 @@ public class BuildServiceAssembly extends Task {
             List<String> javaEEJarPaths = getJarList(javaeeJars);
             
             for (String srcJarPath : srcJarPaths) {
+                /*
                 if ((javaEEJarPaths != null) && (javaEEJarPaths.contains(srcJarPath))){
                     srcJarPath = getLocalJavaEEJarPath(buildDir, srcJarPath);
                     createEndpointsFrom(srcJarPath);
                     continue;
                 }
-                
+                */
+
                 String jarName = getShortName(srcJarPath); // e.x.: SynchronousSample.jar
                 
                 if ((srcJarPath.indexOf(':') < 0) && (!srcJarPath.startsWith("/"))) { // i.e., relative path

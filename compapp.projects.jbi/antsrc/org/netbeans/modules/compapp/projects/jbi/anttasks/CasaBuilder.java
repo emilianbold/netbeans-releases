@@ -1672,10 +1672,11 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
 
         // Loop through all WSDLs and add casa port elements of the given binding component type.
         for (WSDLModel model : wsdlRepository.getWsdlCollection()) {
-            
+            /*
             if (wsdlRepository.isJavaEEWsdl(model)) {
                 continue;
             }
+            */
             
             String relativePath = MyFileUtil.getRelativePath(new File(confDirLoc), getFile(model));
             String tns = model.getRootComponent().getPeer().getAttribute("targetNamespace");

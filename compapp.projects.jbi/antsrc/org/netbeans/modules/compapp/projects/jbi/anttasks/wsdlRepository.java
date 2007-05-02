@@ -479,7 +479,7 @@ public class wsdlRepository {
             WSDLModel doc = (WSDLModel) wsdls.get(i);
 
             // todo: 03/26/07, skip J2EE project concrete wsdls..
-            if (!isJavaEEWsdl(doc)) {
+            if (true) {  // (!isJavaEEWsdl(doc)) {
                 Definitions def = doc.getDefinitions();
                 String tns = def.getTargetNamespace();
                 // Collect ports...
