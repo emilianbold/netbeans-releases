@@ -370,6 +370,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
                 <friend>org.netbeans.modules.wsdlextensions.hl7</friend>
                 <friend>org.netbeans.modules.wsdlextensions.jdbc</friend>
                 <friend>org.netbeans.modules.wsdlextensions.jms</friend>
+                <friend>org.netbeans.modules.wsdlextensions.ldap</friend>
                 <friend>org.netbeans.modules.wsdlextensions.mq</friend>
                 <friend>org.netbeans.modules.wsdlextensions.msmq</friend>
                 <friend>org.netbeans.modules.wsdlextensions.sag</friend>
