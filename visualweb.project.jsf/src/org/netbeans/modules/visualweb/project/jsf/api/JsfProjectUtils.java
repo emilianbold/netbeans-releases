@@ -153,21 +153,14 @@ public class JsfProjectUtils {
                 // Found the project root directory and got the project.xml file
                 if (projXml != null) {
                     try {
-                        Node value = (Node) ProjectManager.mutex().readAccess(
-                            new Mutex.ExceptionAction() {
-                                public Object run() throws Exception {
-                                    Document doc = XMLUtil.parse(new InputSource(FileUtil.toFile(projXml).toURI().toString()), false, true, null,
-                                        new EntityResolver() {
-                                            public InputSource resolveEntity(String pubid, String sysid) throws SAXException, IOException {
-                                                return new InputSource(new ByteArrayInputStream(new byte[0]));
-                                            }
-                                        });
-                                    NodeList nlist = doc.getElementsByTagNameNS(RAVE_AUX_NAMESPACE, RAVE_AUX_NAME);
-                                    return nlist.getLength() == 0 ? null : nlist.item(0);
+                        Document doc = XMLUtil.parse(new InputSource(FileUtil.toFile(projXml).toURI().toString()), false, true, null,
+                            new EntityResolver() {
+                                public InputSource resolveEntity(String pubid, String sysid) throws SAXException, IOException {
+                                    return new InputSource(new ByteArrayInputStream(new byte[0]));
                                 }
-                        });
-
-                        if (value != null) {
+                            });
+                        NodeList nlist = doc.getElementsByTagNameNS(RAVE_AUX_NAMESPACE, RAVE_AUX_NAME);
+                        if (nlist.getLength() > 0) {
                             return true;
 			}
                     } catch (Exception e) {
@@ -179,21 +172,14 @@ public class JsfProjectUtils {
                 // Found the project root directory and got the project.properties file
                 if (propFile != null) {
                     try {
-                        String value = (String) ProjectManager.mutex().readAccess(
-                            new Mutex.ExceptionAction() {
-                                public Object run() throws Exception {
-                                    EditableProperties prop = new EditableProperties();
-                                    InputStream is = propFile.getInputStream();
-                            
-                                    prop.load(is);
-                                    is.close();
+                        EditableProperties prop = new EditableProperties();
+                        InputStream is = propFile.getInputStream();
+                        
+                        prop.load(is);
+                        is.close();
 
-                                    // Check Creator property
-                                    return prop.getProperty("jsf.pagebean.package"); // NOI18N
-                                }
-                        });
-
-                        return value != null;
+                        // Check Creator property
+                        return prop.getProperty("jsf.pagebean.package") != null; // NOI18N
                     } catch (Exception e) {
                         return false;
                     }
