@@ -298,7 +298,7 @@ public final class  UiUtils {
                         Line l = lc.getLineSet().getCurrent(line);
                         
                         if (l != null) {
-                            l.show(Line.SHOW_REUSE, column);
+                            l.show(Line.SHOW_GOTO, column);
                             return true;
                         }
                     }
