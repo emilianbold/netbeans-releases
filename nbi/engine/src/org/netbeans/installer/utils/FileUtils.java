@@ -224,8 +224,11 @@ public final class FileUtils {
             final boolean append) throws IOException {
         StringBuilder builder = new StringBuilder();
         
-        for(String string : list) {
-            builder.append(string).append(SystemUtils.getLineSeparator());
+        for(int i=0;i<list.size();i++) {
+            builder.append(list.get(i));
+            if (i != list.size() - 1 ) {
+                builder.append(SystemUtils.getLineSeparator());
+            }
         }
         
         return writeFile(file, builder, charset, append);
@@ -620,10 +623,10 @@ public final class FileUtils {
         }
         
         deleteFile(
-                file, 
-                recurse, 
-                progress, 
-                0, 
+                file,
+                recurse,
+                progress,
+                0,
                 childrenCount == 0 ? 1 : childrenCount);
         progress.setPercentage(Progress.COMPLETE);
     }
@@ -760,12 +763,12 @@ public final class FileUtils {
         }
         
         copyFile(
-                source, 
-                target, 
-                recurse, 
-                list, 
-                progress, 
-                0, 
+                source,
+                target,
+                recurse,
+                list,
+                progress,
+                0,
                 childrenCount == 0 ? 1 : childrenCount);
         progress.setPercentage(Progress.COMPLETE);
         

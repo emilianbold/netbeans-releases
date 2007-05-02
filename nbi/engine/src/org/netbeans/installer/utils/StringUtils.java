@@ -52,7 +52,7 @@ public abstract class StringUtils {
     ////////////////////////////////////////////////////////////////////////////
     // Static
     public static String format(
-            final String message, 
+            final String message,
             final Object... arguments) {
         return MessageFormat.format(message, arguments);
     }
@@ -164,7 +164,7 @@ public abstract class StringUtils {
     }
     
     public static String pad(
-            final String string, 
+            final String string,
             final int number) {
         StringBuilder builder = new StringBuilder();
         
@@ -189,8 +189,12 @@ public abstract class StringUtils {
             int read = stream.read(buffer);
             
             String readString = new String(buffer, 0, read);
-            for(String string : readString.split(NEW_LINE_PATTERN)) {
-                builder.append(string).append(SystemUtils.getLineSeparator());
+            String[] strings = readString.split(NEW_LINE_PATTERN);
+            for(int i=0;i<strings.length;i++) {
+                builder.append(strings[i]);
+                if ( i != strings.length - 1 ) {
+                    builder.append(SystemUtils.getLineSeparator());
+                }
             }
         }
         
@@ -208,16 +212,16 @@ public abstract class StringUtils {
     }
     
     public static String replace(
-            final String string, 
-            final String replacement, 
-            final int begin, 
+            final String string,
+            final String replacement,
+            final int begin,
             final int end) {
         return string.substring(0, begin) + replacement + string.substring(end);
     }
     
     /**
      * Escapes the path using the platform-specific escape rules.
-     * 
+     *
      * @param path Path to escape.
      * @return Escaped path.
      */
@@ -227,9 +231,9 @@ public abstract class StringUtils {
         
         if (localPath.indexOf(' ') > -1) {
             if (SystemUtils.isWindows()) {
-                localPath = QUOTE + localPath + QUOTE; 
+                localPath = QUOTE + localPath + QUOTE;
             } else {
-                localPath = localPath.replace(SPACE, 
+                localPath = localPath.replace(SPACE,
                         BACK_SLASH + SPACE); //NOI18N
             }
         }
@@ -240,7 +244,7 @@ public abstract class StringUtils {
     /**
      * Joins a command string and its arguments into a single string using the
      * platform-specific rules.
-     * 
+     *
      * @param commandArray The command and its arguments.
      * @return The joined string.
      */
@@ -274,7 +278,7 @@ public abstract class StringUtils {
     }
     
     public static String asString(
-            final List<? extends Object> objects, 
+            final List<? extends Object> objects,
             final String separator) {
         StringBuilder result = new StringBuilder();
         
@@ -295,7 +299,7 @@ public abstract class StringUtils {
     }
     
     public static String asString(
-            final Object[] strings, 
+            final Object[] strings,
             final String separator) {
         StringBuilder result = new StringBuilder();
         
@@ -318,7 +322,7 @@ public abstract class StringUtils {
     }
     
     public static String base64Encode(
-            final String string, 
+            final String string,
             final String charset) throws UnsupportedEncodingException {
         final StringBuilder builder = new StringBuilder();
         final byte[] bytes = string.getBytes(charset);
@@ -375,7 +379,7 @@ public abstract class StringUtils {
     }
     
     public static String base64Decode(
-            final String string, 
+            final String string,
             final String charset) throws UnsupportedEncodingException {
         int completeBlocksNumber = string.length() / 4;
         int missingBytesNumber = 0;
@@ -433,7 +437,7 @@ public abstract class StringUtils {
             properties.load(new ByteArrayInputStream(("key=" + string).getBytes()));
         } catch (IOException e) {
             ErrorManager.notifyWarning(
-                    "Cannot parse string", 
+                    "Cannot parse string",
                     e);
             return string;
         }
@@ -451,7 +455,7 @@ public abstract class StringUtils {
             properties.store(baos, EMPTY_STRING);
         } catch (IOException e) {
             ErrorManager.notifyWarning(
-                    "Cannot convert string", 
+                    "Cannot convert string",
                     e);
             return string;
         }
@@ -548,17 +552,17 @@ public abstract class StringUtils {
         
         throw new ParseException("Cannot parse dependency type: " + string);
     }
-
+    
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final String BACK_SLASH = 
+    public static final String BACK_SLASH =
             "\\"; // NOI18N
-    public static final String FORWARD_SLASH = 
+    public static final String FORWARD_SLASH =
             "/"; // NOI18N
-    public static final String DOUBLE_BACK_SLASH = 
+    public static final String DOUBLE_BACK_SLASH =
             "\\\\"; // NOI18N
     
-    public static final String ENCODING_UTF8 = 
+    public static final String ENCODING_UTF8 =
             "UTF-8"; // NOI18N
     
     public static final String CR = "\r"; // NOI18N
@@ -576,7 +580,7 @@ public abstract class StringUtils {
     private static final String LEFT_WHITESPACE = "^\\s+"; // NOI18N
     private static final String RIGHT_WHITESPACE = "\\s+$"; // NOI18N
     
-        
+    
     private static final char MNEMONIC_CHAR = '&';
     private static final String MNEMONIC = "&"; // NOI18N
     private static final char NO_MNEMONIC = '\u0000';

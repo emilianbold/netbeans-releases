@@ -315,16 +315,15 @@ public final class SystemUtils {
     
     public static ExecutionResults executeCommand(File workingDirectory, String... command) throws IOException {
         // construct the initial log message
-        StringBuilder stringBuilder = new StringBuilder();
-        for(String temp : command) {
-            stringBuilder.append(temp).append(" "); //NOI18N
-        }
+        String commandString = StringUtils.asString(command, StringUtils.SPACE);
         
         if (workingDirectory == null) {
             workingDirectory = getCurrentDirectory();
         }
         
-        LogManager.log(ErrorLevel.MESSAGE, "executing command: " + stringBuilder + ", in directory: " + workingDirectory);
+        LogManager.log(ErrorLevel.MESSAGE, 
+                "executing command: " + commandString + 
+                ", in directory: " + workingDirectory);
         LogManager.indent();
         
         StringBuilder processStdOut = new StringBuilder();
