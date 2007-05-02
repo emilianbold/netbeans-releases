@@ -132,19 +132,21 @@ public class JSP {
                     if(t != null) {
                         ASTNode htmlS = (ASTNode)t.getChildren().get(0); //find S nonterminal node
                         for(ASTItem i : htmlS.getChildren()) {
-                            ASTNode nn = (ASTNode)i;
-                            //fix ERROR nonterminal to etext - see issue #102285
-                            Iterator<ASTItem> itr = nn.getChildren().iterator();
-                            while(itr.hasNext()) {
-                                ASTItem it = itr.next();
-                                if(it instanceof ASTNode) {
-                                    ASTNode nod = (ASTNode)it;
-                                    //if the last element in the children list is ERROR, switch it to etext
-                                    //note: may 'fix' real errors :-|
-                                    if(nod.getNT().equals("ERROR") && !itr.hasNext()) {
-                                        l.add(ASTNode.create(nod.getMimeType(), "etext", nod.getChildren(), nod.getOffset()));
-                                    } else {
-                                        l.add(nod);
+                            if(i instanceof ASTNode) {
+                                ASTNode nn = (ASTNode)i;
+                                //fix ERROR nonterminal to etext - see issue #102285
+                                Iterator<ASTItem> itr = nn.getChildren().iterator();
+                                while(itr.hasNext()) {
+                                    ASTItem it = itr.next();
+                                    if(it instanceof ASTNode) {
+                                        ASTNode nod = (ASTNode)it;
+                                        //if the last element in the children list is ERROR, switch it to etext
+                                        //note: may 'fix' real errors :-|
+                                        if(nod.getNT().equals("ERROR") && !itr.hasNext()) {
+                                            l.add(ASTNode.create(nod.getMimeType(), "etext", nod.getChildren(), nod.getOffset()));
+                                        } else {
+                                            l.add(nod);
+                                        }
                                     }
                                 }
                             }
