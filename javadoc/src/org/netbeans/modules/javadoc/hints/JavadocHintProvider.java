@@ -381,19 +381,13 @@ public final class JavadocHintProvider extends AbstractHint {
             boolean onLine = hintSeverity == HintSeverity.CURRENT_LINE_WARNING;
             switch (leaf.getKind()) {
             case CLASS:
-                return access.isAccessible(((ClassTree) leaf).getModifiers().getFlags()) &&
-                        (!onLine || isInHeader(javac, (ClassTree) leaf, caret));
+                return access.isAccessible(path, !onLine)
+                        && (!onLine || isInHeader(javac, (ClassTree) leaf, caret));
             case METHOD:
-                Tree clazz = path.getParentPath().getLeaf();
-                return clazz.getKind() == Tree.Kind.CLASS &&
-                        (javac.getTreeUtilities().isInterface((ClassTree) clazz) ||
-                        javac.getTreeUtilities().isAnnotation((ClassTree) clazz) ||
-                        access.isAccessible(((MethodTree) leaf).getModifiers().getFlags())) &&
-                        (!onLine || isInHeader(javac, (MethodTree) leaf, caret));
+                return access.isAccessible(path, !onLine)
+                        && (!onLine || isInHeader(javac, (MethodTree) leaf, caret));
             case VARIABLE:
-                clazz = path.getParentPath().getLeaf();
-                return clazz.getKind() == Tree.Kind.CLASS &&
-                        access.isAccessible(((VariableTree) leaf).getModifiers().getFlags());
+                return access.isAccessible(path, !onLine);
             }
             return false;
         }
@@ -1458,6 +1452,37 @@ public final class JavadocHintProvider extends AbstractHint {
                     return flags.contains(Modifier.PUBLIC);
                 default:
                     throw new IllegalStateException();
+            }
+        }
+        
+        /**
+         * @param path path to check
+         * @param alwaysAccessible true means to check if the path contains only class members;
+         *                         false means to check besides class members also their modifiers
+         * @return is accessible
+         * @see #isAccessible(Set)
+         */
+        public boolean isAccessible(TreePath path, boolean alwaysAccessible) {
+            TreePath parent = path.getParentPath();
+            Tree leaf = path.getLeaf();
+            if (parent != null) {
+                Tree.Kind parentKind = parent.getLeaf().getKind();
+                if (parentKind != Tree.Kind.CLASS && parentKind != Tree.Kind.COMPILATION_UNIT) {
+                    // not class member
+                    return false;
+                }
+                
+                if (!isAccessible(parent, alwaysAccessible)) {
+                    return false;
+                }
+            }
+            
+            switch (leaf.getKind()) {
+            case COMPILATION_UNIT: return true;
+            case CLASS: return alwaysAccessible || isAccessible(((ClassTree) leaf).getModifiers().getFlags());
+            case METHOD: return alwaysAccessible || isAccessible(((MethodTree) leaf).getModifiers().getFlags());
+            case VARIABLE: return alwaysAccessible || isAccessible(((VariableTree) leaf).getModifiers().getFlags());
+            default: return false;
             }
         }
     }
