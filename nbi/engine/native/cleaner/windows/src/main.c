@@ -33,7 +33,8 @@ const DWORD MAX_ATTEPTS   = 15;
 const DWORD THREAD_FINISHED = 100;
 const DWORD INITIAL_DELAY = 2000; // 2 seconds is seems to be enough to finish java process
 const WCHAR * LINE_SEPARATOR = L"\r\n";
-
+const WCHAR * UNC_PREFIX     = L"\\\\?\\";
+const DWORD UNC_PREFIX_LENGTH = 4;
 
 typedef struct {
     WAIT_PROC	waitObject;
@@ -224,9 +225,14 @@ void readStringList(HANDLE fileHandle, WCHAR *** list, DWORD *number) {
     free(charBuffer);
 }
 
-void deleteFile(WCHAR * file) {
+void deleteFile(WCHAR * filePath) {
     DWORD count = 0 ;
     WIN32_FILE_ATTRIBUTE_DATA attrs;
+    DWORD length = wcslen(filePath) + UNC_PREFIX_LENGTH + 1;
+    WCHAR * file = (WCHAR*) malloc(sizeof(WCHAR) * length);
+    memset(file, 0, length);
+    wsprintfW(file,L"%s%s",UNC_PREFIX, filePath);
+    
     if(GetFileAttributesExW(file, GetFileExInfoStandard, &attrs)) {
         if(attrs.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
             while((!RemoveDirectoryW(file) || GetFileAttributesExW(file,GetFileExInfoStandard, &attrs)) && 
@@ -237,6 +243,7 @@ void deleteFile(WCHAR * file) {
             ((count++) < MAX_ATTEPTS))
                 Sleep(SLEEP_DELAY);
     }
+    free(file);
 }
 
 DWORD WINAPI deleteFileThread(void * ptr) {
