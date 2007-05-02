@@ -1463,8 +1463,10 @@ public class InteractionManager {
                     }
                 }
             } else if (isToggleEvent(e)) {
-                // Do nothing - already handled in mousePressed; but we don't
-                // want any selection cycling or inline editing
+//                // Do nothing - already handled in mousePressed; but we don't
+//                // want any selection cycling or inline editing
+                // #94266 Toggle only on click not press or release
+                selectAt(e, false);
             } else if (!dontCycleInClickHandler) {
                 // Only cycle when we're clicking on faces beans; otherwise
                 // clicking puts you in insert mode
@@ -2155,11 +2157,13 @@ public class InteractionManager {
                 }
             }
 
-            if ((ancestor == null) || isToggleEvent(e)) { // didn't click over part of the selection
-                selectAt(e, !isToggleEvent(e));
-
-                return true;
-            } else {
+            // #94266 Toggle only on click not press or release
+//            if ((ancestor == null) || isToggleEvent(e)) { // didn't click over part of the selection
+//                selectAt(e, !isToggleEvent(e));
+//
+//                return true;
+//            } else {
+            
 //                MarkupDesignBean ancestorMarkupDesignBean = CssBox.getMarkupDesignBeanForCssBox(ancestor);
 //                if (sm.getPrimary() != ancestor.getDesignBean()) {
 //                    sm.setPrimary(ancestor.getDesignBean());
@@ -2170,7 +2174,7 @@ public class InteractionManager {
                 }
 
                 return false;
-            }
+//            }
         }
 
         private void addDragItem(List<Rectangle> selections, List<CssBox> boxes, List<Element> componentRootElements, /*List<MarkupDesignBean> beans,*/
@@ -2464,15 +2468,16 @@ public class InteractionManager {
 
                 SelectionManager sm = webform.getSelection();
 
-                if (!hasMoved && !isToggleEvent(e) && (sm.getNumSelected() > 1)) {
-                    // You've pressed the mouse button when there
-                    // was more than one selected component, but
-                    // you didn't drag and didn't press a toggle
-                    // key: in this case you want to select only
-                    // the component that received the click.
-                    sm.clearSelection(false);
-                    selectAt(e, false);
-                }
+                // #94266 Toggle only on click not press or release
+//                if (!hasMoved && !isToggleEvent(e) && (sm.getNumSelected() > 1)) {
+//                    // You've pressed the mouse button when there
+//                    // was more than one selected component, but
+//                    // you didn't drag and didn't press a toggle
+//                    // key: in this case you want to select only
+//                    // the component that received the click.
+//                    sm.clearSelection(false);
+//                    selectAt(e, false);
+//                }
             } else if (interaction != null) {
                 interaction.mouseReleased(e);
                 interaction = null;
