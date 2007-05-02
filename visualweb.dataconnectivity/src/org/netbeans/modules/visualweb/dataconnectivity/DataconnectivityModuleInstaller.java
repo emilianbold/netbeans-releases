@@ -63,6 +63,8 @@ import org.openide.windows.WindowManager;
 public class DataconnectivityModuleInstaller extends ModuleInstall {
 
     private static String JSFCL_DATA_BEANINFO_PATH = "com.sun.jsfcl.data"; //NOI18N
+    private static String DATACONNECTIVITY_BEANINFO_PATH 
+        = "org.netbeans.modules.visualweb.dataconnectivity.designtime"; // NOI18N
 
     public static final String DBPORT_property = "derbyPort" ; // NOI18N
 
@@ -106,6 +108,13 @@ public class DataconnectivityModuleInstaller extends ModuleInstall {
             bisp.add(JSFCL_DATA_BEANINFO_PATH);
             Introspector.setBeanInfoSearchPath((String[])bisp.toArray(new String[0]));
         }
+
+        // Register the designtime directory for dataconnectivity in the search path
+        if (!bisp.contains(DATACONNECTIVITY_BEANINFO_PATH)) {
+            bisp = new ArrayList(bisp);
+            bisp.add(this.DATACONNECTIVITY_BEANINFO_PATH);
+            Introspector.setBeanInfoSearchPath((String[])bisp.toArray(new String[0]));
+        }                        
         
 //         time2 = System.currentTimeMillis();
 //         System.err.println("DataconnectivityModuleInstaller.restored() t1 dt=" + (time2 - time1));

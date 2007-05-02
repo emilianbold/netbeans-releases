@@ -319,6 +319,7 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.visualweb.sql</friend>
                 <package>org.netbeans.modules.visualweb.dataconnectivity</package>
                 <package>org.netbeans.modules.visualweb.dataconnectivity.datasource</package>
+                <package>org.netbeans.modules.visualweb.dataconnectivity.designtime</package>
                 <package>org.netbeans.modules.visualweb.dataconnectivity.utils</package>
             </friend-packages>
         </data>

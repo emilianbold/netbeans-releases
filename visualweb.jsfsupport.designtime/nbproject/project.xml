@@ -176,6 +176,7 @@ Microsystems, Inc. All Rights Reserved.
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.visualweb.complib</friend>
+                <friend>org.netbeans.modules.visualweb.dataconnectivity.designtime</friend>
                 <friend>org.netbeans.modules.visualweb.j2ee14classloaderprovider</friend>
                 <friend>org.netbeans.modules.visualweb.j2ee15classloaderprovider</friend>
                 <friend>org.netbeans.modules.visualweb.jsfsupport.designtime_1_1</friend>
