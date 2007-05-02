@@ -276,10 +276,15 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
             switch( tp.getLeaf().getKind()) {
                 case METHOD:
                 case CLASS:
-                case VARIABLE:
                 case COMPILATION_UNIT:
-                    e = ci.getTrees().getElement(tp);
+                    e = ci.getTrees().getElement(tp);                    
                     break;
+                case VARIABLE:
+                    e = ci.getTrees().getElement(tp);
+                    if (!e.getKind().isField()) {
+                        e = null;
+                    }
+                    break;                
             }                        
             if ( e != null ) {
                 break;
@@ -288,7 +293,7 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
         }
         
         if ( e != null ) {
-            final ElementHandle eh = ElementHandle.create(e);
+            final ElementHandle<Element> eh = ElementHandle.create(e);
             
             if ( lastEhForNavigator != null && eh.signatureEquals(lastEhForNavigator)) {
                 return;
