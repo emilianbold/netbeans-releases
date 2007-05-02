@@ -119,9 +119,12 @@ public class ETLCollaborationModel extends CollabSQLUIModelImpl implements Colla
         this.eTLXml = definitionXml;
     }
     
-    public void setDefinitionContent(Element element) {
+    public void setDefinitionContent(ETLDefinitionImpl etlDefn) {
         try {
-            etlDefinition = new ETLDefinitionImpl(element, this.getSQLDefinition().getSQLFrameworkParentObject());
+            if(etlDefinition != null) {
+                this.etlDefinition.removeSQLObjectListener(this);
+            }            
+            this.etlDefinition = etlDefn;            
             this.eTLXml = etlDefinition.toXMLString("");
             etlDefinition.addSQLObjectListener(this);
             super.setSQLDefinition(etlDefinition.getSQLDefinition());
