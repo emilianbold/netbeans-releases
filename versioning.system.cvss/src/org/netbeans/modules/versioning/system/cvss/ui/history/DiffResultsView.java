@@ -136,7 +136,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
                                 }
                                 String revision1 = r1.getRevision().getNumber();
                                 String revision2 = r2.getRevision().getNumber();
-                                if (SearchHistoryPanel.compareRevisions(revision1, revision2) == 1) {
+                                if (SearchHistoryPanel.compareRevisions(revision1, revision2) > 0) {
                                     revision2 = r1.getRevision().getNumber();
                                     revision1 = r2.getRevision().getNumber();
                                 }
