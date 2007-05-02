@@ -1,3 +1,4 @@
+// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
@@ -16,6 +17,7 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+// </editor-fold>
 
 package org.netbeans.modules.j2ee.sun.ide.j2ee.ui;
 
@@ -30,6 +32,7 @@ import java.util.Properties;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.j2ee.sun.api.Asenv;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
@@ -247,7 +250,24 @@ class AddDomainPlatformPanel implements WizardDescriptor.FinishablePanel,
                 wiz.putProperty(AddDomainWizardIterator.TYPE, selectedType);
                 wiz.putProperty(AddDomainWizardIterator.INSTALL_LOCATION,"");
                 wiz.putProperty(AddDomainWizardIterator.DOMAIN,"");
-                wiz.putProperty(AddDomainWizardIterator.PROFILE, getAIVPP().getProfile());
+                Profile p =  getAIVPP().getProfile();
+                wiz.putProperty(AddDomainWizardIterator.PROFILE,p);
+                if (p == Profile.ENTERPRISE) {
+                    Asenv asenv = new Asenv(location);
+                    String nss = asenv.get(Asenv.AS_NS_BIN);
+                    String hadb = asenv.get(Asenv.AS_HADB);
+                    File nssDir = new File(nss);
+                    File hadbDir = new File(hadb);
+                    if (nssDir.exists() && nssDir.isDirectory() && hadbDir.exists() 
+                            && hadbDir.isDirectory()) {
+                        retVal = true;
+                    } else {
+                        wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
+                                NbBundle.getMessage(AddDomainPlatformPanel.class,
+                                "Msg_UnsupportedProfile"));                                    //NOI18N   
+                        retVal = false;
+                    }
+                }
             } else {
                 wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
                         NbBundle.getMessage(AddDomainPlatformPanel.class,

@@ -1,3 +1,4 @@
+// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
@@ -13,9 +14,10 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+// </editor-fold>
 
 package org.netbeans.modules.j2ee.sun.api;
 
@@ -26,6 +28,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.StringTokenizer;
 import org.openide.ErrorManager;
+import org.openide.util.Utilities;
 
 /**
  * Parser for asenv.conf and asenv.bat
@@ -39,15 +42,25 @@ public class Asenv {
      */
     public static final String AS_JAVA = "AS_JAVA";
     /**
+     * key for path to jdk stored in asenv file
+     */
+    public static final String AS_NS_BIN = "AS_NSS_BIN";
+    /**
+     * key for path to jdk stored in asenv file
+     */
+    public static final String AS_HADB = "AS_HADB";
+    /**
      * key to path of default domains in asenv file
      */
     public static final String AS_DEF_DOMAINS_PATH = "AS_DEF_DOMAINS_PATH";
     
     /**
      * Creates a new instance of Asenv
-     * @param asenv asenv.conf or asenv.bat file
+     * @param platformRoot root of the platform
      */
-    public Asenv(File asenv) {
+    public Asenv(File platformRoot) {
+        String ext = (Utilities.isWindows() ? "bat" : "conf");          // NOI18N
+        File asenv = new File(platformRoot,"config/asenv."+ext);            // NOI18N
         FileReader fReader = null;
         BufferedReader bReader = null;
         try {

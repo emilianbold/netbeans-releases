@@ -863,9 +863,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
     private boolean applySettingsToDomain(ProfilerServerSettings settings) {
         boolean retVal;
         SunDeploymentManagerInterface sunDm = (SunDeploymentManagerInterface)this.dm;
-        String ext = (Utilities.isWindows() ? "bat" : "conf");          // NOI18N
-        File asenv = new File(sunDm.getPlatformRoot(),"config/asenv."+ext);            // NOI18N
-        Asenv asenvContent = new Asenv(asenv);
+        Asenv asenvContent = new Asenv(sunDm.getPlatformRoot());
         String currentJdkRoot = asenvContent.get(Asenv.AS_JAVA);
         if (!Utilities.isWindows()) {
             currentJdkRoot = "\""+currentJdkRoot+"\"";

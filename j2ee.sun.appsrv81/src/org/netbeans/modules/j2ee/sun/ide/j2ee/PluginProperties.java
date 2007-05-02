@@ -1,3 +1,4 @@
+// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
@@ -16,6 +17,7 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+// </editor-fold>
 
 package org.netbeans.modules.j2ee.sun.ide.j2ee;
 
@@ -492,12 +494,10 @@ public class PluginProperties  {
             }
             
         }
-        // Go to the conf dir
-        String ext = (File.separatorChar == '/' ? "conf" : "bat");          // NOI18N
-        File asenv = new File(platformRoot,"config/asenv."+ext);            // NOI18N
-        Asenv asenvContent = new Asenv(asenv);
+        // Get the asenv data
+        Asenv asenvContent = new Asenv(platformRoot);
         String defDomainsDirName = asenvContent.get(Asenv.AS_DEF_DOMAINS_PATH);
-        File domains = new File(defDomainsDirName);//NOI18N
+        File domains = new File(defDomainsDirName);
         if (domains.exists() && domains.isDirectory() ) {
             File[] domainsList= domains.listFiles();
             if(domainsList==null) {
