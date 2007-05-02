@@ -59,7 +59,6 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.visualweb.websvcmgr.codegen.WebServiceSupportException;
 import org.netbeans.modules.visualweb.websvcmgr.codegen.WebServiceSupportLibraries;
 import org.openide.modules.InstalledFileLocator;
-import org.netbeans.modules.visualweb.extension.openide.awt.StatusDisplayer_RAVE;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.openide.filesystems.FileObject;
 
@@ -558,7 +557,6 @@ public class Util {
             
             jarFileNames = (String []) supportLibs.getRunTimeJars().toArray(new String [0]);
         } catch(WebServiceSupportException wsse) {
-            StatusDisplayer_RAVE.getRaveDefault().displayError(wsse.getMessage(),2);
             return returnClassPath;
         }
         
