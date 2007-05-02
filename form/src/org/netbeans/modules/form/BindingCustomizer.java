@@ -502,12 +502,14 @@ public class BindingCustomizer extends JPanel {
                     binding.addSubBinding(displayExpression, null);
                 }
             }
-            if ((columnSelector != null) && columnSelector.isVisible()) {
+            if (columnSelector != null) {
                 binding.setBindImmediately(true);
-                List items = columnSelector.getSelectedItems();
-                for (int i=0; i<items.size(); i++) {
-                    MetaBinding subBinding = binding.addSubBinding(BindingDesignSupport.elWrap(items.get(i).toString()), null);
-                    subBinding.setParameter(MetaBinding.TABLE_COLUMN_PARAMETER, i+""); // NOI18N
+                if (columnSelector.isVisible()) {
+                    List items = columnSelector.getSelectedItems();
+                    for (int i=0; i<items.size(); i++) {
+                        MetaBinding subBinding = binding.addSubBinding(BindingDesignSupport.elWrap(items.get(i).toString()), null);
+                        subBinding.setParameter(MetaBinding.TABLE_COLUMN_PARAMETER, i+""); // NOI18N
+                    }
                 }
             }
         } else {
