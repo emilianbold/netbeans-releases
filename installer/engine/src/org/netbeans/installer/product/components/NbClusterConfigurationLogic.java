@@ -191,6 +191,15 @@ public abstract class NbClusterConfigurationLogic extends ProductConfigurationLo
         // get the list of suitable netbeans ide installations
         final List<Dependency> dependencies =
                 getProduct().getDependencyByUid(sourceUid);
+        
+        if(dependencies.size()==0) {
+            LogManager.log(ErrorLevel.WARNING, 
+                    "Can`t uninstall " + getProduct().getDisplayName());
+            LogManager.log(ErrorLevel.WARNING, 
+                    "Can`t find parent product with uid " + sourceUid);            
+            return;
+        }
+        
         final List<Product> sources =
                 Registry.getInstance().getProducts(dependencies.get(0));
         
