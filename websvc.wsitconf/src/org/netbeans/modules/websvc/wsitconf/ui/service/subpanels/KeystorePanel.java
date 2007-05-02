@@ -154,6 +154,13 @@ public class KeystorePanel extends JPanel {
             reloadAliases();
         } else if (jsr109) {
             setKeystorePassword(DEFAULT_PASSWORD);
+            if (!reloadAliases()) {
+                String adminPassword = Util.getPassword(project);
+                setKeystorePassword(adminPassword);
+            }
+            if (!reloadAliases()) {
+                setKeystorePassword("");
+            }
         }
 
         String keyStoreAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(comp, false);

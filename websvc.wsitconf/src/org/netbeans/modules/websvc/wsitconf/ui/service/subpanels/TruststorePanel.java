@@ -144,6 +144,13 @@ public class TruststorePanel extends JPanel {
             reloadAliases();
         } else if (jsr109) {
             setStorePassword(DEFAULT_PASSWORD);
+            if (!reloadAliases()) {
+                String adminPassword = Util.getPassword(project);
+                setStorePassword(adminPassword);
+            }
+            if (!reloadAliases()) {
+                setStorePassword("");
+            }
         }
 
         String peerAlias = ProprietarySecurityPolicyModelHelper.getTrustPeerAlias(comp);

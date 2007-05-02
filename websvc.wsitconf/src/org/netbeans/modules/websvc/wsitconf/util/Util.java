@@ -368,6 +368,15 @@ public class Util {
         return null;
     }
 
+    public static final String getPassword(Project p) {
+        J2eeModuleProvider mp = p.getLookup().lookup(J2eeModuleProvider.class);
+        if (mp != null) {
+            InstanceProperties ip = mp.getInstanceProperties();
+            return ip.getProperty(InstanceProperties.PASSWORD_ATTR);
+        }
+        return "";
+    }
+    
     public static final boolean isWsitSupported(Project p) {
 
         // check if the wsimport class is already present - this means we don't need to add the library
