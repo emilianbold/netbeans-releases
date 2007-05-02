@@ -26,9 +26,7 @@ import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.log.SearchHistoryAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.GetCleanAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateExecutor;
-import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
-import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
-import org.netbeans.modules.versioning.system.cvss.VersionsCache;
+import org.netbeans.modules.versioning.system.cvss.*;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -36,9 +34,6 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.cookies.ViewCookie;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -53,6 +48,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.event.*;
 import java.text.DateFormat;
 import java.io.File;
+import java.io.IOException;
 
 /**
  * Shows Search History results in a JList.
@@ -407,7 +403,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
     }
 
     private void rollbackChange(int [] selection) {
-        List changes = new ArrayList();
+        List<LogInformation.Revision> changes = new ArrayList<LogInformation.Revision>();
         for (int i = 0; i < selection.length; i++) {
             int idx = selection[i];
             Object o = dispResults.get(idx);
@@ -488,6 +484,29 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             File file = drev.getRevision().getLogInfoHeader().getFile();
             Project project = master.getProject(file);                
             Context context = Utils.getProjectsContext(new Project[] { master.getProject(file) });
+            if (context.getRootFiles().length == 0) {
+                // the project itself is not versioned, try to search in the broadest context possible
+                FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
+                for (;;) {
+                    File parent = file.getParentFile();
+                    assert parent != null;
+                    if ((cache.getStatus(parent).getStatus() & FileInformation.STATUS_IN_REPOSITORY) == 0) {
+                        Set<File> files = new HashSet<File>(1);
+                        files.add(file);
+                        try {
+                            String cvsRoot = Utils.getCVSRootFor(file);
+                            ClientRuntime cr = CvsVersioningSystem.getInstance().getClientRuntime(cvsRoot);
+                            cr.logError(NbBundle.getMessage(SummaryView.class, "MSG_AlternativeSearch1", ProjectUtils.getInformation(project).getDisplayName()));
+                            cr.logError(NbBundle.getMessage(SummaryView.class, "MSG_AlternativeSearch2", file.getAbsolutePath()));
+                        } catch (IOException e) {
+                            // oops, no root for the file, we'll catch it later anyway
+                        }
+                        context = new Context(files, files, Collections.emptySet());
+                        break;
+                    }
+                    file = parent;
+                }
+            }
             SearchHistoryAction.openSearch(
                     context, 
                     ProjectUtils.getInformation(project).getDisplayName(),

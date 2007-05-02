@@ -208,6 +208,11 @@ public class ClientRuntime {
         e.printStackTrace(log.getOut());
     }
 
+    public void logError(String s) {
+        openLog();        
+        log.getErr().print(s);
+    }
+    
     /**
      * Makes sure output from this command is visible.
      */ 

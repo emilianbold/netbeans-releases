@@ -90,6 +90,7 @@ public class SearchHistoryAction extends AbstractSystemAction  {
     }
 
     public static void openSearch(Context context, String title, String commitMessage, String username, Date date) {
+        assert context.getRootFiles().length > 0;
         Calendar c = Calendar.getInstance();
         c.setTime(date);
         // annotations do not include time information, we must search whole day
