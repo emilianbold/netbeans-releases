@@ -636,7 +636,7 @@ public class PageFlowController {
         Node tmpNode = new AbstractNode(Children.LEAF);
         tmpNode.setName(displayName);
         oldNode.replaceWrappedNode(tmpNode);  //Does this take care of pageName2Node?
-        view.resetNodeWidget(oldNode, false);
+        view.resetNodeWidget(oldNode, true);
     }
     
     

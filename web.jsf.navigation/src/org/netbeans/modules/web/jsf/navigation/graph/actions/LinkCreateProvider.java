@@ -33,14 +33,10 @@ import org.netbeans.api.visual.action.ConnectorState;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
-import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
-import org.netbeans.modules.web.jsf.navigation.NavigationCaseNode;
 import org.netbeans.modules.web.jsf.navigation.PageFlowController;
 import org.netbeans.modules.web.jsf.navigation.PageFlowNode;
-import org.netbeans.modules.web.jsf.navigation.PageFlowUtilities;
 import org.netbeans.modules.web.jsf.navigation.PinNode;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
-import org.openide.nodes.Node;
 
 /**
  *

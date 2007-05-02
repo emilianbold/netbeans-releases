@@ -378,9 +378,9 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         VMDNodeWidget nodeWidget = ((VMDNodeWidget) findWidget(node));
         if( nodeWidget != null ) {
             nodeWidget.attachPinWidget(widget);
-            widget.setProperties(pinNode.getName(), Arrays.asList(pinNode.getIcon()));
-
-
+            widget.setProperties(pinNode.getName(), Arrays.asList(pinNode.getIcon(0)));
+            
+            
             Chain actions = widget.getActions();
             actions.addAction(createObjectHoverAction());
             actions.addAction(createSelectAction());
@@ -475,8 +475,6 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         return anchor;
     }
     
-    
-    
     private final class PageFlowSelectProvider implements SelectProvider {
         
         public boolean isAimingAllowed(Widget widget, Point localLocation, boolean invertSelection) {
@@ -512,7 +510,7 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         }
         
         public String getText(Widget widget) {
-            Node caseNode = (Node)findObject(widget.getParentWidget());
+            NavigationCaseNode caseNode = (NavigationCaseNode)findObject(widget.getParentWidget());
             return ((LabelWidget)widget).getLabel();
         }
         
@@ -524,12 +522,9 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
             NavigationCaseNode caseNode = (NavigationCaseNode)findObject(widget.getParentWidget());
             String oldName = caseNode.getName();
             
-            if ( caseNode.canRename() ) {
+            if ( caseNode.canRename() ) {                
                 PinNode pin = getEdgeSource(caseNode);
-                if( !pin.isDefault()){
-                    pin.setFromOutcome(newName);
-                }
-                caseNode.setName(newName);
+                caseNode.setName(pin, newName);
             }
             
             ((LabelWidget)widget).setLabel(newName);
@@ -549,12 +544,12 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
             return true;
         }
         public String getText(Widget widget) {
-            Node pageNode = (Node)findObject(nodeWidget);
+            PageFlowNode pageNode = (PageFlowNode)findObject(nodeWidget);
             return pageNode.getName();
         }
         public void setText(Widget widget, String text) {
             
-            Node pageNode = (Node)findObject(nodeWidget);
+            PageFlowNode pageNode = (PageFlowNode)findObject(nodeWidget);
             if ( pageNode.canRename() && !text.equals(pageNode.getName())) {
                 
                 //Explicitly declared oldName and newName for ease of reading.
@@ -608,8 +603,10 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
             
             Set<Node> selected = new HashSet<Node>();
             for( Object obj : newSelection ){
-                if( obj instanceof Node ) {
-                    selected.add((Node)obj);
+                if( obj instanceof PageSceneElement ) {
+                    PageSceneElement element = (PageSceneElement)obj;     
+                    
+                    selected.add(element.getNode());
                 }
             }
             

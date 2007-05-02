@@ -20,7 +20,7 @@ import javax.swing.AbstractAction;
 import org.netbeans.modules.web.jsf.navigation.NavigationCaseNode;
 import org.netbeans.modules.web.jsf.navigation.PinNode;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
-import org.openide.nodes.Node;
+import org.netbeans.modules.web.jsf.navigation.graph.PageSceneElement;
 import org.openide.util.Exceptions;
 
 /**
@@ -49,7 +49,7 @@ public class PageFlowDeleteAction extends AbstractAction{
         
         for( Object selectedObj : selectedObjs ){
             /* HACK until PinNode is made a Node */
-            if(!( selectedObj instanceof Node )  && !(selectedObj instanceof PinNode ) ){
+            if(!( selectedObj instanceof PageSceneElement )  ){
                 return false;
             }
         }
@@ -59,15 +59,15 @@ public class PageFlowDeleteAction extends AbstractAction{
     
     public void actionPerformed(ActionEvent event) {
         
-        Queue<Node> deleteNodesList = new LinkedList<Node>();
+        Queue<PageSceneElement> deleteNodesList = new LinkedList<PageSceneElement>();
         //Workaround: Temporarily Wrapping Collection because of Issue: 100127
         Set<Object> selectedObjects = new HashSet<Object>(scene.getSelectedObjects());
         
         /*When deleteing only one item. */
         if (selectedObjects.size() == 1){
             Object myObj = selectedObjects.toArray()[0];
-            if( myObj instanceof Node ) {
-                deleteNodesList.add((Node)myObj);
+            if( myObj instanceof PageSceneElement ) {
+                deleteNodesList.add((PageSceneElement)myObj);
                 deleteNodes(deleteNodesList);
                 return;
             }
@@ -76,15 +76,15 @@ public class PageFlowDeleteAction extends AbstractAction{
         /* When deleting multiple objects, make sure delete all the links first. */
         for( Object selectedObj : selectedObjects ){
             if( scene.isEdge(selectedObj) ){
-                deleteNodesList.add((Node)selectedObj);
+                deleteNodesList.add((PageSceneElement)selectedObj);
                 //                    delete((Node)selectedObj);
             }
         }
         /* The deleted links should not be selected anymore */
         selectedObjects = new HashSet<Object>(scene.getSelectedObjects());
         for( Object selectedObj : selectedObjects ){
-            if( selectedObj instanceof Node ) {
-                deleteNodesList.add((Node)selectedObj);
+            if( selectedObj instanceof PageSceneElement ) {
+                deleteNodesList.add((PageSceneElement)selectedObj);
                 //                    delete((Node)selectedObj);
             }
         }
@@ -93,13 +93,13 @@ public class PageFlowDeleteAction extends AbstractAction{
     }
     
     //        public Queue<Node> myDeleteNodes;
-    private void deleteNodes( Queue<Node> deleteNodes ){
-        final Queue<Node> myDeleteNodes = deleteNodes;
+    private void deleteNodes( Queue<PageSceneElement> deleteNodes ){
+        final Queue<PageSceneElement> myDeleteNodes = deleteNodes;
         EventQueue.invokeLater(new Runnable() {
             public void run() {
                 try {
                     //This should walk through in order.
-                    for( Node deleteNode : myDeleteNodes ){
+                    for( PageSceneElement deleteNode : myDeleteNodes ){
                         if( deleteNode.canDestroy() ){
                             
                             if( deleteNode instanceof NavigationCaseNode ){

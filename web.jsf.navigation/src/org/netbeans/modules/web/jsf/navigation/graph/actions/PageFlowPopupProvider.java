@@ -44,6 +44,7 @@ import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.TopComponent;
 import javax.swing.Action;
 import org.netbeans.modules.web.jsf.navigation.PinNode;
+import org.openide.nodes.Node;
 
 /**
  *
@@ -86,7 +87,9 @@ public class PageFlowPopupProvider implements PopupMenuProvider {
         if( obj != null ) {
             Set<Object> set = new HashSet<Object>();
             set.add(obj);
-            graphScene.setSelectedObjects(set);            
+            graphScene.setSelectedObjects(set);      
+            
+//          Node nodes[] = tc.getActivatedNodes();
             
             if( obj instanceof PageFlowNode ) {
                 PageFlowNode pageNode = (PageFlowNode)obj;

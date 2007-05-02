@@ -60,8 +60,7 @@ public class VWPContentModel extends PageContentModel{
         this.facesModel = facesModel;
         this.pageName = pageName;
         updatePageContentItems();
-        initListeners();
-        
+        initListeners();        
     }
     
     @Override
@@ -246,7 +245,7 @@ public class VWPContentModel extends PageContentModel{
                 }
                  */
                 
-                PageContentItem pageContentItem = new VWPContentItem(this, bean, name, action, icon);
+                String outcome = action;
                 //               NavigableComponent b = new NavigableComponent(bean, action, p, name, icon);
                 if (action != null && action.startsWith("#{")) { // Looks like value binding: dynamic navigation.
                     //COMEBACKTO - b.dynamic = true;
@@ -254,15 +253,11 @@ public class VWPContentModel extends PageContentModel{
                         MethodBindDesignProperty mpr = (MethodBindDesignProperty)pr;
                         MethodBindDesignEvent mev = mpr.getEventReference();
                         if (mev != null) {
-                            Object ret = mev.getHandlerMethodReturn();
-                            if (ret instanceof String) {
-                                pageContentItem.setFromOutcome((String)ret);
-                                //                                b.setAction((String)ret);
-                                //b.dynamic = false;  //!CQ TODO: show both icon & link
-                            }
+                            outcome = mev.getHandlerMethodReturn();
                         }
                     }
                 }
+                PageContentItem pageContentItem = new VWPContentItem(this, bean, name, outcome, icon);
                 pageContentItems.add(pageContentItem);
                 //                p.getBeans().add(b);T
                 
@@ -358,8 +353,8 @@ public class VWPContentModel extends PageContentModel{
         oldCaseOutcome = contentItem.getFromOutcome();
         String javaeePlatform = null;
         
-        
-        if( getPageContentItems() != null && getPageContentItems().size() > 0 ) {
+        Collection<PageContentItem> items = getPageContentItems();
+        if( items != null && items.size() > 0 ) {
             //            updatePageContentItems();  //just incase the user had made changes
             UndoEvent undo = null;
             try {
@@ -367,7 +362,7 @@ public class VWPContentModel extends PageContentModel{
                 
                 // Are there any beans on the page referring to that
                 // action? If so, update their action handlers too!
-                for( PageContentItem pageContentItem : getPageContentItems() ){
+                for( PageContentItem pageContentItem : items ){
                     if (pageContentItem instanceof VWPContentItem) {
                         DesignBean designBean = ((VWPContentItem)pageContentItem).getDesignBean();
                         if( designBean != null ) {

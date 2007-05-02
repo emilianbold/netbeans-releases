@@ -413,7 +413,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         //Reset the Node Name
         VMDNodeWidget nodeWidget = (VMDNodeWidget)scene.findWidget(pageNode);
         
-        //Do this because sometimes the node display name is the object display name.        
+        //Do this because sometimes the node display name is the object display name.
         pageNode.updateNode_HACK();
         //        nodeWidget.setNodeName(node.getDisplayName());
         if( nodeWidget !=  null ) {
@@ -428,9 +428,9 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
             pfc.PageFlowCreationStack.clear();
             pfc.PageFlowDestroyStack.clear();
             System.err.println("PageNode: " + pageNode);
-//            System.err.println("Node Widget is null in scene for: " + pageNode.getDisplayName());
+            //            System.err.println("Node Widget is null in scene for: " + pageNode.getDisplayName());
             System.err.println("Here are the scene nodes: " + scene.getNodes());
-//            Thread.dumpStack();
+            //            Thread.dumpStack();
         }
         
         
@@ -451,10 +451,12 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
                 }
             }
         }
-        //        validateGraph();  Called by whoever calls resetNode.
         
-        //This will re-add the pins.
-        setupPinsInNode(pageNode);
+        if ( pageNode.isDataNode() ){            
+            pageNode.updateContentModel();
+            //This will re-add the pins.
+            setupPinsInNode(pageNode);
+        }
         
         for( NavigationCaseNode caseNode : redrawCaseNodes ){
             setEdgeSourcePin(caseNode, pageNode);
