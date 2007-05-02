@@ -1034,6 +1034,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   </target>
 
   <target name="build-visual-cluster-only" depends="init">
+    <delete file="netbeans/nb.cluster.visualweb.built" failonerror="false"/>
     <antcall target="build-one-cluster">
       <param name="one.cluster.name" value="nb.cluster.visualweb"/>
       <param name="one.cluster.name-hasNoDependencies" value="true"/>
@@ -1096,6 +1097,13 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
           description="Clean out (almost) all build products.">
     <echo message="Run `ant real-clean' if desired."/>
   </target>
+
+  <target name="clean-vw" depends="init" description="Clean onlu VW modules">
+    <antcall target="cleanall" inheritAll="false">
+      <param name="allmodules" value="${nb.cluster.visualweb}"/>
+    </antcall>
+  </target>
+
 
 <!-- This section contains properties and targets used to build -->
 <!-- Solaris packages.                                          -->
