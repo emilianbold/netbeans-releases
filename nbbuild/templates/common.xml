@@ -452,7 +452,7 @@ Microsystems, Inc. All Rights Reserved.
             <formatter type="brief" usefile="false"/>
             <formatter type="xml"/>
         </junit>
-        <fail if="tests.failed">Some tests failed; see details above.</fail>
+        <fail if="tests.failed" unless="continue.after.failing.tests">Some tests failed; see details above.</fail>
     </target>
 
     <target name="test-single" depends="init,test-init,test-build">
@@ -469,7 +469,7 @@ Microsystems, Inc. All Rights Reserved.
             <formatter type="brief" usefile="false"/>
             <formatter type="xml"/>
         </junit>
-        <fail if="tests.failed">Some tests failed; see details above.</fail>
+        <fail if="tests.failed" unless="continue.after.failing.tests">Some tests failed; see details above.</fail>
     </target>
 
     <target name="do-debug-test-single">
