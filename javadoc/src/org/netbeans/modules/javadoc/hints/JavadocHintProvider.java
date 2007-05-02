@@ -30,7 +30,6 @@ import com.sun.javadoc.Tag;
 import com.sun.javadoc.ThrowsTag;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ErroneousTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
@@ -39,7 +38,6 @@ import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
-import com.sun.source.util.TreePathScanner;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -87,7 +85,6 @@ import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
-import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.LazyFixList;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.cookies.EditorCookie;
@@ -118,7 +115,6 @@ import org.openide.util.NbPreferences;
 public final class JavadocHintProvider extends AbstractHint {
     
     private static final int NOPOS = -2; // XXX copied from jackpot; should be in api
-    private boolean cancel = false;
     
     private static Access access;
     private boolean createJavadocKind;
@@ -126,25 +122,12 @@ public final class JavadocHintProvider extends AbstractHint {
     private JavadocHintProvider(boolean createJavadocKind) {
         this.createJavadocKind = createJavadocKind;
     }
-    
-    public synchronized void cancel() {
-        this.cancel = true;
-    }
-    
-    public synchronized void resume() {
-        this.cancel = false;
-    }
-    
-    boolean isCanceled() {
-        return cancel;
-    }
 
     public Set<Kind> getTreeKinds() {
         return EnumSet.of(Kind.METHOD, Kind.CLASS, Kind.VARIABLE);
     }
     
     public List<ErrorDescription> run(CompilationInfo javac, TreePath path) {
-        resume();
         readSettings();
         
         if (Boolean.FALSE.equals(AccessibilityQuery.isPubliclyAccessible(javac.getFileObject().getParent()))) {
@@ -173,43 +156,8 @@ public final class JavadocHintProvider extends AbstractHint {
             return null;
         }
         
-        boolean onLine = hintSeverity == HintSeverity.CURRENT_LINE_WARNING;
-        
-        if (onLine && isInMethod(path.getParentPath()))
-            return null;
-        
-        List<ErrorDescription> errors = new ArrayList<ErrorDescription>();
-        
-        Tree leaf = path.getLeaf();
-        int caret = CaretAwareJavaSourceTaskFactory.getLastPosition(javac.getFileObject());
         Analyzer a = new Analyzer(javac, doc, path, severity, hintSeverity);
-        switch (leaf.getKind()) {
-        case CLASS:
-            if (access.isAccessible(((ClassTree) leaf).getModifiers().getFlags()) &&
-                (!onLine || isInHeader(javac, (ClassTree) leaf, caret))) {
-                a.processNode(path, errors);
-            }
-            break;
-        case METHOD:
-            Tree clazz = path.getParentPath().getLeaf();
-            if (clazz.getKind() == Tree.Kind.CLASS &&
-                    (javac.getTreeUtilities().isInterface((ClassTree) clazz) ||
-                    javac.getTreeUtilities().isAnnotation((ClassTree) clazz) ||
-                    access.isAccessible(((MethodTree) leaf).getModifiers().getFlags())) &&
-                (!onLine || isInHeader(javac, (MethodTree) leaf, caret))) {
-                a.processNode(path, errors);
-            }
-            break;
-        case VARIABLE:
-            clazz = path.getParentPath().getLeaf();
-            if (clazz.getKind() == Tree.Kind.CLASS &&
-                access.isAccessible(((VariableTree) leaf).getModifiers().getFlags())) {
-                a.processNode(path, errors);
-            }
-            break;
-        }
-        
-        return errors;
+        return a.analyze();
     }
     
     private static boolean isInHeader(CompilationInfo info, ClassTree tree, int offset) {
@@ -217,16 +165,16 @@ public final class JavadocHintProvider extends AbstractHint {
         SourcePositions sp = info.getTrees().getSourcePositions();
         long lastKnownOffsetInHeader = sp.getStartPosition(cut, tree);
         
-        if (tree.getModifiers() != null) {
-            lastKnownOffsetInHeader = sp.getEndPosition(cut, tree.getModifiers());
-        }
-        
-        if (tree.getExtendsClause() != null) {
+        List<? extends Tree> impls = tree.getImplementsClause();
+        List<? extends TypeParameterTree> typeparams;
+        if (impls != null && !impls.isEmpty()) {
+            lastKnownOffsetInHeader= sp.getEndPosition(cut, impls.get(impls.size() - 1));
+        } else if ((typeparams = tree.getTypeParameters()) != null && !typeparams.isEmpty()) {
+            lastKnownOffsetInHeader= sp.getEndPosition(cut, typeparams.get(typeparams.size() - 1));
+        } else if (tree.getExtendsClause() != null) {
             lastKnownOffsetInHeader = sp.getEndPosition(cut, tree.getExtendsClause());
-        }
-        
-        for (Tree t : tree.getImplementsClause()) {
-            lastKnownOffsetInHeader = sp.getEndPosition(cut, t);
+        } else if (tree.getModifiers() != null) {
+            lastKnownOffsetInHeader = sp.getEndPosition(cut, tree.getModifiers());
         }
         
         TokenSequence<JavaTokenId> ts = info.getTreeUtilities().tokensFor(tree);
@@ -247,20 +195,20 @@ public final class JavadocHintProvider extends AbstractHint {
         SourcePositions sp = info.getTrees().getSourcePositions();
         long lastKnownOffsetInHeader = sp.getStartPosition(cut, tree);
         
-        if (tree.getModifiers() != null) {
-            lastKnownOffsetInHeader = sp.getEndPosition(cut, tree.getModifiers());
-        }
+        List<? extends ExpressionTree> throwz;
+        List<? extends VariableTree> params;
+        List<? extends TypeParameterTree> typeparams;
         
-        if (tree.getReturnType() != null) {
+        if ((throwz = tree.getThrows()) != null && !throwz.isEmpty()) {
+            lastKnownOffsetInHeader = sp.getEndPosition(cut, throwz.get(throwz.size() - 1));
+        } else if ((params = tree.getParameters()) != null && !params.isEmpty()) {
+            lastKnownOffsetInHeader = sp.getEndPosition(cut, params.get(params.size() - 1));
+        } else if ((typeparams = tree.getTypeParameters()) != null && !typeparams.isEmpty()) {
+            lastKnownOffsetInHeader = sp.getEndPosition(cut, typeparams.get(typeparams.size() - 1));
+        } else if (tree.getReturnType() != null) {
             lastKnownOffsetInHeader = sp.getEndPosition(cut, tree.getReturnType());
-        }
-        
-        for (Tree t : tree.getParameters()) {
-            lastKnownOffsetInHeader = sp.getEndPosition(cut, t);
-        }
-        
-        for (Tree t : tree.getThrows()) {
-            lastKnownOffsetInHeader = sp.getEndPosition(cut, t);
+        } else if (tree.getModifiers() != null) {
+            lastKnownOffsetInHeader = sp.getEndPosition(cut, tree.getModifiers());
         }
         
         TokenSequence<JavaTokenId> ts = info.getTreeUtilities().tokensFor(tree);
@@ -271,19 +219,6 @@ public final class JavadocHintProvider extends AbstractHint {
             if (ts.token().id() == JavaTokenId.LBRACE) {
                 return offset < ts.offset();
             }
-        }
-        
-        return false;
-    }
-    
-    private boolean isInMethod(TreePath tp) {
-        while (tp != null) {
-            if (tp.getLeaf().getKind() == Kind.METHOD ||
-                tp.getLeaf().getKind() == Kind.BLOCK) {
-                return true;
-            }
-            
-            tp = tp.getParentPath();
         }
         
         return false;
@@ -368,33 +303,32 @@ public final class JavadocHintProvider extends AbstractHint {
             return createErrorDescription(message, ErrorDescriptionFactory.lazyListForFixes(fixes), positions);
         }
         
-        void processNode(TreePath path, List<ErrorDescription> errors) {
-            checkTaskState();
+        public List<ErrorDescription> analyze() {
+            List<ErrorDescription> errors = Collections.<ErrorDescription>emptyList();
+            Tree node = currentPath.getLeaf();
             
-            Tree node = path.getLeaf();
-            
-            if (javac.getTreeUtilities().isSynthetic(path)) {
-                return;
+            if (javac.getTreeUtilities().isSynthetic(currentPath) || !isValid(currentPath)) {
+                return errors;
             }
             // check javadoc
-            Element elm = javac.getTrees().getElement(path);
+            Element elm = javac.getTrees().getElement(currentPath);
             
             if (elm == null) {
                 Logger.getLogger(JavadocHintProvider.class.getName()).log(
                         Level.INFO, "Cannot resolve element for " + node + " in " + file); // NOI18N
-                return;
+                return errors;
             } else if (isGuarded(node)) {
-                return;
+                return errors;
             }
             
             String jdText = javac.getElements().getDocComment(elm);
             // create hint descriptor + prepare javadoc
             if (jdText == null) {
                 if (JavadocUtilities.hasInheritedDoc(javac, elm)) {
-                    return;
+                    return errors;
                 }
                 if (!createJavadocKind)
-                    return ;
+                    return errors;
                 
                 try {
                     Position[] positions = createSignaturePositions(node);
@@ -402,44 +336,66 @@ public final class JavadocHintProvider extends AbstractHint {
                             NbBundle.getMessage(JavadocHintProvider.class, "MISSING_JAVADOC_DESC"), // NOI18N
                             createGenerateFixes(elm),
                             positions);
+                    errors = new ArrayList<ErrorDescription>();
                     errors.add(err);
                 } catch (BadLocationException ex) {
                     Logger.getLogger(JavadocHintProvider.class.getName()).log(Level.INFO, ex.getMessage(), ex);
                 }
             } else {
                 if (createJavadocKind)
-                    return ;
-                try {
-                    Doc jDoc = javac.getElementUtilities().javaDocFor(elm);
-                    if (jDoc.isMethod() || jDoc.isConstructor()) {
-                        ExecutableMemberDoc methDoc = (ExecutableMemberDoc) jDoc;
-                        ExecutableElement methodEl = (ExecutableElement) elm;
-                        MethodTree methodTree = (MethodTree) node;
-                        processParameters(methodEl, methodTree, methDoc, errors);
-                        processReturn(methodEl, methodTree, methDoc, errors);
-                        processThrows(methodEl, methodTree, methDoc, errors);
-                    } else if(jDoc.isClass() || jDoc.isInterface()) {
-                        TypeElement classEl = (TypeElement) elm;
-                        ClassDoc classDoc = (ClassDoc) jDoc;
-                        ClassTree classTree = (ClassTree) node;
-                        processTypeParameters(classEl, classTree, classDoc, errors);
-                    } else if (jDoc.isAnnotationType()) {
-                        processAnnTypeParameters(elm, node, jDoc, errors);
-                    } else if (jDoc.isAnnotationTypeElement()) {
-                        AnnotationTypeElementDoc annDoc = (AnnotationTypeElementDoc) jDoc;
-                        ExecutableElement methodEl = (ExecutableElement) elm;
-                        MethodTree methodTree = (MethodTree) node;
-                        processAnnTypeParameters(methodEl, methodTree, annDoc, errors);
-                        processReturn(methodEl, methodTree, annDoc, errors);
-                        processAnnTypeThrows(methodEl, methodTree, annDoc, errors);
-                    }
-
-                    processDeprecatedAnnotation(elm, jDoc, errors);
-                } catch (OutOfLimitException ex) {
-                    // fixJavadocHintCounter run out, next jd errors will be ignored
-                }
+                    return errors;
                 
+                errors = new ArrayList<ErrorDescription>();
+                Doc jDoc = javac.getElementUtilities().javaDocFor(elm);
+                if (jDoc.isMethod() || jDoc.isConstructor()) {
+                    ExecutableMemberDoc methDoc = (ExecutableMemberDoc) jDoc;
+                    ExecutableElement methodEl = (ExecutableElement) elm;
+                    MethodTree methodTree = (MethodTree) node;
+                    processParameters(methodEl, methodTree, methDoc, errors);
+                    processReturn(methodEl, methodTree, methDoc, errors);
+                    processThrows(methodEl, methodTree, methDoc, errors);
+                } else if(jDoc.isClass() || jDoc.isInterface()) {
+                    TypeElement classEl = (TypeElement) elm;
+                    ClassDoc classDoc = (ClassDoc) jDoc;
+                    ClassTree classTree = (ClassTree) node;
+                    processTypeParameters(classEl, classTree, classDoc, errors);
+                } else if (jDoc.isAnnotationType()) {
+                    processAnnTypeParameters(elm, node, jDoc, errors);
+                } else if (jDoc.isAnnotationTypeElement()) {
+                    AnnotationTypeElementDoc annDoc = (AnnotationTypeElementDoc) jDoc;
+                    ExecutableElement methodEl = (ExecutableElement) elm;
+                    MethodTree methodTree = (MethodTree) node;
+                    processAnnTypeParameters(methodEl, methodTree, annDoc, errors);
+                    processReturn(methodEl, methodTree, annDoc, errors);
+                    processAnnTypeThrows(methodEl, methodTree, annDoc, errors);
+                }
+
+                processDeprecatedAnnotation(elm, jDoc, errors);
             }
+            return errors;
+        }
+        
+        private boolean isValid(TreePath path) {
+            Tree leaf = path.getLeaf();
+            int caret = CaretAwareJavaSourceTaskFactory.getLastPosition(javac.getFileObject());
+            boolean onLine = hintSeverity == HintSeverity.CURRENT_LINE_WARNING;
+            switch (leaf.getKind()) {
+            case CLASS:
+                return access.isAccessible(((ClassTree) leaf).getModifiers().getFlags()) &&
+                        (!onLine || isInHeader(javac, (ClassTree) leaf, caret));
+            case METHOD:
+                Tree clazz = path.getParentPath().getLeaf();
+                return clazz.getKind() == Tree.Kind.CLASS &&
+                        (javac.getTreeUtilities().isInterface((ClassTree) clazz) ||
+                        javac.getTreeUtilities().isAnnotation((ClassTree) clazz) ||
+                        access.isAccessible(((MethodTree) leaf).getModifiers().getFlags())) &&
+                        (!onLine || isInHeader(javac, (MethodTree) leaf, caret));
+            case VARIABLE:
+                clazz = path.getParentPath().getLeaf();
+                return clazz.getKind() == Tree.Kind.CLASS &&
+                        access.isAccessible(((VariableTree) leaf).getModifiers().getFlags());
+            }
+            return false;
         }
         
         private void processDeprecatedAnnotation(Element elm, Doc jDoc, List<ErrorDescription> errors) {
@@ -874,13 +830,6 @@ public final class JavadocHintProvider extends AbstractHint {
         
         private void addTagHint(List<ErrorDescription> errors, ErrorDescription desc) {
             errors.add(desc);
-            checkTaskState();
-        }
-        
-        private void checkTaskState() {
-            if (isCanceled()) {
-                throw new CancelException();
-            }
         }
     }
     
@@ -1512,41 +1461,17 @@ public final class JavadocHintProvider extends AbstractHint {
             }
         }
     }
-    /**
-     * This is not regular exception! It allows to promtly cancel
-     * javadoc hints computation on CancellableTask request.
-     * NO STACK TRACE IS FILLED! performance reason
-     */
-    private static final class CancelException extends RuntimeException {
-        @Override
-        public synchronized Throwable fillInStackTrace() {
-            return null;
-        }
-    }
-    
-    /**
-     * This is not regular throwable! It allows to promtly cancel
-     * javadoc add/remove tag hints computation on running
-     * out of the FIX_JAVADOC_HINT_LIMIT.
-     * NO STACK TRACE IS FILLED! performance reason
-     */
-    private static final class OutOfLimitException extends RuntimeException {
-        @Override
-        public synchronized Throwable fillInStackTrace() {
-            return null;
-        }
-    }
 
     public String getId() {
         return JavadocHintProvider.class.getName();
     }
 
     public String getDisplayName() {
-        return NbBundle.getMessage(JavadocHintProvider.class, createJavadocKind ? "DN_CREATE_JAVADOC_HINT" : "DN_ERROR_IN_JAVADOC_HINT");
+        return NbBundle.getMessage(JavadocHintProvider.class, createJavadocKind ? "DN_CREATE_JAVADOC_HINT" : "DN_ERROR_IN_JAVADOC_HINT"); // NOI18N
     }
 
     public String getDescription() {
-        return NbBundle.getMessage(JavadocHintProvider.class, createJavadocKind ? "DESC_CREATE_JAVADOC_HINT" : "DESC_ERROR_IN_JAVADOC_HINT");
+        return NbBundle.getMessage(JavadocHintProvider.class, createJavadocKind ? "DESC_CREATE_JAVADOC_HINT" : "DESC_ERROR_IN_JAVADOC_HINT"); // NOI18N
     }
     
     private HintSeverity getDefaultHintSeverity() {
@@ -1554,7 +1479,7 @@ public final class JavadocHintProvider extends AbstractHint {
     }
     
     private String getSettingsName() {
-        return createJavadocKind ? "create-javadoc" : "error-in-javadoc";
+        return createJavadocKind ? "create-javadoc" : "error-in-javadoc"; // NOI18N
     }
     
     @Override
@@ -1569,7 +1494,7 @@ public final class JavadocHintProvider extends AbstractHint {
         return p;
     }
     
-    private static final String INITIALIZED = "javadoc-hint-initialized";
+    private static final String INITIALIZED = "javadoc-hint-initialized"; // NOI18N
     
     public static JavadocHintProvider createCreateJavadoc() {
         return new JavadocHintProvider(true);
