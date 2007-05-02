@@ -130,7 +130,7 @@ public class DBColumnDrop extends DBConnectionDrop {
             // Create a new entity (if there isn't one that corresponds to the dragged table)
             if (entityInfo == null) {
                 // Generates a Java class for the entity
-                J2EEUtils.createEntity(formFile.getParent(), scope, unit, column.getDatabaseConnection(), column.getTableName(), null);
+                J2EEUtils.createEntity(formFile.getParent(), scope, unit, column.getDatabaseConnection(), column.getTableName(), null, false);
 
                 entityInfo = J2EEUtils.findEntity(mappings, column.getTableName());
             }

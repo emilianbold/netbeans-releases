@@ -351,11 +351,13 @@ public class J2EEUtils {
      * @param tableNames names of the tables.
      * @param dbconn connection to the DB with the tables.
      * @param unit persistence unit to add the generated classes into
+     * @param inNewProject determines whether the given project is completely new
+     * (e.g. in early stages of its life - not opened etc.)
      * @return entity class that corresponds to the specified table and names
      * of the entity classes for related tables (if <code>relatedTableNames</code>
      * parameter was non-<code>null</code>).
      */
-    public static String[] generateEntityClass(final Project project, SourceGroup location, String packageName, DatabaseConnection dbconn, List tableNames, PersistenceUnit unit) {
+    private static String[] generateEntityClass(final Project project, SourceGroup location, String packageName, DatabaseConnection dbconn, List tableNames, PersistenceUnit unit, boolean inNewProject) {
         try {
             EntitiesFromDBGenerator generator = new EntitiesFromDBGenerator(tableNames, true, packageName, location, dbconn, project, unit);
             // PENDING
@@ -366,31 +368,24 @@ public class J2EEUtils {
             }
             
             // Compile generated bean
-            OpenProjects.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    try {
-                        for (Project p : OpenProjects.getDefault().getOpenProjects()) {
-                            if (p.equals(project)) {
-                                Action action = FileSensitiveActions.fileCommandAction(ActionProvider.COMMAND_COMPILE_SINGLE, "", null); // NOI18N
-                                if (action instanceof ContextAwareAction) {
-                                    DataObject[] dobs = new DataObject[entities.size()];
-                                    int count = 0;
-                                    for (FileObject fob : entities) {
-                                        dobs[count++] = DataObject.find(fob);
-                                    }
-                                    Lookup lookup = Lookups.fixed((Object[])dobs);
-                                    ((ContextAwareAction)action).createContextAwareInstance(lookup).actionPerformed(new ActionEvent(new Object(), 0, null));
-                                }
-                                break;
-                            } // else something went wrong - don't attempt to compile
+            if (inNewProject) {
+                OpenProjects.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        try {
+                            for (Project p : OpenProjects.getDefault().getOpenProjects()) {
+                                if (p.equals(project)) {
+                                    compileGeneratedEntities(entities);
+                                    break;
+                                } // else something went wrong - don't attempt to compile
+                            }
+                        } finally {
+                            OpenProjects.getDefault().removePropertyChangeListener(this);
                         }
-                    } catch (DataObjectNotFoundException dnfex) {
-                        dnfex.printStackTrace();
-                    } finally {
-                        OpenProjects.getDefault().removePropertyChangeListener(this);
                     }
-                }
-            });
+                });
+            } else {
+                compileGeneratedEntities(entities);
+            }
 
             String[] result = new String[entities.size()];
             int count = 0;
@@ -402,6 +397,28 @@ public class J2EEUtils {
             ex.printStackTrace();
         }
         return null;
+    }
+
+    /**
+     * Compiles the given set of entities. 
+     * 
+     * @param entities entities to compile.
+     */
+    private static void compileGeneratedEntities(Set<FileObject> entities) {
+        try {
+            Action action = FileSensitiveActions.fileCommandAction(ActionProvider.COMMAND_COMPILE_SINGLE, "", null); // NOI18N
+            if (action instanceof ContextAwareAction) {
+                DataObject[] dobs = new DataObject[entities.size()];
+                int count = 0;
+                for (FileObject fob : entities) {
+                    dobs[count++] = DataObject.find(fob);
+                }
+                Lookup lookup = Lookups.fixed((Object[])dobs);
+                ((ContextAwareAction)action).createContextAwareInstance(lookup).actionPerformed(new ActionEvent(new Object(), 0, null));
+            }
+        } catch (DataObjectNotFoundException dnfex) {
+            dnfex.printStackTrace();
+        }
     }
 
     /**
@@ -489,9 +506,11 @@ public class J2EEUtils {
      * @param tableName name of the table.
      * @param relatedTableNames names of related tables whose entity classes should be added
      * into the peristence unit.
+     * @param inNewProject determines whether the given project is completely new
+     * (e.g. in early stages of its life - not opened etc.)
      * @throws Exception when something goes wrong.
      */
-    public static void createEntity(FileObject dir, PersistenceScope scope, PersistenceUnit unit, DatabaseConnection connection, String tableName, String[] relatedTableNames) throws Exception {
+    public static void createEntity(FileObject dir, PersistenceScope scope, PersistenceUnit unit, DatabaseConnection connection, String tableName, String[] relatedTableNames, boolean inNewProject) throws Exception {
         Project project = FileOwnerQuery.getOwner(dir);
         String packageName = scope.getClassPath().getResourceName(dir, '.', false);
 
@@ -508,7 +527,7 @@ public class J2EEUtils {
         if (relatedTableNames != null) {
             tableNames.addAll(Arrays.asList(relatedTableNames));
         }
-        J2EEUtils.generateEntityClass(project, location, packageName, connection, tableNames, unit);
+        J2EEUtils.generateEntityClass(project, location, packageName, connection, tableNames, unit, inNewProject);
         // PENDING ugly workaround for the fact that the generated entity is not immediately
         // in the model - will be removed as soon as the corresponding issue is fixed
         try {
