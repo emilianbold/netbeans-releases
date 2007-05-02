@@ -57,6 +57,7 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
         postInitComponents();
         RequestProcessor.getDefault().post(new Runnable () {
             public void run() {
+                Utilities.presentRefreshProviders(PluginManagerUI.this, false);
                 units = UpdateManager.getDefault().getUpdateUnits();
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
