@@ -376,6 +376,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
                 <friend>org.netbeans.modules.wsdlextensions.sap</friend>
                 <friend>org.netbeans.modules.wsdlextensions.smtp</friend>
                 <friend>org.netbeans.modules.wsdlextensions.snmp</friend>
+                <friend>org.netbeans.modules.wsdlextensions.tcpip</friend>
                 <friend>org.netbeans.modules.xml.wsdl.refactoring</friend>
                 <friend>org.netbeans.modules.xml.wsdlextui</friend>
                 <friend>org.netbeans.modules.xslt.project</friend>
