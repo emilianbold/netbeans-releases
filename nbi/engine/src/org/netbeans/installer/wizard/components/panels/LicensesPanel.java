@@ -136,18 +136,20 @@ public class LicensesPanel extends WizardPanel {
             if (!products.equals(currentProducts)) {
                 final StringBuilder text = new StringBuilder();
                 for (Product product: currentProducts) {
-                    text.append("-------------------------------------------------");
-                    text.append(StringUtils.CRLF);
-                    text.append(product.getDisplayName() + ":");
-                    text.append(StringUtils.CRLFCRLF);
-                    try {
-                        text.append(product.getLogic().getLicense().getText());
-                    } catch (InitializationException e) {
-                        ErrorManager.notifyError(
-                                "Could not access configuration logic",
-                                e);
+                    if(product.getLogic().getLicense()!=null) {
+                        text.append("-------------------------------------------------");
+                        text.append(StringUtils.CRLF);
+                        text.append(product.getDisplayName() + ":");
+                        text.append(StringUtils.CRLFCRLF);
+                        try {
+                            text.append(product.getLogic().getLicense().getText());
+                        } catch (InitializationException e) {
+                            ErrorManager.notifyError(
+                                    "Could not access configuration logic",
+                                    e);
+                        }
+                        text.append(StringUtils.CRLFCRLF);
                     }
-                    text.append(StringUtils.CRLFCRLF);
                 }
                 
                 licensePane.setText(text);
