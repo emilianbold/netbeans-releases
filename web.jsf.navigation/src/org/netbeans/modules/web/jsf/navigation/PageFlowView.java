@@ -22,6 +22,8 @@ package org.netbeans.modules.web.jsf.navigation;
 
 import java.awt.BorderLayout;
 import java.awt.Image;
+import java.awt.event.MouseEvent;
+import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -40,10 +42,12 @@ import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.navigation.JSFPageFlowMultiviewDescriptor.PageFlowElement;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
+import org.netbeans.modules.web.jsf.navigation.graph.SceneSerializer;
 import org.netbeans.spi.palette.PaletteActions;
 import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteFactory;
 import org.openide.explorer.ExplorerManager;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
@@ -73,7 +77,14 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         pfc = new PageFlowController( context,  this );
         pfc.setupGraph();
         setFocusable(true);
-        boolean isValidated = scene.initLayout();
+        
+        
+        FileObject nbprojectFolder = pfc.getWebFolder().getParent().getFileObject("nbproject", null);
+        String fileName = pfc.getConfigDataObject().getPrimaryFile().getName() + ".NavData";
+        navDataFile = new File(nbprojectFolder.getPath(), fileName);
+        loadNodelocations();
+        
+//        boolean isValidated = scene.initLayout();
         
         //        this(context, new InstanceContent());
     }
@@ -212,7 +223,10 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     }
     
     public void saveLocations() {
-        scene.saveLocations();
+//        scene.saveLocations();
+    }
+    public void saveLocation(Page pageNode, String newDisplayName){
+//        scene.saveLocation(pageNode,newDisplayName);
     }
     
     /**
@@ -452,7 +466,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
             }
         }
         
-        if ( pageNode.isDataNode() ){            
+        if ( pageNode.isDataNode() ){
             pageNode.updateContentModel();
             //This will re-add the pins.
             setupPinsInNode(pageNode);
@@ -478,8 +492,23 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         return myNavCases;
     }
     
-    public void saveLocation(Page pageNode, String newDisplayName){
-        scene.saveLocation(pageNode,newDisplayName);
+
+    
+    
+    File navDataFile;
+    public void serializeNodeLocations(){
+        //For long term storage;
+        SceneSerializer.serialize(scene, navDataFile);
     }
     
+    private void loadNodelocations() {
+        if( navDataFile.exists() ) {
+            SceneSerializer.deserialize(scene, navDataFile);
+            validate();
+        }
+    }
+
+    
+    
+
 }

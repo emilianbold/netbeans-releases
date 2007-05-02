@@ -26,7 +26,9 @@
 
 package org.netbeans.modules.web.jsf.navigation;
 
+
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -731,5 +733,8 @@ public class PageFlowController {
         configModel.sync();
     }
     
+    public void serializeNodeLocations() {
+        view.serializeNodeLocations();
+    }
 
 }

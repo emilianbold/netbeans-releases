@@ -106,7 +106,7 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge, PinNod
     private WidgetAction connectAction = ActionFactory.createConnectAction(connectionLayer, new LinkCreateProvider(this));
     private WidgetAction selectAction = ActionFactory.createSelectAction(new PageFlowSelectProvider());
     
-    private SceneLayout sceneGraphLayout;
+//    private SceneLayout sceneGraphLayout;
     private PageFlowView tc;
     
     /**
@@ -256,45 +256,45 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge, PinNod
             nodeWidget.setMinimized(true);
         }
         
-        if ( !initialSetup ) {
-            pageFlowSceneGraphLayout.invokeLayout();
-            //            Point point = locations.get(displayName);
-            //            if( point == null ) {
-            //                point = PageFlowLayoutUtilities.getPreferredNodePosition(this,true);
-            //            } else {
-            //                //Just in case there is another widget there. Relocate that one instead.
-            //                Widget widget = PageFlowLayoutUtilities.isWidgetAt(this, point);
-            //                if (widget != null ){
-            //                    widget.setPreferredLocation(PageFlowLayoutUtilities.getPreferredNodePosition(this,true));
-            //                }
-            //            }
-            //            nodeWidget.setPreferredLocation(point);
-        }
+//        if ( !initialSetup ) {
+//            pageFlowSceneGraphLayout.invokeLayout();
+//            //            Point point = locations.get(displayName);
+//            //            if( point == null ) {
+//            //                point = PageFlowLayoutUtilities.getPreferredNodePosition(this,true);
+//            //            } else {
+//            //                //Just in case there is another widget there. Relocate that one instead.
+//            //                Widget widget = PageFlowLayoutUtilities.isWidgetAt(this, point);
+//            //                if (widget != null ){
+//            //                    widget.setPreferredLocation(PageFlowLayoutUtilities.getPreferredNodePosition(this,true));
+//            //                }
+//            //            }
+//            //            nodeWidget.setPreferredLocation(point);
+//        }
         
         return nodeWidget;
     }
     
-    public void saveLocations() {
-        pageFlowSceneGraphLayout.saveLocations();
-    }
-    public void saveLocation(Page pageNode, String newDisplayName){
-        pageFlowSceneGraphLayout.saveLocation(pageNode,newDisplayName);
-    }
-    public void saveLocation(Page pageNode, Point  newPoint){
-        pageFlowSceneGraphLayout.saveLocation(pageNode,newPoint);
-    }
-    private PageFlowSceneGraphLayout pageFlowSceneGraphLayout = new PageFlowSceneGraphLayout(this);
-    boolean initialSetup = true;
-    public boolean initLayout(){
-        //        if( pageFlowSceneGraphLayout != null ) {
-        pageFlowSceneGraphLayout.invokeLayoutImmediately();
-        initialSetup = false;
-        return isValidated();
-        //        } else {
-        //            System.out.println("SceneGraphLayout is still null");
-        //            return false;
-        //        }
-    }
+//    public void saveLocations() {
+//        pageFlowSceneGraphLayout.saveLocations();
+//    }
+//    public void saveLocation(Page pageNode, String newDisplayName){
+//        pageFlowSceneGraphLayout.saveLocation(pageNode,newDisplayName);
+//    }
+//    public void saveLocation(Page pageNode, Point  newPoint){
+//        pageFlowSceneGraphLayout.saveLocation(pageNode,newPoint);
+//    }
+//    private PageFlowSceneGraphLayout pageFlowSceneGraphLayout = new PageFlowSceneGraphLayout(this);
+//    boolean initialSetup = true;
+//    public boolean initLayout(){
+//        //        if( pageFlowSceneGraphLayout != null ) {
+//        pageFlowSceneGraphLayout.invokeLayoutImmediately();
+//        initialSetup = false;
+//        return isValidated();
+//        //        } else {
+//        //            System.out.println("SceneGraphLayout is still null");
+//        //            return false;
+//        //        }
+//    }
     
     
     //    public boolean layoutGraph(){

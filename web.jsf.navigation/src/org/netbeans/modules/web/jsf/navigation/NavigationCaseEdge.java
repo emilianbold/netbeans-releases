@@ -27,14 +27,17 @@
 package org.netbeans.modules.web.jsf.navigation;
 
 import java.awt.Image;
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
 import org.netbeans.modules.web.jsf.navigation.graph.PageSceneElement;
+import org.netbeans.modules.web.jsf.navigation.graph.SceneSerializer;
 import org.openide.ErrorManager;
 import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -50,7 +53,7 @@ import org.openide.util.NbBundle;
  *
  * @author joelle
  */
-public final class NavigationCaseEdge extends PageSceneElement implements SaveCookie  {
+public final class NavigationCaseEdge extends PageSceneElement  {
     private NavigationCase navCase = null;
     private String toViewID;
     private PageFlowController pc;
@@ -107,7 +110,7 @@ public final class NavigationCaseEdge extends PageSceneElement implements SaveCo
     }
     
     
-
+    
     
     public boolean canRename() {
         return true;
@@ -175,20 +178,7 @@ public final class NavigationCaseEdge extends PageSceneElement implements SaveCo
             navNode.destroy();
         }
     }
-    public void save() throws IOException {
-        //            pc.getConfigDataObject().getEditorSupport().saveDocument();
-        getCookie(SaveCookie.class).save();
-    }
     
-    
-    private SaveCookie saveCookie;
-    public <T extends Cookie> T getCookie(Class<T> type) {
-        if( type.equals(SaveCookie.class)) {
-            saveCookie = pc.getConfigDataObject().getCookie(SaveCookie.class);
-            return (T) saveCookie;
-        }
-        return null;
-    }
     
     public HelpCtx getHelpCtx() {
         throw new UnsupportedOperationException("Not supported yet.");
@@ -200,12 +190,12 @@ public final class NavigationCaseEdge extends PageSceneElement implements SaveCo
     
     public Node getNode() {
         if( navNode == null )
-            navNode = new NavNode ();
+            navNode = new NavNode();
         return navNode;
     }
     
     Node navNode;
-    private class NavNode extends AbstractNode {
+    private class NavNode extends AbstractNode{
         
         public NavNode() {
             super(Children.LEAF);
@@ -256,9 +246,27 @@ public final class NavigationCaseEdge extends PageSceneElement implements SaveCo
             return s;
         }
         
+//        public void save() throws IOException {
+//            //            pc.getConfigDataObject().getEditorSupport().saveDocument();
+//            getCookie(SaveCookie.class).save();
+//            
+//            pc.serializeNodeLocations();
+//        }
+        
+        
+        private SaveCookie saveCookie;
+        public <T extends Cookie> T getCookie(Class<T> type) {
+            if( type.equals(SaveCookie.class)) {
+                saveCookie = pc.getConfigDataObject().getCookie(SaveCookie.class);
+                pc.serializeNodeLocations();
+                return (T) saveCookie;
+            }
+            return null;
+        }
+        
     }
     
-        
+    
     public class ModelProperty extends PropertySupport.Reflection<String>{
         
         public ModelProperty(Object instance, Class<String> valueType, String getter, String setter ) throws NoSuchMethodException {
