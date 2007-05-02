@@ -19,11 +19,13 @@
 
 package org.netbeans.modules.j2ee.metadata.model.api.support.annotation;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.concurrent.Callable;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 import org.netbeans.modules.j2ee.metadata.model.support.PersistenceTestCase;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
@@ -95,16 +97,37 @@ public class AnnotationModelHelperTest extends PersistenceTestCase {
             }
         };
         helper.addJavaContextListener(listener);
-        Runnable empty = new Runnable() {
-            public void run() {}
+        Callable<Void> empty = new Callable<Void>() {
+            public Void call() {
+                return null;
+            }
         };
         helper.userActionTask(empty);
         assertTrue(contextLeft[0]);
         contextLeft[0] = false;
-        helper.userActionTask(empty);
-        assertTrue(contextLeft[0]);
+        helper.userActionTask(empty, false);
+        assertFalse(contextLeft[0]);
         WeakReference<JavaContextListener> listenerRef = new WeakReference<JavaContextListener>(listener);
         listener = null;
         assertGC("Should be possible to GC listener", listenerRef);
+    }
+
+    public void testRecursiveUserActionTask() throws Exception {
+        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        ClasspathInfo cpi = ClasspathInfo.create(srcFO);
+        final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
+        helper.userActionTask(new Callable<Void>() {
+            public Void call() throws IOException {
+                final JavaSource js1 = helper.getJavaSource();
+                helper.userActionTask(new Callable<Void>() {
+                    public Void call() {
+                        JavaSource js2 = helper.getJavaSource();
+                        assertSame(js1, js2);
+                        return null;
+                    }
+                });
+                return  null;
+            }
+        });
     }
 }

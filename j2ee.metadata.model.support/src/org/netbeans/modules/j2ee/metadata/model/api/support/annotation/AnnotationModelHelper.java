@@ -45,7 +45,6 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.RootsEvent;
 import org.netbeans.api.java.source.TypesEvent;
 import org.openide.util.Exceptions;
-import org.openide.util.NotImplementedException;
 import org.openide.util.WeakSet;
 
 /**
@@ -54,12 +53,12 @@ import org.openide.util.WeakSet;
  */
 public final class AnnotationModelHelper {
 
-    // XXX threading model has unclear semantics. This class should be fully
-    // thread-safe, and all methods bound to the java context should be move
-    // to another class (e.g., JavaContext) whose lifecycle should be bound
-    // to one invocation of the userActionTask() method
+    // XXX userActionTask() should be runInJavacContext()
 
-    // XXX userActionTask() should be runInJavaContext()
+    // Used to ensure that only one thread can run userActionTask() and
+    // to ensure that only the thread that entered the java context can call
+    // getCompilationController() etc.
+    private final Object LOCK = new Object();
 
     private final ClasspathInfo cpi;
     private final Set<JavaContextListener> javaContextListeners = new WeakSet<JavaContextListener>();
@@ -84,31 +83,56 @@ public final class AnnotationModelHelper {
         return cpi;
     }
 
-    public AnnotationScanner getAnnotationScanner() {
-        assertUserActionTask();
-        if (annotationScanner == null) {
-            annotationScanner = new AnnotationScanner(this);
+    public <T extends PersistentObject> PersistentObjectManager<T> createPersistentObjectManager(ObjectProvider<T> provider) {
+        synchronized (LOCK) {
+            PersistentObjectManager<T> manager = PersistentObjectManager.newInstance(this, provider);
+            registerPersistentObjectManager(manager);
+            return manager;
         }
-        return annotationScanner;
     }
 
-    public JavaSource getJavaSource() {
-        assertUserActionTask();
-        return javaSource;
+    private void registerPersistentObjectManager(PersistentObjectManager<? extends PersistentObject> manager) {
+        assert Thread.holdsLock(LOCK);
+        if (classIndex == null) {
+            classIndex = cpi.getClassIndex();
+            // this doesn't get removed anywhere, which should not matter, since
+            // the classpath info, its class index and all managers have the same lifecycle
+            listener = new ClassIndexListenerImpl();
+            classIndex.addClassIndexListener(listener);
+        }
+        managers.add(manager);
     }
 
-    public CompilationController getCompilationController() {
-        assertUserActionTask();
-        assert controller != null;
-        return controller;
+    public void addJavaContextListener(JavaContextListener listener) {
+        synchronized (LOCK) {
+            javaContextListeners.add(listener);
+        }
     }
 
     public <V> V userActionTask(final Callable<V> callable) throws IOException {
-        final JavaSource newJavaSource = JavaSource.create(cpi);
+        return userActionTask(callable, true);
+    }
+
+    public void userActionTask(final Runnable run) throws IOException {
+        userActionTask(new Callable<Void>() {
+            public Void call() {
+                run.run();
+                return null;
+            }
+        });
+    }
+
+    // Not private because used in unit tests.
+    <V> V userActionTask(final Callable<V> callable, final boolean notify) throws IOException {
+        JavaSource existingJavaSource;
+        synchronized (LOCK) {
+            existingJavaSource = javaSource;
+        }
+        final JavaSource newJavaSource = existingJavaSource != null ? existingJavaSource : JavaSource.create(cpi);
         final List<V> result = new ArrayList<V>();
-        try {
-            newJavaSource.runUserActionTask(new CancellableTask<CompilationController>() {
-                public void run(CompilationController controller) throws Exception {
+        newJavaSource.runUserActionTask(new CancellableTask<CompilationController>() {
+            public void run(CompilationController controller) throws Exception {
+                synchronized (LOCK) {
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
                     AnnotationModelHelper.this.javaSource = newJavaSource;
                     AnnotationModelHelper.this.controller = controller;
@@ -125,54 +149,51 @@ public final class AnnotationModelHelper {
                     } finally {
                         AnnotationModelHelper.this.controller = null;
                         annotationScanner = null;
+                        javaSource = null;
+                        if (notify) {
+                            for (JavaContextListener hook : javaContextListeners) {
+                                hook.javaContextLeft();
+                            }
+                        }
                     }
                 }
-                public void cancel() {
-                    // we can't cancel
-                }
-            }, true);
-        } finally {
-            for (JavaContextListener hook : javaContextListeners) {
-                hook.javaContextLeft();
             }
-        }
+            public void cancel() {
+                // we can't cancel
+            }
+        }, true);
         return result.get(0);
     }
 
-    public void userActionTask(final Runnable run) throws IOException {
-        userActionTask(new Callable<Void>() {
-            public Void call() {
-                run.run();
-                return null;
-            }
-        });
+    public AnnotationScanner getAnnotationScanner() {
+        assertHoldsLock();
+        if (annotationScanner == null) {
+            annotationScanner = new AnnotationScanner(this);
+        }
+        return annotationScanner;
     }
 
-    private void assertUserActionTask() {
-        if (javaSource == null) {
-            throw new IllegalStateException("Not in an user action task"); // NOI18N
+    public JavaSource getJavaSource() {
+        assertHoldsLock();
+        return javaSource;
+    }
+
+    public CompilationController getCompilationController() {
+        assertHoldsLock();
+        assert controller != null;
+        return controller;
+    }
+
+    private void assertHoldsLock() {
+        if (!Thread.holdsLock(LOCK)) {
+            throw new IllegalStateException("The calling thread is not inside userActionTask()"); // NOI18N
         }
     }
 
-    public <T extends PersistentObject> PersistentObjectManager<T> createPersistentObjectManager(ObjectProvider<T> provider) {
-        PersistentObjectManager<T> manager = PersistentObjectManager.newInstance(this, provider);
-        registerPersistentObjectManager(manager);
-        return manager;
-    }
-
-    private void registerPersistentObjectManager(PersistentObjectManager<? extends PersistentObject> manager) {
-        if (classIndex == null) {
-            classIndex = cpi.getClassIndex();
-            // this doesn't get removed anywhere, which should not matter, since
-            // the classpath info, its class index and all managers have the same lifecycle
-            listener = new ClassIndexListenerImpl();
-            classIndex.addClassIndexListener(listener);
+    private void assertNoHoldsLock() {
+        if (!Thread.holdsLock(LOCK)) {
+            throw new IllegalStateException("The calling thread is not inside userActionTask()"); // NOI18N
         }
-        managers.add(manager);
-    }
-
-    public void addJavaContextListener(JavaContextListener listener) {
-        javaContextListeners.add(listener);
     }
 
     /**
@@ -180,7 +201,7 @@ public final class AnnotationModelHelper {
      * (resolvable by {@link javax.lang.model.util.Elements#getTypeElement}).
      */
     public TypeMirror resolveType(String typeName) {
-        assertUserActionTask();
+        assertHoldsLock();
         TypeElement type = getCompilationController().getElements().getTypeElement(typeName);
         if (type != null) {
             return type.asType();
@@ -189,7 +210,7 @@ public final class AnnotationModelHelper {
     }
 
     public boolean isSameRawType(TypeMirror type1, String type2ElementName) {
-        assertUserActionTask();
+        assertHoldsLock();
         TypeElement type2Element = getCompilationController().getElements().getTypeElement(type2ElementName);
         if (type2Element != null) {
             Types types = getCompilationController().getTypes();
@@ -200,7 +221,7 @@ public final class AnnotationModelHelper {
     }
 
     public List<? extends TypeElement> getSuperclasses(TypeElement type) {
-        assertUserActionTask();
+        assertHoldsLock();
         List<TypeElement> result = new ArrayList<TypeElement>();
         TypeElement currentType = type;
         for (;;) {
@@ -215,7 +236,7 @@ public final class AnnotationModelHelper {
     }
 
     public TypeElement getSuperclass(TypeElement type) {
-        assertUserActionTask();
+        assertHoldsLock();
         TypeMirror supertype = type.getSuperclass();
         if (TypeKind.DECLARED.equals(supertype.getKind())) {
             Element element = ((DeclaredType)supertype).asElement();
@@ -230,7 +251,7 @@ public final class AnnotationModelHelper {
     }
 
     public boolean hasAnnotation(List<? extends AnnotationMirror> annotations, String annotationTypeName) {
-        assertUserActionTask();
+        assertHoldsLock();
         for (AnnotationMirror annotation : annotations) {
             String typeName = getAnnotationTypeName(annotation.getAnnotationType());
             if (annotationTypeName.equals(typeName)) {
@@ -241,7 +262,7 @@ public final class AnnotationModelHelper {
     }
 
     public boolean hasAnyAnnotation(List<? extends AnnotationMirror> annotations, Set<String> annotationTypeNames) {
-        assertUserActionTask();
+        assertHoldsLock();
         for (AnnotationMirror annotation : annotations) {
             String annotationTypeName = getAnnotationTypeName(annotation.getAnnotationType());
             if (annotationTypeName != null && annotationTypeNames.contains(annotationTypeName)) {
@@ -252,7 +273,7 @@ public final class AnnotationModelHelper {
     }
 
     public Map<String, ? extends AnnotationMirror> getAnnotationsByType(List<? extends AnnotationMirror> annotations) {
-        assertUserActionTask();
+        assertHoldsLock();
         Map<String, AnnotationMirror> result = new HashMap<String, AnnotationMirror>();
         for (AnnotationMirror annotation : annotations) {
             String typeName = getAnnotationTypeName(annotation.getAnnotationType());
@@ -268,7 +289,7 @@ public final class AnnotationModelHelper {
      *         was not an annotation type.
      */
     public String getAnnotationTypeName(DeclaredType typeMirror) {
-        assertUserActionTask();
+        assertHoldsLock();
         if (!TypeKind.DECLARED.equals(typeMirror.getKind())) {
             return null;
         }
@@ -283,11 +304,12 @@ public final class AnnotationModelHelper {
 
         public void typesAdded(final TypesEvent event) {
             try {
-                userActionTask(new Runnable() {
-                    public void run() {
+                runInJavacContext(new Callable<Void>() {
+                    public Void call() {
                         for (PersistentObjectManager<? extends PersistentObject> manager : managers) {
                             manager.typesAdded(event.getTypes());
                         }
+                        return null;
                     }
                 });
             } catch (IOException e) {
@@ -297,11 +319,12 @@ public final class AnnotationModelHelper {
 
         public void typesRemoved(final TypesEvent event) {
             try {
-                userActionTask(new Runnable() {
-                    public void run() {
+                runInJavacContext(new Callable<Void>() {
+                    public Void call() {
                         for (PersistentObjectManager<? extends PersistentObject> manager : managers) {
                             manager.typesRemoved(event.getTypes());
                         }
+                        return null;
                     }
                 });
             } catch (IOException e) {
@@ -311,11 +334,12 @@ public final class AnnotationModelHelper {
 
         public void typesChanged(final TypesEvent event) {
             try {
-                userActionTask(new Runnable() {
-                    public void run() {
+                runInJavacContext(new Callable<Void>() {
+                    public Void call() {
                         for (PersistentObjectManager<? extends PersistentObject> manager : managers) {
                             manager.typesChanged(event.getTypes());
                         }
+                        return null;
                     }
                 });
             } catch (IOException e) {
@@ -324,12 +348,21 @@ public final class AnnotationModelHelper {
         }
 
         public void rootsAdded(RootsEvent event) {
+            rootsChanged();
+        }
+
+        public void rootsRemoved(RootsEvent event) {
+            rootsChanged();
+        }
+
+        private void rootsChanged() {
             try {
-                userActionTask(new Runnable() {
-                    public void run() {
+                runInJavacContext(new Callable<Void>() {
+                    public Void call() {
                         for (PersistentObjectManager<? extends PersistentObject> manager : managers) {
                             manager.rootsChanged();
                         }
+                        return null;
                     }
                 });
             } catch (IOException e) {
@@ -337,18 +370,16 @@ public final class AnnotationModelHelper {
             }
         }
 
-        public void rootsRemoved(RootsEvent event) {
-            try {
-                userActionTask(new Runnable() {
-                    public void run() {
-                        for (PersistentObjectManager<? extends PersistentObject> manager : managers) {
-                            manager.rootsChanged();
-                        }
-                    }
-                });
-            } catch (IOException e) {
-                Exceptions.printStackTrace(e);
+        private <V> void runInJavacContext(final Callable<V> call) throws IOException {
+            synchronized (LOCK) {
+                // if we got here, either the current thread is the same thread that is
+                // running userActionTask(), or no thread is runninng userActionTask()
+                if (javaSource != null) {
+                    // so it's the thread running userActionTask()
+                    throw new IllegalStateException("Retouche is sending ClassIndex events from within JavaSource.runUserActionTask()"); // NOI18N
+                }
             }
+            userActionTask(call, false);
         }
     }
 }
