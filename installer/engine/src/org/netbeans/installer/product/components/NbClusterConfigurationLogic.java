@@ -20,6 +20,7 @@
  */
 package org.netbeans.installer.product.components;
 
+import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.applications.NetBeansUtils;
 import java.io.File;
 import java.io.IOException;
@@ -35,6 +36,7 @@ import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.exceptions.UninstallationException;
 import org.netbeans.installer.utils.helper.Dependency;
+import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.RemovalMode;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.wizard.components.WizardAction;
@@ -246,11 +248,19 @@ public abstract class NbClusterConfigurationLogic extends ProductConfigurationLo
     protected void checkNetbeansRunning() {
         List<Dependency> dependencies =
                 getProduct().getDependencyByUid(BASE_IDE_UID);
-        List<Product> sources =
-                Registry.getInstance().getProducts(dependencies.get(0));
         
-        // pick the first one and integrate with it
-        final File nbLocation = sources.get(0).getInstallationLocation();
-        NetBeansUtils.warnNetbeansRunning(sources.get(0).getInstallationLocation());
+        if (dependencies.size() > 0 ) {
+            List<Product> sources =
+                    Registry.getInstance().getProducts(dependencies.get(0));
+            
+            // pick the first one and integrate with it
+            final File nbLocation = sources.get(0).getInstallationLocation();
+            NetBeansUtils.warnNetbeansRunning(nbLocation);
+        } else {
+            LogManager.log(ErrorLevel.DEBUG,
+                    "... no dependencies on IDE was found for " + getProduct().getDisplayName());
+            LogManager.log(ErrorLevel.DEBUG,
+                    "... so skipping checking for running netbeans IDE");
+        }
     }
 }
