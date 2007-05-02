@@ -161,15 +161,9 @@ public class DataSourceReferencePanel extends JPanel {
     }
     
     private void handleComboBoxes() {
-        if (projectDsRadio.isSelected()) {
-            projectDsCombo.setEnabled(true);
-            serverDsCombo.setEnabled(false);
-            dsCopyToProjectCheck.setEnabled(false);
-        } else {
-            projectDsCombo.setEnabled(false);
-            serverDsCombo.setEnabled(true);
-            dsCopyToProjectCheck.setEnabled(true);
-        }
+        projectDsCombo.setEnabled(projectDsRadio.isSelected());
+        serverDsCombo.setEnabled(serverDsRadio.isSelected());
+        dsCopyToProjectCheck.setEnabled(serverDsRadio.isSelected());
     }
     
     private void populate() {

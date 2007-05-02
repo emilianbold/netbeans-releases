@@ -46,6 +46,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import org.netbeans.modules.j2ee.ejbcore.action.SendJMSGenerator;
+import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.MessageDestinationUiSupport;
+import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.MessageDestinationUiSupport.DestinationsHolder;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -67,55 +69,57 @@ public class SendJMSMessageAction extends NodeAction {
     
     protected void performAction(Node[] nodes) {
        try {           
-            JButton okButton = new JButton();
-            okButton.setText(NbBundle.getMessage(SendJMSMessageAction.class, "LBL_Ok"));
-            okButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SendJMSMessageAction.class, "ACSD_Ok"));
-            JButton cancelButton = new JButton();
-            cancelButton.setText(NbBundle.getMessage(SendJMSMessageAction.class, "LBL_Cancel"));
-            cancelButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SendJMSMessageAction.class, "ACSD_Cancel"));
             ElementHandle<TypeElement> beanClass = _RetoucheUtil.getJavaClassFromNode(nodes[0]);
             FileObject srcFile = nodes[0].getLookup().lookup(FileObject.class);
             Project enterpriseProject = FileOwnerQuery.getOwner(srcFile);
             EnterpriseReferenceContainer erc = enterpriseProject.getLookup().lookup(EnterpriseReferenceContainer.class);
-        
-            MessageDestinationPanel panel = new MessageDestinationPanel(okButton, erc.getServiceLocatorName());
+            J2eeModuleProvider provider = enterpriseProject.getLookup().lookup(J2eeModuleProvider.class);
+            
+            MessageDestinationUiSupport.DestinationsHolder holder = 
+                    SendJMSMessageUiSupport.getDestinations(provider);
+            SendJmsMessagePanel sendJmsMessagePanel = SendJmsMessagePanel.newInstance(
+                    provider,
+                    holder.getModuleDestinations(),
+                    holder.getServerDestinations(),
+                    SendJMSMessageUiSupport.getMdbs(),
+                    erc.getServiceLocatorName());
             final DialogDescriptor dialogDescriptor = new DialogDescriptor(
-                    panel,
-                    NbBundle.getMessage(SendJMSMessageAction.class,"LBL_SelectMessageDestination"),
+                    sendJmsMessagePanel,
+                    NbBundle.getMessage(SendJMSMessageAction.class,"LBL_SendJmsMessage"),
                     true,
                     DialogDescriptor.OK_CANCEL_OPTION,
                     DialogDescriptor.OK_OPTION,
                     DialogDescriptor.DEFAULT_ALIGN,
-                    new HelpCtx(MessageDestinationPanel.class),
-                    null
-                    );
+                    new HelpCtx(SendJMSMessageAction.class),
+                    null);
             
-            panel.addPropertyChangeListener(new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (evt.getPropertyName().equals(MessageDestinationPanel.IS_VALID)) {
-                        Object newvalue = evt.getNewValue();
-                        if ((newvalue != null) && (newvalue instanceof Boolean)) {
-                            dialogDescriptor.setValid(((Boolean)newvalue).booleanValue());
+            sendJmsMessagePanel.addPropertyChangeListener(SendJmsMessagePanel.IS_VALID,
+                    new PropertyChangeListener() {
+                        public void propertyChange(PropertyChangeEvent evt) {
+                            Object newvalue = evt.getNewValue();
+                            if ((newvalue != null) && (newvalue instanceof Boolean)) {
+                                dialogDescriptor.setValid(((Boolean)newvalue).booleanValue());
+                            }
                         }
-                    }
-                }
-            });
-            panel.checkDestination();
+                    });
+            // initial invalidation
+            dialogDescriptor.setValid(false);
 
-            Object button = DialogDisplayer.getDefault().notify(dialogDescriptor);
-            if (button != DialogDescriptor.OK_OPTION) {
+            Object option = DialogDisplayer.getDefault().notify(dialogDescriptor);
+            if (option != DialogDescriptor.OK_OPTION) {
                 return;
             }
             
-            JMSDestination destination = panel.getSelectedDestination();
-            String serviceLocator = panel.getServiceLocator();
+            String serviceLocator = sendJmsMessagePanel.getServiceLocator();
             ServiceLocatorStrategy serviceLocatorStrategy = null;
             if (serviceLocator != null) {
                 serviceLocatorStrategy = 
-                        ServiceLocatorStrategy.create(enterpriseProject, srcFile, 
-                                                      serviceLocator);
+                        ServiceLocatorStrategy.create(enterpriseProject, srcFile, serviceLocator);
             }
             
+            MessageDestination messageDestination = sendJmsMessagePanel.getDestination();
+            // don't know if this can be removed...
+            JMSDestination destination = sendJmsMessagePanel.getJmsDestination(enterpriseProject);
             SendJMSGenerator generator = new SendJMSGenerator(destination);
             generator.genMethods(
                     erc, 
@@ -123,7 +127,7 @@ public class SendJMSMessageAction extends NodeAction {
                     srcFile, 
                     serviceLocatorStrategy,
                     enterpriseProject.getLookup().lookup(J2eeModuleProvider.class),
-                    panel.getDestination());
+                    messageDestination);
             if (serviceLocator != null) {
                 erc.setServiceLocatorName(serviceLocator);
             }

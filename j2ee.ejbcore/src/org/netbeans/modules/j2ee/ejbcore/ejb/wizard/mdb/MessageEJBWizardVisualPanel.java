@@ -126,13 +126,8 @@ public class MessageEJBWizardVisualPanel extends javax.swing.JPanel {
     }
    
     private void handleComboBoxes() {
-        if (projectDestinationsRadio.isSelected()) {
-            projectDestinationsCombo.setEnabled(true);
-            serverDestinationsCombo.setEnabled(false);
-        } else {
-            projectDestinationsCombo.setEnabled(false);
-            serverDestinationsCombo.setEnabled(true);
-        }
+        projectDestinationsCombo.setEnabled(projectDestinationsRadio.isSelected());
+        serverDestinationsCombo.setEnabled(serverDestinationsRadio.isSelected());
     }
     
     private void populate() {

@@ -52,14 +52,10 @@ import org.openide.util.NbBundle;
  * This class contains only static methods.
  * @author Tomas Mysik
  */
-public class MessageDestinationUiSupport {
-    
-    // do not create instance of this helper class
-    private MessageDestinationUiSupport() {
-    }
+public abstract class MessageDestinationUiSupport {
     
     /**
-     * Get module nad server message destinations.
+     * Get module and server message destinations.
      * <p>
      * <b>Destinations are fetched asynchronously.</b>
      * @param j2eeModuleProvider 
@@ -92,7 +88,7 @@ public class MessageDestinationUiSupport {
     }
  
     /**
-     * Populate given combo box withe given message destinations.
+     * Populate given combo box with given message destinations.
      * @param destinations message destinations for given combo box.
      * @param comboBox combo box to populate.
      * @param selectedItem combo box item to be selected. If it's <code>null</code> no item selection is done.
