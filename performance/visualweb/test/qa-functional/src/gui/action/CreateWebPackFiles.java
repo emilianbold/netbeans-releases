@@ -100,7 +100,7 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
         expectedTime = 1000;
         WAIT_AFTER_OPEN=5000;
 	docname = "CSSTable"; //NOI18N
-        doccategory = "XML"; //NOI18N
+        doccategory = "Web"; //NOI18N
         doctype = "Cascading Style Sheet"; //NOI18N
 	docfolder = "web" + java.io.File.separatorChar + "resources"; // NOI18N
 	suffix = ".css";
