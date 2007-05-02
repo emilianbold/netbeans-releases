@@ -42,18 +42,18 @@ to the number of characters in the <code>columns</code> property.</li>
 </ul>
 <p>The File upload component uses a filter, a <code>com.sun.webui.jsf.util.UploadFilter</code> object that is configured for you in the  web application's deployment descriptor. The <code>UploadFilter</code> uses the Apache commons <code>fileupload</code> package. You might need to change these settings in the following two cases: </p>
 <ul>
-  <li>The server holds the uploaded file in memory unless it exceeds 4096 bytes; otherwise, the server holds the file contents in a temporary file. You can change this threshold by modifying the <code>sizeThreshold</code> parameter for the <code>UploadFilter</code> filter entry in the web application's <code>web.xml</code> file, as described <a href="#editfilters">below</a>.</li>
+  <li>The server holds the uploaded file in memory unless it exceeds 4096 bytes; otherwise, the server holds the file contents in a temporary file. You can change this threshold by modifying the <code>sizeThreshold</code> parameter for the <code>UploadFilter</code> filter entry in the web application's <code>web.xml</code> file, as described <a href="#editfilter">below</a>.</li>
   <li> By default, the File Upload component can handle files up to one
 megabyte in size. You can change the maximum file size by modifying the
-  <code>maxSize</code> parameter for the <code>UploadFilter</code> filter entry in the application's <code>web.xml</code> file, as described <a href="#editfilters">below</a>. 
+  <code>maxSize</code> parameter for the <code>UploadFilter</code> filter entry in the application's <code>web.xml</code> file, as described <a href="#editfilter">below</a>. 
   <ul class="warning">
     <li>
       <div>A negative value for the
-        <code>maxSize</code> parameter indicates that there is no file size limit. Setting the parameter to a negative value is not recommended for security reasons.&nbsp; For example, if you allow unlimited file sizes, a malicious user could mount a denial of service attack on your site by using extremely large files<a name="editfilter"></a></div>
+        <code>maxSize</code> parameter indicates that there is no file size limit. Setting the parameter to a negative value is not recommended for security reasons.&nbsp; For example, if you allow unlimited file sizes, a malicious user could mount a denial of service attack on your site by using extremely large files.</div>
       </li>
   </ul>
   </li>
-  <li>To change the settings for the <code>UploadFilter</code> object in the <code>web.xml</code> file: </li>
+  <li>To<a name="editfilter"></a> change the settings for the <code>UploadFilter</code> object in the <code>web.xml</code> file: </li>
   <ol>
     <li>In the Files window, expand <i>project-name</i> &gt; web &gt; WEB-INF.</li>
     <li> Double-click the web.xml node to open the file in the XML editor.</li>

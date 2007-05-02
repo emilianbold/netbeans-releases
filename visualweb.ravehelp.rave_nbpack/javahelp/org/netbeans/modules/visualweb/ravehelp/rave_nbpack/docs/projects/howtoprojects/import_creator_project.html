@@ -29,64 +29,70 @@
 <ul class="note">
   <li>If you do not have the target server set correctly, the IDE prompts you to do so. Right-click the project in the Projects window and choose Resolve Missing Server Problem.</li>
 </ul>
-<b>To import a Java Studio Creator  2 project:</b>
+<b>To import a Java Studio Creator 2 project:</b>
 <ol>
   <li>In the main toolbar, choose Open Project and browse for the  project that you want to import. 
-    <ul class="warning">
-  <li>Before you open the existing project in the Visual Web Pack, the IDE prompts you to make a backup of your project. When you import and change a Java Studio Creator  project in the Visual Web Pack, you may no longer use the project in Java Studio Creator 2. When you have made a copy of the project, click OK to continue. </li>
+<ul class="warning">
+<li>Before you open the existing project in the Visual Web Pack, the IDE prompts you to make a backup of your project. When you import and change a Java Studio Creator  project in the Visual Web Pack, you may no longer use the project in Java Studio Creator 2. When you have made a copy of the project, click OK to continue. </li>
 </ul></li>
-  <li>Click Open Project Folder to open the project in the IDE. <p>
-    The IDE scans the project classpath.</p></li>
-  <li>Restart the IDE.</li>
-  
-  
-  <li>In the Runtime Window, expand the Databases node <img src="../../images/databasenodeicon.gif" width="17" height="15">, and then right-click the node of the database you want to use and choose Connect. <p>The IDE prompts you to enter a password for the database.</p>
-  </li>
-  <li>In the Projects window, expand the project node, right-click the Data Source References node, and choose Refresh.
-  <p>If there are unresolved data sources, a red broken badge <img src="../../images/data_src_ref_node.gif" text="data source reference node icon">&nbsp;is displayed on the Data Source References node.
-</p>
-<ul class="note">
-    <li>If more than one project is imported that uses the same data source,
-right-click the Data Source
-References node and choose  Resolve Data Source(s) to  add JNDI resources for the Sun Java System Application
-Server.</li>
-  </ul>
- </li>
-  <li>If there are unresolved data sources, right-click the Data Source References node and choose Resolve Data Source(s). 
+
+<li>Click Open Project Folder to open the project in the IDE. 
+<p>The IDE scans the project classpath.</p></li>
+
+<li>Restart the IDE.</li>
+   
+<li>In the Runtime Window, expand the Databases node <img src="../../images/databasenodeicon.gif" alt="database node icon">, and then right-click the node of the database you want to use and choose Connect. 
+<p>The IDE prompts you to enter a password for the database.</p>
+</li>
+
+<li>
+In the Projects window, expand the project node, right-click the Data Source References node, and choose Refresh.  
+<p>If there are unresolved data sources, a red broken badge <img src="../../images/data_src_ref_node.gif" alt="data source reference node icon with broken badge">&nbsp; is displayed on the Data Source References node.</p>
+<ul class="note"><li>If more than one project is imported that uses the same data source,
+right-click the Data Source References node and choose Resolve Data Source(s) to add JNDI resources for the Sun Java System Application Server.</li></ul>
+</li>
+
+<li>
+If there are unresolved data sources, right-click the Data Source References node and choose Resolve Data Source(s). 
     <p>The Data Source References node turns red and the Resolve Data Source(s) dialog box opens.
-</p>
-<ul class-"note>
-      <li>When you choose Refresh or  Resolve Data Source(s) on the pop-up menu, it
+
+<ul class="note">
+      <li>When you choose Refresh or Resolve Data Source(s) from the pop-up menu, it
 takes time to determine the status of the project's data sources, so the mouse
 cursor changes to a wait cursor.</li>
     </ul>
   </li>
-  <li>In the Resolve Data Source(s) dialog box, select the database name from the list and click Add Data Connection.<p>
-  The <a href="../../ui_elements/dialogs/add_database_conn_db.html">Add Database Connection</a> dialog box opens. <ul class="note">
-    <li>If the project you are importing uses a Java DB database, go to step 14.
-      <p></p></li>
-  </ul></li>
-  <li>To add a new server type, in the Server Type drop-down list, select Add Server Type.<p>
-  The<a href="../../ui_elements/dialogs/edit_database_svr_types_db.html"> Edit Database Server Types</a> dialog box opens</p></li>
-  <li>Click New and browse for the database driver JAR file. <p>
-  The driver JAR file then appears in the JDBC Driver Jar File(s) pane. </p></li>
-  <li>If nothing appears in the Driver Class Name field, click Suggest.<p>
-    The IDE suggests the best possible driver class name for the driver.</p></li>
-  <li>    If nothing appears in the URL Template field, type the URL template for the database connection. Follow the example that is provided.
+<li>In the Resolve Data Source(s) dialog box, select the database name from the list and click Add Data Connection.
+<p>The <a href="../../ui_elements/dialogs/add_database_conn_db.html">Add Database Connection</a> dialog box opens.</p> 
+<ul class="note">
+    <li>If the project you are importing uses a Java DB database, go to step 14.</li>
+  </ul>
+
+
+  <li>To add a new server type, in the Server Type drop-down list, select Add Server Type.
+<p>The <a href="../../ui_elements/dialogs/edit_database_svr_types_db.html">Edit Database Server Types</a> dialog box opens</p></li>
+
+  <li>Click New and browse for the database driver JAR file. 
+<p>The driver JAR file then appears in the JDBC Driver Jar File(s) pane. </p></li>
+
+<li>If nothing appears in the Driver Class Name field, click Suggest.
+<p>The IDE suggests the best possible driver class name for the driver.</p></li>
+
+<li>If nothing appears in the URL Template field, type the URL template for the database connection. Follow the example that is provided.
     <ul class="note">
     <li>For Java DB databases, the URL should look like this:  
       <code>jdbc:derby://localhost:1527/travel</code>.</li>  
   </ul>
   </li>
-  <li>Click Close. <p>
-      The Add Data Connection dialog box opens.</p></li>
+
+  <li>Click Close. <p>The Add Data Connection dialog box opens.</p></li>
 	  
     
       <li>Select the server type from the drop-down list. </li>
       <li>Enter a User ID and a Password.<ul class="note">
         <li>For Java DB databases, the password is the same as the User ID. For example, for the Travel sample database the user name is <code>travel</code> and the password is <code>travel</code>. </li>
       </ul><p></p></li>
-      <li>Enter the Database URL and click  Add to add the Data Source.<p></li>
+      <li>Enter the Database URL and click  Add to add the Data Source.</li>
      
 </ol>
 <ul class="note">
