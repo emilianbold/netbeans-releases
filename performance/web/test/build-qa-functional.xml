@@ -1,0 +1,204 @@
+<?xml version="1.0"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="Web Functional and Performance Tests" basedir="." default="all">
+    
+    <!-- Root folders -->
+    <property name="nball.dir" location="../../../../nb_all"/>
+    <property name="nbextra.dir" location="../../../../nbextra"/>
+    <property environment="env"/>
+
+    <!-- Imports default qa-functional-compiler and runidetes executor.
+        jemmy and jellytools jars are on classpath for both. -->
+    <import file="${nball.dir}/nbbuild/templates/xtest-qa-functional.xml"/>
+    <import file="../../../performance/performancetestutilities/dist/build-performance-tests.xml"/>
+    
+
+    <!-- Creates an empty Java project in IDE -->
+    <!-- <property name="xtest.ide.create.project" value="true"/> -->
+    <!-- Opens project at specified location -->
+    <!--
+    <property name="xtest.ide.open.project" location="${xtest.data}/SampleProject"/>
+    -->
+
+    <!-- ========= -->
+    <!-- Compilers -->
+    <!-- ========= -->
+
+    <target name="qa-perf-compiler" depends="init,init-cp,build-performance">
+        <buildTests srcdir="qa-functional/src" compileexcludes="**/data/**,org/**">
+            <classpath>
+                <path refid="test.qa-functional.compile.cp"/>
+           </classpath>
+        </buildTests>
+    </target>
+
+    <target name="check-perf-classes">
+        <available file="../../../performance/build/test/qa-functional/classes" property="perf.classes.exist" type="dir"/>
+    </target>
+    
+    <target name="build-performance" unless="perf.classes.exist" depends="check-perf-classes">
+	<java classname="org.apache.tools.ant.Main" dir="../../../performance/test" failonerror="true" fork="true">
+          <jvmarg value="-Dant.home=${ant.home}"/>
+          <arg value="buildtests"/>
+          <arg value="-Dxtest.testtype=qa-functional"/>
+          <arg value="-Dxtest.attribs=all"/>
+          <arg value="-Dxtest.home=${xtest.home}"/>
+          <arg value="-Dnetbeans.dest.dir=${netbeans.dest.dir}"/>
+	  <classpath path="${java.class.path}"/>
+        </java>
+    </target>
+
+    
+    <path id="perf.util">
+        <pathelement location="lib/util.jar"/>
+    </path>
+    
+    <!-- Setting command line -->
+    <target name="ide_command_line_suffix">
+        <!--  Repeat performance test more than once -->
+        <property name="perf.cfg" value="-J-Dorg.netbeans.performance.repeat=3 -J-Dorg.netbeans.performance.memory.usage.log=true"/>
+        <property name="reg.home" value="-J-Dorg.netbeans.modules.tomcat.autoregister.catalinaHome=${xtest.tmpdir}/apache-tomcat-${tomcat_version}" />
+        <property name="reg.token" value="-J-Dorg.netbeans.modules.tomcat.autoregister.token=1" />
+        <property name="xtest.ide.commandline.suffix" value="${perf.cfg} ${reg.home} ${reg.token}"/>
+    </target>
+    
+    <!-- ========= -->
+    <!-- Executors -->
+    <!-- ========= -->
+    
+    <!-- This target executes tests inside IDE. It is defined in default-build-qa-functional.xml.
+         If you need to customize it, you can uncomment the following and override it.
+    <target name="runidetest">        
+        <executeTests  pluginName="ide">
+            <classpath>
+                <path refid="jemmy.and.jelly.path"/>  
+            </classpath>
+        </executeTests>
+    </target>
+    -->
+    
+    <!-- ===================== -->
+    <!-- Performance Executors -->
+    <!-- ===================== -->
+    
+    <target name="copy_unzip_test_folder_web_project">
+        <unzip src="qa-functional/data/PerformanceTestFolderWebApp.zip" dest="${xtest.tmpdir}/"/>
+    </target>
+
+    <property name="tomcat.ext.dir" location="${nball.dir}/tomcatint/external"/>
+    <import file="${tomcat.ext.dir}/build.xml"/>
+    
+    <property name="tomcat.home" value="${xtest.tmpdir}/apache-tomcat-${tomcat_version}"/>
+    
+    <target name="install-tomcat" depends="init">
+        <delete dir="${tomcat.home}" quiet="true"/>
+        <unzip src="${tomcat.ext.dir}/apache-tomcat-${tomcat_version}.zip" dest="${xtest.tmpdir}/"/>
+        <!-- <Workaround> for issue #102127 -->
+        <copy todir="${tomcat.home}/common/lib">
+            <fileset dir="qa-functional/data">
+                <include name="org-netbeans-modules-web-httpmonitor.jar"/>
+                <include name="org-netbeans-modules-schema2beans.jar"/>
+            </fileset>
+        </copy>
+        <!-- </Workaround> -->
+        <chmod dir="${tomcat.home}/bin" perm="ugo+rx" includes="**/*.sh"/>
+    </target>
+    
+    <!--Executor for IDE test -->
+    <!-- This target is executed from test-executor in newly created Project -->
+    <!-- Name of this task is defined in cfg-xxx.xml -->
+    <!-- This target executes tests inside IDE -->
+    <target name="runidesetup" depends="init,init-cp,install-tomcat,copy_unzip_test_folder_project,copy_unzip_test_folder_web_project">
+        <antcall target="copy_released_ide_cfg_file"/>
+        <executeTests pluginName="ide">
+            <classpath refid="jemmy.and.jelly.path"/>
+            <classpath location="${test.qa-functional.run.cp.extra}"/>
+            <property name="xtest.timeout" value="7200000" />
+        </executeTests>
+        <!-- save copy of current Userdir -->
+        <copy todir="${xtest.workdir}/sys/ide_backup">
+          <fileset dir="${xtest.workdir}/sys/ide"/>
+        </copy>
+
+        <antcall target="copy_original_ide_cfg_file"/>
+    </target>
+
+    <!-- Executor for performance tests -->
+    <target name="runide_performance" depends="init,init-cp,ide_command_line_suffix">
+        <delete dir="${xtest.workdir}/sys/ide"/>
+        <copy todir="${xtest.workdir}/sys/ide">
+            <fileset dir="${xtest.workdir}/sys/ide_backup"/>
+        </copy>
+        <antcall target="copy_released_ide_cfg_file"/>
+
+        <executeTests pluginName="ide">
+            <classpath refid="jemmy.and.jelly.path"/>
+            <classpath location="${test.qa-functional.run.cp.extra}"/>
+            <property name="xtest.enable.assertions" value="false" />
+            <property name="xtest.ide.reuse.userdir" value="true"/>
+            <property name="xtest.timeout" value="7200000" />
+        </executeTests>
+
+        <antcall target="copy_original_ide_cfg_file"/>
+    </target>
+
+    <!-- Executor for Measure Complex Startup Time - prepare -->
+    <target name="runcodetest_measure_complex_startup_prepare" depends="init,init-cp,copy_unzip_jedit_project">
+        <antcall target="copy_released_ide_cfg_file"/>
+        <executeTests pluginName="ide">
+            <classpath refid="jemmy.and.jelly.path"/>
+            <property name="xtest.enable.assertions" value="false" />
+            <!-- Opens project at specified location -->
+            <property name="xtest.ide.open.project" location="${xtest.tmpdir}/jEdit41"/>
+            <property name="xtest.timeout" value="1800000" />
+        </executeTests>
+        <antcall target="copy_original_ide_cfg_file"/>
+    </target>
+
+    <!-- Executor for Measure Complex Startup Time -->
+    <target name="runcodetest_measure_complex_startup" depends="init-cp,make_netbeans_executable">
+        <antcall target="copy_released_ide_cfg_file"/>
+        <executeTests pluginName="jvm">
+            <property name="xtest.enable.assertions" value="false" />
+            <property name="xtest.ide.reuse.userdir" value="true"/>
+            <property name="xtest.userdata|netbeans.dest.dir" value="${netbeans.dest.dir}"/>
+            <property name="xtest.userdata|userdir.prepared" value="${xtest.workdir}"/>
+            <property name="xtest.userdata|performance.testutilities.dist.jar" value="${performance.testutilities.dist.jar}"/>
+            <!-- Property for repeatedly used userdir with opened files -->
+            <property name="xtest.userdata|org.netbeans.performance.repeat" value="5"/>
+        </executeTests>
+        <copy todir="${xtest.sketchpad}">
+            <fileset dir="${xtest.workdir}/sys/ide/var/log"/>
+        </copy>
+        <antcall target="copy_original_ide_cfg_file"/>
+    </target>
+    
+    <!-- ================= -->
+    <!-- Performance Utils -->
+    <!-- ================= -->
+
+    <!-- Make ide executable -->
+    <target name="make_netbeans_executable">
+        <chmod perm="ugo+rx" file="${netbeans.dest.dir}/bin/netbeans"/>
+        <chmod perm="ugo+rx" dir="${netbeans.dest.dir}" includes="platform?/lib/nbexec"/>
+    </target>    
+</project>
+
