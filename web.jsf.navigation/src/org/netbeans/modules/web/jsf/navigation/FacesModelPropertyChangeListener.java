@@ -118,8 +118,8 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
     //    private final void replaceFromViewIdToViewIdEventHandler(String oldName, String newName, boolean possibleRefactor) {
     private final void replaceFromViewIdToViewIdEventHandler(String oldName, String newName) {
         /* Going to have to do this another day. */
-        PageFlowNode oldPageNode = pfc.getPageName2Node(oldName);
-        PageFlowNode newPageNode = pfc.getPageName2Node(newName);
+        Page oldPageNode = pfc.getPageName2Node(oldName);
+        Page newPageNode = pfc.getPageName2Node(newName);
         boolean isNewPageLinked = false;
         if( newPageNode != null && view.getNodeEdges(newPageNode).size() > 0 ){
             /* This tells me that the new page already exists.*/
@@ -174,7 +174,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
                 
                 String toPage = caseNode.getToViewId();
                 if( toPage != null ) {
-                    PageFlowNode pageNode = pfc.getPageName2Node(toPage);
+                    Page pageNode = pfc.getPageName2Node(toPage);
                     if( pageNode != null && !pfc.isPageInFacesConfig(toPage)){
                         if( !pageNode.isDataNode() || PageFlowUtilities.getInstance().getCurrentScope() == PageFlowUtilities.LBL_SCOPE_FACESCONFIG){
                             view.removeNodeWithEdges(pageNode);
@@ -195,7 +195,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
             String fromPage = pfc.removeNavRule2String(myOldRule);
             
             if( fromPage != null ){
-                PageFlowNode pageNode = pfc.getPageName2Node(fromPage);
+                Page pageNode = pfc.getPageName2Node(fromPage);
                 if( pageNode != null && !pfc.isPageInFacesConfig(fromPage)){
                     if( !pageNode.isDataNode() || PageFlowUtilities.getInstance().getCurrentScope() == PageFlowUtilities.LBL_SCOPE_FACESCONFIG){
                         view.removeNodeWithEdges(pageNode);

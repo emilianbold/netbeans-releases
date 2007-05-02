@@ -63,7 +63,7 @@ import org.netbeans.api.visual.vmd.VMDPinWidget;
 import org.netbeans.api.visual.widget.ImageWidget;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.modules.web.jsf.navigation.NavigationCaseNode;
-import org.netbeans.modules.web.jsf.navigation.PageFlowNode;
+import org.netbeans.modules.web.jsf.navigation.Page;
 import org.netbeans.modules.web.jsf.navigation.PageFlowView;
 import org.netbeans.modules.web.jsf.navigation.PinNode;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.MapActionUtility;
@@ -89,7 +89,7 @@ import org.openide.util.actions.SystemAction;
  * @author Joelle Lam
  */
 // TODO - remove popup menu action
-public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNode, PinNode> {
+public class PageFlowScene extends GraphPinScene<Page, NavigationCaseNode, PinNode> {
     
     private LayerWidget backgroundLayer = new LayerWidget(this);
     private LayerWidget mainLayer = new LayerWidget(this);
@@ -228,7 +228,7 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
      * @param node the node
      * @return the widget attached to the node, will return null if
      */
-    protected Widget attachNodeWidget(PageFlowNode node) {
+    protected Widget attachNodeWidget(Page node) {
         assert node != null;
         VMDNodeWidget nodeWidget = new VMDNodeWidget(this);
         String displayName = node.getDisplayName();
@@ -277,10 +277,10 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
     public void saveLocations() {
         pageFlowSceneGraphLayout.saveLocations();
     }
-    public void saveLocation(PageFlowNode pageNode, String newDisplayName){
+    public void saveLocation(Page pageNode, String newDisplayName){
         pageFlowSceneGraphLayout.saveLocation(pageNode,newDisplayName);
     }
-    public void saveLocation(PageFlowNode pageNode, Point  newPoint){
+    public void saveLocation(Page pageNode, Point  newPoint){
         pageFlowSceneGraphLayout.saveLocation(pageNode,newPoint);
     }
     private PageFlowSceneGraphLayout pageFlowSceneGraphLayout = new PageFlowSceneGraphLayout(this);
@@ -313,7 +313,7 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
     private Queue emptyPositions = new LinkedList();
     
     @Override
-    protected void detachNodeWidget(PageFlowNode node,
+    protected void detachNodeWidget(Page node,
             Widget widget) {
         //        Point p = widget.getPreferredLocation();
         //        if ( (p.getX() - BORDER_OFFSET) %
@@ -347,7 +347,7 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
      * @param pageNode
      * @return
      */
-    public PinNode getDefaultPin( PageFlowNode pageNode ){
+    public PinNode getDefaultPin( Page pageNode ){
         Collection<PinNode> pins = getNodePins(pageNode);
         if( pins == null ){
             System.err.println("Node is null?: " + pageNode);
@@ -367,7 +367,7 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
      * @param pinNode
      * @return the widget attached to the pin, null, if it is a default pin
      */
-    protected Widget attachPinWidget(PageFlowNode node, PinNode pinNode) {
+    protected Widget attachPinWidget(Page node, PinNode pinNode) {
         assert node != null;
         
         if( pinNode.isDefault() ){
@@ -544,12 +544,12 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
             return true;
         }
         public String getText(Widget widget) {
-            PageFlowNode pageNode = (PageFlowNode)findObject(nodeWidget);
+            Page pageNode = (Page)findObject(nodeWidget);
             return pageNode.getName();
         }
         public void setText(Widget widget, String text) {
             
-            PageFlowNode pageNode = (PageFlowNode)findObject(nodeWidget);
+            Page pageNode = (Page)findObject(nodeWidget);
             if ( pageNode.canRename() && !text.equals(pageNode.getName())) {
                 
                 //Explicitly declared oldName and newName for ease of reading.

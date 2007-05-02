@@ -34,7 +34,7 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
 import org.netbeans.modules.web.jsf.navigation.PageFlowController;
-import org.netbeans.modules.web.jsf.navigation.PageFlowNode;
+import org.netbeans.modules.web.jsf.navigation.Page;
 import org.netbeans.modules.web.jsf.navigation.PinNode;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 
@@ -45,8 +45,8 @@ import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 public class LinkCreateProvider implements ConnectProvider {
     
     private PageFlowScene graphScene;
-    PageFlowNode source = null;
-    PageFlowNode target = null;
+    Page source = null;
+    Page target = null;
     PinNode pinNode = null;
     
     /**
@@ -67,7 +67,7 @@ public class LinkCreateProvider implements ConnectProvider {
             pinNode = (PinNode)object;
             source = pinNode.getPageFlowNode();
         } else if ( graphScene.isNode(object) ){
-            source = (PageFlowNode)object;
+            source = (Page)object;
         }
         
         return source != null;
@@ -77,7 +77,7 @@ public class LinkCreateProvider implements ConnectProvider {
     public ConnectorState isTargetWidget(Widget sourceWidget, Widget targetWidget) {
         target = null;
         Object object = graphScene.findObject(targetWidget);
-        target = graphScene.isNode(object) ? (PageFlowNode) object : null;
+        target = graphScene.isNode(object) ? (Page) object : null;
         if (target != null)
             return ConnectorState.ACCEPT;
         return object != null ? ConnectorState.REJECT_AND_STOP : ConnectorState.REJECT;

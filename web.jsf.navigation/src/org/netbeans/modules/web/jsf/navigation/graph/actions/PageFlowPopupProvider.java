@@ -34,7 +34,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import org.netbeans.api.visual.action.PopupMenuProvider;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.web.jsf.navigation.PageFlowNode;
+import org.netbeans.modules.web.jsf.navigation.Page;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -91,8 +91,8 @@ public class PageFlowPopupProvider implements PopupMenuProvider {
             
 //          Node nodes[] = tc.getActivatedNodes();
             
-            if( obj instanceof PageFlowNode ) {
-                PageFlowNode pageNode = (PageFlowNode)obj;
+            if( obj instanceof Page ) {
+                Page pageNode = (Page)obj;
                 Action[] actions;
                 Action[] pageNodeActions = pageNode.getActions(true);
                 Action[] fileSystemActions = SystemFileSystemSupport.getActions(PATH_PAGEFLOW_NODE_ACTIONS);

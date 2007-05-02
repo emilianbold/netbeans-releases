@@ -72,7 +72,7 @@ public class PageFlowController {
     /**
      * Temporarily Make Public for Work Around.
      */
-    private final HashMap<String,PageFlowNode> pageName2Node = new HashMap<String,PageFlowNode>();  //Should this be synchronized.
+    private final HashMap<String,Page> pageName2Node = new HashMap<String,Page>();  //Should this be synchronized.
     
     private static final String DEFAULT_DOC_BASE_FOLDER = "web"; //NOI18NF
     
@@ -153,7 +153,7 @@ public class PageFlowController {
      * @param pinNode if null then it was not conntect to a pin.
      * @return
      */
-    public NavigationCase createLink(PageFlowNode source, PageFlowNode target, PinNode pinNode) {
+    public NavigationCase createLink(Page source,Page target, PinNode pinNode) {
         
         String sourceName = source.getDisplayName();
         int caseNum = 1;
@@ -201,7 +201,7 @@ public class PageFlowController {
         return navCase;
     }
     
-    public void updatePageItems( PageFlowNode pageNode ) {
+    public void updatePageItems( Page pageNode ) {
         view.resetNodeWidget(pageNode, true);
         view.validateGraph();
     }
@@ -384,8 +384,8 @@ public class PageFlowController {
     
     public java.util.Stack<String> PageFlowCreationStack = new java.util.Stack<String>();
     int PageFlowCreationCount = 0;
-    public PageFlowNode createPageFlowNode(Node node) {
-        PageFlowNode pageNode =  new PageFlowNode(this, node);
+    public Page createPageFlowNode(Node node) {
+        Page pageNode =  new Page(this, node);
         Calendar rightNow = Calendar.getInstance();
         PageFlowCreationStack.push("\n" + PageFlowCreationCount + ". " + rightNow.get(Calendar.MINUTE)+ ":" + rightNow.get(Calendar.SECOND) + " -  " + pageNode);
         PageFlowCreationCount++;
@@ -394,7 +394,7 @@ public class PageFlowController {
     }
     public java.util.Stack<String> PageFlowDestroyStack = new java.util.Stack<String>();
     int PageFlowDestroyCount = 0;
-    public void destroyPageFlowNode(PageFlowNode pageNode){
+    public void destroyPageFlowNode(Page pageNode){
         pageNode.destroy2();
         Calendar rightNow = Calendar.getInstance();
         PageFlowDestroyStack.push("\n" + PageFlowDestroyCount + ". " + rightNow.get(Calendar.MINUTE)+ ":" + rightNow.get(Calendar.SECOND) + " -  " + pageNode);
@@ -410,8 +410,8 @@ public class PageFlowController {
         for( FileObject webFile : webFiles ) {
             try {
                 //DISPLAYNAME:
-                String webFileName = PageFlowNode.getFolderDisplayName(getWebFolder(), webFile);
-                PageFlowNode node = null;
+                String webFileName = Page.getFolderDisplayName(getWebFolder(), webFile);
+                Page node = null;
                 node = createPageFlowNode((DataObject.find(webFile)).getNodeDelegate());
                 view.createNode(node, null, null);
                 //Do not remove the webFile page until it has been created with a data Node.  If the dataNode throws and exception, then it can be created with an Abstract node.
@@ -428,7 +428,7 @@ public class PageFlowController {
             if( pageName != null ){
                 Node tmpNode = new AbstractNode(Children.LEAF);
                 tmpNode.setName(pageName);
-                PageFlowNode node = createPageFlowNode(tmpNode);
+                Page node = createPageFlowNode(tmpNode);
                 view.createNode(node, null, null);
             }
         }
@@ -441,7 +441,7 @@ public class PageFlowController {
     private FileObject getFileObject(String pageName){
         for( FileObject webFile : webFiles ) {
             //DISPLAYNAME:
-            String webFileName = PageFlowNode.getFolderDisplayName(getWebFolder(), webFile);
+            String webFileName = Page.getFolderDisplayName(getWebFolder(), webFile);
             //            String webFileName = webFile.getNameExt();
             if( webFileName.equals(pageName)) {
                 return webFile;
@@ -468,21 +468,21 @@ public class PageFlowController {
                         donfe.printStackTrace();
                     }
                 }
-                PageFlowNode node = createPageFlowNode(wrapNode);
+                Page node = createPageFlowNode(wrapNode);
                 view.createNode(node, null, null);
             }
         }
     }
     
     
-    public PageFlowNode removePageName2Node(PageFlowNode pageNode , boolean destroy ){
+    public Page removePageName2Node(Page pageNode, boolean destroy  ){
         return removePageName2Node(pageNode.getDisplayName(), destroy);
     }
     
-    public PageFlowNode removePageName2Node( String displayName, boolean destroy ) {
+    public Page removePageName2Node( String displayName, boolean destroy ) {
         printThreadInfo();
         synchronized ( pageName2Node ) {
-            PageFlowNode node = pageName2Node.remove(displayName);
+            Page node = pageName2Node.remove(displayName);
             if( destroy ) {
                 destroyPageFlowNode(node);
             }
@@ -491,10 +491,10 @@ public class PageFlowController {
         }
     }
     
-    public void replacePageName2Node(PageFlowNode node, String newName, String oldName ){
+    public void replacePageName2Node(Page node, String newName, String oldName  ){
         printThreadInfo();
         synchronized ( pageName2Node ) {
-            PageFlowNode node2 = pageName2Node.remove(oldName);
+            Page node2 = pageName2Node.remove(oldName);
             if( node == null || node2 == null ){
                 System.err.println("PageFlowEditor: Trying to add Page [" + oldName + "] but it is null.");
             }
@@ -509,13 +509,13 @@ public class PageFlowController {
             keys = new HashSet<String>(pageName2Node.keySet());
         }
         for( String key : keys ){
-            PageFlowNode node = removePageName2Node(key, true);
+            Page node = removePageName2Node(key, true);
         }
         //            pageName2Node.clear();
         //        }
     }
     
-    public void putPageName2Node(String displayName, PageFlowNode pageNode){
+    public void putPageName2Node(String displayName,Page pageNode){
         printThreadInfo();
         if( pageNode == null ){
             throw new RuntimeException("PageFlowEditor: Trying to add Page [" + displayName + "] but it is null.");
@@ -525,15 +525,15 @@ public class PageFlowController {
         }
     }
     
-    public PageFlowNode getPageName2Node(String displayName){
+    public Page getPageName2Node(String displayName){
         printThreadInfo();
         synchronized ( pageName2Node ) {
             /*
              * Begin Test
              */
-            PageFlowNode pageNode = pageName2Node.remove(displayName);
+            Page pageNode = pageName2Node.remove(displayName);
             if( pageNode != null ) {
-                PageFlowNode pageNode2 = pageName2Node.get(displayName);
+                Page pageNode2 = pageName2Node.get(displayName);
                 if( pageNode2 != null ){
                     throw new RuntimeException("Why are there two of the same page?: " + displayName +"\n PageNode1: " + pageNode + "\n PageNode2:" + pageNode2);
                 }
@@ -560,7 +560,7 @@ public class PageFlowController {
     }
     
     
-    public void removeSceneNodeEdges(PageFlowNode pageNode) {
+    public void removeSceneNodeEdges(Page pageNode) {
         
         Collection<NavigationCaseNode> navCaseNodes = view.getNodeEdges(pageNode);
         for( NavigationCaseNode navCaseNode : navCaseNodes ){
@@ -631,7 +631,7 @@ public class PageFlowController {
     }
     
     
-    public void changeToAbstractNode(PageFlowNode oldNode, String displayName ) {
+    public void changeToAbstractNode(Page oldNode, String displayName  ) {
         //1. Make Old Node an abstract node
         Node tmpNode = new AbstractNode(Children.LEAF);
         tmpNode.setName(displayName);
@@ -644,7 +644,7 @@ public class PageFlowController {
         return configDataObj;
     }
     
-    public void saveLocation(PageFlowNode node, String newDisplayName) {
+    public void saveLocation(Page node, String newDisplayName) {
         view.saveLocation(node, newDisplayName);
     }
     

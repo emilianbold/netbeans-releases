@@ -105,9 +105,9 @@ public class WebFolderListener extends FileChangeAdapter{
         }
         
         //DISPLAYNAME:
-        String pageDisplayName = PageFlowNode.getFolderDisplayName(webFolder, fileObj);
+        String pageDisplayName = Page.getFolderDisplayName(webFolder, fileObj);
         
-        PageFlowNode oldNode = pfc.getPageName2Node(pageDisplayName);
+        Page oldNode = pfc.getPageName2Node(pageDisplayName);
         if( oldNode != null ) {
             if( pfc.isPageInFacesConfig(oldNode.getDisplayName()) ) {
                 //                Node tmpNode = new AbstractNode(Children.LEAF);
@@ -135,13 +135,13 @@ public class WebFolderListener extends FileChangeAdapter{
                 Node dataNode = dataObj.getNodeDelegate();
                 //                    PageFlowNode pageNode = pageName2Node.get(dataNode.getDisplayName());
                 //DISPLAYNAME:
-                PageFlowNode pageNode = pfc.getPageName2Node(PageFlowNode.getFolderDisplayName(webFolder, fileObj));
+                Page pageNode = pfc.getPageName2Node(Page.getFolderDisplayName(webFolder, fileObj));
                 if( pageNode != null  ) {
                     pageNode.replaceWrappedNode(dataNode);
                     view.resetNodeWidget(pageNode, false);
                     view.validateGraph();
                 } else if ( PageFlowUtilities.getInstance().getCurrentScope() == PageFlowUtilities.LBL_SCOPE_PROJECT ){
-                    PageFlowNode node = pfc.createPageFlowNode(dataNode);
+                    Page node = pfc.createPageFlowNode(dataNode);
                     view.createNode(node, null, null);
                     view.validateGraph();
                 }
@@ -172,9 +172,9 @@ public class WebFolderListener extends FileChangeAdapter{
             
         } else {
             //DISPLAYNAME:
-            String newDisplayName  = PageFlowNode.getFolderDisplayName(webFolder, fileObj);
+            String newDisplayName  = Page.getFolderDisplayName(webFolder, fileObj);
             String path = fileObj.getPath().replace(fileObj.getNameExt(), "");
-            String oldDisplayName = PageFlowNode.getFolderDisplayName(webFolder, path, oldName+ "." + extName);
+            String oldDisplayName = Page.getFolderDisplayName(webFolder, path, oldName+ "." + extName);
             
             renameFile(fileObj, oldDisplayName, newDisplayName);
         }
@@ -188,7 +188,7 @@ public class WebFolderListener extends FileChangeAdapter{
             if( file.isFolder() ){
                 renameFolder( file, oldFolderName, newFolderName);
             } else {
-                String newDisplayName = PageFlowNode.getFolderDisplayName(webFolder, file);
+                String newDisplayName = Page.getFolderDisplayName(webFolder, file);
                 String oldDisplayName = newDisplayName.replaceFirst(newFolderName, oldFolderName);
                 renameFile(file, oldDisplayName, newDisplayName);
             }
@@ -199,8 +199,8 @@ public class WebFolderListener extends FileChangeAdapter{
     
     private void renameFile(FileObject fileObj, String oldDisplayName, String newDisplayName ){
         
-        PageFlowNode oldNode = pfc.getPageName2Node(oldDisplayName);        
-        PageFlowNode abstractNode = pfc.getPageName2Node(newDisplayName); // I know I do this twice, but I am trying to keep it less confusing.
+        Page oldNode = pfc.getPageName2Node(oldDisplayName);        
+        Page abstractNode = pfc.getPageName2Node(newDisplayName); // I know I do this twice, but I am trying to keep it less confusing.
         
         if ( oldNode == null && abstractNode != null ){
             /* Probably a refactoring scenario */
@@ -243,7 +243,7 @@ public class WebFolderListener extends FileChangeAdapter{
             if( pfc.isPageInFacesConfig(oldDisplayName) ){
                 pfc.changeToAbstractNode(oldNode, oldDisplayName);
                 if( PageFlowUtilities.getInstance().getCurrentScope() == PageFlowUtilities.LBL_SCOPE_PROJECT ) {
-                    PageFlowNode newNode = pfc.createPageFlowNode(newNodeDelegate);
+                    Page newNode = pfc.createPageFlowNode(newNodeDelegate);
                     view.createNode(newNode, null, null);
                 }
             } else {

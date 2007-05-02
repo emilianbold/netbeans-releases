@@ -192,8 +192,8 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
      */
     public void clearGraph() {
         //Workaround: Temporarily Wrapping Collection because of  http://www.netbeans.org/issues/show_bug.cgi?id=97496
-        Collection<PageFlowNode> nodes = new HashSet<PageFlowNode>(scene.getNodes());
-        for( PageFlowNode node : nodes ){
+        Collection<Page> nodes = new HashSet<Page>(scene.getNodes());
+        for( Page node : nodes ){
             scene.removeNodeWithEdges(node);
         }
         scene.validate();
@@ -223,7 +223,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
      * @param glyphs
      * @return
      */
-    protected VMDNodeWidget createNode( PageFlowNode pageNode, String type, List<Image> glyphs) {
+    protected VMDNodeWidget createNode( Page pageNode, String type, List<Image> glyphs) {
         assert pageNode.getDisplayName() != null;
         
         VMDNodeWidget widget = (VMDNodeWidget) scene.addNode(pageNode);
@@ -237,7 +237,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         return widget;
     }
     
-    private void setupPinsInNode( PageFlowNode pageNode ) {
+    private void setupPinsInNode( Page pageNode ) {
         Collection<PinNode> pinNodes = pageNode.getPinNodes();
         for( PinNode pinNode : pinNodes ){
             createPin( pageNode, pinNode );
@@ -252,7 +252,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
      * @param pinNode representing that page item.
      * @return
      */
-    protected VMDPinWidget createPin( PageFlowNode pageNode, PinNode pinNode ) {
+    protected VMDPinWidget createPin( Page pageNode, PinNode pinNode  ) {
         VMDPinWidget widget = (VMDPinWidget) scene.addPin(pageNode, pinNode);
         //        VMDPinWidget widget = (VMDPinWidget) graphScene.addPin(page, pin);
         //        if( navComp != null ){
@@ -268,7 +268,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
      * @param fromPageNode
      * @param toPageNode
      */
-    protected void createEdge( NavigationCaseNode navCaseNode, PageFlowNode fromPageNode, PageFlowNode toPageNode  ) {
+    protected void createEdge(  NavigationCaseNode navCaseNode,Page fromPageNode,Page toPageNode  ) {
         assert fromPageNode.getDisplayName() != null;
         assert toPageNode.getDisplayName() != null;
         
@@ -277,7 +277,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         setEdgeTargePin( navCaseNode, toPageNode );
     }
     
-    private void setEdgeSourcePin( NavigationCaseNode navCaseNode, PageFlowNode fromPageNode  ){
+    private void setEdgeSourcePin(  NavigationCaseNode navCaseNode,Page fromPageNode  ){
         PinNode sourcePin = scene.getDefaultPin( fromPageNode);
         Collection<PinNode> pinNodes = scene.getPins();
         for (PinNode pinNode : pinNodes ){
@@ -296,7 +296,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         scene.setEdgeSource(navCaseNode,  sourcePin );
     }
     
-    private void setEdgeTargePin( NavigationCaseNode navCaseNode, PageFlowNode toPageNode ){
+    private void setEdgeTargePin(  NavigationCaseNode navCaseNode,Page toPageNode ){
         PinNode targetPin = scene.getDefaultPin(toPageNode);
         //I need to remove extension so it matches the DataNode's pins.
         scene.setEdgeTarget(navCaseNode,  targetPin);
@@ -394,7 +394,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         }
     }
     
-    public void removeNodeWithEdges( PageFlowNode node ){
+    public void removeNodeWithEdges( Page node ){
         //        scene.removeNode(node);
         if ( scene.getNodes().contains(node) ){
             /* In some cases the node will already be deleted by a side effect of deleting another node.
@@ -404,7 +404,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         }
     }
     
-    public void resetNodeWidget( PageFlowNode pageNode , boolean contentItemsChanged ){
+    public void resetNodeWidget( Page pageNode, boolean contentItemsChanged  ){
         
         if( pageNode == null ){
             throw new RuntimeException("PageFlowEditor: Cannot set node to null");
@@ -436,7 +436,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         
     }
     
-    private void redrawPinsAndEdges(PageFlowNode pageNode ) {
+    private void redrawPinsAndEdges(Page pageNode ) {
         /* Gather the Edges */
         Collection<NavigationCaseNode> redrawCaseNodes = new ArrayList<NavigationCaseNode>();
         Collection<PinNode> pinNodes = new ArrayList<PinNode>( scene.getPins() );
@@ -463,7 +463,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         }
     }
     
-    public Collection<NavigationCaseNode>  getNodeEdges(PageFlowNode node ){
+    public Collection<NavigationCaseNode>  getNodeEdges(Page node ){
         Collection<NavigationCaseNode> navCases = scene.getEdges();
         Collection<NavigationCaseNode> myNavCases = new HashSet<NavigationCaseNode>();
         
@@ -478,7 +478,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         return myNavCases;
     }
     
-    public void saveLocation(PageFlowNode pageNode, String newDisplayName){
+    public void saveLocation(Page pageNode, String newDisplayName){
         scene.saveLocation(pageNode,newDisplayName);
     }
     
