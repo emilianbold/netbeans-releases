@@ -78,23 +78,23 @@ import java.util.TreeMap;
  *         Winston Prakash (bug fixes)
  */
 public class ObjectArrayDataProvider extends AbstractTableDataProvider
-    implements Serializable {
-
+        implements Serializable {
+    
     
     // ------------------------------------------------------------ Constructors
-
-
+    
+    
     /**
      * <p>Construct a new ObjectArrayDataProvider with no known data.  The
      * <code>setArray()</code> method can be used to set the contained array.</p>
      */
     public ObjectArrayDataProvider() {
-
+        
         setArray(null);
-
+        
     }
-
-
+    
+    
     /**
      * <p>Constructs a new ObjectArraytDataProvider wrapping the specified
      * array.</p>
@@ -102,12 +102,12 @@ public class ObjectArrayDataProvider extends AbstractTableDataProvider
      * @param array Array to be wrapped
      */
     public ObjectArrayDataProvider(Object array[]) {
-
+        
         setArray(array);
-
+        
     }
-
-
+    
+    
     /**
      * <p>Constructs a new ObjectArraytDataProvider wrapping the specified
      * array and value of the <code>includeFields</code> property.</p>
@@ -116,55 +116,55 @@ public class ObjectArrayDataProvider extends AbstractTableDataProvider
      * @param includeFields Desired includeFields property
      */
     public ObjectArrayDataProvider(Object array[], boolean includeFields) {
-
+        
         setArray(array);
         setIncludeFields(includeFields);
-
+        
     }
-
-
-
+    
+    
+    
     // ------------------------------------------------------ Instance Variables
-
-
+    
+    
     /**
      * <p>Storage for the array being wrapped by this data provider.</p>
      */
     private Object array[] = null;
-
-
+    
+    
     /**
      * <p>Resource bundle containing our localized messages.</p>
      */
     private transient ResourceBundle bundle = null;
-
-
+    
+    
     /**
      * <p>Storage for the <code>includeFields</code> property.  By default,
      * this is true.</p>
      */
     private boolean includeFields = true;
-
-
+    
+    
     /**
      * <p>Storage for the object type contained in this data provider.</p>
      */
     private Class objectType;
-
-
+    
+    
     // -------------------------------------------------------------- Properties
-
-
+    
+    
     /**
      * <code>Return the array that we are wrapping.</p>
      */
     public Object[] getArray() {
-
+        
         return this.array;
-
+        
     }
-
-
+    
+    
     /**
      * <p>Replace the array that we are wrapping.  In addition,
      * the <code>objectType</code> property will be reset based on the
@@ -173,7 +173,7 @@ public class ObjectArrayDataProvider extends AbstractTableDataProvider
      * @param array The new array to be wrapped
      */
     public void setArray(Object array[]) {
-
+        
         this.array = array;
         if (array != null) {
             objectType = array.getClass().getComponentType();
@@ -181,20 +181,20 @@ public class ObjectArrayDataProvider extends AbstractTableDataProvider
             objectType = null;
         }
         fireProviderChanged();
-
+        
     }
     
-   /**
+    /**
      * <p>Return the object type that this data provider contains.  This
      * determines the list of {@link FieldKey}s that this provider supplies.</p>
      */
     public Class getObjectType() {
-
+        
         return objectType;
-
+        
     }
-
-
+    
+    
     /**
      * <p>Set the object type contained in this ObjectListDataProvider.  This
      * type determines the list of public properties and fields to expose as
@@ -205,24 +205,24 @@ public class ObjectArrayDataProvider extends AbstractTableDataProvider
      *        ObjectDataProvider
      */
     public void setObjectType(Class objectType) {
-
+        
         this.objectType = objectType;
         this.support = null;
         fireProviderChanged();
-
+        
     }
-
-
+    
+    
     /**
      * <p>Return the state of the <code>includeFields</code> property.</p>
      */
     public boolean isIncludeFields() {
-
+        
         return this.includeFields;
-
+        
     }
-
-
+    
+    
     /**
      * <p>Set the <code>includeFields</code> property.  This affects the set of
      * {@link FieldKey}s that this {@link DataProvider} emits.  If the
@@ -234,19 +234,19 @@ public class ObjectArrayDataProvider extends AbstractTableDataProvider
      * @param includeFields The new include fields value
      */
     public void setIncludeFields(boolean includeFields) {
-
+        
         this.includeFields = includeFields;
         this.support = null;
-
+        
     }
-
-
+    
+    
     // ---------------------------------------------------------- Public Methods
-
-
+    
+    
     // ---------------------------------------------------- DataProvider Methods
-
-
+    
+    
     /** {@inheritDoc} */
     public FieldKey getFieldKey(String fieldId) throws DataProviderException {
         FieldKey fieldKey = null;
@@ -255,23 +255,23 @@ public class ObjectArrayDataProvider extends AbstractTableDataProvider
         }
         if (fieldKey != null){
             return fieldKey;
-        } else{    
+        } else{
             throw new IllegalArgumentException(fieldId);
         }
     }
-
-
+    
+    
     /** {@inheritDoc} */
     public FieldKey[] getFieldKeys() throws DataProviderException {
-
+        
         if (getSupport() != null) {
             return getSupport().getFieldKeys();
         }
         return FieldKey.EMPTY_ARRAY;
-
+        
     }
-
-
+    
+    
     /** {@inheritDoc} */
     public Class getType(FieldKey fieldKey) throws DataProviderException {
         if ((getSupport() == null) || (getSupport().getFieldKey(fieldKey.getFieldId()) == null)) {
@@ -280,24 +280,24 @@ public class ObjectArrayDataProvider extends AbstractTableDataProvider
             return getSupport().getType(fieldKey);
         }
     }
-
-
+    
+    
     /** {@inheritDoc} */
     public Object getValue(FieldKey fieldKey) throws DataProviderException {
-
+        
         return getValue(fieldKey, getCursorRow());
-
+        
     }
-
-
+    
+    
     /** {@inheritDoc} */
     public void setValue(FieldKey fieldKey, Object value) throws DataProviderException {
-
+        
         setValue(fieldKey, getCursorRow(), value);
-
+        
     }
-
-
+    
+    
     /** {@inheritDoc} */
     public boolean isReadOnly(FieldKey fieldKey) throws DataProviderException {
         if ((getSupport() == null) || (getSupport().getFieldKey(fieldKey.getFieldId()) == null)) {
@@ -306,25 +306,32 @@ public class ObjectArrayDataProvider extends AbstractTableDataProvider
             return getSupport().isReadOnly(fieldKey);
         }
     }
-
-
+    
+    
     // --------------------------------------- TableDataProvider Methods (Basic)
-
-
+    
+    
     /** {@inheritDoc} */
     public int getRowCount() throws DataProviderException {
-
+        if( java.beans.Beans.isDesignTime()) {
+            return 3;
+        }
+        
         if (array == null) {
             return 0;
         } else {
             return array.length;
         }
-
+        
     }
-
-
+    
+    
     /** {@inheritDoc} */
     public Object getValue(FieldKey fieldKey, RowKey rowKey) throws DataProviderException {
+        
+        if( java.beans.Beans.isDesignTime()) {
+            return AbstractDataProvider.getFakeData(getType(fieldKey));
+        }
         
         if ((getSupport() == null) || (getSupport().getFieldKey(fieldKey.getFieldId()) == null)) {
             throw new IllegalArgumentException(fieldKey.toString());
@@ -334,18 +341,13 @@ public class ObjectArrayDataProvider extends AbstractTableDataProvider
             throw new IndexOutOfBoundsException("" + rowKey);
         }
         
-        if( java.beans.Beans.isDesignTime() && (array == null || array.length == 0 ) ) {
-            // Fill the object with design time fake data
-            array = (Object[])AbstractDataProvider.getFakeData(array.getClass(), objectType);
-        }
-        
         return getSupport().getValue(fieldKey, array[getRowIndex(rowKey)]);
     }
-
-
+    
+    
     /** {@inheritDoc} */
     public void setValue(FieldKey fieldKey, RowKey rowKey, Object value) throws DataProviderException {
-
+        
         if ((getSupport() == null) || (getSupport().getFieldKey(fieldKey.getFieldId()) == null)) {
             throw new IllegalArgumentException(fieldKey.toString());
         }
@@ -358,141 +360,141 @@ public class ObjectArrayDataProvider extends AbstractTableDataProvider
         Object previous = getSupport().getValue(fieldKey, array[getRowIndex(rowKey)]);
         getSupport().setValue(fieldKey, array[getRowIndex(rowKey)], value);
         if (((previous == null) && (value != null)) ||
-            ((previous != null) && (value == null)) ||
-            ((previous != null) && (value != null) && !previous.equals(value))) {
+                ((previous != null) && (value == null)) ||
+                ((previous != null) && (value != null) && !previous.equals(value))) {
             fireValueChanged(fieldKey, rowKey, previous, value);
             fireValueChanged(fieldKey, previous, value);
         }
     }
-
+    
     // -------------------------------------- TableDataProvider Methods (Cursor)
-
-
+    
+    
     // Base class definitions are sufficient
-
-
+    
+    
     // ------------------------ TableDataProvider Methods (Append/Insert/Delete)
-
-
+    
+    
     /**
      * {@inheritDoc}
      */
     public boolean canAppendRow() throws DataProviderException {
-
+        
         return false;
-
+        
     }
-
-
+    
+    
     /**
      * {@inheritDoc}
      */
     public RowKey appendRow() throws DataProviderException {
-
+        
         throw new UnsupportedOperationException();
-
+        
     }
-
-
+    
+    
     /**
      * {@inheritDoc}
      */
     public boolean canInsertRow(RowKey beforeRow) throws DataProviderException {
-
+        
         return false;
-
+        
     }
-
-
+    
+    
     /**
      * {@inheritDoc}
      */
     public RowKey insertRow(RowKey beforeRow) throws DataProviderException {
-
+        
         throw new UnsupportedOperationException();
-
+        
     }
-
-
+    
+    
     /**
      * {@inheritDoc}
      */
     public boolean canRemoveRow(RowKey row) throws DataProviderException {
-
+        
         return false;
-
+        
     }
-
-
+    
+    
     /**
      * <p>Remove the object at the specified row from the list.</p>
      *
      * {@inheritDoc}
      */
     public void removeRow(RowKey row) throws DataProviderException {
-
+        
         throw new UnsupportedOperationException();
-
+        
     }
-
-
+    
+    
     // --------------------------------------------------------- Private Methods
-
-
+    
+    
     /**
      * <p>Return the resource bundle containing our localized messages.</p>
      */
     private ResourceBundle getBundle() {
-
+        
         if (bundle == null) {
             bundle = ResourceBundle.getBundle("com/sun/data/provider/impl/Bundle");
         }
         return bundle;
-
+        
     }
-
-
+    
+    
     /**
      * <p>Return the row index corresponding to the specified row key.</p>
      *
      * @param rowKey Row key for which to extract an index
      */
     private int getRowIndex(RowKey rowKey) throws DataProviderException {
-
+        
         return ((IndexRowKey) rowKey).getIndex();
-
+        
     }
-
-
+    
+    
     /**
      * <p>Return a suitable {@link RowKey} for the specified row index.</p>
      */
     private RowKey getRowKey(int index) throws DataProviderException {
-
+        
         return new IndexRowKey(index);
-
+        
     }
-
-
+    
+    
     /**
      * <p>The cached support object for field key manipulation.  Must be
      * transient because its content is not Serializable.</p>
      */
     private transient ObjectFieldKeySupport support = null;
-
-
+    
+    
     /**
      * <p>Return the {@link ObjectFieldKeySupport} instance for the
      * object class we are wrapping.</p>
      */
     private ObjectFieldKeySupport getSupport() {
-
+        
         if ((support == null) && (objectType != null)) {
             support = new ObjectFieldKeySupport(objectType, includeFields);
         }
         return support;
-
+        
     }
-
-
+    
+    
 }

@@ -63,11 +63,11 @@ import com.sun.data.provider.TransactionalDataProvider;
  *         Winston Prakash (bug fixes)
  */
 public class ObjectListDataProvider extends AbstractTableDataProvider
-    implements Serializable, TransactionalDataProvider {
-
+        implements Serializable, TransactionalDataProvider {
+    
     // ------------------------------------------------------------ Constructors
-
-
+    
+    
     /**
      * <p>Construct a new ObjectListDataProvider with no known object type.  The
      * <code>setObjectType()</code> method can be used to set the object type.
@@ -75,12 +75,12 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
      * type.</p>
      */
     public ObjectListDataProvider() {
-
+        
         setObjectType(null);
-
+        
     }
-
-
+    
+    
     /**
      * <p>Constructs a new ObjectListDataProvider wrapping the specified list.
      * </p>
@@ -88,12 +88,12 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
      * @param list List to be wrapped
      */
     public ObjectListDataProvider(List list) {
-
+        
         setList(list);
-
+        
     }
-
-
+    
+    
     /**
      * <p>Constructs a new ObjectListDataProvider wrapping the specified list
      * with the specified include fields flag.</p>
@@ -102,13 +102,13 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
      * @param includeFields Desired include fields property setting
      */
     public ObjectListDataProvider(List list, boolean includeFields) {
-
+        
         setList(list);
         setIncludeFields(includeFields);
-
+        
     }
-
-
+    
+    
     /**
      * <p>Constructs a new ObjectListDataProvider for the specified object type.
      * </p>
@@ -116,12 +116,12 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
      * @param objectType Desired object type Class
      */
     public ObjectListDataProvider(Class objectType) {
-
+        
         setObjectType(objectType);
-
+        
     }
-
-
+    
+    
     /**
      * <p>Constructs a new ObjectListDataProvider for the specified object type
      * and <code>includeFields</code> property value.</p>
@@ -130,16 +130,16 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
      * @param includeFields Desired include fields property setting
      */
     public ObjectListDataProvider(Class objectType, boolean includeFields) {
-
+        
         setObjectType(objectType);
         setIncludeFields(includeFields);
-
+        
     }
-
-
+    
+    
     // ------------------------------------------------------ Instance Variables
-
-
+    
+    
     /**
      * <p>List of object instances to be appended to the underlying
      * list when changes are committed.  The {@link RowKey} values
@@ -150,70 +150,70 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
      * so on.</p>
      */
     private List appends = new ArrayList();
-
-
+    
+    
     /**
      * <p>Resource bundle containing our localized messages.</p>
      */
     private transient ResourceBundle bundle = null;
-
-
+    
+    
     /**
      * <p>Set of {@link RowKey}s of rows that have been marked to be
      * deleted.  An <code>Iterator</code> over this set will return
      * the corresponding {@link RowKey}s in ascending order.</p>
      */
     private Set deletes = new TreeSet();
-
-
+    
+    
     /**
      * <p>Storage for the <code>includeFields</code> property.  By default,
      * this is true.</p>
      */
     private boolean includeFields = true;
-
-
+    
+    
     /**
      * <p>Storage for the internal list of objects wrapped by this
      * data provider.</p>
      */
     private List list = new ArrayList();
-
-
+    
+    
     /**
      * <p>Storage for the object type contained in this data provider.</p>
      */
     private Class objectType;
-
-
+    
+    
     /**
      * <p>Map keyed by {@link RowKey}, whose elements are themselves
      * Maps keyed by {@link FieldKey} of each field for which an
      * updated value has been cached.</p>
      */
     private Map updates = new HashMap();
-
-
+    
+    
     /**
      * <p>Storage for the userResizable property (default value is
      * <code>true</true>).</p>
      */
     private boolean userResizable = true;
-
-
+    
+    
     // -------------------------------------------------------------- Properties
-
-
+    
+    
     /**
      * <p>Return the state of the <code>includeFields</code> property.</p>
      */
     public boolean isIncludeFields() {
-
+        
         return this.includeFields;
-
+        
     }
-
-
+    
+    
     /**
      * <p>Set the <code>includeFields</code> property.  This affects the set of
      * {@link FieldKey}s that this {@link com.sun.data.provider.DataProvider}
@@ -225,23 +225,23 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
      * @param includeFields The new include fields value
      */
     public void setIncludeFields(boolean includeFields) {
-
+        
         this.includeFields = includeFields;
         this.support = null;
-
+        
     }
-
-
+    
+    
     /**
      * <code>Return the <code>List</code> that we are wrapping.</p>
      */
     public List getList() {
-
+        
         return this.list;
-
+        
     }
-
-
+    
+    
     /**
      * <p>Replace the <code>List</code> that we are wrapping.  In addition,
      * the <code>objectType</code> property will be reset based on the
@@ -251,7 +251,7 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
      * @param list The new list to be wrapped
      */
     public void setList(List list) {
-
+        
         this.list = list;
         if (list != null && objectType == null) {
             if (list.size() > 0) {
@@ -261,19 +261,19 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
         }
         fireProviderChanged();
     }
-
-
+    
+    
     /**
      * <p>Return the object type that this data provider contains.  This
      * determines the list of {@link FieldKey}s that this provider supplies.</p>
      */
     public Class getObjectType() {
-
+        
         return objectType;
-
+        
     }
-
-
+    
+    
     /**
      * <p>Set the object type contained in this ObjectListDataProvider.  This
      * type determines the list of public properties and fields to expose as
@@ -284,27 +284,27 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
      *        ObjectDataProvider
      */
     public void setObjectType(Class objectType) {
-
+        
         this.objectType = objectType;
         this.objectTypeConstructor = null;
         this.support = null;
         fireProviderChanged();
-
+        
     }
-
-
+    
+    
     /**
      * <p>Return the current state of the userResizable property.  Note that
      * the wrapped list will not be actually resizable unless there is a
      * public no-args constructor on the <code>objectType</code> class.</p>
      */
     public boolean isUserResizable() {
-
+        
         return this.userResizable;
-
+        
     }
-
-
+    
+    
     /**
      * <p>Set the user resizable property.  If set to <code>true</code> (the
      * default), the resizability of this ObjectListDataProvider is based on
@@ -320,30 +320,30 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
      * @see com.sun.data.provider.TableDataProvider#canInsertRow(RowKey beforeRow)
      */
     public void setUserResizable(boolean resizable) {
-
+        
         this.userResizable = resizable;
-
+        
     }
-
-
+    
+    
     // ---------------------------------------------------------- Public Methods
-
-
+    
+    
     /**
      * <p>Append the specified object to the list of contained objects.</p>
      *
      * @param object The Object to store in the list
      */
     public void addObject(Object object) {
-
+        
         if (objectType == null) {
             setObjectType(object.getClass());
         }
         appendRow(object);
-
+        
     }
-
-
+    
+    
     /**
      * <p>Add the specified object to the list of contained objects
      * at the specified row.</p>
@@ -353,7 +353,7 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
      */
     /* FIXME - inserts not currently supported
     public void addObject(RowKey row, Object object) {
-
+     
         if (objectType == null) {
             setObjectType(object.getClass());
         }
@@ -363,45 +363,45 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
         if (getCursorIndex() == index) {
             fireValueChanged(null, null, object);
         }
-
+     
     }
      */
-
-
+    
+    
     /**
      * <p>Clear the list of contained objects.</p>
      */
     // FIXME - probably remove as being redundant
     public void clearObjectList() {
-
+        
         list.clear();
         fireProviderChanged();
-
+        
     }
-
-
+    
+    
     /**
      * <p>Returns the object stored at the specified row.</p>
      *
      * @param row The desired row to retrieve the contained object from
      */
     public Object getObject(RowKey row) {
-
+        
         return list.get(getRowIndex(row));
-
+        
     }
-
-
+    
+    
     /**
      * <p>Return the contained objects as an array.</p>
      */
     public Object[] getObjects() {
-
+        
         return list.toArray(new Object[list.size()]);
-
+        
     }
-
-
+    
+    
     /**
      * <p>Return <code>true</code> if the specified row has been
      * marked for removal on the next call to <code>commitChanges()</code>.</p>
@@ -409,27 +409,27 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
      * @param row The {@link RowKey} of the row to check
      */
     public boolean isRemoved(RowKey row) {
-
+        
         return deletes.contains(row);
-
+        
     }
-
-
+    
+    
     /**
      * <p>Remove the specified object from the list of contained objects.</p>
      *
      * @param object The Object to remove from the list
      */
     public void removeObject(Object object) {
-
+        
         int index = list.indexOf(object);
         if (index > -1) {
             removeObject(getRowKey(index));
         }
-
+        
     }
-
-
+    
+    
     /**
      * <p>Remove the object at the specified row from the list
      * of contained objects.</p>
@@ -437,12 +437,12 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
      * @param row The desired Object row to remove from the list
      */
     public void removeObject(RowKey row) {
-
+        
         removeRow(row);
-
+        
     }
-
-
+    
+    
     /**
      * <p>Replace the object at the specified row.</p>
      *
@@ -450,20 +450,20 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
      * @param object The new object to set at the specified row
      */
     public void setObject(RowKey row, Object object) {
-
+        
         Object previous = getObject(row);
         list.set(getRowIndex(row), object);
         fireValueChanged(null, row, previous, object);
         if (getCursorRow() == row) {
             fireValueChanged(null, previous, object);
         }
-
+        
     }
-
-
+    
+    
     // ---------------------------------------------------- DataProvider Methods
-
-
+    
+    
     /** {@inheritDoc} */
     public FieldKey getFieldKey(String fieldId) throws DataProviderException {
         FieldKey fieldKey = null;
@@ -472,23 +472,23 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
         }
         if (fieldKey != null){
             return fieldKey;
-        } else{    
+        } else{
             throw new IllegalArgumentException(fieldId);
         }
     }
-
-
+    
+    
     /** {@inheritDoc} */
     public FieldKey[] getFieldKeys() throws DataProviderException {
-
+        
         if (getSupport() != null) {
             return getSupport().getFieldKeys();
         }
         return FieldKey.EMPTY_ARRAY;
-
+        
     }
-
-
+    
+    
     /** {@inheritDoc} */
     public Class getType(FieldKey fieldKey) throws DataProviderException {
         if ((getSupport() == null) || (getSupport().getFieldKey(fieldKey.getFieldId()) == null)) {
@@ -497,24 +497,24 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
             return getSupport().getType(fieldKey);
         }
     }
-
-
+    
+    
     /** {@inheritDoc} */
     public Object getValue(FieldKey fieldKey) throws DataProviderException {
-
+        
         return getValue(fieldKey, getCursorRow());
-
+        
     }
-
-
+    
+    
     /** {@inheritDoc} */
     public void setValue(FieldKey fieldKey, Object value) throws DataProviderException {
-
+        
         setValue(fieldKey, getCursorRow(), value);
-
+        
     }
-
-
+    
+    
     /** {@inheritDoc} */
     public boolean isReadOnly(FieldKey fieldKey) throws DataProviderException {
         if ((getSupport() == null) || (getSupport().getFieldKey(fieldKey.getFieldId()) == null)) {
@@ -523,48 +523,49 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
             return getSupport().isReadOnly(fieldKey);
         }
     }
-
-
+    
+    
     // --------------------------------------- TableDataProvider Methods (Basic)
-
-
+    
+    
     /** {@inheritDoc} */
     public int getRowCount() throws DataProviderException {
-
+        if( java.beans.Beans.isDesignTime()) {
+            return 3;
+        }
+        
         if (list == null) {
             return 0;
         } else {
             return list.size() - deletes.size();
         }
-
+        
     }
-
-
+    
+    
     /** {@inheritDoc} */
     public Object getValue(FieldKey fieldKey, RowKey rowKey) throws DataProviderException {
+        if( java.beans.Beans.isDesignTime() ) {
+            return AbstractDataProvider.getFakeData(getType(fieldKey));
+        }
         
         if ((getSupport() == null) || (getSupport().getFieldKey(fieldKey.getFieldId()) == null)) {
             throw new IllegalArgumentException(fieldKey.toString());
         }
         
-        if( java.beans.Beans.isDesignTime() && (list == null || list.isEmpty() ) ) {
-            // Fill the object with design time fake data
-            list = (List)AbstractDataProvider.getFakeData(list.getClass(), objectType);
-        }
-
         // Return pending update value (if any)
         Map fieldUpdates = (Map) updates.get(rowKey);
         if ((fieldUpdates != null) && (fieldUpdates.containsKey(fieldKey))) {
             return fieldUpdates.get(fieldKey);
         }
-
+        
         // Otherwise, return the value from the underlying list
         if (!isRowAvailable(rowKey) && !deletes.contains(rowKey)) {
             throw new IndexOutOfBoundsException("" + rowKey);
         }
         
         int index = getRowIndex(rowKey);
-        // getRowCount()  returns list.size()-deletes.size() 
+        // getRowCount()  returns list.size()-deletes.size()
         // So index could be list.size()-1 (last index) - Winston
         //if (index < getRowCount()) {
         if (index < list.size()) {
@@ -573,8 +574,8 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
             return getSupport().getValue(fieldKey, appends.get(index - getRowCount()));
         }
     }
-
-
+    
+    
     /**
      * <p>Return <code>true</code> if the specified {@link RowKey} represents
      * a row in the original list, or a row that has been appended.  FIXME -
@@ -584,7 +585,7 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
      * @param row {@link RowKey} to test for availability
      */
     public boolean isRowAvailable(RowKey row) throws DataProviderException {
-
+        
         if (deletes.contains(row)) {
             return false;
         }
@@ -595,11 +596,11 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
         }
         return false;
     }
-
-
+    
+    
     /** {@inheritDoc} */
     public void setValue(FieldKey fieldKey, RowKey rowKey, Object value) throws DataProviderException {
-
+        
         if ((getSupport() == null) || (getSupport().getFieldKey(fieldKey.getFieldId()) == null)) {
             throw new IllegalArgumentException(fieldKey.toString());
         }
@@ -609,19 +610,19 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
         if (!isRowAvailable(rowKey) && !deletes.contains(rowKey)) {
             throw new IndexOutOfBoundsException(rowKey.toString());
         }
-
+        
         // Retrieve the previous value and determine if it has changed
         Object previous = getValue(fieldKey, rowKey);
         if (((previous == null) && (value == null)) ||
-            ((previous != null) && (value != null) && previous.equals(value))) {
+                ((previous != null) && (value != null) && previous.equals(value))) {
             return; // No change
         }
-
+        
         // Verify type compatibility of the proposed new value
         if (!getSupport().isAssignable(fieldKey, value)) {
             throw new IllegalArgumentException(fieldKey + " = " + value); // NOI18N
         }
-
+        
         // Record a pending change for this row and field
         Map fieldUpdates = (Map) updates.get(rowKey);
         if (fieldUpdates == null) {
@@ -631,20 +632,20 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
         fieldUpdates.put(fieldKey, value);
         fireValueChanged(fieldKey, rowKey, previous, value);
         fireValueChanged(fieldKey, previous, value);
-
+        
     }
-
-
-
+    
+    
+    
     // -------------------------------------- TableDataProvider Methods (Cursor)
-
-
+    
+    
     // Base class definitions are sufficient
-
-
+    
+    
     // ------------------------ TableDataProvider Methods (Append/Insert/Delete)
-
-
+    
+    
     /**
      * <p>Return true if the <code>userResizable</code> property is set to
      * <code>true</code>, and there is a public zero-args constructor for the
@@ -653,7 +654,7 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
      * {@inheritDoc}
      */
     public boolean canAppendRow() throws DataProviderException {
-
+        
         if (!userResizable) {
             return false;
         }
@@ -661,10 +662,10 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
             return getObjectTypeConstructor() != null;
         }
         return false;
-
+        
     }
-
-
+    
+    
     /**
      * <p>Construct a new instance of the specified object type and append it
      * to the end of the list.</p>
@@ -672,7 +673,7 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
      * {@inheritDoc}
      */
     public RowKey appendRow() throws DataProviderException {
-
+        
         if (!canAppendRow()) {
             throw new IllegalStateException(getBundle().getString("OLDP_NOT_RESIZABLE"));
         }
@@ -685,17 +686,17 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
         } catch (Exception x) {
             throw new IllegalStateException(getBundle().getString("OLDP_NOT_RESIZABLE") + ":" + x.getMessage());
         }
-
+        
     }
-
-
+    
+    
     /**
      * <p>Append the specified object to the end of the list.</p>
      *
      * @param object Object to be appended
      */
     public RowKey appendRow(Object object) throws DataProviderException {
-
+        
         if (!userResizable) {
             throw new IllegalStateException(getBundle().getString("OLDP_NOT_RESIZABLE"));
         }
@@ -703,10 +704,10 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
         RowKey rowKey = getRowKey(list.size() + appends.size() - 1);
         fireRowAdded(rowKey);
         return rowKey;
-
+        
     }
-
-
+    
+    
     /**
      * <p>Return true if the <code>userResizable</code> property is set to
      * <code>true</code>, and there is a public zero-args constructor for the
@@ -715,13 +716,13 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
      * {@inheritDoc}
      */
     public boolean canInsertRow(RowKey beforeRow) throws DataProviderException {
-
+        
         // FIXME - inserts are not currently supported
         return false;
-
+        
     }
-
-
+    
+    
     /**
      * <p>Construct a new instance of the specified object type and insert it
      * at the specified position in the list.</p>
@@ -731,9 +732,9 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
      * {@inheritDoc}
      */
     public RowKey insertRow(RowKey beforeRow) throws DataProviderException {
-
+        
         throw new UnsupportedOperationException();
-
+        
         /*
          * FIXME - inserts are not currently supported, and when they
          * are supported will need to be cached until commit or revert.
@@ -754,10 +755,10 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
         }
         return null;
          */
-
+        
     }
-
-
+    
+    
     /**
      * <p>Return <code>true</code> if the <code>userResizable</code>
      * property is set to <code>true</code>.</p>
@@ -765,19 +766,19 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
      * {@inheritDoc}
      */
     public boolean canRemoveRow(RowKey row) throws DataProviderException {
-
+        
         return userResizable;
-
+        
     }
-
-
+    
+    
     /**
      * <p>Remove the object at the specified row from the list.</p>
      *
      * {@inheritDoc}
      */
     public void removeRow(RowKey row) throws DataProviderException {
-
+        
         // Verify that we can actually remove this row
         if (!canRemoveRow(row)) {
             throw new IllegalStateException(getBundle().getString("OLDP_NOT_RESIZABLE")); // NOI18N
@@ -785,22 +786,22 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
         if (!isRowAvailable(row)) {
             throw new IllegalArgumentException(getBundle().getString("CAN_NOT_DELETE_ROW_KEY") + row); // NOI18N
         }
-
+        
         // Record the fact that we are going to delete this row
         deletes.add(row);
-
+        
         // Fire appropriate events regarding this deletion
         fireRowRemoved(row);
         if (getCursorRow() == row) {
             fireValueChanged(null, list.get(getRowIndex(row)), null);
         }
-
+        
     }
-
-
+    
+    
     // --------------------------------------- TransactionalDataProvider Methods
-
-
+    
+    
     /**
      * <p>Cause any cached updates to existing field values, as well as
      * inserted and deleted rows, to be flowed through to the underlying
@@ -808,7 +809,7 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
      * {@link com.sun.data.provider.DataProvider}.</p>
      */
     public void commitChanges() throws DataProviderException {
-
+        
         // Commit all pending updates to the underlying list
         Iterator rowUpdates = updates.entrySet().iterator();
         while (rowUpdates.hasNext()) {
@@ -828,55 +829,55 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
             }
         }
         updates.clear();
-
+        
         // Commit all pending deletes to the underlying list
         RowKey deletes[] = (RowKey[])
-          this.deletes.toArray(new RowKey[this.deletes.size()]);
+        this.deletes.toArray(new RowKey[this.deletes.size()]);
         for (int i = (deletes.length - 1); i >= 0; i--) {
             list.remove(getRowIndex(deletes[i]));
         }
         this.deletes.clear();
-
+        
         // FIXME - inserts will need to be interwoven to avoid indexing errors
-
+        
         // Commit all pending appends to the underlying list
         Iterator appendInstances = appends.iterator();
         while (appendInstances.hasNext()) {
             list.add(appendInstances.next());
         }
         appends.clear();
-
+        
         // Notify interested listeners that we have committed
         fireChangesCommitted();
-
+        
     }
-
-
+    
+    
     /** {@inheritDoc} */
     public void revertChanges() throws DataProviderException {
-
+        
         // Erase any cached information about pending changes
         updates.clear();
         deletes.clear();
         appends.clear();
-
+        
         // Notify interested listeners that we are reverting
         fireChangesReverted();
-
+        
     }
-
-
+    
+    
     /** {@inheritDoc} */
     public void addTransactionalDataListener(TransactionalDataListener listener) {
-
+        
         super.addDataListener(listener);
-
+        
     }
-
-
+    
+    
     /** {@inheritDoc} */
     public TransactionalDataListener[] getTransactionalDataListeners() {
-
+        
         if (dpListeners == null) {
             return new TransactionalDataListener[0];
         } else {
@@ -887,78 +888,78 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
                 }
             }
             return (TransactionalDataListener[]) tdpList.toArray
-              (new TransactionalDataListener[tdpList.size()]);
+                    (new TransactionalDataListener[tdpList.size()]);
         }
-
+        
     }
-
-
+    
+    
     /** {@inheritDoc} */
     public void removeTransactionalDataListener(TransactionalDataListener listener) {
-
+        
         super.removeDataListener(listener);
-
+        
     }
-
-
+    
+    
     // --------------------------------------------------------- Private Methods
-
-
+    
+    
     /**
      * <p>Fire a <code>changesCommitted</code> method to all registered
      * listeners.</p>
      */
     private void fireChangesCommitted() {
-
+        
         TransactionalDataListener listeners[] = getTransactionalDataListeners();
         for (int i = 0; i < listeners.length; i++) {
             listeners[i].changesCommitted(this);
         }
-
+        
     }
-
-
+    
+    
     /**
      * <p>Fire a <code>changesReverted</code> method to all registered
      * listeners.</p>
      */
     private void fireChangesReverted() {
-
+        
         TransactionalDataListener listeners[] = getTransactionalDataListeners();
         for (int i = 0; i < listeners.length; i++) {
             listeners[i].changesReverted(this);
         }
-
+        
     }
-
-
+    
+    
     /**
      * <p>Return the resource bundle containing our localized messages.</p>
      */
     private ResourceBundle getBundle() {
-
+        
         if (bundle == null) {
             bundle = ResourceBundle.getBundle("com/sun/data/provider/impl/Bundle");
         }
         return bundle;
-
+        
     }
-
-
+    
+    
     /**
      * <p>The zero-args public constructor for the <code>objectType</code>
      * class (lazily instantiated by getObjectTypeConstructor(), marked
      * as transient because Constructor instances are not Serializable).</p>
      */
     private transient Constructor objectTypeConstructor = null;
-
-
+    
+    
     /**
      * <p>Return the zero-arguments public constructor for the class
      * specified by the <code>objectType</code> property, if there is one.</p>
      */
     private Constructor getObjectTypeConstructor() {
-
+        
         if (objectTypeConstructor != null) {
             return objectTypeConstructor;
         }
@@ -971,51 +972,51 @@ public class ObjectListDataProvider extends AbstractTableDataProvider
             objectTypeConstructor = null;
         }
         return objectTypeConstructor;
-
+        
     }
-
-
+    
+    
     /**
      * <p>Return the row index corresponding to the specified row key.</p>
      *
      * @param rowKey Row key for which to extract an index
      */
     private int getRowIndex(RowKey rowKey) {
-
+        
         return ((IndexRowKey) rowKey).getIndex();
-
+        
     }
-
-
+    
+    
     /**
      * <p>Return a suitable {@link RowKey} for the specified row index.</p>
      */
     private RowKey getRowKey(int index) {
-
+        
         return new IndexRowKey(index);
-
+        
     }
-
-
+    
+    
     /**
      * <p>The cached support object for field key manipulation.  Must be
      * transient because its content is not Serializable.</p>
      */
     private transient ObjectFieldKeySupport support = null;
-
-
+    
+    
     /**
      * <p>Return the {@link ObjectFieldKeySupport} instance for the
      * object class we are wrapping.</p>
      */
     private ObjectFieldKeySupport getSupport() {
-
+        
         if ((support == null) && (objectType != null)) {
             support = new ObjectFieldKeySupport(objectType, includeFields);
         }
         return support;
-
+        
     }
-
-
+    
+    
 }
