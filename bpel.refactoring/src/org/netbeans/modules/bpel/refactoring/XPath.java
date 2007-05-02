@@ -84,6 +84,7 @@ final class XPath extends AbstractXPathVisitor {
   void visit(String content, Component component) {
 //out();
 //out("XPATH visit: " + content);
+//out("XPATH visit: '" + content + "' " + component);
     visit(content, component, false);
   }
 
@@ -97,6 +98,8 @@ final class XPath extends AbstractXPathVisitor {
     if (content == null || content.length() == 0) {
       return content;
     }
+//out();
+//out("visit: " + content);
     XPathModel model = AbstractXPathModelHelper.getInstance().newXPathModel();
     myVisitedComplexType = new LinkedList<ComplexType>();
     myExpressions = new LinkedList<XPathExpression>();
@@ -106,7 +109,8 @@ final class XPath extends AbstractXPathVisitor {
     try {
       XPathExpression expression = model.parseExpression(content);
       expression.accept(this);
-
+//out();
+//out();
       if (myDoRename) {
 //out("  do rename: " + myTarget.getName());
         rename(myTarget.getName());
@@ -115,7 +119,7 @@ final class XPath extends AbstractXPathVisitor {
       return expression.getExpressionString();
     }
     catch (XPathException e) {
-//out("  exception: " + e.getMessage());
+//out("  !!!! exception: " + e.getMessage());
       return content;
     }
   }
@@ -172,17 +176,17 @@ final class XPath extends AbstractXPathVisitor {
     myVariableReference = null;
 
     if ( !expressionPath.equals(rootExpression)) {
-///out("     root: " + expression);
+//out("     root: " + rootExpression);
       rootExpression.accept(this);
     }
     if (myVariable == null) {
 //out("Variable is not found");
       return;
     }
-//out(" Variable: " + myVariable.getName());
+//out("Variable: " + myVariable.getName());
 
     if (myVariable == myTarget) {
-      addItem();
+//out("  variable is target: " + myVariable.getName());
       return;
     }
     LocationStep [] locations = expressionPath.getSteps();
@@ -468,6 +472,11 @@ final class XPath extends AbstractXPathVisitor {
         myVariable = variable;
         myVariableReference = reference;
         myPartName = part;
+
+        if (myVariable == myTarget) {
+//out("  add variable: " + myVariable.getName());
+          addItem();
+        }
         break;
       }
     }
