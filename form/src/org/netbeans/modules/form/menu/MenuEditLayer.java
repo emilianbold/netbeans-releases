@@ -585,34 +585,36 @@ public class MenuEditLayer extends JPanel {
         if(!formModelListeners.containsKey(metacomp)) {
             FormModelListener fml = new FormModelListener() {
                 public void formChanged(FormModelEvent[] events) {
-                    for(FormModelEvent evt : events) {
-                        p("event = " + evt);
-                        p("type = " + evt.getChangeType());
-                        p("prop changed = " + evt.COMPONENT_PROPERTY_CHANGED);
-                        p("comp added = " + evt.COMPONENT_ADDED);
-                        p("comp removed = " + evt.COMPONENT_REMOVED);
-                        p("comp reordered = " + evt.COMPONENTS_REORDERED);
-                        if(evt.getComponent() != null) {
-                            p(" " + evt.getComponent().getName());
-                        };
-                        if(evt.getChangeType() == evt.COMPONENT_PROPERTY_CHANGED) {
-                            rebuildOnScreenMenu(metacomp);
-                        }
-                        // if this menu was deleted then make sure it's popup is hidden and removed
-                        if(evt.getChangeType() == evt.COMPONENT_REMOVED) {
-                            if(evt.getComponent() == metacomp) {
-                                p("this component was removed");
-                                unconfigureMenu(menu);
-                                continue;
-                            }
-                        }
-                        // if something added to the menu we monitor
-                        if(evt.getChangeType() == evt.COMPONENT_ADDED ||
-                                evt.getChangeType() == evt.COMPONENTS_REORDERED ||
-                                evt.getChangeType() == evt.COMPONENT_REMOVED) {
-                            if(evt.getContainer() == metacomp) {
-                                // then rebuild the menu*/
+                    if (events != null) {
+                        for(FormModelEvent evt : events) {
+                            p("event = " + evt);
+                            p("type = " + evt.getChangeType());
+                            p("prop changed = " + evt.COMPONENT_PROPERTY_CHANGED);
+                            p("comp added = " + evt.COMPONENT_ADDED);
+                            p("comp removed = " + evt.COMPONENT_REMOVED);
+                            p("comp reordered = " + evt.COMPONENTS_REORDERED);
+                            if(evt.getComponent() != null) {
+                                p(" " + evt.getComponent().getName());
+                            };
+                            if(evt.getChangeType() == evt.COMPONENT_PROPERTY_CHANGED) {
                                 rebuildOnScreenMenu(metacomp);
+                            }
+                            // if this menu was deleted then make sure it's popup is hidden and removed
+                            if(evt.getChangeType() == evt.COMPONENT_REMOVED) {
+                                if(evt.getComponent() == metacomp) {
+                                    p("this component was removed");
+                                    unconfigureMenu(menu);
+                                    continue;
+                                }
+                            }
+                            // if something added to the menu we monitor
+                            if(evt.getChangeType() == evt.COMPONENT_ADDED ||
+                                    evt.getChangeType() == evt.COMPONENTS_REORDERED ||
+                                    evt.getChangeType() == evt.COMPONENT_REMOVED) {
+                                if(evt.getContainer() == metacomp) {
+                                    // then rebuild the menu*/
+                                    rebuildOnScreenMenu(metacomp);
+                                }
                             }
                         }
                     }
