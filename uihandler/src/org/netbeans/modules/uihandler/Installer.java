@@ -743,11 +743,7 @@ public class Installer extends ModuleInstall {
             if (reportPanel==null) reportPanel = new ReportPanel();
             Throwable t = getThrown();
             if ((t != null)&&(reportPanel !=null)){
-                String summary = t.getClass().getName();
-                String[] pieces = summary.split("\\.");
-                if (pieces.length > 0) summary = pieces[pieces.length-1];//posledni piece
-                if (t.getMessage()!= null)summary = summary.concat(" : " + t.getMessage()); //NOI18N
-                reportPanel.setSummary(summary);
+                reportPanel.setSummary(t.toString());
             }
             browser = new HtmlBrowser();
             String resource = NbBundle.getMessage(Installer.class, "URL_Connecting"); // NOI18N
