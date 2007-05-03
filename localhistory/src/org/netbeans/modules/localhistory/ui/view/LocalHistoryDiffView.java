@@ -27,10 +27,7 @@ import java.beans.PropertyChangeListener;
 import java.io.*;
 import javax.swing.*;
 
-import org.netbeans.api.diff.Diff;
-import org.netbeans.api.diff.DiffView;
-import org.netbeans.api.diff.StreamSource;
-import org.netbeans.api.diff.Difference;
+import org.netbeans.api.diff.*;
 import org.netbeans.modules.localhistory.store.StoreEntry;
 import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.openide.ErrorManager;
@@ -54,7 +51,7 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
     private final LocalHistoryTopComponent master;
     private DiffPanel panel;
     private Component diffComponent;
-    private DiffView diffView;            
+    private DiffController diffView;            
     
     /** Creates a new instance of LocalHistoryView */
     public LocalHistoryDiffView(LocalHistoryTopComponent master) {
@@ -68,7 +65,9 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
     public void propertyChange(PropertyChangeEvent evt) {
         if(ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
             selectionChanged(evt);
-        } 
+        } else if (DiffController.PROP_DIFFERENCES.equals(evt.getPropertyName())) {
+            refreshNavigationButtons();
+        }
     }
       
     JPanel getPanel() {
@@ -106,8 +105,6 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
         }
 
         public void run() {
-            final Diff diff = Diff.getDefault();
-            
             // XXX how to get the mimetype
             
             SwingUtilities.invokeLater(new Runnable() {
@@ -127,9 +124,10 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
                             ss2 = StreamSource.createSource("currentfile", title, entry.getMIMEType(), new StringReader(""));
                         }
                         
-                        diffView = diff.createDiff(ss1, ss2);  
+                        diffView = DiffController.create(ss1, ss2);
+                        diffView.addPropertyChangeListener(LocalHistoryDiffView.this);
                         
-                        JComponent c = (JComponent) diffView.getComponent();
+                        JComponent c = diffView.getJComponent();
                         setDiffComponent(c);
                         master.setDiffView(c);
                         if(diffView.getDifferenceCount() > 0) {
@@ -176,7 +174,7 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
         if(diffView == null) {
             return;
         }          
-        int nextDiffernce = diffView.getCurrentDifference() + 1;        
+        int nextDiffernce = diffView.getDifferenceIndex() + 1;        
         if(nextDiffernce < diffView.getDifferenceCount()) {
             setCurrentDifference(nextDiffernce);    
         }                        
@@ -186,19 +184,19 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
         if(diffView == null) {
             return;
         }
-        int prevDiffernce = diffView.getCurrentDifference() - 1;
+        int prevDiffernce = diffView.getDifferenceIndex() - 1;
         if(prevDiffernce > -1) {
             setCurrentDifference(prevDiffernce);                
         }            
     }    
     
     private void setCurrentDifference(int idx) {
-        diffView.setCurrentDifference(idx);    
+        diffView.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.DifferenceIndex, idx);    
         refreshNavigationButtons();
     }
     
     private void refreshNavigationButtons() {
-        int currentDifference = diffView.getCurrentDifference();
+        int currentDifference = diffView.getDifferenceIndex();
         panel.prevButton.setEnabled(currentDifference > 0);
         panel.nextButton.setEnabled(currentDifference < diffView.getDifferenceCount() - 1);
     }    

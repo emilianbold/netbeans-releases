@@ -109,7 +109,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     private int diffSerial;
     private Difference[] diffs = NO_DIFFERENCES;
    
-    private boolean isSetCurrentDifferenceContext = false;
+    private int ignoredUpdateEvents;
     
     private int horizontalScroll1ChangedValue = -1;
     private int horizontalScroll2ChangedValue = -1;
@@ -290,13 +290,9 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         if (location == -1) {
         } else {
             if (getDifferenceIndex() == location) return;
-            try {
-                isSetCurrentDifferenceContext = true;
-                setDifferenceIndex(location);
-                showCurrentDifference();
-            } finally {
-                isSetCurrentDifferenceContext = false;
-            }
+            ignoredUpdateEvents = 4;
+            setDifferenceIndex(location);
+            showCurrentDifference();
         }
     }
 
@@ -441,6 +437,9 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             if (diff.getType() == Difference.ADD) {
                 int start = DiffViewManager.getRowStartFromLineOffset(document, diff.getSecondStart() - 1);
                 int end = DiffViewManager.getRowStartFromLineOffset(document, diff.getSecondEnd());
+                if (end == -1) {
+                    end = document.getLength();
+                }
                 document.remove(start, end - start);
             } else if (diff.getType() == Difference.DELETE) {
                 int start = DiffViewManager.getRowStartFromLineOffset(document, diff.getSecondStart());
@@ -448,6 +447,9 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             } else {
                 int start = DiffViewManager.getRowStartFromLineOffset(document, diff.getSecondStart() - 1);
                 int end = DiffViewManager.getRowStartFromLineOffset(document, diff.getSecondEnd());
+                if (end == -1) {
+                    end = document.getLength();
+                }
                 document.remove(start, end - start);
                 document.insertString(start, diff.getFirstText(), null);
             }
@@ -520,7 +522,10 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
      */
     void updateCurrentDifference() {
         assert SwingUtilities.isEventDispatchThread();
-        if (isSetCurrentDifferenceContext) return;
+        if (ignoredUpdateEvents > 0) {
+            ignoredUpdateEvents--;
+            return;
+        }
         int cd = computeCurrentDifference();
         setDifferenceIndex(cd);
     }
@@ -863,6 +868,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         if (getDifferenceIndex() >= diffs.length) updateCurrentDifference();
+                        support.firePropertyChange(DiffController.PROP_DIFFERENCES, null, null);
                         jEditorPane1.setCurrentDiff(diffs);
                         jEditorPane2.setCurrentDiff(diffs);
                         jSplitPane1.repaint();

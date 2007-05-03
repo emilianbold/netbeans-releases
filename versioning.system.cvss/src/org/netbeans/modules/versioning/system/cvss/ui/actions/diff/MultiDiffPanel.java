@@ -54,12 +54,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.*;
 import java.util.List;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 /**
  *
  * @author  maros
  */
-public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, VersioningListener, DiffSetupSource  {
+public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, VersioningListener, DiffSetupSource, PropertyChangeListener {
     
     /**
      * Array of DIFF setups that we show in the DIFF view. Contents of this array is changed if
@@ -520,6 +522,12 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         refreshSetups();
     }
 
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (DiffController.PROP_DIFFERENCES.equals(evt.getPropertyName())) {
+            refreshComponents();
+        }
+    }
+
     private class DiffPrepareTask implements Runnable {
         
         private final Setup[] prepareSetups;
@@ -538,6 +546,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                         StreamSource ss1 = prepareSetups[fi].getFirstSource();
                         StreamSource ss2 = prepareSetups[fi].getSecondSource();
                         final DiffController view = DiffController.create(ss1, ss2);  // possibly executing slow external diff
+                        view.addPropertyChangeListener(MultiDiffPanel.this);
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
                                 prepareSetups[fi].setView(view);
