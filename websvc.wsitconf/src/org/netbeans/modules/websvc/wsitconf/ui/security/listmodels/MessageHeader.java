@@ -46,22 +46,6 @@ public class MessageHeader extends TargetElement {
         RM_SEQUENCEACK,
         RM_SEQUENCE
     };
-
-//    public enum ADDRESSING_HEADERS { 
-//        ADDRESSING_TO, 
-//        ADDRESSING_FROM, 
-//        ADDRESSING_FAULTTO, 
-//        ADDRESSING_REPLYTO, 
-//        ADDRESSING_MESSAGEID,
-//        ADDRESSING_RELATESTO,
-//        ADDRESSING_ACTION,
-//    };
-//
-//    public enum RM_HEADERS { 
-//        RM_ACKREQUESTED,
-//        RM_SEQUENCEACK,
-//        RM_SEQUENCE
-//    };
     
     public MessageHeader(String header) {
         super(header);

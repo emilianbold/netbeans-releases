@@ -40,7 +40,6 @@ import org.netbeans.modules.websvc.wsitmodelext.security.tokens.ProtectionToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.RecipientToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.SecureConversationToken;
 import org.netbeans.modules.xml.wsdl.model.*;
-import java.util.Vector;
 
 /**
  *
@@ -48,50 +47,6 @@ import java.util.Vector;
  */
 public class ProfilesModelHelper {
 
-    private static Vector<Vector> DEFAULT_TARGETS = new Vector();
-    
-    static {
-        Vector row = new Vector();
-        row.add(new MessageBody());
-        row.add(Boolean.TRUE); row.add(Boolean.TRUE); row.add(Boolean.FALSE);
-        DEFAULT_TARGETS.add(row);
-        
-        row = new Vector();
-        row.add(new MessageHeader(MessageHeader.ADDRESSING_TO));
-        row.add(Boolean.TRUE); row.add(Boolean.FALSE); row.add(Boolean.FALSE);
-        DEFAULT_TARGETS.add(row);
-        
-        row = new Vector();
-        row.add(new MessageHeader(MessageHeader.ADDRESSING_FROM));
-        row.add(Boolean.TRUE); row.add(Boolean.FALSE); row.add(Boolean.FALSE);
-        DEFAULT_TARGETS.add(row);
-        
-        row = new Vector();
-        row.add(new MessageHeader(MessageHeader.ADDRESSING_FAULTTO));
-        row.add(Boolean.TRUE); row.add(Boolean.FALSE); row.add(Boolean.FALSE);
-        DEFAULT_TARGETS.add(row);
-
-        row = new Vector();
-        row.add(new MessageHeader(MessageHeader.ADDRESSING_REPLYTO));
-        row.add(Boolean.TRUE); row.add(Boolean.FALSE); row.add(Boolean.FALSE);
-        DEFAULT_TARGETS.add(row);
-
-        row = new Vector();
-        row.add(new MessageHeader(MessageHeader.ADDRESSING_MESSAGEID));
-        row.add(Boolean.TRUE); row.add(Boolean.FALSE); row.add(Boolean.FALSE);
-        DEFAULT_TARGETS.add(row);
-
-        row = new Vector();
-        row.add(new MessageHeader(MessageHeader.ADDRESSING_RELATESTO));
-        row.add(Boolean.TRUE); row.add(Boolean.FALSE); row.add(Boolean.FALSE);
-        DEFAULT_TARGETS.add(row);
-
-        row = new Vector();
-        row.add(new MessageHeader(MessageHeader.ADDRESSING_ACTION));
-        row.add(Boolean.TRUE); row.add(Boolean.FALSE); row.add(Boolean.FALSE);
-        DEFAULT_TARGETS.add(row);
-    }
-    
     /**
      * Creates a new instance of ProfilesModelHelper
      */
@@ -583,7 +538,11 @@ public class ProfilesModelHelper {
         
         BindingInput input = o.getBindingInput();
         BindingOutput output = o.getBindingOutput();
-               
+
+        Binding b = (Binding) o.getParent();
+        
+        boolean wss11 = SecurityPolicyModelHelper.isWss11(b);                
+        
         boolean isTransaction = model.isIntransaction();
         if (!isTransaction) {
             model.startTransaction();
@@ -600,68 +559,64 @@ public class ProfilesModelHelper {
             }
             // Profile #2
             if (ComboConstants.PROF_MSGAUTHSSL.equals(profile)) {
-//                SecurityTokensModelHelper.setSupportingTokens(input, null, SecurityTokensModelHelper.SIGNED_SUPPORTING);
                 return;
             }
             // Profile #3
             if (ComboConstants.PROF_SAMLSSL.equals(profile)) {
-//                SecurityTokensModelHelper.setSupportingTokens(input, null, SecurityTokensModelHelper.SIGNED_SUPPORTING);
                 return;
             }
             // Profile #4
             if (ComboConstants.PROF_USERNAME.equals(profile)) {
-//                SecurityTokensModelHelper.setSupportingTokens(input, null, SecurityTokensModelHelper.SIGNED_SUPPORTING);
-                SecurityPolicyModelHelper.setTargets(input, DEFAULT_TARGETS);
-                SecurityPolicyModelHelper.setTargets(output, DEFAULT_TARGETS);
+                SecurityPolicyModelHelper.setDefaultTargets(input, wss11);
+                SecurityPolicyModelHelper.setDefaultTargets(output, wss11);
                 return;
             }
             // Profile #5
             if (ComboConstants.PROF_MUTUALCERT.equals(profile)) {
-                SecurityPolicyModelHelper.setTargets(input, DEFAULT_TARGETS);
-                SecurityPolicyModelHelper.setTargets(output, DEFAULT_TARGETS);
+                SecurityPolicyModelHelper.setDefaultTargets(input, wss11);
+                SecurityPolicyModelHelper.setDefaultTargets(output, wss11);
                 return;
             }
             // Profile #6
             if (ComboConstants.PROF_ENDORSCERT.equals(profile)) {
-                SecurityPolicyModelHelper.setTargets(input, DEFAULT_TARGETS);
-                SecurityPolicyModelHelper.setTargets(output, DEFAULT_TARGETS);
+                SecurityPolicyModelHelper.setDefaultTargets(input, wss11);
+                SecurityPolicyModelHelper.setDefaultTargets(output, wss11);
                 return;
             }
             // Profile #7
             if (ComboConstants.PROF_SAMLSENDER.equals(profile)) {
-//                SecurityTokensModelHelper.setSupportingTokens(input, null, SecurityTokensModelHelper.SIGNED_SUPPORTING);
-                SecurityPolicyModelHelper.setTargets(input, DEFAULT_TARGETS);
-                SecurityPolicyModelHelper.setTargets(output, DEFAULT_TARGETS);
+                SecurityPolicyModelHelper.setDefaultTargets(input, wss11);
+                SecurityPolicyModelHelper.setDefaultTargets(output, wss11);
                 return;
             }
             // Profile #8
             if (ComboConstants.PROF_SAMLHOLDER.equals(profile)) {
-                SecurityPolicyModelHelper.setTargets(input, DEFAULT_TARGETS);
-                SecurityPolicyModelHelper.setTargets(output, DEFAULT_TARGETS);
+                SecurityPolicyModelHelper.setDefaultTargets(input, wss11);
+                SecurityPolicyModelHelper.setDefaultTargets(output, wss11);
                 return;
             }
             // Profile #9
             if (ComboConstants.PROF_KERBEROS.equals(profile)) {
-                SecurityPolicyModelHelper.setTargets(input, DEFAULT_TARGETS);
-                SecurityPolicyModelHelper.setTargets(output, DEFAULT_TARGETS);
+                SecurityPolicyModelHelper.setDefaultTargets(input, wss11);
+                SecurityPolicyModelHelper.setDefaultTargets(output, wss11);
                 return;
             }
             // Profile #10
             if (ComboConstants.PROF_STSISSUED.equals(profile)) {
-                SecurityPolicyModelHelper.setTargets(input, DEFAULT_TARGETS);
-                SecurityPolicyModelHelper.setTargets(output, DEFAULT_TARGETS);
+                SecurityPolicyModelHelper.setDefaultTargets(input, wss11);
+                SecurityPolicyModelHelper.setDefaultTargets(output, wss11);
                 return;
             }
             // Profile #11
             if (ComboConstants.PROF_STSISSUEDCERT.equals(profile)) {
-                SecurityPolicyModelHelper.setTargets(input, DEFAULT_TARGETS);
-                SecurityPolicyModelHelper.setTargets(output, DEFAULT_TARGETS);
+                SecurityPolicyModelHelper.setDefaultTargets(input, wss11);
+                SecurityPolicyModelHelper.setDefaultTargets(output, wss11);
                 return;
             }
             // Profile #12
             if (ComboConstants.PROF_STSISSUEDENDORSE.equals(profile)) {
-                SecurityPolicyModelHelper.setTargets(input, DEFAULT_TARGETS);
-                SecurityPolicyModelHelper.setTargets(output, DEFAULT_TARGETS);
+                SecurityPolicyModelHelper.setDefaultTargets(input, wss11);
+                SecurityPolicyModelHelper.setDefaultTargets(output, wss11);
                 return;
             }
         } finally {
@@ -741,7 +696,7 @@ public class ProfilesModelHelper {
                     SecurityPolicyModelHelper.enableSignEntireHeadersAndBody(bType, true);
                 }
                 
-                SecurityPolicyModelHelper.setTargets(p, DEFAULT_TARGETS);
+                SecurityPolicyModelHelper.setDefaultTargets(p, true);
                 
                 SecurityPolicyModelHelper.disableWss(par);
                 WssElement wss = SecurityPolicyModelHelper.enableWss(par, true);

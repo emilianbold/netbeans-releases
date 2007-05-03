@@ -35,6 +35,8 @@ public enum RMQName {
     ACKNOWLEDGEMENTINTERVAL(createRMQName("AcknowledgementInterval")),          //NOI18N
     INACTIVITYTIMEOUT(createRMQName("InactivityTimeout"));                      //NOI18N
 
+    public static final String RM_HEADERS_NS_URI = "http://schemas.xmlsoap.org/ws/2005/02/rm";    //NOI18N
+    
     public static final String RM_NS_URI = "http://schemas.xmlsoap.org/ws/2005/02/rm/policy";    //NOI18N
     public static final String RM_NS_PREFIX = "wsrm";                                            //NOI18N
     

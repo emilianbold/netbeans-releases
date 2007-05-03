@@ -885,15 +885,15 @@ public class SecurityPolicyModelHelper {
         }
         if (MessageHeader.RM_ACKREQUESTED.equals(item)) {
             h.setName("AckRequested");  //NOI18N
-            h.setNamespace(RMQName.RM_NS_URI);
+            h.setNamespace(RMQName.RM_HEADERS_NS_URI);
         }
         if (MessageHeader.RM_SEQUENCEACK.equals(item)) {
             h.setName("SequenceAcknowledgement");   //NOI18N
-            h.setNamespace(RMQName.RM_NS_URI);
+            h.setNamespace(RMQName.RM_HEADERS_NS_URI);
         }
         if (MessageHeader.RM_SEQUENCE.equals(item)) {
             h.setName("Sequence");  //NOI18N
-            h.setNamespace(RMQName.RM_NS_URI);
+            h.setNamespace(RMQName.RM_HEADERS_NS_URI);
         }
         if (h != null) {
             c.addExtensibilityElement(h);
@@ -939,7 +939,6 @@ public class SecurityPolicyModelHelper {
      */ 
     public static ExtensibilityElement getSecurityBindingTypeElement(WSDLComponent c) {
         assert c != null;
-        WSDLModel model = c.getModel();
         WSDLComponent p = c;
         
         if ((c instanceof Binding) || (c instanceof BindingOperation) || 
@@ -962,7 +961,6 @@ public class SecurityPolicyModelHelper {
     public static WSDLComponent setSecurityBindingType(WSDLComponent c, String bindingType) {
         assert (c!=null);
         WSDLModel model = c.getModel();
-        WSDLComponentFactory wcf = model.getFactory();
         WSDLComponent secBindingType = null;
                
         boolean isTransaction = model.isIntransaction();
@@ -1004,8 +1002,6 @@ public class SecurityPolicyModelHelper {
     }
 
     public static void setDefaultTargets(WSDLComponent c, boolean wss11) {
-
-        WSDLModel model = c.getModel();
         Vector<Vector> targets = new Vector();
 
         Vector row = new Vector();
@@ -1032,7 +1028,6 @@ public class SecurityPolicyModelHelper {
     }
 
     public static void removeTargets(WSDLComponent c) {
-        WSDLModel model = c.getModel();
         setTargets(c, null);
     }
     
