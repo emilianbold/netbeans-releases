@@ -71,8 +71,9 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
     private final JTextComponent  textComponent;
     /**
      * We must keep FileObject here because a File may change if the FileObject is renamed.
+     * The fileObejct can be DELETED TOO!
      */
-    private final FileObject      fileObject;
+    private FileObject            fileObject;
 
     private final EditorUI        editorUI;
     private final FoldHierarchy   foldHierarchy;
@@ -295,7 +296,13 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
     }
 
     public void fileDeleted(FileEvent fe) {
-        // not interested
+        DataObject dobj = (DataObject) document.getProperty(Document.StreamDescriptionProperty);
+        if (dobj != null) {
+            // needed since we are changing the fileObject instance
+            fileObject.removeFileChangeListener(this);
+            fileObject = dobj.getPrimaryFile();
+        }
+        fileRenamed(null);
     }
 
     public void fileRenamed(FileRenameEvent fe) {
