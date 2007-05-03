@@ -24,7 +24,7 @@ Microsystems, Inc. All Rights Reserved.
     description_key='HINT_CURRENT_EXP_LINE'
     localizing_bundle='org.netbeans.modules.debugger.resources.Bundle'
     visible='true'
-    glyph='nbresloc:/org/netbeans/modules/debugger/resources/editor/Breakpoint+PC.gif'
+    glyph='nbresloc:/org/netbeans/modules/debugger/resources/editor/Breakpoint+PC.png'
     highlight='0xE9FFE6'
     type='line'
 >
