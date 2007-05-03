@@ -524,7 +524,6 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
             "NPrISP.error.cannot.write"); // NOI18N
     
-    
     public static final long REQUIRED_SPACE_ADDITION =
             10L * 1024L * 1024L; // 10MB
 }
