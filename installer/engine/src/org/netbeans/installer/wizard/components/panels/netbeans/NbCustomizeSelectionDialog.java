@@ -20,6 +20,8 @@
  */
 package org.netbeans.installer.wizard.components.panels.netbeans;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -198,8 +200,6 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         descriptionPane = new NbiTextPane();
         descriptionPane.setBorder(
                 new EmptyBorder(5, 5, 5, 5));
-        descriptionPane.setPreferredSize(new Dimension(150, 10));
-        descriptionPane.setMinimumSize(new Dimension(150, 10));
         
         // descriptionScrollPane ////////////////////////////////////////////////////
         descriptionScrollPane = new NbiScrollPane(descriptionPane);
@@ -207,25 +207,13 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
                 NbiScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         descriptionScrollPane.setBorder(
                 new TitledBorder(FEATURE_DESCRIPTION_TITLE));
+        descriptionScrollPane.setPreferredSize(new Dimension(200, 10));        
         
         // componentPanel ///////////////////////////////////////////////////////////
         componentPanel = new NbiPanel();
-        componentPanel.add(componentsScrollPane, new GridBagConstraints(
-                0, 0,                             // x, y
-                1, 1,                             // width, height
-                1.0, 1.0,                         // weight-x, weight-y
-                GridBagConstraints.PAGE_START,    // anchor
-                GridBagConstraints.BOTH,          // fill
-                new Insets(0, 0, 0, 0),           // padding
-                0, 0));                           // padx, pady - ???
-        componentPanel.add(descriptionScrollPane, new GridBagConstraints(
-                1, 0,                             // x, y
-                1, 1,                             // width, height
-                0.0, 1.0,                         // weight-x, weight-y
-                GridBagConstraints.PAGE_START,    // anchor
-                GridBagConstraints.VERTICAL,      // fill
-                new Insets(0, 6, 0, 0),           // padding
-                0, 0));                           // padx, pady - ???
+        componentPanel.setLayout(new BorderLayout(6, 0));
+        componentPanel.add(componentsScrollPane, BorderLayout.CENTER);
+        componentPanel.add(descriptionScrollPane, BorderLayout.EAST);
         
         // sizesLabel ///////////////////////////////////////////////////////////////
         sizesLabel = new NbiLabel();
@@ -282,7 +270,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
                 0, 1,                             // x, y
                 1, 1,                             // width, height
                 1.0, 1.0,                         // weight-x, weight-y
-                GridBagConstraints.PAGE_START,    // anchor
+                GridBagConstraints.CENTER,        // anchor
                 GridBagConstraints.BOTH,          // fill
                 new Insets(6, 11, 0, 11),          // padding
                 0, 0));                           // padx, pady - ???
