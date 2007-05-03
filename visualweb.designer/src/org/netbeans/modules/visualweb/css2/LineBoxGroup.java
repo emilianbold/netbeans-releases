@@ -285,7 +285,8 @@ public class LineBoxGroup extends ContainerBox {
             CssBox box = list.get(i);
             //relative boxes are similar to float boxes
             if (box.getBoxType() == BoxType.FLOAT || box.getBoxType() == BoxType.RELATIVE) {
-                if (box.isInlineBox() && !box.isReplacedBox() && box instanceof ContainerBox) {
+                if (box.isInlineBox() && !box.isReplacedBox() && box instanceof ContainerBox
+                && box.getBoxType() != BoxType.FLOAT) { // XXX #99707 Excluding floats from here.
                     LineBox oldLineBox = lineBox;
                     int oldTargetY = targetY;
                     int oldContentWidth = contentWidth;

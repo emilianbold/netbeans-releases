@@ -1692,8 +1692,10 @@ public class ContainerBox extends CssBox {
 
             // + box.leftMargin); // Already added?
         } else {
-            System.out.println("WRONG RIGHT POSITIONING!");
-            box.setX(parentBox.leftPadding + parentBox.leftBorderWidth);
+//            System.out.println("WRONG RIGHT POSITIONING!");
+//            box.setX(parentBox.leftPadding + parentBox.leftBorderWidth);
+            // XXX #99707 Based on the left float positioning above.
+            box.setX(parentBox.width - parentBox.rightPadding - parentBox.rightBorderWidth);
         }
 
         // TODO: look for "clear" property to clear floats - see section
