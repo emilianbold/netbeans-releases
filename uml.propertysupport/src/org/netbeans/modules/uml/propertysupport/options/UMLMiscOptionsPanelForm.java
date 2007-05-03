@@ -18,9 +18,9 @@ public class UMLMiscOptionsPanelForm extends JPanel {
     
     /** Creates new form UMLMiscOptionsPanelForm */
     public UMLMiscOptionsPanelForm() {
-        //initComponents();
+        initComponents();
 
-        super (new BorderLayout()) ;
+        //super (new BorderLayout()) ;
         
         
     }

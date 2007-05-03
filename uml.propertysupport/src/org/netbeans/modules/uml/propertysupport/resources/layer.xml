@@ -51,14 +51,15 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
         </file>
         <attr boolvalue="true" name="UMLOptions.instance/Advanced.instance"/>
     </folder>
+
     <folder name="UML">
         <folder name="UMLOptions">
-            <folder name="Panels">
-            <file name="DefaultOptionsPanel.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.propertysupport.options.DefaultOptionsPanel"/>
-            </file>
+            <folder name="Misc">
+                <file name="JavaPlatformOptions.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.propertysupport.options.panels.JavaPlatformOptions"/>
+                </file>
             </folder>
         </folder>
     </folder>
-    
+
 </filesystem>
