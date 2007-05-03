@@ -21,6 +21,7 @@ package org.netbeans.modules.editor.lib2.highlighting;
 
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -125,7 +126,7 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
     //  Private implementation
     // ----------------------------------------------------------------------
 
-    private void dumpSequence(TokenSequence<? extends TokenId> seq, StringBuilder sb) {
+    private static void dumpSequence(TokenSequence<? extends TokenId> seq, StringBuilder sb) {
         for(seq.moveStart(); seq.moveNext(); ) {
             TokenSequence<? extends TokenId> emSeq = seq.embedded();
             if (emSeq != null) {
@@ -136,19 +137,22 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
                 sb.append(String.format("%3s", seq.offset())).append(", "); //NOI18N
                 sb.append(String.format("%3s", seq.offset() + token.length())).append(", "); //NOI18N
                 sb.append(String.format("%+3d", token.length())).append("> : "); //NOI18N
-                sb.append(tokenId(token)).append(" : '"); //NOI18N
+                sb.append(tokenId(token.id(), true)).append(" : '"); //NOI18N
                 sb.append(tokenText(token));
                 sb.append("'\n"); //NOI18N
             }
         }
     }
     
-    private String tokenId(Token<? extends TokenId> token) {
-        TokenId tokenId = token.id();
-        return String.format("%20s.%-15s", tokenId.getClass().getSimpleName(), tokenId.name()); //NOI18N
+    private static String tokenId(TokenId tokenId, boolean format) {
+        if (format) {
+            return String.format("%20s.%-15s", tokenId.getClass().getSimpleName(), tokenId.name()); //NOI18N
+        } else {
+            return tokenId.getClass().getSimpleName() + "." + tokenId.name();
+        }
     }
     
-    private String tokenText(Token<? extends TokenId> token) {
+    private static String tokenText(Token<? extends TokenId> token) {
         CharSequence text = token.text();
         StringBuilder sb = new StringBuilder(text.length());
         
@@ -163,6 +167,35 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
                 }
             } else {
                 sb.append(ch);
+            }
+        }
+        
+        return sb.toString();
+    }
+
+    private static String attributeSet(AttributeSet as) {
+        StringBuilder sb = new StringBuilder();
+        
+        for(Enumeration<? extends Object> keys = as.getAttributeNames(); keys.hasMoreElements(); ) {
+            Object key = keys.nextElement();
+            Object value = as.getAttribute(key);
+
+            if (key == null) {
+                sb.append("null"); //NOI18N
+            } else {
+                sb.append("'").append(key.toString()).append("'"); //NOI18N
+            }
+
+            sb.append(" = "); //NOI18N
+
+            if (value == null) {
+                sb.append("null"); //NOI18N
+            } else {
+                sb.append("'").append(value.toString()).append("'"); //NOI18N
+            }
+
+            if (keys.hasMoreElements()) {
+                sb.append(", "); //NOI18N
             }
         }
         
@@ -397,8 +430,8 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
             
             AttributeSet attribs = findFontAndColors(fcs, tokenId, innerLanguage);
             
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine(mimePath + ":" + tokenId.name() + " -> " + attribs); //NOI18N
+            if (LOG.isLoggable(Level.FINER)) {
+                LOG.finer(tokenId(tokenId, false) + " -> {" + attributeSet(attribs) + "}"); //NOI18N
             }
             
             return attribs != null ? attribs : SimpleAttributeSet.EMPTY;
