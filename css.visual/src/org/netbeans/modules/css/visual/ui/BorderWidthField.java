@@ -63,14 +63,21 @@ public class BorderWidthField extends javax.swing.JPanel {
         });
     }
 
-    private PropertyChangeSupport propertyChangeSupport =  new PropertyChangeSupport(this);
+    private PropertyChangeSupport propertyChangeSupport;
+    
+    private PropertyChangeSupport propertyChangeSupport() {
+        if(propertyChangeSupport == null) {
+            propertyChangeSupport =  new PropertyChangeSupport(this);
+        }
+        return propertyChangeSupport;
+    }
 
     /**
      * Adds a PropertyChangeListener to the listener list.
      * @param l The listener to add.
      */
     public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
-        propertyChangeSupport.addPropertyChangeListener(l);
+        propertyChangeSupport().addPropertyChangeListener(l);
     }
 
     /**
@@ -78,7 +85,7 @@ public class BorderWidthField extends javax.swing.JPanel {
      * @param l The listener to remove.
      */
     public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
-        propertyChangeSupport.removePropertyChangeListener(l);
+        propertyChangeSupport().removePropertyChangeListener(l);
     }
 
     public void setWidthString(String widthStr){
@@ -221,7 +228,7 @@ public class BorderWidthField extends javax.swing.JPanel {
         String oldValue = borderWidthData.toString();
         borderWidthData.setUnit(borderWidthUnitCombo.getSelectedItem().toString());
         borderWidthData.setValue( borderWidthCombo.getSelectedItem().toString());
-        propertyChangeSupport.firePropertyChange("border-width", oldValue, borderWidthData.toString());//NOI18N
+        propertyChangeSupport().firePropertyChange("border-width", oldValue, borderWidthData.toString());//NOI18N
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

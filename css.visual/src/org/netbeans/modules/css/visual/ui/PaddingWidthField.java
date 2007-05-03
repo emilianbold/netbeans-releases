@@ -61,14 +61,21 @@ public class PaddingWidthField extends javax.swing.JPanel {
         });
     }
 
-    private PropertyChangeSupport propertyChangeSupport =  new PropertyChangeSupport(this);
+    private PropertyChangeSupport propertyChangeSupport;
 
+    private PropertyChangeSupport propertyChangeSupport() {
+        if(propertyChangeSupport == null) {
+            propertyChangeSupport =  new PropertyChangeSupport(this);
+        }
+        return propertyChangeSupport;
+    }
+    
     /**
      * Adds a PropertyChangeListener to the listener list.
      * @param l The listener to add.
      */
     public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
-        propertyChangeSupport.addPropertyChangeListener(l);
+        propertyChangeSupport().addPropertyChangeListener(l);
     }
 
     public void setPaddingString(String paddingStr){
@@ -127,7 +134,7 @@ public class PaddingWidthField extends javax.swing.JPanel {
      * @param l The listener to remove.
      */
     public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
-        propertyChangeSupport.removePropertyChangeListener(l);
+        propertyChangeSupport().removePropertyChangeListener(l);
     }
     
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
@@ -217,7 +224,7 @@ public class PaddingWidthField extends javax.swing.JPanel {
         String oldValue = borderPaddingData.toString();
         borderPaddingData.setUnit(borderPaddingUnitCombo.getSelectedItem().toString());
         borderPaddingData.setValue( borderPaddingCombo.getSelectedItem().toString());
-        propertyChangeSupport.firePropertyChange("padding-width", oldValue, borderPaddingData.toString()); //NOI18N
+        propertyChangeSupport().firePropertyChange("padding-width", oldValue, borderPaddingData.toString()); //NOI18N
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

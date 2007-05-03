@@ -39,7 +39,7 @@ import javax.swing.JPanel;
  */
 abstract public class StyleEditor extends JPanel {
 
-    PropertyChangeSupport cssPropertyChangeSupport = new PropertyChangeSupport(this);
+    private PropertyChangeSupport cssPropertyChangeSupport;
 
     CssPropertyChangeListener cssPropertyChangeListener = new CssPropertyChangeListener();
 
@@ -53,6 +53,13 @@ abstract public class StyleEditor extends JPanel {
      */
     abstract protected void setCssPropertyValues(CssStyleData styleData);
 
+    PropertyChangeSupport cssPropertyChangeSupport() {
+        if(cssPropertyChangeSupport == null) {
+            cssPropertyChangeSupport =  new PropertyChangeSupport(this);
+        }
+        return cssPropertyChangeSupport;
+    }
+    
     /**
      * Set the CSS property change listener
      */
@@ -63,7 +70,7 @@ abstract public class StyleEditor extends JPanel {
             if (!listenerAdded){
                 listenerAdded = true;
                 cssPropertyChangeListener.setCssStyleData(styleData);
-                cssPropertyChangeSupport.addPropertyChangeListener(cssPropertyChangeListener);
+                cssPropertyChangeSupport().addPropertyChangeListener(cssPropertyChangeListener);
             }
         }
     }
@@ -75,7 +82,7 @@ abstract public class StyleEditor extends JPanel {
         synchronized(StyleEditor.class){
             if (listenerAdded){
                 listenerAdded = false;
-                cssPropertyChangeSupport.removePropertyChangeListener(cssPropertyChangeListener);
+                cssPropertyChangeSupport().removePropertyChangeListener(cssPropertyChangeListener);
             }
         }
     }

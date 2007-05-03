@@ -199,7 +199,7 @@ public class MarginStyleEditor extends StyleEditor {
                     NbBundle.getMessage(MarginDataTable.class, "ALL_SIDE_MARGIN_WIDTH_UNIT_ACCESS_DESC"));
             allMarginField.addPropertyChangeListener(new PropertyChangeListenerImpl() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    //cssPropertyChangeSupport.firePropertyChange(CssProperties.MARGIN, null, evt.getNewValue().toString());
+                    //cssPropertyChangeSupport().firePropertyChange(CssProperties.MARGIN, null, evt.getNewValue().toString());
                     topMarginField.setMarginString(evt.getNewValue().toString());
                     bottomMarginField.setMarginString(evt.getNewValue().toString());
                     leftMarginField.setMarginString(evt.getNewValue().toString());
@@ -218,7 +218,7 @@ public class MarginStyleEditor extends StyleEditor {
                     NbBundle.getMessage(MarginDataTable.class, "ALL_SIDE_PADDING_WIDTH_UNIT_ACCESS_DESC"));
             allPaddingField.addPropertyChangeListener(new PropertyChangeListenerImpl() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    //cssPropertyChangeSupport.firePropertyChange(CssProperties.PADDING, null, evt.getNewValue().toString());
+                    //cssPropertyChangeSupport().firePropertyChange(CssProperties.PADDING, null, evt.getNewValue().toString());
                     topPaddingField.setPaddingString(evt.getNewValue().toString());
                     bottomPaddingField.setPaddingString(evt.getNewValue().toString());
                     leftPaddingField.setPaddingString(evt.getNewValue().toString());
@@ -236,7 +236,7 @@ public class MarginStyleEditor extends StyleEditor {
                     NbBundle.getMessage(MarginDataTable.class, "TOP_SIDE_MARGIN_WIDTH_UNIT_ACCESS_DESC"));
             topMarginField.addPropertyChangeListener(new PropertyChangeListenerImpl() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    cssPropertyChangeSupport.firePropertyChange(CssProperties.MARGIN_TOP, null, evt.getNewValue().toString());
+                    cssPropertyChangeSupport().firePropertyChange(CssProperties.MARGIN_TOP, null, evt.getNewValue().toString());
                 }
             });
             setValueAt(topMarginField, 2, 1);
@@ -249,7 +249,7 @@ public class MarginStyleEditor extends StyleEditor {
                     NbBundle.getMessage(MarginDataTable.class, "TOP_SIDE_PADDING_WIDTH_UNIT_ACCESS_DESC"));
             topPaddingField.addPropertyChangeListener(new PropertyChangeListenerImpl() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    cssPropertyChangeSupport.firePropertyChange(CssProperties.PADDING_TOP, null, evt.getNewValue().toString());
+                    cssPropertyChangeSupport().firePropertyChange(CssProperties.PADDING_TOP, null, evt.getNewValue().toString());
                 }
             });
             setValueAt(topPaddingField, 2, 2);
@@ -262,7 +262,7 @@ public class MarginStyleEditor extends StyleEditor {
                     NbBundle.getMessage(MarginDataTable.class, "BOTTOM_SIDE_MARGIN_WIDTH_UNIT_ACCESS_DESC"));
             bottomMarginField.addPropertyChangeListener(new PropertyChangeListenerImpl() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    cssPropertyChangeSupport.firePropertyChange(CssProperties.MARGIN_BOTTOM, null, evt.getNewValue().toString());
+                    cssPropertyChangeSupport().firePropertyChange(CssProperties.MARGIN_BOTTOM, null, evt.getNewValue().toString());
                 }
             });
             setValueAt(bottomMarginField, 3, 1);
@@ -275,7 +275,7 @@ public class MarginStyleEditor extends StyleEditor {
                     NbBundle.getMessage(MarginDataTable.class, "BOTTOM_SIDE_PADDING_WIDTH_UNIT_ACCESS_DESC"));
             bottomPaddingField.addPropertyChangeListener(new PropertyChangeListenerImpl() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    cssPropertyChangeSupport.firePropertyChange(CssProperties.PADDING_BOTTOM, null, evt.getNewValue().toString());
+                    cssPropertyChangeSupport().firePropertyChange(CssProperties.PADDING_BOTTOM, null, evt.getNewValue().toString());
                 }
             });
             setValueAt(bottomPaddingField, 3, 2);
@@ -288,7 +288,7 @@ public class MarginStyleEditor extends StyleEditor {
                     NbBundle.getMessage(MarginDataTable.class, "LEFT_SIDE_MARGIN_WIDTH_UNIT_ACCESS_DESC"));
             leftMarginField.addPropertyChangeListener(new PropertyChangeListenerImpl() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    cssPropertyChangeSupport.firePropertyChange(CssProperties.MARGIN_LEFT, null, evt.getNewValue().toString());
+                    cssPropertyChangeSupport().firePropertyChange(CssProperties.MARGIN_LEFT, null, evt.getNewValue().toString());
                 }
             });
             setValueAt(leftMarginField, 4, 1);
@@ -301,7 +301,7 @@ public class MarginStyleEditor extends StyleEditor {
                     NbBundle.getMessage(MarginDataTable.class, "LEFT_SIDE_PADDING_WIDTH_UNIT_ACCESS_DESC"));
             leftPaddingField.addPropertyChangeListener(new PropertyChangeListenerImpl() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    cssPropertyChangeSupport.firePropertyChange(CssProperties.PADDING_LEFT, null, evt.getNewValue().toString());
+                    cssPropertyChangeSupport().firePropertyChange(CssProperties.PADDING_LEFT, null, evt.getNewValue().toString());
                 }
             });
             setValueAt(leftPaddingField, 4, 2);
@@ -314,7 +314,7 @@ public class MarginStyleEditor extends StyleEditor {
                     NbBundle.getMessage(MarginDataTable.class, "RIGHT_SIDE_MARGIN_WIDTH_UNIT_ACCESS_DESC"));
             rightMarginField.addPropertyChangeListener(new PropertyChangeListenerImpl() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    cssPropertyChangeSupport.firePropertyChange(CssProperties.MARGIN_RIGHT, null, evt.getNewValue().toString());
+                    cssPropertyChangeSupport().firePropertyChange(CssProperties.MARGIN_RIGHT, null, evt.getNewValue().toString());
                 }
             });
             setValueAt(rightMarginField, 5, 1);
@@ -327,7 +327,7 @@ public class MarginStyleEditor extends StyleEditor {
                     NbBundle.getMessage(MarginDataTable.class, "RIGHT_SIDE_PADDING_WIDTH_UNIT_ACCESS_DESC"));
             rightPaddingField.addPropertyChangeListener(new PropertyChangeListenerImpl() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    cssPropertyChangeSupport.firePropertyChange(CssProperties.PADDING_RIGHT, null, evt.getNewValue().toString());
+                    cssPropertyChangeSupport().firePropertyChange(CssProperties.PADDING_RIGHT, null, evt.getNewValue().toString());
                 }
             });
             setValueAt(rightPaddingField, 5, 2);

@@ -795,7 +795,7 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
     private void setFontFamily(){
         PropertyData fontFamilyData = new PropertyData();
         fontFamilyData.setValue(fontChosenField.getText());
-        cssPropertyChangeSupport.firePropertyChange(CssProperties.FONT_FAMILY, null, fontFamilyData.toString());
+        cssPropertyChangeSupport().firePropertyChange(CssProperties.FONT_FAMILY, null, fontFamilyData.toString());
     }
     
     private void setFontSize(){
@@ -803,35 +803,35 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
         PropertyWithUnitData fontSizeData = new PropertyWithUnitData();
         fontSizeData.setUnit(fontSizeUnitCombo.getSelectedItem().toString());
         fontSizeData.setValue(fontSizeField.getText());
-        cssPropertyChangeSupport.firePropertyChange(CssProperties.FONT_SIZE, null, fontSizeData.toString());
+        cssPropertyChangeSupport().firePropertyChange(CssProperties.FONT_SIZE, null, fontSizeData.toString());
     }
     
     private void setFontStyle(){
         PropertyData fontStyleData = new PropertyData();
         fontStyleData.setValue(fontStyleComboBox.getSelectedItem().toString());
-        cssPropertyChangeSupport.firePropertyChange(CssProperties.FONT_STYLE, null, fontStyleData.toString());
+        cssPropertyChangeSupport().firePropertyChange(CssProperties.FONT_STYLE, null, fontStyleData.toString());
     }
     
     private void setFontWeight(){
         PropertyData fontWeightData = new PropertyData();
         fontWeightData.setValue(fontWeightComboBox.getSelectedItem().toString());
-        cssPropertyChangeSupport.firePropertyChange(CssProperties.FONT_WEIGHT, null, fontWeightData.toString());
+        cssPropertyChangeSupport().firePropertyChange(CssProperties.FONT_WEIGHT, null, fontWeightData.toString());
     }
     
     private void setFontVariant(){
         PropertyData fontVariantData = new PropertyData();
         fontVariantData.setValue(fontVariantComboBox.getSelectedItem().toString());
-        cssPropertyChangeSupport.firePropertyChange(CssProperties.FONT_VARIANT, null, fontVariantData.toString());
+        cssPropertyChangeSupport().firePropertyChange(CssProperties.FONT_VARIANT, null, fontVariantData.toString());
     }
     
     private void  setFontColor(){
         PropertyData fontColorData = new PropertyData();
         fontColorData.setValue(colorField.getColorString());
-        cssPropertyChangeSupport.firePropertyChange(CssProperties.COLOR, null, fontColorData.toString());
+        cssPropertyChangeSupport().firePropertyChange(CssProperties.COLOR, null, fontColorData.toString());
     }
     
     private void  setTextDecoration(){
-        cssPropertyChangeSupport.firePropertyChange(CssProperties.TEXT_DECORATION, null, textDecorationData.toString());
+        cssPropertyChangeSupport().firePropertyChange(CssProperties.TEXT_DECORATION, null, textDecorationData.toString());
     }
     
     

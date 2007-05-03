@@ -701,44 +701,44 @@ public class TextBlockStyleEditor extends StyleEditor {
     private void setLineHeight(){
         lineHeightData.setUnit(lineHeightUnitCombo.getSelectedItem().toString());
         lineHeightData.setValue(lineHeightCombo.getSelectedItem().toString());
-        cssPropertyChangeSupport.firePropertyChange(CssProperties.LINE_HEIGHT, null, lineHeightData.toString());
+        cssPropertyChangeSupport().firePropertyChange(CssProperties.LINE_HEIGHT, null, lineHeightData.toString());
         lineHeightUnitCombo.setEnabled(lineHeightData.isValueInteger());
     }
     
     private void setLetterSpacing(){
         letterSpacingData.setUnit(letterSpacingUnitCombo.getSelectedItem().toString());
         letterSpacingData.setValue(letterSpacingCombo.getSelectedItem().toString());
-        cssPropertyChangeSupport.firePropertyChange(CssProperties.LETTER_SPACING, null, letterSpacingData.toString());
+        cssPropertyChangeSupport().firePropertyChange(CssProperties.LETTER_SPACING, null, letterSpacingData.toString());
         letterSpacingUnitCombo.setEnabled(letterSpacingData.isValueInteger());
     }
     
     private void setWordSpacing(){
         wordSpacingData.setUnit(wordSpacingUnitCombo.getSelectedItem().toString());
         wordSpacingData.setValue(wordSpacingCombo.getSelectedItem().toString());
-        cssPropertyChangeSupport.firePropertyChange(CssProperties.WORD_SPACING, null, wordSpacingData.toString());
+        cssPropertyChangeSupport().firePropertyChange(CssProperties.WORD_SPACING, null, wordSpacingData.toString());
         wordSpacingUnitCombo.setEnabled(wordSpacingData.isValueInteger());
     }
     
     private void setDirection(){
         directionData.setValue(directionCombo.getSelectedItem().toString());
-        cssPropertyChangeSupport.firePropertyChange(CssProperties.DIRECTION, null, directionData.toString());
+        cssPropertyChangeSupport().firePropertyChange(CssProperties.DIRECTION, null, directionData.toString());
     }
     
     private void setTextIndent(){
         textIndentData.setUnit(textIndentUnitCombo.getSelectedItem().toString());
         textIndentData.setValue(textIndentCombo.getSelectedItem().toString());
-        cssPropertyChangeSupport.firePropertyChange(CssProperties.TEXT_INDENT, null, textIndentData.toString());
+        cssPropertyChangeSupport().firePropertyChange(CssProperties.TEXT_INDENT, null, textIndentData.toString());
         textIndentUnitCombo.setEnabled(textIndentData.isValueInteger());
     }
     
     private void setVerticalAlign(){
         verticalAlignData.setValue(verticalAlignCombo.getSelectedItem().toString());
-        cssPropertyChangeSupport.firePropertyChange(CssProperties.VERTICAL_ALIGN, null, verticalAlignData.toString());
+        cssPropertyChangeSupport().firePropertyChange(CssProperties.VERTICAL_ALIGN, null, verticalAlignData.toString());
     }
     
     private void setTextAlign(){
         textAlignData.setValue(horizontalAlignCombo.getSelectedItem().toString());
-        cssPropertyChangeSupport.firePropertyChange(CssProperties.TEXT_ALIGN, null, textAlignData.toString());
+        cssPropertyChangeSupport().firePropertyChange(CssProperties.TEXT_ALIGN, null, textAlignData.toString());
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

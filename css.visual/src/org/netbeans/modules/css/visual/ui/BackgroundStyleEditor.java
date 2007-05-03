@@ -493,7 +493,7 @@ public class BackgroundStyleEditor extends StyleEditor implements PropertyChange
     private void  setBackgroundColor(){
         PropertyData backgroundColorData = new PropertyData();
         backgroundColorData.setValue(colorField.getColorString());
-        cssPropertyChangeSupport.firePropertyChange(CssProperties.BACKGROUND_COLOR, null, backgroundColorData.toString());
+        cssPropertyChangeSupport().firePropertyChange(CssProperties.BACKGROUND_COLOR, null, backgroundColorData.toString());
     }
     
     private void  setBackgroundImage(){
@@ -508,23 +508,23 @@ public class BackgroundStyleEditor extends StyleEditor implements PropertyChange
         }else{
             backgroundImageData.setValue(CssStyleData.NOT_SET);
         }
-        cssPropertyChangeSupport.firePropertyChange(CssProperties.BACKGROUND_IMAGE, null, backgroundImageData.toString());
+        cssPropertyChangeSupport().firePropertyChange(CssProperties.BACKGROUND_IMAGE, null, backgroundImageData.toString());
     }
     
     private void  setBackgroundRepeat(){
         PropertyData backgroundRepeatData = new PropertyData();
         backgroundRepeatData.setValue(repeatComboBox.getSelectedItem().toString());
-        cssPropertyChangeSupport.firePropertyChange(CssProperties.BACKGROUND_REPEAT, null, backgroundRepeatData.toString());
+        cssPropertyChangeSupport().firePropertyChange(CssProperties.BACKGROUND_REPEAT, null, backgroundRepeatData.toString());
     }
     
     private void  setBackgroundAttachment(){
         PropertyData backgroundAttachmentData = new PropertyData();
         backgroundAttachmentData.setValue(scrollComboBox.getSelectedItem().toString());
-        cssPropertyChangeSupport.firePropertyChange(CssProperties.BACKGROUND_ATTACHMENT, null, backgroundAttachmentData.toString());
+        cssPropertyChangeSupport().firePropertyChange(CssProperties.BACKGROUND_ATTACHMENT, null, backgroundAttachmentData.toString());
     }
     
     private void  setBackgroundPosition(){
-        cssPropertyChangeSupport.firePropertyChange(CssProperties.BACKGROUND_POSITION, null, bgPositionData.toString());
+        cssPropertyChangeSupport().firePropertyChange(CssProperties.BACKGROUND_POSITION, null, bgPositionData.toString());
         enablePositionCombo();
     }
     

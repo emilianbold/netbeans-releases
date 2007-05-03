@@ -2,7 +2,9 @@
 
 <Form version="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -102,7 +104,7 @@
             <Component class="javax.swing.JButton" name="fontFamilyButton">
               <Properties>
                 <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="org/netbeans/modules/css/stylebuilder/Bundle.properties" key="FONT_FAMILY_EDIT_BTN_MNEMONIC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="" key="FONT_FAMILY_EDIT_BTN_MNEMONIC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/css/stylebuilder/Bundle.properties" key="EDIT" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>

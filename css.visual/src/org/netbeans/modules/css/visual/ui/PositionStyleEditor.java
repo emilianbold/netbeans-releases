@@ -962,7 +962,7 @@ public class PositionStyleEditor extends StyleEditor {
     private void clipLeftUnitComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_clipLeftUnitComboBoxItemStateChanged
         if (evt.getStateChange() != evt.DESELECTED) {
             clipData.setLeftUnit(clipLeftUnitComboBox.getSelectedItem().toString());
-            cssPropertyChangeSupport.firePropertyChange(CssProperties.CLIP, null, clipData.toString());
+            cssPropertyChangeSupport().firePropertyChange(CssProperties.CLIP, null, clipData.toString());
         }
     }//GEN-LAST:event_clipLeftUnitComboBoxItemStateChanged
     
@@ -970,14 +970,14 @@ public class PositionStyleEditor extends StyleEditor {
         if (evt.getStateChange() != evt.DESELECTED) {
             clipData.setLeft(clipLeftComboBox.getSelectedItem().toString());
             clipLeftUnitComboBox.setEnabled(clipData.isLeftValueInteger());
-            cssPropertyChangeSupport.firePropertyChange(CssProperties.CLIP, null, clipData.toString());
+            cssPropertyChangeSupport().firePropertyChange(CssProperties.CLIP, null, clipData.toString());
         }
     }//GEN-LAST:event_clipLeftComboBoxItemStateChanged
         
     private void clipBottomUnitComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_clipBottomUnitComboBoxItemStateChanged
         if (evt.getStateChange() != evt.DESELECTED) {
             clipData.setBottomUnit(clipBottomUnitComboBox.getSelectedItem().toString());
-            cssPropertyChangeSupport.firePropertyChange(CssProperties.CLIP, null, clipData.toString());
+            cssPropertyChangeSupport().firePropertyChange(CssProperties.CLIP, null, clipData.toString());
         }
     }//GEN-LAST:event_clipBottomUnitComboBoxItemStateChanged
     
@@ -985,14 +985,14 @@ public class PositionStyleEditor extends StyleEditor {
         if (evt.getStateChange() != evt.DESELECTED) {
             clipData.setBottom(clipBottomComboBox.getSelectedItem().toString());
             clipBottomUnitComboBox.setEnabled(clipData.isBottomValueInteger());
-            cssPropertyChangeSupport.firePropertyChange(CssProperties.CLIP, null, clipData.toString());
+            cssPropertyChangeSupport().firePropertyChange(CssProperties.CLIP, null, clipData.toString());
         }
     }//GEN-LAST:event_clipBottomComboBoxItemStateChanged
         
     private void clipRightUnitComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_clipRightUnitComboBoxItemStateChanged
         if (evt.getStateChange() != evt.DESELECTED) {
             clipData.setRightUnit(clipRightUnitComboBox.getSelectedItem().toString());
-            cssPropertyChangeSupport.firePropertyChange(CssProperties.CLIP, null, clipData.toString());
+            cssPropertyChangeSupport().firePropertyChange(CssProperties.CLIP, null, clipData.toString());
         }
     }//GEN-LAST:event_clipRightUnitComboBoxItemStateChanged
     
@@ -1000,14 +1000,14 @@ public class PositionStyleEditor extends StyleEditor {
         if (evt.getStateChange() != evt.DESELECTED) {
             clipData.setRight(clipRightComboBox.getSelectedItem().toString());
             clipRightUnitComboBox.setEnabled(clipData.isRightValueInteger());
-            cssPropertyChangeSupport.firePropertyChange(CssProperties.CLIP, null, clipData.toString());
+            cssPropertyChangeSupport().firePropertyChange(CssProperties.CLIP, null, clipData.toString());
         }
     }//GEN-LAST:event_clipRightComboBoxItemStateChanged
         
     private void clipTopUnitComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_clipTopUnitComboBoxItemStateChanged
         if (evt.getStateChange() != evt.DESELECTED) {
             clipData.setTopUnit(clipTopUnitComboBox.getSelectedItem().toString());
-            cssPropertyChangeSupport.firePropertyChange(CssProperties.CLIP, null, clipData.toString());
+            cssPropertyChangeSupport().firePropertyChange(CssProperties.CLIP, null, clipData.toString());
         }
     }//GEN-LAST:event_clipTopUnitComboBoxItemStateChanged
     
@@ -1015,7 +1015,7 @@ public class PositionStyleEditor extends StyleEditor {
         if (evt.getStateChange() != evt.DESELECTED) {
             clipData.setTop(clipTopComboBox.getSelectedItem().toString());
             clipTopUnitComboBox.setEnabled(clipData.isTopValueInteger());
-            cssPropertyChangeSupport.firePropertyChange(CssProperties.CLIP, null, clipData.toString());
+            cssPropertyChangeSupport().firePropertyChange(CssProperties.CLIP, null, clipData.toString());
         }
     }//GEN-LAST:event_clipTopComboBoxItemStateChanged
         
@@ -1130,20 +1130,20 @@ public class PositionStyleEditor extends StyleEditor {
     private void setZindex(){
         PropertyData zindexData = new PropertyData();
         zindexData.setValue(zindexComboBox.getSelectedItem().toString());
-        cssPropertyChangeSupport.firePropertyChange(CssProperties.Z_INDEX, null, zindexData.toString());
+        cssPropertyChangeSupport().firePropertyChange(CssProperties.Z_INDEX, null, zindexData.toString());
     }
     
     public void setVisibility(){
         PropertyData visibleData = new PropertyData();
         visibleData.setValue(visibleComboBox.getSelectedItem().toString());
-        cssPropertyChangeSupport.firePropertyChange(CssProperties.VISIBILITY, null, visibleData.toString());
+        cssPropertyChangeSupport().firePropertyChange(CssProperties.VISIBILITY, null, visibleData.toString());
     }
     
     private void setHeight(){
         PropertyWithUnitData heightData = new PropertyWithUnitData();
         heightData.setUnit(heightUnitComboBox.getSelectedItem().toString());
         heightData.setValue(heightComboBox.getSelectedItem().toString());
-        cssPropertyChangeSupport.firePropertyChange(CssProperties.HEIGHT, null, heightData.toString());
+        cssPropertyChangeSupport().firePropertyChange(CssProperties.HEIGHT, null, heightData.toString());
         heightUnitComboBox.setEnabled(heightData.isValueInteger());
     }
     
@@ -1151,7 +1151,7 @@ public class PositionStyleEditor extends StyleEditor {
         PropertyWithUnitData widthData = new PropertyWithUnitData();
         widthData.setUnit(widthUnitComboBox.getSelectedItem().toString());
         widthData.setValue(widthComboBox.getSelectedItem().toString());
-        cssPropertyChangeSupport.firePropertyChange(CssProperties.WIDTH, null, widthData.toString());
+        cssPropertyChangeSupport().firePropertyChange(CssProperties.WIDTH, null, widthData.toString());
         widthUnitComboBox.setEnabled(widthData.isValueInteger());
     }
     
@@ -1159,7 +1159,7 @@ public class PositionStyleEditor extends StyleEditor {
         PropertyWithUnitData posRightData = new PropertyWithUnitData();
         posRightData.setUnit(posRightUnitComboBox.getSelectedItem().toString());
         posRightData.setValue(posRightComboBox.getSelectedItem().toString());
-        cssPropertyChangeSupport.firePropertyChange(CssProperties.RIGHT, null, posRightData.toString());
+        cssPropertyChangeSupport().firePropertyChange(CssProperties.RIGHT, null, posRightData.toString());
         posRightUnitComboBox.setEnabled(posRightData.isValueInteger());
     }
     
@@ -1167,7 +1167,7 @@ public class PositionStyleEditor extends StyleEditor {
         PropertyWithUnitData posLeftData = new PropertyWithUnitData();
         posLeftData.setUnit(posLeftUnitComboBox.getSelectedItem().toString());
         posLeftData.setValue(posLeftComboBox.getSelectedItem().toString());
-        cssPropertyChangeSupport.firePropertyChange(CssProperties.LEFT, null, posLeftData.toString());
+        cssPropertyChangeSupport().firePropertyChange(CssProperties.LEFT, null, posLeftData.toString());
         posLeftUnitComboBox.setEnabled(posLeftData.isValueInteger());
     }
     
@@ -1175,7 +1175,7 @@ public class PositionStyleEditor extends StyleEditor {
         PropertyWithUnitData posBottomData = new PropertyWithUnitData();
         posBottomData.setUnit(posBottomUnitComboBox.getSelectedItem().toString());
         posBottomData.setValue(posBottomComboBox.getSelectedItem().toString());
-        cssPropertyChangeSupport.firePropertyChange(CssProperties.BOTTOM, null, posBottomData.toString());
+        cssPropertyChangeSupport().firePropertyChange(CssProperties.BOTTOM, null, posBottomData.toString());
         posBottomUnitComboBox.setEnabled(posBottomData.isValueInteger());
     }
     
@@ -1183,14 +1183,14 @@ public class PositionStyleEditor extends StyleEditor {
         PropertyWithUnitData posTopData = new PropertyWithUnitData();
         posTopData.setUnit(posTopUnitComboBox.getSelectedItem().toString());
         posTopData.setValue(posTopComboBox.getSelectedItem().toString());
-        cssPropertyChangeSupport.firePropertyChange(CssProperties.TOP, null, posTopData.toString());
+        cssPropertyChangeSupport().firePropertyChange(CssProperties.TOP, null, posTopData.toString());
         posTopUnitComboBox.setEnabled(posTopData.isValueInteger());
     }
     
     public void setPosition(){
         PropertyData positionData = new PropertyData();
         positionData.setValue(positionModeCombo.getSelectedItem().toString());
-        cssPropertyChangeSupport.firePropertyChange(CssProperties.POSITION, null, positionData.toString());
+        cssPropertyChangeSupport().firePropertyChange(CssProperties.POSITION, null, positionData.toString());
     }
     
     
