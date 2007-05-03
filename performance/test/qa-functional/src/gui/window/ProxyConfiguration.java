@@ -32,7 +32,7 @@ import org.netbeans.jemmy.operators.JTabbedPaneOperator;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class ProxyConfiguration extends UpdateCenter {
+public class ProxyConfiguration extends PluginManager {
 
     private JButtonOperator openProxyButton;
     protected String BUTTON, TAB;

@@ -47,7 +47,7 @@ public class MeasureDialogs  {
         suite.addTest(new OpenProjectDialog("measureTime", "Open Project dialog open"));
         suite.addTest(new OpenFileDialog("measureTime", "Open File dialog open"));
  
-        suite.addTest(new UpdateCenter("measureTime", "Plugin Manager open"));
+        suite.addTest(new PluginManager("measureTime", "Plugin Manager open"));
         
         // need to be after Options - since NB 6.0 we open first panel of Options dialog instead of separate Proxy Configuration dialog,
         //    also after Update Center - because the Proxy dialog is invoked from Update Center wizard

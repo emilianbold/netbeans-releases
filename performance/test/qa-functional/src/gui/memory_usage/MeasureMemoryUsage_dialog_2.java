@@ -42,7 +42,7 @@ public class MeasureMemoryUsage_dialog_2 {
         suite.addTest(new OpenProjectDialog("measureTime", "Open Project dialog open"));
         suite.addTest(new OpenFileDialog("measureTime", "Open File dialog open"));
  
-        suite.addTest(new UpdateCenter("measureTime", "Update Center wizard open"));
+        suite.addTest(new PluginManager("measureTime", "Update Center wizard open"));
         suite.addTest(new ProxyConfiguration("measureTime", "Proxy Configuration open"));
         
         suite.addTest(new FavoritesWindow("measureTime", "Favorites window open"));
