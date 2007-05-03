@@ -125,26 +125,6 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
             ClassPath cp = ClassPath.getClassPath(fileObject, ClassPath.COMPILE);
             boolean isMyFaces = cp.findResource("org/apache/myfaces/webapp/StartupServletContextListener.class") != null; //NOI18N
-            if (ddRoot != null) {
-                if (!WebApp.VERSION_2_5.equals(ddRoot.getVersion())) {
-                    if (isMyFaces) {
-                        JsfProjectUtils.removeLibraryReferences(project,
-                                new Library[]{ LibraryManager.getDefault().getLibrary("jsf-designtime")}, ClassPath.COMPILE);
-                        JsfProjectUtils.removeLibraryReferences(project,
-                                new Library[]{ LibraryManager.getDefault().getLibrary("jsf-runtime")}, ClassPath.EXECUTE);
-                    } else {
-                        boolean hasJstl = cp.findResource("javax/servlet/jsp/jstl/core/Config.class") != null; // NOI18N
- 
-                        if (!hasJstl) {
-                            Library jstlLibrary = LibraryManager.getDefault().getLibrary("jstl11");
-                            
-                            if (jstlLibrary != null) {
-                                JsfProjectUtils.addLibraryReferences(project, new Library[] { jstlLibrary });
-                            }
-                        }
-                    }
-                }
-            }
 
             FileSystem fileSystem = webModule.getWebInf().getFileSystem();
             fileSystem.runAtomicAction(new CreateFacesConfig(webModule, isMyFaces, pageName));

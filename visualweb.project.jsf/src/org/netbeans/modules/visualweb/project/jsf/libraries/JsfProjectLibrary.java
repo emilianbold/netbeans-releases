@@ -44,39 +44,52 @@ public class JsfProjectLibrary {
     private static final String JAR_HEADER = "nbinst:///";
     private static final String JAR_TAIL = "!/";
 
-    // JSF 1.1 libraries for both Compile and Deploy
+    // JSF RI (Reference Implementation) libraries for both Compile and Deploy
+    public static final String[] ALLTIME_LIBS_JSFRI = {
+        "jstl11",
+    };
+
+    // JSF RI (Reference Implementation) libraries for Compile only
+    public static final String[] DESIGNTIME_LIBS_JSFRI = {
+        "jsf-designtime",
+    };
+
+    // JSF RI (Reference Implementation) libraries for Deploy only
+    public static final String[] RUNTIME_LIBS_JSFRI = {
+        "jsf-runtime",
+    };
+
+    // JSF 1.1 support libraries for both Compile and Deploy
     public static final String[] ALLTIME_LIBS_JSF11 = {
     };
 
-    // JSF 1.1 libraries for Compile only
+    // JSF 1.1 support libraries for Compile only
     public static final String[] DESIGNTIME_LIBS_JSF11 = {
-        "jsf-designtime",
         "jsfsupport-designtime",
         "webui-designtime",
         "jdbcsupport-designtime",
     };
 
-    // JSF 1.1 libraries for Deploy only
+    // JSF 1.1 support libraries for Deploy only
     public static final String[] RUNTIME_LIBS_JSF11 = {
-        "jsf-runtime",
         "jsfsupport-runtime",
         "webui-runtime",
         "jdbcsupport-runtime",
         "exceptionhandler-runtime",
     };
 
-    // JSF 1.2 libraries for both Compile and Deploy
+    // JSF 1.2 support libraries for both Compile and Deploy
     public static final String[] ALLTIME_LIBS_JSF12 = {
         "jsf12-support",
         "woodstock-components",
     };
 
-    // JSF 1.2 libraries for Compile only
+    // JSF 1.2 support libraries for Compile only
     public static final String[] DESIGNTIME_LIBS_JSF12 = {
         "jdbcsupport-designtime",
     };
 
-    // JSF 1.2 libraries for Deploy only
+    // JSF 1.2 support libraries for Deploy only
     public static final String[] RUNTIME_LIBS_JSF12 = {
          "jdbcsupport-runtime",
          "exceptionhandler-runtime",
@@ -86,7 +99,7 @@ public class JsfProjectLibrary {
     public static final String DEFAULT_JSF12_THEME = "woodstock-theme-default";
 
     public static void addLibrary(Project project) throws IOException {
-        // Add the Creator libraries to the project
+        // Add the JSF support libraries to the project
         LibraryManager libMgr = LibraryManager.getDefault();
         String[] alltimeList;
         String[] designtimeList;
@@ -96,6 +109,9 @@ public class JsfProjectLibrary {
         Library[] runtimeLibs;
         String defaultTheme;
 
+        String[] alltimeRIList = new String[0];
+        String[] designtimeRIList = new String[0];
+        String[] runtimeRIList = new String[0];
         if (JsfProjectUtils.isJavaEE5Project(project)) {
             defaultTheme = DEFAULT_JSF12_THEME;
             alltimeList = ALLTIME_LIBS_JSF12;
@@ -106,25 +122,48 @@ public class JsfProjectLibrary {
             alltimeList = ALLTIME_LIBS_JSF11;
             designtimeList = DESIGNTIME_LIBS_JSF11;
             runtimeList = RUNTIME_LIBS_JSF11;
+
+            ClassPath cp = ClassPath.getClassPath(JsfProjectUtils.getDocumentRoot(project), ClassPath.COMPILE);
+            if (cp.findResource("javax/faces/FacesException.class") == null && //NOI18N
+                cp.findResource("org/apache/myfaces/webapp/StartupServletContextListener.class") == null) { //NOI18N
+                designtimeRIList = DESIGNTIME_LIBS_JSFRI;
+                runtimeRIList = RUNTIME_LIBS_JSFRI;
+
+                if (cp.findResource("javax/servlet/jsp/jstl/core/Config.class") == null) { // NOI18N
+                    Library jstlLibrary = LibraryManager.getDefault().getLibrary(ALLTIME_LIBS_JSFRI[0]);
+                    if (jstlLibrary != null) {
+                        alltimeRIList = ALLTIME_LIBS_JSFRI;
+                    }
+                }
+            }
         }
 
         JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_JSF_PROJECT_LIBRARIES_DIR, JsfProjectConstants.PATH_LIBRARIES);
         JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_CURRENT_THEME, defaultTheme);
 
-        alltimeLibs = new Library[alltimeList.length+1];
+        alltimeLibs = new Library[alltimeRIList.length + alltimeList.length + 1];
+        for (int i = 0; i < alltimeRIList.length; i++) {
+            alltimeLibs[i] = libMgr.getLibrary(alltimeRIList[i]);
+        }
         for (int i = 0; i < alltimeList.length; i++) {
-            alltimeLibs[i] = libMgr.getLibrary(alltimeList[i]);
+            alltimeLibs[i+alltimeRIList.length] = libMgr.getLibrary(alltimeList[i]);
         }
-        alltimeLibs[alltimeList.length] = libMgr.getLibrary(defaultTheme);
+        alltimeLibs[alltimeRIList.length+alltimeList.length] = libMgr.getLibrary(defaultTheme);
 
-        designtimeLibs = new Library[designtimeList.length];
+        designtimeLibs = new Library[designtimeRIList.length + designtimeList.length];
+        for (int i = 0; i < designtimeRIList.length; i++) {
+            designtimeLibs[i] = libMgr.getLibrary(designtimeRIList[i]);
+        }
         for (int i = 0; i < designtimeList.length; i++) {
-            designtimeLibs[i] = libMgr.getLibrary(designtimeList[i]);
+            designtimeLibs[i+designtimeRIList.length] = libMgr.getLibrary(designtimeList[i]);
         }
 
-        runtimeLibs = new Library[runtimeList.length];
+        runtimeLibs = new Library[runtimeRIList.length + runtimeList.length];
+        for (int i = 0; i < runtimeRIList.length; i++) {
+            runtimeLibs[i] = libMgr.getLibrary(runtimeRIList[i]);
+        }
         for (int i = 0; i < runtimeList.length; i++) {
-            runtimeLibs[i] = libMgr.getLibrary(runtimeList[i]);
+            runtimeLibs[i+runtimeRIList.length] = libMgr.getLibrary(runtimeList[i]);
         }
 
         JsfProjectUtils.addLibraryReferences(project, alltimeLibs);
@@ -135,6 +174,7 @@ public class JsfProjectLibrary {
     }
 
     public static void updateLocalizedRoots(Project project) throws IOException {
+        // Add the localized JSF support jar files to the project
         String[] alltimeList;
         String[] designtimeList;
         String[] runtimeList;
