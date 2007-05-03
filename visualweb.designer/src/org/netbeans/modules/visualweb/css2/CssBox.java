@@ -3377,6 +3377,12 @@ public class CssBox implements Box {
                     if(newSize > contentHeight) {
                         contentHeight = newSize;
                     }
+                } else if (box != null && box.getBoxType() == BoxType.FLOAT) {
+                    // XXX #99707 Counting floats. This is just a hack.
+                    int newSize = box.getHeight();
+                    if (newSize != UNINITIALIZED && newSize != AUTO && newSize > contentHeight) {
+                        contentHeight = newSize;
+                    }
                 }
             }
         }
