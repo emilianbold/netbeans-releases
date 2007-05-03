@@ -10,7 +10,6 @@ package org.netbeans.modules.languages;
 import junit.framework.TestCase;
 
 import org.netbeans.api.languages.ParseException;
-import org.netbeans.modules.languages.parser.AnalyserAnalyser;
 
 
 /**
@@ -30,7 +29,7 @@ public class NBSLanguageReaderTest extends TestCase {
             "TOKEN:SYMBOL:( '>' | '=')\n" +
             "TOKEN:ENDTAG:( '</' ['a'-'z']+ )\n" +
             "TOKEN:ATTRIBUTE:( ['a'-'z']+ )\n" +
-            "TOKEN:ATTR_VALUE:( '\\\"' [^ '\\n' '\\r' '\\\"']+ '\\\"' )\n" +
+            "TOKEN:ATTR_VALUE:( '\\\"' [^ '\\n' '\\r' '\\\"' '\\uffff']+ '\\\"' )\n" +
             "TOKEN:VALUE:( '\\\"' [^ '\\n' '\\r' '\\\"']+ '\\\"' )\n" +
             "TOKEN:TEXT:( [^'<']+ )\n" +
             "\n" +
