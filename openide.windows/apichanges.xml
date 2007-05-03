@@ -28,7 +28,7 @@ Microsystems, Inc. All Rights Reserved.
     <api name="winsys"/>
     <summary>Added a method to check the TopComponent type - editor/view</summary>
     <version major="6" minor="16"/>
-    <date day="5" month="3" year="2007"/>
+    <date day="3" month="5" year="2007"/>
     <author login="saubrecht"/>
     <compatibility addition="yes" binary="incompatible" source="incompatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
     <description>
