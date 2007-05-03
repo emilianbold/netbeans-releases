@@ -1491,6 +1491,13 @@ public class LayoutDesigner implements LayoutConstants {
             for (int dim=0; dim < DIM_COUNT; dim++) {
                 addingInts[dim] = restrictedCopy(commonParents[dim], sourceToTargetComp, overallSpace, dim, null);
             }
+            // component intervals were removed, also remove the components
+            // (this is in case components are moved, not copied)
+            for (LayoutComponent comp : targetComponents) {
+                if (comp.getParent() != null) {
+                    layoutModel.removeComponent(comp, false);
+                }
+            }
 
             // place the copied intervals
             int[] shift = getCopyShift(sourceComponents, targetContainer, overallSpace, sourceContainer == targetContainer);
