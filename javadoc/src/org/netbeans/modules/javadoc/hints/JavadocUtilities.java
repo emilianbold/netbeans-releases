@@ -582,6 +582,7 @@ public class JavadocUtilities {
         IGNORE_TOKES = new HashSet<TokenId>();
         IGNORE_TOKES.add(JavaTokenId.WHITESPACE);
         IGNORE_TOKES.add(JavaTokenId.BLOCK_COMMENT);
+        IGNORE_TOKES.add(JavaTokenId.LINE_COMMENT);
     }
 
 }
