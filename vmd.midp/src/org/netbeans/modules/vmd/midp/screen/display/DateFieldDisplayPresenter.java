@@ -45,7 +45,7 @@ public class DateFieldDisplayPresenter extends ItemDisplayPresenter {
         super.reload(deviceInfo);
 
         PropertyValue inputModeValue = getComponent ().readProperty (DateFieldCD.PROP_INPUT_MODE);
-        String text = "<user date time>";
+        String text = "<user input mode>";
         DateFormat format = DateFormat.getDateTimeInstance (DateFormat.MEDIUM, DateFormat.MEDIUM);
         if (inputModeValue.getKind () == PropertyValue.Kind.VALUE) {
             int inputMode = MidpTypes.getInteger (inputModeValue);
