@@ -21,6 +21,8 @@ package org.netbeans.swing.tabcontrol.plaf;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.awt.image.RescaleOp;
 import javax.swing.plaf.synth.Region;
 import javax.swing.plaf.synth.SynthConstants;
 import javax.swing.plaf.synth.SynthContext;
@@ -89,9 +91,30 @@ final class GtkEditorTabCellRenderer extends AbstractTabCellRenderer {
         SynthStyleFactory sf = laf.getStyleFactory();
         SynthStyle style = sf.getStyle(dummyTab, region);
         SynthContext context =
-            new SynthContext(dummyTab, region, style, state);
+            new SynthContext(dummyTab, region, style, 
+                state == SynthConstants.FOCUSED ? SynthConstants.SELECTED : state);
         SynthPainter painter = style.getPainter(context);
-        painter.paintTabbedPaneTabBackground(context, g, x, y, w, h, index);
+        if (state == SynthConstants.DEFAULT) {
+            painter.paintTabbedPaneTabBackground(context, g, x, y, w, h, index);
+        } else {
+            BufferedImage bufIm = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+            Graphics2D g2d = bufIm.createGraphics();
+            g2d.setBackground(UIManager.getColor("control.shadow"));
+            g2d.clearRect(0, 0, w, h);
+            painter.paintTabbedPaneTabBackground(context, g2d, 0, 0, w, h, index);
+            // differentiate active and selected tabs, active tab made brighter,
+            // selected tab darker
+            RescaleOp op = state == SynthConstants.FOCUSED 
+                ? new RescaleOp(1.08f, 0, null)
+                : new RescaleOp(0.96f, 0, null); 
+            BufferedImage img = op.filter(bufIm, null);
+            g.drawImage(img, x, y, null);
+        }
+
+    }
+    
+    private static int getHeightDifference (GtkEditorTabCellRenderer ren) {
+        return ren.isSelected() ? ren.isActive() ? 0 : 1 : 2;
     }
     
     private static class GtkPainter implements TabPainter {
@@ -135,13 +158,12 @@ final class GtkEditorTabCellRenderer extends AbstractTabCellRenderer {
         public void paintInterior(Graphics g, Component c) {
             GtkEditorTabCellRenderer ren = (GtkEditorTabCellRenderer) c;
             Polygon p = getInteriorPolygon(c);
-            if (ren.isSelected()) {
-                paintTabBackground(g, 0, SynthConstants.SELECTED,
-                p.getBounds().x, p.getBounds().y, p.getBounds().width, p.getBounds().height);
-            } else {
-                paintTabBackground(g, 0, 0,
-                p.getBounds().x, p.getBounds().y + 2, p.getBounds().width, p.getBounds().height - 2);
-            }
+            int state = ren.isSelected() ? ren.isActive() ? SynthConstants.FOCUSED 
+                    : SynthConstants.SELECTED : SynthConstants.DEFAULT;
+            Rectangle bounds = p.getBounds();
+            int yDiff = getHeightDifference(ren);
+            paintTabBackground(g, 0, state, bounds.x, bounds.y + yDiff, 
+                    bounds.width, bounds.height - yDiff);
             
             if (!supportsCloseButton((JComponent)c)) {
                 return;
@@ -240,13 +262,12 @@ final class GtkEditorTabCellRenderer extends AbstractTabCellRenderer {
         public void paintInterior(Graphics g, Component c) {
             GtkEditorTabCellRenderer ren = (GtkEditorTabCellRenderer) c;
             Polygon p = getInteriorPolygon(c);
-            if (ren.isSelected()) {
-                paintTabBackground(g, 0, SynthConstants.SELECTED,
-                p.getBounds().x, p.getBounds().y, p.getBounds().width, p.getBounds().height);
-            } else {
-                paintTabBackground(g, 0, 0,
-                p.getBounds().x, p.getBounds().y + 2, p.getBounds().width, p.getBounds().height - 2);
-            }
+            int state = ren.isSelected() ? ren.isActive() ? SynthConstants.FOCUSED 
+                    : SynthConstants.SELECTED : SynthConstants.DEFAULT;
+            Rectangle bounds = p.getBounds();
+            int yDiff = getHeightDifference(ren);
+            paintTabBackground(g, 0, state, bounds.x, bounds.y + yDiff, 
+                    bounds.width, bounds.height - yDiff);
         }
 
         public boolean isBorderOpaque() {
@@ -302,13 +323,12 @@ final class GtkEditorTabCellRenderer extends AbstractTabCellRenderer {
             GtkEditorTabCellRenderer ren = (GtkEditorTabCellRenderer) c;
             
             Polygon p = getInteriorPolygon(c);
-            if (ren.isSelected()) {
-                paintTabBackground(g, 0, SynthConstants.SELECTED,
-                p.getBounds().x, p.getBounds().y, p.getBounds().width, p.getBounds().height);
-            } else {
-                paintTabBackground(g, 0, 0,
-                p.getBounds().x, p.getBounds().y + 2, p.getBounds().width, p.getBounds().height - 2);
-            }
+            int state = ren.isSelected() ? ren.isActive() ? SynthConstants.FOCUSED 
+                    : SynthConstants.SELECTED : SynthConstants.DEFAULT;
+            Rectangle bounds = p.getBounds();
+            int yDiff = getHeightDifference(ren);
+            paintTabBackground(g, 0, state, bounds.x, bounds.y + yDiff, 
+                    bounds.width, bounds.height - yDiff);
         }
 
         public boolean supportsCloseButton(JComponent renderer) {

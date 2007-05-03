@@ -25,10 +25,12 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
+import java.awt.image.RescaleOp;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
-
 import javax.swing.plaf.ComponentUI;
 import java.util.HashMap;
 import java.util.Map;
@@ -172,6 +174,11 @@ public final class GtkViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
     
     private static void paintTabBackgroundNative (Graphics g, int index, int state,
     int x, int y, int w, int h) {
+    }
+
+    protected void paintTabBackground(Graphics g, int index, int x, int y,
+                                      int width, int height) {
+        int state = isSelected(index) ? SynthConstants.SELECTED : SynthConstants.DEFAULT;
         if (dummyTab == null) {
             dummyTab = new JTabbedPane();
         }
@@ -179,21 +186,31 @@ public final class GtkViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         SynthLookAndFeel laf = (SynthLookAndFeel) UIManager.getLookAndFeel();
         SynthStyleFactory sf = laf.getStyleFactory();
         SynthStyle style = sf.getStyle(dummyTab, region);
-        SynthContext context =
-            new SynthContext(dummyTab, region, style, state);
+        SynthContext context = new SynthContext(dummyTab, region, style, state);
         SynthPainter painter = style.getPainter(context);
-        painter.paintTabbedPaneTabBackground(context, g, x, y, w, h, index);
-    }
-
-    protected void paintTabBackground(Graphics g, int index, int x, int y,
-                                      int width, int height) {
-        if (isSelected(index)) {
-            paintTabBackgroundNative(g, 0, SynthConstants.SELECTED,
-            x, y, width, height);
+        if (state == SynthConstants.SELECTED) {
+            // differentiate active and selected tabs, active tab made brighter,
+            // selected tab darker and lower
+            RescaleOp op = null;
+            if (isActive()) {
+                op = new RescaleOp(1.08f, 0, null);
+            } else {
+                op = new RescaleOp(0.96f, 0, null);
+                y++;
+                height--;
+            }
+                                      
+            BufferedImage bufIm = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+            Graphics2D g2d = bufIm.createGraphics();
+            g2d.setBackground(UIManager.getColor("control.shadow"));
+            g2d.clearRect(0, 0, width, height);
+            painter.paintTabbedPaneTabBackground(context, g2d, 0, 0, width, height, index);
+            BufferedImage img = op.filter(bufIm, null);
+            g.drawImage(img, x, y, null);
         } else {
-            paintTabBackgroundNative(g, 0, 0,
-            x, y + 2, width, height - 2);
-        }        
+            // non selected are lowered by 2 pixels
+            painter.paintTabbedPaneTabBackground(context, g, x, y + 2, width, height - 2, index);
+        }
     }
 
     /**
