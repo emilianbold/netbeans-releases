@@ -100,7 +100,7 @@ class FileObjectIterator implements Iterator<FileObject> {
         HashSet<FileObject> collectedFiles = new HashSet<FileObject>( comps.size() );
         
         for( final TopComponent tc : comps ) {
-            if( WindowManager.getDefault().isEditorTopComponent( tc ) ) {
+            if( WindowManager.getDefault().isOpenedEditorTopComponent( tc ) ) {
                 DataObject dob = tc.getLookup().lookup( DataObject.class );
                 if( null != dob ) {
                     FileObject fo = dob.getPrimaryFile();

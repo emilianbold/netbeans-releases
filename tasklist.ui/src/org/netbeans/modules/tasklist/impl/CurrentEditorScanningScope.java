@@ -152,7 +152,7 @@ public class CurrentEditorScanningScope extends TaskScanningScope implements Pro
     private FileObject getFileFromTopComponent( final TopComponent tc ) {
         if( null == tc || !tc.isShowing() )
             return null;
-        if( WindowManager.getDefault().isEditorTopComponent( tc ) ) {
+        if( WindowManager.getDefault().isOpenedEditorTopComponent( tc ) ) {
             DataObject dob = tc.getLookup().lookup( DataObject.class );
             if( null != dob ) {
                 return dob.getPrimaryFile();
