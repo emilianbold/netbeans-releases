@@ -314,6 +314,7 @@ private void tpTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:
     private void refreshUnits () {
         synchronized(PluginManagerUI.this) {
             if (units == null || units.size() == 0) return;
+            units = UpdateManager.getDefault().getUpdateUnits();
         }        
         UnitCategoryTableModel installTableModel = ((UnitCategoryTableModel)installedTable.getModel ());        
         UnitCategoryTableModel updateTableModel = ((UnitCategoryTableModel)updateTable.getModel ());        
