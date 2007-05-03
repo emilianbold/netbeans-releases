@@ -212,12 +212,40 @@ public class STSWizardCreator {
                     // add implementation clause
                     TypeElement provider = workingCopy.getElements().getTypeElement("javax.xml.ws.Provider"); //NOI18N
                     TypeElement source = workingCopy.getElements().getTypeElement("javax.xml.transform.Source"); //NOI18N
+                    TypeElement baseStsImpl = workingCopy.getElements().getTypeElement("com.sun.xml.ws.security.trust.sts.BaseSTSImpl"); //NOI18N
+                    TypeElement msgContext = workingCopy.getElements().getTypeElement("javax.xml.ws.handler.MessageContext"); //NOI18N
+                    TypeElement resource = workingCopy.getElements().getTypeElement("javax.annotation.Resource"); //NOI18N
+                    TypeElement wsContext = workingCopy.getElements().getTypeElement("javax.xml.ws.WebServiceContext"); //NOI18N
+                    TypeElement WSAn = workingCopy.getElements().getTypeElement("javax.xml.ws.WebServiceProvider"); //NOI18N
+                    
+                    // create parameters
+                    List<AnnotationTree> annotations = new ArrayList<AnnotationTree>();
+                    AnnotationTree resourceAnnotation = make.Annotation(
+                        make.QualIdent(resource), 
+                        Collections.<ExpressionTree>emptyList()
+                    );
+                    annotations.add(resourceAnnotation);
+                    
+                    List<VariableTree> classField = new ArrayList<VariableTree>();
+                    // final ObjectOutput arg0
+                    classField.add(make.Variable(
+                            make.Modifiers(
+                                Collections.<Modifier>emptySet(),
+                                annotations
+                            ),
+                            "context", // name
+                            make.QualIdent(wsContext), // parameter type
+                            null // initializer - does not make sense in parameters.
+                    ));
+                    
+                    modifiedClass = genUtils.addClassFields(javaClass, classField);
+                    
                     ParameterizedTypeTree t = make.ParameterizedType(make.QualIdent(provider), 
                             Collections.singletonList(make.QualIdent(source)) );
-                    modifiedClass = make.addClassImplementsClause(javaClass, t);
+                    modifiedClass = make.addClassImplementsClause(modifiedClass, t);
+                    modifiedClass = make.setExtends(modifiedClass, make.QualIdent(baseStsImpl));
                     
                     //add @WebServiceProvider annotation
-                    TypeElement WSAn = workingCopy.getElements().getTypeElement("javax.xml.ws.WebServiceProvider"); //NOI18N
                     List<ExpressionTree> attrs = new ArrayList<ExpressionTree>();
                     attrs.add(
                         make.Assignment(make.Identifier("serviceName"), make.Literal(service.getName()))); //NOI18N
@@ -232,7 +260,7 @@ public class STSWizardCreator {
                         attrs
                     );
                     modifiedClass = genUtils.addAnnotation(modifiedClass, WSAnnotation);
-
+                                        
                     //add @WebServiceProvider annotation
                     TypeElement modeAn = workingCopy.getElements().getTypeElement("javax.xml.ws.ServiceMode"); //NOI18N
                     List<ExpressionTree> attrsM = new ArrayList<ExpressionTree>();
@@ -267,7 +295,7 @@ public class STSWizardCreator {
                                 Collections.<Modifier>emptySet(),
                                 Collections.<AnnotationTree>emptyList()
                             ),
-                            "source", // name
+                            "rstElement", // name
                             make.QualIdent(source), // parameter type
                             null // initializer - does not make sense in parameters.
                     ));
@@ -287,10 +315,31 @@ public class STSWizardCreator {
                             Collections.<TypeParameterTree>emptyList(), // type parameters - none
                             params,
                             exc, // throws 
-                            "{ //TODO implement this method\nthrow new UnsupportedOperationException(\"Not implemented yet.\") }", // body text
+                            "{ return super.invoke(rstElement); }", // body text
                             null // default value - not applicable here, used by annotations
                     );
                     modifiedClass =  make.addClassMember(modifiedClass, method); 
+                    
+                    // create method
+                    ModifiersTree msgContextModifiers = make.Modifiers(
+                        Collections.<Modifier>singleton(Modifier.PROTECTED),
+                        Collections.<AnnotationTree>emptyList()
+                    );
+                    
+                    List<ExpressionTree> excMsg = new ArrayList<ExpressionTree>();
+                    
+                    MethodTree methodMsgContext = make.Method(
+                            msgContextModifiers, // public
+                            "getMessageContext", // operation name
+                            make.QualIdent(msgContext), // return type 
+                            Collections.<TypeParameterTree>emptyList(), // type parameters - none
+                            Collections.<VariableTree>emptyList(),
+                            excMsg, // throws 
+                            "{ MessageContext msgCtx = context.getMessageContext();\nreturn msgCtx; }", // body text
+                            null // default value - not applicable here, used by annotations
+                    );
+                    modifiedClass =  make.addClassMember(modifiedClass, methodMsgContext);                     
+                    
                     workingCopy.rewrite(javaClass, modifiedClass);
                 }
             }
