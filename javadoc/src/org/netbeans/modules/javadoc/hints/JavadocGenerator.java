@@ -30,6 +30,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
@@ -89,8 +90,18 @@ public final class JavadocGenerator {
         }
         
         for (TypeMirror exceptionType : method.getThrownTypes()) {
-            TypeElement exception = (TypeElement) ((DeclaredType) exceptionType).asElement();
-            builder.append(" * @throws ").append(exception.getQualifiedName().toString()).append(" \n"); // NOI18N
+            CharSequence name;
+            if (TypeKind.DECLARED == exceptionType.getKind()) {
+                TypeElement exception = (TypeElement) ((DeclaredType) exceptionType).asElement();
+                name = exception.getQualifiedName();
+            } else if (TypeKind.TYPEVAR == exceptionType.getKind()) {
+                // ExceptionType of throws clause may contain TypeVariable see JLS 8.4.6
+                TypeParameterElement exception = (TypeParameterElement) ((TypeVariable) exceptionType).asElement();
+                name = exception.getSimpleName();
+            } else {
+                throw new IllegalStateException("Illegal kind: " + exceptionType.getKind()); // NOI18N
+            }
+            builder.append(" * @throws ").append(name).append(" \n"); // NOI18N
         }
         
         if (SourceVersion.RELEASE_5.compareTo(srcVersion) <= 0 &&

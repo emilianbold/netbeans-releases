@@ -522,17 +522,27 @@ public final class JavadocHintProvider extends AbstractHint {
                 ++index;
                 TreePath path = new TreePath(currentPath, throwTree);
                 Element el = javac.getTrees().getElement(path);
-                TypeElement tel = (TypeElement) el;
-                boolean exists = tagNames.remove(tel.getQualifiedName().toString()) != null;
+                String fqn;
+                if (ElementKind.CLASS == el.getKind()) {
+                    TypeElement tel = (TypeElement) el;
+                    fqn = tel.getQualifiedName().toString();
+                } else if (ElementKind.TYPE_PARAMETER == el.getKind()) {
+                    // ExceptionType of throws clause may contain TypeVariable see JLS 8.4.6
+                    fqn = el.getSimpleName().toString();
+                } else {
+                    throw new IllegalStateException("Illegal kind: " + el.getKind()); // NOI18N
+                }
+                
+                boolean exists = tagNames.remove(fqn) != null;
                 if (!exists && (jdoc.isConstructor() ||
                         jdoc.isMethod() && 
-                        JavadocUtilities.findThrowsTag(javac, (MethodDoc) jdoc, tel.getQualifiedName().toString(), true) == null)) {
+                        JavadocUtilities.findThrowsTag(javac, (MethodDoc) jdoc, fqn, true) == null)) {
                     // missing @throws
                     try {
                         Position[] poss = createPositions(throwTree);
                         ErrorDescription err = createErrorDescription(
-                                NbBundle.getMessage(JavadocHintProvider.class, "MISSING_THROWS_DESC", tel.getQualifiedName().toString()), // NOI18N
-                                Collections.<Fix>singletonList(AddTagFix.createAddThrowsTagFix(exec, tel.getQualifiedName().toString(), index, file, spec)),
+                                NbBundle.getMessage(JavadocHintProvider.class, "MISSING_THROWS_DESC", fqn), // NOI18N
+                                Collections.<Fix>singletonList(AddTagFix.createAddThrowsTagFix(exec, fqn, index, file, spec)),
                                 poss);
                         addTagHint(errors, err);
                     } catch (BadLocationException ex) {
