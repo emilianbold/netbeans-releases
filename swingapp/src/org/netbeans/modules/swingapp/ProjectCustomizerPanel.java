@@ -47,6 +47,8 @@ public class ProjectCustomizerPanel extends javax.swing.JPanel {
 
     private FileObject lafJarRoot;
 
+    static String fileChooserFile;
+
     public ProjectCustomizerPanel() {
         initComponents();
         lafCombo.setModel(new DefaultComboBoxModel(LAF_DISPLAY_NAMES));
@@ -196,6 +198,7 @@ public class ProjectCustomizerPanel extends javax.swing.JPanel {
                 return NbBundle.getMessage(ProjectCustomizerPanel.class, "CTL_JarArchivesMask"); // NOI18N
             }
         });
+        fileChooser.setSelectedFile(new File(fileChooserFile));
         if (fileChooser.showOpenDialog(getTopLevelAncestor()) == JFileChooser.APPROVE_OPTION) {
             File file = fileChooser.getSelectedFile();
             if (file != null) {
@@ -223,6 +226,7 @@ public class ProjectCustomizerPanel extends javax.swing.JPanel {
                         DialogDisplayer.getDefault().notify(d);
                     }
                 }
+                fileChooserFile = file.getAbsolutePath();
             }
         }
     }//GEN-LAST:event_browseButtonActionPerformed
@@ -265,6 +269,7 @@ public class ProjectCustomizerPanel extends javax.swing.JPanel {
                     || (fo == null
                         && ("javax.swing.plaf.metal.MetalLookAndFeel".equals(superName) // NOI18N
                             || "javax.swing.plaf.basic.BasicLookAndFeel".equals(superName) // NOI18N
+                            || "javax.swing.plaf.synth.SynthLookAndFeel".equals(superName) // NOI18N
                             || "javax.swing.LookAndFeel".equals(superName)))) { // NOI18N
                     return clazz.getName().getExternalName();
                 }
