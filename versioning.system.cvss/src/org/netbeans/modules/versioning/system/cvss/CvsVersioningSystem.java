@@ -438,7 +438,8 @@ public class CvsVersioningSystem {
     
      public boolean isInCvsIgnore(File file) {
         try {
-            return readCvsIgnoreEntries(file.getParentFile()).contains(file.getName());
+            String patternToIgnore = computePatternToIgnore(file.getName());
+            return readCvsIgnoreEntries(file.getParentFile()).contains(patternToIgnore);
         } catch (IOException e) {
             ErrorManager.getDefault().notify(e);
             return false;
@@ -588,14 +589,20 @@ public class CvsVersioningSystem {
     private void addToCvsIgnore(File file) throws IOException {
         
         Set entries = readCvsIgnoreEntries(file.getParentFile());
-        if (entries.add(file.getName())) {
+        String patternToIgnore = computePatternToIgnore(file.getName());
+        if (entries.add(patternToIgnore)) {
             writeCvsIgnoreEntries(file.getParentFile(), entries);
         }
     }
     
+    private String computePatternToIgnore(String name) {
+        return name.replace(' ', '?');
+    }
+
     private void removeFromCvsIgnore(File file) throws IOException {
         Set entries = readCvsIgnoreEntries(file.getParentFile());
-        if (entries.remove(file.getName())) {
+        String patternToIgnore = computePatternToIgnore(file.getName());        
+        if (entries.remove(patternToIgnore)) {
             writeCvsIgnoreEntries(file.getParentFile(), entries);
         }
     }
