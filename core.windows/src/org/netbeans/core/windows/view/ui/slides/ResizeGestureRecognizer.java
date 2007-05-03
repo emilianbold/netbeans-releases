@@ -81,7 +81,8 @@ public class ResizeGestureRecognizer implements AWTEventListener {
     }
 
     private boolean isInResizeArea(MouseEvent event) {
-        if (comp == null || side == null) {
+        if (comp == null || side == null
+            || (SwingUtilities.getRoot(comp) == null && SwingUtilities.getWindowAncestor( comp ) == null) ) {
             return false;
         }
         Point leftTop = new Point(0, 0);
