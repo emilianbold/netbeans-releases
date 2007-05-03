@@ -132,7 +132,7 @@ public class ElementNode extends AbstractNode {
         }        
     }
     
-    public ElementNode getNodeForElement( ElementHandle eh ) {
+    public ElementNode getNodeForElement( ElementHandle<Element> eh ) {
         
         if ( getDescritption().elementHandle != null &&
              eh.signatureEquals(getDescritption().elementHandle)) {

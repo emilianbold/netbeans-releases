@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.java.navigation;
 
+import javax.lang.model.element.Element;
 import javax.swing.JComponent;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.spi.navigator.NavigatorPanel;
@@ -67,7 +68,7 @@ public class ClassMemberPanel implements NavigatorPanel {
         return getClassMemberPanelUI();
     }
 
-    public void selectElement(ElementHandle eh) {
+    public void selectElement(ElementHandle<Element> eh) {
         getClassMemberPanelUI().selectElementNode(eh);
     }
     

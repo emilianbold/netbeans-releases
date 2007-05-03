@@ -13,6 +13,7 @@ import javax.swing.KeyStroke;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyVetoException;
+import javax.lang.model.element.Element;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
@@ -122,8 +123,12 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         });
     }
     
-    public void selectElementNode( ElementHandle eh ) {
-        ElementNode node = getRootNode().getNodeForElement(eh);
+    public void selectElementNode( ElementHandle<Element> eh ) {
+        ElementNode root = getRootNode();
+        if ( root == null ) {
+            return;
+        }
+        ElementNode node = root.getNodeForElement(eh);
         try {
             manager.setSelectedNodes(new Node[]{ node == null ? getRootNode() : node });
         } catch (PropertyVetoException propertyVetoException) {
