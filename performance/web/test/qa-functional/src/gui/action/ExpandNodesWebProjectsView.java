@@ -95,7 +95,6 @@ public class ExpandNodesWebProjectsView extends WebPerformanceTestCase {
     public void initialize(){
         projectTab = new ProjectsTabOperator();
         new MaximizeWindowAction().performAPI(projectTab);
-        projectTab.getProjectRootNode("PerformanceTestData").collapse();
         projectTab.getProjectRootNode("TestWebProject").collapse();
         projectTab.getProjectRootNode("PerformanceTestFoldersData").collapse();
         System.setProperty("perf.dont.resolve.java.badges", "true");

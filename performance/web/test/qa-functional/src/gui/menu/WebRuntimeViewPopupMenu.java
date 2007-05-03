@@ -46,7 +46,7 @@ public class WebRuntimeViewPopupMenu extends WebPerformanceTestCase {
     private static String SERVERS = Bundle.getStringTrimmed(
         "org.netbeans.modules.j2ee.deployment.impl.ui.Bundle",
         "SERVER_REGISTRY_NODE");
-    private static String BUNDLED_TOMCAT = "Bundled Tomcat"; // not in a bundle
+    private static String BUNDLED_TOMCAT = "Tomcat"; // not in a bundle
     private static String WEB_APPLICATIONS = Bundle.getStringTrimmed(
         "org.netbeans.modules.tomcat5.nodes.Bundle",
         "LBL_WebApps");
@@ -95,6 +95,7 @@ public class WebRuntimeViewPopupMenu extends WebPerformanceTestCase {
         }
         RuntimeTabOperator runtimeTab = RuntimeTabOperator.invoke();
         dataObjectNode = new Node(runtimeTab.getRootNode(), path);
+        log("testMenu(): runtimeTab.isValid = "+runtimeTab.isValid());
         doMeasurement();
     }
     
@@ -103,10 +104,7 @@ public class WebRuntimeViewPopupMenu extends WebPerformanceTestCase {
     }
     
     public void prepare() {
-        Timeouts timeouts = dataObjectNode.tree().getTimeouts().cloneThis();
-        dataObjectNode.tree().getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 45000);
         dataObjectNode.select();
-        dataObjectNode.tree().setTimeouts(timeouts);
         eventTool().waitNoEvent(1000);
     }
     
