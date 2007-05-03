@@ -178,6 +178,10 @@ public class FixTestDependencies extends Task {
                 String MODULE_DEP_END = "</module-dependencies>";
                 int moduleDepEnd = xml.indexOf(MODULE_DEP_END);
                 if (moduleDepEnd == -1) {
+                    MODULE_DEP_END = "<module-dependencies/>";
+                    moduleDepEnd = xml.indexOf(MODULE_DEP_END);
+                }
+                if (moduleDepEnd == -1) {
                     throw new BuildException("No module dependency found.");
                 }
                 moduleDepEnd += MODULE_DEP_END.length();
