@@ -186,6 +186,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     private void setupComponents() {
         fileTable = new DiffFileTable(this);
         splitPane.setTopComponent(fileTable.getComponent());
+        splitPane.setBottomComponent(new NoContentPanel(NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoContent")));
         commitButton.addActionListener(this);
         localToggle.addActionListener(this);
         remoteToggle.addActionListener(this);
@@ -288,7 +289,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         DiffController view = null;
         
         if (currentIndex != -1) {
-            currentModelIndex = fileTable.getModelIndex(currentIndex);
+            currentModelIndex = showingFileTable() ? fileTable.getModelIndex(currentIndex) : 0;
             view = setups[currentModelIndex].getView();
 
             // enable Select in .. action
@@ -308,7 +309,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             diffView = null;
             boolean focus = false;
             if (view != null) {
-                if (fileTable.getComponent().isVisible()) {
+                if (showingFileTable()) {
                     fileTableSetSelectedIndexContext = true;
                     fileTable.setSelectedIndex(currentIndex);
                     fileTableSetSelectedIndexContext = false;
@@ -344,6 +345,10 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
 //        }
     }
 
+    private boolean showingFileTable() {
+        return fileTable.getComponent().isVisible();
+    }
+
     private void setBottomComponent() {
         int gg = splitPane.getDividerLocation();
         splitPane.setBottomComponent(diffView);
@@ -363,7 +368,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
 
     /** Next that is driven by visibility. It continues to next not yet visible difference. */
     private void onNextButton() {
-        if (fileTable.getComponent().isVisible()) {
+        if (showingFileTable()) {
             currentIndex = fileTable.getSelectedIndex();
             currentModelIndex = fileTable.getSelectedModelIndex();
         }

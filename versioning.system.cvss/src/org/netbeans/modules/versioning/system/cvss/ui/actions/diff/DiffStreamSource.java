@@ -160,11 +160,13 @@ public class DiffStreamSource extends StreamSource {
                     boolean isBase = file.equals(baseFile);
                     try {
                         File rf = VersionsCache.getInstance().getRemoteFile(file, revision, group);
-                        File newRemoteFile = new File(tempFolder, file.getName());
-                        newRemoteFile.deleteOnExit();
-                        Utils.copyStreamsCloseAll(new FileOutputStream(newRemoteFile), new FileInputStream(rf)); 
-                        if (isBase) {
-                            remoteFile = newRemoteFile;
+                        if (rf != null) {
+                            File newRemoteFile = new File(tempFolder, file.getName());
+                            newRemoteFile.deleteOnExit();
+                            Utils.copyStreamsCloseAll(new FileOutputStream(newRemoteFile), new FileInputStream(rf));
+                            if (isBase) {
+                                remoteFile = newRemoteFile;
+                            }
                         }
                     } catch (Exception e) {
                         if (isBase) throw e;
