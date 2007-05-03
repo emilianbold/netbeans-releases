@@ -41,6 +41,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.wsdl.Definition;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -69,6 +71,7 @@ public class ActionImpl extends CallableSystemAction {
 	private String jndi_name = "";
     private static final String CONNECTION_FILE = "connectivityInfo.xml";
     private String engineFileName = "sqlse_engine.xml";
+    private JFrame frame;
     DatabaseConnection dbConn = null;
     Connection conn = null;
     Project project =null;
@@ -254,6 +257,10 @@ public class ActionImpl extends CallableSystemAction {
             JBIFileWriter fw = new JBIFileWriter(mBuildDirectoryLocation + "/META-INF/jbi.xml",
                     mBuildDirectoryLocation + "/sqlmap.xml",mBuildDirectoryLocation);
             fw.writeJBI();
+            JOptionPane.showMessageDialog(frame,
+                    "WSDL Generated.",
+                    "Information",
+                    JOptionPane.INFORMATION_MESSAGE);
                         
         } catch (Exception e) {
             throw new Exception(e.getMessage());

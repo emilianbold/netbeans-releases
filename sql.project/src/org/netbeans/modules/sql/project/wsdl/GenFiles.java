@@ -42,6 +42,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.wsdl.Definition;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -51,6 +53,7 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.project.Project;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallableSystemAction;
+import org.openide.filesystems.FileObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -70,6 +73,7 @@ public class GenFiles extends CallableSystemAction {
 	private String jndi_name = "";
     private static final String CONNECTION_FILE = "connectivityInfo.xml";
     private String engineFileName = "sqlse_engine.xml";
+    private JFrame frame;
     DatabaseConnection dbConn = null;
     Connection conn = null;
     Project project =null;
@@ -100,7 +104,7 @@ public class GenFiles extends CallableSystemAction {
 	
 	public String getName(){
 		//return NbBundle.getMessage(ActionImpl.class, "CTL_Connect");
-		return "Generate Wsdl ...";
+		return "Generate WSDL...";
 	}
 
 	/*public void removePropertyChangeListener(PropertyChangeListener listener) {
@@ -259,7 +263,11 @@ public class GenFiles extends CallableSystemAction {
             JBIFileWriter fw = new JBIFileWriter(mBuildDirectoryLocation + "/META-INF/jbi.xml",
                     mBuildDirectoryLocation + "/sqlmap.xml",mBuildDirectoryLocation);
             fw.writeJBI();
-                        
+            project.getProjectDirectory().refresh();
+            JOptionPane.showMessageDialog(frame,
+                    "WSDL Generated.",
+                    "Information",
+                    JOptionPane.INFORMATION_MESSAGE);
         } catch (Exception e) {
             throw new Exception(e.getMessage());
         }

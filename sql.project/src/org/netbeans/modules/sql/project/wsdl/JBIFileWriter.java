@@ -148,17 +148,17 @@ public class JBIFileWriter {
 			sb.append(">\n");
 			sb.append("    <services binding-component=\"false\">\n");
 			// Generate all <provides> first
-			for (int i = 0, I = sqlEntryList.size(); i < I; i++) {
-				SQLMapEntry xme = (SQLMapEntry) sqlEntryList.get(i);
+			//for (int i = 0, I = sqlEntryList.size(); i < I; i++) {
+				SQLMapEntry xme = (SQLMapEntry) sqlEntryList.get(0);
 				sb.append("        <provides interface-name=\""
 						+ getDottedQName(xme.getPortType(), nsTable));
 				sb.append("\" service-name=\"" + getDottedQName(xme.getPartnerLink(), nsTable));
 				sb.append("\" endpoint-name=\"" + xme.getRoleName());
 				sb.append("\"/>\n");
-			}
+			//}
 			// Generate all <consumes> second
-			for (int i = 0, I = sqlEntryList.size(); i < I; i++) {
-				SQLMapEntry xme = (SQLMapEntry) sqlEntryList.get(i);
+			//for (int i = 0, I = sqlEntryList.size(); i < I; i++) {
+			//	SQLMapEntry xme = (SQLMapEntry) sqlEntryList.get(0);
 				if (!xme.getType().equals(SQLMapEntry.REQUEST_REPLY_SERVICE)) {
 					sb.append("        <consumes interface-name=\""
 							+ getDottedQName(xme.getPortType(), nsTable));
@@ -166,7 +166,7 @@ public class JBIFileWriter {
 					sb.append("\" endpoint-name=\"" + xme.getRoleName());
 					sb.append("\" link-type=\"standard\"/>\n");
 				}
-			}
+			//}
 			sb.append("    </services>\n");
 			sb.append(" </jbi>\n");
 			sb.append("<!--end of generated code -->\n");
