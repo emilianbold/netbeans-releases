@@ -90,7 +90,7 @@ public class MonitorSupport {
         return getMonitorFlag(tm.getUri());
     }
     
-    public static void synchronizeMonitorWithFlag(TomcatManager tm, boolean alsoSetPort, boolean alsoCopyJars) throws IOException, SAXException {
+    public static void synchronizeMonitorWithFlag(TomcatManager tm, boolean alsoSetPort) throws IOException, SAXException {
         String url = tm.getUri();
         boolean monitorFlag = getMonitorFlag(url);
         boolean monitorModuleAvailable = isMonitorEnabled();
@@ -110,9 +110,7 @@ public class MonitorSupport {
         boolean needsSave = false;
         boolean result;
         if (shouldInstall) {
-            if (alsoCopyJars) {
-                addMonitorJars(tm);
-            }
+            addMonitorJars(tm);
             result = changeFilterMonitor(webApp, true);
             needsSave = needsSave || result;
             if (alsoSetPort) {                  

@@ -312,7 +312,7 @@ public final class StartTomcat extends StartServer implements ProgressObject {
             // install the monitor
             if (command == CommandType.START) {
                 try {
-                    MonitorSupport.synchronizeMonitorWithFlag(tm, true, !tm.isBundledTomcat());
+                    MonitorSupport.synchronizeMonitorWithFlag(tm, true);
                 } catch (IOException e) {
                     if (MonitorSupport.getMonitorFlag(tm)) {
                         // tomcat has been started with monitor enabled
