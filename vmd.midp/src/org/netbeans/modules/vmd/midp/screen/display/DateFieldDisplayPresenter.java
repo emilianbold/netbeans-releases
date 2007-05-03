@@ -51,14 +51,14 @@ public class DateFieldDisplayPresenter extends ItemDisplayPresenter {
             int inputMode = MidpTypes.getInteger (inputModeValue);
             switch (inputMode) {
                 case DateFieldCD.VALUE_DATE:
-                    text = "<current date>";
+                    text = "<user date>";
                     format = DateFormat.getDateInstance (DateFormat.MEDIUM);
                     break;
                 case DateFieldCD.VALUE_DATE_TIME:
-                    text = "<current date time>";
+                    text = "<user date time>";
                     break;
                 case DateFieldCD.VALUE_TIME:
-                    text = "<current time>";
+                    text = "<user time>";
                     format = DateFormat.getTimeInstance (DateFormat.MEDIUM);
                     break;
             }
