@@ -29,6 +29,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.util.EventObject;
 import java.util.LinkedList;
 import java.util.List;
@@ -51,16 +52,20 @@ import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+import org.netbeans.installer.Installer;
 import org.netbeans.installer.product.RegistryType;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.RegistryNode;
 import org.netbeans.installer.product.components.Group;
+import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.helper.Dependency;
 import org.netbeans.installer.utils.helper.DependencyType;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
+import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.utils.helper.swing.NbiCheckBox;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
@@ -117,6 +122,10 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                 DEFAULT_ERROR_CONFLICT_INSTALL);
         setProperty(ERROR_REQUIREMENT_UNINSTALL_PROPERTY,
                 DEFAULT_ERROR_REQUIREMENT_UNINSTALL);
+        setProperty(ERROR_NO_ENOUGH_SPACE_TO_DOWNLOAD_PROPERTY,
+                DEFAULT_ERROR_NO_ENOUGH_SPACE_TO_DOWNLOAD);
+        setProperty(ERROR_NO_ENOUGH_SPACE_TO_EXTRACT_PROPERTY,
+                DEFAULT_ERROR_NO_ENOUGH_SPACE_TO_EXTRACT);
     }
     
     @Override
@@ -193,17 +202,17 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
     /////////////////////////////////////////////////////////////////////////////////
     // Inner Classes
     public static class ComponentsSelectionPanelUi extends ErrorMessagePanelUi {
-        private ComponentsSelectionPanel component;
+        private ComponentsSelectionPanel panel;
         
-        public ComponentsSelectionPanelUi(final ComponentsSelectionPanel component) {
-            super(component);
+        public ComponentsSelectionPanelUi(final ComponentsSelectionPanel panel) {
+            super(panel);
             
-            this.component = component;
+            this.panel = panel;
         }
         
         public SwingUi getSwingUi(SwingContainer container) {
             if (swingUi == null) {
-                swingUi = new ComponentsSelectionPanelSwingUi(component, container);
+                swingUi = new ComponentsSelectionPanelSwingUi(panel, container);
             }
             
             return super.getSwingUi(container);
@@ -213,7 +222,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
     public static class ComponentsSelectionPanelSwingUi extends ErrorMessagePanelSwingUi {
         /////////////////////////////////////////////////////////////////////////////
         // Instance
-        private ComponentsSelectionPanel component;
+        private ComponentsSelectionPanel panel;
         
         private NbiTree       componentsTree;
         private NbiScrollPane componentsScrollPane;
@@ -228,7 +237,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                 final SwingContainer container) {
             super(component, container);
             
-            this.component = component;
+            this.panel = component;
             
             initComponents();
         }
@@ -236,9 +245,9 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         @Override
         protected void initialize() {
             descriptionPane.setContentType(
-                    component.getProperty(COMPONENT_DESCRIPTION_CONTENT_TYPE_PROPERTY));
+                    panel.getProperty(COMPONENT_DESCRIPTION_CONTENT_TYPE_PROPERTY));
             
-            if (!component.isThereAnythingVisibleToInstall()) {
+            if (!panel.isThereAnythingVisibleToInstall()) {
                 sizesLabel.setVisible(false);
             }
             
@@ -258,18 +267,24 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                     registry.getProducts(Status.TO_BE_UNINSTALLED);
             
             if ((toInstall.size() == 0) && (toUninstall.size() == 0)) {
-                if (!component.isThereAnythingVisibleToInstall()) {
-                    return component.getProperty(ERROR_NO_CHANGES_UNINSTALL_ONLY_PROPERTY);
+                if (!panel.isThereAnythingVisibleToInstall()) {
+                    return panel.getProperty(
+                            ERROR_NO_CHANGES_UNINSTALL_ONLY_PROPERTY);
                 }
-                if (!component.isThereAnythingVisibleToUninstall()) {
-                    return component.getProperty(ERROR_NO_CHANGES_INSTALL_ONLY_PROPERTY);
+                
+                if (!panel.isThereAnythingVisibleToUninstall()) {
+                    return panel.getProperty(
+                            ERROR_NO_CHANGES_INSTALL_ONLY_PROPERTY);
                 }
-                return component.getProperty(ERROR_NO_CHANGES_PROPERTY);
+                
+                return panel.getProperty(ERROR_NO_CHANGES_PROPERTY);
             }
             
             for (Product product: toInstall) {
-                for (Dependency requirement: product.getDependencies(DependencyType.REQUIREMENT)) {
-                    List<Product> requirees = registry.getProducts(requirement);
+                for (Dependency requirement: product.getDependencies(
+                        DependencyType.REQUIREMENT)) {
+                    final List<Product> requirees = 
+                            registry.getProducts(requirement);
                     
                     boolean satisfied = false;
                     
@@ -283,14 +298,15 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                     
                     if (!satisfied) {
                         return StringUtils.format(
-                                component.getProperty(ERROR_REQUIREMENT_INSTALL_PROPERTY),
+                                panel.getProperty(ERROR_REQUIREMENT_INSTALL_PROPERTY),
                                 product.getDisplayName(),
                                 requirees.get(0).getDisplayName());
                     }
                 }
                 
-                for (Dependency conflict: product.getDependencies(DependencyType.CONFLICT)) {
-                    List<Product> conflictees = registry.getProducts(conflict);
+                for (Dependency conflict: product.getDependencies(
+                        DependencyType.CONFLICT)) {
+                    final List<Product> conflictees = registry.getProducts(conflict);
                     
                     boolean satisfied = true;
                     Product unsatisfiedConflict = null;
@@ -306,7 +322,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                     
                     if (!satisfied) {
                         return StringUtils.format(
-                                component.getProperty(ERROR_CONFLICT_INSTALL_PROPERTY),
+                                panel.getProperty(ERROR_CONFLICT_INSTALL_PROPERTY),
                                 product.getDisplayName(),
                                 unsatisfiedConflict.getDisplayName());
                     }
@@ -334,13 +350,51 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                             
                             if (!satisfied) {
                                 return StringUtils.format(
-                                        component.getProperty(ERROR_REQUIREMENT_UNINSTALL_PROPERTY),
+                                        panel.getProperty(ERROR_REQUIREMENT_UNINSTALL_PROPERTY),
                                         product.getDisplayName(),
                                         dependent.getDisplayName());
                             }
                         }
                     }
                 }
+            }
+            
+            // devise the error message template which should be used - "not enough
+            // space to download..." is at least one of the components comes from 
+            // a remote registry, "not enough space to extract..." - otherwise
+            String template = panel.getProperty(
+                    ERROR_NO_ENOUGH_SPACE_TO_EXTRACT_PROPERTY);
+            for (Product product: toInstall) {
+                if (product.getRegistryType() == RegistryType.REMOTE) {
+                    template = panel.getProperty(
+                            ERROR_NO_ENOUGH_SPACE_TO_DOWNLOAD_PROPERTY);
+                    break;
+                }
+            }
+            
+            // check whether the space available in the local directory (which will 
+            // be used for downloading data) is enough to keep all the installation 
+            // data and configuration logic (plus some margin for safety)
+            try {
+                final File localDirectory = Installer.getInstance().getLocalDirectory();
+                final long availableSize = SystemUtils.getFreeSpace(localDirectory);
+                
+                long requiredSize = 0;
+                for (Product product: toInstall) {
+                    requiredSize += product.getDownloadSize();
+                }
+                requiredSize += REQUIRED_SPACE_ADDITION;
+                
+                if (availableSize < requiredSize) {
+                    return StringUtils.format(
+                            template,
+                            localDirectory,
+                            StringUtils.formatSize(requiredSize - availableSize));
+                }
+            } catch (NativeException e) {
+                ErrorManager.notifyError(
+                        "Cannot check the free disk space",
+                        e);
             }
             
             return null;
@@ -421,7 +475,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             descriptionScrollPane.setVerticalScrollBarPolicy(
                     NbiScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
             descriptionScrollPane.setBorder(
-                    new TitledBorder(component.getProperty(FEATURE_DESCRIPTION_TITLE_PROPERTY)));
+                    new TitledBorder(panel.getProperty(FEATURE_DESCRIPTION_TITLE_PROPERTY)));
             
             // sizesLabel ///////////////////////////////////////////////////////////
             sizesLabel = new NbiLabel();
@@ -490,10 +544,10 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                 downloadSize += product.getDownloadSize();
             }
             
-            String template = component.getProperty(SIZES_LABEL_TEXT_NO_DOWNLOAD_PROPERTY);
+            String template = panel.getProperty(SIZES_LABEL_TEXT_NO_DOWNLOAD_PROPERTY);
             for (RegistryNode remoteNode: registry.getNodes(RegistryType.REMOTE)) {
                 if (remoteNode.isVisible()) {
-                    template = component.getProperty(
+                    template = panel.getProperty(
                             SIZES_LABEL_TEXT_PROPERTY);
                 }
             }
@@ -501,8 +555,8 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             if (installationSize == 0) {
                 sizesLabel.setText(StringUtils.format(
                         template,
-                        component.getProperty(DEFAULT_INSTALLATION_SIZE_PROPERTY),
-                        component.getProperty(DEFAULT_DOWNLOAD_SIZE_PROPERTY)));
+                        panel.getProperty(DEFAULT_INSTALLATION_SIZE_PROPERTY),
+                        panel.getProperty(DEFAULT_DOWNLOAD_SIZE_PROPERTY)));
             } else {
                 sizesLabel.setText(StringUtils.format(
                         template,
@@ -966,6 +1020,10 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             "error.conflict.install"; // NOI18N
     public static final String ERROR_REQUIREMENT_UNINSTALL_PROPERTY =
             "error.requirement.uninstall"; // NOI18N
+    public static final String ERROR_NO_ENOUGH_SPACE_TO_DOWNLOAD_PROPERTY =
+            "error.not.enough.space.to.download"; // NOI18N
+    public static final String ERROR_NO_ENOUGH_SPACE_TO_EXTRACT_PROPERTY =
+            "error.not.enough.space.to.extract"; // NOI18N
     
     public static final String DEFAULT_ERROR_NO_CHANGES =
             ResourceUtils.getString(ComponentsSelectionPanel.class,
@@ -985,4 +1043,13 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
     public static final String DEFAULT_ERROR_REQUIREMENT_UNINSTALL =
             ResourceUtils.getString(ComponentsSelectionPanel.class,
             "CSP.error.requirement.uninstall"); // NOI18N
+    public static final String DEFAULT_ERROR_NO_ENOUGH_SPACE_TO_DOWNLOAD =
+            ResourceUtils.getString(ComponentsSelectionPanel.class,
+            "CSP.error.not.enough.space.to.download"); // NOI18N
+    public static final String DEFAULT_ERROR_NO_ENOUGH_SPACE_TO_EXTRACT =
+            ResourceUtils.getString(ComponentsSelectionPanel.class,
+            "CSP.error.not.enough.space.to.extract"); // NOI18N
+    
+    public static final long REQUIRED_SPACE_ADDITION =
+            10L * 1024L * 1024L; // 10MB
 }

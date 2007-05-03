@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -23,12 +23,13 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.LinkedList;
 import java.util.List;
-import javax.swing.border.EmptyBorder;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
@@ -65,24 +66,24 @@ public class PostInstallSummaryPanel extends WizardPanel {
         setProperty(MESSAGE_WARNINGS_CONTENT_TYPE_PROPERTY, DEFAULT_MESSAGE_WARNINGS_CONTENT_TYPE);
         setProperty(MESSAGE_ERRORS_TEXT_PROPERTY, DEFAULT_MESSAGE_ERRORS_TEXT);
         setProperty(MESSAGE_ERRORS_CONTENT_TYPE_PROPERTY, DEFAULT_MESSAGE_ERRORS_CONTENT_TYPE);
-        setProperty(SUCCESSFULLY_INSTALLED_COMPONENTS_LABEL_TEXT_PROPERTY, DEFAULT_SUCCESSFULLY_INSTALLED_COMPONENTS_LABEL_TEXT);
-        setProperty(SUCCESSFULLY_INSTALLED_COMPONENTS_TEXT_PROPERTY, DEFAULT_SUCCESSFULLY_INSTALLED_COMPONENTS_TEXT);
-        setProperty(SUCCESSFULLY_INSTALLED_COMPONENTS_CONTENT_TYPE_PROPERTY, DEFAULT_SUCCESSFULLY_INSTALLED_COMPONENTS_CONTENT_TYPE);
-        setProperty(COMPONENTS_INSTALLED_WITH_WARNINGS_LABEL_TEXT_PROPERTY, DEFAULT_COMPONENTS_INSTALLED_WITH_WARNINGS_LABEL_TEXT);
-        setProperty(COMPONENTS_INSTALLED_WITH_WARNINGS_TEXT_PROPERTY, DEFAULT_COMPONENTS_INSTALLED_WITH_WARNINGS_TEXT);
-        setProperty(COMPONENTS_INSTALLED_WITH_WARNINGS_CONTENT_TYPE_PROPERTY, DEFAULT_COMPONENTS_INSTALLED_WITH_WARNINGS_CONTENT_TYPE);
-        setProperty(COMPONENTS_FAILED_TO_INSTALL_WARNINGS_LABEL_TEXT_PROPERTY, DEFAULT_COMPONENTS_FAILED_TO_INSTALL_WARNINGS_LABEL_TEXT);
-        setProperty(COMPONENTS_FAILED_TO_INSTALL_TEXT_PROPERTY, DEFAULT_COMPONENTS_FAILED_TO_INSTALL_TEXT);
-        setProperty(COMPONENTS_FAILED_TO_INSTALL_CONTENT_TYPE_PROPERTY, DEFAULT_COMPONENTS_FAILED_TO_INSTALL_CONTENT_TYPE);
-        setProperty(SUCCESSFULLY_UNINSTALLED_COMPONENTS_LABEL_TEXT_PROPERTY, DEFAULT_SUCCESSFULLY_UNINSTALLED_COMPONENTS_LABEL_TEXT);
-        setProperty(SUCCESSFULLY_UNINSTALLED_COMPONENTS_TEXT_PROPERTY, DEFAULT_SUCCESSFULLY_UNINSTALLED_COMPONENTS_TEXT);
-        setProperty(SUCCESSFULLY_UNINSTALLED_COMPONENTS_CONTENT_TYPE_PROPERTY, DEFAULT_SUCCESSFULLY_UNINSTALLED_COMPONENTS_CONTENT_TYPE);
-        setProperty(COMPONENTS_UNINSTALLED_WITH_WARNINGS_LABEL_TEXT_PROPERTY, DEFAULT_COMPONENTS_UNINSTALLED_WITH_WARNINGS_LABEL_TEXT);
-        setProperty(COMPONENTS_UNINSTALLED_WITH_WARNINGS_TEXT_PROPERTY, DEFAULT_COMPONENTS_UNINSTALLED_WITH_WARNINGS_TEXT);
-        setProperty(COMPONENTS_UNINSTALLED_WITH_WARNINGS_CONTENT_TYPE_PROPERTY, DEFAULT_COMPONENTS_UNINSTALLED_WITH_WARNINGS_CONTENT_TYPE);
-        setProperty(COMPONENTS_FAILED_TO_UNINSTALL_WARNINGS_LABEL_TEXT_PROPERTY, DEFAULT_COMPONENTS_FAILED_TO_UNINSTALL_WARNINGS_LABEL_TEXT);
-        setProperty(COMPONENTS_FAILED_TO_UNINSTALL_TEXT_PROPERTY, DEFAULT_COMPONENTS_FAILED_TO_UNINSTALL_TEXT);
-        setProperty(COMPONENTS_FAILED_TO_UNINSTALL_CONTENT_TYPE_PROPERTY, DEFAULT_COMPONENTS_FAILED_TO_UNINSTALL_CONTENT_TYPE);
+        setProperty(SUCCESSFULLY_INSTALLED_LABEL_TEXT_PROPERTY, DEFAULT_SUCCESSFULLY_INSTALLED_LABEL_TEXT);
+        setProperty(SUCCESSFULLY_INSTALLED_TEXT_PROPERTY, DEFAULT_SUCCESSFULLY_INSTALLED_TEXT);
+        setProperty(SUCCESSFULLY_INSTALLED_CONTENT_TYPE_PROPERTY, DEFAULT_SUCCESSFULLY_INSTALLED_CONTENT_TYPE);
+        setProperty(INSTALLED_WITH_WARNINGS_LABEL_TEXT_PROPERTY, DEFAULT_INSTALLED_WITH_WARNINGS_LABEL_TEXT);
+        setProperty(INSTALLED_WITH_WARNINGS_TEXT_PROPERTY, DEFAULT_INSTALLED_WITH_WARNINGS_TEXT);
+        setProperty(INSTALLED_WITH_WARNINGS_CONTENT_TYPE_PROPERTY, DEFAULT_INSTALLED_WITH_WARNINGS_CONTENT_TYPE);
+        setProperty(FAILED_TO_INSTALL_WARNINGS_LABEL_TEXT_PROPERTY, DEFAULT_FAILED_TO_INSTALL_WARNINGS_LABEL_TEXT);
+        setProperty(FAILED_TO_INSTALL_TEXT_PROPERTY, DEFAULT_FAILED_TO_INSTALL_TEXT);
+        setProperty(FAILED_TO_INSTALL_CONTENT_TYPE_PROPERTY, DEFAULT_FAILED_TO_INSTALL_CONTENT_TYPE);
+        setProperty(SUCCESSFULLY_UNINSTALLED_LABEL_TEXT_PROPERTY, DEFAULT_SUCCESSFULLY_UNINSTALLED_LABEL_TEXT);
+        setProperty(SUCCESSFULLY_UNINSTALLED_TEXT_PROPERTY, DEFAULT_SUCCESSFULLY_UNINSTALLED_TEXT);
+        setProperty(SUCCESSFULLY_UNINSTALLED_CONTENT_TYPE_PROPERTY, DEFAULT_SUCCESSFULLY_UNINSTALLED_CONTENT_TYPE);
+        setProperty(UNINSTALLED_WITH_WARNINGS_LABEL_TEXT_PROPERTY, DEFAULT_UNINSTALLED_WITH_WARNINGS_LABEL_TEXT);
+        setProperty(UNINSTALLED_WITH_WARNINGS_TEXT_PROPERTY, DEFAULT_UNINSTALLED_WITH_WARNINGS_TEXT);
+        setProperty(UNINSTALLED_WITH_WARNINGS_CONTENT_TYPE_PROPERTY, DEFAULT_UNINSTALLED_WITH_WARNINGS_CONTENT_TYPE);
+        setProperty(FAILED_TO_UNINSTALL_WARNINGS_LABEL_TEXT_PROPERTY, DEFAULT_FAILED_TO_UNINSTALL_WARNINGS_LABEL_TEXT);
+        setProperty(FAILED_TO_UNINSTALL_TEXT_PROPERTY, DEFAULT_FAILED_TO_UNINSTALL_TEXT);
+        setProperty(FAILED_TO_UNINSTALL_CONTENT_TYPE_PROPERTY, DEFAULT_FAILED_TO_UNINSTALL_CONTENT_TYPE);
         setProperty(VIEW_DETAILS_BUTTON_TEXT_PROPERTY, DEFAULT_VIEW_DETAILS_BUTTON_TEXT);
         setProperty(VIEW_LOG_BUTTON_TEXT_PROPERTY, DEFAULT_VIEW_LOG_BUTTON_TEXT);
         setProperty(SEND_LOG_BUTTON_TEXT_PROPERTY, DEFAULT_SEND_LOG_BUTTON_TEXT);
@@ -204,9 +205,9 @@ public class PostInstallSummaryPanel extends WizardPanel {
                 successfullyInstalledComponentsLabel.setVisible(true);
                 successfullyInstalledComponentsPane.setVisible(true);
                 
-                successfullyInstalledComponentsLabel.setText(component.getProperty(SUCCESSFULLY_INSTALLED_COMPONENTS_LABEL_TEXT_PROPERTY));
-                successfullyInstalledComponentsPane.setContentType(component.getProperty(SUCCESSFULLY_INSTALLED_COMPONENTS_CONTENT_TYPE_PROPERTY));
-                successfullyInstalledComponentsPane.setText(StringUtils.format(component.getProperty(SUCCESSFULLY_INSTALLED_COMPONENTS_TEXT_PROPERTY), StringUtils.asString(products, component.getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
+                successfullyInstalledComponentsLabel.setText(component.getProperty(SUCCESSFULLY_INSTALLED_LABEL_TEXT_PROPERTY));
+                successfullyInstalledComponentsPane.setContentType(component.getProperty(SUCCESSFULLY_INSTALLED_CONTENT_TYPE_PROPERTY));
+                successfullyInstalledComponentsPane.setText(StringUtils.format(component.getProperty(SUCCESSFULLY_INSTALLED_TEXT_PROPERTY), StringUtils.asString(products, component.getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
             } else {
                 successfullyInstalledComponentsLabel.setVisible(false);
                 successfullyInstalledComponentsPane.setVisible(false);
@@ -217,9 +218,9 @@ public class PostInstallSummaryPanel extends WizardPanel {
                 componentsInstalledWithWarningsLabel.setVisible(true);
                 componentsInstalledWithWarningsPane.setVisible(true);
                 
-                componentsInstalledWithWarningsLabel.setText(component.getProperty(COMPONENTS_INSTALLED_WITH_WARNINGS_LABEL_TEXT_PROPERTY));
-                componentsInstalledWithWarningsPane.setContentType(component.getProperty(COMPONENTS_INSTALLED_WITH_WARNINGS_CONTENT_TYPE_PROPERTY));
-                componentsInstalledWithWarningsPane.setText(StringUtils.format(component.getProperty(COMPONENTS_INSTALLED_WITH_WARNINGS_TEXT_PROPERTY), StringUtils.asString(products, component.getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
+                componentsInstalledWithWarningsLabel.setText(component.getProperty(INSTALLED_WITH_WARNINGS_LABEL_TEXT_PROPERTY));
+                componentsInstalledWithWarningsPane.setContentType(component.getProperty(INSTALLED_WITH_WARNINGS_CONTENT_TYPE_PROPERTY));
+                componentsInstalledWithWarningsPane.setText(StringUtils.format(component.getProperty(INSTALLED_WITH_WARNINGS_TEXT_PROPERTY), StringUtils.asString(products, component.getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
             } else {
                 componentsInstalledWithWarningsLabel.setVisible(false);
                 componentsInstalledWithWarningsPane.setVisible(false);
@@ -230,9 +231,9 @@ public class PostInstallSummaryPanel extends WizardPanel {
                 componentsFailedToInstallLabel.setVisible(true);
                 componentsFailedToInstallPane.setVisible(true);
                 
-                componentsFailedToInstallLabel.setText(component.getProperty(COMPONENTS_FAILED_TO_INSTALL_WARNINGS_LABEL_TEXT_PROPERTY));
-                componentsFailedToInstallPane.setContentType(component.getProperty(COMPONENTS_FAILED_TO_INSTALL_CONTENT_TYPE_PROPERTY));
-                componentsFailedToInstallPane.setText(StringUtils.format(component.getProperty(COMPONENTS_FAILED_TO_INSTALL_TEXT_PROPERTY), StringUtils.asString(products, component.getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
+                componentsFailedToInstallLabel.setText(component.getProperty(FAILED_TO_INSTALL_WARNINGS_LABEL_TEXT_PROPERTY));
+                componentsFailedToInstallPane.setContentType(component.getProperty(FAILED_TO_INSTALL_CONTENT_TYPE_PROPERTY));
+                componentsFailedToInstallPane.setText(StringUtils.format(component.getProperty(FAILED_TO_INSTALL_TEXT_PROPERTY), StringUtils.asString(products, component.getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
             } else {
                 componentsFailedToInstallLabel.setVisible(false);
                 componentsFailedToInstallPane.setVisible(false);
@@ -243,12 +244,26 @@ public class PostInstallSummaryPanel extends WizardPanel {
                 successfullyUninstalledComponentsLabel.setVisible(true);
                 successfullyUninstalledComponentsPane.setVisible(true);
                 
-                successfullyUninstalledComponentsLabel.setText(component.getProperty(SUCCESSFULLY_UNINSTALLED_COMPONENTS_LABEL_TEXT_PROPERTY));
-                successfullyUninstalledComponentsPane.setContentType(component.getProperty(SUCCESSFULLY_UNINSTALLED_COMPONENTS_CONTENT_TYPE_PROPERTY));
-                successfullyUninstalledComponentsPane.setText(StringUtils.format(component.getProperty(SUCCESSFULLY_UNINSTALLED_COMPONENTS_TEXT_PROPERTY), StringUtils.asString(products, component.getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
+                successfullyUninstalledComponentsLabel.setText(component.getProperty(SUCCESSFULLY_UNINSTALLED_LABEL_TEXT_PROPERTY));
+                successfullyUninstalledComponentsPane.setContentType(component.getProperty(SUCCESSFULLY_UNINSTALLED_CONTENT_TYPE_PROPERTY));
+                successfullyUninstalledComponentsPane.setText(StringUtils.format(component.getProperty(SUCCESSFULLY_UNINSTALLED_TEXT_PROPERTY), StringUtils.asString(products, component.getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
             } else {
                 successfullyUninstalledComponentsLabel.setVisible(false);
                 successfullyUninstalledComponentsPane.setVisible(false);
+            }
+            
+            List<Product> notCompletelyRemoved = new LinkedList<Product>();
+            for (Product product: products) {
+                if (!FileUtils.isEmpty(product.getInstallationLocation())) {
+                    notCompletelyRemoved.add(product);
+                }
+            }
+            
+            if (notCompletelyRemoved.size() > 0) {
+                final String text = successfullyUninstalledComponentsPane.getText();
+                successfullyUninstalledComponentsPane.setText(text + StringUtils.format(
+                        panel.getProperty(MESSAGE_FILES_REMAINING_PROPERTY),
+                        StringUtils.asString(notCompletelyRemoved)));
             }
             
             products = registry.getProducts(UNINSTALLED_WITH_WARNINGS);
@@ -256,12 +271,26 @@ public class PostInstallSummaryPanel extends WizardPanel {
                 componentsUninstalledWithWarningsLabel.setVisible(true);
                 componentsUninstalledWithWarningsPane.setVisible(true);
                 
-                componentsUninstalledWithWarningsLabel.setText(component.getProperty(COMPONENTS_UNINSTALLED_WITH_WARNINGS_LABEL_TEXT_PROPERTY));
-                componentsUninstalledWithWarningsPane.setContentType(component.getProperty(COMPONENTS_UNINSTALLED_WITH_WARNINGS_CONTENT_TYPE_PROPERTY));
-                componentsUninstalledWithWarningsPane.setText(StringUtils.format(component.getProperty(COMPONENTS_UNINSTALLED_WITH_WARNINGS_TEXT_PROPERTY), StringUtils.asString(products, component.getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
+                componentsUninstalledWithWarningsLabel.setText(component.getProperty(UNINSTALLED_WITH_WARNINGS_LABEL_TEXT_PROPERTY));
+                componentsUninstalledWithWarningsPane.setContentType(component.getProperty(UNINSTALLED_WITH_WARNINGS_CONTENT_TYPE_PROPERTY));
+                componentsUninstalledWithWarningsPane.setText(StringUtils.format(component.getProperty(UNINSTALLED_WITH_WARNINGS_TEXT_PROPERTY), StringUtils.asString(products, component.getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
             } else {
                 componentsUninstalledWithWarningsLabel.setVisible(false);
                 componentsUninstalledWithWarningsPane.setVisible(false);
+            }
+            
+            notCompletelyRemoved = new LinkedList<Product>();
+            for (Product product: products) {
+                if (!FileUtils.isEmpty(product.getInstallationLocation())) {
+                    notCompletelyRemoved.add(product);
+                }
+            }
+            
+            if (notCompletelyRemoved.size() > 0) {
+                final String text = componentsUninstalledWithWarningsPane.getText();
+                componentsUninstalledWithWarningsPane.setText(text + StringUtils.format(
+                        panel.getProperty(MESSAGE_FILES_REMAINING_PROPERTY),
+                        StringUtils.asString(notCompletelyRemoved)));
             }
             
             products = registry.getProducts(FAILED_TO_UNINSTALL);
@@ -269,9 +298,9 @@ public class PostInstallSummaryPanel extends WizardPanel {
                 componentsFailedToUninstallLabel.setVisible(true);
                 componentsFailedToUninstallPane.setVisible(true);
                 
-                componentsFailedToUninstallLabel.setText(component.getProperty(COMPONENTS_FAILED_TO_UNINSTALL_WARNINGS_LABEL_TEXT_PROPERTY));
-                componentsFailedToUninstallPane.setContentType(component.getProperty(COMPONENTS_FAILED_TO_UNINSTALL_CONTENT_TYPE_PROPERTY));
-                componentsFailedToUninstallPane.setText(StringUtils.format(component.getProperty(COMPONENTS_FAILED_TO_UNINSTALL_TEXT_PROPERTY), StringUtils.asString(products, component.getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
+                componentsFailedToUninstallLabel.setText(component.getProperty(FAILED_TO_UNINSTALL_WARNINGS_LABEL_TEXT_PROPERTY));
+                componentsFailedToUninstallPane.setContentType(component.getProperty(FAILED_TO_UNINSTALL_CONTENT_TYPE_PROPERTY));
+                componentsFailedToUninstallPane.setText(StringUtils.format(component.getProperty(FAILED_TO_UNINSTALL_TEXT_PROPERTY), StringUtils.asString(products, component.getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
             } else {
                 componentsFailedToUninstallLabel.setVisible(false);
                 componentsFailedToUninstallPane.setVisible(false);
@@ -334,7 +363,7 @@ public class PostInstallSummaryPanel extends WizardPanel {
             componentsUninstalledWithWarningsLabel = new NbiLabel();
             componentsUninstalledWithWarningsLabel.setLabelFor(
                     componentsUninstalledWithWarningsPane);
-                    
+            
             // componentsFailedToUninstallPane //////////////////////////////////////
             componentsFailedToUninstallPane = new NbiTextPane();
             
@@ -548,42 +577,44 @@ public class PostInstallSummaryPanel extends WizardPanel {
             "message.errors.text"; // NOI18N
     public static final String MESSAGE_ERRORS_CONTENT_TYPE_PROPERTY =
             "message.errors.content.type"; // NOI18N
-    public static final String SUCCESSFULLY_INSTALLED_COMPONENTS_LABEL_TEXT_PROPERTY =
-            "successfully.installed.components.label.text"; // NOI18N
-    public static final String SUCCESSFULLY_INSTALLED_COMPONENTS_TEXT_PROPERTY =
-            "successfully.installed.components.text"; // NOI18N
-    public static final String SUCCESSFULLY_INSTALLED_COMPONENTS_CONTENT_TYPE_PROPERTY =
-            "successfully.installed.components.content.type"; // NOI18N
-    public static final String COMPONENTS_INSTALLED_WITH_WARNINGS_LABEL_TEXT_PROPERTY =
-            "components.installed.with.warnings.label.text"; // NOI18N
-    public static final String COMPONENTS_INSTALLED_WITH_WARNINGS_TEXT_PROPERTY =
-            "components.installed.with.warnings.text"; // NOI18N
-    public static final String COMPONENTS_INSTALLED_WITH_WARNINGS_CONTENT_TYPE_PROPERTY =
-            "components.installed.with.warnings.content.type"; // NOI18N
-    public static final String COMPONENTS_FAILED_TO_INSTALL_WARNINGS_LABEL_TEXT_PROPERTY =
-            "components.failed.to.install.label.text"; // NOI18N
-    public static final String COMPONENTS_FAILED_TO_INSTALL_TEXT_PROPERTY =
-            "components.failed.to.install.text"; // NOI18N
-    public static final String COMPONENTS_FAILED_TO_INSTALL_CONTENT_TYPE_PROPERTY =
-            "components.failed.to.install.content.type"; // NOI18N
-    public static final String SUCCESSFULLY_UNINSTALLED_COMPONENTS_LABEL_TEXT_PROPERTY =
-            "successfully.uninstalled.components.label.text"; // NOI18N
-    public static final String SUCCESSFULLY_UNINSTALLED_COMPONENTS_TEXT_PROPERTY =
-            "successfully.uninstalled.components.text"; // NOI18N
-    public static final String SUCCESSFULLY_UNINSTALLED_COMPONENTS_CONTENT_TYPE_PROPERTY =
-            "successfully.uninstalled.components.content.type"; // NOI18N
-    public static final String COMPONENTS_UNINSTALLED_WITH_WARNINGS_LABEL_TEXT_PROPERTY =
-            "components.uninstalled.with.warnings.label.text"; // NOI18N
-    public static final String COMPONENTS_UNINSTALLED_WITH_WARNINGS_TEXT_PROPERTY =
-            "components.uninstalled.with.warnings.text"; // NOI18N
-    public static final String COMPONENTS_UNINSTALLED_WITH_WARNINGS_CONTENT_TYPE_PROPERTY =
-            "components.uninstalled.with.warnings.content.type"; // NOI18N
-    public static final String COMPONENTS_FAILED_TO_UNINSTALL_WARNINGS_LABEL_TEXT_PROPERTY =
-            "components.failed.to.uninstall.label.text"; // NOI18N
-    public static final String COMPONENTS_FAILED_TO_UNINSTALL_TEXT_PROPERTY =
-            "components.failed.to.uninstall.text"; // NOI18N
-    public static final String COMPONENTS_FAILED_TO_UNINSTALL_CONTENT_TYPE_PROPERTY =
-            "components.failed.to.uninstall.content.type"; // NOI18N
+    public static final String SUCCESSFULLY_INSTALLED_LABEL_TEXT_PROPERTY =
+            "successfully.installed.label.text"; // NOI18N
+    public static final String SUCCESSFULLY_INSTALLED_TEXT_PROPERTY =
+            "successfully.installed.text"; // NOI18N
+    public static final String SUCCESSFULLY_INSTALLED_CONTENT_TYPE_PROPERTY =
+            "successfully.installed.content.type"; // NOI18N
+    public static final String INSTALLED_WITH_WARNINGS_LABEL_TEXT_PROPERTY =
+            "installed.with.warnings.label.text"; // NOI18N
+    public static final String INSTALLED_WITH_WARNINGS_TEXT_PROPERTY =
+            "installed.with.warnings.text"; // NOI18N
+    public static final String INSTALLED_WITH_WARNINGS_CONTENT_TYPE_PROPERTY =
+            "installed.with.warnings.content.type"; // NOI18N
+    public static final String FAILED_TO_INSTALL_WARNINGS_LABEL_TEXT_PROPERTY =
+            "failed.to.install.label.text"; // NOI18N
+    public static final String FAILED_TO_INSTALL_TEXT_PROPERTY =
+            "failed.to.install.text"; // NOI18N
+    public static final String FAILED_TO_INSTALL_CONTENT_TYPE_PROPERTY =
+            "failed.to.install.content.type"; // NOI18N
+    public static final String SUCCESSFULLY_UNINSTALLED_LABEL_TEXT_PROPERTY =
+            "successfully.uninstalled.label.text"; // NOI18N
+    public static final String SUCCESSFULLY_UNINSTALLED_TEXT_PROPERTY =
+            "successfully.uninstalled.text"; // NOI18N
+    public static final String SUCCESSFULLY_UNINSTALLED_CONTENT_TYPE_PROPERTY =
+            "successfully.uninstalled.content.type"; // NOI18N
+    public static final String UNINSTALLED_WITH_WARNINGS_LABEL_TEXT_PROPERTY =
+            "uninstalled.with.warnings.label.text"; // NOI18N
+    public static final String UNINSTALLED_WITH_WARNINGS_TEXT_PROPERTY =
+            "uninstalled.with.warnings.text"; // NOI18N
+    public static final String UNINSTALLED_WITH_WARNINGS_CONTENT_TYPE_PROPERTY =
+            "uninstalled.with.warnings.content.type"; // NOI18N
+    public static final String FAILED_TO_UNINSTALL_WARNINGS_LABEL_TEXT_PROPERTY =
+            "failed.to.uninstall.label.text"; // NOI18N
+    public static final String FAILED_TO_UNINSTALL_TEXT_PROPERTY =
+            "failed.to.uninstall.text"; // NOI18N
+    public static final String FAILED_TO_UNINSTALL_CONTENT_TYPE_PROPERTY =
+            "failed.to.uninstall.content.type"; // NOI18N
+    public static final String MESSAGE_FILES_REMAINING_PROPERTY =
+            "message.files.remaining"; // NOI18N
     public static final String VIEW_DETAILS_BUTTON_TEXT_PROPERTY =
             "view.details.button.text"; // NOI18N
     public static final String VIEW_LOG_BUTTON_TEXT_PROPERTY =
@@ -611,60 +642,63 @@ public class PostInstallSummaryPanel extends WizardPanel {
     public static final String DEFAULT_MESSAGE_ERRORS_CONTENT_TYPE =
             ResourceUtils.getString(PostInstallSummaryPanel.class,
             "PoISP.message.errors.content.type"); // NOI18N
-    public static final String DEFAULT_SUCCESSFULLY_INSTALLED_COMPONENTS_LABEL_TEXT =
+    public static final String DEFAULT_SUCCESSFULLY_INSTALLED_LABEL_TEXT =
             ResourceUtils.getString(PostInstallSummaryPanel.class,
-            "PoISP.successfully.installed.components.label.text"); // NOI18N
-    public static final String DEFAULT_SUCCESSFULLY_INSTALLED_COMPONENTS_TEXT =
+            "PoISP.successfully.installed.label.text"); // NOI18N
+    public static final String DEFAULT_SUCCESSFULLY_INSTALLED_TEXT =
             ResourceUtils.getString(PostInstallSummaryPanel.class,
-            "PoISP.successfully.installed.components.text"); // NOI18N
-    public static final String DEFAULT_SUCCESSFULLY_INSTALLED_COMPONENTS_CONTENT_TYPE =
+            "PoISP.successfully.installed.text"); // NOI18N
+    public static final String DEFAULT_SUCCESSFULLY_INSTALLED_CONTENT_TYPE =
             ResourceUtils.getString(PostInstallSummaryPanel.class,
-            "PoISP.successfully.installed.components.content.type"); // NOI18N
-    public static final String DEFAULT_COMPONENTS_INSTALLED_WITH_WARNINGS_LABEL_TEXT =
+            "PoISP.successfully.installed.content.type"); // NOI18N
+    public static final String DEFAULT_INSTALLED_WITH_WARNINGS_LABEL_TEXT =
             ResourceUtils.getString(PostInstallSummaryPanel.class,
-            "PoISP.components.installed.with.warnings.label.text"); // NOI18N
-    public static final String DEFAULT_COMPONENTS_INSTALLED_WITH_WARNINGS_TEXT =
+            "PoISP.installed.with.warnings.label.text"); // NOI18N
+    public static final String DEFAULT_INSTALLED_WITH_WARNINGS_TEXT =
             ResourceUtils.getString(PostInstallSummaryPanel.class,
-            "PoISP.components.installed.with.warnings.text"); // NOI18N
-    public static final String DEFAULT_COMPONENTS_INSTALLED_WITH_WARNINGS_CONTENT_TYPE =
+            "PoISP.installed.with.warnings.text"); // NOI18N
+    public static final String DEFAULT_INSTALLED_WITH_WARNINGS_CONTENT_TYPE =
             ResourceUtils.getString(PostInstallSummaryPanel.class,
-            "PoISP.components.installed.with.warnings.content.type"); // NOI18N
-    public static final String DEFAULT_COMPONENTS_FAILED_TO_INSTALL_WARNINGS_LABEL_TEXT =
+            "PoISP.installed.with.warnings.content.type"); // NOI18N
+    public static final String DEFAULT_FAILED_TO_INSTALL_WARNINGS_LABEL_TEXT =
             ResourceUtils.getString(PostInstallSummaryPanel.class,
-            "PoISP.components.failed.to.install.label.text"); // NOI18N
-    public static final String DEFAULT_COMPONENTS_FAILED_TO_INSTALL_TEXT =
+            "PoISP.failed.to.install.label.text"); // NOI18N
+    public static final String DEFAULT_FAILED_TO_INSTALL_TEXT =
             ResourceUtils.getString(PostInstallSummaryPanel.class,
-            "PoISP.components.failed.to.install.text"); // NOI18N
-    public static final String DEFAULT_COMPONENTS_FAILED_TO_INSTALL_CONTENT_TYPE =
+            "PoISP.failed.to.install.text"); // NOI18N
+    public static final String DEFAULT_FAILED_TO_INSTALL_CONTENT_TYPE =
             ResourceUtils.getString(PostInstallSummaryPanel.class,
-            "PoISP.components.failed.to.install.content.type"); // NOI18N
-    public static final String DEFAULT_SUCCESSFULLY_UNINSTALLED_COMPONENTS_LABEL_TEXT =
+            "PoISP.failed.to.install.content.type"); // NOI18N
+    public static final String DEFAULT_SUCCESSFULLY_UNINSTALLED_LABEL_TEXT =
             ResourceUtils.getString(PostInstallSummaryPanel.class,
-            "PoISP.successfully.uninstalled.components.label.text"); // NOI18N
-    public static final String DEFAULT_SUCCESSFULLY_UNINSTALLED_COMPONENTS_TEXT =
+            "PoISP.successfully.uninstalled.label.text"); // NOI18N
+    public static final String DEFAULT_SUCCESSFULLY_UNINSTALLED_TEXT =
             ResourceUtils.getString(PostInstallSummaryPanel.class,
-            "PoISP.successfully.uninstalled.components.text"); // NOI18N
-    public static final String DEFAULT_SUCCESSFULLY_UNINSTALLED_COMPONENTS_CONTENT_TYPE =
+            "PoISP.successfully.uninstalled.text"); // NOI18N
+    public static final String DEFAULT_SUCCESSFULLY_UNINSTALLED_CONTENT_TYPE =
             ResourceUtils.getString(PostInstallSummaryPanel.class,
-            "PoISP.successfully.uninstalled.components.content.type"); // NOI18N
-    public static final String DEFAULT_COMPONENTS_UNINSTALLED_WITH_WARNINGS_LABEL_TEXT =
+            "PoISP.successfully.uninstalled.content.type"); // NOI18N
+    public static final String DEFAULT_UNINSTALLED_WITH_WARNINGS_LABEL_TEXT =
             ResourceUtils.getString(PostInstallSummaryPanel.class,
-            "PoISP.components.uninstalled.with.warnings.label.text"); // NOI18N
-    public static final String DEFAULT_COMPONENTS_UNINSTALLED_WITH_WARNINGS_TEXT =
+            "PoISP.uninstalled.with.warnings.label.text"); // NOI18N
+    public static final String DEFAULT_UNINSTALLED_WITH_WARNINGS_TEXT =
             ResourceUtils.getString(PostInstallSummaryPanel.class,
-            "PoISP.components.uninstalled.with.warnings.text"); // NOI18N
-    public static final String DEFAULT_COMPONENTS_UNINSTALLED_WITH_WARNINGS_CONTENT_TYPE =
+            "PoISP.uninstalled.with.warnings.text"); // NOI18N
+    public static final String DEFAULT_UNINSTALLED_WITH_WARNINGS_CONTENT_TYPE =
             ResourceUtils.getString(PostInstallSummaryPanel.class,
-            "PoISP.components.uninstalled.with.warnings.content.type"); // NOI18N
-    public static final String DEFAULT_COMPONENTS_FAILED_TO_UNINSTALL_WARNINGS_LABEL_TEXT =
+            "PoISP.uninstalled.with.warnings.content.type"); // NOI18N
+    public static final String DEFAULT_FAILED_TO_UNINSTALL_WARNINGS_LABEL_TEXT =
             ResourceUtils.getString(PostInstallSummaryPanel.class,
-            "PoISP.components.failed.to.uninstall.label.text"); // NOI18N
-    public static final String DEFAULT_COMPONENTS_FAILED_TO_UNINSTALL_TEXT =
+            "PoISP.failed.to.uninstall.label.text"); // NOI18N
+    public static final String DEFAULT_FAILED_TO_UNINSTALL_TEXT =
             ResourceUtils.getString(PostInstallSummaryPanel.class,
-            "PoISP.components.failed.to.uninstall.text"); // NOI18N
-    public static final String DEFAULT_COMPONENTS_FAILED_TO_UNINSTALL_CONTENT_TYPE =
+            "PoISP.failed.to.uninstall.text"); // NOI18N
+    public static final String DEFAULT_FAILED_TO_UNINSTALL_CONTENT_TYPE =
             ResourceUtils.getString(PostInstallSummaryPanel.class,
-            "PoISP.components.failed.to.uninstall.content.type"); // NOI18N
+            "PoISP.failed.to.uninstall.content.type"); // NOI18N
+    public static final String DEFAULT_MESSAGE_FILES_REMAINING =
+            ResourceUtils.getString(PostInstallSummaryPanel.class,
+            "PoISP.message.files.remaining"); // NOI18N
     public static final String DEFAULT_VIEW_DETAILS_BUTTON_TEXT =
             ResourceUtils.getString(PostInstallSummaryPanel.class,
             "PoISP.view.details.button.text"); // NOI18N
