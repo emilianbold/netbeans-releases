@@ -97,8 +97,8 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
                 
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.editor.resources.Bundle"/>
-                <folder name="NetBeans">
-                    <folder name="FontsColors">
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
                         <folder name="Defaults">
                             <file name="org-netbeans-modules-html-editor-coloring.xml" url="fontsColors.xml">
                                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.editor.resources.Bundle"/>
@@ -107,8 +107,8 @@ Microsystems, Inc. All Rights Reserved.
                     </folder>
                 </folder>
 
-                <folder name="NetBeans">
-                    <folder name="Keybindings">
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
                         <folder name="Defaults">
                             <file name="org-netbeans-modules-html-editor-keybindings.xml" url="keybindings.xml"/>
                         </folder>
