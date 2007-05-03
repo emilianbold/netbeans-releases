@@ -30,8 +30,8 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="language.nbs" url="JSP.nbs"/>
                     
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.syntax.resources.Bundle"/>
-                <folder name="NetBeans">
-                    <folder name="FontsColors">
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
                         <folder name="Defaults">
                             <file name="org-netbeans-modules-web-core-syntax-coloring.xml" url="fontsColors.xml">
                                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.syntax.resources.Bundle"/>
@@ -40,8 +40,8 @@ Microsystems, Inc. All Rights Reserved.
                     </folder>
                 </folder>
                 
-                <folder name="NetBeans">
-                    <folder name="Keybindings">
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
                         <folder name="Defaults">
                             <file name="org-netbeans-modules-web-core-syntax-keybindings.xml" url="DefaultKeyBindings.xml"/> 
                             <file name="org-netbeans-modules-web-core-syntax-keybindings-mac.xml" url="DefaultKeyBindings-Mac.xml"> 
@@ -135,8 +135,8 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="language.nbs" url="JSP.nbs"/>
                 
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.syntax.resources.Bundle"/>
-                <folder name="NetBeans">
-                    <folder name="FontsColors">
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
                         <folder name="Defaults">
                             <file name="org-netbeans-modules-web-core-syntax-coloring.xml" url="fontsColors.xml">
                                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.syntax.resources.Bundle"/>
