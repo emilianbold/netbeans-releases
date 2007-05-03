@@ -30,7 +30,6 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-import java.beans.PropertyChangeSupport;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
@@ -46,7 +45,6 @@ import org.openide.util.NbBundle;
  * @version 1.0
  */
 public class ColorSelectionField extends javax.swing.JPanel {
-    private PropertyChangeSupport propertyChangeSupport =  new PropertyChangeSupport(this);
     ColorModel colorModel = new ColorModel();
 
     String currentColor = null;
@@ -135,7 +133,7 @@ public class ColorSelectionField extends javax.swing.JPanel {
      * @param l The listener to add.
      */
     public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
-        propertyChangeSupport.addPropertyChangeListener(l);
+        addPropertyChangeListener(l);
     }
     
     /**
@@ -143,14 +141,14 @@ public class ColorSelectionField extends javax.swing.JPanel {
      * @param l The listener to remove.
      */
     public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
-        propertyChangeSupport.removePropertyChangeListener(l);
+        removePropertyChangeListener(l);
     }
     
     private void setColor(){
         currentColor = (String)colorComboBox.getSelectedItem();
         colorModel.setColor(currentColor);
         repaint();
-        propertyChangeSupport.firePropertyChange("color", oldColor, currentColor); //NOI18N
+        firePropertyChange("color", oldColor, currentColor); //NOI18N
         oldColor = currentColor;
         
     }
