@@ -27,6 +27,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.prefs.Preferences;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
@@ -36,6 +38,7 @@ import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
+import org.openide.util.NbPreferences;
 
 /** Handles creation and manipulation with boolean state filters. 
  *
@@ -191,6 +194,8 @@ public final class FiltersManager {
             toolbar.setFloatable(false);
             toolbar.setRollover(true);
             toolbar.setBorderPainted(false);
+            toolbar.setBorder(BorderFactory.createEmptyBorder());
+            toolbar.setOpaque(false);
             // create toggle buttons
             int filterCount = filtersDesc.getFilterCount();
             toggles = new ArrayList<JToggleButton>(filterCount);
@@ -223,8 +228,12 @@ public final class FiltersManager {
             }
         }
         
+        private Preferences getPreferences() {
+            return NbPreferences.forModule( FiltersManager.class );
+        }
+        
         private JToggleButton createToggle (Map<String,Boolean> fStates, int index) {
-            boolean isSelected = filtersDesc.isSelected(index);
+            boolean isSelected = getPreferences().getBoolean( filtersDesc.getName(index), filtersDesc.isSelected(index) );
             Icon icon = filtersDesc.getSelectedIcon(index);
             // ensure small size, just for the icon
             JToggleButton result = new JToggleButton(icon, isSelected);
@@ -278,6 +287,18 @@ public final class FiltersManager {
             
             // notify listener
             lCopy.filterStateChanged(new ChangeEvent(FiltersManager.this));
+        }
+
+        @Override
+        public void removeNotify() {
+            //remember filter settings
+            if( null != filterStates ) {
+                Preferences prefs = getPreferences();
+                for( String filterName : filterStates.keySet() ) {
+                    prefs.putBoolean( filterName, filterStates.get( filterName ) );
+                }
+            }
+            super.removeNotify();
         }
     
     } // end of FiltersComponent
