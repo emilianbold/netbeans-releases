@@ -28,7 +28,6 @@ import java.util.logging.Logger;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.modules.debugger.jpda.models.ArgumentVariable;
 import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.openide.util.NbBundle;
@@ -1463,15 +1462,18 @@ public class Evaluator implements JavaParserVisitor {
                 if (var != null) return frame.getValue(var);
             } catch (AbsentInformationException e) {
                 // Try to get arguments
-                JPDAThread thread = evaluationContext.getDebugger().getThread(frame.thread());
-                org.netbeans.api.debugger.jpda.LocalVariable[] lvs =
-                        new CallStackFrameImpl(frame, 0, evaluationContext.getDebugger()).getMethodArguments();
-                if (lvs != null) {
-                    for (org.netbeans.api.debugger.jpda.LocalVariable lv : lvs) {
-                        if (ctx.identifier.equals(lv.getName())) {
-                            return ((ArgumentVariable) lv).getInnerValue();
+                try {
+                    org.netbeans.api.debugger.jpda.LocalVariable[] lvs;
+                    lvs = new CallStackFrameImpl(frame, 0, evaluationContext.getDebugger()).getMethodArguments();
+                    if (lvs != null) {
+                        for (org.netbeans.api.debugger.jpda.LocalVariable lv : lvs) {
+                            if (ctx.identifier.equals(lv.getName())) {
+                                return ((JDIVariable) lv).getJDIValue();
+                            }
                         }
                     }
+                } catch (NativeMethodException nmex) {
+                    // ignore - no arguments available
                 }
             }
         }

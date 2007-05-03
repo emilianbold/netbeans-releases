@@ -169,7 +169,12 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                 if (currentOperation == null) {
                     return new Object[] {};
                 }
-                List<org.netbeans.api.debugger.jpda.LocalVariable> arguments = frame.findOperationArguments(currentOperation);//currentOperation.getArgumentValues();
+                List<org.netbeans.api.debugger.jpda.LocalVariable> arguments;
+                try {
+                    arguments = frame.findOperationArguments(currentOperation);//currentOperation.getArgumentValues();
+                } catch (NativeMethodException nmex) {
+                    return new Object[] { "NativeMethodException" };
+                }
                 if (arguments == null) {
                     return new Object[] {};
                 } else {
@@ -428,6 +433,8 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                     System.arraycopy (avs, 0, result, 1 + shift, avs.length);
                     return result;
                 }            
+            } catch (NativeMethodException nmex) {
+                return new String[] { "NativeMethodException" };
             } catch (InternalException ex) {
                 return new String [] {ex.getMessage ()};
             }

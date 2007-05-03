@@ -290,7 +290,7 @@ public class CallStackFrameImpl implements CallStackFrame {
                 com.sun.jdi.VirtualMachine vm = tr.virtualMachine();
                 com.sun.jdi.request.StepRequest step = vm.eventRequestManager().createStepRequest(
                         tr,
-                        com.sun.jdi.request.StepRequest.STEP_LINE,
+                        com.sun.jdi.request.StepRequest.STEP_MIN,
                         com.sun.jdi.request.StepRequest.STEP_INTO);
                 step.addCountFilter(1);
                 step.setSuspendPolicy(com.sun.jdi.request.StepRequest.SUSPEND_EVENT_THREAD);
@@ -377,6 +377,9 @@ public class CallStackFrameImpl implements CallStackFrame {
     private static List<com.sun.jdi.Value> getArgumentValues(StackFrame sf) {
         if (!IS_JDK_16) return null;
         try {
+            if (sf.location().method().isNative()) {
+                throw new NativeMethodException(sf.location().method().name());
+            }
             java.lang.reflect.Method getArgumentValuesMethod = sf.getClass().getMethod("getArgumentValues"); // NOI18N
             Object values = getArgumentValuesMethod.invoke(sf, new java.lang.Object[]{});
             return (List<com.sun.jdi.Value>) values;
