@@ -36,7 +36,7 @@ public abstract class FileStorage {
 	return  Stats.doubleFileStorage ? new DoubleFileStorage(path) : new SingleFileStorage(path);
     }
     
-    public static FileStorage create(File file) throws IOException {
+     public static FileStorage create(File file) throws IOException {
 	return  Stats.doubleFileStorage ? new DoubleFileStorage(file) : new SingleFileStorage(file);
     }
     

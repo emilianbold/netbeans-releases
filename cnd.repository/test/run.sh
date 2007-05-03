@@ -109,7 +109,7 @@ function runcnd() {
     echo "<memory>${MEM} Mb</memory>" >> ${XMLOUTPUT}
     echo "<run-line>${RUNLINE}</run-line>" >> ${XMLOUTPUT}
     #echo ${RUNLINE} 
-    LOGNAME="mws-rep${USE_REPOSITORY}-${MEM}.txt"
+    LOGNAME="mws-rep${USE_REPOSITORY}-${MWSPROJECT}-${MEM}.txt"
     ${RUNLINE} ${PARAMS} > ${LOGPATH}/${LOGNAME} 2>&1
     echo "<log name='mws log'>${LOGNAME}</log>" >> ${XMLOUTPUT}
     echo "</test-mws>" >> ${XMLOUTPUT}

@@ -77,6 +77,8 @@ public class Stats {
     public static final boolean doubleFileStorage = getBoolean("cnd.repository.double", true); //NOI18N
     public static final int defragmentationThreashold = getInteger("cnd.repository.defragm.threshold", 50); //NOI18N
             
+    public final static String ENCODING = System.getProperty("file.encoding"); // NOI18N
+    
     public static final boolean isTraceKey(Key key) {
 	if( traceKey ) {
 	    if( key != null ) {

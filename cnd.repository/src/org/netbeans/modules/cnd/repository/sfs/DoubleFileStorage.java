@@ -20,17 +20,11 @@
 package org.netbeans.modules.cnd.repository.sfs;
 
 import java.io.*;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Formatter;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.repository.sfs.statistics.FileStatistics;
@@ -210,7 +204,7 @@ public class DoubleFileStorage extends FileStorage {
     
     private Map<Key, Persistent> fickleMap = new HashMap<Key, Persistent>();
 
-    private File baseFile;
+    private File basePath;
     
     private Worker active;
     private Worker passive;
@@ -232,10 +226,10 @@ public class DoubleFileStorage extends FileStorage {
         this(new File(basePath));
     }
     
-    public DoubleFileStorage(File baseFile) throws IOException {
-        this.baseFile = baseFile;
-	active = new Worker(new File(baseFile.getAbsoluteFile() + "-0")); // NOI18N
-	passive = new Worker(new File(baseFile.getAbsoluteFile() + "-1")); // NOI18N
+    public DoubleFileStorage(File basePath) throws IOException {
+        this.basePath = basePath;
+	active = new Worker(File.createTempFile("cache-0", null, basePath)); // NOI18N
+	passive = new Worker(File.createTempFile("cache-1", null, basePath)); // NOI18N
     }
     
     private FileRWAccess createFileRWAccess(File file) throws IOException {
@@ -273,7 +267,7 @@ public class DoubleFileStorage extends FileStorage {
 	WriteStatistics.instance().update(0);
 	
 	if( Stats.traceDefragmentation ) {
-	    System.out.printf(">>> Defragmenting %s; timeout %d ms total fragmentation %d%%\n", baseFile.getAbsolutePath(), timeout, getFragmentationPercentage()); // NOI18N
+	    System.out.printf(">>> Defragmenting %s; timeout %d ms total fragmentation %d%%\n", basePath.getAbsolutePath(), timeout, getFragmentationPercentage()); // NOI18N
 	    System.out.printf("\tActive:  %s\n", active.getTraceString()); // NOI18N
 	    System.out.printf("\tPassive: %s\n", passive.getTraceString()); // NOI18N
 	} 
@@ -309,7 +303,7 @@ public class DoubleFileStorage extends FileStorage {
 	}
 	
 	if( Stats.traceDefragmentation ) {
-	    System.out.printf("<<< Defragmenting %s; timeout %d ms total fragmentation %d%%\n", baseFile.getAbsolutePath(), timeout, getFragmentationPercentage()); // NOI18N
+	    System.out.printf("<<< Defragmenting %s; timeout %d ms total fragmentation %d%%\n", basePath.getAbsolutePath(), timeout, getFragmentationPercentage()); // NOI18N
 	    System.out.printf("\tActive:  %s\n", active.getTraceString()); // NOI18N
 	    System.out.printf("\tPassive: %s\n", passive.getTraceString()); // NOI18N
 	} 
@@ -358,7 +352,7 @@ public class DoubleFileStorage extends FileStorage {
     
     
     public void dump(PrintStream ps) throws IOException {
-	ps.printf("\nDumping DoubleFileStorage; baseFile %s\n", baseFile.getAbsolutePath()); // NOI18N
+	ps.printf("\nDumping DoubleFileStorage; baseFile %s\n", basePath.getAbsolutePath()); // NOI18N
 	ps.printf("\nActive file:\n"); // NOI18N
 	active.dump(ps);
 	ps.printf("\nPassive file:\n"); // NOI18N
@@ -367,7 +361,7 @@ public class DoubleFileStorage extends FileStorage {
     }
     
     public void dumpSummary(PrintStream ps) throws IOException {
-	ps.printf("\nDumping DoubleFileStorage; baseFile %s\n", baseFile.getAbsolutePath()); // NOI18N
+	ps.printf("\nDumping DoubleFileStorage; baseFile %s\n", basePath.getAbsolutePath()); // NOI18N
 	ps.printf("\nActive file:\n"); // NOI18N
 	active.dumpSummary(ps);
 	ps.printf("\nPassive file:\n"); // NOI18N
