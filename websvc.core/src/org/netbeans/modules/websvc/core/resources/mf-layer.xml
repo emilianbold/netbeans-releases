@@ -228,6 +228,12 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
     <folder name="Projects">
+        <!-- populate J2SE Project Lookup with WS Client Support -->
+        <folder name="org-netbeans-modules-java-j2seproject">
+            <folder name="Lookup">
+                <file name="org.netbeans.modules.websvc.core.jaxws.projects.J2SEWSSupportLookupProvider.instance"/>
+            </folder>            
+        </folder>
         <!-- Web Service References node in J2SE Project -->
         <folder name="org-netbeans-modules-java-j2seproject">
             <folder name="Nodes">
@@ -242,5 +248,8 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="org-netbeans-modules-websvc-core-jaxws-nodes-WebServicesNodeFactory.instance/org-netbeans-modules-web-project-ui-ConfFilesNodeFactory.instance" boolvalue="true"/>
             </folder>
         </folder>
+    </folder>
+    <folder name="Projects">
+
     </folder>
 </filesystem>

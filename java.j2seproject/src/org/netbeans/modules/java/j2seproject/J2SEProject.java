@@ -49,14 +49,10 @@ import org.netbeans.modules.java.j2seproject.ui.J2SELogicalViewProvider;
 import org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.modules.java.j2seproject.wsclient.J2SEProjectWebServicesClientSupport;
-import org.netbeans.modules.java.j2seproject.jaxws.J2SEProjectJAXWSClientSupport;
 import org.netbeans.modules.java.j2seproject.queries.J2SEProjectEncodingQueryImpl;
 import org.netbeans.modules.java.j2seproject.queries.BinaryForSourceQueryImpl;
-import org.netbeans.modules.java.j2seproject.wsclient.J2SEProjectWebServicesSupportProvider;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
-import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportFactory;
-import org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientSupportFactory;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -116,10 +112,7 @@ public final class J2SEProject implements Project, AntProjectListener {
     
     // WS client support
     private J2SEProjectWebServicesClientSupport j2seProjectWebServicesClientSupport;
-    private J2SEProjectJAXWSClientSupport j2seJAXWSClientSupport;
     private WebServicesClientSupport apiWebServicesClientSupport;
-    private JAXWSClientSupport apiJaxwsClientSupport;
-    private FileObject jaxWsFo;
     private AntBuildExtender buildExtender;
 
     J2SEProject(AntProjectHelper helper) throws IOException {
@@ -134,8 +127,6 @@ public final class J2SEProject implements Project, AntProjectListener {
             UpdateHelper.createDefaultNotifier());
         j2seProjectWebServicesClientSupport = new J2SEProjectWebServicesClientSupport(this, helper, refHelper);
         apiWebServicesClientSupport = WebServicesClientSupportFactory.createWebServicesClientSupport (j2seProjectWebServicesClientSupport);
-        j2seJAXWSClientSupport = new J2SEProjectJAXWSClientSupport(this, updateHelper);
-        apiJaxwsClientSupport = JAXWSClientSupportFactory.createJAXWSClientSupport(j2seJAXWSClientSupport);
 
         lookup = createLookup(aux);
         helper.addAntProjectListener(this);
@@ -250,7 +241,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             this, // never cast an externally obtained Project to J2SEProject - use lookup instead
             new J2SEProjectOperations(this),
             new J2SEConfigurationProvider(this),
-            new J2SEProjectWebServicesSupportProvider(),
+            apiWebServicesClientSupport,
             new J2SEPersistenceProvider(this, cpProvider),
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
@@ -506,14 +497,6 @@ public final class J2SEProject implements Project, AntProjectListener {
             }
         }
         
-    }
-    
-    public WebServicesClientSupport getAPIWebServicesClientSupport () {
-            return apiWebServicesClientSupport;
-    }    
-
-    public JAXWSClientSupport getAPIJAXWSClientSupport() {
-        return apiJaxwsClientSupport;
     }
     
     /**

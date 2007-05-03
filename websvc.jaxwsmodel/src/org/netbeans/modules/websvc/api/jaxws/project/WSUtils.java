@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
@@ -51,6 +52,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 
 /**
@@ -320,18 +323,23 @@ public class WSUtils {
     /** Set jaxws.endorsed.dir property for wsimport, wsgen tasks
      *  to specify jvmarg value : -Djava.endorsed.dirs=${jaxws.endorsed.dir}"
      */
-    public static void setJaxWsEndorsedDirProperty(EditableProperties ep) {
+    public static boolean setJaxWsEndorsedDirProperty(EditableProperties ep) {
         String oldJaxWsEndorsedDirs = ep.getProperty(ENDORSED_DIR_PROPERTY);
         String javaVersion = System.getProperty("java.specification.version"); //NOI18N
+        boolean changed=false;
         if ("1.6".equals(javaVersion)) { //NOI18N
             String jaxWsEndorsedDirs = getJaxWsApiDir();
-            if (jaxWsEndorsedDirs!=null && !jaxWsEndorsedDirs.equals(oldJaxWsEndorsedDirs))
+            if (jaxWsEndorsedDirs!=null && !jaxWsEndorsedDirs.equals(oldJaxWsEndorsedDirs)) {
                 ep.setProperty(ENDORSED_DIR_PROPERTY, jaxWsEndorsedDirs);
+                changed=true;
+            }
         } else {
             if (oldJaxWsEndorsedDirs!=null) {
                 ep.remove(ENDORSED_DIR_PROPERTY);
+                changed=true;
             }
         }
+        return changed;
     }
     
     private static String getJaxWsApiDir() {
@@ -363,4 +371,53 @@ public class WSUtils {
         }
         return jaxWsFo;
     }
+    
+    public static EditableProperties getEditableProperties(final Project prj,final  String propertiesPath) 
+        throws IOException {        
+        try {
+            return
+            ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<EditableProperties>() {
+                public EditableProperties run() throws IOException {                                             
+                    FileObject propertiesFo = prj.getProjectDirectory().getFileObject(propertiesPath);
+                    EditableProperties ep = null;
+                    if (propertiesFo!=null) {
+                        InputStream is = null; 
+                        ep = new EditableProperties();
+                        try {
+                            is = propertiesFo.getInputStream();
+                            ep.load(is);
+                        } finally {
+                            if (is!=null) is.close();
+                        }
+                    }
+                    return ep;
+                }
+            });
+        } catch (MutexException ex) {
+            return null;
+        }
+    }
+    
+    public static void storeEditableProperties(final Project prj, final  String propertiesPath, final EditableProperties ep) 
+        throws IOException {        
+        try {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws IOException {                                             
+                    FileObject propertiesFo = prj.getProjectDirectory().getFileObject(propertiesPath);
+                    if (propertiesFo!=null) {
+                        OutputStream os = null;
+                        try {
+                            os = propertiesFo.getOutputStream();
+                            ep.store(os);
+                        } finally {
+                            if (os!=null) os.close();
+                        }
+                    }
+                    return null;
+                }
+            });
+        } catch (MutexException ex) {
+        }
+    }
+    
 }
