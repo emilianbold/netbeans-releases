@@ -187,7 +187,7 @@ public class JavaScript {
         NbEditorDocument doc = (NbEditorDocument) context.getDocument ();
         SyntaxContext scontext = (SyntaxContext) context;
         ASTPath path = scontext.getASTPath ();
-        JSItem item = getDeclaration (doc, path);
+        JSItem item = getDeclaration (path);
         if (item == null) return null;
         int offset = item.getOffset();
         DataObject dobj = NbEditorUtilities.getDataObject (doc);
@@ -262,7 +262,6 @@ public class JavaScript {
             ASTPath path = ((SyntaxContext) context).getASTPath ();
             Document doc = syntaxContext.getDocument ();
             Map<String,CompletionItem> members = getMembers (
-                doc,
                 path,
                 getDocumentName (doc)
             );
@@ -465,7 +464,7 @@ public class JavaScript {
         NbEditorDocument doc = (NbEditorDocument)comp.getDocument();
         int position = comp.getCaretPosition();
         ASTPath path = node.findPath(position);
-        JSItem item = getDeclaration (doc, path);
+        JSItem item = getDeclaration (path);
         if (item == null) return;
         int offset = item.getOffset();
         DataObject dobj = NbEditorUtilities.getDataObject (doc);
@@ -477,29 +476,74 @@ public class JavaScript {
     }
      
     public static boolean enabledGoToDeclaration (ASTNode node, JTextComponent comp) {
-        NbEditorDocument doc = (NbEditorDocument)comp.getDocument();
         int position = comp.getCaretPosition();
         ASTPath path = node.findPath(position);
-        JSItem item = getDeclaration (doc, path);
+        JSItem item = getDeclaration (path);
         return item != null;
     }
     
+    public static boolean isUsedMethod (Context context) {
+        if (!(context instanceof SyntaxContext)) return false;
+        SyntaxContext scontext = (SyntaxContext)context;
+        ASTPath path = scontext.getASTPath ();
+        ASTNode n = (ASTNode) path.getLeaf ();
+        JSRoot root = getRoot ((ASTNode) path.getRoot ());
+        JSItem item = root.getItem (n.getAsText (), n.getOffset ());
+        if (item instanceof JSFunction)
+            return ((JSFunction) item).findUsages ().size () > 0;
+        if (item instanceof JSVariable)
+            return ((JSVariable) item).findUsages ().size () > 0;
+        return false;
+    }
+    
+    public static boolean isUnusedMethod (Context context) {
+        if (!(context instanceof SyntaxContext)) return false;
+        SyntaxContext scontext = (SyntaxContext)context;
+        ASTPath path = scontext.getASTPath ();
+        ASTNode n = (ASTNode) path.getLeaf ();
+        JSRoot root = getRoot ((ASTNode) path.getRoot ());
+        JSItem item = root.getItem (n.getAsText (), n.getOffset ());
+        if (item instanceof JSFunction)
+            return ((JSFunction) item).findUsages ().isEmpty ();
+        if (item instanceof JSVariable)
+            return ((JSVariable) item).findUsages ().isEmpty ();
+        return false;
+    }
+    
     public static boolean isFunctionParameter (Context context) {
-        return isVariable (context, JSVariable.Type.PARAMETER);
+        JSVariable variable =  getVariable (context);
+        if (variable == null) return false;
+        return variable.getType () == JSVariable.Type.PARAMETER;
+    }
+    
+    public static boolean isUnusedFunctionParameter (Context context) {
+        JSVariable variable =  getVariable (context);
+        if (variable == null) return false;
+        return variable.getType () == JSVariable.Type.PARAMETER &&
+            variable.findUsages ().isEmpty ();
     }
     
     public static boolean isLocalVariable(Context context) {
-        return isVariable (context, JSVariable.Type.LOCAL);
+        JSVariable variable =  getVariable (context);
+        if (variable == null) return false;
+        return variable.getType () == JSVariable.Type.LOCAL;
+    }
+    
+    public static boolean isUnusedLocalVariable(Context context) {
+        JSVariable variable =  getVariable (context);
+        if (variable == null) return false;
+        return variable.getType () == JSVariable.Type.LOCAL &&
+            variable.findUsages ().isEmpty ();
     }
 
     
     // helper methods ..........................................................
     
     private static JSParser jsParser;
-    private static Map<Document,JSRoot> jsParsers = new WeakHashMap<Document,JSRoot> ();
+    private static Map<ASTNode,JSRoot> astNodeToJSRoot = new WeakHashMap<ASTNode,JSRoot> ();
     
-    public static JSRoot getRoot (Document doc, ASTNode ast) {
-        JSRoot result = jsParsers.get (doc);
+    public static JSRoot getRoot (ASTNode ast) {
+        JSRoot result = astNodeToJSRoot.get (ast);
         if (result != null)
             return result;
         if (jsParser == null)
@@ -508,35 +552,32 @@ public class JavaScript {
             } catch (LanguageDefinitionNotFoundException ex) {
             }
         result = jsParser.process (ast);
-        jsParsers.put (doc, result);
+        astNodeToJSRoot.put (ast, result);
         printRoots ();
         return result;
     }
     
     private static void printRoots () {
         System.out.println("\nJSRoots:");
-        Iterator<Document> it = jsParsers.keySet ().iterator ();
+        Iterator<JSRoot> it = astNodeToJSRoot.values ().iterator ();
         while (it.hasNext ()) {
-            Document document =  it.next ();
-            String title = (String) document.getProperty("title");
-            if (title == null) title = document.toString();
-            System.out.println("  " + title);
+            System.out.println("  " + it.next ());
         }
     }
     
-    public static JSItem getDeclaration (Document doc, ASTPath path) {
+    public static JSItem getDeclaration (ASTPath path) {
         ASTItem leaf = path.getLeaf();
         if (!(leaf instanceof ASTToken))
             return null;
         ASTToken token = (ASTToken) leaf;
         ASTNode ast = (ASTNode) path.getRoot ();
-        JSRoot root = JavaScript.getRoot (doc, ast);
+        JSRoot root = JavaScript.getRoot (ast);
         return root.getItem (token.getIdentifier (), token.getOffset ());
     }
     
-    private static Map<String,CompletionItem> getMembers (Document doc, ASTPath path, String title) {
+    private static Map<String,CompletionItem> getMembers (ASTPath path, String title) {
         Map<String,CompletionItem> result = new HashMap<String,CompletionItem> ();
-        JSRoot root = getRoot (doc, (ASTNode) path.get (0));
+        JSRoot root = getRoot ((ASTNode) path.get (0));
         Collection<JSItem> c = root.getItems (path.getLeaf ().getOffset ());
         Iterator<JSItem> it = c.iterator ();
         while (it.hasNext ()) {
@@ -604,15 +645,14 @@ public class JavaScript {
         return name;
     }
     
-    private static boolean isVariable(Context context, JSVariable.Type type) {
-        if (!(context instanceof SyntaxContext)) {
-            return false;
-        }
+    private static JSVariable getVariable (Context context) {
+        if (!(context instanceof SyntaxContext)) return null;
         SyntaxContext scontext = (SyntaxContext)context;
         ASTPath path = scontext.getASTPath ();
-        JSItem item = getDeclaration (context.getDocument(), path);
-        return (item instanceof JSVariable) &&
-               ((JSVariable) item).getType () == type;
+        JSItem item = getDeclaration (path);
+        if (item instanceof JSVariable) 
+            return (JSVariable) item;
+        return null;
     }
     
     private static LibrarySupport library;

@@ -303,27 +303,50 @@ COLOR:js_separator: {
 COLOR:FunctionName: {
     color_name: "js_method";
     default_coloring: "default";
+    condition:org.netbeans.modules.languages.javascript.JavaScript.isUsedMethod;
     font_type: "bold";
 }
 
+COLOR:FunctionName: {
+    color_name: "js_unused_method";
+    default_coloring: "default";
+    condition:org.netbeans.modules.languages.javascript.JavaScript.isUnusedMethod;
+    font_type: "bold";
+    foreground_color: "0x737373";
+}
 COLOR:js_regularExpression: {
     font_type: "bold";
-    foreground_color: "0x008000";
+    foreground_color: "0x006f00";
 }
 
 COLOR:js_identifier: {
-    color_name: "js_functionParameter";
+    color_name: "js_function_parameter";
     default_coloring: "default";
     condition:org.netbeans.modules.languages.javascript.JavaScript.isFunctionParameter;
     foreground_color: "0xA06001";
 }
 
 COLOR:js_identifier: {
-    color_name: "js_localVariable";
+    color_name: "js_unused_function_parameter";
+    default_coloring: "default";
+    condition:org.netbeans.modules.languages.javascript.JavaScript.isUnusedFunctionParameter;
+    foreground_color: "0x737373";
+}
+
+COLOR:js_identifier: {
+    color_name: "js_local_variable";
     default_coloring: "default";
     font_type: "bold";
     condition:org.netbeans.modules.languages.javascript.JavaScript.isLocalVariable;
     foreground_color: "0x098618";
+}
+
+COLOR:js_identifier: {
+    color_name: "js_unused_local_variable";
+    default_coloring: "default";
+    font_type: "bold";
+    condition:org.netbeans.modules.languages.javascript.JavaScript.isUnusedLocalVariable;
+    foreground_color: "0x737373";
 }
 
 ########### indentation ########################################################
