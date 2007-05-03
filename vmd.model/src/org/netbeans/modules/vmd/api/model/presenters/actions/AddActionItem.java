@@ -19,21 +19,17 @@
 
 package org.netbeans.modules.vmd.api.model.presenters.actions;
 
-import java.awt.Image;
-import java.awt.event.ActionEvent;
-import java.util.Map;
-import java.util.WeakHashMap;
-
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.ImageIcon;
-
 import org.netbeans.modules.vmd.api.model.ComponentProducer;
-import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.common.AcceptSupport;
 import org.openide.util.Utilities;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 /**
  *
@@ -65,13 +61,12 @@ public abstract class AddActionItem extends AbstractAction {
     }
     
     private AddActionItem(TypeID typeID, DesignComponent component, ComponentProducer producer) {
-        Image image = Utilities.loadImage(producer.getPaletteDescriptor().getSmallIcon());
-        if (image == null)
-            Debug.warning("Could not find image: " + producer.getPaletteDescriptor().getSmallIcon()); //NOI18N
-        icon = new ImageIcon(image);
+        String smallIcon = producer.getPaletteDescriptor ().getSmallIcon ();
+        Image image = smallIcon != null ? Utilities.loadImage(smallIcon) : null;
         putValue(TYPEID_KEY, typeID);
         putValue(Action.NAME, producer.getPaletteDescriptor().getDisplayName());
-        putValue(Action.SMALL_ICON, icon);
+        if (image != null)
+            putValue(Action.SMALL_ICON, new ImageIcon(image));
         resolveAction(component);
     }
     
