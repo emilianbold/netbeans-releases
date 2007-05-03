@@ -106,7 +106,7 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge, PinNod
     private WidgetAction connectAction = ActionFactory.createConnectAction(connectionLayer, new LinkCreateProvider(this));
     private WidgetAction selectAction = ActionFactory.createSelectAction(new PageFlowSelectProvider());
     
-//    private SceneLayout sceneGraphLayout;
+    //    private SceneLayout sceneGraphLayout;
     private PageFlowView tc;
     
     /**
@@ -134,6 +134,7 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge, PinNod
         actions.addAction(popupGraphAction);
         actions.addAction(createActionMap());
         addObjectSceneListener(new MyObjectSceneListener(), ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
+        addSceneListener(new PageFlowSceneListener(this));
         //        actions.addAction(dragNdropAction);
         //        actions.addAction(selectAction);
         
@@ -223,6 +224,9 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge, PinNod
     //        widget.
     //    }
     
+    
+    Collection<Page> nodesAdded = new HashSet();
+    
     /**
      * Implements attaching a widget to a node. The widget is VMDNodeWidget and has object-hover, select, popup-menu and move actions.
      * @param node the node
@@ -256,45 +260,46 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge, PinNod
             nodeWidget.setMinimized(true);
         }
         
-//        if ( !initialSetup ) {
-//            pageFlowSceneGraphLayout.invokeLayout();
-//            //            Point point = locations.get(displayName);
-//            //            if( point == null ) {
-//            //                point = PageFlowLayoutUtilities.getPreferredNodePosition(this,true);
-//            //            } else {
-//            //                //Just in case there is another widget there. Relocate that one instead.
-//            //                Widget widget = PageFlowLayoutUtilities.isWidgetAt(this, point);
-//            //                if (widget != null ){
-//            //                    widget.setPreferredLocation(PageFlowLayoutUtilities.getPreferredNodePosition(this,true));
-//            //                }
-//            //            }
-//            //            nodeWidget.setPreferredLocation(point);
-//        }
+        //        if ( !initialSetup ) {
+        //            pageFlowSceneGraphLayout.invokeLayout();
+        //            //            Point point = locations.get(displayName);
+        //            //            if( point == null ) {
+        //            //                point = PageFlowLayoutUtilities.getPreferredNodePosition(this,true);
+        //            //            } else {
+        //            //                //Just in case there is another widget there. Relocate that one instead.
+        //            //                Widget widget = PageFlowLayoutUtilities.isWidgetAt(this, point);
+        //            //                if (widget != null ){
+        //            //                    widget.setPreferredLocation(PageFlowLayoutUtilities.getPreferredNodePosition(this,true));
+        //            //                }
+        //            //            }
+        //            //            nodeWidget.setPreferredLocation(point);
+        //        }
         
+        nodesAdded.add(node);
         return nodeWidget;
     }
     
-//    public void saveLocations() {
-//        pageFlowSceneGraphLayout.saveLocations();
-//    }
-//    public void saveLocation(Page pageNode, String newDisplayName){
-//        pageFlowSceneGraphLayout.saveLocation(pageNode,newDisplayName);
-//    }
-//    public void saveLocation(Page pageNode, Point  newPoint){
-//        pageFlowSceneGraphLayout.saveLocation(pageNode,newPoint);
-//    }
-//    private PageFlowSceneGraphLayout pageFlowSceneGraphLayout = new PageFlowSceneGraphLayout(this);
-//    boolean initialSetup = true;
-//    public boolean initLayout(){
-//        //        if( pageFlowSceneGraphLayout != null ) {
-//        pageFlowSceneGraphLayout.invokeLayoutImmediately();
-//        initialSetup = false;
-//        return isValidated();
-//        //        } else {
-//        //            System.out.println("SceneGraphLayout is still null");
-//        //            return false;
-//        //        }
-//    }
+    //    public void saveLocations() {
+    //        pageFlowSceneGraphLayout.saveLocations();
+    //    }
+    //    public void saveLocation(Page pageNode, String newDisplayName){
+    //        pageFlowSceneGraphLayout.saveLocation(pageNode,newDisplayName);
+    //    }
+    //    public void saveLocation(Page pageNode, Point  newPoint){
+    //        pageFlowSceneGraphLayout.saveLocation(pageNode,newPoint);
+    //    }
+    //    private PageFlowSceneGraphLayout pageFlowSceneGraphLayout = new PageFlowSceneGraphLayout(this);
+    //    boolean initialSetup = true;
+    //    public boolean initLayout(){
+    //        //        if( pageFlowSceneGraphLayout != null ) {
+    //        pageFlowSceneGraphLayout.invokeLayoutImmediately();
+    //        initialSetup = false;
+    //        return isValidated();
+    //        //        } else {
+    //        //            System.out.println("SceneGraphLayout is still null");
+    //        //            return false;
+    //        //        }
+    //    }
     
     
     //    public boolean layoutGraph(){
@@ -324,8 +329,6 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge, PinNod
     
     
     private static class DefaultAnchorWidget extends ImageWidget{
-        
-        
         public DefaultAnchorWidget( PageFlowScene scene, Image image ){
             super(scene, image);
         }
@@ -337,8 +340,6 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge, PinNod
             setBorder(state.isHovered() ? BORDER_HOVERED : BORDER );
             
         }
-        
-        
     }
     
     
@@ -522,7 +523,7 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge, PinNod
             NavigationCaseEdge caseNode = (NavigationCaseEdge)findObject(widget.getParentWidget());
             String oldName = caseNode.getName();
             
-            if ( caseNode.canRename() ) {                
+            if ( caseNode.canRename() ) {
                 PinNode pin = getEdgeSource(caseNode);
                 caseNode.setName(pin, newName);
             }
@@ -604,7 +605,7 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge, PinNod
             Set<Node> selected = new HashSet<Node>();
             for( Object obj : newSelection ){
                 if( obj instanceof PageSceneElement ) {
-                    PageSceneElement element = (PageSceneElement)obj;     
+                    PageSceneElement element = (PageSceneElement)obj;
                     
                     selected.add(element.getNode());
                 }
@@ -636,6 +637,28 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge, PinNod
             throw new UnsupportedOperationException("Not supported yet.");
         }
     }
+    
+    FreePlaceNodesLayouter fpnl = new FreePlaceNodesLayouter();
+    private class PageFlowSceneListener implements SceneListener {
+        PageFlowScene scene;
+        public PageFlowSceneListener(PageFlowScene scene) {
+            this.scene = scene;
+        }
+        
+        public void sceneRepaint() {
+        }
+        
+        public void sceneValidating() {
+        }
+        
+        public void sceneValidated() {
+            if( nodesAdded.size() > 0 ) {
+                fpnl.layoutNodesLocations(scene, nodesAdded);
+                nodesAdded.clear();
+            }
+        }
+    };
+    
     
     //    private void renamePin( Node pageNode, PinNode oldPinName, PinNode newPinName ){
     //        assert pageNode != null;
