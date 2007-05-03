@@ -23,6 +23,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
@@ -298,26 +299,24 @@ public class JbiActionProvider implements ActionProvider {
             Map<Class, Project> subProjectTypeMap = new HashMap<Class, Project>();
             for (VisualClassPathItem item : itemList) {
                 String evalPath = item.getEvaluated();
-                File file = new File(evalPath + File.separator + ".." + File.separator + ".."); // TMP
+                File file = new File(evalPath);
                 FileObject fo = FileUtil.toFileObject(file);
-                Project subProject = ProjectManager.getDefault().findProject(fo);
+                Project subProject = ProjectManager.getDefault().findProject(fo.getParent().getParent());
                 
                 subProjects.add(subProject);                
                 subProjectTypeMap.put(subProject.getClass(), subProject);
             }
-            
-            for (Class projectType : subProjectTypeMap.keySet()) {
-                Project subProject = subProjectTypeMap.get(projectType);
-                Lookup lookup = project.getLookup();
-                ProjectValidator validator = lookup.lookup(ProjectValidator.class);
-                if (validator != null) {
-                    String result = validator.validateProjects(subProjects);
-                    if (result != null) {
-                        NotifyDescriptor d = new NotifyDescriptor.Message(
-                                result, NotifyDescriptor.ERROR_MESSAGE);
-                        DialogDisplayer.getDefault().notify(d);
-                        return false;
-                    }
+            Collection<? extends ProjectValidator> validators = Lookup.getDefault().lookupAll(ProjectValidator.class);
+
+            for (ProjectValidator validator : validators) {
+                String result = validator.validateProjects(subProjects);
+
+                if (result != null) {
+                    //  very strange
+                    NotifyDescriptor d = new NotifyDescriptor.Message(
+                            result, NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(d);
+                    return false;
                 }
             }
         } catch (Exception e) {
