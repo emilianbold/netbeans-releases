@@ -49,21 +49,11 @@ public class CustomizerModeling extends javax.swing.JPanel
     {
         mUIProperties = uiProperties;
         initComponents();
-        
-        //addProjectModePanel(uiProperties);
-           
-        // IZ 84855 - conover - this is no longer valid with live RT disabled
-        // addCodeGenPanel(uiProperties);  
-        
         addJavaProjectPanel(uiProperties);
         addMessageLabel(uiProperties);
         FileObject projectFolder = uiProperties.getProject().getProjectDirectory();
         File pf = FileUtil.toFile(projectFolder);
-        
         projectLocation.setText(pf == null ? "" : pf.getPath()); // NOI18N
-        
-        // Gray out all the components if the project is an Analysis project.
-        // For this release (Buzz), we do not allow an analysis have code generation 		
         String modelingMode = uiProperties.getCurrentProjectMode();
         
         if (modelingMode.equals(UMLProject.PROJECT_MODE_ANALYSIS_STR)) 
@@ -76,16 +66,7 @@ public class CustomizerModeling extends javax.swing.JPanel
     {
         return new HelpCtx(CustomizerModeling.class);
     }
-    
-    // TODO - MCF - assuming we continue to expose the SourceLevel combo
-    // we will want to conditionally enable it whenever the user selects a
-    // Mode for which it is meaningful.
-    // e.g. enable it when Mode = Design or Impl
-    // disable when Mode = Analysis
-    private void enableSourceLevel()
-    {
-        // this.sourceLevel.setEnabled(sourceLevel.getItemCount()>0);
-    }
+
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -155,25 +136,6 @@ public class CustomizerModeling extends javax.swing.JPanel
 
     }// </editor-fold>//GEN-END:initComponents
 
-// IZ 84855 - conover - this is no longer valid with live RT disabled
-//    private void addCodeGenPanel(UMLProjectProperties uiProperties) 
-//    {        
-//        codeGenPanel = uiProperties.getCodeGenPanel();  
-//        jPanelCentral.add(codeGenPanel, java.awt.BorderLayout.NORTH);
-//        codeGenPanel.removePropertyChangeListener(PanelCodeGen.MODE_CHANGED_PROP, mChangeListener); // for the case it has been already registered
-//        codeGenPanel.addPropertyChangeListener(PanelCodeGen.MODE_CHANGED_PROP, mChangeListener);
-//    }
-        
-    // this method is no longer used. It is replaced by addCodeGeneration()
-//    private void addProjectModePanel(UMLProjectProperties uiProperties)
-//    {
-//        projectModePanel = new PanelProjectMode(uiProperties) ;
-//        jPanelCentral.add(projectModePanel, java.awt.BorderLayout.NORTH);
-//        
-//        projectModePanel.addPropertyChangeListener(
-//                ReferencedJavaProjectPanel.MODE_CHANGED_PROP, mChangeListener);
-//    }
-    
     private void addJavaProjectPanel(UMLProjectProperties uiProperties)
     {
         javaProjectPanel = new ReferencedJavaProjectPanel(uiProperties);
@@ -263,44 +225,6 @@ public class CustomizerModeling extends javax.swing.JPanel
         
         public void propertyChange(PropertyChangeEvent evt)
         {
-// IZ 84855 - conover - this is no longer valid with live RT disabled
-//            if(PanelCodeGen.MODE_CHANGED_PROP.equals(evt.getPropertyName()) == true)
-//            {
-//                if(UMLProject.PROJECT_MODE_IMPL_STR.equals(evt.getNewValue()))
-//                {
-//                    if(javaProjectPanel.getSelectedProject() == null)
-//                    {
-//                        messageLabel.setText(NbBundle.getMessage(CustomizerModeling.class, "Java_Project_Warning"));
-//                        firePropertyChange(CustomizerPane.OK_ENABLE_PROPERTY, mIsEnabled, false);
-//                        mIsEnabled = false;
-//                    }
-//                    else 
-//                    {
-//                        messageLabel.setText("");
-//                        if (!mIsEnabled) 
-//                        {
-//                            firePropertyChange(CustomizerPane.OK_ENABLE_PROPERTY, mIsEnabled, true);
-//                            mIsEnabled = true;
-//                        }
-//                    }
-//                }
-//                else
-//                {   
-//                    if(javaProjectPanel.getSelectedProject() != null)
-//                    {
-//                        messageLabel.setText(NbBundle.getMessage(CustomizerModeling.class, "Java_Project_Warning"));
-//                        firePropertyChange(CustomizerPane.OK_ENABLE_PROPERTY, mIsEnabled, false);
-//                        mIsEnabled = false;
-//                    }
-//                    else 
-//                    {
-//                        testBroken();
-//                        firePropertyChange(CustomizerPane.OK_ENABLE_PROPERTY, mIsEnabled, true);
-//                        mIsEnabled = true;
-//                    }
-//                }
-//            }
-//            else 
             if (ReferencedJavaProjectPanel.ASSOCIATED_JAVA_PROJ_PROP
                 .equals(evt.getPropertyName()) == true)
             {
@@ -336,21 +260,11 @@ public class CustomizerModeling extends javax.swing.JPanel
                 mIsEnabled = enabled;
             }
             
-            else if(ReferencedJavaProjectPanel.JAVA_PROJECT_CHANGED_PROP
-                .equals(evt.getPropertyName()))
-            {
-// IZ 84855 - conover - this is no longer valid with live RT disabled
-//                Component[] components = codeGenPanel.getComponents();
-//                for (Component comp : components) {
-//                    if (comp instanceof javax.swing.JCheckBox) {
-//                        JCheckBox checkbox = (JCheckBox) comp;
-//                        if (!checkbox.isSelected()) {
-//                            checkbox.setSelected(true);
-//                        }
-//                        break;
-//                    }
-//                }
-            }
+//            else if(ReferencedJavaProjectPanel.JAVA_PROJECT_CHANGED_PROP
+//                .equals(evt.getPropertyName()))
+//            {
+//
+//            }
         }
     }
 }

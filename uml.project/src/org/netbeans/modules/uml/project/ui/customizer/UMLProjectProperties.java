@@ -21,9 +21,10 @@ package org.netbeans.modules.uml.project.ui.customizer;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import javax.swing.ComboBoxModel;
 import javax.swing.table.DefaultTableModel;
@@ -37,10 +38,10 @@ import org.netbeans.modules.uml.project.ui.common.CommonUiSupport;
 import org.netbeans.modules.uml.project.ui.common.JavaSourceRootsUI.JavaSourceRootsModel;
 import org.netbeans.modules.uml.project.ui.common.ReferencedJavaProjectModel;
 import org.netbeans.modules.uml.project.ui.common.ReferencedJavaProjectSupport;
-// import org.netbeans.modules.uml.project.ui.common.PanelCodeGen;
 
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.uml.util.StringTokenizer2;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -50,7 +51,6 @@ import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
-import org.openide.nodes.Node;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 
@@ -59,27 +59,19 @@ import org.openide.util.MutexException;
  */
 public class UMLProjectProperties 
 {
-    
-    
     // Special properties of the project, stored in project.xml by project.save
-    
     
     // Properties stored in the PROJECT.PROPERTIES
     public static final String MODELING_MODE = "uml.modeling.mode"; // NOI18N
     public static final String GEN_CODE_SOURCE_FOLDER = "gen.code.source.folder"; // NOI18N
-    
     public static final String UML_PROJECT_ANT_ARTIFACT = "uml.umlproject"; // NOI18N
-    
     public static final String ANT_ARTIFACT_PREFIX = "${reference."; // NOI18N
     public static final String REFERENCED_JAVA_PROJECT = "uml.javaproject"; // NOI18N
-    public static final String REFERENCED_JAVA_PROJECT_ARTIFACTS =
-        "uml.javaproject.artifacts"; // NOI18N
-    
-    public static final String REFERENCED_JAVA_PROJECT_SRC =
-        "uml.javaproject.src"; // NOI18N
-    
+    public static final String REFERENCED_JAVA_PROJECT_ARTIFACTS = "uml.javaproject.artifacts"; // NOI18N
+    public static final String REFERENCED_JAVA_PROJECT_SRC = "uml.javaproject.src"; // NOI18N
     public static final String UML_PROJECT_IMPORTS = "uml.imports"; // NOI18N
     public static final String UML_ARTIFACT_PREFIX = "${uml.reference."; // NOI18N
+    public static final String CODE_GEN_TEMPLATES = "code.gen.templates"; // NOI18N
     
     // MODELS FOR VISUAL CONTROLS
     
@@ -88,15 +80,10 @@ public class UMLProjectProperties
     public String modelingModeValue;
     public ReferencedJavaProjectModel REFERENCED_JAVA_PROJECT_MODEL;
     public JavaSourceRootsModel REFERENCED_JAVA_SOURCE_ROOTS_MODEL;
-    
-// IZ 84855 - conover - this is no longer valid with live RT disabled
-//    private PanelCodeGen panelCodeGen = null;
-    
     public DefaultTableModel UML_PROJECT_IMPORTS_MODEL;
+    public String codeGenTemplates;
     
     UMLImportsSupport importsSupport;
-    
-    
     
     // CustomizerRunTest
     
@@ -146,7 +133,6 @@ public class UMLProjectProperties
      */
     public void init()
     {
-        
         // Customizer Modeling
         // fetch the stored value
         // SELECTED_MODELING_MODE_MODEL = projectGroup.createStringDocument(
@@ -156,9 +142,8 @@ public class UMLProjectProperties
         EditableProperties projectProperties = updateHelper.getProperties(
             AntProjectHelper.PROJECT_PROPERTIES_PATH );
         
-        MODELING_MODE_MODEL  = CommonUiSupport.createModelingModeComboBoxModel
-            (evaluator.getProperty(MODELING_MODE));
-        
+        MODELING_MODE_MODEL = CommonUiSupport.createModelingModeComboBoxModel(
+            evaluator.getProperty(MODELING_MODE));
         
         REFERENCED_JAVA_PROJECT_MODEL =
             javaRefSupport.createReferencedJeavaProjectModel(
@@ -168,13 +153,13 @@ public class UMLProjectProperties
         REFERENCED_JAVA_SOURCE_ROOTS_MODEL = javaRefSupport.
             createReferencedJavaSourceRootsModel(
             REFERENCED_JAVA_PROJECT_MODEL,
-            (String) projectProperties.get(REFERENCED_JAVA_PROJECT_SRC)) ;
+            (String) projectProperties.get(REFERENCED_JAVA_PROJECT_SRC));
         
         UML_PROJECT_IMPORTS_MODEL = UMLImportsUiSupport.createTableModel(
             importsSupport.itemsIterator(
-            (String)projectProperties.get(UML_PROJECT_IMPORTS )) );
+            (String)projectProperties.get(UML_PROJECT_IMPORTS)));
         
-        
+        codeGenTemplates = projectProperties.get(CODE_GEN_TEMPLATES);
     }
     
     public void save()
@@ -198,7 +183,6 @@ public class UMLProjectProperties
             // avoid having to recreate props in my AssociatedSoruceProvider
             // which will be called a lot.
             // So I am trying to cache these properties in the project.
-            // TODO - review to make sure this will not cause a problem.
             project.setUMLProjectProperties(this);
         }
         
@@ -212,15 +196,6 @@ public class UMLProjectProperties
             ErrorManager.getDefault().notify(ex);
         }
     }
-    
-// IZ 84855 - conover - this is no longer valid with live RT disabled
-//    public PanelCodeGen getCodeGenPanel()
-//    {
-//        if (panelCodeGen == null)
-//            panelCodeGen = new PanelCodeGen(this);
-//        
-//        return panelCodeGen;
-//    }
     
     private void storeProperties() throws IOException
     {
@@ -248,21 +223,16 @@ public class UMLProjectProperties
         projectGroup.store(projectProperties);
         privateGroup.store(privateProperties);
         
-        // if (!getCurrentProjectMode().equals(UMLProject.PROJECT_MODE_ANALYSIS_STR))
-        // {
         projectProperties.setProperty(MODELING_MODE, getProjectMode());
-        // }
-        //projectProperties.setProperty(MODELING_MODE,
-        //	(String) MODELING_MODE_MODEL.getSelectedItem());
         
-        //String[] srcs = new String[REFERENCED_JAVA_SOURCE_ROOTS_MODEL.size()];
-        //REFERENCED_JAVA_SOURCE_ROOTS_MODEL.copyInto(srcs);
-        
-        projectProperties.setProperty(
-            GEN_CODE_SOURCE_FOLDER, getGenCodeSourceFolder());
+//        projectProperties.setProperty(
+//            GEN_CODE_SOURCE_FOLDER, getGenCodeSourceFolder());
         
         projectProperties.setProperty(
             REFERENCED_JAVA_PROJECT_SRC, refJavaSrcRoots);
+        
+        projectProperties.setProperty(
+            CODE_GEN_TEMPLATES, getCodeGenTemplates());
         
         projectProperties.setProperty(UML_PROJECT_IMPORTS, umlImports);
        
@@ -273,9 +243,9 @@ public class UMLProjectProperties
         updateHelper.putProperties(
             AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties );
 		
-		UMLProjectGenerator.fixJavaProjectReferences(
-				updateHelper.getAntProjectHelper(), 
-				REFERENCED_JAVA_PROJECT_MODEL.getProject());
+        UMLProjectGenerator.fixJavaProjectReferences(
+            updateHelper.getAntProjectHelper(),
+            REFERENCED_JAVA_PROJECT_MODEL.getProject());
     }
     
     private static String getDocumentText(Document document)
@@ -304,9 +274,6 @@ public class UMLProjectProperties
         
         String oldJavaArtifactRefStr =
             (String)ep.get(this.REFERENCED_JAVA_PROJECT_ARTIFACTS);
-        
-        // TODO FIX - HACK assuming array of 1,
-        // must fix to deal with 0 or > 1 cases
         
         if (oldJavaArtifactRefStr != null && oldJavaArtifactRefStr.length() > 0)
         {
@@ -342,53 +309,14 @@ public class UMLProjectProperties
         
         // Create a set of old and new artifacts.
         Set oldArtifacts = new HashSet();
-        
-        // TODO - MCF - I think for bulletproof reference coordination we
-        // may need to follow the pattern I found in the J2SE project.
-        // However, I have not yet observed a problem so I am not sure if we
-        // need to do this step
-        
-        
-        /* e.g. this is J2SE style
-        oldArtifacts.addAll( cs.itemsList(
-         (String)projectProperties.get( JAVAC_CLASSPATH ) ) );
-        oldArtifacts.addAll( cs.itemsList(
-         (String)projectProperties.get( JAVAC_TEST_CLASSPATH ) ) );;
-         *
-         */
-        
         Set newArtifacts = new HashSet();
-        
-        /* e.g. this is J2SE style
-        newArtifacts.addAll(ClassPathUiSupport.getList(JAVAC_CLASSPATH_MODEL));
-        newArtifacts.addAll(ClassPathUiSupport.getList(JAVAC_TEST_CLASSPATH_MODEL));
-         */
         
         // Create set of removed artifacts and remove them
         Set removed = new HashSet( oldArtifacts );
         removed.removeAll( newArtifacts );
         Set added = new HashSet(newArtifacts);
         added.removeAll(oldArtifacts);
-        
-        // TODO - MCF - I think for bulletproof reference coordination we
-        // may need to follow the pattern I found in the J2SE project.
-        // However, I have not yet observed a problem so I am not sure if we
-        // need to do this step
-        
-        // This is J2SE style
-        // 1. first remove all project references. The method will modify
-        // project property files, so it must be done separately
-        // for (Iterator it = removed.iterator(); it.hasNext();)
-        // {
-            /* This is J2SE style
-            ClassPathSupport.Item item = (ClassPathSupport.Item)it.next();
-            if ( item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT ||
-                    item.getType() == ClassPathSupport.Item.TYPE_JAR ) {
-                refHelper.destroyReference(item.getReference());
-            }
-             */
-        // }
-        
+
         // 2. now read project.properties and modify rest
         ep = updateHelper.getProperties(
             AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -407,49 +335,8 @@ public class UMLProjectProperties
         ep.setProperty(
             UMLProjectProperties.REFERENCED_JAVA_PROJECT, javaSrcProjRefVal);
         
-        
-        // for (Iterator it = removed.iterator(); it.hasNext();)
-        // {
-            /* // This is J2SE style
-            ClassPathSupport.Item item = (ClassPathSupport.Item)it.next();
-            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
-                // remove helper property pointing to library jar if there is any
-                String prop = item.getReference();
-                prop = prop.substring(2, prop.length()-1);
-                ep.remove(prop);
-                changed = true;
-            }
-             */
-        // }
-        
         File projDir = FileUtil.toFile(
             updateHelper.getAntProjectHelper().getProjectDirectory());
-        
-        // for (Iterator it = added.iterator(); it.hasNext();)
-        // {
-            /* // This is J2SE style
-            ClassPathSupport.Item item = (ClassPathSupport.Item)it.next();
-            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
-                // add property to project.properties pointing to relativized
-                // library jar(s) if possible
-                String prop = cs.getLibraryReference( item );
-                prop = prop.substring(2, prop.length()-1);
-                // XXX make a PropertyUtils method for this!
-                String value = relativizeLibraryClasspath(prop, projDir);
-                if (value != null) {
-                    ep.setProperty(prop, value);
-                    ep.setComment(prop, new String[]{
-                        // XXX this should be I18N!
-                        // Not least because the English is wrong...
-                        "# Property "+prop+" is set here just to make
-                        // sharing of project simpler.",
-                        "# The library definition has always
-                        // preference over this property."}, false);
-                    changed = true;
-                }
-            }
-             */
-        // }
         
         if (changed)
         {
@@ -480,21 +367,6 @@ public class UMLProjectProperties
         String[] paths = PropertyUtils.tokenizePath(value);
         StringBuffer sb = new StringBuffer();
         
-        // for (int i=0; i<paths.length; i++)
-        // {
-            /*
-            File f = updateHelper.getAntProjectHelper().resolveFile(paths[i]);
-            if (CollocationQuery.areCollocated(f, projectDir)) {
-                sb.append(PropertyUtils.relativizeFile(projectDir, f));
-            } else {
-                return null;
-            }
-            if (i+1<paths.length) {
-                sb.append(File.pathSeparatorChar);
-            }
-             */
-        // }
-        
         if (sb.length() == 0)
             return null;
         
@@ -519,12 +391,7 @@ public class UMLProjectProperties
     
     public String getProjectMode()
     {
-// IZ 84855 - conover - this is no longer valid with live RT disabled
-//        if (panelCodeGen != null)
-//            return panelCodeGen.getSelectedProjectModeStr();
-//
-//        else
-            return evaluator.getProperty(MODELING_MODE);
+        return evaluator.getProperty(MODELING_MODE);
     }
     
     public String getCurrentProjectMode()
@@ -532,8 +399,26 @@ public class UMLProjectProperties
         return evaluator.getProperty(MODELING_MODE);
     }
 
-    public String getGenCodeSourceFolder()
+//    public String getGenCodeSourceFolder()
+//    {
+//        return evaluator.getProperty(GEN_CODE_SOURCE_FOLDER);
+//    }
+    
+    public String getCodeGenTemplates()
     {
-        return evaluator.getProperty(GEN_CODE_SOURCE_FOLDER);
+        String templates = evaluator.getProperty(CODE_GEN_TEMPLATES);
+        
+        if (templates == null)
+            templates = "";
+        
+        return templates;
+    }
+    
+    public final static String TEMPLATE_DELIMITER = "|";
+    
+    public List<String> getCodeGenTemplatesArray()
+    {
+        return new ArrayList<String>(Arrays.asList(StringTokenizer2.toArray(
+            getCodeGenTemplates(), TEMPLATE_DELIMITER))); // NOI18N
     }
 }
