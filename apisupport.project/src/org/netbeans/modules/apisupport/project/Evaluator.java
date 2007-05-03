@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -359,13 +359,13 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                         "${test.unit.lib.cp}:" + // NOI18N
                         // XXX this is ugly, try to look for the JAR using wildcards instead
                         "${netbeans.dest.dir}/ide6/modules/ext/junit-3.8.1.jar:" + // NOI18N
-                        "${netbeans.dest.dir}/ide8/modules/ext/junit-3.8.2.jar:" + // NOI18N
+                        "${netbeans.dest.dir}/java1/modules/ext/junit-3.8.2.jar:" + // NOI18N
                         "${netbeans.dest.dir}/testtools/modules/ext/nbjunit.jar:" + // NOI18N
                         "${netbeans.dest.dir}/testtools/modules/ext/insanelib.jar:" + // NOI18N
                         "${netbeans.dest.dir}/testtools/modules/org-netbeans-modules-nbjunit.jar:" + // NOI18N, new for 6.0
                         "${netbeans.dest.dir}/testtools/modules/org-netbeans-modules-nbjunit-ide.jar:" + // NOI18N, new for 6.0
                         "${netbeans.home}/../ide6/modules/ext/junit-3.8.1.jar:" + // NOI18N
-                        "${netbeans.home}/../ide8/modules/ext/junit-3.8.2.jar:" + // NOI18N
+                        "${netbeans.home}/../java1/modules/ext/junit-3.8.2.jar:" + // NOI18N
                         "${netbeans.home}/../testtools/modules/ext/nbjunit.jar:" + // NOI18N
                         "${netbeans.home}/../testtools/modules/ext/insanelib.jar:" + // NOI18N
                         "${netbeans.home}/../testtools/modules/org-netbeans-modules-nbjunit.jar:" + // NOI18N, new for 6.0
