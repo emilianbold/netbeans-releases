@@ -99,7 +99,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Performance Executors -->
     <!-- ===================== -->
     
-    <target name="copy_unzip_test_folder_web_project">
+    <target name="unzip-test-project">
         <unzip src="qa-functional/data/PerformanceTestFolderWebApp.zip" dest="${xtest.tmpdir}/"/>
     </target>
 
@@ -126,7 +126,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- This target is executed from test-executor in newly created Project -->
     <!-- Name of this task is defined in cfg-xxx.xml -->
     <!-- This target executes tests inside IDE -->
-    <target name="runidesetup" depends="init,init-cp,install-tomcat,copy_unzip_test_folder_project,copy_unzip_test_folder_web_project">
+    <target name="runidesetup" depends="init,init-cp,install-tomcat,ide_command_line_suffix,unzip-test-project">
         <antcall target="copy_released_ide_cfg_file"/>
         <executeTests pluginName="ide">
             <classpath refid="jemmy.and.jelly.path"/>

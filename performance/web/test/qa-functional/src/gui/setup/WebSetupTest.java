@@ -25,7 +25,7 @@ import org.netbeans.jellytools.actions.BuildProjectAction;
 import org.netbeans.junit.ide.ProjectSupport;
 
 
-public class WebSetupTest extends org.netbeans.junit.NbTestCase {
+public class WebSetupTest extends org.netbeans.jellytools.JellyTestCase {
     
     public WebSetupTest(java.lang.String testName) {
         super(testName);
