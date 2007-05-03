@@ -45,7 +45,9 @@ import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.awt.HtmlBrowser;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -252,4 +254,50 @@ public class Utilities {
             manager.unsetProgressComponent (detailLabel, progressComp);
         }
     }
+    
+    
+    public static void startAsWorkerThread(final PluginManagerUI manager, final Runnable runnableCode, final String progressDisplayName) {
+        startAsWorkerThread(new Runnable() {
+            public void run() {
+                ProgressHandle handle = ProgressHandleFactory.createHandle(progressDisplayName); // NOI18N                
+                JComponent progressComp = ProgressHandleFactory.createProgressComponent(handle);
+                JLabel detailLabel = ProgressHandleFactory.createDetailLabelComponent(handle);
+                
+                try {                    
+                    detailLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+                    manager.setProgressComponent(detailLabel, progressComp);
+                    handle.setInitialDelay(0);                    
+                    handle.start();                    
+                    handle.progress (progressDisplayName);
+                    runnableCode.run();
+                } finally {
+                    if (handle != null) {
+                        handle.finish();
+                    }                    
+                    manager.unsetProgressComponent (detailLabel, progressComp);
+                }
+            }
+        });
+    }
+    
+    public static RequestProcessor.Task startAsWorkerThread(final Runnable runnableCode) {
+        return startAsWorkerThread(runnableCode, 0);    
+    }   
+    
+    public static RequestProcessor.Task startAsWorkerThread(final Runnable runnableCode, final int delay) {
+        RequestProcessor.Task retval = RequestProcessor.getDefault().create(runnableCode);
+        if (SwingUtilities.isEventDispatchThread ()) {
+            retval.schedule(delay);
+        } else {
+            if (delay > 0) {
+                try {
+                    java.lang.Thread.sleep(delay);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            retval.run();
+        }
+        return retval;
+    }    
 }

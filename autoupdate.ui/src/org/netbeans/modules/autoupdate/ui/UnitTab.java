@@ -487,6 +487,7 @@ private void refresh (final boolean force) {
     
     final Runnable checkUpdates = new Runnable(){
         public void run() {
+            manager.initTask.waitFinished();
             Utilities.presentRefreshProviders (manager, force);
             SwingUtilities.invokeLater(new Runnable () {
                 public void run() {
@@ -500,7 +501,7 @@ private void refresh (final boolean force) {
     };
     NetworkProblemPanel.setPerformAgain(checkUpdates);
     
-    RequestProcessor.getDefault().post(checkUpdates);
+    Utilities.startAsWorkerThread(checkUpdates);
 }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

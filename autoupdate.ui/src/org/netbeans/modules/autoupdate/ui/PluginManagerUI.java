@@ -21,6 +21,10 @@ package org.netbeans.modules.autoupdate.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Window;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.JButton;
@@ -34,6 +38,7 @@ import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -49,33 +54,90 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
     private UnitTable localTable;
     private JButton closeButton;
     private SplittedUnitTab settingTab;
+    final  RequestProcessor.Task initTask;
+    
     
     /** Creates new form PluginManagerUI */
     public PluginManagerUI (JButton closeButton) {
         this.closeButton = closeButton;
         initComponents();
         postInitComponents();
-        RequestProcessor.getDefault().post(new Runnable () {
+        //start initialize method as soon as possible
+        initTask = Utilities.startAsWorkerThread(new Runnable() {
             public void run() {
-                Utilities.presentRefreshProviders(PluginManagerUI.this, false);
-                units = UpdateManager.getDefault().getUpdateUnits();
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        refreshUnits();
-                    }
-                });
-                
+                initialize();
             }
         });        
     }
+
+    private Window findWindowParent() {
+        Component c = this;
+        while(c != null) {
+            c = c.getParent();
+            if (c instanceof Window) {
+                return (Window)c;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        //show progress for initialize method
+        final Window w = findWindowParent();
+        if (w != null) {
+            w.addWindowListener(new WindowAdapter(){
+                public void windowOpened(WindowEvent e) {
+                    final WindowAdapter waa = this;
+                    Utilities.startAsWorkerThread(PluginManagerUI.this,new Runnable() {
+                        public void run() {
+                            initTask.waitFinished();
+                            w.removeWindowListener(waa);
+                        }
+                    }, NbBundle.getMessage(PluginManagerUI.class, "UnitTab_InitAndCheckingForUpdates"));
+                }
+            });
+        }                
+    }
+
     
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        unitilialize();
+    }
+
+    public void initialize() {
+        try {   
+            units = UpdateManager.getDefault().getUpdateUnits();
+            SwingUtilities.invokeAndWait(new Runnable() {
+                public void run() {
+                    refreshUnits();
+                }
+            });
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
+    //workaround of #96282 - Memory leak in org.netbeans.core.windows.services.NbPresenter     
     public void unitilialize() {
-        units = Collections.emptyList ();
-        installedTable = null;
-        availableTable = null;
-        updateTable = null;
-        localTable = null;
-        settingTab = null;
+        Utilities.startAsWorkerThread(new Runnable() {
+            public void run() {
+                initTask.waitFinished();
+                synchronized(PluginManagerUI.this) {
+                    units = null;
+                }
+                installedTable = null;
+                availableTable = null;
+                updateTable = null;
+                localTable = null;
+                settingTab = null;                
+            }
+        }, 10000);
     }
     
     void setProgressComponent (final JLabel detail, final JComponent progressComponent) {
@@ -85,10 +147,10 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
             SwingUtilities.invokeLater (new Runnable () {
                 public void run () {
                     setProgressComponentInAwt (detail, progressComponent);
-                }
-            });
+                    }
+                });
+            }
         }
-    }
     
     private void setProgressComponentInAwt (JLabel detail, JComponent progressComponent) {
         assert pProgress != null;
@@ -250,7 +312,9 @@ private void tpTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:
     }
     
     private void refreshUnits () {
-        units = UpdateManager.getDefault ().getUpdateUnits ();
+        synchronized(PluginManagerUI.this) {
+            if (units == null || units.size() == 0) return;
+        }        
         UnitCategoryTableModel installTableModel = ((UnitCategoryTableModel)installedTable.getModel ());        
         UnitCategoryTableModel updateTableModel = ((UnitCategoryTableModel)updateTable.getModel ());        
         UnitCategoryTableModel availableTableModel = ((UnitCategoryTableModel)availableTable.getModel ());

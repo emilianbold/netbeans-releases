@@ -49,8 +49,6 @@ public final class PluginManagerAction extends CallableSystemAction {
         
         Dialog d = DialogDisplayer.getDefault ().createDialog (dd);
         d.setVisible (true);
-        //workaround of #96282 - Memory leak in org.netbeans.core.windows.services.NbPresenter 
-        pluginManagerUI.unitilialize();
     }
     
     public String getName () {
