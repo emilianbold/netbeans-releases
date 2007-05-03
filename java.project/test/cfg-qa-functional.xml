@@ -19,13 +19,10 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <mconfig name="projects">
-     <testbag testattribs="validation" name="Basic" executor="ide">
+     <testbag testattribs="stable" name="Basic" executor="ide">
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="projects/TestCreateProject.class"/>
-                <include name="projects/TestFreeformProject.class"/>
-                <include name="projects/TestLibraries.class"/>
-                <include name="projects/APITests/TestCreateProject_API.class"/>
+                <include name="projects/**/*Test.class"/>
             </patternset>
         </testset>
     </testbag>
