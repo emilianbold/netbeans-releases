@@ -70,6 +70,15 @@ if [ $ERROR_CODE != 0 ]; then
     exit $ERROR_CODE;
 fi
 
+#Build all the NBMs
+ant -f nbbuild/build.xml build-nbms -Dmoduleconfig=all -Dbase.nbm.target.dir=${DIST_DIR}/nbms > ${NBMS_BUILD_LOC} 2>&1
+ERROR_CODE=$?
+
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - Can't build NBMs"
+    exit $ERROR_CODE;
+fi
+
 cd $NB_ALL/nbbuild
 
 #Remove the build helper files
