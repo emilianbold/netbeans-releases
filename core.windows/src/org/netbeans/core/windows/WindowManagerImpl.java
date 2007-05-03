@@ -1190,20 +1190,24 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     
     @Override
     public boolean isEditorTopComponent( TopComponent tc ) {
-        //check opened TopComponents first to avoid AWT assertion if possible
-        for( Iterator it = getModes().iterator(); it.hasNext(); ) {
-            ModeImpl mode = (ModeImpl)it.next();
-            
-            if( mode.getOpenedTopComponents().contains( tc ) ) {
-                return mode.getKind() == Constants.MODE_KIND_EDITOR;
-            }
-        }
-        
-        //now look also in closed and docked TopComponents
         for( Iterator it = getModes().iterator(); it.hasNext(); ) {
             ModeImpl mode = (ModeImpl)it.next();
             
             if( mode.containsTopComponent( tc ) ) {
+                return mode.getKind() == Constants.MODE_KIND_EDITOR;
+            }
+        }
+
+        //unknown TopComponent
+        return false;
+    }
+    
+    @Override
+    public boolean isOpenedEditorTopComponent( TopComponent tc ) {
+        for( Iterator it = getModes().iterator(); it.hasNext(); ) {
+            ModeImpl mode = (ModeImpl)it.next();
+            
+            if( mode.getOpenedTopComponents().contains( tc ) ) {
                 return mode.getKind() == Constants.MODE_KIND_EDITOR;
             }
         }

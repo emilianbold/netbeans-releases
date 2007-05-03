@@ -544,6 +544,21 @@ public abstract class WindowManager extends Object implements Serializable {
     public boolean isEditorTopComponent( TopComponent tc ) {
         return false;
     }
+    
+    /**
+     * <p>Check whether the given TopComponent is opened and docked into an 'editor' Mode. 
+     * It is safe to call this method outside the event dispatch thread.</p>
+     * <p>Please note that some TopComponents may be docked into 'editor' modes as well as 
+     * 'view' modes, see method isTopComponentAllowedToMoveAnywhere().</p>
+     * 
+     * @param tc TopComponent to check.
+     * @return True if the TopComponent is opened and the Mode it is docked 
+     * is of 'editor' kind (i.e. holds editor windows).
+     * @since 6.16
+     */
+    public boolean isOpenedEditorTopComponent( TopComponent tc ) {
+        return false;
+    }
 
     /**
      * <p>Check whether the given Mode holds editor windows.</p>

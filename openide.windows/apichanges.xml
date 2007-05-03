@@ -24,6 +24,22 @@ Microsystems, Inc. All Rights Reserved.
 </apidefs>
 <changes>
 
+<change id="isOpenedEditorTopComponent">
+    <api name="winsys"/>
+    <summary>Added a method to check the TopComponent type - editor/view</summary>
+    <version major="6" minor="16"/>
+    <date day="5" month="3" year="2007"/>
+    <author login="saubrecht"/>
+    <compatibility addition="yes" binary="incompatible" source="incompatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+        Added method <a href="@TOP@org/openide/windows/WindowManager.html#isOpenedEditorTopComponent(TopComponent)">WindowManager.isOpenedEditorTopComponent(TopComponent)</a>
+        for checking of the TopComponent type - editor or view. The method returns true if the given TopComponent is opened and is docked into an editor-type Mode.
+        It is safe to call this method outside the event dispatch thread.
+     </description>
+    <class package="org.openide.windows" name="WindowManager"/>
+    <issue number="102174"/>
+</change>    
+
 <change id="openAtTabPosition">
     <api name="winsys"/>
     <summary>Added methods for opening TopComponent at specified position</summary>
