@@ -126,6 +126,17 @@ entryPoint() {
 	fi
 }
 
+isLauncherCommandArgument() {
+	case "$1" in
+	    $ARG_VERBOSE | $ARG_NOSPACECHECK | $ARG_OUTPUT | $ARG_HELP | $ARG_JAVAHOME | $ARG_TEMPDIR | $ARG_EXTRACT | $ARG_SILENT | $ARG_LOCALE | $ARG_CLASSPATHP | $ARG_CLASSPATHA)
+	    	echo 1
+		;;
+	    *)
+		echo 0
+		;;
+	esac
+}
+
 parseCommandLineArguments() {
 	while [ $# != 0 ]
 	do
@@ -162,7 +173,7 @@ parseCommandLineArguments() {
 			;;
 		$ARG_EXTRACT)
 			EXTRACT_ONLY=1
-			if [ -n "$2" ] ; then
+			if [ -n "$2" ] && [ `isLauncherCommandArgument "$2"` -eq 0 ] ; then
 				LAUNCHER_EXTRACT_DIR="$2"
 				shift
 			else
