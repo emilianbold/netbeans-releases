@@ -24,8 +24,6 @@
         
     </description>
     
-    <target name="create-wsclasses" depends="run-wscompile, run-wsimport" />
-    
     <target name="-init-user">
         <property file="${user.properties.file}"/>
     </target>
@@ -95,6 +93,9 @@
        <delete dir="${jxrpc.base}/dt"/>
     </target>
     
+
+    <target name="create-jaxws-jars" depends="run-wsimport, client-dt-wsimport" description="Creates the runtime and designtime jars for a JAX-WS based webservice client"/>
+
     <target name="-init-wsimport" depends="-init-user">
         <property name="jaxws.base" value="${websvc.home}/${serviceName}/jaxws"/>
         <mkdir dir="${jaxws.base}/build"/>
@@ -103,10 +104,7 @@
             <classpath path="${java.home}/../lib/tools.jar:${libs.jaxws20.classpath}"/>
         </taskdef>
     </target>
-    
-    <!-- Currently only JAXRPC wrapper proxy client and the corresponding design time is created
-    We need to generate for JAX-WS aslo-->
-    
+
     <target name="run-wsimport" depends="-init-wsimport">
         <wsimport sourcedestdir="${jaxws.base}/src" 
                   extension="true" 
@@ -117,7 +115,7 @@
         </wsimport>
     </target>
     
-    <target name="client-dt-wsimport" depends="-init-wsimport">
+    <target name="client-dt-wsimport" depends="run-wsimport">
         <!-- Add the .wsdl file to the web service. The wsimport tool uses an
              absolute path for the wsdl, which does not work for file-based wsdl files -->
         <copy file="${wsdlFileName}" todir="${jaxws.base}/src/${packageDir}"/>
