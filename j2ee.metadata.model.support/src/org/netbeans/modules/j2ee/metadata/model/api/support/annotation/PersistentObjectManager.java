@@ -28,6 +28,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.SourceUtils;
 
 /**
  *
@@ -36,23 +37,24 @@ import org.netbeans.api.java.source.ElementHandle;
 public class PersistentObjectManager<T extends PersistentObject> implements JavaContextListener {
 
     private static final Logger LOGGER = Logger.getLogger(PersistentObjectManager.class.getName());
-    // private static final boolean VOLATILE = Boolean.getBoolean("netbeans.metadata.model.volatile"); // NOI18N
+    private static final boolean NO_EVENTS = Boolean.getBoolean("netbeans.metadata.model.noevents"); // NOI18N
     // XXX for M9 only
     // XXX causes PersistentObjectManagerTest to fail; currently excluded in test/cfg-unit.xml
-    private static final boolean VOLATILE = true;
+    // private static final boolean NO_EVENTS = true;
 
     private final AnnotationModelHelper helper;
     private final ObjectProvider<T> provider;
     private final Map<ElementHandle<TypeElement>, T> objects = new HashMap<ElementHandle<TypeElement>, T>();
 
     private boolean initialized = false;
+    private boolean temporary = false;
 
     static <V extends PersistentObject> PersistentObjectManager<V> newInstance(AnnotationModelHelper helper, ObjectProvider<V> provider) {
         PersistentObjectManager<V> newInstance = new PersistentObjectManager<V>(helper, provider);
-        if (VOLATILE) {
-            LOGGER.log(Level.FINE, "creating a volatile manager"); // NOI18N
-            helper.addJavaContextListener(newInstance);
+        if (NO_EVENTS) {
+            LOGGER.log(Level.FINE, "ignoring events"); // NOI18N
         }
+        helper.addJavaContextListener(newInstance);
         return newInstance;
     }
 
@@ -61,13 +63,26 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
         this.provider = provider;
     }
 
-    public AnnotationModelHelper getHelper() {
-        return helper;
+    public Collection<T> getObjects() {
+        ensureInitialized();
+        Collection<T> values = objects.values();
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "getObjects returning {0} objects: {1}", new Object[] { values.size(), values }); // NOI18N
+        } else {
+            LOGGER.log(Level.FINE, "getObjects returning {0} objects", values.size()); // NOI18N
+        }
+        return values;
     }
 
     private void ensureInitialized() {
         if (!initialized) {
-            LOGGER.log(Level.FINE, "intializing"); // NOI18N
+            boolean scanInProgress = SourceUtils.isScanInProgress();
+            temporary = NO_EVENTS | scanInProgress;
+            if (temporary) {
+                LOGGER.log(Level.FINE, "initalizing temporarily (scanInProgress: {0})", scanInProgress); // NOI18N
+            } else {
+                LOGGER.log(Level.FINE, "intializing"); // NOI18N
+            }
             for (T object : provider.createInitialObjects()) {
                 LOGGER.log(Level.FINE, "created object {0}", object); // NOI18N
                 objects.put(object.getSourceElementHandle(), object);
@@ -79,13 +94,6 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
     private void deinitialize() {
         initialized = false;
         objects.clear();
-    }
-
-    public Collection<T> getObjects() {
-        ensureInitialized();
-        Collection<T> values = objects.values();
-        LOGGER.log(Level.FINE, "getObjects returning {0} objects", values.size()); // NOI18N
-        return values;
     }
 
     void typesAdded(Iterable<? extends ElementHandle<TypeElement>> typeHandles) {
@@ -157,8 +165,8 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
     }
 
     public void javaContextLeft() {
-        if (VOLATILE) {
-            LOGGER.log(Level.FINE, "discarding volatile manager"); // NOI18N
+        if (temporary) {
+            LOGGER.log(Level.FINE, "discarding temporary manager"); // NOI18N
             deinitialize();
         }
     }
