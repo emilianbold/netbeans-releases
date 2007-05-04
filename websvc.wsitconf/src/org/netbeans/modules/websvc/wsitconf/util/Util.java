@@ -343,7 +343,7 @@ public class Util {
         return storeLocation;
     }
     
-    public static Enumeration<String> getAliases(String storePath, char[] password, String type) throws IOException {
+    public static List<String> getAliases(String storePath, char[] password, String type) throws IOException {
         if ((storePath == null) || (type == null)) return null;
         FileInputStream iStream;
         try {
@@ -355,7 +355,14 @@ public class Util {
             java.security.KeyStore keyStore;
             keyStore = java.security.KeyStore.getInstance(type);
             keyStore.load(iStream, password);
-            return keyStore.aliases();
+            Enumeration<String> e = keyStore.aliases();
+            ArrayList<String> arr = new ArrayList<String>(keyStore.size());
+            while (e.hasMoreElements()) {
+                String key = e.nextElement();
+                arr.add(key);
+            }
+            Collections.sort(arr);
+            return arr;
         } catch (FileNotFoundException ex) {
             logger.log(Level.INFO, null, ex);
         } catch (KeyStoreException ex) {

@@ -33,6 +33,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import javax.swing.*;
 import java.io.File;
+import java.util.Iterator;
+import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
@@ -341,18 +343,19 @@ public class TruststorePanel extends JPanel {
     }
     
     private boolean reloadAliases() {
-        Enumeration<String> aliases;
+        List<String> aliasList;
         try {
-            aliases = Util.getAliases(getStoreLocation(), getCharStorePassword(), storeType);
+            aliasList = Util.getAliases(getStoreLocation(), getCharStorePassword(), storeType);
         } catch (IOException ex) {
             ex.printStackTrace();
             return false;
         }
         keyAliasCombo.removeAllItems();
-        if (aliases != null) {
+        if (aliasList != null) {
             keyAliasCombo.addItem("");  //NOI18N
-            while (aliases.hasMoreElements()){
-                String alias = aliases.nextElement();
+            Iterator<String> aliases = aliasList.iterator();
+            while (aliases.hasNext()){
+                String alias = aliases.next();
                 keyAliasCombo.addItem(alias);
             }
             if (keyAliasCombo.getItemCount() > 1) {
