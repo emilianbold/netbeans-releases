@@ -29,6 +29,8 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
     public PageFlowController pfc;
     public PageFlowView view;
     public boolean refactoringIsLikely = false;
+    PageFlowUtilities pfUtil = PageFlowUtilities.getInstance();
+    
     public FacesModelPropertyChangeListener( PageFlowController pfc ){
         this.pfc = pfc;
         view = pfc.getView();
@@ -176,7 +178,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
                 if( toPage != null ) {
                     Page pageNode = pfc.getPageName2Node(toPage);
                     if( pageNode != null && !pfc.isPageInFacesConfig(toPage)){
-                        if( !pageNode.isDataNode() || PageFlowUtilities.getInstance().getCurrentScope() == PageFlowUtilities.LBL_SCOPE_FACESCONFIG){
+                        if( !pageNode.isDataNode() || pfUtil.getCurrentScope() == PageFlowUtilities.LBL_SCOPE_FACESCONFIG){
                             view.removeNodeWithEdges(pageNode);
                             pfc.removePageName2Node(pageNode,true);
                             view.validateGraph();
@@ -197,7 +199,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
             if( fromPage != null ){
                 Page pageNode = pfc.getPageName2Node(fromPage);
                 if( pageNode != null && !pfc.isPageInFacesConfig(fromPage)){
-                    if( !pageNode.isDataNode() || PageFlowUtilities.getInstance().getCurrentScope() == PageFlowUtilities.LBL_SCOPE_FACESCONFIG){
+                    if( !pageNode.isDataNode() || pfUtil.getCurrentScope() == PageFlowUtilities.LBL_SCOPE_FACESCONFIG){
                         view.removeNodeWithEdges(pageNode);
                         pfc.removePageName2Node(pageNode, true);
                         view.validateGraph();

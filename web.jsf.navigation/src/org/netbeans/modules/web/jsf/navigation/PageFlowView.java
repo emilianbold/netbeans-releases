@@ -326,7 +326,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
      */
     public JComponent getToolbarRepresentation() {
         
-        PageFlowUtilities pfu = PageFlowUtilities.getInstance();
+//        PageFlowUtilities pfu = PageFlowUtilities.getInstance();
         // TODO -- Look at NbEditorToolBar in the editor - it does stuff
         // with the UI to get better Aqua and Linux toolbar
         JToolBar toolbar = new JToolBar();
