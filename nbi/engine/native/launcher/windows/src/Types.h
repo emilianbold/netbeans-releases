@@ -129,6 +129,8 @@ extern "C" {
         SizedString * restOfBytes;
         I18NStrings * i18nMessages;
         DWORD I18N_PROPERTIES_NUMBER;
+        
+        WCHARList * launcherCommandArguments;
     } LauncherProperties ;
     
     

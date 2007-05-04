@@ -36,7 +36,7 @@ extern "C" {
     void freeLauncherProperties(LauncherProperties ** props);
 
     DWORD isSilent(LauncherProperties * props);
-    
+    DWORD isLauncherArgument(LauncherProperties * props, WCHAR * value);
     void processLauncher(LauncherProperties * props);
     
     void resolvePath(LauncherProperties * props, LauncherResource * file);

@@ -53,6 +53,17 @@ const WCHAR * NEW_LINE            = L"\n";
 const WCHAR * CLASSPATH_SEPARATOR = L";";
 const WCHAR * CLASS_SUFFIX = L".class";
 
+
+DWORD isLauncherArgument(LauncherProperties * props, WCHAR * value) {
+    DWORD i=0;
+    for(i=0;i<props->launcherCommandArguments->size;i++) {
+        if(wcscmp(props->launcherCommandArguments->items[i], value)==0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 DWORD getArgumentIndex(LauncherProperties * props, const WCHAR *arg, DWORD removeArgument) {
     WCHARList *cmd = props->commandLine;
     DWORD i=0;
@@ -72,15 +83,17 @@ DWORD argumentExists(LauncherProperties * props, const WCHAR *arg, DWORD removeA
     return (index < props->commandLine->size);
     
 }
-WCHAR * getArgumentValue(LauncherProperties * props, const WCHAR *arg, DWORD removeArgument) {
+WCHAR * getArgumentValue(LauncherProperties * props, const WCHAR *arg, DWORD removeArgument, DWORD mandatory) {
     WCHARList *cmd = props->commandLine;
     WCHAR * result = NULL;
     DWORD i = getArgumentIndex(props, arg, removeArgument);
-    if((i+1) < cmd->size) { //we have at least one more argument
-        result = appendStringW(NULL, cmd->items[i+1]);
-        if(removeArgument) FREE(cmd->items[i+1]);
+    if((i+1) < cmd->size) { 
+        //we have at least one more argument
+        if(mandatory || !isLauncherArgument(props, cmd->items[i+1])) {
+            result = appendStringW(NULL, cmd->items[i+1]);
+            if(removeArgument) FREE(cmd->items[i+1]);
+        }            
     }
-    
     return result;
 }
 
@@ -360,7 +373,7 @@ void setClasspathElements(LauncherProperties * props) {
     WCHAR * appCP = NULL;
     
     // add some libraries to the beginning of the classpath
-    while((preCP = getArgumentValue(props, classPathPrepend, 1))!=NULL) {
+    while((preCP = getArgumentValue(props, classPathPrepend, 1, 1))!=NULL) {
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... adding entry to the beginning of classpath : ", 0);
         writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, preCP, 1);
         if (props->classpath != NULL) {
@@ -390,7 +403,7 @@ void setClasspathElements(LauncherProperties * props) {
     }
     
     // add some libraries to the end of the classpath
-    while((appCP = getArgumentValue(props, classPathAppend, 1))!=NULL) {
+    while((appCP = getArgumentValue(props, classPathAppend, 1, 1))!=NULL) {
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... adding entry to the end of classpath : ", 0);
         writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, appCP, 1);
         if (props->classpath != NULL) {
@@ -602,6 +615,20 @@ WCHARList * getCommandlineArguments() {
 
 LauncherProperties * createLauncherProperties(WCHARList * commandLine) {
     LauncherProperties *props = (LauncherProperties*)malloc(sizeof(LauncherProperties));
+    DWORD c = 0;
+    props->launcherCommandArguments = newWCHARList(11);
+    props->launcherCommandArguments->items[c++] = appendStringW(NULL, outputFileArg);
+    props->launcherCommandArguments->items[c++] = appendStringW(NULL, javaArg);
+    props->launcherCommandArguments->items[c++] = appendStringW(NULL, debugArg);
+    props->launcherCommandArguments->items[c++] = appendStringW(NULL, tempdirArg);
+    props->launcherCommandArguments->items[c++] = appendStringW(NULL, classPathPrepend);
+    props->launcherCommandArguments->items[c++] = appendStringW(NULL, classPathAppend);
+    props->launcherCommandArguments->items[c++] = appendStringW(NULL, extractArg);
+    props->launcherCommandArguments->items[c++] = appendStringW(NULL, helpArg);
+    props->launcherCommandArguments->items[c++] = appendStringW(NULL, helpOtherArg);
+    props->launcherCommandArguments->items[c++] = appendStringW(NULL, silentArg);
+    props->launcherCommandArguments->items[c++] = appendStringW(NULL, nospaceCheckArg);
+    
     props->jvmArguments = NULL;
     props->appArguments = NULL;
     props->extractOnly  = 0;
@@ -633,20 +660,20 @@ LauncherProperties * createLauncherProperties(WCHARList * commandLine) {
     props->restOfBytes = createSizedString();
     props->I18N_PROPERTIES_NUMBER = 0;
     props->i18nMessages = NULL;
-    props->userDefinedJavaHome    = getArgumentValue(props, javaArg, 1);
-    props->userDefinedTempDir     = getArgumentValue(props, tempdirArg, 1);
+    props->userDefinedJavaHome    = getArgumentValue(props, javaArg, 1, 1);
+    props->userDefinedTempDir     = getArgumentValue(props, tempdirArg, 1, 1);
     
     props->userDefinedExtractDir  = NULL;
     props->extractOnly = 0;
     
     if(argumentExists(props, extractArg, 0)) {
-        props->userDefinedExtractDir = getArgumentValue(props, extractArg, 1);
-        if(props->userDefinedExtractDir==NULL) {
+        props->userDefinedExtractDir = getArgumentValue(props, extractArg, 1, 0);
+        if(props->userDefinedExtractDir==NULL) {// next argument is null or another launcher argument        
             props->userDefinedExtractDir = getCurrentDirectory();
-        }
+        } 
         props->extractOnly = 1;
     }
-    props->userDefinedOutput      = getArgumentValue(props, outputFileArg, 1);
+    props->userDefinedOutput      = getArgumentValue(props, outputFileArg, 1, 1);
     props->checkForFreeSpace      = !argumentExists(props, nospaceCheckArg, 1);
     props->silentMode             = argumentExists(props, silentArg, 0);
     props->launcherSize = getFileSize(props->exePath);
@@ -716,7 +743,7 @@ void freeLauncherProperties(LauncherProperties **props) {
         CloseHandle((*props)->stderrHandle);
         
         freeI18NMessages((*props));
-        
+        freeWCHARList(& ((*props)->launcherCommandArguments));
         freeWCHARList(& ((*props)->commandLine));
         CloseHandle((*props)->handler);
         
