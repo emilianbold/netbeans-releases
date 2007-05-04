@@ -149,7 +149,7 @@ public abstract class Shortcut {
     }
     
     public void setIcon(final File icon) {
-        this.icon = icon;
+        setIcon(icon,0);
     }
     
     public void setIcon(final File icon, int index) {
