@@ -23,10 +23,11 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.actions.NodeAction;
-import static org.netbeans.modules.print.api.PrintUI.*;
 
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.search.api.SearchManagerAccess;
+
+import static org.netbeans.modules.print.ui.PrintUI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

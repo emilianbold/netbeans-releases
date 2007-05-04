@@ -25,7 +25,7 @@ import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import org.openide.ErrorManager;
 
-import static org.netbeans.modules.print.api.PrintUI.*;
+import static org.netbeans.modules.print.ui.PrintUI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

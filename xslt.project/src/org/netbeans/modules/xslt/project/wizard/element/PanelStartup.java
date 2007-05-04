@@ -27,7 +27,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
 import org.netbeans.api.project.Project;
-import static org.netbeans.modules.print.api.PrintUI.*;
+import static org.netbeans.modules.print.ui.PrintUI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

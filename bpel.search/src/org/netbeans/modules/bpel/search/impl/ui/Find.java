@@ -35,7 +35,6 @@ import org.netbeans.modules.xml.xam.ui.search.SearchControlPanel;
 import org.netbeans.modules.xml.xam.ui.search.SearchProvider;
 import org.netbeans.modules.xml.xam.ui.search.Query;
 
-import static org.netbeans.modules.print.api.PrintUI.*;
 import org.netbeans.modules.bpel.search.api.SearchElement;
 import org.netbeans.modules.bpel.search.api.SearchEvent;
 import org.netbeans.modules.bpel.search.api.SearchException;
@@ -43,6 +42,8 @@ import org.netbeans.modules.bpel.search.api.SearchOption;
 import org.netbeans.modules.bpel.search.api.SearchMatch;
 import org.netbeans.modules.bpel.search.spi.SearchEngine;
 import org.netbeans.modules.bpel.search.spi.SearchListener;
+
+import static org.netbeans.modules.print.ui.PrintUI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

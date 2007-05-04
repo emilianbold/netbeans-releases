@@ -53,12 +53,13 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import org.openide.windows.WindowManager;
-import static org.netbeans.modules.print.api.PrintUI.*;
 
 import org.netbeans.modules.bpel.search.api.SearchEvent;
 import org.netbeans.modules.bpel.search.api.SearchElement;
 import org.netbeans.modules.bpel.search.spi.SearchListener;
 import org.netbeans.modules.bpel.search.impl.util.Util;
+
+import static org.netbeans.modules.print.ui.PrintUI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

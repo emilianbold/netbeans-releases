@@ -65,7 +65,7 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
 import org.netbeans.modules.xml.wsdl.ui.view.ElementOrType;
 
-import static org.netbeans.modules.print.api.PrintUI.*;
+import static org.netbeans.modules.print.ui.PrintUI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

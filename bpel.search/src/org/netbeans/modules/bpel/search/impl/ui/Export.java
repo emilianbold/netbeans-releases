@@ -44,7 +44,7 @@ import javax.swing.filechooser.FileFilter;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
 import org.openide.awt.HtmlBrowser;
-import org.netbeans.modules.print.api.PrintUI;
+import org.netbeans.modules.print.ui.PrintUI;
 
 /**
  * @author Vladimir Yaroslavskiy

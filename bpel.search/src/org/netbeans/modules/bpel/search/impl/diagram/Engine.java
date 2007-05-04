@@ -19,7 +19,6 @@
 package org.netbeans.modules.bpel.search.impl.diagram;
 
 import java.util.List;
-import static org.netbeans.modules.print.api.PrintUI.*;
 
 import org.netbeans.modules.bpel.editors.api.Diagram;
 import org.netbeans.modules.bpel.editors.api.DiagramElement;
@@ -27,6 +26,8 @@ import org.netbeans.modules.bpel.editors.api.DiagramElement;
 import org.netbeans.modules.bpel.search.api.SearchException;
 import org.netbeans.modules.bpel.search.api.SearchOption;
 import org.netbeans.modules.bpel.search.spi.SearchEngine;
+
+import static org.netbeans.modules.print.ui.PrintUI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

@@ -44,7 +44,7 @@ import org.netbeans.modules.bpel.core.BPELDataObject;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.Process;
 
-import static org.netbeans.modules.print.api.PrintUI.*;
+import static org.netbeans.modules.print.ui.PrintUI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

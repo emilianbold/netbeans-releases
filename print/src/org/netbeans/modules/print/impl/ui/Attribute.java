@@ -45,7 +45,7 @@ import javax.swing.SpinnerNumberModel;
 import org.openide.DialogDescriptor;
 import org.openide.util.HelpCtx;
 
-import org.netbeans.modules.print.api.PrintUI;
+import org.netbeans.modules.print.ui.PrintUI;
 import org.netbeans.modules.print.impl.util.Util;
 
 /**

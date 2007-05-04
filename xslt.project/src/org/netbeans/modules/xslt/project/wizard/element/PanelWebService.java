@@ -33,7 +33,7 @@ import javax.swing.JPanel;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.Project;
 
-import static org.netbeans.modules.print.api.PrintUI.*;
+import static org.netbeans.modules.print.ui.PrintUI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

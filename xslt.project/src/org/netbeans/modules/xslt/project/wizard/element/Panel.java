@@ -144,15 +144,15 @@ abstract class Panel<T> implements WizardDescriptor.ValidatingPanel<T> {
   }
 
   protected final String i18n(String key) {
-    return org.netbeans.modules.print.api.PrintUI.i18n(Panel.class, key);
+    return org.netbeans.modules.print.ui.PrintUI.i18n(Panel.class, key);
   }
 
   protected final String i18n(String key, String param) {
-    return org.netbeans.modules.print.api.PrintUI.i18n(Panel.class, key, param);
+    return org.netbeans.modules.print.ui.PrintUI.i18n(Panel.class, key, param);
   }
 
   protected final String i18n(String key, String param1, String param2) {
-    return org.netbeans.modules.print.api.PrintUI.i18n(
+    return org.netbeans.modules.print.ui.PrintUI.i18n(
       Panel.class, key, param1, param2);
   }
 
@@ -341,15 +341,15 @@ abstract class Panel<T> implements WizardDescriptor.ValidatingPanel<T> {
   protected static final String EMPTY = ""; // NOI18N
 
   protected static final String NAME_TYPE =
-    org.netbeans.modules.print.api.PrintUI.i18n(Panel.class,
+    org.netbeans.modules.print.ui.PrintUI.i18n(Panel.class,
     "LBL_Service_Type"); // NOI18N
 
   protected static final String NAME_WSDL =
-    org.netbeans.modules.print.api.PrintUI.i18n(Panel.class,
+    org.netbeans.modules.print.ui.PrintUI.i18n(Panel.class,
     "LBL_WSDL_File"); // NOI18N
 
   protected static final String NAME_XSLT =
-    org.netbeans.modules.print.api.PrintUI.i18n(Panel.class,
+    org.netbeans.modules.print.ui.PrintUI.i18n(Panel.class,
     "LBL_XSLT_Configuration"); // NOI18N
 
   public static final String INPUT_FILE = "input.file"; // NOI18N

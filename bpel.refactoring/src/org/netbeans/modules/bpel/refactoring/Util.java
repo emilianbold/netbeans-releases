@@ -33,7 +33,7 @@ import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 
-import static org.netbeans.modules.print.api.PrintUI.*;
+import static org.netbeans.modules.print.ui.PrintUI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

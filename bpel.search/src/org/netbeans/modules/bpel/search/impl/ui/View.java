@@ -35,7 +35,8 @@ import org.openide.windows.TopComponent;
 
 import org.netbeans.modules.print.api.PrintManagerAccess;
 import org.netbeans.modules.bpel.search.impl.util.Util;
-import static org.netbeans.modules.print.api.PrintUI.*;
+
+import static org.netbeans.modules.print.ui.PrintUI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

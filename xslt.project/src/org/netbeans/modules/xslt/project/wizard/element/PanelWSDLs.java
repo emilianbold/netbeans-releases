@@ -25,7 +25,7 @@ import javax.swing.JPanel;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import static org.netbeans.modules.print.api.PrintUI.*;
+import static org.netbeans.modules.print.ui.PrintUI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

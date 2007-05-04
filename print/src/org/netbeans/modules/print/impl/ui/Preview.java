@@ -54,9 +54,9 @@ import javax.swing.SwingUtilities;
 
 import org.openide.DialogDescriptor;
 
-import org.netbeans.modules.print.api.PrintUI;
 import org.netbeans.modules.print.spi.PrintPage;
 import org.netbeans.modules.print.spi.PrintProvider;
+import org.netbeans.modules.print.ui.PrintUI;
 import org.netbeans.modules.print.impl.util.Util;
 
 /**

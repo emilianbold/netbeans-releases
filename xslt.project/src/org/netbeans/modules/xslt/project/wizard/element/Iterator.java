@@ -42,7 +42,7 @@ import org.netbeans.modules.xslt.core.transformmap.api.TMapModel;
 import org.netbeans.modules.xslt.core.transformmap.api.TransformMap;
 import org.netbeans.modules.xslt.core.transformmap.api.WSDLReference;
 
-import static org.netbeans.modules.print.api.PrintUI.*;
+import static org.netbeans.modules.print.ui.PrintUI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

@@ -34,7 +34,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.openide.DialogDescriptor;
-import org.netbeans.modules.print.api.PrintUI;
+import org.netbeans.modules.print.ui.PrintUI;
 
 import org.netbeans.modules.bpel.search.api.SearchException;
 import org.netbeans.modules.bpel.search.api.SearchOption;

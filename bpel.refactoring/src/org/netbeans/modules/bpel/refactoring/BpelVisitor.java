@@ -60,7 +60,7 @@ import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.Referenceable;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
-import static org.netbeans.modules.print.api.PrintUI.*;
+import static org.netbeans.modules.print.ui.PrintUI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

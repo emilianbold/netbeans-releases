@@ -18,11 +18,12 @@
  */
 package org.netbeans.modules.bpel.search.impl.ui;
 
-import static org.netbeans.modules.print.api.PrintUI.*;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bpel.search.api.SearchEvent;
 import org.netbeans.modules.bpel.search.spi.SearchListener;
+
+import static org.netbeans.modules.print.ui.PrintUI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

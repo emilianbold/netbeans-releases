@@ -31,7 +31,8 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
-import static org.netbeans.modules.print.api.PrintUI.*;
+
+import static org.netbeans.modules.print.ui.PrintUI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

@@ -25,10 +25,11 @@ import org.w3c.dom.Node;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.editors.api.Diagram;
 import org.netbeans.modules.bpel.editors.api.DiagramElement;
-import static org.netbeans.modules.print.api.PrintUI.*;
 
 import org.netbeans.modules.bpel.search.api.SearchException;
 import org.netbeans.modules.bpel.search.api.SearchOption;
+
+import static org.netbeans.modules.print.ui.PrintUI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
