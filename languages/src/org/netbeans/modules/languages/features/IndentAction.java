@@ -71,7 +71,7 @@ public class IndentAction extends InsertBreakAction {
                     ts.move (caret.getDot ());
                     if (!ts.moveNext ()) break;
                 }
-                Language l = LanguagesManager.getDefault ().getLanguage (ts.language ().mimeType ());
+            Language l = LanguagesManager.getDefault ().getLanguage (ts.language ().mimeType ());
             Token token = ts.token ();
             Object indentValue = getIndentProperties (l);
 
@@ -100,12 +100,12 @@ public class IndentAction extends InsertBreakAction {
                     if (ni == 2)
                         indent -= 4;
                 }
+                start = NbDocument.findLineOffset ((StyledDocument) doc, ln + 1);
                 try {
-                    start = NbDocument.findLineOffset ((StyledDocument) doc, ln + 1);
                     end = NbDocument.findLineOffset ((StyledDocument) doc, ln + 2);
                     line = doc.getText (start, end - start);
                 } catch (IndexOutOfBoundsException ex) {
-                    line = null;
+                    line = doc.getText (start, doc.getLength () - start);
                 }
                 indent (doc, caret.getDot (), indent);
                 if ( line != null && 

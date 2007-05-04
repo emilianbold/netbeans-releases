@@ -56,12 +56,12 @@ public class BraceCompletionInsertAction extends ExtDefaultKeyTypedAction {
                 return;
             }
             TokenSequence ts = th.tokenSequence ();
+            int offset = caret.getDot ();
             while (true) {
                 ts.move (caret.getDot ());
-                if (!ts.moveNext ())  {
-                    super.insertString (doc, dotPos, caret, str, overwrite);
-                    return;
-                }
+                if (!ts.moveNext ())
+                    break;
+                offset = ts.offset ();
                 TokenSequence ts2 = ts.embedded ();
                 if (ts2 == null) break;
                 ts = ts2;
@@ -93,7 +93,7 @@ public class BraceCompletionInsertAction extends ExtDefaultKeyTypedAction {
                     return;
                 }
             }
-            boolean beg = ts.offset () == caret.getDot ();
+            boolean beg = offset == caret.getDot ();
 
             super.insertString (doc, dotPos, caret, str, overwrite);
 
@@ -101,9 +101,8 @@ public class BraceCompletionInsertAction extends ExtDefaultKeyTypedAction {
             ts = th.tokenSequence ();
             while (true) {
                 ts.move (caret.getDot ());
-                if (!ts.moveNext ())  {
-                    return;
-                }
+                if (!ts.moveNext ())
+                    break;
                 TokenSequence ts2 = ts.embedded ();
                 if (ts2 == null) break;
                 ts = ts2;
