@@ -136,6 +136,25 @@ public class PageFlowController {
         }
     }
     
+    
+    /**
+     * Get the current page flow editor scope
+     * @return currentScope (LBL_SCOPE_PROJECT,LBL_SCOPE_FACESCONFIG)
+     */
+    public String getCurrentScope() {
+        return PageFlowUtilities.getInstance().getCurrentScope();
+    }
+    
+    public boolean isFacesConfigCurrentScope() {
+        return getCurrentScope() == PageFlowUtilities.LBL_SCOPE_FACESCONFIG;
+    }
+    public boolean isProjectCurrentScope() {
+        return getCurrentScope() == PageFlowUtilities.LBL_SCOPE_PROJECT;
+    }    
+    
+    
+
+    
     /**
      * Set From outcome by default.
      * @param source
@@ -301,11 +320,11 @@ public class PageFlowController {
             navRule2String.put(navRule, FacesModelUtility.getFromViewIdFiltered(navRule));
         }
         
-        String currentScope = PageFlowUtilities.getInstance().getCurrentScope();
+//        String currentScope = PageFlowUtilities.getInstance().getCurrentScope();
         Collection<String> pagesInConfig = getFacesConfigPageNames(rules);
-        if (currentScope.equals(PageFlowUtilities.LBL_SCOPE_FACESCONFIG)){
+        if ( isFacesConfigCurrentScope()){
             createFacesConfigPageNodes(pagesInConfig);
-        } else if (currentScope.equals(PageFlowUtilities.LBL_SCOPE_PROJECT)) {
+        } else if ( isProjectCurrentScope() ) {
             createAllProjectPageNodes(pagesInConfig);
         }
         createAllEdges(rules);

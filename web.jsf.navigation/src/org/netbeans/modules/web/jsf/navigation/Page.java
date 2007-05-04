@@ -233,7 +233,7 @@ public class Page extends PageSceneElement implements SaveCookie {
             java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
             d.setVisible(true);
             input = dialog.getValue();
-            if ( PageFlowUtilities.getInstance().getCurrentScope() == PageFlowUtilities.LBL_SCOPE_PROJECT  ) {
+            if ( pc.isProjectCurrentScope() ) {
                 removePageName2NodeReference = false;  //if it is a data node and we are in project scope make sure to not remove it.
             }
         }

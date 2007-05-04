@@ -22,7 +22,6 @@ package org.netbeans.modules.web.jsf.navigation;
 
 import java.awt.BorderLayout;
 import java.awt.Image;
-import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -83,10 +82,6 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         String fileName = pfc.getConfigDataObject().getPrimaryFile().getName() + ".NavData";
         navDataFile = new File(nbprojectFolder.getPath(), fileName);
         loadNodelocations();
-        
-//        boolean isValidated = scene.initLayout();
-        
-        //        this(context, new InstanceContent());
     }
     
     public void requestMultiViewActive() {

@@ -29,7 +29,7 @@ public class WebFolderListener extends FileChangeAdapter{
     private PageFlowController pfc;
     private PageFlowView view;
     private FileObject webFolder;
-    private final PageFlowUtilities pfUtil = PageFlowUtilities.getInstance();
+//    private final PageFlowUtilities pfUtil = PageFlowUtilities.getInstance();
     
     /**
      * This web folder listener listens to any modifications related to WebFolder and updates the faces config accordingly.
@@ -137,7 +137,7 @@ public class WebFolderListener extends FileChangeAdapter{
                     pageNode.replaceWrappedNode(dataNode);
                     view.resetNodeWidget(pageNode, false);
                     view.validateGraph();
-                } else if ( pfUtil.getCurrentScope() == PageFlowUtilities.LBL_SCOPE_PROJECT ){
+                } else if ( pfc.isProjectCurrentScope() ){
                     Page node = pfc.createPageFlowNode(dataNode);
                     view.createNode(node, null, null);
                     view.validateGraph();
@@ -215,7 +215,7 @@ public class WebFolderListener extends FileChangeAdapter{
         Node newNodeDelegate = getNodeDelegate(fileObj);
         
         //If we are in project view scope
-        if( pfUtil.getCurrentScope() == PageFlowUtilities.LBL_SCOPE_PROJECT ){
+        if( pfc.isProjectCurrentScope() ){
             assert oldNode != null;
         }
         
@@ -239,7 +239,7 @@ public class WebFolderListener extends FileChangeAdapter{
         } else if ( oldNode != null ){
             if( pfc.isPageInFacesConfig(oldDisplayName) ){
                 pfc.changeToAbstractNode(oldNode, oldDisplayName);
-                if( pfUtil.getCurrentScope() == PageFlowUtilities.LBL_SCOPE_PROJECT ) {
+                if( pfc.isProjectCurrentScope() ) {
                     Page newNode = pfc.createPageFlowNode(newNodeDelegate);
                     view.createNode(newNode, null, null);
                 }

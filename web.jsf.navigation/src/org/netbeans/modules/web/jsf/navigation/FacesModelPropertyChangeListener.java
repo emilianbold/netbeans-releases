@@ -29,7 +29,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
     public PageFlowController pfc;
     public PageFlowView view;
     public boolean refactoringIsLikely = false;
-    PageFlowUtilities pfUtil = PageFlowUtilities.getInstance();
+//    PageFlowUtilities pfUtil = PageFlowUtilities.getInstance();
     
     public FacesModelPropertyChangeListener( PageFlowController pfc ){
         this.pfc = pfc;
@@ -178,7 +178,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
                 if( toPage != null ) {
                     Page pageNode = pfc.getPageName2Node(toPage);
                     if( pageNode != null && !pfc.isPageInFacesConfig(toPage)){
-                        if( !pageNode.isDataNode() || pfUtil.getCurrentScope() == PageFlowUtilities.LBL_SCOPE_FACESCONFIG){
+                        if( !pageNode.isDataNode() || pfc.isFacesConfigCurrentScope()){
                             view.removeNodeWithEdges(pageNode);
                             pfc.removePageName2Node(pageNode,true);
                             view.validateGraph();
@@ -199,7 +199,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
             if( fromPage != null ){
                 Page pageNode = pfc.getPageName2Node(fromPage);
                 if( pageNode != null && !pfc.isPageInFacesConfig(fromPage)){
-                    if( !pageNode.isDataNode() || pfUtil.getCurrentScope() == PageFlowUtilities.LBL_SCOPE_FACESCONFIG){
+                    if( !pageNode.isDataNode() || pfc.isFacesConfigCurrentScope()){
                         view.removeNodeWithEdges(pageNode);
                         pfc.removePageName2Node(pageNode, true);
                         view.validateGraph();
@@ -208,7 +208,6 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
             }
         }
         if( myNewRule != null ){
-//            pfc.putNavRule2String(myNewRule, myNewRule.getFromViewId());
             pfc.putNavRule2String(myNewRule, FacesModelUtility.getFromViewIdFiltered(myNewRule));
         }
     }
