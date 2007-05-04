@@ -128,6 +128,7 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.bpel.model</friend>
                 <friend>org.netbeans.modules.bpel.project</friend>
                 <friend>org.netbeans.modules.iep.project</friend>
                 <friend>org.netbeans.modules.sql.project</friend>
@@ -135,8 +136,8 @@
                 <friend>org.netbeans.modules.xml.xam.ui</friend>
                 <friend>org.netbeans.modules.xslt.core</friend>
                 <friend>org.netbeans.modules.xslt.project</friend>
-				<friend>org.netbeans.modules.script.core</friend>
-				<friend>org.netbeans.modules.script.project</friend>
+                <friend>org.netbeans.modules.script.core</friend>
+                <friend>org.netbeans.modules.script.project</friend>
                 <package>org.netbeans.modules.xml.catalogsupport</package>
                 <package>org.netbeans.modules.xml.catalogsupport.ui.customizer</package>
             </friend-packages>
