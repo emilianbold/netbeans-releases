@@ -553,7 +553,7 @@ public class JavaScript {
             }
         result = jsParser.process (ast);
         astNodeToJSRoot.put (ast, result);
-        printRoots ();
+        //printRoots ();
         return result;
     }
     
