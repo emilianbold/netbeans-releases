@@ -17,8 +17,11 @@
  */
 package org.netbeans.modules.uml.propertysupport.options.panels;
 
+import java.awt.BorderLayout;
 import java.util.Hashtable;
+import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JPanel;
 import org.netbeans.modules.uml.propertysupport.options.api.UMLOptionsPanel;
 import org.openide.util.NbBundle;
 
@@ -28,7 +31,8 @@ import org.openide.util.NbBundle;
  */
 public class JavaPlatformOptions implements UMLOptionsPanel {
     
-    private JavaPlatformOptionsPanel form = null ;
+    private JComponent form = null ;
+
     
     public JavaPlatformOptions() {
     }
@@ -38,10 +42,12 @@ public class JavaPlatformOptions implements UMLOptionsPanel {
     }
     
     public JComponent create() {
-        if (form != null)
-            form = new JavaPlatformOptionsPanel() ;
+        if (form == null) {
         
-        return form ;
+            form = new JavaPlatformOptionsPanel();
+        
+        }
+        return form;
     }
     
     public Hashtable getCurrentValues() {

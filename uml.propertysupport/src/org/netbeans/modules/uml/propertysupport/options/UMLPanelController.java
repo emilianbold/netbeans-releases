@@ -80,8 +80,14 @@ public class UMLPanelController extends OptionsPanelController {
     public JComponent getComponent(Lookup lookup) {
         
         if (debug) log("getComponent");
+        
+        // this is the main component that holds the various tabs. There are two
+        // panels being added directly: General and Misc. The other tabs are found
+        // from the lookup (via layer file). See OptionsSupport getMainPanels() and 
+        // getMiscPanels().
         JTabbedPane pane = new JTabbedPane() ;
         
+        // create the General panel and populate it. 
         DefaultOptionsPanel defaultPanel = new DefaultOptionsPanel() ;
         DefaultOptionsPanelForm defaultForm = (DefaultOptionsPanelForm) defaultPanel.create() ;        
         
@@ -93,6 +99,7 @@ public class UMLPanelController extends OptionsPanelController {
             pane.addTab(panel.getDisplayName(), panel.create()) ;
         }
         
+        // create the Misc panel and populate it.
         MiscOptionsPanel misc = new MiscOptionsPanel() ;
         UMLMiscOptionsPanelForm miscPanel = (UMLMiscOptionsPanelForm) misc.create() ;        
         

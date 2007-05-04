@@ -1,7 +1,7 @@
 /*
  * JavaPlatformOptionsPanel.java
  *
- * Created on May 2, 2007, 10:31 AM
+ * Created on May 3, 2007, 7:41 PM
  */
 
 package org.netbeans.modules.uml.propertysupport.options.panels;
@@ -25,271 +25,454 @@ public class JavaPlatformOptionsPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel5 = new javax.swing.JLabel();
+        jLabel9 = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
-        jLabel9 = new javax.swing.JLabel();
+        y1 = new javax.swing.JRadioButton();
+        n1 = new javax.swing.JRadioButton();
+        y2 = new javax.swing.JRadioButton();
+        y3 = new javax.swing.JRadioButton();
+        y4 = new javax.swing.JRadioButton();
+        y5 = new javax.swing.JRadioButton();
+        y6 = new javax.swing.JRadioButton();
+        y7 = new javax.swing.JRadioButton();
+        y8 = new javax.swing.JRadioButton();
+        n2 = new javax.swing.JRadioButton();
+        n3 = new javax.swing.JRadioButton();
+        n4 = new javax.swing.JRadioButton();
+        n5 = new javax.swing.JRadioButton();
+        n6 = new javax.swing.JRadioButton();
+        n7 = new javax.swing.JRadioButton();
+        n8 = new javax.swing.JRadioButton();
+        jPanel2 = new javax.swing.JPanel();
         jLabel10 = new javax.swing.JLabel();
         jLabel11 = new javax.swing.JLabel();
         jLabel12 = new javax.swing.JLabel();
         jLabel13 = new javax.swing.JLabel();
         jLabel14 = new javax.swing.JLabel();
-        jRadioButton1 = new javax.swing.JRadioButton();
-        jRadioButton2 = new javax.swing.JRadioButton();
+        jComboBox1 = new javax.swing.JComboBox();
         jTextField1 = new javax.swing.JTextField();
         jTextField2 = new javax.swing.JTextField();
         jTextField3 = new javax.swing.JTextField();
         jTextField4 = new javax.swing.JTextField();
-        jComboBox1 = new javax.swing.JComboBox();
-        jRadioButton3 = new javax.swing.JRadioButton();
-        jRadioButton4 = new javax.swing.JRadioButton();
-        jRadioButton5 = new javax.swing.JRadioButton();
-        jRadioButton6 = new javax.swing.JRadioButton();
-        jRadioButton7 = new javax.swing.JRadioButton();
-        jRadioButton8 = new javax.swing.JRadioButton();
-        jRadioButton9 = new javax.swing.JRadioButton();
-        jRadioButton10 = new javax.swing.JRadioButton();
-        jRadioButton11 = new javax.swing.JRadioButton();
-        jRadioButton12 = new javax.swing.JRadioButton();
-        jRadioButton13 = new javax.swing.JRadioButton();
-        jRadioButton14 = new javax.swing.JRadioButton();
-        jRadioButton15 = new javax.swing.JRadioButton();
-        jRadioButton16 = new javax.swing.JRadioButton();
 
-        jLabel5.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jLabel5.text")); // NOI18N
+        jLabel9.setText("jLabel1");
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jLabel1.text")); // NOI18N
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jLabel1.text_1")); // NOI18N
 
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jLabel2.text")); // NOI18N
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jLabel2.text_1")); // NOI18N
 
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jLabel3.text")); // NOI18N
+        jLabel3.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jLabel3.text_1")); // NOI18N
 
-        jLabel4.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jLabel4.text")); // NOI18N
+        jLabel4.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jLabel4.text_1")); // NOI18N
 
-        jLabel6.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jLabel6.text")); // NOI18N
+        jLabel5.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jLabel5.text_1")); // NOI18N
 
-        jLabel7.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jLabel7.text")); // NOI18N
+        jLabel6.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jLabel6.text_1")); // NOI18N
 
-        jLabel8.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jLabel8.text")); // NOI18N
+        jLabel7.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jLabel7.text_1")); // NOI18N
 
-        jLabel9.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jLabel9.text")); // NOI18N
+        jLabel8.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jLabel8.text_1")); // NOI18N
 
-        jLabel10.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jLabel10.text")); // NOI18N
+        y1.setSelected(true);
+        y1.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jRadioButton1.text_1")); // NOI18N
+        y1.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        y1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                y1ActionPerformed(evt);
+            }
+        });
 
-        jLabel11.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jLabel11.text")); // NOI18N
+        n1.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "y2.text")); // NOI18N
+        n1.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        n1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                n1ActionPerformed(evt);
+            }
+        });
 
-        jLabel12.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jLabel12.text")); // NOI18N
+        y2.setSelected(true);
+        y2.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "y2.text_1")); // NOI18N
+        y2.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        y2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                y2ActionPerformed(evt);
+            }
+        });
 
-        jLabel13.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jLabel13.text")); // NOI18N
+        y3.setSelected(true);
+        y3.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "y3.text")); // NOI18N
+        y3.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        y3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                y3ActionPerformed(evt);
+            }
+        });
 
-        jLabel14.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jLabel14.text")); // NOI18N
+        y4.setSelected(true);
+        y4.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "y4.text")); // NOI18N
+        y4.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        y4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                y4ActionPerformed(evt);
+            }
+        });
 
-        jRadioButton1.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jRadioButton1.text")); // NOI18N
-        jRadioButton1.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        y5.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "y5.text")); // NOI18N
+        y5.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        y5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                y5ActionPerformed(evt);
+            }
+        });
 
-        jRadioButton2.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jRadioButton2.text")); // NOI18N
-        jRadioButton2.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        y6.setSelected(true);
+        y6.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "y6.text")); // NOI18N
+        y6.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        y6.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                y6ActionPerformed(evt);
+            }
+        });
 
-        jTextField1.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jTextField1.text")); // NOI18N
+        y7.setSelected(true);
+        y7.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "y7.text")); // NOI18N
+        y7.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        y7.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                y7ActionPerformed(evt);
+            }
+        });
 
-        jTextField2.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jTextField2.text")); // NOI18N
+        y8.setSelected(true);
+        y8.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "y8.text")); // NOI18N
+        y8.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        y8.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                y8ActionPerformed(evt);
+            }
+        });
 
-        jTextField3.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jTextField3.text")); // NOI18N
+        n2.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "n2.text")); // NOI18N
+        n2.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        n2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                n2ActionPerformed(evt);
+            }
+        });
 
-        jTextField4.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jTextField4.text")); // NOI18N
+        n3.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "n3.text")); // NOI18N
+        n3.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        n3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                n3ActionPerformed(evt);
+            }
+        });
+
+        n4.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "n4.text")); // NOI18N
+        n4.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        n4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                n4ActionPerformed(evt);
+            }
+        });
+
+        n5.setSelected(true);
+        n5.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "n5.text")); // NOI18N
+        n5.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        n5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                n5ActionPerformed(evt);
+            }
+        });
+
+        n6.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "n6.text")); // NOI18N
+        n6.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        n6.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                n6ActionPerformed(evt);
+            }
+        });
+
+        n7.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "n7.text")); // NOI18N
+        n7.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        n7.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                n7ActionPerformed(evt);
+            }
+        });
+
+        n8.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "n8.text")); // NOI18N
+        n8.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        n8.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                n8ActionPerformed(evt);
+            }
+        });
+
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .add(jLabel8)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 26, Short.MAX_VALUE)
+                        .add(y8))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .add(jLabel7)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 121, Short.MAX_VALUE)
+                        .add(y7)))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, n1)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, n2)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, n3)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, n4)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, n5)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, n6)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, n7)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, n8))
+                .addContainerGap(34, Short.MAX_VALUE))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
+                .add(jLabel6)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 35, Short.MAX_VALUE)
+                .add(y6)
+                .add(74, 74, 74))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
+                .add(jLabel5)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 107, Short.MAX_VALUE)
+                .add(y5)
+                .add(74, 74, 74))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
+                .add(jLabel4)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 80, Short.MAX_VALUE)
+                .add(y4)
+                .add(74, 74, 74))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
+                .add(jLabel3)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 98, Short.MAX_VALUE)
+                .add(y3)
+                .add(74, 74, 74))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
+                .add(jLabel2)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 51, Short.MAX_VALUE)
+                .add(y2)
+                .add(74, 74, 74))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
+                .add(jLabel1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 11, Short.MAX_VALUE)
+                .add(y1)
+                .add(74, 74, 74))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel1)
+                    .add(y1)
+                    .add(n1))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel2)
+                    .add(y2)
+                    .add(n2))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel3)
+                    .add(y3)
+                    .add(n3))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel4)
+                    .add(y4)
+                    .add(n4))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel5)
+                    .add(y5)
+                    .add(n5))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel6)
+                    .add(n6)
+                    .add(y6))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel7)
+                    .add(n7)
+                    .add(y7))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel8)
+                    .add(n8)
+                    .add(y8))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jLabel10.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jLabel10.text_1")); // NOI18N
+
+        jLabel11.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jLabel11.text_1")); // NOI18N
+
+        jLabel12.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jLabel12.text_1")); // NOI18N
+
+        jLabel13.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jLabel13.text_1")); // NOI18N
+
+        jLabel14.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jLabel14.text_1")); // NOI18N
 
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Ask Me", "Create New Operation", "Modify All Instances" }));
 
-        jRadioButton3.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jRadioButton3.text")); // NOI18N
-        jRadioButton3.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        jTextField1.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jTextField1.text_1")); // NOI18N
 
-        jRadioButton4.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jRadioButton4.text")); // NOI18N
-        jRadioButton4.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        jTextField2.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jTextField2.text_1")); // NOI18N
 
-        jRadioButton5.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jRadioButton5.text")); // NOI18N
-        jRadioButton5.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        jTextField3.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jTextField3.text_1")); // NOI18N
 
-        jRadioButton6.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jRadioButton6.text")); // NOI18N
-        jRadioButton6.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        jTextField4.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jTextField4.text_1")); // NOI18N
 
-        jRadioButton7.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jRadioButton7.text")); // NOI18N
-        jRadioButton7.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        jRadioButton8.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jRadioButton8.text")); // NOI18N
-        jRadioButton8.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        jRadioButton9.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jRadioButton9.text")); // NOI18N
-        jRadioButton9.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        jRadioButton10.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jRadioButton10.text")); // NOI18N
-        jRadioButton10.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        jRadioButton11.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jRadioButton11.text")); // NOI18N
-        jRadioButton11.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        jRadioButton12.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jRadioButton12.text")); // NOI18N
-        jRadioButton12.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        jRadioButton13.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jRadioButton13.text")); // NOI18N
-        jRadioButton13.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        jRadioButton14.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jRadioButton14.text")); // NOI18N
-        jRadioButton14.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        jRadioButton15.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jRadioButton15.text")); // NOI18N
-        jRadioButton15.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        jRadioButton16.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jRadioButton16.text")); // NOI18N
-        jRadioButton16.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2Layout.createSequentialGroup()
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jPanel2Layout.createSequentialGroup()
+                        .add(jLabel10)
+                        .add(18, 18, 18)
+                        .add(jComboBox1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 169, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2Layout.createSequentialGroup()
+                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jLabel11)
+                            .add(jLabel13))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(jTextField2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 33, Short.MAX_VALUE)
+                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jLabel14)
+                            .add(jLabel12))
+                        .add(18, 18, 18)
+                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jTextField3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(jTextField4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap())
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addContainerGap(20, Short.MAX_VALUE)
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(jPanel2Layout.createSequentialGroup()
+                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(jLabel10)
+                            .add(jComboBox1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .add(18, 18, 18)
+                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(jLabel11)
+                            .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(jLabel12)
+                            .add(jTextField3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                                .add(jLabel13)
+                                .add(jTextField2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(jTextField4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(jLabel14))
+                .addContainerGap())
+        );
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(jLabel14)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(jLabel12)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .add(jRadioButton3))
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(jLabel13)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .add(jRadioButton5))
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(jLabel1)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .add(jRadioButton1))
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 250, Short.MAX_VALUE)
-                                .add(jRadioButton7))
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 250, Short.MAX_VALUE)
-                                .add(jRadioButton9))
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 250, Short.MAX_VALUE)
-                                .add(jRadioButton11))
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(250, 250, 250)
-                                .add(jRadioButton13))
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(249, 249, 249)
-                                .add(jRadioButton15)))
-                        .add(6, 6, 6)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jRadioButton4)
-                            .add(jRadioButton6)
-                            .add(jRadioButton2)
-                            .add(jRadioButton8)
-                            .add(jRadioButton10)
-                            .add(jRadioButton12)
-                            .add(jRadioButton14)
-                            .add(jRadioButton16)))
-                    .add(layout.createSequentialGroup()
-                        .add(20, 20, 20)
-                        .add(jLabel7))
-                    .add(layout.createSequentialGroup()
-                        .add(20, 20, 20)
-                        .add(jLabel8))
-                    .add(layout.createSequentialGroup()
-                        .add(20, 20, 20)
-                        .add(jLabel10))
-                    .add(layout.createSequentialGroup()
-                        .add(20, 20, 20)
-                        .add(jLabel11))
-                    .add(layout.createSequentialGroup()
-                        .add(20, 20, 20)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel9)
-                            .add(jLabel2)
-                            .add(jLabel4)
-                            .add(jLabel6)
-                            .add(jLabel3))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jTextField2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(jTextField3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(jTextField4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(jComboBox1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 188, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(60, Short.MAX_VALUE))
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(201, Short.MAX_VALUE))
+            .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
-                    .add(jRadioButton1)
-                    .add(jRadioButton2))
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel12)
-                    .add(jRadioButton3)
-                    .add(jRadioButton4))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel13)
-                    .add(jRadioButton5)
-                    .add(jRadioButton6))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel11)
-                    .add(jRadioButton7)
-                    .add(jRadioButton8))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel10)
-                    .add(jRadioButton9)
-                    .add(jRadioButton10))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel8)
-                    .add(jRadioButton11)
-                    .add(jRadioButton12))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel7)
-                    .add(jRadioButton13)
-                    .add(jRadioButton14))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(jLabel14)
-                        .add(jRadioButton16))
-                    .add(jRadioButton15))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel9)
-                    .add(jComboBox1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel2)
-                    .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(14, 14, 14)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel4)
-                    .add(jTextField4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel6)
-                    .add(jTextField3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel3)
-                    .add(jTextField2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(122, 122, 122))
+                .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+private void n8ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_n8ActionPerformed
+    // TODO add your handling code here:
+}//GEN-LAST:event_n8ActionPerformed
+
+private void n7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_n7ActionPerformed
+    // TODO add your handling code here:
+}//GEN-LAST:event_n7ActionPerformed
+
+private void n6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_n6ActionPerformed
+    // TODO add your handling code here:
+}//GEN-LAST:event_n6ActionPerformed
+
+private void n5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_n5ActionPerformed
+    // TODO add your handling code here:
+}//GEN-LAST:event_n5ActionPerformed
+
+private void n4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_n4ActionPerformed
+    // TODO add your handling code here:
+}//GEN-LAST:event_n4ActionPerformed
+
+private void n3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_n3ActionPerformed
+    // TODO add your handling code here:
+}//GEN-LAST:event_n3ActionPerformed
+
+private void n2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_n2ActionPerformed
+    // TODO add your handling code here:
+}//GEN-LAST:event_n2ActionPerformed
+
+private void y8ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_y8ActionPerformed
+    // TODO add your handling code here:
+}//GEN-LAST:event_y8ActionPerformed
+
+private void y7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_y7ActionPerformed
+    // TODO add your handling code here:
+}//GEN-LAST:event_y7ActionPerformed
+
+private void y6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_y6ActionPerformed
+    // TODO add your handling code here:
+}//GEN-LAST:event_y6ActionPerformed
+
+private void y5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_y5ActionPerformed
+    // TODO add your handling code here:
+}//GEN-LAST:event_y5ActionPerformed
+
+private void y4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_y4ActionPerformed
+    // TODO add your handling code here:
+}//GEN-LAST:event_y4ActionPerformed
+
+private void y3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_y3ActionPerformed
+    // TODO add your handling code here:
+}//GEN-LAST:event_y3ActionPerformed
+
+private void y2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_y2ActionPerformed
+    // TODO add your handling code here:
+}//GEN-LAST:event_y2ActionPerformed
+
+    private void n1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_n1ActionPerformed
+    // TODO add your handling code here:
+}//GEN-LAST:event_n1ActionPerformed
+
+    private void y1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_y1ActionPerformed
+    // TODO add your handling code here:
+}//GEN-LAST:event_y1ActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -308,26 +491,28 @@ public class JavaPlatformOptionsPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
-    private javax.swing.JRadioButton jRadioButton1;
-    private javax.swing.JRadioButton jRadioButton10;
-    private javax.swing.JRadioButton jRadioButton11;
-    private javax.swing.JRadioButton jRadioButton12;
-    private javax.swing.JRadioButton jRadioButton13;
-    private javax.swing.JRadioButton jRadioButton14;
-    private javax.swing.JRadioButton jRadioButton15;
-    private javax.swing.JRadioButton jRadioButton16;
-    private javax.swing.JRadioButton jRadioButton2;
-    private javax.swing.JRadioButton jRadioButton3;
-    private javax.swing.JRadioButton jRadioButton4;
-    private javax.swing.JRadioButton jRadioButton5;
-    private javax.swing.JRadioButton jRadioButton6;
-    private javax.swing.JRadioButton jRadioButton7;
-    private javax.swing.JRadioButton jRadioButton8;
-    private javax.swing.JRadioButton jRadioButton9;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField jTextField2;
     private javax.swing.JTextField jTextField3;
     private javax.swing.JTextField jTextField4;
+    private javax.swing.JRadioButton n1;
+    private javax.swing.JRadioButton n2;
+    private javax.swing.JRadioButton n3;
+    private javax.swing.JRadioButton n4;
+    private javax.swing.JRadioButton n5;
+    private javax.swing.JRadioButton n6;
+    private javax.swing.JRadioButton n7;
+    private javax.swing.JRadioButton n8;
+    private javax.swing.JRadioButton y1;
+    private javax.swing.JRadioButton y2;
+    private javax.swing.JRadioButton y3;
+    private javax.swing.JRadioButton y4;
+    private javax.swing.JRadioButton y5;
+    private javax.swing.JRadioButton y6;
+    private javax.swing.JRadioButton y7;
+    private javax.swing.JRadioButton y8;
     // End of variables declaration//GEN-END:variables
     
 }
