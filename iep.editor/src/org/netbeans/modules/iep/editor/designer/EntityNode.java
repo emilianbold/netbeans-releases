@@ -243,6 +243,10 @@ public class EntityNode extends SimpleNode
                 boolean isSchemaOwner = mComponent.getProperty(IS_SCHEMA_OWNER_KEY).getBoolValue();
                 int maxTopoScore = 0;
                 for (JGoListPosition pos = inputPort.getFirstLinkPos(); pos != null; pos = inputPort.getNextLinkPos(pos)) {
+                    Object o = inputPort.getLinkAtPos(pos);
+                    if (!(o instanceof Link)) {
+                        continue;
+                    }
                     Link inputLink = (Link)inputPort.getLinkAtPos(pos);
                     EntityNode fromNode= inputLink.getFromNode();
                     TcgComponent fromComponent = fromNode.mComponent;

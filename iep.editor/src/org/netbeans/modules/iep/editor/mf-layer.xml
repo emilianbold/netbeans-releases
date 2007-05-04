@@ -69,6 +69,7 @@
             <file name="TableOutput.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/output/TableOutput.xml" />
             <file name="StreamOutput.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/output/StreamOutput.xml" />
             <file name="RelationOutput.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/output/RelationOutput.xml" />
+            <file name="BatchedStreamOutput.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/output/BatchedStreamOutput.xml" />
         </folder>
 
         <folder name="relationConverter">

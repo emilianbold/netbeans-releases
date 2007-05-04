@@ -102,6 +102,7 @@ type CDATA #REQUIRED
             <property transient="false" category="IEP.Category.entity" name="globalId" title="IEP.Model.Entity.globalId.title" description="IEP.Model.Entity.globalId.description" required="false" type="string" editor="default" default="" renderer="string" access="&R;" multiple="false"/>
             <property transient="true" category="IEP.Category.entity" name="wsInput" title="IEP.Model.Entity.wsInput.title" description="IEP.Model.Entity.wsInput.description" required="false" type="boolean" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="false" renderer="string" access="" multiple="false"/>
             <property transient="true" category="IEP.Category.entity" name="wsOutput" title="IEP.Model.Entity.wsOutput.title" description="IEP.Model.Entity.wsOutput.description" required="false" type="boolean" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="false" renderer="string" access="" multiple="false"/>
+            <property transient="false" category="IEP.Category.entity" name="batchMode" title="IEP.Model.Entity.batchMode.title" description="IEP.Model.Entity.batchMode.description" required="false" type="boolean" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="false" renderer="string" access="" multiple="false"/>
             <property transient="true" category="IEP.Category.entity" name="palette" title="IEP.Model.Entity.palette.title" description="IEP.Model.Entity.palette.description" required="false" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="" renderer="string" access="" multiple="false"/>
             <property transient="true" category="IEP.Category.entity" name="categoryOrder" title="IEP.Model.Entity.categoryOrder.title" description="IEP.Model.Entity.categoryOrder.description" required="false" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="IEP.Category.main\IEP.Category.operator\IEP.Category.schema\IEP.Category.entity" renderer="string" access="" multiple="true"/>
         </property_group>
@@ -199,6 +200,23 @@ type CDATA #REQUIRED
             </property_group>
             <property transient="false" category="IEP.Category.operator" name="includeTimestamp" title="IEP.Output.StreamOutput.includeTimestamp.title" description="IEP.Output.StreamOutput.includeTimestamp.description" required="false" type="boolean" editor="default" default="false" renderer="string" access="&RW;" multiple="false"/>
             <code type="xml" file="vm/iep/output/streamOutput.xml"/>
+        </component_type>
+        <!-- batched stream ouput: do nothing -->
+        <component_type name="BatchedStreamOutput" icon="batchedStreamOutputx16.png" title="IEP.Output.BatchedStreamOutput.title" description="IEP.Output.BatchedStreamOutput.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
+            <property_group ref="/IEP/View/Node"/>
+            <property_group ref="/IEP/Model/Entity">
+                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.BatchedStreamOutputCustomEditor"/>
+                <property name="type" default="i18n.IEP.Output.BatchedStreamOutput.title"/>
+                <property name="inputType" default="i18n.IEP.IOType.stream"/>
+                <property name="wsOutput" default="true"/>
+                <property name="batchMode" default="true"/>
+                <property name="palette" default="output"/>
+            </property_group>
+            <property transient="false" category="IEP.Category.operator" name="includeTimestamp" title="IEP.Output.BatchedStreamOutput.includeTimestamp.title" description="IEP.Output.BatchedStreamOutput.includeTimestamp.description" required="false" type="boolean" editor="default" default="false" renderer="string" access="&RW;" multiple="false"/>
+            <property transient="false" category="IEP.Category.operator" name="batchSize" title="IEP.Output.BatchedStreamOutput.batchSize.title" description="IEP.Output.BatchedStreamOutput.batchSize.description" required="false" type="integer" editor="default" default="10" renderer="string" access="&RW;" multiple="false"/>
+            <property transient="false" category="IEP.Category.operator" name="maximumDelaySize" title="IEP.Output.BatchedStreamOutput.maximumDelaySize.title" description="IEP.Output.BatchedStreamOutput.maximumDelaySize.description" required="false" type="double" editor="default" default="10.0" renderer="string" access="&RW;" multiple="false"/>
+            <property transient="false" category="IEP.Category.operator" name="maximumDelayUnit" title="IEP.Output.BatchedStreamOutput.maximumDelayUnit.title" description="IEP.Output.BatchedStreamOutput.maximumDelayUnit.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TimeUnitPropertyEditor" default="second" renderer="string" access="&RW;" multiple="false"/>
+            <code type="xml" file="vm/iep/output/batchedStreamOutput.xml"/>
         </component_type>
         <!-- relation output: do nothing -->
         <component_type name="RelationOutput" icon="relationOutputx16.png" title="IEP.Output.RelationOutput.title" description="IEP.Output.RelationOutput.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">

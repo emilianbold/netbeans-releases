@@ -31,6 +31,8 @@ public interface SharedConstants {
     
     public static final String OP_STREAM_OUTPUT = "StreamOutput";
     
+    public static final String OP_BATCHED_STREAM_OUTPUT = "BatchedStreamOutput";
+    
     public static final String OP_RELATION_OUTPUT = "RelationOutput";
     
     public static final String OP_TABLE_OUTPUT = "TableOutput";
@@ -193,6 +195,14 @@ public interface SharedConstants {
     public static String WS_INPUT_KEY = "wsInput";
      
     public static String WS_OUTPUT_KEY = "wsOutput";
+    
+    public static String BATCH_MODE_KEY = "batchMode";
+    
+    public static String BATCH_SIZE_KEY = "batchSize";
+
+    public static String MAXIMUM_DELAY_SIZE_KEY = "maximumDelaySize";
+
+    public static String MAXIMUM_DELAY_UNIT_KEY = "maximumDelayUnit";
     
     // TcgProperty value
     public static String IO_TYPE_NONE = "i18n.IEP.IOType.none";
