@@ -358,7 +358,7 @@ public final class SystemUtils {
             if (string.length() > 0) {
                 BufferedReader reader = new BufferedReader(new StringReader(string));
                 for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-                    LogManager.log(ErrorLevel.MESSAGE, "[stdout]: " + line);
+                    LogManager.log(ErrorLevel.MESSAGE, "[stderr]: " + line);
                 }
                 
                 processStdErr.append(string);
