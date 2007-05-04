@@ -69,10 +69,7 @@ Microsystems, Inc. All Rights Reserved.
     </copy>   
     -->
 
-    <!-- move stuff to /bin  -->
-    <basename property="my.cluster.dir" file="${cluster}"/>
-    <filter token="CLUSTER_DIR" value="${my.cluster.dir}"/>
-    <copy file="external/travel.zip" tofile="${cluster}/modules/ext/travel.zip" /> 
+    <copy file="external/travel.zip" tofile="release/modules/ext/travel.zip" /> 
   </target>
 
   <target name="compile" depends="fake-jdbc-40,projectized-common.compile"/>
@@ -98,6 +95,11 @@ Microsystems, Inc. All Rights Reserved.
     <mkdir dir="${fake-jdbc-40.build}"/>
     <javac srcdir="${fake-jdbc-40.src}" destdir="${fake-jdbc-40.build}"/>
   </target>
+
+    <target name="clean" depends="projectized-common.clean">
+             <delete dir="release/modules"/>
+    </target>
+
 
 </project>
 
