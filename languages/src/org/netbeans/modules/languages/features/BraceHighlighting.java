@@ -56,7 +56,9 @@ public class BraceHighlighting extends ExtSyntaxSupport {
             if (tokenHierarchy == null) return super.findMatchingBlock(offset, simpleSearch);
             TokenSequence tokens = tokenHierarchy.tokenSequence();
             tokens.move(offset);
-            tokens.moveNext ();
+            if(!(tokens.moveNext() || tokens.movePrevious())) {
+                return null; //no token
+            }
             Token<STokenId> token = tokens.token ();
             String mimeType = (String) doc.getProperty("mimeType"); // NOI18N
             Language language = LanguagesManager.getDefault ().getLanguage (mimeType);
