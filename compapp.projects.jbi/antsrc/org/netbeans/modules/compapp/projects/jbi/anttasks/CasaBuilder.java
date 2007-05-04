@@ -127,7 +127,7 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
             factory.setNamespaceAware(true);
             try {
                 DocumentBuilder documentBuilder = factory.newDocumentBuilder();
-                oldCasaDocument = documentBuilder.parse(casaFileLoc);
+                oldCasaDocument = documentBuilder.parse(casaFile);
                 deletedCasaPortLinkHrefs = 
                     getDeletedCasaPortLinkHrefs(oldCasaDocument); // todo: remove me
             } catch (Exception ex) {
