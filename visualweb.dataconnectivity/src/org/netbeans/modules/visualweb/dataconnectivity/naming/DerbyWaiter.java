@@ -23,6 +23,7 @@ import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverListener;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
+import org.netbeans.modules.visualweb.dataconnectivity.utils.SampleDatabaseCreator;
 import org.openide.util.Exceptions;
 
 
@@ -34,7 +35,8 @@ public class DerbyWaiter {
 
     private static final String DRIVER_CLASS_NET = "org.apache.derby.jdbc.ClientDriver"; // NOI18N[
 
-    private boolean registered;       
+    private boolean registered;  
+    private boolean isMigration; // if user is migrating settings
     
     private final JDBCDriverListener jdbcDriverListener = new JDBCDriverListener() {
         public void driversChanged() {
@@ -42,8 +44,10 @@ public class DerbyWaiter {
         }
     };
     
-    public DerbyWaiter() {
+    public DerbyWaiter(boolean migration) {
+        isMigration = migration;
         JDBCDriverManager.getDefault().addDriverListener(jdbcDriverListener);
+        registerConnections();
     }
     
     private synchronized void registerConnections() {
@@ -52,8 +56,13 @@ public class DerbyWaiter {
         }
         JDBCDriver[] drvsArray = JDBCDriverManager.getDefault().getDrivers(DRIVER_CLASS_NET);
         if (drvsArray.length > 0) {
-            DatabaseSettingsImporter.getInstance().locateAndRegisterDrivers();
-            DatabaseSettingsImporter.getInstance().locateAndRegisterConnections();
+            if (isMigration) {
+                DatabaseSettingsImporter.getInstance().locateAndRegisterDrivers();
+                DatabaseSettingsImporter.getInstance().locateAndRegisterConnections();
+                SampleDatabaseCreator.createAll("travel", "travel", "travel", "TRAVEL", "modules/ext/travel.zip", false, "localhost", 1527);
+            } else
+                SampleDatabaseCreator.createAll("travel", "travel", "travel", "TRAVEL", "modules/ext/travel.zip", false, "localhost", 1527);
+            
             registered = true;
             JDBCDriverManager.getDefault().removeDriverListener(jdbcDriverListener);            
         }

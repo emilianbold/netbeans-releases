@@ -42,7 +42,6 @@ import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
-import org.netbeans.api.db.explorer.JDBCDriverListener;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException;
