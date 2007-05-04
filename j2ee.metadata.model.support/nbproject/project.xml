@@ -18,6 +18,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
+                        <release-version>0</release-version>
                         <specification-version>1.2</specification-version>
                     </run-dependency>
                 </dependency>
