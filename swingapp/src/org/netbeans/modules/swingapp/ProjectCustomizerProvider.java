@@ -78,8 +78,8 @@ public class ProjectCustomizerProvider implements ProjectCustomizer.CompositeCat
         ((SaveListener)category.getOkButtonListener()).panel = panel;
 
         Project project = context.lookup(Project.class);
-        if (ProjectCustomizerPanel.fileChooserFile == null) {
-            ProjectCustomizerPanel.fileChooserFile = project.getProjectDirectory().getPath();
+        if (ProjectCustomizerPanel.fileChooserDir == null) {
+            ProjectCustomizerPanel.fileChooserDir = project.getProjectDirectory().getPath();
         }
         DesignResourceMap resMap = ResourceUtils.getAppDesignResourceMap(project);
         panel.setVendorId(resMap.getString(KEY_VENDOR_ID));

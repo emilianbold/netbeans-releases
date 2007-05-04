@@ -47,7 +47,7 @@ public class ProjectCustomizerPanel extends javax.swing.JPanel {
 
     private FileObject lafJarRoot;
 
-    static String fileChooserFile;
+    static String fileChooserDir;
 
     public ProjectCustomizerPanel() {
         initComponents();
@@ -183,7 +183,7 @@ public class ProjectCustomizerPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-        JFileChooser fileChooser = new JFileChooser();
+        JFileChooser fileChooser = new JFileChooser(fileChooserDir);
         fileChooser.setDialogTitle(NbBundle.getMessage(ProjectCustomizerPanel.class, "CTL_SelectJAR_Caption")); // NOI18N
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fileChooser.setAcceptAllFileFilterUsed(true);
@@ -198,7 +198,6 @@ public class ProjectCustomizerPanel extends javax.swing.JPanel {
                 return NbBundle.getMessage(ProjectCustomizerPanel.class, "CTL_JarArchivesMask"); // NOI18N
             }
         });
-        fileChooser.setSelectedFile(new File(fileChooserFile));
         if (fileChooser.showOpenDialog(getTopLevelAncestor()) == JFileChooser.APPROVE_OPTION) {
             File file = fileChooser.getSelectedFile();
             if (file != null) {
@@ -226,7 +225,7 @@ public class ProjectCustomizerPanel extends javax.swing.JPanel {
                         DialogDisplayer.getDefault().notify(d);
                     }
                 }
-                fileChooserFile = file.getAbsolutePath();
+                fileChooserDir = file.getParent();
             }
         }
     }//GEN-LAST:event_browseButtonActionPerformed
