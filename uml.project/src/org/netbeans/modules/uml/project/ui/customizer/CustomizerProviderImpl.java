@@ -51,6 +51,8 @@ import org.netbeans.modules.uml.project.ui.codegen.CodeGeneratorAction;
 import org.netbeans.modules.uml.project.ui.customizer.uiapi.UMLCustomizerDialog;
 import org.netbeans.modules.uml.project.ui.common.ReferencedJavaProjectModel;
 import org.netbeans.modules.uml.ui.swing.commondialogs.CodeGenTemplateManagerPanel;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 
 /** Customization of UML project
@@ -66,7 +68,8 @@ public class CustomizerProviderImpl implements CustomizerProvider
     
     private ProjectCustomizer.Category categories[];
     private ProjectCustomizer.CategoryComponentProvider panelProvider;
-    
+    public static final String CUSTOMIZER_FOLDER_PATH = "Projects/org-netbeans-modules-uml-project/Customizer"; //NO18N
+
     private static Map /*<Project,Dialog>*/project2Dialog = new HashMap();
     
     public CustomizerProviderImpl(
@@ -108,36 +111,42 @@ public class CustomizerProviderImpl implements CustomizerProvider
             UMLProjectProperties uiProperties = new UMLProjectProperties(
                 (UMLProject)project, projectHelper, evaluator, refHelper);
             
-            init(uiProperties);
+            Lookup context = Lookups.fixed(new Object[] {
+                project,
+                uiProperties,
+                new SubCategoryProvider(preselectedCategory, preselectedSubCategory)
+            });
+//            init(uiProperties);
             
             OptionListener listener = new OptionListener( project, uiProperties );
             
             HelpCtx helpCtx = new HelpCtx(
                 "org.netbeans.modules.uml.project.ui.customizer.UMLCustomizer" ); // NOI18N
 
-            if (preselectedCategory != null && preselectedSubCategory != null)
-            {
-                for (int i=0; i<categories.length; i++ )
-                {
-                    if (preselectedCategory.equals(categories[i].getName()))
-                    {
-                        JComponent component = 
-                            panelProvider.create(categories[i]);
-                        
-                        if (component instanceof SubCategoryProvider)
-                        {
-                            ((SubCategoryProvider)component).showSubCategory(
-                                preselectedSubCategory);
-                        }
-                        
-                        break;
-                    }
-                }
-            }
-            
-            dialog = UMLCustomizerDialog.createCustomizerDialog(
-                categories, panelProvider, 
-                preselectedCategory, listener, helpCtx);
+//            if (preselectedCategory != null && preselectedSubCategory != null)
+//            {
+//                for (int i=0; i<categories.length; i++ )
+//                {
+//                    if (preselectedCategory.equals(categories[i].getName()))
+//                    {
+//                        JComponent component = 
+//                            panelProvider.create(categories[i]);
+//                        
+//                        if (component instanceof SubCategoryProvider)
+//                        {
+//                            ((SubCategoryProvider)component).showSubCategory(
+//                                preselectedSubCategory);
+//                        }
+//                        
+//                        break;
+//                    }
+//                }
+//            }
+            //JM: We don't have JavaImplementation project types anymore.. so don't need a custom dialog..              
+//            dialog = UMLCustomizerDialog.createCustomizerDialog(
+//                categories, panelProvider, 
+//                preselectedCategory, listener, helpCtx);
+            dialog = ProjectCustomizer.createCustomizerDialog( CUSTOMIZER_FOLDER_PATH, context, preselectedCategory, listener, null );
             
             dialog.addWindowListener(listener);
             
@@ -152,63 +161,63 @@ public class CustomizerProviderImpl implements CustomizerProvider
         }
     }
     
-    // Names of categories
-    private static final String MODELING_CATEGORY = "ModelingCategory"; // NOI18N
-    private static final String IMPORTS_CATEGORY = "ImportsCategory"; // NOI18N
-    private static final String CODEGEN_CATEGORY = "CodeGenCategory"; // NOI18N
-    
-    
-    private void init( UMLProjectProperties uiProperties )
-    {
-        
-        ResourceBundle bundle = NbBundle.getBundle( CustomizerProviderImpl.class );
-        
-        ProjectCustomizer.Category modeling = ProjectCustomizer.Category.create(
-            MODELING_CATEGORY,
-            bundle.getString("LBL_Config_Modeling"), // NOI18N
-            null,
-            null);
-        
-        ProjectCustomizer.Category imports = ProjectCustomizer.Category.create(
-            IMPORTS_CATEGORY,
-            bundle.getString("LBL_Config_Imports"), // NOI18N
-            null,
-            null);
-        
-        ProjectCustomizer.Category codegen = ProjectCustomizer.Category.create(
-            CODEGEN_CATEGORY,
-            bundle.getString("LBL_Code_Gen"), // NOI18N
-            null,
-            null);
-        
-        categories = new ProjectCustomizer.Category[]
-            {modeling, imports, codegen};
-        
-        Map panels = new HashMap();
-        panels.put(modeling, new CustomizerModeling(uiProperties));
-        panels.put(imports, new PanelUmlImports(uiProperties));
-        panels.put(codegen, new CodeGenTemplateManagerPanel(
-            uiProperties.getCodeGenTemplatesArray()));
-        
-        panelProvider = new PanelProvider(panels);
-    }
-    
-    private static class PanelProvider implements ProjectCustomizer.CategoryComponentProvider
-    {
-        private JPanel EMPTY_PANEL = new JPanel();
-        private Map /*<Category,JPanel>*/ panels;
-        
-        PanelProvider(Map panels)
-        {
-            this.panels = panels;
-        }
-        
-        public JComponent create(ProjectCustomizer.Category category)
-        {
-            JComponent panel = (JComponent)panels.get(category);
-            return panel == null ? EMPTY_PANEL : panel;
-        }
-    }
+//    // Names of categories
+//    private static final String MODELING_CATEGORY = "ModelingCategory"; // NOI18N
+//    private static final String IMPORTS_CATEGORY = "ImportsCategory"; // NOI18N
+//    private static final String CODEGEN_CATEGORY = "CodeGenCategory"; // NOI18N
+//    
+//    
+//    private void init( UMLProjectProperties uiProperties )
+//    {
+//        
+//        ResourceBundle bundle = NbBundle.getBundle( CustomizerProviderImpl.class );
+//        
+//        ProjectCustomizer.Category modeling = ProjectCustomizer.Category.create(
+//            MODELING_CATEGORY,
+//            bundle.getString("LBL_Config_Modeling"), // NOI18N
+//            null,
+//            null);
+//        
+//        ProjectCustomizer.Category imports = ProjectCustomizer.Category.create(
+//            IMPORTS_CATEGORY,
+//            bundle.getString("LBL_Config_Imports"), // NOI18N
+//            null,
+//            null);
+//        
+//        ProjectCustomizer.Category codegen = ProjectCustomizer.Category.create(
+//            CODEGEN_CATEGORY,
+//            bundle.getString("LBL_Code_Gen"), // NOI18N
+//            null,
+//            null);
+//        
+//        categories = new ProjectCustomizer.Category[]
+//            {modeling, imports, codegen};
+//        
+//        Map panels = new HashMap();
+//        panels.put(modeling, new CustomizerModeling(uiProperties));
+//        panels.put(imports, new PanelUmlImports(uiProperties));
+//        panels.put(codegen, new CodeGenTemplateManagerPanel(
+//            uiProperties.getCodeGenTemplatesArray()));
+//        
+//        panelProvider = new PanelProvider(panels);
+//    }
+//    
+//    private static class PanelProvider implements ProjectCustomizer.CategoryComponentProvider
+//    {
+//        private JPanel EMPTY_PANEL = new JPanel();
+//        private Map /*<Category,JPanel>*/ panels;
+//        
+//        PanelProvider(Map panels)
+//        {
+//            this.panels = panels;
+//        }
+//        
+//        public JComponent create(ProjectCustomizer.Category category)
+//        {
+//            JComponent panel = (JComponent)panels.get(category);
+//            return panel == null ? EMPTY_PANEL : panel;
+//        }
+//    }
     
     /** Listens to the actions on the Customizer's option buttons */
     private class OptionListener extends WindowAdapter implements ActionListener
@@ -287,8 +296,26 @@ public class CustomizerProviderImpl implements CustomizerProvider
         }
     }
     
-    static interface SubCategoryProvider
-    {
-        public void showSubCategory(String name);
+//    static interface SubCategoryProvider
+//    {
+//        public void showSubCategory(String name);
+//    }
+    
+    static final class SubCategoryProvider {
+
+        private String subcategory;
+
+        private String category;
+
+        SubCategoryProvider(String category, String subcategory) {
+            this.category = category;
+            this.subcategory = subcategory;
+        }
+        public String getCategory() {
+            return category;
+        }
+        public String getSubcategory() {
+            return subcategory;
+        }
     }
 }
