@@ -36,13 +36,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.StringTokenizer;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.xml.catalogsupport.util.ProjectReferenceUtility;
 import org.netbeans.modules.xml.retriever.catalog.CatalogEntry;
 import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModel;
@@ -61,12 +59,11 @@ import org.openide.filesystems.FileUtil;
  * @author Ajit
  */
 public class DefaultProjectCatalogSupport extends ProjectCatalogSupport {
-    
-    public static final String NBURI_SCHEME = "nb-uri";
-    
+        
     public Project project;
     public AntProjectHelper helper;
     public ReferenceHelper refHelper;
+    
     /**
      * Creates a new instance of DefaultProjectCatalogSupport
      */
@@ -101,7 +98,7 @@ public class DefaultProjectCatalogSupport extends ProjectCatalogSupport {
             String ssp = getUsableProjectName(owner);
             String fragment = getRelativePath(owner.getProjectDirectory(),foTobeAddedInCat);
             try {
-                return new URI(NBURI_SCHEME,ssp,fragment);
+                return new URI(ProjectConstants.NBURI_SCHEME,ssp,fragment);
             } catch (URISyntaxException ex) {
             }
         }
@@ -109,7 +106,7 @@ public class DefaultProjectCatalogSupport extends ProjectCatalogSupport {
     }
     
     public boolean isProjectProtocol(URI uriStoredInCatFile) {
-        return NBURI_SCHEME.equals(uriStoredInCatFile.getScheme());
+        return ProjectConstants.NBURI_SCHEME.equals(uriStoredInCatFile.getScheme());
     }
     
     public FileObject resolveProjectProtocol(URI uriToBeResolved) {
@@ -215,9 +212,9 @@ public class DefaultProjectCatalogSupport extends ProjectCatalogSupport {
     
     private static String[] sourceTypes = new String[] {
         ProjectConstants.SOURCES_TYPE_XML,
-        JavaProjectConstants.SOURCES_TYPE_JAVA,
-        WebProjectConstants.TYPE_DOC_ROOT,
-        WebProjectConstants.TYPE_WEB_INF
+        ProjectConstants.SOURCES_TYPE_JAVA,
+        ProjectConstants.TYPE_DOC_ROOT,
+        ProjectConstants.TYPE_WEB_INF
     };
     
     private static FileObject getSourceFolder(Project project, FileObject source) {

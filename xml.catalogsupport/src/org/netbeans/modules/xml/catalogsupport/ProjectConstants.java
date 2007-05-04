@@ -18,8 +18,6 @@
  */
 package org.netbeans.modules.xml.catalogsupport;
 
-import org.netbeans.api.java.project.JavaProjectConstants;
-
 /**
  * Commond project constants.
  * 
@@ -35,5 +33,11 @@ public interface ProjectConstants {
      *    WebProjectConstants.TYPE_WEB_INF,
      *    SOURCES_TYPE_XML
      */
+    public static final String NBURI_SCHEME = "nb-uri";
     public static final String SOURCES_TYPE_XML = "xml";
+    public static final String SOURCES_TYPE_JAVA = "java";
+    public static final String TYPE_DOC_ROOT = "doc_root";
+    public static final String TYPE_WEB_INF = "web_inf";
+    public static final String ARTIFACT_TYPE_JAR = "jar";
+    public static final String ARTIFACT_TYPE_WAR = "war";
 }

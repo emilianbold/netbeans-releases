@@ -23,7 +23,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.openide.filesystems.FileObject;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
@@ -31,13 +30,13 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModel;
 import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModelFactory;
 import org.netbeans.modules.xml.retriever.catalog.CatalogEntry;
 import org.netbeans.modules.xml.catalogsupport.DefaultProjectCatalogSupport;
+import org.netbeans.modules.xml.catalogsupport.ProjectConstants;
 
 /**
  * Utility Class to provide project reference support.
@@ -66,8 +65,8 @@ public class ProjectReferenceUtility {
         if(prov!=null) {
             AntArtifact[] antArtifacts = prov.getBuildArtifacts();
             for(AntArtifact artifact:antArtifacts) {
-                if(artifact.getType().equals(WebProjectConstants.ARTIFACT_TYPE_WAR)
-                || artifact.getType().equals(JavaProjectConstants.ARTIFACT_TYPE_JAR)){
+                if(artifact.getType().equals(ProjectConstants.ARTIFACT_TYPE_WAR)
+                || artifact.getType().equals(ProjectConstants.ARTIFACT_TYPE_JAR)){
                     for(URI uri:artifact.getArtifactLocations()) {
                         refHelper.addReference(artifact,uri);
                     }
