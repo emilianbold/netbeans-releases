@@ -28,7 +28,6 @@ package org.netbeans.modules.web.jsf.navigation;
 
 
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -67,13 +66,7 @@ public class PageFlowController {
     private DataObject configDataObj;
     
     private final HashMap<NavigationCase,NavigationCaseEdge> case2Node = new HashMap<NavigationCase,NavigationCaseEdge>();
-    
-    //This should always match what is inside the scene.
     private HashMap<NavigationRule,String> navRule2String = new HashMap<NavigationRule,String>();
-    
-    /**
-     * Temporarily Make Public for Work Around.
-     */
     private final HashMap<String,Page> pageName2Node = new HashMap<String,Page>();  //Should this be synchronized.
     
     private static final String DEFAULT_DOC_BASE_FOLDER = "web"; //NOI18NF
@@ -140,11 +133,6 @@ public class PageFlowController {
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            //            webFolder.removeFileChangeListener(fcl);
-            //            for (Enumeration<FileObject> e = (Enumeration<FileObject>) webFolder.getFolders(true); e.hasMoreElements() ;) {
-            //                e.nextElement().removeFileChangeListener(fcl);
-            //            }
-            //            fcl = null;
         }
     }
     
@@ -160,9 +148,7 @@ public class PageFlowController {
         String sourceName = source.getDisplayName();
         int caseNum = 1;
         
-        configModel.startTransaction();
-        
-        
+        configModel.startTransaction();        
         FacesConfig facesConfig = configModel.getRootComponent();
         NavigationRule navRule = getRuleWithFromViewID(facesConfig, source.getDisplayName());
         NavigationCase navCase = configModel.getFactory().createNavigationCase();
@@ -229,7 +215,6 @@ public class PageFlowController {
     private NavigationRule getRuleWithFromViewID(FacesConfig facesConfig, String fromViewId ){
         
         for( NavigationRule navRule : facesConfig.getNavigationRules() ){
-//            String rulefromViewId = navRule.getFromViewId();
             String rulefromViewId = FacesModelUtility.getFromViewIdFiltered(navRule);
             if( rulefromViewId != null && rulefromViewId.equals(fromViewId) ){
                 //  Match Found
@@ -239,8 +224,6 @@ public class PageFlowController {
         
         return null;
     }
-    
-    
     
     
     private Collection<FileObject> getAllProjectRelevantFilesObjects() {
@@ -329,9 +312,6 @@ public class PageFlowController {
         //view.layoutGraph();
         view.validateGraph();
         
-        System.out.println(pageName2Node);
-        
-        //        view.layoutSceneImmediately();
         return true;
         
     }
@@ -400,7 +380,6 @@ public class PageFlowController {
     }
     
     private void createAllProjectPageNodes(Collection<String> pagesInConfig) {
-        
         
         Collection<String> pages = new HashSet<String>(pagesInConfig);
         
@@ -570,8 +549,6 @@ public class PageFlowController {
             //            view.removeEdge(navCaseNode);
         }
     }
-    
-    
 
     
     /**
@@ -605,7 +582,6 @@ public class PageFlowController {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        
     }
     
     /**
