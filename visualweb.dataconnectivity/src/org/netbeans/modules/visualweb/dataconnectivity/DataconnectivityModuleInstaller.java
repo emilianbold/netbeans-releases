@@ -41,6 +41,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject;
 import org.netbeans.modules.visualweb.dataconnectivity.naming.DatabaseSettingsImporter;
 import org.netbeans.modules.visualweb.dataconnectivity.naming.DerbyWaiter;
@@ -151,11 +152,15 @@ public class DataconnectivityModuleInstaller extends ModuleInstall {
                 
                 // Dataconnectivity implementation to support Project migration of previous releases projects
                 // For previous release userdir migration, if no context file then settings haven't been migrated
-                if (DatabaseSettingsImporter.getInstance().locateContextFile() != null)
-                    new DerbyWaiter();  // waits for Derby drivers to be registered before migrating userdir settings
-                
+                File contextFile =  DatabaseSettingsImporter.getInstance().locateContextFile();
+                if (contextFile != null)
+                    new DerbyWaiter(contextFile.exists());  // waits for Derby drivers to be registered before migrating userdir settings
+                else {
                 // Create sample database in Shortfin
-                SampleDatabaseCreator.createAll("travel", "travel", "travel", "TRAVEL", "modules/ext/travel.zip", false, "localhost", 1527);
+                    if (ConnectionManager.getDefault().getConnection("jdbc:derby://localhost:1527/travel [travel on TRAVEL]") == null)
+                        new DerbyWaiter(false);
+                //SampleDatabaseCreator.createAll("travel", "travel", "travel", "TRAVEL", "modules/ext/travel.zip", false, "localhost", 1527);
+                }
                 
             }
         }  );
