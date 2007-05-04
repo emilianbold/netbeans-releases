@@ -83,6 +83,20 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
         </folder>
     </folder>
     
+    <folder name="Projects">
+        <folder name="org-netbeans-modules-uml-project">            
+            <folder name="Customizer">
+                <file name="Modeling.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.project.ui.customizer.UMLCompositePanelProvider.createModeling"/>
+                </file>
+                <attr name="Modeling.instance/Imports.instance" boolvalue="true"/>
+                <file name="Imports.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.project.ui.customizer.UMLCompositePanelProvider.createImports"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+    
     <!--
     <folder name="Actions">
         <folder name="UMLProject">
