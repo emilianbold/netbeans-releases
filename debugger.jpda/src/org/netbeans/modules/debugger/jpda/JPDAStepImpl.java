@@ -60,6 +60,7 @@ import com.sun.jdi.ThreadReference;
 import com.sun.jdi.request.StepRequest;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
+import com.sun.jdi.ClassType;
 import com.sun.jdi.Location;
 import com.sun.jdi.Method;
 import com.sun.jdi.ReferenceType;
@@ -209,7 +210,9 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
              // Set the method exit breakpoint to get the return value
             String methodName = lastOperation.getMethodName();
             if (methodName != null && MethodBreakpointImpl.canGetMethodReturnValues(vm)) {
+                // TODO: Would be nice to know which ObjectReference we're executing the method on
                 MethodBreakpoint mb = MethodBreakpoint.create(lastOperation.getMethodClassType(), methodName);
+                mb.setClassFilters(createClassFilters(vm, lastOperation.getMethodClassType(), methodName));
                 //mb.setMethodName(methodName);
                 mb.setBreakpointType(MethodBreakpoint.TYPE_METHOD_EXIT);
                 mb.setHidden(true);
@@ -367,6 +370,38 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             tr.holdLastOperations(false);
             return false;
         }
+    }
+    
+    /**
+     * Returns all class names, which are subclasses of <code>className</code>
+     * and contain method <code>methodName</code>
+     */
+    private static String[] createClassFilters(VirtualMachine vm, String className, String methodName) {
+        return createClassFilters(vm, className, methodName, new ArrayList<String>()).toArray(new String[] {});
+    }
+    
+    private static List<String> createClassFilters(VirtualMachine vm, String className, String methodName, List<String> filters) {
+        List<ReferenceType> classTypes = vm.classesByName(className);
+        for (ReferenceType type : classTypes) {
+            List<Method> methods = type.methodsByName(methodName);
+            boolean hasNonStatic = methods.isEmpty();
+            for (Method method : methods) {
+                if (!filters.contains(type.name())) {
+                    filters.add(type.name());
+                }
+                if (!method.isStatic()) {
+                    hasNonStatic = true;
+                }
+            }
+            if (hasNonStatic && type instanceof ClassType) {
+                ClassType clazz = (ClassType) type;
+                ClassType superClass = clazz.superclass();
+                if (superClass != null) {
+                    createClassFilters(vm, superClass.name(), methodName, filters);
+                }
+            }
+        }
+        return filters;
     }
     
     /**

@@ -89,7 +89,9 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
             breakpoint.getClassExclusionFilters (), 
             ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED
         );
-        checkLoadedClasses (breakpoint.getClassFilters () [0]);
+        for(String filter : breakpoint.getClassFilters()) {
+            checkLoadedClasses (filter);
+        }
     }
 
     public boolean exec (Event event) {
