@@ -110,15 +110,15 @@ public final class NewFileWizard extends TemplateWizard {
     
     public void setTitle (String ignore) {}
     
-    protected WizardDescriptor.Panel createTemplateChooser () {
-        WizardDescriptor.Panel panel = new TemplateChooserPanel( getCurrentProject () /*, recommendedTypes */ );
+    protected WizardDescriptor.Panel<WizardDescriptor> createTemplateChooser() {
+        WizardDescriptor.Panel<WizardDescriptor> panel = new TemplateChooserPanel( getCurrentProject () /*, recommendedTypes */ );
         JComponent jc = (JComponent)panel.getComponent ();
         jc.getAccessibleContext ().setAccessibleName (NbBundle.getBundle (NewProjectWizard.class).getString ("ACSN_NewFileWizard")); // NOI18N
         jc.getAccessibleContext ().setAccessibleDescription (NbBundle.getBundle (NewProjectWizard.class).getString ("ACSD_NewFileWizard")); // NOI18N
         return panel;
     }        
 
-    protected WizardDescriptor.Panel createTargetChooser () {
+    protected WizardDescriptor.Panel<WizardDescriptor> createTargetChooser() {
         Sources c = ProjectUtils.getSources(getCurrentProject ());
         return Templates.createSimpleTargetChooser(getCurrentProject (), c.getSourceGroups(Sources.TYPE_GENERIC));
     }

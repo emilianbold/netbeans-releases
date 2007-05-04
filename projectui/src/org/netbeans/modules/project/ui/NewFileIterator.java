@@ -40,13 +40,12 @@ import org.openide.loaders.DataObject;
  *
  * @author  Jiri Rechtacek
  */
-public class NewFileIterator implements WizardDescriptor.InstantiatingIterator {
+public class NewFileIterator implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
     
     private static final long serialVersionUID = 1L;
     
-    private transient boolean isLibrary;
-    private transient WizardDescriptor.Iterator simpleIterator;
-    private transient WizardDescriptor.Panel[] panels;
+    private transient WizardDescriptor.Iterator<WizardDescriptor> simpleIterator;
+    private transient WizardDescriptor.Panel<WizardDescriptor> panel;
     private transient WizardDescriptor wiz;
     private transient Project currentProject;
     
@@ -70,46 +69,44 @@ public class NewFileIterator implements WizardDescriptor.InstantiatingIterator {
         return new NewFileIterator (false);
     }
     
-    private WizardDescriptor.Iterator getSimpleIterator () {
+    private WizardDescriptor.Iterator<WizardDescriptor> getSimpleIterator () {
         if (simpleIterator == null) {
-            assert panels != null && panels.length > 0;
-            simpleIterator = new WizardDescriptor.ArrayIterator (panels);
+            assert panel != null;
+            @SuppressWarnings("unchecked") // XXX generic array construction, cannot avoid yet
+            WizardDescriptor.Iterator<WizardDescriptor> _simpleIterator = new WizardDescriptor.ArrayIterator<WizardDescriptor>(new WizardDescriptor.Panel[] {panel});
+            simpleIterator = _simpleIterator;
         }
         return simpleIterator;
     }
             
-    private WizardDescriptor.Panel[] getPanels (WizardDescriptor wizardDescriptor) {
+    private WizardDescriptor.Panel<WizardDescriptor> getPanel (WizardDescriptor wizardDescriptor) {
         Project project = Templates.getProject( wizardDescriptor );
         assert project != null : wizardDescriptor;
-        if (!project.equals (currentProject) || panels == null) {
+        if (!project.equals (currentProject) || panel == null) {
             currentProject = project;
             Sources sources = ProjectUtils.getSources(project);
             if (isFolder) {
-                panels = new WizardDescriptor.Panel[] {            
-                    new SimpleTargetChooserPanel (project, sources.getSourceGroups (Sources.TYPE_GENERIC), null, true)
-                };
+                panel = new SimpleTargetChooserPanel(project, sources.getSourceGroups(Sources.TYPE_GENERIC), null, true);
             } else {
-                panels = new WizardDescriptor.Panel[] {            
-                    Templates.createSimpleTargetChooser (project, sources.getSourceGroups (Sources.TYPE_GENERIC))
-                };
+                panel = Templates.createSimpleTargetChooser(project, sources.getSourceGroups(Sources.TYPE_GENERIC));
             }
         }
-        return panels;
+        return panel;
     }
     
     private String[] createSteps (String[] before) {
-        assert panels != null;
+        assert panel != null;
         
         if (before == null) {
             before = new String[0];
         }
         
-        String[] res = new String[ (before.length - 1) + panels.length];
+        String[] res = new String[before.length];
         for (int i = 0; i < res.length; i++) {
             if (i < (before.length - 1)) {
                 res[i] = before[i];
             } else {
-                res[i] = panels[i - before.length + 1].getComponent ().getName ();
+                res[i] = panel.getComponent().getName();
             }
         }
         return res;
@@ -128,7 +125,7 @@ public class NewFileIterator implements WizardDescriptor.InstantiatingIterator {
     }
     
     public void initialize(WizardDescriptor wiz) {
-        panels = getPanels (wiz);
+        panel = getPanel(wiz);
         this.wiz = wiz;
         
         // Make sure list of steps is accurate.
@@ -138,8 +135,8 @@ public class NewFileIterator implements WizardDescriptor.InstantiatingIterator {
             beforeSteps = (String[])prop;
         }
         String[] steps = createSteps (beforeSteps);
-        for (int i = 0; i < panels.length; i++) {
-            Component c = panels[i].getComponent();
+        for (int i = 0; i < 1; i++) { // XXX what was this loop for, exactly? panels.length was always 1
+            Component c = panel.getComponent();
             if (steps[i] == null) {
                 // Default step name to component name of panel.
                 // Mainly useful for getting the name of the target
@@ -159,7 +156,7 @@ public class NewFileIterator implements WizardDescriptor.InstantiatingIterator {
     public void uninitialize (WizardDescriptor wiz) {
         this.simpleIterator = null;
         this.wiz = null;
-        panels = null;
+        panel = null;
     }
     
     public String name() {
@@ -178,7 +175,7 @@ public class NewFileIterator implements WizardDescriptor.InstantiatingIterator {
     public void previousPanel() {
         getSimpleIterator ().previousPanel ();
     }
-    public WizardDescriptor.Panel current() {
+    public WizardDescriptor.Panel<WizardDescriptor> current() {
         return getSimpleIterator ().current ();
     }
     public final void addChangeListener(ChangeListener l) {

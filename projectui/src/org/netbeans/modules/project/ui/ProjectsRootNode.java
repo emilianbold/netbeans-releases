@@ -45,9 +45,6 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.FolderLookup;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
@@ -104,8 +101,7 @@ public class ProjectsRootNode extends AbstractNode {
             return new Action[0];
         } else {
             List<Action> actions = new ArrayList<Action>();
-            DataFolder actionsFolder = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().findResource(ACTIONS_FOLDER));
-            for (Object o: new FolderLookup(actionsFolder).getLookup().lookupAll(Object.class)) {
+            for (Object o : Lookups.forPath(ACTIONS_FOLDER).lookupAll(Object.class)) {
                 if (o instanceof Action) {
                     actions.add((Action) o);
                 } else if (o instanceof JSeparator) {

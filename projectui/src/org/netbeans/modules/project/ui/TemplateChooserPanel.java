@@ -38,8 +38,7 @@ import org.openide.util.NbBundle;
  *
  * @author  Petr Hrebejk
  */
-
-final class TemplateChooserPanel implements WizardDescriptor.Panel, ChangeListener {
+final class TemplateChooserPanel implements WizardDescriptor.Panel<WizardDescriptor>, ChangeListener {
 
     private static String lastCategory = null;
     private static String lastTemplate = null;
@@ -80,21 +79,18 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel, ChangeListen
         changeSupport.removeChangeListener(l);
     }
 
-    public void readSettings(Object settings) {
+    public void readSettings(WizardDescriptor settings) {
         TemplateChooserPanelGUI panel = (TemplateChooserPanelGUI) this.getComponent();
         panel.readValues( project, lastCategory, lastTemplate );
-        ((WizardDescriptor)settings).putProperty ("WizardPanel_contentSelectedIndex", new Integer (0)); // NOI18N
-        ((WizardDescriptor)settings).putProperty ("WizardPanel_contentData", new String[] { // NOI18N
+        settings.putProperty("WizardPanel_contentSelectedIndex", 0); // NOI18N
+        settings.putProperty ("WizardPanel_contentData", new String[] { // NOI18N
                 NbBundle.getBundle (TemplateChooserPanel.class).getString ("LBL_TemplatesPanel_Name"), // NOI18N
                 NbBundle.getBundle (TemplateChooserPanel.class).getString ("LBL_TemplatesPanel_Dots")}); // NOI18N
         // bugfix #44400: wizard title always changes
-        ((WizardDescriptor)settings).putProperty ("NewFileWizard_Title", null); // NOI18N
+        settings.putProperty("NewFileWizard_Title", null); // NOI18N
     }
 
-    public void storeSettings(Object settings) {
-            
-        WizardDescriptor wd = (WizardDescriptor)settings;
-        
+    public void storeSettings(WizardDescriptor wd) {
         Object value = wd.getValue();
         
         if ( NotifyDescriptor.CANCEL_OPTION != value &&

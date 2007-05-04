@@ -19,13 +19,9 @@
 
 package org.netbeans.modules.project.ui;
 
-import java.awt.*;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import javax.swing.event.ChangeEvent;
+import java.awt.Component;
+import java.awt.Cursor;
 import javax.swing.event.ChangeListener;
-
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -36,13 +32,17 @@ import org.openide.loaders.TemplateWizard;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.openide.util.*;
+import org.openide.util.AsyncGUIJob;
+import org.openide.util.ChangeSupport;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
  * @author  tom
  */
-public class TemplatesPanel implements WizardDescriptor.Panel {
+public class TemplatesPanel implements WizardDescriptor.Panel<WizardDescriptor> {
     
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private TemplatesPanelGUI panel;
@@ -54,7 +54,7 @@ public class TemplatesPanel implements WizardDescriptor.Panel {
     public TemplatesPanel() {
     }
     
-    public void readSettings (Object settings) {      
+    public void readSettings(WizardDescriptor settings) {
         TemplateWizard wd = (TemplateWizard) settings;
         wd.putProperty ("WizardPanel_contentSelectedIndex", new Integer (0)); // NOI18N
         wd.putProperty ("WizardPanel_contentData", new String[] { // NOI18N
@@ -93,10 +93,10 @@ public class TemplatesPanel implements WizardDescriptor.Panel {
 
         }
         // bugfix #44792: project wizard title always changes
-        ((WizardDescriptor)settings).putProperty ("NewProjectWizard_Title", null); // NOI18N
+        wd.putProperty("NewProjectWizard_Title", null); // NOI18N
     }
     
-    public void storeSettings (Object settings) {
+    public void storeSettings(WizardDescriptor settings) {
         TemplateWizard wd = (TemplateWizard) settings;
         
         // WelcomeScreen hack, XXX Delete after WS is redesigned

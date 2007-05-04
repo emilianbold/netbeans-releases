@@ -21,8 +21,6 @@ package org.netbeans.modules.project.ui;
 
 import java.awt.Component;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -40,18 +38,18 @@ import org.openide.util.NbBundle;
  *
  * @author  Petr Hrebejk
  */
-final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeListener {
+final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDescriptor>, ChangeListener {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private SimpleTargetChooserPanelGUI gui;
 
     private Project project;
     private SourceGroup[] folders;
-    private WizardDescriptor.Panel bottomPanel;
+    private WizardDescriptor.Panel<WizardDescriptor> bottomPanel;
     private WizardDescriptor wizard;
     private boolean isFolder;
     
-    SimpleTargetChooserPanel( Project project, SourceGroup[] folders, WizardDescriptor.Panel bottomPanel, boolean isFolder ) {
+    SimpleTargetChooserPanel(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel, boolean isFolder) {
         this.folders = folders;
         this.project = project;
         this.bottomPanel = bottomPanel;
@@ -108,9 +106,9 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
         changeSupport.removeChangeListener(l);
     }
 
-    public void readSettings( Object settings ) {
+    public void readSettings(WizardDescriptor settings) {
                 
-        wizard = (WizardDescriptor)settings;
+        wizard = settings;
                 
         if ( gui == null ) {
             getComponent();
@@ -139,11 +137,11 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
         }
     }
     
-    public void storeSettings(Object settings) { 
-        if ( WizardDescriptor.PREVIOUS_OPTION.equals( ((WizardDescriptor)settings).getValue() ) ) {
+    public void storeSettings(WizardDescriptor settings) { 
+        if (WizardDescriptor.PREVIOUS_OPTION.equals(settings.getValue())) {
             return;
         }
-        if( !((WizardDescriptor) settings).getValue().equals(WizardDescriptor.CANCEL_OPTION) && isValid() ) {
+        if(!settings.getValue().equals(WizardDescriptor.CANCEL_OPTION) && isValid()) {
             if ( bottomPanel != null ) {
                 bottomPanel.storeSettings( settings );
             }
@@ -157,16 +155,16 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
             
             FileObject fo = getTargetFolderFromGUI();
             try {
-                Templates.setTargetFolder( (WizardDescriptor) settings, fo );
+                Templates.setTargetFolder(settings, fo);
             } catch (IllegalArgumentException iae) {
                 ErrorManager.getDefault().annotate(iae, ErrorManager.EXCEPTION, null, 
                         NbBundle.getMessage(SimpleTargetChooserPanel.class, "MSG_Cannot_Create_Folder", 
                         gui.getTargetFolder()), null, null);
                 throw iae;
             }
-            Templates.setTargetName( (WizardDescriptor)settings, name );
+            Templates.setTargetName(settings, name);
         }
-        ((WizardDescriptor)settings).putProperty ("NewFileWizard_Title", null); // NOI18N
+        settings.putProperty("NewFileWizard_Title", null); // NOI18N
     }
 
     public void stateChanged(ChangeEvent e) {        

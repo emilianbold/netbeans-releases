@@ -19,13 +19,11 @@
 
 package org.netbeans.modules.project.uiapi;
 
+import java.io.File;
 import javax.swing.JFileChooser;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
-
-import java.io.File;
 
 /**
  * Factory to be implemented bu the ui implementation
@@ -47,6 +45,6 @@ public interface ProjectChooserFactory {
 
     public JFileChooser createProjectChooser(); 
     
-    public WizardDescriptor.Panel createSimpleTargetChooser( Project project, SourceGroup[] folders, WizardDescriptor.Panel bottomPanel );
+    public WizardDescriptor.Panel<WizardDescriptor> createSimpleTargetChooser(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel);
             
 }

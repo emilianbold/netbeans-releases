@@ -28,15 +28,12 @@ import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.FolderLookup;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Support class for creating Project node's children nodes from NodeFactory instances
@@ -112,13 +109,11 @@ public class NodeFactorySupport {
         
         // protected for tests..
         protected Lookup createLookup() {
-            FileObject root = Repository.getDefault().getDefaultFileSystem().findResource(folderPath);
-            assert root != null : "Cannot find path " + folderPath + " in layers";
-            DataFolder folder = DataFolder.findFolder(root);
-            return new FolderLookup(folder).getLookup();
+            return Lookups.forPath(folderPath);
         }
         
        protected Node[] createNodes(NodeListKeyWrapper key) {
+           @SuppressWarnings("unchecked") // needs to handle NodeList's of different types
            Node nd = key.nodeList.node(key.object);
            if (nd != null) {
                return new Node[] { nd };

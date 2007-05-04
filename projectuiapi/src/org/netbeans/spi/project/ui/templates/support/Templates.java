@@ -180,7 +180,7 @@ public class Templates {
      * @param folders a list of possible roots to create the new file in
      * @return a wizard panel(s) prompting the user to choose a name and location
      */
-    public static WizardDescriptor.Panel createSimpleTargetChooser( Project project, SourceGroup[] folders ) {        
+    public static WizardDescriptor.Panel<WizardDescriptor> createSimpleTargetChooser( Project project, SourceGroup[] folders ) {        
         return createSimpleTargetChooser( project, folders, null );
     }
     
@@ -195,7 +195,7 @@ public class Templates {
      * @param bottomPanel panel which should be placed underneth the default chooser
      * @return a wizard panel(s) prompting the user to choose a name and location
      */
-    public static WizardDescriptor.Panel createSimpleTargetChooser( Project project, SourceGroup[] folders, WizardDescriptor.Panel bottomPanel ) {        
+    public static WizardDescriptor.Panel<WizardDescriptor> createSimpleTargetChooser(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel) {
         return Utilities.getProjectChooserFactory().createSimpleTargetChooser( project, folders, bottomPanel );
     }
         
