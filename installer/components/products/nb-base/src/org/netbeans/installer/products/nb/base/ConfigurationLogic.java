@@ -33,10 +33,11 @@ import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.exceptions.UninstallationException;
 import org.netbeans.installer.utils.helper.FilesList;
-import org.netbeans.installer.utils.helper.Shortcut;
-import org.netbeans.installer.utils.helper.ShortcutLocationType;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.progress.Progress;
+import org.netbeans.installer.utils.system.shortcut.FileShortcut;
+import org.netbeans.installer.utils.system.shortcut.LocationType;
+import org.netbeans.installer.utils.system.shortcut.Shortcut;
 import org.netbeans.installer.wizard.Wizard;
 import org.netbeans.installer.wizard.components.WizardComponent;
 import org.netbeans.installer.wizard.components.panels.JdkLocationPanel;
@@ -152,7 +153,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 
                 SystemUtils.createShortcut(
                         getDesktopShortcut(installLocation),
-                        ShortcutLocationType.CURRENT_USER_DESKTOP);
+                        LocationType.CURRENT_USER_DESKTOP);
             } catch (NativeException e) {
                 throw new InstallationException(
                         getString("CL.install.error.desktop"),  // NOI18N
@@ -166,7 +167,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             
             SystemUtils.createShortcut(
                     getStartMenuShortcut(installLocation),
-                    ShortcutLocationType.CURRENT_USER_START_MENU);
+                    LocationType.CURRENT_USER_START_MENU);
         } catch (NativeException e) {
             throw new InstallationException(
                     getString("CL.install.error.start.menu"),  // NOI18N
@@ -235,7 +236,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             
             SystemUtils.removeShortcut(
                     getStartMenuShortcut(installLocation),
-                    ShortcutLocationType.CURRENT_USER_START_MENU,
+                    LocationType.CURRENT_USER_START_MENU,
                     true);
         } catch (NativeException e) {
             throw new UninstallationException(
@@ -250,7 +251,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 
                 SystemUtils.removeShortcut(
                         getDesktopShortcut(installLocation),
-                        ShortcutLocationType.CURRENT_USER_DESKTOP,
+                        LocationType.CURRENT_USER_DESKTOP,
                         false);
             } catch (NativeException e) {
                 throw new UninstallationException(
@@ -341,7 +342,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             executable = new File(location, EXECUTABLE_UNIX);
         }
         
-        final Shortcut shortcut = new Shortcut(name, executable);
+        final FileShortcut shortcut = new FileShortcut(name, executable);
         
         shortcut.setDescription(description);
         shortcut.setCategories(SHORTCUT_CATEGORIES);
@@ -349,7 +350,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         shortcut.setIcon(icon);
         shortcut.setRelativePath(relativePath);
         shortcut.setWorkingDirectory(location);
-        shortcut.setModifyExecutablePath(true);
+        shortcut.setModifyPath(true);
         
         return shortcut;
     }

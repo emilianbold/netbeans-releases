@@ -38,7 +38,9 @@ import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.exceptions.UninstallationException;
 import org.netbeans.installer.utils.helper.FilesList;
-import org.netbeans.installer.utils.helper.ShortcutLocationType;
+import org.netbeans.installer.utils.system.shortcut.FileShortcut;
+import org.netbeans.installer.utils.system.shortcut.LocationType;
+import org.netbeans.installer.utils.system.shortcut.Shortcut;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.wizard.Wizard;
@@ -47,7 +49,7 @@ import org.netbeans.installer.wizard.components.panels.JdkLocationPanel;
 import org.netbeans.installer.products.sjsas.wizard.panels.ASPanel;
 import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.helper.Shortcut;
+
 
 /**
  *
@@ -388,13 +390,13 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     }
     private void modifyShortcut(Shortcut shortcut, boolean create) throws NativeException {
         if(create) {
-            SystemUtils.createShortcut(shortcut, ShortcutLocationType.CURRENT_USER_START_MENU);
+            SystemUtils.createShortcut(shortcut, LocationType.CURRENT_USER_START_MENU);
         } else {
-            SystemUtils.removeShortcut(shortcut, ShortcutLocationType.CURRENT_USER_START_MENU, true);
+            SystemUtils.removeShortcut(shortcut, LocationType.CURRENT_USER_START_MENU, true);
         }
     }
     private Shortcut getIconShortcut(File file, String icon, String resourceName, File asLocation) {
-        Shortcut shortcut = new Shortcut(
+        FileShortcut shortcut = new FileShortcut(
                 getString(resourceName), file);
         shortcut.setIcon(new File(asLocation,
                 ICONS_SUBDIR + SystemUtils.getFileSeparator() + icon));
