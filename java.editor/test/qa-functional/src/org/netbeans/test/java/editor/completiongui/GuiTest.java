@@ -92,11 +92,12 @@ public class GuiTest extends EditorTestCase {
             }
             while(itemNo>1) {
                 editor.pushKey(KeyEvent.VK_DOWN);
+                new EventTool().waitNoEvent(200);
                 itemNo--;
-            }
-            if(itemNo!=0) editor.pushKey(KeyEvent.VK_ENTER); //instant substitution
+            }            
+            editor.pushKey(KeyEvent.VK_ENTER);
             
-            new EventTool().waitNoEvent(100);
+            new EventTool().waitNoEvent(300);
             String text = editor.getText();
             Pattern p = Pattern.compile(pattern,Pattern.DOTALL);
             boolean ok = p.matcher(text).matches();
