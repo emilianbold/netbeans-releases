@@ -76,9 +76,9 @@ public abstract class GraphPinScene<N, E, P> extends ObjectScene {
         assert node != null : "Null parameter";
         assert ! nodes.contains (node) : "Node (" + node + ") already added";
         Widget widget = attachNodeWidget (node);
-        addObject (node, widget);
         nodes.add (node);
         nodePins.put (node, new HashSet<P> ());
+        addObject (node, widget);
         notifyNodeAdded (node, widget);
         return widget;
     }
@@ -94,8 +94,8 @@ public abstract class GraphPinScene<N, E, P> extends ObjectScene {
         nodes.remove (node);
         nodePins.remove (node);
         Widget widget = findWidget (node);
-        removeObject (node);
         detachNodeWidget (node, widget);
+        removeObject (node);
     }
 
     /**
@@ -129,8 +129,8 @@ public abstract class GraphPinScene<N, E, P> extends ObjectScene {
     public final Widget addEdge (E edge) {
         assert edge != null  &&  ! edges.contains (edge);
         Widget widget = attachEdgeWidget (edge);
-        addObject (edge, widget);
         edges.add (edge);
+        addObject (edge, widget);
         notifyEdgeAdded (edge, widget);
         return widget;
     }
@@ -147,8 +147,8 @@ public abstract class GraphPinScene<N, E, P> extends ObjectScene {
         edgeSourcePins.remove (edge);
         edgeTargetPins.remove (edge);
         Widget widget = findWidget (edge);
-        removeObject (edge);
         detachEdgeWidget (edge, widget);
+        removeObject (edge);
     }
 
     /**
@@ -170,12 +170,12 @@ public abstract class GraphPinScene<N, E, P> extends ObjectScene {
     public final Widget addPin (N node, P pin) {
         assert node != null  &&  pin != null  &&  ! pins.contains (pin);
         Widget widget = attachPinWidget (node, pin);
-        addObject (pin, widget);
         pins.add (pin);
         nodePins.get (node).add (pin);
         pinNodes.put (pin, node);
         pinInputEdges.put (pin, new ArrayList<E> ());
         pinOutputEdges.put (pin, new ArrayList<E> ());
+        addObject (pin, widget);
         notifyPinAdded (node, pin, widget);
         return widget;
     }
@@ -196,8 +196,8 @@ public abstract class GraphPinScene<N, E, P> extends ObjectScene {
         pinInputEdges.remove (pin);
         pinOutputEdges.remove (pin);
         Widget widget = findWidget (pin);
-        removeObject (pin);
         detachPinWidget (pin, widget);
+        removeObject (pin);
     }
 
     /**

@@ -73,10 +73,10 @@ public abstract class GraphScene<N, E> extends ObjectScene {
     public final Widget addNode (N node) {
         assert node != null  &&  ! nodes.contains (node);
         Widget widget = attachNodeWidget (node);
-        addObject (node, widget);
         nodes.add (node);
         nodeInputEdges.put (node, new ArrayList<E> ());
         nodeOutputEdges.put (node, new ArrayList<E> ());
+        addObject (node, widget);
         notifyNodeAdded (node, widget);
         return widget;
     }
@@ -95,8 +95,8 @@ public abstract class GraphScene<N, E> extends ObjectScene {
         nodeOutputEdges.remove (node);
         nodes.remove (node);
         Widget widget = findWidget (node);
-        removeObject (node);
         detachNodeWidget (node, widget);
+        removeObject (node);
     }
 
     /**
@@ -128,8 +128,8 @@ public abstract class GraphScene<N, E> extends ObjectScene {
     public final Widget addEdge (E edge) {
         assert edge != null  &&  ! edges.contains (edge);
         Widget widget = attachEdgeWidget (edge);
-        addObject (edge, widget);
         edges.add (edge);
+        addObject (edge, widget);
         notifyEdgeAdded (edge, widget);
         return widget;
     }
@@ -146,8 +146,8 @@ public abstract class GraphScene<N, E> extends ObjectScene {
         edgeSourceNodes.remove (edge);
         edgeTargetNodes.remove (edge);
         Widget widget = findWidget (edge);
-        removeObject (edge);
         detachEdgeWidget (edge, widget);
+        removeObject (edge);
     }
 
     /**
