@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mconfig PUBLIC "-//NetBeans//DTD XTest cfg 1.0//EN" "http://www.netbeans.org/dtds/xtest-cfg-1_0.dtd">
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<mconfig name="QA functional an performance tests config">    
+    
+    <!-- ====================== -->
+    <!--  PERFORMANCE TESTBAGS  -->
+    <!-- ====================== -->
+    
+    <!-- common testbag to setup userdir-->
+    <testbag testattribs="measure_all or measure_once or measure_dialogs or measure_menus or measure_actions or deployment" prio="2"
+    compiler="qa-perf-compiler" executor="ide_perf_setup" name="Setup IDE">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/MeasuringEJBSetup.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    
+    <!-- 1st round -->
+    <testbag testattribs="measure_all or measure_once or measure_dialogs" prio="3"
+    compiler="qa-perf-compiler" executor="ide_perf_as" name="Measure J2EE Dialogs">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/MeasureJ2EEDialogs.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <!-- 2nd round -->
+    <testbag testattribs="measure_all or measure_dialogs" prio="4"
+    compiler="qa-perf-compiler" executor="ide_perf_as" name="Measure J2EE Dialogs">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/MeasureJ2EEDialogs.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <!-- 3rd round -->
+    <testbag testattribs="measure_all or measure_dialogs" prio="5"
+    compiler="qa-perf-compiler" executor="ide_perf_as" name="Measure J2EE Dialogs">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/MeasureJ2EEDialogs.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+    <!-- 1st round -->
+    <testbag testattribs="measure_all or measure_once or measure_menus" prio="13"
+    compiler="qa-perf-compiler" executor="ide_perf_as" name="Measure J2EE Menus">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/MeasureJ2EEMenus.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+    <!-- 2st round -->
+    <testbag testattribs="measure_all or measure_menus" prio="14"
+    compiler="qa-perf-compiler" executor="ide_perf_as" name="Measure J2EE Menus">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/MeasureJ2EEMenus.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+    <!-- 3st round -->
+    <testbag testattribs="measure_all or measure_menus" prio="15"
+    compiler="qa-perf-compiler" executor="ide_perf_as" name="Measure J2EE Menus">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/MeasureJ2EEMenus.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <!-- 1st round -->
+    <testbag testattribs="measure_all or measure_once or measure_actions" prio="23"
+    compiler="qa-perf-compiler" executor="ide_perf_as" name="Measure J2EE Actions">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/MeasureJ2EEActions.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+    <!-- 2st round -->
+    <testbag testattribs="measure_all or measure_actions" prio="24"
+    compiler="qa-perf-compiler" executor="ide_perf_as" name="Measure J2EE Actions">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/MeasureJ2EEActions.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+    <!-- 3st round -->
+    <testbag testattribs="measure_all or measure_actions" prio="25"
+    compiler="qa-perf-compiler" executor="ide_perf_as" name="Measure J2EE Actions">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/MeasureJ2EEActions.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <!-- 1st round -->
+    <testbag testattribs="deployment" prio="31"
+    compiler="qa-perf-compiler" executor="ide_perf_as" name="Measure J2EE Actions">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/MeasureJ2EEActions.class/"/>
+            </patternset>
+        </testset>
+        <testproperty name="xtest.userdata|onlyDeployment" value="true"/>
+    </testbag>
+
+    <!-- 2st round -->
+    <testbag testattribs="deployment" prio="32"
+    compiler="qa-perf-compiler" executor="ide_perf_as" name="Measure J2EE Actions">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/MeasureJ2EEActions.class/"/>
+            </patternset>
+        </testset>
+        <testproperty name="xtest.userdata|onlyDeployment" value="true"/>
+    </testbag>
+
+    <!-- 3st round -->
+    <testbag testattribs="deployment" prio="33"
+    compiler="qa-perf-compiler" executor="ide_perf_as" name="Measure J2EE Actions">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/MeasureJ2EEActions.class/"/>
+            </patternset>
+        </testset>
+        <testproperty name="xtest.userdata|onlyDeployment" value="true"/>
+    </testbag>
+
+    
+    <!-- MEASURE STARTUP -->
+    <testbag testattribs="measure_all or measure_startup" prio="101" executor="measure_startup_opened_files_prepare" compiler="qa-performance-startup-compiler"  name="Prepare IDE for measure startup time with J2EE projects">
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="startup/MeasureJ2EEStartupTimeOpenedFilesPrepare.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+    
+    <testbag testattribs="measure_all or measure_startup" prio="102" executor="measure_startup_opened_files" compiler="qa-performance-startup-compiler"  name="Measure IDE startup time with J2EE projects">
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="startup/MeasureJ2EEStartupTime.class/testStartIDEWithOpenedFiles"/>
+	    </patternset>
+	</testset>
+    </testbag>
+    
+    <testbag testattribs="measure_all or measure_startup  or measure_startup_web" prio="103" executor="measure_startup_opened_files_prepare" compiler="qa-performance-startup-compiler"  name="Prepare IDE for measure startup time with web projects">
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="startup/MeasureJ2EEStartupTimeWithWeb.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+    
+    <testbag testattribs="measure_all or measure_startup or measure_startup_web" prio="104" executor="measure_startup_opened_files" compiler="qa-performance-startup-compiler"  name="Measure IDE startup time with web projects">
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="startup/MeasureJ2EEStartupTime.class/testStartIDEWithWeb"/>
+	    </patternset>
+	</testset>
+    </testbag>
+    
+    <testbag testattribs="measure_startup_nb40" prio="111" executor="measure_startup_opened_files_prepare" compiler="qa-performance-startup-compiler"  name="Prepare 4.0 IDE for measure startup time with web">
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="startup/MeasureNB40WebStartupTimeOpenedFilesPrepare.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+    
+    <testbag testattribs="measure_startup_nb40" prio="112" executor="measure_startup_opened_files" compiler="qa-performance-startup-compiler" name="Measure 4.0 IDE startup time">
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="startup/MeasureJ2EEStartupTime.class/testStartIDEWithOpenedFiles"/>
+	    </patternset>
+	</testset>
+    </testbag>
+    
+    <testbag testattribs="measure_startup_nb40 or measure_startup_nb40_web" prio="113" executor="measure_startup_opened_files_prepare" compiler="qa-performance-startup-compiler"  name="Prepare 4.0 IDE for measure startup time with 3 webs">
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="startup/MeasureNB40StartupTimeWithWeb.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+    
+    <testbag testattribs="measure_startup_nb40 or measure_startup_nb40_web" prio="114" executor="measure_startup_opened_files" compiler="qa-performance-startup-compiler" name="Measure 4.0 IDE startup time with 3 webs">
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="startup/MeasureJ2EEStartupTime.class/testStartIDEWithWeb"/>
+	    </patternset>
+	</testset>
+    </testbag>              
+
+    <!-- ======================= -->
+    <!--  PERFORMANCE EXECUTORS  -->
+    <!-- ======================= -->
+    
+    <executor name="ide_perf_setup" antfile="build-qa-functional.xml" target="runide_setup"/>
+    <executor name="ide_perf_as" antfile="build-qa-functional.xml" target="runide_performance_as"/>
+    <executor name="measure_startup_opened_files_prepare" antfile="build-qa-functional.xml" target="runcodetest_measure_complex_startup_prepare"/>
+    <executor name="measure_startup_opened_files" antfile="build-qa-functional.xml" target="runcodetest_measure_complex_startup"/>    
+    <compiler name="qa-perf-compiler" antfile="build-qa-functional.xml" target="qa-perf-compiler"/>
+    <compiler name="qa-performance-startup-compiler" antfile="build-qa-functional.xml" target="qa-performance-startup-compiler"/>
+        
+</mconfig>
