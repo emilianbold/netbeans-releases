@@ -1033,7 +1033,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <delete dir="${netbeans.dest.dir}"/>
   </target>
 
-  <target name="build-visual-cluster-only" depends="init">
+  <target name="build-vw" depends="init" description="Build only the Visual Web modules.">
     <delete file="netbeans/nb.cluster.visualweb.built" failonerror="false"/>
     <antcall target="build-one-cluster">
       <param name="one.cluster.name" value="nb.cluster.visualweb"/>
@@ -1098,7 +1098,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <echo message="Run `ant real-clean' if desired."/>
   </target>
 
-  <target name="clean-vw" depends="init" description="Clean onlu VW modules">
+  <target name="clean-vw" depends="init" description="Clean only Visual Web modules">
     <antcall target="cleanall" inheritAll="false">
       <param name="allmodules" value="${nb.cluster.visualweb}"/>
     </antcall>
@@ -1972,7 +1972,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <zip basedir="${test.dist.dir}" destfile="build/testdist.zip"/>
   </target>      
 
-  <target name="vw-commit-validation">
+  <target name="commit-validation-vw" description="Run the Visual Web sanity tests">
       <ant dir="../visualweb/ravebuild" target="build-test-tools" inheritall="true"/>
       <ant dir="../visualweb/ravebuild" target="commit-validation" inheritall="false"/> 
   </target>
