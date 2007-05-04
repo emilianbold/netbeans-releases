@@ -280,8 +280,7 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
                     if (!ts.movePrevious ()) break;
                     t = ts.token ();
                 }
-                ts.moveNext ();
-                e = ts.offset ();
+                e = ts.offset () + t.length ();
                 sln = NbDocument.findLineNumber ((StyledDocument)doc, s);
                 eln = NbDocument.findLineNumber ((StyledDocument)doc, e);
                 if (eln - sln < 1) return;
