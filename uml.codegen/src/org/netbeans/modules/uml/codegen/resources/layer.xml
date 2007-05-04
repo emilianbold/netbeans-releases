@@ -36,7 +36,7 @@
         <folder name="UMLOptions">
             <folder name="Panels">
             <file name="CodeGenOptionsPanel.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.codegen.options.CodeGenOptionsPanel"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.codegen.ui.CodeGenOptionsPanel"/>
             </file>
             </folder>
         </folder>

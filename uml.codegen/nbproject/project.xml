@@ -138,7 +138,9 @@ Microsystems, Inc. All Rights Reserved.
             <public-packages>
                 <package>org.netbeans.modules.uml.codegen</package>
                 <package>org.netbeans.modules.uml.codegen.java</package>
-                <package>org.netbeans.modules.uml.codegen.options</package>
+                <package>org.netbeans.modules.uml.codegen.java.merging</package>
+                <package>org.netbeans.modules.uml.codegen.model</package>
+                <package>org.netbeans.modules.uml.codegen.ui</package>
             </public-packages>
         </data>
     </configuration>
