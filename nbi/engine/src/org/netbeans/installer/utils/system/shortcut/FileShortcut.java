@@ -28,7 +28,7 @@ import java.util.List;
  *
  * @author Dmitry Lipin
  */
-public abstract class FileShortcut extends Shortcut {
+public class FileShortcut extends Shortcut {
     private File target;
     private boolean modifyPath;
     private List<String> arguments;
