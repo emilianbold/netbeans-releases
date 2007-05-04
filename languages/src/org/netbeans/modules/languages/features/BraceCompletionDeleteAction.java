@@ -28,6 +28,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.ExtKit.ExtDeleteCharAction;
+import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManager;
@@ -51,15 +52,22 @@ public class BraceCompletionDeleteAction extends ExtDeleteCharAction {
             String mimeType = (String) doc.getProperty ("mimeType");
             TokenHierarchy th = TokenHierarchy.get (doc);
             if (th == null) return;
-            TokenSequence ts = th.tokenSequence ();
-            while (true) {
-                ts.move (caret.getDot ());
-                if (!ts.moveNext ()) return;
-                TokenSequence ts2 = ts.embedded ();
-                if (ts2 == null) break;
-                ts = ts2;
+            if (doc instanceof NbEditorDocument)
+                ((NbEditorDocument) doc).readLock ();
+            try {
+                TokenSequence ts = th.tokenSequence ();
+                while (true) {
+                    ts.move (caret.getDot ());
+                    if (!ts.moveNext ()) return;
+                    TokenSequence ts2 = ts.embedded ();
+                    if (ts2 == null) break;
+                    ts = ts2;
+                }
+                mimeType = ts.language ().mimeType ();
+            } finally {
+                if (doc instanceof NbEditorDocument)
+                    ((NbEditorDocument) doc).readUnlock ();
             }
-            mimeType = ts.language ().mimeType ();
             Language l = LanguagesManager.getDefault ().getLanguage (mimeType);
             List<Feature> completes = l.getFeatures ("COMPLETE");
             Iterator<Feature> it = completes.iterator ();

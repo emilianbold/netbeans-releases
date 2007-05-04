@@ -298,9 +298,9 @@ public class ParserManagerImpl extends ParserManager {
     }
 
     public TokenInput createTokenInput () {
+        if (doc instanceof NbEditorDocument)
+            ((NbEditorDocument) doc).readLock ();
         try {
-            if (doc instanceof NbEditorDocument)
-                ((NbEditorDocument) doc).readLock ();
             if (tokenHierarchy == null) 
                 return TokenInputUtils.create (Collections.<ASTToken>emptyList ());
             TokenSequence ts = tokenHierarchy.tokenSequence ();

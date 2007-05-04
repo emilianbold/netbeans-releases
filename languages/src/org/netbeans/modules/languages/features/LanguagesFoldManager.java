@@ -265,25 +265,32 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
                         fold == language.getFeature(Language.FOLD, ((ASTToken) item).getType()));
             if (!isTokenFold) {
                 TokenHierarchy th = TokenHierarchy.get (doc);
-                TokenSequence ts = th.tokenSequence ();
-                ts.move (e - 1);
-                if (!ts.moveNext ()) return;
-                while (!ts.language ().mimeType ().equals (mimeType)) {
-                    ts = ts.embedded ();
-                    if (ts == null) return;
+                if (doc instanceof NbEditorDocument)
+                    ((NbEditorDocument) doc).readLock ();
+                try {
+                    TokenSequence ts = th.tokenSequence ();
                     ts.move (e - 1);
                     if (!ts.moveNext ()) return;
+                    while (!ts.language ().mimeType ().equals (mimeType)) {
+                        ts = ts.embedded ();
+                        if (ts == null) return;
+                        ts.move (e - 1);
+                        if (!ts.moveNext ()) return;
+                    }
+                    Token t = ts.token ();
+                    Set<String> skip = language.getSkipTokenTypes ();
+                    while (skip.contains (t.id ().name ())) {
+                        if (!ts.movePrevious ()) break;
+                        t = ts.token ();
+                    }
+                    e = ts.offset () + t.length ();
+                    sln = NbDocument.findLineNumber ((StyledDocument)doc, s);
+                    eln = NbDocument.findLineNumber ((StyledDocument)doc, e);
+                    if (eln - sln < 1) return;
+                } finally {
+                    if (doc instanceof NbEditorDocument)
+                        ((NbEditorDocument) doc).readUnlock ();
                 }
-                Token t = ts.token ();
-                Set<String> skip = language.getSkipTokenTypes ();
-                while (skip.contains (t.id ().name ())) {
-                    if (!ts.movePrevious ()) break;
-                    t = ts.token ();
-                }
-                e = ts.offset () + t.length ();
-                sln = NbDocument.findLineNumber ((StyledDocument)doc, s);
-                eln = NbDocument.findLineNumber ((StyledDocument)doc, e);
-                if (eln - sln < 1) return;
             }
                 
             if (fold.hasSingleValue ()) {

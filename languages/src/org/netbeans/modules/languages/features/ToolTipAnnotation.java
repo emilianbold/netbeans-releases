@@ -67,15 +67,22 @@ public class ToolTipAnnotation extends Annotation {
                 ) + lp.getColumn ();
             TokenHierarchy tokenHierarchy = TokenHierarchy.get (doc);
             if (tokenHierarchy == null) return null;
-            TokenSequence tokenSequence = tokenHierarchy.tokenSequence ();
-            tokenSequence.move (offset);
-            if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()) return null;
+            if (doc instanceof NbEditorDocument)
+                ((NbEditorDocument) doc).readLock ();
             Language l = LanguagesManager.getDefault ().getLanguage (mimeType);
-            Token token = tokenSequence.token ();
-            Feature tooltip = l.getFeature (Language.TOOLTIP, token.id ().name ());
-            if (tooltip != null) {
-                String s = c ((String) tooltip.getValue (Context.create (doc, tokenSequence)));
-                return s;
+            try {
+                TokenSequence tokenSequence = tokenHierarchy.tokenSequence ();
+                tokenSequence.move (offset);
+                if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()) return null;
+                Token token = tokenSequence.token ();
+                Feature tooltip = l.getFeature (Language.TOOLTIP, token.id ().name ());
+                if (tooltip != null) {
+                    String s = c ((String) tooltip.getValue (Context.create (doc, tokenSequence)));
+                    return s;
+                }
+            } finally {
+                if (doc instanceof NbEditorDocument)
+                    ((NbEditorDocument) doc).readUnlock ();
             }
             ASTNode ast = null;
             try {
@@ -93,7 +100,7 @@ public class ToolTipAnnotation extends Annotation {
             int i, k = path.size ();
             for (i = 0; i < k; i++) {
                 ASTPath p = path.subPath (i);
-                tooltip = l.getFeature (Language.TOOLTIP, p);
+                Feature tooltip = l.getFeature (Language.TOOLTIP, p);
                 if (tooltip == null) continue;
                 String s = c ((String) tooltip.getValue (SyntaxContext.create (doc, p)));
                 return s;

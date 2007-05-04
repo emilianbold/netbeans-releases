@@ -161,29 +161,37 @@ public class CompletionSupport implements org.netbeans.spi.editor.completion.Com
         int offset = component.getCaret ().getDot ();
         try {
             TokenHierarchy tokenHierarchy = TokenHierarchy.get (doc);
-            TokenSequence sequence = tokenHierarchy.tokenSequence ();
+            if (doc instanceof NbEditorDocument)
+                ((NbEditorDocument) doc).readLock ();
+            String t;
+            try {
+                TokenSequence sequence = tokenHierarchy.tokenSequence ();
 
-            //find most embedded token sequence on the specified offset
-            while(true) {
-                sequence.move (offset - 1);
-                sequence.moveNext ();
-                TokenSequence embedded = sequence.embedded ();
-                if (embedded == null) break;
-                sequence = embedded;
+                //find most embedded token sequence on the specified offset
+                while(true) {
+                    sequence.move (offset - 1);
+                    sequence.moveNext ();
+                    TokenSequence embedded = sequence.embedded ();
+                    if (embedded == null) break;
+                    sequence = embedded;
+                }
+                Token token = sequence.token ();
+                String tokenType = token.id ().name ();
+                String mimeType = sequence.language ().mimeType ();
+                Language l = LanguagesManager.getDefault ().getLanguage (mimeType);
+                Feature feature = l.getFeature (Language.COMPLETION, tokenType);
+                t = text;
+                String start = token.text().toString ();
+                start = start.substring (0, offset - sequence.offset ()).trim ();
+                String cType = feature != null ? (String)feature.getValue("type") : null;
+                int delta = feature != null && ("operator".equals(cType) || "whitespace".equals(cType)) ? 
+                    start.length() : 0;
+                if (!l.getSkipTokenTypes ().contains (token.id ().name ()))
+                    t = text.substring (offset - sequence.offset () - delta);
+            } finally {
+                if (doc instanceof NbEditorDocument)
+                    ((NbEditorDocument) doc).readUnlock ();
             }
-            Token token = sequence.token ();
-            String tokenType = token.id ().name ();
-            String mimeType = sequence.language ().mimeType ();
-            Language l = LanguagesManager.getDefault ().getLanguage (mimeType);
-            Feature feature = l.getFeature (Language.COMPLETION, tokenType);
-            String t = text;
-            String start = token.text().toString ();
-            start = start.substring (0, offset - sequence.offset ()).trim ();
-            String cType = feature != null ? (String)feature.getValue("type") : null;
-            int delta = feature != null && ("operator".equals(cType) || "whitespace".equals(cType)) ? 
-                start.length() : 0;
-            if (!l.getSkipTokenTypes ().contains (token.id ().name ()))
-                t = text.substring (offset - sequence.offset () - delta);
             doc.insertString (offset, t, null);
         } catch (BadLocationException ex) {
             ErrorManager.getDefault ().notify (ex);

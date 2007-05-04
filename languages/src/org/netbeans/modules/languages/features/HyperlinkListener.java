@@ -129,18 +129,25 @@ MouseListener {
                     getHyperlinkPressedAS ()
                 );
         } else {
-            TokenSequence ts = context.getTokenSequence ();
-            Token t = ts.token ();
-            ASTToken stoken = ASTToken.create (
-                ts.language ().mimeType (),
-                t.id ().name (),
-                t.text ().toString (),
-                ts.offset ()
-            );
-            Highlighting.getHighlighting (doc).highlight (
-                stoken,
-                getHyperlinkPressedAS ()
-            );
+            if (doc instanceof NbEditorDocument)
+                ((NbEditorDocument) doc).readLock ();
+            try {
+                TokenSequence ts = context.getTokenSequence ();
+                Token t = ts.token ();
+                ASTToken stoken = ASTToken.create (
+                    ts.language ().mimeType (),
+                    t.id ().name (),
+                    t.text ().toString (),
+                    ts.offset ()
+                );
+                Highlighting.getHighlighting (doc).highlight (
+                    stoken,
+                    getHyperlinkPressedAS ()
+                );
+            } finally {
+                if (doc instanceof NbEditorDocument)
+                    ((NbEditorDocument) doc).readUnlock ();
+            }
         }
     }
 
@@ -157,18 +164,25 @@ MouseListener {
                     (ASTNode) o
                 );
         } else {
-            TokenSequence ts = context.getTokenSequence ();
-            Token t = ts.token ();
-            ASTToken stoken = ASTToken.create (
-                ts.language ().mimeType (),
-                t.id ().name (),
-                t.text ().toString (),
-                ts.offset ()
-            );
-            Highlighting.getHighlighting (doc).highlight (
-                stoken,
-                getHyperlinkPressedAS ()
-            );
+            if (doc instanceof NbEditorDocument)
+                ((NbEditorDocument) doc).readLock ();
+            try {
+                TokenSequence ts = context.getTokenSequence ();
+                Token t = ts.token ();
+                ASTToken stoken = ASTToken.create (
+                    ts.language ().mimeType (),
+                    t.id ().name (),
+                    t.text ().toString (),
+                    ts.offset ()
+                );
+                Highlighting.getHighlighting (doc).highlight (
+                    stoken,
+                    getHyperlinkPressedAS ()
+                );
+            } finally {
+                if (doc instanceof NbEditorDocument)
+                    ((NbEditorDocument) doc).readUnlock ();
+            }
         }
         context = null;
     }
@@ -187,14 +201,21 @@ MouseListener {
             if (ast == null) {
                 String mimeType = (String) doc.getProperty ("mimeType");
                 TokenHierarchy tokenHierarchy = TokenHierarchy.get (doc);
-                TokenSequence tokenSequence = tokenHierarchy.tokenSequence ();
-                tokenSequence.move (offset);
-                tokenSequence.moveNext ();
-                Language language = LanguagesManager.getDefault ().getLanguage (mimeType);
-                Token token = tokenSequence.token ();
-                Feature hyperlink = language.getFeature 
-                    (Language.HYPERLINK, token.id ().name ());
-                if (hyperlink != null) return new Object[] {Context.create (doc, tokenSequence), hyperlink};
+                if (doc instanceof NbEditorDocument)
+                    ((NbEditorDocument) doc).readLock ();
+                try {
+                    TokenSequence tokenSequence = tokenHierarchy.tokenSequence ();
+                    tokenSequence.move (offset);
+                    tokenSequence.moveNext ();
+                    Language language = LanguagesManager.getDefault ().getLanguage (mimeType);
+                    Token token = tokenSequence.token ();
+                    Feature hyperlink = language.getFeature 
+                        (Language.HYPERLINK, token.id ().name ());
+                    if (hyperlink != null) return new Object[] {Context.create (doc, tokenSequence), hyperlink};
+                } finally {
+                    if (doc instanceof NbEditorDocument)
+                        ((NbEditorDocument) doc).readUnlock ();
+                }
                 return null;
             }
             ASTPath path = ast.findPath (offset);

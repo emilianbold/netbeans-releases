@@ -35,6 +35,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.languages.Context;
+import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManager;
@@ -70,18 +71,25 @@ public class CompletionProviderImpl implements CompletionProvider {
         if (".".equals(typedText)) { // NOI18N
             Document doc = component.getDocument ();
             TokenHierarchy tokenHierarchy = TokenHierarchy.get (doc);
-            TokenSequence tokenSequence = tokenHierarchy.tokenSequence ();
-            int offset = component.getCaret().getDot();
-            if (offset <= 1) {
-                return 0;
-            }
-            tokenSequence.move(offset - 2);
-            if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()) {
-                return 0;
-            }
-            Token token = tokenSequence.token ();
-            if (token.id().name().indexOf("identifier") > -1) { // NOI18N [PENDING]
-                return COMPLETION_QUERY_TYPE;
+            if (doc instanceof NbEditorDocument)
+                ((NbEditorDocument) doc).readLock ();
+            try {
+                TokenSequence tokenSequence = tokenHierarchy.tokenSequence ();
+                int offset = component.getCaret().getDot();
+                if (offset <= 1) {
+                    return 0;
+                }
+                tokenSequence.move(offset - 2);
+                if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()) {
+                    return 0;
+                }
+                Token token = tokenSequence.token ();
+                if (token.id().name().indexOf("identifier") > -1) { // NOI18N [PENDING]
+                    return COMPLETION_QUERY_TYPE;
+                }
+            } finally {
+                if (doc instanceof NbEditorDocument)
+                    ((NbEditorDocument) doc).readUnlock ();
             }
         }
         return 0;
@@ -118,10 +126,17 @@ public class CompletionProviderImpl implements CompletionProvider {
             
             doc = component.getDocument ();
             TokenHierarchy tokenHierarchy = TokenHierarchy.get (doc);
-            TokenSequence tokenSequence = tokenHierarchy.tokenSequence ();
-            int offset = component.getCaret ().getDot ();
-            refresh (tokenSequence, offset, resultSet);
-            resultSet.finish();
+            if (doc instanceof NbEditorDocument)
+                ((NbEditorDocument) doc).readLock ();
+            try {
+                TokenSequence tokenSequence = tokenHierarchy.tokenSequence ();
+                int offset = component.getCaret ().getDot ();
+                refresh (tokenSequence, offset, resultSet);
+                resultSet.finish();
+            } finally {
+                if (doc instanceof NbEditorDocument)
+                    ((NbEditorDocument) doc).readUnlock ();
+            }
         }
         
         private void refresh (TokenSequence tokenSequence, int offset, CompletionResultSet resultSet) {
@@ -173,9 +188,16 @@ public class CompletionProviderImpl implements CompletionProvider {
         private void compute (Result resultSet) {
             doc = component.getDocument ();
             TokenHierarchy tokenHierarchy = TokenHierarchy.get (doc);
-            TokenSequence tokenSequence = tokenHierarchy.tokenSequence ();
-            int offset = component.getCaret ().getDot ();
-            compute (tokenSequence, offset, resultSet, doc);
+            if (doc instanceof NbEditorDocument)
+                ((NbEditorDocument) doc).readLock ();
+            try {
+                TokenSequence tokenSequence = tokenHierarchy.tokenSequence ();
+                int offset = component.getCaret ().getDot ();
+                compute (tokenSequence, offset, resultSet, doc);
+            } finally {
+                if (doc instanceof NbEditorDocument)
+                    ((NbEditorDocument) doc).readUnlock ();
+            }
             addParserTags (resultSet);
         }
         

@@ -26,16 +26,20 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import javax.swing.text.Document;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.languages.Context;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.parser.Pattern;
 import org.netbeans.modules.languages.parser.Pattern;
 import org.openide.ErrorManager;
 import org.openide.util.Lookup;
+
 
 /**
  *
@@ -289,14 +293,24 @@ public class Feature {
                 if (l instanceof ASTToken)
                     return evaluate ((ASTToken) l);
             } else {
-                Token t = context.getTokenSequence ().token ();
-                ASTToken stoken = ASTToken.create (
-                    context.getTokenSequence ().language ().mimeType (),
-                    t.id ().name (),
-                    t.text ().toString (),
-                    context.getTokenSequence ().offset ()
-                );
-                 return evaluate (stoken);
+                Document doc = context.getDocument ();
+                if (doc instanceof NbEditorDocument)
+                    ((NbEditorDocument) doc).readLock ();
+                ASTToken stoken;
+                try {
+                    TokenSequence ts = context.getTokenSequence ();
+                    Token t = ts.token ();
+                    stoken = ASTToken.create (
+                        ts.language ().mimeType (),
+                        t.id ().name (),
+                        t.text ().toString (),
+                        ts.offset ()
+                    );
+                } finally {
+                    if (doc instanceof NbEditorDocument)
+                        ((NbEditorDocument) doc).readUnlock ();
+                }
+                return evaluate (stoken);
             }
             throw new IllegalArgumentException ();
         }

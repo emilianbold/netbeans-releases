@@ -33,6 +33,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
+import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManager;
@@ -54,46 +55,53 @@ public class BraceHighlighting extends ExtSyntaxSupport {
             BaseDocument doc = getDocument ();
             TokenHierarchy<BaseDocument> tokenHierarchy = TokenHierarchy.<BaseDocument>get (doc);
             if (tokenHierarchy == null) return super.findMatchingBlock(offset, simpleSearch);
-            TokenSequence tokens = tokenHierarchy.tokenSequence();
-            tokens.move(offset);
-            if(!(tokens.moveNext() || tokens.movePrevious())) {
-                return null; //no token
-            }
-            Token<STokenId> token = tokens.token ();
-            String mimeType = (String) doc.getProperty("mimeType"); // NOI18N
-            Language language = LanguagesManager.getDefault ().getLanguage (mimeType);
-            Map<String,String>[] bracesValue = getBraces (language);
-            if (bracesValue == null) {
-                return super.findMatchingBlock(offset, simpleSearch);
-            }
+            if (doc instanceof NbEditorDocument)
+                ((NbEditorDocument) doc).readLock ();
+            try {
+                TokenSequence tokens = tokenHierarchy.tokenSequence();
+                tokens.move(offset);
+                if(!(tokens.moveNext() || tokens.movePrevious())) {
+                    return null; //no token
+                }
+                Token<STokenId> token = tokens.token ();
+                String mimeType = (String) doc.getProperty("mimeType"); // NOI18N
+                Language language = LanguagesManager.getDefault ().getLanguage (mimeType);
+                Map<String,String>[] bracesValue = getBraces (language);
+                if (bracesValue == null) {
+                    return super.findMatchingBlock(offset, simpleSearch);
+                }
 
-            CharSequence text = token.text().toString();
-            boolean moveToRight = false;
-            String bracket = bracesValue [0].get (text);
-            if (bracket != null) {
-                moveToRight = true;
-            } else {
-                bracket = bracesValue [1].get (text);
-                if (bracket == null) {
-                    return null;
-                }
-            }
-            String focusedBracket = text.toString();
-            int focusedBracketLength = focusedBracket.length();
-            int length = bracket.length();
-            int depth = 1;
-            while (moveToRight ? tokens.moveNext() : tokens.movePrevious()) {
-                token = tokens.token();
-                text = token.text();
-                if (text.length() == length && bracket.equals(text.toString())) {
-                    depth--;
-                    if (depth == 0) {
-                        int position = token.offset(tokenHierarchy);
-                        return new int[] {position, position + token.length()};
+                CharSequence text = token.text().toString();
+                boolean moveToRight = false;
+                String bracket = bracesValue [0].get (text);
+                if (bracket != null) {
+                    moveToRight = true;
+                } else {
+                    bracket = bracesValue [1].get (text);
+                    if (bracket == null) {
+                        return null;
                     }
-                } else if (text.length() == focusedBracketLength && focusedBracket.equals(text.toString())) {
-                    depth++;
                 }
+                String focusedBracket = text.toString();
+                int focusedBracketLength = focusedBracket.length();
+                int length = bracket.length();
+                int depth = 1;
+                while (moveToRight ? tokens.moveNext() : tokens.movePrevious()) {
+                    token = tokens.token();
+                    text = token.text();
+                    if (text.length() == length && bracket.equals(text.toString())) {
+                        depth--;
+                        if (depth == 0) {
+                            int position = token.offset(tokenHierarchy);
+                            return new int[] {position, position + token.length()};
+                        }
+                    } else if (text.length() == focusedBracketLength && focusedBracket.equals(text.toString())) {
+                        depth++;
+                    }
+                }
+            } finally {
+                if (doc instanceof NbEditorDocument)
+                    ((NbEditorDocument) doc).readUnlock ();
             }
         } catch (ConcurrentModificationException e) {
         } catch (ParseException e) {
