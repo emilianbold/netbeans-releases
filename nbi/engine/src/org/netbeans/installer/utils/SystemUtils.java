@@ -479,7 +479,28 @@ public final class SystemUtils {
         return getNativeUtils().getShortcutLocation(shortcut, locationType);
     }
     
-    
+    /**
+     * Create shortcut at the specified location that is set using <code>locationType</code>.
+     * <br>For the current moment the following logic is implemented:
+     * <ul>
+     * <li> For Windows FileShortcut is created as an <i>.lnk</i> file.<br>
+     *      InternetShortcut is created as a standard <i>.url</i> file.<br></li>
+     * <li> For Linux/Solaris FileShortcut is created as a <i>.desktop</i> entry with 
+     *      type <b>Application</b> if the target is normal file.<br>
+     *      If the file is actually a directory then a symlink is created <br>
+     *      InternetShortcut is created as a <i>.desktop</i> entry with type 
+     *      <b>Link</b>.</li>
+     * <li> For MacOS FileShortcut on desktop is created as a symlink 
+     *      (with, possibly, moving up-parents to the first .app).<br>
+     *      InternetShortcut on desktop is created as a standard <i>.url</i> file.<br>
+     *      "Start Menu" file shortcuts for MacOS are created at Dock.<br>
+     *      InternetShortcut creation in Dock actually does nothing since it 
+     *      seems that there is no way add an internet shortcut ot the Dock 
+     *      at all.</li>
+     * </ul>
+     *  
+     *
+     */
     public static File createShortcut(Shortcut shortcut, LocationType locationType) throws NativeException {
         return getNativeUtils().createShortcut(shortcut, locationType);
     }
