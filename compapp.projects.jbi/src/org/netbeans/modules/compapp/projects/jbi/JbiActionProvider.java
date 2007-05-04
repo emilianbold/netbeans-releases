@@ -223,6 +223,9 @@ public class JbiActionProvider implements ActionProvider {
             if (!isSelectedServer()) {
                 return;
             }
+            if (!validateSubProjects()) {
+                return;
+            }
         } else if (command.equals(JbiProjectConstants.COMMAND_JBICLEANCONFIG) ||
                 command.equals(JbiProjectConstants.COMMAND_JBIBUILD) ||
                 command.equals(JbiProjectConstants.COMMAND_JBICLEANBUILD)) {
@@ -289,7 +292,6 @@ public class JbiActionProvider implements ActionProvider {
     }
     
     private boolean validateSubProjects(){
-        
         try {
             JbiProjectProperties properties = project.getProjectProperties();
             List<VisualClassPathItem> itemList =
