@@ -301,9 +301,9 @@ public class JbiActionProvider implements ActionProvider {
             Map<Class, Project> subProjectTypeMap = new HashMap<Class, Project>();
             for (VisualClassPathItem item : itemList) {
                 String evalPath = item.getEvaluated();
-                File file = new File(evalPath);
+                File file = new File(evalPath + File.separator + ".." + File.separator + ".."); // TMP
                 FileObject fo = FileUtil.toFileObject(file);
-                Project subProject = ProjectManager.getDefault().findProject(fo.getParent().getParent());
+                Project subProject = ProjectManager.getDefault().findProject(fo);
                 
                 subProjects.add(subProject);                
                 subProjectTypeMap.put(subProject.getClass(), subProject);
