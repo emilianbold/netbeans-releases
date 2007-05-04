@@ -23,7 +23,7 @@
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.visdev.prefuse</code-name-base>
             <module-dependencies/>
-            <public-packages>
+            <friend-packages>
                 <package>prefuse</package>
                 <package>prefuse.data</package>
                 <package>prefuse.data.event</package>
@@ -58,7 +58,10 @@
                 <package>prefuse.data.io.sql</package>
                 <package>prefuse.action.assignment</package>
                 <package>prefuse.data.util</package>
-            </public-packages>
+                <friend>org.netbeans.modules.xml.nbprefuse</friend>
+                <friend>org.netbeans.modules.xml.refactoring</friend>
+                <friend>org.netbeans.modules.xml.schema.refactoring</friend>
+            </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/prefuse.jar</runtime-relative-path>
                 <binary-origin>../external/prefuse.jar</binary-origin>
