@@ -46,14 +46,6 @@ import org.netbeans.spi.editor.completion.support.CompletionUtilities;
 import org.openide.ErrorManager;
 import org.openide.util.Utilities;
 
-
-/*
- * CompletionSupport.
- * 
- * @author Jan Jancura
- */
-
-
 /*
  * CompletionSupport.
  * 
@@ -187,7 +179,9 @@ public class CompletionSupport implements org.netbeans.spi.editor.completion.Com
             String t = text;
             String start = token.text().toString ();
             start = start.substring (0, offset - sequence.offset ()).trim ();
-            int delta = feature != null && "true".equals(feature.getValue("doNotUsePrefix")) ? start.length() : 0;
+            String cType = feature != null ? (String)feature.getValue("type") : null;
+            int delta = feature != null && ("operator".equals(cType) || "whitespace".equals(cType)) ? 
+                start.length() : 0;
             if (!l.getSkipTokenTypes ().contains (token.id ().name ()))
                 t = text.substring (offset - sequence.offset () - delta);
             doc.insertString (offset, t, null);
