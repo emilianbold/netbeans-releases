@@ -205,7 +205,7 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
                             final J2MEProject project=node.getLookup().lookup(J2MEProject.class);
                             final Node n=new CfgNode(
                                     new ConfigChildren(),
-                                    Lookups.fixed(new Object[] {project, cfg, new AbilitiesPanel.VAData()}),
+                                    Lookups.fixed(new Object[] {project, cfg, AbilitiesPanel.hintInstance}),
                                     cfg.getDisplayName(),PLATFORM_ICON,
                                     new Action[] {
                                                   SetConfigurationAction.getStaticInstance(),
@@ -276,12 +276,12 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
         {
             final Node node=confs[i].equals(project.getConfigurationHelper().getDefaultConfiguration()) ? 
                 new CfgNode(new ConfigChildren(), 
-                    Lookups.fixed(new Object[] {project, confs[i], new AbilitiesPanel.VAData()}),
+                    Lookups.fixed(new Object[] {project, confs[i], AbilitiesPanel.hintInstance}),
                     confs[i].getDisplayName(),PLATFORM_ICON,
                     new Action[] {SetConfigurationAction.getStaticInstance(),
                                  }) :
                 new CfgNode(new ConfigChildren(),
-                    Lookups.fixed(new Object[] {project, confs[i], new AbilitiesPanel.VAData()}),
+                    Lookups.fixed(new Object[] {project, confs[i], AbilitiesPanel.hintInstance}),
                     confs[i].getDisplayName(),PLATFORM_ICON,
                     new Action[] {
                                   SetConfigurationAction.getStaticInstance(),
@@ -304,27 +304,17 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
         //Selection of a particular confiugration in projects view cause change of abilities navigator
         TopComponent.getRegistry().addPropertyChangeListener(new PropertyChangeListener()
         {
-            private Node active=null;
-            
             public void propertyChange(PropertyChangeEvent evt)
             {
-                if (TopComponent.Registry.PROP_ACTIVATED_NODES.equals(evt.getPropertyName()))
+                if (TopComponent.Registry.PROP_ACTIVATED_NODES.equals(evt.getPropertyName()) && evt.getNewValue() instanceof Node[] &&
+                    evt.getSource() instanceof TopComponent.Registry && 
+                    ((TopComponent.Registry)evt.getSource()).getActivated() instanceof ExplorerManager.Provider)
                 {
-                    /* We need to react just on changes which happens in ProjectTab
-                     * This solution is not perfect but close to it as possible
-                     */
-                    if (evt.getNewValue() instanceof Node[] && evt.getSource() instanceof TopComponent.Registry && 
-                            ((TopComponent.Registry)evt.getSource()).getActivated() instanceof ExplorerManager.Provider)
+                    final Node nodes[]=(Node[])evt.getNewValue();
+                    if (nodes.length>0)
                     {
-                        final Node nodes[]=(Node[])evt.getNewValue();
-                        if (nodes.length>0)
-                        {
-                            final Node node=((Node[])evt.getNewValue())[0];
-                            if (node!=active)
-                            {
-                                AbilitiesPanel.ABPanel.setAbilities(node.getLookup());
-                            }
-                        }
+                        final Node node=((Node[])evt.getNewValue())[0];
+                        AbilitiesPanel.ABPanel.setAbilities((Node[])evt.getNewValue());
                     }
                 }
             }

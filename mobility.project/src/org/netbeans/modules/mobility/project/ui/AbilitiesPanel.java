@@ -29,6 +29,9 @@
 package org.netbeans.modules.mobility.project.ui;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTable;
@@ -38,17 +41,19 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableCellEditor;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.spi.project.ProjectConfiguration;
+import org.netbeans.mobility.antext.preprocessor.CommentingPreProcessor;
+import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
+import org.netbeans.modules.mobility.project.J2MEProjectUtils;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
+import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
+import org.netbeans.spi.mobility.project.support.DefaultPropertyParsers;
+import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.mobility.project.ui.customizer.CustomizerAbilities;
-import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
-import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
 import org.netbeans.spi.navigator.NavigatorLookupHint;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.netbeans.spi.mobility.project.ui.customizer.support.VisualPropertySupport;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -61,29 +66,51 @@ import org.openide.util.Lookup;
 
 public class AbilitiesPanel implements NavigatorPanel
 {
-    static class VAData implements NavigatorLookupHint
+    private static ABPanel instance=null;
+    
+    //Version for the hack
+    /*
+    static class ABHint implements NavigatorLookupHint
     {
-        VAData()
+        private String ext="";
+        
+        private synchronized void setExt()
         {
+            ext="ext";
         }
+        
+        synchronized public String getContentType()
+        {
+            String ret= "j2me/abilities"+ext;
+            ext="";
+            return ret;
+        }
+    };
+     **/
+    
+    static class ABHint implements NavigatorLookupHint
+    {
+        static String hint= "j2me/abilities";
         
         public String getContentType()
         {
-            return "j2me/abilities";
+            return hint;
         }
-    }
+    };
+        
+    static ABHint hintInstance=new ABHint();
+    
+    private static String MULTIPLE_VALUES="Multiple different values ...";
     
     static class ABPanel extends JPanel
     {
         private static javax.swing.JScrollPane scrollPane;
         final private static EditableTableModel tableModel =  new EditableTableModel();
-        final private static JTable table=new JTable(tableModel);
-        private static ABPanel instance=null;
-        private static VAData data = null;
-        private static J2MEProjectProperties j2meProperties = null;
-        private static VisualPropertySupport vps = null;
+        final private static JTable table=new JTable(tableModel);    
+        final private static Object[] emptyTable = new Object[] {new HashMap<String,String>()};
         private static J2MEProject project=null;
-        private static ProjectConfiguration conf=null;
+        private static Node[] selectedNodes=null;
+        private static Node defaultConfig=null;
         
         private ABPanel()
         {
@@ -91,8 +118,8 @@ public class AbilitiesPanel implements NavigatorPanel
             scrollPane.setViewportView(table);
             table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);                                    
             
-            final TableCellEditor editor=table.getDefaultEditor(String.class);                        
-            editor.addCellEditorListener(new CellEditorListener() {                    
+            final TableCellEditor editor=table.getDefaultEditor(String.class);         
+            editor.addCellEditorListener(new CellEditorListener() {                                    
                 public void editingStopped(ChangeEvent e)
                 {
                     final int row=table.getSelectedRow();
@@ -105,14 +132,60 @@ public class AbilitiesPanel implements NavigatorPanel
                     if (!value.equals(newValue))         
                     {
                         tableModel.editRow(key,newValue);
-                        j2meProperties.store();
-                        // And save the project
-                        try {
-                            ProjectManager.getDefault().saveProject(project);
-                        }
-                        catch ( IOException ex ) {
-                            ErrorManager.getDefault().notify( ex );
-                        }
+                        ProjectManager.mutex().writeAccess(new Runnable() 
+                        {
+                            public void run() 
+                            {
+                                AntProjectHelper helper=project.getLookup().lookup(AntProjectHelper.class);
+                                EditableProperties ep=helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                                if (defaultConfig != null)
+                                {
+                                    String abilities=J2MEProjectUtils.evaluateProperty(helper,DefaultPropertiesDescriptor.ABILITIES,ProjectConfigurationsHelper.DEFAULT_CONFIGURATION_NAME);
+                                    Map<String,String> ab=CommentingPreProcessor.decodeAbilitiesMap(abilities);
+                                    ab.put(key,newValue);
+                                    abilities=CommentingPreProcessor.encodeAbilitiesMap(ab);
+                                    ep.put(DefaultPropertiesDescriptor.ABILITIES,abilities);
+                                    helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,ep);
+                                    
+                                    try
+                                    {
+                                        ProjectManager.getDefault().saveProject(project);
+                                    } catch (Exception ex)
+                                    {
+                                        ErrorManager.getDefault().notify(ex);
+                                    }
+                                }                        
+
+                                for (Node node : selectedNodes)
+                                {
+                                    if (node != defaultConfig)
+                                    {
+                                        ProjectConfiguration conf=node.getLookup().lookup(ProjectConfiguration.class);
+                                        String abilities=J2MEProjectUtils.evaluateProperty(helper,DefaultPropertiesDescriptor.ABILITIES,conf.getDisplayName());
+                                        Map<String,String> ab=CommentingPreProcessor.decodeAbilitiesMap(abilities);
+                                        String defCf=ab.get(key);
+                                        //if value is the same configuration inherits its values from the default configuration 
+                                        //which was selected (and modified) as well so we don't need to change it
+                                        //if the values are different configuration don't inherit abilities anymore and so we can store it
+                                        if (!defCf.equals(newValue))
+                                        {
+                                            ab.put(key,newValue);
+                                            abilities=CommentingPreProcessor.encodeAbilitiesMap(ab);
+                                            ep.put(J2MEProjectProperties.CONFIG_PREFIX+conf.getDisplayName()+"."+DefaultPropertiesDescriptor.ABILITIES,abilities);
+                                        }
+                                    }
+                                }
+                                //Save the properties
+                                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,ep);
+                                try
+                                {
+                                    ProjectManager.getDefault().saveProject(project);
+                                } catch (Exception ex)
+                                {
+                                    ErrorManager.getDefault().notify(ex);
+                                } 
+                            }
+                        });
                     }
                 }
 
@@ -123,51 +196,78 @@ public class AbilitiesPanel implements NavigatorPanel
             
         }
         
-        public static void setAbilities(final Lookup context)
+        public static void setAbilities(final Node[] nodes)
         {
-            if (context!=null)
+            HashSet<String> abSet = new HashSet<String>();
+            HashMap<String,String> abIntersection = new HashMap<String,String>();
+            J2MEProject prj=null;            
+            boolean setExt = false;
+            defaultConfig=null;
+            
+            for (Node n : nodes)
             {
-                data=context.lookup(VAData.class);
-                if (data!=null)
+                Lookup context=n.getLookup();                
+                if (context!=null)
                 {
-                    tableModel.removeListeners();
-                    Node node=context.lookup(Node.class);
-                    project=node.getLookup().lookup(J2MEProject.class);
-                    conf=node.getLookup().lookup(ProjectConfiguration.class);
-                    assert project != null;
-                    j2meProperties = new J2MEProjectProperties( project,
-                            project.getLookup().lookup(AntProjectHelper.class),
-                            project.getLookup().lookup(ReferenceHelper.class),
-                            project.getConfigurationHelper() );
-                    
-                    //Default configuration is a special case
-                    final ProjectConfigurationsHelper pch=project.getLookup().lookup(ProjectConfigurationsHelper.class);
-                    final ProjectConfiguration cf=conf.getDisplayName().equals(pch.getDefaultConfiguration().getDisplayName()) ? null : conf;
-                    final boolean def=testForNonDefaultValue(j2meProperties,cf);
-                    final boolean useDefault=def ^ true; //Negation
-                    
-                    tableModel.setEditable(def);
-                    table.setBackground(javax.swing.UIManager.getDefaults().getColor(useDefault ? "Panel.background" : "Table.background")); //NOI18N
+                    ABHint data=context.lookup(ABHint.class);
+                    if (data!=null)
+                    {
+                        tableModel.removeListeners();
+                        Node node=context.lookup(Node.class);
+                        project=node.getLookup().lookup(J2MEProject.class);
+                        ProjectConfiguration conf=node.getLookup().lookup(ProjectConfiguration.class);
+                        assert project != null;
+                        if (conf.getDisplayName().equals(ProjectConfigurationsHelper.DEFAULT_CONFIGURATION_NAME))
+                            defaultConfig=n;
 
-                    
-                    final String pn=VisualPropertySupport.translatePropertyName(cf==null?null:cf.getDisplayName(),
-                            DefaultPropertiesDescriptor.ABILITIES, useDefault);
-                    
-                    final Object values[]= new Object[] {j2meProperties.get(pn)};                    
-                    tableModel.setDataDelegates(values);
-                    
-                    vps = VisualPropertySupport.getDefault(j2meProperties);                    
-                    vps.register(tableModel,new String[] {pn},false);
+                        String abilities=J2MEProjectUtils.evaluateProperty(project.getLookup().lookup(AntProjectHelper.class),"abilities",conf.getDisplayName());
+                        Map<String,String> ab=CommentingPreProcessor.decodeAbilitiesMap(abilities);
+                        //change hinttype so only one instace is found
+                        if (setExt)
+                        {
+                            //User has choosen multiple configurations from different projects - we don't support it
+                            if (prj!=project)
+                            {
+                                defaultConfig=null;
+                                tableModel.setDataDelegates(emptyTable);
+                                return;
+                            }
+                                
+                            //data.setExt();
+                            abSet.retainAll(ab.keySet());
+                            
+                            //Aggregate
+                            for (String key : abSet)
+                            {
+                                if (abIntersection.containsKey(key))
+                                {
+                                    String value1=abIntersection.get(key);
+                                    String value2=ab.get(key);
+                                    if ((value1 != null && !value1.equals(value2) || (value1==null && value2!=null)))
+                                    {
+                                        abIntersection.put(key,MULTIPLE_VALUES);
+                                    }
+                                }
+                                else
+                                    abIntersection.put(key,ab.get(key));
+                            }
+                        }
+                        else
+                        {
+                            //first pass
+                            prj=project;
+                            setExt=true;
+                            abSet.addAll(ab.keySet());
+                            abIntersection.putAll(ab);
+                        }
+                    }
                 }
             }
-        }
-        
-        private static boolean testForNonDefaultValue(final J2MEProjectProperties properties, final ProjectConfiguration conf)
-        {
-            if (conf == null || 
-                    properties.get(VisualPropertySupport.prefixPropertyName(conf.getDisplayName(), DefaultPropertiesDescriptor.ABILITIES)) != null)
-                return true;
-            return false;
+            abIntersection.keySet().retainAll(abSet);
+            tableModel.setEditable(true);
+            table.setBackground(javax.swing.UIManager.getDefaults().getColor("Table.background")); //NOI18N               
+            tableModel.setDataDelegates(new Object[] {abIntersection});
+            selectedNodes=nodes;
         }
         
         private void initComponents()
@@ -203,7 +303,11 @@ public class AbilitiesPanel implements NavigatorPanel
     
     public String getDisplayName()
     {
-        return "Abilities";
+        String cf="";
+        if (ABPanel.selectedNodes != null)            
+            cf =ABPanel.selectedNodes.length==1 ? " : " + ABPanel.selectedNodes[0].getLookup().lookup(ProjectConfiguration.class).getDisplayName() : 
+                                                  " : Multiple configurations";
+        return "Abilities" + cf ;
     }
     
     public String getDisplayHint()
