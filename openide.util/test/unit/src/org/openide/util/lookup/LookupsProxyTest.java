@@ -217,6 +217,28 @@ implements AbstractLookupBaseHid.Impl {
         assertEquals("3x100+1 checks", 301, listener.round);
     }
     
+    
+    public void testRefreshWithoutAllInstances103300 () {
+        Changer ch = new Changer (Lookup.EMPTY);
+        
+        Lookup lookup = Lookups.proxy(ch);
+
+        ch.setLookup (new AbstractLookup (new InstanceContent ())); // another empty lookup
+        assertNull("Nothing there", lookup.lookup (Object.class)); // does the refresh
+        
+        InstanceContent content = new InstanceContent ();
+        AbstractLookup del = new AbstractLookup (content);
+        content.add (this);
+        ch.setLookup (del);
+        assertEquals("Can see me", this, lookup.lookup (Object.class));
+        
+        ch.setLookup (del);
+        assertEquals("Still can see me", this, lookup.lookup (Object.class));
+
+        assertEquals("I am visible", this, lookup.lookup(LookupsProxyTest.class));
+    }
+
+
     private static final class Changer implements Lookup.Provider {
         private Lookup lookup;
         
@@ -232,4 +254,5 @@ implements AbstractLookupBaseHid.Impl {
             return lookup;
         }
     }
+
 }
