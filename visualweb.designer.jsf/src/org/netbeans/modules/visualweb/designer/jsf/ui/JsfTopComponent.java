@@ -198,6 +198,8 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         setDisplayName(NbBundle.getMessage(JsfTopComponent.class, "LBL_JsfDisplayName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(JsfTopComponent.class, "ACSD_DesignerTopComp"));
 
+        initActivatedNodes();
+
         if (jsfForm.isValid()) {
             initDesigner();
         } else {
@@ -215,6 +217,12 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         return designer;
     }
 
+    
+    private void initActivatedNodes() {
+        // There needs to be non-null array to indicate this component can be activated.
+        setActivatedNodes(new Node[0]);
+    }
+    
     private void initDesigner() {
         initDesignerComponent();
         initDesignerListeners();
@@ -2498,11 +2506,19 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         if (isActivated()) {
             designerActivated();
         }
-        jsfLookupProvider.refreshLookup();
+        refreshLookup();
         
         revalidate();
         repaint();
     }
+    
+    private void refreshLookup() {
+        jsfLookupProvider.clearLookup();
+        
+        // XXX #103300 Ugly API which even doesn't work as described (the commented out line).
+//        getLookup().lookup(Object.class);
+        getLookup().lookupResult(Object.class).allInstances();
+    }    
     
     
     private static class JsfLookupProvider implements Lookup.Provider {
@@ -2542,7 +2558,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
             return Lookups.fixed(objects.toArray());
         }
         
-        public synchronized void refreshLookup() {
+        public synchronized void clearLookup() {
             lookup = null;
         }
     } // End of JsfLookupProvider.

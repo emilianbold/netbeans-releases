@@ -2678,7 +2678,7 @@ public class JsfForm {
         return getFacesModel() != null;
     }
 
-    private void loadFacesModel(DataObject dataObject) {
+    private void loadFacesModel(final DataObject dataObject) {
         FacesModel facesModel;
         try {
             facesModel = getFacesModel(dataObject);
@@ -2693,10 +2693,10 @@ public class JsfForm {
         }
         
         setFacesModel(facesModel);
-        init(dataObject);
         
         EventQueue.invokeLater(new Runnable() {
             public void run() {
+                init(dataObject);
                 notifyViewsModelLoaded();
             }
         });
