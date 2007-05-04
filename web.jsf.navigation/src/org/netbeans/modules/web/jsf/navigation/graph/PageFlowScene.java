@@ -138,9 +138,9 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge, PinNod
         
         
         fpnl = new FreePlaceNodesLayouter(this, tc.getVisibleRect());
-        //        actions.addAction(dragNdropAction);
-        //        actions.addAction(selectAction);
         
+        //        actions.addAction(dragNdropAction);
+        //        actions.addAction(selectAction);        
         
         //        GridGraphLayout<PageFlowNode, NavigationCaseNode> gridGraphLayout = new GridGraphLayout<PageFlowNode, NavigationCaseNode> ();
         //        gridGraphLayout.addGraphLayoutListener(new GridGraphListener());
@@ -260,7 +260,6 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge, PinNod
         if ( node.getPinNodes().size() == 0 ){
             nodeWidget.setMinimized(true);
         }
-        fpnl.addNode(node);
         
         //        if ( !initialSetup ) {
         //            pageFlowSceneGraphLayout.invokeLayout();
@@ -316,7 +315,7 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge, PinNod
     }
     
     
-    private Queue emptyPositions = new LinkedList();
+//    private Queue emptyPositions = new LinkedList();
     
     @Override
     protected void detachNodeWidget(Page node,
