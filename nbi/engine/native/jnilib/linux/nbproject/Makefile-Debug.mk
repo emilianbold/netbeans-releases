@@ -27,11 +27,11 @@ OBJECTFILES= \
 	build/Debug/GNU-Linux-x86/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/linux/../.unix/src/jni_UnixNativeUtils.o
 
 # C Compiler Flags
-CFLAGS=-shared -m32 -static-libgcc -mimpure-text
+CFLAGS=-shared -m32 -static-libgcc
 
 # CC Compiler Flags
-CCFLAGS=-shared -m32 -static-libgcc -mimpure-text
-CXXFLAGS=-shared -m32 -static-libgcc -mimpure-text
+CCFLAGS=-shared -m32 -static-libgcc
+CXXFLAGS=-shared -m32 -static-libgcc
 
 # Fortran Compiler Flags
 FFLAGS=
@@ -44,7 +44,7 @@ LDLIBSOPTIONS=
 
 dist/linux.so: ${OBJECTFILES}
 	@${MKDIR} -p dist
-	${LINK.c} -shared -static-libgcc -mimpure-text -o dist/linux.so -s ${OBJECTFILES} ${LDLIBSOPTIONS} 
+	${LINK.c} -shared -static-libgcc -o dist/linux.so -s ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
 build/Debug/GNU-Linux-x86/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/linux/../.common/src/CommonUtils.o: ../.common/src/CommonUtils.c 
 	@${MKDIR} -p build/Debug/GNU-Linux-x86/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/linux/../.common/src
