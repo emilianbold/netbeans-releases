@@ -64,13 +64,6 @@ public class ColorSelectionField extends javax.swing.JPanel {
         colorComboBox.setModel(colorList);
         colorComboBox.setSelectedIndex(0);
     }
-
-    private PropertyChangeSupport propertyChangeSupport() {
-        if(propertyChangeSupport == null) {
-            propertyChangeSupport =  new PropertyChangeSupport(this);
-        }
-        return propertyChangeSupport;
-    }
     
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -137,27 +130,11 @@ public class ColorSelectionField extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_colorButtonActionPerformed
     
-    /**
-     * Adds a PropertyChangeListener to the listener list.
-     * @param l The listener to add.
-     */
-    public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
-        propertyChangeSupport().addPropertyChangeListener(l);
-    }
-    
-    /**
-     * Removes a PropertyChangeListener from the listener list.
-     * @param l The listener to remove.
-     */
-    public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
-        propertyChangeSupport().removePropertyChangeListener(l);
-    }
-    
     private void setColor(){
         currentColor = (String)colorComboBox.getSelectedItem();
         colorModel.setColor(currentColor);
         repaint();
-        propertyChangeSupport().firePropertyChange("color", oldColor, currentColor); //NOI18N
+        firePropertyChange("color", oldColor, currentColor); //NOI18N
         oldColor = currentColor;
         
     }

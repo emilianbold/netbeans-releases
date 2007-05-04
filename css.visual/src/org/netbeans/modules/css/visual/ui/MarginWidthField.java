@@ -61,31 +61,6 @@ public class MarginWidthField extends javax.swing.JPanel {
         });
     }
 
-    private PropertyChangeSupport propertyChangeSupport;
-
-    private PropertyChangeSupport propertyChangeSupport() {
-        if(propertyChangeSupport == null) {
-            propertyChangeSupport =  new PropertyChangeSupport(this);
-        }
-        return propertyChangeSupport;
-    }
-    
-    /**
-     * Adds a PropertyChangeListener to the listener list.
-     * @param l The listener to add.
-     */
-    public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
-        propertyChangeSupport().addPropertyChangeListener(l);
-    }
-
-    /**
-     * Removes a PropertyChangeListener from the listener list.
-     * @param l The listener to remove.
-     */
-    public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
-        propertyChangeSupport().removePropertyChangeListener(l);
-    }
-
     public void setMarginString(String marginStr){
         if((marginStr != null) && !marginStr.equals("")){
             if(Utils.isInteger(marginStr)){
@@ -225,7 +200,7 @@ public class MarginWidthField extends javax.swing.JPanel {
         String oldValue = borderMarginData.toString();
         borderMarginData.setUnit(borderMarginUnitCombo.getSelectedItem().toString());
         borderMarginData.setValue( borderMarginCombo.getSelectedItem().toString());
-        propertyChangeSupport().firePropertyChange("margin-width", oldValue, borderMarginData.toString()); //NOI18N
+        firePropertyChange("margin-width", oldValue, borderMarginData.toString()); //NOI18N
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

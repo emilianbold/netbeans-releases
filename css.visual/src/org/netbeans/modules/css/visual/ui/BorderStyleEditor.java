@@ -262,7 +262,7 @@ public class BorderStyleEditor extends StyleEditor {
                     NbBundle.getMessage(BorderDataTable.class, "ALL_SIDE_BORDER_WIDTH_UNIT_ACCESS_NAME"));
             allWidthField.setAccessibleDescription(NbBundle.getMessage(BorderDataTable.class, "ALL_SIDE_BORDER_WIDTH_ACCESS_DESC"),
                     NbBundle.getMessage(BorderDataTable.class, "ALL_SIDE_BORDER_WIDTH_UNIT_ACCESS_DESC"));
-            allWidthField.addPropertyChangeListener(new PropertyChangeListenerImpl() {
+            allWidthField.addPropertyChangeListener("border-width", new PropertyChangeListenerImpl() { //NOI18N
                 public void propertyChange(PropertyChangeEvent evt) {
                     //cssPropertyChangeSupport().firePropertyChange(CssStyleData.BORDER_WIDTH, null, evt.getNewValue().toString());
                     topWidthField.setWidthString(evt.getNewValue().toString());
@@ -275,7 +275,7 @@ public class BorderStyleEditor extends StyleEditor {
             
             // All Side Width
             allColorField = new ColorSelectionField();
-            allColorField.addPropertyChangeListener(new PropertyChangeListenerImpl() {
+            allColorField.addPropertyChangeListener("color", new PropertyChangeListenerImpl() { //NOI18N
                 public void propertyChange(PropertyChangeEvent evt) {
                     //cssPropertyChangeSupport().firePropertyChange(CssStyleData.BORDER_COLOR, null, allColorField.getColorString());
                     topColorField.setColorString(allColorField.getColorString());
@@ -304,7 +304,7 @@ public class BorderStyleEditor extends StyleEditor {
                     NbBundle.getMessage(BorderDataTable.class, "TOP_SIDE_BORDER_WIDTH_UNIT_ACCESS_NAME"));
             topWidthField.setAccessibleDescription(NbBundle.getMessage(BorderDataTable.class, "TOP_SIDE_BORDER_WIDTH_ACCESS_DESC"),
                     NbBundle.getMessage(BorderDataTable.class, "TOP_SIDE_BORDER_WIDTH_UNIT_ACCESS_DESC"));
-            topWidthField.addPropertyChangeListener(new PropertyChangeListenerImpl() {
+            topWidthField.addPropertyChangeListener("border-width", new PropertyChangeListenerImpl() { //NOI18N
                 public void propertyChange(PropertyChangeEvent evt) {
                     cssPropertyChangeSupport().firePropertyChange(CssProperties.BORDER_TOP_WIDTH, null, evt.getNewValue().toString());
                 }
@@ -313,7 +313,7 @@ public class BorderStyleEditor extends StyleEditor {
             
             // Top Side Color
             topColorField = new ColorSelectionField();
-            topColorField.addPropertyChangeListener(new PropertyChangeListenerImpl() {
+            topColorField.addPropertyChangeListener("color", new PropertyChangeListenerImpl() { //NOI18N
                 public void propertyChange(PropertyChangeEvent evt) {
                     cssPropertyChangeSupport().firePropertyChange(CssProperties.BORDER_TOP_COLOR, null, topColorField.getColorString());
                 }
@@ -339,7 +339,7 @@ public class BorderStyleEditor extends StyleEditor {
                     NbBundle.getMessage(BorderDataTable.class, "BOTTOM_SIDE_BORDER_WIDTH_UNIT_ACCESS_NAME"));
             bottomWidthField.setAccessibleDescription(NbBundle.getMessage(BorderDataTable.class, "BOTTOM_SIDE_BORDER_WIDTH_ACCESS_DESC"),
                     NbBundle.getMessage(BorderDataTable.class, "BOTTOM_SIDE_BORDER_WIDTH_UNIT_ACCESS_DESC"));
-            bottomWidthField.addPropertyChangeListener(new PropertyChangeListenerImpl() {
+            bottomWidthField.addPropertyChangeListener("border-width", new PropertyChangeListenerImpl() { //NOI18N
                 public void propertyChange(PropertyChangeEvent evt) {
                     cssPropertyChangeSupport().firePropertyChange(CssProperties.BORDER_BOTTOM_WIDTH, null, evt.getNewValue().toString());
                 }
@@ -348,7 +348,7 @@ public class BorderStyleEditor extends StyleEditor {
             
             // Bottom Side Width
             bottomColorField = new ColorSelectionField();
-            bottomColorField.addPropertyChangeListener(new PropertyChangeListenerImpl() {
+            bottomColorField.addPropertyChangeListener("color", new PropertyChangeListenerImpl() { //NOI18N
                 public void propertyChange(PropertyChangeEvent evt) {
                     cssPropertyChangeSupport().firePropertyChange(CssProperties.BORDER_BOTTOM_COLOR, null, bottomColorField.getColorString());
                 }
@@ -378,7 +378,7 @@ public class BorderStyleEditor extends StyleEditor {
                     NbBundle.getMessage(BorderDataTable.class, "LEFT_SIDE_BORDER_WIDTH_UNIT_ACCESS_DESC"));
             // Set the Left Side data
             
-            leftWidthField.addPropertyChangeListener(new PropertyChangeListenerImpl() {
+            leftWidthField.addPropertyChangeListener("border-width", new PropertyChangeListenerImpl() { //NOI18N
                 public void propertyChange(PropertyChangeEvent evt) {
                     cssPropertyChangeSupport().firePropertyChange(CssProperties.BORDER_LEFT_WIDTH, null, evt.getNewValue().toString());
                 }
@@ -387,7 +387,7 @@ public class BorderStyleEditor extends StyleEditor {
             
             // Left Side Width
             leftColorField = new ColorSelectionField();
-            leftColorField.addPropertyChangeListener(new PropertyChangeListenerImpl() {
+            leftColorField.addPropertyChangeListener("color", new PropertyChangeListenerImpl() { //NOI18N
                 public void propertyChange(PropertyChangeEvent evt) {
                     cssPropertyChangeSupport().firePropertyChange(CssProperties.BORDER_LEFT_COLOR, null, leftColorField.getColorString());
                 }
@@ -414,7 +414,7 @@ public class BorderStyleEditor extends StyleEditor {
                     NbBundle.getMessage(BorderDataTable.class, "RIGHT_SIDE_BORDER_WIDTH_UNIT_ACCESS_NAME"));
             rightWidthField.setAccessibleDescription(NbBundle.getMessage(BorderDataTable.class, "RIGHT_SIDE_BORDER_WIDTH_ACCESS_DESC"),
                     NbBundle.getMessage(BorderDataTable.class, "RIGHT_SIDE_BORDER_WIDTH_UNIT_ACCESS_DESC"));
-            rightWidthField.addPropertyChangeListener(new PropertyChangeListenerImpl() {
+            rightWidthField.addPropertyChangeListener("border-width", new PropertyChangeListenerImpl() { //NOI18N
                 public void propertyChange(PropertyChangeEvent evt) {
                     cssPropertyChangeSupport().firePropertyChange(CssProperties.BORDER_RIGHT_WIDTH, null, evt.getNewValue().toString());
                 }
@@ -423,7 +423,7 @@ public class BorderStyleEditor extends StyleEditor {
             
             // Right Side Width
             rightColorField = new ColorSelectionField();
-            rightColorField.addPropertyChangeListener(new PropertyChangeListenerImpl() {
+            rightColorField.addPropertyChangeListener("color", new PropertyChangeListenerImpl() { //NOI18N
                 public void propertyChange(PropertyChangeEvent evt) {
                     cssPropertyChangeSupport().firePropertyChange(CssProperties.BORDER_RIGHT_COLOR, null, rightColorField.getColorString());
                 }
