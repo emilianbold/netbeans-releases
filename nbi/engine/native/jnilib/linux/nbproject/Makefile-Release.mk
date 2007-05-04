@@ -44,7 +44,7 @@ LDLIBSOPTIONS=
 
 dist/Release/GNU-Linux-x86/liblinux.so: ${OBJECTFILES}
 	@${MKDIR} -p dist/Release/GNU-Linux-x86
-	${LINK.c} -shared -o dist/Release/GNU-Linux-x86/liblinux.so ${OBJECTFILES} ${LDLIBSOPTIONS} 
+	${LINK.c} -shared -static-libgcc -mimpure-text -o dist/Release/GNU-Linux-x86/liblinux.so ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
 build/Release/GNU-Linux-x86/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/linux/../.common/src/CommonUtils.o: ../.common/src/CommonUtils.c 
 	@${MKDIR} -p build/Release/GNU-Linux-x86/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/linux/../.common/src

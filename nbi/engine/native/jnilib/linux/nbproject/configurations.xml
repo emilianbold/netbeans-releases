@@ -41,7 +41,7 @@
             <directoryPath>/usr/java/include</directoryPath>
             <directoryPath>/usr/java/include/linux</directoryPath>
           </includeDirectories>
-          <commandLine>-shared -m32</commandLine>
+          <commandLine>-shared -m32 -static-libgcc -mimpure-text</commandLine>
         </cCompilerTool>
         <ccCompilerTool>
           <developmentMode>0</developmentMode>
@@ -50,7 +50,7 @@
             <directoryPath>/usr/java/include</directoryPath>
             <directoryPath>/usr/java/include/linux</directoryPath>
           </includeDirectories>
-          <commandLine>-shared -m32</commandLine>
+          <commandLine>-shared -m32 -static-libgcc -mimpure-text</commandLine>
         </ccCompilerTool>
         <fortranCompilerTool>
         </fortranCompilerTool>

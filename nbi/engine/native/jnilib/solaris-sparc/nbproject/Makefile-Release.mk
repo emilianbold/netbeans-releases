@@ -44,7 +44,7 @@ LDLIBSOPTIONS=
 
 dist/Release/GNU-Solaris-Sparc/libsolaris-sparc.so: ${OBJECTFILES}
 	@${MKDIR} -p dist/Release/GNU-Solaris-Sparc
-	${LINK.c} -shared -o dist/Release/GNU-Solaris-Sparc/libsolaris-sparc.so ${OBJECTFILES} ${LDLIBSOPTIONS} 
+	${LINK.c} -shared -static-libgcc -mimpure-text -o dist/Release/GNU-Solaris-Sparc/libsolaris-sparc.so ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
 build/Release/GNU-Solaris-Sparc/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/solaris-sparc/../.common/src/CommonUtils.o: ../.common/src/CommonUtils.c 
 	@${MKDIR} -p build/Release/GNU-Solaris-Sparc/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/solaris-sparc/../.common/src

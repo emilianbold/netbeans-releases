@@ -41,7 +41,7 @@
             <directoryPath>/usr/java/include</directoryPath>
             <directoryPath>/usr/java/include/solaris</directoryPath>
           </includeDirectories>
-          <commandLine>-m32 -fPIC -shared</commandLine>
+          <commandLine>-m32 -fPIC -shared -static-libgcc -mimpure-text</commandLine>
         </cCompilerTool>
         <ccCompilerTool>
           <developmentMode>0</developmentMode>
@@ -50,7 +50,7 @@
             <directoryPath>/usr/java/include</directoryPath>
             <directoryPath>/usr/java/include/solaris</directoryPath>
           </includeDirectories>
-          <commandLine>-m32 -fPIC -shared</commandLine>
+          <commandLine>-m32 -fPIC -shared -static-libgcc -mimpure-text</commandLine>
         </ccCompilerTool>
         <fortranCompilerTool>
         </fortranCompilerTool>
