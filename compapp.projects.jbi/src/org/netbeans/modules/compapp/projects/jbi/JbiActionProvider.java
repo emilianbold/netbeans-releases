@@ -55,15 +55,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.awt.Dialog;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiBuildListener;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectHelper;
@@ -301,9 +292,13 @@ public class JbiActionProvider implements ActionProvider {
             Map<Class, Project> subProjectTypeMap = new HashMap<Class, Project>();
             for (VisualClassPathItem item : itemList) {
                 String evalPath = item.getEvaluated();
-                File file = new File(evalPath + File.separator + ".." + File.separator + ".."); // TMP
-                FileObject fo = FileUtil.toFileObject(file);
-                Project subProject = ProjectManager.getDefault().findProject(fo);
+                // Get the component project root directory from its build artifact
+                evalPath = evalPath.replaceAll("\\\\", "/");
+                evalPath = evalPath.substring(0, evalPath.lastIndexOf("/"));
+                evalPath = evalPath.substring(0, evalPath.lastIndexOf("/"));
+                File subProjectDir = new File(evalPath); 
+                FileObject subProjectDirFO = FileUtil.toFileObject(subProjectDir);
+                Project subProject = ProjectManager.getDefault().findProject(subProjectDirFO);
                 
                 subProjects.add(subProject);                
                 subProjectTypeMap.put(subProject.getClass(), subProject);
