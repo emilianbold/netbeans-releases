@@ -36,6 +36,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.RequestProcessor;
+
 import java.io.IOException;
 import java.util.*;
 
@@ -51,14 +52,12 @@ public final class MidpProjectSupport {
     
     /**
      * Add library to the project based on the supplied names
-     * @param document
-     * @param libraryNames
+     * @param document the document
+     * @param libraryNames the library names to be added
      */
-    public static void addLibraryToProject(final DesignDocument document, final String[] libraryNames) {
+    public static void addLibraryToProject(final DesignDocument document, final String... libraryNames) {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                if (libraryNames == null || libraryNames.length <= 0)
-                    return;
                 final Project project = getProjectForDocument(document);
                 if (project == null)
                     return;
@@ -77,7 +76,32 @@ public final class MidpProjectSupport {
             }
         });
     }
-    
+
+    /**
+     * Add library to the project based on the supplied archive files
+     * @param document the document
+     * @param archiveFiles the archive files to be added
+     */
+    public static void addArchiveFileToProject(final DesignDocument document, final FileObject... archiveFiles) {
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                final Project project = getProjectForDocument(document);
+                if (project == null)
+                    return;
+                ProjectClassPathExtender extender = project.getLookup().lookup(ProjectClassPathExtender.class);
+                for (FileObject file : archiveFiles) {
+                    if (file == null  ||  ! file.isValid ())
+                        continue;
+                    try {
+                        extender.addArchiveFile (file);
+                    } catch (IOException e) {
+                        Debug.warning(e);
+                    }
+                }
+            }
+        });
+    }
+
     /**
      * Gets project for document.
      * @param document the document
