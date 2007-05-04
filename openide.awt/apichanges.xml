@@ -23,6 +23,20 @@ Microsystems, Inc. All Rights Reserved.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
+    <change id="DropDownButton-added">
+        <api name="awt"/>
+        <summary>Added factory class for drop-down buttons</summary>
+        <version major="6" minor="11"/>
+        <date day="4" month="5" year="2007"/>
+        <author login="saubrecht"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+        Added a factory class that can create special buttons with a small arrow icon that brings up a popup menu when clicked.
+        </description>
+        <class package="org.openide.awt" name="DropDownButtonFactory"/>
+        <issue number="102614"/>
+    </change>
+
     <change id="CloseableTabbedPane-added">
         <api name="awt"/>
         <summary>Added TabbedPane with closeable tabs</summary>
