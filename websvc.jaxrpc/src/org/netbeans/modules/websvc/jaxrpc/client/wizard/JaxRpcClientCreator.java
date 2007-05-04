@@ -102,15 +102,8 @@ public class JaxRpcClientCreator implements ClientCreator {
         task = new Task(new Runnable() {
             public void run() {
                 try {
-//                    String jaxVersion = (String) wiz.getProperty(ClientWizardProperties.JAX_VERSION);
-//                    if (jaxVersion.equals(WizardProperties.JAX_WS)) {
-                        handle.start();
-                        //generate15Client((isJsr109Supported || isJWSDPSupported), handle);
+                        handle.start(100);
                         generate14Client(handle);
-//                    } else {
-//                        handle.start(100);
-//                        generate14Client(handle);
-//                    }
                 } catch (IOException exc) {
                     //finish progress bar
                     handle.finish();
