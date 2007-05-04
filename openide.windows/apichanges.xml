@@ -32,7 +32,7 @@ Microsystems, Inc. All Rights Reserved.
     <author login="saubrecht"/>
     <compatibility addition="yes" binary="incompatible" source="incompatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
     <description>
-        Added method <a href="@TOP@org/openide/windows/WindowManager.html#isOpenedEditorTopComponent(TopComponent)">WindowManager.isOpenedEditorTopComponent(TopComponent)</a>
+        Added method <a href="@TOP@org/openide/windows/WindowManager.html#isOpenedEditorTopComponent(org.openide.windows.TopComponent)">WindowManager.isOpenedEditorTopComponent(TopComponent)</a>
         for checking of the TopComponent type - editor or view. The method returns true if the given TopComponent is opened and is docked into an editor-type Mode.
         It is safe to call this method outside the event dispatch thread.
      </description>
