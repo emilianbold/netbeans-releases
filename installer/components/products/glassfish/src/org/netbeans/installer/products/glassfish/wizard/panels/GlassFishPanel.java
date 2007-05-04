@@ -690,7 +690,7 @@ public class GlassFishPanel extends DestinationPanel {
             add(containerPanel, new GridBagConstraints(
                     0, 5,                             // x, y
                     2, 1,                             // width, height
-                    1.0, 1.0,                         // weight-x, weight-y
+                    1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.LINE_START,    // anchor
                     GridBagConstraints.HORIZONTAL,    // fill
                     new Insets(0, 0, 0, 0),           // padding

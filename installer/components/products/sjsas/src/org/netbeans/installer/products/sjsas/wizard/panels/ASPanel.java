@@ -677,7 +677,7 @@ public class ASPanel extends DestinationPanel {
             // this /////////////////////////////////////////////////////////////////
             add(jdkLocationLabel, new GridBagConstraints(
                     0, 2,                             // x, y
-                    5, 1,                             // width, height
+                    2, 1,                             // width, height
                     1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.LINE_START,    // anchor
                     GridBagConstraints.HORIZONTAL,    // fill
@@ -710,7 +710,7 @@ public class ASPanel extends DestinationPanel {
             add(containerPanel, new GridBagConstraints(
                     0, 5,                             // x, y
                     2, 1,                             // width, height
-                    1.0, 1.0,                         // weight-x, weight-y
+                    1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.LINE_START,    // anchor
                     GridBagConstraints.BOTH,          // fill
                     new Insets(0, 0, 0, 0),           // padding
