@@ -27,11 +27,11 @@ OBJECTFILES= \
 	build/Debug/GNU-Solaris-Sparc/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/solaris-x86/../.unix/src/jni_UnixNativeUtils.o
 
 # C Compiler Flags
-CFLAGS=-m32 -fPIC -shared -static-libgcc -mimpure-text
+CFLAGS=-m32 -fPIC -shared -static-libgcc
 
 # CC Compiler Flags
-CCFLAGS=-m32 -fPIC -shared -static-libgcc -mimpure-text
-CXXFLAGS=-m32 -fPIC -shared -static-libgcc -mimpure-text
+CCFLAGS=-m32 -fPIC -shared -static-libgcc
+CXXFLAGS=-m32 -fPIC -shared -static-libgcc
 
 # Fortran Compiler Flags
 FFLAGS=
@@ -44,7 +44,7 @@ LDLIBSOPTIONS=
 
 dist/solaris-x86.so: ${OBJECTFILES}
 	@${MKDIR} -p dist
-	${LINK.c} -shared -static-libgcc -mimpure-text -o dist/solaris-x86.so -s ${OBJECTFILES} ${LDLIBSOPTIONS} 
+	${LINK.c} -shared -static-libgcc -o dist/solaris-x86.so -s ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
 build/Debug/GNU-Solaris-Sparc/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/solaris-x86/../.common/src/CommonUtils.o: ../.common/src/CommonUtils.c 
 	@${MKDIR} -p build/Debug/GNU-Solaris-Sparc/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/solaris-x86/../.common/src
