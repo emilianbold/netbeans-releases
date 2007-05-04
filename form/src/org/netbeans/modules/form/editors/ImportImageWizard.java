@@ -60,6 +60,8 @@ class ImportImageWizard extends WizardDescriptor {
     private FileObject targetFolder;
     private FileObject fileInProject;
 
+    static String lastDirectoryUsed; // for file chooser
+
     /**
      * @param files pre-selected files to be copied, can be null
      * @param targetFolder pre-selected target folder, can be null
@@ -167,7 +169,7 @@ class ImportImageWizard extends WizardDescriptor {
 
         public Component getComponent() {
             if (fileChooser == null) {
-                fileChooser = new JFileChooser();
+                fileChooser = new JFileChooser(lastDirectoryUsed);
                 fileChooser.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
                 fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
                 fileChooser.setAcceptAllFileFilterUsed(true);
@@ -212,8 +214,13 @@ class ImportImageWizard extends WizardDescriptor {
         }
 
         public void storeSettings(Object settings) {
-            if (fileChooser != null)
-                ((ImportImageWizard)settings).selectedFiles = fileChooser.getSelectedFiles();
+            if (fileChooser != null) {
+                File[] files = fileChooser.getSelectedFiles();
+                ((ImportImageWizard)settings).selectedFiles = files;
+                if (files != null && files.length > 0) {
+                    lastDirectoryUsed = files[0].getParent();
+                }
+            }
         }
 
         public boolean isValid() {

@@ -565,8 +565,15 @@ public class CustomIconEditor extends javax.swing.JPanel {
         }
     }
 
+    private String getFileChooserDir() {
+        if (lastDirectoryUsed == null && selectedPackage != null) {
+            lastDirectoryUsed = selectedPackage.getPath();
+        }
+        return lastDirectoryUsed;
+    }
+
     private void selectExternalFile() {
-        JFileChooser fileChooser = new JFileChooser(lastDirectoryUsed);
+        JFileChooser fileChooser = new JFileChooser(getFileChooserDir());
         fileChooser.setDialogTitle(NbBundle.getMessage(CustomIconEditor.class, "CTL_OpenDialogName")); // NOI18N
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fileChooser.setAcceptAllFileFilterUsed(true);
@@ -591,6 +598,7 @@ public class CustomIconEditor extends javax.swing.JPanel {
                 }
                 externalRadio.setSelected(true);
             }
+            lastDirectoryUsed = file.getParent();
             setExternalFile(file);
             updateValue();
         }
@@ -769,7 +777,9 @@ public class CustomIconEditor extends javax.swing.JPanel {
         File[] files = selectedExternalFile != null ?
             files = new File[] { selectedExternalFile } : null;
         FileObject srcFile = propertyEditor.getSourceFile();
+        ImportImageWizard.lastDirectoryUsed = getFileChooserDir();
         FileObject[] imported = new ImportImageWizard(files, selectedPackage, srcFile).show();
+        lastDirectoryUsed = ImportImageWizard.lastDirectoryUsed;
         FileObject fo = imported != null && imported.length > 0 ?  imported[0] : null;
         if (fo != null) {
             ClassPath cp = ClassPath.getClassPath(srcFile, ClassPath.SOURCE);
