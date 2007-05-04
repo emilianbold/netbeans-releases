@@ -30,7 +30,6 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.cookies.SaveCookie;
 import org.openide.text.PositionRef;
 
 /**
@@ -82,12 +81,6 @@ public final class ModificationResult {
         // found document.
         if (ec != null && out == null) {
             Document doc = ec.getDocument();
-            boolean save = true;
-            if (doc != null) {
-                save = false;
-            } else {
-                doc = ec.openDocument();
-            }
             if (doc != null) {
                 if (doc instanceof BaseDocument)
                     ((BaseDocument)doc).atomicLock();
@@ -118,10 +111,6 @@ public final class ModificationResult {
                     if (doc instanceof BaseDocument)
                         ((BaseDocument)doc).atomicUnlock();
                 }
-                if (save) {
-                	SaveCookie saveCookie = dObj.getLookup().lookup(SaveCookie.class);
-                	saveCookie.save();
-                }
                 return;
             }
         }
@@ -137,9 +126,10 @@ public final class ModificationResult {
             ins.close();
             ins = null;
             byte[] arr = baos.toByteArray();
+            int arrLength = convertToLF(arr);
             baos.close();
             baos = null;
-            in = new InputStreamReader(new ByteArrayInputStream(arr), encoding);
+            in = new InputStreamReader(new ByteArrayInputStream(arr, 0, arrLength), encoding);
             // initialize standard commit output stream, if user
             // does not provide his own writer
             if (out == null) {
@@ -190,6 +180,16 @@ public final class ModificationResult {
             if (out != null)
                 out.close();
         }            
+    }
+    
+    private int convertToLF(byte[] buff) {
+        int j = 0;
+        for (int i = 0; i < buff.length; i++) {
+            if (buff[i] != '\r') {
+                buff[j++] = buff[i];
+            }
+        }
+        return j;
     }
     
     /**
