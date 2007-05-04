@@ -108,6 +108,7 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge, PinNod
     
     //    private SceneLayout sceneGraphLayout;
     private PageFlowView tc;
+    private FreePlaceNodesLayouter fpnl;
     
     /**
      * Creates a VMD graph scene.
@@ -134,7 +135,9 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge, PinNod
         actions.addAction(popupGraphAction);
         actions.addAction(createActionMap());
         addObjectSceneListener(new MyObjectSceneListener(), ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
-        addSceneListener(new PageFlowSceneListener(this));
+        
+        
+        fpnl = new FreePlaceNodesLayouter(this, tc.getVisibleRect());
         //        actions.addAction(dragNdropAction);
         //        actions.addAction(selectAction);
         
@@ -225,8 +228,6 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge, PinNod
     //    }
     
     
-    Collection<Page> nodesAdded = new HashSet();
-    
     /**
      * Implements attaching a widget to a node. The widget is VMDNodeWidget and has object-hover, select, popup-menu and move actions.
      * @param node the node
@@ -259,6 +260,7 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge, PinNod
         if ( node.getPinNodes().size() == 0 ){
             nodeWidget.setMinimized(true);
         }
+        fpnl.addNode(node);
         
         //        if ( !initialSetup ) {
         //            pageFlowSceneGraphLayout.invokeLayout();
@@ -275,7 +277,6 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge, PinNod
         //            //            nodeWidget.setPreferredLocation(point);
         //        }
         
-        nodesAdded.add(node);
         return nodeWidget;
     }
     
@@ -638,26 +639,7 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge, PinNod
         }
     }
     
-    FreePlaceNodesLayouter fpnl = new FreePlaceNodesLayouter();
-    private class PageFlowSceneListener implements SceneListener {
-        PageFlowScene scene;
-        public PageFlowSceneListener(PageFlowScene scene) {
-            this.scene = scene;
-        }
-        
-        public void sceneRepaint() {
-        }
-        
-        public void sceneValidating() {
-        }
-        
-        public void sceneValidated() {
-            if( nodesAdded.size() > 0 ) {
-                fpnl.layoutNodesLocations(scene, nodesAdded);
-                nodesAdded.clear();
-            }
-        }
-    };
+    
     
     
     //    private void renamePin( Node pageNode, PinNode oldPinName, PinNode newPinName ){

@@ -50,6 +50,9 @@ public class SceneSerializer {
             setAttribute(document, nodeElement, NODE_ID_ATTR, page.getDisplayName());
             Widget widget = scene.findWidget(page);
             Point location = widget.getPreferredLocation();
+            if( location == null ) {
+                location = widget.getLocation();
+            }
             setAttribute(document, nodeElement, NODE_X_ATTR, Integer.toString(location.x));
             setAttribute(document, nodeElement, NODE_Y_ATTR, Integer.toString(location.y));
             sceneElement.appendChild(nodeElement);
