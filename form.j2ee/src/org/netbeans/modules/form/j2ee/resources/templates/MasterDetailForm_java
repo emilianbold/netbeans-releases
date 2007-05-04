@@ -1,11 +1,11 @@
 package test;
 
-import java.awt.EventQueue;/* DETAIL_ONLY */
-import java.util.ArrayList;
+import java.awt.EventQueue;
+import java.util.ArrayList;/* DETAIL_ONLY */
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;/* DETAIL_ONLY */
+import java.util.LinkedList;/* DETAIL_ONLY */
+import java.util.List;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.event.ListSelectionEvent;
@@ -46,32 +46,27 @@ public class __NAME__ extends JPanel {
     /* DETAIL_ONLY */
     private void deleteDetailButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteDetailButtonActionPerformed
         int index = masterTable.getSelectedRow();
-        _masterClass_ _masterEntityInitial_ = list.get(index);
+        _masterClass_ _masterEntityInitial_ = list.get(/* JDK6ONLY */masterTable.convertRowIndexToModel(/* JDK6ONLY */index/* JDK6ONLY */)/* JDK6ONLY */);
         Collection<_detailClass_> _detailEntityInitial_s = _masterEntityInitial_.get_joinCollectionCapital_();
         int[] selected = detailTable.getSelectedRows();
         List<_detailClass_> toRemove = new ArrayList<_detailClass_>(selected.length);
-        int count = -1;
-        Iterator<_detailClass_> iter = _detailEntityInitial_s.iterator();
-        for (int idx=0; idx<selected.length; idx++) {
+        for (int idx=0; idx<selected.length; idx++) {/* JDK6ONLY */
+            selected[idx] = detailTable.convertRowIndexToModel(selected[idx]);/* JDK6ONLY */
+            int count = 0;
+            Iterator<_detailClass_> iter = _detailEntityInitial_s.iterator();
+            while (count++ < selected[idx]) iter.next();
             _detailClass_ _detailEntityInitial_ = iter.next();
-            count++;
-            while (count < selected[idx]) {
-                _detailEntityInitial_ = iter.next();
-                count++;
-            }
             toRemove.add(_detailEntityInitial_);
-        }
-        for (_detailClass_ _detailEntityInitial_ : toRemove) {
-            _detailEntityInitial_s.remove(_detailEntityInitial_);
             entityManager.remove(_detailEntityInitial_);
         }
+        _detailEntityInitial_s.removeAll(toRemove);
         masterTable.clearSelection();
         masterTable.setRowSelectionInterval(index, index);
     }//GEN-LAST:event_deleteDetailButtonActionPerformed
 
     private void newDetailButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newDetailButtonActionPerformed
         int index = masterTable.getSelectedRow();
-        _masterClass_ _masterEntityInitial_ = list.get(index);
+        _masterClass_ _masterEntityInitial_ = list.get(/* JDK6ONLY */masterTable.convertRowIndexToModel(/* JDK6ONLY */index/* JDK6ONLY */)/* JDK6ONLY */);
         Collection<_detailClass_> _detailEntityInitial_s = _masterEntityInitial_.get_joinCollectionCapital_();
         if (_detailEntityInitial_s == null) {
             _detailEntityInitial_s = new LinkedList<_detailClass_>();
@@ -97,10 +92,13 @@ public class __NAME__ extends JPanel {
 
     private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
         int[] selected = masterTable.getSelectedRows();
-        for (int idx=selected.length-1; idx>=0; idx--) {
-            _masterClass_ _masterEntityInitial_ = list.remove(selected[idx]);
+        List<_masterClass_> toRemove = new ArrayList<_masterClass_>(selected.length);
+        for (int idx=0; idx<selected.length; idx++) {
+            _masterClass_ _masterEntityInitial_ = list.get(/* JDK6ONLY */masterTable.convertRowIndexToModel(/* JDK6ONLY */selected[idx]/* JDK6ONLY */)/* JDK6ONLY */);
+            toRemove.add(_masterEntityInitial_);
             entityManager.remove(_masterEntityInitial_);
         }
+        list.removeAll(toRemove);
     }//GEN-LAST:event_deleteButtonActionPerformed
 
     private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newButtonActionPerformed

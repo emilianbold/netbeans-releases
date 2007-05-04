@@ -21,6 +21,7 @@ package org.netbeans.modules.form.j2ee.wizard;
 
 import java.io.*;
 import java.util.*;
+import org.netbeans.modules.form.project.ClassPathUtils;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 
@@ -48,6 +49,8 @@ public class MasterDetailGenerator {
     private static final String DETAIL_ONLY = "DETAIL_ONLY"; // NOI18N
     /** Name of the sections that are valid only when the detail table is not specified. */
     private static final String MASTER_ONLY = "MASTER_ONLY"; // NOI18N
+    /** Name of the sections that are valid only when the template is created on JDK1.6. */
+    private static final String JDK6ONLY = "JDK6ONLY"; // NOI18N
     /** Form file. */
     private FileObject formFile;
     /** Java file. */
@@ -141,6 +144,7 @@ public class MasterDetailGenerator {
             form = deleteSections(form, MASTER_ONLY, false, false);
             form = deleteSections(form, DETAIL_ONLY, true, false);
         }
+        java = deleteSections(java, JDK6ONLY, ClassPathUtils.isJava6ProjectPlatform(javaFile), true);
 
         write(formFile, form);
         write(javaFile, java);
