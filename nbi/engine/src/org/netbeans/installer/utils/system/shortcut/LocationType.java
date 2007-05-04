@@ -16,17 +16,15 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
- * $Id$
  */
-package org.netbeans.installer.utils.helper;
+
+package org.netbeans.installer.utils.system.shortcut;
 
 /**
- * Class is depricated since NetBeans M9.<br>
- * Use <code>org.netbeans.installer.utils.system.shortcut.LocationType</code> instead
+ *
+ * @author Dmitry Lipin
  */
- 
-@Deprecated
-public enum ShortcutLocationType {
+public enum LocationType {
     CURRENT_USER_DESKTOP,
     ALL_USERS_DESKTOP,
     CURRENT_USER_START_MENU,

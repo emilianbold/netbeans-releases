@@ -42,13 +42,15 @@ import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.ExecutionResults;
 import org.netbeans.installer.utils.helper.FilesList;
 import org.netbeans.installer.utils.helper.Platform;
-import org.netbeans.installer.utils.helper.Shortcut;
+import org.netbeans.installer.utils.system.shortcut.FileShortcut;
+import org.netbeans.installer.utils.system.shortcut.Shortcut;
 import org.netbeans.installer.utils.helper.ShortcutLocationType;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.utils.system.NativeUtils;
 import org.netbeans.installer.utils.system.launchers.Launcher;
 import org.netbeans.installer.utils.system.launchers.LauncherFactory;
 import org.netbeans.installer.utils.system.launchers.LauncherProperties;
+import org.netbeans.installer.utils.system.shortcut.LocationType;
 
 /**
  *
@@ -439,16 +441,50 @@ public final class SystemUtils {
     public static boolean isDeletingAllowed(File file) {
         return getNativeUtils().isDeletingAllowed(file);
     }
+    @Deprecated 
+    private static LocationType toLocationType(ShortcutLocationType type) {
+        LocationType tp = null;
+        switch(type) {
+            case CURRENT_USER_DESKTOP : 
+                tp = LocationType.CURRENT_USER_DESKTOP; 
+                break;
+            case CURRENT_USER_START_MENU : 
+                tp = LocationType.CURRENT_USER_START_MENU; 
+                break;
+            case ALL_USERS_DESKTOP : 
+                tp = LocationType.ALL_USERS_DESKTOP;
+                break;
+            case ALL_USERS_START_MENU : 
+                tp = LocationType.ALL_USERS_START_MENU;            
+                break;
+        }
+        return tp;
+    }
+    @Deprecated
+    public static File getShortcutLocation(org.netbeans.installer.utils.helper.Shortcut shortcut, ShortcutLocationType locationType) throws NativeException {        
+        return getNativeUtils().getShortcutLocation((FileShortcut)shortcut, toLocationType(locationType));
+    }
     
-    public static File getShortcutLocation(Shortcut shortcut, ShortcutLocationType locationType) throws NativeException {
+    @Deprecated
+    public static File createShortcut(org.netbeans.installer.utils.helper.Shortcut shortcut, ShortcutLocationType locationType) throws NativeException {
+        return getNativeUtils().createShortcut((FileShortcut)shortcut, toLocationType(locationType));
+    }
+    @Deprecated
+    public static void removeShortcut(org.netbeans.installer.utils.helper.Shortcut shortcut, ShortcutLocationType locationType, boolean deleteEmptyParents) throws NativeException {
+        getNativeUtils().removeShortcut((FileShortcut)shortcut, toLocationType(locationType), deleteEmptyParents);
+    }
+    
+    
+    public static File getShortcutLocation(Shortcut shortcut, LocationType locationType) throws NativeException {
         return getNativeUtils().getShortcutLocation(shortcut, locationType);
     }
     
-    public static File createShortcut(Shortcut shortcut, ShortcutLocationType locationType) throws NativeException {
+    
+    public static File createShortcut(Shortcut shortcut, LocationType locationType) throws NativeException {
         return getNativeUtils().createShortcut(shortcut, locationType);
     }
     
-    public static void removeShortcut(Shortcut shortcut, ShortcutLocationType locationType, boolean deleteEmptyParents) throws NativeException {
+    public static void removeShortcut(Shortcut shortcut, LocationType locationType, boolean deleteEmptyParents) throws NativeException {
         getNativeUtils().removeShortcut(shortcut, locationType, deleteEmptyParents);
     }
     

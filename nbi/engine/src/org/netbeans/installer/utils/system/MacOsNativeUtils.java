@@ -34,12 +34,14 @@ import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.ExecutionResults;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
-import org.netbeans.installer.utils.helper.Shortcut;
-import org.netbeans.installer.utils.helper.ShortcutLocationType;
+import org.netbeans.installer.utils.system.shortcut.FileShortcut;
+import org.netbeans.installer.utils.system.shortcut.InternetShortcut;
+import org.netbeans.installer.utils.system.shortcut.Shortcut;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.XMLUtils;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.exceptions.XMLException;
+import org.netbeans.installer.utils.system.shortcut.LocationType;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -54,8 +56,8 @@ import org.xml.sax.SAXException;
 public class MacOsNativeUtils extends UnixNativeUtils {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final String    LIBRARY_PATH_MACOSX     = 
-            NATIVE_JNILIB_RESOURCE_SUFFIX + 
+    public static final String    LIBRARY_PATH_MACOSX     =
+            NATIVE_JNILIB_RESOURCE_SUFFIX +
             "macosx/" + //NOI18N
             "macosx.dylib"; // NO18N
     
@@ -89,8 +91,8 @@ public class MacOsNativeUtils extends UnixNativeUtils {
     public File getDefaultApplicationsLocation() {
         File applications = new File("/Applications");
         
-        if (applications.exists() && 
-                applications.isDirectory() && 
+        if (applications.exists() &&
+                applications.isDirectory() &&
                 FileUtils.canWrite(applications)) {
             return applications;
         } else {
@@ -98,15 +100,25 @@ public class MacOsNativeUtils extends UnixNativeUtils {
         }
     }
     
-    public File getShortcutLocation(Shortcut shortcut, ShortcutLocationType locationType) {
+    private String getShortcutFilename(Shortcut shortcut) {
         String fileName = shortcut.getFileName();
         
         if (fileName == null) {
-            fileName = shortcut.getExecutable().getName();
-            if (fileName!=null && fileName.endsWith(APP_SUFFIX)) {
-                fileName = fileName.substring(0,fileName.lastIndexOf(APP_SUFFIX));
+            if(shortcut instanceof FileShortcut) {
+                fileName = ((FileShortcut) shortcut).getTarget().getName();
+                
+                if (fileName!=null && fileName.endsWith(APP_SUFFIX)) {
+                    fileName = fileName.substring(0,fileName.lastIndexOf(APP_SUFFIX));
+                }
+            } else if (shortcut instanceof InternetShortcut ) {
+                fileName = ((InternetShortcut )shortcut).getURL().getFile();
             }
         }
+        return fileName;
+    }
+    
+    public File getShortcutLocation(Shortcut shortcut, LocationType locationType) throws NativeException {
+        String fileName = getShortcutFilename(shortcut);
         
         switch (locationType) {
             case CURRENT_USER_DESKTOP:
@@ -121,29 +133,43 @@ public class MacOsNativeUtils extends UnixNativeUtils {
         return null;
     }
     
-    public File createShortcut(Shortcut shortcut, ShortcutLocationType locationType) throws NativeException {
+    protected void createURLShortcut(InternetShortcut shortcut) throws NativeException {
+        try {
+            List<String> lines = new LinkedList<String> ();
+            lines.add("[InternetShortcut]");
+            lines.add("URL=" + shortcut.getURL());
+            lines.add("IconFile=" + shortcut.getIconPath());
+            lines.add(SystemUtils.getLineSeparator());
+            FileUtils.writeStringList(new File(shortcut.getPath()),lines);
+        } catch (IOException ex) {
+            throw new NativeException("Can`t create URL shortcut", ex);
+        }
+    }
+    
+    public File createShortcut(Shortcut shortcut, LocationType locationType) throws NativeException {
         final File shortcutFile = getShortcutLocation(shortcut, locationType);
         
         try {
             
-            if (locationType == ShortcutLocationType.CURRENT_USER_DESKTOP ||
-                    locationType == ShortcutLocationType.ALL_USERS_DESKTOP ) {
-                // create a symlink on desktop
+            if (locationType == LocationType.CURRENT_USER_DESKTOP ||
+                    locationType == LocationType.ALL_USERS_DESKTOP ) {
+                // create a symlink on desktop for files/directories and .url for internet shortcuts
                 if(!shortcutFile.exists()) {
-                    SystemUtils.executeCommand(null,new String[] {
-                        "ln", "-s", shortcut.getExecutablePath(),  //NOI18N
-                        shortcutFile.getPath()});
+                    if(shortcut instanceof FileShortcut) {
+                        createSymLink(shortcutFile, ((FileShortcut) shortcut).getTarget());
+                    } else if(shortcut instanceof InternetShortcut) {
+                        createURLShortcut((InternetShortcut)shortcut);
+                    }
+                    
                 }
-            } else {
-                //create link in the Dock
-                if(convertDockProperties(true)==0) {
-                    if (modifyDockLink(shortcut, shortcutFile, true)) {
+            } else if(shortcut instanceof FileShortcut &&
+                    convertDockProperties(true)==0) { //create link in the Dock
+                    if (modifyDockLink((FileShortcut)shortcut, shortcutFile, true)) {
                         LogManager.log(ErrorLevel.DEBUG,
                                 "    Updating Dock");
                         convertDockProperties(false);
                         SystemUtils.executeCommand(null,UPDATE_DOCK_COMMAND);
                     }
-                }
             }
             return shortcutFile;
         } catch (IOException e) {
@@ -151,25 +177,23 @@ public class MacOsNativeUtils extends UnixNativeUtils {
         }
     }
     
-    public void removeShortcut(Shortcut shortcut, ShortcutLocationType locationType, boolean cleanupParents) throws NativeException {
+    public void removeShortcut(Shortcut shortcut, LocationType locationType, boolean cleanupParents) throws NativeException {
         final File shortcutFile = getShortcutLocation(shortcut, locationType);
         
         try {
-            if (locationType == ShortcutLocationType.CURRENT_USER_DESKTOP ||
-                    locationType == ShortcutLocationType.ALL_USERS_DESKTOP ) {
+            if (locationType == LocationType.CURRENT_USER_DESKTOP ||
+                    locationType == LocationType.ALL_USERS_DESKTOP ) {
                 // create a symlink on desktop
                 if(shortcutFile.exists()) {
                     FileUtils.deleteFile(shortcutFile,false);
                 }
-            } else {
-                //create link in the Dock
-                if(convertDockProperties(true)==0) {
-                    if(modifyDockLink(shortcut,shortcutFile,false)) {
-                        LogManager.log(ErrorLevel.DEBUG,
-                                "    Updating Dock");
-                        if(convertDockProperties(false)==0) {
-                            SystemUtils.executeCommand(null,UPDATE_DOCK_COMMAND);
-                        }
+            } else if(shortcut instanceof FileShortcut &&
+                    convertDockProperties(true)==0) {//create link in the Dock
+                if(modifyDockLink((FileShortcut) shortcut,shortcutFile,false)) {
+                    LogManager.log(ErrorLevel.DEBUG,
+                            "    Updating Dock");
+                    if(convertDockProperties(false)==0) {
+                        SystemUtils.executeCommand(null,UPDATE_DOCK_COMMAND);
                     }
                 }
             }
@@ -217,23 +241,23 @@ public class MacOsNativeUtils extends UnixNativeUtils {
         return executable;
     }
     
-    private void modifyShortcutExecutable(Shortcut shortcut) {
-        if (shortcut.canModifyExecutablePath()) {
-            File executable = upToApp(new File(shortcut.getExecutablePath()));
+    private void modifyShortcutPath(FileShortcut shortcut) {
+        if (shortcut.canModifyPath()) {
+            File target = upToApp(shortcut.getTarget());
             
-            if (executable != null) {
-                shortcut.setExecutable(executable);
+            if (target != null) {
+                shortcut.setTarget(target);
             }
         }
     }
     
-    private boolean modifyDockLink(Shortcut shortcut, File dockFile, boolean adding) {
+    private boolean modifyDockLink(FileShortcut shortcut, File dockFile, boolean adding) {
         OutputStream outputStream = null;
         boolean modified  = false;
         
         try {
             
-            modifyShortcutExecutable(shortcut);
+            modifyShortcutPath(shortcut);
             
             DocumentBuilderFactory documentBuilderFactory =
                     DocumentBuilderFactory.newInstance();
@@ -325,85 +349,86 @@ public class MacOsNativeUtils extends UnixNativeUtils {
             if(adding) {
                 LogManager.log(ErrorLevel.DEBUG,
                         "Adding shortcut with the following properties: ");
-                LogManager.log(ErrorLevel.DEBUG, "    executable = " + shortcut.getExecutablePath());
-                LogManager.log(ErrorLevel.DEBUG, "    name = " + shortcut.getName());
-                
-                
-                dict = XMLUtils.appendChild(array,"dict",null);
-                XMLUtils.appendChild(dict,"key","tile-data");
-                Element dictChild = XMLUtils.appendChild(dict,"dict",null);
-                XMLUtils.appendChild(dictChild,"key","file-data");
-                Element dictCC = XMLUtils.appendChild(dictChild,"dict",null);
-                XMLUtils.appendChild(dictCC,"key","_CFURLString");
-                XMLUtils.appendChild(dictCC,"string",shortcut.getExecutablePath());
-                XMLUtils.appendChild(dictCC,"key","_CFURLStringType");
-                XMLUtils.appendChild(dictCC,"integer","0");
-                XMLUtils.appendChild(dictChild,"key","file-label");
-                XMLUtils.appendChild(dictChild,"string",shortcut.getName());
-                XMLUtils.appendChild(dictChild,"key","file-type");
-                XMLUtils.appendChild(dictChild,"integer","41");
-                XMLUtils.appendChild(dict,"key","tile-type");
-                XMLUtils.appendChild(dict, "string","file-tile");
-                LogManager.log(ErrorLevel.DEBUG,
-                        "... adding shortcut to Dock XML finished");
-                modified = true;
-            } else {
-                LogManager.log(ErrorLevel.DEBUG,
-                        "Removing shortcut with the following properties: ");
-                LogManager.indent();
-                LogManager.log(ErrorLevel.DEBUG,
-                        "executable = " + shortcut.getExecutablePath());
-                LogManager.log(ErrorLevel.DEBUG,
-                        "name = " + shortcut.getName());
-                
-                String location = shortcut.getExecutablePath();
-                List<Element> dcts = new LinkedList <Element> ();
-                
-                for(Element el1: XMLUtils.getChildren(array, "dict")) {
-                    for(Element el2: XMLUtils.getChildren(el1, "dict")) {
-                        for(Element el3: XMLUtils.getChildren(el2, "dict")) {
-                            dcts.addAll(XMLUtils.getChildren(el3, "string"));
-                        }
-                    }
-                }
-                
-                
-                index = 0;
-                Node dct = null;
-                LogManager.log(ErrorLevel.DEBUG,
-                        "Total dict/dict/dict/string items = " + dcts.size());
-                LogManager.log(ErrorLevel.DEBUG,
-                        "        location = " + location);
-                
-                File locationFile = new File(location);
-                
-                while(index < dcts.size() && dcts.get(index)!=null) {
-                    Node item = dcts.get(index);
-                    String content = item.getTextContent();
-                    LogManager.log(ErrorLevel.DEBUG, "        content = " + content);
-                    if(content!=null && !content.equals("")) {
-                        File contentFile = new File(content);
-                        if(locationFile.equals(contentFile)) {
-                            dct = item;
-                            break;
-                        }
-                    }
-                    index++;
-                };
-                
-                if(dct!=null) {
+                if(shortcut instanceof FileShortcut) {
+                    LogManager.log(ErrorLevel.DEBUG, "    target = " + shortcut.getTargetPath());
+                    LogManager.log(ErrorLevel.DEBUG, "    name = " + shortcut.getName());
+                    
+                    
+                    dict = XMLUtils.appendChild(array,"dict",null);
+                    XMLUtils.appendChild(dict,"key","tile-data");
+                    Element dictChild = XMLUtils.appendChild(dict,"dict",null);
+                    XMLUtils.appendChild(dictChild,"key","file-data");
+                    Element dictCC = XMLUtils.appendChild(dictChild,"dict",null);
+                    XMLUtils.appendChild(dictCC,"key","_CFURLString");
+                    XMLUtils.appendChild(dictCC,"string",shortcut.getTargetPath());
+                    XMLUtils.appendChild(dictCC,"key","_CFURLStringType");
+                    XMLUtils.appendChild(dictCC,"integer","0");
+                    XMLUtils.appendChild(dictChild,"key","file-label");
+                    XMLUtils.appendChild(dictChild,"string",shortcut.getName());
+                    XMLUtils.appendChild(dictChild,"key","file-type");
+                    XMLUtils.appendChild(dictChild,"integer","41");
+                    XMLUtils.appendChild(dict,"key","tile-type");
+                    XMLUtils.appendChild(dict, "string","file-tile");
                     LogManager.log(ErrorLevel.DEBUG,
-                            "Shortcut exists in the dock.plist");
-                    array.removeChild(dct.getParentNode().getParentNode().getParentNode());
+                            "... adding shortcut to Dock XML finished");
                     modified = true;
                 } else {
                     LogManager.log(ErrorLevel.DEBUG,
-                            "... shortcut doesn`t exist in the dock.plist");
-                    modified = false;
+                            "Removing shortcut with the following properties: ");
+                    LogManager.indent();
+                    LogManager.log(ErrorLevel.DEBUG, "    target = " + shortcut.getTargetPath());
+                    LogManager.log(ErrorLevel.DEBUG,
+                            "name = " + shortcut.getName());
+                    
+                    String location = shortcut.getTargetPath();
+                    List<Element> dcts = new LinkedList <Element> ();
+                    
+                    for(Element el1: XMLUtils.getChildren(array, "dict")) {
+                        for(Element el2: XMLUtils.getChildren(el1, "dict")) {
+                            for(Element el3: XMLUtils.getChildren(el2, "dict")) {
+                                dcts.addAll(XMLUtils.getChildren(el3, "string"));
+                            }
+                        }
+                    }
+                    
+                    
+                    index = 0;
+                    Node dct = null;
+                    LogManager.log(ErrorLevel.DEBUG,
+                            "Total dict/dict/dict/string items = " + dcts.size());
+                    LogManager.log(ErrorLevel.DEBUG,
+                            "        location = " + location);
+                    
+                    File locationFile = new File(location);
+                    
+                    while(index < dcts.size() && dcts.get(index)!=null) {
+                        Node item = dcts.get(index);
+                        String content = item.getTextContent();
+                        LogManager.log(ErrorLevel.DEBUG, "        content = " + content);
+                        if(content!=null && !content.equals("")) {
+                            File contentFile = new File(content);
+                            if(locationFile.equals(contentFile)) {
+                                dct = item;
+                                break;
+                            }
+                        }
+                        index++;
+                    };
+                    
+                    if(dct!=null) {
+                        LogManager.log(ErrorLevel.DEBUG,
+                                "Shortcut exists in the dock.plist");
+                        array.removeChild(dct.getParentNode().getParentNode().getParentNode());
+                        modified = true;
+                    } else {
+                        LogManager.log(ErrorLevel.DEBUG,
+                                "... shortcut doesn`t exist in the dock.plist");
+                        modified = false;
+                    }
+                    LogManager.unindent();
+                    LogManager.log(ErrorLevel.DEBUG,
+                            "... removing shortcut from Dock XML finished");
                 }
-                LogManager.unindent();
-                LogManager.log(ErrorLevel.DEBUG,
-                        "... removing shortcut from Dock XML finished");
             }
             if(modified) {
                 LogManager.log(ErrorLevel.DEBUG,
@@ -412,7 +437,6 @@ public class MacOsNativeUtils extends UnixNativeUtils {
                 LogManager.log(ErrorLevel.DEBUG,
                         "    Done (saving xml)");
             }
-            
         } catch (ParserConfigurationException e) {
             LogManager.log(ErrorLevel.WARNING,e);
             return false;

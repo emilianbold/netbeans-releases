@@ -138,6 +138,32 @@ char* getStringFromMethod(JNIEnv* jEnv, jobject object, const char* methodName) 
     return result;
 }
 
+jboolean isInstanceOf(JNIEnv* jEnv, jobject object, const char* className) {    
+    jboolean result = 0;
+    jclass clazz = clazz = (*jEnv)->FindClass(jEnv, className);
+    
+    if (clazz != NULL) {
+        result = (*jEnv)->IsInstanceOf(jEnv, object, clazz);
+        (*jEnv)->DeleteLocalRef(jEnv, clazz);
+    } 
+    return result;
+}
+
+jint getIntFromMethod(JNIEnv* jEnv, jobject object, const char* methodName) {
+    jlong value = 0;
+    
+    jclass clazz = (*jEnv)->GetObjectClass(jEnv, object);
+    if (clazz != NULL) {
+        jmethodID method = (*jEnv)->GetMethodID(jEnv, clazz, methodName, "()I");
+        if (method != NULL) {
+            value = (*jEnv)->CallIntMethod(jEnv, object, method);                       
+        }
+        (*jEnv)->DeleteLocalRef(jEnv, clazz);
+    }
+    
+    return value;
+}
+
 void throwException(JNIEnv* jEnv, const char* message) {
     jclass clazz = (*jEnv)->FindClass(jEnv, "org/netbeans/installer/utils/exceptions/NativeException");
     if (clazz != NULL) {

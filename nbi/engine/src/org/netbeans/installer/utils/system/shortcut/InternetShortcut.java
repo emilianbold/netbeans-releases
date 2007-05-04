@@ -16,19 +16,31 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
- * $Id$
  */
-package org.netbeans.installer.utils.helper;
+
+package org.netbeans.installer.utils.system.shortcut;
+
+import java.net.URL;
 
 /**
- * Class is depricated since NetBeans M9.<br>
- * Use <code>org.netbeans.installer.utils.system.shortcut.LocationType</code> instead
+ *
+ * @author Dmitry Lipin
  */
- 
-@Deprecated
-public enum ShortcutLocationType {
-    CURRENT_USER_DESKTOP,
-    ALL_USERS_DESKTOP,
-    CURRENT_USER_START_MENU,
-    ALL_USERS_START_MENU            
+public class InternetShortcut extends Shortcut {
+    private URL  url;
+    
+    public InternetShortcut(final String name, final URL url) {
+        super(name);
+        setURL(url);
+    }
+    public URL getURL() {
+        return url;
+    }
+    
+    public void setURL(URL url) {
+        this.url = url;
+    }
+    public String getTargetPath() {
+        return url.toString();
+    }
 }

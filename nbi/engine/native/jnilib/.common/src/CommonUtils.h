@@ -47,6 +47,10 @@ char* getChars(JNIEnv* jEnv, jstring jString);
 
 char* getStringFromMethod(JNIEnv* jEnv, jobject object, const char* methodName);
 
+jint getIntFromMethod(JNIEnv* jEnv, jobject object, const char* methodName);
+
+jboolean isInstanceOf(JNIEnv* jEnv, jobject object, const char* className);
+
 void throwException(JNIEnv* jEnv, const char* message);
 
 void writeLog(JNIEnv* jEnv, int level, const char* message);

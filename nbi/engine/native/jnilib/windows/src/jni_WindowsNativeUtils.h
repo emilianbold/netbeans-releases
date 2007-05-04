@@ -34,10 +34,11 @@ JNIEXPORT jlong JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUt
 /*
  * Class:     org_netbeans_installer_utils_system_WindowsNativeUtils
  * Method:    createShortcut0
- * Signature: (Lorg/netbeans/installer/utils/SystemUtils/Shortcut;)V
+ * Signature: (Lorg/netbeans/installer/utils/system/shortcut/FileShortcut;)V
  */
 JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUtils_createShortcut0
   (JNIEnv *, jobject, jobject);
+
 
 /*
  * Class:     org_netbeans_installer_utils_system_WindowsNativeUtils

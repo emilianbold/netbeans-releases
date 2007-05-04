@@ -36,8 +36,9 @@ import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StreamUtils;
 import org.netbeans.installer.utils.helper.FilesList;
-import org.netbeans.installer.utils.helper.Shortcut;
-import org.netbeans.installer.utils.helper.ShortcutLocationType;
+import org.netbeans.installer.utils.system.shortcut.FileShortcut;
+import org.netbeans.installer.utils.system.shortcut.InternetShortcut;
+import org.netbeans.installer.utils.system.shortcut.Shortcut;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.helper.ApplicationDescriptor;
@@ -45,6 +46,7 @@ import org.netbeans.installer.utils.system.cleaner.ProcessOnExitCleanerHandler;
 import org.netbeans.installer.utils.system.launchers.Launcher;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.utils.system.cleaner.OnExitCleanerHandler;
+import org.netbeans.installer.utils.system.shortcut.LocationType;
 import org.netbeans.installer.utils.system.unix.shell.BourneShell;
 import org.netbeans.installer.utils.system.unix.shell.CShell;
 import org.netbeans.installer.utils.system.unix.shell.KornShell;
@@ -127,7 +129,7 @@ public abstract class UnixNativeUtils extends NativeUtils {
         }
     }
     
-    public File getShortcutLocation(Shortcut shortcut, ShortcutLocationType locationType) throws NativeException {
+    public File getShortcutLocation(Shortcut shortcut, LocationType locationType) throws NativeException {
         final String XDG_DATA_HOME = SystemUtils.getEnvironmentVariable("XDG_DATA_HOME");
         final String XDG_DATA_DIRS = SystemUtils.getEnvironmentVariable("XDG_DATA_DIRS");
         
@@ -147,52 +149,90 @@ public abstract class UnixNativeUtils extends NativeUtils {
         
         String fileName = shortcut.getFileName();
         if (fileName == null) {
-            fileName = shortcut.getExecutable().getName() + ".desktop";
+            if(shortcut instanceof FileShortcut) {
+                File target = ((FileShortcut)shortcut).getTarget();
+                fileName = target.getName();
+                if(!target.isDirectory()) {
+                    fileName += ".desktop";
+                }
+            } else if(shortcut instanceof InternetShortcut) {
+                fileName = ((InternetShortcut)shortcut).getURL().getFile() + ".desktop";
+            }
         }
         
         switch (locationType) {
-        case CURRENT_USER_DESKTOP:
-            return new File(SystemUtils.getUserHomeDirectory(), "Desktop/" + fileName);
-        case ALL_USERS_DESKTOP:
-            return new File(SystemUtils.getUserHomeDirectory(), "Desktop/" + fileName);
-        case CURRENT_USER_START_MENU:
-            return new File(currentUserLocation, "applications/" + fileName);
-        case ALL_USERS_START_MENU:
-            return new File(allUsersLocation, "applications/" + fileName);
-        default:
-            return null;
+            case CURRENT_USER_DESKTOP:
+                return new File(SystemUtils.getUserHomeDirectory(), "Desktop/" + fileName);
+            case ALL_USERS_DESKTOP:
+                return new File(SystemUtils.getUserHomeDirectory(), "Desktop/" + fileName);
+            case CURRENT_USER_START_MENU:
+                return new File(currentUserLocation, "applications/" + fileName);
+            case ALL_USERS_START_MENU:
+                return new File(allUsersLocation, "applications/" + fileName);
+            default:
+                return null;
         }
     }
     
-    public File createShortcut(Shortcut shortcut, ShortcutLocationType locationType) throws NativeException {
-        final File          file     = getShortcutLocation(shortcut, locationType);
-        final StringBuilder contents = new StringBuilder();
-        final String        nl       = SystemUtils.getLineSeparator();
+    private List <String> getDesktopEntry(FileShortcut shortcut) {
+        final List <String> list = new ArrayList<String> ();
         
-        contents.append("[Desktop Entry]").append(nl);
-        contents.append("Encoding=UTF-8").append(nl);
-        
-        contents.append("Name=" + shortcut.getName()).append(nl);
-        contents.append("Exec=" + shortcut.getExecutable()).append(nl);
-        
+        list.add("[Desktop Entry]");
+        list.add("Encoding=UTF-8");
+        list.add("Name=" + shortcut.getName());
+        list.add("Exec=" + shortcut.getTarget());
         if(shortcut.getIcon()!=null) {
-            contents.append("Icon=" + shortcut.getIconPath()).append(nl);
+            list.add("Icon=" + shortcut.getIconPath());
         }
-        
         if(shortcut.getCategories().length != 0) {
-            contents.append("Categories=" +
-                    StringUtils.asString(shortcut.getCategories(),";")).
-                    append(nl);
+            list.add("Categories=" +
+                    StringUtils.asString(shortcut.getCategories(),";"));
         }
         
-        contents.append("Version=1.0").append(nl);
-        contents.append("StartupNotify=true").append(nl);
-        contents.append("Type=Application").append(nl);
-        contents.append("Terminal=0").append(nl);
-        
-        
+        list.add("Version=1.0");
+        list.add("StartupNotify=true");
+        list.add("Type=Application");
+        list.add("Terminal=0");
+        list.add(SystemUtils.getLineSeparator());
+        return list;
+    }
+    
+    protected List <String> getDesktopEntry(InternetShortcut shortcut) {
+        final List <String> list = new ArrayList<String> ();
+        list.add("[Desktop Entry]");
+        list.add("Encoding=UTF-8");
+        list.add("Name=" + shortcut.getName());
+        list.add("URL=" + shortcut.getURL());
+        if(shortcut.getIcon()!=null) {
+            list.add("Icon=" + shortcut.getIconPath());
+        }
+        if(shortcut.getCategories().length != 0) {
+            list.add("Categories=" +
+                    StringUtils.asString(shortcut.getCategories(),";"));
+        }
+        list.add("Version=1.0");
+        list.add("StartupNotify=true");
+        list.add("Type=Link");
+        list.add(SystemUtils.getLineSeparator());
+        return list;
+    }
+    
+    
+    public File createShortcut(Shortcut shortcut, LocationType locationType) throws NativeException {
+        final File          file     = getShortcutLocation(shortcut, locationType);
         try {
-            FileUtils.writeFile(file, contents);
+            if(shortcut instanceof FileShortcut) {
+                File target = ((FileShortcut)shortcut).getTarget();
+                if(target.isDirectory()) {
+                    createSymLink(file, target);
+                } else {
+                    FileUtils.writeStringList(file,
+                            getDesktopEntry((FileShortcut)shortcut));
+                }
+            } else if(shortcut instanceof InternetShortcut) {
+                FileUtils.writeStringList(file,
+                        getDesktopEntry((InternetShortcut)shortcut));
+            }
         } catch (IOException e) {
             throw new NativeException("Cannot create shortcut", e);
         }
@@ -200,15 +240,15 @@ public abstract class UnixNativeUtils extends NativeUtils {
         return file;
     }
     
-    public void removeShortcut(Shortcut shortcut, ShortcutLocationType locationType, boolean cleanupParents) throws NativeException {
+    public void removeShortcut(Shortcut shortcut, LocationType locationType, boolean cleanupParents) throws NativeException {
         try {
             File shortcutFile = getShortcutLocation(shortcut, locationType);
             
             FileUtils.deleteFile(shortcutFile);
             
             if(cleanupParents &&
-                    (locationType == ShortcutLocationType.ALL_USERS_START_MENU ||
-                    locationType == ShortcutLocationType.CURRENT_USER_START_MENU)) {
+                    (locationType == LocationType.ALL_USERS_START_MENU ||
+                    locationType == LocationType.CURRENT_USER_START_MENU)) {
                 FileUtils.deleteEmptyParents(shortcutFile);
             }
         } catch (IOException e) {
@@ -464,8 +504,8 @@ public abstract class UnixNativeUtils extends NativeUtils {
             final String stdout = SystemUtils.executeCommand("df", "-h").getStdOut();
             final String[] lines = stdout.split(StringUtils.NEW_LINE_PATTERN);
             
-            // a quick and dirty solution - we assume that % is present only once in 
-            // each line - in the part where the percentage is reported, hence we 
+            // a quick and dirty solution - we assume that % is present only once in
+            // each line - in the part where the percentage is reported, hence we
             // look for the percentage sign and then for the first slash
             final List<File> roots = new LinkedList<File>();
             for (int i = 1; i < lines.length; i++) {
@@ -486,7 +526,7 @@ public abstract class UnixNativeUtils extends NativeUtils {
             
             return roots;
         } catch (NativeException e) {
-            final IOException ioException = 
+            final IOException ioException =
                     new IOException("Cannot define the environment");
             
             throw (IOException) ioException.initCause(e);

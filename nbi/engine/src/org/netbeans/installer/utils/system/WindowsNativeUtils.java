@@ -34,15 +34,16 @@ import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.helper.Shortcut;
-import org.netbeans.installer.utils.helper.ShortcutLocationType;
+import org.netbeans.installer.utils.system.shortcut.FileShortcut;
+import org.netbeans.installer.utils.system.shortcut.InternetShortcut;
+import org.netbeans.installer.utils.system.shortcut.LocationType;
+import org.netbeans.installer.utils.system.shortcut.Shortcut;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.helper.ApplicationDescriptor;
 import org.netbeans.installer.utils.system.windows.SystemApplication;
 import org.netbeans.installer.utils.system.windows.FileExtension;
 import org.netbeans.installer.utils.system.windows.WindowsRegistry;
-import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.helper.FilesList;
 import org.netbeans.installer.utils.system.launchers.Launcher;
 import org.netbeans.installer.utils.progress.Progress;
@@ -208,7 +209,7 @@ public class WindowsNativeUtils extends NativeUtils {
         try {
             clSection = registry.canModifyKey(HKCR, "") ? HKCR : HKCU;
             clKey = (result) ? EMPTY_STRING : CURRENT_USER_CLASSES;
-            uninstallSection = registry.canModifyKey(HKLM,UNINSTALL_KEY) ? HKLM : HKCU;            
+            uninstallSection = registry.canModifyKey(HKLM,UNINSTALL_KEY) ? HKLM : HKCU;
         } catch (NativeException ex) {
             LogManager.log(ex);
             clSection = HKCU;
@@ -285,13 +286,18 @@ public class WindowsNativeUtils extends NativeUtils {
         return true;
     }
     
-    public File getShortcutLocation(Shortcut shortcut, ShortcutLocationType locationType) throws NativeException {
+    public File getShortcutLocation(Shortcut shortcut, LocationType locationType) throws NativeException {
         String path = shortcut.getRelativePath();
         if (path == null) {
             path = "";
         }
         
-        String fileName = shortcut.getName() + ".lnk";
+        String fileName = shortcut.getName();
+        if(shortcut instanceof FileShortcut) {
+            fileName += ".lnk";
+        } else if(shortcut instanceof InternetShortcut) {
+            fileName += ".url";
+        }
         
         final String allUsersRootPath = SystemUtils.getEnvironmentVariable("allusersprofile");
         
@@ -332,17 +338,35 @@ public class WindowsNativeUtils extends NativeUtils {
         return null;
     }
     
-    public File createShortcut(Shortcut shortcut, ShortcutLocationType locationType) throws NativeException {
+    protected void createURLShortcut(InternetShortcut shortcut) throws NativeException {
+        try {
+            List<String> lines = new LinkedList<String> ();
+            lines.add("[InternetShortcut]");
+            lines.add("URL=" + shortcut.getURL());
+            lines.add("IconFile=" + shortcut.getIconPath());
+            lines.add("IconIndex="+ shortcut.getIconIndex());
+            lines.add("HotKey=0");
+            lines.add("IDList=");
+            lines.add(SystemUtils.getLineSeparator());
+            FileUtils.writeStringList(new File(shortcut.getPath()),lines);
+        } catch (IOException ex) {
+            throw new NativeException("Can`t create URL shortcut", ex);
+        }
+    }
+    public File createShortcut(Shortcut shortcut, LocationType locationType) throws NativeException {
         File shortcutFile = getShortcutLocation(shortcut, locationType);
         
         shortcut.setPath(shortcutFile.getAbsolutePath());
-        
-        createShortcut0(shortcut);
+        if(shortcut instanceof FileShortcut) {
+            createShortcut0((FileShortcut)shortcut);
+        } else if(shortcut instanceof InternetShortcut) {
+            createURLShortcut((InternetShortcut)shortcut);
+        }
         
         return shortcutFile;
     }
     
-    public void removeShortcut(Shortcut shortcut, ShortcutLocationType locationType, boolean cleanupParents) throws NativeException {
+    public void removeShortcut(Shortcut shortcut, LocationType locationType, boolean cleanupParents) throws NativeException {
         File shortcutFile = getShortcutLocation(shortcut, locationType);
         
         try {
@@ -359,7 +383,7 @@ public class WindowsNativeUtils extends NativeUtils {
                 }
             }
         } catch (IOException e) {
-            
+           LogManager.log("Can`t remove shortcut",e); 
         }
     }
     
@@ -368,7 +392,7 @@ public class WindowsNativeUtils extends NativeUtils {
         
         // create 'uninstaller' and 'modifier'
         Launcher modifyLauncher = null;
-        Launcher uninstallLauncher = null;        
+        Launcher uninstallLauncher = null;
         try {
             if (descriptor.getModifyCommand() != null) {
                 modifyLauncher = createUninstaller(descriptor, false, new Progress());
@@ -379,7 +403,7 @@ public class WindowsNativeUtils extends NativeUtils {
                 list.add(uninstallLauncher.getOutputFile());
             }
         } catch (IOException e) {
-            throw new NativeException("Can`t create uninstaller", e);            
+            throw new NativeException("Can`t create uninstaller", e);
         }
         
         //add to add/remove programs
@@ -1196,7 +1220,7 @@ public class WindowsNativeUtils extends NativeUtils {
     
     private native long getFreeSpace0(String string);
     
-    private native void createShortcut0(Shortcut shortcut);
+    private native void createShortcut0(FileShortcut shortcut);
     
     private native void deleteFileOnReboot0(String file);
     

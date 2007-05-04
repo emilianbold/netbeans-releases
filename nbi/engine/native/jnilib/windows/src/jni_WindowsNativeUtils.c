@@ -191,11 +191,12 @@ JNIEXPORT jlong JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUt
 
 JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUtils_createShortcut0(JNIEnv* jEnv, jobject jObject, jobject jShortcut) {
     char *shortcutPath     = getStringFromMethod(jEnv, jShortcut, "getPath");
-    char *targetPath       = getStringFromMethod(jEnv, jShortcut, "getExecutablePath");
+    char *targetPath       = getStringFromMethod(jEnv, jShortcut, "getTargetPath");
     char *description      = getStringFromMethod(jEnv, jShortcut, "getDescription");
     char *iconPath         = getStringFromMethod(jEnv, jShortcut, "getIconPath");
+    jint iconIndex         = getIntFromMethod(jEnv, jShortcut,    "getIconIndex");
     char *workingDirectory = getStringFromMethod(jEnv, jShortcut, "getWorkingDirectoryPath");
-    char *arguments        = getStringFromMethod(jEnv, jShortcut, "getArgumentsString");
+    char *arguments        = getStringFromMethod(jEnv, jShortcut, "getArgumentsString");        
     
     HRESULT     tempResult;
     IShellLink* shell;
@@ -249,7 +250,7 @@ JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUti
             }
             
             if ((errorCode == 0) && (iconPath != NULL)) {
-                if (!SUCCEEDED(shell->lpVtbl->SetIconLocation(shell, iconPath, 0))) {
+                if (!SUCCEEDED(shell->lpVtbl->SetIconLocation(shell, iconPath, iconIndex))) {
                     throwException(jEnv, "Native error");
                     errorCode = -6;
                 }
@@ -334,10 +335,10 @@ JNIEXPORT jboolean JNICALL Java_org_netbeans_installer_utils_system_WindowsNativ
 }
 
 JNIEXPORT jboolean JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUtils_notifyEnvironmentChanged0(JNIEnv *jEnv, jobject jObj) {
-     /* maximum 1 sec timeout for each window in the system */
-     DWORD dwReturnValue;
-     LRESULT result = SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, 0, (LPARAM) "Environment", SMTO_ABORTIFHUNG, 1000, &dwReturnValue);
-     return (result!=0);
+    /* maximum 1 sec timeout for each window in the system */
+    DWORD dwReturnValue;
+    LRESULT result = SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, 0, (LPARAM) "Environment", SMTO_ABORTIFHUNG, 1000, &dwReturnValue);
+    return (result!=0);
 }
 
 
@@ -385,10 +386,10 @@ JNIEXPORT jint JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUti
     memset(&GenericMapping, 0x00, sizeof (GENERIC_MAPPING));
     
     DWORD DesiredAccess = (DWORD) jLevel ;
-    DesiredAccess = DesiredAccess | STANDARD_RIGHTS_READ;    
+    DesiredAccess = DesiredAccess | STANDARD_RIGHTS_READ;
     GenericMapping.GenericRead = FILE_GENERIC_READ;
     
-    if(jLevel & FILE_WRITE_DATA) {        
+    if(jLevel & FILE_WRITE_DATA) {
         GenericMapping.GenericWrite = FILE_GENERIC_WRITE;
     }
     
@@ -405,7 +406,7 @@ JNIEXPORT jint JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUti
     }
     /* Clean up. */
     HeapFree(GetProcessHeap(), 0, pSD);
-    CloseHandle(hToken);    
+    CloseHandle(hToken);
     return (bAccessGranted);
 }
 

@@ -32,8 +32,7 @@ import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
-import org.netbeans.installer.utils.helper.Shortcut;
-import org.netbeans.installer.utils.helper.ShortcutLocationType;
+import org.netbeans.installer.utils.system.shortcut.Shortcut;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.helper.ApplicationDescriptor;
@@ -45,6 +44,7 @@ import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.utils.system.cleaner.OnExitCleanerHandler;
 import org.netbeans.installer.utils.system.cleaner.JavaOnExitCleanerHandler;
 import org.netbeans.installer.utils.system.launchers.LauncherProperties;
+import org.netbeans.installer.utils.system.shortcut.LocationType;
 
 /**
  *
@@ -70,22 +70,22 @@ public abstract class NativeUtils {
     
     public static synchronized NativeUtils getInstance() {
         switch (SystemUtils.getCurrentPlatform()) {
-        case WINDOWS:
-            instance = new WindowsNativeUtils();
-            break;
-        case LINUX:
-            instance = new LinuxNativeUtils();
-            break;
-        case SOLARIS_X86:
-            instance = new SolarisX86NativeUtils();
-            break;
-        case SOLARIS_SPARC:
-            instance = new SolarisSparcNativeUtils();
-            break;
-        case MACOS_X_PPC:
-        case MACOS_X_X86:
-            instance = new MacOsNativeUtils();
-            break;
+            case WINDOWS:
+                instance = new WindowsNativeUtils();
+                break;
+            case LINUX:
+                instance = new LinuxNativeUtils();
+                break;
+            case SOLARIS_X86:
+                instance = new SolarisX86NativeUtils();
+                break;
+            case SOLARIS_SPARC:
+                instance = new SolarisSparcNativeUtils();
+                break;
+            case MACOS_X_PPC:
+            case MACOS_X_X86:
+                instance = new MacOsNativeUtils();
+                break;
         }
         
         return instance;
@@ -108,11 +108,11 @@ public abstract class NativeUtils {
     
     public abstract boolean isPathValid(String path);
     
-    public abstract File getShortcutLocation(Shortcut shortcut, ShortcutLocationType locationType) throws NativeException;
+    public abstract File getShortcutLocation(Shortcut shortcut, LocationType locationType) throws NativeException;
     
-    public abstract File createShortcut(Shortcut shortcut, ShortcutLocationType locationType) throws NativeException;
+    public abstract File createShortcut(Shortcut shortcut, LocationType locationType) throws NativeException;
     
-    public abstract void removeShortcut(Shortcut shortcut, ShortcutLocationType locationType, boolean deleteEmptyParents) throws NativeException;
+    public abstract void removeShortcut(Shortcut shortcut, LocationType locationType, boolean deleteEmptyParents) throws NativeException;
     
     protected Launcher createUninstaller(ApplicationDescriptor descriptor, boolean uninstall, Progress progress) throws IOException {
         LogManager.log("creating uninstaller...");
@@ -131,12 +131,12 @@ public abstract class NativeUtils {
         if (uninstall) {
             props.setAppArguments(descriptor.getUninstallCommand());
             props.setOutput(
-                    new File(descriptor.getInstallPath(), "uninstall"), 
+                    new File(descriptor.getInstallPath(), "uninstall"),
                     true);
         } else {
             props.setAppArguments(descriptor.getModifyCommand());
             props.setOutput(
-                    new File(descriptor.getInstallPath(), "modify-install"), 
+                    new File(descriptor.getInstallPath(), "modify-install"),
                     true);
         }
         
