@@ -127,15 +127,17 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
     public void unitilialize() {
         Utilities.startAsWorkerThread(new Runnable() {
             public void run() {
+                //ensures that uninitialization runs after initialization
                 initTask.waitFinished();
-                synchronized(PluginManagerUI.this) {
+                //ensure exclusivity between this uninitialization code and refreshUnits (which can run even after this dialog is disposed)
+                synchronized(initTask) {
                     units = null;
+                    installedTable = null;
+                    availableTable = null;
+                    updateTable = null;
+                    localTable = null;
+                    settingTab = null;                    
                 }
-                installedTable = null;
-                availableTable = null;
-                updateTable = null;
-                localTable = null;
-                settingTab = null;                
             }
         }, 10000);
     }
@@ -310,35 +312,41 @@ private void tpTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:
             }
         }        
     }
-    
-    private void refreshUnits () {
-        synchronized(PluginManagerUI.this) {
-            if (units == null || units.size() == 0) return;
+
+    private void refreshUnits () {        
+        //ensure exclusivity between this refreshUnits code(which can run even after this dialog is disposed) and uninitialization code
+        synchronized(initTask) {
+            //return immediatelly if uninialization(after removeNotify) was alredy called
+            if (units == null) return;
+            //TODO: REVIEW THIS CODE - problem is that is called from called from AWT thread
+            //UpdateManager.getDefault().getUpdateUnits() should never be called fromn AWT because it may cause 
+            //long terming starvation because in fact impl. of this method calls AutoUpdateCatalogCache.getCatalogURL
+            //which is synchronized and may wait until cache is created
+            //even more AutoUpdateCatalog.getUpdateItems () can at first start call refresh and thus writeToCache again
             units = UpdateManager.getDefault().getUpdateUnits();
-        }        
-        UnitCategoryTableModel installTableModel = ((UnitCategoryTableModel)installedTable.getModel ());        
-        UnitCategoryTableModel updateTableModel = ((UnitCategoryTableModel)updateTable.getModel ());        
-        UnitCategoryTableModel availableTableModel = ((UnitCategoryTableModel)availableTable.getModel ());
-        UnitCategoryTableModel localTableModel = ((UnitCategoryTableModel)localTable.getModel ());
-        
-        updateTableModel.setUnits(units);
-        installTableModel.setUnits(units);
-        availableTableModel.setUnits(units);
-        
-        selectFirstRow(installedTable);
-        selectFirstRow(updateTable);
-        selectFirstRow(availableTable);
-        decorateTitle (0, updateTable, NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Update_Title"));
-        decorateTitle (1, availableTable, NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Available_Title"));
-        decorateTitle (2, localTable, NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Local_Title"));
-        decorateTitle (3, installedTable, NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Installed_Title"));
+            UnitCategoryTableModel installTableModel = ((UnitCategoryTableModel)installedTable.getModel());
+            UnitCategoryTableModel updateTableModel = ((UnitCategoryTableModel)updateTable.getModel());
+            UnitCategoryTableModel availableTableModel = ((UnitCategoryTableModel)availableTable.getModel());
+            UnitCategoryTableModel localTableModel = ((UnitCategoryTableModel)localTable.getModel());
+            
+            updateTableModel.setUnits(units);
+            installTableModel.setUnits(units);
+            availableTableModel.setUnits(units);            
+            selectFirstRow(installedTable);
+            selectFirstRow(updateTable);
+            selectFirstRow(availableTable);
+            decorateTitle(0, updateTable, NbBundle.getMessage(PluginManagerUI.class, "PluginManagerUI_UnitTab_Update_Title"));
+            decorateTitle(1, availableTable, NbBundle.getMessage(PluginManagerUI.class, "PluginManagerUI_UnitTab_Available_Title"));
+            decorateTitle(2, localTable, NbBundle.getMessage(PluginManagerUI.class, "PluginManagerUI_UnitTab_Local_Title"));
+            decorateTitle(3, installedTable, NbBundle.getMessage(PluginManagerUI.class, "PluginManagerUI_UnitTab_Installed_Title"));            
+        }                
     }
         
     
     static boolean canContinue (String message) {
         return NotifyDescriptor.YES_OPTION.equals (DialogDisplayer.getDefault ().notify (new NotifyDescriptor.Confirmation (message)));
     }
-
+    //TODO: all the request for refresh should be cancelled if there is already one such running refresh task    
     public void updateUnitsChanged() {
         refreshUnits ();
     }
