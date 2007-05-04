@@ -73,7 +73,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     PageFlowView(PageFlowElement multiview, JSFConfigEditorContext context){
         this.multiview = multiview;
         this.context = context;
-        init();
+        initScene();
         pfc = new PageFlowController( context,  this );
         pfc.setupGraph();
         setFocusable(true);
@@ -156,7 +156,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     /*
      * Initializes the Panel and the graph
      **/
-    private void init(){
+    private void initScene(){
         setLayout(new BorderLayout());
         
         scene = new PageFlowScene(this);

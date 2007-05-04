@@ -169,10 +169,8 @@ public class PageFlowController {
         try {
             if (navRule == null) {
                 navRule = configModel.getFactory().createNavigationRule();
-//                navRule.setFromViewId(source.getDisplayName());
                 FacesModelUtility.setFromViewId(navRule, source.getDisplayName());
                 facesConfig.addNavigationRule(navRule);
-//                navRule2String.put(navRule, navRule.getFromViewId());
                 navRule2String.put(navRule, FacesModelUtility.getFromViewIdFiltered(navRule));
             } else {
                 caseNum = getNewCaseNumber(navRule);
@@ -184,8 +182,6 @@ public class PageFlowController {
             }
             navCase.setFromOutcome(caseName);
             
-            
-//            navCase.setToViewId(target.getDisplayName());
             FacesModelUtility.setToViewId(navCase, target.getDisplayName());
             navRule.addNavigationCase(navCase);
         } catch ( Exception e ){
