@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.languages.dataobject;
 
-import org.openide.loaders.UniFileLoader;
+import org.openide.loaders.MultiFileLoader;
 
 import java.awt.*;
 import java.beans.BeanInfo;
@@ -27,19 +27,21 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.SimpleBeanInfo;
 
+
 public class LanguagesDataLoaderBeanInfo extends SimpleBeanInfo {
 
     public BeanInfo[] getAdditionalBeanInfo() {
         try {
-            return new BeanInfo[] {Introspector.getBeanInfo(UniFileLoader.class)};
+            return new BeanInfo[] {Introspector.getBeanInfo(MultiFileLoader.class)};
         } catch (IntrospectionException e) {
             throw new AssertionError(e);
         }
     }
-    
-    public Image getIcon(int type) {
-        return super.getIcon(type); // TODO add a custom icon here
 
+    /** @param type Desired type of the icon
+    * @return returns the Image loader's icon
+    */
+    public Image getIcon(final int type) {
+        return org.openide.util.Utilities.loadImage ("org/netbeans/modules/languages/resources/defaultIcon.png"); // NOI18N
     }
-
 }
