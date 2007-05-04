@@ -255,6 +255,7 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.uml.codegen</friend>
                 <friend>org.netbeans.modules.uml.designpattern</friend>
                 <friend>org.netbeans.modules.uml.drawingarea</friend>
                 <friend>org.netbeans.modules.uml.integration</friend>
