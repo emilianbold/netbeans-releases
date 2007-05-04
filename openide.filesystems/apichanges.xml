@@ -90,7 +90,7 @@ Microsystems, Inc. All Rights Reserved.
         </change>        
         <change id="added-FileObject-getOutputStream-without-FileLock-parameter">
             <api name="filesystems"/>
-            <summary>Added additional method <code>FileObject.getOutpuStream</code>
+            <summary>Added additional method <code>FileObject.getOutputStream</code>
                 that doesn't take <code>FileLock</code> as a parameter.
             </summary>
             <version major="6" minor="6"/>
@@ -99,7 +99,7 @@ Microsystems, Inc. All Rights Reserved.
             <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
             <description>
                 <p>
-                    Although newly added method <code>FileObject.getOutpuStream</code>
+                    Although newly added method <code>FileObject.getOutputStream</code>
                     doesn't take <code>FileLock</code> as a parameter, the implementation
                     is responsible for taking a lock before <code>OutputStream</code> is
                     returned and thus <code>FileAlreadyLockedException</code> exception is thrown
