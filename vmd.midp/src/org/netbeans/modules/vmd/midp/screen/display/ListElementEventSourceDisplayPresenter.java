@@ -26,20 +26,20 @@ import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
-import org.netbeans.modules.vmd.midp.components.elements.ChoiceElementCD;
 import org.netbeans.modules.vmd.midp.components.displayables.ListCD;
+import org.netbeans.modules.vmd.midp.components.elements.ChoiceElementCD;
 import org.netbeans.modules.vmd.midp.components.items.ChoiceSupport;
+import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.netbeans.modules.vmd.midp.components.sources.ListElementEventSourceCD;
-import org.netbeans.modules.vmd.midp.screen.display.property.ScreenStringPropertyEditor;
 import org.netbeans.modules.vmd.midp.screen.display.property.ScreenBooleanPropertyEditor;
+import org.netbeans.modules.vmd.midp.screen.display.property.ScreenStringPropertyEditor;
+import org.openide.util.Utilities;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Arrays;
-import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -103,15 +103,12 @@ public class ListElementEventSourceDisplayPresenter extends ScreenDisplayPresent
         if (imageComponent != null)
             path = (String) imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH).getPrimitiveValue();
         Icon icon = ScreenSupport.getIconFromImageComponent(imageComponent);
-        if (icon != null) {
-            image.setText(null);
+        if (icon != null)
             image.setIcon(icon);
-        } else if (icon == null && path != null) {
+        else if (path != null)
             image.setIcon(ICON_BROKEN);
-        } else {
-            image.setText(null); //NOI18N 
+        else
             image.setIcon(null);
-        }
 
         String text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(ListElementEventSourceCD.PROP_STRING));
         label.setText(ScreenSupport.wrapWithHtml(text));
