@@ -19,13 +19,6 @@
 
 package org.netbeans.modules.vmd.midpnb.screen.display;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
@@ -34,6 +27,9 @@ import org.netbeans.modules.vmd.midp.screen.display.DisplayableDisplayPresenter;
 import org.netbeans.modules.vmd.midp.screen.display.ScreenSupport;
 import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScreenCD;
 import org.openide.util.Utilities;
+
+import javax.swing.*;
+import java.awt.*;
 
 /**
  *
@@ -78,9 +74,10 @@ public class AbstractInfoDisplayPresenter extends DisplayableDisplayPresenter {
             path = (String) imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH).getPrimitiveValue();
         Icon icon = ScreenSupport.getIconFromImageComponent(imageComponent);
         if (icon != null) {
+            imageLabel.setText (null);
             imageLabel.setIcon(icon);
-        } else if (icon == null && path != null) {
-            imageLabel.setText(null);
+        } else if (path != null) {
+            imageLabel.setText(path);
             imageLabel.setIcon(ICON_BROKEN);
         } else {
             imageLabel.setIcon(null);
@@ -89,6 +86,9 @@ public class AbstractInfoDisplayPresenter extends DisplayableDisplayPresenter {
         
         String text = MidpTypes.getString(getComponent().readProperty(AbstractInfoScreenCD.PROP_TEXT));
         stringLabel.setText(ScreenSupport.wrapWithHtml(text));
+
+        DesignComponent font = getComponent().readProperty(AbstractInfoScreenCD.PROP_TEXT_FONT).getComponent();
+        stringLabel.setFont(ScreenSupport.getFont(deviceInfo, font));
     }
     
 }
