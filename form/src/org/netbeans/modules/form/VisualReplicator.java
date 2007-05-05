@@ -418,7 +418,8 @@ public class VisualReplicator { //implements VisualMapper
     }
 
     public void removeComponent(RADComponent metacomp,
-                                ComponentContainer metacont)
+                                ComponentContainer metacont,
+                                boolean removeMapping)
     {
         if (metacomp == null)
             return;
@@ -508,7 +509,9 @@ public class VisualReplicator { //implements VisualMapper
             else return;
         }
 
-        removeMapping(metacomp);
+        if (removeMapping) {
+            removeMapping(metacomp);
+        }
     }
 
     public void updateComponentProperty(RADProperty property) {
@@ -527,7 +530,7 @@ public class VisualReplicator { //implements VisualMapper
         // [maybe this should be done for all AWT components]
         if (targetComp instanceof java.awt.Scrollbar) {
             // remove the component and add a new clone
-            removeComponent(metacomp, null);
+            removeComponent(metacomp, null, true);
             addComponent(metacomp);
             return;
         }
@@ -717,9 +720,13 @@ public class VisualReplicator { //implements VisualMapper
             final Component[] comps = new Component[metacomps.length];
             String[] compIds = new String[metacomps.length];
             for (int i=0; i < metacomps.length; i++) {
-                comps[i] = (Component) cloneComponent(metacomps[i],
-                                                      relativeProperties);
-                compIds[i] = metacomps[i].getId();
+                RADComponent sub = metacomps[i];
+                Component subClone = (Component) getClonedComponent(sub);
+                if (subClone == null) {
+                    subClone = (Component) cloneComponent(sub, relativeProperties);
+                }
+                comps[i] = subClone;
+                compIds[i] = sub.getId();
             }
 
             if (metacont.isMenuTypeComponent()) {
@@ -752,8 +759,11 @@ public class VisualReplicator { //implements VisualMapper
         else if (metacomp instanceof RADMenuComponent) {
             RADComponent[] metacomps = ((RADMenuComponent)metacomp).getSubBeans();
             for (int i = 0; i < metacomps.length; i++) {
-                Object menuItem = cloneComponent(
-                        (RADMenuItemComponent)metacomps[i], relativeProperties);
+                RADComponent sub = metacomps[i];
+                Object menuItem = getClonedComponent(sub);
+                if (menuItem == null) {
+                    menuItem = cloneComponent((RADMenuItemComponent)sub, relativeProperties);
+                }
                 addToMenu(compClone, menuItem);
             }
         }

@@ -381,7 +381,7 @@ class CopySupport {
                         // need to remove layout component
                         LayoutComponent layoutComp = sourceLayout.getLayoutComponent(sourceComp.getId());
                         if (layoutComp != null) {
-                            sourceLayout.removeComponent(sourceComp.getId(), layoutComp.isLayoutContainer());
+                            sourceLayout.removeComponent(sourceComp.getId(), !layoutComp.isLayoutContainer());
                         }
                     } // old-to-old layout copy is fully handled by MetaComponentCreator
                 }

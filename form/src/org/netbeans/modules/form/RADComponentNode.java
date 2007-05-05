@@ -180,6 +180,7 @@ public class RADComponentNode extends FormNode
                 actions.add(SystemAction.get(ChooseSameSizeAction.class));
                 actions.add(SystemAction.get(DefaultSizeAction.class));
                 actions.add(SystemAction.get(CustomizeEmptySpaceAction.class));
+                actions.add(SystemAction.get(EncloseAction.class));
                 actions.add(null);
                 
                 if (component instanceof RADVisualContainer) {

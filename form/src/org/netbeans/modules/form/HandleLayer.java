@@ -1202,7 +1202,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             return 0;
         }
         Component comp = (Component) formDesigner.getComponent(metacomp);
-        int resizable;
+        int resizable = 0;
         LayoutSupportManager laySup = metacont.getLayoutSupport();
         if (laySup == null) { // new layout support
             java.util.List selectedComps = formDesigner.getSelectedComponents();
@@ -1213,15 +1213,16 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                             | LayoutSupportManager.RESIZE_UP
                             | LayoutSupportManager.RESIZE_DOWN;
             }
-            else resizable = 0;
         }
         else { // old layout support
             Container cont = (Container) formDesigner.getComponent(metacont);
-            Container contDel = metacont.getContainerDelegate(cont);
+            if (cont != null) { // might be null if component just enclosed in container not yet cloned
+                Container contDel = metacont.getContainerDelegate(cont);
 
-            resizable = laySup.getResizableDirections(
-                                       cont, contDel,
-                                       comp, metacont.getIndexOf(metacomp));
+                resizable = laySup.getResizableDirections(
+                                           cont, contDel,
+                                           comp, metacont.getIndexOf(metacomp));
+            }
         }
         return resizable;
     }

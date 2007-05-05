@@ -2200,8 +2200,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                         return;
                     }
                     else {
-                        replicator.removeComponent(ev.getComponent(),
-                                                   ev.getContainer());
+                        replicator.removeComponent(ev.getComponent(), ev.getContainer(),
+                                                   !topDesignComponent.isParentComponent(removed));
                         updateDone = true;
                     }
                     // Note: BindingDesignSupport takes care of removing bindings
@@ -2215,7 +2215,6 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                     }
                 }
                 else if (type == FormModelEvent.COMPONENT_PROPERTY_CHANGED) {
-
                     RADProperty eventProperty = ev.getComponentProperty();
                     RADComponent eventComponent = ev.getComponent();
                     

@@ -1873,6 +1873,107 @@ public class LayoutDesigner implements LayoutConstants {
         return index - d;
     }
 
+    public void encloseInContainer(String[] compIds, String contId) {
+        LayoutComponent enclosingCont = layoutModel.getLayoutComponent(contId);
+        if (enclosingCont == null) {
+            enclosingCont = new LayoutComponent(contId, true);
+        } else if (enclosingCont.getParent() != null) {
+            throw new IllegalArgumentException("Target container already exists and is placed in the layout"); // NOI18N
+        } else if (enclosingCont.getSubComponentCount() > 0) {
+            throw  new IllegalArgumentException("Target container is not empty."); // NOI18N
+        }
+        LayoutComponent parentCont = null;
+        LayoutComponent[] components = new LayoutComponent[compIds.length];
+//        LayoutComponent[][] borderComps = new LayoutComponent[DIM_COUNT][2];
+        LayoutInterval[] commonParents = new LayoutInterval[DIM_COUNT];
+        boolean[] resizing = new boolean[DIM_COUNT];
+        Map<LayoutComponent, LayoutComponent> compMap = new HashMap<LayoutComponent, LayoutComponent>();
+        LayoutRegion overallSpace = new LayoutRegion();
+        int i = 0;
+        for (String id : compIds) {
+            LayoutComponent comp = layoutModel.getLayoutComponent(id);
+            components[i++] = comp;
+            compMap.put(comp, comp);
+
+            if (parentCont == null) {
+                parentCont = comp.getParent();
+            }
+            LayoutRegion space = comp.getLayoutInterval(0).getCurrentSpace();
+
+            for (int dim=0; dim < DIM_COUNT; dim++) {
+//                if (!overallSpace.isSet(dim) || space.positions[dim][LEADING] < overallSpace.positions[dim][LEADING]) {
+//                    borderComps[dim][LEADING] = comp;
+//                } else if (!overallSpace.isSet(dim) || space.positions[dim][TRAILING] > overallSpace.positions[dim][TRAILING]) {
+//                    borderComps[dim][TRAILING] = comp;
+//                }
+                overallSpace.expand(space, dim);
+
+                if (commonParents[dim] == null) {
+                    commonParents[dim] = comp.getLayoutInterval(dim);
+                } else {
+                    commonParents[dim] = LayoutInterval.getCommonParent(
+                            commonParents[dim], comp.getLayoutInterval(dim));
+                }
+            }
+        }
+        LayoutInterval[] parentRoots = new LayoutInterval[DIM_COUNT];
+        for (int dim=0; dim < DIM_COUNT; dim++) {
+            parentRoots[dim] = LayoutInterval.getRoot(components[0].getLayoutInterval(dim));
+            resizing[dim] = LayoutInterval.wantResize(commonParents[dim]);
+        }
+        if (enclosingCont.isLayoutContainer()) {
+            LayoutInterval[] extractedInts = new LayoutInterval[DIM_COUNT];
+            for (int dim=0; dim < DIM_COUNT; dim++) {
+                LayoutInterval extract = commonParents[dim];
+                if (extract.isComponent()) { // just one component being enclosed
+                    layoutModel.removeInterval(extract);
+                    extractedInts[dim] = extract;
+                } else {
+                    extractedInts[dim] = restrictedCopy(extract, compMap, overallSpace, dim, null);
+                }
+            }
+            for (LayoutComponent comp : components) {
+                layoutModel.removeComponent(comp, false);
+                layoutModel.addComponent(comp, enclosingCont, -1);
+            }
+            for (int dim=0; dim < DIM_COUNT; dim++) {
+                // make sure the root is empty (clear possible "offset" gap) 
+                LayoutInterval root = enclosingCont.getDefaultLayoutRoot(dim);
+                for (int n=root.getSubIntervalCount(); n > 0; n--) {
+                    root.remove(n-1);
+                }
+                assert root.isParallel();
+                LayoutInterval seq = new LayoutInterval(SEQUENTIAL);
+                seq.add(new LayoutInterval(SINGLE),-1);
+                seq.add(extractedInts[dim], -1);
+                seq.add(new LayoutInterval(SINGLE), -1);
+                layoutModel.addInterval(seq, root, -1);
+            }
+        } else {
+            for (LayoutComponent comp : components) {
+                layoutModel.removeComponentAndIntervals(comp, !comp.isLayoutContainer());
+            }
+        }
+        LayoutInterval[] addingInts = new LayoutInterval[DIM_COUNT];
+        for (int dim=0; dim < DIM_COUNT; dim++) {
+            LayoutInterval interval = enclosingCont.getLayoutInterval(dim);
+            addingInts[dim] = interval;
+            interval.setSizes(USE_PREFERRED_SIZE, DEFAULT,
+                              resizing[dim] ? Short.MAX_VALUE : USE_PREFERRED_SIZE);
+        }
+        // provisionally use dragger to position the container; maybe could be done better
+        prepareDragger(new LayoutComponent[] { enclosingCont },
+                new Rectangle[] { overallSpace.toRectangle(new Rectangle()) },
+                new Point(0, 0),
+                LayoutDragger.ALL_EDGES);
+        dragger.setTargetContainer(parentCont, parentRoots);
+        dragger.move(new int[] { 10, 10 }, true, false);
+        dragger.move(new int[] { 0, 0 }, true, false);
+        addComponents(new LayoutComponent[] { enclosingCont }, parentCont, addingInts, false);
+        dragger = null;
+        visualStateUpToDate = false;
+    }
+
     /**
      * Add a single new component (targetId) to given target container. No layout
      * information is provided, so the component is placed on a default location
