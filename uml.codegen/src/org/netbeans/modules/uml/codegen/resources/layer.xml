@@ -41,4 +41,15 @@
             </folder>
         </folder>
     </folder>
+
+<folder name="Projects">
+        <folder name="org-netbeans-modules-uml-project">
+            <folder name="Customizer">
+                <file name="Templates.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.codegen.customizer.TemplatesManagerCustomizer.createTemplates"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+
 </filesystem>
