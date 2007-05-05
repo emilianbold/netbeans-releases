@@ -42,11 +42,11 @@
         </folder>
     </folder>
 
-<folder name="Projects">
+    <folder name="Projects">
         <folder name="org-netbeans-modules-uml-project">
             <folder name="Customizer">
                 <file name="Templates.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.codegen.customizer.TemplatesManagerCustomizer.createTemplates"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.codegen.ui.TemplatesManagerCustomizer.createTemplates"/>
                 </file>
             </folder>
         </folder>

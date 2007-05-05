@@ -27,9 +27,6 @@ import java.awt.event.WindowEvent;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.ResourceBundle;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -47,10 +44,7 @@ import org.netbeans.modules.uml.project.AssociatedSourceProvider;
 import org.netbeans.modules.uml.project.UMLProject;
 import org.netbeans.modules.uml.project.UMLProjectHelper;
 import org.netbeans.modules.uml.project.ui.MDREventProcessor;
-import org.netbeans.modules.uml.project.ui.codegen.CodeGeneratorAction;
-import org.netbeans.modules.uml.project.ui.customizer.uiapi.UMLCustomizerDialog;
 import org.netbeans.modules.uml.project.ui.common.ReferencedJavaProjectModel;
-import org.netbeans.modules.uml.ui.swing.commondialogs.CodeGenTemplateManagerPanel;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
