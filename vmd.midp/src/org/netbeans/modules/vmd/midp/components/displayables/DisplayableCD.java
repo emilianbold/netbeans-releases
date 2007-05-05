@@ -78,11 +78,10 @@ public final class DisplayableCD extends ComponentDescriptor {
     }
 
     public void postInitialize (DesignComponent component) {
-        String instanceName = MidpTypes.getString (component.readProperty (ClassCD.PROP_INSTANCE_NAME));
-        component.writeProperty (PROP_TITLE, MidpTypes.createStringValue (instanceName));
+        component.writeProperty (PROP_TITLE, component.readProperty (ClassCD.PROP_INSTANCE_NAME));
 
         DesignDocument document = component.getDocument ();
-        DesignComponent listener = MidpDocumentSupport.getCommandListener (document);
+        DesignComponent listener = MidpDocumentSupport.getCommandListener (document, CommandListenerCD.TYPEID);
         component.writeProperty (PROP_COMMAND_LISTENER, PropertyValue.createComponentReference (listener));
     }
 

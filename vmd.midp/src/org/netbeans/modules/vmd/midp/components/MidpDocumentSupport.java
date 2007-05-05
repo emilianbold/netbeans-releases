@@ -19,7 +19,6 @@
 package org.netbeans.modules.vmd.midp.components;
 
 import org.netbeans.modules.vmd.api.model.*;
-import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.midp.components.categories.CommandsCategoryCD;
 import org.netbeans.modules.vmd.midp.components.categories.ControllersCategoryCD;
@@ -30,7 +29,6 @@ import org.netbeans.modules.vmd.midp.components.general.RootCD;
 import org.netbeans.modules.vmd.midp.components.handlers.EventHandlerCD;
 import org.netbeans.modules.vmd.midp.components.handlers.SwitchDisplayableEventHandlerCD;
 import org.netbeans.modules.vmd.midp.components.items.ItemCD;
-import org.netbeans.modules.vmd.midp.components.listeners.CommandListenerCD;
 import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
 import org.netbeans.modules.vmd.midp.components.sources.EventSourceCD;
 import org.netbeans.modules.vmd.midp.components.sources.ItemCommandEventSourceCD;
@@ -44,9 +42,7 @@ import java.util.*;
 public final class MidpDocumentSupport {
     
     public static final String PROJECT_TYPE_MIDP = "vmd-midp"; // NOI18N
-    
-    private static DesignComponent newComponent;
-    
+
     public static final Comparator<DesignComponent> COMPONENT_DISPLAY_NAME_COMPARATOR = new Comparator<DesignComponent>() {
         public int compare(DesignComponent component1, DesignComponent component2) {
             String name1 = (String) component1.readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue();
@@ -73,8 +69,8 @@ public final class MidpDocumentSupport {
         List<DesignComponent> list = DocumentSupport.gatherSubComponentsOfType(categoryComponent, typeID);
         if (list.size() == 1)
             return list.get(0);
-        else if (list.size() == 0) {   
-            newComponent = document.createComponent(typeID);
+        else if (list.size() == 0) {
+            DesignComponent newComponent = document.createComponent (typeID);
             categoryComponent.addComponent(newComponent);
             return newComponent;
         }
@@ -207,12 +203,12 @@ public final class MidpDocumentSupport {
         
         return unusedCommands;
     }
-    
-    public static DesignComponent getCommandListener(DesignDocument document) {
+
+    public static DesignComponent getCommandListener(DesignDocument document, TypeID listenerType) {
         DesignComponent controllersCategory = getCategoryComponent(document, ControllersCategoryCD.TYPEID);
-        List<DesignComponent> list = DocumentSupport.gatherSubComponentsOfType(controllersCategory, CommandListenerCD.TYPEID);
+        List<DesignComponent> list = DocumentSupport.gatherSubComponentsOfType(controllersCategory, listenerType);
         if (list.isEmpty()) {
-            DesignComponent commandListener = document.createComponent(CommandListenerCD.TYPEID);
+            DesignComponent commandListener = document.createComponent(listenerType);
             controllersCategory.addComponent(commandListener);
             return commandListener;
         }

@@ -45,6 +45,7 @@ import org.netbeans.modules.vmd.midp.components.displayables.FormCD;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.components.general.RootCode;
 import org.netbeans.modules.vmd.midp.components.listeners.ItemCommandListenerCD;
+import org.netbeans.modules.vmd.midp.components.listeners.CommandListenerCD;
 import org.netbeans.modules.vmd.midp.components.sources.ItemCommandEventSourceCD;
 import org.netbeans.modules.vmd.midp.inspector.controllers.ComponentsCategoryPC;
 import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
@@ -109,6 +110,9 @@ public class ItemCD extends ComponentDescriptor {
 
     public void postInitialize (DesignComponent component) {
         component.writeProperty (PROP_LABEL, component.readProperty (ClassCD.PROP_INSTANCE_NAME));
+
+        DesignComponent listener = MidpDocumentSupport.getCommandListener (component.getDocument (), ItemCommandListenerCD.TYPEID);
+        component.writeProperty (PROP_ITEM_COMMAND_LISTENER, PropertyValue.createComponentReference (listener));
     }
 
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
