@@ -52,6 +52,7 @@ import org.openide.util.Lookup;
  *  @author Miloslav Metelka, Martin Roskanin
  *  @deprecated Use {@link MimeDataProvider} instead.
  */
+@Deprecated
 public interface MimeLookupInitializer {
 
     /**
@@ -74,6 +75,6 @@ public interface MimeLookupInitializer {
      *  If there will be no specific initializers for the particular mime-type
      *  then an empty result should be returned.
      */
-    Lookup.Result child(String mimeType);
+    Lookup.Result<MimeLookupInitializer> child(String mimeType);
 
 }

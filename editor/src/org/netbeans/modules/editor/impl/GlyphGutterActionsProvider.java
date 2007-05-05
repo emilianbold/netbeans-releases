@@ -25,18 +25,19 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.spi.editor.mimelookup.Class2LayerFolder;
 import org.netbeans.spi.editor.mimelookup.InstanceProvider;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Vita Stejskal
  */
-public final class GlyphGutterActionsProvider extends ActionsList implements Class2LayerFolder, InstanceProvider {
+public final class GlyphGutterActionsProvider extends ActionsList implements Class2LayerFolder<GlyphGutterActionsProvider>, InstanceProvider<GlyphGutterActionsProvider> {
 
     public static final String GLYPH_GUTTER_ACTIONS_FOLDER_NAME = "GlyphGutterActions"; //NOI18N
     
     public static List getGlyphGutterActions(String mimeType) {
         MimePath mimePath = MimePath.parse(mimeType);
-        GlyphGutterActionsProvider provider = (GlyphGutterActionsProvider) MimeLookup.getLookup(mimePath).lookup(GlyphGutterActionsProvider.class);
+        GlyphGutterActionsProvider provider = MimeLookup.getLookup(mimePath).lookup(GlyphGutterActionsProvider.class);
         return provider == null ? Collections.emptyList() : provider.getActionsOnly();
     }
     
@@ -44,11 +45,11 @@ public final class GlyphGutterActionsProvider extends ActionsList implements Cla
         super(null);
     }
 
-    private GlyphGutterActionsProvider(List keys) {
+    private GlyphGutterActionsProvider(List<FileObject> keys) {
         super(keys);
     }
     
-    public Class getClazz(){
+    public Class<GlyphGutterActionsProvider> getClazz() {
         return GlyphGutterActionsProvider.class;
     }
 
@@ -56,11 +57,11 @@ public final class GlyphGutterActionsProvider extends ActionsList implements Cla
         return GLYPH_GUTTER_ACTIONS_FOLDER_NAME;
     }
 
-    public InstanceProvider getInstanceProvider() {
+    public InstanceProvider<GlyphGutterActionsProvider> getInstanceProvider() {
         return new GlyphGutterActionsProvider();
     }
     
-    public Object createInstance(List fileObjectList) {
+    public GlyphGutterActionsProvider createInstance(List<FileObject> fileObjectList) {
         return new GlyphGutterActionsProvider(fileObjectList);
     }
 }

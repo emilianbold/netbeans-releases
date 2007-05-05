@@ -52,10 +52,11 @@ package org.netbeans.spi.editor.mimelookup;
  * can be registered in the 'Editors/text/x-java/foldManager' folder and they
  * will be properly retrieved when calling
  * <code>MimeLookup.getLookup(MimePath.get("text/x-java")).lookup(FolderManager.class);</code>.
+ * @param T type of instance which will be created
  *
  * @author Miloslav Metelka, Martin Roskanin, Vita Stejskal
  */
-public interface Class2LayerFolder {
+public interface Class2LayerFolder<T> {
     
     /**
      * Gets the class of the instances that are registered under the special
@@ -63,7 +64,7 @@ public interface Class2LayerFolder {
      *
      * @return The class which this object provides an additional information for.
      */
-    Class getClazz();
+    Class<T> getClazz();
     
     /**
      * Gets the name of the subfolder where the instances are registered. The
@@ -84,6 +85,6 @@ public interface Class2LayerFolder {
      * @return The <code>InstanceProvider</code> capable of createing instances
      * of the {@link #getClazz()} class. Can return <code>null</code>.
      */
-    InstanceProvider getInstanceProvider();
+    InstanceProvider<T> getInstanceProvider();
     
 }

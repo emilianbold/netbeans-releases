@@ -22,15 +22,15 @@ package org.netbeans.modules.editor.mimelookup.impl;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
-import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.spi.editor.mimelookup.Class2LayerFolder;
 import org.netbeans.spi.editor.mimelookup.InstanceProvider;
 import org.openide.util.Lookup;
@@ -60,11 +60,11 @@ public final class ClassInfoStorage {
         return instance;
     }
     
-    private Lookup.Result mappers = null;
+    private Lookup.Result<Class2LayerFolder> mappers = null;
     private L mappersListener = null;
 
     private final String LOCK = new String("Class2Paths.LOCK"); //NOI18N
-    private HashMap mapping = new HashMap();
+    private Map<String,Info> mapping = new HashMap<String,Info>();
     
     private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     
@@ -73,7 +73,7 @@ public final class ClassInfoStorage {
         mappers = Lookup.getDefault().lookupResult(Class2LayerFolder.class);
         
         mappersListener = new L();
-        mappers.addLookupListener((LookupListener) WeakListeners.create(LookupListener.class, mappersListener, mappers));
+        mappers.addLookupListener(WeakListeners.create(LookupListener.class, mappersListener, mappers));
         
         rebuild();
     }
@@ -81,7 +81,7 @@ public final class ClassInfoStorage {
     public Info getInfo(String className) {
         synchronized (LOCK) {
             if (mapping.containsKey(className)) {
-                return (Info) mapping.get(className);
+                return mapping.get(className);
             } else {
                 return new Info(this, className, null, null);
             }
@@ -96,15 +96,11 @@ public final class ClassInfoStorage {
         pcs.removePropertyChangeListener(l);
     }
 
-    private List rebuild() {
+    private List<PropertyChangeEvent> rebuild() {
         synchronized (LOCK) {
             // Gather the new mapping information
-            HashMap newMapping = new HashMap();
-            Collection newMappers = mappers.allInstances();
-            
-            for (Iterator i = newMappers.iterator(); i.hasNext(); ) {
-                Class2LayerFolder mapper = (Class2LayerFolder) i.next();
-                
+            Map<String,Info> newMapping = new HashMap<String,Info>();
+            for (Class2LayerFolder mapper : mappers.allInstances()) {
                 String className = mapper.getClazz().getName();
                 String path = mapper.getLayerFolderName();
                 InstanceProvider ip = mapper.getInstanceProvider();
@@ -128,16 +124,14 @@ public final class ClassInfoStorage {
             }
         
             // Compute differences
-            HashSet removed = new HashSet(mapping.keySet());
+            Set<String> removed = new HashSet<String>(mapping.keySet());
             removed.removeAll(newMapping.keySet());
             
-            HashSet added = new HashSet(newMapping.keySet());
+            Set<String> added = new HashSet<String>(newMapping.keySet());
             added.removeAll(mapping.keySet());
             
-            HashSet changed = new HashSet();
-            for (Iterator i = newMapping.keySet().iterator(); i.hasNext(); ) {
-                String className = (String) i.next();
-                
+            Set<String> changed = new HashSet<String>();
+            for (String className : newMapping.keySet()) {
                 if (mapping.containsKey(className) && 
                     !Utilities.compareObjects(newMapping.get(className), mapping.get(className)))
                 {
@@ -150,7 +144,7 @@ public final class ClassInfoStorage {
             mapping.putAll(newMapping);
             
             // Generate events
-            ArrayList events = new ArrayList(3);
+            List<PropertyChangeEvent> events = new ArrayList<PropertyChangeEvent>(3);
             if (!removed.isEmpty()) {
                 events.add(new PropertyChangeEvent(this, PROP_CLASS_INFO_REMOVED, null, removed));
             }
@@ -168,12 +162,8 @@ public final class ClassInfoStorage {
     private class L implements LookupListener {
 
         public void resultChanged(LookupEvent ev) {
-            // Update mapping information
-            List events = rebuild();
-            
-            // Fire change events if neccessary
-            for (Iterator i = events.iterator(); i.hasNext(); ) {
-                PropertyChangeEvent event = (PropertyChangeEvent) i.next();
+            // Update mapping information & fire change events if neccessary
+            for (PropertyChangeEvent event : rebuild()) {
                 pcs.firePropertyChange(event);
             }
         }
@@ -185,15 +175,15 @@ public final class ClassInfoStorage {
         private String className;
         private String extraPath;
         private String instanceProviderClass;
-        private WeakReference ref; // TODO: This should really be a timed-weak-ref
+        private Reference<InstanceProvider<?>> ref; // TODO: This should really be a timed-weak-ref
         
-        private Info(ClassInfoStorage storage, String className, String extraPath, InstanceProvider instanceProvider) {
+        private Info(ClassInfoStorage storage, String className, String extraPath, InstanceProvider<?> instanceProvider) {
             this.storage = storage;
             this.className = className;
             this.extraPath = extraPath == null ? "" : extraPath; //NOI18N
             if (instanceProvider != null) {
                 this.instanceProviderClass = instanceProvider.getClass().getName();
-                this.ref = new WeakReference(instanceProvider);
+                this.ref = new WeakReference<InstanceProvider<?>>(instanceProvider);
             }
         }
         
@@ -209,7 +199,7 @@ public final class ClassInfoStorage {
             return instanceProviderClass;
         }
         
-        public InstanceProvider getInstanceProvider() {
+        public InstanceProvider<?> getInstanceProvider() {
             synchronized (storage.LOCK) {
                 // There was no instance provider specified
                 if (ref == null) {
@@ -219,9 +209,7 @@ public final class ClassInfoStorage {
                 InstanceProvider ip = (InstanceProvider) ref.get();
                 if (ip == null) {
                     // Instance provider has been GCed, recreate it
-                    Collection instances = storage.mappers.allInstances();
-                    for (Iterator i = instances.iterator(); i.hasNext(); ) {
-                        Class2LayerFolder mapper = (Class2LayerFolder) i.next();
+                    for (Class2LayerFolder mapper : storage.mappers.allInstances()) {
                         String className = mapper.getClazz().getName();
                         
                         if (this.className.equals(className)) {
@@ -231,7 +219,7 @@ public final class ClassInfoStorage {
                     }
                     
                     if (ip != null) {
-                        ref = new WeakReference(ip);
+                        ref = new WeakReference<InstanceProvider<?>>(ip);
                     }
                 }
                 
@@ -239,7 +227,7 @@ public final class ClassInfoStorage {
             }
         }
 
-        public boolean equals(Object obj) {
+        public @Override boolean equals(Object obj) {
             if (obj instanceof Info) {
                 Info info = (Info) obj;
                 return  this.className.equals(info.className) &&
@@ -250,7 +238,7 @@ public final class ClassInfoStorage {
             }
         }
 
-        public int hashCode() {
+        public @Override int hashCode() {
             int hashCode = className.hashCode();
             
             if (extraPath != null) {

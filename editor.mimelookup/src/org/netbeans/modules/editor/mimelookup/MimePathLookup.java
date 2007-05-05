@@ -34,6 +34,7 @@ import org.openide.util.lookup.ProxyLookup;
  *
  * @author vita
  */
+@SuppressWarnings("deprecation")
 public final class MimePathLookup extends ProxyLookup implements LookupListener {
     
     private MimePath mimePath;
@@ -51,10 +52,10 @@ public final class MimePathLookup extends ProxyLookup implements LookupListener 
         this.mimePath = mimePath;
 
         dataProviders = Lookup.getDefault().lookup(new Lookup.Template<MimeDataProvider>(MimeDataProvider.class));
-        dataProviders.addLookupListener((LookupListener) WeakListeners.create(LookupListener.class, this, dataProviders));
+        dataProviders.addLookupListener(WeakListeners.create(LookupListener.class, this, dataProviders));
 
         mimeInitializers = Lookup.getDefault().lookup(new Lookup.Template<MimeLookupInitializer>(MimeLookupInitializer.class));
-        mimeInitializers.addLookupListener((LookupListener) WeakListeners.create(LookupListener.class, this, mimeInitializers));
+        mimeInitializers.addLookupListener(WeakListeners.create(LookupListener.class, this, mimeInitializers));
         
         rebuild();
     }
@@ -75,9 +76,7 @@ public final class MimePathLookup extends ProxyLookup implements LookupListener 
         
         for (MimeLookupInitializer initializer : mimeInitializers.allInstances()) {
             for (int j = 0; j < mimePath.size(); j++) {
-                Lookup.Result children = initializer.child(mimePath.getMimeType(j));
-                for (Iterator k = children.allInstances().iterator(); k.hasNext(); ) {
-                    MimeLookupInitializer mli = (MimeLookupInitializer) k.next();
+                for (MimeLookupInitializer mli : initializer.child(mimePath.getMimeType(j)).allInstances()) {
                     Lookup mimePathLookup = mli.lookup();
                     if (mimePathLookup != null) {
                         lookups.add(mimePathLookup);
@@ -86,7 +85,7 @@ public final class MimePathLookup extends ProxyLookup implements LookupListener 
             }
         }
         
-        setLookups((Lookup [])lookups.toArray(new Lookup[lookups.size()]));
+        setLookups(lookups.toArray(new Lookup[lookups.size()]));
     }
     
     //-------------------------------------------------------------

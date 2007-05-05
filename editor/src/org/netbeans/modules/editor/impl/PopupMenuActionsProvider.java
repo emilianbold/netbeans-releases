@@ -25,18 +25,19 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.spi.editor.mimelookup.Class2LayerFolder;
 import org.netbeans.spi.editor.mimelookup.InstanceProvider;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Vita Stejskal
  */
-public final class PopupMenuActionsProvider extends ActionsList implements Class2LayerFolder, InstanceProvider {
+public final class PopupMenuActionsProvider extends ActionsList implements Class2LayerFolder<PopupMenuActionsProvider>, InstanceProvider<PopupMenuActionsProvider> {
 
     private static final String POPUP_MENU_ACTIONS_FOLDER_NAME = "Popup"; //NOI18N
     
     public static List getPopupMenuItems(String mimeType) {
         MimePath mimePath = MimePath.parse(mimeType);
-        PopupMenuActionsProvider provider = (PopupMenuActionsProvider) MimeLookup.getLookup(mimePath).lookup(PopupMenuActionsProvider.class);
+        PopupMenuActionsProvider provider = MimeLookup.getLookup(mimePath).lookup(PopupMenuActionsProvider.class);
         return provider == null ? Collections.emptyList() : provider.getAllInstances();
     }
     
@@ -44,11 +45,11 @@ public final class PopupMenuActionsProvider extends ActionsList implements Class
         super(null);
     }
 
-    private PopupMenuActionsProvider(List keys) {
+    private PopupMenuActionsProvider(List<FileObject> keys) {
         super(keys);
     }
     
-    public Class getClazz(){
+    public Class<PopupMenuActionsProvider> getClazz(){
         return PopupMenuActionsProvider.class;
     }
 
@@ -56,11 +57,11 @@ public final class PopupMenuActionsProvider extends ActionsList implements Class
         return POPUP_MENU_ACTIONS_FOLDER_NAME;
     }
 
-    public InstanceProvider getInstanceProvider() {
+    public InstanceProvider<PopupMenuActionsProvider> getInstanceProvider() {
         return new PopupMenuActionsProvider();
     }
     
-    public Object createInstance(List fileObjectList) {
+    public PopupMenuActionsProvider createInstance(List<FileObject> fileObjectList) {
         return new PopupMenuActionsProvider(fileObjectList);
     }
 }

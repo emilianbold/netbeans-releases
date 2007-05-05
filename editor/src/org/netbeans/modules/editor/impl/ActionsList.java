@@ -20,7 +20,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -30,15 +29,15 @@ public class ActionsList {
     
     private static final Logger LOG = Logger.getLogger(ActionsList.class.getName());
     
-    private final List all;
-    private final List actions;
+    private final List<Object> all;
+    private final List<Action> actions;
 
     /**
      * Create a new <code>ActionList</code> instance by calling<code>this(keys, false)</code>.
      * 
      * @param keys The list of objects to convert to <code>Action</code>s
      */
-    protected ActionsList(List keys) {
+    protected ActionsList(List<FileObject> keys) {
         this(keys, false);
     }
     
@@ -53,51 +52,46 @@ public class ActionsList {
      * @param keys The list of objects to convert to <code>Action</code>s
      * @param ignoreFolders <code>true</code> if the conversion should skipp folders
      */
-    protected ActionsList(List keys, boolean ignoreFolders) {
-        List [] lists = convertImpl(keys == null ? Collections.emptyList() : keys, ignoreFolders);
-        this.all = lists[0];
-        this.actions = lists[1];
+    protected ActionsList(List<FileObject> keys, boolean ignoreFolders) {
+        Pair p = convertImpl(keys == null ? Collections.<FileObject>emptyList() : keys, ignoreFolders);
+        this.all = p.all;
+        this.actions = p.actions;
     }
 
-    public List getAllInstances() {
+    public List<Object> getAllInstances() {
         return all;
     }
 
-    public List getActionsOnly() {
+    public List<Action> getActionsOnly() {
         return actions;
     }
 
-    public static List convert(List keys) {
-        List [] lists = convertImpl(keys, false);
-        return lists[0];
+    public static List<Object> convert(List<FileObject> keys) {
+        return convertImpl(keys, false).all;
     }
     
-    private static List [] convertImpl(List keys, boolean ignoreFolders) {
-        List all = new ArrayList();
-        List actions = new ArrayList();
+    private static class Pair {
+        List<Object> all;
+        List<Action> actions;
+    }
+    private static Pair convertImpl(List<FileObject> keys, boolean ignoreFolders) {
+        List<Object> all = new ArrayList<Object>();
+        List<Action> actions = new ArrayList<Action>();
 
-        for (int i = 0; i < keys.size(); i++){
-            Object item = keys.get(i);
-            DataObject dob = null;
-
-            if (item instanceof DataObject) {
-                dob = (DataObject) item;
-            } else if (item instanceof FileObject) {
-                try {
-                    dob = DataObject.find((FileObject) item);
-                } catch (DataObjectNotFoundException dnfe) {
-                    // ignore
-                }
+        for (FileObject item : keys) {
+            DataObject dob;
+            try {
+                dob = DataObject.find(item);
+            } catch (DataObjectNotFoundException dnfe) {
+                continue; // ignore
             }
 
-            if (dob != null) {
-                InstanceCookie ic = (InstanceCookie) dob.getLookup().lookup(InstanceCookie.class);
+            InstanceCookie ic = dob.getLookup().lookup(InstanceCookie.class);
                 if (ic != null){
                     try{
-                        if (Action.class.isAssignableFrom(ic.instanceClass()) ||
-                            SystemAction.class.isAssignableFrom(ic.instanceClass()))
+                        if (Action.class.isAssignableFrom(ic.instanceClass()))
                         {
-                            Object instance = ic.instanceCreate();
+                            Action instance = (Action) ic.instanceCreate();
                             all.add(instance);
                             actions.add(instance);
                         } else if (!DataFolder.class.isAssignableFrom(ic.instanceClass()) || !ignoreFolders) {
@@ -112,17 +106,11 @@ public class ActionsList {
                 } else {
                     all.add(dob.getName());
                 }
-            } else {
-                all.add(item);
-                if (item instanceof Action || item instanceof SystemAction) {
-                    actions.add(item);
-                }
-            }
         }
 
-        return new List [] { 
-            all.isEmpty() ? Collections.emptyList() : Collections.unmodifiableList(all), 
-            actions.isEmpty() ? Collections.emptyList() : Collections.unmodifiableList(actions), 
-        };
+        Pair p = new Pair();
+        p.all = all.isEmpty() ? Collections.emptyList() : Collections.unmodifiableList(all);
+        p.actions = actions.isEmpty() ? Collections.<Action>emptyList() : Collections.unmodifiableList(actions);
+        return p;
     }
 }

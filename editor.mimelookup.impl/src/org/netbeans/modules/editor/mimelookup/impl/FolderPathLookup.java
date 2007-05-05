@@ -22,11 +22,12 @@ package org.netbeans.modules.editor.mimelookup.impl;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.cookies.InstanceCookie;
@@ -70,11 +71,9 @@ public final class FolderPathLookup extends AbstractLookup {
     }
 
     private void rebuild() {
-        List files = children.getChildren();
-        ArrayList instanceFiles = new ArrayList();
+        List<String> instanceFiles = new ArrayList<String>();
         
-        for (Iterator i = files.iterator(); i.hasNext(); ) {
-            FileObject file = (FileObject) i.next();
+        for (FileObject file : children.getChildren()) {
             if (!file.isValid()) {
                 // Can happen after modules are disabled. Ignore it.
                 continue;
@@ -82,7 +81,7 @@ public final class FolderPathLookup extends AbstractLookup {
             
             try {
                 DataObject d = DataObject.find(file);
-                InstanceCookie instanceCookie = (InstanceCookie) d.getCookie(InstanceCookie.class);
+                InstanceCookie instanceCookie = d.getCookie(InstanceCookie.class);
                 if (instanceCookie != null) {
                     instanceFiles.add(file.getPath());
                 }
@@ -107,17 +106,17 @@ public final class FolderPathLookup extends AbstractLookup {
         }
     } // End of PCL class
     
-    private static final class InstanceConvertor implements InstanceContent.Convertor {
-        private HashMap types = new HashMap();
+    private static final class InstanceConvertor implements InstanceContent.Convertor<String,Object> {
+        private Map<String,Reference<Class<?>>> types = new HashMap<String,Reference<Class<?>>>();
         
-        public Class type(Object filePath) {
+        public Class<?> type(String filePath) {
             synchronized (types) {
-                WeakReference ref = (WeakReference) types.get(filePath);
-                Class type = ref == null ? null : (Class) ref.get();
+                Reference<Class<?>> ref = types.get(filePath);
+                Class<?> type = ref == null ? null : (Class) ref.get();
                 if (type == null) {
                     try {
                         type = getInstanceCookie(filePath).instanceClass();
-                        types.put(filePath, new WeakReference(type));
+                        types.put(filePath, new WeakReference<Class<?>>(type));
                     } catch (Exception e) {
                         LOG.log(Level.WARNING, "Can't determine instance class from '" + filePath + "'", e); //NOI18N
                         return DeadMarker.class; // Something nobody will ever find
@@ -128,11 +127,11 @@ public final class FolderPathLookup extends AbstractLookup {
             }
         }
 
-        public String id(Object filePath) {
-            return (String) filePath;
+        public String id(String filePath) {
+            return filePath;
         }
 
-        public String displayName(Object filePath) {
+        public String displayName(String filePath) {
             try {
                 return getInstanceCookie(filePath).instanceName();
             } catch (Exception e) {
@@ -141,7 +140,7 @@ public final class FolderPathLookup extends AbstractLookup {
             }
         }
 
-        public Object convert(Object filePath) {
+        public Object convert(String filePath) {
             try {
                 return getInstanceCookie(filePath).instanceCreate();
             } catch (Exception e) {
@@ -150,15 +149,15 @@ public final class FolderPathLookup extends AbstractLookup {
             }
         }
         
-        private InstanceCookie getInstanceCookie(Object filePath) throws IOException {
-            FileObject file = Repository.getDefault().getDefaultFileSystem().findResource((String) filePath);
+        private InstanceCookie getInstanceCookie(String filePath) throws IOException {
+            FileObject file = Repository.getDefault().getDefaultFileSystem().findResource(filePath);
             if (file == null) {
                 // Should not occure
                 throw new IOException("The file does not exist '" + filePath + "'"); //NOI18N
             }
             
             DataObject d = DataObject.find(file);
-            InstanceCookie cookie = (InstanceCookie) d.getCookie(InstanceCookie.class);
+            InstanceCookie cookie = d.getCookie(InstanceCookie.class);
             if (cookie != null) {
                 return cookie;
             } else {

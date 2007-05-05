@@ -39,7 +39,7 @@ import org.openide.loaders.DataObject;
  *
  * @author Martin Roskanin
  */
-public final class SideBarFactoriesProvider implements Class2LayerFolder, InstanceProvider {
+public final class SideBarFactoriesProvider implements Class2LayerFolder<SideBarFactoriesProvider>, InstanceProvider<SideBarFactoriesProvider> {
 
     private static final Logger LOG = Logger.getLogger(SideBarFactoriesProvider.class.getName());
     
@@ -64,7 +64,7 @@ public final class SideBarFactoriesProvider implements Class2LayerFolder, Instan
         return factories;
     }
     
-    public Class getClazz(){
+    public Class<SideBarFactoriesProvider> getClazz(){
         return SideBarFactoriesProvider.class;
     }
     
@@ -78,14 +78,12 @@ public final class SideBarFactoriesProvider implements Class2LayerFolder, Instan
         return SIDEBAR_COMPONENTS_FOLDER_NAME;
     }
 
-    public InstanceProvider getInstanceProvider() {
+    public InstanceProvider<SideBarFactoriesProvider> getInstanceProvider() {
         return new SideBarFactoriesProvider();
     }
 
-    public Object createInstance(List fileObjectList) {
-        @SuppressWarnings("unchecked")
-        List<FileObject> list = fileObjectList;
-        return new SideBarFactoriesProvider(list);
+    public SideBarFactoriesProvider createInstance(List<FileObject> fileObjectList) {
+        return new SideBarFactoriesProvider(fileObjectList);
     }
     
     private Map<CustomizableSideBar.SideBarPosition, List<SideBarFactory>> computeInstances() {
@@ -100,7 +98,7 @@ public final class SideBarFactoriesProvider implements Class2LayerFolder, Instan
             
             try {
                 DataObject dob = DataObject.find(f);
-                InstanceCookie ic = (InstanceCookie)dob.getCookie(InstanceCookie.class);
+                InstanceCookie ic = dob.getCookie(InstanceCookie.class);
                 if (ic != null && SideBarFactory.class.isAssignableFrom(ic.instanceClass())) {
                     factory = (SideBarFactory) ic.instanceCreate();
                 }

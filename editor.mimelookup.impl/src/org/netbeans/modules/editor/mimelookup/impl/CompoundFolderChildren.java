@@ -29,9 +29,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbCollections;
 import org.openide.util.TopologicalSortException;
 import org.openide.util.Utilities;
 
@@ -50,7 +52,7 @@ public final class CompoundFolderChildren {
     
     private final String LOCK = new String("CompoundFolderChildren.LOCK"); //NOI18N
     private FolderChildren [] layers = null;
-    private List children = Collections.EMPTY_LIST;
+    private List<FileObject> children = Collections.emptyList();
     
     private PCL listener = new PCL();
     private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
@@ -70,7 +72,7 @@ public final class CompoundFolderChildren {
         rebuild();
     }
     
-    public List getChildren() {
+    public List<FileObject> getChildren() {
         synchronized (LOCK) {
             return children;
         }
@@ -89,8 +91,8 @@ public final class CompoundFolderChildren {
         
         synchronized (LOCK) {
             // Collect all children
-            HashMap visible = new HashMap();
-            HashMap hidden = new HashMap();
+            Map<String,FileObject> visible = new HashMap<String,FileObject>();
+            Map<String,FileObject> hidden = new HashMap<String,FileObject>();
             
             for (int i = 0; i < layers.length; i++) {
                 List layerKids = layers[i].getChildren();
@@ -113,7 +115,7 @@ public final class CompoundFolderChildren {
             }
 
             // Collect all edges
-            HashMap edges = new HashMap();
+            Map<FileObject,Set<FileObject>> edges = new HashMap<FileObject,Set<FileObject>>();
             for (int i = 0; i < layers.length; i++) {
                 Map layerAttrs = layers[i].getFolderAttributes();
                 for (Iterator j = layerAttrs.keySet().iterator(); j.hasNext(); ) {
@@ -137,13 +139,13 @@ public final class CompoundFolderChildren {
                     }
                     
                     // Get the files and add them among the edges
-                    FileObject from = (FileObject) visible.get(name1);
-                    FileObject to = (FileObject) visible.get(name2);
+                    FileObject from = visible.get(name1);
+                    FileObject to = visible.get(name2);
                     
                     if (from != null && to != null) {
-                        HashSet vertices = (HashSet) edges.get(from);
+                        Set<FileObject> vertices = edges.get(from);
                         if (vertices == null) {
-                            vertices = new HashSet();
+                            vertices = new HashSet<FileObject>();
                             edges.put(from, vertices);
                         }
                         vertices.add(to);
@@ -152,13 +154,13 @@ public final class CompoundFolderChildren {
             }
             
             // Sort the children
-            List sorted;
+            List<FileObject> sorted;
             
             try {
                 sorted = Utilities.topologicalSort(visible.values(), edges);
             } catch (TopologicalSortException e) {
                 LOG.log(Level.WARNING, "Can't sort folder children.", e); //NOI18N
-                sorted = e.partialSort();
+                sorted = NbCollections.checkedListByCopy(e.partialSort(), FileObject.class, true);
             }
             
             if (!children.equals(sorted)) {

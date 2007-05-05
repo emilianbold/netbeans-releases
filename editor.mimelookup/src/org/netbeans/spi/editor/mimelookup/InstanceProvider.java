@@ -20,6 +20,7 @@
 package org.netbeans.spi.editor.mimelookup;
 
 import java.util.List;
+import org.openide.filesystems.FileObject;
 
 /**
  * Provider of the instance of the given class.
@@ -40,12 +41,13 @@ import java.util.List;
  * e.g.<pre>
  * interface PopupActions {
  *
- *     List<Action> getActions();
+ *     List&lt;Action> getActions();
  *
  * }</pre>
  *
+ * @param T type of instance which will be created
  */
-public interface InstanceProvider {
+public interface InstanceProvider<T> {
     
     /**
      * Create an instance of the class for which this
@@ -59,6 +61,6 @@ public interface InstanceProvider {
      *  should be translated to that instance so typically the instance
      *  contains some kind of the collection.
      */
-    public Object createInstance(List/*<FileObject>*/ fileObjectList);
+    public T createInstance(List<FileObject> fileObjectList);
 
 }

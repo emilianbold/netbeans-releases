@@ -35,7 +35,7 @@ import org.openide.loaders.DataObject;
  *
  * @author Vita Stejskal
  */
-public final class ToolbarActionsProvider extends ActionsList implements Class2LayerFolder, InstanceProvider {
+public final class ToolbarActionsProvider extends ActionsList implements Class2LayerFolder<ToolbarActionsProvider>, InstanceProvider<ToolbarActionsProvider> {
 
     private static final Logger LOG = Logger.getLogger(ToolbarActionsProvider.class.getName());
     
@@ -57,11 +57,11 @@ public final class ToolbarActionsProvider extends ActionsList implements Class2L
         super(null);
     }
 
-    private ToolbarActionsProvider(List keys) {
+    private ToolbarActionsProvider(List<FileObject> keys) {
         super(keys, true);
     }
     
-    public Class getClazz(){
+    public Class<ToolbarActionsProvider> getClazz(){
         return ToolbarActionsProvider.class;
     }
 
@@ -69,28 +69,28 @@ public final class ToolbarActionsProvider extends ActionsList implements Class2L
         return TOOLBAR_ACTIONS_FOLDER_NAME;
     }
 
-    public InstanceProvider getInstanceProvider() {
+    public InstanceProvider<ToolbarActionsProvider> getInstanceProvider() {
         return new ToolbarActionsProvider();
     }
     
-    public Object createInstance(List fileObjectList) {
+    public ToolbarActionsProvider createInstance(List<FileObject> fileObjectList) {
         return new ToolbarActionsProvider(fileObjectList);
     }
     
     // XXX: This is here to help NbEditorToolbar to deal with legacy code
     // that registered toolbar actions in text/base. The artificial text/base
     // mime type is deprecated and should not be used anymore.
-    public static final class LegacyToolbarActionsProvider extends ActionsList implements Class2LayerFolder, InstanceProvider {
+    public static final class LegacyToolbarActionsProvider extends ActionsList implements Class2LayerFolder<LegacyToolbarActionsProvider>, InstanceProvider<LegacyToolbarActionsProvider> {
 
         public LegacyToolbarActionsProvider() {
             super(null);
         }
 
-        private LegacyToolbarActionsProvider(List keys) {
+        private LegacyToolbarActionsProvider(List<FileObject> keys) {
             super(keys);
         }
 
-        public Class getClazz(){
+        public Class<LegacyToolbarActionsProvider> getClazz(){
             return LegacyToolbarActionsProvider.class;
         }
 
@@ -98,11 +98,11 @@ public final class ToolbarActionsProvider extends ActionsList implements Class2L
             return TOOLBAR_ACTIONS_FOLDER_NAME;
         }
 
-        public InstanceProvider getInstanceProvider() {
+        public InstanceProvider<LegacyToolbarActionsProvider> getInstanceProvider() {
             return new LegacyToolbarActionsProvider();
         }
 
-        public Object createInstance(List fileObjectList) {
+        public LegacyToolbarActionsProvider createInstance(List<FileObject> fileObjectList) {
             ArrayList<FileObject> textBaseFilesList = new ArrayList<FileObject>();
 
             for(Object o : fileObjectList) {

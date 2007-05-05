@@ -23,8 +23,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Logger;
 import org.netbeans.spi.editor.mimelookup.InstanceProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -34,16 +34,12 @@ import org.openide.util.lookup.InstanceContent;
  */
 public final class InstanceProviderLookup extends AbstractLookup {
 
-    private static final Logger LOG = Logger.getLogger(InstanceProvider.class.getName());
-    
     private InstanceContent content;
-    private InstanceProvider instanceProvider;
+    private InstanceProvider<?> instanceProvider;
     
     private CompoundFolderChildren children;
     private PCL listener = new PCL();
 
-    private final String LOCK = new String("InstanceProviderLookup.LOCK"); //NOI18N
-    
     /** Creates a new instance of InstanceProviderLookup */
     public InstanceProviderLookup(String [] paths, InstanceProvider instanceProvider) {
         this(paths, instanceProvider, new InstanceContent());
@@ -62,7 +58,7 @@ public final class InstanceProviderLookup extends AbstractLookup {
     }
 
     private void rebuild() {
-        List files = children.getChildren();
+        List<FileObject> files = children.getChildren();
         Object instance = instanceProvider.createInstance(files);
         content.set(Collections.singleton(instance), null);
     }
