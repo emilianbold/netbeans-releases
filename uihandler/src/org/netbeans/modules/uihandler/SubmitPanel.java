@@ -130,7 +130,7 @@ implements ExplorerManager.Provider, PropertyChangeListener {
         tabs.addTab(org.openide.util.NbBundle.getMessage(SubmitPanel.class, "MSG_Tab_Text"), raw); // NOI18N
 
         add(tabs, java.awt.BorderLayout.CENTER);
-    }// </editor-fold>    public ExplorerManager getExplorerManager() {//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     public ExplorerManager getExplorerManager() {
         return manager;
@@ -140,7 +140,7 @@ implements ExplorerManager.Provider, PropertyChangeListener {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         try {
             LogRecords.write(os, r);
-            text.getDocument().insertString(text.getDocument().getLength(), os.toString(), null);
+            text.getDocument().insertString(text.getDocument().getLength(), os.toString("UTF-8"), null); // NOI18N
             text.getCaret().setDot(0);
         } catch (IOException ex) {
             Installer.LOG.log(Level.WARNING, null, ex);
@@ -196,7 +196,7 @@ implements ExplorerManager.Provider, PropertyChangeListener {
     private javax.swing.JEditorPane record;
     private javax.swing.JPanel structured;
     private javax.swing.JTabbedPane tabs;
-    private javax.swing.JEditorPane text;
+    javax.swing.JEditorPane text;
     // End of variables declaration//GEN-END:variables
     
     
