@@ -20,7 +20,6 @@
 package org.netbeans.modules.editor.options;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.Insets;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -37,7 +36,6 @@ import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.JTextComponent;
 import java.awt.Toolkit;
-import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
@@ -76,6 +74,7 @@ import java.util.logging.Level;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.impl.KitsTracker;
+import org.netbeans.modules.editor.lib.ColoringMap;
 import org.openide.filesystems.Repository;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -264,11 +263,13 @@ public class BaseOptions extends OptionSupport {
     public boolean usesNewOptionsDialog() {
         if (usingNewOptions == null) {
             boolean b = false;
-            if (!BASE.equals(getTypeName())){
-                FontColorSettings fcs = getFontColorSettings();
+            if (!BASE.equals(getTypeName())) {
+                String mime = getCTImpl();
+                Lookup lookup = MimeLookup.getLookup(MimePath.parse(mime));
+                FontColorSettings fcs = lookup.lookup(FontColorSettings.class);
                 if (fcs != null){
                     AttributeSet as = fcs.getTokenFontColors(FontColorNames.DEFAULT_COLORING);
-                    if (as !=null){
+                    if (as !=null) {
                         b = true;
                     }
                 }
@@ -919,54 +920,7 @@ public class BaseOptions extends OptionSupport {
         }
         super.setSettingValue(SettingsNames.KEY_BINDING_LIST, newKeybs, KEY_BINDING_LIST_PROP);
     }
-    
-    private void updateColoringsFromNewOptionsDialogAttributes(){
-        Map m = getColoringMap_old();
-        m.remove(null);
-        FontColorSettings fcs = getFontColorSettings();
-        if (fcs == null){
-            return;
-        }
-        
-        for(Iterator it = m.keySet().iterator(); it.hasNext(); ) {
-            String category = (String) it.next ();
-	    if (category == null) continue;
-            
-            AttributeSet as = fcs.getTokenFontColors (category);
-	    if (as == null) {
-		as = fcs.getFontColors (category);
-            }
-	    if (as == null) {
-		System.out.println("ColorBridge.unknown category " + category); //NOI18N
-                continue;
-	    }
-            
-            m.put(category, Coloring.fromAttributeSet(as));
-        }
-        m.put(null, getKitClass().getName() ); // add kit class                               
-        setColoringMap (m);
 
-        // set other colorings like text limit line, caret
-        AttributeSet set = (AttributeSet) fcs.getFontColors(SettingsNames.CARET_COLOR_INSERT_MODE);
-        if (set != null){
-            Color color = (Color)set.getAttribute(StyleConstants.Foreground);
-            Color current  = getCaretColorInsertMode();
-            if (color!=null && !color.equals(current)){
-                setCaretColorInsertMode(color);
-                setCaretColorOverwriteMode(color);
-            }
-        }
-
-        set = (AttributeSet) fcs.getFontColors(SettingsNames.TEXT_LIMIT_LINE_COLOR);
-        if (set != null){
-            Color color = (Color)set.getAttribute(StyleConstants.Foreground);
-            Color current  = getTextLimitLineColor();
-            if (color!=null && !color.equals(current)){
-                setTextLimitLineColor(color);
-            }
-        }
-    }
-    
     private KeyBindingSettings getKeybindingSettings() {
         synchronized (Settings.class) {
             if (keyBindingsSettings == null){
@@ -998,138 +952,132 @@ public class BaseOptions extends OptionSupport {
             return keyBindingsSettings;
         }
     }
-    
-    private FontColorSettings getFontColorSettings() {
-        synchronized (Settings.class) {
-            if (fontColorSettings == null) {
-                String mime = getCTImpl();
-                Lookup lookup = MimeLookup.getLookup(MimePath.parse(mime));
-                Lookup.Result result = lookup.lookup(new Lookup.Template(FontColorSettings.class));
-                Collection inst = result.allInstances();
-                lookupListener = new LookupListener(){
-                    public void resultChanged(LookupEvent ev){
-                        Lookup.Result result = ((Lookup.Result)ev.getSource());
-                        // refresh fontColorSettings
-                        Collection newInstances = result.allInstances();
-                        if (newInstances.size() > 0){
-                            fontColorSettings = (FontColorSettings)newInstances.iterator().next();
-                        }
 
-                        updateColoringsFromNewOptionsDialogAttributes();
-                    }
-                };
-                result.addLookupListener(lookupListener);
-                if (inst.size() > 0){
-                    fontColorSettings = (FontColorSettings)inst.iterator().next();
-                }
-            }
-            return fontColorSettings;
-        }
+    /**
+     * Tries to gather all colorings defined for the mime type of this instance.
+     * 
+     * @return The map with all colorings defined the mime type of this instance.
+     *   The returned map may be inaccurate, please use the new Editor Settings
+     *   API and its <code>FontColorSettings</code> class.
+     * 
+     * @deprecated Use Editor Settings API instead.
+     */
+    public Map<String, Coloring> getColoringMap() {
+        return new HashMap<String, Coloring>(ColoringMap.get(getContentType()).getMap());
     }
     
-    public Map getColoringMap() {
-        if (!coloringsInitialized) {
-            coloringsInitialized = true;
-            if (usesNewOptionsDialog()) {
-                updateColoringsFromNewOptionsDialogAttributes();
-            } else {
-                loadSettings(FontsColorsMIMEProcessor.class);
-            }
-        }
-        
-        return getColoringMap_old();
-    }
-    
-    private Map getColoringMap_old() {
-        Map settingsMap = SettingsUtil.getColoringMap(getKitClass(), false, true); // !!! !evaluateEvaluators
-        Map cm = (settingsMap == null) ? new HashMap() : new HashMap(settingsMap);
-        cm.put(null, getKitClass().getName() ); // add kit class
-        return cm;
-    }
-    
-    /** Sets new coloring map and save the diff-ed changes to XML file*/
+    /** 
+     * Calls <code>setColoringMap(coloringMap, true)</code>.
+     * 
+     * @deprecated Use Editor Settings Storage API instead.
+     */
     public void setColoringMap(Map coloringMap) {
         setColoringMap(coloringMap, true);
     }
     
-    /** Sets new coloring map to initializer map and if saveToXML is true,
-     *  then new settings will be saved to XML file. */
-    public void setColoringMap(final Map coloringMap, boolean saveToXML){
-        Map diffMap = null;
+    /** 
+     * Tries to update colorings for the mime type of this instance.
+     * 
+     * @param coloringMap The map with colorings.
+     * @param saveToXML Ignored.
+     * 
+     * @deprecated Use Editor Settings Storage API instead.
+     */
+    public void setColoringMap(final Map<String, Coloring> coloringMap, boolean saveToXML) {
         if (coloringMap != null) {
-//            if (inReadExternal) {
-                /* Fix of #11115
-                 * The better place would be in upgradeOptions()
-                 * which was attempted originally. However the normal
-                 * behavior of setColoringMap() destroys the colorings
-                 * if they are not upgraded immediately. Therefore
-                 * the readExternalColoringMap approach was attempted.
-                 * However there was an NPE in
-                 * properties.syntax.EditorSettingsCopy.updateColors
-                 * at line 235 the keyColoring was null.
-                 * Therefore the patch appears here.
-                 */
-                //coloringMap = UpgradeOptions.patchColorings(getKitClass(), coloringMap);
-//            }
-            
-            if (!usesNewOptionsDialog() && saveToXML){
-                diffMap = OptionUtilities.getMapDiff(getColoringMap(),coloringMap,false);
-                if (diffMap.size()>0){
-                    // settings has changed, write changed settings to XML file
-                    //System.out.println("SETTING COLORING MAP:"+diffMap);
-                    updateSettings(FontsColorsMIMEProcessor.class, diffMap);
-                }
-            }
-            
-            coloringMap.remove(null); // remove kit class
-            
             Settings.update(new Runnable() {
                 public void run() {
                     SettingsUtil.setColoringMap( getKitClass(), coloringMap, false );
                 }
             });
-            
-            coloringMapInitializer = SettingsUtil.getColoringMapInitializer(
-            getKitClass(), coloringMap, false,
-            getTypeName() + "-coloring-map-initializer" //NOI18N
-            );
-            
-            firePropertyChange(COLORING_MAP_PROP, null, null);
         }
+        
+// XXX: try harder to preseve backwards compatibility of this method
+//        Map diffMap = null;
+//        if (coloringMap != null) {
+////            if (inReadExternal) {
+//                /* Fix of #11115
+//                 * The better place would be in upgradeOptions()
+//                 * which was attempted originally. However the normal
+//                 * behavior of setColoringMap() destroys the colorings
+//                 * if they are not upgraded immediately. Therefore
+//                 * the readExternalColoringMap approach was attempted.
+//                 * However there was an NPE in
+//                 * properties.syntax.EditorSettingsCopy.updateColors
+//                 * at line 235 the keyColoring was null.
+//                 * Therefore the patch appears here.
+//                 */
+//                //coloringMap = UpgradeOptions.patchColorings(getKitClass(), coloringMap);
+////            }
+//            
+//            if (!usesNewOptionsDialog() && saveToXML){
+//                diffMap = OptionUtilities.getMapDiff(getColoringMap(),coloringMap,false);
+//                if (diffMap.size()>0){
+//                    // settings has changed, write changed settings to XML file
+//                    //System.out.println("SETTING COLORING MAP:"+diffMap);
+//                    updateSettings(FontsColorsMIMEProcessor.class, diffMap);
+//                }
+//            }
+//            
+//            coloringMap.remove(null); // remove kit class
+//            
+//            Settings.update(new Runnable() {
+//                public void run() {
+//                    SettingsUtil.setColoringMap( getKitClass(), coloringMap, false );
+//                }
+//            });
+//            
+//            coloringMapInitializer = SettingsUtil.getColoringMapInitializer(
+//            getKitClass(), coloringMap, false,
+//            getTypeName() + "-coloring-map-initializer" //NOI18N
+//            );
+//            
+//            firePropertyChange(COLORING_MAP_PROP, null, null);
+//        }
     }
     
+    /**
+     * @deprecated Use Editor Settings API instead.
+     */
     public int getFontSize() {
         Coloring dc = SettingsUtil.getColoring(getKitClass(), SettingsNames.DEFAULT_COLORING, false);
         return (dc != null) ? dc.getFont().getSize() : SettingsDefaults.defaultFont.getSize();
     }
-    
+  
+    /**
+     * Does nothing.
+     * 
+     * @deprecated Use Editor Settings Storage API instead.
+     */
     public void setFontSize(final int size) {
-        if (size < 0) {
-            NbEditorUtilities.invalidArgument("MSG_NegativeValue"); // NOI18N
-            return;
-        }
-        final int oldSize = getFontSize();
-        Map cm = SettingsUtil.getColoringMap(getKitClass(), false, true); // !!! !evaluateEvaluators
-        if (cm != null) {
-            Iterator it = cm.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry entry = (Map.Entry)it.next();
-                Object value = entry.getValue();
-                if (value instanceof Coloring) {
-                    Coloring c = (Coloring)value;
-                    Font font = c.getFont();
-                    if (font != null && font.getSize() != size) {
-                        font = font.deriveFont((float)size);
-                        Coloring newColoring = new Coloring(font, c.getFontMode(),
-                        c.getForeColor(), c.getBackColor()); // this way due to bug in Coloring
-                        entry.setValue(newColoring);
-                    }
-                }
-            }
-            setColoringMap(cm);
-            
-            firePropertyChange(FONT_SIZE_PROP, null, null);
-        }
+// XXX: do something sensible here like changing the size of the default coloring for example
+//
+//        if (size < 0) {
+//            NbEditorUtilities.invalidArgument("MSG_NegativeValue"); // NOI18N
+//            return;
+//        }
+//        final int oldSize = getFontSize();
+//        Map cm = SettingsUtil.getColoringMap(getKitClass(), false, true); // !!! !evaluateEvaluators
+//        if (cm != null) {
+//            Iterator it = cm.entrySet().iterator();
+//            while (it.hasNext()) {
+//                Map.Entry entry = (Map.Entry)it.next();
+//                Object value = entry.getValue();
+//                if (value instanceof Coloring) {
+//                    Coloring c = (Coloring)value;
+//                    Font font = c.getFont();
+//                    if (font != null && font.getSize() != size) {
+//                        font = font.deriveFont((float)size);
+//                        Coloring newColoring = new Coloring(font, c.getFontMode(),
+//                        c.getForeColor(), c.getBackColor()); // this way due to bug in Coloring
+//                        entry.setValue(newColoring);
+//                    }
+//                }
+//            }
+//            setColoringMap(cm);
+//    
+//            firePropertyChange(FONT_SIZE_PROP, null, null);
+//        }
     }
     
     public float getLineHeightCorrection() {
@@ -1377,14 +1325,22 @@ public class BaseOptions extends OptionSupport {
         return (Color)super.getSettingValue(SettingsNames.TEXT_LIMIT_LINE_COLOR);
     }
     
-    /** Sets new TextLimitLineColor property to initializer map and save the
-     *  changes to XML file */
+    /** 
+     * Sets new TextLimitLineColor property to initializer map and save the
+     * changes to XML file
+     * 
+     * @deprecated Use Editor Settings Storage API instead.
+     */
     public void setTextLimitLineColor(Color color) {
         setTextLimitLineColor(color, true);
     }
     
-    /** Sets new TextLimitLineColor property to initializer map and if saveToXML is true,
-     *  then new settings will be saved to XML file (fontsColors.xml). */
+    /** 
+     * Sets new TextLimitLineColor property to initializer map and if saveToXML is true,
+     * then new settings will be saved to XML file (fontsColors.xml).
+     * 
+     * @deprecated Use Editor Settings Storage API instead.
+     */
     public void setTextLimitLineColor(Color color , boolean saveToXML) {
         if (saveToXML){
             if (!getTextLimitLineColor().equals(color) && (color!=null)){

@@ -67,6 +67,15 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.lexer</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>1.18</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.awt</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -116,6 +125,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.lib.editor.hyperlink.spi</package>
                 <package>org.netbeans.lib.editor.view</package>
             </public-packages>
-            </data>
+        </data>
     </configuration>
 </project>

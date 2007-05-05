@@ -28,33 +28,23 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.event.ChangeListener;
-import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.Coloring;
 import org.netbeans.editor.EditorUI;
-import org.netbeans.editor.Settings;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtEditorUI;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.modules.editor.options.AllOptionsFolder;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
-import org.openide.util.WeakListeners;
 import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.actions.CallbackSystemAction;
@@ -64,7 +54,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.border.Border;
-import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.editor.impl.CustomizableSideBar;
 import org.netbeans.modules.editor.impl.CustomizableSideBar.SideBarPosition;
 import org.openide.text.CloneableEditorSupport;
@@ -84,12 +73,6 @@ public class NbEditorUI extends ExtEditorUI {
 
     private boolean attached = false;
     private ChangeListener listener;
-    private FontColorSettings fontColorSettings;    
-    private LookupListener weakLookupListener;    
-    private Lookup.Result result;
-    private LookupListener lookupListener;    
-    
-    private static final Map /*<mimeType, map of colorings>*/mime2Coloring = new HashMap(5);
     
     /**
      *
@@ -142,82 +125,6 @@ public class NbEditorUI extends ExtEditorUI {
         new NbEditorUI.SystemActionPerformer(editorActionName);
     }
 
-    private String getDocumentContentType(){
-        JTextComponent c = getComponent();
-        if (c == null){
-            return null;
-        }
-        Document doc = c.getDocument();
-        String mimeType = (String) doc.getProperty("mimeType");  //NOI18N
-        if (mimeType == null){
-            return null;
-        }
-        return mimeType;
-    }
-    
-    private FontColorSettings getFontColorSettings(){
-        synchronized (Settings.class){
-            if (fontColorSettings == null){
-                final String mimeType = getDocumentContentType();
-                if (mimeType == null){
-                    return null;
-                }
-                Lookup lookup = MimeLookup.getLookup(MimePath.parse(mimeType));
-                result = lookup.lookup(new Lookup.Template(FontColorSettings.class));
-                Collection inst = result.allInstances();
-                lookupListener = new MyLookupListener(mimeType);
-                weakLookupListener = (LookupListener) WeakListeners.create(
-                        LookupListener.class, lookupListener, result);
-  
-                result.addLookupListener(weakLookupListener);
-                if (inst.size() > 0){
-                    fontColorSettings = (FontColorSettings)inst.iterator().next();
-                }
-            }
-        }
-        return fontColorSettings;
-    }
-
-    
-    protected Map createColoringMap(){
-        FontColorSettings fcs = getFontColorSettings();
-        String mimeType = getDocumentContentType();
-        if (fcs == null || mimeType == null){
-            return super.createColoringMap();
-        }
-        synchronized (Settings.class){
-            Map cm = (Map)mime2Coloring.get(mimeType);
-            if (cm != null){
-                return cm;
-            }
-            cm = new HashMap();
-            cm.putAll(super.createColoringMap());
-
-            for(Iterator it = cm.keySet().iterator(); it.hasNext(); ) {
-
-                Object nameObj = it.next();
-                if (!(nameObj instanceof String)) {
-                    continue;
-                }
-                
-                String name = (String) nameObj;
-                
-                AttributeSet as = fcs.getTokenFontColors(name);
-                if (as == null){
-                    as = fcs.getFontColors(name);
-                    if (as == null){
-                        continue;
-                    }
-                }
-
-                cm.put(name, Coloring.fromAttributeSet(as));
-            }
-            
-            mime2Coloring.put(mimeType, cm);
-            return cm;
-        }
-    }
-    
     protected void installUI(JTextComponent c) {
         super.installUI(c);
 
@@ -668,33 +575,6 @@ public class NbEditorUI extends ExtEditorUI {
             }
         }
 
-    }
-
-    public Map getColoringMap() {
-        return createColoringMap();
-    }
-
-    private class MyLookupListener implements LookupListener {
-
-        private String mimeType;
-
-        public MyLookupListener(String mimeType) {
-            super();
-            this.mimeType = mimeType;
-        }
-
-        public void resultChanged(LookupEvent ev) {
-            synchronized (Settings.class){
-                mime2Coloring.remove(mimeType);
-                Lookup.Result result = ((Lookup.Result)ev.getSource());
-                // refresh fontColorSettings
-                Collection newInstances = result.allInstances();
-                if (newInstances.size() > 0){
-                    fontColorSettings = (FontColorSettings)newInstances.iterator().next();
-                }
-            }
-            settingsChangeImpl(null);
-        }
     }
 
 }
