@@ -28,6 +28,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
 import static java.lang.Math.min;
@@ -321,6 +323,8 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
      *
      */
     static final class PropCharsetDecoder extends CharsetDecoder {
+        
+        private final Logger log = Logger.getLogger(getClass().getName().replace('$', '.'));
 
         private static enum State {
             INITIAL,
@@ -370,6 +374,9 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
         }
 
         protected void implReset() {
+            log.finer("");
+            log.finer("implReset() called");
+            
             inBufPos = 0;
             outBufPos = 0;
             
@@ -420,7 +427,9 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
         }
         
         private void handlePendingCharacters() {
+            log.finer("handlePendingCharacters()");
             if (!hasPendingCharacters()) {
+                log.finer(" - no pending characters");
                 return;
             }
             
@@ -429,9 +438,14 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
                     assert false;
                     break;
                 case BACKSLASH:
+                    log.finer("backslash pending");
                     outBuf[outBufPos++] = '\\';
                     break;
                 case UNICODE:
+                    log.finer("broken \\u.... sequence pending");
+                    if (log.isLoggable(Level.FINEST)) {
+                        log.finest(" - " + unicodeBytesRead + " unicode value bytes pending");
+                    }
                     outBuf[outBufPos++] = '\\';
                     outBuf[outBufPos++] = 'u';
                     
@@ -452,29 +466,37 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
          * sets flag variable {@link #emptyIn} to {@code true}.
          */
         private void readIn(ByteBuffer in) {
+            log.finer("filling inBuf: ");
             if (emptyIn) {
+                log.finer(" - input empty (emptyIn already set)");
                 return;
             }
             
             int inRemaining = in.remaining();
             if (inRemaining == 0) {
+                log.finer(" - input empty (emptyIn will be set)");
                 emptyIn = true;
                 return;
             }
             
             int bufRemaining = inBuf.length - inBufPos;
             if (bufRemaining == 0) {
+                log.finer(" - no space remaining in inBuf");
                 /* no space in inBuf */
                 return;
             }
             
             int length = min(inRemaining, bufRemaining);
+            if (log.isLoggable(Level.FINER)) {
+                log.finer(" - " + length + " bytes will be read");
+            }
             in.get(inBuf, inBufPos, length);
             inBufPos += length;
             emptyInBuf = false;
             
             if (length == inRemaining) {
                 assert in.remaining() == 0;
+                log.finer(" - all remaining bytes were read (emptyIn will be set)");
                 emptyIn = true;
             }
         }
@@ -483,18 +505,30 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
          * Encodes as many chars from the internal input buffer as possible.
          */
         private CoderResult decodeBuf() {
+            log.finer("decoding inBuf, writing to outBuf");
             if (emptyInBuf) {
+                log.finer(" - inBuf is empty - nothing to decode");
                 return null;
             }
             
             CoderResult result = null;
             int decodingInBufPos = 0;
+            log.finest(" - decoding bytes:");
+            log.finest("     - initial state: " + state);
             while ((decodingInBufPos < inBufPos)
                     && (outBufPos <= outBufSize - maxCharsPerByteInt)) {
                 int decodedChars = decodeByte(inBuf[decodingInBufPos++]);
+                if (log.isLoggable(Level.FINEST)) {
+                    StringBuilder sb = new StringBuilder(60);
+                    sb.append("     - byte 0x");
+                    sb.append(hexavalue(inBuf[decodingInBufPos - 1]));
+                    sb.append(" => ").append(state);
+                    log.finest(sb.toString());
+                }
                 if (decodedChars < 0) {
                     /* put back the character following the broken sequence: */
                     decodingInBufPos--;
+                    log.finer("          - last byte returned to be processed again");
 
                     unicodeBytesRead = 0;
                     unicodeValue = 0;
@@ -504,9 +538,14 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
             }
             int remainder = inBufPos - decodingInBufPos;
             if (remainder != 0) {
+                if (log.isLoggable(Level.FINER)) {
+                    log.finer(" - " + remainder + " bytes will remain in the inBuf");
+                }
                 System.arraycopy(inBuf, decodingInBufPos,
                                  inBuf, 0,
                                  remainder);
+            } else {
+                log.finer(" - all bytes were successfully decoded");
             }
             inBufPos = remainder;
             emptyInBuf = (inBufPos == 0);
@@ -519,34 +558,47 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
          *          {@code false} otherwise
          */
         private boolean flushOutBuf(CharBuffer out) {
+            log.finer("flushing outBuf");
             if (outBufPos == 0) {
                 /* nothing to flush */
+                log.finer(" - outBuf is empty - nothing to flush");
                 return false;
             }
             
             if (fullOut) {      //we know that (outBufPos != null)
+                log.finer(" - output CharBuffer is full (fullOut already set)");
                 return true;
             }
             
             int outRemaining = out.remaining();
             if (outRemaining == 0) {
+                log.finer(" - output CharBuffer is full (fullOut will be set)");
                 fullOut = true;
                 return true;
             }
             
             int length = min(outRemaining, outBufPos);
+            if (log.isLoggable(Level.FINER)) {
+                log.finer(" - " + length + " chars will be written");
+            }
             out.put(outBuf, 0, length);
             
             int remainder = outBufPos - length;
             if (remainder != 0) {
+                if (log.isLoggable(Level.FINER)) {
+                    log.finer(" - " + remainder + " bytes will remain in the outBuf");
+                }
                 System.arraycopy(outBuf, length,
                                  outBuf, 0,
                                  remainder);
+            } else {
+                log.finer(" - all bytes were successfully flushed");
             }
             outBufPos = remainder;
             
             if (length == outRemaining) {
                 assert out.remaining() == 0;
+                log.finer(" - output CharBuffer is now full (fullOut will be set)");
                 fullOut = true;
             }
             
@@ -623,6 +675,14 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
             }
             
             return outBufPos - oldPos;
+        }
+        
+        private static char[] hexavalue(byte b) {
+            final int bInt = (int) (b >= 0 ? b : b + 256);
+            char[] result = new char[2];
+            result[0] = hexadecimalChars.charAt(bInt / 16);
+            result[1] = hexadecimalChars.charAt(bInt % 16);
+            return result;
         }
         
         char[] decodeBytesForTests(final byte[] bytes) throws CharacterCodingException {
