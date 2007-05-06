@@ -25,6 +25,8 @@ import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -32,6 +34,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileProxy;
+import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.helper.ExtendedUri;
 
@@ -42,22 +45,171 @@ import org.netbeans.installer.utils.helper.ExtendedUri;
 public class NbiFrame extends JFrame {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
-    private int frameWidth;
-    private int frameHeight;
-    private File frameIcon;
+    /**
+     * Initial width of the frame.
+     */
+    protected int frameWidth;
+    
+    /**
+     * Minimum width of the frame.
+     */
+    protected int frameMinimumWidth;
+    
+    /**
+     * Maximum width of the frame.
+     */
+    protected int frameMaximumWidth;
+    
+    /**
+     * Initial height of the frame.
+     */
+    protected int frameHeight;
+    
+    /**
+     * Minimum height of the frame.
+     */
+    protected int frameMinimumHeight;
+    
+    /**
+     * Maximum height of the frame.
+     */
+    protected int frameMaximumHeight;
+    
+    /**
+     * Frame's icon.
+     */
+    protected File frameIcon;
     
     private NbiFrameContentPane contentPane;
     
     public NbiFrame() {
         super();
         
-        frameWidth = DEFAULT_FRAME_WIDTH;
-        frameHeight = DEFAULT_FRAME_HEIGHT;
         
-        try {
-            frameIcon = FileProxy.getInstance().getFile(DEFAULT_FRAME_ICON_URI);
-        } catch (DownloadException e) {
-            ErrorManager.notifyWarning("Cannot download frame icon", e);
+        frameWidth = DEFAULT_FRAME_WIDTH;
+        if (System.getProperty(FRAME_WIDTH_PROPERTY) != null) {
+            try {
+                frameWidth = Integer.parseInt(
+                        System.getProperty(FRAME_WIDTH_PROPERTY));
+            } catch (NumberFormatException e) {
+                final String warning = ResourceUtils.getString(
+                        NbiFrame.class,
+                        RESOURCE_FAILED_TO_PARSE_SYSTEM_PROPERTY,
+                        FRAME_WIDTH_PROPERTY,
+                        System.getProperty(FRAME_WIDTH_PROPERTY));
+                
+                ErrorManager.notifyWarning(warning, e);
+            }
+        }
+        
+        frameMinimumWidth = DEFAULT_FRAME_MINIMUM_WIDTH;
+        if (System.getProperty(FRAME_MINIMUM_WIDTH_PROPERTY) != null) {
+            try {
+                frameMinimumWidth = Integer.parseInt(
+                        System.getProperty(FRAME_MINIMUM_WIDTH_PROPERTY));
+            } catch (NumberFormatException e) {
+                final String warning = ResourceUtils.getString(
+                        NbiFrame.class,
+                        RESOURCE_FAILED_TO_PARSE_SYSTEM_PROPERTY,
+                        FRAME_MINIMUM_WIDTH_PROPERTY,
+                        System.getProperty(FRAME_MINIMUM_WIDTH_PROPERTY));
+                
+                ErrorManager.notifyWarning(warning, e);
+            }
+        }
+        
+        frameMaximumWidth = DEFAULT_FRAME_MAXIMUM_WIDTH;
+        if (System.getProperty(FRAME_MAXIMUM_WIDTH_PROPERTY) != null) {
+            try {
+                frameMaximumWidth = Integer.parseInt(
+                        System.getProperty(FRAME_MAXIMUM_WIDTH_PROPERTY));
+            } catch (NumberFormatException e) {
+                final String warning = ResourceUtils.getString(
+                        NbiFrame.class,
+                        RESOURCE_FAILED_TO_PARSE_SYSTEM_PROPERTY,
+                        FRAME_MAXIMUM_WIDTH_PROPERTY,
+                        System.getProperty(FRAME_MAXIMUM_WIDTH_PROPERTY));
+                
+                ErrorManager.notifyWarning(warning, e);
+            }
+        }
+        
+        frameHeight = DEFAULT_FRAME_HEIGHT;
+        if (System.getProperty(FRAME_HEIGHT_PROPERTY) != null) {
+            try {
+                frameHeight = Integer.parseInt(
+                        System.getProperty(FRAME_HEIGHT_PROPERTY));
+            } catch (NumberFormatException e) {
+                final String warning = ResourceUtils.getString(
+                        NbiFrame.class,
+                        RESOURCE_FAILED_TO_PARSE_SYSTEM_PROPERTY,
+                        FRAME_HEIGHT_PROPERTY,
+                        System.getProperty(FRAME_HEIGHT_PROPERTY));
+                
+                ErrorManager.notifyWarning(warning, e);
+            }
+        }
+        
+        frameMinimumHeight = DEFAULT_FRAME_MINIMUM_HEIGHT;
+        if (System.getProperty(FRAME_MINIMUM_HEIGHT_PROPERTY) != null) {
+            try {
+                frameMinimumHeight = Integer.parseInt(
+                        System.getProperty(FRAME_MINIMUM_HEIGHT_PROPERTY));
+            } catch (NumberFormatException e) {
+                final String warning = ResourceUtils.getString(
+                        NbiFrame.class,
+                        RESOURCE_FAILED_TO_PARSE_SYSTEM_PROPERTY,
+                        FRAME_MINIMUM_HEIGHT_PROPERTY,
+                        System.getProperty(FRAME_MINIMUM_HEIGHT_PROPERTY));
+                
+                ErrorManager.notifyWarning(warning, e);
+            }
+        }
+        
+        frameMaximumHeight = DEFAULT_FRAME_MAXIMUM_HEIGHT;
+        if (System.getProperty(FRAME_MAXIMUM_HEIGHT_PROPERTY) != null) {
+            try {
+                frameMaximumHeight = Integer.parseInt(
+                        System.getProperty(FRAME_MAXIMUM_HEIGHT_PROPERTY));
+            } catch (NumberFormatException e) {
+                final String warning = ResourceUtils.getString(
+                        NbiFrame.class,
+                        RESOURCE_FAILED_TO_PARSE_SYSTEM_PROPERTY,
+                        FRAME_MAXIMUM_HEIGHT_PROPERTY,
+                        System.getProperty(FRAME_MAXIMUM_HEIGHT_PROPERTY));
+                
+                ErrorManager.notifyWarning(warning, e);
+            }
+        }
+        
+        boolean customIconLoaded = false;
+        if (System.getProperty(FRAME_ICON_URI_PROPERTY) != null) {
+            final String frameIconUri =
+                    System.getProperty(FRAME_ICON_URI_PROPERTY);
+            
+            try {
+                frameIcon = FileProxy.getInstance().getFile(frameIconUri);
+                customIconLoaded = true;
+            } catch (DownloadException e) {
+                ErrorManager.notifyWarning(ResourceUtils.getString(
+                        NbiFrame.class,
+                        RESOURCE_FAILED_TO_DOWNLOAD_WIZARD_ICON,
+                        frameIconUri), e);
+            }
+        }
+        
+        if (!customIconLoaded) {
+            final String frameIconUri = DEFAULT_FRAME_ICON_URI;
+            
+            try {
+                frameIcon = FileProxy.getInstance().getFile(frameIconUri);
+                customIconLoaded = true;
+            } catch (DownloadException e) {
+                ErrorManager.notifyWarning(ResourceUtils.getString(
+                        NbiFrame.class,
+                        RESOURCE_FAILED_TO_DOWNLOAD_WIZARD_ICON,
+                        frameIconUri), e);
+            }
         }
         
         initComponents();
@@ -87,7 +239,8 @@ public class NbiFrame extends JFrame {
         contentPane.setBackgroundImage(url);
     }
     
-    private void initComponents() {
+    // protected ////////////////////////////////////////////////////////////////////
+    protected void initComponents() {
         // the frame itself
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         
@@ -96,8 +249,32 @@ public class NbiFrame extends JFrame {
         try {
             setIconImage(new ImageIcon(frameIcon.toURI().toURL()).getImage());
         } catch (MalformedURLException e) {
-            ErrorManager.notifyWarning("Cannot load frame icon", e);
+            ErrorManager.notifyWarning(ResourceUtils.getString(
+                    NbiFrame.class,
+                    RESOURCE_FAILED_TO_SET_FRAME_ICON), e);
         }
+        
+        addComponentListener(new ComponentAdapter() {
+            public void componentResized(ComponentEvent event) {
+                if ((frameMinimumWidth != -1) && 
+                        (getSize().width < frameMinimumWidth)) {
+                    setSize(frameMinimumWidth, getSize().height);
+                }
+                if ((frameMinimumHeight != -1) && 
+                        (getSize().height < frameMinimumHeight)) {
+                    setSize(getSize().width, frameMinimumHeight);
+                }
+                
+                if ((frameMaximumWidth != -1) && 
+                        (getSize().width > frameMaximumWidth)) {
+                    setSize(frameMaximumWidth, getSize().height);
+                }
+                if ((frameMaximumHeight != -1) && 
+                        (getSize().height > frameMaximumHeight)) {
+                    setSize(getSize().width, frameMaximumHeight);
+                }
+            }
+        });
         
         // content pane
         contentPane = new NbiFrameContentPane();
@@ -141,18 +318,64 @@ public class NbiFrame extends JFrame {
     
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
+    public static final String FRAME_WIDTH_PROPERTY = 
+            "nbi.ui.swing.frame.width";
+    
+    public static final String FRAME_MINIMUM_WIDTH_PROPERTY = 
+            "nbi.ui.swing.frame.minimum.width";
+    
+    public static final String FRAME_MAXIMUM_WIDTH_PROPERTY = 
+            "nbi.ui.swing.frame.maximum.width";
+    
+    public static final String FRAME_HEIGHT_PROPERTY = 
+            "nbi.ui.swing.frame.height";
+    
+    public static final String FRAME_MINIMUM_HEIGHT_PROPERTY = 
+            "nbi.ui.swing.frame.minimum.height";
+    
+    public static final String FRAME_MAXIMUM_HEIGHT_PROPERTY = 
+            "nbi.ui.swing.frame.maximum.height";
+    
+    public static final String FRAME_ICON_URI_PROPERTY = 
+            "nbi.ui.swing.frame.icon.uri";
+    
     public static final int DEFAULT_FRAME_WIDTH  = 
             650;
+    
+    public static final int DEFAULT_FRAME_MINIMUM_WIDTH = 
+            650;
+    
+    public static final int DEFAULT_FRAME_MAXIMUM_WIDTH = 
+            -1;
+    
     public static final int DEFAULT_FRAME_HEIGHT = 
             600;
+    
+    public static final int DEFAULT_FRAME_MINIMUM_HEIGHT = 
+            600;
+    
+    public static final int DEFAULT_FRAME_MAXIMUM_HEIGHT = 
+            -1;
+    
     public static final String DEFAULT_FRAME_ICON_URI = 
             ExtendedUri.RESOURCE_SCHEME + 
             ":org/netbeans/installer/utils/helper/swing/frame-icon.png";
     
-    public static final String FRAME_WIDTH_PROPERTY = 
-            "nbi.ui.swing.frame.width";
-    public static final String FRAME_HEIGHT_PROPERTY = 
-            "nbi.ui.swing.frame.height";
-    public static final String FRAME_ICON_URI_PROPERTY = 
-            "nbi.ui.swing.frame.icon.uri";
+    /**
+     * Name of a resource bundle entry.
+     */
+    private static final String RESOURCE_FAILED_TO_PARSE_SYSTEM_PROPERTY =
+            "NF.error.failed.to.parse.property"; // NOI18N
+    
+    /**
+     * Name of a resource bundle entry.
+     */
+    private static final String RESOURCE_FAILED_TO_DOWNLOAD_WIZARD_ICON =
+            "NF.error.failed.to.download.icon"; // NOI18N
+    
+    /**
+     * Name of a resource bundle entry.
+     */
+    private static final String RESOURCE_FAILED_TO_SET_FRAME_ICON =
+            "NF.error.failed.to.set.frame.icon"; // NOI18N
 }

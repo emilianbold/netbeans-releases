@@ -21,7 +21,6 @@ package org.netbeans.installer.wizard.containers;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -31,13 +30,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
-import java.net.MalformedURLException;
 import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
-import javax.swing.ImageIcon;
-import javax.swing.InputMap;
-import javax.swing.JComponent;
 import javax.swing.JRootPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -76,21 +69,6 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
     private WizardFrameContentPane contentPane;
     
     /**
-     * Width of the container frame.
-     */
-    private int frameWidth;
-    
-    /**
-     * Height of the container frame.
-     */
-    private int frameHeight;
-    
-    /**
-     * Container frame's icon.
-     */
-    private File frameIcon;
-    
-    /**
      * Prefix of the container frame title.
      */
     private String frameTitlePrefix;
@@ -111,63 +89,142 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
     public SwingFrameContainer() {
         super();
         
+        frameWidth = DEFAULT_WIZARD_FRAME_WIDTH;
         if (System.getProperty(WIZARD_FRAME_WIDTH_PROPERTY) != null) {
             try {
                 frameWidth = Integer.parseInt(
                         System.getProperty(WIZARD_FRAME_WIDTH_PROPERTY));
             } catch (NumberFormatException e) {
-                ErrorManager.notifyWarning(ResourceUtils.getString(
+                final String warning = ResourceUtils.getString(
                         SwingFrameContainer.class,
                         RESOURCE_FAILED_TO_PARSE_SYSTEM_PROPERTY,
                         WIZARD_FRAME_WIDTH_PROPERTY,
-                        System.getProperty(WIZARD_FRAME_WIDTH_PROPERTY)), e);
+                        System.getProperty(WIZARD_FRAME_WIDTH_PROPERTY));
+                
+                ErrorManager.notifyWarning(warning, e);
             }
-        } else {
-            frameWidth = DEFAULT_WIZARD_FRAME_WIDTH;
         }
         
+        frameMinimumWidth = DEFAULT_WIZARD_FRAME_MINIMUM_WIDTH;
+        if (System.getProperty(WIZARD_FRAME_MINIMUM_WIDTH_PROPERTY) != null) {
+            try {
+                frameMinimumWidth = Integer.parseInt(
+                        System.getProperty(WIZARD_FRAME_MINIMUM_WIDTH_PROPERTY));
+            } catch (NumberFormatException e) {
+                final String warning = ResourceUtils.getString(
+                        SwingFrameContainer.class,
+                        RESOURCE_FAILED_TO_PARSE_SYSTEM_PROPERTY,
+                        WIZARD_FRAME_MINIMUM_WIDTH_PROPERTY,
+                        System.getProperty(WIZARD_FRAME_MINIMUM_WIDTH_PROPERTY));
+                
+                ErrorManager.notifyWarning(warning, e);
+            }
+        }
+        
+        frameMaximumWidth = DEFAULT_WIZARD_FRAME_MAXIMUM_WIDTH;
+        if (System.getProperty(WIZARD_FRAME_MAXIMUM_WIDTH_PROPERTY) != null) {
+            try {
+                frameMaximumWidth = Integer.parseInt(
+                        System.getProperty(WIZARD_FRAME_MAXIMUM_WIDTH_PROPERTY));
+            } catch (NumberFormatException e) {
+                final String warning = ResourceUtils.getString(
+                        SwingFrameContainer.class,
+                        RESOURCE_FAILED_TO_PARSE_SYSTEM_PROPERTY,
+                        WIZARD_FRAME_MAXIMUM_WIDTH_PROPERTY,
+                        System.getProperty(WIZARD_FRAME_MAXIMUM_WIDTH_PROPERTY));
+                
+                ErrorManager.notifyWarning(warning, e);
+            }
+        }
+        
+        frameHeight = DEFAULT_WIZARD_FRAME_HEIGHT;
         if (System.getProperty(WIZARD_FRAME_HEIGHT_PROPERTY) != null) {
             try {
                 frameHeight = Integer.parseInt(
                         System.getProperty(WIZARD_FRAME_HEIGHT_PROPERTY));
             } catch (NumberFormatException e) {
-                ErrorManager.notifyWarning(ResourceUtils.getString(
+                final String warning = ResourceUtils.getString(
                         SwingFrameContainer.class,
                         RESOURCE_FAILED_TO_PARSE_SYSTEM_PROPERTY,
                         WIZARD_FRAME_HEIGHT_PROPERTY,
-                        System.getProperty(WIZARD_FRAME_HEIGHT_PROPERTY)), e);
+                        System.getProperty(WIZARD_FRAME_HEIGHT_PROPERTY));
+                
+                ErrorManager.notifyWarning(warning, e);
             }
-        } else {
-            frameHeight = DEFAULT_WIZARD_FRAME_HEIGHT;
         }
         
-        final String frameIconUri;
+        frameMinimumHeight = DEFAULT_WIZARD_FRAME_MINIMUM_HEIGHT;
+        if (System.getProperty(WIZARD_FRAME_MINIMUM_HEIGHT_PROPERTY) != null) {
+            try {
+                frameMinimumHeight = Integer.parseInt(
+                        System.getProperty(WIZARD_FRAME_MINIMUM_HEIGHT_PROPERTY));
+            } catch (NumberFormatException e) {
+                final String warning = ResourceUtils.getString(
+                        SwingFrameContainer.class,
+                        RESOURCE_FAILED_TO_PARSE_SYSTEM_PROPERTY,
+                        WIZARD_FRAME_MINIMUM_HEIGHT_PROPERTY,
+                        System.getProperty(WIZARD_FRAME_MINIMUM_HEIGHT_PROPERTY));
+                
+                ErrorManager.notifyWarning(warning, e);
+            }
+        }
+        
+        frameMaximumHeight = DEFAULT_WIZARD_FRAME_MAXIMUM_HEIGHT;
+        if (System.getProperty(WIZARD_FRAME_MAXIMUM_HEIGHT_PROPERTY) != null) {
+            try {
+                frameMaximumHeight = Integer.parseInt(
+                        System.getProperty(WIZARD_FRAME_MAXIMUM_HEIGHT_PROPERTY));
+            } catch (NumberFormatException e) {
+                final String warning = ResourceUtils.getString(
+                        SwingFrameContainer.class,
+                        RESOURCE_FAILED_TO_PARSE_SYSTEM_PROPERTY,
+                        WIZARD_FRAME_MAXIMUM_HEIGHT_PROPERTY,
+                        System.getProperty(WIZARD_FRAME_MAXIMUM_HEIGHT_PROPERTY));
+                
+                ErrorManager.notifyWarning(warning, e);
+            }
+        }
+        
+        boolean customIconLoaded = false;
         if (System.getProperty(WIZARD_FRAME_ICON_URI_PROPERTY) != null) {
-            frameIconUri = System.getProperty(WIZARD_FRAME_ICON_URI_PROPERTY);
-        } else {
-            frameIconUri = DEFAULT_WIZARD_FRAME_ICON_URI;
-        }
-        try {
-            frameIcon = FileProxy.getInstance().getFile(frameIconUri);
-        } catch (DownloadException e) {
-            ErrorManager.notifyWarning(ResourceUtils.getString(
-                    SwingFrameContainer.class,
-                    RESOURCE_FAILED_TO_DOWNLOAD_WIZARD_ICON,
-                    frameIconUri), e);
+            final String frameIconUri =
+                    System.getProperty(WIZARD_FRAME_ICON_URI_PROPERTY);
+            
+            try {
+                frameIcon = FileProxy.getInstance().getFile(frameIconUri);
+                customIconLoaded = true;
+            } catch (DownloadException e) {
+                ErrorManager.notifyWarning(ResourceUtils.getString(
+                        SwingFrameContainer.class,
+                        RESOURCE_FAILED_TO_DOWNLOAD_WIZARD_ICON,
+                        frameIconUri), e);
+            }
         }
         
+        if (!customIconLoaded) {
+            final String frameIconUri = DEFAULT_WIZARD_FRAME_ICON_URI;
+            
+            try {
+                frameIcon = FileProxy.getInstance().getFile(frameIconUri);
+                customIconLoaded = true;
+            } catch (DownloadException e) {
+                ErrorManager.notifyWarning(ResourceUtils.getString(
+                        SwingFrameContainer.class,
+                        RESOURCE_FAILED_TO_DOWNLOAD_WIZARD_ICON,
+                        frameIconUri), e);
+            }
+        }
+        
+        frameTitlePrefix = DEFAULT_WIZARD_FRAME_TITLE_PREFIX;
         if (System.getProperty(WIZARD_FRAME_TITLE_PREFIX_PROPERTY) != null) {
             frameTitlePrefix =
                     System.getProperty(WIZARD_FRAME_TITLE_PREFIX_PROPERTY);
-        } else {
-            frameTitlePrefix = DEFAULT_WIZARD_FRAME_TITLE_PREFIX;
         }
         
+        frameTitlePattern = DEFAULT_WIZARD_FRAME_TITLE_PATTERN;
         if (System.getProperty(WIZARD_FRAME_TITLE_PATTERN_PROPERTY) != null) {
             frameTitlePattern =
                     System.getProperty(WIZARD_FRAME_TITLE_PATTERN_PROPERTY);
-        } else {
-            frameTitlePattern = DEFAULT_WIZARD_FRAME_TITLE_PATTERN;
         }
         
         initComponents();
@@ -290,7 +347,10 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
      * method also sets some frame properties which will be required at runtime,
      * such as size, position, etc.
      */
-    private void initComponents() {
+    @Override
+    protected void initComponents() {
+        super.initComponents();
+        
         setDefaultCloseOperation(NbiFrame.DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent event) {
@@ -301,16 +361,6 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
                 }
             }
         });
-        
-        setSize(frameWidth, frameHeight);
-        
-        try {
-            setIconImage(new ImageIcon(frameIcon.toURI().toURL()).getImage());
-        } catch (MalformedURLException e) {
-            ErrorManager.notifyWarning(ResourceUtils.getString(
-                    SwingFrameContainer.class,
-                    RESOURCE_FAILED_TO_SET_WIZARD_ICON), e);
-        }
         
         contentPane = new WizardFrameContentPane();
         setContentPane(contentPane);
@@ -457,8 +507,8 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
         }
         
         /**
-         * Returns the Swing implementation of the standard <code>Help</code> 
-         * button. This method is called by the {@link SwingFrameContainer} when it 
+         * Returns the Swing implementation of the standard <code>Help</code>
+         * button. This method is called by the {@link SwingFrameContainer} when it
          * needs to get the handle of the button.
          *
          * @return <code>Help</code> button instance.
@@ -469,8 +519,8 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
         }
         
         /**
-         * Returns the Swing implementation of the standard <code>Back</code> 
-         * button. This method is called by the {@link SwingFrameContainer} when it 
+         * Returns the Swing implementation of the standard <code>Back</code>
+         * button. This method is called by the {@link SwingFrameContainer} when it
          * needs to get the handle of the button.
          *
          * @return <code>Back</code> button instance.
@@ -481,8 +531,8 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
         }
         
         /**
-         * Returns the Swing implementation of the standard <code>Next</code> 
-         * button. This method is called by the {@link SwingFrameContainer} when it 
+         * Returns the Swing implementation of the standard <code>Next</code>
+         * button. This method is called by the {@link SwingFrameContainer} when it
          * needs to get the handle of the button.
          *
          * @return <code>Next</code> button instance.
@@ -493,8 +543,8 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
         }
         
         /**
-         * Returns the Swing implementation of the standard <code>Cancel</code> 
-         * button. This method is called by the {@link SwingFrameContainer} when it 
+         * Returns the Swing implementation of the standard <code>Cancel</code>
+         * button. This method is called by the {@link SwingFrameContainer} when it
          * needs to get the handle of the button.
          *
          * @return <code>Cancel</code> button instance.
@@ -649,52 +699,104 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
     /**
-     * Name of the system property which is expected to contain the desired value 
-     * for the width of the wizard frame.
+     * Name of the system property which is expected to contain the desired value
+     * for the initial width of the wizard frame.
      */
     public static final String WIZARD_FRAME_WIDTH_PROPERTY =
             "nbi.wizard.ui.swing.frame.width"; // NOI18N
     
     /**
-     * Name of the system property which is expected to contain the desired value 
-     * for the height of the wizard frame.
+     * Name of the system property which is expected to contain the desired value
+     * for the minimum width of the wizard frame.
+     */
+    public static final String WIZARD_FRAME_MINIMUM_WIDTH_PROPERTY =
+            "nbi.wizard.ui.swing.frame.minimum.width"; // NOI18N
+    
+    /**
+     * Name of the system property which is expected to contain the desired value
+     * for the maximum width of the wizard frame.
+     */
+    public static final String WIZARD_FRAME_MAXIMUM_WIDTH_PROPERTY =
+            "nbi.wizard.ui.swing.frame.maximum.width"; // NOI18N
+    
+    /**
+     * Name of the system property which is expected to contain the desired value
+     * for the initial height of the wizard frame.
      */
     public static final String WIZARD_FRAME_HEIGHT_PROPERTY =
             "nbi.wizard.ui.swing.frame.height"; // NOI18N
     
     /**
-     * Name of the system property which is expected to contain the desired value 
+     * Name of the system property which is expected to contain the desired value
+     * for the minimum height of the wizard frame.
+     */
+    public static final String WIZARD_FRAME_MINIMUM_HEIGHT_PROPERTY =
+            "nbi.wizard.ui.swing.frame.minimum.height"; // NOI18N
+    
+    /**
+     * Name of the system property which is expected to contain the desired value
+     * for the maximum height of the wizard frame.
+     */
+    public static final String WIZARD_FRAME_MAXIMUM_HEIGHT_PROPERTY =
+            "nbi.wizard.ui.swing.frame.height"; // NOI18N
+    
+    /**
+     * Name of the system property which is expected to contain the desired value
      * for the URI of the wizard frame icon.
      */
     public static final String WIZARD_FRAME_ICON_URI_PROPERTY =
             "nbi.wizard.ui.swing.frame.icon"; // NOI18N
     
     /**
-     * Name of the system property which is expected to contain the desired value 
+     * Name of the system property which is expected to contain the desired value
      * for the standard prefix of the wizard frame's title.
      */
     public static final String WIZARD_FRAME_TITLE_PREFIX_PROPERTY =
             "nbi.wizard.ui.swing.frame.title.prefix"; // NOI18N
     
     /**
-     * Name of the system property which is expected to contain the desired value 
-     * for the pattern for merging the standard title prefix with the component's 
+     * Name of the system property which is expected to contain the desired value
+     * for the pattern for merging the standard title prefix with the component's
      * title.
      */
     public static final String WIZARD_FRAME_TITLE_PATTERN_PROPERTY =
             "nbi.wizard.ui.swing.frame.title.pattern"; // NOI18N
     
     /**
-     * Default value for the wizard frame's width.
+     * Default value for the wizard frame's initial width.
      */
     public static final int DEFAULT_WIZARD_FRAME_WIDTH =
             NbiFrame.DEFAULT_FRAME_WIDTH;
     
     /**
-     * Default value for the wizard frame's height.
+     * Default value for the wizard frame's minimum width.
+     */
+    public static final int DEFAULT_WIZARD_FRAME_MINIMUM_WIDTH =
+            NbiFrame.DEFAULT_FRAME_MINIMUM_WIDTH;
+    
+    /**
+     * Default value for the wizard frame's maximum width.
+     */
+    public static final int DEFAULT_WIZARD_FRAME_MAXIMUM_WIDTH =
+            NbiFrame.DEFAULT_FRAME_MAXIMUM_WIDTH;
+    
+    /**
+     * Default value for the wizard frame's initial height.
      */
     public static final int DEFAULT_WIZARD_FRAME_HEIGHT =
             NbiFrame.DEFAULT_FRAME_HEIGHT;
+    
+    /**
+     * Default value for the wizard frame's minimum height.
+     */
+    public static final int DEFAULT_WIZARD_FRAME_MINIMUM_HEIGHT =
+            NbiFrame.DEFAULT_FRAME_MINIMUM_HEIGHT;
+    
+    /**
+     * Default value for the wizard frame's maximum height.
+     */
+    public static final int DEFAULT_WIZARD_FRAME_MAXIMUM_HEIGHT =
+            NbiFrame.DEFAULT_FRAME_MAXIMUM_HEIGHT;
     
     /**
      * Default value for the wizard frame's icon's URI.
@@ -710,7 +812,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
             "SFC.frame.title.prefix"); // NOI18N
     
     /**
-     * Default value for the pattern for merging the standard title prefix with the 
+     * Default value for the pattern for merging the standard title prefix with the
      * component's title.
      */
     public static final String DEFAULT_WIZARD_FRAME_TITLE_PATTERN =
@@ -729,12 +831,6 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
      */
     private static final String RESOURCE_FAILED_TO_DOWNLOAD_WIZARD_ICON =
             "SFC.error.failed.to.download.icon"; // NOI18N
-    
-    /**
-     * Name of a resource bundle entry.
-     */
-    private static final String RESOURCE_FAILED_TO_SET_WIZARD_ICON =
-            "SFC.error.failed.to.set.wizard.icon"; // NOI18N
     
     /**
      * Name of the {@link AbstractAction} which is invoked when the user presses the
