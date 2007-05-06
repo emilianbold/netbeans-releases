@@ -422,10 +422,26 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
             }
         }
         
+        /**
+         * This is method is only necessary because of bug in JDK 1.5.x that
+         * {@code flush()} is not always called when it should be.
+         * Once JDK 1.5.x is not supported, remove this method.
+         * 
+         * @see  #handlePendingCharacters()
+         */
         private boolean hasPendingCharacters() {
             return state != State.INITIAL;
         }
         
+        /**
+         * This is method is only necessary because of bug in JDK 1.5.x that
+         * {@code flush()} is not always called when it should be.
+         * Once JDK 1.5.x is not supported, move this method's functionality
+         * to method {@code implFlush()} and remove this method.
+         * 
+         * @see  <a href="http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6221056">JDK bug 6221056</a>
+         * @see  <a href="http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4744247">JDK bug 4744247</a>
+         */
         private void handlePendingCharacters() {
             log.finer("handlePendingCharacters()");
             if (!hasPendingCharacters()) {
