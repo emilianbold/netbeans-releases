@@ -12,5 +12,5 @@ ${licensePrefix}If applicable, add the following below the CDDL Header, with the
 ${licensePrefix}enclosed by brackets [] replaced by your own identifying information:
 ${licensePrefix}"Portions Copyrighted [year] [name of copyright owner]"
 ${licensePrefix}
-${licensePrefix}Copyright ${date?date?string("yyyy")} Sun Microsystems, Inc. All rights reserved.
+${licensePrefix}Portions Copyrighted ${date?date?string("yyyy")} Sun Microsystems, Inc.
 ${licenseLast}
