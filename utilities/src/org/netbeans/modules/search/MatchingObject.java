@@ -30,7 +30,12 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.FileChannel;
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.CoderResult;
+import java.nio.charset.CodingErrorAction;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -390,7 +395,7 @@ final class MatchingObject implements PropertyChangeListener {
         ByteBuffer buf = getByteBuffer();
         if (buf != null) {
             Charset charset = FullTextType.getCharset(getFileObject());
-            CharBuffer cbuf = charset.decode(buf);
+            CharBuffer cbuf = decodeByteBuffer(buf, charset);
             String terminator
                     = System.getProperty("line.separator");         //NOI18N
 
@@ -663,7 +668,7 @@ final class MatchingObject implements PropertyChangeListener {
                         text.toString().replace("\n", terminator));     //NOI18N
             }
             Charset charset = FullTextType.getCharset(getFileObject());
-            ByteBuffer buffer = charset.encode(text.toString());
+            ByteBuffer buffer = encodeCharBuffer(CharBuffer.wrap(text), charset);
 
             FileOutputStream fos = new FileOutputStream(getFile());
             FileChannel channel = fos.getChannel();
@@ -678,6 +683,124 @@ final class MatchingObject implements PropertyChangeListener {
         }
     }
 
+    /**
+     * Decodes a given {@code ByteBuffer} with a given charset decoder.
+     * This is a workaround for a broken
+     * {@link Charset.decode(ByteBuffer) Charset#decode(java.nio.ByteBuffer}
+     * method in JDK 1.5.x.
+     * 
+     * @param  in  {@code ByteBuffer} to be decoded
+     * @param  charset  charset whose decoder will be used for decoding
+     * @return  {@code CharBuffer} containing chars produced by the decoder
+     * @see  <a href="http://java.sun.com/j2se/1.5.0/docs/api/java/nio/charset/Charset.html#decode(java.nio.ByteBuffer)">Charset.decode(ByteBuffer)</a>
+     * @see  <a href="http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6221056">JDK bug #6221056</a>
+     * @see  <a href="http://www.netbeans.org/issues/show_bug.cgi?id=103193">NetBeans bug #103193</a>
+     * @see  <a href="http://www.netbeans.org/issues/show_bug.cgi?id=103067">NetBeans bug #103067</a>
+     */
+    private CharBuffer decodeByteBuffer(final ByteBuffer in,
+                                        final Charset charset)
+            throws CharacterCodingException {
+        
+        final CharsetDecoder decoder = charset.newDecoder()
+                                       .onMalformedInput(CodingErrorAction.REPLACE)
+                                       .onUnmappableCharacter(CodingErrorAction.REPLACE);
+        
+	int remaining = in.remaining();
+        if (remaining == 0) {
+            return CharBuffer.allocate(0);
+        }
+        
+        int n = (int) (remaining * decoder.averageCharsPerByte());
+        if (n < 16) {
+            n = 16;            //make sure some CharBuffer is allocated
+                               //even when decoding small number of bytes
+                               //and averageCharsPerByte() is less than 1
+        }
+	CharBuffer out = CharBuffer.allocate(n);
+        
+	decoder.reset();
+	for (;;) {
+	    CoderResult cr = in.hasRemaining()
+                             ? decoder.decode(in, out, true)
+                             : CoderResult.UNDERFLOW;
+	    if (cr.isUnderflow()) {
+		cr = decoder.flush(out);
+            }
+	    if (cr.isUnderflow()) {
+		break;
+            }
+	    if (cr.isOverflow()) {
+		CharBuffer o = CharBuffer.allocate(n <<= 1);
+		out.flip();
+		o.put(out);
+		out = o;
+		continue;
+	    }
+	    cr.throwException();
+	}
+	out.flip();
+	return out;
+    }
+    
+    /**
+     * Encodes a given {@code CharBuffer} with a given charset encoder.
+     * This is a workaround for a broken
+     * {@link Charset.decode(ByteBuffer) Charset#encode(java.nio.ByteBuffer}
+     * method in JDK 1.5.x.
+     * 
+     * @param  in  {@code CharBuffer} to be encoded
+     * @param  charset  charset whose encoder will be used for encoding
+     * @return  {@code ByteBuffer} containing bytes produced by the encoder
+     * @see  <a href="http://java.sun.com/j2se/1.5.0/docs/api/java/nio/charset/Charset.html#decode(java.nio.ByteBuffer)">Charset.decode(ByteBuffer)</a>
+     * @see  <a href="http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6221056">JDK bug #6221056</a>
+     * @see  <a href="http://www.netbeans.org/issues/show_bug.cgi?id=103193">NetBeans bug #103193</a>
+     * @see  <a href="http://www.netbeans.org/issues/show_bug.cgi?id=103067">NetBeans bug #103067</a>
+     */
+    private ByteBuffer encodeCharBuffer(final CharBuffer in,
+                                        final Charset charset)
+            throws CharacterCodingException {
+        
+        final CharsetEncoder encoder = charset.newEncoder()
+                                       .onMalformedInput(CodingErrorAction.REPLACE)
+                                       .onUnmappableCharacter(CodingErrorAction.REPLACE);
+        
+	int remaining = in.remaining();
+        if (remaining == 0) {
+            return ByteBuffer.allocate(0);
+        }
+        
+        int n = (int) (remaining * encoder.averageBytesPerChar());
+        if (n < 16) {
+            n = 16;            //make sure some CharBuffer is allocated
+                               //even when decoding small number of bytes
+                               //and averageCharsPerByte() is less than 1
+        }
+	ByteBuffer out = ByteBuffer.allocate(n);
+        
+	encoder.reset();
+	for (;;) {
+	    CoderResult cr = in.hasRemaining()
+                             ? encoder.encode(in, out, true)
+                             : CoderResult.UNDERFLOW;
+	    if (cr.isUnderflow()) {
+		cr = encoder.flush(out);
+            }
+	    if (cr.isUnderflow()) {
+		break;
+            }
+	    if (cr.isOverflow()) {
+		ByteBuffer o = ByteBuffer.allocate(n <<= 1);
+		out.flip();
+		o.put(out);
+		out = o;
+		continue;
+	    }
+	    cr.throwException();
+	}
+	out.flip();
+	return out;
+    }
+    
     /** Returns name of this node.
      * @return name of this node.
      */
