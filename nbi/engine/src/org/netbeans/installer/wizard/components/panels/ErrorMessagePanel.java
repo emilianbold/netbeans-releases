@@ -2,23 +2,24 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
  */
 package org.netbeans.installer.wizard.components.panels;
 
+import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import javax.swing.Icon;
@@ -80,16 +81,36 @@ public class ErrorMessagePanel extends WizardPanel {
         /////////////////////////////////////////////////////////////////////////////
         // Constants
         public static final String ERROR_ICON =
-                "org/netbeans/installer/wizard/components/panels/error.png";
+                "org/netbeans/installer/wizard/components/panels/error.png"; // NOI18N
+        public static final String WARNING_ICON =
+                "org/netbeans/installer/wizard/components/panels/warning.png"; // NOI18N
+        public static final String INFO_ICON =
+                "org/netbeans/installer/wizard/components/panels/info.png"; // NOI18N
         public static final String EMPTY_ICON =
-                "org/netbeans/installer/wizard/components/panels/empty.png";
+                "org/netbeans/installer/wizard/components/panels/empty.png"; // NOI18N
+        
+        public static final Color ERROR_COLOR = 
+                Color.BLACK;
+        public static final Color WARNING_COLOR = 
+                Color.BLACK;
+        public static final Color INFO_COLOR = 
+                Color.BLACK;
+        public static final Color EMPTY_COLOR = 
+                Color.BLACK;
         
         /////////////////////////////////////////////////////////////////////////////
         // Instance
         protected ErrorMessagePanel component;
         
         private Icon errorIcon;
+        private Icon warningIcon;
+        private Icon infoIcon;
         private Icon emptyIcon;
+        
+        private Color errorColor;
+        private Color warningColor;
+        private Color infoColor;
+        private Color emptyColor;
         
         private NbiLabel errorLabel;
         
@@ -104,8 +125,21 @@ public class ErrorMessagePanel extends WizardPanel {
             
             errorIcon = new ImageIcon(
                     getClass().getClassLoader().getResource(ERROR_ICON));
+            warningIcon = new ImageIcon(
+                    getClass().getClassLoader().getResource(WARNING_ICON));
+            infoIcon = new ImageIcon(
+                    getClass().getClassLoader().getResource(INFO_ICON));
             emptyIcon = new ImageIcon(
                     getClass().getClassLoader().getResource(EMPTY_ICON));
+            
+            errorColor = 
+                    ERROR_COLOR;
+            warningColor = 
+                    WARNING_COLOR;
+            infoColor = 
+                    INFO_COLOR;
+            emptyColor = 
+                    EMPTY_COLOR;
             
             initComponents();
         }
@@ -145,7 +179,7 @@ public class ErrorMessagePanel extends WizardPanel {
             }
             
             if (!UiUtils.showYesNoDialog(
-                    "Cancel", 
+                    "Cancel",
                     "Are you sure you want to cancel?")) {
                 if (validatingThread != null) {
                     validatingThread.play();
@@ -169,33 +203,61 @@ public class ErrorMessagePanel extends WizardPanel {
             }
         }
         
+        protected String getWarningMessage() {
+            return null;
+        }
+        
+        protected String getInformationalMessage() {
+            return null;
+        }
+        
         protected synchronized final void updateErrorMessage() {
-            String errorMessage;
+            String message;
             
             try {
-                errorMessage = validateInput();
+                message = validateInput();
+                if (message != null) {
+                    errorLabel.setIcon(errorIcon);
+                    errorLabel.setText(message);
+                    errorLabel.setForeground(errorColor);
+                    container.getNextButton().setEnabled(false);
+                    
+                    return;
+                }
                 
-                if (errorMessage == null) {
-                    errorLabel.setIcon(emptyIcon);
-                    errorLabel.clearText();
+                message = getWarningMessage();
+                if (message != null) {
+                    errorLabel.setIcon(warningIcon);
+                    errorLabel.setText(message);
+                    errorLabel.setForeground(warningColor);
                     container.getNextButton().setEnabled(true);
                     
                     return;
                 }
+                
+                message = getInformationalMessage();
+                if (message != null) {
+                    errorLabel.setIcon(infoIcon);
+                    errorLabel.setText(message);
+                    errorLabel.setForeground(infoColor);
+                    container.getNextButton().setEnabled(true);
+                    
+                    return;
+                }
+                
+                errorLabel.setIcon(emptyIcon);
+                errorLabel.clearText();
+                errorLabel.setForeground(emptyColor);
+                container.getNextButton().setEnabled(true);
             } catch (Exception e) {
-                // we have a good reason to catch Exception here, as most of the 
-                // code that is called is not under the engine's control 
-                // (validateInput() is component-specific) and we do not want to 
+                // we have a good reason to catch Exception here, as most of the
+                // code that is called is not under the engine's control
+                // (validateInput() is component-specific) and we do not want to
                 // propagate unexpected exceptions that could otherwise be handled
                 // normally
                 
-                ErrorManager.notifyDebug("Failed to verify input", e);
-                errorMessage = "Unknown error: " + e.getMessage();
+                ErrorManager.notifyError("Failed to verify input", e);
             }
-            
-            errorLabel.setIcon(errorIcon);
-            errorLabel.setText(errorMessage);
-            container.getNextButton().setEnabled(false);
         }
         
         // private //////////////////////////////////////////////////////////////////

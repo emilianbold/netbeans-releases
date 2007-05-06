@@ -19,6 +19,7 @@
  */
 package org.netbeans.installer.wizard.components;
 
+import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.helper.UiMode;
 import org.netbeans.installer.wizard.containers.SwingContainer;
 import org.netbeans.installer.wizard.ui.SwingUi;
@@ -175,6 +176,56 @@ public abstract class WizardPanel extends WizardComponent {
             super(panel, container);
             
             this.panel = panel;
+        }
+        
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void evaluateBackButtonClick() {
+            if (validateInput() == null) {
+                saveInput();
+            }
+            
+            component.getWizard().previous();
+        }
+        
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void evaluateNextButtonClick() {
+            String errorMessage = validateInput();
+            
+            if (errorMessage == null) {
+                saveInput();
+                component.getWizard().next();
+            } else {
+                ErrorManager.notifyError(errorMessage);
+            }
+        }
+        
+        // protected ////////////////////////////////////////////////////////////////
+        /**
+         * Saves the user input to the wizard's property container. This method does
+         * not perform any additional validation of the input as it will be
+         * validated prior to calling this method - in {@link #validateInput()}
+         */
+        protected void saveInput() {
+            // does nothing
+        }
+        
+        /**
+         * Validates the user input. This method performs the validatation of the
+         * data input by the user on this panel. It either passed the input data to
+         * the component for validation, or takes the risk and validates the data
+         * itself.
+         *
+         * @return Error message which describes what is incorrect with the user
+         *      input, or <code>null</code> if the user input is correct.
+         */
+        protected String validateInput() {
+            return null; // null means that everything is OK
         }
     }
 }

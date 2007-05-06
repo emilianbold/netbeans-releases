@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import javax.swing.JComponent;
-import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.UiUtils;
@@ -499,10 +498,6 @@ public abstract class WizardComponent {
          * {@inheritDoc}
          */
         public void evaluateBackButtonClick() {
-            if (validateInput() == null) {
-                saveInput();
-            }
-            
             component.getWizard().previous();
         }
         
@@ -510,14 +505,7 @@ public abstract class WizardComponent {
          * {@inheritDoc}
          */
         public void evaluateNextButtonClick() {
-            String errorMessage = validateInput();
-            
-            if (errorMessage == null) {
-                saveInput();
-                component.getWizard().next();
-            } else {
-                ErrorManager.notifyError(errorMessage);
-            }
+            component.getWizard().next();
         }
         
         /**
@@ -620,28 +608,6 @@ public abstract class WizardComponent {
          */
         protected void initialize() {
             // does nothing
-        }
-        
-        /**
-         * Saves the user input to the wizard's property container. This method does
-         * not perform any additional validation of the input as it will be
-         * validated prior to calling this method - in {@link #validateInput()}
-         */
-        protected void saveInput() {
-            // does nothing
-        }
-        
-        /**
-         * Validates the user input. This method performs the validatation of the
-         * data input by the user on this panel. It either passed the input data to
-         * the component for validation, or takes the risk and validates the data
-         * itself.
-         *
-         * @return Error message which describes what is incorrect with the user
-         *      input, or <code>null</code> if the user input is correct.
-         */
-        protected String validateInput() {
-            return null; // null means that everything is OK
         }
     }
     

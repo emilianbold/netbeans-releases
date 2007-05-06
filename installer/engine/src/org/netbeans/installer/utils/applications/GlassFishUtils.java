@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -240,6 +242,27 @@ public class GlassFishUtils {
         }
     }
     
+    public static List<String> getDomainNames(File location) {
+        final List<String> names = new LinkedList<String>();
+        
+        final File domainsDir = new File(location, "domains");
+        if (domainsDir.exists() && domainsDir.isDirectory()) {
+            final File[] children = domainsDir.listFiles();
+            
+            if (children != null) {
+                for (File child: children) {
+                    final File domainXml = new File(child, "config/domain.xml");
+                    
+                    if (domainXml.exists() && domainXml.isFile()) {
+                        names.add(child.getName());
+                    }
+                }
+            }
+        }
+        
+        return names;
+    }
+    
     public static int getAdminPort(File location, String domainName) throws IOException, XMLException {
         try {
             final DocumentBuilder builder =
@@ -296,6 +319,38 @@ public class GlassFishUtils {
                         httpServiceElement,
                         "http-listener")) {
                     if (element.getAttribute("security-enabled").equals("false")) {
+                        return Integer.parseInt(element.getAttribute("port"));
+                    }
+                }
+            }
+            
+            return Integer.parseInt("8080");
+        } catch (ParserConfigurationException e) {
+            throw new XMLException("Cannot configure parser", e);
+        } catch (SAXException e) {
+            throw new XMLException("Something wrong while parsing", e);
+        }
+    }
+    
+    public static int getHttpsPort(File location, String domainName) throws IOException, XMLException {
+        try {
+            final DocumentBuilder builder =
+                    DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            builder.setEntityResolver(new GlassFishDtdEntityResolver(location));
+            
+            final Element documentElement = builder.parse(getDomainXml(
+                    location,
+                    domainName)).getDocumentElement();
+            
+            final Element httpServiceElement = XMLUtils.getChild(
+                    documentElement,
+                    "configs/config/http-service");
+            
+            if (httpServiceElement != null) {
+                for (Element element: XMLUtils.getChildren(
+                        httpServiceElement,
+                        "http-listener")) {
+                    if (element.getAttribute("security-enabled").equals("true")) {
                         return Integer.parseInt(element.getAttribute("port"));
                     }
                 }

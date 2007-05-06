@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -27,13 +27,24 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import java.io.IOException;
+import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.installer.product.Registry;
+import org.netbeans.installer.product.components.Product;
+import org.netbeans.installer.product.filters.OrFilter;
+import org.netbeans.installer.product.filters.ProductFilter;
+import org.netbeans.installer.product.filters.RegistryFilter;
+import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.applications.GlassFishUtils;
+import org.netbeans.installer.utils.exceptions.XMLException;
+import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiComboBox;
@@ -87,7 +98,8 @@ public class ASPanel extends DestinationPanel {
                 DEFAULT_PASSWORD_LABEL_TEXT);
         setProperty(REPEAT_PASSWORD_LABEL_TEXT_PROPERTY,
                 DEFAULT_REPEAT_PASSWORD_LABEL_TEXT);
-        setProperty(DEFAULTS_LABEL_TEXT_PROPERTY,DEFAULT_DEFAULTS_LABEL_TEXT);
+        setProperty(DEFAULTS_LABEL_TEXT_PROPERTY,
+                DEFAULT_DEFAULTS_LABEL_TEXT);
         setProperty(HTTP_LABEL_TEXT_PROPERTY,
                 DEFAULT_HTTP_LABEL_TEXT);
         setProperty(HTTPS_LABEL_TEXT_PROPERTY,
@@ -138,6 +150,9 @@ public class ASPanel extends DestinationPanel {
         setProperty(ERROR_HTTPS_EQUALS_ADMIN_PROPERTY,
                 DEFAULT_ERROR_HTTPS_EQUALS_ADMIN);
         
+        setProperty(WARNING_PORT_IN_USE_PROPERTY,
+                DEFAULT_WARNING_PORT_IN_USE);
+        
         setProperty(DEFAULT_USERNAME_PROPERTY,
                 DEFAULT_DEFAULT_USERNAME);
         setProperty(DEFAULT_PASSWORD_PROPERTY,
@@ -149,9 +164,9 @@ public class ASPanel extends DestinationPanel {
         setProperty(DEFAULT_ADMIN_PORT_PROPERTY,
                 DEFAULT_DEFAULT_ADMIN_PORT);
         
-        setProperty(JdkLocationPanel.MINIMUM_JDK_VERSION_PROPERTY, 
+        setProperty(JdkLocationPanel.MINIMUM_JDK_VERSION_PROPERTY,
                 DEFAULT_MINIMUM_JDK_VERSION);
-        setProperty(JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY, 
+        setProperty(JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY,
                 DEFAULT_MAXIMUM_JDK_VERSION);
     }
     
@@ -367,20 +382,20 @@ public class ASPanel extends DestinationPanel {
                     new File(jdkLocationField.getText()));
             
             panel.getWizard().setProperty(
-                    USERNAME_PROPERTY, 
+                    USERNAME_PROPERTY,
                     usernameField.getText());
             panel.getWizard().setProperty(
-                    PASSWORD_PROPERTY, 
+                    PASSWORD_PROPERTY,
                     new String(passwordField.getPassword()));
             
             panel.getWizard().setProperty(
-                    HTTP_PORT_PROPERTY, 
+                    HTTP_PORT_PROPERTY,
                     httpPortField.getText());
             panel.getWizard().setProperty(
-                    HTTPS_PORT_PROPERTY, 
+                    HTTPS_PORT_PROPERTY,
                     httpsPortField.getText());
             panel.getWizard().setProperty(
-                    ADMIN_PORT_PROPERTY, 
+                    ADMIN_PORT_PROPERTY,
                     adminPortField.getText());
         }
         
@@ -397,10 +412,10 @@ public class ASPanel extends DestinationPanel {
                 return errorMessage;
             }
             
-            final String username  = usernameField.getText();
-            final String password  = new String(passwordField.getPassword());
+            final String username = usernameField.getText();
+            final String password = new String(passwordField.getPassword());
             final String password2 = new String(repeatPasswordField.getPassword());
-            final String httpPort  = httpPortField.getText().trim();
+            final String httpPort = httpPortField.getText().trim();
             final String httpsPort = httpsPortField.getText().trim();
             final String adminPort = adminPortField.getText().trim();
             
@@ -535,6 +550,65 @@ public class ASPanel extends DestinationPanel {
             return null;
         }
         
+        @Override
+        protected String getWarningMessage() {
+            final RegistryFilter filter = new OrFilter(
+                    new ProductFilter("glassfish", SystemUtils.getCurrentPlatform()),
+                    new ProductFilter("sjsam", SystemUtils.getCurrentPlatform()));
+            final List<Product> products =
+                    Registry.getInstance().queryProducts(filter);
+            
+            final int httpPort = Integer.parseInt(httpPortField.getText().trim());
+            final int httpsPort = Integer.parseInt(httpsPortField.getText().trim());
+            final int adminPort = Integer.parseInt(adminPortField.getText().trim());
+            
+            try {
+                for (Product product: products) {
+                    if (product.getStatus() == Status.INSTALLED) {
+                        final File location = product.getInstallationLocation();
+                        
+                        for (String domainName: GlassFishUtils.getDomainNames(location)) {
+                            int port = GlassFishUtils.getHttpPort(location, domainName);
+                            if ((port == httpPort) ||
+                                    (port == httpsPort) ||
+                                    (port == adminPort)) {
+                                return StringUtils.format(
+                                        panel.getProperty(WARNING_PORT_IN_USE_PROPERTY),
+                                        port,
+                                        product);
+                            }
+                            
+                            port = GlassFishUtils.getHttpsPort(location, domainName);
+                            if ((port == httpPort) ||
+                                    (port == httpsPort) ||
+                                    (port == adminPort)) {
+                                return StringUtils.format(
+                                        panel.getProperty(WARNING_PORT_IN_USE_PROPERTY),
+                                        port,
+                                        product);
+                            }
+                            
+                            port = GlassFishUtils.getAdminPort(location, domainName);
+                            if ((port == httpPort) ||
+                                    (port == httpsPort) ||
+                                    (port == adminPort)) {
+                                return StringUtils.format(
+                                        panel.getProperty(WARNING_PORT_IN_USE_PROPERTY),
+                                        port,
+                                        product);
+                            }
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                ErrorManager.notifyDebug("Faield to get the port value.", e);
+            } catch (XMLException e) {
+                ErrorManager.notifyDebug("Faield to get the port value.", e);
+            }
+            
+            return null;
+        }
+        
         // private //////////////////////////////////////////////////////////////////
         private void initComponents() {
             // containerPanel ///////////////////////////////////////////////////////
@@ -599,10 +673,10 @@ public class ASPanel extends DestinationPanel {
             fileChooser.setMultiSelectionEnabled(false);
             
             final Dimension longFieldSize = new Dimension(
-                    200, 
+                    200,
                     new NbiTextField().getPreferredSize().height);
             final Dimension shortFieldSize = new Dimension(
-                    80, 
+                    80,
                     longFieldSize.height);
             
             // usernameField ////////////////////////////////////////////////////////
@@ -922,9 +996,9 @@ public class ASPanel extends DestinationPanel {
     public static final String ADMIN_PORT_PROPERTY =
             "admin.port"; // NOI18N
     
-    public static final String JDK_LOCATION_LABEL_TEXT_PROPERTY = 
+    public static final String JDK_LOCATION_LABEL_TEXT_PROPERTY =
             "jdk.location.label.text"; // NOI18N
-    public static final String BROWSE_BUTTON_TEXT_PROPERTY = 
+    public static final String BROWSE_BUTTON_TEXT_PROPERTY =
             "browse.button.text"; // NOI18N
     public static final String USERNAME_LABEL_TEXT_PROPERTY =
             "username.label.text"; // NOI18N
@@ -942,10 +1016,10 @@ public class ASPanel extends DestinationPanel {
             "defaults.label.text"; // NOI18N
     
     
-    public static final String DEFAULT_DESTINATION_LABEL_TEXT = 
+    public static final String DEFAULT_DESTINATION_LABEL_TEXT =
             ResourceUtils.getString(ASPanel.class,
             "AS.destination.label.text"); // NOI18N
-    public static final String DEFAULT_DESTINATION_BUTTON_TEXT = 
+    public static final String DEFAULT_DESTINATION_BUTTON_TEXT =
             ResourceUtils.getString(ASPanel.class,
             "AS.destination.button.text"); // NOI18N
     
@@ -1046,6 +1120,8 @@ public class ASPanel extends DestinationPanel {
             "error.http.equals.admin"; // NOI18N
     public static final String ERROR_HTTPS_EQUALS_ADMIN_PROPERTY =
             "error.https.equals.admin"; // NOI18N
+    public static final String WARNING_PORT_IN_USE_PROPERTY =
+            "warning.port.in.use"; // NOI18N
     
     public static final String DEFAULT_ERROR_USERNAME_NULL =
             ResourceUtils.getString(ASPanel.class,
@@ -1110,11 +1186,14 @@ public class ASPanel extends DestinationPanel {
     public static final String DEFAULT_ERROR_HTTPS_EQUALS_ADMIN =
             ResourceUtils.getString(ASPanel.class,
             "AS.error.https.equals.admin"); // NOI18N
+    public static final String DEFAULT_WARNING_PORT_IN_USE =
+            ResourceUtils.getString(ASPanel.class,
+            "AS.warning.port.in.use"); // NOI18N
     
-    public static final String DEFAULT_MINIMUM_JDK_VERSION = 
+    public static final String DEFAULT_MINIMUM_JDK_VERSION =
             ResourceUtils.getString(ASPanel.class,
             "AS.minimum.jdk.version"); // NOI18N
-    public static final String DEFAULT_MAXIMUM_JDK_VERSION = 
+    public static final String DEFAULT_MAXIMUM_JDK_VERSION =
             ResourceUtils.getString(ASPanel.class,
             "AS.maximum.jdk.version"); // NOI18N
 }
