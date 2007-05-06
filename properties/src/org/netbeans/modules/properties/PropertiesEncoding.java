@@ -453,11 +453,14 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
                     for (int i = 0; i < unicodeBytesRead; i++) {
                         outBuf[outBufPos++] = unicodeValueChars[i];
                     }
+                    unicodeBytesRead = 0;
+                    unicodeValue = 0;
                     break;
                 default:
                     assert false;
                     break;
             }
+            state = State.INITIAL;
         }
         
         /**
