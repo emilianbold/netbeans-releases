@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -126,7 +126,7 @@ public interface HudsonJob extends Lookup.Provider, Comparable<HudsonJob> {
     public void start();
     
     /**
-     * Returns number of the last successful build
+     * Returns default job lookup
      * 
      * @return default job lookup
      */

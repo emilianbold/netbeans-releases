@@ -36,7 +36,7 @@ import org.openide.util.NbBundle;
 
 /**
  * Instance properties wizard visual panel
- * 
+ *
  * @author  Michal Mocnak
  */
 public class InstancePropertiesVisual extends javax.swing.JPanel {
@@ -123,6 +123,10 @@ public class InstancePropertiesVisual extends javax.swing.JPanel {
         }
     }
     
+    public void setChecking(boolean b) {
+        urlTxt.setEnabled(!b);
+    }
+    
     private void fireChangeEvent() {
         ArrayList<ChangeListener> tempList;
         
@@ -147,7 +151,7 @@ public class InstancePropertiesVisual extends javax.swing.JPanel {
                 name += " (" + String.valueOf(count) + ")";
             
             count++;
-        } while (HudsonManagerImpl.getDefault().getInstanceByName(name) != null);
+        } while (HudsonManagerImpl.getInstance().getInstanceByName(name) != null);
         
         return name;
     }

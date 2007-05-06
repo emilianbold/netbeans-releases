@@ -13,27 +13,36 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.hudson.api;
+package org.netbeans.modules.hudson.util;
 
-import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Factory for HudsonManager
+ * Hudson properties support
  *
  * @author Michal Mocnak
  */
-public class HudsonManagerFactory {
+public class HudsonPropertiesSupport {
     
-    /**
-     * Returns default instance of the HudsonManager
-     *
-     * @return hudson manager
-     */
-    public static HudsonManager getDefaultHudsonManager() {
-        return HudsonManagerImpl.getDefault();
+    private Map<String, Object> properties = new HashMap<String, Object>();
+    
+    public HudsonPropertiesSupport() {}
+    
+    public <T> T getProperty(String name, Class<T> clazz) {
+        Object o = properties.get(name);
+        
+        if (clazz.isInstance(o))
+            return clazz.cast(o);
+        
+        return null;
+    }
+    
+    public void putProperty(String name, Object o) {
+        properties.put(name, o);
     }
 }

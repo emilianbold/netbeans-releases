@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -57,7 +57,7 @@ public class HudsonJobNode extends AbstractNode {
     public HudsonJobNode(HudsonJobImpl job) {
         super(Children.LEAF, Lookups.singleton(job));
         
-        setJob(job);
+        setHudsonJob(job);
     }
     
     @Override
@@ -138,7 +138,7 @@ public class HudsonJobNode extends AbstractNode {
         fireDisplayNameChange(oldHtmlDisplayName, getHtmlDisplayName());
     }
     
-    public void setJob(HudsonJobImpl job) {
+    public void setHudsonJob(HudsonJobImpl job) {
         this.job = job;
         
         // Refresh

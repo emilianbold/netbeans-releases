@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -32,7 +32,6 @@ import org.netbeans.modules.hudson.api.HudsonJob;
 import org.openide.ErrorManager;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 /**
@@ -47,7 +46,7 @@ public final class HudsonJobView extends TopComponent {
     private static final String GLOBE_ICON_OFF_BASE = "/org/netbeans/modules/hudson/ui/resources/globe_off.png";
     private static final String GLOBE_ICON_ON_BASE = "/org/netbeans/modules/hudson/ui/resources/globe_on.png";
     
-    private static final ImageIcon TOP_BG_IMAGE = new ImageIcon(Utilities.loadImage(TOP_BG_BASE, true));
+    private final ImageIcon TOP_BG_IMAGE = new ImageIcon(getClass().getResource(TOP_BG_BASE));
     
     private static Map<String, HudsonJobView> cache = new HashMap<String, HudsonJobView>();
     
@@ -65,7 +64,7 @@ public final class HudsonJobView extends TopComponent {
         initComponents();
         
         // Set icon and display name
-        setIcon(Utilities.loadImage(ICON_BASE, true));
+        setIcon(new ImageIcon(getClass().getResource(ICON_BASE)).getImage());
         setDisplayName(job.getDisplayName());
         
         // Set panels
@@ -320,5 +319,5 @@ private void runJobButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         // Refresh content
         refreshContent();
     }
-
+    
 }

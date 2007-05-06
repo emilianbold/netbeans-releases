@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,11 +21,11 @@ package org.netbeans.modules.hudson.impl;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.Semaphore;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -34,14 +34,16 @@ import org.netbeans.modules.hudson.api.HudsonChangeListener;
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob;
+import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.api.HudsonView;
 import org.netbeans.modules.hudson.ui.HudsonJobView;
-import org.netbeans.modules.hudson.ui.nodes.OpenableInBrowser;
-import org.openide.ErrorManager;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
+import org.netbeans.modules.hudson.ui.notification.HudsonNotificationController;
+import org.netbeans.modules.hudson.util.Utilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  * Implementation of the HudsonInstacne
@@ -53,12 +55,16 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     private HudsonInstanceProperties properties;
     private HudsonConnector connector;
     
-    private Synchronization synchronization = new Synchronization();
+    private HudsonVersion version;
+    private boolean connected;
+    private boolean terminated;
+    
+    private final Synchronization synchronization;
+    private Semaphore sync;
+    
     private Collection<HudsonJob> jobs = new ArrayList<HudsonJob>();
     private Collection<HudsonView> views = new ArrayList<HudsonView>();
     private Collection<HudsonChangeListener> listeners = new ArrayList<HudsonChangeListener>();
-    
-    private boolean sync = false;
     
     private HudsonInstanceImpl(String name, String url) {
         this(new HudsonInstanceProperties(name, url));
@@ -67,6 +73,9 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     private HudsonInstanceImpl(HudsonInstanceProperties properties) {
         this.properties = properties;
         this.connector = new HudsonConnector(this);
+        this.synchronization = new Synchronization();
+        this.sync = new Semaphore(1, true);
+        this.terminated = false;
         
         // Start synchronization
         synchronization.start();
@@ -80,33 +89,49 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
             }
         });
         
-        // Add content change listener to update HudsonJobViews in cache
+        // For listeners purposes
+        final HudsonInstance instance = this;
+        
+        // Add content change listener to update HudsonJobViews in cache and
+        // to notify all failed jobs
         addHudsonChangeListener(new HudsonChangeAdapter() {
             @Override
             public void contentChanged() {
+                // Failed jobs collection
+                final Collection<HudsonJob> failedJobs = new ArrayList<HudsonJob>();
+                
+                // Collect failed jobs ans update jobs view
                 for (final HudsonJob job : getJobs()) {
-                    try {
-                        // Updates jobs views in the cache
-                        SwingUtilities.invokeAndWait(new Runnable() {
-                            public void run() {
-                                HudsonJobView.getInstanceFromCache(job);
-                            }
-                        });
-                    } catch (InterruptedException e) {
-                        Exceptions.printStackTrace(e);
-                    } catch (InvocationTargetException e) {
-                        Exceptions.printStackTrace(e);
-                    }
+                    if (job.getColor().equals(Color.red) || job.getColor().equals(Color.red_anime))
+                        failedJobs.add(job);
+                    
+                    Utilities.invokeInAWTThread(new Runnable() {
+                        public void run() {
+                            // Updates jobs views in the cache
+                            HudsonJobView.getInstanceFromCache(job);
+                        }
+                    }, true);
                 }
                 
+                // Notify failed jobs
+                Utilities.invokeInAWTThread(new Runnable() {
+                    public void run() {
+                        // Updates jobs views in the cache
+                        HudsonNotificationController.getDefault().notify(failedJobs);
+                    }
+                }, true);
+                
+                // When job detail is opened and job was removed, close view
                 for (final HudsonJobView v : HudsonJobView.getCachedInstances()) {
-                    if (!getJobs().contains(v.getJob())) {
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
-                                if (v.isOpened())
-                                    v.close();
-                            }
-                        });
+                    if (instance.equals(v.getJob().getLookup().lookup(HudsonInstance.class))) {
+                        if (!getJobs().contains(v.getJob())) {
+                             SwingUtilities.invokeLater(new Runnable() {
+                                public void run() {
+                                    if (v.isOpened())
+                                        v.close();
+                                }
+                            });
+                        }
                     }
                 }
             }
@@ -142,15 +167,24 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     public static HudsonInstanceImpl createHudsonInstance(HudsonInstanceProperties properties) {
         HudsonInstanceImpl instance = new HudsonInstanceImpl(properties);
         
-        if (null == HudsonManagerImpl.getDefault().addInstance(instance))
+        if (null == HudsonManagerImpl.getInstance().addInstance(instance))
             return null;
         
         return instance;
     }
     
-    protected void stopAutoSynchronization() {
-        if (synchronization.isRunning())
-            synchronization.stop();
+    public void terminate() {
+        // Clear all
+        synchronization.stop();
+        terminated = true;
+        connected = false;
+        version = null;
+        jobs.clear();
+        views.clear();
+        
+        // Fire changes
+        fireStateChanges();
+        fireContentChanges();
     }
     
     public HudsonConnector getConnector() {
@@ -158,7 +192,11 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     }
     
     public HudsonVersion getVersion() {
-        return getConnector().getHudsonVersion();
+        return version;
+    }
+    
+    public boolean isConnected() {
+        return connected;
     }
     
     public HudsonInstanceProperties getProperties() {
@@ -186,53 +224,53 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     }
     
     public synchronized void synchronize() {
-        // Set synchronization flag or exit if synchronization is running
-        synchronized(this) {
-            if (sync)
-                return;
-            else
-                sync = true;
-        }
-        
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(
-                NbBundle.getMessage(HudsonInstanceImpl.class, "MSG_Synchronizing", getName()));
-        
-        handle.start();
-        
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                try {
-                    // Get actual views
-                    Collection<HudsonView> oldViews = getViews();
-                    
-                    // Retrieve jobs
-                    Collection<HudsonJob> retrieved = getConnector().getAllJobs();
-                    
-                    // Update state
-                    fireStateChanges();
-                    
-                    // Sort retrieved list
-                    Collections.sort(Arrays.asList(retrieved.toArray(new HudsonJob[] {})));
-                    
-                    // When there are no changes return and do not fire changes
-                    if (getJobs().equals(retrieved) && oldViews.equals(getViews()))
-                        return;
-                    
-                    // Update jobs
-                    jobs = retrieved;
-                    
-                    // Fire all changes
-                    fireContentChanges();
-                } finally {
-                    handle.finish();
-                    
-                    // Release synchronization flag
-                    synchronized(this) {
-                        sync = false;
+        if (sync.tryAcquire()) {
+            final ProgressHandle handle = ProgressHandleFactory.createHandle(
+                    NbBundle.getMessage(HudsonInstanceImpl.class, "MSG_Synchronizing", getName()));
+            
+            handle.start();
+            
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    try {
+                        // Get actual views
+                        Collection<HudsonView> oldViews = getViews();
+                        
+                        // Retrieve jobs
+                        Collection<HudsonJob> retrieved = getConnector().getAllJobs();
+                        
+                        // Exit when instance is terminated
+                        if (terminated)
+                            return;
+                        
+                        // Set connected and version
+                        connected = getConnector().isConnected();
+                        version = getConnector().getHudsonVersion();
+                        
+                        // Update state
+                        fireStateChanges();
+                        
+                        // Sort retrieved list
+                        Collections.sort(Arrays.asList(retrieved.toArray(new HudsonJob[] {})));
+                        
+                        // When there are no changes return and do not fire changes
+                        if (getJobs().equals(retrieved) && oldViews.equals(getViews()))
+                            return;
+                        
+                        // Update jobs
+                        jobs = retrieved;
+                        
+                        // Fire all changes
+                        fireContentChanges();
+                    } finally {
+                        handle.finish();
+                        
+                        // Release synchronization lock
+                        sync.release();
                     }
                 }
-            }
-        });
+            });
+        }
     }
     
     public void addHudsonChangeListener(HudsonChangeListener l) {
@@ -290,24 +328,28 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     
     private class Synchronization implements Runnable {
         
-        private boolean runningFlag = false;
+        private Task task;
+        private Semaphore lock = new Semaphore(1);
+        private RequestProcessor processor = new RequestProcessor(getUrl(), 1, true);
         
         public synchronized void start() {
-            if (!runningFlag)
-                RequestProcessor.getDefault().post(this);
+            if (lock.tryAcquire())
+                task = processor.post(this);
         }
         
         public synchronized void stop() {
-            runningFlag = false;
+            task.cancel();
+        }
+        
+        public synchronized void terminate() {
+            processor.stop();
         }
         
         public synchronized boolean isRunning() {
-            return runningFlag;
+            return lock.availablePermits() == 0;
         }
         
         public void run() {
-            // Activate
-            runningFlag = true;
             long milis = 0;
             
             try {
@@ -321,12 +363,12 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
                     
                     // Wait for the specified amount of time
                     Thread.sleep(milis);
-                } while (runningFlag && milis > 0);
+                } while (milis > 0);
             } catch (InterruptedException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                // Synchronization is stopped or terminated
             } finally {
-                // Deactivate
-                runningFlag = false;
+                // release lock
+                lock.release();
             }
         }
     }

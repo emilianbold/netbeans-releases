@@ -13,22 +13,21 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.hudson.ui;
 
-import java.awt.GridBagConstraints;
+import java.awt.GridLayout;
 import javax.swing.ImageIcon;
-import javax.swing.JLabel;
 import org.netbeans.modules.hudson.impl.HudsonJobBuild.HudsonJobChangeFile;
 import org.netbeans.modules.hudson.impl.HudsonJobBuild.HudsonJobChangeItem;
 import org.openide.util.NbBundle;
 
 /**
  * Hudson Job's Change Panel
- * 
+ *
  * @author  Michal Mocnak
  */
 public class HudsonJobChangePanel extends javax.swing.JPanel {
@@ -41,15 +40,12 @@ public class HudsonJobChangePanel extends javax.swing.JPanel {
     public HudsonJobChangePanel(HudsonJobChangeItem change) {
         initComponents();
         
-        userLabel.setText(NbBundle.getMessage(HudsonJobChangePanel.class, "LBL_User", change.getUser()));
-        msgLabel.setText(NbBundle.getMessage(HudsonJobChangePanel.class, "LBL_Msg", change.getMsg()));
         
-        GridBagConstraints gbc = new java.awt.GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0;
-        gbc.insets = new java.awt.Insets(0, 0, 5, 0);
+        
+        userLabel.setText(NbBundle.getMessage(HudsonJobChangePanel.class, "LBL_User", change.getUser()));
+        msgLabel.setText("<html>" + NbBundle.getMessage(HudsonJobChangePanel.class, "LBL_Msg", change.getMsg()));
+        
+        filesPanel.setLayout(new GridLayout(change.getFiles().size(), 1));
         
         for (HudsonJobChangeFile file : change.getFiles()) {
             ImageIcon icon = null;
@@ -69,11 +65,12 @@ public class HudsonJobChangePanel extends javax.swing.JPanel {
                 break;
             }
             
-            filesPanel.add(new JLabel(NbBundle.getMessage(HudsonJobChangePanel.class,
-                    "LBL_File", file.getName(), file.getRevision()), icon, JLabel.LEFT), gbc);
-            
-            gbc.gridy++;
+            filesPanel.add(new HudsonFilePanel(icon, file.getRevision(), file.getName()));
         }
+        
+        filesPanel.repaint();
+        filesPanel.revalidate();
+        
     }
     
     /** This method is called from within the constructor to
@@ -83,71 +80,65 @@ public class HudsonJobChangePanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
-        titlePane = new javax.swing.JPanel();
+        titlePanel = new javax.swing.JPanel();
         userLabel = new javax.swing.JLabel();
         msgLabel = new javax.swing.JLabel();
         filesPanel = new javax.swing.JPanel();
 
         setOpaque(false);
+        setLayout(new java.awt.GridBagLayout());
 
-        titlePane.setBackground(new java.awt.Color(255, 255, 153));
-        titlePane.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 204, 153), 1, true));
+        titlePanel.setBackground(new java.awt.Color(255, 255, 153));
+        titlePanel.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 204, 153), 1, true));
 
         userLabel.setFont(new java.awt.Font("Dialog", 1, 14));
         userLabel.setText("jLabel1");
 
         msgLabel.setText("jLabel2");
 
-        org.jdesktop.layout.GroupLayout titlePaneLayout = new org.jdesktop.layout.GroupLayout(titlePane);
-        titlePane.setLayout(titlePaneLayout);
-        titlePaneLayout.setHorizontalGroup(
-            titlePaneLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(titlePaneLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(titlePaneLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(userLabel)
-                    .add(msgLabel))
-                .addContainerGap(556, Short.MAX_VALUE))
+        org.jdesktop.layout.GroupLayout titlePanelLayout = new org.jdesktop.layout.GroupLayout(titlePanel);
+        titlePanel.setLayout(titlePanelLayout);
+        titlePanelLayout.setHorizontalGroup(
+            titlePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(titlePanelLayout.createSequentialGroup()
+                .add(titlePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(userLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
+                    .add(msgLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE))
+                .addContainerGap())
         );
-        titlePaneLayout.setVerticalGroup(
-            titlePaneLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(titlePaneLayout.createSequentialGroup()
+        titlePanelLayout.setVerticalGroup(
+            titlePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(titlePanelLayout.createSequentialGroup()
                 .add(userLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(msgLabel))
         );
 
-        filesPanel.setOpaque(false);
-        filesPanel.setLayout(new java.awt.GridBagLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        add(titlePanel, gridBagConstraints);
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, filesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 622, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, titlePane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(titlePane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(filesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
-        );
+        filesPanel.setOpaque(false);
+        filesPanel.setLayout(new java.awt.GridLayout(10, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        add(filesPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel filesPanel;
     private javax.swing.JLabel msgLabel;
-    private javax.swing.JPanel titlePane;
+    private javax.swing.JPanel titlePanel;
     private javax.swing.JLabel userLabel;
     // End of variables declaration//GEN-END:variables
     

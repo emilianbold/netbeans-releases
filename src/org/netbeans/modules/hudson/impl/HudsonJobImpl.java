@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -23,7 +23,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonView;
-import org.netbeans.modules.hudson.ui.nodes.OpenableInBrowser;
+import org.netbeans.modules.hudson.constants.HudsonJobConstants;
+import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
+import org.netbeans.modules.hudson.util.HudsonPropertiesSupport;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -32,19 +34,9 @@ import org.openide.util.lookup.Lookups;
  *
  * @author pblaha
  */
-public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
+public class HudsonJobImpl implements HudsonJob, HudsonJobConstants, OpenableInBrowser {
     
-    private String displayName;
-    private String name;
-    private String description;
-    private String url;
-    private Color color;
-    private boolean isInQueue;
-    private boolean isBuildable;
-    private int lastBuild;
-    private int lastStableBuild;
-    private int lastSuccessfulBuild;
-    private int lastFailedBuild;
+    private HudsonPropertiesSupport properties = new HudsonPropertiesSupport();
     
     private Collection<HudsonView> views = new ArrayList<HudsonView>();
     
@@ -61,92 +53,52 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
         this.instance = instance;
     }
     
-    public String getDisplayName() {
-        return displayName;
+    public void putProperty(String name, Object o) {
+        properties.putProperty(name, o);
     }
     
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
+    public String getDisplayName() {
+        return properties.getProperty(HUDSON_JOB_DISPLAY_NAME, String.class);
     }
     
     public String getName() {
-        return name;
-    }
-    
-    public void setName(String name) {
-        this.name = name;
+        return properties.getProperty(HUDSON_JOB_NAME, String.class);
     }
     
     public String getDescription() {
-        return description;
-    }
-    
-    public void setDescription(String description) {
-        this.description = description;
+        return properties.getProperty(HUDSON_JOB_DESCRIPTION, String.class);
     }
     
     public String getUrl() {
-        return url;
-    }
-    
-    public void setUrl(String url) {
-        this.url = url;
+        return properties.getProperty(HUDSON_JOB_URL, String.class);
     }
     
     public Color getColor() {
-        return color;
-    }
-    
-    public void setColor(Color color) {
-        this.color = color;
+        return properties.getProperty(HUDSON_JOB_COLOR, Color.class);
     }
     
     public boolean isInQueue() {
-        return isInQueue;
-    }
-    
-    public void setIsInQueue(boolean isInQueue) {
-        this.isInQueue = isInQueue;
+        return properties.getProperty(HUDSON_JOB_IN_QUEUE, Boolean.class);
     }
     
     public boolean isBuildable() {
-        return isBuildable;
-    }
-    
-    public void setIsBuildable(boolean isBuildable) {
-        this.isBuildable = isBuildable;
+        return properties.getProperty(HUDSON_JOB_BUILDABLE, Boolean.class);
     }
     
     public int getLastBuild() {
-        return lastBuild;
-    }
-    
-    public void setLastBuild(int lastBuild) {
-        this.lastBuild = lastBuild;
+        return properties.getProperty(HUDSON_JOB_LAST_BUILD, Integer.class);
     }
     
     public int getLastStableBuild() {
-        return lastStableBuild;
-    }
-    
-    public void setLastStableBuild(int lastStableBuild) {
-        this.lastStableBuild = lastStableBuild;
+        return properties.getProperty(HUDSON_JOB_LAST_STABLE_BUILD, Integer.class);
     }
     
     public int getLastSuccessfulBuild() {
-        return lastSuccessfulBuild;
-    }
-    
-    public void setLastSuccessfulBuild(int lastSuccessfulBuild) {
-        this.lastSuccessfulBuild = lastSuccessfulBuild;
+        return properties.getProperty(HUDSON_JOB_LAST_SUCCESSFUL_BUILD, Integer.class);
     }
     
     public int getLastFailedBuild() {
-        return lastFailedBuild;
-    }
-    
-    public void setLastFailedBuild(int lastFailedBuild) {
-        this.lastFailedBuild = lastFailedBuild;
+        return properties.getProperty(HUDSON_JOB_LAST_FAILED_BUILD, Integer.class);
     }
     
     public synchronized Collection<HudsonView> getViews() {
@@ -169,32 +121,30 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
         return Lookups.singleton(instance);
     }
     
-    public boolean equals(Object obj) {
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
+    public boolean equals(Object o) {
+        if (!(o instanceof HudsonJobImpl))
             return false;
         
-        final HudsonJobImpl other = (HudsonJobImpl) obj;
+        final HudsonJobImpl j = (HudsonJobImpl) o;
         
-        if (this.displayName != other.displayName &&
-                (this.displayName == null || !this.displayName.equals(other.displayName)))
+        if (getDisplayName() != j.getDisplayName() &&
+                (getDisplayName() == null || !getDisplayName().equals(j.getDisplayName())))
             return false;
-        if (this.name != other.name &&
-                (this.name == null || !this.name.equals(other.name)))
+        if (getName() != j.getName() &&
+                (getName() == null || !getName().equals(j.getName())))
             return false;
-        if (this.url != other.url &&
-                (this.url == null || !this.url.equals(other.url)))
+        if (getUrl() != j.getUrl() &&
+                (getUrl() == null || !getUrl().equals(j.getUrl())))
             return false;
-        if (this.color != other.color &&
-                (this.color == null || !this.color.equals(other.color)))
+        if (getColor() != j.getColor() &&
+                (getColor() == null || !getColor().equals(j.getColor())))
             return false;
-        if (this.isInQueue != other.isInQueue)
+        if (isInQueue() != j.isInQueue())
             return false;
-        if (this.isBuildable != other.isBuildable)
+        if (isBuildable() != j.isBuildable())
             return false;
-        if (this.getViews() != other.getViews() &&
-                (this.getViews() == null || !this.getViews().equals(other.getViews())))
+        if (this.getViews() != j.getViews() &&
+                (this.getViews() == null || !this.getViews().equals(j.getViews())))
             return false;
         
         return true;

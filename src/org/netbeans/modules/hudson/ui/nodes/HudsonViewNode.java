@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -27,9 +27,10 @@ import java.util.HashMap;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.hudson.api.HudsonChangeListener;
+import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonView;
-import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.impl.HudsonJobImpl;
+import org.netbeans.modules.hudson.impl.HudsonViewImpl;
 import org.netbeans.modules.hudson.ui.actions.OpenUrlAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -47,13 +48,11 @@ public class HudsonViewNode extends AbstractNode {
     
     private static final String ICON_BASE = "org/netbeans/modules/hudson/ui/resources/jobs.png";
     
-    private HudsonInstanceImpl instance;
     private HudsonView view;
     
-    public HudsonViewNode(HudsonInstanceImpl instance, HudsonView view) {
-        super(new ViewNodeChildren(instance, view), Lookups.singleton(view));
+    public HudsonViewNode(HudsonViewImpl view) {
+        super(new ViewNodeChildren(view), Lookups.singleton(view));
         
-        this.instance = instance;
         this.view = view;
         
         setDisplayName(view.getName() + " " +
@@ -74,30 +73,23 @@ public class HudsonViewNode extends AbstractNode {
     
     public static class ViewNodeChildren extends Children.Keys<HudsonJobImpl> implements HudsonChangeListener {
         
-        private HudsonInstanceImpl instance;
+        private HudsonInstance instance;
         private HudsonView view;
         
         private java.util.Map<String, HudsonJobNode> cache = new HashMap<String, HudsonJobNode>();
         
-        public ViewNodeChildren(HudsonInstanceImpl instance, HudsonView view) {
-            this.instance = instance;
+        public ViewNodeChildren(HudsonView view) {
             this.view = view;
+            
+            // Lookup HudsonInstance
+            instance = view.getLookup().lookup(HudsonInstance.class);
             
             // Add HudsonChangeListener into instance
             instance.addHudsonChangeListener(this);
         }
         
         protected Node[] createNodes(HudsonJobImpl job) {
-            HudsonJobNode n = cache.get(job.getName());
-            
-            if (null == n) {
-                n = new HudsonJobNode(job);
-                cache.put(job.getName(), n);
-            } else {
-                n.setJob(job);
-            }
-            
-            return new Node[] {n};
+            return new Node[] {HudsonNodesFactory.getDefault().getHudsonJobNode(this, job)};
         }
         
         @Override

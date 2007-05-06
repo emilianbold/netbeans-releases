@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -29,7 +29,6 @@ import java.awt.event.MouseEvent;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.border.EmptyBorder;
-import org.openide.util.Utilities;
 
 /**
  * Decorated button
@@ -44,8 +43,8 @@ public class HudsonButton extends JButton {
     private boolean active = false;
     
     public HudsonButton(String iconBaseOn, String iconBaseOff) {
-        ICON_ON = new ImageIcon(Utilities.loadImage(iconBaseOn, true));
-        ICON_OFF = new ImageIcon(Utilities.loadImage(iconBaseOff, true));
+        ICON_ON = new ImageIcon(getClass().getResource(iconBaseOn));
+        ICON_OFF = new ImageIcon(getClass().getResource(iconBaseOff));
         
         setBorder(new EmptyBorder(1, 1, 1, 1));
         setMargin(new Insets(0, 0, 0, 0));

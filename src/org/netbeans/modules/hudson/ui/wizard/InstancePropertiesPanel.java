@@ -40,7 +40,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
- *
+ * Hudson wizard instance properties panel
+ * 
  * @author Michal Mocnak
  */
 public class InstancePropertiesPanel implements WizardDescriptor.Panel, InstanceWizardConstants, ChangeListener {
@@ -89,7 +90,7 @@ public class InstancePropertiesPanel implements WizardDescriptor.Panel, Instance
             return false;
         }
         
-        if (HudsonManagerImpl.getDefault().getInstanceByName(name) != null) {
+        if (HudsonManagerImpl.getInstance().getInstanceByName(name) != null) {
             wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(InstancePropertiesPanel.class,
                     "MSG_ExistName"));
             return false;
@@ -111,6 +112,7 @@ public class InstancePropertiesPanel implements WizardDescriptor.Panel, Instance
         }
         
         if (!url.equals(checkingUrl)) {
+            getInstancePropertiesVisual().setChecking(true);
             
             final ProgressHandle handle = ProgressHandleFactory.createHandle(
                     NbBundle.getMessage(InstancePropertiesPanel.class, "MSG_Checking"));
@@ -125,6 +127,10 @@ public class InstancePropertiesPanel implements WizardDescriptor.Panel, Instance
                     // Set deafault values into flags
                     checkingFlag = true;
                     checkingState = false;
+                    
+                    // Set wizard tool tip text
+                    wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(InstancePropertiesPanel.class,
+                            "MSG_Checking"));
                     
                     try {
                         URLConnection connection = new URL(checkingUrl).openConnection();
@@ -144,6 +150,7 @@ public class InstancePropertiesPanel implements WizardDescriptor.Panel, Instance
                     } finally {
                         // Set checking progress to stopped
                         checkingFlag = false;
+                        getInstancePropertiesVisual().setChecking(false);
                         
                         // Stop the progress handle
                         handle.finish();
@@ -156,11 +163,7 @@ public class InstancePropertiesPanel implements WizardDescriptor.Panel, Instance
                     checkingState = true;
                 }
             });
-        }
-        
-        if (checkingFlag == true) {
-            wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(InstancePropertiesPanel.class,
-                    "MSG_Checking"));
+            
             return false;
         }
         

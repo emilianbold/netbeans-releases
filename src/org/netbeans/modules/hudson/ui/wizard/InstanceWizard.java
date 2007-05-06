@@ -24,14 +24,12 @@ import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
 /**
- *
+ * Hudson wizard descriptor
+ * 
  * @author Michal Mocnak
  */
 public class InstanceWizard extends WizardDescriptor implements InstanceWizardConstants {
     
-    /**
-     *
-     */
     public InstanceWizard() {
         super(new InstanceWizardIterator());
         

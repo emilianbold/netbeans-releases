@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -23,57 +23,44 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import org.netbeans.modules.hudson.constants.HudsonJobBuildConstants;
+import org.netbeans.modules.hudson.constants.HudsonJobChangeFileConstants;
+import org.netbeans.modules.hudson.constants.HudsonJobChangeItemConstants;
+import org.netbeans.modules.hudson.util.HudsonPropertiesSupport;
 
 /**
  * Describes Hudson Job's Build
- * 
+ *
  * @author Michal Mocnak
  */
-public class HudsonJobBuild {
+public class HudsonJobBuild implements HudsonJobBuildConstants {
     
     public enum Result {
         SUCCESS, FAILURE
     }
     
-    private boolean building;
-    private long duration;
-    private long timestamp;
-    private Result result;
+    private HudsonPropertiesSupport properties = new HudsonPropertiesSupport();
     
     private List<HudsonJobChangeItem> changes = new ArrayList<HudsonJobChangeItem>();
     
-    public HudsonJobBuild() {}
-    
-    public boolean isBuilding() {
-        return building;
+    public void putProperty(String name, Object o) {
+        properties.putProperty(name, o);
     }
     
-    public void setBuilding(boolean building) {
-        this.building = building;
+    public boolean isBuilding() {
+        return properties.getProperty(HUDSON_JOB_BUILD_BUILDING, Boolean.class);
     }
     
     public int getDuration() {
-        return (int) (duration / 60000);
-    }
-    
-    public void setDuration(long duration) {
-        this.duration = duration;
+        return (int) (properties.getProperty(HUDSON_JOB_BUILD_DURATION, java.lang.Long.class) / 60000);
     }
     
     public Date getDate() {
-        return new Date(timestamp);
-    }
-    
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
+        return new Date(properties.getProperty(HUDSON_JOB_BUILD_TIMESTAMP, Long.class));
     }
     
     public Result getResult() {
-        return result;
-    }
-    
-    public void setResult(Result result) {
-        this.result = result;
+        return properties.getProperty(HUDSON_JOB_BUILD_RESULT, Result.class);
     }
     
     public Collection<HudsonJobChangeItem> getChanges() {
@@ -84,27 +71,22 @@ public class HudsonJobBuild {
         changes.add(item);
     }
     
-    public static class HudsonJobChangeItem {
+    public static class HudsonJobChangeItem implements HudsonJobChangeItemConstants {
         
-        private String user;
-        private String msg;
+        private HudsonPropertiesSupport properties = new HudsonPropertiesSupport();
         
         private List<HudsonJobChangeFile> files = new ArrayList<HudsonJobChangeFile>();
         
-        public String getUser() {
-            return user;
+        public void putProperty(String name, Object o) {
+            properties.putProperty(name, o);
         }
         
-        public void setUser(String user) {
-            this.user = user;
+        public String getUser() {
+            return properties.getProperty(HUDSON_JOB_CHANGE_ITEM_USER, String.class);
         }
         
         public String getMsg() {
-            return msg;
-        }
-        
-        public void setMsg(String msg) {
-            this.msg = msg;
+            return properties.getProperty(HUDSON_JOB_CHANGE_ITEM_MESSAGE, String.class);
         }
         
         public Collection<HudsonJobChangeFile> getFiles() {
@@ -116,47 +98,32 @@ public class HudsonJobBuild {
         }
     }
     
-    public static class HudsonJobChangeFile {
+    public static class HudsonJobChangeFile implements HudsonJobChangeFileConstants{
         
         public enum EditType {
             add, edit, delete
         }
         
-        private String name;
-        private EditType editType;
-        private String revision;
-        private String prevRevision;
+        private HudsonPropertiesSupport properties = new HudsonPropertiesSupport();
         
-        public String getName() {
-            return name;
+        public void putProperty(String name, Object o) {
+            properties.putProperty(name, o);
         }
         
-        public void setName(String name) {
-            this.name = name;
+        public String getName() {
+            return properties.getProperty(HUDSON_JOB_CHANGE_FILE_NAME, String.class);
         }
         
         public EditType getEditType() {
-            return editType;
-        }
-        
-        public void setEditType(EditType editType) {
-            this.editType = editType;
+            return properties.getProperty(HUDSON_JOB_CHANGE_FILE_EDIT_TYPE, EditType.class);
         }
         
         public String getRevision() {
-            return revision;
-        }
-        
-        public void setRevision(String revision) {
-            this.revision = revision;
+            return properties.getProperty(HUDSON_JOB_CHANGE_FILE_REVISION, String.class);
         }
         
         public String getPrevRevision() {
-            return prevRevision;
-        }
-        
-        public void setPrevRevision(String prevRevision) {
-            this.prevRevision = prevRevision;
+            return properties.getProperty(HUDSON_JOB_CHANGE_FILE_PREVIOUS_REVISION, String.class);
         }
     }
 }

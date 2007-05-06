@@ -13,18 +13,20 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.hudson.api;
+
+import org.openide.util.Lookup;
 
 /**
  * Describes Hudson view
  *
  * @author Michal Mocnak
  */
-public interface HudsonView {
+public interface HudsonView extends Lookup.Provider {
     
     /**
      * Default all view name
@@ -52,4 +54,11 @@ public interface HudsonView {
      * @return Hudson's view url
      */
     public String getUrl();
+    
+    /**
+     * Returns default view lookup
+     *
+     * @return default view lookup
+     */
+    public Lookup getLookup();
 }

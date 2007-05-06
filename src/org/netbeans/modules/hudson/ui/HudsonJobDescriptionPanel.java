@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,7 +24,7 @@ import org.openide.util.NbBundle;
 
 /**
  * Hudson Job's Description Panel
- * 
+ *
  * @author  Michal Mocnak
  */
 public class HudsonJobDescriptionPanel extends javax.swing.JPanel {
@@ -37,7 +37,7 @@ public class HudsonJobDescriptionPanel extends javax.swing.JPanel {
     public void refreshContent(HudsonJob job) {
         String text;
         
-        if (job.getDescription().length() > 0)
+        if (null != job.getDescription() && job.getDescription().length() > 0)
             text = job.getDescription();
         else
             text = NbBundle.getMessage(HudsonJobDescriptionPanel.class, "LBL_NoDescription");

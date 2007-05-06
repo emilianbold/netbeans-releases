@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,7 +21,6 @@ package org.netbeans.modules.hudson.ui;
 
 import java.awt.Color;
 import java.awt.GridBagConstraints;
-import java.awt.Insets;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.hudson.api.HudsonJob;
@@ -29,12 +28,13 @@ import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.impl.HudsonJobBuild;
 import org.netbeans.modules.hudson.impl.HudsonJobBuild.HudsonJobChangeItem;
 import org.netbeans.modules.hudson.impl.HudsonJobBuild.Result;
+import org.netbeans.modules.hudson.util.Utilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
  * Hudson Job's Build Panel
- * 
+ *
  * @author  Michal Mocnak
  */
 public class HudsonJobBuildPanel extends javax.swing.JPanel {
@@ -59,37 +59,75 @@ public class HudsonJobBuildPanel extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        changesPanel = new javax.swing.JPanel();
+        changesLabel = new javax.swing.JLabel();
+        changesContentPanel = new javax.swing.JPanel();
         noChangesLabel = new javax.swing.JLabel();
-        contentPane = new javax.swing.JScrollPane();
-        contentPanel = new javax.swing.JPanel();
+        statusLabel = new javax.swing.JLabel();
+        loadingLabel = new javax.swing.JLabel();
         buildPanel = new javax.swing.JPanel();
         buildLabel = new javax.swing.JLabel();
         buildContentPanel = new javax.swing.JPanel();
         buildResultLabel = new javax.swing.JLabel();
         buildStatusLabel = new javax.swing.JLabel();
-        changesPanel = new javax.swing.JPanel();
-        changesLabel = new javax.swing.JLabel();
-        changesContentPanel = new javax.swing.JPanel();
-        jPanel1 = new javax.swing.JPanel();
-        statusLabel = new javax.swing.JLabel();
-        loadingLabel = new javax.swing.JLabel();
+        contentPane = new javax.swing.JScrollPane();
+        contentPanel = new javax.swing.JPanel();
+
+        changesPanel.setBorder(null);
+        changesPanel.setOpaque(false);
+        changesPanel.setLayout(new java.awt.GridBagLayout());
+
+        changesLabel.setFont(new java.awt.Font("Dialog", 1, 14));
+        changesLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        changesLabel.setText(org.openide.util.NbBundle.getMessage(HudsonJobBuildPanel.class, "LBL_Changes")); // NOI18N
+        changesLabel.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(204, 204, 204), 1, true));
+        changesLabel.setOpaque(true);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        changesPanel.add(changesLabel, gridBagConstraints);
+
+        changesContentPanel.setBorder(null);
+        changesContentPanel.setOpaque(false);
+        changesContentPanel.setLayout(new java.awt.GridBagLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        changesPanel.add(changesContentPanel, gridBagConstraints);
 
         noChangesLabel.setText(org.openide.util.NbBundle.getMessage(HudsonJobBuildPanel.class, "LBL_NoChanges")); // NOI18N
 
-        contentPane.setBorder(null);
-        contentPane.setOpaque(false);
-        contentPane.getViewport().setOpaque(false);
+        statusLabel.setFont(new java.awt.Font("Dialog", 1, 14));
+        statusLabel.setText(org.openide.util.NbBundle.getMessage(HudsonJobBuildPanel.class, "LBL_NoAvailableBuild")); // NOI18N
 
-        contentPanel.setOpaque(false);
-        contentPanel.setLayout(new java.awt.GridBagLayout());
+        loadingLabel.setFont(new java.awt.Font("Dialog", 1, 14));
+        loadingLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/hudson/ui/resources/loading.gif"))); // NOI18N
+        loadingLabel.setText(org.openide.util.NbBundle.getMessage(HudsonJobBuildPanel.class, "LBL_Loading")); // NOI18N
+        loadingLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        loadingLabel.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
 
         buildPanel.setOpaque(false);
+        buildPanel.setLayout(new java.awt.GridBagLayout());
 
         buildLabel.setFont(new java.awt.Font("Dialog", 1, 14));
         buildLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         buildLabel.setText(org.openide.util.NbBundle.getMessage(HudsonJobBuildPanel.class, "LBL_BuildNumber")); // NOI18N
         buildLabel.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(204, 204, 204), 1, true));
         buildLabel.setOpaque(true);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        buildPanel.add(buildLabel, gridBagConstraints);
 
         buildContentPanel.setOpaque(false);
         buildContentPanel.setLayout(new java.awt.GridBagLayout());
@@ -110,95 +148,37 @@ public class HudsonJobBuildPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         buildContentPanel.add(buildStatusLabel, gridBagConstraints);
 
-        org.jdesktop.layout.GroupLayout buildPanelLayout = new org.jdesktop.layout.GroupLayout(buildPanel);
-        buildPanel.setLayout(buildPanelLayout);
-        buildPanelLayout.setHorizontalGroup(
-            buildPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, buildLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 647, Short.MAX_VALUE)
-            .add(buildPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(buildContentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 623, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        buildPanelLayout.setVerticalGroup(
-            buildPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(buildPanelLayout.createSequentialGroup()
-                .add(buildLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 27, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(buildContentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(10, 10, 0, 10);
-        contentPanel.add(buildPanel, gridBagConstraints);
-
-        changesPanel.setOpaque(false);
-
-        changesLabel.setFont(new java.awt.Font("Dialog", 1, 14));
-        changesLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        changesLabel.setText(org.openide.util.NbBundle.getMessage(HudsonJobBuildPanel.class, "LBL_Changes")); // NOI18N
-        changesLabel.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(204, 204, 204), 1, true));
-        changesLabel.setOpaque(true);
-
-        changesContentPanel.setOpaque(false);
-        changesContentPanel.setLayout(new java.awt.GridBagLayout());
-
-        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 0, Short.MAX_VALUE)
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 0, Short.MAX_VALUE)
-        );
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.ipadx = 1;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 10, 0);
-        changesContentPanel.add(jPanel1, gridBagConstraints);
-
-        org.jdesktop.layout.GroupLayout changesPanelLayout = new org.jdesktop.layout.GroupLayout(changesPanel);
-        changesPanel.setLayout(changesPanelLayout);
-        changesPanelLayout.setHorizontalGroup(
-            changesPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, changesLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 647, Short.MAX_VALUE)
-            .add(changesContentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 647, Short.MAX_VALUE)
-        );
-        changesPanelLayout.setVerticalGroup(
-            changesPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(changesPanelLayout.createSequentialGroup()
-                .add(changesLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 27, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(changesContentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 10, 10, 10);
-        contentPanel.add(changesPanel, gridBagConstraints);
-
-        contentPane.setViewportView(contentPanel);
-
-        statusLabel.setFont(new java.awt.Font("Dialog", 1, 14));
-        statusLabel.setText(org.openide.util.NbBundle.getMessage(HudsonJobBuildPanel.class, "LBL_NoAvailableBuild")); // NOI18N
-
-        loadingLabel.setFont(new java.awt.Font("Dialog", 1, 14));
-        loadingLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/hudson/ui/resources/loading.gif"))); // NOI18N
-        loadingLabel.setText(org.openide.util.NbBundle.getMessage(HudsonJobBuildPanel.class, "LBL_Loading")); // NOI18N
-        loadingLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        loadingLabel.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        buildPanel.add(buildContentPanel, gridBagConstraints);
 
         setOpaque(false);
         setLayout(new java.awt.GridBagLayout());
+
+        contentPane.setBorder(null);
+        contentPane.setViewportBorder(null);
+        contentPane.setOpaque(false);
+
+        contentPanel.setBorder(null);
+        contentPanel.setOpaque(false);
+        contentPanel.setLayout(new java.awt.GridBagLayout());
+        contentPane.setViewportView(contentPanel);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 30, 5);
+        add(contentPane, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     
     
@@ -213,7 +193,6 @@ public class HudsonJobBuildPanel extends javax.swing.JPanel {
     private javax.swing.JPanel changesPanel;
     private javax.swing.JScrollPane contentPane;
     private javax.swing.JPanel contentPanel;
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JLabel loadingLabel;
     private javax.swing.JLabel noChangesLabel;
     private javax.swing.JLabel statusLabel;
@@ -231,10 +210,10 @@ public class HudsonJobBuildPanel extends javax.swing.JPanel {
         
         public void showBuild(HudsonJob job, int build) {
             // Remove all components from container
-            removeAll();
+            contentPanel.removeAll();
             
             // Add results
-            add(loadingLabel);
+            contentPanel.add(loadingLabel);
             
             // Repaint and revalidate
             repaint();
@@ -266,19 +245,12 @@ public class HudsonJobBuildPanel extends javax.swing.JPanel {
                 }
             } else {
                 // Remove all components from container
-                removeAll();
+                contentPanel.removeAll();
                 
                 // Add results
                 if (!state) {
-                    add(statusLabel);
+                    contentPanel.add(statusLabel);
                 } else {
-                    // Contraints for panels
-                    GridBagConstraints gbc = new GridBagConstraints();
-                    gbc.fill = java.awt.GridBagConstraints.BOTH;
-                    gbc.weightx = 1.0;
-                    gbc.weighty = 1.0;
-                    gbc.insets = new java.awt.Insets(10, 10, 0, 10);
-                    
                     buildLabel.setText(NbBundle.getMessage(HudsonJobBuildPanel.class, "LBL_BuildNumber",
                             build, data.getDate()));
                     
@@ -288,9 +260,10 @@ public class HudsonJobBuildPanel extends javax.swing.JPanel {
                         buildStatusLabel.setText(null);
                         buildStatusLabel.setIcon(new ImageIcon(getClass().getResource(BUILDING_ICON_BASE)));
                         
-                        contentPanel.removeAll();
-                        contentPanel.add(buildPanel, gbc);
+                        contentPanel.add(buildPanel, Utilities.getGridBagConstraints(0, 0, 1.0, 1.0,
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH, 0, 0, 0, 0));
                     } else {
+                        // Building is done, show build and content panel
                         buildResultLabel.setText((data.getResult() == Result.SUCCESS) ?
                             NbBundle.getMessage(HudsonJobBuildPanel.class, "LBL_Success") :
                             NbBundle.getMessage(HudsonJobBuildPanel.class, "LBL_Failure"));
@@ -299,47 +272,33 @@ public class HudsonJobBuildPanel extends javax.swing.JPanel {
                         buildStatusLabel.setText(NbBundle.getMessage(HudsonJobBuildPanel.class, "LBL_Duration", data.getDuration()));
                         buildStatusLabel.setIcon(null);
                         
+                        // Remove all from content panel
                         contentPanel.removeAll();
                         
-                        // Set constraints
-                        gbc.weighty = 0;
+                        // Add build panel into content panel
+                        contentPanel.add(buildPanel, Utilities.getGridBagConstraints(0, 0, 1.0, 0.1,
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH, 0, 0, 0, 0));
                         
-                        contentPanel.add(buildPanel, gbc);
-                        
-                        // Update changesPanel
+                        // Remove all from changes panel
                         changesContentPanel.removeAll();
                         
                         if (data.getChanges().size() == 0) {
                             changesContentPanel.add(noChangesLabel);
                         } else {
-                            // Set constraints
-                            gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
-                            gbc.insets = new java.awt.Insets(0, 0, 0, 0);
-                            gbc.gridx = 0;
-                            gbc.gridy = 0;
+                            // Prepare gridy value
+                            int gridy = 0;
                             
                             // Add changes
-                            for (HudsonJobChangeItem change : data.getChanges()) {
-                                changesContentPanel.add(new HudsonJobChangePanel(change), gbc);
-                                gbc.gridy++;
-                            }
+                            for (HudsonJobChangeItem change : data.getChanges())
+                                changesContentPanel.add(new HudsonJobChangePanel(change),
+                                Utilities.getGridBagConstraints(0, gridy++, 1.0, 1.0,
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH, 0, 0, 0, 0));
                         }
                         
-                        // Set constraints
-                        gbc.insets = new java.awt.Insets(0, 10, 10, 10);
-                        gbc.gridx = 0;
-                        gbc.gridy = 1;
-                        gbc.weighty = 1.0;
-                        
-                        contentPanel.add(changesPanel, gbc);
+                        // Add changes panel into content panel
+                        contentPanel.add(changesPanel, Utilities.getGridBagConstraints(0, 1, 1.0, 0.9,
+                                GridBagConstraints.CENTER, GridBagConstraints.BOTH, 0, 0, 0, 0));
                     }
-                    
-                    // Set constraints
-                    gbc.fill = java.awt.GridBagConstraints.BOTH;
-                    gbc.gridy = 0;
-                    gbc.insets = new Insets(0, 0, 20, 0);
-                    
-                    add(contentPane, gbc);
                 }
                 
                 // Repaint and revalidate

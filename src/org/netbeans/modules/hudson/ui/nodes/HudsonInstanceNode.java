@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -31,6 +31,7 @@ import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.api.HudsonView;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
+import org.netbeans.modules.hudson.impl.HudsonViewImpl;
 import org.netbeans.modules.hudson.ui.actions.OpenUrlAction;
 import org.netbeans.modules.hudson.ui.actions.RemoveInstanceAction;
 import org.netbeans.modules.hudson.ui.actions.SynchronizeAction;
@@ -86,6 +87,10 @@ public class HudsonInstanceNode extends AbstractNode {
                 refreshContent();
             }
         });
+        
+        // Refresh
+        refreshState();
+        refreshContent();
     }
     
     @Override
@@ -125,7 +130,7 @@ public class HudsonInstanceNode extends AbstractNode {
         // Save html name
         String oldHtmlName = getHtmlDisplayName();
         
-        alive = instance.getConnector().isConnected();
+        alive = instance.isConnected();
         version = Utilities.isSupportedVersion(instance.getVersion());
         
         // Refresh children
@@ -209,18 +214,8 @@ public class HudsonInstanceNode extends AbstractNode {
         private Collection<Node> getKeys() {
             List<Node> l = new ArrayList<Node>();
             
-            for (HudsonView h : instance.getViews()) {
-                HudsonViewNode n = cache.get(h.getName());
-                
-                if (null == n) {
-                    n = new HudsonViewNode(instance, h);
-                    cache.put(h.getName(), n);
-                } else {
-                    n.setHudsonView(h);
-                }
-                
-                l.add(n);
-            }
+            for (HudsonView v : instance.getViews())
+                l.add(HudsonNodesFactory.getDefault().getHudsonViewNode(this, (HudsonViewImpl) v));
             
             return l;
         }

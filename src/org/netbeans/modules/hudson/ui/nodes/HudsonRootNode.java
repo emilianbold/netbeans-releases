@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.hudson.api.HudsonChangeListener;
+import org.netbeans.modules.hudson.api.HudsonManager;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
 import org.netbeans.modules.hudson.ui.actions.AddInstanceAction;
@@ -32,6 +33,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -43,7 +45,11 @@ public class HudsonRootNode extends AbstractNode {
     
     private static final String ICON_BASE = "org/netbeans/modules/hudson/ui/resources/hudson.png";
     
-    private static HudsonRootNode instance;
+    /** Init lock */
+    private static final Object LOCK_INIT = new Object();
+    
+    /** The only instance of the hudson nodes factory in the system */
+    private static HudsonRootNode defaultInstance;
     
     /**
      * Creates a new instance of HudsonRootNode
@@ -61,10 +67,12 @@ public class HudsonRootNode extends AbstractNode {
      * @return default instance of HudsonRootNode
      */
     public static HudsonRootNode getDefault() {
-        if (null == instance)
-            instance = new HudsonRootNode();
-        
-        return instance;
+        synchronized(LOCK_INIT) {
+            if (null == defaultInstance)
+                defaultInstance = new HudsonRootNode();
+            
+            return defaultInstance;
+        }
     }
     
     @Override
@@ -109,7 +117,8 @@ public class HudsonRootNode extends AbstractNode {
         private void refreshKeys() {
             Collection<HudsonInstanceImpl> keys = getKeys();
             
-            if (keys.size() == 0 && !HudsonManagerImpl.startupFlag)
+            if (keys.size() == 0 && !NbPreferences.forModule(
+                    HudsonManager.class).getBoolean(HudsonManagerImpl.STARTUP_PROP, false))
                 setKeys(new Object[] {tooltip});
             else
                 setKeys(keys);

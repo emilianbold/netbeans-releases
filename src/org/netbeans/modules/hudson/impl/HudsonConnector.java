@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -37,6 +37,11 @@ import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.api.HudsonView;
+import org.netbeans.modules.hudson.constants.HudsonJobBuildConstants;
+import org.netbeans.modules.hudson.constants.HudsonJobChangeFileConstants;
+import org.netbeans.modules.hudson.constants.HudsonJobChangeItemConstants;
+import org.netbeans.modules.hudson.constants.HudsonJobConstants;
+import org.netbeans.modules.hudson.constants.HudsonXmlApiConstants;
 import org.netbeans.modules.hudson.impl.HudsonJobBuild.HudsonJobChangeFile;
 import org.netbeans.modules.hudson.impl.HudsonJobBuild.HudsonJobChangeFile.EditType;
 import org.netbeans.modules.hudson.impl.HudsonJobBuild.HudsonJobChangeItem;
@@ -57,50 +62,14 @@ import org.xml.sax.SAXException;
  *
  * @author Michal Mocnak
  */
-public class HudsonConnector {
-    
-    // XML API Suffix
-    private static final String XML_API_URL ="/api/xml";
-    
-    // Hudson Instance Element
-    private static final String VIEW_ELEMENT_NAME = "view";
-    private static final String JOB_ELEMENT_NAME = "job";
-    private static final String NAME_ELEMENT_NAME = "name";
-    private static final String URL_ELEMENT_NAME = "url";
-    private static final String COLOR_ELEMENT_NAME = "color";
-    
-    // Hudson Job Elements
-    private static final String DESCRIPTION_ELEMENT_NAME = "description";
-    private static final String DISPLAY_NAME_ELEMENT_NAME = "displayName";
-    private static final String BUILDABLE_ELEMENT_NAME = "buildable";
-    private static final String INQUEUE_ELEMENT_NAME = "inQueue";
-    private static final String LAST_BUILD_ELEMENT_NAME = "lastBuild";
-    private static final String LAST_STABLE_BUILD_ELEMENT_NAME = "lastStableBuild";
-    private static final String LAST_SUCCESSFUL_BUILD_ELEMENT_NAME = "lastSuccessfulBuild";
-    private static final String LAST_FAILED_BUILD_ELEMENT_NAME = "lastFailedBuild";
-    
-    // Hudson Job Build Elements
-    private static final String BUILDING_ELEMENT_NAME = "building";
-    private static final String DURATION_ELEMENT_NAME = "duration";
-    private static final String TIMESTAMP_ELEMENT_NAME = "timestamp";
-    private static final String RESULT_ELEMENT_NAME = "result";
-    private static final String ITEM_ELEMENT_NAME = "item";
-    private static final String FILE_ELEMENT_NAME = "file";
-    private static final String EDIT_TYPE_ELEMENT_NAME = "editType";
-    private static final String REVISION_ELEMENT_NAME = "revision";
-    private static final String PREV_REVISION_ELEMENT_NAME = "prevrevision";
-    private static final String MSG_ELEMENT_NAME = "msg";
-    private static final String USER_ELEMENT_NAME = "user";
-    
-    
-    // Start Hudson Job Command
-    private static final String BUILD_URL = "build";
+public class HudsonConnector implements HudsonXmlApiConstants,
+        HudsonJobConstants, HudsonJobBuildConstants, HudsonJobChangeFileConstants, HudsonJobChangeItemConstants {
     
     private DocumentBuilder builder;
     private HudsonInstanceImpl instance;
-    private HudsonVersion version;
     
-    private boolean isConnected = false;
+    private HudsonVersion version;
+    private boolean connected = false;
     
     private Map<String, HudsonView> cache = new HashMap<String, HudsonView>();
     
@@ -119,25 +88,6 @@ public class HudsonConnector {
         }
     }
     
-    public synchronized boolean isConnected() {
-        synchronized(this) {
-            return isConnected;
-        }
-    }
-    
-    private synchronized void setConnected(boolean isConnected) {
-        synchronized(this) {
-            this.isConnected = isConnected;
-        }
-    }
-    
-    public synchronized HudsonVersion getHudsonVersion() {
-        if (null == version)
-            version = retrievedHudsonVersion();
-        
-        return version;
-    }
-    
     public synchronized Collection<HudsonJob> getAllJobs() {
         Document docInstance = getDocument(instance.getUrl());
         
@@ -148,8 +98,8 @@ public class HudsonConnector {
         cache.clear();
         
         // Get views and jobs
-        NodeList views = docInstance.getElementsByTagName(VIEW_ELEMENT_NAME);
-        NodeList jobs = docInstance.getElementsByTagName(JOB_ELEMENT_NAME);
+        NodeList views = docInstance.getElementsByTagName(XML_API_VIEW_ELEMENT);
+        NodeList jobs = docInstance.getElementsByTagName(XML_API_JOB_ELEMENT);
         
         // Parse views and set them into instance
         Collection<HudsonView> cViews = getViews(views);
@@ -176,7 +126,7 @@ public class HudsonConnector {
         handle.start();
         
         try {
-            final URL url = new URL(job.getUrl() + "/" + BUILD_URL);
+            final URL url = new URL(job.getUrl() + "/" + XML_API_BUILD_URL);
             
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
@@ -218,14 +168,14 @@ public class HudsonConnector {
             Node n = buildDetails.item(i);
             
             if (n.getNodeType() == Node.ELEMENT_NODE) {
-                if (n.getNodeName().equals(BUILDING_ELEMENT_NAME)) {
-                    result.setBuilding(Boolean.parseBoolean(n.getFirstChild().getTextContent()));
-                } else if (n.getNodeName().equals(DURATION_ELEMENT_NAME)) {
-                    result.setDuration(Long.parseLong(n.getFirstChild().getTextContent()));
-                } else if (n.getNodeName().equals(TIMESTAMP_ELEMENT_NAME)) {
-                    result.setTimestamp(Long.parseLong(n.getFirstChild().getTextContent()));
-                } else if (!result.isBuilding() && n.getNodeName().equals(RESULT_ELEMENT_NAME)) {
-                    result.setResult((n.getFirstChild().getTextContent().
+                if (n.getNodeName().equals(XML_API_BUILDING_ELEMENT)) {
+                    result.putProperty(HUDSON_JOB_BUILD_BUILDING, Boolean.parseBoolean(n.getFirstChild().getTextContent()));
+                } else if (n.getNodeName().equals(XML_API_DURATION_ELEMENT)) {
+                    result.putProperty(HUDSON_JOB_BUILD_DURATION, Long.parseLong(n.getFirstChild().getTextContent()));
+                } else if (n.getNodeName().equals(XML_API_TIMESTAMP_ELEMENT)) {
+                    result.putProperty(HUDSON_JOB_BUILD_TIMESTAMP, Long.parseLong(n.getFirstChild().getTextContent()));
+                } else if (!result.isBuilding() && n.getNodeName().equals(XML_API_RESULT_ELEMENT)) {
+                    result.putProperty(HUDSON_JOB_BUILD_RESULT, (n.getFirstChild().getTextContent().
                             equals("SUCCESS")) ? Result.SUCCESS : Result.FAILURE);
                 }
             }
@@ -233,7 +183,7 @@ public class HudsonConnector {
         
         try {
             // Get changes
-            NodeList changes = docBuild.getElementsByTagName(ITEM_ELEMENT_NAME);
+            NodeList changes = docBuild.getElementsByTagName(XML_API_ITEM_ELEMENT);
             
             for (int i = 0 ; i < changes.getLength() ; i++) {
                 Node n = changes.item(i);
@@ -245,7 +195,7 @@ public class HudsonConnector {
                     Node o = n.getChildNodes().item(j);
                     
                     if (o.getNodeType() == Node.ELEMENT_NODE) {
-                        if (o.getNodeName().equals(FILE_ELEMENT_NAME)) {
+                        if (o.getNodeName().equals(XML_API_FILE_ELEMENT)) {
                             
                             HudsonJobChangeFile file = new HudsonJobChangeFile();
                             
@@ -253,35 +203,49 @@ public class HudsonConnector {
                                 Node d = o.getChildNodes().item(k);
                                 
                                 if (d.getNodeType() == Node.ELEMENT_NODE) {
-                                    if (d.getNodeName().equals(EDIT_TYPE_ELEMENT_NAME)) {
-                                        file.setEditType(EditType.valueOf(d.getFirstChild().getTextContent()));
-                                    } else if (d.getNodeName().equals(NAME_ELEMENT_NAME)) {
-                                        file.setName(d.getFirstChild().getTextContent());
-                                    } else if (d.getNodeName().equals(PREV_REVISION_ELEMENT_NAME)) {
-                                        file.setPrevRevision(d.getFirstChild().getTextContent());
-                                    } else if (d.getNodeName().equals(REVISION_ELEMENT_NAME)) {
-                                        file.setRevision(d.getFirstChild().getTextContent());
+                                    if (d.getNodeName().equals(XML_API_EDIT_TYPE_ELEMENT)) {
+                                        file.putProperty(HUDSON_JOB_CHANGE_FILE_EDIT_TYPE,
+                                                EditType.valueOf(d.getFirstChild().getTextContent()));
+                                    } else if (d.getNodeName().equals(XML_API_NAME_ELEMENT)) {
+                                        file.putProperty(HUDSON_JOB_CHANGE_FILE_NAME, d.getFirstChild().getTextContent());
+                                    } else if (d.getNodeName().equals(XML_API_PREV_REVISION_ELEMENT)) {
+                                        file.putProperty(HUDSON_JOB_CHANGE_FILE_PREVIOUS_REVISION,
+                                                d.getFirstChild().getTextContent());
+                                    } else if (d.getNodeName().equals(XML_API_REVISION_ELEMENT)) {
+                                        file.putProperty(HUDSON_JOB_CHANGE_FILE_REVISION,
+                                                d.getFirstChild().getTextContent());
                                     }
                                 }
                             }
                             
                             item.addFile(file);
-                        } else if (o.getNodeName().equals(MSG_ELEMENT_NAME)) {
-                            item.setMsg(o.getFirstChild().getTextContent());
-                        } else if (o.getNodeName().equals(USER_ELEMENT_NAME)) {
-                            item.setUser(o.getFirstChild().getTextContent());
+                        } else if (o.getNodeName().equals(XML_API_MSG_ELEMENT)) {
+                            item.putProperty(HUDSON_JOB_CHANGE_ITEM_MESSAGE, o.getFirstChild().getTextContent());
+                        } else if (o.getNodeName().equals(XML_API_USER_ELEMENT)) {
+                            item.putProperty(HUDSON_JOB_CHANGE_ITEM_USER, o.getFirstChild().getTextContent());
                         }
                     }
                 }
                 
                 result.addChangeItem(item);
-                
             }
         } catch (NullPointerException e) {
             // There is no changes
         }
         
         return result;
+    }
+    
+    protected synchronized HudsonVersion getHudsonVersion() {
+        if (null == version)
+            version = retrieveHudsonVersion();
+        
+        return version;
+    }
+    
+    protected boolean isConnected() {
+        return connected;
+        
     }
     
     private Collection<HudsonView> getViews(NodeList nodes) {
@@ -298,9 +262,9 @@ public class HudsonConnector {
                 Node o = n.getChildNodes().item(j);
                 
                 if (o.getNodeType() == Node.ELEMENT_NODE) {
-                    if (o.getNodeName().equals(NAME_ELEMENT_NAME)) {
+                    if (o.getNodeName().equals(XML_API_NAME_ELEMENT)) {
                         name = o.getFirstChild().getTextContent();
-                    } else if (o.getNodeName().equals(URL_ELEMENT_NAME)) {
+                    } else if (o.getNodeName().equals(XML_API_URL_ELEMENT)) {
                         url = o.getFirstChild().getTextContent();
                     }
                 }
@@ -313,7 +277,7 @@ public class HudsonConnector {
                     continue;
                 
                 // Retrieve description
-                NodeList descriptionList = docView.getElementsByTagName(DESCRIPTION_ELEMENT_NAME);
+                NodeList descriptionList = docView.getElementsByTagName(XML_API_DESCRIPTION_ELEMENT);
                 
                 try {
                     description = descriptionList.item(0).getFirstChild().getTextContent();
@@ -322,12 +286,12 @@ public class HudsonConnector {
                 }
                 
                 // Create HudsonView
-                HudsonViewImpl view = new HudsonViewImpl(name, description, url);
+                HudsonViewImpl view = new HudsonViewImpl(instance, name, description, url);
                 
                 if (!view.getName().equals(HudsonView.ALL_VIEW)) {
                     
                     // Retrieve jobs
-                    NodeList jobsList = docView.getElementsByTagName(JOB_ELEMENT_NAME);
+                    NodeList jobsList = docView.getElementsByTagName(XML_API_JOB_ELEMENT);
                     
                     for (int k = 0; k < jobsList.getLength(); k++) {
                         Node d = jobsList.item(k);
@@ -336,7 +300,7 @@ public class HudsonConnector {
                             Node e = d.getChildNodes().item(l);
                             
                             if (e.getNodeType() == Node.ELEMENT_NODE) {
-                                if (e.getNodeName().equals(NAME_ELEMENT_NAME)) {
+                                if (e.getNodeName().equals(XML_API_NAME_ELEMENT)) {
                                     cache.put(view.getName() + "/" + e.getFirstChild().getTextContent(), view);
                                 }
                             }
@@ -364,12 +328,12 @@ public class HudsonConnector {
                 Node o = n.getChildNodes().item(j);
                 
                 if (o.getNodeType() == Node.ELEMENT_NODE) {
-                    if (o.getNodeName().equals(NAME_ELEMENT_NAME)) {
-                        job.setName(o.getFirstChild().getTextContent());
-                    } else if (o.getNodeName().equals(URL_ELEMENT_NAME)) {
-                        job.setUrl(o.getFirstChild().getTextContent());
-                    } else if (o.getNodeName().equals(COLOR_ELEMENT_NAME)) {
-                        job.setColor(Color.valueOf(o.getFirstChild().getTextContent()));
+                    if (o.getNodeName().equals(XML_API_NAME_ELEMENT)) {
+                        job.putProperty(HUDSON_JOB_NAME, o.getFirstChild().getTextContent());
+                    } else if (o.getNodeName().equals(XML_API_URL_ELEMENT)) {
+                        job.putProperty(HUDSON_JOB_URL, o.getFirstChild().getTextContent());
+                    } else if (o.getNodeName().equals(XML_API_COLOR_ELEMENT)) {
+                        job.putProperty(HUDSON_JOB_COLOR, Color.valueOf(o.getFirstChild().getTextContent()));
                     }
                 }
             }
@@ -386,26 +350,24 @@ public class HudsonConnector {
                     Node d = jobDetails.item(k);
                     
                     if (d.getNodeType() == Node.ELEMENT_NODE) {
-                        if (d.getNodeName().equals(DESCRIPTION_ELEMENT_NAME)) {
+                        if (d.getNodeName().equals(XML_API_DESCRIPTION_ELEMENT)) {
                             try {
-                                job.setDescription(d.getFirstChild().getTextContent());
-                            } catch (NullPointerException e) {
-                                job.setDescription("");
-                            }
-                        } else if (d.getNodeName().equals(DISPLAY_NAME_ELEMENT_NAME)) {
-                            job.setDisplayName(d.getFirstChild().getTextContent());
-                        } else if (d.getNodeName().equals(BUILDABLE_ELEMENT_NAME)) {
-                            job.setIsBuildable(Boolean.valueOf(d.getFirstChild().getTextContent()));
-                        } else if (d.getNodeName().equals(INQUEUE_ELEMENT_NAME)) {
-                            job.setIsInQueue(Boolean.valueOf(d.getFirstChild().getTextContent()));
-                        } else if (d.getNodeName().equals(LAST_BUILD_ELEMENT_NAME)) {
-                            job.setLastBuild(Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
-                        } else if (d.getNodeName().equals(LAST_FAILED_BUILD_ELEMENT_NAME)) {
-                            job.setLastFailedBuild(Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
-                        } else if (d.getNodeName().equals(LAST_STABLE_BUILD_ELEMENT_NAME)) {
-                            job.setLastStableBuild(Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
-                        } else if (d.getNodeName().equals(LAST_SUCCESSFUL_BUILD_ELEMENT_NAME)) {
-                            job.setLastSuccessfulBuild(Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
+                                job.putProperty(HUDSON_JOB_DESCRIPTION, d.getFirstChild().getTextContent());
+                            } catch (NullPointerException e) {}
+                        } else if (d.getNodeName().equals(XML_API_DISPLAY_NAME_ELEMENT)) {
+                            job.putProperty(HUDSON_JOB_DISPLAY_NAME, d.getFirstChild().getTextContent());
+                        } else if (d.getNodeName().equals(XML_API_BUILDABLE_ELEMENT)) {
+                            job.putProperty(HUDSON_JOB_BUILDABLE, Boolean.valueOf(d.getFirstChild().getTextContent()));
+                        } else if (d.getNodeName().equals(XML_API_INQUEUE_ELEMENT)) {
+                            job.putProperty(HUDSON_JOB_IN_QUEUE, Boolean.valueOf(d.getFirstChild().getTextContent()));
+                        } else if (d.getNodeName().equals(XML_API_LAST_BUILD_ELEMENT)) {
+                            job.putProperty(HUDSON_JOB_LAST_BUILD, Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
+                        } else if (d.getNodeName().equals(XML_API_LAST_FAILED_BUILD_ELEMENT)) {
+                            job.putProperty(HUDSON_JOB_LAST_FAILED_BUILD, Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
+                        } else if (d.getNodeName().equals(XML_API_LAST_STABLE_BUILD_ELEMENT)) {
+                            job.putProperty(HUDSON_JOB_LAST_STABLE_BUILD, Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
+                        } else if (d.getNodeName().equals(XML_API_LAST_SUCCESSFUL_BUILD_ELEMENT)) {
+                            job.putProperty(HUDSON_JOB_LAST_SUCCESSFUL_BUILD, Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
                         }
                     }
                 }
@@ -428,7 +390,7 @@ public class HudsonConnector {
         return jobs;
     }
     
-    private synchronized HudsonVersion retrievedHudsonVersion() {
+    private synchronized HudsonVersion retrieveHudsonVersion() {
         HudsonVersion v = null;
         
         try {
@@ -458,14 +420,14 @@ public class HudsonConnector {
             
             // Connected failed
             if(conn.getResponseCode() != 200) {
-                setConnected(false);
+                connected = false;
                 return null;
             }
             
             // Connected successfully
             if (!isConnected()) {
-                setConnected(true);
-                version = retrievedHudsonVersion();
+                connected = true;
+                version = retrieveHudsonVersion();
             }
             
             // Get input stream
@@ -476,7 +438,7 @@ public class HudsonConnector {
             
             // Check for right version
             if (!Utilities.isSupportedVersion(getHudsonVersion())) {
-                HudsonVersion v = retrievedHudsonVersion();
+                HudsonVersion v = retrieveHudsonVersion();
                 
                 if (!Utilities.isSupportedVersion(v))
                     return null;

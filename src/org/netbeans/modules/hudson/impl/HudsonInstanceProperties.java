@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -23,9 +23,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.PropertySupport;
@@ -46,7 +44,6 @@ public class HudsonInstanceProperties extends Properties {
     
     private Sheet.Set set;
     
-    private Map<String, HudsonInstanceProperty> properties = new HashMap<String, HudsonInstanceProperty>();
     private List<PropertyChangeListener> listeners = new ArrayList<PropertyChangeListener>();
     
     public HudsonInstanceProperties(String name, String url) {

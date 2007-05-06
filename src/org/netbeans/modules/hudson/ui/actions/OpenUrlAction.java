@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,7 +21,7 @@ package org.netbeans.modules.hudson.ui.actions;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import org.netbeans.modules.hudson.ui.nodes.OpenableInBrowser;
+import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
 import org.openide.ErrorManager;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.nodes.Node;
