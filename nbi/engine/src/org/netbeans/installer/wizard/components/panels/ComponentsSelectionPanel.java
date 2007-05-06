@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -163,7 +163,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
     
     // private //////////////////////////////////////////////////////////////////////
     private boolean canExecute() {
-        return !(Boolean.getBoolean(Registry.FORCE_INSTALL_PROPERTY) || 
+        return !(Boolean.getBoolean(Registry.FORCE_INSTALL_PROPERTY) ||
                 Boolean.getBoolean(Registry.FORCE_UNINSTALL_PROPERTY));
     }
     
@@ -283,7 +283,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             for (Product product: toInstall) {
                 for (Dependency requirement: product.getDependencies(
                         DependencyType.REQUIREMENT)) {
-                    final List<Product> requirees = 
+                    final List<Product> requirees =
                             registry.getProducts(requirement);
                     
                     boolean satisfied = false;
@@ -360,7 +360,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             }
             
             // devise the error message template which should be used - "not enough
-            // space to download..." is at least one of the components comes from 
+            // space to download..." is at least one of the components comes from
             // a remote registry, "not enough space to extract..." - otherwise
             String template = panel.getProperty(
                     ERROR_NO_ENOUGH_SPACE_TO_EXTRACT_PROPERTY);
@@ -372,8 +372,8 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                 }
             }
             
-            // check whether the space available in the local directory (which will 
-            // be used for downloading data) is enough to keep all the installation 
+            // check whether the space available in the local directory (which will
+            // be used for downloading data) is enough to keep all the installation
             // data and configuration logic (plus some margin for safety)
             try {
                 final File localDirectory = Installer.getInstance().getLocalDirectory();
@@ -453,9 +453,11 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                     "checkbox.update",
                     new AbstractAction("checkbox.update") {
                 public void actionPerformed(ActionEvent event) {
-                    componentsTree.getModel().valueForPathChanged(
-                            componentsTree.getSelectionPath(),
-                            null);
+                    final TreePath path = componentsTree.getSelectionPath();
+                    
+                    if (path != null) {
+                        componentsTree.getModel().valueForPathChanged(path, null);
+                    }
                 }
             });
             componentsTree.getInputMap().put(
@@ -654,7 +656,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                         requireesNeedUpdate = false;
                         break;
                     }
-                    if ((correctRequiree == null) || 
+                    if ((correctRequiree == null) ||
                             correctRequiree.getVersion().olderThan(version)) {
                         correctRequiree = requiree;
                     }
@@ -958,7 +960,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             "description.install"; // NOI18N
     public static final String DESCRIPTION_UNINSTALL_PROPERTY =
             "description.uninstall"; // NOI18N
-    public static final String FEATURE_DESCRIPTION_TITLE_PROPERTY = 
+    public static final String FEATURE_DESCRIPTION_TITLE_PROPERTY =
             "feature.description.title";
     
     public static final String DEFAULT_TITLE =
@@ -975,7 +977,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             "CSP.description.uninstall"); // NOI18N
     public static final String DEFAULT_FEATURE_DESCRIPTION_TITLE =
             ResourceUtils.getString(ComponentsSelectionPanel.class,
-            "CSP.feature.description.title");// NOI18N    
+            "CSP.feature.description.title");// NOI18N
     public static final String COMPONENT_DESCRIPTION_TEXT_PROPERTY =
             "component.description.text"; // NOI18N
     public static final String COMPONENT_DESCRIPTION_CONTENT_TYPE_PROPERTY =
