@@ -91,11 +91,7 @@ public class LoadGenPluginImpl implements LoadGenPlugin, ProcessInstanceListener
    */
   public void stop(String scriptPath) {
     EngineManager manager = Lookup.getDefault().lookup(EngineManager.class);
-    for(ProcessInstance process : runningProcesses) {
-      if (process.getCurrentScript().equalsIgnoreCase(scriptPath)) {
-        manager.stopProcess(process, true);
-      }
-    }
+    manager.stopProcess(scriptPath, true);
   }
   
   private static Collection<FileObject> findScripts(final Project project, final Set<String> extensions) {

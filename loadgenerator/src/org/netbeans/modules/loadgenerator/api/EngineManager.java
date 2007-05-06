@@ -38,4 +38,5 @@ public interface EngineManager {
   public ProcessInstance startNewProcess(final Engine engine);
   
   public void stopProcess(final ProcessInstance process, final boolean force);
+  public void stopProcess(final String scriptPath, final boolean force);
 }

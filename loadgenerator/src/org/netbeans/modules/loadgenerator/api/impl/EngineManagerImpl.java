@@ -49,7 +49,7 @@ public class EngineManagerImpl implements EngineManager, ProcessInstanceListener
   final private Map<ProcessInstance, ProgressHandle> prgrsHandles = Collections.synchronizedMap(new HashMap<ProcessInstance, ProgressHandle>());
   final private ManagerOutputWindowRegistry registry = ManagerOutputWindowRegistry.getDefault();
   
-  private Collection<ProcessInstance> runningInstances;
+  final private Collection<ProcessInstance> runningInstances;
   private static String lastUsedScript = null;
   
   public void generatorStarted(ProcessInstance provider) {
@@ -221,5 +221,13 @@ public class EngineManagerImpl implements EngineManager, ProcessInstanceListener
     prgrsHandles.put(provider, phandle);
     
     provider.stop(force);
+  }
+  
+  public void stopProcess(final String scriptPath, final boolean force) {
+    for(ProcessInstance instance : runningInstances) {
+      if (instance.getCurrentScript().equals(scriptPath)) {
+        stopProcess(instance, force);
+      }
+    }
   }
 }
