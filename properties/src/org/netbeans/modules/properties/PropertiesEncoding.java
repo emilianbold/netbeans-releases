@@ -438,13 +438,13 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
                     assert false;
                     break;
                 case BACKSLASH:
-                    log.finer("backslash pending");
+                    log.finer(" - backslash pending");
                     outBuf[outBufPos++] = '\\';
                     break;
                 case UNICODE:
-                    log.finer("broken \\u.... sequence pending");
+                    log.finer(" - broken \\u.... sequence pending");
                     if (log.isLoggable(Level.FINEST)) {
-                        log.finest(" - " + unicodeBytesRead + " unicode value bytes pending");
+                        log.finest("    - " + unicodeBytesRead + " unicode value bytes pending");
                     }
                     outBuf[outBufPos++] = '\\';
                     outBuf[outBufPos++] = 'u';
