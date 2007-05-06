@@ -12,7 +12,5 @@ ${licensePrefix}If applicable, add the following below the CDDL Header, with the
 ${licensePrefix}enclosed by brackets [] replaced by your own identifying information:
 ${licensePrefix}"Portions Copyrighted [year] [name of copyright owner]"
 ${licensePrefix}
-${licensePrefix}The Original Software is NetBeans. The Initial Developer of the Original
-${licensePrefix}Software is Sun Microsystems, Inc. Portions Copyright 1997-${date?date?string("yyyy")} Sun
-${licensePrefix}Microsystems, Inc. All Rights Reserved.
+${licensePrefix}Copyright ${date?date?string("yyyy")} Sun Microsystems, Inc. All rights reserved.
 ${licenseLast}
