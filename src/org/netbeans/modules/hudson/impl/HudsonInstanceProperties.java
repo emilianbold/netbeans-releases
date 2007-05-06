@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import org.netbeans.modules.hudson.constants.HudsonInstanceConstants;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
@@ -36,11 +37,8 @@ import org.openide.util.NbBundle;
  *
  * @author Michal Mocnak
  */
-public class HudsonInstanceProperties extends Properties {
-    
-    public static final String PROP_NAME = "hudson_name";
-    public static final String PROP_URL = "hudson_url";
-    public static final String PROP_SYNC = "hudson_sync_time";
+public class HudsonInstanceProperties extends Properties
+        implements HudsonInstanceConstants {
     
     private Sheet.Set set;
     
@@ -51,9 +49,9 @@ public class HudsonInstanceProperties extends Properties {
     }
     
     public HudsonInstanceProperties(String name, String url, String sync) {
-        put(PROP_NAME, name);
-        put(PROP_URL, url);
-        put(PROP_SYNC, sync);
+        put(HUDSON_INSTANCE_NAME, name);
+        put(HUDSON_INSTANCE_URL, url);
+        put(HUDSON_INSTANCE_SYNC, sync);
     }
     
     public HudsonInstanceProperties(FileObject properties) {
@@ -88,21 +86,21 @@ public class HudsonInstanceProperties extends Properties {
             set = Sheet.createPropertiesSet();
             
             // Set display name
-            set.setDisplayName(getProperty(PROP_NAME));
+            set.setDisplayName(getProperty(HUDSON_INSTANCE_NAME));
             
             // Put properties in
             set.put(new PropertySupport[] {
-                new HudsonInstanceProperty(PROP_NAME,
-                        NbBundle.getMessage(HudsonInstanceProperties.class, "TXT_Prop_Name"),
-                        NbBundle.getMessage(HudsonInstanceProperties.class, "DESC_Prop_Name"),
+                new HudsonInstanceProperty(HUDSON_INSTANCE_NAME,
+                        NbBundle.getMessage(HudsonInstanceProperties.class, "TXT_Instance_Prop_Name"),
+                        NbBundle.getMessage(HudsonInstanceProperties.class, "DESC_Instance_Prop_Name"),
                         true, false),
-                        new HudsonInstanceProperty(PROP_URL,
-                        NbBundle.getMessage(HudsonInstanceProperties.class, "TXT_Prop_Url"),
-                        NbBundle.getMessage(HudsonInstanceProperties.class, "DESC_Prop_Url"),
+                        new HudsonInstanceProperty(HUDSON_INSTANCE_URL,
+                        NbBundle.getMessage(HudsonInstanceProperties.class, "TXT_Instance_Prop_Url"),
+                        NbBundle.getMessage(HudsonInstanceProperties.class, "DESC_Instance_Prop_Url"),
                         true, false),
-                        new HudsonInstanceProperty(PROP_SYNC,
-                        NbBundle.getMessage(HudsonInstanceProperties.class, "TXT_Prop_Sync"),
-                        NbBundle.getMessage(HudsonInstanceProperties.class, "DESC_Prop_Sync"),
+                        new HudsonInstanceProperty(HUDSON_INSTANCE_SYNC,
+                        NbBundle.getMessage(HudsonInstanceProperties.class, "TXT_Instance_Prop_Sync"),
+                        NbBundle.getMessage(HudsonInstanceProperties.class, "DESC_Instance_Prop_Sync"),
                         true, true)
             });
         }

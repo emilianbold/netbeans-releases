@@ -34,6 +34,8 @@ public interface HudsonJobConstants {
     
     public static final String HUDSON_JOB_URL = "hudson_job_url";
     
+    public static final String HUDSON_JOB_VCS_ROOT = "hudson_job_vcs_root";
+    
     public static final String HUDSON_JOB_COLOR = "hudson_job_color";
     
     public static final String HUDSON_JOB_IN_QUEUE = "hudson_job_in_queue";

@@ -83,7 +83,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
         // Add property listener for synchronization
         this.properties.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals(HudsonInstanceProperties.PROP_SYNC))
+                if (evt.getPropertyName().equals(HudsonInstanceProperties.HUDSON_INSTANCE_SYNC))
                     if (!synchronization.isRunning())
                         synchronization.start();
             }
@@ -125,7 +125,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
                 for (final HudsonJobView v : HudsonJobView.getCachedInstances()) {
                     if (instance.equals(v.getJob().getLookup().lookup(HudsonInstance.class))) {
                         if (!getJobs().contains(v.getJob())) {
-                             SwingUtilities.invokeLater(new Runnable() {
+                            SwingUtilities.invokeLater(new Runnable() {
                                 public void run() {
                                     if (v.isOpened())
                                         v.close();
@@ -204,11 +204,11 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     }
     
     public String getName() {
-        return getProperties().getProperty(HudsonInstanceProperties.PROP_NAME);
+        return getProperties().getProperty(HudsonInstanceProperties.HUDSON_INSTANCE_NAME);
     }
     
     public String getUrl() {
-        return getProperties().getProperty(HudsonInstanceProperties.PROP_URL);
+        return getProperties().getProperty(HudsonInstanceProperties.HUDSON_INSTANCE_URL);
     }
     
     public synchronized Collection<HudsonJob> getJobs() {
@@ -358,7 +358,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
                     synchronize();
                     
                     // Refresh wait time
-                    String s = getProperties().getProperty(HudsonInstanceProperties.PROP_SYNC);
+                    String s = getProperties().getProperty(HudsonInstanceProperties.HUDSON_INSTANCE_SYNC);
                     milis = Integer.parseInt(s) * 60 * 1000;
                     
                     // Wait for the specified amount of time

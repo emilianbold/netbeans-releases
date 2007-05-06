@@ -26,7 +26,10 @@ import org.netbeans.modules.hudson.api.HudsonView;
 import org.netbeans.modules.hudson.constants.HudsonJobConstants;
 import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
 import org.netbeans.modules.hudson.util.HudsonPropertiesSupport;
+import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -41,6 +44,8 @@ public class HudsonJobImpl implements HudsonJob, HudsonJobConstants, OpenableInB
     private Collection<HudsonView> views = new ArrayList<HudsonView>();
     
     private HudsonInstanceImpl instance;
+    
+    private Sheet.Set set;
     
     /**
      * Creates a new instance of Job
@@ -66,7 +71,9 @@ public class HudsonJobImpl implements HudsonJob, HudsonJobConstants, OpenableInB
     }
     
     public String getDescription() {
+        
         return properties.getProperty(HUDSON_JOB_DESCRIPTION, String.class);
+        
     }
     
     public String getUrl() {
@@ -86,19 +93,35 @@ public class HudsonJobImpl implements HudsonJob, HudsonJobConstants, OpenableInB
     }
     
     public int getLastBuild() {
-        return properties.getProperty(HUDSON_JOB_LAST_BUILD, Integer.class);
+        try {
+            return properties.getProperty(HUDSON_JOB_LAST_BUILD, Integer.class);
+        } catch (NullPointerException e) {
+            return 0;
+        }
     }
     
     public int getLastStableBuild() {
-        return properties.getProperty(HUDSON_JOB_LAST_STABLE_BUILD, Integer.class);
+        try {
+            return properties.getProperty(HUDSON_JOB_LAST_STABLE_BUILD, Integer.class);
+        } catch (NullPointerException e) {
+            return 0;
+        }
     }
     
     public int getLastSuccessfulBuild() {
-        return properties.getProperty(HUDSON_JOB_LAST_SUCCESSFUL_BUILD, Integer.class);
+        try {
+            return properties.getProperty(HUDSON_JOB_LAST_SUCCESSFUL_BUILD, Integer.class);
+        } catch (NullPointerException e) {
+            return 0;
+        }
     }
     
     public int getLastFailedBuild() {
-        return properties.getProperty(HUDSON_JOB_LAST_FAILED_BUILD, Integer.class);
+        try {
+            return properties.getProperty(HUDSON_JOB_LAST_FAILED_BUILD, Integer.class);
+        } catch (NullPointerException e) {
+            return 0;
+        }
     }
     
     public synchronized Collection<HudsonView> getViews() {
@@ -119,6 +142,29 @@ public class HudsonJobImpl implements HudsonJob, HudsonJobConstants, OpenableInB
     
     public Lookup getLookup() {
         return Lookups.singleton(instance);
+    }
+    
+    public Sheet.Set getSheetSet() {
+        if (null == set) {
+            set = Sheet.createPropertiesSet();
+            
+            // Set display name
+            set.setDisplayName(getDisplayName());
+            
+            // Put properties in
+            set.put(new PropertySupport[] {
+                new HudsonJobProperty(HUDSON_JOB_NAME,
+                        NbBundle.getMessage(HudsonJobImpl.class, "TXT_Job_Prop_Name"),
+                        NbBundle.getMessage(HudsonJobImpl.class, "DESC_Job_Prop_Name"),
+                        true, false),
+                        new HudsonJobProperty(HUDSON_JOB_URL,
+                        NbBundle.getMessage(HudsonJobImpl.class, "TXT_Job_Prop_Url"),
+                        NbBundle.getMessage(HudsonJobImpl.class, "DESC_Job_Prop_Url"),
+                        true, false)
+            });
+        }
+        
+        return set;
     }
     
     public boolean equals(Object o) {
@@ -152,5 +198,26 @@ public class HudsonJobImpl implements HudsonJob, HudsonJobConstants, OpenableInB
     
     public int compareTo(HudsonJob o) {
         return getDisplayName().compareTo(o.getDisplayName());
+    }
+    
+    private class HudsonJobProperty extends PropertySupport<String> {
+        
+        private String key;
+        
+        public HudsonJobProperty(String key, String name, String desc, boolean read, boolean write) {
+            super(key, String.class, name, desc, read, write);
+            
+            this.key = key;
+        }
+        
+        @Override
+        public void setValue(String value) {
+            putProperty(key, value);
+        }
+        
+        @Override
+        public String getValue() {
+            return properties.getProperty(key, String.class);
+        }
     }
 }

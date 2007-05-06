@@ -27,9 +27,11 @@ import org.netbeans.modules.hudson.impl.HudsonJobImpl;
 import org.netbeans.modules.hudson.ui.actions.OpenUrlAction;
 import org.netbeans.modules.hudson.ui.actions.ShowJobDetailAction;
 import org.netbeans.modules.hudson.ui.actions.StartJobAction;
+import org.openide.actions.PropertiesAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.NodeTransfer;
+import org.openide.nodes.Sheet;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
@@ -71,7 +73,9 @@ public class HudsonJobNode extends AbstractNode {
             SystemAction.get(ShowJobDetailAction.class),
             SystemAction.get(StartJobAction.class),
             null,
-            SystemAction.get(OpenUrlAction.class)
+            SystemAction.get(OpenUrlAction.class),
+            null,
+            SystemAction.get(PropertiesAction.class)
         };
     }
     
@@ -84,13 +88,22 @@ public class HudsonJobNode extends AbstractNode {
     public Transferable drag() throws IOException {
         return NodeTransfer.transferable(this, NodeTransfer.DND_COPY);
     }
-
+    
     @Override
     public PasteType getDropType(Transferable arg0, int arg1, int arg2) {
         return super.getDropType(arg0, arg1, arg2);
     }
     
-    
+    @Override
+    protected Sheet createSheet() {
+        // Create a property sheet
+        Sheet s = super.createSheet();
+        
+        // Put properties in
+        s.put(job.getSheetSet());
+        
+        return s;
+    }
     
     private void refreshState() {
         // Store old html name
