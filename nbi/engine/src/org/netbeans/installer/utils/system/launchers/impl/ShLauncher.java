@@ -94,7 +94,9 @@ public class ShLauncher extends CommonLauncher {
         "/opt/j2se/",
         
         "/usr/lib/",
-        
+        "/usr/lib/jvm/",
+        "/usr/lib/jdk/",
+
         "/export/jdk/",
         "/export/java/",
         "/export/j2se/",
