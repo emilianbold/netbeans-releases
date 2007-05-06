@@ -2707,6 +2707,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                 }
                 results.add(JavaCompletionItem.createKeywordItem(RETURN_KEYWORD, postfix, offset, false));
             }
+            boolean caseAdded = false;
+            boolean breakAdded = false;
+            boolean continueAdded = false;
             TreePath tp = env.getPath();
             while (tp != null) {
                 switch (tp.getLeaf().getKind()) {
@@ -2719,23 +2722,30 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 break;
                             lastCase = t;
                         }
-                        if (lastCase == null || lastCase.getExpression() != null) {
+                        if (! caseAdded && (lastCase == null || lastCase.getExpression() != null)) {
+                            caseAdded = true;
                             if (Utilities.startsWith(CASE_KEYWORD, prefix))
                                 results.add(JavaCompletionItem.createKeywordItem(CASE_KEYWORD, SPACE, offset, false));
                             if (Utilities.startsWith(DEFAULT_KEYWORD, prefix))
                                 results.add(JavaCompletionItem.createKeywordItem(DEFAULT_KEYWORD, COLON, offset, false));
                         }
-                        if (Utilities.startsWith(BREAK_KEYWORD, prefix))
+                        if (!breakAdded && Utilities.startsWith(BREAK_KEYWORD, prefix)) {
+                            breakAdded = true;
                             results.add(JavaCompletionItem.createKeywordItem(BREAK_KEYWORD, SEMI, offset, false));
+                        }
                         break;
                     case DO_WHILE_LOOP:
                     case ENHANCED_FOR_LOOP:
                     case FOR_LOOP:
                     case WHILE_LOOP:
-                        if (Utilities.startsWith(BREAK_KEYWORD, prefix))
+                        if (! breakAdded && Utilities.startsWith(BREAK_KEYWORD, prefix)) {
+                            breakAdded = true;
                             results.add(JavaCompletionItem.createKeywordItem(BREAK_KEYWORD, SEMI, offset, false));
-                        if (Utilities.startsWith(CONTINUE_KEYWORD, prefix))
-                            results.add(JavaCompletionItem.createKeywordItem(CONTINUE_KEYWORD, SEMI, offset, false));
+                        }
+                        if (!continueAdded && Utilities.startsWith(CONTINUE_KEYWORD, prefix)) {
+                            continueAdded = true;
+                            results.add(JavaCompletionItem.createKeywordItem(CONTINUE_KEYWORD, SEMI, offset, false));                            
+                        }
                         break;
                 }
                 tp = tp.getParentPath();
