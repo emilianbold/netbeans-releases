@@ -122,8 +122,9 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
         // retains focus the node selection reflects the selected box
         SelectionManager sm = webform.getSelection();
         List<Node> nodes = new ArrayList<Node>(sm.getNumSelected());
-        DataObject dobj = webform.getDataObject();
-        Node n = new BoxNode(box, dobj);
+//        DataObject dobj = webform.getDataObject();
+//        DataObject dobj = webform.getJspDataObject();
+        Node n = new BoxNode(box/*, dobj*/);
 
         //n.setDataObject(dobj);
         nodes.add(n);
@@ -302,8 +303,9 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
 
                     SelectionManager sm = webform.getSelection();
                     List<Node> nodes = new ArrayList<Node>(sm.getNumSelected());
-                    DataObject dobj = webform.getDataObject();
-                    Node n = new BoxNode(box, dobj);
+//                    DataObject dobj = webform.getDataObject();
+//                    DataObject dobj = webform.getJspDataObject();
+                    Node n = new BoxNode(box/*, dobj*/);
 
                     //n.setDataObject(dobj);
                     nodes.add(n);
@@ -445,12 +447,12 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
         /** Name of property set for general properties */
         public static final String GENERAL = "general"; // NOI18N
         private CssBox box;
-        protected DataObject dobj;
+//        protected DataObject dobj;
 
-        public BoxNode(CssBox box, DataObject dobj) {
+        public BoxNode(CssBox box/*, DataObject dobj*/) {
             super(Children.LEAF);
             this.box = box;
-            this.dobj = dobj;
+//            this.dobj = dobj;
         }
 
         public Action[] getActions(boolean context) {
@@ -676,15 +678,15 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
             return s;
         }
 
-        /**
-         * Set the data object this component is associated with (if any).
-         * When set, this node will return the cookies of the data object as well.
-         * Therefore, as an example, if you select an image component in a page,
-         * the
-         */
-        public void setDataObject(DataObject dobj) {
-            this.dobj = dobj;
-        }
+//        /**
+//         * Set the data object this component is associated with (if any).
+//         * When set, this node will return the cookies of the data object as well.
+//         * Therefore, as an example, if you select an image component in a page,
+//         * the
+//         */
+//        public void setDataObject(DataObject dobj) {
+//            this.dobj = dobj;
+//        }
 
         /** Get a cookie. Call super first, but if null, also check the
          * associated data object.
@@ -696,9 +698,9 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
                 return cookie;
             }
 
-            if (dobj != null) {
-                return dobj.getCookie(cl);
-            }
+//            if (dobj != null) {
+//                return dobj.getCookie(cl);
+//            }
 
             return null;
         }

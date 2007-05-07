@@ -623,16 +623,16 @@ public class WebForm implements Designer {
 //        return getModel().getMarkupFile();
 //    }
 
-    public DataObject getDataObject() {
-//        FileObject file = getModel().getMarkupFile();
-//
-//        try {
-//            return DataObject.find(file);
-//        } catch (DataObjectNotFoundException e) {
-//            return null;
-//        }
-        return getJspDataObject();
-    }
+//    public DataObject getDataObject() {
+////        FileObject file = getModel().getMarkupFile();
+////
+////        try {
+////            return DataObject.find(file);
+////        } catch (DataObjectNotFoundException e) {
+////            return null;
+////        }
+//        return getJspDataObject();
+//    }
 
     public DataObject getJspDataObject() {
 //        FileObject file = getModel().getMarkupFile();
