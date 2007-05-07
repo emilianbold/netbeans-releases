@@ -89,6 +89,7 @@ import org.openide.util.RequestProcessor;
 public class JavaScript {
 
     private static final String DOC = "org/netbeans/modules/languages/javascript/Documentation.xml";
+    private static final String DOM0 = "org/netbeans/modules/languages/javascript/DOM0.xml";
     private static final String DOM1 = "org/netbeans/modules/languages/javascript/DOM1.xml";
     private static final String DOM2 = "org/netbeans/modules/languages/javascript/DOM2.xml";
     private static final String MIME_TYPE = "text/javascript";
@@ -660,7 +661,7 @@ public class JavaScript {
     private static LibrarySupport getLibrary () {
         if (library == null)
             library = LibrarySupport.create (
-                Arrays.asList (new String[] {DOC, DOM1, DOM2})
+                Arrays.asList (new String[] {DOC, DOM0, DOM1, DOM2})
             );
         return library;
     }
