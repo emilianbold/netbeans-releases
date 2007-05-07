@@ -511,12 +511,13 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
         javaDocPane = new javax.swing.JEditorPane();
         signatureEditorPane = new javax.swing.JEditorPane();
         filtersLabel = new javax.swing.JLabel();
+        closeButton = new javax.swing.JButton();
+        filtersToolbar = new NoBorderToolBar();
         showSuperTypeHierarchyToggleButton = new javax.swing.JToggleButton();
         showSubTypeHierarchyToggleButton = new javax.swing.JToggleButton();
         showFQNToggleButton = new javax.swing.JToggleButton();
         showInnerToggleButton = new javax.swing.JToggleButton();
         expandAllButton = new javax.swing.JButton();
-        closeButton = new javax.swing.JButton();
 
         setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
@@ -549,31 +550,41 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(filtersLabel, org.openide.util.NbBundle.getMessage(JavaHierarchyPanel.class, "LABEL_filtersLabel")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(closeButton, org.openide.util.NbBundle.getMessage(JavaHierarchyPanel.class, "LABEL_Close")); // NOI18N
+
+        filtersToolbar.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        filtersToolbar.setFloatable(false);
+        filtersToolbar.setBorderPainted(false);
+        filtersToolbar.setOpaque(false);
+
         javaHierarchyModeButtonGroup.add(showSuperTypeHierarchyToggleButton);
         showSuperTypeHierarchyToggleButton.setIcon(JavaMembersAndHierarchyIcons.SUPER_TYPE_HIERARCHY_ICON);
         showSuperTypeHierarchyToggleButton.setSelected(true);
         showSuperTypeHierarchyToggleButton.setToolTipText(org.openide.util.NbBundle.getBundle(JavaHierarchyPanel.class).getString("TOOLTIP_showSuperTypeHierarchyToggleButton")); // NOI18N
         showSuperTypeHierarchyToggleButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
+        filtersToolbar.add(showSuperTypeHierarchyToggleButton);
 
         javaHierarchyModeButtonGroup.add(showSubTypeHierarchyToggleButton);
         showSubTypeHierarchyToggleButton.setIcon(JavaMembersAndHierarchyIcons.SUB_TYPE_HIERARCHY_ICON);
         showSubTypeHierarchyToggleButton.setToolTipText(org.openide.util.NbBundle.getBundle(JavaHierarchyPanel.class).getString("TOOLTIP_showSubTypeHierarchyToggleButton")); // NOI18N
         showSubTypeHierarchyToggleButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
+        filtersToolbar.add(showSubTypeHierarchyToggleButton);
 
         showFQNToggleButton.setIcon(JavaMembersAndHierarchyIcons.FQN_ICON);
         showFQNToggleButton.setToolTipText(org.openide.util.NbBundle.getBundle(JavaHierarchyPanel.class).getString("TOOLTIP_showFQNToggleButton")); // NOI18N
         showFQNToggleButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
+        filtersToolbar.add(showFQNToggleButton);
 
         showInnerToggleButton.setIcon(JavaMembersAndHierarchyIcons.INNER_CLASS_ICON);
         showInnerToggleButton.setSelected(true);
         showInnerToggleButton.setToolTipText(org.openide.util.NbBundle.getBundle(JavaHierarchyPanel.class).getString("TOOLTIP_showInnerToggleButton")); // NOI18N
         showInnerToggleButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
+        filtersToolbar.add(showInnerToggleButton);
 
         expandAllButton.setIcon(JavaMembersAndHierarchyIcons.EXPAND_ALL_ICON);
         expandAllButton.setToolTipText(org.openide.util.NbBundle.getMessage(JavaHierarchyPanel.class, "TOOLTIP_expandAll")); // NOI18N
         expandAllButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
-
-        org.openide.awt.Mnemonics.setLocalizedText(closeButton, org.openide.util.NbBundle.getMessage(JavaHierarchyPanel.class, "LABEL_Close")); // NOI18N
+        filtersToolbar.add(expandAllButton);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -586,23 +597,15 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(filterLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(filterTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 547, Short.MAX_VALUE)
+                        .add(filterTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 549, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(caseSensitiveFilterCheckBox))
                     .add(signatureEditorPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 674, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(filtersLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(showSuperTypeHierarchyToggleButton)
+                        .add(filtersToolbar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 572, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(showSubTypeHierarchyToggleButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(showFQNToggleButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(showInnerToggleButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(expandAllButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 504, Short.MAX_VALUE)
                         .add(closeButton)))
                 .addContainerGap())
         );
@@ -615,18 +618,15 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
                     .add(caseSensitiveFilterCheckBox)
                     .add(filterTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(splitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 333, Short.MAX_VALUE)
+                .add(splitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(signatureEditorPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(filtersLabel)
-                    .add(showSuperTypeHierarchyToggleButton)
-                    .add(showSubTypeHierarchyToggleButton)
-                    .add(showFQNToggleButton)
-                    .add(showInnerToggleButton)
-                    .add(expandAllButton)
-                    .add(closeButton))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(filtersLabel)
+                        .add(closeButton))
+                    .add(filtersToolbar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -638,6 +638,7 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
     public javax.swing.JLabel filterLabel;
     public javax.swing.JTextField filterTextField;
     public javax.swing.JLabel filtersLabel;
+    public javax.swing.JToolBar filtersToolbar;
     public javax.swing.JEditorPane javaDocPane;
     public javax.swing.JScrollPane javaDocScrollPane;
     public javax.swing.ButtonGroup javaHierarchyModeButtonGroup;
@@ -650,5 +651,4 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
     public javax.swing.JEditorPane signatureEditorPane;
     public javax.swing.JSplitPane splitPane;
     // End of variables declaration//GEN-END:variables
-
 }

@@ -38,6 +38,7 @@ import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
+import org.netbeans.modules.java.navigation.NoBorderToolBar;
 import org.openide.util.NbPreferences;
 
 /** Handles creation and manipulation with boolean state filters. 
@@ -190,7 +191,7 @@ public final class FiltersManager {
             setBorder(new EmptyBorder(1, 2, 3, 5));
 
             // configure toolbar
-            JToolBar toolbar = new JToolBar(JToolBar.HORIZONTAL);
+            JToolBar toolbar = new NoBorderToolBar(JToolBar.HORIZONTAL);
             toolbar.setFloatable(false);
             toolbar.setRollover(true);
             toolbar.setBorderPainted(false);

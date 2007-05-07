@@ -28,16 +28,12 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.net.URL;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.swing.JComponent;
 import javax.swing.JRootPane;
 import javax.swing.KeyStroke;
-import javax.swing.RootPaneContainer;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.event.DocumentEvent;
@@ -538,6 +534,8 @@ public class JavaMembersPanel extends javax.swing.JPanel {
         javaDocPane = new javax.swing.JEditorPane();
         signatureEditorPane = new javax.swing.JEditorPane();
         filtersLabel = new javax.swing.JLabel();
+        closeButton = new javax.swing.JButton();
+        filtersToolbar = new NoBorderToolBar();
         showInheritedToggleButton = new javax.swing.JToggleButton();
         showFQNToggleButton = new javax.swing.JToggleButton();
         showInnerToggleButton = new javax.swing.JToggleButton();
@@ -549,7 +547,6 @@ public class JavaMembersPanel extends javax.swing.JPanel {
         showPackageToggleButton = new javax.swing.JToggleButton();
         showPrivateToggleButton = new javax.swing.JToggleButton();
         showStaticToggleButton = new javax.swing.JToggleButton();
-        closeButton = new javax.swing.JButton();
 
         setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
@@ -581,61 +578,77 @@ public class JavaMembersPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(filtersLabel, org.openide.util.NbBundle.getMessage(JavaMembersPanel.class, "LABEL_filtersLabel")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(closeButton, org.openide.util.NbBundle.getMessage(JavaMembersPanel.class, "LABEL_Close")); // NOI18N
+
+        filtersToolbar.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        filtersToolbar.setFloatable(false);
+        filtersToolbar.setBorderPainted(false);
+        filtersToolbar.setOpaque(false);
+
         showInheritedToggleButton.setIcon(JavaMembersAndHierarchyIcons.INHERITED_ICON);
         showInheritedToggleButton.setToolTipText(org.openide.util.NbBundle.getBundle(JavaMembersPanel.class).getString("TOOLTIP_showInheritedToggleButton")); // NOI18N
         showInheritedToggleButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
+        filtersToolbar.add(showInheritedToggleButton);
 
         showFQNToggleButton.setIcon(JavaMembersAndHierarchyIcons.FQN_ICON);
         showFQNToggleButton.setSelected(true);
         showFQNToggleButton.setToolTipText(org.openide.util.NbBundle.getBundle(JavaMembersPanel.class).getString("TOOLTIP_showFQNToggleButton")); // NOI18N
         showFQNToggleButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
+        filtersToolbar.add(showFQNToggleButton);
 
         showInnerToggleButton.setIcon(JavaMembersAndHierarchyIcons.INNER_CLASS_ICON);
         showInnerToggleButton.setSelected(true);
         showInnerToggleButton.setToolTipText(org.openide.util.NbBundle.getBundle(JavaMembersPanel.class).getString("TOOLTIP_showInnerToggleButton")); // NOI18N
         showInnerToggleButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
+        filtersToolbar.add(showInnerToggleButton);
 
         showConstructorsToggleButton.setIcon(JavaMembersAndHierarchyIcons.CONSTRUCTOR_ICON);
         showConstructorsToggleButton.setSelected(true);
         showConstructorsToggleButton.setToolTipText(org.openide.util.NbBundle.getBundle(JavaMembersPanel.class).getString("TOOLTIP_showConstructorsToggleButton")); // NOI18N
         showConstructorsToggleButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
+        filtersToolbar.add(showConstructorsToggleButton);
 
         showMethodsToggleButton.setIcon(JavaMembersAndHierarchyIcons.METHOD_ICON);
         showMethodsToggleButton.setSelected(true);
         showMethodsToggleButton.setToolTipText(org.openide.util.NbBundle.getBundle(JavaMembersPanel.class).getString("TOOLTIP_showMethodsToggleButton")); // NOI18N
         showMethodsToggleButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
+        filtersToolbar.add(showMethodsToggleButton);
 
         showFieldsToggleButton.setIcon(JavaMembersAndHierarchyIcons.FIELD_ICON);
         showFieldsToggleButton.setSelected(true);
         showFieldsToggleButton.setToolTipText(org.openide.util.NbBundle.getBundle(JavaMembersPanel.class).getString("TOOLTIP_showFieldsToggleButton")); // NOI18N
         showFieldsToggleButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
+        filtersToolbar.add(showFieldsToggleButton);
 
         showEnumConstantsToggleButton.setIcon(JavaMembersAndHierarchyIcons.ENUM_CONSTANTS_ICON);
         showEnumConstantsToggleButton.setSelected(true);
         showEnumConstantsToggleButton.setToolTipText(org.openide.util.NbBundle.getBundle(JavaMembersPanel.class).getString("TOOLTIP_showEnumConstantsToggleButton")); // NOI18N
         showEnumConstantsToggleButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
+        filtersToolbar.add(showEnumConstantsToggleButton);
 
         showProtectedToggleButton.setIcon(JavaMembersAndHierarchyIcons.PROTECTED_ICON);
         showProtectedToggleButton.setSelected(true);
         showProtectedToggleButton.setToolTipText(org.openide.util.NbBundle.getBundle(JavaMembersPanel.class).getString("TOOLTIP_showProtectedToggleButton")); // NOI18N
         showProtectedToggleButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
+        filtersToolbar.add(showProtectedToggleButton);
 
         showPackageToggleButton.setIcon(JavaMembersAndHierarchyIcons.PACKAGE_ICON);
         showPackageToggleButton.setSelected(true);
         showPackageToggleButton.setToolTipText(org.openide.util.NbBundle.getBundle(JavaMembersPanel.class).getString("TOOLTIP_showPackageToggleButton")); // NOI18N
         showPackageToggleButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
+        filtersToolbar.add(showPackageToggleButton);
 
         showPrivateToggleButton.setIcon(JavaMembersAndHierarchyIcons.PRIVATE_ICON);
         showPrivateToggleButton.setSelected(true);
         showPrivateToggleButton.setToolTipText(org.openide.util.NbBundle.getBundle(JavaMembersPanel.class).getString("TOOLTIP_showPrivateToggleButton")); // NOI18N
         showPrivateToggleButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
+        filtersToolbar.add(showPrivateToggleButton);
 
         showStaticToggleButton.setIcon(JavaMembersAndHierarchyIcons.STATIC_ICON);
         showStaticToggleButton.setSelected(true);
         showStaticToggleButton.setToolTipText(org.openide.util.NbBundle.getBundle(JavaMembersPanel.class).getString("TOOLTIP_showStaticToggleButton")); // NOI18N
         showStaticToggleButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
-
-        org.openide.awt.Mnemonics.setLocalizedText(closeButton, org.openide.util.NbBundle.getMessage(JavaMembersPanel.class, "LABEL_Close")); // NOI18N
+        filtersToolbar.add(showStaticToggleButton);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -648,35 +661,15 @@ public class JavaMembersPanel extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(filterLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(filterTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 547, Short.MAX_VALUE)
+                        .add(filterTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 549, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(caseSensitiveFilterCheckBox))
                     .add(signatureEditorPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 674, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(filtersLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(showInheritedToggleButton)
+                        .add(filtersToolbar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 572, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(showFQNToggleButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(showInnerToggleButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(showConstructorsToggleButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(showMethodsToggleButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(showFieldsToggleButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(showEnumConstantsToggleButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(showProtectedToggleButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(showPackageToggleButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(showPrivateToggleButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(showStaticToggleButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 408, Short.MAX_VALUE)
                         .add(closeButton)))
                 .addContainerGap())
         );
@@ -689,24 +682,15 @@ public class JavaMembersPanel extends javax.swing.JPanel {
                     .add(caseSensitiveFilterCheckBox)
                     .add(filterTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(splitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 333, Short.MAX_VALUE)
+                .add(splitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(signatureEditorPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(filtersLabel)
-                    .add(showInheritedToggleButton)
-                    .add(showFQNToggleButton)
-                    .add(showInnerToggleButton)
-                    .add(showConstructorsToggleButton)
-                    .add(showMethodsToggleButton)
-                    .add(showFieldsToggleButton)
-                    .add(showEnumConstantsToggleButton)
-                    .add(showProtectedToggleButton)
-                    .add(showPackageToggleButton)
-                    .add(showPrivateToggleButton)
-                    .add(showStaticToggleButton)
-                    .add(closeButton))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(filtersLabel)
+                        .add(closeButton))
+                    .add(filtersToolbar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -717,6 +701,7 @@ public class JavaMembersPanel extends javax.swing.JPanel {
     public javax.swing.JLabel filterLabel;
     public javax.swing.JTextField filterTextField;
     public javax.swing.JLabel filtersLabel;
+    public javax.swing.JToolBar filtersToolbar;
     public javax.swing.JEditorPane javaDocPane;
     public javax.swing.JScrollPane javaDocScrollPane;
     public javax.swing.JTree javaMembersTree;
@@ -735,5 +720,4 @@ public class JavaMembersPanel extends javax.swing.JPanel {
     public javax.swing.JEditorPane signatureEditorPane;
     public javax.swing.JSplitPane splitPane;
     // End of variables declaration//GEN-END:variables
-
 }
