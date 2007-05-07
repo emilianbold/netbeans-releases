@@ -21,6 +21,13 @@
                 <attr name="org-netbeans-modules-java-j2seproject-ui-LibrariesNodeFactory.instance/org-netbeans-modules-websvc-jaxrpc-nodes-JaxRpcNodeFactory.instance" boolvalue="true"/>
                 <file name="org-netbeans-modules-websvc-jaxrpc-nodes-JaxRpcNodeFactory.instance"/>
             </folder>
+            <folder name="Customizer">
+                <attr name="Application/Client.instance" boolvalue="true"/>
+                <file name="Client.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.websvc.jaxrpc.project.customizer.JaxRpcCompositePanelProvider.createJaxRpcClients"/>
+                </file>
+            </folder>
         </folder>
     </folder>
+
 </filesystem>
