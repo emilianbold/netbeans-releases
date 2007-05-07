@@ -398,17 +398,4 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
             return name;
         }
     }
-
-    private static abstract class ClassIndexAdapter implements ClassIndexListener {
-
-        public void typesAdded(TypesEvent event) {}
-
-        public void typesRemoved(TypesEvent event) {}
-
-        public void typesChanged(TypesEvent event) {}
-
-        public void rootsAdded(RootsEvent event) {}
-
-        public void rootsRemoved(RootsEvent event) {}
-    }
 }

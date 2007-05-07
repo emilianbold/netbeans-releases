@@ -24,9 +24,16 @@ import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.ClassIndex;
+import org.netbeans.api.java.source.ClassIndexListener;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.RootsEvent;
+import org.netbeans.api.java.source.TypesEvent;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 import org.netbeans.modules.j2ee.metadata.model.support.PersistenceTestCase;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
@@ -119,10 +126,10 @@ public class AnnotationModelHelperTest extends PersistenceTestCase {
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
         helper.userActionTask(new Callable<Void>() {
             public Void call() throws IOException {
-                final JavaSource js1 = helper.getJavaSource();
+                final JavaSource js1 = helper.javaSource;
                 helper.userActionTask(new Callable<Void>() {
                     public Void call() {
-                        JavaSource js2 = helper.getJavaSource();
+                        JavaSource js2 = helper.javaSource;
                         assertSame(js1, js2);
                         return null;
                     }
@@ -132,7 +139,7 @@ public class AnnotationModelHelperTest extends PersistenceTestCase {
         });
     }
 
-    public void testGetJavaSourceFromAnotherThread() throws Exception {
+    public void testGetCompilationControllerFromAnotherThread() throws Exception {
         RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
@@ -143,10 +150,6 @@ public class AnnotationModelHelperTest extends PersistenceTestCase {
                 try {
                     latch1.await();
                 } catch (InterruptedException e) {}
-                try {
-                    helper.getJavaSource();
-                    fail();
-                } catch (IllegalStateException e) {}
                 try {
                     helper.getCompilationController();
                     fail();
@@ -165,5 +168,84 @@ public class AnnotationModelHelperTest extends PersistenceTestCase {
             }
         });
         t.join();
+    }
+
+    public void testUserActionTaskSingleThread() throws Exception {
+        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        ClasspathInfo cpi = ClasspathInfo.create(srcFO);
+        final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
+        final CountDownLatch latch = new CountDownLatch(1);
+        final Thread t = new Thread(new Runnable() {
+            public void run() {
+                try {
+                    latch.await();
+                } catch (InterruptedException e) {}
+                try {
+                    helper.userActionTask(new Callable<Void>() {
+                        public Void call() throws Exception {
+                            fail();
+                            return null;
+                        }
+                    });
+                } catch (IOException e) {}
+            }
+        });
+        t.start();
+        helper.userActionTask(new Callable<Void>() {
+            public Void call() throws Exception {
+                latch.countDown();
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {}
+                t.interrupt();
+                return null;
+            }
+        });
+    }
+
+    public void testWhenScanFinished() throws Exception {
+        ClasspathInfo cpi = ClasspathInfo.create(srcFO);
+        final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
+        ClassIndex index = cpi.getClassIndex();
+        final CountDownLatch startLatch = new CountDownLatch(1);
+        final CountDownLatch scanBlockingLatch = new CountDownLatch(1);
+        index.addClassIndexListener(new ClassIndexAdapter() {
+            public void typesAdded(TypesEvent event) {
+                // called as a result of scheduleCompilationAndWait()
+                startLatch.countDown();
+                try {
+                    scanBlockingLatch.await();
+                } catch (InterruptedException e) {}
+            }
+        });
+        final String result = "result";
+        final AtomicReference<Future<String>> futureRef = new AtomicReference<Future<String>>();
+        Thread t = new Thread(new Runnable() {
+            public void run() {
+                try {
+                    startLatch.await();
+                } catch (InterruptedException e) {}
+                try {
+                    futureRef.set(helper.userActionTaskWhenScanFinished(new Callable<String>() {
+                        public String call() throws Exception {
+                            return result;
+                        }
+                    }));
+                } catch (IOException e) {
+                    throw new Error(e);
+                }
+                assertFalse(futureRef.get().isDone());
+                assertFalse(futureRef.get().isCancelled());
+                scanBlockingLatch.countDown();
+            }
+        });
+        t.start();
+        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        TestUtilities.copyStringToFileObject(srcFO, "Person.java",
+                "public interface Person {" +
+                "   String getName();" +
+                "}");
+        scanBlockingLatch.await(5, TimeUnit.SECONDS);
+        assertSame(result, futureRef.get().get());
     }
 }
