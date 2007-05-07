@@ -101,23 +101,23 @@ public interface DomProvider {
     /** Gets <code>PaletteController</code> associated with this <code>DomProvider</code>. */
     public PaletteController getPaletteController();
 
-    //////
-    // XXX Revise these methods
+//    //////
+//    // XXX Revise these methods
 //    public void requestRefresh();
 //    public void refreshModel(boolean deep);
 //    public void refreshProject();
 //    public void destroyDomSynchronizer();
 //    /** Until all modification stuff is moved to designer/jsf (from designer). */
 //    public void setUpdatesSuspended(MarkupDesignBean markupDesignBean, boolean suspend);
-    public boolean isRefreshPending();
+//    public boolean isRefreshPending();
 //    public void attachContext();
 //    public void detachContext();
 //    public DocumentFragment createSourceFragment(MarkupDesignBean bean);
 //    public void requestChange(MarkupDesignBean bean);
 //    public void beanChanged(MarkupDesignBean bean);
 //    public void requestTextUpdate(MarkupDesignBean bean);
-    // XXX
-    //////
+//    // XXX
+//    //////
 
     // >>> DnD
 //    public DataFlavor getImportFlavor(DataFlavor[] flavors);

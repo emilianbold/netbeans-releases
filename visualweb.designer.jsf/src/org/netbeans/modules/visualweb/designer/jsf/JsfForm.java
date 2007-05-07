@@ -709,9 +709,9 @@ public class JsfForm {
         getDomSynchronizer().setUpdatesSuspended(markupDesignBean, suspend);
     }
     
-    boolean isRefreshPending() {
-        return getDomSynchronizer().isRefreshPending();
-    }
+//    boolean isRefreshPending() {
+//        return getDomSynchronizer().isRefreshPending();
+//    }
     
 //    private void attachContext(DesignContext designContext) {
 //////        getDomSynchronizer().attachContext(context);

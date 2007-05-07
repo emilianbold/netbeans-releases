@@ -407,12 +407,12 @@ FacesDndSupport.UpdateSuspender {
         }
     }
 
-    /**
-     * Return true iff a refresh is pending
-     */
-    public boolean isRefreshPending() {
-        return pendingEventType == TYPE_REFRESH;
-    }
+//    /**
+//     * Return true iff a refresh is pending
+//     */
+//    public boolean isRefreshPending() {
+//        return pendingEventType == TYPE_REFRESH;
+//    }
 
     /**
      * Return true iff any type of change is pending

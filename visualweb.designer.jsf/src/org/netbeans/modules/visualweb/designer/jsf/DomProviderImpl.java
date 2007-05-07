@@ -134,9 +134,9 @@ class DomProviderImpl implements DomProvider {
 //        jsfForm.setUpdatesSuspended(markupDesignBean, suspend);
 //    }
 
-    public boolean isRefreshPending() {
-        return jsfForm.isRefreshPending();
-    }
+//    public boolean isRefreshPending() {
+//        return jsfForm.isRefreshPending();
+//    }
 
 //    public void attachContext() {
 //        DesignContext context = getFacesModel().getLiveUnit();

@@ -579,11 +579,12 @@ public class PageBox extends DocumentBox implements ChangeListener {
     }
 
     public void redoLayout(boolean immediate) {
-//        if (webform.getDomSynchronizer().isRefreshPending()) {
-        if (webform.isRefreshPending()) {
-            // Change will happen soon anyway
-            return;
-        }
+        // This seems to be redundant (see only usages in designer/jsf (redoPaneLayout).
+////        if (webform.getDomSynchronizer().isRefreshPending()) {
+//        if (webform.isRefreshPending()) {
+//            // Change will happen soon anyway
+//            return;
+//        }
 
         // XXX We are not sharing any output window from here.
 //        InSyncService.getProvider().getRaveErrorHandler().clearErrors(true);

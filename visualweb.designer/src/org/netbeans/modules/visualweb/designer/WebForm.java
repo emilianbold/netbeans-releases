@@ -1417,9 +1417,9 @@ public class WebForm implements Designer {
 //        domProvider.setUpdatesSuspended(componentRootElement, suspend);
 //    }
 
-    public boolean isRefreshPending() {
-        return domProvider.isRefreshPending();
-    }
+//    public boolean isRefreshPending() {
+//        return domProvider.isRefreshPending();
+//    }
 
 ////    public void attachContext(DesignContext context) {
 ////        domProvider.attachContext(context);
