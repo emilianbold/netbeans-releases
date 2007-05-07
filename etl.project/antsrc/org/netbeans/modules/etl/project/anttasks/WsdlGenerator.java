@@ -174,6 +174,8 @@ public class WsdlGenerator {
 			Writer sink = new FileWriter(wsdlLocation + "/" + engineFileName + ".wsdl");
 
 			writer.writeWSDL(def, sink);
+                        sink.flush();
+                        sink.close();
 		} catch (Exception e) {
 			logger.info(e.getMessage());
 			throw new WsdlGenerateException(e);

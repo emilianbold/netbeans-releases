@@ -47,10 +47,10 @@
 			transport="http://schemas.xmlsoap.org/soap/http" />
 		<operation name="execute">
 			<soap:operation soapAction="execute" />
-			<input>
+			<input name="inputMsg">
 				<soap:body use="literal" />
 			</input>
-			<output>
+			<output name="outputMsg">
 				<soap:body use="literal" />
 			</output>
 		</operation>

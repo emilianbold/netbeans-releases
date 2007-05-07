@@ -54,7 +54,6 @@ import org.netbeans.modules.sql.framework.model.SQLDBTable;
 import com.sun.sql.framework.utils.StringUtil;
 import com.sun.sql.framework.utils.XmlUtil;
 import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.utils.Logger;
 
 /**
  * 
@@ -156,7 +155,8 @@ public class EngineFileGenerator {
         
         fos = new FileOutputStream(engineFile);
         FileUtil.copy(engineContent.getBytes("UTF-8"), fos);
-        
+        fos.flush();
+        fos.close();
     }
     
     private SQLDefinition checkForDeploymentProperties(File etlFile, String etlFileName) {
