@@ -19,23 +19,23 @@
 
 package org.netbeans.modules.java.editor.imports;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.util.EventObject;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import javax.swing.Icon;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.event.CellEditorListener;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.EventListenerList;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
-import org.openide.awt.HtmlRenderer;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
+import javax.swing.UIManager;
 import org.openide.util.NbBundle;
 
 /**
@@ -45,49 +45,78 @@ import org.openide.util.NbBundle;
  * @author  eakle, Martin Roskanin
  */
 public class FixDuplicateImportStmts extends javax.swing.JPanel{
-    private PackagesTblModel tblModel = null;
+    private JComboBox[] combos;
+    private JCheckBox checkUnusedImports;
     
     public FixDuplicateImportStmts() {
         initComponents();
     }
     
-    public void initPanel(String[] simpleNames, String[][] choices, String[] defaults) {
-        initComponentsMore(simpleNames, choices, defaults);
+    public void initPanel(String[] simpleNames, String[][] choices, Icon[][] icons, String[] defaults, boolean removeUnusedImports) {
+        initComponentsMore(simpleNames, choices, icons, defaults, removeUnusedImports);
         setAccessible();
     }
     
-    private void initComponentsMore(String simpleNames[], String choices[][], String defaults[]) {
-        tblModel = new PackagesTblModel(simpleNames.length);
-        packagesTbl.setModel(tblModel);
-        packagesTbl.setColumnSelectionInterval(1,1);        
-        packagesTbl.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-        packagesTbl.setSurrendersFocusOnKeystroke(true);
+    private void initComponentsMore(String simpleNames[], String choices[][], Icon[][] icons, String defaults[], boolean removeUnusedImports) {
+        contentPanel.setLayout( new GridBagLayout() );
+        contentPanel.setBackground( UIManager.getColor("Table.background") ); //NOI18N
+        jScrollPane1.setBorder( UIManager.getBorder("ScrollPane.border") ); //NOI18N
         
+        if( choices.length > 0 ) {
+        
+            int row = 0;
 
-        for (int i=0; i<simpleNames.length; i++){
-            packagesTbl.setValueAt(simpleNames[i], i, 0 );
+            combos = new JComboBox[choices.length];
+
+            Font monoSpaced = new Font( "Monospaced", Font.PLAIN, new JLabel().getFont().getSize() );
+            FocusListener focusListener = new FocusListener() {
+                public void focusGained(FocusEvent e) {
+                    Component c = e.getComponent();
+                    Rectangle r = c.getBounds();
+                    contentPanel.scrollRectToVisible( r );
+                }
+                public void focusLost(FocusEvent arg0) {
+                }
+            };
+            for (int i=0; i<choices.length; i++){
+                combos[i] = new JComboBox(choices[i]);
+                combos[i].setSelectedItem(defaults[i]);
+                combos[i].getAccessibleContext().setAccessibleDescription(getBundleString("FixDupImportStmts_Combo_ACSD")); //NOI18N
+                combos[i].getAccessibleContext().setAccessibleName(getBundleString("FixDupImportStmts_Combo_Name_ACSD")); //NOI18N
+                combos[i].setOpaque(false);
+                combos[i].setFont( monoSpaced );
+                combos[i].addFocusListener( focusListener );
+                combos[i].setEnabled( choices[i].length > 1 );
+                combos[i].setRenderer( new DelegatingRenderer(combos[i].getRenderer(), choices[i], icons[i] ) );
+
+                JLabel lblSimpleName = new JLabel( simpleNames[i] );
+                lblSimpleName.setOpaque( false );
+                lblSimpleName.setFont( monoSpaced );
+                lblSimpleName.setLabelFor( combos[i] );
+
+                contentPanel.add( lblSimpleName, new GridBagConstraints(0,row,1,1,0.0,0.0,GridBagConstraints.WEST,GridBagConstraints.NONE,new Insets(3,5,2,5),0,0) );
+                contentPanel.add( combos[i], new GridBagConstraints(1,row++,1,1,1.0,0.0,GridBagConstraints.WEST,GridBagConstraints.HORIZONTAL,new Insets(3,5,2,5),0,0) );
+            }
+
+            contentPanel.add( new JLabel(), new GridBagConstraints(2,row,2,1,0.0,1.0,GridBagConstraints.CENTER,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0) );
+
+            jScrollPane1.setPreferredSize( new Dimension(460, getRowHeight() * Math.min(combos.length, 6) + 0 ) );
+        } else {
+            contentPanel.add( new JLabel("<nothing to fix>"), new GridBagConstraints(0,0,1,1,1.0,1.0,GridBagConstraints.CENTER,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0) );
         }
         
-        for (int i=0; i<choices.length; i++){
-            JComboBox combo = new JComboBox(choices[i]);
-            combo.setSelectedItem(defaults[i]);
-            combo.setRenderer(HtmlRenderer.createRenderer());
-            combo.getAccessibleContext().setAccessibleDescription(getBundleString("FixDupImportStmts_Combo_ACSD")); //NOI18N
-            combo.getAccessibleContext().setAccessibleName(getBundleString("FixDupImportStmts_Combo_Name_ACSD")); //NOI18N
-            packagesTbl.setValueAt(combo, i, 1 );
-        }
-        
-        packagesTbl.setDefaultRenderer( JComponent.class, new JComponentCellRenderer() );
-        packagesTbl.setDefaultEditor( JComponent.class, new JComponentCellEditor() );
-        
-        //packagesTbl.setPreferredScrollableViewportSize(new Dimension(560, 350));
-        adjustTableSize(packagesTbl, 5, 560);
-    
         // load localized text into widgets:
-        jLabel1.setText(getBundleString("FixDupImportStmts_IntroLbl")); //NOI18N
-        jLabel1.setLabelFor(packagesTbl);
-        jLabel1.setDisplayedMnemonic(getBundleString("FixDupImportStmts_IntroLbl_Mnemonic").charAt(0)); // NOI18N
+        lblTitle.setText(getBundleString("FixDupImportStmts_IntroLbl")); //NOI18N
+        lblHeader.setText(getBundleString("FixDupImportStmts_Header")); //NOI18N
+        
+        checkUnusedImports = new JCheckBox(getBundleString("FixDupImportStmts_UnusedImports")); //NOI18N
+        bottomPanel.add( checkUnusedImports, BorderLayout.WEST );
+        checkUnusedImports.setEnabled(removeUnusedImports);
+        checkUnusedImports.setSelected(removeUnusedImports);
+    }
+    
+    private int getRowHeight() {
+        return combos.length == 0 ? 0 :combos[0].getPreferredSize().height+6;
     }
     
     private static String getBundleString(String s) {
@@ -96,34 +125,19 @@ public class FixDuplicateImportStmts extends javax.swing.JPanel{
     
     
     private void setAccessible() {
-        // establish initial focus in JTable.
-        packagesTbl.requestFocusInWindow();
-        
-        // remove the built-in behavior of Enter in a JTable so it invoke the dialog's OK btn:
-        enableEnterToClose(packagesTbl);
         getAccessibleContext().setAccessibleDescription(getBundleString("FixDupImportStmts_IntroLbl")); // NOI18N
     }
     
     public String[] getSelections() {
-        return tblModel.getSelections();
+        String[] res = new String[combos.length];
+        for( int i=0; i<combos.length; i++ ) {
+            res[i] = combos[i].getSelectedItem().toString();
+        }
+        return res;
     }
     
-    // Set table size based on number of rows desired.
-    private void adjustTableSize(JTable table, int rows, int width) {
-        int margin = table.getIntercellSpacing().height;
-        int unit = table.getRowHeight() + margin;
-        int height = rows * unit -  margin;
-        Dimension dim = new Dimension(width, height);
-        table.setPreferredScrollableViewportSize(dim);
-    }
-
-    static private void enableEnterToClose(javax.swing.JTable table)
-    {
-        javax.swing.InputMap inputMap =
-            table.getInputMap(table.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        javax.swing.KeyStroke esc = javax.swing.KeyStroke.getKeyStroke("ENTER");    // NOI18N
-        javax.swing.InputMap parentMap = inputMap.getParent();
-	parentMap.remove(esc);
+    public boolean getRemoveUnusedImports() {
+        return checkUnusedImports.isSelected();
     }
     
     /** This method is called from within the constructor to
@@ -135,285 +149,85 @@ public class FixDuplicateImportStmts extends javax.swing.JPanel{
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jLabel1 = new javax.swing.JLabel();
+        lblTitle = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        packagesTbl = new JTableX();
-        jPanel1 = new javax.swing.JPanel();
+        contentPanel = new javax.swing.JPanel();
+        bottomPanel = new javax.swing.JPanel();
+        lblHeader = new javax.swing.JLabel();
 
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 12, 12));
+        setPreferredSize(null);
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 12, 12)));
-        setPreferredSize(new java.awt.Dimension(560, 200));
-        jLabel1.setText("<html>~More than one class found in classpath for some Type Name in source.  Select class to use in import statement for each Type Name below:</html>");
+        lblTitle.setText("~Select the fully qualified name to use in the import statement.");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.1;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
-        add(jLabel1, gridBagConstraints);
+        add(lblTitle, gridBagConstraints);
 
-        packagesTbl.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {"MyType", "com.foo.AllTypes"},
-                {"OtherType", "com.foo.AllTypes"},
-                {null, null},
-                {null, null},
-                {null, null}
-            },
-            new String [] {
-                "~Type Name", "~Class to Import"
-            }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.String.class, java.lang.Object.class
-            };
-            boolean[] canEdit = new boolean [] {
-                false, true
-            };
+        jScrollPane1.setBorder(null);
 
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
-            }
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
-        jScrollPane1.setViewportView(packagesTbl);
-        packagesTbl.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/editor/java/Bundle").getString("FixDupImportStmts_Table_ACSD"));
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(jScrollPane1, gridBagConstraints);
+        contentPanel.setLayout(new java.awt.GridBagLayout());
+        jScrollPane1.setViewportView(contentPanel);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        add(jPanel1, gridBagConstraints);
+        gridBagConstraints.weighty = 1.0;
+        add(jScrollPane1, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+        bottomPanel.setLayout(new java.awt.BorderLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        add(bottomPanel, gridBagConstraints);
+
+        lblHeader.setText("~Import Statements:");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 0);
+        add(lblHeader, gridBagConstraints);
+    }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel bottomPanel;
+    private javax.swing.JPanel contentPanel;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTable packagesTbl;
+    private javax.swing.JLabel lblHeader;
+    private javax.swing.JLabel lblTitle;
     // End of variables declaration//GEN-END:variables
     
-    // ------------------ Inner Classes -------------------------
-    /*
-     * Service information for a selected Organization
-     */
-    private static class PackagesTblModel extends javax.swing.table.DefaultTableModel {
-        
-        String columnNames[] = {
-            getBundleString("FixDupImportStmts_TblCol1Hdr"), //NOI18N
-            getBundleString("FixDupImportStmts_TblCol2Hdr")  //NOI18N
-        };
-        
-        public PackagesTblModel(int rowCount) {
-            super(rowCount, 2);
+    private static class DelegatingRenderer implements ListCellRenderer {
+        private ListCellRenderer orig;
+        private Icon[] icons;
+        private String[] values;
+        public DelegatingRenderer( ListCellRenderer orig, String[] values, Icon[] icons ) {
+            this.orig = orig;
+            this.icons = icons;
+            this.values = values;
         }
 
-        public String getColumnName(int col){
-            return columnNames[col];
-        }
-        
-        public boolean isCellEditable(int row, int col) {
-            return (col == 1);
-        }
-                
-        public String[] getSelections() {
-            int rowCount = getRowCount();
-            String ret[] = new String[rowCount];
-            for (int i = 0; i<rowCount; i++ ){
-                ret [i] = (String)((JComboBox)getValueAt(i, 1)).getSelectedItem();
-            }
-            return ret;
-        }
-        
-    }
-
-    // ----------------------
-    
-    // extend JTable to support a cell editor for each row.
-    private static class JTableX extends JTable
-     {
-        //private boolean done = false;
- 
-         private boolean needCalcRowHeight = true;        
-    
-         public JTableX () {}
-         
-         public void updateUI() {
-             super.updateUI();
-             needCalcRowHeight = true;            
-         }
-         
-         public void paint(Graphics g) {
-             if (needCalcRowHeight) {
-                 calcRowHeight(g);
-             }
-             super.paint(g);
-         }
-         
-         /** Calculate the height of rows based on the current font.  This is
-          *  done when the first paint occurs, to ensure that a valid Graphics
-          *  object is available.
-          */
-         private void calcRowHeight(Graphics g) {
-             Font f = getFont();
-             FontMetrics fm = g.getFontMetrics(f);
-             int rowHeight = (int) (fm.getHeight() * 1.4);
-             needCalcRowHeight = false;
-             setRowHeight(rowHeight);
-         }
-        
-        
-        // rows were not high enough to show a JComboBox renderer.
-         /*
-        public void paint(Graphics g) {
-            if (!done) {
-               this.setRowHeight((int)(this.getRowHeight() * 1.4));
-               done = true;
-            }
-            super.paint(g);
-        }
-         
-          */
-
-        public TableCellRenderer getCellRenderer(int row, int column) {
-                TableColumn tableColumn = getColumnModel().getColumn(column);
-                TableCellRenderer renderer = tableColumn.getCellRenderer();
-                if (renderer == null) {
-                        Class c = getColumnClass(column);
-                        if( c.equals(Object.class) )
-                        {
-                                Object o = getValueAt(row,column);
-                                if( o != null )
-                                        c = getValueAt(row,column).getClass();
-                        }
-                        renderer = getDefaultRenderer(c);
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            Component res = orig.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            if( res instanceof JLabel && null != icons ) {
+                for( int i=0; i<values.length; i++ ) {
+                    if( values[i].equals( value ) ) {
+                        ((JLabel)res).setIcon( icons[i] );
+                        break;
+                    }
                 }
-                return renderer;
-        }
-
-        public TableCellEditor getCellEditor(int row, int column) {
-                TableColumn tableColumn = getColumnModel().getColumn(column);
-                TableCellEditor editor = tableColumn.getCellEditor();
-                if (editor == null) {
-                        Class c = getColumnClass(column);
-                        if( c.equals(Object.class) )
-                        {
-                                Object o = getValueAt(row,column);
-                                if( o != null )
-                                        c = getValueAt(row,column).getClass();
-                        }
-                        editor = getDefaultEditor(c);
-                }
-                return editor;
-        }
- 
-    }
-
-    
-    private class JComponentCellRenderer implements TableCellRenderer {
-        public JComponentCellRenderer () {}
-        
-        public Component getTableCellRendererComponent(JTable table, Object value,
-        boolean isSelected, boolean hasFocus, int row, int column) {
-            return (JComponent)value;
+            }
+            return res;
         }
     }
-
-
-    private class JComponentCellEditor implements TableCellEditor{
-        
-        protected EventListenerList listenerList = new EventListenerList();
-        transient protected ChangeEvent changeEvent = null;
-        
-        protected JComponent editorComponent = null;
-        
-        public JComponentCellEditor () {}
-        
-        public Component getComponent() {
-            return editorComponent;
-        }
-        
-        
-        public Object getCellEditorValue() {
-            return editorComponent;
-        }
-        
-        public boolean isCellEditable(EventObject anEvent) {
-            return true;
-        }
-        
-        public boolean shouldSelectCell(EventObject anEvent) {
-            return true;
-        }
- 
-        public boolean stopCellEditing() {
-            fireEditingStopped();
-            return true;
-        }
-        
-        public void cancelCellEditing() {
-            fireEditingCanceled();
-        }
-        
-        public void addCellEditorListener(CellEditorListener l) {
-            listenerList.add(CellEditorListener.class, l);
-        }
-        
-        public void removeCellEditorListener(CellEditorListener l) {
-            listenerList.remove(CellEditorListener.class, l);
-        }
-        
-        protected void fireEditingStopped() {
-            Object[] listeners = listenerList.getListenerList();
-            // Process the listeners last to first, notifying
-            // those that are interested in this event
-            for (int i = listeners.length-2; i>=0; i-=2) {
-                if (listeners[i]==CellEditorListener.class) {
-                    // Lazily create the event:
-                    if (changeEvent == null)
-                        changeEvent = new ChangeEvent(this);
-                    ((CellEditorListener)listeners[i+1]).editingStopped(changeEvent);
-                }
-            }
-        }
-        
-        protected void fireEditingCanceled() {
-            // Guaranteed to return a non-null array
-            Object[] listeners = listenerList.getListenerList();
-            // Process the listeners last to first, notifying
-            // those that are interested in this event
-            for (int i = listeners.length-2; i>=0; i-=2) {
-                if (listeners[i]==CellEditorListener.class) {
-                    // Lazily create the event:
-                    if (changeEvent == null)
-                        changeEvent = new ChangeEvent(this);
-                    ((CellEditorListener)listeners[i+1]).editingCanceled(changeEvent);
-                }
-            }
-        }
-        
-        // implements javax.swing.table.TableCellEditor
-        public Component getTableCellEditorComponent(JTable table, Object value,
-        boolean isSelected, int row, int column) {
-            editorComponent = (JComponent)value;
-            return editorComponent;
-        }
-        
-    } // End of class JComponentCellEditor
-
 }

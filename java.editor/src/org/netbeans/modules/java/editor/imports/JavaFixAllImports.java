@@ -26,16 +26,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.TypeElement;
+import javax.swing.Icon;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.editor.java.Utilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -69,6 +72,7 @@ public class JavaFixAllImports {
                     int size = notFilteredCandidates.size();
                     String[] names = new String[size];
                     String[][] variants = new String[size][];
+                    Icon[][] icons = new Icon[size][];
                     String[] defaults = new String[size];
                     Map<String, TypeElement> fqn2TE = new HashMap<String, TypeElement>();
                     Map<String, String> displayName2FQN = new HashMap<String, String>();
@@ -83,12 +87,14 @@ public class JavaFixAllImports {
 
                         if (!unfilteredVars.isEmpty()) {
                             variants[index] = new String[unfilteredVars.size()];
+                            icons[index] = new Icon[variants[index].length];
 
                             int i = -1;
                             int minImportanceLevel = Integer.MAX_VALUE;
 
                             for (TypeElement e : filteredVars) {
                                 variants[index][++i] = e.getQualifiedName().toString();
+                                icons[index][i] = UiUtils.getElementIcon(e.getKind(), e.getModifiers());
                                 int level = Utilities.getImportanceLevel(variants[index][i]);
                                 if (level < minImportanceLevel) {
                                     defaults[index] = variants[index][i];
@@ -115,7 +121,7 @@ public class JavaFixAllImports {
                             }
                         } else {
                             variants[index] = new String[1];
-                            variants[index][0] = "<html><font color='#FF0000'>&lt;cannot be resolved&gt;";
+                            variants[index][0] = NbBundle.getMessage(JavaFixAllImports.class, "FixDupImportStmts_CannotResolve"); //NOI18N
                             defaults[index] = variants[index][0];
                         }
 
@@ -124,9 +130,9 @@ public class JavaFixAllImports {
 
                     FixDuplicateImportStmts panel = new FixDuplicateImportStmts();
 
-                    panel.initPanel(names, variants, defaults);
+                    panel.initPanel(names, variants, icons, defaults, true);
 
-                    DialogDescriptor dd = new DialogDescriptor(panel, "Fix All Imports");
+                    DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(JavaFixAllImports.class, "FixDupImportStmts_Title")); //NOI18N
                     Dialog d = DialogDisplayer.getDefault().createDialog(dd);
 
                     d.setVisible(true);
