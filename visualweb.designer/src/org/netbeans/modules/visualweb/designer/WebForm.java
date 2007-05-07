@@ -150,7 +150,11 @@ public class WebForm implements Designer {
 //    private DocumentCache frameCache;
 
     private final EventListenerList listenerList = new EventListenerList();
-    
+
+    /** Determines whether to paint size mask or not. Typically used for fragments and portlets.
+     * The mask is painted in case the returned body element has width and height properties smaller
+     * than the size of the viewport. */
+    private boolean paintSizeMask;
     
 //    private static class JspDataObjectListener implements PropertyChangeListener {
 //        private final WebForm webForm;
@@ -1030,23 +1034,23 @@ public class WebForm implements Designer {
 //    }
 // </refactoring>
 
-    /**
-     * Return true iff this webform represents a fragment. Note - portlets are
-     * frequently fragments too so don't conclude from this method returning true
-     * that you are not dealing with a portlet!
-     */
-    public boolean isFragment() {
-//        return isFragment;
-        return domProvider.isFragment();
-    }
-
-    /**
-     * Retru true iff this webform represents a portlet
-     */
-    public boolean isPortlet() {
-//        return isPortlet;
-        return domProvider.isPortlet();
-    }
+//    /**
+//     * Return true iff this webform represents a fragment. Note - portlets are
+//     * frequently fragments too so don't conclude from this method returning true
+//     * that you are not dealing with a portlet!
+//     */
+//    public boolean isFragment() {
+////        return isFragment;
+//        return domProvider.isFragment();
+//    }
+//
+//    /**
+//     * Retru true iff this webform represents a portlet
+//     */
+//    public boolean isPortlet() {
+////        return isPortlet;
+//        return domProvider.isPortlet();
+//    }
 
 //    /**
 //     * Return the project associated with this webform
@@ -3198,5 +3202,13 @@ public class WebForm implements Designer {
             }
         }
     } // End of RenderContextImpl.
+
     
+    public void setPaintSizeMask(boolean paintSizeMask) {
+        this.paintSizeMask = paintSizeMask;
+    }
+    
+    public boolean isPaintSizeMask() {
+        return paintSizeMask;
+    }
 }

@@ -267,4 +267,9 @@ public interface Designer {
 
     
     public DomProvider[] getExternalDomProviders();
+    
+    /** Sets whether to paint size mask, typically used for fragments and portlets. */
+    public void setPaintSizeMask(boolean paintSizeMask);
+    /** Specifies whether the component paints size mask. */
+    public boolean isPaintSizeMask();
 }

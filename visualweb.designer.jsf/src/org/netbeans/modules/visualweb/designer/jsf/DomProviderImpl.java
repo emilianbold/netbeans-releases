@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.visualweb.designer.jsf;
 
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import javax.swing.JPopupMenu;
 import org.netbeans.modules.visualweb.api.designer.Designer;
@@ -27,24 +26,17 @@ import com.sun.rave.designtime.DesignProperty;
 import java.util.ArrayList;
 import org.netbeans.modules.visualweb.api.designer.DomProvider;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
-import org.netbeans.modules.visualweb.api.designtime.idebridge.DesigntimeIdeBridgeProvider;
 import com.sun.rave.designtime.DesignBean;
-import com.sun.rave.designtime.DisplayItem;
 import com.sun.rave.designtime.Result;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
 import com.sun.rave.designtime.markup.MarkupMouseRegion;
-import com.sun.rave.designtime.markup.MarkupPosition;
-import org.netbeans.modules.visualweb.insync.ResultHandler;
 import org.netbeans.modules.visualweb.insync.Util;
 import org.netbeans.modules.visualweb.insync.beans.BeansUnit;
 import org.netbeans.modules.visualweb.insync.faces.FacesBean;
 import org.netbeans.modules.visualweb.insync.faces.FacesPageUnit;
 import org.netbeans.modules.visualweb.insync.faces.HtmlBean;
-import org.netbeans.modules.visualweb.insync.faces.MarkupBean;
 import org.netbeans.modules.visualweb.insync.live.LiveUnit;
 import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
-import org.netbeans.modules.visualweb.insync.models.FacesModel;
-import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -60,10 +52,7 @@ import org.netbeans.modules.visualweb.designer.jsf.virtualforms.ComponentGroupSu
 import org.netbeans.modules.visualweb.designer.jsf.ui.JsfMultiViewElement;
 import org.netbeans.modules.visualweb.designer.jsf.ui.JsfTopComponent;
 import org.netbeans.spi.palette.PaletteController;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.windows.TopComponent;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
@@ -301,13 +290,13 @@ class DomProviderImpl implements DomProvider {
         return jsfForm.getDndSupport();
     }
 
-    public boolean isFragment() {
-        return jsfForm.isFragment();
-    }
-
-    public boolean isPortlet() {
-        return jsfForm.isPortlet();
-    }
+//    public boolean isFragment() {
+//        return jsfForm.isFragment();
+//    }
+//
+//    public boolean isPortlet() {
+//        return jsfForm.isPortlet();
+//    }
 
     public DataObject getJspDataObject() {
 ////        FileObject file = getFacesModel().getMarkupFile();

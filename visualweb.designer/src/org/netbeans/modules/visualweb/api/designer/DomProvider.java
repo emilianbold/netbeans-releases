@@ -174,8 +174,8 @@ public interface DomProvider {
 //    /** XXX TEMP. */
 //    public FacesModel getFacesModel();
 
-    public boolean isFragment();
-    public boolean isPortlet();
+//    public boolean isFragment();
+//    public boolean isPortlet();
     
     public DataObject getJspDataObject();
 

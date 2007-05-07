@@ -254,6 +254,8 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         ActionMap paneMap = designer.getPaneActionMap();
 
         am.setParent(paneMap);
+        
+        designer.setPaintSizeMask(jsfForm.isFragment() || jsfForm.isPortlet());
     }
     
     private void initLoadingComponent() {

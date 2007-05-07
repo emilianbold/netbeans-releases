@@ -207,7 +207,8 @@ public class PageBox extends DocumentBox implements ChangeListener {
 
             g.setColor(Color.WHITE);
             g.drawString("(" + x2 + "," + y2 + ")", x2 + 10, y2 + 10);
-        } else if (webform.isFragment() || webform.isPortlet()) {
+//        } else if (webform.isFragment() || webform.isPortlet()) {
+        } else if (webform.isPaintSizeMask()) {
             // See if we should draw page-fragment/portlet size mask
             Element e = webform.getHtmlBody();
 
