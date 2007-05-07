@@ -20,12 +20,15 @@
 package org.netbeans.modules.j2ee.ejbjarproject.ui;
 
 import java.io.File;
-import org.openide.options.SystemOption;
+import java.util.prefs.Preferences;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 
-public class FoldersListSettings extends SystemOption {
+public class FoldersListSettings {
 
+    private static final FoldersListSettings INSTANCE = new FoldersListSettings();
+    
     static final long serialVersionUID = -4905094097265543014L;
 
     private static final String LAST_EXTERNAL_SOURCE_ROOT = "srcRoot";  //NOI18N
@@ -57,127 +60,112 @@ public class FoldersListSettings extends SystemOption {
     }
 
     public String getLastExternalSourceRoot () {
-        return (String) getProperty(LAST_EXTERNAL_SOURCE_ROOT);
+        return getPreferences().get(LAST_EXTERNAL_SOURCE_ROOT, System.getProperty("user.home"));
     }
 
     public void setLastExternalSourceRoot (String path) {
-        putProperty (LAST_EXTERNAL_SOURCE_ROOT, path, true);
+        getPreferences().put(LAST_EXTERNAL_SOURCE_ROOT, path);
     }
 
     public int getNewProjectCount () {
-        Integer value = (Integer) getProperty (NEW_PROJECT_COUNT);
-        return value == null ? 0 : value.intValue();
+        return getPreferences().getInt(NEW_PROJECT_COUNT, 0);
     }
 
     public void setNewProjectCount (int count) {
-        this.putProperty(NEW_PROJECT_COUNT, new Integer(count),true);
+        getPreferences().putInt(NEW_PROJECT_COUNT, count);
     }
     
     public boolean isShowAgainBrokenRefAlert() {
-        Boolean b = (Boolean)getProperty(SHOW_AGAIN_BROKEN_REF_ALERT);
-        return b == null ? true : b.booleanValue();
+        return getPreferences().getBoolean(SHOW_AGAIN_BROKEN_REF_ALERT, true);
     }
     
     public void setShowAgainBrokenRefAlert(boolean again) {
-        this.putProperty(SHOW_AGAIN_BROKEN_REF_ALERT, Boolean.valueOf(again), true);
+        getPreferences().putBoolean(SHOW_AGAIN_BROKEN_REF_ALERT, again);
     }
     
     public boolean isShowAgainBrokenServerAlert() {
-        Boolean b = (Boolean)getProperty(SHOW_AGAIN_BROKEN_SERVER_ALERT);
-        return b == null ? true : b.booleanValue();
+        return getPreferences().getBoolean(SHOW_AGAIN_BROKEN_SERVER_ALERT, true);
     }
     
     public void setShowAgainBrokenServerAlert(boolean again) {
-        this.putProperty(SHOW_AGAIN_BROKEN_SERVER_ALERT, Boolean.valueOf(again), true);
+        getPreferences().putBoolean(SHOW_AGAIN_BROKEN_SERVER_ALERT, again);
     }
 
     public static FoldersListSettings getDefault () {
-        return (FoldersListSettings) SystemOption.findObject (FoldersListSettings.class, true);
+        return INSTANCE;
     }
 
     public File getLastUsedSourceRootFolder () {
-        String folder = (String) this.getProperty (LAST_USED_SOURCE_ROOT_FOLDER);
-        if (folder == null) {
-            folder = System.getProperty("user.home");    //NOI18N
-        }
-        return new File (folder);
+        return new File(getPreferences().get(LAST_USED_SOURCE_ROOT_FOLDER, System.getProperty("user.home")));
     }
 
     public void setLastUsedSourceRootFolder (File folder) {
         assert folder != null : "Folder can not be null";
         String path = folder.getAbsolutePath();
-        this.putProperty (LAST_USED_SOURCE_ROOT_FOLDER, path, true);
+        getPreferences().put(LAST_USED_SOURCE_ROOT_FOLDER, path);
     }
     
     public File getLastUsedArtifactFolder () {
-        String folder = (String) this.getProperty (LAST_USED_ARTIFACT_FOLDER);
-        if (folder == null) {
-            folder = System.getProperty("user.home");    //NOI18N
-        }
-        return new File (folder);
+        return new File(getPreferences().get(LAST_USED_ARTIFACT_FOLDER, System.getProperty("user.home")));
     }
 
     public void setLastUsedArtifactFolder (File folder) {
         assert folder != null : "Folder can not be null";
         String path = folder.getAbsolutePath();
-        this.putProperty (LAST_USED_ARTIFACT_FOLDER, path, true);
+        getPreferences().put(LAST_USED_ARTIFACT_FOLDER, path);
     }
 
     public File getLastUsedClassPathFolder () {
-        String lucpr = (String) this.getProperty (LAST_USED_CP_FOLDER);
-        if (lucpr == null) {
-            lucpr = System.getProperty("user.home");    //NOI18N
-        }
-        return new File (lucpr);
+        return new File(getPreferences().get(LAST_USED_CP_FOLDER, System.getProperty("user.home")));
     }
 
     public void setLastUsedClassPathFolder (File folder) {
         assert folder != null : "ClassPath root can not be null";
         String path = folder.getAbsolutePath();
-        this.putProperty(LAST_USED_CP_FOLDER, path, true);
+        getPreferences().put(LAST_USED_CP_FOLDER, path);
     }
     
     public boolean isAgreedSetJdk14() {
-        Boolean b = (Boolean)getProperty(AGREED_SET_JDK_14);
-        return b == null ? true : b.booleanValue();
+        return getPreferences().getBoolean(AGREED_SET_JDK_14, true);
     }
     
     public void setAgreedSetJdk14(boolean agreed) {
-        this.putProperty(AGREED_SET_JDK_14, Boolean.valueOf(agreed), true);
+        getPreferences().putBoolean(AGREED_SET_JDK_14, agreed);
     }
     
     public boolean isAgreedSetSourceLevel14() {
-        Boolean b = (Boolean)getProperty(AGREED_SET_SOURCE_LEVEL_14);
-        return b == null ? true : b.booleanValue();
+        return getPreferences().getBoolean(AGREED_SET_SOURCE_LEVEL_14, true);
     }
     
     public void setAgreedSetSourceLevel14(boolean agreed) {
-        this.putProperty(AGREED_SET_SOURCE_LEVEL_14, Boolean.valueOf(agreed), true);
+        getPreferences().putBoolean(AGREED_SET_SOURCE_LEVEL_14, agreed);
     }
 
     public boolean isAgreedSetJdk15() {
-        Boolean b = (Boolean)getProperty(AGREED_SET_JDK_15);
-        return b == null ? true : b.booleanValue();
+        return getPreferences().getBoolean(AGREED_SET_JDK_15, true);
     }
     
     public void setAgreedSetJdk15(boolean agreed) {
-        this.putProperty(AGREED_SET_JDK_15, Boolean.valueOf(agreed), true);
+        getPreferences().putBoolean(AGREED_SET_JDK_15, agreed);
     }
     
     public boolean isAgreedSetSourceLevel15() {
-        Boolean b = (Boolean)getProperty(AGREED_SET_SOURCE_LEVEL_15);
-        return b == null ? true : b.booleanValue();
+        return getPreferences().getBoolean(AGREED_SET_SOURCE_LEVEL_15, true);
     }
     
     public void setAgreedSetSourceLevel15(boolean agreed) {
-        this.putProperty(AGREED_SET_SOURCE_LEVEL_15, Boolean.valueOf(agreed), true);
+        getPreferences().putBoolean(AGREED_SET_SOURCE_LEVEL_15, agreed);
     }
 
     public void setLastUsedServer(String serverInstanceID) {
-        putProperty(LAST_USED_SERVER, serverInstanceID, true);
+        getPreferences().put(LAST_USED_SERVER, serverInstanceID);
     }
 
     public String getLastUsedServer() {
-        return (String) getProperty(LAST_USED_SERVER);
+        return getPreferences().get(LAST_USED_SERVER, null);
+    }
+    
+    private static Preferences getPreferences() {
+        return NbPreferences.forModule(FoldersListSettings.class);
     }
 }

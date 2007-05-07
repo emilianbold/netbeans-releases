@@ -53,10 +53,6 @@ Microsystems, Inc. All Rights Reserved.
         <file name="ejb-jar-3.0.xml" url="ejb-jar-3.0.xml"/>
         <file name="MANIFEST.MF" url="MANIFEST.MF"/>
     </folder>
-    
-    <folder name="Services">
-        <file name="org-netbeans-modules-j2ee-ejbjarproject-ui-FoldersList.settings" url="foldersList.settings"/>
-    </folder>
 
     <folder name="Projects">
         <folder name="org-netbeans-modules-j2ee-ejbjarproject">
