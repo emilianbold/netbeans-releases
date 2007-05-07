@@ -19,121 +19,215 @@
 
 package org.netbeans.modules.websvc.wsitconf.refactoring;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.Collection;
+import javax.xml.namespace.QName;
+import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
-import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.netbeans.modules.websvc.wsitconf.refactoring.WSITXmlRenameRefactoring;
-import org.netbeans.modules.websvc.wsitconf.util.Util;
-import org.openide.util.Lookup;
+import org.netbeans.modules.xml.wsdl.model.Binding;
+import org.netbeans.modules.xml.wsdl.model.BindingOperation;
+import org.netbeans.modules.xml.wsdl.model.Definitions;
+import org.netbeans.modules.xml.wsdl.model.Input;
+import org.netbeans.modules.xml.wsdl.model.Message;
+import org.netbeans.modules.xml.wsdl.model.Operation;
+import org.netbeans.modules.xml.wsdl.model.Output;
+import org.netbeans.modules.xml.wsdl.model.PortType;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author Martin Grebac
+ * @author Martin Grebac, Martin Matula
  */
-public class WSITRenameRefactoringPlugin implements RefactoringPlugin {
-    
-    /** This one is important creature - makes sure that cycles between plugins won't appear */
-    private static ThreadLocal semafor = new ThreadLocal();
-    
-    private WSITXmlRenameRefactoring wsitXmlRenameRefactor = new WSITXmlRenameRefactoring();
-    
-    private final RenameRefactoring renameRefactoring;
-    
-    private static final Logger logger = Logger.getLogger("org.netbeans.modules.websvc.wsitconf.refactoring.rename");
-    
+public final class WSITRenameRefactoringPlugin extends WSITRefactoringPlugin<RenameRefactoring> {
     /**
      * Creates a new instance of WSITRenameRefactoringPlugin
      */
     public WSITRenameRefactoringPlugin(RenameRefactoring refactoring) {
-        this.renameRefactoring = refactoring;
+        super(refactoring);
     }
-    
-    /** Checks pre-conditions of the renameRefactoring and returns problems.
-     * @return Problems found or null (if no problems were identified)
-     */
-    public Problem preCheck() {
-        Problem problem = null;
-        if (semafor.get() == null) {
-            semafor.set(new Object());
-            
-            Lookup refO = renameRefactoring.getRefactoringSource();
-            logger.log(Level.FINE, "refO: " + refO);
-            
-            Problem wsitXmlProblem = wsitXmlRenameRefactor.preCheck(refO);
-            problem = Util.addProblemsToEnd(problem, wsitXmlProblem);
 
-            semafor.set(null);
-        }
-        return problem;
+    protected RefactoringElementImplementation createClassRE(WSDLModel model) {
+        return new ClassRE(refactoring.getNewName(), model);
     }
-    
-    
-    public Problem fastCheckParameters() {
-        Problem problem = null;
-        if (semafor.get() == null) {
-            semafor.set(new Object());
-            
-            Lookup refO = renameRefactoring.getRefactoringSource();
-            logger.log(Level.FINE, "refO: " + refO);
-            
-            String newName = renameRefactoring.getNewName();
-            logger.log(Level.FINE, "newname: " + newName);
-                        
-            semafor.set(null);
-        }
-        return problem;
+
+    protected RefactoringElementImplementation createMethodRE(String methodName, WSDLModel model) {
+        return new MethodRE(methodName, refactoring.getNewName(), model);
     }
-    
-    /** Checks parameters of the renameRefactoring.
-     * @return Problems found or null (if no problems were identified)
+
+   /**
+     * Rename refactoring element for wsit-*.xml
      */
-    public Problem checkParameters() {
-        Problem problem = null;
-        if (semafor.get() == null) {
-            semafor.set(new Object());
-            
-            Lookup refO = renameRefactoring.getRefactoringSource();
-            logger.log(Level.FINE, "refO: " + refO);
-            
-            String newName = renameRefactoring.getNewName();
-            logger.log(Level.FINE, "newname: " + newName);
-            
-            semafor.set(null);
-        }
-        return problem;
-    }
-    
-    /** Collects renameRefactoring elements for a given renameRefactoring.
-     * @param refactoringElements Collection of renameRefactoring elements - the implementation of this method
-     * should add renameRefactoring elements to this collections. It should make no assumptions about the collection
-     * content.
-     * @return Problems found or null (if no problems were identified)
-     */
-    public Problem prepare(RefactoringElementsBag refactoringElements) {
-        Problem problem = null;
-        
-        if (semafor.get() == null) {
-            semafor.set(new Object());
-            
-            Lookup refO = renameRefactoring.getRefactoringSource();
-            logger.log(Level.FINE, "refO: " + refO);
-            
-            String newName = renameRefactoring.getNewName();
-            logger.log(Level.FINE, "newname: " + newName);
-            
-            Problem wsitXmlProblem = wsitXmlRenameRefactor.prepare(renameRefactoring, refO, newName, refactoringElements);
-            problem = Util.addProblemsToEnd(problem, wsitXmlProblem);
-            
-            semafor.set(null);
+    private static class ClassRE extends AbstractRefactoringElement {
+        private final String oldConfigName;
+        private final String newConfigName;
+        private final String extension;
+                
+        /**
+         * Creates a new instance of WSITXmlClassRenameRefactoringElement
+         * 
+         * @param oldName the fully qualified old name of the implementation class
+         * @param newName the fully qualified new name of the implementation class
+         */
+        public ClassRE(String newName, WSDLModel model) {
+            super(model);
+            this.oldConfigName = getParentFile().getName();
+            this.newConfigName = oldConfigName.substring(0, oldConfigName.lastIndexOf('.') + 1) + newName;
+            this.extension = getParentFile().getExt();
         }
         
-        logger.log(Level.FINE, "Gonna return problem: " + problem);
-        return problem;
+        public void performChange() {
+            FileLock lock = null;
+            FileObject parentFile = getParentFile();
+            try {
+                lock = parentFile.lock();
+                parentFile.rename(lock, newConfigName, extension);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            } finally {
+                if (lock != null) lock.releaseLock();
+            }
+        }
+
+        public void undoChange() {
+            FileLock lock = null;
+            FileObject parentFile = getParentFile();
+            try {
+                lock = parentFile.lock();
+                parentFile.rename(lock, oldConfigName, extension);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            } finally {
+                if (lock != null) lock.releaseLock();
+            }
+        }
+        
+        /**
+         * Returns text describing the refactoring formatted for display (using HTML tags).
+         * @return Formatted text.
+         */
+        public String getDisplayText() {
+            Object[] args = new Object [] {oldConfigName, newConfigName};
+            return MessageFormat.format(NbBundle.getMessage(ClassRE.class, "TXT_WsitXmlClassRename"), args);
+        }
     }
     
-    public void cancelRequest() { }
-    
+   /**
+     * Rename refactoring element for wsit-*.xml
+     */
+    private static class MethodRE extends AbstractRefactoringElement {
+        private final String oldName;
+        private final String newName;
+        
+        public MethodRE(String oldName, String newName, WSDLModel model) {
+            super(model);
+            this.oldName = oldName;
+            this.newName = newName;
+        }
+        
+        public void performChange() {
+            Definitions d = model.getDefinitions();
+            Binding b = (Binding) d.getBindings().toArray()[0];
+            Collection<BindingOperation> bOperations = b.getBindingOperations();
+            PortType portType = (PortType) d.getPortTypes().toArray()[0];
+            Collection<Operation> operations = portType.getOperations();
+            
+            model.startTransaction();
+            try {
+                for (BindingOperation bOperation : bOperations) {
+                    if (oldName.equals(bOperation.getName())) {
+                        bOperation.setName(newName);
+                    }
+                }
+
+                for (Operation o : operations) {
+                    if (oldName.equals(o.getName())) {
+                        o.setName(newName);
+                        Input i = o.getInput();
+                        if (i != null) {
+                            QName qname = i.getMessage().getQName();
+                            Message msg = model.findComponentByName(qname, Message.class);
+                            String oMsgName = msg.getName();
+                            if (oMsgName != null) {
+                                String nMsgName = oMsgName.replaceAll(oldName, newName);
+                                msg.setName(nMsgName);
+                            }
+                            i.setMessage(i.createReferenceTo(msg, Message.class));
+                        }
+                        Output out = o.getOutput();
+                        if (out != null) {
+                            QName qname = out.getMessage().getQName();
+                            Message msg = model.findComponentByName(qname, Message.class);
+                            String oMsgName = msg.getName();
+                            if (oMsgName != null) {
+                                String nMsgName = oMsgName.replaceAll(oldName, newName);
+                                msg.setName(nMsgName);
+                            }
+                            out.setMessage(out.createReferenceTo(msg, Message.class));
+                        }
+                    }
+                }
+            } finally {
+                model.endTransaction();
+            }
+        }
+
+        public void undoChange() {
+            Definitions d = model.getDefinitions();
+            Binding b = (Binding) d.getBindings().toArray()[0];
+            Collection<BindingOperation> bOperations = b.getBindingOperations();
+            PortType portType = (PortType) d.getPortTypes().toArray()[0];
+            Collection<Operation> operations = portType.getOperations();
+            
+            model.startTransaction();
+            try {
+                for (BindingOperation bOperation : bOperations) {
+                    if (newName.equals(bOperation.getName())) {
+                        bOperation.setName(oldName);
+                    }
+                }
+                for (Operation o : operations) {
+                    if (newName.equals(o.getName())) {
+                        o.setName(oldName);
+                        Input i = o.getInput();
+                        if (i != null) {
+                            QName qname = i.getMessage().getQName();
+                            Message msg = model.findComponentByName(qname, Message.class);
+                            String oMsgName = msg.getName();
+                            if (oMsgName != null) {
+                                String nMsgName = oMsgName.replaceAll(newName, oldName);
+                                msg.setName(nMsgName);
+                            }
+                            i.setMessage(i.createReferenceTo(msg, Message.class));
+                        }
+                        Output out = o.getOutput();
+                        if (out != null) {
+                            QName qname = out.getMessage().getQName();
+                            Message msg = model.findComponentByName(qname, Message.class);
+                            String oMsgName = msg.getName();
+                            if (oMsgName != null) {
+                                String nMsgName = oMsgName.replaceAll(newName, oldName);
+                                msg.setName(nMsgName);
+                            }
+                            out.setMessage(out.createReferenceTo(msg, Message.class));
+                        }
+                    }
+                }
+            } finally {
+                model.endTransaction();
+            }
+        }
+        
+        /**
+         * Returns text describing the refactoring formatted for display (using HTML tags).
+         * @return Formatted text.
+         */
+        public String getDisplayText() {
+            Object[] args = new Object [] {oldName, newName};
+            return MessageFormat.format(NbBundle.getMessage(MethodRE.class, "TXT_WsitXmlMethodRename"), args);
+        }
+    }
 }

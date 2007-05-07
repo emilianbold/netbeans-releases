@@ -65,7 +65,6 @@ import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -120,7 +119,7 @@ public class WSITModelSupport {
         }
         return model;
     }
-
+    
     public static WSDLModel getModelForService(Service service, FileObject implClass, Project p, boolean create, Collection createdFiles) {
         try {
             String wsdlUrl = service.getWsdlUrl();
@@ -307,7 +306,7 @@ public class WSITModelSupport {
         }
         return model;
     }
-   
+    
     private static FileObject getLocalWsdlFO(FileObject localWSDLFolder, String wsdlName){
         return localWSDLFolder.getFileObject(wsdlName);
     }
@@ -581,12 +580,12 @@ public class WSITModelSupport {
             }
         }
     }
-
+    
     public static void save(WSDLComponent c) {
         WSDLModel model = c.getModel();
         save(model);
     }
-
+    
     public synchronized static void save(WSDLModel model) {
         try {
             if (model != null) {
@@ -607,7 +606,7 @@ public class WSITModelSupport {
             logger.log(Level.SEVERE, null, e);
         }
     }
-
+    
     //TODO: Need a way to determine binding that the user wants
     //For now just get the first one (if there is one)
     public static Binding getBinding(Service service, FileObject implClass, Project project, boolean create, Collection createdFiles) {
@@ -619,5 +618,5 @@ public class WSITModelSupport {
             return bindings.iterator().next();
         }
         return null;
-    }        
+    }
 }

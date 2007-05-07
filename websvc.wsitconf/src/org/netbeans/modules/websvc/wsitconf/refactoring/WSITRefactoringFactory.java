@@ -19,15 +19,15 @@
 
 package org.netbeans.modules.websvc.wsitconf.refactoring;
 
-import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
 import org.netbeans.modules.websvc.wsitconf.refactoring.WSITRenameRefactoringPlugin;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -35,7 +35,7 @@ import org.openide.filesystems.FileObject;
  */
 public class WSITRefactoringFactory implements RefactoringPluginFactory {
     
-    private static final Logger logger = Logger.getLogger("org.netbeans.modules.websvc.wsitconf.refactoring");
+    private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.websvc.wsitconf.refactoring");
 
     /**
      * Creates a new instance of WSITRefactoringFactory
@@ -50,31 +50,20 @@ public class WSITRefactoringFactory implements RefactoringPluginFactory {
      */
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
 
-        logger.log(Level.FINE, "Create instance called: " + refactoring);
+        LOGGER.log(Level.FINE, "Create instance called: " + refactoring);
 
-        Collection<? extends FileObject> o = refactoring.getRefactoringSource().lookupAll(FileObject.class);
-        
+        TreePathHandle tph = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
+        if (tph == null) return null;
+
         if (refactoring instanceof RenameRefactoring) {
-            if (!o.isEmpty()) {
-                logger.log(Level.FINE, "Rename refactoring");
-                return new WSITRenameRefactoringPlugin((RenameRefactoring)refactoring);
-            }
+            LOGGER.log(Level.FINE, "Rename refactoring");
+            return new WSITRenameRefactoringPlugin((RenameRefactoring) refactoring);
         }
         
-//        if (refactoring instanceof SafeDeleteRefactoring) {
-//            err.log("Safe delete refactoring");
-//            return new WSITSafeDeleteRefactoringPlugin(refactoring);
-//        }
-//
-//        if (refactoring instanceof WhereUsedQuery) {
-//            err.log("Where used refactoring");
-//            return new WSITWhereUsedRefactoringPlugin(refactoring);
-//        }
-//
-//        if (refactoring instanceof MoveClassRefactoring) {
-//            err.log("Move class refactoring (also rename package is move class refactoring)");
-//            return new WSITMoveClassRefactoringPlugin(refactoring);
-//        }
+        if (refactoring instanceof SafeDeleteRefactoring) {
+            LOGGER.log(Level.FINE, "Safe delete refactoring");
+            return new WSITSafeDeleteRefactoringPlugin((SafeDeleteRefactoring) refactoring);
+        }
 
         return null;
     }
