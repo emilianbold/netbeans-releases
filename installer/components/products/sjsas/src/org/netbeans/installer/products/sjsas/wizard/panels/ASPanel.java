@@ -119,6 +119,8 @@ public class ASPanel extends DestinationPanel {
                 DEFAULT_ERROR_PASSWORD_SPACES);
         setProperty(ERROR_PASSWORDS_DO_NOT_MATCH_PROPERTY,
                 DEFAULT_ERROR_PASSWORDS_DO_NOT_MATCH);
+        setProperty(ERROR_ALL_PORTS_OCCUPIED_PROPERTY,
+                DEFAULT_ERROR_ALL_PORTS_OCCUPIED);
         setProperty(ERROR_HTTP_NULL_PROPERTY,
                 DEFAULT_ERROR_HTTP_NULL);
         setProperty(ERROR_HTTPS_NULL_PROPERTY,
@@ -253,6 +255,8 @@ public class ASPanel extends DestinationPanel {
         private NbiLabel adminPortLabel;
         private NbiTextField adminPortField;
         
+        private boolean allPortsOccupied;
+        
         public GlassFishPanelSwingUi(
                 final ASPanel panel,
                 final SwingContainer container) {
@@ -266,8 +270,6 @@ public class ASPanel extends DestinationPanel {
         // protected ////////////////////////////////////////////////////////////////
         @Override
         protected void initialize() {
-            super.initialize();
-            
             jdkLocationLabel.setText(
                     panel.getProperty(JDK_LOCATION_LABEL_TEXT_PROPERTY));
             
@@ -355,23 +357,43 @@ public class ASPanel extends DestinationPanel {
             String httpPort = panel.getWizard().getProperty(
                     HTTP_PORT_PROPERTY);
             if (httpPort == null) {
-                httpPort = Integer.toString(defaultHttpPort);
+                if (defaultHttpPort != -1) {
+                    httpPort = Integer.toString(defaultHttpPort);
+                    allPortsOccupied = false;
+                } else {
+                    httpPort = StringUtils.EMPTY_STRING;
+                    allPortsOccupied = true;
+                }
             }
             httpPortField.setText(httpPort);
             
             String httpsPort = panel.getWizard().getProperty(
                     HTTPS_PORT_PROPERTY);
             if (httpsPort == null) {
-                httpsPort = Integer.toString(defaultHttpsPort);
+                if (defaultHttpsPort != -1) {
+                    httpsPort = Integer.toString(defaultHttpsPort);
+                    allPortsOccupied = false;
+                } else {
+                    httpsPort = StringUtils.EMPTY_STRING;
+                    allPortsOccupied = true;
+                }
             }
             httpsPortField.setText(httpsPort);
             
             String adminPort = panel.getWizard().getProperty(
                     ADMIN_PORT_PROPERTY);
             if (adminPort == null) {
-                adminPort = Integer.toString(defaultAdminPort);
+                if (defaultAdminPort != -1) {
+                    adminPort = Integer.toString(defaultAdminPort);
+                    allPortsOccupied = false;
+                } else {
+                    adminPort = StringUtils.EMPTY_STRING;
+                    allPortsOccupied = true;
+                }
             }
             adminPortField.setText(adminPort);
+            
+            super.initialize();
         }
         
         @Override
@@ -463,18 +485,22 @@ public class ASPanel extends DestinationPanel {
                         password2);
             }
             
+            if ((httpPort.equals("") || httpsPort.equals("") || adminPort.equals("")) && allPortsOccupied) {
+                return panel.getProperty(ERROR_ALL_PORTS_OCCUPIED_PROPERTY);
+            }
+            
             if ((httpPort == null) || httpPort.equals("")) {
                 return StringUtils.format(
                         panel.getProperty(ERROR_HTTP_NULL_PROPERTY),
                         httpPort);
             }
-            if (!httpPort.matches("[1-9][0-9]*")) {
+            if (!httpPort.matches("(0|[1-9][0-9]*)")) {
                 return StringUtils.format(
                         panel.getProperty(ERROR_HTTP_NOT_INTEGER_PROPERTY),
                         httpPort);
             }
             int port = new Integer(httpPort);
-            if ((port < 1) || (port > 65535)) {
+            if ((port < 0) || (port > 65535)) {
                 return StringUtils.format(
                         panel.getProperty(ERROR_HTTP_NOT_IN_RANGE_PROPERTY),
                         httpPort);
@@ -490,13 +516,13 @@ public class ASPanel extends DestinationPanel {
                         panel.getProperty(ERROR_HTTPS_NULL_PROPERTY),
                         httpsPort);
             }
-            if (!httpsPort.matches("[1-9][0-9]*")) {
+            if (!httpsPort.matches("(0|[1-9][0-9]*)")) {
                 return StringUtils.format(
                         panel.getProperty(ERROR_HTTPS_NOT_INTEGER_PROPERTY),
                         httpsPort);
             }
             port = new Integer(httpsPort);
-            if ((port < 1) || (port > 65535)) {
+            if ((port < 0) || (port > 65535)) {
                 return StringUtils.format(
                         panel.getProperty(ERROR_HTTPS_NOT_IN_RANGE_PROPERTY),
                         httpsPort);
@@ -512,13 +538,13 @@ public class ASPanel extends DestinationPanel {
                         panel.getProperty(ERROR_ADMIN_NULL_PROPERTY),
                         adminPort);
             }
-            if (!adminPort.matches("[1-9][0-9]*")) {
+            if (!adminPort.matches("(0|[1-9][0-9]*)")) {
                 return StringUtils.format(
                         panel.getProperty(ERROR_ADMIN_NOT_INTEGER_PROPERTY),
                         adminPort);
             }
             port = new Integer(adminPort);
-            if ((port < 1) || (port > 65535)) {
+            if ((port < 0) || (port > 65535)) {
                 return StringUtils.format(
                         panel.getProperty(ERROR_ADMIN_NOT_IN_RANGE_PROPERTY),
                         adminPort);
@@ -1090,6 +1116,8 @@ public class ASPanel extends DestinationPanel {
             "error.password.spaces"; // NOI18N
     public static final String ERROR_PASSWORDS_DO_NOT_MATCH_PROPERTY =
             "error.passwords.do.not.match"; // NOI18N
+    public static final String ERROR_ALL_PORTS_OCCUPIED_PROPERTY =
+            "error.all.ports.occupied"; // NOI18N
     public static final String ERROR_HTTP_NULL_PROPERTY =
             "error.http.null"; // NOI18N
     public static final String ERROR_HTTPS_NULL_PROPERTY =
@@ -1120,6 +1148,7 @@ public class ASPanel extends DestinationPanel {
             "error.http.equals.admin"; // NOI18N
     public static final String ERROR_HTTPS_EQUALS_ADMIN_PROPERTY =
             "error.https.equals.admin"; // NOI18N
+    
     public static final String WARNING_PORT_IN_USE_PROPERTY =
             "warning.port.in.use"; // NOI18N
     
@@ -1141,6 +1170,9 @@ public class ASPanel extends DestinationPanel {
     public static final String DEFAULT_ERROR_PASSWORDS_DO_NOT_MATCH =
             ResourceUtils.getString(ASPanel.class,
             "AS.error.passwords.do.not.match"); // NOI18N
+    public static final String DEFAULT_ERROR_ALL_PORTS_OCCUPIED =
+            ResourceUtils.getString(ASPanel.class,
+            "AS.error.all.ports.occupied"); // NOI18N
     public static final String DEFAULT_ERROR_HTTP_NULL =
             ResourceUtils.getString(ASPanel.class,
             "AS.error.http.null"); // NOI18N
@@ -1186,6 +1218,7 @@ public class ASPanel extends DestinationPanel {
     public static final String DEFAULT_ERROR_HTTPS_EQUALS_ADMIN =
             ResourceUtils.getString(ASPanel.class,
             "AS.error.https.equals.admin"); // NOI18N
+    
     public static final String DEFAULT_WARNING_PORT_IN_USE =
             ResourceUtils.getString(ASPanel.class,
             "AS.warning.port.in.use"); // NOI18N

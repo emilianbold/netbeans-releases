@@ -406,6 +406,11 @@ public final class SystemUtils {
             }
         }
         
+        // if the port is not in the allowed range - return false
+        if ((port < 0) && (port > 65535)) {
+            return false;
+        }
+        
         // if the port is not in the restricted list, we'll try to open a server
         // socket on it, if we fail, then someone is already listening on this port
         // and it is occupied
@@ -429,18 +434,33 @@ public final class SystemUtils {
     }
     
     public static int getAvailablePort(int basePort, int... forbiddenPorts) {
-        // increment the port value until we find an available port
+        // increment the port value until we find an available port or stumble into 
+        // the upper bound
         int port = basePort;
-        while (!isPortAvailable(port, forbiddenPorts)) {
+        while ((port < 65535) && !isPortAvailable(port, forbiddenPorts)) {
             port++;
         }
         
-        return port;
+        if (port == 65535) {
+            port = 0;
+            while ((port < basePort) && !isPortAvailable(port, forbiddenPorts)) {
+                port++;
+            }
+            
+            if (port == basePort) {
+                return -1;
+            } else {
+                return port;
+            }
+        } else {
+            return port;
+        }
     }
     
     public static boolean isDeletingAllowed(File file) {
         return getNativeUtils().isDeletingAllowed(file);
     }
+    
     @Deprecated 
     private static LocationType toLocationType(ShortcutLocationType type) {
         LocationType tp = null;
@@ -460,6 +480,7 @@ public final class SystemUtils {
         }
         return tp;
     }
+    
     @Deprecated
     public static File getShortcutLocation(org.netbeans.installer.utils.helper.Shortcut shortcut, ShortcutLocationType locationType) throws NativeException {        
         return getNativeUtils().getShortcutLocation((FileShortcut)shortcut, toLocationType(locationType));
@@ -469,11 +490,11 @@ public final class SystemUtils {
     public static File createShortcut(org.netbeans.installer.utils.helper.Shortcut shortcut, ShortcutLocationType locationType) throws NativeException {
         return getNativeUtils().createShortcut((FileShortcut)shortcut, toLocationType(locationType));
     }
+    
     @Deprecated
     public static void removeShortcut(org.netbeans.installer.utils.helper.Shortcut shortcut, ShortcutLocationType locationType, boolean deleteEmptyParents) throws NativeException {
         getNativeUtils().removeShortcut((FileShortcut)shortcut, toLocationType(locationType), deleteEmptyParents);
     }
-    
     
     public static File getShortcutLocation(Shortcut shortcut, LocationType locationType) throws NativeException {
         return getNativeUtils().getShortcutLocation(shortcut, locationType);

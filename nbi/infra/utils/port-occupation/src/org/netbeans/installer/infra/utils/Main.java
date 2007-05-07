@@ -29,20 +29,32 @@ import java.net.ServerSocket;
  */
 public class Main {
     public static void main(String[] args) {
-        int[] ports = new int[]{8080, 8081, 4848};
-        
-        for (int i = 0; i < ports.length; i++) {
-            final int port = ports[i];
+        for (String arg: args) {
+            if (arg.matches("[0-9]+")) {
+                occupy(Integer.parseInt(arg));
+            }
             
-            new Thread() {
-                public void run() {
-                    try {
-                        new ServerSocket(port).accept();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+            if (arg.matches("[0-9]+-[0-9]+")) {
+                int start = Integer.parseInt(arg.substring(0, arg.indexOf("-")));
+                int end = Integer.parseInt(arg.substring(arg.indexOf("-") + 1));
+                
+                for (int port = start; port <= end; port++) {
+                    occupy(port);
                 }
-            }.start();
+            }
         }
+    }
+    
+    private static void occupy(final int port) {
+        new Thread() {
+            public void run() {
+                try {
+                    System.out.println("occupying: " + port);
+                    new ServerSocket(port).accept();
+                } catch (IOException e) {
+                    System.out.println("    failed: " + port + " (" + e.getMessage() + ")");
+                }
+            }
+        }.start();
     }
 }
