@@ -36,6 +36,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Lookup;
 
 import java.io.IOException;
 import java.util.*;
@@ -45,9 +46,15 @@ import java.util.*;
  * @author Karol Harezlak
  */
 public final class MidpProjectSupport {
+
+    private static final Lookup.Result<ProjectResourceResolver> resolvers = Lookup.getDefault ().lookupResult (ProjectResourceResolver.class);
     
     /** Creates a new instance of MidpProjectSupport */
     private MidpProjectSupport() {
+    }
+
+    public static Collection<? extends ProjectResourceResolver> getAllResolvers () {
+        return resolvers.allInstances ();
     }
     
     /**
@@ -150,17 +157,33 @@ public final class MidpProjectSupport {
         
         for (ClassPath cp : classPathList) {
             FileObject[] roots = cp.getRoots();
-            for (int k = 0; k < roots.length; k++) {
-                Enumeration<? extends FileObject> children = roots[k].getChildren(true);
-                while (children.hasMoreElements()) {
-                    FileObject child = children.nextElement();
-                    String curRelPath = FileUtil.getRelativePath(roots[k], child);
-                    if (relativeResourcePath.equals(curRelPath)) {
-                        matches.put(child, roots[k]);
+            for (FileObject root : roots) {
+                Enumeration<? extends FileObject> children = root.getChildren (true);
+                while (children.hasMoreElements ()) {
+                    FileObject child = children.nextElement ();
+                    String curRelPath = FileUtil.getRelativePath (root, child);
+                    if (relativeResourcePath.equals (curRelPath)) {
+                        matches.put (child, root);
                     }
                 }
             }
         }
+
+        for (ProjectResourceResolver resolver : resolvers.allInstances ()) {
+            Collection<FileObject> collection = resolver.getResourceRoots (project, document.getDocumentInterface ().getProjectType ());
+            if (collection == null)
+                continue;
+            for (FileObject root : collection) {
+                Enumeration<? extends FileObject> enumeration = root.getChildren (true);
+                while (enumeration.hasMoreElements ()) {
+                    FileObject object = enumeration.nextElement ();
+                    String curRelPath = FileUtil.getRelativePath(root, object);
+                    if (relativeResourcePath.equals(curRelPath))
+                        matches.put(object, root);
+                }
+            }
+        }
+
         return matches;
     }
     
@@ -218,11 +241,20 @@ public final class MidpProjectSupport {
         
         for (ClassPath cp : classPathList) {
             FileObject[] roots = cp.getRoots();
-            for (int k = 0; k < roots.length; k++) {
+            for (FileObject root : roots) {
                 //fill the map <FileObject, String relativePath>
-                extractFiles(roots[k], roots[k], matches, fileExtensions);
+                extractFiles (root, root, matches, fileExtensions);
             }
         }
+
+        for (ProjectResourceResolver resolver : resolvers.allInstances ()) {
+            Collection<FileObject> collection = resolver.getResourceRoots (project, document.getDocumentInterface ().getProjectType ());
+            if (collection == null)
+                continue;
+            for (FileObject root : collection)
+                extractFiles (root, root, matches, fileExtensions);
+        }
+
         return matches;
     }
     

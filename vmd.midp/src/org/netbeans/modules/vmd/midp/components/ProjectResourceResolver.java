@@ -15,33 +15,21 @@
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
+ *
  */
 
-package org.netbeans.modules.vmd.midp.propertyeditors;
+package org.netbeans.modules.vmd.midp.components;
 
-import org.netbeans.modules.vmd.api.model.DesignDocument;
-import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
+import org.openide.filesystems.FileObject;
+import org.netbeans.api.project.Project;
+
+import java.util.Collection;
 
 /**
- *
- * @author Karol Harezlak
+ * @author David Kaspar
  */
-public final class MidpPropertyEditorSupport {
+public interface ProjectResourceResolver {
 
-    private MidpPropertyEditorSupport() {
-    }
+    public Collection<FileObject> getResourceRoots (Project project, String projectType);
 
-    public static boolean singleSelectionEditAsTextOnly() {
-       final DesignDocument document =  ActiveDocumentSupport.getDefault().getActiveDocument();
-       if (document == null)
-           return false;
-       final boolean[] canEditAsText = new boolean[1];
-       document.getTransactionManager().readAccess(new Runnable() {
-            public void run() {
-                canEditAsText[0] = !(document.getSelectedComponents().size() > 1);
-            }
-        });
-       return canEditAsText[0];
-    }
-    
 }
