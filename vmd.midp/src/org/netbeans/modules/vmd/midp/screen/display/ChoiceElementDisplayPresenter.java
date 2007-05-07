@@ -51,12 +51,14 @@ public class ChoiceElementDisplayPresenter extends ScreenDisplayPresenter {
     public static final String ICON_CHECKBOX_PATH = "org/netbeans/modules/vmd/midp/resources/components/element_16.png"; // NOI18N
     public static final String ICON_EMPTY_RADIOBUTTON_PATH = "org/netbeans/modules/vmd/midp/resources/components/empty_radio_16.png"; // NOI18N
     public static final String ICON_RADIOBUTTON_PATH = "org/netbeans/modules/vmd/midp/resources/components/radio_16.png"; // NOI18N
+    public static final String ICON_POPUP_PATH = "org/netbeans/modules/vmd/midp/resources/components/down.png"; // NOI18N
     public static final String ICON_BROKEN_PATH = "org/netbeans/modules/vmd/midp/resources/components/broken.png"; // NOI18N
     
     public static final Icon ICON_EMPTY_CHECKBOX = new ImageIcon(Utilities.loadImage(ICON_EMPTY_CHECKBOX_PATH));
     public static final Icon ICON_CHECKBOX = new ImageIcon(Utilities.loadImage(ICON_CHECKBOX_PATH));
     public static final Icon ICON_EMPTY_RADIOBUTTON = new ImageIcon(Utilities.loadImage(ICON_EMPTY_RADIOBUTTON_PATH));
     public static final Icon ICON_RADIOBUTTON = new ImageIcon(Utilities.loadImage(ICON_RADIOBUTTON_PATH));
+    public static final Icon ICON_POPUP = new ImageIcon(Utilities.loadImage(ICON_POPUP_PATH));
     public static final Icon ICON_BROKEN = new ImageIcon(Utilities.loadImage(ICON_BROKEN_PATH));
     
     private JPanel view;
@@ -65,17 +67,17 @@ public class ChoiceElementDisplayPresenter extends ScreenDisplayPresenter {
     private JLabel label;
     
     public ChoiceElementDisplayPresenter() {
-        view = new JPanel ();
+        view = new JPanel();
         view.setLayout(new BoxLayout(view, BoxLayout.X_AXIS));
-        view.setOpaque (false);
-
-        state = new JLabel ();
-        view.add (state);
-        image = new JLabel ();
-        view.add (image);
+        view.setOpaque(false);
+        
+        state = new JLabel();
+        view.add(state);
+        image = new JLabel();
+        view.add(image);
         label = new JLabel();
-        view.add (label);
-
+        view.add(label);
+        
         view.add(Box.createHorizontalGlue());
     }
     
@@ -92,36 +94,40 @@ public class ChoiceElementDisplayPresenter extends ScreenDisplayPresenter {
     }
     
     public void reload(ScreenDeviceInfo deviceInfo) {
-        int type = (Integer) getComponent ().getParentComponent ().readProperty (ChoiceGroupCD.PROP_CHOICE_TYPE).getPrimitiveValue ();
-        PropertyValue selectedValue = getComponent ().readProperty (ChoiceElementCD.PROP_SELECTED);
-        boolean selected = selectedValue.getKind () == PropertyValue.Kind.VALUE  &&  MidpTypes.getBoolean (selectedValue);
+        int type = (Integer) getComponent().getParentComponent().readProperty(ChoiceGroupCD.PROP_CHOICE_TYPE).getPrimitiveValue();
+        PropertyValue selectedValue = getComponent().readProperty(ChoiceElementCD.PROP_SELECTED);
+        boolean selected = selectedValue.getKind() == PropertyValue.Kind.VALUE  &&  MidpTypes.getBoolean(selectedValue);
         switch (type) {
             case ChoiceSupport.VALUE_EXCLUSIVE:
-                state.setIcon (selected ? ChoiceElementDisplayPresenter.ICON_RADIOBUTTON : ChoiceElementDisplayPresenter.ICON_EMPTY_RADIOBUTTON);
+                state.setIcon(selected ? ChoiceElementDisplayPresenter.ICON_RADIOBUTTON : ChoiceElementDisplayPresenter.ICON_EMPTY_RADIOBUTTON);
                 break;
             case ChoiceSupport.VALUE_MULTIPLE:
-                state.setIcon (selected ? ChoiceElementDisplayPresenter.ICON_CHECKBOX : ChoiceElementDisplayPresenter.ICON_EMPTY_CHECKBOX);
+                state.setIcon(selected ? ChoiceElementDisplayPresenter.ICON_CHECKBOX : ChoiceElementDisplayPresenter.ICON_EMPTY_CHECKBOX);
+                break;
+            case ChoiceSupport.VALUE_POPUP:
+                state.setIcon(ChoiceElementDisplayPresenter.ICON_POPUP);
                 break;
             default:
-                state.setIcon (null);
+                state.setIcon(null);
                 break;
         }
-
+        
         DesignComponent imageComponent = getComponent().readProperty(ChoiceElementCD.PROP_IMAGE).getComponent();
         String path = null;
         if (imageComponent != null)
             path = (String) imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH).getPrimitiveValue();
         Icon icon = ScreenSupport.getIconFromImageComponent(imageComponent);
-        if (icon != null)
+        if (icon != null) {
             image.setIcon(icon);
-        else if (path != null)
-           image.setIcon(ICON_BROKEN);
-        else
+        } else if (path != null) {
+            image.setIcon(ICON_BROKEN);
+        } else {
             image.setIcon(null);
-
+        }
+        
         String text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(ChoiceElementCD.PROP_STRING));
         label.setText(ScreenSupport.wrapWithHtml(text));
-
+        
         DesignComponent font = getComponent().readProperty(ChoiceElementCD.PROP_FONT).getComponent();
         label.setFont(ScreenSupport.getFont(deviceInfo, font));
     }
@@ -129,12 +135,12 @@ public class ChoiceElementDisplayPresenter extends ScreenDisplayPresenter {
     public Shape getSelectionShape() {
         return new Rectangle(view.getSize());
     }
-
+    
     public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {
-        return Arrays.asList (
-                new ScreenPropertyDescriptor (getComponent (), state, new ScreenBooleanPropertyEditor (ChoiceElementCD.PROP_SELECTED)),
+        return Arrays.asList(
+                new ScreenPropertyDescriptor(getComponent(), state, new ScreenBooleanPropertyEditor(ChoiceElementCD.PROP_SELECTED)),
                 new ScreenPropertyDescriptor(getComponent(), label, new ScreenStringPropertyEditor(ChoiceElementCD.PROP_STRING))
-        );
+                );
     }
-
+    
 }
