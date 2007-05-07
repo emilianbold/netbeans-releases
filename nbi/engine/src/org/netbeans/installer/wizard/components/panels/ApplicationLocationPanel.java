@@ -42,7 +42,6 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.plaf.basic.BasicComboBoxEditor;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
@@ -399,20 +398,15 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
     }
     
     public static class LocationsComboBoxEditor implements ComboBoxEditor {
-        private List<ActionListener> listeners;
         private NbiTextField textField;
-        private LocationsComboBoxModel model;
+        
         private LocationValidator validator;
+        private LocationsComboBoxModel model;
         
         public LocationsComboBoxEditor(LocationValidator validator) {
             this.validator = validator;
             
             textField = new NbiTextField();
-            textField.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    fireAction(e);
-                }
-            });
             textField.getDocument().addDocumentListener(new DocumentListener() {
                 public void insertUpdate(DocumentEvent e) {
                     LocationsComboBoxEditor.this.validator.validate(
@@ -434,8 +428,6 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
             if (!SystemUtils.isMacOS()) {
                 textField.setBorder(new EmptyBorder(1, 1, 1, 1));
             }
-            
-            this.listeners = new LinkedList<ActionListener>();
         }
         
         public void setModel(LocationsComboBoxModel model) {
@@ -477,34 +469,11 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
         }
         
         public void addActionListener(ActionListener listener) {
-            synchronized (listeners) {
-                listeners.add(listener);
-            }
+            textField.addActionListener(listener);
         }
         
         public void removeActionListener(ActionListener listener) {
-            synchronized (listeners) {
-                listeners.remove(listener);
-            }
-        }
-        
-        // private //////////////////////////////////////////////////////////////////
-        private void fireAction(ActionEvent event) {
-            ActionListener[] clone;
-            synchronized (listeners) {
-                clone = listeners.toArray(new ActionListener[listeners.size()]);
-            }
-            
-            for (ActionListener listener: clone) {
-                listener.actionPerformed(event);
-            }
-        }
-        
-        private void fireAction() {
-            fireAction(new ActionEvent(
-                    textField,
-                    ActionEvent.ACTION_PERFORMED,
-                    ""));
+            textField.removeActionListener(listener);
         }
     }
     

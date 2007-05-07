@@ -272,7 +272,7 @@ public class NbBasePanel extends DestinationPanel {
             jdkLocationComboBox.setEditable(true);
             jdkLocationComboBox.setEditor(new LocationsComboBoxEditor(validator));
             jdkLocationComboBox.addItemListener(new ItemListener() {
-                public void itemStateChanged(ItemEvent e) {
+                public void itemStateChanged(ItemEvent event) {
                     final ComboBoxModel model = jdkLocationComboBox.getModel();
                     
                     if (model instanceof LocationsComboBoxModel) {

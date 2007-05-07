@@ -281,7 +281,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
         
         // handle the default buttons - Escape
         getRootPane().getInputMap(JRootPane.WHEN_IN_FOCUSED_WINDOW).put(
-                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true),
+                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
                 CANCEL_ACTION_NAME);
         getRootPane().getActionMap().put(CANCEL_ACTION_NAME, new AbstractAction() {
             public void actionPerformed(ActionEvent event) {
