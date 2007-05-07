@@ -1532,7 +1532,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     Map<ElementHandle, Collection<String>> members = RebuildOraculum.sortOut(jt.getElements(), classes);
                     result.addAll(RebuildOraculum.get(fo).findFilesToRebuild(rootFile, fo, cpInfo, members, classNamesToDelete));
                     jt.analyze ();
-                    dumpClasses(listener.getEnteredTypes(), fm, root.toExternalForm(), null,
+                    dumpClasses((List<? extends ClassSymbol>)classes, fm, root.toExternalForm(), null,
                             com.sun.tools.javac.code.Types.instance(jt.getContext()),
                             com.sun.tools.javac.util.Name.Table.instance(jt.getContext()));
                     sa.analyse(trees, jt, fm, active, added);
