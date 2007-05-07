@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -27,7 +27,6 @@ import java.awt.event.ActionListener;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.JComponent;
-import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
@@ -50,12 +49,12 @@ public class LicensesPanel extends WizardPanel {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     public LicensesPanel() {
-        setProperty(TITLE_PROPERTY, 
+        setProperty(TITLE_PROPERTY,
                 DEFAULT_TITLE);
-        setProperty(DESCRIPTION_PROPERTY, 
+        setProperty(DESCRIPTION_PROPERTY,
                 DEFAULT_DESCRIPTION);
         
-        setProperty(ACCEPT_CHECKBOX_TEXT_PROPERTY, 
+        setProperty(ACCEPT_CHECKBOX_TEXT_PROPERTY,
                 DEFAULT_ACCEPT_CHECKBOX_TEXT);
     }
     
@@ -102,7 +101,7 @@ public class LicensesPanel extends WizardPanel {
     public static class LicensesPanelSwingUi extends WizardPanelSwingUi {
         protected LicensesPanel component;
         
-        private List<Product> products;
+        private List<Product> acceptedProducts;
         
         private NbiTextPane licensePane;
         private NbiScrollPane licenseScrollPane;
@@ -115,7 +114,7 @@ public class LicensesPanel extends WizardPanel {
             super(component, container);
             
             this.component = component;
-            this.products = new LinkedList<Product>();
+            this.acceptedProducts = new LinkedList<Product>();
             
             initComponents();
         }
@@ -134,34 +133,36 @@ public class LicensesPanel extends WizardPanel {
             final List<Product> currentProducts =
                     Registry.getInstance().getProductsToInstall();
             
-            if (!products.equals(currentProducts)) {
-                final StringBuilder text = new StringBuilder();
-                for (Product product: currentProducts) {
-                    text.append("-------------------------------------------------");
-                    text.append(StringUtils.CRLF);
-                    text.append(product.getDisplayName() + ":");
-                    text.append(StringUtils.CRLFCRLF);
-                    try {
-                        Text license = product.getLogic().getLicense();
-			if(license!=null) {
-				text.append(license.getText());
-			}
-                    } catch (InitializationException e) {
-                        ErrorManager.notifyError(
-                                "Could not access configuration logic",
-                                e);
+            final StringBuilder text = new StringBuilder();
+            
+            boolean everythingAccepted = true;
+            for (Product product: currentProducts) {
+                if (!acceptedProducts.contains(product)) {
+                    everythingAccepted = false;
+                }
+                
+                text.append("-------------------------------------------------");
+                text.append(StringUtils.CRLF);
+                text.append(product.getDisplayName() + ":");
+                text.append(StringUtils.CRLFCRLF);
+                try {
+                    Text license = product.getLogic().getLicense();
+                    if(license!=null) {
+                        text.append(license.getText());
                     }
-                    text.append(StringUtils.CRLFCRLF);
+                } catch (InitializationException e) {
+                    ErrorManager.notifyError(
+                            "Could not access configuration logic",
+                            e);
                 }
-                
-                licensePane.setText(text);
-                licensePane.setCaretPosition(0);
-                
-                if (!products.containsAll(currentProducts)) {
-                    acceptCheckBox.setSelected(false);
-                }
-                
-                products = currentProducts;
+                text.append(StringUtils.CRLFCRLF);
+            }
+            
+            licensePane.setText(text);
+            licensePane.setCaretPosition(0);
+            
+            if (!everythingAccepted) {
+                acceptCheckBox.setSelected(false);
             }
             
             acceptCheckBoxToggled();
@@ -208,6 +209,13 @@ public class LicensesPanel extends WizardPanel {
         
         private void acceptCheckBoxToggled() {
             if (acceptCheckBox.isSelected()) {
+                for (Product product: Registry.
+                        getInstance().getProductsToInstall()) {
+                    if (!acceptedProducts.contains(product)) {
+                        acceptedProducts.add(product);
+                    }
+                }
+                
                 container.getNextButton().setEnabled(true);
             } else {
                 container.getNextButton().setEnabled(false);
