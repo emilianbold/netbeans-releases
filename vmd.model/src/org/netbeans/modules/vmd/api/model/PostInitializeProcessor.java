@@ -44,7 +44,7 @@ public abstract class PostInitializeProcessor {
     protected abstract void postInitialize (DesignComponent component);
 
     static void postInitializeComponent (String projectType, DesignComponent component) {
-        assert Debug.isFriend (DesignComponent.class, ""); // NOI18N
+        assert Debug.isFriend (DesignDocument.class, "createComponent"); // NOI18N
         for (PostInitializeProcessor processor : result.allInstances ())
             if (projectType.equals (processor.getProjectType ()))
                 processor.postInitialize (component);
