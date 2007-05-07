@@ -1373,10 +1373,13 @@ public class JavaCompletionProvider implements CompletionProvider {
                             Set<? extends TypeMirror> smarts = env.getSmartTypes();
                             if (smarts != null)
                                 for (TypeMirror smart : smarts) {
-                                    if (smart.getKind() == TypeKind.DECLARED)
+                                    if (smart.getKind() == TypeKind.DECLARED) {
                                         addSubtypesOf(env, (DeclaredType)smart, true);
-                                    else if (smart.getKind() == TypeKind.ARRAY)
-                                        results.add(JavaCompletionItem.createArrayItem((ArrayType)smart, offset, env.getController().getElements()));
+                                    } else if (smart.getKind() == TypeKind.ARRAY) {
+                                        try {
+                                            results.add(JavaCompletionItem.createArrayItem((ArrayType)smart, offset, env.getController().getElements()));                                            
+                                        } catch (IllegalArgumentException iae) {}
+                                    }
                                 }
                         }
                         String prefix = env.getPrefix();
