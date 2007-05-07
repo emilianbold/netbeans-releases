@@ -2,23 +2,24 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
  */
 package org.netbeans.installer.products.glassfish.wizard.panels;
 
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -26,13 +27,24 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import java.io.IOException;
+import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.installer.product.Registry;
+import org.netbeans.installer.product.components.Product;
+import org.netbeans.installer.product.filters.OrFilter;
+import org.netbeans.installer.product.filters.ProductFilter;
+import org.netbeans.installer.product.filters.RegistryFilter;
+import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.applications.GlassFishUtils;
+import org.netbeans.installer.utils.exceptions.XMLException;
+import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiComboBox;
@@ -86,7 +98,8 @@ public class GlassFishPanel extends DestinationPanel {
                 DEFAULT_PASSWORD_LABEL_TEXT);
         setProperty(REPEAT_PASSWORD_LABEL_TEXT_PROPERTY,
                 DEFAULT_REPEAT_PASSWORD_LABEL_TEXT);
-        setProperty(DEFAULTS_LABEL_TEXT_PROPERTY,DEFAULT_DEFAULTS_LABEL_TEXT);
+        setProperty(DEFAULTS_LABEL_TEXT_PROPERTY,
+                DEFAULT_DEFAULTS_LABEL_TEXT);
         setProperty(HTTP_LABEL_TEXT_PROPERTY,
                 DEFAULT_HTTP_LABEL_TEXT);
         setProperty(HTTPS_LABEL_TEXT_PROPERTY,
@@ -106,6 +119,8 @@ public class GlassFishPanel extends DestinationPanel {
                 DEFAULT_ERROR_PASSWORD_SPACES);
         setProperty(ERROR_PASSWORDS_DO_NOT_MATCH_PROPERTY,
                 DEFAULT_ERROR_PASSWORDS_DO_NOT_MATCH);
+        setProperty(ERROR_ALL_PORTS_OCCUPIED_PROPERTY,
+                DEFAULT_ERROR_ALL_PORTS_OCCUPIED);
         setProperty(ERROR_HTTP_NULL_PROPERTY,
                 DEFAULT_ERROR_HTTP_NULL);
         setProperty(ERROR_HTTPS_NULL_PROPERTY,
@@ -137,6 +152,9 @@ public class GlassFishPanel extends DestinationPanel {
         setProperty(ERROR_HTTPS_EQUALS_ADMIN_PROPERTY,
                 DEFAULT_ERROR_HTTPS_EQUALS_ADMIN);
         
+        setProperty(WARNING_PORT_IN_USE_PROPERTY,
+                DEFAULT_WARNING_PORT_IN_USE);
+        
         setProperty(DEFAULT_USERNAME_PROPERTY,
                 DEFAULT_DEFAULT_USERNAME);
         setProperty(DEFAULT_PASSWORD_PROPERTY,
@@ -148,9 +166,9 @@ public class GlassFishPanel extends DestinationPanel {
         setProperty(DEFAULT_ADMIN_PORT_PROPERTY,
                 DEFAULT_DEFAULT_ADMIN_PORT);
         
-        setProperty(JdkLocationPanel.MINIMUM_JDK_VERSION_PROPERTY, 
+        setProperty(JdkLocationPanel.MINIMUM_JDK_VERSION_PROPERTY,
                 DEFAULT_MINIMUM_JDK_VERSION);
-        setProperty(JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY, 
+        setProperty(JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY,
                 DEFAULT_MAXIMUM_JDK_VERSION);
     }
     
@@ -237,6 +255,8 @@ public class GlassFishPanel extends DestinationPanel {
         private NbiLabel adminPortLabel;
         private NbiTextField adminPortField;
         
+        private boolean allPortsOccupied;
+        
         public GlassFishPanelSwingUi(
                 final GlassFishPanel panel,
                 final SwingContainer container) {
@@ -250,8 +270,6 @@ public class GlassFishPanel extends DestinationPanel {
         // protected ////////////////////////////////////////////////////////////////
         @Override
         protected void initialize() {
-            super.initialize();
-            
             jdkLocationLabel.setText(
                     panel.getProperty(JDK_LOCATION_LABEL_TEXT_PROPERTY));
             
@@ -339,23 +357,43 @@ public class GlassFishPanel extends DestinationPanel {
             String httpPort = panel.getWizard().getProperty(
                     HTTP_PORT_PROPERTY);
             if (httpPort == null) {
-                httpPort = Integer.toString(defaultHttpPort);
+                if (defaultHttpPort != -1) {
+                    httpPort = Integer.toString(defaultHttpPort);
+                    allPortsOccupied = false;
+                } else {
+                    httpPort = StringUtils.EMPTY_STRING;
+                    allPortsOccupied = true;
+                }
             }
             httpPortField.setText(httpPort);
             
             String httpsPort = panel.getWizard().getProperty(
                     HTTPS_PORT_PROPERTY);
             if (httpsPort == null) {
-                httpsPort = Integer.toString(defaultHttpsPort);
+                if (defaultHttpsPort != -1) {
+                    httpsPort = Integer.toString(defaultHttpsPort);
+                    allPortsOccupied = false;
+                } else {
+                    httpsPort = StringUtils.EMPTY_STRING;
+                    allPortsOccupied = true;
+                }
             }
             httpsPortField.setText(httpsPort);
             
             String adminPort = panel.getWizard().getProperty(
                     ADMIN_PORT_PROPERTY);
             if (adminPort == null) {
-                adminPort = Integer.toString(defaultAdminPort);
+                if (defaultAdminPort != -1) {
+                    adminPort = Integer.toString(defaultAdminPort);
+                    allPortsOccupied = false;
+                } else {
+                    adminPort = StringUtils.EMPTY_STRING;
+                    allPortsOccupied = true;
+                }
             }
             adminPortField.setText(adminPort);
+            
+            super.initialize();
         }
         
         @Override
@@ -366,20 +404,20 @@ public class GlassFishPanel extends DestinationPanel {
                     new File(jdkLocationField.getText()));
             
             panel.getWizard().setProperty(
-                    USERNAME_PROPERTY, 
+                    USERNAME_PROPERTY,
                     usernameField.getText());
             panel.getWizard().setProperty(
-                    PASSWORD_PROPERTY, 
+                    PASSWORD_PROPERTY,
                     new String(passwordField.getPassword()));
             
             panel.getWizard().setProperty(
-                    HTTP_PORT_PROPERTY, 
+                    HTTP_PORT_PROPERTY,
                     httpPortField.getText());
             panel.getWizard().setProperty(
-                    HTTPS_PORT_PROPERTY, 
+                    HTTPS_PORT_PROPERTY,
                     httpsPortField.getText());
             panel.getWizard().setProperty(
-                    ADMIN_PORT_PROPERTY, 
+                    ADMIN_PORT_PROPERTY,
                     adminPortField.getText());
         }
         
@@ -396,10 +434,10 @@ public class GlassFishPanel extends DestinationPanel {
                 return errorMessage;
             }
             
-            final String username  = usernameField.getText();
-            final String password  = new String(passwordField.getPassword());
+            final String username = usernameField.getText();
+            final String password = new String(passwordField.getPassword());
             final String password2 = new String(repeatPasswordField.getPassword());
-            final String httpPort  = httpPortField.getText().trim();
+            final String httpPort = httpPortField.getText().trim();
             final String httpsPort = httpsPortField.getText().trim();
             final String adminPort = adminPortField.getText().trim();
             
@@ -447,18 +485,22 @@ public class GlassFishPanel extends DestinationPanel {
                         password2);
             }
             
+            if ((httpPort.equals("") || httpsPort.equals("") || adminPort.equals("")) && allPortsOccupied) {
+                return panel.getProperty(ERROR_ALL_PORTS_OCCUPIED_PROPERTY);
+            }
+            
             if ((httpPort == null) || httpPort.equals("")) {
                 return StringUtils.format(
                         panel.getProperty(ERROR_HTTP_NULL_PROPERTY),
                         httpPort);
             }
-            if (!httpPort.matches("[1-9][0-9]*")) {
+            if (!httpPort.matches("(0|[1-9][0-9]*)")) {
                 return StringUtils.format(
                         panel.getProperty(ERROR_HTTP_NOT_INTEGER_PROPERTY),
                         httpPort);
             }
             int port = new Integer(httpPort);
-            if ((port < 1) || (port > 65535)) {
+            if ((port < 0) || (port > 65535)) {
                 return StringUtils.format(
                         panel.getProperty(ERROR_HTTP_NOT_IN_RANGE_PROPERTY),
                         httpPort);
@@ -474,13 +516,13 @@ public class GlassFishPanel extends DestinationPanel {
                         panel.getProperty(ERROR_HTTPS_NULL_PROPERTY),
                         httpsPort);
             }
-            if (!httpsPort.matches("[1-9][0-9]*")) {
+            if (!httpsPort.matches("(0|[1-9][0-9]*)")) {
                 return StringUtils.format(
                         panel.getProperty(ERROR_HTTPS_NOT_INTEGER_PROPERTY),
                         httpsPort);
             }
             port = new Integer(httpsPort);
-            if ((port < 1) || (port > 65535)) {
+            if ((port < 0) || (port > 65535)) {
                 return StringUtils.format(
                         panel.getProperty(ERROR_HTTPS_NOT_IN_RANGE_PROPERTY),
                         httpsPort);
@@ -496,13 +538,13 @@ public class GlassFishPanel extends DestinationPanel {
                         panel.getProperty(ERROR_ADMIN_NULL_PROPERTY),
                         adminPort);
             }
-            if (!adminPort.matches("[1-9][0-9]*")) {
+            if (!adminPort.matches("(0|[1-9][0-9]*)")) {
                 return StringUtils.format(
                         panel.getProperty(ERROR_ADMIN_NOT_INTEGER_PROPERTY),
                         adminPort);
             }
             port = new Integer(adminPort);
-            if ((port < 1) || (port > 65535)) {
+            if ((port < 0) || (port > 65535)) {
                 return StringUtils.format(
                         panel.getProperty(ERROR_ADMIN_NOT_IN_RANGE_PROPERTY),
                         adminPort);
@@ -529,6 +571,65 @@ public class GlassFishPanel extends DestinationPanel {
                 return StringUtils.format(
                         panel.getProperty(ERROR_HTTPS_EQUALS_ADMIN_PROPERTY),
                         httpsPort, adminPort);
+            }
+            
+            return null;
+        }
+        
+        @Override
+        protected String getWarningMessage() {
+            final RegistryFilter filter = new OrFilter(
+                    new ProductFilter("glassfish", SystemUtils.getCurrentPlatform()),
+                    new ProductFilter("sjsam", SystemUtils.getCurrentPlatform()));
+            final List<Product> products =
+                    Registry.getInstance().queryProducts(filter);
+            
+            final int httpPort = Integer.parseInt(httpPortField.getText().trim());
+            final int httpsPort = Integer.parseInt(httpsPortField.getText().trim());
+            final int adminPort = Integer.parseInt(adminPortField.getText().trim());
+            
+            try {
+                for (Product product: products) {
+                    if (product.getStatus() == Status.INSTALLED) {
+                        final File location = product.getInstallationLocation();
+                        
+                        for (String domainName: GlassFishUtils.getDomainNames(location)) {
+                            int port = GlassFishUtils.getHttpPort(location, domainName);
+                            if ((port == httpPort) ||
+                                    (port == httpsPort) ||
+                                    (port == adminPort)) {
+                                return StringUtils.format(
+                                        panel.getProperty(WARNING_PORT_IN_USE_PROPERTY),
+                                        port,
+                                        product);
+                            }
+                            
+                            port = GlassFishUtils.getHttpsPort(location, domainName);
+                            if ((port == httpPort) ||
+                                    (port == httpsPort) ||
+                                    (port == adminPort)) {
+                                return StringUtils.format(
+                                        panel.getProperty(WARNING_PORT_IN_USE_PROPERTY),
+                                        port,
+                                        product);
+                            }
+                            
+                            port = GlassFishUtils.getAdminPort(location, domainName);
+                            if ((port == httpPort) ||
+                                    (port == httpsPort) ||
+                                    (port == adminPort)) {
+                                return StringUtils.format(
+                                        panel.getProperty(WARNING_PORT_IN_USE_PROPERTY),
+                                        port,
+                                        product);
+                            }
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                ErrorManager.notifyDebug("Faield to get the port value.", e);
+            } catch (XMLException e) {
+                ErrorManager.notifyDebug("Faield to get the port value.", e);
             }
             
             return null;
@@ -597,8 +698,17 @@ public class GlassFishPanel extends DestinationPanel {
             fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             fileChooser.setMultiSelectionEnabled(false);
             
+            final Dimension longFieldSize = new Dimension(
+                    200,
+                    new NbiTextField().getPreferredSize().height);
+            final Dimension shortFieldSize = new Dimension(
+                    80,
+                    longFieldSize.height);
+            
             // usernameField ////////////////////////////////////////////////////////
             usernameField = new NbiTextField();
+            usernameField.setPreferredSize(longFieldSize);
+            usernameField.setMinimumSize(longFieldSize);
             usernameField.getDocument().addDocumentListener(
                     new ValidatingDocumentListener(this));
             
@@ -608,6 +718,8 @@ public class GlassFishPanel extends DestinationPanel {
             
             // passwordField ////////////////////////////////////////////////////////
             passwordField = new NbiPasswordField();
+            passwordField.setPreferredSize(longFieldSize);
+            passwordField.setMinimumSize(longFieldSize);
             passwordField.getDocument().addDocumentListener(
                     new ValidatingDocumentListener(this));
             
@@ -617,6 +729,8 @@ public class GlassFishPanel extends DestinationPanel {
             
             // repeatPasswordField //////////////////////////////////////////////////
             repeatPasswordField = new NbiPasswordField();
+            repeatPasswordField.setPreferredSize(longFieldSize);
+            repeatPasswordField.setMinimumSize(longFieldSize);
             repeatPasswordField.getDocument().addDocumentListener(
                     new ValidatingDocumentListener(this));
             
@@ -626,6 +740,8 @@ public class GlassFishPanel extends DestinationPanel {
             
             // httpPortField ////////////////////////////////////////////////////////
             httpPortField = new NbiTextField();
+            httpPortField.setPreferredSize(shortFieldSize);
+            httpPortField.setMinimumSize(shortFieldSize);
             httpPortField.getDocument().addDocumentListener(
                     new ValidatingDocumentListener(this));
             
@@ -635,6 +751,8 @@ public class GlassFishPanel extends DestinationPanel {
             
             // httpsPortField ///////////////////////////////////////////////////////
             httpsPortField = new NbiTextField();
+            httpsPortField.setPreferredSize(shortFieldSize);
+            httpsPortField.setMinimumSize(shortFieldSize);
             httpsPortField.getDocument().addDocumentListener(
                     new ValidatingDocumentListener(this));
             
@@ -644,6 +762,8 @@ public class GlassFishPanel extends DestinationPanel {
             
             // adminPortField ///////////////////////////////////////////////////////
             adminPortField = new NbiTextField();
+            adminPortField.setPreferredSize(shortFieldSize);
+            adminPortField.setMinimumSize(shortFieldSize);
             adminPortField.getDocument().addDocumentListener(
                     new ValidatingDocumentListener(this));
             
@@ -657,7 +777,7 @@ public class GlassFishPanel extends DestinationPanel {
             // this /////////////////////////////////////////////////////////////////
             add(jdkLocationLabel, new GridBagConstraints(
                     0, 2,                             // x, y
-                    5, 1,                             // width, height
+                    2, 1,                             // width, height
                     1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.LINE_START,    // anchor
                     GridBagConstraints.HORIZONTAL,    // fill
@@ -692,7 +812,7 @@ public class GlassFishPanel extends DestinationPanel {
                     2, 1,                             // width, height
                     1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.LINE_START,    // anchor
-                    GridBagConstraints.HORIZONTAL,    // fill
+                    GridBagConstraints.BOTH,          // fill
                     new Insets(0, 0, 0, 0),           // padding
                     0, 0));                           // padx, pady - ???
             
@@ -902,9 +1022,9 @@ public class GlassFishPanel extends DestinationPanel {
     public static final String ADMIN_PORT_PROPERTY =
             "admin.port"; // NOI18N
     
-    public static final String JDK_LOCATION_LABEL_TEXT_PROPERTY = 
+    public static final String JDK_LOCATION_LABEL_TEXT_PROPERTY =
             "jdk.location.label.text"; // NOI18N
-    public static final String BROWSE_BUTTON_TEXT_PROPERTY = 
+    public static final String BROWSE_BUTTON_TEXT_PROPERTY =
             "browse.button.text"; // NOI18N
     public static final String USERNAME_LABEL_TEXT_PROPERTY =
             "username.label.text"; // NOI18N
@@ -922,10 +1042,10 @@ public class GlassFishPanel extends DestinationPanel {
             "defaults.label.text"; // NOI18N
     
     
-    public static final String DEFAULT_DESTINATION_LABEL_TEXT = 
+    public static final String DEFAULT_DESTINATION_LABEL_TEXT =
             ResourceUtils.getString(GlassFishPanel.class,
             "GFP.destination.label.text"); // NOI18N
-    public static final String DEFAULT_DESTINATION_BUTTON_TEXT = 
+    public static final String DEFAULT_DESTINATION_BUTTON_TEXT =
             ResourceUtils.getString(GlassFishPanel.class,
             "GFP.destination.button.text"); // NOI18N
     
@@ -996,6 +1116,8 @@ public class GlassFishPanel extends DestinationPanel {
             "error.password.spaces"; // NOI18N
     public static final String ERROR_PASSWORDS_DO_NOT_MATCH_PROPERTY =
             "error.passwords.do.not.match"; // NOI18N
+    public static final String ERROR_ALL_PORTS_OCCUPIED_PROPERTY =
+            "error.all.ports.occupied"; // NOI18N
     public static final String ERROR_HTTP_NULL_PROPERTY =
             "error.http.null"; // NOI18N
     public static final String ERROR_HTTPS_NULL_PROPERTY =
@@ -1027,6 +1149,9 @@ public class GlassFishPanel extends DestinationPanel {
     public static final String ERROR_HTTPS_EQUALS_ADMIN_PROPERTY =
             "error.https.equals.admin"; // NOI18N
     
+    public static final String WARNING_PORT_IN_USE_PROPERTY =
+            "warning.port.in.use"; // NOI18N
+    
     public static final String DEFAULT_ERROR_USERNAME_NULL =
             ResourceUtils.getString(GlassFishPanel.class,
             "GFP.error.username.null"); // NOI18N
@@ -1045,6 +1170,9 @@ public class GlassFishPanel extends DestinationPanel {
     public static final String DEFAULT_ERROR_PASSWORDS_DO_NOT_MATCH =
             ResourceUtils.getString(GlassFishPanel.class,
             "GFP.error.passwords.do.not.match"); // NOI18N
+    public static final String DEFAULT_ERROR_ALL_PORTS_OCCUPIED =
+            ResourceUtils.getString(GlassFishPanel.class,
+            "GFP.error.all.ports.occupied"); // NOI18N
     public static final String DEFAULT_ERROR_HTTP_NULL =
             ResourceUtils.getString(GlassFishPanel.class,
             "GFP.error.http.null"); // NOI18N
@@ -1090,11 +1218,15 @@ public class GlassFishPanel extends DestinationPanel {
     public static final String DEFAULT_ERROR_HTTPS_EQUALS_ADMIN =
             ResourceUtils.getString(GlassFishPanel.class,
             "GFP.error.https.equals.admin"); // NOI18N
-    
-    public static final String DEFAULT_MINIMUM_JDK_VERSION = 
+            
+    public static final String DEFAULT_WARNING_PORT_IN_USE =
+            ResourceUtils.getString(GlassFishPanel.class,
+            "GFP.warning.port.in.use"); // NOI18N
+            
+    public static final String DEFAULT_MINIMUM_JDK_VERSION =
             ResourceUtils.getString(GlassFishPanel.class,
             "GFP.minimum.jdk.version"); // NOI18N
-    public static final String DEFAULT_MAXIMUM_JDK_VERSION = 
+    public static final String DEFAULT_MAXIMUM_JDK_VERSION =
             ResourceUtils.getString(GlassFishPanel.class,
             "GFP.maximum.jdk.version"); // NOI18N
 }
