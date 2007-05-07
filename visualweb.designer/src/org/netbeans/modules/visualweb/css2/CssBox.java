@@ -1076,7 +1076,7 @@ public class CssBox implements Box {
                 + "element=" + element // NOI18N
 //                + ", markupDesignBean=" + getMarkupDesignBeanForCssBox(this) // NOI18N
 //                + ", componentRootElement=" + getElementForComponentRootCssBox(this) // NOI18N
-//                + ", size=" + width + ":" + height // NOI18N
+                + ", size=" + width + ":" + height // NOI18N
 //                + ", contentWidth=" + contentWidth // NOI18N
 //                + ", containingBlockWidth=" + containingBlockWidth
                 ; // NOI18N

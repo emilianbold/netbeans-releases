@@ -114,7 +114,6 @@ class JsfDesignerListener implements DesignerListener {
         if (box instanceof ExternalBox) {
 //            ((ExternalDocumentBox)box).open();
             openExternalBox((ExternalBox)box);
-
             return false;
 //        } else if ((box != null) && (box.getTag() == HtmlTag.DIV) && (box.getBoxCount() == 1) &&
 //                box.getBox(0) instanceof ExternalDocumentBox) {
@@ -127,9 +126,8 @@ class JsfDesignerListener implements DesignerListener {
             // fragment child.
 //            ((ExternalDocumentBox)box.getBox(0)).open();
                 openExternalBox((ExternalBox)children[0]);
+                return false;
             }
-
-            return false;
         }
         
         return editEventHandler();
