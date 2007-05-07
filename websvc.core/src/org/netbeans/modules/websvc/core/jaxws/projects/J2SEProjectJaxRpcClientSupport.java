@@ -18,13 +18,8 @@
  */
 
 package org.netbeans.modules.websvc.core.jaxws.projects;
-import java.io.File;
-import java.net.UnknownHostException;
-//import org.netbeans.modules.java.j2seproject.J2SEProject;
 import javax.xml.parsers.DocumentBuilder;
-//import org.netbeans.modules.java.j2seproject.J2SEProjectType;
 import javax.xml.parsers.DocumentBuilderFactory;
-//import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.modules.websvc.api.client.ClientStubDescriptor;
 import org.netbeans.modules.websvc.api.client.WebServicesClientConstants;
@@ -53,7 +48,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
-//import org.netbeans.spi.project.support.ant.ReferenceHelper;
 
 
 /**
@@ -65,8 +59,6 @@ public class J2SEProjectJaxRpcClientSupport implements WebServicesClientSupportI
 
     private static final String JAX_RPC_NAMESPACE="http://www.netbeans.org/ns/j2se-project/jax-rpc"; //NOI18N
     private Project project;
-    //private AntProjectHelper helper;
-    //private ReferenceHelper referenceHelper;
     private String proxyHost,proxyPort;
 
     public static final String WSDL_FOLDER = "wsdl"; //NOI18N
@@ -74,8 +66,6 @@ public class J2SEProjectJaxRpcClientSupport implements WebServicesClientSupportI
     /** Creates a new instance of J2SEProjectWebServicesSupport */
     public J2SEProjectJaxRpcClientSupport(Project project) {
         this.project = project;
-        //this.helper = helper;
-        //this.referenceHelper = referenceHelper;
     }
 
     // Implementation of WebServiceClientSupportImpl
@@ -101,7 +91,6 @@ public class J2SEProjectJaxRpcClientSupport implements WebServicesClientSupportI
         AuxiliaryConfiguration aux = project.getLookup().lookup(AuxiliaryConfiguration.class);
         Element clientElements = aux.getConfigurationFragment(WebServicesClientConstants.WEB_SERVICE_CLIENTS,
                                     JAX_RPC_NAMESPACE, true);
-        System.out.println("clientElementsa = "+clientElements);
         if (clientElements==null) {
             Document doc = createNewDocument();
             Element root = doc.createElementNS(JAX_RPC_NAMESPACE, WebServicesClientConstants.WEB_SERVICE_CLIENTS);
@@ -109,25 +98,7 @@ public class J2SEProjectJaxRpcClientSupport implements WebServicesClientSupportI
             clientElements = aux.getConfigurationFragment(WebServicesClientConstants.WEB_SERVICE_CLIENTS,
                                     JAX_RPC_NAMESPACE, true);
         }
-        System.out.println("clientElements = "+clientElements);
-//        NodeList nodes = data.getElementsByTagName(WebServicesClientConstants.WEB_SERVICE_CLIENTS);
-//        Element clientElements = null;
-//        Document doc = data.getOwnerDocument();
-//        NodeList nodes = data.getElementsByTagName(WebServicesClientConstants.WEB_SERVICE_CLIENTS);
-//        Element clientElements = null;
-        
-          Document doc = clientElements.getOwnerDocument();
-        
-//        if(nodes.getLength() == 0) {
-//            // 'needsSave' deliberately left false here because this is a trival change
-//            // that only should be saved if additional changes are also made below.
-//            clientElements = doc.createElementNS(JAX_RPC_NAMESPACE, WebServicesClientConstants.WEB_SERVICE_CLIENTS);
-//            NodeList srcRoots = data.getElementsByTagNameNS(JAX_RPC_NAMESPACE, "source-roots"); // NOI18N
-//            assert srcRoots.getLength() == 1 : "Invalid project.xml."; // NOI18N
-//            data.insertBefore(clientElements, srcRoots.item(0));
-//        } else {
-//            clientElements = (Element) nodes.item(0);
-//        }
+        Document doc = clientElements.getOwnerDocument();
         
         /** Make sure this service is not already registered in project.xml
          */
@@ -158,9 +129,9 @@ public class J2SEProjectJaxRpcClientSupport implements WebServicesClientSupportI
             Element clientElementName = doc.createElementNS(JAX_RPC_NAMESPACE, WebServicesClientConstants.WEB_SERVICE_CLIENT_NAME);
             clientElement.appendChild(clientElementName);
             clientElementName.appendChild(doc.createTextNode(serviceName));
-            //Element clientElementStubType = doc.createElementNS(JAX_RPC_NAMESPACE, WebServicesClientConstants.WEB_SERVICE_STUB_TYPE);
-            //clientElement.appendChild(clientElementStubType);
-            //clientElementStubType.appendChild(doc.createTextNode(stubDescriptor.getName()));
+            Element clientElementStubType = doc.createElementNS(JAX_RPC_NAMESPACE, WebServicesClientConstants.WEB_SERVICE_STUB_TYPE);
+            clientElement.appendChild(clientElementStubType);
+            clientElementStubType.appendChild(doc.createTextNode(stubDescriptor.getName()));
             Element clientElementSourceUrl = doc.createElementNS(JAX_RPC_NAMESPACE, WebServicesClientConstants.CLIENT_SOURCE_URL);
             clientElement.appendChild(clientElementSourceUrl);
             clientElementSourceUrl.appendChild(doc.createTextNode(sourceUrl));
@@ -168,9 +139,6 @@ public class J2SEProjectJaxRpcClientSupport implements WebServicesClientSupportI
             //helper.putPrimaryConfigurationData(data, true);
             needsSave = true;
         }
-        
-        //EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        //EditableProperties privateProperties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         EditableProperties projectProperties = null;
         EditableProperties privateProperties = null;
         try {
@@ -222,7 +190,6 @@ public class J2SEProjectJaxRpcClientSupport implements WebServicesClientSupportI
         }
         
         if(modifiedProjectProperties) {
-            //helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
             try {
                 WSUtils.storeEditableProperties(project, AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
                 needsSave = true;
@@ -412,35 +379,30 @@ public class J2SEProjectJaxRpcClientSupport implements WebServicesClientSupportI
         
         /** Locate root of web service client node structure in project,xml
          */
-//        Element data = helper.getPrimaryConfigurationData(true);
-//        Document doc = data.getOwnerDocument();
-//        NodeList nodes = data.getElementsByTagName(WebServicesClientConstants.WEB_SERVICE_CLIENTS);
-//        Element clientElements = null;
-//        
-//        /* If there is a root, get all the names of the child services and search
-//         * for the one we want to remove.
-//         */
-//        if(nodes.getLength() >= 1) {
-//            clientElements = (Element) nodes.item(0);
-//            NodeList clientNameList = clientElements.getElementsByTagNameNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesClientConstants.WEB_SERVICE_CLIENT_NAME);
-//            for(int i = 0; i < clientNameList.getLength(); i++ ) {
-//                Element clientNameElement = (Element) clientNameList.item(i);
-//                NodeList nl = clientNameElement.getChildNodes();
-//                if(nl.getLength() == 1) {
-//                    org.w3c.dom.Node n = nl.item(0);
-//                    if(n.getNodeType() == org.w3c.dom.Node.TEXT_NODE) {
-//                        if(serviceName.equalsIgnoreCase(n.getNodeValue())) {
-//                            // Found it!  Now remove it.
-//                            org.w3c.dom.Node serviceNode = clientNameElement.getParentNode();
-//                            clientElements.removeChild(serviceNode);
-//                            helper.putPrimaryConfigurationData(data, true);
-//                            needsSave = true;
-//                        }
-//                    }
-//                }
-//            }
-//        }
-        
+        AuxiliaryConfiguration aux = project.getLookup().lookup(AuxiliaryConfiguration.class);
+        Element clientElements = aux.getConfigurationFragment(WebServicesClientConstants.WEB_SERVICE_CLIENTS,
+                                    JAX_RPC_NAMESPACE, true);
+        if (clientElements!=null) {
+            NodeList clientNameList = clientElements.getElementsByTagNameNS(JAX_RPC_NAMESPACE, WebServicesClientConstants.WEB_SERVICE_CLIENT_NAME);
+            for(int i = 0; i < clientNameList.getLength(); i++ ) {
+                Element clientNameElement = (Element) clientNameList.item(i);
+                NodeList nl = clientNameElement.getChildNodes();
+                if(nl.getLength() == 1) {
+                    org.w3c.dom.Node n = nl.item(0);
+                    if(n.getNodeType() == org.w3c.dom.Node.TEXT_NODE) {
+                        if(serviceName.equalsIgnoreCase(n.getNodeValue())) {
+                            // Found it!  Now remove it.
+                            org.w3c.dom.Node clientNode = clientNameElement.getParentNode();
+                            clientElements.removeChild(clientNode);
+                            //helper.putPrimaryConfigurationData(data, true);
+                            //aux.putConfigurationFragment(clientElements, true);
+                            needsSave = true;
+                        }
+                    }
+                }
+            }        
+        }        
+      
         // !PW Lastly, save the project if we actually made any changes to any
         // properties or the build script.
         if(needsSave || needsSave1) {
@@ -474,13 +436,12 @@ public class J2SEProjectJaxRpcClientSupport implements WebServicesClientSupportI
         if (wsdlFolder == null && create) {
             wsdlFolder = FileUtil.createFolder(project.getProjectDirectory(), wsdlFolderStr);
         }
-        System.out.println("wsdlFolder = "+wsdlFolder);
         return wsdlFolder;
     }
     
     public List/*ClientStubDescriptor*/ getStubDescriptors() {
         ArrayList stubs = new ArrayList(2);
-//        stubs.add(jaxrpcClientStub);
+        stubs.add(jaxrpcClientStub);
         return stubs;
     }
     
@@ -541,60 +502,69 @@ public class J2SEProjectJaxRpcClientSupport implements WebServicesClientSupportI
     
     private static final List importantClientFeatures = Arrays.asList(WSCOMPILE_KEY_CLIENT_FEATURES);
     
-    public List getServiceClients() {
+        public List getServiceClients() {
+        
         List serviceNames = new ArrayList();
-//        
-//        Element data = helper.getPrimaryConfigurationData(true);
-//        NodeList nodes = data.getElementsByTagName(WebServicesClientConstants.WEB_SERVICE_CLIENTS);
-//        EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-//        
-//        if(nodes.getLength() != 0) {
-//            Element clientElements = (Element) nodes.item(0);
-//            NodeList clientNameList = clientElements.getElementsByTagNameNS(
-//            J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesClientConstants.WEB_SERVICE_CLIENT_NAME);
-//            for(int i = 0; i < clientNameList.getLength(); i++ ) {
-//                Element clientNameElement = (Element) clientNameList.item(i);
-//                NodeList nl = clientNameElement.getChildNodes();
-//                if(nl.getLength() == 1) {
-//                    org.w3c.dom.Node n = nl.item(0);
-//                    if(n.getNodeType() == org.w3c.dom.Node.TEXT_NODE) {
-//                        String serviceName = n.getNodeValue();
-//                        String currentFeatures = projectProperties.getProperty("wscompile.client." + serviceName + ".features"); //NOI18N
-//                        if(currentFeatures == null) {
-//                            // !PW should probably retrieve default features for stub type.
-//                            // For now, this will work because this is the same value we'd get doing that.
-//                            //
-//                            // Defaults if we can't find any feature property for this client
-//                            // Mostly for upgrading EA1, EA2 projects which did not have
-//                            // this property, but also useful if the user deletes it from
-//                            // project.properties.
-//                            currentFeatures = "wsi, strict";
-//                        }
-//                        ClientStubDescriptor stubType = getClientStubDescriptor(clientNameElement.getParentNode());
-//                        boolean propVerbose = "true".equalsIgnoreCase( //NOI18N
-//                                projectProperties.getProperty("wscompile.client." + serviceName + ".verbose")); //NOI18N
-//                        boolean propDebug = "true".equalsIgnoreCase( //NOI18N
-//                                projectProperties.getProperty("wscompile.client." + serviceName + ".debug")); //NOI18N                
-//                        boolean propPrintStackTrace = "true".equalsIgnoreCase( //NOI18N
-//                                projectProperties.getProperty("wscompile.client." + serviceName + ".xPrintStackTrace")); //NOI18N
-//                        boolean propExtensible = "true".equalsIgnoreCase( //NOI18N
-//                                projectProperties.getProperty("wscompile.client." + serviceName + ".xSerializable")); //NOI18N
-//                        boolean propOptimize = "true".equalsIgnoreCase( //NOI18N
-//                                projectProperties.getProperty("wscompile.client." + serviceName + ".optimize")); //NOI18N
-//                        boolean[] options = new boolean[] { //NOI18N
-//                            propVerbose,propDebug,propPrintStackTrace,propExtensible,propOptimize
-//                        };
-//                        WsCompileClientEditorSupport.ServiceSettings settings = new WsCompileClientEditorSupport.ServiceSettings(
-//                        serviceName, stubType, options, currentFeatures, allClientFeatures, importantClientFeatures);
-//                        serviceNames.add(settings);
-//                    } else {
-//                        // !PW FIXME node is wrong type?! - log message or trace?
-//                    }
-//                } else {
-//                    // !PW FIXME no name for this service entry - notify user
-//                }
-//            }
-//        }
+        AuxiliaryConfiguration aux = project.getLookup().lookup(AuxiliaryConfiguration.class);
+        Element clientElements = aux.getConfigurationFragment(WebServicesClientConstants.WEB_SERVICE_CLIENTS,
+                                    JAX_RPC_NAMESPACE, true);
+        if (clientElements!=null) {
+            NodeList clientNameList = clientElements.getElementsByTagNameNS(
+                    JAX_RPC_NAMESPACE, WebServicesClientConstants.WEB_SERVICE_CLIENT_NAME);
+
+            for(int i = 0; i < clientNameList.getLength(); i++ ) {
+                Element clientNameElement = (Element) clientNameList.item(i);
+                NodeList nl = clientNameElement.getChildNodes();
+                if(nl.getLength() == 1) {
+                    org.w3c.dom.Node n = nl.item(0);
+                    if(n.getNodeType() == org.w3c.dom.Node.TEXT_NODE) {
+                        EditableProperties projectProperties = null;
+                        try {
+                            projectProperties = WSUtils.getEditableProperties(project, AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                        } catch (IOException ex) {
+                            
+                        }
+                        assert projectProperties!=null;
+                        
+                        String serviceName = n.getNodeValue();
+                        String currentFeatures = projectProperties.getProperty("wscompile.client." + serviceName + ".features"); //NOI18N
+                        if(currentFeatures == null) {
+                            // !PW should probably retrieve default features for stub type.
+                            // For now, this will work because this is the same value we'd get doing that.
+                            //
+                            // Defaults if we can't find any feature property for this client
+                            // Mostly for upgrading EA1, EA2 projects which did not have
+                            // this property, but also useful if the user deletes it from
+                            // project.properties.
+                            currentFeatures = "wsi, strict";
+                        }
+                        ClientStubDescriptor stubType = getClientStubDescriptor(clientNameElement.getParentNode());
+                        boolean propVerbose = "true".equalsIgnoreCase( //NOI18N
+                                projectProperties.getProperty("wscompile.client." + serviceName + ".verbose")); //NOI18N
+                        boolean propDebug = "true".equalsIgnoreCase( //NOI18N
+                                projectProperties.getProperty("wscompile.client." + serviceName + ".debug")); //NOI18N                
+                        boolean propPrintStackTrace = "true".equalsIgnoreCase( //NOI18N
+                                projectProperties.getProperty("wscompile.client." + serviceName + ".xPrintStackTrace")); //NOI18N
+                        boolean propExtensible = "true".equalsIgnoreCase( //NOI18N
+                                projectProperties.getProperty("wscompile.client." + serviceName + ".xSerializable")); //NOI18N
+                        boolean propOptimize = "true".equalsIgnoreCase( //NOI18N
+                                projectProperties.getProperty("wscompile.client." + serviceName + ".optimize")); //NOI18N
+                        boolean[] options = new boolean[] { //NOI18N
+                            propVerbose,propDebug,propPrintStackTrace,propExtensible,propOptimize
+                        };
+                        WsCompileClientEditorSupport.ServiceSettings settings = new WsCompileClientEditorSupport.ServiceSettings(
+                        serviceName, stubType, options, currentFeatures, allClientFeatures, importantClientFeatures);
+                        serviceNames.add(settings);
+                        
+                        
+                    } else {
+                        // !PW FIXME node is wrong type?! - log message or trace?
+                    }
+                } else {
+                    // !PW FIXME no name for this service entry - notify user
+                }
+            }      
+        }
         
         return serviceNames;
     }
@@ -602,24 +572,24 @@ public class J2SEProjectJaxRpcClientSupport implements WebServicesClientSupportI
     private ClientStubDescriptor getClientStubDescriptor(org.w3c.dom.Node parentNode) {
         ClientStubDescriptor result = null;
         
-//        if(parentNode instanceof Element) {
-//            Element parentElement = (Element) parentNode;
-//            NodeList clientNameList = parentElement.getElementsByTagNameNS(
-//            J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesClientConstants.WEB_SERVICE_STUB_TYPE);
-//            if(clientNameList.getLength() == 1) {
-//                Element clientStubElement = (Element) clientNameList.item(0);
-//                NodeList nl = clientStubElement.getChildNodes();
-//                if(nl.getLength() == 1) {
-//                    org.w3c.dom.Node n = nl.item(0);
-//                    if(n.getNodeType() == org.w3c.dom.Node.TEXT_NODE) {
-//                        String stubName = n.getNodeValue();
-//                        if (ClientStubDescriptor.JAXRPC_CLIENT_STUB.equals(stubName)) {
-//                            result = jaxrpcClientStub;
-//                        }
-//                    }
-//                }
-//            }
-//        }
+        if(parentNode instanceof Element) {
+            Element parentElement = (Element) parentNode;
+            NodeList clientNameList = parentElement.getElementsByTagNameNS(
+            JAX_RPC_NAMESPACE, WebServicesClientConstants.WEB_SERVICE_STUB_TYPE);
+            if(clientNameList.getLength() == 1) {
+                Element clientStubElement = (Element) clientNameList.item(0);
+                NodeList nl = clientStubElement.getChildNodes();
+                if(nl.getLength() == 1) {
+                    org.w3c.dom.Node n = nl.item(0);
+                    if(n.getNodeType() == org.w3c.dom.Node.TEXT_NODE) {
+                        String stubName = n.getNodeValue();
+                        if (ClientStubDescriptor.JAXRPC_CLIENT_STUB.equals(stubName)) {
+                            result = jaxrpcClientStub;
+                        }
+                    }
+                }
+            }
+        }
         
         return result;
     }
@@ -718,10 +688,9 @@ public class J2SEProjectJaxRpcClientSupport implements WebServicesClientSupportI
         return clientElement;
     }
     
-//    private static final JAXRPCClientStubDescriptor jaxrpcClientStub = new JAXRPCClientStubDescriptor(
-//        ClientStubDescriptor
-//        ClientStubDescriptor.JAXRPC_CLIENT_STUB, org.openide.util.NbBundle.getMessage(J2SEProjectJaxRpcClientSupport.class,"LBL_JAXRPCStaticClientStub"),
-//        new String [] { "wsi", "strict" });
+    private static final JAXRPCClientStubDescriptor jaxrpcClientStub = new JAXRPCClientStubDescriptor(
+        ClientStubDescriptor.JAXRPC_CLIENT_STUB, org.openide.util.NbBundle.getMessage(J2SEProjectJaxRpcClientSupport.class,"LBL_JAXRPCStaticClientStub"),
+        new String [] { "wsi", "strict" });
 
     public void addServiceClientReference(String serviceName, String fqServiceName, String relativeWsdlPath, String relativeMappingPath, String[] portSEIInfo) {
         // nothing to do in J2se
