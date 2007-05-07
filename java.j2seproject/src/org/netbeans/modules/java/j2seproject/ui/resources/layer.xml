@@ -101,10 +101,6 @@ Microsystems, Inc. All Rights Reserved.
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider.createApplication"/>
                     </file>
                 </folder>
-                <attr name="Application/Client.instance" boolvalue="true"/>
-                <file name="Client.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider.createWebServiceClients"/>
-                </file>
             </folder>
             
             <folder name="Nodes">

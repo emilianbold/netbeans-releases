@@ -19,15 +19,9 @@
 
 package org.netbeans.modules.java.j2seproject.ui.customizer;
 
-import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.java.j2seproject.wsclient.CustomizerWSClientHost;
-import org.netbeans.modules.java.j2seproject.wsclient.NoWebServiceClientsPanel;
-import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -48,8 +42,7 @@ public class J2SECompositePanelProvider implements ProjectCustomizer.CompositeCa
     public static final String RUN = "Run";
 //    private static final String RUN_TESTS = "RunTests";
     private static final String APPLICATION = "Application";
-    
-    private static final String WEBSERVICECLIENTS = "WebServiceClients";
+
     private static final String WEBSERVICE_CATEGORY = "WebServiceCategory";
 
     private String name;
@@ -98,12 +91,6 @@ public class J2SECompositePanelProvider implements ProjectCustomizer.CompositeCa
                     bundle.getString( "LBL_Config_Run" ), // NOI18N
                     null,
                     null );
-        } else if (WEBSERVICECLIENTS.equals(name)) {
-            toReturn = ProjectCustomizer.Category.create(
-                    WEBSERVICECLIENTS,
-                    bundle.getString( "LBL_Config_WebServiceClients" ), // NOI18N
-                    null,
-                    null);
         } else if (APPLICATION.equals(name)) {
             toReturn = ProjectCustomizer.Category.create(
                     APPLICATION,
@@ -132,19 +119,6 @@ public class J2SECompositePanelProvider implements ProjectCustomizer.CompositeCa
             return new CustomizerJavadoc(uiProps);
         } else if (RUN.equals(nm)) {
             return new CustomizerRun(uiProps);
-        } else if (WEBSERVICECLIENTS.equals(nm)) {
-            List serviceClientsSettings = null;
-            Project project = (Project)context.lookup(Project.class);
-            WebServicesClientSupport clientSupport = WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory());
-            if (clientSupport != null) {
-                serviceClientsSettings = clientSupport.getServiceClients();
-            }
-
-            if(serviceClientsSettings != null && serviceClientsSettings.size() > 0) {
-                return new CustomizerWSClientHost( uiProps, serviceClientsSettings );
-            } else {
-                return new NoWebServiceClientsPanel();
-            }
         } else if (APPLICATION.equals(nm)) {
             return new CustomizerApplication(uiProps);
         }
@@ -174,10 +148,6 @@ public class J2SECompositePanelProvider implements ProjectCustomizer.CompositeCa
 
     public static J2SECompositePanelProvider createRun() {
         return new J2SECompositePanelProvider(RUN);
-    }
-
-    public static J2SECompositePanelProvider createWebServiceClients() {
-        return new J2SECompositePanelProvider(WEBSERVICECLIENTS);
     }
     
     public static J2SECompositePanelProvider createApplication() {

@@ -24,6 +24,7 @@ Microsystems, Inc. All Rights Reserved.
                 xmlns:j2seproject1="http://www.netbeans.org/ns/j2se-project/1"
                 xmlns:j2seproject2="http://www.netbeans.org/ns/j2se-project/2"
                 xmlns:j2seproject3="http://www.netbeans.org/ns/j2se-project/3"
+                xmlns:jaxrpc="http://www.netbeans.org/ns/j2se-project/jax-rpc"
                 xmlns:projdeps="http://www.netbeans.org/ns/ant-project-references/1"
                 xmlns:projdeps2="http://www.netbeans.org/ns/ant-project-references/2"
                 exclude-result-prefixes="xalan p projdeps projdeps2">
@@ -564,7 +565,7 @@ is divided into following sections:
                 <xsl:with-param name="type" select="'jar'"/>
             </xsl:call-template>
             
-            <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:web-service-clients/j2seproject3:web-service-client">
+            <xsl:if test="/p:project/p:configuration/jaxrpc:web-service-clients/jaxrpc:web-service-client">
                 <target name="wscompile-init" depends="init">
                     <taskdef name="wscompile" classname="com.sun.xml.rpc.tools.ant.Wscompile"
                              classpath="${{wscompile.classpath}}"/>
@@ -575,9 +576,9 @@ is divided into following sections:
                     <mkdir dir="${{build.generated.dir}}/wsclient"/>
                     <mkdir dir="${{build.generated.dir}}/wsbinary"/>
                     
-                    <xsl:for-each select="/p:project/p:configuration/j2seproject3:data/j2seproject3:web-service-clients/j2seproject3:web-service-client">
+                    <xsl:for-each select="/p:project/p:configuration/jaxrpc:web-service-clients/jaxrpc:web-service-client">
                         <xsl:variable name="wsclientname">
-                            <xsl:value-of select="j2seproject3:web-service-client-name"/>
+                            <xsl:value-of select="jaxrpc:web-service-client-name"/>
                         </xsl:variable>
                         
                         <wsclientuptodate property="wscompile.client.{$wsclientname}.notrequired"
@@ -587,22 +588,22 @@ is divided into following sections:
                 </target>
             </xsl:if>
             
-            <xsl:for-each select="/p:project/p:configuration/j2seproject3:data/j2seproject3:web-service-clients/j2seproject3:web-service-client">
+            <xsl:for-each select="/p:project/p:configuration/jaxrpc:web-service-clients/jaxrpc:web-service-client">
                 <xsl:variable name="wsclientname">
-                    <xsl:value-of select="j2seproject3:web-service-client-name"/>
+                    <xsl:value-of select="jaxrpc:web-service-client-name"/>
                 </xsl:variable>
                 <xsl:variable name="useimport">
                     <xsl:choose>
-                        <xsl:when test="j2seproject3:web-service-stub-type">
-                            <xsl:value-of select="j2seproject3:web-service-stub-type='jsr-109_client'"/>
+                        <xsl:when test="jaxrpc:web-service-stub-type">
+                            <xsl:value-of select="jaxrpc:web-service-stub-type='jsr-109_client'"/>
                         </xsl:when>
                         <xsl:otherwise>true</xsl:otherwise>
                     </xsl:choose>
                 </xsl:variable>
                 <xsl:variable name="useclient">
                     <xsl:choose>
-                        <xsl:when test="j2seproject3:web-service-stub-type">
-                            <xsl:value-of select="j2seproject3:web-service-stub-type='jaxrpc_static_client'"/>
+                        <xsl:when test="jaxrpc:web-service-stub-type">
+                            <xsl:value-of select="jaxrpc:web-service-stub-type='jaxrpc_static_client'"/>
                         </xsl:when>
                         <xsl:otherwise>false</xsl:otherwise>
                     </xsl:choose>
@@ -637,15 +638,15 @@ is divided into following sections:
                 </target>
             </xsl:for-each>
             
-            <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:web-service-clients/j2seproject3:web-service-client">
+            <xsl:if test="/p:project/p:configuration/jaxrpc:web-service-clients/jaxrpc:web-service-client">
                 <target name="web-service-client-generate">
                     <xsl:attribute name="depends">
-                        <xsl:for-each select="/p:project/p:configuration/j2seproject3:data/j2seproject3:web-service-clients/j2seproject3:web-service-client">
+                        <xsl:for-each select="/p:project/p:configuration/jaxrpc:web-service-clients/jaxrpc:web-service-client">
                             <xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
                             <xsl:variable name="wsname2">
-                                <xsl:value-of select="j2seproject3:web-service-client-name"/>
+                                <xsl:value-of select="jaxrpc:web-service-client-name"/>
                             </xsl:variable>
-                            <xsl:value-of select="j2seproject3:web-service-client-name"/><xsl:text>-client-wscompile</xsl:text>
+                            <xsl:value-of select="jaxrpc:web-service-client-name"/><xsl:text>-client-wscompile</xsl:text>
                         </xsl:for-each>
                     </xsl:attribute>
                 </target>
@@ -656,7 +657,7 @@ is divided into following sections:
             </xsl:if>
             
             <target name="-pre-pre-compile">
-                <xsl:attribute name="depends">init,deps-jar<xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:web-service-clients/j2seproject3:web-service-client">,web-service-client-generate</xsl:if></xsl:attribute>
+                <xsl:attribute name="depends">init,deps-jar<xsl:if test="/p:project/p:configuration/jaxrpc:web-service-clients/jaxrpc:web-service-client">,web-service-client-generate</xsl:if></xsl:attribute>
                 <mkdir dir="${{build.classes.dir}}"/>
             </target>
             
@@ -666,7 +667,7 @@ is divided into following sections:
             </target>
             
             <target name="-do-compile">
-                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile<xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:web-service-clients/j2seproject3:web-service-client">,web-service-client-compile</xsl:if></xsl:attribute>
+                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile<xsl:if test="/p:project/p:configuration/jaxrpc:web-service-clients/jaxrpc:web-service-client">,web-service-client-compile</xsl:if></xsl:attribute>
                 <xsl:attribute name="if">have.sources</xsl:attribute>
                 <j2seproject3:depend/>
                 <j2seproject3:javac/>
@@ -694,7 +695,7 @@ is divided into following sections:
             </target>
             
             <target name="-do-compile-single">
-                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile<xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:web-service-clients/j2seproject3:web-service-client">,web-service-client-compile</xsl:if></xsl:attribute>
+                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile<xsl:if test="/p:project/p:configuration/jaxrpc:web-service-clients/jaxrpc:web-service-client">,web-service-client-compile</xsl:if></xsl:attribute>
                 <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
                 <j2seproject3:force-recompile/>
                 <j2seproject3:javac includes="${{javac.includes}}" excludes=""/>

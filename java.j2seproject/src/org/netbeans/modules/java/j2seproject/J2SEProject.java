@@ -29,6 +29,9 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -48,11 +51,11 @@ import org.netbeans.modules.java.j2seproject.queries.UnitTestForSourceQueryImpl;
 import org.netbeans.modules.java.j2seproject.ui.J2SELogicalViewProvider;
 import org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
-import org.netbeans.modules.java.j2seproject.wsclient.J2SEProjectWebServicesClientSupport;
+//import org.netbeans.modules.java.j2seproject.wsclient.J2SEProjectWebServicesClientSupport;
 import org.netbeans.modules.java.j2seproject.queries.J2SEProjectEncodingQueryImpl;
 import org.netbeans.modules.java.j2seproject.queries.BinaryForSourceQueryImpl;
-import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
-import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportFactory;
+//import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
+//import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportFactory;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -86,6 +89,7 @@ import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
 import org.w3c.dom.Node;
@@ -111,8 +115,8 @@ public final class J2SEProject implements Project, AntProjectListener {
     private SourceRoots testRoots;
     
     // WS client support
-    private J2SEProjectWebServicesClientSupport j2seProjectWebServicesClientSupport;
-    private WebServicesClientSupport apiWebServicesClientSupport;
+    //private J2SEProjectWebServicesClientSupport j2seProjectWebServicesClientSupport;
+    //private WebServicesClientSupport apiWebServicesClientSupport;
     private AntBuildExtender buildExtender;
 
     J2SEProject(AntProjectHelper helper) throws IOException {
@@ -125,8 +129,8 @@ public final class J2SEProject implements Project, AntProjectListener {
         genFilesHelper = new GeneratedFilesHelper(helper, buildExtender);
         this.updateHelper = new UpdateHelper (this, this.helper, this.aux, this.genFilesHelper,
             UpdateHelper.createDefaultNotifier());
-        j2seProjectWebServicesClientSupport = new J2SEProjectWebServicesClientSupport(this, helper, refHelper);
-        apiWebServicesClientSupport = WebServicesClientSupportFactory.createWebServicesClientSupport (j2seProjectWebServicesClientSupport);
+        //j2seProjectWebServicesClientSupport = new J2SEProjectWebServicesClientSupport(this, helper, refHelper);
+        //apiWebServicesClientSupport = WebServicesClientSupportFactory.createWebServicesClientSupport (j2seProjectWebServicesClientSupport);
 
         lookup = createLookup(aux);
         helper.addAntProjectListener(this);
@@ -241,7 +245,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             this, // never cast an externally obtained Project to J2SEProject - use lookup instead
             new J2SEProjectOperations(this),
             new J2SEConfigurationProvider(this),
-            apiWebServicesClientSupport,
+            //apiWebServicesClientSupport,
             new J2SEPersistenceProvider(this, cpProvider),
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
@@ -400,6 +404,9 @@ public final class J2SEProject implements Project, AntProjectListener {
     private final class ProjectOpenedHookImpl extends ProjectOpenedHook {
         
         ProjectOpenedHookImpl() {}
+        private static final String JAX_RPC_NAMESPACE="http://www.netbeans.org/ns/j2se-project/jax-rpc"; //NOI18N
+        private static final String JAX_RPC_CLIENTS="web-service-clients"; //NOI18N
+        private static final String JAX_RPC_CLIENT="web-service-client"; //NOI18N
         
         protected void projectOpened() {
             // Check up on build scripts.
@@ -439,6 +446,35 @@ public final class J2SEProject implements Project, AntProjectListener {
                     
                     // set jaxws.endorsed.dir property (for endorsed mechanism to be used with wsimport, wsgen)
                     setJaxWsEndorsedDirProperty(ep);
+                    
+                    //move web-service-clients one level up from in project.xml
+                    Element data = helper.getPrimaryConfigurationData(true);
+                    NodeList nodes = data.getElementsByTagName(JAX_RPC_CLIENTS);
+                    if(nodes.getLength() > 0) {                        
+                        Element oldJaxRpcClients = (Element) nodes.item(0);
+                        Document doc = createNewDocument();
+                        Element newJaxRpcClients = doc.createElementNS(JAX_RPC_NAMESPACE, JAX_RPC_CLIENTS);
+                        NodeList childNodes = oldJaxRpcClients.getElementsByTagName(JAX_RPC_CLIENT);
+                        for (int i=0;i<childNodes.getLength();i++) {                            
+                            Element oldJaxRpcClient = (Element) childNodes.item(i);
+                            Element newJaxRpcClient = doc.createElementNS(JAX_RPC_NAMESPACE, JAX_RPC_CLIENT);
+                            NodeList nodeProps = oldJaxRpcClient.getChildNodes();
+                            for (int j=0;j<nodeProps.getLength();j++) {
+                                Node n = nodeProps.item(j);
+                                if (n instanceof Element) {
+                                    Element oldProp = (Element) n;
+                                    Element newProp = doc.createElementNS(JAX_RPC_NAMESPACE, oldProp.getLocalName());
+                                    String text = oldProp.getTextContent();
+                                    newProp.setTextContent(text);
+                                    newJaxRpcClient.appendChild(newProp);
+                                }
+                            }
+                            newJaxRpcClients.appendChild(newJaxRpcClient);
+                        }
+                        aux.putConfigurationFragment(newJaxRpcClients, true);
+                        data.removeChild(oldJaxRpcClients);
+                        helper.putPrimaryConfigurationData(data, true);
+                    }
                     
                     updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
                     ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -637,6 +673,22 @@ public final class J2SEProject implements Project, AntProjectListener {
             return file.getParent();
         }
         return null;
+    }
+    
+    private static final DocumentBuilder db;
+    static {
+        try {
+            db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        } catch (ParserConfigurationException e) {
+            throw new AssertionError(e);
+        }
+    }
+    private static Document createNewDocument() {
+        // #50198: for thread safety, use a separate document.
+        // Using XMLUtil.createDocument is much too slow.
+        synchronized (db) {
+            return db.newDocument();
+        }
     }
 
 }
