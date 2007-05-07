@@ -1809,7 +1809,6 @@ public class BaseOptions extends OptionSupport {
             getKeyBindingList();
             getAbbrevMap();
             getMacroMap();
-            getColoringMap();
             loadSettings(PropertiesMIMEProcessor.class);
 
             if (LOG.isLoggable(Level.FINE)) {
