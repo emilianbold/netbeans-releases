@@ -45,8 +45,6 @@ import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,13 +54,11 @@ import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.event.EventListenerList;
 
-import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
-import org.openide.util.WeakListeners;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -1518,34 +1514,59 @@ public class WebForm implements Designer {
 //        domProvider.refreshProject();
 //    }
     
-    public void refreshModel(final boolean deep) {
-        // #6483029 Refresh contained external forms (e.g. fragments) first.
-        refreshExternalForms(deep);
-        
-        domProvider.refreshModel(deep);
-    }
+//    public void refreshModel(final boolean deep) {
+//        // #6483029 Refresh contained external forms (e.g. fragments) first.
+//        refreshExternalForms(deep);
+//        
+//        domProvider.refreshModel(deep);
+//    }
+//    
+//    private void refreshExternalForms(boolean deep) {
+//        DesignerPane designerPane = getPane();
+//        if (designerPane == null) {
+//            // XXX #6495248 This is not opened yet, so not initialized yet.
+//            // TODO The external forms may not be stored in ui components (boxes),
+//            // they need to be findable from the model directly.
+//            return;
+//        }
+//        
+//        PageBox pageBox = designerPane.getPageBox();
+//        if (pageBox == null) {
+//            return;
+//        }
+//        WebForm[] externalForms = pageBox.findExternalForms();
+//        for (WebForm externalForm : externalForms) {
+//            if (this == externalForm) {
+//                // XXX To prevent neverending loop if there is such case.
+//                continue;
+//            }
+//            externalForm.refreshModel(deep);
+//        }
+//    }
     
-    private void refreshExternalForms(boolean deep) {
+    public DomProvider[] getExternalDomProviders() {
         DesignerPane designerPane = getPane();
         if (designerPane == null) {
             // XXX #6495248 This is not opened yet, so not initialized yet.
             // TODO The external forms may not be stored in ui components (boxes),
             // they need to be findable from the model directly.
-            return;
+            return new DomProvider[0];
         }
         
         PageBox pageBox = designerPane.getPageBox();
         if (pageBox == null) {
-            return;
+            return new DomProvider[0];
         }
         WebForm[] externalForms = pageBox.findExternalForms();
+        
+        List<DomProvider> domProviders = new ArrayList<DomProvider>();
         for (WebForm externalForm : externalForms) {
-            if (this == externalForm) {
-                // XXX To prevent neverending loop if there is such case.
+            if (externalForm == null || externalForm == this) {
                 continue;
             }
-            externalForm.refreshModel(deep);
+            domProviders.add(externalForm.domProvider);
         }
+        return domProviders.toArray(new DomProvider[domProviders.size()]);
     }
     
 //    private void modelRefreshed() {

@@ -915,6 +915,37 @@ public class JsfForm {
         getDomSynchronizer().requestRefresh();
     }
     
+    public void refreshModelWithExternals(boolean deep) {
+        JsfForm[] externals = findExternals();
+        for (JsfForm jsfForm : externals) {
+            jsfForm.refreshModel(deep);
+        }
+        
+        refreshModel(deep);
+    }
+    
+    private JsfForm[] findExternals() {
+        Designer[] designers = findDesigners(this);
+        if (designers.length == 0) {
+            return new JsfForm[0];
+        }
+        Designer designer = designers[0];
+        DomProvider[] domProviders = designer.getExternalDomProviders();
+        List<JsfForm> externals = new ArrayList<JsfForm>();
+        for (DomProvider domProvider : domProviders) {
+            JsfForm external = findJsfFormForDomProvider(domProvider);
+            if (external == null) {
+                continue;
+            }
+            if (external == this) {
+                // Skip this one.
+                continue;
+            }
+            externals.add(external);
+        }
+        return externals.toArray(new JsfForm[externals.size()]);
+    }
+    
     public void refreshModel(boolean deep) {
         getFacesModel().refreshAndSyncNonPageBeans(deep);
         // XXX Moved from designer/../WebForm.

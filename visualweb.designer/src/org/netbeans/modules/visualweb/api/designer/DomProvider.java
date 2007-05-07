@@ -104,7 +104,7 @@ public interface DomProvider {
     //////
     // XXX Revise these methods
 //    public void requestRefresh();
-    public void refreshModel(boolean deep);
+//    public void refreshModel(boolean deep);
 //    public void refreshProject();
 //    public void destroyDomSynchronizer();
 //    /** Until all modification stuff is moved to designer/jsf (from designer). */

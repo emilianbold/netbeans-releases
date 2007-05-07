@@ -120,9 +120,9 @@ class DomProviderImpl implements DomProvider {
 //        jsfForm.requestRefresh();
 //    }
 
-    public void refreshModel(boolean deep) {
-        jsfForm.refreshModel(deep);
-    }
+//    public void refreshModel(boolean deep) {
+//        jsfForm.refreshModel(deep);
+//    }
 
 //    public void setUpdatesSuspended(MarkupDesignBean markupDesignBean, boolean suspend) {
 

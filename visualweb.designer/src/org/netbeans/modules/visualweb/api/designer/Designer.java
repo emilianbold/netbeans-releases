@@ -264,5 +264,7 @@ public interface Designer {
     } // End of RenderContext.
     
     public RenderContext createRenderContext();
+
     
+    public DomProvider[] getExternalDomProviders();
 }

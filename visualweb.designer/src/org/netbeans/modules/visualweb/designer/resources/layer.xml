@@ -28,7 +28,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-visualweb-designer-action-BringToFrontAction.instance"/>
             <file name="org-netbeans-modules-visualweb-designer-action-DecorationsAction.instance"/>
             <!--<file name="org-netbeans-modules-visualweb-designer-action-InlineEditAction.instance"/>-->
-            <file name="org-netbeans-modules-visualweb-designer-action-RefreshAction.instance"/>
+            <!--<file name="org-netbeans-modules-visualweb-designer-action-RefreshAction.instance"/>-->
             <file name="org-netbeans-modules-visualweb-designer-action-SendToBackAction.instance"/>
             <!--<file name="org-netbeans-modules-visualweb-designer-action-SelectParentAction.instance"/>-->
             <file name="org-netbeans-modules-visualweb-designer-action-TargetResolutionAction.instance"/>
@@ -81,11 +81,13 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="DesignerSeparator3.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file>
+                    <!--
                     <attr name="DesignerSeparator3.instance/org-netbeans-modules-visualweb-designer-action-RefreshAction.shadow" boolvalue="true"/>
                     <file name="org-netbeans-modules-visualweb-designer-action-RefreshAction.shadow">
                         <attr name="originalFile" stringvalue="/Actions/Designer/org-netbeans-modules-visualweb-designer-action-RefreshAction.instance"/>
                     </file>
                     <attr name="org-netbeans-modules-visualweb-designer-action-RefreshAction.shadow/org-netbeans-modules-visualweb-designer-action-TargetResolutionAction.shadow" boolvalue="true"/>
+                    -->
                     <file name="org-netbeans-modules-visualweb-designer-action-TargetResolutionAction.shadow">
                         <attr name="originalFile" stringvalue="/Actions/Designer/org-netbeans-modules-visualweb-designer-action-TargetResolutionAction.instance"/>
                     </file>
@@ -140,11 +142,13 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="DesignerSeparator4.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file>
+                    <!--
                     <attr name="DesignerSeparator4.instance/org-netbeans-modules-visualweb-designer-action-RefreshAction.shadow" boolvalue="true"/>
                     <file name="org-netbeans-modules-visualweb-designer-action-RefreshAction.shadow">
                         <attr name="originalFile" stringvalue="/Actions/Designer/org-netbeans-modules-visualweb-designer-action-RefreshAction.instance"/>
                     </file>
                     <attr name="org-netbeans-modules-visualweb-designer-action-RefreshAction.shadow/org-netbeans-modules-visualweb-designer-action-TargetResolutionAction.shadow" boolvalue="true"/>
+                    -->
                     <file name="org-netbeans-modules-visualweb-designer-action-TargetResolutionAction.shadow">
                         <attr name="originalFile" stringvalue="/Actions/Designer/org-netbeans-modules-visualweb-designer-action-TargetResolutionAction.instance"/>
                     </file>
@@ -155,10 +159,12 @@ Microsystems, Inc. All Rights Reserved.
                 <folder name="Toolbars">
                     <folder name="Default">
                         <!-- This registers actions for the designer component toolbar. -->
+                        <!--
                         <attr name="org-netbeans-modules-visualweb-insync-action-BrowserPreviewAction.shadow/org-netbeans-modules-visualweb-designer-action-RefreshAction.shadow" boolvalue="true"/>
                         <file name="org-netbeans-modules-visualweb-designer-action-RefreshAction.shadow">
                             <attr name="originalFile" stringvalue="/Actions/Designer/org-netbeans-modules-visualweb-designer-action-RefreshAction.instance"/>
                         </file>
+                        -->
                         <!--
                         <attr name="org-netbeans-modules-visualweb-designer-action-RefreshAction.shadow/org-netbeans-modules-visualweb-designer-action-VirtualFormsSupportAction.shadow" boolvalue="true"/>
                         <file name="org-netbeans-modules-visualweb-designer-action-VirtualFormsSupportAction.shadow">
