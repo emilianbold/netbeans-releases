@@ -427,8 +427,16 @@ public final class JavaSource {
      * @see org.netbeans.api.java.source.CancellableTask for information about implementation requirements
      * @param task The task which.
      * @param shared if true the java compiler may be reused by other {@link org.netbeans.api.java.source.CancellableTasks},
-     * the value false may have negative impact on the IDE performance.
-     */    
+     * the value false may have negative impact on the IDE performance.     
+     * <div class="nonnormative">
+     * <p>
+     * It's legal to nest the {@link JavaSource#runUserActionTask} into another {@link JavaSource#runUserActionTask}.
+     * It's also legal to nest the {@link JavaSource#runModificationTask} into {@link JavaSource#runUserActionTask},
+     * the outer {@link JavaSource#runUserActionTask} does not see changes caused by nested {@link JavaSource#runModificationTask},
+     * but the following nested task see them. 
+     * </p>
+     * </div>
+     */
     public void runUserActionTask( final CancellableTask<CompilationController> task, final boolean shared) throws IOException {
         if (task == null) {
             throw new IllegalArgumentException ("Task cannot be null");     //NOI18N
