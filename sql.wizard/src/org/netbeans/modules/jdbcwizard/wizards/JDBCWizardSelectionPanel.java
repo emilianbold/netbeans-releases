@@ -312,12 +312,6 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
                 this.dbmodel = new DatabaseModelImpl(this.selectedConnection.getDisplayName(), def);
     
     		    final String[][] tableList = DBMetaData.getTablesOnly("", this.selectedConnection.getSchema(), "", false,connection);
-    		    // issue 76953: do not display tables from the Recycle Bin on Oracle 10 and higher
-                //if (("Oracle".equals(this.dbtype)) && DBMetaData.getDatabaseMajorVersion(connection) >= 10)) { // NOI18N
-                //    recycleBinTables = DBMetaData.getOracleRecycleBinTables(connection);
-                //} else {
-                //    recycleBinTables = Collections.EMPTY_LIST;
-                //}
     		    if ("ORACLE".equalsIgnoreCase(this.dbtype) && DBMetaData.getDatabaseMajorVersion(connection) >= 10) { // NOI18N
                     recycleBinTables = DBMetaData.getOracleRecycleBinTables(connection);
                 } else {

@@ -816,7 +816,7 @@ public final class DBMetaData {
      * @return List List of primary keys
      * @throws Exception DOCUMENT ME!
      */
-    public static final List getPrimaryKeys(String tcatalog, String tschema, final String tname,final Connection connection) throws Exception {
+    public static final List getPrimaryKeys(String tcatalog, String tschema, final String tname,final Connection v) throws Exception {
         List pkList = Collections.EMPTY_LIST;
         ResultSet rs = null;
 
@@ -829,8 +829,12 @@ public final class DBMetaData {
                 tschema = null;
             }
 
-            rs = connection.getMetaData().getPrimaryKeys(tcatalog, tschema, tname);
-            pkList = KeyColumn.createPrimaryKeyColumnList(rs);
+            rs = v.getMetaData().getPrimaryKeys(tcatalog, tschema, tname);
+            if(v.getMetaData().getDriverName().startsWith("JDBC-ODBC")){
+            	pkList = KeyColumn.createPrimaryKeyColumnList(rs,true);
+            }else{
+            	pkList = KeyColumn.createPrimaryKeyColumnList(rs,false);
+            }
         } catch (final Exception e) {
             e.printStackTrace();
             //this.errMsg = e.getLocalizedMessage();

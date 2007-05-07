@@ -77,7 +77,7 @@ public class KeyColumn {
      * @return List of KeyColumn instances based from metadata in rs
      * @throws SQLException if SQL error occurs while reading in data from given ResultSet
      */
-    public static List createPrimaryKeyColumnList(final ResultSet rs) throws SQLException {
+    public static List createPrimaryKeyColumnList(final ResultSet rs, boolean odbcflag) throws SQLException {
         if (rs == null) {
             final ResourceBundle cMessages = NbBundle.getBundle(KeyColumn.class);// NO i18n
             throw new IllegalArgumentException(cMessages.getString("ERROR_NULL_RS") + "(ERROR_NULL_RS)");// NO
@@ -90,13 +90,13 @@ public class KeyColumn {
             pkColumns = new ArrayList();
 
             do {
-                pkColumns.add(new KeyColumn(rs));
+                pkColumns.add(new KeyColumn(rs, odbcflag));
             } while (rs.next());
         }
 
         return pkColumns;
     }
-
+    
     /**
      * Creates an instance of KeyColumn with the given values.
      * 
@@ -114,23 +114,37 @@ public class KeyColumn {
     protected KeyColumn() {
     }
 
-    private KeyColumn(final ResultSet rs) throws SQLException {
-        if (rs == null) {
-            final ResourceBundle cMessages = NbBundle.getBundle(KeyColumn.class);// NO i18n
-            throw new IllegalArgumentException(cMessages.getString("ERROR_VALID_RS") + "(ERROR_VALID_RS)");// NO
-            // i18n
-        }
-
-        this.keyName = rs.getString(KeyColumn.RS_KEY_NAME);
-        this.columnName = rs.getString(KeyColumn.RS_COLUMN_NAME);
-        this.sequenceNum = rs.getShort(KeyColumn.RS_SEQUENCE_NUM);
-    }
+    private KeyColumn(final ResultSet rs, boolean odbcflag) throws SQLException {
+		if (rs == null) {
+			final ResourceBundle cMessages = NbBundle
+					.getBundle(KeyColumn.class);// NO i18n
+			throw new IllegalArgumentException(cMessages
+					.getString("ERROR_VALID_RS")
+					+ "(ERROR_VALID_RS)");// NO
+			// i18n
+		}
+		// Order of the result set for odbc driver
+		// {6=PK_NAME, 5=KEY_SEQ, 4=COLUMN_NAME, 3=TABLE_NAME, 2=TABLE_SCHEM,
+		// 1=TABLE_CAT}
+		if (odbcflag) {
+			String tablecat = rs.getString(1);
+			String tablesch = rs.getString(2);
+			String tablename = rs.getString(3);
+			this.columnName = rs.getString(4);
+			this.sequenceNum = rs.getShort(5);
+			this.keyName = rs.getString(6);
+		} else {
+			this.keyName = rs.getString(KeyColumn.RS_KEY_NAME);
+			this.columnName = rs.getString(KeyColumn.RS_COLUMN_NAME);
+			this.sequenceNum = rs.getShort(KeyColumn.RS_SEQUENCE_NUM);
+		}
+	}
 
     /**
-     * Gets name of column name associate with this primary key.
-     * 
-     * @return name of column
-     */
+	 * Gets name of column name associate with this primary key.
+	 * 
+	 * @return name of column
+	 */
     public String getColumnName() {
         return this.columnName;
     }
