@@ -171,6 +171,7 @@ public final class DesignDocument {
         DesignComponent component = createRawComponent (componentType);
         assert component != null;
         performComponentPostInit (component, component.getComponentDescriptor ());
+        PostInitializeProcessor.postInitializeComponent(getDocumentInterface().getProjectType(), component);
         return component;
     }
 
