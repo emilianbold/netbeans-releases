@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -123,6 +124,8 @@ public class JavaFixAllImports {
                             variants[index] = new String[1];
                             variants[index][0] = NbBundle.getMessage(JavaFixAllImports.class, "FixDupImportStmts_CannotResolve"); //NOI18N
                             defaults[index] = variants[index][0];
+                            icons[index] = new Icon[1];
+                            icons[index][0] = new ImageIcon( org.openide.util.Utilities.loadImage("/org/netbeans/modules/java/editor/resources/error-glyph.gif") );//NOI18N
                         }
 
                         index++;
