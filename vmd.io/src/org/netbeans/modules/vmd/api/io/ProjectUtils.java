@@ -137,6 +137,8 @@ public final class ProjectUtils {
     public static List<SourceGroup> getSourceGroups(String projectID) {
         assert projectID != null;
         Project project = getProject(projectID);
+        if (project == null)
+            return null;
         Sources sources = org.netbeans.api.project.ProjectUtils.getSources(project);
         SourceGroup[] sg = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         return Arrays.asList(sg);

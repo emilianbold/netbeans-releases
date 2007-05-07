@@ -46,6 +46,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 
 /**
  *
@@ -161,11 +162,14 @@ public final class ScreenSupport {
             return null;
         DesignDocument document = imageComponent.getDocument ();
 
-        SourceGroup sourceGroup = ProjectUtils.getSourceGroups(document.getDocumentInterface ().getProjectID ()).get(0); // CLDC project has always only one source root
-        FileObject sourceRoot = sourceGroup.getRootFolder ();
-        Icon sourceIcon = resolveImageForRoot (sourceRoot, imagePath);
-        if (sourceIcon != null)
-            return sourceIcon;
+        List<SourceGroup> sourceGroups = ProjectUtils.getSourceGroups(document.getDocumentInterface ().getProjectID ());
+        if (! sourceGroups.isEmpty ()) {
+            SourceGroup sourceGroup = sourceGroups.get(0); // CLDC project has always only one source root
+            FileObject sourceRoot = sourceGroup.getRootFolder ();
+            Icon sourceIcon = resolveImageForRoot (sourceRoot, imagePath);
+            if (sourceIcon != null)
+                return sourceIcon;
+        }
 
         Project project = MidpProjectSupport.getProjectForDocument (document);
         for (ProjectResourceResolver resolver : MidpProjectSupport.getAllResolvers ()) {
