@@ -60,6 +60,7 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+
 /**
  * Extracts database metadata information (table names and constraints, their associated columns,
  * etc.)
@@ -432,7 +433,33 @@ public final class DBMetaData {
 
         return dbtype;
     }
+    
+    public static int getDatabaseMajorVersion(final Connection conn) throws Exception{
+        final DatabaseMetaData dbmeta = conn.getMetaData();
+        return dbmeta.getDatabaseMajorVersion();
+    }
 
+    public static List getOracleRecycleBinTables(final Connection conn) {
+        List result = new ArrayList();
+        try {
+            Statement stmt = conn.createStatement();
+            try {
+                ResultSet rs = stmt.executeQuery("SELECT OBJECT_NAME FROM RECYCLEBIN WHERE TYPE = 'TABLE'"); // NOI18N
+                try {
+                    while (rs.next()) {
+                        result.add(rs.getString("OBJECT_NAME")); // NOI18N
+                    }
+                } finally {
+                    rs.close();
+                }
+            } finally {
+                stmt.close();
+            }
+        } catch (SQLException exc) {
+            result = Collections.EMPTY_LIST;
+        }
+        return result;
+    }
     private static final String getJDBCSearchPattern(final String guiPattern, final Connection connection) throws Exception {
         //this.errMsg = "";
 

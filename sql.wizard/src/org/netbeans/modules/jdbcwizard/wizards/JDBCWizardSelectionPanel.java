@@ -1,23 +1,4 @@
 /*
- * The contents of this file are subject to the terms of the Common Development
- * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
- * 
- * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- * or http://www.netbeans.org/cddl.txt.
- * 
- * When distributing Covered Code, include this CDDL Header Notice in each file
- * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
- * 
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- */
-
-/*
  * 
  * Copyright 2005 Sun Microsystems, Inc.
  * 
@@ -83,7 +64,7 @@ import java.util.List;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.Connection;
-
+import java.util.Collections;
 
 /**
  * @author
@@ -318,6 +299,7 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
     public void persistModel() {
         //final DBMetaData meta = new DBMetaData();
     	final Connection connection = this.selectedConnection.getJDBCConnection();
+    	List recycleBinTables = null;
         if(connection != null){
             try {
                 //meta.connectDB(this.selectedConnection.getJDBCConnection());
@@ -330,12 +312,26 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
                 this.dbmodel = new DatabaseModelImpl(this.selectedConnection.getDisplayName(), def);
     
     		    final String[][] tableList = DBMetaData.getTablesOnly("", this.selectedConnection.getSchema(), "", false,connection);
+    		    // issue 76953: do not display tables from the Recycle Bin on Oracle 10 and higher
+                //if (("Oracle".equals(this.dbtype)) && DBMetaData.getDatabaseMajorVersion(connection) >= 10)) { // NOI18N
+                //    recycleBinTables = DBMetaData.getOracleRecycleBinTables(connection);
+                //} else {
+                //    recycleBinTables = Collections.EMPTY_LIST;
+                //}
+    		    if ("ORACLE".equalsIgnoreCase(this.dbtype) && DBMetaData.getDatabaseMajorVersion(connection) >= 10) { // NOI18N
+                    recycleBinTables = DBMetaData.getOracleRecycleBinTables(connection);
+                } else {
+                    recycleBinTables = Collections.EMPTY_LIST;
+                }
+
     			String[] currTable = null;
     			List tableNamesList = new ArrayList();
                 if (tableList != null) {
                     for (int i = 0; i < tableList.length; i++) {
                         currTable = tableList[i];
-    					tableNamesList.add(currTable[DBMetaData.NAME]);
+                        	if (!recycleBinTables.contains(currTable[DBMetaData.NAME])) {
+                        		tableNamesList.add(currTable[DBMetaData.NAME]);
+                            }
                         }
                        
                     }
@@ -349,6 +345,7 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
       }
     }
 
+    
     /**
      * 
      *
