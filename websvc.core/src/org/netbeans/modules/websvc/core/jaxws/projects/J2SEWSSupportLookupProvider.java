@@ -20,8 +20,11 @@
 package org.netbeans.modules.websvc.core.jaxws.projects;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.core.jaxws.projects.J2SEProjectJAXWSClientSupport;
+import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportFactory;
+import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportImpl;
 import org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientSupportFactory;
 import org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientSupportImpl;
 import org.netbeans.spi.project.LookupProvider;
@@ -42,6 +45,10 @@ public class J2SEWSSupportLookupProvider implements LookupProvider {
         Project project = baseContext.lookup(Project.class);
         JAXWSClientSupportImpl j2seJAXWSClientSupport = new J2SEProjectJAXWSClientSupport(project);
         JAXWSClientSupport jaxWsClientSupportApi = JAXWSClientSupportFactory.createJAXWSClientSupport(j2seJAXWSClientSupport);
-        return Lookups.fixed(new Object[] {jaxWsClientSupportApi,new J2SEProjectWSClientSupportProvider()});
+        
+        WebServicesClientSupportImpl jaxrpcClientSupport = new J2SEProjectJaxRpcClientSupport(project);
+        WebServicesClientSupport jaxRpcClientSupportApi = WebServicesClientSupportFactory.createWebServicesClientSupport(jaxrpcClientSupport);
+        
+        return Lookups.fixed(new Object[] {jaxWsClientSupportApi,jaxRpcClientSupportApi,new J2SEProjectWSClientSupportProvider()});
     }
 }

@@ -879,14 +879,16 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         }
         
         // Project selected must support at least one stub type.
-        WebServicesClientSupport clientSupport =
-                WebServicesClientSupport.getWebServicesClientSupport(p.getProjectDirectory());
-        List clientStubs = (clientSupport != null) ? clientSupport.getStubDescriptors() : null;
-        if(clientStubs == null || clientStubs.size() == 0) {
-            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_NoStubsDefined")); // NOI18N
-            return false; // project with web service client support, but no stub types defined.
-        }
-        
+
+// Commented out temporarly (until jax-rpc client support is implemented)
+//        WebServicesClientSupport clientSupport =
+//                WebServicesClientSupport.getWebServicesClientSupport(p.getProjectDirectory());
+//        List clientStubs = (clientSupport != null) ? clientSupport.getStubDescriptors() : null;
+//        if(clientStubs == null || clientStubs.size() == 0) {
+//            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_NoStubsDefined")); // NOI18N
+//            return false; // project with web service client support, but no stub types defined.
+//        }
+
         if (jComboBoxJaxVersion.getSelectedItem().equals(ClientWizardProperties.JAX_RPC)) {
             SourceGroup[] sgs = JaxWsClientCreator.getJavaSourceGroups(project);
             //no source root -> there must be at least one source root to create JAX-RPC client
