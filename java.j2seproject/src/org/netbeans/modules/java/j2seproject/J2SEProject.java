@@ -51,11 +51,8 @@ import org.netbeans.modules.java.j2seproject.queries.UnitTestForSourceQueryImpl;
 import org.netbeans.modules.java.j2seproject.ui.J2SELogicalViewProvider;
 import org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
-//import org.netbeans.modules.java.j2seproject.wsclient.J2SEProjectWebServicesClientSupport;
 import org.netbeans.modules.java.j2seproject.queries.J2SEProjectEncodingQueryImpl;
 import org.netbeans.modules.java.j2seproject.queries.BinaryForSourceQueryImpl;
-//import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
-//import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportFactory;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -113,10 +110,7 @@ public final class J2SEProject implements Project, AntProjectListener {
     private MainClassUpdater mainClassUpdater;
     private SourceRoots sourceRoots;
     private SourceRoots testRoots;
-    
-    // WS client support
-    //private J2SEProjectWebServicesClientSupport j2seProjectWebServicesClientSupport;
-    //private WebServicesClientSupport apiWebServicesClientSupport;
+
     private AntBuildExtender buildExtender;
 
     J2SEProject(AntProjectHelper helper) throws IOException {
@@ -129,8 +123,6 @@ public final class J2SEProject implements Project, AntProjectListener {
         genFilesHelper = new GeneratedFilesHelper(helper, buildExtender);
         this.updateHelper = new UpdateHelper (this, this.helper, this.aux, this.genFilesHelper,
             UpdateHelper.createDefaultNotifier());
-        //j2seProjectWebServicesClientSupport = new J2SEProjectWebServicesClientSupport(this, helper, refHelper);
-        //apiWebServicesClientSupport = WebServicesClientSupportFactory.createWebServicesClientSupport (j2seProjectWebServicesClientSupport);
 
         lookup = createLookup(aux);
         helper.addAntProjectListener(this);
@@ -245,7 +237,6 @@ public final class J2SEProject implements Project, AntProjectListener {
             this, // never cast an externally obtained Project to J2SEProject - use lookup instead
             new J2SEProjectOperations(this),
             new J2SEConfigurationProvider(this),
-            //apiWebServicesClientSupport,
             new J2SEPersistenceProvider(this, cpProvider),
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
@@ -447,7 +438,8 @@ public final class J2SEProject implements Project, AntProjectListener {
                     // set jaxws.endorsed.dir property (for endorsed mechanism to be used with wsimport, wsgen)
                     setJaxWsEndorsedDirProperty(ep);
                     
-                    //move web-service-clients one level up from in project.xml
+                    // move web-service-clients one level up from in project.xml
+                    // WS should be part of auxiliary configuration
                     Element data = helper.getPrimaryConfigurationData(true);
                     NodeList nodes = data.getElementsByTagName(JAX_RPC_CLIENTS);
                     if(nodes.getLength() > 0) {                        
@@ -637,7 +629,7 @@ public final class J2SEProject implements Project, AntProjectListener {
         //add targets here as required by the external plugins..
         public List<String> getExtensibleTargets() {
             String[] targets = new String[] {
-                "-do-init", "-init-check", "-post-clean", "jar", "-pre-pre-compile","-do-compile","-do-compile-single"
+                "-do-init", "-init-check", "-post-clean", "jar", "-pre-pre-compile","-do-compile","-do-compile-single" //NOI18N
             };
             return Arrays.asList(targets);
         }
