@@ -102,7 +102,7 @@ public class FixDuplicateImportStmts extends javax.swing.JPanel{
 
             jScrollPane1.setPreferredSize( new Dimension(460, getRowHeight() * Math.min(combos.length, 6) + 0 ) );
         } else {
-            contentPanel.add( new JLabel("<nothing to fix>"), new GridBagConstraints(0,0,1,1,1.0,1.0,GridBagConstraints.CENTER,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0) );
+            contentPanel.add( new JLabel(getBundleString("FixDupImportStmts_NothingToFix")), new GridBagConstraints(0,0,1,1,1.0,1.0,GridBagConstraints.CENTER,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0) );
         }
         
         // load localized text into widgets:
