@@ -220,7 +220,7 @@ public interface DomProvider {
 //    // XXX
 //    public MarkupDesignBean getMarkupDesignBeanEquivalentTo(MarkupDesignBean oldBean);
 
-    public org.openide.nodes.Node getRootBeanNode();
+//    public org.openide.nodes.Node getRootBeanNode();
 
 //    public void deleteBean(DesignBean designBean);
 //    public void deleteComponent(Element componentRootElement);
@@ -541,7 +541,7 @@ public interface DomProvider {
     // XXX
 //    public void tcEnableCutCopyDelete(Designer designer);
 //    public void tcDisableCutCopyDelete(Designer designer);
-    public void tcSetActivatedNodes(Designer designer, org.openide.nodes.Node[] nodes);
+//    public void tcSetActivatedNodes(Designer designer, org.openide.nodes.Node[] nodes);
     public org.openide.nodes.Node[] tcGetActivatedNodes(Designer designer);
     public void tcShowPopupMenu(Designer designer, int x, int y);
     public void tcShowPopupMenu(Designer designer, JPopupMenu popup, int x, int y);

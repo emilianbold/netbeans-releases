@@ -1099,10 +1099,11 @@ public class DomProviderServiceImpl implements DomProviderService {
         return null;
     }
 
-    public org.openide.nodes.Node getNodeRepresentation(Element componentRootElement) {
-        MarkupDesignBean markupDesignBean = MarkupUnit.getMarkupDesignBeanForElement(componentRootElement);
-        return DesigntimeIdeBridgeProvider.getDefault().getNodeRepresentation(markupDesignBean);
-    }
+//    public org.openide.nodes.Node getNodeRepresentation(Element componentRootElement) {
+////        MarkupDesignBean markupDesignBean = MarkupUnit.getMarkupDesignBeanForElement(componentRootElement);
+////        return DesigntimeIdeBridgeProvider.getDefault().getNodeRepresentation(markupDesignBean);
+//        return JsfSupportUtilities.getNodeRepresentation(componentRootElement);
+//    }
 
     public Element getComponentRootElementFromNode(org.openide.nodes.Node node) {
 //        DesignBean bean = (DesignBean)node.getLookup().lookup(DesignBean.class);

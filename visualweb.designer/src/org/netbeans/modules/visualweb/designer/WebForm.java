@@ -2000,9 +2000,9 @@ public class WebForm implements Designer {
 //        return domProvider.getMarkupDesignBeanEquivalentTo(oldBean);
 //    }
 
-    org.openide.nodes.Node getRootBeanNode() {
-        return domProvider.getRootBeanNode();
-    }
+//    org.openide.nodes.Node getRootBeanNode() {
+//        return domProvider.getRootBeanNode();
+//    }
 
 //    public void deleteBean(DesignBean designBean) {
 //        domProvider.deleteBean(designBean);
@@ -2730,9 +2730,9 @@ public class WebForm implements Designer {
             return null;
         }
 
-        public org.openide.nodes.Node getNodeRepresentation(Element componentRootElement) {
-            return null;
-        }
+//        public org.openide.nodes.Node getNodeRepresentation(Element componentRootElement) {
+//            return null;
+//        }
 
         public Element getComponentRootElementFromNode(org.openide.nodes.Node node) {
             return null;
@@ -3045,9 +3045,9 @@ public class WebForm implements Designer {
 //        domProvider.tcDisableCutCopyDelete(this);
 //    }
     
-    public void tcSetActivatedNodes(org.openide.nodes.Node[] nodes) {
-        domProvider.tcSetActivatedNodes(this, nodes);
-    }
+//    public void tcSetActivatedNodes(org.openide.nodes.Node[] nodes) {
+//        domProvider.tcSetActivatedNodes(this, nodes);
+//    }
     
     public org.openide.nodes.Node[] tcGetActivatedNodes() {
         return domProvider.tcGetActivatedNodes(this);
@@ -3137,6 +3137,13 @@ public class WebForm implements Designer {
         DesignerListener[] designerListeners = getDesignerListeners();
         for (DesignerListener l : designerListeners) {
             l.userActionPerformed(evt);
+        }
+    }
+    
+    public void fireSelectionChanged(DesignerEvent evt) {
+        DesignerListener[] designerListeners = getDesignerListeners();
+        for (DesignerListener l : designerListeners) {
+            l.selectionChanged(evt);
         }
     }
     

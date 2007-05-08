@@ -2671,7 +2671,7 @@ public class JsfForm {
         return getFacesModel().getMarkupUnit();
     }
     
-    org.openide.nodes.Node getRootBeanNode() {
+    public org.openide.nodes.Node getRootBeanNode() {
         FacesModel facesModel = getFacesModel();
         DesignBean rootBean = facesModel.getRootBean();
         if (rootBean == null) {

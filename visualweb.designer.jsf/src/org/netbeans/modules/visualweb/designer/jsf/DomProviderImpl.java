@@ -591,21 +591,21 @@ class DomProviderImpl implements DomProvider {
         return true;
     }
 
-    public org.openide.nodes.Node getRootBeanNode() {
-//        FacesModel facesModel = getFacesModel();
-//        DesignBean rootBean = facesModel.getRootBean();
-//        if (rootBean == null) {
-//            // XXX If the model is busted then it is supposed to be OK, there is an error, see e.g. #6478860.
-//            if (!facesModel.isBusted()) {
-//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-//                        new IllegalStateException("Invalid FacesModel, it is not busted and its root design bean is null, facesModel=" + facesModel)); // NOI18N
-//            }
-//            return null;
-//        } else {
-//            return DesigntimeIdeBridgeProvider.getDefault().getNodeRepresentation(rootBean);
-//        }
-        return jsfForm.getRootBeanNode();
-    }
+//    public org.openide.nodes.Node getRootBeanNode() {
+////        FacesModel facesModel = getFacesModel();
+////        DesignBean rootBean = facesModel.getRootBean();
+////        if (rootBean == null) {
+////            // XXX If the model is busted then it is supposed to be OK, there is an error, see e.g. #6478860.
+////            if (!facesModel.isBusted()) {
+////                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+////                        new IllegalStateException("Invalid FacesModel, it is not busted and its root design bean is null, facesModel=" + facesModel)); // NOI18N
+////            }
+////            return null;
+////        } else {
+////            return DesigntimeIdeBridgeProvider.getDefault().getNodeRepresentation(rootBean);
+////        }
+//        return jsfForm.getRootBeanNode();
+//    }
 
 //    public void deleteBean(DesignBean designBean) {
 
@@ -1240,13 +1240,13 @@ class DomProviderImpl implements DomProvider {
 //        jsfMultiViewElement.getJsfTopComponent().disableCutCopyDelete();
 //    }
 
-    public void tcSetActivatedNodes(Designer designer, org.openide.nodes.Node[] nodes) {
-        JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);
-        if (jsfMultiViewElement == null) {
-            return;
-        }
-        setActivatedNodes(jsfMultiViewElement.getJsfTopComponent(), nodes);
-    }
+//    public void tcSetActivatedNodes(Designer designer, org.openide.nodes.Node[] nodes) {
+//        JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);
+//        if (jsfMultiViewElement == null) {
+//            return;
+//        }
+//        setActivatedNodes(jsfMultiViewElement.getJsfTopComponent(), nodes);
+//    }
 
     public org.openide.nodes.Node[] tcGetActivatedNodes(Designer designer) {
         JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);

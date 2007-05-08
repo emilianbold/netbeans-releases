@@ -26,6 +26,7 @@ import java.awt.Point;
 import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.netbeans.modules.visualweb.api.designer.Designer.Box;
 import org.netbeans.modules.visualweb.api.designer.cssengine.StyleData;
+import org.netbeans.modules.visualweb.api.designtime.idebridge.DesigntimeIdeBridgeProvider;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.netbeans.modules.visualweb.designer.jsf.ui.JsfMultiViewElement;
 import org.netbeans.modules.visualweb.insync.Util;
@@ -201,4 +202,10 @@ public final class JsfSupportUtilities {
         }
         jsfMultiViewElement.getJsfTopComponent().repaint();
     }
+    
+    public static org.openide.nodes.Node getNodeRepresentation(Element componentRootElement) {
+        MarkupDesignBean markupDesignBean = MarkupUnit.getMarkupDesignBeanForElement(componentRootElement);
+        return DesigntimeIdeBridgeProvider.getDefault().getNodeRepresentation(markupDesignBean);
+    }
+    
 }

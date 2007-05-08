@@ -174,7 +174,7 @@ public interface DomProviderService {
 
     public Image getIcon(Element componentRootElement);
 
-    public org.openide.nodes.Node getNodeRepresentation(Element componentRootElement);
+//    public org.openide.nodes.Node getNodeRepresentation(Element componentRootElement);
     public Element getComponentRootElementFromNode(org.openide.nodes.Node node);
 
 //    // XXX Get rid of this.

@@ -245,6 +245,8 @@ public interface Designer {
     public interface DesignerListener extends EventListener {
         /** When user performed action on the box. */
         public void userActionPerformed(DesignerEvent evt);
+        /** When selection was changed. */
+        public void selectionChanged(DesignerEvent evt);
     } // End of DesignerListener.
     
     public interface DesignerEvent {

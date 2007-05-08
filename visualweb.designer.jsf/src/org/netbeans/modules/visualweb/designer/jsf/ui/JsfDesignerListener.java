@@ -21,14 +21,19 @@
 package org.netbeans.modules.visualweb.designer.jsf.ui;
 
 
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.netbeans.modules.visualweb.api.designer.Designer.Box;
 import org.netbeans.modules.visualweb.api.designer.Designer.DesignerEvent;
 import org.netbeans.modules.visualweb.api.designer.Designer.DesignerListener;
 import org.netbeans.modules.visualweb.api.designer.Designer.ExternalBox;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.netbeans.modules.visualweb.designer.jsf.JsfForm;
+import org.netbeans.modules.visualweb.designer.jsf.JsfSupportUtilities;
 import org.openide.cookies.OpenCookie;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 import org.w3c.dom.Element;
 
 
@@ -243,6 +248,28 @@ class JsfDesignerListener implements DesignerListener {
 
         if (oc != null) {
             oc.open();
+        }
+    }
+
+    public void selectionChanged(DesignerEvent evt) {
+        Designer designer = evt.getDesigner();
+        Element[] selectedComponents = designer.getSelectedComponents();
+        
+        if (selectedComponents.length > 0) {
+            List<Node> nodes = new ArrayList<Node>(selectedComponents.length);
+            for (Element selectedComponent : selectedComponents) {
+                Node n = JsfSupportUtilities.getNodeRepresentation(selectedComponent);
+                nodes.add(n);
+            }
+
+            Node[] nds = nodes.toArray(new Node[nodes.size()]);
+            jsfTopComponent.setActivatedNodes(nds);
+        } else {
+            Node[] nodes;
+            Node rootNode = jsfTopComponent.getJsfForm().getRootBeanNode();
+            nodes = rootNode == null ? new Node[0] : new Node[] {rootNode};
+            
+            jsfTopComponent.setActivatedNodes(nodes);
         }
     }
 }

@@ -40,6 +40,9 @@ import java.util.Set;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import org.netbeans.modules.visualweb.api.designer.Designer;
+import org.netbeans.modules.visualweb.api.designer.Designer.Box;
+import org.netbeans.modules.visualweb.api.designer.Designer.DesignerEvent;
 
 import org.netbeans.modules.visualweb.api.designer.DomProviderService.ResizeConstraint;
 import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
@@ -2072,102 +2075,121 @@ public class SelectionManager {
             refreshTimer = null;
         }
 
-//        releaseNodes();
-
-//        DataObject dobj = webform.getDataObject();
-//        DesignerTopComp topcomp = webform.getTopComponent();
-
-//        // Ensure that the tray is no longer appearing selected
-//        topcomp.clearTraySelection();
-
-//        if ((selected != null) && (selected.size() > 0)) {
-////            Iterator it = selected.iterator();
+////        releaseNodes();
 //
+////        DataObject dobj = webform.getDataObject();
+////        DesignerTopComp topcomp = webform.getTopComponent();
+//
+////        // Ensure that the tray is no longer appearing selected
+////        topcomp.clearTraySelection();
+//
+////        if ((selected != null) && (selected.size() > 0)) {
+//////            Iterator it = selected.iterator();
+////
+////            //Node[] nodes = new Node[selected.size()];
+////            ArrayList nodes = new ArrayList(selected.size());
+////
+//////            while (it.hasNext()) {
+//////                FormObject fo = (FormObject)it.next();
+////            for (FormObject fo : selected) {
+////                DesignBean component = fo.component;
+//        if (!selectedComponents.isEmpty()) {
 //            //Node[] nodes = new Node[selected.size()];
-//            ArrayList nodes = new ArrayList(selected.size());
-//
-////            while (it.hasNext()) {
-////                FormObject fo = (FormObject)it.next();
-//            for (FormObject fo : selected) {
-//                DesignBean component = fo.component;
-        if (!selectedComponents.isEmpty()) {
-            //Node[] nodes = new Node[selected.size()];
-            List<Node> nodes = new ArrayList<Node>(selectedComponents.size());
-            for (SelectedComponent sc : selectedComponents) {
-//                DesignBean component = WebForm.getDomProviderService().getMarkupDesignBeanForElement(sc.componentRootElement);
-//                Node n = DesigntimeIdeBridgeProvider.getDefault().getNodeRepresentation(component);
-                Node n = WebForm.getDomProviderService().getNodeRepresentation(sc.componentRootElement);
-//                n.setDataObject(dobj);
-                nodes.add(n);
-            }
-
-            Node[] nds = nodes.toArray(new Node[nodes.size()]);
-
-//            if (topcomp.isShowing()) {
-//                topcomp.requestActive();
-//            }
-
-//            DesignerUtils.setActivatedNodes(topcomp, nds);
-            webform.tcSetActivatedNodes(nds);
-//            prevNodes = nds;
-            
-        } else {
-// <>
-//            Node[] nodes = new Node[1];
-//
-//            if (documentComponent == null) {
-//                documentComponent = new DocumentComp(webform);
-//            } else {
-//                documentComponent.sync();
-//            }
-//
-//            DocumentCompNode node = new DocumentCompNode(documentComponent, dobj);
-//
-//            //node.setDataObject(dobj);
-//            nodes[0] = node;
-//
-//            if (topcomp.isShowing()) {
-//                topcomp.requestActive();
-//            }
-//
-//            DesignerUtils.setActivatedNodes(topcomp, nodes);
-//            prevNodes = nodes;
-// ====
-            // XXX Ugly way of maintaining activated nodes.
-            // TODO Redesign activated nodes retrieval/setting.
-            Node[] nodes;
-//            FacesModel facesModel = webform.getModel();
-//            DesignBean rootBean = facesModel.getRootBean();
-//            if (rootBean == null) {
-//                // XXX If the model is busted then it is supposed to be OK, there is an error, see e.g. #6478860.
-//                if (!facesModel.isBusted()) {
-//                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-//                            new IllegalStateException("Invalid FacesModel, it is not busted and its root design bean is null, facesModel=" + facesModel)); // NOI18N
-//                }
-//                nodes = new Node[0];
-//            } else {
-//                Node n = DesigntimeIdeBridgeProvider.getDefault().getNodeRepresentation(rootBean);
+//            List<Node> nodes = new ArrayList<Node>(selectedComponents.size());
+//            for (SelectedComponent sc : selectedComponents) {
+////                DesignBean component = WebForm.getDomProviderService().getMarkupDesignBeanForElement(sc.componentRootElement);
+////                Node n = DesigntimeIdeBridgeProvider.getDefault().getNodeRepresentation(component);
+//                Node n = WebForm.getDomProviderService().getNodeRepresentation(sc.componentRootElement);
 ////                n.setDataObject(dobj);
-//                nodes = new Node[] {n};
+//                nodes.add(n);
 //            }
-            Node rootNode = webform.getRootBeanNode();
-            nodes = rootNode == null ? new Node[0] : new Node[] {rootNode};
-            
-//            DesignerUtils.setActivatedNodes(topcomp, nodes);
-            webform.tcSetActivatedNodes(nodes);
-//            // XXX Why is this here? Why it should get active based on node setting?
-//            if (topcomp.isShowing()) {
-//                topcomp.requestActive();
-//            }
-//            prevNodes = nodes;
-// </>
+//
+//            Node[] nds = nodes.toArray(new Node[nodes.size()]);
+//
+////            if (topcomp.isShowing()) {
+////                topcomp.requestActive();
+////            }
+//
+////            DesignerUtils.setActivatedNodes(topcomp, nds);
+//            webform.tcSetActivatedNodes(nds);
+////            prevNodes = nds;
+//            
+//        } else {
+//// <>
+////            Node[] nodes = new Node[1];
+////
+////            if (documentComponent == null) {
+////                documentComponent = new DocumentComp(webform);
+////            } else {
+////                documentComponent.sync();
+////            }
+////
+////            DocumentCompNode node = new DocumentCompNode(documentComponent, dobj);
+////
+////            //node.setDataObject(dobj);
+////            nodes[0] = node;
+////
+////            if (topcomp.isShowing()) {
+////                topcomp.requestActive();
+////            }
+////
+////            DesignerUtils.setActivatedNodes(topcomp, nodes);
+////            prevNodes = nodes;
+//// ====
+//            // XXX Ugly way of maintaining activated nodes.
+//            // TODO Redesign activated nodes retrieval/setting.
+//            Node[] nodes;
+////            FacesModel facesModel = webform.getModel();
+////            DesignBean rootBean = facesModel.getRootBean();
+////            if (rootBean == null) {
+////                // XXX If the model is busted then it is supposed to be OK, there is an error, see e.g. #6478860.
+////                if (!facesModel.isBusted()) {
+////                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+////                            new IllegalStateException("Invalid FacesModel, it is not busted and its root design bean is null, facesModel=" + facesModel)); // NOI18N
+////                }
+////                nodes = new Node[0];
+////            } else {
+////                Node n = DesigntimeIdeBridgeProvider.getDefault().getNodeRepresentation(rootBean);
+//////                n.setDataObject(dobj);
+////                nodes = new Node[] {n};
+////            }
+//            Node rootNode = webform.getRootBeanNode();
+//            nodes = rootNode == null ? new Node[0] : new Node[] {rootNode};
+//            
+////            DesignerUtils.setActivatedNodes(topcomp, nodes);
+//            webform.tcSetActivatedNodes(nodes);
+////            // XXX Why is this here? Why it should get active based on node setting?
+////            if (topcomp.isShowing()) {
+////                topcomp.requestActive();
+////            }
+////            prevNodes = nodes;
+//// </>
+//        }
+//
+//        // XXX #101248 This seems to be needless.
+////        if(!webform.isGridMode()) {
+////            selectTextBetweenSelectedNodes();
+////        }
+        webform.fireSelectionChanged(new SelectionDesignerEvent(webform));
+    }
+    
+    
+    private static class SelectionDesignerEvent implements DesignerEvent {
+        private final WebForm webForm;
+        
+        public SelectionDesignerEvent(WebForm webForm) {
+            this.webForm = webForm;
         }
 
-        // XXX #101248 This seems to be needless.
-//        if(!webform.isGridMode()) {
-//            selectTextBetweenSelectedNodes();
-//        }
-    }
+        public Designer getDesigner() {
+            return webForm;
+        }
+
+        public Box getBox() {
+            return null;
+        }
+    } // End of SelectionDesignerEvent.
+    
     
 //    private void selectTextBetweenSelectedNodes() {
 ////        Position start = null, end = null;
