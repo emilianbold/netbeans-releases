@@ -153,8 +153,12 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
 
     public void close(){
         log("::close");
-        cleanupTest();
-        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
+        try {
+        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport        
+        } catch (Exception ex) {
+            log("Exception catched on CloseAllDocuments action: "+ex.getMessage());
+        }        
+        cleanupTest();        
     }
     
     private void cleanupTest() {
