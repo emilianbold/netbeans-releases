@@ -19,9 +19,9 @@
 
 package org.openide;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.reflect.InvocationTargetException;
@@ -887,11 +887,11 @@ public class NotifyDescriptor extends Object {
             Mnemonics.setLocalizedText(textLabel, text);
 
             textLabel.setBorder(new EmptyBorder(0, 0, 0, 10));
-            panel.setLayout(new BorderLayout());
+            panel.setLayout(new FlowLayout());
             panel.setBorder(new EmptyBorder(11, 12, 1, 11));
             textField = new JTextField(25);
-            panel.add(BorderLayout.WEST, textLabel);
-            panel.add(BorderLayout.CENTER, textField);
+            panel.add(textLabel);
+            panel.add(textField);
             textLabel.setLabelFor(textField);
             textField.setBorder(new CompoundBorder(textField.getBorder(), new EmptyBorder(2, 0, 2, 0)));
             textField.requestFocus();
@@ -917,7 +917,7 @@ public class NotifyDescriptor extends Object {
             textField.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(NotifyDescriptor.class, "ACSD_InputField")
             );
-
+            
             return panel;
         }
     }
