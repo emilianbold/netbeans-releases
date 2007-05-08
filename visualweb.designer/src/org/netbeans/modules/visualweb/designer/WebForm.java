@@ -3077,9 +3077,9 @@ public class WebForm implements Designer {
 //        return domProvider.tcGetPastePosition(this);
 //    }
     
-    public void tcRepaint() {
-        domProvider.tcRepaint(this);
-    }
+//    public void tcRepaint() {
+//        domProvider.tcRepaint(this);
+//    }
     
 //    public boolean tcSeenEscape(ActionEvent evt) {
 //        return domProvider.tcSeenEscape(this, evt);

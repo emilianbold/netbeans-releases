@@ -1341,14 +1341,14 @@ class DomProviderImpl implements DomProvider {
 //        return designer.getPastePoint();
 //    }
 
-    public void tcRepaint(Designer designer) {
-//        JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);
-//        if (jsfMultiViewElement == null) {
-//            return;
-//        }
-//        jsfMultiViewElement.getJsfTopComponent().repaint();
-        JsfSupportUtilities.tcRepaint(designer);
-    }
+//    public void tcRepaint(Designer designer) {
+////        JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);
+////        if (jsfMultiViewElement == null) {
+////            return;
+////        }
+////        jsfMultiViewElement.getJsfTopComponent().repaint();
+//        JsfSupportUtilities.tcRepaint(designer);
+//    }
 
 //    public boolean tcSeenEscape(Designer designer, ActionEvent evt) {
 //        JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);
