@@ -634,18 +634,18 @@ public class WebForm implements Designer {
 //        return getJspDataObject();
 //    }
 
-    public DataObject getJspDataObject() {
-//        FileObject file = getModel().getMarkupFile();
-//
-//        try {
-//            return DataObject.find(file);
-//        } catch (DataObjectNotFoundException dnfe) {
-//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, dnfe);
-//
-//            return null;
-//        }
-        return domProvider.getJspDataObject();
-    }
+//    public DataObject getJspDataObject() {
+////        FileObject file = getModel().getMarkupFile();
+////
+////        try {
+////            return DataObject.find(file);
+////        } catch (DataObjectNotFoundException dnfe) {
+////            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, dnfe);
+////
+////            return null;
+////        }
+//        return domProvider.getJspDataObject();
+//    }
 
 //    public DataObject getJavaDataObject() {
 //        FileObject file = getModel().getJavaFile();

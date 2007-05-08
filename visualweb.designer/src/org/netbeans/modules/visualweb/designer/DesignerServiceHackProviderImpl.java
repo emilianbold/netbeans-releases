@@ -28,7 +28,6 @@ import org.netbeans.modules.visualweb.css2.BackgroundImagePainter;
 import org.netbeans.modules.visualweb.css2.CssBorder;
 import org.netbeans.modules.visualweb.css2.CssBox;
 import org.netbeans.modules.visualweb.designer.CssUtilities;
-import org.netbeans.modules.visualweb.css2.JspIncludeBox;
 import org.netbeans.modules.visualweb.css2.PageBox;
 import org.netbeans.modules.visualweb.css2.TableBox;
 
@@ -46,8 +45,6 @@ import javax.swing.UIManager;
 
 import org.apache.xerces.dom.DocumentImpl;
 import org.netbeans.modules.visualweb.api.designer.Designer;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.windows.WindowManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
@@ -1063,27 +1060,28 @@ public final class DesignerServiceHackProviderImpl /*extends DesignerServiceHack
 //        DataObject jspDataObject = contextWebform.getJspDataObject();
 //        return jspDataObject == null ? null : jspDataObject.getPrimaryFile();
 //    }
-    
-    public static FileObject getExternalFormFileForElement(Element element) {
-        WebForm webForm = WebForm.findWebFormForElement(element);
-        if (webForm == null) {
-            return null;
-        }
-//        CssBox includeBox = CssBox.getBox(element);
-        CssBox includeBox = webForm.findCssBoxForElement(element);
-
-        if ((includeBox != null) && includeBox instanceof JspIncludeBox) {
-            WebForm frameForm = ((JspIncludeBox)includeBox).getExternalForm();
-
-//            if ((frameForm != null) && (frameForm != WebForm.EXTERNAL)) {
-            if (frameForm != null) {
-//                return frameForm.getModel().getMarkupFile();
-                DataObject jspDataObject = frameForm.getJspDataObject();
-                return jspDataObject == null ? null : jspDataObject.getPrimaryFile();
-            }
-        }
-        return null;
-    }
+  
+    // XXX Moved to designer/jsf/../DesignerServiceHackImpl.
+//    public static FileObject getExternalFormFileForElement(Element element) {
+//        WebForm webForm = WebForm.findWebFormForElement(element);
+//        if (webForm == null) {
+//            return null;
+//        }
+////        CssBox includeBox = CssBox.getBox(element);
+//        CssBox includeBox = webForm.findCssBoxForElement(element);
+//
+//        if ((includeBox != null) && includeBox instanceof JspIncludeBox) {
+//            WebForm frameForm = ((JspIncludeBox)includeBox).getExternalForm();
+//
+////            if ((frameForm != null) && (frameForm != WebForm.EXTERNAL)) {
+//            if (frameForm != null) {
+////                return frameForm.getModel().getMarkupFile();
+//                DataObject jspDataObject = frameForm.getJspDataObject();
+//                return jspDataObject == null ? null : jspDataObject.getPrimaryFile();
+//            }
+//        }
+//        return null;
+//    }
     
 // </separation of models>
     

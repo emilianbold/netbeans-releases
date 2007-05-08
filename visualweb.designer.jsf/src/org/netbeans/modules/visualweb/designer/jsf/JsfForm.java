@@ -506,7 +506,7 @@ public class JsfForm {
         return findJsfFormForFacesModel(facesModel);
     }
     
-    private static JsfForm findJsfForm(Element element) {
+    /*private*/ static JsfForm findJsfForm(Element element) {
         MarkupDesignBean markupDesignBean = MarkupUnit.getMarkupDesignBeanForElement(element);
         if (markupDesignBean == null) {
             return null;

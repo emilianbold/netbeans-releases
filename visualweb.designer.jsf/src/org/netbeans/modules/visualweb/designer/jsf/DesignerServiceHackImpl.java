@@ -55,6 +55,9 @@ import javax.swing.TransferHandler;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.visualweb.api.designer.Designer;
+import org.netbeans.modules.visualweb.api.designer.Designer.Box;
+import org.netbeans.modules.visualweb.api.designer.Designer.ExternalBox;
+import org.netbeans.modules.visualweb.api.designer.DomProvider;
 import org.netbeans.modules.visualweb.designer.jsf.ui.JsfTopComponent;
 import org.netbeans.modules.visualweb.insync.UndoEvent;
 import org.openide.ErrorManager;
@@ -1473,7 +1476,33 @@ public class DesignerServiceHackImpl extends DesignerServiceHack {
 //            }
 //        }
 //        return null;
-        return DesignerServiceHackProvider.getExternalFormFileForElement(element);
+//        return DesignerServiceHackProvider.getExternalFormFileForElement(element);
+        JsfForm jsfForm = JsfForm.findJsfForm(element);
+        if (jsfForm == null) {
+            return null;
+        }
+        
+        // XXX Instead of traversing the boxes, traverse the elements directly.
+//        CssBox includeBox = CssBox.getBox(element);
+        Designer[] designers = JsfForm.findDesigners(jsfForm);
+        if (designers.length == 0) {
+            return null;
+        }
+        Designer designer = designers[0];
+        Box includeBox = designer.findBoxForElement(element);
+
+        if (includeBox instanceof ExternalBox) {
+            DomProvider domProvider = ((ExternalBox)includeBox).getExternalDomProvider();
+            JsfForm frameForm = JsfForm.findJsfFormForDomProvider(domProvider);
+
+//            if ((frameForm != null) && (frameForm != WebForm.EXTERNAL)) {
+            if (frameForm != null) {
+//                return frameForm.getModel().getMarkupFile();
+                DataObject jspDataObject = frameForm.getJspDataObject();
+                return jspDataObject == null ? null : jspDataObject.getPrimaryFile();
+            }
+        }
+        return null;
     }
     
 // </separation of models>

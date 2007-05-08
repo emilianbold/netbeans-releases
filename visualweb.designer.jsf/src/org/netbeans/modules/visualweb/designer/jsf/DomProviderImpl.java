@@ -298,19 +298,19 @@ class DomProviderImpl implements DomProvider {
 //        return jsfForm.isPortlet();
 //    }
 
-    public DataObject getJspDataObject() {
-////        FileObject file = getFacesModel().getMarkupFile();
-//        FileObject file = jsfForm.getMarkupFile();
-//
-//        try {
-//            return DataObject.find(file);
-//        } catch (DataObjectNotFoundException ex) {
-//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-//
-//            return null;
-//        }
-        return jsfForm.getJspDataObject();
-    }
+//    public DataObject getJspDataObject() {
+//////        FileObject file = getFacesModel().getMarkupFile();
+////        FileObject file = jsfForm.getMarkupFile();
+////
+////        try {
+////            return DataObject.find(file);
+////        } catch (DataObjectNotFoundException ex) {
+////            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+////
+////            return null;
+////        }
+//        return jsfForm.getJspDataObject();
+//    }
 
     public URL getBaseUrl() {
 //        MarkupUnit markupUnit = getFacesModel().getMarkupUnit();

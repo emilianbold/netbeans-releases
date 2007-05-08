@@ -25,7 +25,6 @@ import java.awt.Image;
 import java.net.URL;
 import java.util.Map;
 
-import org.openide.filesystems.FileObject;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 
@@ -131,9 +130,9 @@ public final class DesignerServiceHackProvider {
 //        return DesignerServiceHackProviderImpl.getContextFileForFragmentFile(fragmentFile);
 //    }
 
-    public static FileObject getExternalFormFileForElement(Element element) {
-        return DesignerServiceHackProviderImpl.getExternalFormFileForElement(element);
-    }
+//    public static FileObject getExternalFormFileForElement(Element element) {
+//        return DesignerServiceHackProviderImpl.getExternalFormFileForElement(element);
+//    }
 
 //    public static MultiViewElement getDesignerMultiViewElement(DataObject dataObject) {
 //        return DesignerServiceHackProviderImpl.getDesignerMultiViewElement(dataObject);

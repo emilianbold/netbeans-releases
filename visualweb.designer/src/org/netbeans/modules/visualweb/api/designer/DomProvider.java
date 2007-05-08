@@ -177,7 +177,7 @@ public interface DomProvider {
 //    public boolean isFragment();
 //    public boolean isPortlet();
     
-    public DataObject getJspDataObject();
+//    public DataObject getJspDataObject();
 
     
     public URL getBaseUrl();
