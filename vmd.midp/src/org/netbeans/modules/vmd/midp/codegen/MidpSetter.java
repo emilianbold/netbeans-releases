@@ -83,6 +83,10 @@ public class MidpSetter implements Setter {
         return constructorRelatedTypeID;
     }
 
+    public int getPriority () {
+        return 0;
+    }
+
     public String getSetterName () {
         return instanceNameSuffix;
     }

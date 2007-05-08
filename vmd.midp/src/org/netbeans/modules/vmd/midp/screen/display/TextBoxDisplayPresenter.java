@@ -28,6 +28,7 @@ import org.netbeans.modules.vmd.midp.screen.display.property.ScreenTextAreaPrope
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -61,9 +62,11 @@ public class TextBoxDisplayPresenter extends DisplayableDisplayPresenter {
     }
     
     public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {
-        return Collections.singleton(
+        ArrayList<ScreenPropertyDescriptor> list = new ArrayList<ScreenPropertyDescriptor> (super.getPropertyDescriptors ());
+        list.add (
             new ScreenPropertyDescriptor(getComponent(), textBox, new ScreenTextAreaPropertyEditor (TextBoxCD.PROP_STRING))
         );
+        return list;
     }
     
 }

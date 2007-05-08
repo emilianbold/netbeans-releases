@@ -34,6 +34,8 @@ public interface Setter {
 
     TypeID getConstructorRelatedTypeID ();
 
+    int getPriority ();
+
     /**
      * Used for stable sorting of setters.
      * @return the setter name

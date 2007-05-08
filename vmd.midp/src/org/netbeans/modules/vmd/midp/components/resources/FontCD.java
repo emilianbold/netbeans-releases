@@ -166,6 +166,10 @@ public final class FontCD extends ComponentDescriptor {
             return TYPEID;
         }
 
+        public int getPriority() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
         public String getSetterName () {
             return "Font.getFont"; // NOI18N
         }
@@ -243,6 +247,7 @@ public final class FontCD extends ComponentDescriptor {
         public List<String> getParameters () {
             return Collections.emptyList ();
         }
+
     }
 
 }

@@ -121,6 +121,7 @@ public final class InitCodeGenerator {
                 } else {
                     price += PRICE_OF_DEFAULT_PARAM;
                 }
+                price += setter.getPriority();
             }
 
             if (! mustUseChangedProperty  ||  usesChangedProperty) {

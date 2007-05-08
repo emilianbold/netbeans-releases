@@ -92,6 +92,9 @@ public class SVGImageCD extends ComponentDescriptor {
             public TypeID getConstructorRelatedTypeID() {
                 return TYPEID;
             }
+            public int getPriority() {
+                return 0;
+            }
             public String getSetterName() {
                 return null;
             }

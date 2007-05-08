@@ -40,8 +40,8 @@ public class ListCode {
 
     private static final String LIST_ACTION_METHOD_SUFFIX = "Action";
 
-    static final String PARAM_STRING = "elementString"; // NOI18N
-    static final String PARAM_IMAGE = "elementImage"; // NOI18N
+    public static final String PARAM_STRING = "elementString"; // NOI18N
+    public static final String PARAM_IMAGE = "elementImage"; // NOI18N
     static final String PARAM_FONT = "elementFont"; // NOI18N
     static final String PARAM_SELECTED_ARRAY = "elementSelectedArray"; // NOI18N
     static final String PARAM_STRING_ARRAY = "elementStringArray"; // NOI18N
