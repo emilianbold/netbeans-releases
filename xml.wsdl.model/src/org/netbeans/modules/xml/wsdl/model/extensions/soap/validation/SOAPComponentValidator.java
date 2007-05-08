@@ -402,20 +402,31 @@ public class SOAPComponentValidator
             }
         }
         
-        try {
-            URI uri = new URI(location);
-            String scheme = uri.getScheme();
-            if (!scheme.equalsIgnoreCase("http") &&
-                    !scheme.equalsIgnoreCase("https")) {
-                return;
-            }
-            URL url = uri.toURL();
-        } catch (Exception ex) {
-            results.add(
-                    new Validator.ResultItem(this,
-                    Validator.ResultType.ERROR,
-                    address,
-                    NbBundle.getMessage(SOAPComponentValidator.class, "SOAPAddressValidator.Unsupported_location_attribute")));
+            if(containsToken(location)) {
+                if(!isValidSoapAddressToken(location)) {
+                        results.add(
+                            new Validator.ResultItem(this,
+                            Validator.ResultType.ERROR,
+                            address,
+                            NbBundle.getMessage(SOAPComponentValidator.class, "SOAPAddressValidator.Unsupported_Token_Format")));
+                    return;
+                }
+            } else {
+                try {
+                    URI uri = new URI(location);
+                    String scheme = uri.getScheme();
+                    if (!scheme.equalsIgnoreCase("http") &&
+                        !scheme.equalsIgnoreCase("https")) {
+                    return;
+                    }
+                    URL url = uri.toURL();
+                } catch (Exception ex) {
+                    results.add(
+                        new Validator.ResultItem(this,
+                        Validator.ResultType.ERROR,
+                        address,
+                        NbBundle.getMessage(SOAPComponentValidator.class, "SOAPAddressValidator.Unsupported_location_attribute")));
+                }   
         }
     }
     
@@ -622,5 +633,80 @@ public class SOAPComponentValidator
                     operation,
                     NbBundle.getMessage(SOAPComponentValidator.class, "SOAPOperationValidator.Unsupported_style_attribute")));
         }
+    }
+
+
+    private boolean containsToken(String val) {
+        if(val.contains("${")) {                        
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * A token string can be of the following format: 
+     * 1. http(s)://${host}:${port}/${context}
+     * 2. ${URL}
+     */
+    private boolean isValidSoapAddressToken(String tokenString) {
+        boolean containsProtocolInfo = false;
+        boolean isValidToken = true;
+        if(tokenString.startsWith("http://")) {
+            //strip off the protocol stuff
+            tokenString = tokenString.substring(7, tokenString.length());
+            containsProtocolInfo = true;
+        }
+        if(tokenString.startsWith("https://")) {
+            //strip off the protocol stuff
+            tokenString = tokenString.substring(8, tokenString.length());
+            containsProtocolInfo = true;
+        }
+        //No protocol info, it better be of the format ${URL}
+        if(!containsProtocolInfo) {
+            int indexOfTokenStart = tokenString.indexOf("${");
+            int indexOfTokenEnd = tokenString.indexOf("}");
+            if((indexOfTokenEnd == tokenString.length() - 1) && (indexOfTokenStart == 0)) {
+                isValidToken = true;
+            } else {
+                return false;
+            }
+        }
+        if(tokenString.contains("${") ) {
+            int indexOfPortSeparator = tokenString.indexOf(":");
+            int indexOfContextSeparator = tokenString.lastIndexOf("/");
+            
+            //Context separator / exists.
+            if(indexOfContextSeparator != -1) {
+                //The token is in the context.
+                String context = tokenString.substring(indexOfContextSeparator+1, tokenString.length());
+                int indexOfContextTokenStart = context.indexOf("${");
+                if(indexOfContextTokenStart == 0) {
+                    int indexOfTokenEnd = context.indexOf("}");
+                    if(indexOfTokenEnd < indexOfContextTokenStart) {
+                        return false;
+                    }
+                } else if(context.indexOf("}") > 0) {
+                    return false;
+                }
+                
+                int indexOfTokenStart = tokenString.indexOf("${");
+                if(indexOfTokenStart == 0) { //The token is in the host
+                    String host = tokenString.substring(1, indexOfPortSeparator);
+                    int indexOfTokenEnd = host.indexOf("}");
+                    if(indexOfTokenEnd < 1) {
+                        return false;
+                    }
+                } else if(tokenString.substring(1, indexOfPortSeparator).indexOf("}") > 0) {
+                    return false;
+                }
+                String port = tokenString.substring(indexOfPortSeparator + 1, indexOfContextSeparator);
+                if((port.indexOf("${") != -1) && (port.indexOf("}") > 0)) {
+                    isValidToken = true;
+                } else {
+                    return false;
+                }
+            }
+        }
+        return isValidToken;
     }
 }
