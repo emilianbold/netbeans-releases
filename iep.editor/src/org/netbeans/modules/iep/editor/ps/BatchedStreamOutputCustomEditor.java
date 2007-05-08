@@ -157,7 +157,7 @@ public class BatchedStreamOutputCustomEditor extends DefaultCustomEditor {
             mIncludeTimestampPanel = PropertyPanel.createCheckBoxPanel(includeTimestampStr, includeTimestampProp);
             gbc.gridx = 3;
             gbc.gridy = 0;
-            gbc.gridwidth = 1;
+            gbc.gridwidth = 2;
             gbc.gridheight = 1;
             gbc.anchor = GridBagConstraints.WEST;
             gbc.weightx = 0.0D;
@@ -214,8 +214,18 @@ public class BatchedStreamOutputCustomEditor extends DefaultCustomEditor {
             gbc.fill = GridBagConstraints.NONE;
             pane.add(mMaximumDelayPanel.component[1], gbc);
 
-            // glue
             gbc.gridx = 5;
+            gbc.gridy = 2;
+            gbc.gridwidth = 1;
+            gbc.gridheight = 1;
+            gbc.anchor = GridBagConstraints.WEST;
+            gbc.weightx = 0.0D;
+            gbc.weighty = 0.0D;
+            gbc.fill = GridBagConstraints.NONE;
+            pane.add(mMaximumDelayPanel.component[2], gbc);
+
+            // glue
+            gbc.gridx = 6;
             gbc.gridy = 0;
             gbc.gridwidth = 1;
             gbc.gridheight = 1;

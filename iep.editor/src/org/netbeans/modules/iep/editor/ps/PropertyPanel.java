@@ -169,7 +169,7 @@ public class PropertyPanel {
         };
         JLabel nameLbl = new JLabel(label);
         JTextField tf = new JTextField();
-        tf.setPreferredSize(new Dimension(160, 20));
+        tf.setPreferredSize(new Dimension(140, 20));
         tf.setMinimumSize(new Dimension(50, 20));
         tf.setDocument(tff);
         tf.setText(prop.getStringValue());
@@ -450,7 +450,7 @@ public class PropertyPanel {
         JLabel nameLabel = new JLabel(label);
         JComboBox cbb = new JComboBox(values);
         // PreferredSize must be set o.w. failed validation will resize this field.
-        cbb.setPreferredSize(new Dimension(160, 20));
+        cbb.setPreferredSize(new Dimension(140, 20));
         cbb.setMinimumSize(new Dimension(50, 20));
 
         String value = prop.getStringValue();
