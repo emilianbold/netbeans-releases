@@ -355,26 +355,26 @@ public class SearchForJavaAction extends WizardAction {
     private static final String JDK_PRODUCT_UID = "jdk"; //NOI18N
     
     public static final String [] JAVA_WINDOWS_REGISTRY_ENTRIES = new String [] {
-        "SOFTWARE\\JavaSoft\\Java Development Kit",                         // NOI18N
-        "SOFTWARE\\JRockit\\Java Development Kit",                          // NOI18N
-        "SOFTWARE\\IBM\\Java Development Kit",                              // NOI18N
-        "SOFTWARE\\IBM\\Java2 Development Kit",                             // NOI18N
+        "SOFTWARE\\JavaSoft\\Java Development Kit", // NOI18N
+        "SOFTWARE\\JRockit\\Java Development Kit", // NOI18N
+        "SOFTWARE\\IBM\\Java Development Kit", // NOI18N
+        "SOFTWARE\\IBM\\Java2 Development Kit", // NOI18N
         
-        "SOFTWARE\\JavaSoft\\Java Runtime Environment",                     // NOI18N
-        "SOFTWARE\\JRockit\\Java Runtime Environment",                      // NOI18N
-        "SOFTWARE\\IBM\\Java Runtime Environment",                          // NOI18N
-        "SOFTWARE\\IBM\\Java2 Runtime Environment"                          // NOI18N
+        "SOFTWARE\\JavaSoft\\Java Runtime Environment", // NOI18N
+        "SOFTWARE\\JRockit\\Java Runtime Environment", // NOI18N
+        "SOFTWARE\\IBM\\Java Runtime Environment", // NOI18N
+        "SOFTWARE\\IBM\\Java2 Runtime Environment" // NOI18N
     };
     
     public static final String[] JAVA_ENVIRONMENT_VARIABLES = new String[] {
-        "JAVA_HOME",                                                        // NOI18N
-        "JAVAHOME",                                                         // NOI18N
-        "JAVA_PATH",                                                        // NOI18N
-        "JDK_HOME",                                                         // NOI18N
-        "JDKHOME",                                                          // NOI18N
-        "ANT_JAVA",                                                         // NOI18N
-        "JAVA",                                                             // NOI18N
-        "JDK"                                                               // NOI18N
+        "JAVA_HOME", // NOI18N
+        "JAVAHOME", // NOI18N
+        "JAVA_PATH", // NOI18N
+        "JDK_HOME", // NOI18N
+        "JDKHOME", // NOI18N
+        "ANT_JAVA", // NOI18N
+        "JAVA", // NOI18N
+        "JDK" // NOI18N
     };
     
     public static final String[] JAVA_FILESYSTEM_LOCATIONS = new String[] {
@@ -385,6 +385,8 @@ public class SearchForJavaAction extends WizardAction {
         "$N{install}/Java", // NOI18N
         
         "$N{home}", // NOI18N
+        "$N{home}/java", // NOI18N
+        "$N{home}/jdk", // NOI18N
         "$N{home}/Java", // NOI18N
         
         "/usr", // NOI18N
