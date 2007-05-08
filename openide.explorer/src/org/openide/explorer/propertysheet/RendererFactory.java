@@ -27,8 +27,10 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -53,9 +55,11 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
 import javax.swing.event.ChangeListener;
+import javax.swing.plaf.basic.BasicGraphicsUtils;
 import org.openide.awt.HtmlRenderer;
 import org.openide.nodes.Node.Property;
 import org.openide.util.Utilities;
@@ -740,11 +744,67 @@ final class RendererFactory {
                 lbl.setBackground(getBackground());
                 lbl.setForeground(getForeground());
                 lbl.setBorder( getBorder() );
-                lbl.paint(g);
+                if ("com.sun.java.swing.plaf.windows.WindowsLabelUI".equals(lbl.getUI().getClass().getName()) &&
+                        ! isEnabled() && ! htmlValueUsed) {
+                    // the shadow effect from the label was making a problem
+                    // let's paint the text "manually" in this case
+                    g.setColor(lbl.getBackground());
+                    g.fillRect(0, 0, lbl.getWidth(), lbl.getHeight());
+                    g.setColor(lbl.getForeground());
+                    Icon icon = (lbl.isEnabled()) ? lbl.getIcon() : lbl.getDisabledIcon();
+                    
+                    FontMetrics fm = g.getFontMetrics();
+                    Insets insets = lbl.getInsets(paintViewInsets);
+                    
+                    paintViewR.x = insets.left;
+                    paintViewR.y = insets.top;
+                    paintViewR.width = lbl.getWidth() - (insets.left + insets.right);
+                    paintViewR.height = lbl.getHeight() - (insets.top + insets.bottom);
+                    
+                    paintIconR.x = paintIconR.y = paintIconR.width = paintIconR.height = 0;
+                    paintTextR.x = paintTextR.y = paintTextR.width = paintTextR.height = 0;
+                    
+                    String clippedText =
+                            SwingUtilities.layoutCompoundLabel(
+                            lbl, fm, text, icon, lbl.getVerticalAlignment(),
+                            lbl.getHorizontalAlignment(),
+                            lbl.getVerticalTextPosition(),
+                            lbl.getHorizontalTextPosition(),
+                            paintViewR, paintIconR, paintTextR, lbl.getIconTextGap());
+                    
+                    
+                    if (icon != null) {
+                        icon.paintIcon(lbl, g, paintIconR.x, paintIconR.y);
+                    }
+                    int textX = paintTextR.x;
+                    int textY = paintTextR.y + fm.getAscent();
+                    int mnemonicIndex = lbl.getDisplayedMnemonicIndex();
+                    // we are here only if the property is read-only (disabled)
+                    //   --> make the foreground brighter
+                    Color fg = lbl.getForeground();
+                    Color changedForeground = lbl.getForeground().brighter();
+                    if (Color.BLACK.equals(fg)) {
+                        // for some unknown reason the code with brighter does
+                        // not work for me!
+                        changedForeground = Color.GRAY;
+                    }
+                    
+                    g.setColor(changedForeground);
+                    BasicGraphicsUtils.drawStringUnderlineCharAt(g, clippedText, mnemonicIndex,
+                            textX, textY);
+                } else {
+                    lbl.paint(g);
+                }
             }
 
             clear();
         }
+        
+        // variables for the hack from the above method:
+        private static Insets paintViewInsets = new Insets(0, 0, 0, 0);
+        private static Rectangle paintIconR = new Rectangle();
+        private static Rectangle paintTextR = new Rectangle();
+        private static Rectangle paintViewR = new Rectangle();
 
         private void delegatedPaint(Graphics g) {
             Color c = g.getColor();
