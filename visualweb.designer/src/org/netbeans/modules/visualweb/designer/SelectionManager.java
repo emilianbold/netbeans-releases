@@ -2240,19 +2240,19 @@ public class SelectionManager {
 //        }
 //    }
 
-    /** Return set of currently selected nodes */
-    public Node[] getSelectedNodes() {
-        if (refreshTimer != null) {
-            // The nodes may not be current - there's a pending update. Cancel the
-            // update request and update the nodes immediately instead
-            refreshTimer.stop();
-            refreshTimer = null;
-            updateNodesImmediate();
-        }
-
-//        return webform.getTopComponent().getActivatedNodes();
-        return webform.tcGetActivatedNodes();
-    }
+//    /** Return set of currently selected nodes */
+//    public Node[] getSelectedNodes() {
+//        if (refreshTimer != null) {
+//            // The nodes may not be current - there's a pending update. Cancel the
+//            // update request and update the nodes immediately instead
+//            refreshTimer.stop();
+//            refreshTimer = null;
+//            updateNodesImmediate();
+//        }
+//
+////        return webform.getTopComponent().getActivatedNodes();
+//        return webform.tcGetActivatedNodes();
+//    }
 
     /** Return the primary selection, if any. The primary is the most recently
      * "touched" DesignBean in the selection. For example, if you swipe select

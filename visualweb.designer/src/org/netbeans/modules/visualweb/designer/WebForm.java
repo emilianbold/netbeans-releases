@@ -3049,9 +3049,9 @@ public class WebForm implements Designer {
 //        domProvider.tcSetActivatedNodes(this, nodes);
 //    }
     
-    public org.openide.nodes.Node[] tcGetActivatedNodes() {
-        return domProvider.tcGetActivatedNodes(this);
-    }
+//    public org.openide.nodes.Node[] tcGetActivatedNodes() {
+//        return domProvider.tcGetActivatedNodes(this);
+//    }
     
 //    public void tcRequestActive() {
 //        domProvider.tcRequestActive(this);

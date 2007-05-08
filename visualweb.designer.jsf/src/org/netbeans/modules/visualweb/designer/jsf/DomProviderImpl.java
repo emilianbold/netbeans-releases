@@ -1248,13 +1248,13 @@ class DomProviderImpl implements DomProvider {
 //        setActivatedNodes(jsfMultiViewElement.getJsfTopComponent(), nodes);
 //    }
 
-    public org.openide.nodes.Node[] tcGetActivatedNodes(Designer designer) {
-        JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);
-        if (jsfMultiViewElement == null) {
-            return new org.openide.nodes.Node[0];
-        }
-        return jsfMultiViewElement.getJsfTopComponent().getActivatedNodes();
-    }
+//    public org.openide.nodes.Node[] tcGetActivatedNodes(Designer designer) {
+//        JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);
+//        if (jsfMultiViewElement == null) {
+//            return new org.openide.nodes.Node[0];
+//        }
+//        return jsfMultiViewElement.getJsfTopComponent().getActivatedNodes();
+//    }
 
     public void tcShowPopupMenu(Designer designer, int x, int y) {
         JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);
