@@ -172,6 +172,9 @@ public final class Product extends RegistryNode {
         // product should be automatically wrapped, we first create the required
         // directories structure and then extract the product
         if (SystemUtils.isMacOS() && configurationLogic.wrapForMacOs()) {
+            setProperty(
+                    "application.location", 
+                    getInstallationLocation().getAbsolutePath());
             setInstallationLocation(new File(resourcesDir,
                     getInstallationLocation().getName().replaceAll("\\.app$", "")));
             
@@ -897,7 +900,14 @@ public final class Product extends RegistryNode {
             icon = null;
         }
         
-        final String installLocation = getInstallationLocation().getAbsolutePath();
+        String installLocation = getInstallationLocation().getAbsolutePath();
+        if (SystemUtils.isMacOS() && configurationLogic.wrapForMacOs()) {
+            final String applicationLocation = getProperty("application.location");
+            
+            if (applicationLocation != null) {
+                installLocation = applicationLocation;
+            }
+        }
         
         final String[] modifyCommand = new String[] {
             "--target", uid, version.toString()};
