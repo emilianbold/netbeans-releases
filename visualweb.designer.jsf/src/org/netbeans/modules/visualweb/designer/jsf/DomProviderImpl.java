@@ -847,10 +847,10 @@ class DomProviderImpl implements DomProvider {
 //        return jsfForm.getFacesPageUnit().isPage();
 //    }
 
-    public boolean isAlive() {
-//        return getFacesModel().getLiveUnit() != null;
-        return jsfForm.getLiveUnit() != null;
-    }
+//    public boolean isAlive() {
+////        return getFacesModel().getLiveUnit() != null;
+//        return jsfForm.getLiveUnit() != null;
+//    }
 
     public boolean isFormComponent(Element componentRootElement) {
         MarkupDesignBean bean = MarkupUnit.getMarkupDesignBeanForElement(componentRootElement);

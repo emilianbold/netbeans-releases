@@ -2100,9 +2100,9 @@ public class WebForm implements Designer {
 //        return domProvider.isPage();
 //    }
 
-    public boolean isAlive() {
-        return domProvider.isAlive();
-    }
+//    public boolean isAlive() {
+//        return domProvider.isAlive();
+//    }
 
 //    String getImageComponentClassName() {
 //        return domProvider.getImageComponentClassName();

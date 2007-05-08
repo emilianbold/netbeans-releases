@@ -292,7 +292,7 @@ public interface DomProvider {
 
 //    public boolean isPage();
 
-    public boolean isAlive();
+//    public boolean isAlive();
 
 //    // XXX Designer shoudn't know about class names at all.
 //    public String getImageComponentClassName();

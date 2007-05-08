@@ -59,14 +59,14 @@ public class DeleteNextCharAction extends TextAction {
 //            WebForm webform = doc.getWebForm();
             WebForm webform = target.getWebForm();
 
-//            if (webform.getModel().getLiveUnit() == null) {
-            // XXX This seems to be wrong. Model should handle it.
-            if (!webform.isAlive()) {
-                // Can't mutate document
-                UIManager.getLookAndFeel().provideErrorFeedback(target);
-
-                return;
-            }
+////            if (webform.getModel().getLiveUnit() == null) {
+//            // XXX This seems to be wrong. Model should handle it.
+//            if (!webform.isAlive()) {
+//                // Can't mutate document
+//                UIManager.getLookAndFeel().provideErrorFeedback(target);
+//
+//                return;
+//            }
 
 //            DesignerCaret caret = target.getCaret();
 //            if (caret == null) {
