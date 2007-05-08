@@ -94,7 +94,7 @@ public class MIDletViewsSwitch extends org.netbeans.performance.test.utilities.P
     }
     public void shutdown() {
         log(":: shutdown");
-        targetMIDletEditor.close();
+        targetMIDletEditor.closeDiscard();
     }
     public void testFlowToDesignSwitch() {
         fromView = "Flow";
