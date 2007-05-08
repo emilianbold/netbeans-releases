@@ -536,7 +536,7 @@ public interface DomProvider {
     // XXX Temp till the TopComp move is cleaned up.
 //    public void tcUpdateErrors(Designer designer);
 //    public void tcDesignContextGenerationChanged(Designer designer);
-    public void tcRequestActive(Designer designer);
+//    public void tcRequestActive(Designer designer);
     
     // XXX
 //    public void tcEnableCutCopyDelete(Designer designer);

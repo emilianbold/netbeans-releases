@@ -395,7 +395,7 @@ public class JsfForm {
         return jsfMultiViewElement;
     }
     
-    static JsfMultiViewElement findJsfMultiViewElementForDesigner(Designer designer) {
+    public static JsfMultiViewElement findJsfMultiViewElementForDesigner(Designer designer) {
         if (designer == null) {
             return null;
         }

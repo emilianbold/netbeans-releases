@@ -3053,9 +3053,9 @@ public class WebForm implements Designer {
         return domProvider.tcGetActivatedNodes(this);
     }
     
-    public void tcRequestActive() {
-        domProvider.tcRequestActive(this);
-    }
+//    public void tcRequestActive() {
+//        domProvider.tcRequestActive(this);
+//    }
     
     public void tcShowPopupMenu(int x, int y) {
         domProvider.tcShowPopupMenu(this, x, y);

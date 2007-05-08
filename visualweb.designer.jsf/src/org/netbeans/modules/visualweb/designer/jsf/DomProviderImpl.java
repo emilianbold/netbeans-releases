@@ -1216,13 +1216,13 @@ class DomProviderImpl implements DomProvider {
 //        jsfMultiViewElement.getJsfTopComponent().designContextGenerationChanged();
 //    }
 
-    public void tcRequestActive(Designer designer) {
-        JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);
-        if (jsfMultiViewElement == null) {
-            return;
-        }
-        jsfMultiViewElement.getJsfTopComponent().requestActive();
-    }
+//    public void tcRequestActive(Designer designer) {
+//        JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);
+//        if (jsfMultiViewElement == null) {
+//            return;
+//        }
+//        jsfMultiViewElement.getJsfTopComponent().requestActive();
+//    }
 
 //    public void tcEnableCutCopyDelete(Designer designer) {
 //        JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);

@@ -390,8 +390,8 @@ public class InteractionManager {
         }
 
         CssBox box = ModelViewMapper.findBoxForComponentRootElement(webform.getPane().getPageBox(), componentRootElement);
-//        webform.getTopComponent().requestActive();
-        webform.tcRequestActive();
+////        webform.getTopComponent().requestActive();
+//        webform.tcRequestActive();
         startInlineEditing(componentRootElement, propertyName, box, true, true, null, false);
     }
     
@@ -430,8 +430,8 @@ public class InteractionManager {
                 sm.setSelected(componentRootElement, true);
             }
 
-//            webform.getTopComponent().requestActive();
-            webform.tcRequestActive();
+////            webform.getTopComponent().requestActive();
+//            webform.tcRequestActive();
             
             DesignerPane pane = webform.getPane();
             pane.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));

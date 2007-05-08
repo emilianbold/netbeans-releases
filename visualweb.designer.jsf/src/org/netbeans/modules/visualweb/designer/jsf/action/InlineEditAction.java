@@ -29,6 +29,8 @@ import org.netbeans.modules.visualweb.spi.designtime.idebridge.action.AbstractDe
 import javax.swing.Action;
 import javax.swing.JMenuItem;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.visualweb.designer.jsf.JsfForm;
+import org.netbeans.modules.visualweb.designer.jsf.ui.JsfMultiViewElement;
 import org.openide.ErrorManager;
 import org.openide.awt.Actions;
 import org.openide.util.HelpCtx;
@@ -199,6 +201,10 @@ public class InlineEditAction extends AbstractDesignBeanAction {
 //            CssBox box = ModelViewMapper.findBoxForComponentRootElement(webform.getPane().getPageBox(), componentRootElement);
 //            webform.getTopComponent().requestActive();
 //            webform.getManager().startInlineEditing(componentRootElement, propertyName, box, true, true, null, false);
+            JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);
+            if (jsfMultiViewElement != null) {
+                jsfMultiViewElement.requestActive();
+            }
             Element componentRootElement = JsfSupportUtilities.getComponentRootElementForDesignBean(bean);
             designer.startInlineEditing(componentRootElement, propertyName);
          }

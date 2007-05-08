@@ -2294,8 +2294,8 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     }
     
     public void inlineEditComponents(Element[] componentRootElements) {
-        designer.inlineEditComponents(componentRootElements);
         requestActive();
+        designer.inlineEditComponents(componentRootElements);
     }
     // JSF notifications <<<
     

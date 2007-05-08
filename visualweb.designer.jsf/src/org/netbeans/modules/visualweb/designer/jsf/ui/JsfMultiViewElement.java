@@ -196,4 +196,8 @@ public class JsfMultiViewElement implements MultiViewElement {
     public void modelLoaded() {
         jsfTopComponent.modelLoaded();
     }
+    
+    public void requestActive() {
+        jsfTopComponent.requestActive();
+    }
 }
