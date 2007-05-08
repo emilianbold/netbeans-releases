@@ -113,7 +113,7 @@ public class CreateWebPackProject extends org.netbeans.performance.test.utilitie
     }
     
     public void close(){
-        log("::close")
+        log("::close");
         try {
             new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
         } catch (Exception ex) {
