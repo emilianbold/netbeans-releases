@@ -74,6 +74,7 @@ public class CreateWebPackProject extends org.netbeans.performance.test.utilitie
     }
     
     public void prepare(){
+        log("::prepare");
         createProject();
     }
     
@@ -106,13 +107,19 @@ public class CreateWebPackProject extends org.netbeans.performance.test.utilitie
     }
     
     public ComponentOperator open(){
+        log("::open");
         wizard_location.finish();
         return null;
     }
     
     public void close(){
-        VWPFootprintUtilities.deleteProject(project_name);
-        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
+        log("::close")
+        try {
+            new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
+        } catch (Exception ex) {
+            log("Exception catched on CloseAllDocuments action: "+ex.getMessage());
+        }
+        VWPFootprintUtilities.deleteProject(project_name);        
     }
     
     public static void main(java.lang.String[] args) {
