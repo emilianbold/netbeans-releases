@@ -55,7 +55,6 @@ import javax.swing.tree.TreePath;
 
 import org.openide.ErrorManager;
 import org.openide.actions.PropertiesAction;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;

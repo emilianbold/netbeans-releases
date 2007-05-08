@@ -57,7 +57,6 @@ import javax.swing.event.EventListenerList;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -270,10 +269,10 @@ public class WebForm implements Designer {
 //        }
 //    }
     
-    private static boolean isWebFormDataObject(DataObject dobj) {
-//        return (dobj != null) && (FacesModel.getInstance(dobj.getPrimaryFile()) != null);
-        return (dobj != null) && getDomProviderService().isWebFormFileObject(dobj.getPrimaryFile());
-    }
+//    private static boolean isWebFormDataObject(DataObject dobj) {
+////        return (dobj != null) && (FacesModel.getInstance(dobj.getPrimaryFile()) != null);
+//        return (dobj != null) && getDomProviderService().isWebFormFileObject(dobj.getPrimaryFile());
+//    }
 
 //    public static boolean hasWebFormForDataObject(DataObject dobj) {
 ////        synchronized (LOCK_WEB_FORMS) {

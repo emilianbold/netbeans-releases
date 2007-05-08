@@ -21,13 +21,10 @@ package org.netbeans.modules.visualweb.api.designer;
 
 
 import java.awt.Dimension;
-import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.net.URL;
 import java.util.EventListener;
@@ -35,7 +32,6 @@ import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import org.netbeans.modules.visualweb.api.designer.Designer.Box;
 import org.netbeans.spi.palette.PaletteController;
-import org.openide.loaders.DataObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
