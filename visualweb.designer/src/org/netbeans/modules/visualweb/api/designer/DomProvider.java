@@ -290,7 +290,7 @@ public interface DomProvider {
 //    // XXX Get rid of this.
 //    public Class getBeanClass(String className) throws ClassNotFoundException;
 
-    public boolean isPage();
+//    public boolean isPage();
 
     public boolean isAlive();
 

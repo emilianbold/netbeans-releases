@@ -2096,9 +2096,9 @@ public class WebForm implements Designer {
 //        return domProvider.getBeanClass(className);
 //    }
 
-    public boolean isPage() {
-        return domProvider.isPage();
-    }
+//    public boolean isPage() {
+//        return domProvider.isPage();
+//    }
 
     public boolean isAlive() {
         return domProvider.isAlive();

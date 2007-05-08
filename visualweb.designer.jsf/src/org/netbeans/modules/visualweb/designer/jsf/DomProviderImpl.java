@@ -842,10 +842,10 @@ class DomProviderImpl implements DomProvider {
 //        return getFacesModel().getProject();
 //    }
 
-    public boolean isPage() {
-//        return getFacesModel().getFacesUnit().isPage();
-        return jsfForm.getFacesPageUnit().isPage();
-    }
+//    public boolean isPage() {
+////        return getFacesModel().getFacesUnit().isPage();
+//        return jsfForm.getFacesPageUnit().isPage();
+//    }
 
     public boolean isAlive() {
 //        return getFacesModel().getLiveUnit() != null;

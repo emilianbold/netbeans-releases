@@ -94,14 +94,14 @@ public class JspIncludeBox extends ExternalDocumentBox {
             box.styleElement = frameForm.getHtmlBody();
         }
 
-//        if ((frameForm != null) && (frameForm.getModel() != null) &&
-//                (frameForm.getModel().getFacesUnit() != null) &&
-//                frameForm.getModel().getFacesUnit().isPage()) {
-        if (frameForm != null && frameForm.isPage()) {
-//            InSyncService.getProvider().getRaveErrorHandler().displayError(NbBundle.getMessage(JspIncludeBox.class, "FragmentIsPage", getFile(element)));
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                    new IllegalStateException("Form is page, and should be a fragment, form=" + frameForm + ", file=" + getFile(element, webform))); // NOI18N
-        }
+////        if ((frameForm != null) && (frameForm.getModel() != null) &&
+////                (frameForm.getModel().getFacesUnit() != null) &&
+////                frameForm.getModel().getFacesUnit().isPage()) {
+//        if (frameForm != null && frameForm.isPage()) {
+////            InSyncService.getProvider().getRaveErrorHandler().displayError(NbBundle.getMessage(JspIncludeBox.class, "FragmentIsPage", getFile(element)));
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+//                    new IllegalStateException("Form is page, and should be a fragment, form=" + frameForm + ", file=" + getFile(element, webform))); // NOI18N
+//        }
 
         return box;
     }
