@@ -3,7 +3,7 @@
         <taskdef classpath="workspace/nbbuild/netbeans/harness/tasks.jar" resource="org/netbeans/nbbuild/taskdefs.properties"/>
         <makeupdatedesc desc="workspace/nbbuild/nbms/updates.xml" distbase="." automaticgrouping="true">
             <fileset dir="workspace/nbbuild/nbms">
-                <include name="*.nbm"/>
+                <include name="**/*.nbm"/>
                 <!-- XXX temporary, while profiler is not built properly: -->
                 <exclude name="org-netbeans-modules-profiler-loadgen.nbm"/>
                 <exclude name="org-netbeans-modules-debugger-jpda-heapwalk.nbm"/>
