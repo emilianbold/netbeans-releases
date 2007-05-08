@@ -1825,7 +1825,7 @@ public class WebForm implements Designer {
         getManager().inlineEdit(componentRootElements);
         // XXX #6484250 To activate the window after drop.
 //        getTopComponent().requestActive();
-        tcRequestActive();
+//        tcRequestActive();
     }
     // <<< DnD callbacks
 
