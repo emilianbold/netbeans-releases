@@ -67,7 +67,7 @@ abstract class WSITRefactoringPlugin<T extends AbstractRefactoring> extends Prog
     }
 
     public void cancelRequest() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        // do nothing - WSIT refactoring operations are fast - no need to cancel
     }
 
     public Problem fastCheckParameters() {
