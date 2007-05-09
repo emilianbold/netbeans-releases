@@ -142,7 +142,7 @@ public class PageFlowController {
      * @return currentScope (LBL_SCOPE_PROJECT,LBL_SCOPE_FACESCONFIG)
      */
     public String getCurrentScope() {
-        return PageFlowUtilities.getInstance().getCurrentScope();
+        return PageFlowUtilities.getInstance(this).getCurrentScope();
     }
     
     public boolean isFacesConfigCurrentScope() {
