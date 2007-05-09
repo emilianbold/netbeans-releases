@@ -52,6 +52,7 @@ public class CommentsTest extends GeneratorTest {
 //        suite.addTest(new CommentsTest("testAddJavaDocToExistingMethod"));
 //        suite.addTest(new CommentsTest("testAddTwoEndLineCommments"));
 //        suite.addTest(new CommentsTest("testCopyMethodWithCommments"));
+//        suite.addTest(new CommentsTest("testAddStatementWithEmptyLine"));
         return suite;
     }
 
@@ -368,6 +369,77 @@ public class CommentsTest extends GeneratorTest {
                 assertNotNull(method);
                 
                 wc.rewrite(clazz, make.addClassMember(clazz, method));
+            }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+
+    public void testAddStatementWithEmptyLine() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.File;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "\n" +
+            "    void method() {\n" +
+            "    }\n" +
+            "\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.File;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "\n" +
+            "    void method() {\n" +
+            "        \n" +
+            "        // test\n" +
+            "        int a;\n" +
+            "        \n" +
+            "        /*\n" +
+            "         * Test\n" +
+            "         * Test2\n" +
+            "         */\n" +
+            "        int b;\n" +
+            "    }\n" +
+            "\n" +
+            "}\n";
+
+        JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                String bodyText = 
+                        "{\n" +
+                        "    \n" +
+                        "    // test\n" +
+                        "    int a;\n" +
+                        "    \n" +
+                        "    /*\n" +
+                        "     * Test\n" +
+                        "     * Test2\n" +
+                        "     */\n" +
+                        "    int b;\n" +
+                        "}";
+                BlockTree block = make.createMethodBody(method, bodyText);
+                workingCopy.rewrite(method.getBody(), block);
             }
 
             public void cancel() {

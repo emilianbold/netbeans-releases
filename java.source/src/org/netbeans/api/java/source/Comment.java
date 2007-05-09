@@ -50,6 +50,13 @@ public final class Comment {
          * A JavaDoc comment.
          */
         JAVADOC,
+        
+        /**
+         * Whitespace
+         * TODO: not comment, but requested by another teams to preserve
+         * empty lines etc.
+         */
+        WHITESPACE;
     }
 
     /**

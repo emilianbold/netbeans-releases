@@ -1531,6 +1531,20 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     private void printComment(Comment comment, boolean appendOnly) {
+        if (Comment.Style.WHITESPACE == comment.style()) {
+            char[] data = comment.getText().toCharArray();
+            int n = -1;
+            for (int i = 0; i < data.length; i++) {
+                if (data[i] == '\n') {
+                    n++;
+                }
+            }
+            for (int i = n; i > 0; i--) {
+                out.toCol(out.leftMargin);
+                out.append('\n');
+            }
+            return;
+        }
 	String body = comment.getText();
 	int col = comment.indent();
 	int stpos = -1;

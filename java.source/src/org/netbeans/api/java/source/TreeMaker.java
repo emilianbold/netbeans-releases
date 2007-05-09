@@ -2488,6 +2488,8 @@ public final class TreeMaker {
                     case JAVADOC_COMMENT:
                         comments.addComment(statement, Comment.create(Style.JAVADOC, Query.NOPOS, Query.NOPOS, Query.NOPOS, seq.token().toString()));
                         break;
+                    case WHITESPACE:
+                        comments.addComment(statement, Comment.create(Style.WHITESPACE, Query.NOPOS, Query.NOPOS, Query.NOPOS, seq.token().toString()));
                 }
             }
         }
