@@ -58,7 +58,6 @@ import org.openide.util.WeakSet;
  */
 public final class AnnotationModelHelper {
 
-    // XXX JavaContextListener-s not notified by runJavaSourceTaskWhenScanFinished()
     // XXX ExecutionException for the future returned by runJavaSourceTaskWhenScanFinished()
 
     private final ClasspathInfo cpi;
