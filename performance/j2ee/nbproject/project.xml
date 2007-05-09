@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
+            <code-name-base>org.netbeans.modules.j2ee.performancetests</code-name-base>
+            <module-dependencies/>
+          <test-dependencies>
+              <test-type>
+                  <name>unit</name>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.j2ee.performancetests</code-name-base>
+                      <recursive/>
+                      <compile-dependency/>
+                  </test-dependency>
+              </test-type>
+              <test-type>
+                  <name>qa-functional</name>
+                 <!-- <test-dependency>
+                      <code-name-base>org.netbeans.api.java</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.api.progress</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.api.web.webmodule</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.core.multiview</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>-->
+                  <test-dependency>
+                      <code-name-base>org.netbeans.core.windows</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <!--<test-dependency>
+                      <code-name-base>org.netbeans.modules.db</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.dbschema</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency-->
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.editor</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.editor.lib</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <!--test-dependency>
+                      <code-name-base>org.netbeans.modules.j2ee.api.ejbmodule</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.j2ee.common</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.j2ee.dd</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.j2ee.ddloaders</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency-->
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.j2ee.earproject</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.j2ee.ejbcore</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <!--test-dependency>
+                      <code-name-base>org.netbeans.modules.j2ee.ejbjarproject</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.j2ee.metadata</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.j2ee.persistence</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.j2ee.refactoring</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.j2eeserver</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.java</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency-->
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.java.editor</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <!--test-dependency>
+                      <code-name-base>org.netbeans.modules.java.j2seproject</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.javacore</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.project.ant</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.project.libraries</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.projectapi</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.projectui</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.projectuiapi</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.web.project</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency-->
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.websvc.core</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <!--test-dependency>
+                      <code-name-base>org.netbeans.modules.websvc.dev</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.websvc.websvcapi</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.xml.multiview</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.openide.dialogs</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.openide.filesystems</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.openide.loaders</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.openide.nodes</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency-->
+                  <test-dependency>
+                      <code-name-base>org.openide.options</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <!--test-dependency>
+                      <code-name-base>org.openide.text</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency-->
+                  <test-dependency>
+                      <code-name-base>org.openide.util</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <!--test-dependency>
+                      <code-name-base>org.openide.windows</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency-->
+              </test-type>
+            </test-dependencies>
+            <public-packages/>
+        </data>
+    </configuration>
+</project>
