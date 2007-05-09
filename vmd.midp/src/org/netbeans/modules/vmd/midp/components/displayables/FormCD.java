@@ -51,11 +51,9 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.vmd.api.model.ComponentProducer.Result;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
-import org.netbeans.modules.vmd.midp.components.categories.CategorySupport;
 import org.netbeans.modules.vmd.midp.components.categories.ResourcesCategoryCD;
 import org.netbeans.modules.vmd.midp.components.items.ImageItemCD;
 import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
-import org.netbeans.modules.vmd.midp.components.resources.ResourceCD;
 import org.netbeans.modules.vmd.midp.general.FileAcceptPresenter;
 
 /**
