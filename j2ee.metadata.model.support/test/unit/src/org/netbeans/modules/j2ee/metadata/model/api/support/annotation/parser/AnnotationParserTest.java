@@ -61,7 +61,7 @@ public class AnnotationParserTest extends JavaSourceTestCase {
         RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
-        helper.userActionTask(new Runnable() {
+        helper.runJavaSourceTask(new Runnable() {
             public void run() {
                 TypeElement annotated = helper.getCompilationController().getElements().getTypeElement("Annotated");
                 AnnotationMirror annotation = annotated.getAnnotationMirrors().iterator().next();
@@ -100,7 +100,7 @@ public class AnnotationParserTest extends JavaSourceTestCase {
         RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
-        helper.userActionTask(new Runnable() {
+        helper.runJavaSourceTask(new Runnable() {
             public void run() {
                 TypeElement annotated = helper.getCompilationController().getElements().getTypeElement("Annotated");
                 AnnotationMirror annotation = annotated.getAnnotationMirrors().iterator().next();
@@ -130,7 +130,7 @@ public class AnnotationParserTest extends JavaSourceTestCase {
         RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
-        helper.userActionTask(new Runnable() {
+        helper.runJavaSourceTask(new Runnable() {
             public void run() {
                 Elements elements = helper.getCompilationController().getElements();
                 TypeElement annotated = elements.getTypeElement("Annotated");
@@ -161,7 +161,7 @@ public class AnnotationParserTest extends JavaSourceTestCase {
         RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
-        helper.userActionTask(new Runnable() {
+        helper.runJavaSourceTask(new Runnable() {
             public void run() {
                 Elements elements = helper.getCompilationController().getElements();
                 TypeElement annotated = elements.getTypeElement("Annotated");
@@ -201,7 +201,7 @@ public class AnnotationParserTest extends JavaSourceTestCase {
         RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
-        helper.userActionTask(new Runnable() {
+        helper.runJavaSourceTask(new Runnable() {
             public void run() {
                 Elements elements = helper.getCompilationController().getElements();
                 TypeElement annotated = elements.getTypeElement("Annotated");
@@ -247,7 +247,7 @@ public class AnnotationParserTest extends JavaSourceTestCase {
         RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
-        helper.userActionTask(new Runnable() {
+        helper.runJavaSourceTask(new Runnable() {
             public void run() {
                 Elements elements = helper.getCompilationController().getElements();
                 TypeElement annotated = elements.getTypeElement("Annotated");

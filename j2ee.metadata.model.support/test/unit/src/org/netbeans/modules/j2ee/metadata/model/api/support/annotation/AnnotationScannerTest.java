@@ -69,7 +69,7 @@ public class AnnotationScannerTest extends PersistenceTestCase {
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
         final Set<String> types = new HashSet<String>();
-        helper.userActionTask(new Runnable() {
+        helper.runJavaSourceTask(new Runnable() {
             public void run() {
                 helper.getAnnotationScanner().findAnnotatedTypes("javax.persistence.Entity", new TypeAnnotationHandler() {
                     public void typeAnnotation(TypeElement typeElement, AnnotationMirror annotationMirror) {
@@ -106,7 +106,7 @@ public class AnnotationScannerTest extends PersistenceTestCase {
         final int[] entityCount = { 0 };
         final long initialScanDoneTime[] = { 0L };
         final List<ElementHandle<TypeElement>> typeHandles  = new ArrayList<ElementHandle<TypeElement>>();
-        helper.userActionTask(new Runnable() {
+        helper.runJavaSourceTask(new Runnable() {
             public void run() {
                 helper.getAnnotationScanner().findAnnotatedTypes("javax.persistence.Entity", new TypeAnnotationHandler() {
                     public void typeAnnotation(TypeElement typeElement, AnnotationMirror annotationMirror) {

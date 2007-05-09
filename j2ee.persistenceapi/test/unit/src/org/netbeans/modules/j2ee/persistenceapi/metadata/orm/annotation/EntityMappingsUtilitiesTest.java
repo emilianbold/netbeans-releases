@@ -39,7 +39,7 @@ public class EntityMappingsUtilitiesTest extends EntityMappingsTestCase {
     public void testIsCollectionType() throws Exception {
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
-        helper.userActionTask(new Runnable() {
+        helper.runJavaSourceTask(new Runnable() {
             public void run() {
                 Elements elements = helper.getCompilationController().getElements();
                 Types types = helper.getCompilationController().getTypes();
@@ -61,7 +61,7 @@ public class EntityMappingsUtilitiesTest extends EntityMappingsTestCase {
     public void testGetFirstTypeArgument() throws Exception {
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
-        helper.userActionTask(new Runnable() {
+        helper.runJavaSourceTask(new Runnable() {
             public void run() {
                 Elements elements = helper.getCompilationController().getElements();
                 Types types = helper.getCompilationController().getTypes();

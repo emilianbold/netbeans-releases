@@ -79,7 +79,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
         final EntityImpl[] employeeEntity = { null };
         final EntityImpl[] addressEntity = { null };
-        helper.userActionTask(new Runnable() {
+        helper.runJavaSourceTask(new Runnable() {
             public void run() {
                 manager = helper.createPersistentObjectManager(new EntityProvider(helper));
                 for (EntityImpl entity : manager.getObjects()) {
@@ -150,7 +150,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         assertTrue("Should have got a typesChanged event for Employee", employeeChanged.get());
         assertTrue("Should have got a typesChanged event for Department", departmentChanged.get());
         cpi.getClassIndex().removeClassIndexListener(listener);
-        helper.userActionTask(new Runnable() {
+        helper.runJavaSourceTask(new Runnable() {
             public void run() {
                 Collection<EntityImpl> entities = manager.getObjects();
                 assertEquals(2, entities.size());
@@ -197,7 +197,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         rootAddedLatch.await(10, TimeUnit.SECONDS);
         assertTrue("Should have got a rootsAdded event", rootAdded.get());
         cpi.getClassIndex().removeClassIndexListener(listener);
-        helper.userActionTask(new Runnable() {
+        helper.runJavaSourceTask(new Runnable() {
             public void run() {
                 Collection<EntityImpl> entities = manager.getObjects();
                 boolean hasProductEntity = false;
@@ -233,7 +233,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         rootRemovedLatch.await(10, TimeUnit.SECONDS);
         assertTrue("Should have got a rootsRemoved event", rootRemoved.get());
         cpi.getClassIndex().removeClassIndexListener(listener);
-        helper.userActionTask(new Runnable() {
+        helper.runJavaSourceTask(new Runnable() {
             public void run() {
                 Collection<EntityImpl> entities = manager.getObjects();
                 boolean hasProductEntity = false;
@@ -257,7 +257,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
         final EntityImpl[] employeeEntity = { null };
         final EntityImpl[] addressEntity = { null };
-        helper.userActionTask(new Runnable() {
+        helper.runJavaSourceTask(new Runnable() {
             public void run() {
                 manager = helper.createPersistentObjectManager(new EntityProvider(helper));
             }
@@ -283,7 +283,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         addedLatch.await(10, TimeUnit.SECONDS);
         assertTrue("Should have got a typesAdded event for Department", departmentAdded.get());
         cpi.getClassIndex().removeClassIndexListener(listener);
-        helper.userActionTask(new Runnable() {
+        helper.runJavaSourceTask(new Runnable() {
             public void run() {
                 assertEquals(0, manager.getObjects().size());
             }
@@ -310,7 +310,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         changedLatch.await(10, TimeUnit.SECONDS);
         assertTrue("Should have got a typesChanged event for Department", departmentChanged.get());
         cpi.getClassIndex().removeClassIndexListener(listener);
-        helper.userActionTask(new Runnable() {
+        helper.runJavaSourceTask(new Runnable() {
             public void run() {
                 assertEquals(1, manager.getObjects().size());
             }
@@ -336,7 +336,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         changedLatch2.await(10, TimeUnit.SECONDS);
         assertTrue("Should have got a typesChanged event for Department", departmentChanged2.get());
         cpi.getClassIndex().removeClassIndexListener(listener);
-        helper.userActionTask(new Runnable() {
+        helper.runJavaSourceTask(new Runnable() {
             public void run() {
                 assertEquals(0, manager.getObjects().size());
             }

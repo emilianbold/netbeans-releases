@@ -53,7 +53,7 @@ public class AnnotationModelHelperTest extends PersistenceTestCase {
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
         final String expected = "foo";
-        String returned = helper.userActionTask(new Callable<String>() {
+        String returned = helper.runJavaSourceTask(new Callable<String>() {
             public String call() throws Exception {
                 assertNotNull(helper.getCompilationController());
                 return expected;
@@ -84,7 +84,7 @@ public class AnnotationModelHelperTest extends PersistenceTestCase {
         RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
-        helper.userActionTask(new Runnable() {
+        helper.runJavaSourceTask(new Runnable() {
             public void run() {
                 TypeElement pte = helper.getCompilationController().getElements().getTypeElement("PartTimeEmployee");
                 List<? extends TypeElement> superclasses = helper.getSuperclasses(pte);
@@ -110,10 +110,10 @@ public class AnnotationModelHelperTest extends PersistenceTestCase {
                 return null;
             }
         };
-        helper.userActionTask(empty);
+        helper.runJavaSourceTask(empty);
         assertTrue(contextLeft[0]);
         contextLeft[0] = false;
-        helper.userActionTask(empty, false);
+        helper.runJavaSourceTask(empty, false);
         assertFalse(contextLeft[0]);
         WeakReference<JavaContextListener> listenerRef = new WeakReference<JavaContextListener>(listener);
         listener = null;
@@ -124,10 +124,10 @@ public class AnnotationModelHelperTest extends PersistenceTestCase {
         RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
-        helper.userActionTask(new Callable<Void>() {
+        helper.runJavaSourceTask(new Callable<Void>() {
             public Void call() throws IOException {
                 final JavaSource js1 = helper.javaSource;
-                helper.userActionTask(new Callable<Void>() {
+                helper.runJavaSourceTask(new Callable<Void>() {
                     public Void call() {
                         JavaSource js2 = helper.javaSource;
                         assertSame(js1, js2);
@@ -158,7 +158,7 @@ public class AnnotationModelHelperTest extends PersistenceTestCase {
             }
         });
         t.start();
-        helper.userActionTask(new Callable<Void>() {
+        helper.runJavaSourceTask(new Callable<Void>() {
             public Void call() throws Exception {
                 latch1.countDown();
                 try {
@@ -181,7 +181,7 @@ public class AnnotationModelHelperTest extends PersistenceTestCase {
                     latch.await();
                 } catch (InterruptedException e) {}
                 try {
-                    helper.userActionTask(new Callable<Void>() {
+                    helper.runJavaSourceTask(new Callable<Void>() {
                         public Void call() throws Exception {
                             fail();
                             return null;
@@ -191,7 +191,7 @@ public class AnnotationModelHelperTest extends PersistenceTestCase {
             }
         });
         t.start();
-        helper.userActionTask(new Callable<Void>() {
+        helper.runJavaSourceTask(new Callable<Void>() {
             public Void call() throws Exception {
                 latch.countDown();
                 try {
@@ -226,7 +226,7 @@ public class AnnotationModelHelperTest extends PersistenceTestCase {
                     startLatch.await();
                 } catch (InterruptedException e) {}
                 try {
-                    futureRef.set(helper.userActionTaskWhenScanFinished(new Callable<String>() {
+                    futureRef.set(helper.runJavaSourceTaskWhenScanFinished(new Callable<String>() {
                         public String call() throws Exception {
                             return result;
                         }

@@ -48,7 +48,7 @@ public class EntityMappingsMetadataModelImpl implements MetadataModelImplementat
     }
 
     public <R> R runReadAction(final MetadataModelAction<EntityMappingsMetadata, R> action) throws IOException {
-        return helper.userActionTask(new Callable<R>() {
+        return helper.runJavaSourceTask(new Callable<R>() {
             public R call () throws Exception {
                 return action.run(metadata);
             }

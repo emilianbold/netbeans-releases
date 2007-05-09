@@ -57,8 +57,6 @@ import org.openide.util.WeakSet;
  */
 public final class AnnotationModelHelper {
 
-    // XXX userActionTask() should be runInJavacContext()
-
     private final ClasspathInfo cpi;
     // @GuardedBy("this")
     private final Set<JavaContextListener> javaContextListeners = new WeakSet<JavaContextListener>();
@@ -117,12 +115,21 @@ public final class AnnotationModelHelper {
         }
     }
 
-    public <V> V userActionTask(final Callable<V> callable) throws IOException {
-        return userActionTask(callable, true);
+    /**
+     * Runs the given callable as a JavaSource user action task.
+     * The context of the JavaSource task can be accessed by {@link #getCompilationController}.
+     */
+    public <V> V runJavaSourceTask(Callable<V> callable) throws IOException {
+        return runJavaSourceTask(callable, true);
     }
 
-    public void userActionTask(final Runnable run) throws IOException {
-        userActionTask(new Callable<Void>() {
+    /**
+     * Runs the given runnable as a JavaSource user action task.
+     *
+     * @see #runJavaSourceTask(Callable)
+     */
+    public void runJavaSourceTask(final Runnable run) throws IOException {
+        runJavaSourceTask(new Callable<Void>() {
             public Void call() {
                 run.run();
                 return null;
@@ -130,8 +137,13 @@ public final class AnnotationModelHelper {
         });
     }
 
-    // Not private because used in unit tests.
-    <V> V userActionTask(final Callable<V> callable, final boolean notify) throws IOException {
+    /**
+     * Runs the given callable as a JavaSource user action task. Not private because
+     * used in unit tests.
+     *
+     * @param notify whether to notify <code>JavaContextListener</code>s.
+     */
+    <V> V runJavaSourceTask(final Callable<V> callable, final boolean notify) throws IOException {
         JavaSource existingJavaSource;
         synchronized (this) {
             existingJavaSource = javaSource;
@@ -158,7 +170,13 @@ public final class AnnotationModelHelper {
         return result.get(0);
     }
 
-    public <V> Future<V> userActionTaskWhenScanFinished(final Callable<V> callable) throws IOException {
+    /**
+     * Runs the given callable as a JavaSource user action task either immediately,
+     * or, if the Java infrastructure is just performing a classpath scan,
+     * when the scan has finished. This method is the equivalent of
+     * {@link JavaSource#runWhenScanFinished}.
+     */
+    public <V> Future<V> runJavaSourceTaskWhenScanFinished(final Callable<V> callable) throws IOException {
         JavaSource existingJavaSource;
         synchronized (this) {
             existingJavaSource = javaSource;
@@ -211,18 +229,25 @@ public final class AnnotationModelHelper {
         }
     }
 
+    /**
+     * Returns the {@link CompilationController} of a running JavaSource
+     * user action task. This method can only be called when such an user action
+     * task in running.
+     *
+     * @see #runJavaSourceTask(Callable)
+     */
+    public CompilationController getCompilationController() {
+        assertUserActionTaskThread();
+        assert controller != null;
+        return controller;
+    }
+
     public AnnotationScanner getAnnotationScanner() {
         assertUserActionTaskThread();
         if (annotationScanner == null) {
             annotationScanner = new AnnotationScanner(this);
         }
         return annotationScanner;
-    }
-
-    public CompilationController getCompilationController() {
-        assertUserActionTaskThread();
-        assert controller != null;
-        return controller;
     }
 
     private void assertUserActionTaskThread() {
@@ -413,7 +438,7 @@ public final class AnnotationModelHelper {
                     throw new IllegalStateException("Retouche is sending ClassIndex events from within JavaSource.runUserActionTask()"); // NOI18N
                 }
             }
-            userActionTask(call, false);
+            runJavaSourceTask(call, false);
         }
     }
 
