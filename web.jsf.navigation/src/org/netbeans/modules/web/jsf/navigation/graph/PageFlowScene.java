@@ -432,6 +432,17 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge, PinNod
         return connectionWidget;
     }
     
+    public void renameEdgeWidget(NavigationCaseEdge edge, String newName, String oldName ){
+        VMDConnectionWidget edgeWidget = (VMDConnectionWidget) findWidget(edge);
+        List<Widget> widgets = edgeWidget.getChildren();
+        for( Widget widget : widgets ){
+             if( widget instanceof LabelWidget && ((LabelWidget)widget).getLabel().equals(oldName)){
+                  ((LabelWidget)widget).setLabel(newName);
+                  return;
+             }
+        }
+    }
+    
     /**
      * Attaches an anchor of a source pin an edge.
      * The anchor is a ProxyAnchor that switches between the anchor attached to the pin widget directly and

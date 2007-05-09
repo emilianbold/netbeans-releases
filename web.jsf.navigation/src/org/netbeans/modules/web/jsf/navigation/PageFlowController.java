@@ -670,9 +670,14 @@ public class PageFlowController {
     //    }
     
     // case2Node Wrappers
-    public final void putCase2Node(NavigationCase navCase,NavigationCaseEdge navCaseNode ){
-        case2Node.put(navCase, navCaseNode);
+    public final void putCase2Node(NavigationCase navCase,NavigationCaseEdge navCaseEdge ){
+        case2Node.put(navCase, navCaseEdge);
     }
+    
+    public final NavigationCaseEdge getCase2Node(NavigationCase navCase){
+        return case2Node.get(navCase);
+    }
+            
     
     public final NavigationCaseEdge removeCase2Node(NavigationCase navCase ){
         return case2Node.remove(navCase);

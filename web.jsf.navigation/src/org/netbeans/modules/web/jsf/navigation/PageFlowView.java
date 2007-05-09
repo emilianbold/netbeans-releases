@@ -286,6 +286,11 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         setEdgeTargePin( navCaseNode, toPageNode );
     }
     
+    
+    public void renameEdgeWidget(NavigationCaseEdge edge, String newName, String oldName ){
+        scene.renameEdgeWidget(edge, newName, oldName);
+    }
+    
     private void setEdgeSourcePin(  NavigationCaseEdge navCaseNode,Page fromPageNode    ){
         PinNode sourcePin = scene.getDefaultPin( fromPageNode);
         Collection<PinNode> pinNodes = scene.getPins();

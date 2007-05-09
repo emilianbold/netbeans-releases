@@ -28,8 +28,8 @@ import org.openide.util.Exceptions;
 public class FacesModelPropertyChangeListener implements PropertyChangeListener {
     public PageFlowController pfc;
     public PageFlowView view;
-    public boolean refactoringIsLikely = false;
-//    PageFlowUtilities pfUtil = PageFlowUtilities.getInstance();
+//    public boolean refactoringIsLikely = false;
+    //    PageFlowUtilities pfUtil = PageFlowUtilities.getInstance();
     
     public FacesModelPropertyChangeListener( PageFlowController pfc ){
         this.pfc = pfc;
@@ -109,13 +109,27 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
                     //                    replaceFromViewIdToViewIdEventHandler(oldName, newName, refactoringIsLikely);
                 }
             });
-            refactoringIsLikely = false;
+//            refactoringIsLikely = false;
+        } else if ( ev.getPropertyName() == "from-outcome" ){
+            final String oldName = (String) ev.getOldValue();
+            final String newName = (String) ev.getNewValue();
+            final NavigationCase navCase = (NavigationCase)ev.getSource();
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    replaveFromOutcomeEventHandler(navCase, oldName, newName);
+                    //                    replaceFromViewIdToViewIdEventHandler(oldName, newName, refactoringIsLikely);
+                }
+            });
         } else {
             //                System.out.println("Did not catch this event.: " + ev.getPropertyName());
             setupGraphInAWTThread();
         }
     }
-    
+    private final void replaveFromOutcomeEventHandler( NavigationCase navCase, String oldName, String newName ){
+        NavigationCaseEdge edge = pfc.getCase2Node(navCase);
+        view.renameEdgeWidget(edge, newName, oldName);
+        view.validateGraph();
+    }
     
     //    private final void replaceFromViewIdToViewIdEventHandler(String oldName, String newName, boolean possibleRefactor) {
     private final void replaceFromViewIdToViewIdEventHandler(String oldName, String newName) {
