@@ -19,14 +19,11 @@
 
 package org.netbeans.modules.subversion.ui.diff;
 
-import java.util.*;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.*;
 import java.io.File;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.openide.nodes.Node;
 import org.openide.util.*;
 
@@ -48,7 +45,7 @@ public class DiffAction extends ContextAction {
     
     public static void diff(Context ctx, int type, String contextName) {
         
-        DiffMainPanel panel = new DiffMainPanel(ctx, type, contextName); // spawns bacground DiffPrepareTask
+        MultiDiffPanel panel = new MultiDiffPanel(ctx, type, contextName); // spawns bacground DiffPrepareTask
         DiffTopComponent tc = new DiffTopComponent(panel);
         tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", contextName)); // NOI18N
         tc.open();
@@ -56,7 +53,7 @@ public class DiffAction extends ContextAction {
     }
 
     public static void diff(File file, String rev1, String rev2) {
-        DiffMainPanel panel = new DiffMainPanel(file, rev1, rev2); // spawns bacground DiffPrepareTask
+        MultiDiffPanel panel = new MultiDiffPanel(file, rev1, rev2); // spawns bacground DiffPrepareTask
         DiffTopComponent tc = new DiffTopComponent(panel);
         tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", file.getName())); // NOI18N
         tc.open();

@@ -20,7 +20,7 @@
 package org.netbeans.modules.subversion.ui.diff;
 
 import org.netbeans.api.diff.StreamSource;
-import org.netbeans.api.diff.DiffView;
+import org.netbeans.api.diff.DiffController;
 import org.netbeans.modules.subversion.*;
 import org.openide.util.NbBundle;
 
@@ -84,17 +84,19 @@ public final class Setup {
     private final File      baseFile;
     private final String    firstRevision;
     private final String    secondRevision;
+    private FileInformation info;
 
     private DiffStreamSource    firstSource;
     private DiffStreamSource    secondSource;
 
-    private DiffView view;
+    private DiffController      view;
+    private DiffNode            node;
 
     private String    title;
 
     public Setup(File baseFile, int type) {
         this.baseFile = baseFile;
-        FileInformation info = Subversion.getInstance().getStatusCache().getStatus(baseFile);
+        info = Subversion.getInstance().getStatusCache().getStatus(baseFile);
         int status = info.getStatus();
         
         ResourceBundle loc = NbBundle.getBundle(Setup.class);
@@ -226,11 +228,15 @@ public final class Setup {
         return baseFile;
     }
 
-    public void setView(DiffView view) {
+    public FileInformation getInfo() {
+        return info;
+    }
+
+    public void setView(DiffController view) {
         this.view = view;
     }
 
-    public DiffView getView() {
+    public DiffController getView() {
         return view;
     }
 
@@ -242,13 +248,20 @@ public final class Setup {
         return secondSource;
     }
 
+    public void setNode(DiffNode node) {
+        this.node = node;
+    }
+
+    public DiffNode getNode() {
+        return node;
+    }
+    
     public String toString() {
         return title;
     }
 
     /**
      * Loads data over network
-     * @param group that carries shared state. Note that this group must not be executed later on. 
      */
     void initSources() throws IOException {
         if (firstSource != null) firstSource.init();

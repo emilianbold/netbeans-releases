@@ -33,9 +33,9 @@ import org.openide.awt.UndoRedo;
  */
 public class DiffTopComponent extends TopComponent implements DiffSetupSource {
 
-    private final DiffMainPanel panel;
+    private final MultiDiffPanel panel;
 
-    public DiffTopComponent(DiffMainPanel c) {
+    public DiffTopComponent(MultiDiffPanel c) {
         setLayout(new BorderLayout());
         c.putClientProperty(TopComponent.class, this);
         add(c, BorderLayout.CENTER);
