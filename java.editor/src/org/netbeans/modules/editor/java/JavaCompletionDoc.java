@@ -506,7 +506,7 @@ public class JavaCompletionDoc implements CompletionDocumentation {
         StringBuilder sb = new StringBuilder();
         for (Tag tag : doc.tags()) {
             if (DEPRECATED_TAG.equals(tag.kind()))
-                sb.append("<b>").append(NbBundle.getMessage(JavaCompletionDoc.class, "JCD-deprecated")).append("</b> <i>").append(tag.text()).append("</i></p><p>"); //NOI18N
+                sb.append("<b>").append(NbBundle.getMessage(JavaCompletionDoc.class, "JCD-deprecated")).append("</b> <i>").append(inlineTags(eu, doc, tag.inlineTags())).append("</i></p><p>"); //NOI18N
         }
         return sb;
     }
