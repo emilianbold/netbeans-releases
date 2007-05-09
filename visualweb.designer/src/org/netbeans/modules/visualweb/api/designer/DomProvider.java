@@ -195,7 +195,7 @@ public interface DomProvider {
 //    public boolean canDropDesignBeansAtNode(DesignBean[] designBeans, Node node);
     public boolean canDropComponentsAtNode(Element[] componentRootElements, Node node);
 
-    public boolean handleMouseClickForElement(Element element, int clickCount);
+//    public boolean handleMouseClickForElement(Element element, int clickCount);
 
     // XXX
 //    public boolean isNormalAndHasFacesBean(MarkupDesignBean markupDesignBean);

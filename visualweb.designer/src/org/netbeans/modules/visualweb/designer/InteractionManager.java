@@ -49,6 +49,7 @@ import javax.swing.JPopupMenu;
 
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import org.netbeans.modules.visualweb.api.designer.Designer.DesignerClickEvent;
 import org.netbeans.modules.visualweb.api.designer.Designer.DesignerEvent;
 import org.netbeans.modules.visualweb.api.designer.Designer.DesignerPopupEvent;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
@@ -1413,7 +1414,14 @@ public class InteractionManager {
 //                // then do not perform other actions on the same click.
 //                return;
 //            }
-            if (webform.handleMouseClickForElement(box.getElement(), e.getClickCount())) {
+//            if (webform.handleMouseClickForElement(box.getElement(), e.getClickCount())) {
+//                // #6353410 If there was performed click on the region
+//                // then do not perform other actions on the same click.
+//                return;
+//            }
+            DesignerClickEvent evt = new DefaultDesignerClickEvent(webform, box, e.getClickCount());
+            webform.fireUserElementClicked(evt);
+            if (evt.isConsumed()) {
                 // #6353410 If there was performed click on the region
                 // then do not perform other actions on the same click.
                 return;
@@ -1461,8 +1469,8 @@ public class InteractionManager {
                         // instead in the selection, don't use box located above
 //                        webform.getActions().handleDoubleClick(box);
 //                        handleDoubleClick(box);
-                        DesignerEvent evt = new DefaultDesignerEvent(webform, box);
-                        webform.fireUserActionPerformed(evt);
+                        DesignerEvent evt2 = new DefaultDesignerEvent(webform, box);
+                        webform.fireUserActionPerformed(evt2);
                     }
                 }
             } else if (isToggleEvent(e)) {
@@ -3028,6 +3036,41 @@ public class InteractionManager {
         }
 
     } // End of MouseHandler.
+
+    
+    private static class DefaultDesignerClickEvent implements DesignerClickEvent {
+        private boolean consumed;
+        private final int clickCount;
+        private final Designer designer;
+        private final Box box;
+        
+        public DefaultDesignerClickEvent(Designer designer, Box box, int clickCount) {
+            this.designer = designer;
+            this.box = box;
+            this.clickCount = clickCount;
+        }
+
+        public boolean isConsumed() {
+            return consumed;
+        }
+
+        public void consume() {
+            consumed = true;
+        }
+
+        public int getClickCount() {
+            return clickCount;
+        }
+
+        public Designer getDesigner() {
+            return designer;
+        }
+
+        public Box getBox() {
+            return box;
+        }
+        
+    } // DefaultDesignerClickEvent.
     
 
     /** XXX Copied from DesignerActions and SelectionManager later. */

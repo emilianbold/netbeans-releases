@@ -250,6 +250,8 @@ public interface Designer {
         public void userActionPerformed(DesignerEvent evt);
         /** When user invoked popup. */
         public void userPopupActionPerformed(DesignerPopupEvent evt);
+        /** When user clicked on some element. */
+        public void userElementClicked(DesignerClickEvent evt);
         /** When selection was changed. */
         public void selectionChanged(DesignerEvent evt);
     } // End of DesignerListener.
@@ -267,6 +269,11 @@ public interface Designer {
         public int getY();
     } // End of DesignerPopupEvent.
     
+    public interface DesignerClickEvent extends DesignerEvent {
+        public boolean isConsumed();
+        public void consume();
+        public int getClickCount();
+    } // DesignerClickEvent
     
     /** XXX Render Context. */
     public interface RenderContext {

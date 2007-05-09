@@ -1953,9 +1953,9 @@ public class WebForm implements Designer {
         return domProvider.canDropComponentsAtNode(componentRootElements, node);
     }
 
-    boolean handleMouseClickForElement(Element element, int clickCount) {
-        return domProvider.handleMouseClickForElement(element, clickCount);
-    }
+//    boolean handleMouseClickForElement(Element element, int clickCount) {
+//        return domProvider.handleMouseClickForElement(element, clickCount);
+//    }
 
     // XXX, Also better name needed.
 //    boolean isNormalAndHasFacesBean(MarkupDesignBean markupDesignBean) {
@@ -3144,6 +3144,13 @@ public class WebForm implements Designer {
         DesignerListener[] designerListeners = getDesignerListeners();
         for (DesignerListener l : designerListeners) {
             l.userPopupActionPerformed(evt);
+        }
+    }
+    
+    public void fireUserElementClicked(DesignerClickEvent evt) {
+        DesignerListener[] designerListeners = getDesignerListeners();
+        for (DesignerListener l : designerListeners) {
+            l.userElementClicked(evt);
         }
     }
     

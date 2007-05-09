@@ -448,19 +448,19 @@ class DomProviderImpl implements DomProvider {
         return true;
     }
 
-    public boolean handleMouseClickForElement(Element element, int clickCount) {
-        MarkupMouseRegion region = findRegion(element);
-
-        if ((region != null) && region.isClickable()) {
-            Result r = region.regionClicked(clickCount);
-//            ResultHandler.handleResult(r, getFacesModel());
-            jsfForm.handleResult(r);
-            // #6353410 If there was performed click on the region
-            // then do not perform other actions on the same click.
-            return true;
-        }
-        return false;
-    }
+//    public boolean handleMouseClickForElement(Element element, int clickCount) {
+//        MarkupMouseRegion region = findRegion(element);
+//
+//        if ((region != null) && region.isClickable()) {
+//            Result r = region.regionClicked(clickCount);
+////            ResultHandler.handleResult(r, getFacesModel());
+//            jsfForm.handleResult(r);
+//            // #6353410 If there was performed click on the region
+//            // then do not perform other actions on the same click.
+//            return true;
+//        }
+//        return false;
+//    }
 
 //    public boolean isNormalAndHasFacesBean(MarkupDesignBean markupDesignBean) {
 
@@ -1020,33 +1020,27 @@ class DomProviderImpl implements DomProvider {
 //    }
 
     // XXX Moved from FacesSupport.
-
-    // XXX Moved from FacesSupport.
-
-    // XXX Moved from FacesSupport.
-
-    // XXX Moved from FacesSupport.
-    /** Locate the closest mouse region to the given element */
-    private static MarkupMouseRegion findRegion(Element element) {
-        while (element != null) {
-//            if (element.getMarkupMouseRegion() != null) {
-//                return element.getMarkupMouseRegion();
+//    /** Locate the closest mouse region to the given element */
+//    private static MarkupMouseRegion findRegion(Element element) {
+//        while (element != null) {
+////            if (element.getMarkupMouseRegion() != null) {
+////                return element.getMarkupMouseRegion();
+////            }
+////            MarkupMouseRegion region = InSyncService.getProvider().getMarkupMouseRegionForElement(element);
+//            MarkupMouseRegion region = FacesPageUnit.getMarkupMouseRegionForElement(element);
+//            if (region != null) {
+//                return region;
 //            }
-//            MarkupMouseRegion region = InSyncService.getProvider().getMarkupMouseRegionForElement(element);
-            MarkupMouseRegion region = FacesPageUnit.getMarkupMouseRegionForElement(element);
-            if (region != null) {
-                return region;
-            }
-
-            if (element.getParentNode() instanceof Element) {
-                element = (Element)element.getParentNode();
-            } else {
-                break;
-            }
-        }
-
-        return null;
-    }
+//
+//            if (element.getParentNode() instanceof Element) {
+//                element = (Element)element.getParentNode();
+//            } else {
+//                break;
+//            }
+//        }
+//
+//        return null;
+//    }
 
     
 //    private static class WriteLockImpl implements DomProvider.WriteLock {

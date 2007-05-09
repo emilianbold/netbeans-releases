@@ -21,6 +21,8 @@
 package org.netbeans.modules.visualweb.designer.jsf.ui;
 
 
+import com.sun.rave.designtime.Result;
+import com.sun.rave.designtime.markup.MarkupMouseRegion;
 import java.awt.Component;
 import java.awt.Point;
 import java.util.ArrayList;
@@ -28,6 +30,7 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.netbeans.modules.visualweb.api.designer.Designer.Box;
+import org.netbeans.modules.visualweb.api.designer.Designer.DesignerClickEvent;
 import org.netbeans.modules.visualweb.api.designer.Designer.DesignerEvent;
 import org.netbeans.modules.visualweb.api.designer.Designer.DesignerListener;
 import org.netbeans.modules.visualweb.api.designer.Designer.DesignerPopupEvent;
@@ -35,6 +38,7 @@ import org.netbeans.modules.visualweb.api.designer.Designer.ExternalBox;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.netbeans.modules.visualweb.designer.jsf.JsfForm;
 import org.netbeans.modules.visualweb.designer.jsf.JsfSupportUtilities;
+import org.netbeans.modules.visualweb.insync.faces.FacesPageUnit;
 import org.openide.cookies.OpenCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -284,4 +288,42 @@ class JsfDesignerListener implements DesignerListener {
         Point point = SwingUtilities.convertPoint(component, x, y, jsfTopComponent);
         jsfTopComponent.showPopup(evt.getActions(), evt.getContext(), point.x, point.y);
     }
+
+    public void userElementClicked(DesignerClickEvent evt) {
+        MarkupMouseRegion region = findRegion(evt.getBox().getElement());
+
+        if ((region != null) && region.isClickable()) {
+            Result r = region.regionClicked(evt.getClickCount());
+//            ResultHandler.handleResult(r, getFacesModel());
+            jsfTopComponent.getJsfForm().handleResult(r);
+            // #6353410 If there was performed click on the region
+            // then do not perform other actions on the same click.
+//            return true;
+            evt.consume();
+        }
+//        return false;
+    }
+    
+    /** Locate the closest mouse region to the given element */
+    private static MarkupMouseRegion findRegion(Element element) {
+        while (element != null) {
+//            if (element.getMarkupMouseRegion() != null) {
+//                return element.getMarkupMouseRegion();
+//            }
+//            MarkupMouseRegion region = InSyncService.getProvider().getMarkupMouseRegionForElement(element);
+            MarkupMouseRegion region = FacesPageUnit.getMarkupMouseRegionForElement(element);
+            if (region != null) {
+                return region;
+            }
+
+            if (element.getParentNode() instanceof Element) {
+                element = (Element)element.getParentNode();
+            } else {
+                break;
+            }
+        }
+
+        return null;
+    }
+    
 }

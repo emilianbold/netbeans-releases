@@ -2651,7 +2651,7 @@ public class JsfForm {
         getFacesModel().beanCreated(designBean);
     }
     
-    void handleResult(Result result) {
+    public void handleResult(Result result) {
         ResultHandler.handleResult(result, getFacesModel());
     }
     
