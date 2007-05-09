@@ -28,8 +28,6 @@ import java.util.logging.Logger;
 import javax.lang.model.element.Element;                                                                                                                                                                                       
 import javax.lang.model.element.ElementKind;
 import javax.swing.text.Position.Bias;                                                                                                                                                                                         
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;                                                                                                                                                                                     
 import org.openide.filesystems.URLMapper;
@@ -241,15 +239,12 @@ public final class TreePathHandle {
      * @throws java.lang.IllegalArgumentException if arguments are not supported
      */                                                                                                                                                                                                                        
     public static TreePathHandle create(Element element, CompilationInfo info) throws IllegalArgumentException {
-        FileObject file = SourceUtils.getFile(element, info.getClasspathInfo());
-        if (file==null) {
-            //source does not exist
-            ElementHandle eh = ElementHandle.create(element);
-            return new TreePathHandle(null, null, null, eh, true);
-        } else {
-            TreePath treePath = SourceUtils.pathFor(info, element);
+        TreePath treePath = info.getTrees().getPath(element);
+        if (treePath != null)
             return create(treePath, info);
-        }
+        //source does not exist
+        ElementHandle eh = ElementHandle.create(element);
+        return new TreePathHandle(null, null, null, eh, true);
     }
     
     private static boolean isSupported(Element el) {                                                                                                                                                                           

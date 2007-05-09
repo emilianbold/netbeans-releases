@@ -21,7 +21,6 @@ package org.netbeans.modules.java.navigation;
 
 import com.sun.javadoc.Doc;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -33,7 +32,6 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.SourceUtils;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -249,20 +247,6 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
             setDeclaration(declaration);
             return;
         }
-        
-        tree = SourceUtils.treeFor(compilationInfo, element);
-        
-        if ( isCancelled() || tree == null ) {
-            return;
-        }
-        
-        String declaration = tree.toString();
-        if (element.getKind() ==  ElementKind.CONSTRUCTOR) {
-            String constructorName = element.getEnclosingElement().getSimpleName().toString();
-            declaration = declaration.replaceAll(Pattern.quote("<init>"), Matcher.quoteReplacement(constructorName));
-        }
-        setDeclaration(declaration);
-                
     }
     
     private void updateNavigatorSelection(CompilationInfo ci, TreePath tp) {

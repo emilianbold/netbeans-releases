@@ -87,7 +87,6 @@ import org.openide.windows.TopComponent;
 
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.SourceUtils;
 
 import org.netbeans.editor.JumpList;
 import org.netbeans.spi.debugger.jpda.EditorContext;
@@ -625,7 +624,7 @@ public class EditorContextImpl extends EditorContext {
                             String name = ((VariableElement) elm).getSimpleName().toString();
                             if (name.equals(fieldName)) {
                                 SourcePositions positions =  ci.getTrees().getSourcePositions();
-                                Tree tree = SourceUtils.treeFor(ci, elm);
+                                Tree tree = ci.getTrees().getTree(elm);
                                 int pos = (int)positions.getStartPosition(ci.getCompilationUnit(), tree);
                                 EditorCookie editor = (EditorCookie) dataObject.getCookie(EditorCookie.class);
                                 result[0] = NbDocument.findLineNumber(editor.openDocument(), pos) + 1;
@@ -779,7 +778,7 @@ public class EditorContextImpl extends EditorContext {
                         ops[0] = new Operation[] {};
                         return ;
                     }
-                    Tree methodTree = SourceUtils.treeFor(ci, method);
+                    Tree methodTree = ci.getTrees().getTree(method);
                     CompilationUnitTree cu = ci.getCompilationUnit();
                     ExpressionScanner scanner = new ExpressionScanner(lineNumber, cu, ci.getTrees().getSourcePositions());
                     ExpressionScanner.ExpressionsInfo info = new ExpressionScanner.ExpressionsInfo();
@@ -933,7 +932,7 @@ public class EditorContextImpl extends EditorContext {
                     if (method == null) {
                         return ;
                     }
-                    Tree methodTree = SourceUtils.treeFor(ci, method);
+                    Tree methodTree = ci.getTrees().getTree(method);
                     CompilationUnitTree cu = ci.getCompilationUnit();
                     MethodArgumentsScanner scanner =
                             new MethodArgumentsScanner(offset, cu, ci.getTrees().getSourcePositions(), true,
@@ -978,7 +977,7 @@ public class EditorContextImpl extends EditorContext {
                     if (clazz == null) {
                         return ;
                     }
-                    Tree methodTree = SourceUtils.treeFor(ci, clazz);
+                    Tree methodTree = ci.getTrees().getTree(clazz);
                     CompilationUnitTree cu = ci.getCompilationUnit();
                     MethodArgumentsScanner scanner =
                             new MethodArgumentsScanner(methodLineNumber, cu, ci.getTrees().getSourcePositions(), false,

@@ -152,7 +152,7 @@ public final class  UiUtils {
         assert element != null;
         assert info != null;
         assert formatString != null;
-        Tree tree = SourceUtils.treeFor(info, element);
+        Tree tree = info.getTrees().getTree(element);
         if (tree != null) {
             if (tree.getKind() == Tree.Kind.METHOD) {
                 return getMethodHeader((MethodTree) tree, info, formatString);

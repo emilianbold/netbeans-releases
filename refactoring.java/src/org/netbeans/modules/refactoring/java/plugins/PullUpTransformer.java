@@ -24,8 +24,6 @@ import com.sun.source.util.TreePath;
 import java.util.HashSet;
 import java.util.Set;
 import javax.lang.model.element.*;
-import javax.lang.model.type.TypeMirror;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
 
@@ -67,7 +65,7 @@ public class PullUpTransformer extends SearchVisitor {
                         }
                         
                         
-                        MethodTree method = (MethodTree) SourceUtils.treeFor(workingCopy,members[i].getElementHandle().resolve(workingCopy));
+                        MethodTree method = (MethodTree) workingCopy.getTrees().getTree(members[i].getElementHandle().resolve(workingCopy));
                         Set<Modifier> mod = new HashSet<Modifier>(method.getModifiers().getFlags());
                         mod.add(Modifier.ABSTRACT);
                         MethodTree nju = make.Method(
@@ -82,7 +80,7 @@ public class PullUpTransformer extends SearchVisitor {
                         njuClass = make.addClassMember(njuClass, nju);
                         workingCopy.rewrite(tree, njuClass);
                     } else {
-                        njuClass = make.addClassMember(njuClass, SourceUtils.treeFor(workingCopy, members[i].getElementHandle().resolve(workingCopy)));
+                        njuClass = make.addClassMember(njuClass, workingCopy.getTrees().getTree(members[i].getElementHandle().resolve(workingCopy)));
                         workingCopy.rewrite(tree, njuClass);
                     }
                 }

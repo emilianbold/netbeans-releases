@@ -25,7 +25,6 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
 
@@ -104,7 +103,7 @@ public class PushDownTransformer extends SearchVisitor {
                     if (members[i].getType()==1) {
                         njuClass = make.addClassImplementsClause(njuClass, make.Identifier(members[i].getElementHandle().resolve(workingCopy)));
                     } else {
-                        njuClass = make.addClassMember(njuClass, SourceUtils.treeFor(workingCopy, members[i].getElementHandle().resolve(workingCopy)));
+                        njuClass = make.addClassMember(njuClass, workingCopy.getTrees().getTree(members[i].getElementHandle().resolve(workingCopy)));
                     }
                 }
                 workingCopy.rewrite(tree, njuClass);

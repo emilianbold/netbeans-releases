@@ -20,9 +20,12 @@ package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
@@ -46,6 +49,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
@@ -53,7 +57,6 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TypeMirrorHandle;
@@ -415,7 +418,7 @@ public class ExtractSuperclassRefactoringPlugin extends RetoucheRefactoringPlugi
                 TypeMirror origParam = typeParam.asType();
                 for (TypeMirror newParam : typeParams) {
                     if (wc.getTypes().isSameType(origParam, newParam)) {
-                        Tree t = SourceUtils.treeFor(wc, typeParam);
+                        Tree t = wc.getTrees().getTree(typeParam);
                         if (t.getKind() == Tree.Kind.TYPE_PARAMETER) {
                             newTypeParams.add((TypeParameterTree) t);
                         }
@@ -424,14 +427,14 @@ public class ExtractSuperclassRefactoringPlugin extends RetoucheRefactoringPlugi
             }
 
             // add fields, methods and implements
-            List<Tree> members = new ArrayList<Tree>(classTree.getMembers());
+            List<Tree> members = new ArrayList<Tree>();
             List <Tree> implementsList = new ArrayList<Tree>();
             implementsList.addAll(classTree.getImplementsClause());
             for (ExtractSuperclassRefactoring.MemberInfo member : refactoring.getMembers()) {
                 if (member.group == ExtractSuperclassRefactoring.MemberInfo.Group.FIELD) {
                     ElementHandle<VariableElement> handle = (ElementHandle<VariableElement>) member.handle;
                     VariableElement elm = handle.resolve(wc);
-                    VariableTree tree = (VariableTree) SourceUtils.treeFor(wc, elm);
+                    VariableTree tree = (VariableTree) wc.getTrees().getTree(elm);
                     // TODO: copying the tree is workaround for the issue #101395
                     // When issue will be correctly claused, copy can be removed
                     // and original tree added to members.
@@ -445,7 +448,7 @@ public class ExtractSuperclassRefactoringPlugin extends RetoucheRefactoringPlugi
                 } else if (member.group == ExtractSuperclassRefactoring.MemberInfo.Group.METHOD) {
                     ElementHandle<ExecutableElement> handle = (ElementHandle<ExecutableElement>) member.handle;
                     ExecutableElement elm = handle.resolve(wc);
-                    MethodTree methodTree = (MethodTree) SourceUtils.treeFor(wc, elm);
+                    MethodTree methodTree = (MethodTree) wc.getTrees().getTree(elm);
                     if (member.makeAbstract && !elm.getModifiers().contains(Modifier.ABSTRACT)) {
                         methodTree = make.Method(
                                 makeAbstract(make, methodTree.getModifiers()),
@@ -471,6 +474,8 @@ public class ExtractSuperclassRefactoringPlugin extends RetoucheRefactoringPlugi
 
             // create superclass
             Tree superClass = makeSuperclass(make, sourceTypeElm);
+            
+            addConstructors(wc, sourceTypeElm, members);
             
             // create new class
             ClassTree newClassTree = make.Class(
@@ -515,6 +520,67 @@ public class ExtractSuperclassRefactoringPlugin extends RetoucheRefactoringPlugi
             return supEl.getSuperclass().getKind() == TypeKind.NONE
                     ? null
                     : make.Type(supType);
+        }
+        
+        /* in case there are constructors delegating to old superclass it is necessery to create delegates in new superclass */
+        private static void addConstructors(final WorkingCopy javac, final TypeElement origClass, final List<Tree> members) {
+            final TreeMaker make = javac.getTreeMaker();
+            for (ExecutableElement constr : ElementFilter.constructorsIn(origClass.getEnclosedElements())) {
+                if (javac.getElementUtilities().isSynthetic(constr)) {
+                    continue;
+                }
+                
+                TreePath path = javac.getTrees().getPath(constr);
+                MethodTree mc = (MethodTree) (path != null? path.getLeaf(): null);
+                if (mc != null) {
+                    for (StatementTree stmt : mc.getBody().getStatements()) {
+                        // search super(...); statement
+                        if (stmt.getKind() == Tree.Kind.EXPRESSION_STATEMENT) {
+                            ExpressionStatementTree estmt = (ExpressionStatementTree) stmt;
+                            ExpressionTree expr = estmt.getExpression();
+                            TreePath expath = javac.getTrees().getPath(path.getCompilationUnit(), expr);
+                            Element el = javac.getTrees().getElement(expath);
+                            // XXX here should be Element of constructor; wait for issue 99968
+                            if (el != null && el.getKind() == ElementKind.CONSTRUCTOR) {
+                                MethodTree template = (MethodTree) javac.getTrees().getTree(el);
+                                MethodInvocationTree invk = (MethodInvocationTree) expr;
+                                // create constructor block with super call
+                                BlockTree block = make.Block(Collections.<StatementTree>singletonList(
+                                        make.ExpressionStatement(
+                                            make.MethodInvocation(
+                                                (List<? extends ExpressionTree>) invk.getTypeArguments(),
+                                                invk.getMethodSelect(),
+                                                params2Arguments(make, template.getParameters())
+                                            )
+                                        )
+                                ), false);
+                                // create constructor
+                                MethodTree newConstr = make.Constructor(
+                                        template.getModifiers(),
+                                        template.getTypeParameters(),
+                                        template.getParameters(),
+                                        template.getThrows(),
+                                        block);
+                                members.add(newConstr);
+                            }
+                            
+                        }
+                        // take just first statement super(...)
+                        break;
+                    }
+                }
+            }
+        }
+        
+        private static List<? extends ExpressionTree> params2Arguments(TreeMaker make, List<? extends VariableTree> params) {
+            if (params.isEmpty()) {
+                return Collections.<ExpressionTree>emptyList();
+            }
+            List<ExpressionTree> args = new ArrayList<ExpressionTree>(params.size());
+            for (VariableTree param : params) {
+                args.add(make.Identifier(param.getName()));
+            }
+            return args;
         }
         
     }

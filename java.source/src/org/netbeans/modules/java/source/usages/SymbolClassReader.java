@@ -105,6 +105,9 @@ public class SymbolClassReader extends JavadocClassReader {
         jTypes = JavacTypes.instance(context);
         logger = Log.instance(context);
         source = Source.instance(context);
+        allowGenerics = true;
+        allowVarargs = true;
+        allowAnnotations = true;
         
         buffer = new char[127];
     }
@@ -219,10 +222,6 @@ public class SymbolClassReader extends JavadocClassReader {
                 read = r.read();
             } else {
                 typevarsList = List.<TypeVar>nil();
-            }
-            
-            for (TypeVar tvar : typevarsList) {
-                typevars.enter(tvar.tsym);
             }
             
             ct.typarams_field = (List<Type>) ((List<?>) typevarsList);
@@ -605,7 +604,7 @@ public class SymbolClassReader extends JavadocClassReader {
         java.util.List<? extends TypeMirror> typeParams = read == '<' ? readTypeParams(r) : null;//Collections.<TypeMirror>emptyList();
         Type result;
         
-        if (source.allowGenerics() && typeParams != null) {
+        if (typeParams != null) {
             result = new ClassType(outer != null ? outer : Type.noType, List.from(typeParams.toArray(new Type[0])), symbol) {
                 boolean completed = false;
                 public Type getEnclosingType() {

@@ -66,7 +66,7 @@ import org.netbeans.modules.classfile.Method;
 import org.netbeans.modules.classfile.Variable;
 import org.netbeans.modules.classfile.Parameter;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
-import org.netbeans.modules.java.source.ParamNameResolver;
+import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.util.LowMemoryEvent;
@@ -571,7 +571,7 @@ public class BinaryAnalyser implements LowMemoryListener {
                 ClassPathSupport.createClassPath(new URL[0]),
                 ClassPathSupport.createClassPath(new URL[0]));
             final JavacTaskImpl jt = JavaSourceAccessor.INSTANCE.createJavacTask(cpInfo, null, null);            
-            ParamNameResolver.preRegister(jt.getContext(), cpInfo);
+            TreeLoader.preRegister(jt.getContext(), cpInfo);
             TypeElement jc = jt.getElements().getTypeElement(javax.swing.JComponent.class.getName());
             if (jc != null) {
                 List<ExecutableElement> methods = ElementFilter.methodsIn(jc.getEnclosedElements());

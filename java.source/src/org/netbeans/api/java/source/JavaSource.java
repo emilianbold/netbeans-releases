@@ -101,7 +101,7 @@ import org.netbeans.modules.java.source.engine.ReattributionException;
 import org.netbeans.modules.java.source.engine.RootTree;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
-import org.netbeans.modules.java.source.ParamNameResolver;
+import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.java.source.builder.UndoListService;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
@@ -925,7 +925,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         }
         JavacTaskImpl javacTask = createJavacTask(getClasspathInfo(), diagnosticListener, sourceLevel, false);
         Context context = javacTask.getContext();
-        ParamNameResolver.preRegister(context, getClasspathInfo());
+        TreeLoader.preRegister(context, getClasspathInfo());
         Messager.preRegister(context, null);
         ErrorHandlingJavadocEnter.preRegister(context);
         JavadocMemberEnter.preRegister(context);       

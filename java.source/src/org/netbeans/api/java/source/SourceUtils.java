@@ -85,6 +85,9 @@ public class SourceUtils {
     
     private SourceUtils() {}
     
+    /**
+     * @deprecated Use {@link com.sun.source.util.Trees#getTree(Element)} instead.
+     */
     public static Tree treeFor(CompilationInfo info, Element element) {
         Context ctx = getSourceContextFor(info.getClasspathInfo(), Phase.ELEMENTS_RESOLVED, element);
         if (ctx != null) {
@@ -95,6 +98,9 @@ public class SourceUtils {
         return null;
     }
 
+    /**
+     * @deprecated Use {@link com.sun.source.util.Trees#getPath(Element)} instead.
+     */
     public static TreePath pathFor(CompilationInfo info, Element element) {
         Context ctx = getSourceContextFor(info.getClasspathInfo(), Phase.ELEMENTS_RESOLVED, element);
         if (ctx != null) {

@@ -48,7 +48,6 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TypeMirrorHandle;
@@ -403,7 +402,7 @@ public final class ExtractInterfaceRefactoringPlugin extends RetoucheRefactoring
                 TypeMirror origParam = typeParam.asType();
                 for (TypeMirror newParam : typeParams) {
                     if (wc.getTypes().isSameType(origParam, newParam)) {
-                        Tree t = SourceUtils.treeFor(wc, typeParam);
+                        Tree t = wc.getTrees().getTree(typeParam);
                         if (t.getKind() == Tree.Kind.TYPE_PARAMETER) {
                             newTypeParams.add((TypeParameterTree) t);
                         }
@@ -416,7 +415,7 @@ public final class ExtractInterfaceRefactoringPlugin extends RetoucheRefactoring
             List<Tree> members = new ArrayList<Tree>();
             for (ElementHandle<VariableElement> handle : refactoring.getFields()) {
                 VariableElement memberElm = handle.resolve(wc);
-                Tree tree = SourceUtils.treeFor(wc, memberElm);
+                Tree tree = wc.getTrees().getTree(memberElm);
                 members.add(tree);
             }
             // add newmethods

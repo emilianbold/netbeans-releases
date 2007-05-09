@@ -75,7 +75,6 @@ import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.api.lexer.TokenSequence;
@@ -932,7 +931,7 @@ public final class JavadocHintProvider extends AbstractHint {
                         Element elm = handle.resolve(wc);
                         Tree t = null;
                         if (elm != null) {
-                            t = SourceUtils.treeFor(wc, elm);
+                            t = wc.getTrees().getTree(elm);
                         }
                         if (t != null) {
                             JavadocGenerator gen = new JavadocGenerator(GenerateJavadocFix.this.spec);
@@ -1081,7 +1080,7 @@ public final class JavadocHintProvider extends AbstractHint {
             Element elm = handle.resolve(wc);
             Tree t = null;
             if (elm != null) {
-                t = SourceUtils.treeFor(wc, elm);
+                t = wc.getTrees().getTree(elm);
             }
             if (t != null) {
                 removeTag(wc, elm);
