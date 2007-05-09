@@ -42,9 +42,7 @@ public class SvnWcUtils {
 
     private static final String PROPS = "props";
     private static final String PROPS_BASE = "prop-base";
-
-    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'");
-        
+           
     public static File getSvnFile(File file, String svnFileName) throws IOException {
         for (int i = 0; i < ADMIN_DIR_NAMES.length; i++) {            
             File svnFile = new File(file, ADMIN_DIR_NAMES[i] + "/" + svnFileName);
@@ -82,7 +80,8 @@ public class SvnWcUtils {
 
     public static Date parseSvnDate(String inputValue) throws ParseException {
         Date returnValue = null;
-        if (inputValue != null) {
+        if (inputValue != null) {              
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'");                        
             returnValue = dateFormat.parse(inputValue);
         }
         return returnValue;        
