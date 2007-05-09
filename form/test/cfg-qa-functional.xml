@@ -21,7 +21,25 @@ Microsystems, Inc. All Rights Reserved.
 <mconfig name="Form config">
 
 <!-- Jiri Vagner -->
-   <testbag testattribs="validation, full, jv, my" executor="ide" name="testbag_Beans">
+   <testbag testattribs="issues" executor="ide" name="testbag_Fail">
+        <testset dir="qa-functional/src">
+            <patternset>               
+                <include name="org/netbeans/qa/form/visualDevelopment/MenuAndPopupMenuTest.class"/>
+                <include name="org/netbeans/qa/form/issues/*.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+   <testbag testattribs="almoststable" executor="ide" name="testbag_almoststable">
+        <testset dir="qa-functional/src">
+            <patternset>               
+                <include name="org/netbeans/qa/form/visualDevelopment/FormGenerateCodeTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+
+   <testbag testattribs="validation, full" executor="ide" name="testbag_Beans">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/beans/*.*"/>
@@ -29,10 +47,19 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-   <testbag testattribs="validation, full, jv" executor="ide" name="testbag_Options">
+   <testbag testattribs="validation, full,jv" executor="ide" name="testbag_Options">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/options/*.*"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+   <testbag testattribs="jv" executor="ide" name="testbag_visual_development">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="org/netbeans/qa/form/visualDevelopment/FormGenerateCodeTest.class"/>
+                <include name="org/netbeans/qa/form/visualDevelopment/MenuAndPopupMenuTest.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -50,7 +77,7 @@ Microsystems, Inc. All Rights Reserved.
 <!--  Marek G.  -->
 
 <!-- Marek G. -->
-   <testbag testattribs="validation, full, jv" executor="ide" name="testbag_visual_development">
+   <testbag testattribs="validation, full" executor="ide" name="testbag_visual_development">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/visualDevelopment/*.*"/>                
@@ -120,7 +147,16 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-	<testbag testattribs="stresstest" executor="ide" name="testbag_palette">
+    <testbag testattribs="undo" executor="ide" name="testbag_palette">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="org/netbeans/qa/form/undoredo/BaseTest.class"/>
+                <include name="undoredo/StressTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="stresstest" executor="ide" name="testbag_palette">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="undoredo/StressTest.class"/>
