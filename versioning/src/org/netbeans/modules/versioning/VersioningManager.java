@@ -76,6 +76,11 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
     private final FilesystemInterceptor filesystemInterceptor;
 
     /**
+     * Result of Lookup.getDefault().lookup(new Lookup.Template<VersioningSystem>(VersioningSystem.class));
+     */
+    private final Lookup.Result<VersioningSystem> systemsLookupResult;
+    
+    /**
      * Holds all registered versioning systems.
      */
     private final Collection<VersioningSystem> versioningSystems = new ArrayList<VersioningSystem>(2);
@@ -96,34 +101,29 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
     private Map<File, Boolean> localHistoryFolders = new WeakHashMap<File, Boolean>(100);
     
     private final VersioningSystem NULL_OWNER = new VersioningSystem() {
-        public String getDisplayName() {
-            return null;
-        }
     };
     
     private VersioningManager() {
+        systemsLookupResult = Lookup.getDefault().lookup(new Lookup.Template<VersioningSystem>(VersioningSystem.class));
         filesystemInterceptor = new FilesystemInterceptor();
     }
     
     private void init() {
-        initVersioningSystems();
+        systemsLookupResult.addLookupListener(this);
+        refreshVersioningSystems();
         filesystemInterceptor.init(this);
-    }
-
-    private void initVersioningSystems() {
-        Lookup.Result<VersioningSystem> result = Lookup.getDefault().lookup(new Lookup.Template<VersioningSystem>(VersioningSystem.class));
-        refreshVersioningSystems(result.allInstances());
-        result.addLookupListener(this);
     }
 
     /**
      * List of versioning systems changed.
-     * 
-     * @param systems new list of versioning systems
      */
-    private synchronized void refreshVersioningSystems(Collection<? extends VersioningSystem> systems) {
+    private synchronized void refreshVersioningSystems() {
         unloadVersioningSystems();
+        Collection<? extends VersioningSystem> systems = systemsLookupResult.allInstances();
         loadVersioningSystems(systems);
+        flushFileOwnerCache();
+        refreshDiffSidebars(null);
+        VersioningAnnotationProvider.instance.refreshAnnotations(null);
     }
 
     private void loadVersioningSystems(Collection<? extends VersioningSystem> systems) {
@@ -255,8 +255,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
     }
     
     public void resultChanged(LookupEvent ev) {
-        Lookup.Result<VersioningSystem> result = (Lookup.Result<VersioningSystem>) ev.getSource();
-        refreshVersioningSystems(result.allInstances());
+        refreshVersioningSystems();
     }
 
     /**

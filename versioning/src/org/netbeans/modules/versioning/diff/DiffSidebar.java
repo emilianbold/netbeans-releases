@@ -664,7 +664,7 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
 
         private void fetchOriginalContent() {
             int serial = originalContentSerial;
-            if (ownerVersioningSystem == null || originalContentBuffer != null && originalContentBufferSerial == serial) return;
+            if (originalContentBuffer != null && originalContentBufferSerial == serial) return;
             originalContentBufferSerial = serial;
 
             Reader r = getText(ownerVersioningSystem);
@@ -691,6 +691,7 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
      * @return Reader original content of the working copy or null if the original content is not available
      */ 
     private Reader getText(VersioningSystem vs) {
+        if (vs == null) return null;
         File mainFile = FileUtil.toFile(fileObject);
         if (mainFile == null) return null;
         
