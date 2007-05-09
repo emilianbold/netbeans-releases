@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Pattern;
 import org.openide.ErrorManager;
 
 /**
@@ -484,10 +485,16 @@ public class WorkingCopyDetails {
                         fileIdx += keyword.length(); 
                         
                         // 3. now check if there is somthing like "$", ":$" after the keyword                                
-                        if(checkFollowingString(baseLine, fileIdx, "$")) {
+                        if(checkFollowingString(baseLine, fileIdx + 1, "$")) {
                             fileIdx += 1;
-                        } else if(checkFollowingString(baseLine, fileIdx, ":$")) {
+                        } else if(checkFollowingString(baseLine, fileIdx + 1, ":$")) { 
                             fileIdx += 2;    
+                        } else if(checkFollowingString(baseLine, fileIdx + 1, "::")) {
+                            int spaces = getSpacesCount(baseLine, fileIdx + 3);
+                            if(spaces <= 0) {
+                                return false;
+                            }
+                            fileIdx += spaces + 3;                                
                         } else {
                             // we are done
                             return false;
@@ -519,15 +526,31 @@ public class WorkingCopyDetails {
     }
     
     private boolean checkFollowingString(String baseLine, int offset, String str) {
-        if(baseLine.length() <= offset + str.length()) {
+        if(baseLine.length() < offset + str.length()) {
             return false;
         }
         for (int idx = 0; idx < str.length(); idx++) {
-            if(baseLine.charAt(offset + idx + 1) != str.charAt(idx)) {
+            if(baseLine.charAt(offset + idx) != str.charAt(idx)) {
                 return false;
             }            
         }
         return true;    
+    }
+    
+    private int getSpacesCount(String baseLine, int offset) {
+        if(baseLine.length() <= offset) {
+            return -1;
+        }
+        for (int idx = 0; idx < baseLine.length(); idx++) {
+            char c = baseLine.charAt(offset + idx);
+            if(c == ' ') {
+                continue;
+            } else if(c == '$') {
+                return idx;
+            }            
+            return -1;
+        }
+        return -1;
     }
     
 }
