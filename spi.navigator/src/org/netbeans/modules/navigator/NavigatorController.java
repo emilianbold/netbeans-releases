@@ -253,6 +253,8 @@ public final class NavigatorController implements LookupListener, ActionListener
                 navigatorTC.setSelectedPanel(selPanel);
                 navigatorTC.getPanelSelector().addActionListener(this);
             }
+            // #100122: update activated nodes of Navigator TC
+            navigatorTC.setActivatedNodes(obtainActivatedNodes());
             updateTCTitle(areNewProviders ? node : null);
             return;
         }
@@ -353,9 +355,11 @@ public final class NavigatorController implements LookupListener, ActionListener
     /** Builds and returns activated nodes array for Navigator TopComponent.
      */
     private Node[] obtainActivatedNodes () {
+System.out.println("obtainActivatedNodes called...");        
         Collection<? extends Node> nodes = getPanelLookup().lookupAll(Node.class);
         if (nodes.isEmpty()) {
             // set Navigator's active node to be the same as the content it is showing
+System.out.println("curNode: " + curNode);            
             return curNode == null ? new Node[0] : new Node[] { curNode };
         } else {
             return nodes.toArray(new Node[0]);
