@@ -2310,7 +2310,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         final com.sun.tools.javac.code.Types types,
         final com.sun.tools.javac.util.Name.Table nameTable) throws IOException {
         assert source != null;
-        if (classSym.getSimpleName() != nameTable.error) {
+        if (classSym.getSimpleName() != nameTable.error && classSym.getEnclosingElement().getSimpleName() != nameTable.error) {
             URI uri = source.toUri();
             if (dirtyFiles != null && !uri.toURL().toExternalForm().startsWith(currentRootURL)) {
                 dirtyFiles.add (uri);
