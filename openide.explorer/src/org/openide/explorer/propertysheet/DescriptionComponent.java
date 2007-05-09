@@ -96,18 +96,20 @@ class DescriptionComponent extends JComponent implements ActionListener, MouseLi
             jta.setFont(f);
         }
 
-        Image help = Utilities.loadImage("org/openide/resources/propertysheet/propertySheetHelp.png", true); //NOI18N
+        if (!PropUtils.psNoHelpButton) {
+            Image help = Utilities.loadImage("org/openide/resources/propertysheet/propertySheetHelp.png", true); //NOI18N
 
-        btn = new JButton(new ImageIcon(help));
-        btn.addActionListener(this);
-        
-        toolbar = new JToolBar ();
-        toolbar.setRollover (true);
-        toolbar.setFloatable (false);
-        toolbar.setLayout (new BorderLayout (0, 0));
-        toolbar.setBorder (BorderFactory.createEmptyBorder());
-        toolbar.add (btn);
-        btn.setFocusable(false);
+            btn = new JButton(new ImageIcon(help));
+            btn.addActionListener(this);
+
+            toolbar = new JToolBar ();
+            toolbar.setRollover (true);
+            toolbar.setFloatable (false);
+            toolbar.setLayout (new BorderLayout (0, 0));
+            toolbar.setBorder (BorderFactory.createEmptyBorder());
+            toolbar.add (btn);
+            btn.setFocusable(false);
+        }
 
         lbl = new JLabel("Label"); //NOI18N
 
@@ -115,26 +117,30 @@ class DescriptionComponent extends JComponent implements ActionListener, MouseLi
 
         add(jsc);
         add(lbl);
-        add(toolbar);
+        if (!PropUtils.psNoHelpButton) {
+            add(toolbar);
+        }
         jta.addMouseListener(this);
         jsc.addMouseListener(this);
         lbl.addMouseListener(this);
-        btn.addMouseListener(this);
+        if (!PropUtils.psNoHelpButton) {
+            btn.addMouseListener(this);
+        }
         jsc.getViewport().addMouseListener(this);
     }
 
     public void doLayout() {
         Insets ins = getInsets();
-        Dimension bttn = toolbar.getPreferredSize();
         Dimension lbll = lbl.getPreferredSize();
-
-        int height = Math.max(bttn.height, lbll.height);
-        int right = getWidth() - (ins.right + bttn.width);
-
-        toolbar.setBounds(right, ins.top, bttn.width, height);
-
+        int height = lbll.height;
+        int right = getWidth() - ins.right;
+        if (!PropUtils.psNoHelpButton) {
+            Dimension bttn = toolbar.getPreferredSize();
+            height = Math.max(bttn.height, lbll.height);
+            right = getWidth() - (ins.right + bttn.width);
+            toolbar.setBounds(right, ins.top, bttn.width, height);
+        }
         lbl.setBounds(ins.left, ins.top, right, height);
-
         jsc.setBounds(ins.left, height, getWidth() - (ins.left + ins.right), getHeight() - height);
     }
 
@@ -157,7 +163,9 @@ class DescriptionComponent extends JComponent implements ActionListener, MouseLi
     }
 
     public void setHelpEnabled(boolean val) {
-        btn.setEnabled(val);
+        if (!PropUtils.psNoHelpButton) {
+            btn.setEnabled(val);
+        }
     }
 
     /**

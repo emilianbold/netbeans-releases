@@ -85,6 +85,10 @@ final class PropUtils {
      *  gets written.  */
     static final boolean psCommitOnFocusLoss = !Boolean.getBoolean("netbeans.ps.NoCommitOnFocusLoss");
 
+    /** If true, the default help button inside property sheet will not be 
+     * present. */
+    static final boolean psNoHelpButton = Boolean.getBoolean("netbeans.ps.noHelpButton");
+    
     /** UIManager key for alternate color for table - if present, color will
      *  alternate between the standard background and this color    */
     private static final String KEY_ALTBG = "Tree.altbackground"; //NOI18N
