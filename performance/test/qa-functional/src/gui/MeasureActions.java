@@ -52,8 +52,8 @@ public class MeasureActions  {
 //TODO no tomcat - see issue 101104         suite.addTest(new OpenJspFile("testOpening20kBJSPFile", "Open JSP file"));
 //TODO no tomcat - see issue 101104         suite.addTest(new OpenJspFileWithOpenedEditor("testOpening20kBJSPFile", "Open JSP file if Editor opened"));
         
-//TODO properties file is not opened - see issue 103108        suite.addTest(new OpenFilesNoCloneableEditor("testOpening20kBPropertiesFile", "Open Properties file (20kB)"));
-//TODO properties file is not opened - see issue 103108        suite.addTest(new OpenFilesNoCloneableEditorWithOpenedEditor("testOpening20kBPropertiesFile", "Open Properties file (20kB) if Editor opened"));
+        suite.addTest(new OpenFilesNoCloneableEditor("testOpening20kBPropertiesFile", "Open Properties file (20kB)"));
+        suite.addTest(new OpenFilesNoCloneableEditorWithOpenedEditor("testOpening20kBPropertiesFile", "Open Properties file (20kB) if Editor opened"));
         
         suite.addTest(new OpenFormFile("testOpening20kBFormFile", "Open Form file (20kB)"));
         suite.addTest(new OpenFormFileWithOpenedEditor("testOpening20kBFormFile", "Open Form file (20kB) if Editor opened"));
