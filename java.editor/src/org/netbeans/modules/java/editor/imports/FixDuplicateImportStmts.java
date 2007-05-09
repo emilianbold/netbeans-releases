@@ -100,7 +100,9 @@ public class FixDuplicateImportStmts extends javax.swing.JPanel{
 
             contentPanel.add( new JLabel(), new GridBagConstraints(2,row,2,1,0.0,1.0,GridBagConstraints.CENTER,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0) );
 
-            jScrollPane1.setPreferredSize( new Dimension(460, getRowHeight() * Math.min(combos.length, 6) + 0 ) );
+            Dimension d = contentPanel.getPreferredSize();
+            d.height = getRowHeight() * Math.min(combos.length, 6);
+            jScrollPane1.getViewport().setPreferredSize( d );
         } else {
             contentPanel.add( new JLabel(getBundleString("FixDupImportStmts_NothingToFix")), new GridBagConstraints(0,0,1,1,1.0,1.0,GridBagConstraints.CENTER,GridBagConstraints.NONE,new Insets(20,20,20,20),0,0) );
         }
