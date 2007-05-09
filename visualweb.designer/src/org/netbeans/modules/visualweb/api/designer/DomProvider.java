@@ -552,7 +552,7 @@ public interface DomProvider {
 //    public void tcRepaint(Designer designer);
 //    public boolean tcSeenEscape(Designer designer, ActionEvent evt);
     
-    public void tcDeleteSelection(Designer designer);
+//    public void tcDeleteSelection(Designer designer);
 
     // XXX
     public void paintDesignerDecorations(Graphics2D g, Designer designer);

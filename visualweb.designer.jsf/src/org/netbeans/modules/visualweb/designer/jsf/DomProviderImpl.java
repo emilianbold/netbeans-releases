@@ -1358,13 +1358,13 @@ class DomProviderImpl implements DomProvider {
 //        return jsfMultiViewElement.getJsfTopComponent().seenEscape(evt.getWhen());
 //    }
 
-    public void tcDeleteSelection(Designer designer) {
-        JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);
-        if (jsfMultiViewElement == null) {
-            return;
-        }
-        jsfMultiViewElement.getJsfTopComponent().deleteSelection();
-    }
+//    public void tcDeleteSelection(Designer designer) {
+//        JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);
+//        if (jsfMultiViewElement == null) {
+//            return;
+//        }
+//        jsfMultiViewElement.getJsfTopComponent().deleteSelection();
+//    }
 
     // XXX Copy also in designer/../DesignerUtils.
     /** Thread-safe method to set the activated nodes of a TopComponent;

@@ -3085,9 +3085,9 @@ public class WebForm implements Designer {
 //        return domProvider.tcSeenEscape(this, evt);
 //    }
     
-    public void tcDeleteSelection() {
-        domProvider.tcDeleteSelection(this);
-    }
+//    public void tcDeleteSelection() {
+//        domProvider.tcDeleteSelection(this);
+//    }
 
     
     public void addDesignerListener(DesignerListener l) {

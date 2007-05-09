@@ -1832,69 +1832,74 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 
     /** Remove the currently selected components */
     public void deleteSelection() {
-        Node[] nodes = getActivatedNodes();
-
-        if ((nodes == null) || (nodes.length == 0)) {
-            return;
-        }
-
-        // Do this AFTER we obtain the activated nodes - clearing
-        // the selection changes the activated nodes!
-//        webform.getSelection().clearSelection(true);
-        designer.clearSelection(true);
-
-//        FacesModel model = webform.getModel();
-//        Document doc = webform.getDocument();
-
-////        UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(SelectionTopComp.class, "DeleteSelection")); // NOI18N
-//        DomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(SelectionTopComp.class, "DeleteSelection")); // NOI18N
-//        try {
-//            doc.writeLock(NbBundle.getMessage(SelectionTopComp.class, "DeleteSelection")); // NOI18N
-
-//            for (int i = 0; i < nodes.length; i++) {
-//                if (nodes[i] instanceof DesignBeanNode) {
-//                    // XXX todo: make sure you don't delete the
-//                    // document bean!!!!!
-//                    DesignBeanNode node = (DesignBeanNode)nodes[i];
-//                    DesignBean bean = node.getDesignBean();
+//        Node[] nodes = getActivatedNodes();
 //
-////                    if (!FacesSupport.isSpecialBean(/*webform, */bean)) {
-//                    if (!Util.isSpecialBean(bean)) {
-//                        model.getLiveUnit().deleteBean(bean);
-//                    }
-//                }
-//            }
-            List<Element> componentRootElements = new ArrayList<Element>();
-            for (Node node : nodes) {
-                if (node == null) {
-                    continue;
-                }
-//                DesignBean designBean = (DesignBean)node.getLookup().lookup(DesignBean.class);
-//                if (designBean == null) {
+//        if ((nodes == null) || (nodes.length == 0)) {
+//            return;
+//        }
+//
+//        // Do this AFTER we obtain the activated nodes - clearing
+//        // the selection changes the activated nodes!
+////        webform.getSelection().clearSelection(true);
+//        designer.clearSelection(true);
+//
+////        FacesModel model = webform.getModel();
+////        Document doc = webform.getDocument();
+//
+//////        UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(SelectionTopComp.class, "DeleteSelection")); // NOI18N
+////        DomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(SelectionTopComp.class, "DeleteSelection")); // NOI18N
+////        try {
+////            doc.writeLock(NbBundle.getMessage(SelectionTopComp.class, "DeleteSelection")); // NOI18N
+//
+////            for (int i = 0; i < nodes.length; i++) {
+////                if (nodes[i] instanceof DesignBeanNode) {
+////                    // XXX todo: make sure you don't delete the
+////                    // document bean!!!!!
+////                    DesignBeanNode node = (DesignBeanNode)nodes[i];
+////                    DesignBean bean = node.getDesignBean();
+////
+//////                    if (!FacesSupport.isSpecialBean(/*webform, */bean)) {
+////                    if (!Util.isSpecialBean(bean)) {
+////                        model.getLiveUnit().deleteBean(bean);
+////                    }
+////                }
+////            }
+//            List<Element> componentRootElements = new ArrayList<Element>();
+//            for (Node node : nodes) {
+//                if (node == null) {
 //                    continue;
 //                }
-//                Element componentRootElement = WebForm.getDomProviderService().getComponentRootElementFromNode(node);
-                Element componentRootElement = JsfSupportUtilities.getComponentRootElementFromNode(node);
-                if (componentRootElement == null) {
-                    continue;
-                }
-//                if (!Util.isSpecialBean(designBean)) {
-//                if (designBean instanceof MarkupDesignBean && !WebForm.getDomProviderService().isSpecialComponent(
-//                        WebForm.getDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)designBean))) {
-//                if (!WebForm.getDomProviderService().isSpecialComponent(componentRootElement)) {
-////                    webform.getModel().getLiveUnit().deleteBean(designBean);
-////                    webform.deleteBean(designBean);
-//                    webform.deleteComponent(componentRootElement);
+////                DesignBean designBean = (DesignBean)node.getLookup().lookup(DesignBean.class);
+////                if (designBean == null) {
+////                    continue;
+////                }
+////                Element componentRootElement = WebForm.getDomProviderService().getComponentRootElementFromNode(node);
+//                Element componentRootElement = JsfSupportUtilities.getComponentRootElementFromNode(node);
+//                if (componentRootElement == null) {
+//                    continue;
 //                }
-                componentRootElements.add(componentRootElement);
-            }
-//            webform.getDomDocument().deleteComponents(componentRootElements.toArray(new Element[componentRootElements.size()]));
-            jsfForm.deleteComponents(componentRootElements.toArray(new Element[componentRootElements.size()]));
-//        } finally {
-////            doc.writeUnlock();
-////            webform.getModel().writeUnlock(undoEvent);
-//            webform.writeUnlock(writeLock);
-//        }
+////                if (!Util.isSpecialBean(designBean)) {
+////                if (designBean instanceof MarkupDesignBean && !WebForm.getDomProviderService().isSpecialComponent(
+////                        WebForm.getDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)designBean))) {
+////                if (!WebForm.getDomProviderService().isSpecialComponent(componentRootElement)) {
+//////                    webform.getModel().getLiveUnit().deleteBean(designBean);
+//////                    webform.deleteBean(designBean);
+////                    webform.deleteComponent(componentRootElement);
+////                }
+//                componentRootElements.add(componentRootElement);
+//            }
+////            webform.getDomDocument().deleteComponents(componentRootElements.toArray(new Element[componentRootElements.size()]));
+//            jsfForm.deleteComponents(componentRootElements.toArray(new Element[componentRootElements.size()]));
+////        } finally {
+//////            doc.writeUnlock();
+//////            webform.getModel().writeUnlock(undoEvent);
+////            webform.writeUnlock(writeLock);
+////        }
+        Element[] componentRootElements = designer.getSelectedComponents();
+        if (componentRootElements.length > 0) {
+            designer.clearSelection(true);
+            jsfForm.deleteComponents(componentRootElements);
+        }
     }
 
     // XXX Public because implementing multiview.

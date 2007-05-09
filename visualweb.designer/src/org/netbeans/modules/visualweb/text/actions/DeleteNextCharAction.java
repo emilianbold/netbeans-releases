@@ -27,6 +27,7 @@ package org.netbeans.modules.visualweb.text.actions;
 import java.awt.event.ActionEvent;
 
 import javax.swing.UIManager;
+import org.netbeans.modules.visualweb.designer.SelectionManager;
 
 import org.netbeans.modules.visualweb.designer.WebForm;
 import org.netbeans.modules.visualweb.text.DesignerPaneBase;
@@ -36,6 +37,7 @@ import org.netbeans.modules.visualweb.text.DesignerPaneBase;
  * Deletes the character of content that precedes the current caret position.
  *
  */
+import org.w3c.dom.Element;
 public class DeleteNextCharAction extends TextAction {
     /**
      * Creates this object with the appropriate identifier.
@@ -71,9 +73,14 @@ public class DeleteNextCharAction extends TextAction {
 //            DesignerCaret caret = target.getCaret();
 //            if (caret == null) {
             if (!target.hasCaret()) {
-                if (!webform.getSelection().isSelectionEmpty()) {
+//                if (!webform.getSelection().isSelectionEmpty()) {
+                SelectionManager sm = webform.getSelection();
+                if (!sm.isSelectionEmpty()) {
 //                    webform.getTopComponent().deleteSelection();
-                    webform.tcDeleteSelection();
+//                    webform.tcDeleteSelection();
+                    Element[] componentRootElements = sm.getSelectedComponentRootElements();
+                    sm.clearSelection(true);
+                    webform.getDomDocument().deleteComponents(componentRootElements);
                 }
 
                 return;
