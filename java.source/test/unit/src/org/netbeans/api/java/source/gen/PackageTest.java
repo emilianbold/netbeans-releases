@@ -158,6 +158,7 @@ public class PackageTest extends GeneratorTestMDRCompat {
             );
         String golden = 
             "package gro.snaebten.seludom.avaj;\n" +
+            "\n" +
             "/**\n" +
             " * What?\n" +
             " */\n" +
@@ -205,6 +206,7 @@ public class PackageTest extends GeneratorTestMDRCompat {
             );
         String golden = 
             "package gro.snaebten.seludom.avaj;\n" +
+            "\n" +
             "/**\n" +
             " * What?\n" +
             " */\n" +
