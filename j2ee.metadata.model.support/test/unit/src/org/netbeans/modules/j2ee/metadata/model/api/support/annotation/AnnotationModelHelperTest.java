@@ -115,6 +115,8 @@ public class AnnotationModelHelperTest extends PersistenceTestCase {
         contextLeft[0] = false;
         helper.runJavaSourceTask(empty, false);
         assertFalse(contextLeft[0]);
+        helper.runJavaSourceTaskWhenScanFinished(empty);
+        assertTrue(contextLeft[0]);
         WeakReference<JavaContextListener> listenerRef = new WeakReference<JavaContextListener>(listener);
         listener = null;
         assertGC("Should be possible to GC listener", listenerRef);
@@ -206,12 +208,12 @@ public class AnnotationModelHelperTest extends PersistenceTestCase {
     public void testWhenScanFinished() throws Exception {
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
-        ClassIndex index = cpi.getClassIndex();
         final CountDownLatch startLatch = new CountDownLatch(1);
         final CountDownLatch scanBlockingLatch = new CountDownLatch(1);
+        ClassIndex index = cpi.getClassIndex();
         index.addClassIndexListener(new ClassIndexAdapter() {
             public void typesAdded(TypesEvent event) {
-                // called as a result of scheduleCompilationAndWait()
+                // called as a result of creating Person.java below
                 startLatch.countDown();
                 try {
                     scanBlockingLatch.await();
@@ -245,7 +247,7 @@ public class AnnotationModelHelperTest extends PersistenceTestCase {
                 "public interface Person {" +
                 "   String getName();" +
                 "}");
-        scanBlockingLatch.await(5, TimeUnit.SECONDS);
+        scanBlockingLatch.await();
         assertSame(result, futureRef.get().get());
     }
 }

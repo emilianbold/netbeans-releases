@@ -156,16 +156,7 @@ public final class AnnotationModelHelper {
         final List<V> result = new ArrayList<V>();
         newJavaSource.runUserActionTask(new CancellableTask<CompilationController>() {
             public void run(CompilationController controller) throws Exception {
-                try {
-                    result.add(runCallable(callable, controller));
-                } finally {
-                    if (notify) {
-                        // notifying while still under the javac lock
-                        for (JavaContextListener hook : javaContextListeners) {
-                            hook.javaContextLeft();
-                        }
-                    }
-                }
+                result.add(runCallable(callable, controller, notify));
             }
             public void cancel() {
                 // we can't cancel
@@ -189,7 +180,7 @@ public final class AnnotationModelHelper {
         final DelegatingFuture<V> result = new DelegatingFuture<V>();
         result.setDelegate(newJavaSource.runWhenScanFinished(new CancellableTask<CompilationController>() {
             public void run(CompilationController controller) throws Exception {
-                result.setResult(runCallable(callable, controller));
+                result.setResult(runCallable(callable, controller, true));
             }
             public void cancel() {
                 // we can't cancel
@@ -203,7 +194,7 @@ public final class AnnotationModelHelper {
      * Runs the given callable in a javac context. Reentrant only in a single thread
      * (should be guaranteed by JavaSource.javacLock).
      */
-    private <V> V runCallable(Callable<V> callable, CompilationController controller) throws IOException {
+    private <V> V runCallable(Callable<V> callable, CompilationController controller, boolean notify) throws IOException {
         synchronized (AnnotationModelHelper.this) {
             if (userActionTaskThread != null && userActionTaskThread != Thread.currentThread()) {
                 throw new IllegalStateException("JavaSource.runUserActionTask() should not be executed by multiple threads concurrently"); // NOI18N
@@ -229,6 +220,13 @@ public final class AnnotationModelHelper {
             synchronized (AnnotationModelHelper.this) {
                 javaSource = null;
                 userActionTaskThread = null;
+            }
+            if (notify) {
+                // have to notify while still under the javac lock
+                // to ensure the visibility of any changes made by the listeners
+                for (JavaContextListener hook : javaContextListeners) {
+                    hook.javaContextLeft();
+                }
             }
         }
     }
