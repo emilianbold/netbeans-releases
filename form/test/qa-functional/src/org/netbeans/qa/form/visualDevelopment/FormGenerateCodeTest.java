@@ -70,7 +70,6 @@ public class FormGenerateCodeTest extends ExtJellyTestCase {
         suite.addTest(new FormGenerateCodeTest("testAddComponentsIntoContainersSwing"));
         suite.addTest(new FormGenerateCodeTest("testAddComponentsIntoContainersAwt"));
         suite.addTest(new FormGenerateCodeTest("testInPlaceEditing"));
-        suite.addTest(new FormGenerateCodeTest("testMenuAndPopUpMenuCreation"));
         suite.addTest(new FormGenerateCodeTest("testSimpleComponentInsertingIntoForm"));
         suite.addTest(new FormGenerateCodeTest("testLayouts"));
         suite.addTest(new FormGenerateCodeTest("testBorderSettings"));
@@ -239,47 +238,6 @@ public class FormGenerateCodeTest extends ExtJellyTestCase {
         node = new Node(inspector.treeComponents(), "[Frame]|panel1 [Panel]"); // NOI18N
         runPopupOverNode("Add From Palette|AWT|Canvas", node); // NOI18N
         findInCode("panel1.add(canvas1);", designer); // NOI18N
-        
-        removeFile(frameName);
-    }
-    
-    
-    public void testMenuAndPopUpMenuCreation() {
-        p("testMenuAndPopUpMenuCreation - start"); // NOI18N
-        String frameName = createJFrameFile();
-        ComponentInspectorOperator inspector = new ComponentInspectorOperator();
-        FormDesignerOperator designer = new FormDesignerOperator(frameName);
-        
-        Node node = new Node(inspector.treeComponents(), "JFrame"); // NOI18N
-        
-        new Action(null, "Add From Palette|Swing Menus|Menu Bar").perform(node); // NOI18N
-        new Action(null, "Add From Palette|Swing Menus|Popup Menu").perform(node); // NOI18N
-        findInCode("jMenuBar1 = new javax.swing.JMenuBar();", designer); // NOI18N
-        findInCode("jPopupMenu1 = new javax.swing.JPopupMenu();", designer); // NOI18N
-        
-        ArrayList<String> items = new ArrayList<String>();
-        items.add("Add|JMenuItem"); // NOI18N
-        items.add("Add|JCheckBoxMenuItem"); // NOI18N
-        items.add("Add|JRadioButtonMenuItem"); // NOI18N
-        items.add("Add|JSeparator"); // NOI18N
-        items.add("Add|JMenu"); // NOI18N
-        
-        Operator.DefaultStringComparator comparator = new Operator.DefaultStringComparator(true, false);
-        node = new Node(inspector.treeComponents(), "Other Components|jPopupMenu1 [JPopupMenu]"); // NOI18N
-        runPopupOverNode(items, node, comparator);
-        
-        node = new Node(inspector.treeComponents(), "[JFrame]|jMenuBar1 [JMenuBar]|jMenu1 [JMenu]"); // NOI18N
-        runPopupOverNode(items, node, comparator);
-        
-        node = new Node(inspector.treeComponents(), "[JFrame]|jMenuBar1 [JMenuBar]|jMenu1 [JMenu]|jMenu3 [JMenu]"); // NOI18N
-        runPopupOverNode(items, node, comparator);
-        
-        ArrayList<String> lines = new ArrayList<String>();
-        lines.add("jMenu3.add(jMenu4);"); // NOI18N
-        lines.add("jMenu1.add(jMenu3);"); // NOI18N
-        lines.add("jMenuBar1.add(jMenu1);"); // NOI18N
-        lines.add("setJMenuBar(jMenuBar1);"); // NOI18N
-        findInCode(lines, designer);
         
         removeFile(frameName);
     }
