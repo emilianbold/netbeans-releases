@@ -40,7 +40,7 @@ import javax.swing.border.EmptyBorder;
 
 /**
  * Decorated button (as hyperlink)
- * 
+ *
  * @author S. Aubrecht (original)
  * @author Michal Mocnak
  */
@@ -56,7 +56,7 @@ public class HudsonLinkButton extends JButton
     public HudsonLinkButton(boolean showBullet ) {
         setForeground(new Color(Integer.decode("0x0E1B55").intValue()));
         setBorder( new EmptyBorder(1, 1, 1, 1) );
-        setCursor( Cursor.getPredefinedCursor(Cursor.HAND_CURSOR) );
+        setCursor( new Cursor(Cursor.HAND_CURSOR) );
         setHorizontalAlignment( JLabel.LEFT );
         addMouseListener(this);
         setFocusable( true );

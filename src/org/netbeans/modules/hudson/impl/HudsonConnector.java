@@ -21,9 +21,14 @@ package org.netbeans.modules.hudson.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -47,6 +52,7 @@ import org.netbeans.modules.hudson.impl.HudsonJobBuild.HudsonJobChangeFile.EditT
 import org.netbeans.modules.hudson.impl.HudsonJobBuild.HudsonJobChangeItem;
 import org.netbeans.modules.hudson.impl.HudsonJobBuild.Result;
 import org.netbeans.modules.hudson.impl.HudsonJobImpl;
+import org.netbeans.modules.hudson.util.Utilities;
 import org.netbeans.modules.hudson.util.Utilities;
 import org.netbeans.modules.hudson.util.Utilities;
 import org.openide.ErrorManager;
@@ -126,7 +132,7 @@ public class HudsonConnector implements HudsonXmlApiConstants,
         handle.start();
         
         try {
-            final URL url = new URL(job.getUrl() + "/" + XML_API_BUILD_URL);
+            final URL url = new URL(Utilities.getURLWithoutSpaces(job.getUrl() + "/" + XML_API_BUILD_URL));
             
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
@@ -415,7 +421,7 @@ public class HudsonConnector implements HudsonXmlApiConstants,
         Document doc = null;
         
         try {
-            URL u = new java.net.URL(url + XML_API_URL);
+            URL u = new java.net.URL(Utilities.getURLWithoutSpaces(url + XML_API_URL));
             HttpURLConnection conn = (HttpURLConnection) u.openConnection();
             
             // Connected failed

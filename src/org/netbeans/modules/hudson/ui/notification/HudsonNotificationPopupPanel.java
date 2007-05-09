@@ -127,20 +127,19 @@ public class HudsonNotificationPopupPanel extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         contentPane.setBorder(null);
-        contentPane.setViewportBorder(null);
         contentPane.setOpaque(false);
 
-        contentPanel.setBorder(null);
+        contentPanel.setEnabled(false);
         contentPanel.setLayout(new java.awt.GridBagLayout());
 
         titlePanel.setLayout(new java.awt.GridBagLayout());
 
-        titleLabel.setBackground(javax.swing.UIManager.getDefaults().getColor("PropSheet.selectionBackground"));
+        titleLabel.setBackground(new java.awt.Color(153, 153, 153));
         titleLabel.setFont(new java.awt.Font("DejaVu Sans", 1, 13));
         titleLabel.setForeground(new java.awt.Color(254, 254, 254));
         titleLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         titleLabel.setText(org.openide.util.NbBundle.getMessage(HudsonNotificationPopupPanel.class, "titleLabel.text")); // NOI18N
-        titleLabel.setBorder(javax.swing.BorderFactory.createLineBorder(javax.swing.UIManager.getDefaults().getColor("PropSheet.disabledForeground")));
+        titleLabel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
         titleLabel.setOpaque(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;

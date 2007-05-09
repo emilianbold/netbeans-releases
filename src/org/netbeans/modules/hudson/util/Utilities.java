@@ -112,4 +112,8 @@ public class Utilities {
         
         return gbc;
     }
+    
+    public static String getURLWithoutSpaces(String url) {
+        return url.replaceAll("\\s+", "%20");
+    }
 }

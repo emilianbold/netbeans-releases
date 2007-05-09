@@ -47,7 +47,7 @@ public class HudsonNotificationController implements ChangeListener {
         change.addChangeListener(this);
     }
     
-    protected Component getVisualComponent() {
+    protected synchronized Component getVisualComponent() {
         if (null == component) {
             component = new HudsonNotificationPanel();
             change.addChangeListener((HudsonNotificationPanel) component);
@@ -84,8 +84,8 @@ public class HudsonNotificationController implements ChangeListener {
         change.fireChange();
     }
     
-    public void stateChanged(ChangeEvent e) {
-        for (HudsonJob job : this.jobs.values()) {
+    public synchronized void stateChanged(ChangeEvent e) {
+        for (HudsonJob job : getFailedJobs()) {
             HudsonInstance instance = job.getLookup().lookup(HudsonInstance.class);
             
             if (null == instance)
@@ -107,7 +107,6 @@ public class HudsonNotificationController implements ChangeListener {
             
             if (!exists || passed)
                 this.jobs.remove(job.getUrl());
-            
         }
     }
 }

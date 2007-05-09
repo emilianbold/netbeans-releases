@@ -105,7 +105,6 @@ public class HudsonNotificationPanel extends javax.swing.JPanel implements Chang
 
         notificationLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/hudson/ui/resources/red_anime.gif"))); // NOI18N
         notificationLabel.setText(org.openide.util.NbBundle.getMessage(HudsonNotificationPanel.class, "notificationLabel.text")); // NOI18N
-        notificationLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
         notificationLabel.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 notificationLabelMouseClicked(evt);
@@ -114,6 +113,7 @@ public class HudsonNotificationPanel extends javax.swing.JPanel implements Chang
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
         add(notificationLabel, gridBagConstraints);
+        notificationLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
     }// </editor-fold>//GEN-END:initComponents
     
 private void notificationLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_notificationLabelMouseClicked
@@ -241,7 +241,6 @@ private void notificationLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN
             if (showingPopup) {
                 resizePopup();
             }
-        }
-        
+        }       
     }
 }

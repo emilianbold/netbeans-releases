@@ -70,17 +70,17 @@ public class HudsonJobBuildPanel extends javax.swing.JPanel {
         buildContentPanel = new javax.swing.JPanel();
         buildResultLabel = new javax.swing.JLabel();
         buildStatusLabel = new javax.swing.JLabel();
-        contentPane = new javax.swing.JScrollPane();
+        contentScrollPane = new javax.swing.JScrollPane();
         contentPanel = new javax.swing.JPanel();
 
-        changesPanel.setBorder(null);
         changesPanel.setOpaque(false);
         changesPanel.setLayout(new java.awt.GridBagLayout());
 
+        changesLabel.setBackground(new java.awt.Color(204, 204, 204));
         changesLabel.setFont(new java.awt.Font("Dialog", 1, 14));
         changesLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         changesLabel.setText(org.openide.util.NbBundle.getMessage(HudsonJobBuildPanel.class, "LBL_Changes")); // NOI18N
-        changesLabel.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(204, 204, 204), 1, true));
+        changesLabel.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(238, 238, 238), 1, true));
         changesLabel.setOpaque(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -89,7 +89,6 @@ public class HudsonJobBuildPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         changesPanel.add(changesLabel, gridBagConstraints);
 
-        changesContentPanel.setBorder(null);
         changesContentPanel.setOpaque(false);
         changesContentPanel.setLayout(new java.awt.GridBagLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -117,10 +116,11 @@ public class HudsonJobBuildPanel extends javax.swing.JPanel {
         buildPanel.setOpaque(false);
         buildPanel.setLayout(new java.awt.GridBagLayout());
 
+        buildLabel.setBackground(new java.awt.Color(204, 204, 204));
         buildLabel.setFont(new java.awt.Font("Dialog", 1, 14));
         buildLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         buildLabel.setText(org.openide.util.NbBundle.getMessage(HudsonJobBuildPanel.class, "LBL_BuildNumber")); // NOI18N
-        buildLabel.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(204, 204, 204), 1, true));
+        buildLabel.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(238, 238, 238), 1, true));
         buildLabel.setOpaque(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -162,23 +162,20 @@ public class HudsonJobBuildPanel extends javax.swing.JPanel {
         setOpaque(false);
         setLayout(new java.awt.GridBagLayout());
 
-        contentPane.setBorder(null);
-        contentPane.setViewportBorder(null);
-        contentPane.setOpaque(false);
+        contentScrollPane.setBorder(null);
+        contentScrollPane.setOpaque(false);
+        contentScrollPane.getViewport().setOpaque(false);
 
-        contentPanel.setBorder(null);
         contentPanel.setOpaque(false);
         contentPanel.setLayout(new java.awt.GridBagLayout());
-        contentPane.setViewportView(contentPanel);
+        contentScrollPane.setViewportView(contentPanel);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 30, 5);
-        add(contentPane, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 20, 5);
+        add(contentScrollPane, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     
     
@@ -191,8 +188,8 @@ public class HudsonJobBuildPanel extends javax.swing.JPanel {
     private javax.swing.JPanel changesContentPanel;
     private javax.swing.JLabel changesLabel;
     private javax.swing.JPanel changesPanel;
-    private javax.swing.JScrollPane contentPane;
     private javax.swing.JPanel contentPanel;
+    private javax.swing.JScrollPane contentScrollPane;
     private javax.swing.JLabel loadingLabel;
     private javax.swing.JLabel noChangesLabel;
     private javax.swing.JLabel statusLabel;

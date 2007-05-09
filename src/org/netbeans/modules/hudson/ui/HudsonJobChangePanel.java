@@ -104,8 +104,8 @@ public class HudsonJobChangePanel extends javax.swing.JPanel {
             titlePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(titlePanelLayout.createSequentialGroup()
                 .add(titlePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(userLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
-                    .add(msgLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE))
+                    .add(userLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 575, Short.MAX_VALUE)
+                    .add(msgLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 575, Short.MAX_VALUE))
                 .addContainerGap())
         );
         titlePanelLayout.setVerticalGroup(
