@@ -47,6 +47,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.RootsEvent;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TypesEvent;
 import org.openide.util.Exceptions;
 import org.openide.util.WeakSet;
@@ -56,6 +57,9 @@ import org.openide.util.WeakSet;
  * @author Andrei Badea
  */
 public final class AnnotationModelHelper {
+
+    // XXX JavaContextListener-s not notified by runJavaSourceTaskWhenScanFinished()
+    // XXX ExecutionException for the future returned by runJavaSourceTaskWhenScanFinished()
 
     private final ClasspathInfo cpi;
     // @GuardedBy("this")
@@ -248,6 +252,14 @@ public final class AnnotationModelHelper {
             annotationScanner = new AnnotationScanner(this);
         }
         return annotationScanner;
+    }
+
+    /**
+     * Returns true if the Java infrastructure is just performing a classpath
+     * scan.
+     */
+    public boolean isJavaScanInProgress() {
+        return SourceUtils.isScanInProgress();
     }
 
     private void assertUserActionTaskThread() {
