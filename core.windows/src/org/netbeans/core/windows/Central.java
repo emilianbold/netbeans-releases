@@ -163,6 +163,14 @@ final class Central implements ControllerHandler {
     
     /** Sets active mode into model and requests view (if needed). */
     public void setActiveMode(final ModeImpl activeMode) {
+        //#87843: Do not activate mode when it does not contain any opened TC
+        if (activeMode != null) {
+            List<TopComponent> l = activeMode.getOpenedTopComponents();
+            if (l.size() == 0) {
+                return;
+            }
+        }
+        
         final ModeImpl old = getActiveMode();
         if(activeMode == old) {
             // kind of workaround to the scenario when a window slides out automatically
@@ -1587,7 +1595,6 @@ final class Central implements ControllerHandler {
             WindowManagerImpl.getInstance().doFirePropertyChange(
                 WindowManagerImpl.PROP_ACTIVE_MODE, oldActiveMode, newMode);
         }
-        
         
     }
     
