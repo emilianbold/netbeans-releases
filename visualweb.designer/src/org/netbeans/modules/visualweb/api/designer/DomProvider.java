@@ -543,9 +543,9 @@ public interface DomProvider {
 //    public void tcDisableCutCopyDelete(Designer designer);
 //    public void tcSetActivatedNodes(Designer designer, org.openide.nodes.Node[] nodes);
 //    public org.openide.nodes.Node[] tcGetActivatedNodes(Designer designer);
-    public void tcShowPopupMenu(Designer designer, int x, int y);
-    public void tcShowPopupMenu(Designer designer, JPopupMenu popup, int x, int y);
-    public void tcShowPopupMenuForEvent(Designer designer, MouseEvent evt);
+//    public void tcShowPopupMenu(Designer designer, int x, int y);
+//    public void tcShowPopupMenu(Designer designer, JPopupMenu popup, int x, int y);
+//    public void tcShowPopupMenuForEvent(Designer designer, MouseEvent evt);
     
 //    public boolean tcImportComponentData(Designer designer, JComponent comp, Transferable t);
 //    public Point tcGetPastePosition(Designer designer);

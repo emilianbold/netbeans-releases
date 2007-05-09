@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.visualweb.designer;
 
+import org.netbeans.modules.visualweb.api.designer.Designer;
+import org.netbeans.modules.visualweb.api.designer.Designer.Box;
 import org.netbeans.modules.visualweb.api.designer.DomProvider;
 import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
 import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition.Bias;
@@ -48,6 +50,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import org.netbeans.modules.visualweb.api.designer.Designer.DesignerEvent;
+import org.netbeans.modules.visualweb.api.designer.Designer.DesignerPopupEvent;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
@@ -1841,10 +1844,11 @@ public class InteractionManager {
 //                actions.createPopup(p.x, p.y, pane, sm.getSelectedNodes(), true, mouseElement);
 // ====
                 if (isInsideBoxDecoration(overBox, e.getX(), e.getY())) {
-                    showDecorationPopupMenu(overBox, e.getX(), e.getY());
+                    showDecorationPopupMenu(overBox, e.getComponent(), e.getX(), e.getY());
                 } else {
 //                    webform.getTopComponent().showPopupMenu(p.x, p.y);
-                    webform.tcShowPopupMenu(p.x, p.y);
+//                    webform.tcShowPopupMenu(p.x, p.y);
+                    webform.fireUserPopupActionPerformed(new DefaultDesignerPopupEvent(webform, e.getComponent(), null, null, p.x, p.y));
                 }
 // </actions from layer>
 
@@ -3125,7 +3129,7 @@ public class InteractionManager {
         }
     }
     
-    private void showDecorationPopupMenu(final CssBox box, int x, int y) {
+    private void showDecorationPopupMenu(final CssBox box, Component component, int x, int y) {
         Decoration decoration = box.getDecoration();
         if (decoration == null) {
             return;
@@ -3136,12 +3140,69 @@ public class InteractionManager {
             return;
         }
         
-        JPopupMenu popup = Utilities.actionsToPopup(actions, decoration.getContext());
-        
-        // XXX Move somehow to the associated top component?
-//        popup.show(webform.getTopComponent(), x, y);
-        webform.tcShowPopupMenu(popup, x, y);
+//        JPopupMenu popup = Utilities.actionsToPopup(actions, decoration.getContext());
+//        
+//        // XXX Move somehow to the associated top component?
+////        popup.show(webform.getTopComponent(), x, y);
+//        webform.tcShowPopupMenu(popup, x, y);
+        webform.fireUserPopupActionPerformed(new DefaultDesignerPopupEvent(webform, component, actions, decoration.getContext(), x, y));
     }
+    
+    
+    static class DefaultDesignerPopupEvent implements DesignerPopupEvent {
+        private final Designer designer;
+        private final Component component;
+        private final Action[] actions;
+        private final Lookup context;
+        private final int x;
+        private final int y;
+
+        public DefaultDesignerPopupEvent(
+                Designer designer,
+                Component component,
+                Action[] actions,
+                Lookup context,
+                int x,
+                int y
+        ) {
+            this.designer = designer;
+            this.component = component;
+            this.actions = actions;
+            this.context = context;
+            this.x = x;
+            this.y = y;
+        }
+        
+        public Component getComponent() {
+            return component;
+        }
+
+        public Action[] getActions() {
+            return actions;
+        }
+
+        public Lookup getContext() {
+            return context;
+        }
+
+        public Designer getDesigner() {
+            return designer;
+        }
+
+        public Box getBox() {
+            return null;
+        }
+
+        public int getX() {
+            return x;
+        }
+
+        public int getY() {
+            return y;
+        }
+        
+    } // End of DefaultDesignerPopupEvent.
+    
     
     /** Put the designer in inline-editing mode for the first
      * eligible component in the inserted set of beans  */

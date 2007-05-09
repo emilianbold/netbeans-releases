@@ -21,12 +21,16 @@
 package org.netbeans.modules.visualweb.designer.jsf.ui;
 
 
+import java.awt.Component;
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.netbeans.modules.visualweb.api.designer.Designer.Box;
 import org.netbeans.modules.visualweb.api.designer.Designer.DesignerEvent;
 import org.netbeans.modules.visualweb.api.designer.Designer.DesignerListener;
+import org.netbeans.modules.visualweb.api.designer.Designer.DesignerPopupEvent;
 import org.netbeans.modules.visualweb.api.designer.Designer.ExternalBox;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.netbeans.modules.visualweb.designer.jsf.JsfForm;
@@ -271,5 +275,13 @@ class JsfDesignerListener implements DesignerListener {
             
             jsfTopComponent.setActivatedNodes(nodes);
         }
+    }
+
+    public void userPopupActionPerformed(DesignerPopupEvent evt) {
+        Component component = evt.getComponent();
+        int x = evt.getX();
+        int y = evt.getY();
+        Point point = SwingUtilities.convertPoint(component, x, y, jsfTopComponent);
+        jsfTopComponent.showPopup(evt.getActions(), evt.getContext(), point.x, point.y);
     }
 }

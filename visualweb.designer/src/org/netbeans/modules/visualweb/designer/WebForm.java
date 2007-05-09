@@ -3057,17 +3057,17 @@ public class WebForm implements Designer {
 //        domProvider.tcRequestActive(this);
 //    }
     
-    public void tcShowPopupMenu(int x, int y) {
-        domProvider.tcShowPopupMenu(this, x, y);
-    }
-    
-    public void tcShowPopupMenu(JPopupMenu popup, int x, int y) {
-        domProvider.tcShowPopupMenu(this, popup, x, y);
-    }
-    
-    public void tcShowPopupMenuForEvent(MouseEvent evt) {
-        domProvider.tcShowPopupMenuForEvent(this, evt);
-    }
+//    public void tcShowPopupMenu(int x, int y) {
+//        domProvider.tcShowPopupMenu(this, x, y);
+//    }
+//    
+//    public void tcShowPopupMenu(JPopupMenu popup, int x, int y) {
+//        domProvider.tcShowPopupMenu(this, popup, x, y);
+//    }
+//    
+//    public void tcShowPopupMenuForEvent(MouseEvent evt) {
+//        domProvider.tcShowPopupMenuForEvent(this, evt);
+//    }
     
 //    public boolean tcImportComponentData(JComponent comp, Transferable t) {
 //        return domProvider.tcImportComponentData(this, comp, t);
@@ -3137,6 +3137,13 @@ public class WebForm implements Designer {
         DesignerListener[] designerListeners = getDesignerListeners();
         for (DesignerListener l : designerListeners) {
             l.userActionPerformed(evt);
+        }
+    }
+    
+    public void fireUserPopupActionPerformed(DesignerPopupEvent evt) {
+        DesignerListener[] designerListeners = getDesignerListeners();
+        for (DesignerListener l : designerListeners) {
+            l.userPopupActionPerformed(evt);
         }
     }
     

@@ -1256,32 +1256,32 @@ class DomProviderImpl implements DomProvider {
 //        return jsfMultiViewElement.getJsfTopComponent().getActivatedNodes();
 //    }
 
-    public void tcShowPopupMenu(Designer designer, int x, int y) {
-        JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);
-        if (jsfMultiViewElement == null) {
-            return;
-        }
-        jsfMultiViewElement.getJsfTopComponent().showPopupMenu(x, y);
-    }
-
-    public void tcShowPopupMenu(Designer designer, JPopupMenu popup, int x, int y) {
-        JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);
-        if (jsfMultiViewElement == null) {
-            return;
-        }
-        popup.show(jsfMultiViewElement.getJsfTopComponent(), x, y);
-    }
-
-    public void tcShowPopupMenuForEvent(Designer designer, MouseEvent evt) {
-        JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);
-        if (jsfMultiViewElement == null) {
-            return;
-        }
-        // #6442386
-        JsfTopComponent jsfTopComponent = jsfMultiViewElement.getJsfTopComponent();
-        Point p = SwingUtilities.convertPoint(evt.getComponent(), evt.getX(), evt.getY(), jsfTopComponent);
-        jsfTopComponent.showPopupMenu(p.x, p.y);
-    }
+//    public void tcShowPopupMenu(Designer designer, int x, int y) {
+//        JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);
+//        if (jsfMultiViewElement == null) {
+//            return;
+//        }
+//        jsfMultiViewElement.getJsfTopComponent().showPopupMenu(x, y);
+//    }
+//
+//    public void tcShowPopupMenu(Designer designer, JPopupMenu popup, int x, int y) {
+//        JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);
+//        if (jsfMultiViewElement == null) {
+//            return;
+//        }
+//        popup.show(jsfMultiViewElement.getJsfTopComponent(), x, y);
+//    }
+//
+//    public void tcShowPopupMenuForEvent(Designer designer, MouseEvent evt) {
+//        JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);
+//        if (jsfMultiViewElement == null) {
+//            return;
+//        }
+//        // #6442386
+//        JsfTopComponent jsfTopComponent = jsfMultiViewElement.getJsfTopComponent();
+//        Point p = SwingUtilities.convertPoint(evt.getComponent(), evt.getX(), evt.getY(), jsfTopComponent);
+//        jsfTopComponent.showPopupMenu(p.x, p.y);
+//    }
 
     // XXX Moved to FacesDnDSupport.
 //    public boolean tcImportComponentData(Designer designer, JComponent comp, Transferable t) {

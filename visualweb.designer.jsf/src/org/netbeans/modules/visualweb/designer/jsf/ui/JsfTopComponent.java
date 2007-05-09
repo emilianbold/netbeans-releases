@@ -1624,21 +1624,35 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //        }
 // ====
         Point point = getSelectionPoint();
-        showPopupMenu(point.x, point.y);
+        showPopup(null, null, point.x, point.y);
 // </actions from layers>
     }
 
 // <actions from layers>
     private static final String PATH_DESIGNER_ACTIONS = "Designer/application/x-designer/Popup"; // NOI18N
     
-    public void showPopupMenu(int x, int y) {
-        JPopupMenu popupMenu = Utilities.actionsToPopup(
-                SystemFileSystemSupport.getActions(PATH_DESIGNER_ACTIONS),
-                getLookup());
+//    public void showPopupMenu(int x, int y) {
+//        JPopupMenu popupMenu = Utilities.actionsToPopup(
+//                SystemFileSystemSupport.getActions(PATH_DESIGNER_ACTIONS),
+//                getLookup());
+//        if (isShowing()) {
+//            // #6473708 x, y values are computed to the DesignerPane (html).
+////            popupMenu.show(this, x, y);
+//            popupMenu.show(html, x, y);
+//        }
+//    }
+    
+    public void showPopup(Action[] actions, Lookup context, int x, int y) {
+        if (actions == null) {
+            actions = SystemFileSystemSupport.getActions(PATH_DESIGNER_ACTIONS);
+        }
+        if (context == null) {
+            context = getLookup();
+        }
+        JPopupMenu popupMenu = Utilities.actionsToPopup(actions, context);
+        
         if (isShowing()) {
-            // #6473708 x, y values are computed to the DesignerPane (html).
-//            popupMenu.show(this, x, y);
-            popupMenu.show(html, x, y);
+            popupMenu.show(this, x, y);
         }
     }
     

@@ -628,9 +628,18 @@ class FormComponentEditor extends InlineEditor {
 //            Point p =
 //                SwingUtilities.convertPoint(e.getComponent(), e.getX(), e.getY(), designerTC);
 //            designerTC.showPopupMenu(p.x, p.y);
-            webform.tcShowPopupMenuForEvent(e);
+//            webform.tcShowPopupMenuForEvent(e);
+            webform.fireUserPopupActionPerformed(new InteractionManager.DefaultDesignerPopupEvent(
+                    webform,
+                    e.getComponent(),
+                    null,
+                    null,
+                    e.getX(),
+                    e.getY()                    
+            ));
         }
     }
+    
 
     class FinishAction extends AbstractAction {
         public void actionPerformed(ActionEvent evt) {

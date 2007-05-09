@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.visualweb.api.designer;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Point;
@@ -28,11 +29,13 @@ import java.awt.event.ActionEvent;
 import java.io.PrintStream;
 import java.util.EventListener;
 import java.util.prefs.PreferenceChangeListener;
+import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JComponent;
 import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
 import org.netbeans.modules.visualweb.api.designer.DomProvider.DomRange;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
+import org.openide.util.Lookup;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -245,6 +248,8 @@ public interface Designer {
     public interface DesignerListener extends EventListener {
         /** When user performed action on the box. */
         public void userActionPerformed(DesignerEvent evt);
+        /** When user invoked popup. */
+        public void userPopupActionPerformed(DesignerPopupEvent evt);
         /** When selection was changed. */
         public void selectionChanged(DesignerEvent evt);
     } // End of DesignerListener.
@@ -253,6 +258,14 @@ public interface Designer {
         public Designer getDesigner();
         public Box getBox();
     } // End of DesignerEvent.
+    
+    public interface DesignerPopupEvent extends DesignerEvent {
+        public Component getComponent();
+        public Action[] getActions();
+        public Lookup getContext();
+        public int getX();
+        public int getY();
+    } // End of DesignerPopupEvent.
     
     
     /** XXX Render Context. */
