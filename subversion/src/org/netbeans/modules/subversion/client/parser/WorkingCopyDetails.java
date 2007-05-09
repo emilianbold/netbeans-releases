@@ -519,7 +519,7 @@ public class WorkingCopyDetails {
     }
     
     private boolean checkFollowingString(String baseLine, int offset, String str) {
-        if(baseLine.length() < offset + str.length()) {
+        if(baseLine.length() <= offset + str.length()) {
             return false;
         }
         for (int idx = 0; idx < str.length(); idx++) {
