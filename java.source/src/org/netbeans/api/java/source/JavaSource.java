@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
@@ -199,6 +200,7 @@ public final class JavaSource {
     private static final Pattern includedTasks;
     /**Limit for task to be marked as a slow one, in ms*/
     private static final int SLOW_CANCEL_LIMIT = 50;
+    private static final PrintWriter DEV_NULL = new PrintWriter(new DevNullWriter(), false);
     
     /**Not final for tests.*/
     static int REPARSE_DELAY = 500;
@@ -929,7 +931,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         Context context = javacTask.getContext();
         JSCancelService.preRegister(context);
         TreeLoader.preRegister(context, getClasspathInfo());
-        Messager.preRegister(context, null);
+        Messager.preRegister(context, null, DEV_NULL, DEV_NULL, DEV_NULL);
         ErrorHandlingJavadocEnter.preRegister(context);
         JavadocMemberEnter.preRegister(context);       
         JavadocEnv.preRegister(context, getClasspathInfo());
@@ -2102,6 +2104,15 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                     "be created or all dump files were already used. Please " + // NOI18N
                     "check that you have write permission to '" + dumpDir + "' and " + // NOI18N
                     "clean all *.dump files in that directory."); // NOI18N
+        }
+    }
+    
+    private static final class DevNullWriter extends Writer {
+        public void write(char[] cbuf, int off, int len) throws IOException {
+        }
+        public void flush() throws IOException {
+        }
+        public void close() throws IOException {
         }
     }
     
