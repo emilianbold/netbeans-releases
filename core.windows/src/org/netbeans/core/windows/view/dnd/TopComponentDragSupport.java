@@ -762,13 +762,14 @@ implements AWTEventListener, DragSourceListener {
     private static class TopComponentTransferable extends Object
     implements Transferable {
 
+        // #86564: Hold TopComponent weakly to workaround AWT bug #6555816
         /** <code>TopComponent</code> to be transferred. */
-        private TopComponent tc;
+        private WeakReference<TopComponent> weakTC;
 
         
         /** Crates <code>Transferable</code> for specified <code>TopComponent</code> */
         public TopComponentTransferable(TopComponent tc) {
-            this.tc = tc;
+            this.weakTC = new WeakReference<TopComponent>(tc);
         }
 
         
@@ -779,6 +780,7 @@ implements AWTEventListener, DragSourceListener {
          * equals to {@link #MIME_CLONEABLE_TOP_COMPONENT} and the top component
          * is instance of <code>TopComponent.Cloneable</code> returns the instance */
         public Object getTransferData(DataFlavor df) {
+            TopComponent tc = weakTC.get();
             if(MIME_TOP_COMPONENT.equals(df.getMimeType())) {
                 return tc;
             } else if(MIME_TOP_COMPONENT_CLONEABLE.equals(
@@ -798,6 +800,7 @@ implements AWTEventListener, DragSourceListener {
          * of <code>TopComponent.Cloneable</code> */
         public DataFlavor[] getTransferDataFlavors() {
             try {
+                TopComponent tc = weakTC.get();
                 if(tc instanceof TopComponent.Cloneable) {
                     return new DataFlavor[]{
                         new DataFlavor(MIME_TOP_COMPONENT, null, TopComponent.class.getClassLoader()),
@@ -822,6 +825,7 @@ implements AWTEventListener, DragSourceListener {
          * with mimetype {@link #MIME_TOP_COMPONENT_CLONEABLE},
          * <code>false</code> otherwise */
         public boolean isDataFlavorSupported(DataFlavor df) {
+            TopComponent tc = weakTC.get();
             if(MIME_TOP_COMPONENT.equals(df.getMimeType())) {
                 return true;
             } else if(MIME_TOP_COMPONENT_CLONEABLE.equals(
@@ -840,15 +844,18 @@ implements AWTEventListener, DragSourceListener {
     private static class TopComponentArrayTransferable extends Object
     implements Transferable {
 
+        // #86564: Hold TopComponents weakly to workaround AWT bug #6555816
         /** <code>TopComponent</code> to be transferred. */
-        private TopComponent[] tcArray;
+        private List<WeakReference<TopComponent>> weakTCList;
 
         
         /** Crates <code>Transferable</code> for specified <code>TopComponent</code> */
         public TopComponentArrayTransferable(TopComponent[] tcArray) {
-            this.tcArray = tcArray;
+            this.weakTCList = new ArrayList<WeakReference<TopComponent>>();
+            for (TopComponent topComponent : tcArray) {
+                weakTCList.add(new WeakReference<TopComponent>(topComponent));
+            }
         }
-
         
         // >> Transferable implementation >>
         /** Implements <code>Transferable</code> method.
@@ -860,7 +867,14 @@ implements AWTEventListener, DragSourceListener {
          * of <code>TopComponent.Cloneable</code> returns the instance. */
         public Object getTransferData(DataFlavor df) {
             if(MIME_TOP_COMPONENT_ARRAY.equals(df.getMimeType())) {
-                return tcArray;
+                List<TopComponent> tcList = new ArrayList<TopComponent>(weakTCList.size());
+                TopComponent curTC = null;
+                for (WeakReference<TopComponent> weakTC : weakTCList) {
+                    curTC = weakTC.get();
+                    if (curTC != null) {
+                        tcList.add(curTC);
+                    }
+                }
             }
             return null;
         }
