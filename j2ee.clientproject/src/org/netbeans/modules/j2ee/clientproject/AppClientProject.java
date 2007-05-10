@@ -229,7 +229,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
             new JavadocForBinaryQueryImpl(this.helper, evaluator()), //Does not use APH to get/put properties/cfgdata
             new AntArtifactProviderImpl(),
             new ProjectXmlSavedHookImpl(),
-            new ProjectOpenedHookImpl(),
+            UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
             new UnitTestForSourceQueryImpl(getSourceRoots(),getTestSourceRoots()),
             new SourceLevelQueryImpl(evaluator()),
             new AppClientSources(this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()),

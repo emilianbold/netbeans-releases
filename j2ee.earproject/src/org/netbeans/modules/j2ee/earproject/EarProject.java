@@ -173,7 +173,7 @@ public final class EarProject implements Project, AntProjectListener, FileChange
             new EarCustomizerProvider( this, helper, refHelper, abpt ),
             new ClassPathProviderImpl(helper, evaluator()),
             new ProjectXmlSavedHookImpl(),
-            new ProjectOpenedHookImpl(),
+            UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
             new EarSources(helper, evaluator()),
             new RecommendedTemplatesImpl(),
             helper.createSharabilityQuery(evaluator(),

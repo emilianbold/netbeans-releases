@@ -202,7 +202,7 @@ public final class NbModuleProject implements Project {
             helper.createAuxiliaryConfiguration(),
             helper.createCacheDirectoryProvider(),
             new SavedHook(),
-            new OpenedHook(),
+            UILookupMergerSupport.createProjectOpenHookMerger(new OpenedHook()),
             new ModuleActions(this),
             new ClassPathProviderImpl(this),
             new SourceForBinaryImpl(this),

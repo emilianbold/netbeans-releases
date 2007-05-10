@@ -224,7 +224,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             new JavadocForBinaryQueryImpl(this.helper, evaluator()), //Does not use APH to get/put properties/cfgdata
             new AntArtifactProviderImpl(),
             new ProjectXmlSavedHookImpl(),
-            new ProjectOpenedHookImpl(),
+            UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
             new UnitTestForSourceQueryImpl(getSourceRoots(),getTestSourceRoots()),
             new SourceLevelQueryImpl(evaluator()),
             new J2SESources (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()),

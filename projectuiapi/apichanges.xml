@@ -81,6 +81,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="project-open-hook-merger">
+            <api name="general"/>
+            <summary>Add <code>LookupMerger</code>implementation for <code>ProjectOpenedHook</code></summary>
+            <version major="1" minor="24"/>
+            <date day="10" month="5" year="2007"/>
+            <author login="mkleint"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+            <description>
+               New method <code>UILookupMergerSupport.createProjectOpenHookMerger(ProjectOpenedHook)</code> creates an instance of 
+               <code>LookupMerger</code> that ensures that from the <code>ProjectOpenedHook</code> instances in project's lookup, the 
+               project's own is always called first.
+            </description>
+            <class package="org.netbeans.spi.project.ui.support" name="UILookupMergerSupport"/>
+            <issue number="103106"/>
+        </change>
         <change id="project-license-property">
             <api name="general"/>
             <summary>Adding template attribute <code>project.license</code></summary>

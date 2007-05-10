@@ -66,6 +66,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
+import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -192,7 +193,7 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
                     new String[] {"${build.classes.dir}/*.class"}),
             helper.createSharabilityQuery(eval, new String[] {"${src.dir}"},
                     new String[] {"${build.dir}","${dist.dir}", "${proxy.project.dir}"}),
-            new OpenCloseHook(),
+            UILookupMergerSupport.createProjectOpenHookMerger(new OpenCloseHook()),
             new ProvidesAction(ArchiveProject.this),
             new ProvidesLogicalView(ArchiveProject.this),
             helper,

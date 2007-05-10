@@ -92,7 +92,7 @@ public final class SuiteProject implements Project {
             helper.createAuxiliaryConfiguration(),
             helper.createCacheDirectoryProvider(),
             new SavedHook(),
-            new OpenedHook(),
+            UILookupMergerSupport.createProjectOpenHookMerger(new OpenedHook()),
             helper.createSharabilityQuery(eval, new String[0], new String[] {"build", "dist"}), // NOI18N
             new SuiteSubprojectProviderImpl(helper, eval),
             new SuiteProviderImpl(),

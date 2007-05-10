@@ -23,8 +23,10 @@ package org.netbeans.spi.project.ui.support;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import org.netbeans.modules.project.uiapi.ProjectOpenedTrampoline;
 import org.netbeans.spi.project.LookupMerger;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
+import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.openide.util.Lookup;
 
@@ -59,6 +61,19 @@ public final class UILookupMergerSupport {
         return new PrivilegedMerger();
     }
     
+    /**
+     * Create a {@link org.netbeans.spi.project.LookupMerger} instance 
+     * for {@link org.netbeans.spi.project.ui.ProjectOpenedHook}. The merger makes sure all registered
+     * <code>ProjectOpenedHook</code> instances are called and that the default instance is called first.
+     * @param defaultInstance - the default {@link org.netbeans.spi.project.ui.ProjectOpenedHook} instance or null if
+     * a default privileged instance is not required.
+     * @return instance to include in project lookup
+     * @since org.netbeans.modules.projectuiapi 1.24
+     */
+    public static LookupMerger createProjectOpenHookMerger(ProjectOpenedHook defaultInstance) {
+        return new OpenMerger(defaultInstance);
+    }
+    
     private static class PrivilegedMerger implements LookupMerger<PrivilegedTemplates> {
         public Class<PrivilegedTemplates> getMergeableClass() {
             return PrivilegedTemplates.class;
@@ -78,6 +93,22 @@ public final class UILookupMergerSupport {
         public RecommendedTemplates merge(Lookup lookup) {
             return new RecommendedTemplatesImpl(lookup);
         }
+    }
+    
+    private static class OpenMerger implements LookupMerger<ProjectOpenedHook> {
+        private ProjectOpenedHook defaultInstance;
+
+        OpenMerger(ProjectOpenedHook def) {
+            defaultInstance = def;
+        }
+        public Class<ProjectOpenedHook> getMergeableClass() {
+            return ProjectOpenedHook.class;
+        }
+
+        public ProjectOpenedHook merge(Lookup lookup) {
+            return new OpenHookImpl(defaultInstance, lookup);
+        }
+        
     }
     
     private static class PrivilegedTemplatesImpl implements PrivilegedTemplates {
@@ -111,6 +142,44 @@ public final class UILookupMergerSupport {
                 templates.addAll(Arrays.asList(pt.getRecommendedTypes()));
             }
             return templates.toArray(new String[templates.size()]);
+        }
+        
+    }
+    
+    private static class OpenHookImpl extends ProjectOpenedHook {
+
+        private ProjectOpenedHook defaultInstance;
+        private Lookup lkp;        
+        
+        OpenHookImpl(ProjectOpenedHook def, Lookup lkp) {
+            defaultInstance = def;
+            this.lkp = lkp; 
+            //shall we listen on ProjectOpenedHook instance changes in lookup and 
+            // call close on the disappearing ones?
+        }
+        
+        protected void projectOpened() {
+            if (defaultInstance != null) {
+                ProjectOpenedTrampoline.DEFAULT.projectOpened(defaultInstance);
+            }
+            for (ProjectOpenedHook poh : lkp.lookupAll(ProjectOpenedHook.class)) {
+                // just to make sure..
+                if (poh != defaultInstance) {
+                    ProjectOpenedTrampoline.DEFAULT.projectOpened(poh);
+                }
+            }
+        }
+
+        protected void projectClosed() {
+            if (defaultInstance != null) {
+                ProjectOpenedTrampoline.DEFAULT.projectClosed(defaultInstance);
+            }
+            for (ProjectOpenedHook poh : lkp.lookupAll(ProjectOpenedHook.class)) {
+                // just to make sure..
+                if (poh != defaultInstance) {
+                    ProjectOpenedTrampoline.DEFAULT.projectClosed(poh);
+                }
+            }
         }
         
     }

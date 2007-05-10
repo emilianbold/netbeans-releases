@@ -335,7 +335,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             new JavadocForBinaryQueryImpl(this.helper, evaluator()),
             new AntArtifactProviderImpl(),
             new ProjectXmlSavedHookImpl(),
-            new ProjectOpenedHookImpl(),
+            UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
             new UnitTestForSourceQueryImpl(getSourceRoots(),getTestSourceRoots()),
             new SourceLevelQueryImpl(evaluator()),
             new WebSources (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
