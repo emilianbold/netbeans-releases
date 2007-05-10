@@ -1012,7 +1012,14 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         if (jaxWsModel!=null) {
             Service[] services = jaxWsModel.getServices();
             for (int i=0;i<services.length;i++) {
+                // test service with java artifacts (created from WSDL file)
                 if (services[i].getWsdlUrl()!=null && packageName.equals(services[i].getPackageName())) {
+                    wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_PackageUsedForService",services[i].getServiceName()));
+                    return false;
+                }
+                // test service without java artifacts (created from java)
+                String pn = getPackageNameFromClass(services[i].getImplementationClass());
+                if (services[i].getWsdlUrl()==null && packageName.equals(pn)) {
                     wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_PackageUsedForService",services[i].getServiceName()));
                     return false;
                 }
@@ -1284,4 +1291,13 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         return null;
     }
     
+    private String getPackageNameFromClass(String className) {
+        String packageName = null;
+        if (className != null) {
+            int indexDot = className.lastIndexOf('.');
+            if (indexDot < 0) indexDot = 0;
+            packageName = className.substring(0, indexDot);
+        }
+        return packageName;
+    }
 }
