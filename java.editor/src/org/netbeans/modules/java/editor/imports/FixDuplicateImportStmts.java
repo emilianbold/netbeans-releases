@@ -131,8 +131,8 @@ public class FixDuplicateImportStmts extends javax.swing.JPanel{
     }
     
     public String[] getSelections() {
-        String[] res = new String[combos.length];
-        for( int i=0; i<combos.length; i++ ) {
+        String[] res = new String[null == combos ? 0 : combos.length];
+        for( int i=0; i<res.length; i++ ) {
             res[i] = combos[i].getSelectedItem().toString();
         }
         return res;

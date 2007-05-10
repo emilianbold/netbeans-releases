@@ -7,9 +7,6 @@
         <EmptyBorder bottom="12" left="12" right="12" top="12"/>
       </Border>
     </Property>
-    <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-      <Dimension value="null"/>
-    </Property>
   </Properties>
   <AuxValues>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
