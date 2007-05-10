@@ -20,6 +20,8 @@ import org.openide.util.LookupListener;
 
 import javax.swing.*;
 import org.netbeans.spi.navigator.NavigatorPanel;
+import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.ExplorerUtils;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.AbstractLookup;
