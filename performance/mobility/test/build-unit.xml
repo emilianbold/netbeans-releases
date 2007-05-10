@@ -19,17 +19,17 @@
 -->
 
 <project name="Measure startup time and memory usage" basedir="." default="all">
-
+    
     <!-- Root folders -->
     <property name="nball.dir" location="../../.."/>
     <property name="nbextra.dir" location="../../../../nbextra"/>
-
+    
     <!-- Import defaults for Unit tests -->
     <import file="${nball.dir}/nbbuild/templates/xtest-unit.xml"/>
     
     <!-- Import defaults for Performance testing.  -->
     <import file="${nball.dir}/performance/performancetestutilities/dist/build-performance-tests.xml"/>
-
+    
     <!-- ========= -->
     <!-- Compilers -->
     <!-- ========= -->
@@ -62,10 +62,12 @@
             <property name="xtest.enable.assertions" value="false" /> 
             
             <!-- Property for repeatedly used New Userdirs and Userdirs used on old Userdirs -->
-            <property name="xtest.userdata|org.netbeans.performance.repeat.with.new.userdir" value="5"/>
-            <property name="xtest.userdata|org.netbeans.performance.repeat" value="4"/>
+            <property name="xtest.userdata|org.netbeans.performance.repeat.with.new.userdir" value="1"/>
+            <property name="xtest.userdata|org.netbeans.performance.repeat" value="1"/>
             
         </executeTests>
+        
+        <antcall target="clean_userdirs"/>
         <antcall target="copy_original_ide_cfg_file"/>
     </target>
     
@@ -91,7 +93,7 @@
         
         <antcall target="copy_original_ide_cfg_file"/>
     </target>
-
+    
     <!-- Executor for Measure Complex Startup Time -->
     <target name="runcodetest_measure_complex_startup" depends="make_netbeans_executable">
         <!-- copy xsl transformator file for ActionTracker log into appropriate directory -->
@@ -109,7 +111,7 @@
             <property name="xtest.userdata|userdir.prepared" value="${xtest.workdir}"/>
             <property name="xtest.userdata|performance.testutilities.dist.jar" value="${performance.testutilities.dist.jar}"/>
             <property name="xtest.userdata|xtest.perf.commandline.suffix" value="${xtest.perf.commandline.suffix}"/>
-
+            
             <!-- Property for repeatedly used userdir with opened files -->
             <property name="xtest.userdata|org.netbeans.performance.repeat" value="5"/>
         </executeTests>
@@ -120,7 +122,7 @@
         
         <antcall target="copy_original_ide_cfg_file"/>
     </target>
-
+    
     <!-- ========= -->
     <!-- Utils     -->
     <!-- ========= -->

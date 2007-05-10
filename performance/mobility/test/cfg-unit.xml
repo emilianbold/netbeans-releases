@@ -23,10 +23,10 @@
 <mconfig name="Performance unit tests config">
 
 
-    <testbag testattribs="all or startup" prio="1" executor="execute_startup" name="Startup time">
+    <testbag testattribs="all or startup" prio="1" executor="execute_startup" name="Startup time with WTK">
 	<testset dir="unit/src">
 	    <patternset>
-		<include name="startup/OutOfTheBoxStartup.class"/>
+		<include name="startup/OutOfTheBoxStartupWTK.class"/>
 	    </patternset>
 	</testset>
     </testbag>
