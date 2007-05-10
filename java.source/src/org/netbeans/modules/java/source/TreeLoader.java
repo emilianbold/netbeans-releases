@@ -61,17 +61,19 @@ public class TreeLoader extends LazyTreeLoader {
     
     @Override
     public boolean loadTreeFor(final ClassSymbol clazz) {
-        try {
-            FileObject fo = SourceUtils.getFile(clazz, cpInfo);
-            JavacTaskImpl jti = context.get(JavacTaskImpl.class);
-            if (fo != null && jti != null) {
-                Log.instance(context).nerrors = 0;
-                jti.analyze(jti.enter(jti.parse(FileObjects.nbFileObject(fo))));
-                dumpSymFile(clazz);
-                return true;
+        if (clazz != null) {
+            try {
+                FileObject fo = SourceUtils.getFile(clazz, cpInfo);
+                JavacTaskImpl jti = context.get(JavacTaskImpl.class);
+                if (fo != null && jti != null) {
+                    Log.instance(context).nerrors = 0;
+                    jti.analyze(jti.enter(jti.parse(FileObjects.nbFileObject(fo))));
+                    dumpSymFile(clazz);
+                    return true;
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
         }
         return false;
     }
