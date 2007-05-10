@@ -53,7 +53,7 @@ public class Views extends JellyTestCase {
         
         suite.addTest(new Views("testViewsDefaultOpen"));
         suite.addTest(new Views("testViewsCallStack"));
-        if ("1.6.0".compareTo(vers) >= 0) {  //heapwalker
+        if (vers.startsWith("1.6")) {  //heapwalker
             suite.addTest(new Views("testViewsHeapWalker1"));
         } else { // old classes view
             suite.addTest(new Views("testViewsClasses"));
