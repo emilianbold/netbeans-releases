@@ -62,8 +62,8 @@
             <property name="xtest.enable.assertions" value="false" /> 
             
             <!-- Property for repeatedly used New Userdirs and Userdirs used on old Userdirs -->
-            <property name="xtest.userdata|org.netbeans.performance.repeat.with.new.userdir" value="1"/>
-            <property name="xtest.userdata|org.netbeans.performance.repeat" value="1"/>
+            <property name="xtest.userdata|org.netbeans.performance.repeat.with.new.userdir" value="5"/>
+            <property name="xtest.userdata|org.netbeans.performance.repeat" value="4"/>
             
         </executeTests>
         
