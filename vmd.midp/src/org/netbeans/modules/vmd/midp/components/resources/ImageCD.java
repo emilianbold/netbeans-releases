@@ -63,7 +63,7 @@ public final class ImageCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
                 .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
-                    .addProperty("Resource Path", PropertyEditorImageChooser.create(), PROP_RESOURCE_PATH);
+                    .addProperty("Resource Path", new PropertyEditorImageChooser("png","jpg","gif"), PROP_RESOURCE_PATH);
     }
 
     private static Presenter createSetterPresenter () {

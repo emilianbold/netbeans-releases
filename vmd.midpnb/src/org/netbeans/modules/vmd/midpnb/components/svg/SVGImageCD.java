@@ -80,7 +80,7 @@ public class SVGImageCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
                 .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
-                .addProperty("Resource Path", PropertyEditorImageChooser.createSVG(), PROP_RESOURCE_PATH);
+                .addProperty("Resource Path", new PropertyEditorImageChooser("svg"), PROP_RESOURCE_PATH);
     }
     
     private static Presenter createSetterPresenter() {
