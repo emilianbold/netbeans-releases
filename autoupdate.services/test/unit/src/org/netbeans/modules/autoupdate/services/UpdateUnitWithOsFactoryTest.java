@@ -46,11 +46,14 @@ public class UpdateUnitWithOsFactoryTest extends NbTestCase {
     }
     
     private UpdateProvider p = null;
-    private String alientName = "org.netbeans.modules.applemenu";
-    private String alientVersion = "1.111";
+    private String testModuleName = "org.netbeans.modules.applemenu";
+    private String testModuleVersion = "1.111";
     
     protected void setUp () throws IOException, URISyntaxException {
         clearWorkDir ();
+    }
+    
+    public void testUpdateItemsDoesntContainAlien () throws IOException {
         String os = org.openide.util.Utilities.isUnix () ? "Windows" : "Unix";
         System.setProperty ("netbeans.user", getWorkDirPath ());
         Lookup.getDefault ().lookup (ModuleInfo.class);
@@ -60,8 +63,8 @@ public class UpdateUnitWithOsFactoryTest extends NbTestCase {
                             "<module codenamebase=\"com.sun.collablet\" homepage=\"http://collab.netbeans.org/\" distribution=\"http://www.netbeans.org/download/nbms/alpha/dev/1.18/com-sun-collablet.nbm\" license=\"standard-nbm-license.txt\" downloadsize=\"30732\" needsrestart=\"false\" moduleauthor=\"\" releasedate=\"2006/02/23\">" +
                             "<manifest OpenIDE-Module=\"com.sun.collablet/1\" OpenIDE-Module-Display-Category=\"Collaboration\" OpenIDE-Module-Implementation-Version=\"200602231900\" OpenIDE-Module-Long-Description=\"Core multi-user collaboration API &amp; SPI\" OpenIDE-Module-Module-Dependencies=\"org.openide.filesystems &gt; 6.2, org.openide.util &gt; 6.2, org.openide.modules &gt; 6.2, org.openide.nodes &gt; 6.2, org.openide.loaders, org.openide.io\" OpenIDE-Module-Name=\"Collablet Core &amp; API\" OpenIDE-Module-Requires=\"org.openide.windows.IOProvider, org.openide.modules.ModuleFormat1\" OpenIDE-Module-Specification-Version=\"1.3\"/>" +
                             "</module>" +
-                            "<module codenamebase=\"" + alientName + "\" homepage=\"http://ide.netbeans.org/\" distribution=\"http://www.netbeans.org/download/nbms/alpha/dev/1.18/org-netbeans-modules-applemenu.nbm\" license=\"standard-nbm-license.txt\" downloadsize=\"16986\" needsrestart=\"true\" moduleauthor=\"\" releasedate=\"2006/02/23\">" +
-                            "<manifest OpenIDE-Module=\"org.netbeans.modules.applemenu/1\" OpenIDE-Module-Display-Category=\"Infrastructure\" OpenIDE-Module-Implementation-Version=\"200602231900\" OpenIDE-Module-Long-Description=\"Enables Apple menu items to work properly, and moves some standard menu items there - Tools | Options becomes Preferences, Help | About becomes about, File | Exit becomes Quit.\" OpenIDE-Module-Module-Dependencies=\"org.netbeans.core.windows/2, org.netbeans.modules.editor/3, org.netbeans.modules.java.editor/1 &gt; 1.3, org.openide.filesystems &gt; 6.2, org.openide.loaders, org.openide.modules &gt; 6.2, org.openide.nodes &gt; 6.2, org.openide.util &gt; 6.2\" OpenIDE-Module-Name=\"Apple Application Menu\" OpenIDE-Module-Requires=\"org.openide.modules.os." + os + ", org.openide.modules.ModuleFormat1\" OpenIDE-Module-Short-Description=\"Enables proper support for the Apple Application menu\" OpenIDE-Module-Specification-Version=\"" + alientVersion + "\"/>" +
+                            "<module codenamebase=\"" + testModuleName + "\" homepage=\"http://ide.netbeans.org/\" distribution=\"http://www.netbeans.org/download/nbms/alpha/dev/1.18/org-netbeans-modules-applemenu.nbm\" license=\"standard-nbm-license.txt\" downloadsize=\"16986\" needsrestart=\"true\" moduleauthor=\"\" releasedate=\"2006/02/23\">" +
+                            "<manifest OpenIDE-Module=\"org.netbeans.modules.applemenu/1\" OpenIDE-Module-Display-Category=\"Infrastructure\" OpenIDE-Module-Implementation-Version=\"200602231900\" OpenIDE-Module-Long-Description=\"Enables Apple menu items to work properly, and moves some standard menu items there - Tools | Options becomes Preferences, Help | About becomes about, File | Exit becomes Quit.\" OpenIDE-Module-Module-Dependencies=\"org.netbeans.core.windows/2, org.netbeans.modules.editor/3, org.netbeans.modules.java.editor/1 &gt; 1.3, org.openide.filesystems &gt; 6.2, org.openide.loaders, org.openide.modules &gt; 6.2, org.openide.nodes &gt; 6.2, org.openide.util &gt; 6.2\" OpenIDE-Module-Name=\"Apple Application Menu\" OpenIDE-Module-Requires=\"org.openide.modules.os." + os + ", org.openide.modules.ModuleFormat1\" OpenIDE-Module-Short-Description=\"Enables proper support for the Apple Application menu\" OpenIDE-Module-Specification-Version=\"" + testModuleVersion + "\"/>" +
                             "</module>" + 
                             "</module_updates>";
         try {
@@ -70,20 +73,50 @@ public class UpdateUnitWithOsFactoryTest extends NbTestCase {
             x.printStackTrace ();
         }
         p.refresh (true);
-    }
-    
-    public void testUpdateItemsDoesntContainsAlien () throws IOException {
         Map<String, UpdateUnit> unitImpls = new HashMap<String, UpdateUnit> ();
         Map<String, UpdateItem> updates = p.getUpdateItems ();
         assertNotNull ("Some modules are installed.", updates);
         assertFalse ("Some modules are installed.", updates.isEmpty ());
-        assertTrue (alientName + " found in parsed items.", updates.keySet ().contains (alientName + "_" + alientVersion));
+        assertTrue (testModuleName + " found in parsed items.", updates.keySet ().contains (testModuleName + "_" + testModuleVersion));
         
         Map<String, UpdateUnit> newImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (unitImpls, p);
         assertNotNull ("Some units found.", newImpls);
         assertFalse ("Some units found.", newImpls.isEmpty ());
         
-        assertFalse (alientName + " doesn't found in generated UpdateUnits.", newImpls.keySet ().contains (alientName));
+        assertFalse (testModuleName + " doesn't found in generated UpdateUnits.", newImpls.keySet ().contains (testModuleName));
+    }
+    
+    public void testUpdateItemsContainsMyModule () throws IOException {
+        String os = ! org.openide.util.Utilities.isUnix () ? "Windows" : "Unix";
+        System.setProperty ("netbeans.user", getWorkDirPath ());
+        Lookup.getDefault ().lookup (ModuleInfo.class);
+        String catalog =    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + 
+                            "<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 3.0//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-3_0.dtd\">" +
+                            "<module_updates timestamp=\"00/00/19/08/03/2006\">" +
+                            "<module codenamebase=\"com.sun.collablet\" homepage=\"http://collab.netbeans.org/\" distribution=\"http://www.netbeans.org/download/nbms/alpha/dev/1.18/com-sun-collablet.nbm\" license=\"standard-nbm-license.txt\" downloadsize=\"30732\" needsrestart=\"false\" moduleauthor=\"\" releasedate=\"2006/02/23\">" +
+                            "<manifest OpenIDE-Module=\"com.sun.collablet/1\" OpenIDE-Module-Display-Category=\"Collaboration\" OpenIDE-Module-Implementation-Version=\"200602231900\" OpenIDE-Module-Long-Description=\"Core multi-user collaboration API &amp; SPI\" OpenIDE-Module-Module-Dependencies=\"org.openide.filesystems &gt; 6.2, org.openide.util &gt; 6.2, org.openide.modules &gt; 6.2, org.openide.nodes &gt; 6.2, org.openide.loaders, org.openide.io\" OpenIDE-Module-Name=\"Collablet Core &amp; API\" OpenIDE-Module-Requires=\"org.openide.windows.IOProvider, org.openide.modules.ModuleFormat1\" OpenIDE-Module-Specification-Version=\"1.3\"/>" +
+                            "</module>" +
+                            "<module codenamebase=\"" + testModuleName + "\" homepage=\"http://ide.netbeans.org/\" distribution=\"http://www.netbeans.org/download/nbms/alpha/dev/1.18/org-netbeans-modules-applemenu.nbm\" license=\"standard-nbm-license.txt\" downloadsize=\"16986\" needsrestart=\"true\" moduleauthor=\"\" releasedate=\"2006/02/23\">" +
+                            "<manifest OpenIDE-Module=\"org.netbeans.modules.applemenu/1\" OpenIDE-Module-Display-Category=\"Infrastructure\" OpenIDE-Module-Implementation-Version=\"200602231900\" OpenIDE-Module-Long-Description=\"Enables Apple menu items to work properly, and moves some standard menu items there - Tools | Options becomes Preferences, Help | About becomes about, File | Exit becomes Quit.\" OpenIDE-Module-Module-Dependencies=\"org.netbeans.core.windows/2, org.netbeans.modules.editor/3, org.netbeans.modules.java.editor/1 &gt; 1.3, org.openide.filesystems &gt; 6.2, org.openide.loaders, org.openide.modules &gt; 6.2, org.openide.nodes &gt; 6.2, org.openide.util &gt; 6.2\" OpenIDE-Module-Name=\"Apple Application Menu\" OpenIDE-Module-Requires=\"org.openide.modules.os." + os + ", org.openide.modules.ModuleFormat1\" OpenIDE-Module-Short-Description=\"Enables proper support for the Apple Application menu\" OpenIDE-Module-Specification-Version=\"" + testModuleVersion + "\"/>" +
+                            "</module>" + 
+                            "</module_updates>";
+        try {
+            p = new MyProvider (catalog);
+        } catch (Exception x) {
+            x.printStackTrace ();
+        }
+        p.refresh (true);
+        Map<String, UpdateUnit> unitImpls = new HashMap<String, UpdateUnit> ();
+        Map<String, UpdateItem> updates = p.getUpdateItems ();
+        assertNotNull ("Some modules are installed.", updates);
+        assertFalse ("Some modules are installed.", updates.isEmpty ());
+        assertTrue (testModuleName + " found in parsed items.", updates.keySet ().contains (testModuleName + "_" + testModuleVersion));
+        
+        Map<String, UpdateUnit> newImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (unitImpls, p);
+        assertNotNull ("Some units found.", newImpls);
+        assertFalse ("Some units found.", newImpls.isEmpty ());
+        
+        assertTrue (testModuleName + " must found in generated UpdateUnits.", newImpls.keySet ().contains (testModuleName));
     }
     
     private URL generateFile (String s) throws IOException {
