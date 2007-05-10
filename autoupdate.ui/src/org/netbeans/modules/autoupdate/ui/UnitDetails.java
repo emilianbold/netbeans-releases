@@ -105,7 +105,7 @@ public class UnitDetails extends DetailsPanel{
                 }
                 if (u.getDescription() != null && u.getDescription().length () > 0) {
                     text += "<h4>" + getBundle ("UnitDetails_Plugin_Description") + "</h4>"; // NOI18N
-                    text += (u.getDescription() == null ? "" : u.annotate(XMLUtil.toElementContent(u.getDescription())));
+                    text += (u.getDescription() == null ? "" : u.annotate(u.getDescription ()));
                 }
             } catch (CharConversionException e) {
                 err.log (Level.WARNING, null, e);
