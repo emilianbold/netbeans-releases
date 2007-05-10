@@ -1,10 +1,10 @@
 /*
- * Comment example
+ * Comment example.
  */
 ClassName.prototype.test = function (parameter) {
     var number = 123 + parameter;
     var str = "String";
     var regExp = /*.HTML/;
-    return this.name; // line comment
+    return this.name + '_' + str; // line comment
 }
 
