@@ -163,34 +163,42 @@ public class SvnConfigFiles {
                 proxyPort = proxySettings.getHttpPort();                
             }
             String exceptions = proxySettings.getNotProxyHosts();
-                    
-            nbGlobalSection.put("http-proxy-host", proxyHost);                     // NOI18N
-            nbGlobalSection.put("http-proxy-port", Integer.toString(proxyPort));   // NOI18N            
-            if(!exceptions.equals("")) {
-                nbGlobalSection.put("http-proxy-exceptions", exceptions);   // NOI18N
-            }            
+             
+            if(proxyHost != null && !proxyHost.equals("")) {
+                nbGlobalSection.put("http-proxy-host", proxyHost);                     // NOI18N
+                nbGlobalSection.put("http-proxy-port", Integer.toString(proxyPort));   // NOI18N            
+                if(!exceptions.equals("")) {
+                    nbGlobalSection.put("http-proxy-exceptions", exceptions);   // NOI18N
+                }            
+
+                // and the authentication
+                Preferences prefs = org.openide.util.NbPreferences.root ().node ("org/netbeans/core");  // NOI18N    
+                boolean useAuth = prefs.getBoolean ("useProxyAuthentication", false);                   // NOI18N    
+                if(useAuth) {
+                    String username = prefs.get ("proxyAuthenticationUsername", "");                    // NOI18N
+                    String password = prefs.get ("proxyAuthenticationPassword", "");                    // NOI18N    
+
+                    nbGlobalSection.put("http-proxy-username", username);                               // NOI18N
+                    nbGlobalSection.put("http-proxy-password", password);                               // NOI18N            
+                }            
             
-            // and the authentication
-            Preferences prefs = org.openide.util.NbPreferences.root ().node ("org/netbeans/core");  // NOI18N    
-            boolean useAuth = prefs.getBoolean ("useProxyAuthentication", false);                   // NOI18N    
-            if(useAuth) {
-                String username = prefs.get ("proxyAuthenticationUsername", "");                    // NOI18N
-                String password = prefs.get ("proxyAuthenticationPassword", "");                    // NOI18N    
-                
-                nbGlobalSection.put("http-proxy-username", username);                               // NOI18N
-                nbGlobalSection.put("http-proxy-password", password);                               // NOI18N            
-            }            
-            
-            // we have a proxy for the host, so check 
-            // if in the there are also some no proxy settings 
-            // we should get from the original svn servers file
-            Ini.Section svnHostGroup = getServerGroup(host);
-            if(svnGlobalSection != null) {
-                // if there is a global section than get the no proxy settings                                                                 
-                mergeNonProxyKeys(svnGlobalSection, nbGlobalSection);                
-            }            
-            if(svnHostGroup != null) {
-                mergeNonProxyKeys(svnHostGroup, nbGlobalSection);                
+                // we have a proxy for the host, so check 
+                // if in the there are also some no proxy settings 
+                // we should get from the original svn servers file
+                Ini.Section svnHostGroup = getServerGroup(host);
+                if(svnGlobalSection != null) {
+                    // if there is a global section than get the no proxy settings                                                                 
+                    mergeNonProxyKeys(svnGlobalSection, nbGlobalSection);                
+                }            
+                if(svnHostGroup != null) {
+                    mergeNonProxyKeys(svnHostGroup, nbGlobalSection);                
+                }
+            } else {
+                // no proxy host means no proxy at all                                                
+                if(svnGlobalSection != null) {
+                    // if there is a global section than get the no proxy settings                                                                 
+                    mergeNonProxyKeys(svnGlobalSection, nbGlobalSection);                
+                }
             }
         }        
         storeIni(nbServers, "servers");                                                       // NOI18N    
