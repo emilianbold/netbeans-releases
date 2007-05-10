@@ -65,6 +65,9 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         columnLabels.put(DiffNode.COLUMN_NAME_NAME, new String [] {
                 loc.getString("CTL_DiffTable_Column_Name_Title"), 
                 loc.getString("CTL_DiffTable_Column_Name_Desc")});
+        columnLabels.put(DiffNode.COLUMN_NAME_PROPERTY, new String [] {
+                loc.getString("CTL_DiffTable_Column_Property_Title"), 
+                loc.getString("CTL_DiffTable_Column_Property_Desc")});
         columnLabels.put(DiffNode.COLUMN_NAME_STATUS, new String [] { 
                 loc.getString("CTL_DiffTable_Column_Status_Title"), 
                 loc.getString("CTL_DiffTable_Column_Status_Desc")});
@@ -120,6 +123,7 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         table.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DiffFileTable.class, "ACSD_DiffTable")); // NOI18N
         setColumns(new String[] {
             DiffNode.COLUMN_NAME_NAME,
+            DiffNode.COLUMN_NAME_PROPERTY,
             DiffNode.COLUMN_NAME_STATUS,
             DiffNode.COLUMN_NAME_LOCATION}
         );

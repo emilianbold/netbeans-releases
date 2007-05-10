@@ -22,6 +22,7 @@ package org.netbeans.modules.subversion.ui.diff;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.diff.DiffController;
 import org.netbeans.modules.subversion.*;
+import org.netbeans.modules.subversion.client.PropertiesClient;
 import org.openide.util.NbBundle;
 
 import java.io.File;
@@ -82,7 +83,13 @@ public final class Setup {
     public static final String REVISION_HEAD    = "HEAD"; // NOI18N
     
     private final File      baseFile;
-    private final String    firstRevision;
+    
+    /**
+     * Name of the file's property if the setup represents a property diff setup, null otherwise. 
+     */
+    private final String    propertyName;
+    
+    private String    firstRevision;
     private final String    secondRevision;
     private FileInformation info;
 
@@ -94,8 +101,9 @@ public final class Setup {
 
     private String    title;
 
-    public Setup(File baseFile, int type) {
+    public Setup(File baseFile, String propertyName, int type) {
         this.baseFile = baseFile;
+        this.propertyName = propertyName;
         info = Subversion.getInstance().getStatusCache().getStatus(baseFile);
         int status = info.getStatus();
         
@@ -205,9 +213,15 @@ public final class Setup {
             default:
                 throw new IllegalArgumentException("Unknow diff type: " + type); // NOI18N
         }
+        
+        if (propertyName != null){
+            if (REVISION_HEAD.equals(firstRevision)) {
+                firstRevision = REVISION_BASE;
+            }
+        }
 
-        firstSource = new DiffStreamSource(baseFile, firstRevision, firstTitle);
-        secondSource = new DiffStreamSource(baseFile, secondRevision, secondTitle);
+        firstSource = new DiffStreamSource(baseFile, propertyName, firstRevision, firstTitle);
+        secondSource = new DiffStreamSource(baseFile, propertyName, secondRevision, secondTitle);
         title = "<html>" + Subversion.getInstance().getAnnotator().annotateNameHtml(baseFile, info); // NOI18N
     }
 
@@ -218,10 +232,15 @@ public final class Setup {
      */
     public Setup(File baseFile, String firstRevision, String secondRevision) {
         this.baseFile = baseFile;
+        this.propertyName = null;        
         this.firstRevision = firstRevision;
         this.secondRevision = secondRevision;
-        firstSource = new DiffStreamSource(baseFile, firstRevision, firstRevision);
-        secondSource = new DiffStreamSource(baseFile, secondRevision, secondRevision);
+        firstSource = new DiffStreamSource(baseFile, propertyName, firstRevision, firstRevision);
+        secondSource = new DiffStreamSource(baseFile, propertyName, secondRevision, secondRevision);
+    }
+
+    public String getPropertyName() {
+        return propertyName;
     }
 
     public File getBaseFile() {

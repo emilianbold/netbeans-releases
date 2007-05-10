@@ -303,8 +303,8 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
 
         public void run() { 
             final Diff diff = Diff.getDefault();
-            final DiffStreamSource s1 = new DiffStreamSource(header.getFile(), revision1, revision1);
-            final DiffStreamSource s2 = new DiffStreamSource(header.getFile(), revision2, revision2);
+            final DiffStreamSource s1 = new DiffStreamSource(header.getFile(), null, revision1, revision1);
+            final DiffStreamSource s2 = new DiffStreamSource(header.getFile(), null, revision2, revision2);
 
             // it's enqueued at ClientRuntime queue and does not return until previous request handled
             s1.getMIMEType();  // triggers s1.init()

@@ -40,6 +40,7 @@ import java.lang.reflect.InvocationTargetException;
 class DiffNode extends AbstractNode {
     
     static final String COLUMN_NAME_NAME = "name";
+    static final String COLUMN_NAME_PROPERTY = "property";
     static final String COLUMN_NAME_STATUS = "status";
     static final String COLUMN_NAME_LOCATION = "location";
         
@@ -85,6 +86,9 @@ class DiffNode extends AbstractNode {
         ps.put(new NameProperty());
         ps.put(new LocationProperty());
         ps.put(new StatusProperty());
+        if (setup.getPropertyName() != null) {
+            ps.put(new PropertyNameProperty());
+        }
         
         sheet.put(ps);
         setSheet(sheet);        
@@ -114,6 +118,17 @@ class DiffNode extends AbstractNode {
 
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
             return DiffNode.this.getName();
+        }
+    }
+
+    private class PropertyNameProperty extends DiffNodeProperty {
+
+        public PropertyNameProperty() {
+            super(COLUMN_NAME_PROPERTY, String.class, COLUMN_NAME_PROPERTY, COLUMN_NAME_PROPERTY);
+        }
+
+        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+            return setup.getPropertyName();
         }
     }
     

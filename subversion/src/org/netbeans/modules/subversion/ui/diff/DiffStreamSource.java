@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -23,6 +23,7 @@ import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.modules.diff.EncodedReaderFactory;
 import org.netbeans.modules.subversion.*;
+import org.netbeans.modules.subversion.client.PropertiesClient;
 import org.netbeans.modules.versioning.util.Utils;
 
 import java.io.*;
@@ -43,6 +44,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 public class DiffStreamSource extends StreamSource {
 
     private final File      baseFile;
+    private final String    propertyName;
     private final String    revision;
     private final String    title;
     private String          mimeType;
@@ -51,6 +53,7 @@ public class DiffStreamSource extends StreamSource {
      * Null is a valid value if base file does not exist in this revision. 
      */ 
     private File            remoteFile;
+    private MultiDiffPanel.Property propertyValue;
 
     /**
      * Creates a new StreamSource implementation for Diff engine.
@@ -59,16 +62,10 @@ public class DiffStreamSource extends StreamSource {
      * @param revision file revision, may be null if the revision does not exist (ie for new files)
      * @param title title to use in diff panel
      */ 
-    public DiffStreamSource(File baseFile, String revision, String title) {
+    public DiffStreamSource(File baseFile, String propertyName, String revision, String title) {
         this.baseFile = baseFile;
+        this.propertyName = propertyName;
         this.revision = revision;
-        this.title = title;
-    }
-
-    /** Creates DiffStreamSource for nonexiting files. */
-    public DiffStreamSource(String title) {
-        this.baseFile = null;
-        this.revision = null;
         this.title = title;
     }
 
@@ -85,11 +82,6 @@ public class DiffStreamSource extends StreamSource {
     }
 
     public synchronized String getMIMEType() {
-        if (baseFile.isDirectory()) {
-            // http://www.rfc-editor.org/rfc/rfc2425.txt
-            return "content/unknown"; // "text/directory";  //HACK no editor for directory MIME type => NPE while constructing EditorKit // NOI18N
-        }
-
         try {
             init();
         } catch (IOException e) {
@@ -99,19 +91,21 @@ public class DiffStreamSource extends StreamSource {
     }
 
     public synchronized Reader createReader() throws IOException {
-        if (baseFile.isDirectory()) {
-            // XXX return directory listing?
-            // could be nice te return sorted directory content
-            // such as vim if user "edits" directory
-            return new StringReader(NbBundle.getMessage(DiffStreamSource.class, "LBL_Diff_NoFolderDiff")); // NOI18N
-        }
         init();
-        if (revision == null || remoteFile == null) return null;
-        if (!mimeType.startsWith("text/")) {
-            return new StringReader(NbBundle.getMessage(DiffStreamSource.class, "BK5001", getTitle())); // NOI18N
+        if (propertyName != null) {
+            if (propertyValue != null) {
+                return propertyValue.toReader();
+            } else {
+                return null;
+            }
         } else {
-            // XXX diff implementation dependency, we need Encoding API or rewrite to binary diff
-            return EncodedReaderFactory.getDefault().getReader(remoteFile, mimeType);  
+            if (revision == null || remoteFile == null) return null;
+            if (!mimeType.startsWith("text/")) {
+                return new StringReader(NbBundle.getMessage(DiffStreamSource.class, "BK5001", getTitle())); // NOI18N
+            } else {
+                // XXX diff implementation dependency, we need Encoding API or rewrite to binary diff
+                return EncodedReaderFactory.getDefault().getReader(remoteFile, mimeType);  
+            }
         }
     }
 
@@ -120,7 +114,7 @@ public class DiffStreamSource extends StreamSource {
     }
 
     public boolean isEditable() {
-        return Setup.REVISION_CURRENT.equals(revision) && isPrimary();
+        return propertyName == null && Setup.REVISION_CURRENT.equals(revision) && isPrimary();
     }
 
     private boolean isPrimary() {
@@ -142,7 +136,7 @@ public class DiffStreamSource extends StreamSource {
         } catch (IOException e) {
             return Lookups.fixed();
         }
-        if (remoteFile == null || !isPrimary()) return Lookups.fixed();
+        if (propertyName != null || remoteFile == null || !isPrimary()) return Lookups.fixed();
         FileObject remoteFo = FileUtil.toFileObject(remoteFile);
         if (remoteFo == null) return Lookups.fixed();
 
@@ -153,10 +147,14 @@ public class DiffStreamSource extends StreamSource {
      * Loads data over network.
      */
     synchronized void init() throws IOException {
+        if (propertyValue != null || remoteFile != null || revision == null) return;
+        if (propertyName != null) {
+            initProperty();
+            return;
+        }
         if (baseFile.isDirectory()) {
             return;
         }
-        if (remoteFile != null || revision == null) return;
         mimeType = Subversion.getInstance().getMimeType(baseFile);
         try {
             if (isEditable()) {
@@ -197,5 +195,17 @@ public class DiffStreamSource extends StreamSource {
             failure.initCause(e);
             throw failure;
         }
+    }
+
+    private void initProperty() throws IOException {
+        PropertiesClient client = new PropertiesClient(baseFile);
+        if (Setup.REVISION_BASE.equals(revision)) {
+            byte [] value = client.getBaseProperties().get(propertyName);
+            propertyValue = value != null ? new MultiDiffPanel.Property(value) : null;
+        } else if (Setup.REVISION_CURRENT.equals(revision)) {
+            byte [] value = client.getProperties().get(propertyName);
+            propertyValue = value != null ? new MultiDiffPanel.Property(value) : null;
+        }
+        mimeType = propertyValue != null ? propertyValue.getMIME() : "content/unknown"; // NOI18N
     }
 }

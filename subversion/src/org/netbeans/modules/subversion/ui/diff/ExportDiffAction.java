@@ -228,7 +228,7 @@ public class ExportDiffAction extends ContextAction {
                 setups = new ArrayList<Setup>(files.length);
                 for (int i = 0; i < files.length; i++) {
                     File file = files[i];
-                    Setup setup = new Setup(file, Setup.DIFFTYPE_LOCAL);
+                    Setup setup = new Setup(file, null, Setup.DIFFTYPE_LOCAL);
                     setups.add(setup);
                 }
             }

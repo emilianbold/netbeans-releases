@@ -28,11 +28,15 @@ import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.FileInformation;
+import org.netbeans.modules.subversion.client.PropertiesClient;
 import org.netbeans.modules.subversion.ui.commit.CommitAction;
 import org.netbeans.api.diff.DiffController;
 import org.netbeans.api.diff.StreamSource;
+import org.netbeans.api.diff.Difference;
+import org.netbeans.spi.diff.DiffProvider;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.awt.UndoRedo;
 import org.openide.windows.TopComponent;
@@ -46,8 +50,7 @@ import org.openide.LifecycleManager;
 import org.openide.ErrorManager;
 
 import javax.swing.*;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -432,15 +435,18 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         }
         files = SvnUtils.getModifiedFiles(context, displayStatuses);
         
-        Setup [] newSetups = new Setup[files.length];
-        for (int i = 0; i < newSetups.length; i++) {
-            File file = files[i];
-            newSetups[i] = new Setup(file, currentType);
-            newSetups[i].setNode(new DiffNode(newSetups[i]));
+        setups = computeSetups(files);
+        boolean propertyColumnVisible = false;
+        for (Setup setup : setups) {
+            if (setup.getPropertyName() != null) {
+                propertyColumnVisible = true;
+                break;
+            }
         }
-        Arrays.sort(newSetups, new SetupsComparator());
-
-        setups = newSetups;
+        fileTable.setColumns(propertyColumnVisible ? 
+                new String[] { DiffNode.COLUMN_NAME_NAME, DiffNode.COLUMN_NAME_PROPERTY, DiffNode.COLUMN_NAME_STATUS, DiffNode.COLUMN_NAME_LOCATION } :
+                new String[] { DiffNode.COLUMN_NAME_NAME, DiffNode.COLUMN_NAME_STATUS, DiffNode.COLUMN_NAME_LOCATION }
+        );
         fileTable.setTableModel(setupToNodes(setups));
 
         if (setups.length == 0) {
@@ -459,7 +465,6 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
                 throw new IllegalStateException("Unknown DIFF type:" + currentType); // NOI18N
             }
             setups = null;
-//            navigationCombo.setModel(new DefaultComboBoxModel(new Object [] { noContentLabel }));
             fileTable.setTableModel(new Node[0]);
             fileTable.getComponent().setEnabled(false);
             fileTable.getComponent().setPreferredSize(null);
@@ -480,6 +485,53 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
             setDiffIndex(0, 0);
             dpt = new DiffPrepareTask(setups);
             prepareTask = RequestProcessor.getDefault().post(dpt);
+        }
+    }
+
+    private Setup[] computeSetups(File[] files) {
+        List<Setup> newSetups = new ArrayList<Setup>(files.length);
+        for (int i = 0; i < files.length; i++) {
+            File file = files[i];
+            if (!file.isDirectory()) {
+                Setup setup = new Setup(file, null, currentType);
+                setup.setNode(new DiffNode(setup));
+                newSetups.add(setup);
+            }
+            addPropertiesSetups(file, newSetups);
+        }
+        Collections.sort(newSetups, new SetupsComparator());
+        return newSetups.toArray(new Setup[newSetups.size()]);
+    }
+
+    private void addPropertiesSetups(File base, List<Setup> newSetups) {
+        if (currentType == Setup.DIFFTYPE_REMOTE) return;
+        
+        DiffProvider diffAlgorithm = (DiffProvider) Lookup.getDefault().lookup(DiffProvider.class);
+        PropertiesClient client = new PropertiesClient(base);
+        try {
+            Map<String, byte[]> baseProps = client.getBaseProperties();
+            Map<String, byte[]> localProps = client.getProperties();
+            
+            Set<String> allProps = new TreeSet<String>(localProps.keySet());
+            allProps.addAll(baseProps.keySet());
+            for (String key : allProps) {
+                boolean isBase = baseProps.containsKey(key);
+                boolean isLocal = localProps.containsKey(key);
+                boolean propertiesDiffer = true;
+                if (isBase && isLocal) {
+                    Property p1 = new Property(baseProps.get(key));
+                    Property p2 = new Property(localProps.get(key));
+                    Difference[] diffs = diffAlgorithm.computeDiff(p1.toReader(), p2.toReader());
+                    propertiesDiffer = (diffs.length != 0); 
+                }
+                if (propertiesDiffer) {
+                    Setup setup = new Setup(base, key, currentType);
+                    setup.setNode(new DiffNode(setup));
+                    newSetups.add(setup);
+                }
+            }
+        } catch (IOException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
     }
 
@@ -735,4 +787,29 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
     private javax.swing.JSplitPane splitPane;
     // End of variables declaration//GEN-END:variables
     
+    /** Interprets property blob. */
+    static final class Property {
+        final byte[] value;
+
+        Property(Object value) {
+            this.value = (byte[]) value;
+        }
+
+        String getMIME() {            
+            return "text/plain"; // NOI18N
+        }
+
+        Reader toReader() {
+            if (SvnUtils.isBinary(value)) {
+                return new StringReader(NbBundle.getMessage(MultiDiffPanel.class, "LBL_Diff_NoBinaryDiff"));  // hexa-flexa txt? // NOI18N
+            } else {
+                try {
+                    return new InputStreamReader(new ByteArrayInputStream(value), "utf8");  // XXX what encoding is used for storing property values in the text file?,  is it really UTF-8 // NOI18N
+                } catch (UnsupportedEncodingException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                    return new StringReader("[ERROR: " + ex.getLocalizedMessage() + "]"); // NOI18N
+                }
+            }
+        }
+    }
 }
