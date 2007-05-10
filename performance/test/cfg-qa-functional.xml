@@ -160,7 +160,7 @@ Microsystems, Inc. All Rights Reserved.
     
 <!-- Memory Footprint Testbags -->
     <!-- Out Of The Box -->
-    <testbag testattribs="all or footprint_OutOfTheBox" prio="300"
+    <testbag testattribs="all or footprint or footprint_OutOfTheBox" prio="300"
              executor="ide_footprint" name="Footprint - Out Of The Box Startup" >
         <testset dir="qa-functional/src">
             <patternset>
@@ -169,7 +169,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="(all or footprint_OutOfTheBox) and NOT once" prio="301"
+    <testbag testattribs="(all or footprint or footprint_OutOfTheBox) and NOT once" prio="301"
              executor="ide_footprint" name="Footprint - Out Of The Box Startup" >
         <testset dir="footprint/src">
             <patternset>
@@ -178,7 +178,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="(all or footprint_OutOfTheBox) and NOT once" prio="302"
+    <testbag testattribs="(all or footprint or footprint_OutOfTheBox) and NOT once" prio="302"
              executor="ide_footprint" name="Footprint - Out Of The Box Startup" >
         <testset dir="footprint/src">
             <patternset>
@@ -188,7 +188,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <!-- J2SE Project workflow -->
-    <testbag testattribs="all or footprint_JavaProject" prio="310"
+    <testbag testattribs="all or footprint or footprint_JavaProject" prio="310"
              executor="ide_footprint" name="Footprint - J2SE project workflow" >
         <testset dir="footprint/src">
             <patternset>
@@ -197,7 +197,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="(all or footprint_JavaProject) and NOT once" prio="311"
+    <testbag testattribs="(all or footprint or footprint_JavaProject) and NOT once" prio="311"
              executor="ide_footprint" name="Footprint - J2SE project workflow" >
         <testset dir="footprint/src">
             <patternset>
@@ -206,7 +206,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="(all or footprint_JavaProject) and NOT once" prio="312"
+    <testbag testattribs="(all or footprint or footprint_JavaProject) and NOT once" prio="312"
              executor="ide_footprint" name="Footprint - J2SE project workflow" >
         <testset dir="footprint/src">
             <patternset>
@@ -216,7 +216,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <!-- Web Project workflow -->
-<!-- TODO no tomcat - see issue 101104             <testbag testattribs="all or footprint_WebProject" prio="320"
+<!-- TODO no tomcat - see issue 101104             <testbag testattribs="all or footprint or footprint_WebProject" prio="320"
              executor="ide_footprint" name="Footprint - Web project workflow" >
         <testset dir="footprint/src">
             <patternset>
@@ -225,7 +225,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="(all or footprint_WebProject) and NOT once" prio="321"
+    <testbag testattribs="(all or footprint or footprint_WebProject) and NOT once" prio="321"
              executor="ide_footprint" name="Footprint - Web project workflow" >
         <testset dir="footprint/src">
             <patternset>
@@ -234,7 +234,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="(all or footprint_WebProject) and NOT once" prio="322"
+    <testbag testattribs="(all or footprint or footprint_WebProject) and NOT once" prio="322"
              executor="ide_footprint" name="Footprint - Web project workflow" >
         <testset dir="footprint/src">
             <patternset>
@@ -244,7 +244,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
 -->
     <!-- Find Usages -->
-    <testbag testattribs="all or footprint_FindUsages" prio="330"
+    <testbag testattribs="all or footprint or footprint_FindUsages" prio="330"
              executor="ide_footprint" name="Footprint - Find usages" >
         <testset dir="footprint/src">
             <patternset>
@@ -253,7 +253,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="(all or footprint_FindUsages) and NOT once" prio="331"
+    <testbag testattribs="(all or footprint or footprint_FindUsages) and NOT once" prio="331"
              executor="ide_footprint" name="Footprint - Find usages" >
         <testset dir="footprint/src">
             <patternset>
@@ -262,7 +262,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="(all or footprint_FindUsages) and NOT once" prio="332"
+    <testbag testattribs="(all or footprint or footprint_FindUsages) and NOT once" prio="332"
              executor="ide_footprint" name="Footprint - Find usages" >
         <testset dir="footprint/src">
             <patternset>
@@ -272,7 +272,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <!-- Refactor Rename -->
-    <testbag testattribs="all or footprint_RenameClass" prio="340"
+    <testbag testattribs="all or footprint or footprint_RenameClass" prio="340"
              executor="ide_footprint" name="Footprint - Rename class" >
         <testset dir="footprint/src">
             <patternset>
@@ -281,7 +281,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="(all or footprint_RenameClass)) and NOT once" prio="341"
+    <testbag testattribs="(all or footprint or footprint_RenameClass) and NOT once" prio="341"
              executor="ide_footprint" name="Footprint - Rename class" >
         <testset dir="footprint/src">
             <patternset>
@@ -290,7 +290,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="(all or footprint_RenameClass) and NOT once" prio="342"
+    <testbag testattribs="(all or footprint or footprint_RenameClass) and NOT once" prio="342"
              executor="ide_footprint" name="Footprint - Rename class" >
         <testset dir="footprint/src">
             <patternset>

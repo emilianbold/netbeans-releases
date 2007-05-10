@@ -114,6 +114,8 @@ Microsystems, Inc. All Rights Reserved.
             <property name="xtest.userdata|org.netbeans.performance.repeat" value="4"/>
             
         </executeTests>
+        
+        <antcall target="clean_userdirs"/>
         <antcall target="copy_original_ide_cfg_file"/>
     </target>
     

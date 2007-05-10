@@ -123,6 +123,14 @@ Microsystems, Inc. All Rights Reserved.
         <chmod perm="ugo+rx" dir="${netbeans.dest.dir}" includes="platform?/lib/nbexec"/>
     </target>
     
+    <!-- Remove emulators & uml directories from userdirs - to avoid saving MBs of data on our test results server -->
+    <target name="clean_userdirs">
+        <delete failonerror="false" includeemptydirs="true">
+            <fileset dir="${xtest.workdir}" includes="**/emulators/**"/>
+            <fileset dir="${xtest.workdir}" includes="**/.uml/**"/>
+        </delete>
+    </target>
+    
     <!-- =========================== -->
     <!-- IDE Command Line Suffix     -->
     <!-- =========================== -->
