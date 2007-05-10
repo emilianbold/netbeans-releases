@@ -26,6 +26,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,6 +51,7 @@ import org.netbeans.modules.j2ee.persistence.api.PersistenceScopes;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.HintsController;
+import org.netbeans.spi.tasklist.Task;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -66,72 +68,82 @@ public abstract class JPAProblemFinder {
     private FileObject file = null;
     private Object cancellationLock = new Object();
     private JPAProblemContext context = null;
+    private List<ErrorDescription> problemsFound = new ArrayList<ErrorDescription>();
+    
     public final static Logger LOG = Logger.getLogger(JPAProblemFinder.class.getName());
-    private final static String PERSISTENCE_SCOPES_LISTENER = "jpa.verification.scopes_listener";
+    private final static String PERSISTENCE_SCOPES_LISTENER = "jpa.verification.scopes_listener"; //NOI18N
+    private final static Object singleInstanceLock = new Object();
+    private static JPAProblemFinder runningInstance = null;
     
     public JPAProblemFinder(FileObject file){
         this.file = file;
     }
     
     public void run(final CompilationInfo info) throws Exception{
-        // the 'cancelled' flag must be reset as the instance of JPAProblemFinder is reused
-        cancelled = false;
-        final List<ErrorDescription> problemsFound = new ArrayList<ErrorDescription>();
-        createPersistenceScopesListener(file, info.getDocument());
-        Project project = FileOwnerQuery.getOwner(file);
-        
-        if (project == null){
-            return; // the source file doesn't belong to any project, skip all checks
+        if (runningInstance != null){
+            runningInstance.cancel();
         }
         
-        PersistenceScopes scopes = PersistenceScopes.getPersistenceScopes(project);
-        
-        if (scopes == null){
-            return; // project of this type doesn't provide a list of persistence scopes
-        }
-        
-        //TODO: a workaround for 102643, remove it when the issue is fixed
-        if (scopes.getPersistenceScopes().length == 0){
-            return;
-        }
-        
-        PersistenceScope scope = scopes.getPersistenceScopes()[0];
-        // end of workround for 102643
-        
-        MetadataModel<EntityMappingsMetadata> emModel = scope.getEntityMappingsModel(null);
-        emModel.runReadAction(new MetadataModelAction<EntityMappingsMetadata, Void>() {
-            public Void run(EntityMappingsMetadata metadata) {
-                for (Tree tree : info.getCompilationUnit().getTypeDecls()){
-                    if (isCancelled()){
-                        break;
-                    }
-                    
-                    if (tree.getKind() == Tree.Kind.CLASS){
-                        TreePath path = info.getTrees().getPath(info.getCompilationUnit(), tree);
-                        TypeElement javaClass = (TypeElement) info.getTrees().getElement(path);
-                        LOG.fine("processing class " + javaClass.getSimpleName());
-                        context = findProblemContext(info, javaClass, metadata, false);
-                        JPARulesEngine rulesEngine = new JPARulesEngine();
-                        javaClass.accept(rulesEngine, context);
-                        problemsFound.addAll(rulesEngine.getProblemsFound());
+        synchronized(singleInstanceLock){
+            runningInstance = this;
+            // the 'cancelled' flag must be reset as the instance of JPAProblemFinder is reused
+            cancelled = false;
+            problemsFound.clear();
+            createPersistenceScopesListener(file, info.getDocument());
+            Project project = FileOwnerQuery.getOwner(file);
+            
+            if (project == null){
+                return; // the source file doesn't belong to any project, skip all checks
+            }
+            
+            PersistenceScopes scopes = PersistenceScopes.getPersistenceScopes(project);
+            
+            if (scopes == null){
+                return; // project of this type doesn't provide a list of persistence scopes
+            }
+            
+            //TODO: a workaround for 102643, remove it when the issue is fixed
+            if (scopes.getPersistenceScopes().length == 0){
+                return;
+            }
+            
+            PersistenceScope scope = scopes.getPersistenceScopes()[0];
+            // end of workround for 102643
+            
+            MetadataModel<EntityMappingsMetadata> emModel = scope.getEntityMappingsModel(null);
+            emModel.runReadAction(new MetadataModelAction<EntityMappingsMetadata, Void>() {
+                public Void run(EntityMappingsMetadata metadata) {
+                    for (Tree tree : info.getCompilationUnit().getTypeDecls()){
+                        if (isCancelled()){
+                            break;
+                        }
                         
-                        problemsFound.addAll(processIdClassAnnotation(info, javaClass, metadata));
-                        
-                        synchronized(cancellationLock){
-                            context = null;
+                        if (tree.getKind() == Tree.Kind.CLASS){
+                            TreePath path = info.getTrees().getPath(info.getCompilationUnit(), tree);
+                            TypeElement javaClass = (TypeElement) info.getTrees().getElement(path);
+                            LOG.fine("processing class " + javaClass.getSimpleName());
+                            context = findProblemContext(info, javaClass, metadata, false);
+                            JPARulesEngine rulesEngine = new JPARulesEngine();
+                            javaClass.accept(rulesEngine, context);
+                            problemsFound.addAll(rulesEngine.getProblemsFound());
+                            
+                            problemsFound.addAll(processIdClassAnnotation(info, javaClass, metadata));
+                            
+                            synchronized(cancellationLock){
+                                context = null;
+                            }
                         }
                     }
+                    
+                    return null;
                 }
-                
-                return null;
-            }
-        });
-        
-        
-        
-        //TODO: should we really reset the errors if the task is cancelled?
-        LOG.log(Level.FINE, "resetting errors, current number of errors in file: {0}", problemsFound.size());
-        HintsController.setErrors(file, "JPA Verification", problemsFound); //NOI18N
+            });
+            
+            //TODO: should we really reset the errors if the task is cancelled?
+            LOG.log(Level.FINE, "resetting errors, current number of errors in file: {0}", problemsFound.size());
+            HintsController.setErrors(file, "JPA Verification", problemsFound); //NOI18N
+            runningInstance = null;
+        }
     }
     
     /**
@@ -161,7 +173,7 @@ public abstract class JPAProblemFinder {
             }
         }
         
-        return Collections.EMPTY_LIST;
+        return Collections.<ErrorDescription>emptyList();
     }
     
     private JPAProblemContext findProblemContext(CompilationInfo info,
@@ -169,7 +181,7 @@ public abstract class JPAProblemFinder {
         
         JPAProblemContext context = new JPAProblemContext();
         context.setMetaData(metadata);
-         
+        
         if (!idClass){
             Object modelElement = ModelUtils.getEntity(metadata, javaClass);
             
@@ -205,6 +217,7 @@ public abstract class JPAProblemFinder {
     }
     
     public void cancel(){
+        LOG.info("Cancelling JPAProblemFinder task");
         cancelled = true;
         
         synchronized(cancellationLock){
@@ -216,6 +229,10 @@ public abstract class JPAProblemFinder {
     
     public boolean isCancelled(){
         return cancelled;
+    }
+    
+    public List<? extends ErrorDescription> getProblemsFound(){
+        return problemsFound;
     }
     
     private void createPersistenceScopesListener(FileObject file, Document doc){

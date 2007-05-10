@@ -95,7 +95,7 @@ public abstract class Rule<E> {
     }
     
     protected ErrorDescription createProblem(Element subject, ProblemContext ctx){
-        return createProblem(subject, ctx, Collections.EMPTY_LIST);
+        return createProblem(subject, ctx, Collections.<Fix>emptyList());
     }
     
     protected ErrorDescription createProblem(Element subject, ProblemContext ctx, Fix fix){
@@ -104,7 +104,7 @@ public abstract class Rule<E> {
     
     protected ErrorDescription createProblem(Element subject, ProblemContext ctx, List<Fix> fixes){
         ErrorDescription err = null;
-        List<Fix> fixList = fixes == null ? Collections.EMPTY_LIST : fixes;
+        List<Fix> fixList = fixes == null ? Collections.<Fix>emptyList() : fixes;
         
         // by default place error annotation on the element being checked
         Tree elementTree = ctx.getElementToAnnotate() == null ?
