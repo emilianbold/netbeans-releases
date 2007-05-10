@@ -59,9 +59,9 @@ import java.beans.PropertyChangeEvent;
 
 /**
  *
- * @author  maros
+ * @author Maros Sandor
  */
-public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, VersioningListener, DiffSetupSource, PropertyChangeListener {
+class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, VersioningListener, DiffSetupSource, PropertyChangeListener {
     
     /**
      * Array of DIFF setups that we show in the DIFF view. Contents of this array is changed if
@@ -115,7 +115,6 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         currentType = initialType;
         initComponents();
         setupComponents();
-//        fileTable.getComponent().addAncestorListener(this);
         refreshSetups();
         refreshComponents();
         refreshTask = org.netbeans.modules.versioning.util.Utils.createTask(new RefreshViewTask());

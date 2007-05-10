@@ -145,7 +145,7 @@ public class DiffStreamSource extends StreamSource {
         if (initialized) return;
         initialized = true;
         if (revision == null) return;
-        binary = !CvsVersioningSystem.getInstance().isText(baseFile);
+        binary = baseFile.exists() && !CvsVersioningSystem.getInstance().isText(baseFile);
         try {
             if (isEditable()) {
                 // we cannot move editable documents because that would break Document sharing
