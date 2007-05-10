@@ -287,24 +287,18 @@ public class Utilities {
     
     protected static void waitForProjectCreation(int delay, boolean wait){
         try {
-            Thread.sleep(delay);
+            Thread.currentThread().sleep(delay);
         } catch (InterruptedException exc) {
             exc.printStackTrace(System.err);
         }
         
         // wait for classpath scanning finish
         if (wait) {
-            try {
-                ProjectSupport.waitScanFinished();
-                new EventTool().wait(1000);
-                ProjectSupport.waitScanFinished();
-                
-                waitForPendingBackgroundTasks();
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            //} else {
-            //    ProjectSupport.waitScanFinished();
+            ProjectSupport.waitScanFinished();
+            new QueueTool().waitEmpty(1000);
+            ProjectSupport.waitScanFinished();
+            
+            waitForPendingBackgroundTasks();
         }
     }
     
@@ -459,10 +453,10 @@ public class Utilities {
             throw new Error("Cannot find Application Server Node");
         }
         rto.setComparator(previousComparator);
-
+        
         return new Node(rto.tree(),path);
     }
-
+    
     
     public static Node startApplicationServer() {
         Node node = performApplicationServerAction("Start", "Starting");  // NOI18N
