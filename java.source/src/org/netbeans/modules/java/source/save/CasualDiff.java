@@ -866,12 +866,13 @@ public class CasualDiff {
         localPointer = diffParameterList(oldT.args, newT.args, false, localPointer, printer);
         // let diffClassDef() method notified that anonymous class is printed.
         if (oldT.def != null) {
-            copyTo(localPointer, getOldPos(oldT.def));
             if (newT.def != null) {
+                copyTo(localPointer, getOldPos(oldT.def));
                 anonClass = true;
                 localPointer = diffTree(oldT.def, newT.def, getBounds(oldT.def));
                 anonClass = false;
             } else {
+                printer.print(")");
                 localPointer = endPos(oldT.def);
             }
         }

@@ -46,6 +46,8 @@ public class NewClassTreeTest extends GeneratorTest {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTestSuite(NewClassTreeTest.class);
+//        suite.addTest(new NewClassTreeTest("testRemoveClassBody"));
+//        suite.addTest(new NewClassTreeTest("testAddArguments"));
         return suite;
     }
 
@@ -55,7 +57,8 @@ public class NewClassTreeTest extends GeneratorTest {
     public void testRemoveClassBody() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
-            "package hierbas.del.litoral;\n\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
             "public class Test {\n" +
             "    public void taragui() {\n" +
             "        new Runnable() {\n" +
@@ -66,10 +69,11 @@ public class NewClassTreeTest extends GeneratorTest {
             "}\n"
             );
         String golden = 
-            "package hierbas.del.litoral;\n\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
             "public class Test {\n" +
             "    public void taragui() {\n" +
-            "        new X() ;\n" + //XXX: there should be no space between '()' and ';' 
+            "        new X();\n" +
             "    }\n" +
             "    private static class X {}\n" +
             "}\n";
