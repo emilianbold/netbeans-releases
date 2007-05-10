@@ -74,7 +74,8 @@ public class ImportsTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new ImportsTest("testRemoveBeforeEmpty"));
 //        suite.addTest(new ImportsTest("testRenameIdentifier"));
 //        suite.addTest(new ImportsTest("testRenameIdentifier2"));
-//        suite.addTest(new ImportsTest("addAtVeryBeginning"));
+//        suite.addTest(new ImportsTest("testAtVeryBeginning"));
+//        suite.addTest(new ImportsTest("testPackageInfo"));
         return suite;
     }
 
@@ -1136,7 +1137,7 @@ public class ImportsTest extends GeneratorTestMDRCompat {
     /**
      * http://www.netbeans.org/issues/show_bug.cgi?id=100162
      */
-    public void addAtVeryBeginning() throws Exception {
+    public void testAtVeryBeginning() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
             "public class Test {\n" +
@@ -1162,6 +1163,44 @@ public class ImportsTest extends GeneratorTestMDRCompat {
                 CompilationUnitTree copy = make.addCompUnitImport(
                        node, 
                        make.Import(make.Identifier("java.io.IOException"), false)
+                );
+                workingCopy.rewrite(node, copy);
+            }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * http://www.netbeans.org/issues/show_bug.cgi?id=103429
+     */
+    public void testPackageInfo() throws Exception {
+        testFile = new File(getWorkDir(), "package-info.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "@XmlSchema(namespace = \"urn:aaa\")\n" +
+            "package javaapplication2;\n"
+            );
+        String golden =
+            "@XmlSchema(namespace = \"urn:aaa\")\n" +
+            "package javaapplication2;\n" +
+            "\n" +
+            "import javax.xml.bind.annotation.XmlSchema;\n";
+
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree node = workingCopy.getCompilationUnit();
+                CompilationUnitTree copy = make.addCompUnitImport(
+                       node, 
+                       make.Import(make.Identifier("javax.xml.bind.annotation.XmlSchema"), false)
                 );
                 workingCopy.rewrite(node, copy);
             }

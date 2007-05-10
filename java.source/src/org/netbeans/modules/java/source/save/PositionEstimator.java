@@ -248,6 +248,8 @@ public abstract class PositionEstimator {
             CompilationUnitTree cut = copy.getCompilationUnit();
             int resultPos = 0;
             if (cut.getTypeDecls().isEmpty()) {
+                aHead.append('\n');
+                return copy.getText().length();
             } else {
                 Tree t = cut.getTypeDecls().get(0);
                 SourcePositions positions = copy.getTrees().getSourcePositions();
