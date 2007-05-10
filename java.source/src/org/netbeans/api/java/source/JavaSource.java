@@ -27,6 +27,8 @@ import com.sun.tools.javac.code.Symbol.CompletionFailure;
 import com.sun.tools.javac.comp.Enter;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Abort;
+import com.sun.tools.javac.util.CancelAbort;
+import com.sun.tools.javac.util.CancelService;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.Log;
@@ -925,6 +927,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         }
         JavacTaskImpl javacTask = createJavacTask(getClasspathInfo(), diagnosticListener, sourceLevel, false);
         Context context = javacTask.getContext();
+        JSCancelService.preRegister(context);
         TreeLoader.preRegister(context, getClasspathInfo());
         Messager.preRegister(context, null);
         ErrorHandlingJavadocEnter.preRegister(context);
@@ -1091,7 +1094,9 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         } catch (CouplingAbort a) {
             RepositoryUpdater.couplingAbort(a, currentInfo.jfo);
             currentInfo.needsRestart = true;
-            return currentPhase;
+            return currentPhase;            
+        } catch (CancelAbort ca) {
+            return Phase.MODIFIED;
         } catch (Abort abort) {
             currentPhase = Phase.UP_TO_DATE;
         } catch (IOException ex) {
@@ -1133,7 +1138,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             resetStateImpl();
         }
     });
-    
+        
     private void resetState(boolean invalidate, boolean updateIndex) {
         boolean invalid;
         synchronized (this) {
@@ -1150,23 +1155,25 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             //First change set the index as dirty
             updateIndex ();
         }
-        Request r = currentRequest.getTaskToCancel (this);
-        try {
-            if (r != null) {
-                r.task.cancel();
-            }
-        }
-        finally {
-            currentRequest.cancelCompleted(r);
-        }
+        Request r = currentRequest.getTaskToCancel (this, invalidate);
+        if (r != null) {
+            r.task.cancel();
+            assert rst == null;
+            rst = r;
+        }                                        
         resetTask.schedule(REPARSE_DELAY);
     }
+    
+    private Request rst;
     
     /**
      * Not synchronized, only sets the atomic state and clears the listeners
      *
      */
     private void resetStateImpl() {
+        Request r = rst;
+        rst = null;
+        currentRequest.cancelCompleted(r);
         synchronized (JavaSource.class) {
             boolean reschedule, updateIndex;
             synchronized (this) {
@@ -1187,7 +1194,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             if ((cr=JavaSource.waitingRequests.remove(this)) != null && cr.size()>0)  {
                 JavaSource.requests.addAll(cr);
             }
-        }        
+        }               
     }
     
     private void updateIndex () {
@@ -1368,8 +1375,14 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                                         assert ci != null;
                                         javacLock.lock();
                                         try {
-                                            final Phase phase = JavaSource.moveToPhase (r.phase, ci, true);
-                                            boolean shouldCall = phase.compareTo(r.phase)>=0;
+                                            boolean shouldCall;
+                                            JSCancelService.getDefault().active = true;
+                                            try {
+                                                final Phase phase = JavaSource.moveToPhase (r.phase, ci, true);
+                                                shouldCall = phase.compareTo(r.phase)>=0;
+                                            } finally {
+                                                JSCancelService.getDefault().active = false;
+                                            }                                            
                                             if (shouldCall) {
                                                 synchronized (js) {
                                                     shouldCall &= (js.flags & INVALID)==0;
@@ -1391,6 +1404,8 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                                                                     r.task.getClass().toString(), (endTime-cancelTime)));
                                                             }
                                                         }
+                                                    } catch (CancelAbort ca) {
+                                                        //Handled below by: canceled = currentRequest.setCurrentTask(null);
                                                     } catch (Exception re) {
                                                         Exceptions.printStackTrace (re);
                                                     }
@@ -1711,6 +1726,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         private JavaSource.Request canceledReference;
         private long cancelTime;
         private boolean canceled;
+        private boolean mayCancelJavac;
         
         public CurrentRequestReference () {
         }
@@ -1722,10 +1738,10 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                     this.wait();
                 }
                 result = this.canceled;
-                this.canceled = false;
+                this.canceled = this.mayCancelJavac = false;
                 this.cancelTime = 0;
                 this.reference = reference;                
-            }
+            }            
             return result;
         }
         
@@ -1746,7 +1762,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             return request;
         }
         
-        public JavaSource.Request getTaskToCancel (final JavaSource js) {
+        public JavaSource.Request getTaskToCancel (final JavaSource js, final boolean mayCancelJavac) {
             JavaSource.Request request = null;
             if (!factory.isDispatchThread(Thread.currentThread())) {
                 synchronized (this) {
@@ -1756,6 +1772,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                         this.canceledReference = request;
                         this.reference = null;
                         this.canceled = true;
+                        this.mayCancelJavac = mayCancelJavac;
                         this.cancelTime = System.currentTimeMillis();
                     }
                 }
@@ -1830,6 +1847,10 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         
         public synchronized boolean isCanceled () {
             return this.canceled;
+        }
+        
+        synchronized boolean isInterruptJavac () {
+            return this.mayCancelJavac;
         }
         
         public synchronized long getCancelTime () {
@@ -1940,6 +1961,30 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         public void lowMemory(LowMemoryEvent event) {
             lowMemory.set(true);
         }        
+    }
+    
+    private static class JSCancelService extends CancelService {
+        
+        private static JSCancelService instance;
+        
+        boolean active;
+        
+        static void preRegister(final Context context) {
+            context.put(cancelServiceKey, getDefault());
+        }
+        
+        @Override
+        public boolean isCanceled () {
+            final boolean res =  active && currentRequest.isInterruptJavac();
+            return res;
+        }
+        
+        static synchronized JSCancelService getDefault () {
+            if (instance == null) {
+                instance = new JSCancelService();
+            }
+            return instance;
+        }
     }
     
     /**
