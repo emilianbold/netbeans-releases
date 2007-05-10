@@ -69,8 +69,8 @@
         <folder name="org.netbeans.modules.kjava.j2meproject">
             <attr name="midp/cdc" boolvalue="true"/>
             <file name="cdc">
-                <attr name="RecommendedTemplates" stringvalue="CDC,CDC/AWT,CDC/AGUI,java-classes,java-main-class,java-forms,gui-java-application,java-beans,simple-files,XML"/>
-                <attr name="PriviledgedTemplates" stringvalue="Templates/CDC/AGUIXlet.java,Templates/CDC/AWTXlet.java,Templates/CDC/Xlet.java,Templates/GUIForms/JPanel.java"/>
+                <attr name="RecommendedTemplates" stringvalue="CDC,CDC/AWT,CDC/AGUI,CDC/NSIcom,java-classes,java-main-class,java-forms,gui-java-application,java-beans,simple-files,XML"/>
+                <attr name="PriviledgedTemplates" stringvalue="Templates/CDC/AGUIXlet.java,Templates/CDC/AWTXlet.java,Templates/CDC/Xlet.java,Templates/CDC/CDCJFrame.java,Templates/GUIForms/JPanel.java"/>
             </file>
             <attr name="cdc/core" boolvalue="true"/>
         </folder>
@@ -189,11 +189,12 @@
                 <attr name="CDC" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="CDC/AGUI"/>
             </file>
+            <attr name="AGUIXlet.java/CDCJFrame.java" boolvalue="true"/>
             <file name="JFrame.java" url="templates/JFrame_java">
                 <attr name="template" boolvalue="true" />
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/JFrame.html" />
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/JFrame.html" />
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />         
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ui.Bundle"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor16.gif"/>
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor32.gif"/>
                 <attr name="CDC" boolvalue="true"/>
@@ -201,7 +202,7 @@
             </file>
             <file name="JFrame.form" url="templates/JFrame_form">
                 <attr name="template" boolvalue="true" />
-                <attr name="CDC/NSIcom" boolvalue="true"/>
+                <attr name="CDC" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="CDC/NSIcom"/>
             </file>
         </folder>
