@@ -170,6 +170,7 @@ public class UpdateUnitFactory {
         // #101515: Plugin Manager must filter updates by platform dependency
         UpdateElementImpl elImpl = Trampoline.API.impl (element);
         UpdateItemImpl itemImpl = elImpl.getUpdateItemImpl ();
+        boolean passed = false;
         if (itemImpl != null && itemImpl instanceof ModuleItem) {
             ModuleItem moduleItem = (ModuleItem) itemImpl;
             for (Dependency d : moduleItem.getModuleInfo ().getDependencies ()) {
@@ -179,11 +180,14 @@ public class UpdateUnitFactory {
                         for (ModuleInfo info : ModuleProvider.getInstalledModules ().values ()) {
                             if (Arrays.asList (info.getProvides ()).contains (d.getName ())) {
                                 log.log (Level.FINEST, element + " which requires OS " + d + " succeed.");
+                                passed = true;
                                 break;
                             }
                         }
-                        log.log (Level.FINE, element + " which requires OS " + d + " fails.");
-                        return ;
+                        if (! passed) {
+                            log.log (Level.FINE, element + " which requires OS " + d + " fails.");
+                            return ;
+                        }
                     }
                 }
             }
