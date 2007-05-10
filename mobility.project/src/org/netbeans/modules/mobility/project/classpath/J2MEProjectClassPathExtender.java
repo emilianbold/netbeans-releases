@@ -56,8 +56,8 @@ public class J2MEProjectClassPathExtender implements ProjectClassPathExtender {
     //ToDo - this condition map should be constructed dynamically from each library definition
     private static final Map<String, String> CONDITIONS = new HashMap(); 
     static {
-        CONDITIONS.put("swing-layout", "javax/swing/JDialog.class"); //NOI18N
-        CONDITIONS.put("cdc-agui-swing-layout", "javax/swing/JComponent.class,-javax/swing/JDialog.class"); //NOI18N
+        CONDITIONS.put("swing-layout", "javax/swing/AbstractCellEditor.class"); //NOI18N
+        CONDITIONS.put("cdc-agui-swing-layout", "javax/swing/JComponent.class,-javax/swing/AbstractCellEditor.class"); //NOI18N
         CONDITIONS.put("cdc-pp-awt-layout", "java/awt/Component.class,-javax/swing/JComponent.class"); //NOI18N
         CONDITIONS.put("NetBeans MIDP Components", "javax/microedition/lcdui/Screen.class"); //NOI18N
         CONDITIONS.put("nb_svg_midp_components", "javax/microedition/m2g/SVGImage.class"); //NOI18N

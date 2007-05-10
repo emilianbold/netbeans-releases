@@ -104,8 +104,8 @@ class WindowsLayoutStyle extends LayoutStyle {
                          direction == SwingConstants.WEST) {
             return dlu * baseUnitX / 4;
         }
-        assert (direction == SwingConstants.NORTH ||
-                direction == SwingConstants.SOUTH);
+        //assert (direction == SwingConstants.NORTH ||
+        //        direction == SwingConstants.SOUTH);
         return dlu * baseUnitY / 8;
     }
 
