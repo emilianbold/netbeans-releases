@@ -346,7 +346,8 @@ public class DesignerServiceHackImpl extends DesignerServiceHack {
 //        Graphics2D g2d = (Graphics2D)wm.getMainWindow().getGraphics();
 //
 //        return paintCssPreview(g2d, base, properties, width, height);
-        return DesignerServiceHackProvider.getCssPreviewImage(properties, base, width, height);
+        return DesignerServiceHackProvider.getCssPreviewImage(properties, base,
+                width, height, JsfDesignerPreferences.getInstance().getDefaultFontSize());
     }
 
     /** Computes a preview image of the specified size for given <code>DataObject</code>.

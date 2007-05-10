@@ -50,8 +50,9 @@ public final class DesignerServiceHackProvider {
                 width, height);
     }
 
-    public static Image getCssPreviewImage(Map<String, String> properties, URL base, int width, int height) {
-        return DesignerServiceHackProviderImpl.getCssPreviewImage(properties, base, width, height);
+    public static Image getCssPreviewImage(Map<String, String> properties, URL base,
+    int width, int height, int defaultFontSize) {
+        return DesignerServiceHackProviderImpl.getCssPreviewImage(properties, base, width, height, defaultFontSize);
     }
 
     public static Image getPageBoxPreviewImage(/*DataObject dobj,*/ Designer designer, int width, int height) {

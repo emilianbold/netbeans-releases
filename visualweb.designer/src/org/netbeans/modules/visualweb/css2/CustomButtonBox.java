@@ -107,7 +107,7 @@ public class CustomButtonBox extends CssBox {
         } else {
 //            font = CssLookup.getFont(element, DesignerSettings.getInstance().getDefaultFontSize());
 //            font = CssProvider.getValueService().getFontForElement(element, DesignerSettings.getInstance().getDefaultFontSize(), Font.PLAIN);
-            font = CssUtilities.getDesignerFontForElement(element, string);
+            font = CssUtilities.getDesignerFontForElement(element, string, webform.getDefaultFontSize());
         }
 
 //        fm = Toolkit.getDefaultToolkit().getFontMetrics(font);

@@ -33,6 +33,8 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -57,6 +59,8 @@ import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.netbeans.modules.visualweb.api.designer.Designer.Box;
 import org.netbeans.modules.visualweb.api.designer.Designer.DesignerListener;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
+import org.netbeans.modules.visualweb.designer.jsf.GridHandler;
+import org.netbeans.modules.visualweb.designer.jsf.JsfDesignerPreferences;
 import org.netbeans.spi.navigator.NavigatorLookupHint;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.ErrorManager;
@@ -232,7 +236,8 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //        DesignerSettings.getInstance().addPropertyChangeListener(
 //                WeakListeners.propertyChange(settingsListener, DesignerSettings.getInstance()));
 //        DesignerSettings.getInstance().addWeakPreferenceChangeListener(settingsListener);
-        designer.addWeakPreferenceChangeListener(settingsListener);
+//        designer.addWeakPreferenceChangeListener(settingsListener);
+        JsfDesignerPreferences.getInstance().addWeakPreferenceChangeListener(settingsListener);
         
         addPropertyChangeListener(WeakListeners.propertyChange(activatedNodesListener, this));
         
@@ -2082,7 +2087,8 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
                 return;
             }
 //            if(DesignerSettings.PROP_PAGE_SIZE.equals(key)) {
-            if(Designer.PROP_PAGE_SIZE.equals(key)) {
+//            if(Designer.PROP_PAGE_SIZE.equals(key)) {
+            if(JsfDesignerPreferences.PROP_PAGE_SIZE.equals(key)) {
                 // There should be a cleaner way to request the revalidation,
                 // why the standard API doesn't work?
                 // XXX #6486462 Possible NPE.
@@ -2095,21 +2101,32 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
                 
                 designerTC.repaint();
 //            } else if (DesignerSettings.PROP_GRID_SHOW.equals(key)) {
-            } else if (Designer.PROP_GRID_SHOW.equals(key)) {
+//            } else if (Designer.PROP_GRID_SHOW.equals(key)) {
+            } else if (JsfDesignerPreferences.PROP_GRID_SHOW.equals(key)) {
+                GridHandler.getDefault().setGrid(JsfDesignerPreferences.getInstance().getGridShow());
                 designerTC.repaint();
 //            } else if (DesignerSettings.PROP_GRID_SNAP.equals(key)) {
-            } else if (Designer.PROP_GRID_SNAP.equals(key)) {
+//            } else if (Designer.PROP_GRID_SNAP.equals(key)) {
+            } else if (JsfDesignerPreferences.PROP_GRID_SNAP.equals(key)) {
+                GridHandler.getDefault().setSnap(JsfDesignerPreferences.getInstance().getGridSnap());
                 designerTC.repaint();
 //            } else if (DesignerSettings.PROP_GRID_WIDTH.equals(key)) {
-            } else if (Designer.PROP_GRID_WIDTH.equals(key)) {
+//            } else if (Designer.PROP_GRID_WIDTH.equals(key)) {
+            } else if (JsfDesignerPreferences.PROP_GRID_WIDTH.equals(key)) {
+                GridHandler.getDefault().setGridWidth(JsfDesignerPreferences.getInstance().getGridWidth());
                 designerTC.repaint();
 //            } else if (DesignerSettings.PROP_GRID_HEIGHT.equals(key)) {
-            } else if (Designer.PROP_GRID_HEIGHT.equals(key)) {
+//            } else if (Designer.PROP_GRID_HEIGHT.equals(key)) {
+            } else if (JsfDesignerPreferences.PROP_GRID_HEIGHT.equals(key)) {
+                GridHandler.getDefault().setGridHeight(JsfDesignerPreferences.getInstance().getGridHeight());
                 designerTC.repaint();
 //            } else if (DesignerSettings.PROP_DEFAULT_FONT_SIZE.equals(key)) {
-            } else if (Designer.PROP_DEFAULT_FONT_SIZE.equals(key)) {
+//            } else if (Designer.PROP_DEFAULT_FONT_SIZE.equals(key)) {
+            } else if (JsfDesignerPreferences.PROP_DEFAULT_FONT_SIZE.equals(key)) {
 //                designerTC.getWebForm().getPane().getPaneUI().resetPageBox();
                 designerTC.designer.resetPanePageBox();
+                designerTC.repaint();
+            } else if (JsfDesignerPreferences.PROP_SHOW_DECORATIONS.equals(key)) {
                 designerTC.repaint();
             }
         }
@@ -2564,7 +2581,11 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
             boolean isJsfFormValid = jsfTopComponent.getJsfForm().isValid();
             if (isJsfFormValid) {
                 DataObject jsfDobj = jsfTopComponent.getJsfForm().getJspDataObject();
-                if (jsfDobj != null) {
+                if (jsfDobj == null) {
+                    warn("Loaded FacesModel doesn't provide JSP DataObject!" +
+                            "\nThe Designer lookup won't be fully inited. Outline won't work." +
+                            "\nVariable jsfForm=" + jsfTopComponent.getJsfForm()); // NOI18N
+                } else {
                     objects.add(jsfDobj);
                 }
             }
@@ -2573,7 +2594,11 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
             
             if (isJsfFormValid) {
                 PaletteController paletteController = jsfTopComponent.getJsfForm().getPaletteController();
-                if (paletteController != null) {
+                if (paletteController == null) {
+                    warn("Loaded FacesModel doesn't Project needed to create PaletteController!" +
+                            "\nThe Designer lookup won't be fully inited. Palete won't be loaded." +
+                            "\nVariable jsfForm=" + jsfTopComponent.getJsfForm()); // NOI18N
+                } else {
                     objects.add(paletteController);
                 }
             }
@@ -2584,4 +2609,9 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
             lookup = null;
         }
     } // End of JsfLookupProvider.
+    
+    private static void warn(String message) {
+        Logger logger = Logger.getLogger(JsfTopComponent.class.getName());
+        logger.log(Level.WARNING, message);
+    }
 }

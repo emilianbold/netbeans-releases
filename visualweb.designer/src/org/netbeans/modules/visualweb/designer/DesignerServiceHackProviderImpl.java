@@ -138,11 +138,12 @@ public final class DesignerServiceHackProviderImpl /*extends DesignerServiceHack
                 width, height);
     }
 
-    public static Image getCssPreviewImage(Map<String, String> properties, URL base, int width, int height) {
+    public static Image getCssPreviewImage(Map<String, String> properties, URL base,
+    int width, int height, int defaultFontSize) {
         WindowManager wm = WindowManager.getDefault();
         Graphics2D g2d = (Graphics2D)wm.getMainWindow().getGraphics();
 
-        return paintCssPreview(g2d, base, properties, width, height);
+        return paintCssPreview(g2d, base, properties, width, height, defaultFontSize);
     }
 
     /** Computes a preview image of the specified size for given <code>DataObject</code>.
@@ -1097,7 +1098,8 @@ public final class DesignerServiceHackProviderImpl /*extends DesignerServiceHack
      * applied, and return it as an image. Use the preferred initial
      * width, unless the component is larger.
      */
-    private static BufferedImage paintCssPreview(Graphics2D g2d, URL base, Map<String, String> properties, int width, int height) {
+    private static BufferedImage paintCssPreview(Graphics2D g2d, URL base, Map<String, String> properties,
+    int width, int height, int defaultFontSize) {
         // Restore?
         BufferedImage image = null;
 
@@ -1231,7 +1233,7 @@ public final class DesignerServiceHackProviderImpl /*extends DesignerServiceHack
 //                metrics = CssLookup.getFontMetrics(element);
 //                metrics = CssProvider.getValueService().getFontMetricsForElement(element);
                 // XXX Missing text.
-                metrics = CssUtilities.getDesignerFontMetricsForElement(element, null);
+                metrics = CssUtilities.getDesignerFontMetricsForElement(element, null, defaultFontSize);
                 
 //                fg = CssLookup.getColor(element, XhtmlCss.COLOR_INDEX);
                 fg = CssProvider.getValueService().getColorForElement(element, XhtmlCss.COLOR_INDEX);

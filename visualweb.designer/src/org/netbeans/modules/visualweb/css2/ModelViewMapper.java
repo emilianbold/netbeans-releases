@@ -1579,7 +1579,7 @@ public final class ModelViewMapper {
 //                        height = metrics.getHeight();
 //                    }
                     // XXX Missing text.
-                    height = CssUtilities.getDesignerFontMetricsForElement(element, null).getHeight();
+                    height = CssUtilities.getDesignerFontMetricsForElement(element, null, pageBox.getWebForm().getDefaultFontSize()).getHeight();
 
                     Rectangle r =
                         new Rectangle(box.getAbsoluteX(), box.getAbsoluteY(), box.getWidth(), height);
@@ -1748,7 +1748,7 @@ public final class ModelViewMapper {
 //                    height = metrics.getHeight();
 //                }
                 // XXX Missing text.
-                height = CssUtilities.getDesignerFontMetricsForElement(pb.getElement(), null).getHeight();
+                height = CssUtilities.getDesignerFontMetricsForElement(pb.getElement(), null, pageBox.getWebForm().getDefaultFontSize()).getHeight();
 
                 // Try to find a sibling box
                 Node curr = node.getPreviousSibling();
@@ -1858,7 +1858,7 @@ public final class ModelViewMapper {
 //                    height = metrics.getHeight();
 //                }
                 // XXX Missing text.
-                height = CssUtilities.getDesignerFontMetricsForElement(element, null).getHeight();
+                height = CssUtilities.getDesignerFontMetricsForElement(element, null, pageBox.getWebForm().getDefaultFontSize()).getHeight();
 
                 Rectangle r =
                     new Rectangle(box.getAbsoluteX(), box.getAbsoluteY(), box.getWidth(), height);

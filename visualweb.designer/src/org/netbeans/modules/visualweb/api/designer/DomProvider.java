@@ -25,12 +25,11 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
-import java.awt.event.MouseEvent;
 import java.net.URL;
 import java.util.EventListener;
 import javax.swing.JComponent;
-import javax.swing.JPopupMenu;
 import org.netbeans.modules.visualweb.api.designer.Designer.Box;
+import org.netbeans.modules.visualweb.spi.designer.Decoration;
 import org.netbeans.spi.palette.PaletteController;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
@@ -556,4 +555,21 @@ public interface DomProvider {
 
     // XXX
     public void paintDesignerDecorations(Graphics2D g, Designer designer);
+
+    // Decorations
+    // XXX Provider corresponding property in the designer.
+    public Decoration getDecoration(Element element);
+    // Preferences
+    // XXX Rather provide corresponding properties in the Designer.
+    public boolean isShowDecorations();
+    public int getDefaultFontSize();
+    public int getPageSizeWidth();
+    public int getPageSizeHeight();
+    public boolean isGridShow();
+    public boolean isGridSnap();
+    public int getGridWidth();
+    public int getGridHeight();
+    public int getGridTraceWidth();
+    public int getGridTraceHeight();
+    public int getGridOffset();
 }

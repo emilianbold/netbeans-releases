@@ -19,17 +19,13 @@
 
 package org.netbeans.modules.visualweb.designer.jsf;
 
-import java.awt.event.MouseEvent;
-import javax.swing.JPopupMenu;
 import org.netbeans.modules.visualweb.api.designer.Designer;
 import com.sun.rave.designtime.DesignProperty;
 import java.util.ArrayList;
 import org.netbeans.modules.visualweb.api.designer.DomProvider;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import com.sun.rave.designtime.DesignBean;
-import com.sun.rave.designtime.Result;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
-import com.sun.rave.designtime.markup.MarkupMouseRegion;
 import org.netbeans.modules.visualweb.insync.Util;
 import org.netbeans.modules.visualweb.insync.beans.BeansUnit;
 import org.netbeans.modules.visualweb.insync.faces.FacesBean;
@@ -49,10 +45,8 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.designer.jsf.virtualforms.ComponentGroupSupport;
-import org.netbeans.modules.visualweb.designer.jsf.ui.JsfMultiViewElement;
-import org.netbeans.modules.visualweb.designer.jsf.ui.JsfTopComponent;
+import org.netbeans.modules.visualweb.spi.designer.Decoration;
 import org.netbeans.spi.palette.PaletteController;
-import org.openide.loaders.DataObject;
 import org.openide.windows.TopComponent;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
@@ -1415,5 +1409,53 @@ class DomProviderImpl implements DomProvider {
 
             ComponentGroupSupport.paint(liveUnit, designer.createRenderContext(), g2d, showVirtualForms, showAjaxTransactions);
         }
+    }
+
+    public Decoration getDecoration(Element element) {
+        return DecorationManager.getDefault().getDecoration(element);
+    }
+
+    public boolean isShowDecorations() {
+        return JsfDesignerPreferences.getInstance().isShowDecorations();
+    }
+
+    public int getDefaultFontSize() {
+        return JsfDesignerPreferences.getInstance().getDefaultFontSize();
+    }
+
+    public int getPageSizeWidth() {
+        return JsfDesignerPreferences.getInstance().getPageSizeWidth();
+    }
+
+    public int getPageSizeHeight() {
+        return JsfDesignerPreferences.getInstance().getPageSizeHeight();
+    }
+
+    public boolean isGridShow() {
+        return GridHandler.getDefault().isGrid();
+    }
+
+    public boolean isGridSnap() {
+        return GridHandler.getDefault().isSnap();
+    }
+
+    public int getGridWidth() {
+        return GridHandler.getDefault().getGridWidth();
+    }
+
+    public int getGridHeight() {
+        return GridHandler.getDefault().getGridHeight();
+    }
+
+    public int getGridTraceWidth() {
+        return GridHandler.getDefault().getGridTraceWidth();
+    }
+
+    public int getGridTraceHeight() {
+        return GridHandler.getDefault().getGridTraceHeight();
+    }
+
+    public int getGridOffset() {
+        return GridHandler.getDefault().getGridOffset();
     }
 }

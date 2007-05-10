@@ -81,7 +81,7 @@ import org.netbeans.modules.visualweb.designer.html.HtmlTag;
  * @author Tor Norbye
 */
 public class DesignerPane extends org.netbeans.modules.visualweb.text.DesignerPaneBase
-implements /*PropertyChangeListener,*/ PreferenceChangeListener {
+/*implements PropertyChangeListener, PreferenceChangeListener*/ {
     /** Whether or not to use alpha rendering in the GUI */
     static boolean useAlpha = true;
     private static int adjustX = 0;
@@ -174,10 +174,11 @@ implements /*PropertyChangeListener,*/ PreferenceChangeListener {
         add(rendererPane);
 //        webform.setRenderPane(rendererPane);
 
-        // Set listener.
-        DesignerSettings settings = DesignerSettings.getInstance();
-//        settings.addPropertyChangeListener(WeakListeners.propertyChange(this, settings));
-        settings.addWeakPreferenceChangeListener(this);
+        // XXX Now set in designer/jsf.
+//        // Set listener.
+//        DesignerSettings settings = DesignerSettings.getInstance();
+////        settings.addPropertyChangeListener(WeakListeners.propertyChange(this, settings));
+//        settings.addWeakPreferenceChangeListener(this);
 
         setDropTarget(new DesignerPaneDropTarget(this));
         
@@ -266,10 +267,14 @@ implements /*PropertyChangeListener,*/ PreferenceChangeListener {
         int width = getWidth();
         int height = getHeight();
 
-        DesignerSettings designerSettings = DesignerSettings.getInstance();
-        if (designerSettings.getPageSizeWidth() != -1) {
-            width = designerSettings.getPageSizeWidth();
-            height = designerSettings.getPageSizeHeight();
+//        DesignerSettings designerSettings = DesignerSettings.getInstance();
+//        if (designerSettings.getPageSizeWidth() != -1) {
+//            width = designerSettings.getPageSizeWidth();
+//            height = designerSettings.getPageSizeHeight();
+//        }
+        if (webform.getPageSizeWidth() != -1) {
+            width = webform.getPageSizeWidth();
+            height = webform.getPageSizeHeight();
         }
 
         int center = height / 2;
@@ -836,14 +841,14 @@ implements /*PropertyChangeListener,*/ PreferenceChangeListener {
         pageBox.list(out, indent + 1);
     }
 
-//    public void propertyChange(PropertyChangeEvent evt) {
-    public void preferenceChange(PreferenceChangeEvent evt) {
-//        if (DesignerSettings.PROP_SHOW_DECORATIONS.equals(evt.getPropertyName())) {
-        if (DesignerSettings.PROP_SHOW_DECORATIONS.equals(evt.getKey())) {
-            // XXX maybe better to have a copy of the value and in that case to reset it.
-            repaint();
-        }
-    }
+////    public void propertyChange(PropertyChangeEvent evt) {
+//    public void preferenceChange(PreferenceChangeEvent evt) {
+////        if (DesignerSettings.PROP_SHOW_DECORATIONS.equals(evt.getPropertyName())) {
+//        if (DesignerSettings.PROP_SHOW_DECORATIONS.equals(evt.getKey())) {
+//            // XXX maybe better to have a copy of the value and in that case to reset it.
+//            repaint();
+//        }
+//    }
   
 
     class DesignerDropHandler implements DropTargetListener {

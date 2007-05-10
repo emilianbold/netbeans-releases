@@ -27,7 +27,6 @@ package org.netbeans.modules.visualweb.text.actions;
 import java.util.List;
 import org.netbeans.modules.visualweb.css2.CssBox;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
-import org.netbeans.modules.visualweb.designer.GridHandler;
 import org.netbeans.modules.visualweb.designer.SelectionManager;
 import org.netbeans.modules.visualweb.designer.WebForm;
 import java.awt.Point;
@@ -188,7 +187,7 @@ public class NextVisualPositionAction extends TextAction {
 
 //        GridHandler gm = GridHandler.getInstance();
 //        GridHandler gm = webform.getGridHandler();
-        GridHandler gm = GridHandler.getDefault();
+//        GridHandler gm = GridHandler.getDefault();
         
         int offsetX = 0;
         int offsetY = 0;
@@ -200,7 +199,8 @@ public class NextVisualPositionAction extends TextAction {
             if (snapDisabled) {
                 offsetX = stepSize;
             } else {
-                offsetX = gm.getGridWidth();
+//                offsetX = gm.getGridWidth();
+                offsetX = webform.getGridWidth();
             }
 
             break;
@@ -210,7 +210,8 @@ public class NextVisualPositionAction extends TextAction {
             if (snapDisabled) {
                 offsetX = -stepSize;
             } else {
-                offsetX = -gm.getGridWidth();
+//                offsetX = -gm.getGridWidth();
+                offsetX = -webform.getGridWidth();
             }
 
             break;
@@ -220,7 +221,8 @@ public class NextVisualPositionAction extends TextAction {
             if (snapDisabled) {
                 offsetY = -stepSize;
             } else {
-                offsetY = -gm.getGridHeight();
+//                offsetY = -gm.getGridHeight();
+                offsetY = -webform.getGridHeight();
             }
 
             break;
@@ -230,7 +232,8 @@ public class NextVisualPositionAction extends TextAction {
             if (snapDisabled) {
                 offsetY = stepSize;
             } else {
-                offsetY = gm.getGridHeight();
+//                offsetY = gm.getGridHeight();
+                offsetY = webform.getGridHeight();
             }
 
             break;

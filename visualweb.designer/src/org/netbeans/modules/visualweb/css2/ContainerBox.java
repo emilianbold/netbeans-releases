@@ -43,7 +43,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import org.netbeans.modules.visualweb.designer.DesignerUtils;
-import org.netbeans.modules.visualweb.designer.GridHandler;
 import org.netbeans.modules.visualweb.designer.WebForm;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
@@ -794,7 +793,7 @@ public class ContainerBox extends CssBox {
         if (styleElement != null) {
 //            metrics = CssLookup.getFontMetrics(styleElement);
 //            metrics = CssProvider.getValueService().getFontMetricsForElement(styleElement);
-            metrics = CssUtilities.getDesignerFontMetricsForElement(styleElement, text);
+            metrics = CssUtilities.getDesignerFontMetricsForElement(styleElement, text, webform.getDefaultFontSize());
             
 //            fg = CssLookup.getColor(styleElement, XhtmlCss.COLOR_INDEX);
             fg = CssProvider.getValueService().getColorForElement(styleElement, XhtmlCss.COLOR_INDEX);
@@ -913,7 +912,7 @@ public class ContainerBox extends CssBox {
         if (styleElement != null) {
 //            metrics = CssLookup.getFontMetrics(styleElement);
 //            metrics = CssProvider.getValueService().getFontMetricsForElement(styleElement);
-            metrics = CssUtilities.getDesignerFontMetricsForElement(styleElement, text);
+            metrics = CssUtilities.getDesignerFontMetricsForElement(styleElement, text, webform.getDefaultFontSize());
 
             Font font = metrics.getFont();
             font = font.deriveFont(Font.ITALIC);
@@ -2080,7 +2079,8 @@ public class ContainerBox extends CssBox {
 
 //        if (grid && GridHandler.getInstance().grid()) {
 //        if (grid && getWebForm().getGridHandler().grid()) {
-        if (grid && GridHandler.getDefault().isGrid()) {
+//        if (grid && GridHandler.getDefault().isGrid()) {
+        if (grid && webform.isGridShow()) {
             if (hidden && !(this instanceof PageBox)) { // paint grid for the root pagebox!
 
                 return;
@@ -2108,12 +2108,17 @@ public class ContainerBox extends CssBox {
 //        final int gridTraceHeight = GridHandler.getInstance().getGridTraceHeight();
 //        final int gridOffset = GridHandler.getInstance().getGridOffset();
 //        GridHandler gridHandler = getWebForm().getGridHandler();
-        GridHandler gridHandler = GridHandler.getDefault();
-        final int gridWidth = gridHandler.getGridWidth();
-        final int gridHeight = gridHandler.getGridHeight();
-        final int gridTraceWidth = gridHandler.getGridTraceWidth();
-        final int gridTraceHeight = gridHandler.getGridTraceHeight();
-        final int gridOffset = gridHandler.getGridOffset();
+//        GridHandler gridHandler = GridHandler.getDefault();
+//        final int gridWidth = gridHandler.getGridWidth();
+//        final int gridHeight = gridHandler.getGridHeight();
+//        final int gridTraceWidth = gridHandler.getGridTraceWidth();
+//        final int gridTraceHeight = gridHandler.getGridTraceHeight();
+//        final int gridOffset = gridHandler.getGridOffset();
+        final int gridWidth = webform.getGridWidth();
+        final int gridHeight = webform.getGridHeight();
+        final int gridTraceWidth = webform.getGridTraceWidth();
+        final int gridTraceHeight = webform.getGridTraceHeight();
+        final int gridOffset = webform.getGridOffset();
 
         // Draw a plain grid (one dot on each gridsize boundary
         //for (int x = gridOffset; x < width; x += gridSize) {

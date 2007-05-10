@@ -60,8 +60,8 @@ public final class CssUtilities {
      * @param text text based on which the font is selected (according the priority list
      * and the ability to show all its characters).
      * @see #getDesignerFontForElement */
-    public static FontMetrics getDesignerFontMetricsForElement(Element element, String text) {
-        Font font = getDesignerFontForElement(element, text);
+    public static FontMetrics getDesignerFontMetricsForElement(Element element, String text, int defaultFontSize) {
+        Font font = getDesignerFontForElement(element, text, defaultFontSize);
 //        return Toolkit.getDefaultToolkit().getFontMetrics(font);
         return DesignerUtils.getFontMetrics(font);
     }
@@ -76,11 +76,12 @@ public final class CssUtilities {
      * @param element <code>Element</code> for which the <code>Font</code> is provided
      * @param text text based on which the font is selected (according the priority list
      * and the ability to show all its characters. */
-    public static Font getDesignerFontForElement(Element element, String text) {
+    public static Font getDesignerFontForElement(Element element, String text, int defaultFontSize) {
         String[] fontFamilyNames = CssProvider.getValueService().getFontFamilyNamesForElement(element);
 
         int style = CssProvider.getValueService().getFontStyleForElement(element, Font.PLAIN);
-        int size = Math.round(CssProvider.getValueService().getFontSizeForElement(element, DesignerSettings.getInstance().getDefaultFontSize()));
+//        int size = Math.round(CssProvider.getValueService().getFontSizeForElement(element, DesignerSettings.getInstance().getDefaultFontSize()));
+        int size = Math.round(CssProvider.getValueService().getFontSizeForElement(element, defaultFontSize));
 
         for (String fontFamilyName : fontFamilyNames) {
             Font font = getFont(fontFamilyName, style, size);

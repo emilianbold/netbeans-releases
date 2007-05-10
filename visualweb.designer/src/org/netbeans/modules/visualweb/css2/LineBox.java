@@ -26,7 +26,6 @@ import java.awt.Graphics;
 import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
-import org.netbeans.modules.visualweb.designer.DesignerSettings;
 import org.netbeans.modules.visualweb.designer.WebForm;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 
@@ -479,7 +478,8 @@ public class LineBox extends ContainerBox {
                     box.setY(y);
                 } else {
 //                    int pex = (int)CssLookup.getFontSize(element, DesignerSetings.getInstance().getDefaultFontSize()) / 2;
-                    int pex = (int)CssProvider.getValueService().getFontSizeForElement(element, DesignerSettings.getInstance().getDefaultFontSize()) / 2;
+//                    int pex = (int)CssProvider.getValueService().getFontSizeForElement(element, DesignerSettings.getInstance().getDefaultFontSize()) / 2;
+                    int pex = (int)CssProvider.getValueService().getFontSizeForElement(element, webform.getDefaultFontSize()) / 2;
                     int y = baseLine - (box.getHeight() / 2) - pex;
                     box.setY(y);
                 }
@@ -511,7 +511,8 @@ public class LineBox extends ContainerBox {
 //                if (heightValue == CssValueConstants.NORMAL_VALUE) {
                 if (CssProvider.getValueService().isNormalValue(cssHeightValue)) {
 //                    height = (int)(1.1 * CssLookup.getFontSize(element, DesignerSettings.getInstance().getDefaultFontSize()));
-                    height = (int)(1.1 * CssProvider.getValueService().getFontSizeForElement(element, DesignerSettings.getInstance().getDefaultFontSize()));
+//                    height = (int)(1.1 * CssProvider.getValueService().getFontSizeForElement(element, DesignerSettings.getInstance().getDefaultFontSize()));
+                    height = (int)(1.1 * CssProvider.getValueService().getFontSizeForElement(element, webform.getDefaultFontSize()));
                 } else {
 //                    height = (int)heightValue.getFloatValue();
                     height = (int)cssHeightValue.getFloatValue();

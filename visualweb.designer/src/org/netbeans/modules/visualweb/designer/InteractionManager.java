@@ -1076,10 +1076,11 @@ public class InteractionManager {
     }
     
     
-    private static boolean isInsideBoxDecoration(CssBox box, int x, int y) {
+    private /*static*/ boolean isInsideBoxDecoration(CssBox box, int x, int y) {
         Decoration decoration = box.getDecoration();
         if (decoration != null) {
-            if (DesignerSettings.getInstance().isShowDecorations()) {
+//            if (DesignerSettings.getInstance().isShowDecorations()) {
+            if (webform.isShowDecorations()) {
                 int x1 = box.getAbsoluteX() + box.getWidth();
                 int y1 = box.getAbsoluteY();
                 int x2 = x1 + decoration.getWidth();
@@ -1883,7 +1884,8 @@ public class InteractionManager {
                 sizer.setSelect(false);
 //                sizer.setSnapToGrid(GridHandler.getInstance().snap());
 //                sizer.setSnapToGrid(webform.getGridHandler().snap());
-                sizer.setSnapToGrid(GridHandler.getDefault().isSnap());
+//                sizer.setSnapToGrid(GridHandler.getDefault().isSnap());
+                sizer.setSnapToGrid(webform.isGridSnap());
                 sizer.setInsertCursor(true);
                 interaction = sizer;
                 interaction.mousePressed(e);
@@ -3495,9 +3497,11 @@ public class InteractionManager {
 //                return new Point(left + gh.getGridWidth(), top + gh.getGridHeight());
 //                int gridWidth = designer.getGridWidth();
 //                int gridHeight = designer.getGridHeight();
-                GridHandler gh = GridHandler.getDefault();
-                int gridWidth = gh.getGridWidth();
-                int gridHeight = gh.getGridHeight();
+//                GridHandler gh = GridHandler.getDefault();
+//                int gridWidth = gh.getGridWidth();
+//                int gridHeight = gh.getGridHeight();
+                int gridWidth = webform.getGridWidth();
+                int gridHeight = webform.getGridHeight();
                 return new Point(left + gridWidth, top + gridHeight);
             }
 

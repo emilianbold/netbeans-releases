@@ -201,9 +201,11 @@ public class Dragger extends Interaction implements KeyListener {
                     x = r2.x + prevX;
                     y = r2.y + prevY;
                 } else if (hasMoved(prevX, prevY)) {
-                    GridHandler gm = GridHandler.getDefault();
-                    x = gm.snapX(r2.x + prevX, getPositionedBy(i));
-                    y = gm.snapY(r2.y + prevY, getPositionedBy(i));
+//                    GridHandler gm = GridHandler.getDefault();
+//                    x = gm.snapX(r2.x + prevX, getPositionedBy(i));
+//                    y = gm.snapY(r2.y + prevY, getPositionedBy(i));
+                    x = webform.snapX(r2.x + prevX, getPositionedBy(i));
+                    y = webform.snapY(r2.y + prevY, getPositionedBy(i));
                 } else {
                     x = r2.x + startX;
                     y = r2.y + startY;
@@ -469,9 +471,11 @@ public class Dragger extends Interaction implements KeyListener {
                 xp = r.x + x;
                 yp = r.y + y;
             } else if (hasMoved(x, y)) {
-                GridHandler gm = GridHandler.getDefault();
-                xp = gm.snapX(r.x + x, getPositionedBy(i));
-                yp = gm.snapY(r.y + y, getPositionedBy(i));
+//                GridHandler gm = GridHandler.getDefault();
+//                xp = gm.snapX(r.x + x, getPositionedBy(i));
+//                yp = gm.snapY(r.y + y, getPositionedBy(i));
+                xp = webform.snapX(r.x + x, getPositionedBy(i));
+                yp = webform.snapY(r.y + y, getPositionedBy(i));
             } else {
                 xp = r.x + startX;
                 yp = r.y + startY;
@@ -533,7 +537,8 @@ public class Dragger extends Interaction implements KeyListener {
 
 //        if (!GridHandler.getInstance().snap() || (action == DRAG_FREE)) {
 //        if (!webform.getGridHandler().snap() || (action == DRAG_FREE)) {
-        if (!GridHandler.getDefault().isSnap() || (action == DRAG_FREE)) {
+//        if (!GridHandler.getDefault().isSnap() || (action == DRAG_FREE)) {
+        if (!webform.isGridSnap() || (action == DRAG_FREE)) {
             return (x != startX) || (y != startY);
         }
 
@@ -903,7 +908,7 @@ public class Dragger extends Interaction implements KeyListener {
 
 //            GridHandler gm = GridHandler.getInstance();
 //            GridHandler gm = webform.getGridHandler();
-            GridHandler gm = GridHandler.getDefault();
+//            GridHandler gm = GridHandler.getDefault();
 //            DesignerPane.clearDirty();
             pane.clearDirty();
 
@@ -933,8 +938,10 @@ public class Dragger extends Interaction implements KeyListener {
                         x = r2.x + prevX;
                         y = r2.y + prevY;
                     } else if (hasMoved(prevX, prevY)) {
-                        x = gm.snapX(r2.x + prevX, getPositionedBy(i));
-                        y = gm.snapY(r2.y + prevY, getPositionedBy(i));
+//                        x = gm.snapX(r2.x + prevX, getPositionedBy(i));
+//                        y = gm.snapY(r2.y + prevY, getPositionedBy(i));
+                        x = webform.snapX(r2.x + prevX, getPositionedBy(i));
+                        y = webform.snapY(r2.y + prevY, getPositionedBy(i));
                     } else {
                         x = r2.x + startX;
                         y = r2.y + startY;
@@ -972,8 +979,10 @@ public class Dragger extends Interaction implements KeyListener {
                         x = r2.x + prevX;
                         y = r2.y + prevY;
                     } else if (hasMoved(prevX, prevY)) {
-                        x = gm.snapX(r2.x + prevX, getPositionedBy(i));
-                        y = gm.snapY(r2.y + prevY, getPositionedBy(i));
+//                        x = gm.snapX(r2.x + prevX, getPositionedBy(i));
+//                        y = gm.snapY(r2.y + prevY, getPositionedBy(i));
+                        x = webform.snapX(r2.x + prevX, getPositionedBy(i));
+                        y = webform.snapY(r2.y + prevY, getPositionedBy(i));
                     } else {
                         x = r2.x + startX;
                         y = r2.y + startY;
@@ -1069,8 +1078,10 @@ public class Dragger extends Interaction implements KeyListener {
                     x = r.x + prevX;
                     y = r.y + prevY;
                 } else if (hasMoved(prevX, prevY)) {
-                    x = gm.snapX(r.x + prevX, getPositionedBy(i));
-                    y = gm.snapY(r.y + prevY, getPositionedBy(i));
+//                    x = gm.snapX(r.x + prevX, getPositionedBy(i));
+//                    y = gm.snapY(r.y + prevY, getPositionedBy(i));
+                    x = webform.snapX(r.x + prevX, getPositionedBy(i));
+                    y = webform.snapY(r.y + prevY, getPositionedBy(i));
                 } else {
                     x = r.x + startX;
                     y = r.y + startY;

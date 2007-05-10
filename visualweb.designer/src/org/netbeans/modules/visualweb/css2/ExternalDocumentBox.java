@@ -343,7 +343,7 @@ public abstract class ExternalDocumentBox extends DocumentBox implements Externa
 //            Font font = CssProvider.getValueService().getFontForElement(body, DesignerSettings.getInstance().getDefaultFontSize(), Font.PLAIN);
 //            cc.metrics = Toolkit.getDefaultToolkit().getFontMetrics(font);
             // XXX Missing text.
-            cc.metrics = CssUtilities.getDesignerFontMetricsForElement(body, null);
+            cc.metrics = CssUtilities.getDesignerFontMetricsForElement(body, null, frameForm.getDefaultFontSize());
 
             NodeList list = body.getChildNodes();
             int len = list.getLength();

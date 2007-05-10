@@ -46,9 +46,7 @@ import org.w3c.dom.NodeList;
 import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
 import org.netbeans.modules.visualweb.designer.ColorManager;
 import org.netbeans.modules.visualweb.designer.DesignerPane;
-import org.netbeans.modules.visualweb.designer.DesignerSettings;
 import org.netbeans.modules.visualweb.designer.DesignerUtils;
-import org.netbeans.modules.visualweb.designer.GridHandler;
 import org.netbeans.modules.visualweb.designer.WebForm;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
@@ -180,10 +178,13 @@ public class PageBox extends DocumentBox implements ChangeListener {
         }
 
         // Constrain
-        DesignerSettings designerSettings = DesignerSettings.getInstance();
-        if (designerSettings.getPageSizeWidth() != -1) {
-            int x2 = designerSettings.getPageSizeWidth();
-            int y2 = designerSettings.getPageSizeHeight();
+//        DesignerSettings designerSettings = DesignerSettings.getInstance();
+//        if (designerSettings.getPageSizeWidth() != -1) {
+//            int x2 = designerSettings.getPageSizeWidth();
+//            int y2 = designerSettings.getPageSizeHeight();
+        if (webform.getPageSizeWidth() != -1) {
+            int x2 = webform.getPageSizeWidth();
+            int y2 = webform.getPageSizeHeight();
 
             if (constraintsColor == null) {
                 constraintsColor = new Color(128, 128, 128, 208);
@@ -300,7 +301,8 @@ public class PageBox extends DocumentBox implements ChangeListener {
 
 //        if (grid && GridHandler.getInstance().grid()) {
 //        if (grid && getWebForm().getGridHandler().grid()) {
-        if (grid && GridHandler.getDefault().isGrid()) {
+//        if (grid && GridHandler.getDefault().isGrid()) {
+        if (grid && webform.isGridShow()) {
             if (hidden && !(this instanceof PageBox)) { // paint grid for the root pagebox!
 
                 return;
@@ -353,9 +355,11 @@ public class PageBox extends DocumentBox implements ChangeListener {
 
 //        GridHandler gh = GridHandler.getInstance();
 //        GridHandler gh = getWebForm().getGridHandler();
-        GridHandler gh = GridHandler.getDefault();
-        int gridWidth = gh.getGridWidth();
-        int gridHeight = gh.getGridHeight();
+//        GridHandler gh = GridHandler.getDefault();
+//        int gridWidth = gh.getGridWidth();
+//        int gridHeight = gh.getGridHeight();
+        int gridWidth = webform.getGridWidth();
+        int gridHeight = webform.getGridHeight();
         int xOffset = (px % gridWidth);
         int yOffset = (py % gridHeight);
         super.paintGrid(g, px - xOffset, py - yOffset, width + xOffset, height + yOffset);
@@ -500,9 +504,11 @@ public class PageBox extends DocumentBox implements ChangeListener {
 
         int wrapWidth = initialWidth;
 
-        DesignerSettings designerSettings = DesignerSettings.getInstance();
-        if (designerSettings.getPageSizeWidth() != -1) {
-            int w = designerSettings.getPageSizeWidth();
+//        DesignerSettings designerSettings = DesignerSettings.getInstance();
+//        if (designerSettings.getPageSizeWidth() != -1) {
+//            int w = designerSettings.getPageSizeWidth();
+        if (webform.getPageSizeWidth() != -1) {
+            int w = webform.getPageSizeWidth();
 
             if (w < wrapWidth) {
                 wrapWidth = w;
@@ -865,7 +871,7 @@ public class PageBox extends DocumentBox implements ChangeListener {
 //            Font font = CssProvider.getValueService().getFontForElement(body, DesignerSettings.getInstance().getDefaultFontSize(), Font.PLAIN);
 //            cc.metrics = Toolkit.getDefaultToolkit().getFontMetrics(font);
             // XXX Missing text.
-            cc.metrics = CssUtilities.getDesignerFontMetricsForElement(body, null);
+            cc.metrics = CssUtilities.getDesignerFontMetricsForElement(body, null, webform.getDefaultFontSize());
 
 //            // Try to render JSF so I can process the DF before proceeding
 //            Element element = renderBean.getElement();

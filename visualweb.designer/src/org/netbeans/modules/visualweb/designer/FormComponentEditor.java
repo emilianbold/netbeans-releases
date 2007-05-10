@@ -191,7 +191,8 @@ class FormComponentEditor extends InlineEditor {
 
         // XXX The font size should match the computed value including the stylesheet definitions.
         // See stripDesignStyleClasses below.
-        float fontSize = CssProvider.getValueService().getFontSizeForElement(element, DesignerSettings.getInstance().getDefaultFontSize());
+//        float fontSize = CssProvider.getValueService().getFontSizeForElement(element, DesignerSettings.getInstance().getDefaultFontSize());
+        float fontSize = CssProvider.getValueService().getFontSizeForElement(element, webform.getDefaultFontSize());
         if (component instanceof JTextField) {
             // XXX #6491646 Don't use the rendered component for inline editing.
             // It has problems with fonts.

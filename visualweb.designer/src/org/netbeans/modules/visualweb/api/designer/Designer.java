@@ -28,7 +28,6 @@ import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.io.PrintStream;
 import java.util.EventListener;
-import java.util.prefs.PreferenceChangeListener;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JComponent;
@@ -137,6 +136,9 @@ public interface Designer {
         public int getWidth();
         public int getHeight();
         
+        public int getBlockWidth();
+        public int getBlockHeight();
+        
         public int getX();
         public int getY();
         public int getZ();
@@ -189,17 +191,17 @@ public interface Designer {
     
     public Point getPastePoint();
     
-    // XXX Designer settings properties
-    /** show grid */
-    public static final String PROP_GRID_SHOW = "gridShow"; // NOI18N
-    public static final String PROP_GRID_SNAP = "gridSnap"; // NOI18N
-    public static final String PROP_GRID_WIDTH = "gridWidth"; // NOI18N
-    public static final String PROP_GRID_HEIGHT = "gridHeight"; // NOI18N
-    public static final String PROP_PAGE_SIZE = "pageSize"; // NOI18N
-    public static final String PROP_SHOW_DECORATIONS = "showDecorations"; // NOI18N
-    public static final String PROP_DEFAULT_FONT_SIZE = "defaultFontSize"; // NOI18N
-    // XXX Make not weak, and also add removal
-    public void addWeakPreferenceChangeListener(PreferenceChangeListener l);
+//    // XXX Designer settings properties
+//    /** show grid */
+//    public static final String PROP_GRID_SHOW = "gridShow"; // NOI18N
+//    public static final String PROP_GRID_SNAP = "gridSnap"; // NOI18N
+//    public static final String PROP_GRID_WIDTH = "gridWidth"; // NOI18N
+//    public static final String PROP_GRID_HEIGHT = "gridHeight"; // NOI18N
+//    public static final String PROP_PAGE_SIZE = "pageSize"; // NOI18N
+//    public static final String PROP_SHOW_DECORATIONS = "showDecorations"; // NOI18N
+//    public static final String PROP_DEFAULT_FONT_SIZE = "defaultFontSize"; // NOI18N
+//    // XXX Make not weak, and also add removal
+//    public void addWeakPreferenceChangeListener(PreferenceChangeListener l);
     
 //    public void registerListeners();
 //    public void unregisterListeners();

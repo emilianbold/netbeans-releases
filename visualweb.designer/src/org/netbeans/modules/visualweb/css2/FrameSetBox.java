@@ -105,7 +105,7 @@ public class FrameSetBox extends PageBox {
 //            Font font = CssProvider.getValueService().getFontForElement(body, DesignerSettings.getInstance().getDefaultFontSize(), Font.PLAIN);
 //            context.metrics = Toolkit.getDefaultToolkit().getFontMetrics(font);
             // XXX Missing text.
-            context.metrics = CssUtilities.getDesignerFontMetricsForElement(body, null);
+            context.metrics = CssUtilities.getDesignerFontMetricsForElement(body, null, webform.getDefaultFontSize());
 
             //super.createChildren(cc);
         }

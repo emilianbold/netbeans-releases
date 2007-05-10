@@ -110,7 +110,7 @@ public class LineBreakBox extends CssBox {
 //            metrics = CssLookup.getFontMetrics(getElement());
 //            metrics = CssProvider.getValueService().getFontMetricsForElement(getElement());
             // XXX Missing text.
-            metrics = CssUtilities.getDesignerFontMetricsForElement(getElement(), null);
+            metrics = CssUtilities.getDesignerFontMetricsForElement(getElement(), null, webform.getDefaultFontSize());
         }
 
         return metrics;

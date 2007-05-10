@@ -44,15 +44,14 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
-import java.awt.event.MouseEvent;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.CellRendererPane;
 import javax.swing.JComponent;
-import javax.swing.JPopupMenu;
 import javax.swing.event.EventListenerList;
+import org.netbeans.modules.visualweb.spi.designer.Decoration;
 
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.ErrorManager;
@@ -2822,15 +2821,15 @@ public class WebForm implements Designer {
         return findCssBoxForElement(element);
     }
     
-    public int snapX(int x, Box positionedBy) {
-//        return getGridHandler().snapX(x, positionedBy);
-        return GridHandler.getDefault().snapX(x, positionedBy);
-    }
-
-    public int snapY(int y, Box positionedBy) {
-//        return getGridHandler().snapY(y, positionedBy);
-        return GridHandler.getDefault().snapY(y, positionedBy);
-    }
+//    public int snapX(int x, Box positionedBy) {
+////        return getGridHandler().snapX(x, positionedBy);
+//        return GridHandler.getDefault().snapX(x, positionedBy);
+//    }
+//
+//    public int snapY(int y, Box positionedBy) {
+////        return getGridHandler().snapY(y, positionedBy);
+//        return GridHandler.getDefault().snapY(y, positionedBy);
+//    }
 
     public Element getPrimarySelectedComponent() {
         // XXX
@@ -2987,9 +2986,9 @@ public class WebForm implements Designer {
         return getManager().getPastePoint();
     }
 
-    public void addWeakPreferenceChangeListener(PreferenceChangeListener l) {
-        DesignerSettings.getInstance().addWeakPreferenceChangeListener(l);
-    }
+//    public void addWeakPreferenceChangeListener(PreferenceChangeListener l) {
+//        DesignerSettings.getInstance().addWeakPreferenceChangeListener(l);
+//    }
 
     public ActionMap getPaneActionMap() {
         return getPane().getActionMap();
@@ -3223,12 +3222,161 @@ public class WebForm implements Designer {
         }
     } // End of RenderContextImpl.
 
-    
+
     public void setPaintSizeMask(boolean paintSizeMask) {
         this.paintSizeMask = paintSizeMask;
     }
     
     public boolean isPaintSizeMask() {
         return paintSizeMask;
+    }
+
+    
+    public Decoration getDecoration(Element element) {
+        return domProvider.getDecoration(element);
+    }
+    
+    public boolean isShowDecorations() {
+        return domProvider.isShowDecorations();
+    }
+    
+    public int getDefaultFontSize() {
+        return domProvider.getDefaultFontSize();
+    }
+    
+    public int getPageSizeWidth() {
+        return domProvider.getPageSizeWidth();
+    }
+    
+    public int getPageSizeHeight() {
+        return domProvider.getPageSizeHeight();
+    }
+    
+    public boolean isGridShow() {
+        return domProvider.isGridShow();
+    }
+    
+    public boolean isGridSnap() {
+        return domProvider.isGridSnap();
+    }
+    
+    public int getGridWidth() {
+        return domProvider.getGridWidth();
+    }
+    
+    public int getGridHeight() {
+        return domProvider.getGridHeight();
+    }
+    
+    public int getGridTraceWidth() {
+        return domProvider.getGridTraceWidth();
+    }
+    
+    public int getGridTraceHeight() {
+        return domProvider.getGridTraceHeight();
+    }
+    
+    public int getGridOffset() {
+        return domProvider.getGridOffset();
+    }
+    
+    /** Adjust the given mouse X position to account for insets in parent
+     * components etc., such that the resulting position matches the canvas
+     * pixel in the view the mouse is over.
+     */
+    public int adjustX(int x) {
+        x += DesignerPane.getAdjustX();
+
+        return x;
+    }
+
+    /** Adjust the given mouse X position to account for insets in parent
+     * components etc., such that the resulting position matches the canvas
+     * pixel in the view the mouse is over.
+     */
+    public int adjustY(int y) {
+        y += DesignerPane.getAdjustY();
+
+        return y;
+    }
+    
+    /** Snap the given X position. If snap to grid is turned off, it simply
+     * returns the original position.
+     * @param x The horizontal position to be snapped to the grid
+     * @param parent A positioning parent to snap to, or null to use
+     *   the default viewport (0,0)
+     * @todo Handle case where the x coordinate is less than the parent box left.
+     *   This can happen when the user drags the component outside the grid area.
+     */
+//    public int snapX(int x, CssBox parent) {
+    public int snapX(int x, Box parent) {
+        boolean snap = isGridSnap();
+        int gridWidth = getGridWidth();
+        int gridOffset = getGridOffset();
+        return doSnapX(x, parent == null ? 0 : parent.getAbsoluteX(), snap, gridWidth, gridOffset);
+    }
+    
+    public int snapX(int x) {
+        return snapX(x, null);
+    }
+    
+    private static int doSnapX(int x, int absX, boolean snap, int gridWidth, int gridOffset) {
+//        int root = 0; // X coordinate of positioning parent
+
+//        if (parent != null) {
+//            root = parent.getAbsoluteX();
+//            x -= root;
+//        }
+        // X coordinate of positioning parent
+        int root = absX;
+        x -= root;
+
+        if (snap) {
+            x = (((x + gridOffset + (gridWidth / 2)) / gridWidth) * gridWidth) - gridOffset;
+        }
+
+        x += root;
+
+        return x;
+    }
+
+    /** Snap the given Y position. If snap to grid is turned off, it simply
+     * returns the original position.
+     * @param y The vertical position to be snapped to the grid
+     * @param parent A positioning parent to snap to, or null to use
+     *   the default viewport (0,0)
+     * @todo Handle case where the y coordinate is less than the parent box top.
+     *   This can happen when the user drags the component above the grid area.
+     */
+//    public int snapY(int y, CssBox parent) {
+    public int snapY(int y, Box parent) {
+        boolean snap = isGridSnap();
+        int gridHeight = getGridHeight();
+        int gridOffset = getGridOffset();
+        return doSnapY(y, parent == null ? 0 : parent.getAbsoluteY(), snap, gridHeight, gridOffset);
+    }
+    
+    public int snapY(int y) {
+        return snapY(y, null);
+    }
+    
+    private static int doSnapY(int y, int absY, boolean snap, int gridHeight, int gridOffset) {
+//        int root = 0; // Y coordinate of positioning parent
+
+//        if (parent != null) {
+//            root = parent.getAbsoluteY();
+//            y -= root;
+//        }
+        // Y coordinate of positioning parent
+        int root = absY;
+        y -= root;
+
+        if (snap) {
+            y = (((y + gridOffset + (gridHeight / 2)) / gridHeight) * gridHeight) - gridOffset;
+        }
+
+        y += root;
+
+        return y;
     }
 }

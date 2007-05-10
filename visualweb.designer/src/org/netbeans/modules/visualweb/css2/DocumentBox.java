@@ -114,7 +114,7 @@ public abstract class DocumentBox extends ContainerBox {
 //            Font font = CssProvider.getValueService().getFontForElement(body, DesignerSettings.getInstance().getDefaultFontSize(), Font.PLAIN);
 //            cc.metrics = Toolkit.getDefaultToolkit().getFontMetrics(font);
             // XXX Missing text.
-            cc.metrics = CssUtilities.getDesignerFontMetricsForElement(body, null);
+            cc.metrics = CssUtilities.getDesignerFontMetricsForElement(body, null, webform.getDefaultFontSize());
 
             super.createChildren(cc);
             fixedBoxes = cc.getFixedBoxes();
@@ -527,7 +527,7 @@ public abstract class DocumentBox extends ContainerBox {
 //        Font font = CssProvider.getValueService().getFontForElement(body, DesignerSettings.getInstance().getDefaultFontSize(), Font.PLAIN);
 //        cc.metrics = Toolkit.getDefaultToolkit().getFontMetrics(font);
         // XXX Missing text.
-        cc.metrics = CssUtilities.getDesignerFontMetricsForElement(body, null);
+        cc.metrics = CssUtilities.getDesignerFontMetricsForElement(body, null, webform.getDefaultFontSize());
 
         // Previous and next boxes
         Node prevNode = node.getPreviousSibling();
@@ -837,7 +837,7 @@ public abstract class DocumentBox extends ContainerBox {
 //        Font font = CssProvider.getValueService().getFontForElement(body, DesignerSettings.getInstance().getDefaultFontSize(), Font.PLAIN);
 //        cc.metrics = Toolkit.getDefaultToolkit().getFontMetrics(font);
         // XXX Missing text.
-        cc.metrics = CssUtilities.getDesignerFontMetricsForElement(body, null);
+        cc.metrics = CssUtilities.getDesignerFontMetricsForElement(body, null, webform.getDefaultFontSize());
 
         // Add the new box right behind the old box        
         parentBox.addNode(cc, node, null, target, null);

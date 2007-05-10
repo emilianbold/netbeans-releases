@@ -21,8 +21,6 @@ package org.netbeans.modules.visualweb.css2;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssComputedValue;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.designer.CssUtilities;
-import org.netbeans.modules.visualweb.designer.DecorationManager;
-import org.netbeans.modules.visualweb.designer.DesignerSettings;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssListValue;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
@@ -1163,8 +1161,9 @@ public class CssBox implements Box {
     }
 
     
-    private static boolean isBoxDecorationOutsideClip(CssBox box) {
-        if (!DesignerSettings.getInstance().isShowDecorations()) {
+    private /*static*/ boolean isBoxDecorationOutsideClip(CssBox box) {
+//        if (!DesignerSettings.getInstance().isShowDecorations()) {
+        if (!webform.isShowDecorations()) {
             return true;
         }
         
@@ -1201,7 +1200,8 @@ public class CssBox implements Box {
     }
     
     protected void paintDecoration(Graphics g, int x, int y) {
-        if (!DesignerSettings.getInstance().isShowDecorations()) {
+//        if (!DesignerSettings.getInstance().isShowDecorations()) {
+        if (!webform.isShowDecorations()) {
             return;
         }
         
@@ -1468,8 +1468,9 @@ public class CssBox implements Box {
         }
     }
     
-    private static boolean isInsideBoxDecoration(int x, int y, CssBox box) {
-        if (!DesignerSettings.getInstance().isShowDecorations()) {
+    private /*static*/ boolean isInsideBoxDecoration(int x, int y, CssBox box) {
+//        if (!DesignerSettings.getInstance().isShowDecorations()) {
+        if (!webform.isShowDecorations()) {
             return false;
         }
         
@@ -1485,7 +1486,8 @@ public class CssBox implements Box {
     }
     
     private boolean isInsideDecoration(int x, int y, int ax, int ay) {
-        if (!DesignerSettings.getInstance().isShowDecorations()) {
+//        if (!DesignerSettings.getInstance().isShowDecorations()) {
+        if (!webform.isShowDecorations()) {
             return false;
         }
         
@@ -3693,7 +3695,8 @@ public class CssBox implements Box {
     //        if (heightValue == CssValueConstants.NORMAL_VALUE) {
             if (CssProvider.getValueService().isNormalValue(cssHeightValue)) {
     //            contentHeight = (int)(1.1 * CssLookup.getFontSize(element, DesignerSettings.getInstance().getDefaultFontSize()));
-                contentHeight = (int)(1.1 * CssProvider.getValueService().getFontSizeForElement(element, DesignerSettings.getInstance().getDefaultFontSize()));
+//                contentHeight = (int)(1.1 * CssProvider.getValueService().getFontSizeForElement(element, DesignerSettings.getInstance().getDefaultFontSize()));
+                contentHeight = (int)(1.1 * CssProvider.getValueService().getFontSizeForElement(element, webform.getDefaultFontSize()));
             } else {
     //            contentHeight = (int)heightValue.getFloatValue();
                 contentHeight = (int)cssHeightValue.getFloatValue();
@@ -4256,7 +4259,8 @@ public class CssBox implements Box {
     /** Gets <code>Decoration</code> associated with this box.
      * @return gets the associated <code>Decoration</code> or null if there is none. */
     public Decoration getDecoration() {
-        return DecorationManager.getDefault().getDecoration(element);
+//        return DecorationManager.getDefault().getDecoration(element);
+        return webform.getDecoration(element);
     }
     
     /**

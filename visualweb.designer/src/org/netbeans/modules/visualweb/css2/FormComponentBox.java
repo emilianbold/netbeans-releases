@@ -295,7 +295,7 @@ public class FormComponentBox extends ContainerBox {
                 // check font-family, font-variant etc. too
 //                Font font = CssLookup.getFont(fel, DesignerSettings.getInstance().getDefaultFontSize());
 //                Font font = CssProvider.getValueService().getFontForElement(fel, DesignerSettings.getInstance().getDefaultFontSize(), Font.PLAIN);
-                Font font = CssUtilities.getDesignerFontForElement(fel, getTextFromComponent(c));
+                Font font = CssUtilities.getDesignerFontForElement(fel, getTextFromComponent(c), webform.getDefaultFontSize());
                 setFontForComponent(c, font);
             }
         }
