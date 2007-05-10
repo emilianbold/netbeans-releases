@@ -429,7 +429,9 @@ public class ExtractSuperclassRefactoringPlugin extends RetoucheRefactoringPlugi
             // add fields, methods and implements
             List<Tree> members = new ArrayList<Tree>();
             List <Tree> implementsList = new ArrayList<Tree>();
-            implementsList.addAll(classTree.getImplementsClause());
+            
+            addConstructors(wc, sourceTypeElm, members);
+            
             for (ExtractSuperclassRefactoring.MemberInfo member : refactoring.getMembers()) {
                 if (member.group == ExtractSuperclassRefactoring.MemberInfo.Group.FIELD) {
                     ElementHandle<VariableElement> handle = (ElementHandle<VariableElement>) member.handle;
@@ -474,8 +476,6 @@ public class ExtractSuperclassRefactoringPlugin extends RetoucheRefactoringPlugi
 
             // create superclass
             Tree superClass = makeSuperclass(make, sourceTypeElm);
-            
-            addConstructors(wc, sourceTypeElm, members);
             
             // create new class
             ClassTree newClassTree = make.Class(
@@ -525,6 +525,8 @@ public class ExtractSuperclassRefactoringPlugin extends RetoucheRefactoringPlugi
         /* in case there are constructors delegating to old superclass it is necessery to create delegates in new superclass */
         private static void addConstructors(final WorkingCopy javac, final TypeElement origClass, final List<Tree> members) {
             final TreeMaker make = javac.getTreeMaker();
+            // cache of already resolved constructors
+            final Set<Element> added = new HashSet<Element>();
             for (ExecutableElement constr : ElementFilter.constructorsIn(origClass.getEnclosedElements())) {
                 if (javac.getElementUtilities().isSynthetic(constr)) {
                     continue;
@@ -537,23 +539,23 @@ public class ExtractSuperclassRefactoringPlugin extends RetoucheRefactoringPlugi
                         // search super(...); statement
                         if (stmt.getKind() == Tree.Kind.EXPRESSION_STATEMENT) {
                             ExpressionStatementTree estmt = (ExpressionStatementTree) stmt;
+                            boolean isSyntheticSuper = javac.getTreeUtilities().isSynthetic(javac.getTrees().getPath(path.getCompilationUnit(), estmt));
                             ExpressionTree expr = estmt.getExpression();
                             TreePath expath = javac.getTrees().getPath(path.getCompilationUnit(), expr);
                             Element el = javac.getTrees().getElement(expath);
-                            // XXX here should be Element of constructor; wait for issue 99968
-                            if (el != null && el.getKind() == ElementKind.CONSTRUCTOR) {
+                            if (el != null && el.getKind() == ElementKind.CONSTRUCTOR && added.add(el)) {
                                 MethodTree template = (MethodTree) javac.getTrees().getTree(el);
                                 MethodInvocationTree invk = (MethodInvocationTree) expr;
                                 // create constructor block with super call
-                                BlockTree block = make.Block(Collections.<StatementTree>singletonList(
-                                        make.ExpressionStatement(
-                                            make.MethodInvocation(
-                                                (List<? extends ExpressionTree>) invk.getTypeArguments(),
-                                                invk.getMethodSelect(),
-                                                params2Arguments(make, template.getParameters())
-                                            )
-                                        )
-                                ), false);
+                                BlockTree block = isSyntheticSuper
+                                        ? make.Block(Collections.<StatementTree>emptyList(), false)
+                                        : make.Block(Collections.<StatementTree>singletonList(
+                                            make.ExpressionStatement(
+                                                make.MethodInvocation(
+                                                    Collections.<ExpressionTree>emptyList(),
+                                                    invk.getMethodSelect(),
+                                                    params2Arguments(make, template.getParameters())
+                                                ))), false);
                                 // create constructor
                                 MethodTree newConstr = make.Constructor(
                                         template.getModifiers(),
