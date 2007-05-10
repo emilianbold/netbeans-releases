@@ -113,12 +113,14 @@ prio = "!" "important";
 ########### color ##############################################################
  
 COLOR:selector: {
+    color_name: "css_selector";
     default_coloring: "identifier";
     foreground_color: "#007c00";
     font_type:"bold";
 } 
  
 COLOR:key: {
+    color_name: "css_key";
     default_coloring: "keyword";
     foreground_color:"blue";
 } 
