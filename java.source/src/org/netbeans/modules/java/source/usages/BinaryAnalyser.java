@@ -90,6 +90,8 @@ public class BinaryAnalyser implements LowMemoryListener {
     
     static final String OBJECT = Object.class.getName();                        
     
+    private static boolean FULL_INDEX = Boolean.getBoolean("org.netbeans.modules.java.source.usages.BinaryAnalyser.fullIndex");     //NOI18N
+    
     private final Index index;
     private final Map<String,List<String>> refs = new HashMap<String,List<String>>();
     private final Set<String> toDelete = new HashSet<String> ();
@@ -413,118 +415,119 @@ public class BinaryAnalyser implements LowMemoryListener {
             addUsage (usages, ifaceName, ClassIndexImpl.UsageType.SUPER_INTERFACE);
         }                     
 
-        //2. Add filed usages 
-        final ConstantPool constantPool = classFile.getConstantPool();
-        Collection<? extends CPFieldInfo> fields = constantPool.getAllConstants(CPFieldInfo.class);            
-        for (CPFieldInfo field : fields) {
-            ClassName name = ClassFileUtil.getType(constantPool.getClass(field.getClassID()));
-            if (name != null) {
-                addUsage (usages, name, ClassIndexImpl.UsageType.FIELD_REFERENCE);
+        if (FULL_INDEX) {
+            //2. Add filed usages 
+            final ConstantPool constantPool = classFile.getConstantPool();
+            Collection<? extends CPFieldInfo> fields = constantPool.getAllConstants(CPFieldInfo.class);            
+            for (CPFieldInfo field : fields) {
+                ClassName name = ClassFileUtil.getType(constantPool.getClass(field.getClassID()));
+                if (name != null) {
+                    addUsage (usages, name, ClassIndexImpl.UsageType.FIELD_REFERENCE);
+                }
             }
-        }
 
-        //3. Add method usages
-        Collection<? extends CPMethodInfo> methodCalls = constantPool.getAllConstants(CPMethodInfo.class);
-        for (CPMethodInfo method : methodCalls) {                
-            ClassName name = ClassFileUtil.getType(constantPool.getClass(method.getClassID()));
-            if (name != null) {                    
-                addUsage (usages, name, ClassIndexImpl.UsageType.METHOD_REFERENCE);
+            //3. Add method usages
+            Collection<? extends CPMethodInfo> methodCalls = constantPool.getAllConstants(CPMethodInfo.class);
+            for (CPMethodInfo method : methodCalls) {                
+                ClassName name = ClassFileUtil.getType(constantPool.getClass(method.getClassID()));
+                if (name != null) {                    
+                    addUsage (usages, name, ClassIndexImpl.UsageType.METHOD_REFERENCE);
+                }
             }
-        }
-        methodCalls = constantPool.getAllConstants(CPInterfaceMethodInfo.class);
-        for (CPMethodInfo method : methodCalls) {
-            ClassName name = ClassFileUtil.getType(constantPool.getClass(method.getClassID()));
-            if (name != null) {                    
-                addUsage (usages, name, ClassIndexImpl.UsageType.METHOD_REFERENCE);
+            methodCalls = constantPool.getAllConstants(CPInterfaceMethodInfo.class);
+            for (CPMethodInfo method : methodCalls) {
+                ClassName name = ClassFileUtil.getType(constantPool.getClass(method.getClassID()));
+                if (name != null) {                    
+                    addUsage (usages, name, ClassIndexImpl.UsageType.METHOD_REFERENCE);
+                }
             }
-        }
 
-        //4, 5, 6, 8 Add method type refs (return types, param types, exception types) and local variables.
-        Collection<Method> methods = classFile.getMethods();
-        for (Method method : methods) {
-            String jvmTypeId = method.getReturnType();
-            ClassName type = ClassFileUtil.getType (jvmTypeId);
-            if (type != null) {
-                addUsage(usages, type, ClassIndexImpl.UsageType.TYPE_REFERENCE);
-            }
-            List<Parameter> params =  method.getParameters();
-            for (Parameter param : params) {
-                jvmTypeId = param.getDescriptor();
-                type = ClassFileUtil.getType (jvmTypeId);
+            //4, 5, 6, 8 Add method type refs (return types, param types, exception types) and local variables.
+            Collection<Method> methods = classFile.getMethods();
+            for (Method method : methods) {
+                String jvmTypeId = method.getReturnType();
+                ClassName type = ClassFileUtil.getType (jvmTypeId);
                 if (type != null) {
                     addUsage(usages, type, ClassIndexImpl.UsageType.TYPE_REFERENCE);
                 }
-            }
-            CPClassInfo[] classInfos = method.getExceptionClasses();
-            for (CPClassInfo classInfo : classInfos) {
-                type = classInfo.getClassName();
-                if (type != null) {
-                    addUsage(usages, type, ClassIndexImpl.UsageType.TYPE_REFERENCE);
-                }
-            }
-            jvmTypeId = method.getTypeSignature();
-            if (jvmTypeId != null) {
-                try {
-                    ClassName[] typeSigNames = ClassFileUtil.getTypesFromMethodTypeSignature (jvmTypeId);
-                    for (ClassName typeSigName : typeSigNames) {
-                        addUsage(usages, typeSigName, ClassIndexImpl.UsageType.TYPE_REFERENCE);
-                    }
-                } catch (IllegalStateException is) {
-                    Logger.getLogger("global").warning("Invalid method signature: "+className+"::"+method.getName()+" signature is:" + jvmTypeId);  // NOI18N
-                }
-            }
-            Code code = method.getCode();
-            if (code != null) {
-                LocalVariableTableEntry[] vars = code.getLocalVariableTable();                
-                for (LocalVariableTableEntry var : vars) {
-                    type = ClassFileUtil.getType (var.getDescription());
+                List<Parameter> params =  method.getParameters();
+                for (Parameter param : params) {
+                    jvmTypeId = param.getDescriptor();
+                    type = ClassFileUtil.getType (jvmTypeId);
                     if (type != null) {
                         addUsage(usages, type, ClassIndexImpl.UsageType.TYPE_REFERENCE);
                     }
                 }
-                LocalVariableTypeTableEntry[] varTypes = method.getCode().getLocalVariableTypeTable();
-                for (LocalVariableTypeTableEntry varType : varTypes) {
+                CPClassInfo[] classInfos = method.getExceptionClasses();
+                for (CPClassInfo classInfo : classInfos) {
+                    type = classInfo.getClassName();
+                    if (type != null) {
+                        addUsage(usages, type, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                    }
+                }
+                jvmTypeId = method.getTypeSignature();
+                if (jvmTypeId != null) {
                     try {
-                        ClassName[] typeSigNames = ClassFileUtil.getTypesFromFiledTypeSignature (varType.getSignature());
+                        ClassName[] typeSigNames = ClassFileUtil.getTypesFromMethodTypeSignature (jvmTypeId);
                         for (ClassName typeSigName : typeSigNames) {
                             addUsage(usages, typeSigName, ClassIndexImpl.UsageType.TYPE_REFERENCE);
                         }
                     } catch (IllegalStateException is) {
-                        Logger.getLogger("global").warning("Invalid local variable signature: "+className+"::"+method.getName());  // NOI18N
+                        Logger.getLogger("global").warning("Invalid method signature: "+className+"::"+method.getName()+" signature is:" + jvmTypeId);  // NOI18N
                     }
                 }
-            }
-        }                                    
-        //7. Add Filed Type References                        
-        Collection<Variable> vars = classFile.getVariables();
-        for (Variable var : vars) {
-            String jvmTypeId = var.getDescriptor();
-            ClassName type = ClassFileUtil.getType (jvmTypeId);
-            if (type != null) {
-                addUsage (usages, type, ClassIndexImpl.UsageType.TYPE_REFERENCE);
-            }
-            jvmTypeId = var.getTypeSignature();
-            if (jvmTypeId != null) {
-                try {
-                    ClassName[] typeSigNames = ClassFileUtil.getTypesFromFiledTypeSignature (jvmTypeId);
-                    for (ClassName typeSigName : typeSigNames) {
-                        addUsage(usages, typeSigName, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                Code code = method.getCode();
+                if (code != null) {
+                    LocalVariableTableEntry[] vars = code.getLocalVariableTable();                
+                    for (LocalVariableTableEntry var : vars) {
+                        type = ClassFileUtil.getType (var.getDescription());
+                        if (type != null) {
+                            addUsage(usages, type, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                        }
                     }
-                } catch (IllegalStateException is) {
-                    Logger.getLogger("global").warning("Invalid field signature: "+className+"::"+var.getName()+" signature is: "+jvmTypeId);  // NOI18N
+                    LocalVariableTypeTableEntry[] varTypes = method.getCode().getLocalVariableTypeTable();
+                    for (LocalVariableTypeTableEntry varType : varTypes) {
+                        try {
+                            ClassName[] typeSigNames = ClassFileUtil.getTypesFromFiledTypeSignature (varType.getSignature());
+                            for (ClassName typeSigName : typeSigNames) {
+                                addUsage(usages, typeSigName, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                            }
+                        } catch (IllegalStateException is) {
+                            Logger.getLogger("global").warning("Invalid local variable signature: "+className+"::"+method.getName());  // NOI18N
+                        }
+                    }
                 }
-            }
-        }            
+            }                                    
+            //7. Add Filed Type References                        
+            Collection<Variable> vars = classFile.getVariables();
+            for (Variable var : vars) {
+                String jvmTypeId = var.getDescriptor();
+                ClassName type = ClassFileUtil.getType (jvmTypeId);
+                if (type != null) {
+                    addUsage (usages, type, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                }
+                jvmTypeId = var.getTypeSignature();
+                if (jvmTypeId != null) {
+                    try {
+                        ClassName[] typeSigNames = ClassFileUtil.getTypesFromFiledTypeSignature (jvmTypeId);
+                        for (ClassName typeSigName : typeSigNames) {
+                            addUsage(usages, typeSigName, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                        }
+                    } catch (IllegalStateException is) {
+                        Logger.getLogger("global").warning("Invalid field signature: "+className+"::"+var.getName()+" signature is: "+jvmTypeId);  // NOI18N
+                    }
+                }
+            }            
 
-        //9. Remains
-        Collection<? extends CPClassInfo> cis = constantPool.getAllConstants(CPClassInfo.class);
-        for (CPClassInfo ci : cis) {
-            ClassName ciName = ClassFileUtil.getType(ci);
-            if (ciName != null && !usages.keySet().contains (ciName)) {
-                addUsage(usages, ciName, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+            //9. Remains
+            Collection<? extends CPClassInfo> cis = constantPool.getAllConstants(CPClassInfo.class);
+            for (CPClassInfo ci : cis) {
+                ClassName ciName = ClassFileUtil.getType(ci);
+                if (ciName != null && !usages.keySet().contains (ciName)) {
+                    addUsage(usages, ciName, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                }
             }
         }
-        
         return usages;
     }        
     
