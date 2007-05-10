@@ -33,7 +33,8 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Main target -->
     
-    <target name="jnlp" depends="-test-jnlp-enabled" if="is.jnlp.enabled">
+    <target name="jnlp" depends="-init-check,-test-jnlp-enabled" if="is.jnlp.enabled">
+        <delete file="dist/lib/javaws.jar" failonerror="false"/>
         <antcall target="generate-jnlp"/>
     </target>
     
@@ -67,7 +68,7 @@ Microsystems, Inc. All Rights Reserved.
 ]]></echo>
     </target>
     
-    <!-- -->
+    <!-- Initial check -->
     
     <target name="-init-check">
         <fail unless="application.title" message="Must set application title."/>
@@ -159,9 +160,33 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Security -->
     
+    <target name="-init-security" depends="-check-signing-possible" if="jnlp.signed.true+signjarstask.available">
+        <property name="jnlp.security" value="    &lt;security&gt;${line.separator}        &lt;all-permissions/&gt;${line.separator}    &lt;/security&gt;"/>
+    </target>
+    <target name="-security-props-check">
+        <condition property="jnlp.signed.true">
+            <istrue value="${jnlp.signed}"/>
+        </condition>
+    </target>
+    <target name="-jnlp-init-keystore" depends="-jnlp-init-keystore-props,-check-keystore-exists" unless="jnlp.signjar.keystore.exists">
+        <property name="jnlp.signjar.vendor" value="CN=${application.vendor}"/>
+        <echo message="Going to create default keystore in ${jnlp.signjar.keystore}"/>
+        <genkey dname="${jnlp.signjar.vendor}" alias="${jnlp.signjar.alias}" keystore="${jnlp.signjar.keystore}"
+            storepass="${jnlp.signjar.storepass}" keypass="${jnlp.signjar.keypass}"/>
+    </target>
+    <target name="-check-keystore-exists">
+        <available property="jnlp.signjar.keystore.exists" file="${jnlp.signjar.keystore}"/>
+    </target>
+    <target name="-jnlp-init-keystore-props">
+        <property name="jnlp.signjar.keystore" value="${basedir}/build/nb-jws.ks"/>
+        <property name="jnlp.signjar.storepass" value="storepass"/>
+        <property name="jnlp.signjar.keypass" value="keypass"/>
+        <property name="jnlp.signjar.alias" value="nb-jws"/>
+    </target>    
+    
     <!-- Generating JNLP file -->
     
-    <target name="generate-jnlp" depends="jnlp-init-generate-master,-init-codebase,-init-resources-jars,-init-application-args,-init-icons,-init-offline,-init-descriptions,jnlp-init-notinited">
+    <target name="generate-jnlp" depends="jnlp-init-generate-master,-init-codebase,-init-resources-runtime,-init-security,-init-resources-jars,-init-application-args,-init-icons,-init-offline,-init-descriptions,jnlp-init-notinited">
         <copy file="master.jnlp" tofile="${jnlp.dest.dir}/${launch.jnlp.file}__" overwrite="true">
             <filterchain>
                 <replacestring from="$${jnlp.codebase}" to="${jnlp.codebase.value}"/>
@@ -183,14 +208,12 @@ Microsystems, Inc. All Rights Reserved.
         <antcall target="-strip-empty-lines"/>
         <antcall target="-generate-html-page"/>
     </target>
-    
     <target name="jnlp-init-notinited">
         <property name="jnlp.security" value=""/>
         <property name="jnlp.offline.allowed.value" value=""/>
         <property name="application.homepage" value=""/>
         <property name="jnlp.application.args.value" value=""/>
     </target>
-    
     <target name="-strip-empty-lines">
         <move file="${jnlp.dest.dir}/${launch.jnlp.file}__" tofile="${jnlp.dest.dir}/${launch.jnlp.file}" overwrite="true">
             <filterchain>
@@ -204,7 +227,6 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Codebase processing -->
     
     <target name="-init-codebase" depends="-codebase-props-check,-init-non-user-codebase,-init-user-codebase"/>
-    
     <target name="-codebase-props-check">
         <condition property="local.codebase">
             <or>
@@ -227,11 +249,9 @@ Microsystems, Inc. All Rights Reserved.
             <equals arg1="${jnlp.codebase.type}" arg2="user" trim="true"/>
         </condition>
     </target>
-    
     <target name="-init-non-user-codebase" if="non.user.codebase">
         <property name="jnlp.codebase.value" value="${jnlp.codebase.url}"/>
     </target>
-    
     <target name="-init-user-codebase" if="user.codebase">
         <property name="jnlp.codebase.value" value="${jnlp.codebase.user}"/>
     </target>
@@ -284,17 +304,19 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- JAR resources -->
     
-    <target name="-init-resources-jars" depends="-preinit-resources-jars,-init-resources-runtime"/>
-    <target name="-preinit-resources-jars" depends="-exclude-javaws-from-cp">
-        <pathconvert pathsep="${line.separator}" property="jnlp.resources.main.jar.value">
-            <path location="${dist.jar}"/>
-            <mapper type="regexp" from="^.*[/\\]([^/\\]+\.jar)"
-                to='        &lt;jar href="\1" main="true" download="eager"/&gt;'/>
-        </pathconvert>
+    <target name="-init-resources-jars" depends="-preinit-resources-unsigned-jars,-preinit-resources-signed-jars,-preinit-resources-main-jar"/>
+    <target name="-preinit-resources-unsigned-jars" depends="-exclude-javaws-from-cp,-check-signing-possible" unless="jnlp.signed.true+signjarstask.available">
         <pathconvert pathsep="${line.separator}" property="jnlp.resources.jars.value">
             <path path="${run.classpath.without.javaws.jar}"/>
             <mapper type="regexp" from="^.*[/\\]([^/\\]+\.jar)"
                 to='        &lt;jar href="lib/\1" download="eager"/&gt;'/>
+        </pathconvert>
+    </target>
+    <target name="-preinit-resources-main-jar">
+        <pathconvert pathsep="${line.separator}" property="jnlp.resources.main.jar.value">
+            <path location="${dist.jar}"/>
+            <mapper type="regexp" from="^.*[/\\]([^/\\]+\.jar)"
+                to='        &lt;jar href="\1" main="true" download="eager"/&gt;'/>
         </pathconvert>
     </target>
     <target name="-exclude-javaws-from-cp">
@@ -306,6 +328,35 @@ Microsystems, Inc. All Rights Reserved.
             <path path="${run.classpath}"/>
             <map from="${path.element.to.be.removed}" to=""/>
         </pathconvert>
+    </target>
+    <target name="-check-task-available">
+        <condition property="signjarstask.available">
+            <isset property="netbeans.home"/>
+        </condition>
+    </target>
+    <target name="-check-signing-possible" depends="-security-props-check,-check-task-available">
+        <condition property="jnlp.signed.true+signjarstask.available">
+            <and>
+                <isset property="jnlp.signed.true"/>
+                <isset property="signjarstask.available"/>
+            </and>
+        </condition>
+    </target>
+    <target name="-unavailable-task-warning" depends="-check-task-available" unless="signjarstask.available">
+        <echo message="Signtask is not available, jar files will not be signed. Task is available only when running inside NetBeans IDE."/>
+    </target>
+    <target name="-preinit-resources-signed-jars" depends="-unavailable-task-warning,-sign-jars" if="jnlp.signed.true+signjarstask.available">
+        <property name="jnlp.resources.jars.value" value="${jnlp.signed.jars}${jnlp.components}"/>
+    </target>
+    <target name="-sign-jars" depends="-jnlp-init-keystore,-check-signing-possible" if="jnlp.signed.true+signjarstask.available">
+        <jnlpsignjars keystore="${jnlp.signjar.keystore}" storepass="${jnlp.signjar.storepass}" 
+                keypass="${jnlp.signjar.keypass}" alias="${jnlp.signjar.alias}" mainjar="${dist.jar}" destdir="dist"
+                codebase="${jnlp.codebase.value}" signedjarsprop="jnlp.signed.jars"
+                componentsprop="jnlp.components">
+            <fileset dir="dist/lib">
+                <include name="*.jar"/>
+            </fileset>
+        </jnlpsignjars>
     </target>
     
     <!-- Application arguments -->
@@ -325,52 +376,24 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Running/Debugging -->
     
-    <target name="jws-run" depends="jar,-verify-jnlp-enabled,generate-jnlp,-verify-codebase" description="Start javaws execution">
+    <target name="jws-run" depends="jar,-verify-jnlp-enabled,-verify-codebase" description="Start javaws execution">
         <exec executable="${java.home}/bin/javaws">
             <arg file="${jnlp.dest.dir}/${launch.jnlp.file}"/>
         </exec>
     </target>
-    
-    <target name="jws-debug" if="netbeans.home" depends="jar,-verify-jnlp-enabled,generate-jnlp,-verify-codebase,-debug-start-debugger,-debug-javaws-debuggee" 
+    <target name="jws-debug" if="netbeans.home" depends="jar,-verify-jnlp-enabled,-verify-codebase,-debug-start-debugger,-debug-javaws-debuggee" 
         description="Debug javaws project in IDE"/>
-    
     <target name="-debug-javaws-debuggee">
         <exec executable="${java.home}/bin/javaws">
             <env key="JAVAWS_VM_ARGS" value="-Xdebug -Xnoagent -Djava.compiler=none -Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
             <arg file="${jnlp.dest.dir}/${launch.jnlp.file}"/>
         </exec>
     </target>
-    
-    <target name="-verify-codebase" unless="local.codebase">
+    <target name="-verify-codebase" depends="-codebase-props-check" unless="local.codebase">
         <fail message="Project cannot be run with non-local codebase. Open project properties dialog and set Web Start Codebase to Local Execution."/>
     </target>
-    
     <target name="-verify-jnlp-enabled" depends="-test-jnlp-enabled" unless="is.jnlp.enabled">
         <fail message="Project cannot be run with selected Run Configuration when Java Web Start is disabled."/>
-    </target>
-    
-    <!-- Signing -->
-    
-    <property name="jnlp.signjar.default.keystore" location="build/default.keystore"/>
-    <property name="jnlp.signjar.default.alias" value="jnlp"/>
-    <property name="jnlp.signjar.default.password" value="netbeans"/>
-    
-    <available property="jnlp.signjar.keystore.exists" file="${jnlp.signjar.keystore}"/>
-    
-    <target name="jnlp-generate-keystore" unless="jnlp.signjar.keystore.exists">
-        <property name="jnlp.signjar.vendor" value="CN=${user.name}"/>
-        <echo message="Going to create default keystore in ${jnlp.signjar.keystore}"/>
-        <genkey alias="${jnlp.signjar.alias}" keystore="${jnlp.signjar.keystore}"
-            storepass="${jnlp.signjar.password}" dname="${jnlp.signjar.vendor}"/>
-    </target>
-    
-    <target name="sign-jars" depends="jnlp-generate-keystore">
-        <signjar storepass="${jnlp.signjar.password}" keystore="${jnlp.signjar.keystore}" 
-            alias="${jnlp.signjar.alias}">
-            <fileset dir="${jnlp.dest.dir}">
-                <include name="*.jar"/>
-            </fileset>
-        </signjar>
     </target>
     
     <!-- Test JNLP enabled-->
@@ -381,7 +404,7 @@ Microsystems, Inc. All Rights Reserved.
         </condition>
     </target>
     
-    <!-- -->
+    <!-- Generate simple HTML test page -->
     
     <target name="-generate-html-page">
         <echo file="${jnlp.dest.dir}/launch.html"><![CDATA[<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">

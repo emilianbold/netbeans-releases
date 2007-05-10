@@ -19,23 +19,17 @@
 
 package org.netbeans.modules.javawebstart.ui.customizer;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Set;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JToggleButton;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
-import javax.swing.text.StyledDocument;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -45,7 +39,6 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -59,7 +52,6 @@ import org.openide.util.NbBundle;
 public class JWSProjectProperties {
     
     public static final String JNLP_ENABLED      = "jnlp.enabled";
-    //public static final String JNLP_DESC_SHORT   = "jnlp.desc.short";
     public static final String JNLP_ICON         = "jnlp.icon";
     public static final String JNLP_OFFLINE      = "jnlp.offline-allowed";
     public static final String JNLP_CBASE_TYPE   = "jnlp.codebase.type";
@@ -70,7 +62,7 @@ public class JWSProjectProperties {
     public static final String JNLP_INIT_HEAP    = "jnlp.initial-heap-size";
     public static final String JNLP_MAX_HEAP     = "jnlp.max-heap-size";
     
-    public static final String JNLP_SIGN_ENABLED = "jnlp.signing.enabled";
+    public static final String JNLP_SIGNED = "jnlp.signed";
     
     public static final String CB_TYPE_LOCAL = "local";
     public static final String CB_TYPE_WEB = "web";
@@ -90,6 +82,7 @@ public class JWSProjectProperties {
     // Models 
     JToggleButton.ToggleButtonModel enabledModel;
     JToggleButton.ToggleButtonModel allowOfflineModel;
+    JToggleButton.ToggleButtonModel signedModel;
     ComboBoxModel codebaseModel;
     
     // and Documents
@@ -110,6 +103,7 @@ public class JWSProjectProperties {
         
         enabledModel = jnlpPropGroup.createToggleButtonModel(evaluator, JNLP_ENABLED);
         allowOfflineModel = jnlpPropGroup.createToggleButtonModel(evaluator, JNLP_OFFLINE);
+        signedModel = jnlpPropGroup.createToggleButtonModel(evaluator, JNLP_SIGNED);
         iconDocument = jnlpPropGroup.createStringDocument(evaluator, JNLP_ICON);
         
         codebaseModel = new CodebaseComboBoxModel();

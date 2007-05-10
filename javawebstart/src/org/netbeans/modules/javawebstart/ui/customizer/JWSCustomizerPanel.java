@@ -21,7 +21,6 @@ package org.netbeans.modules.javawebstart.ui.customizer;
 
 import java.io.File;
 
-import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.filechooser.FileFilter;
@@ -56,6 +55,7 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         
         enableCheckBox.setModel(jwsProps.enabledModel);
         offlineCheckBox.setModel(jwsProps.allowOfflineModel);
+        signedCheckBox.setModel(jwsProps.signedModel);
         iconTextField.setDocument(jwsProps.iconDocument);
         codebaseComboBox.setModel(jwsProps.codebaseModel);
         codebaseTextField.setDocument(jwsProps.codebaseURLDocument);
@@ -88,9 +88,9 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         browseButton = new javax.swing.JButton();
         codebaseComboBox = new javax.swing.JComboBox();
         codebaseTextField = new javax.swing.JTextField();
-        offlineLabel = new javax.swing.JLabel();
         offlineCheckBox = new javax.swing.JCheckBox();
         panelDescLabel = new javax.swing.JLabel();
+        signedCheckBox = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -171,27 +171,16 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.insets = new java.awt.Insets(5, 6, 0, 0);
         add(codebaseTextField, gridBagConstraints);
 
-        offlineLabel.setText(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.offlineLabel.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 0);
-        add(offlineLabel, gridBagConstraints);
-
         offlineCheckBox.setText(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.offlineCheckBox.text")); // NOI18N
         offlineCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         offlineCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(11, 7, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(11, 4, 0, 0);
         add(offlineCheckBox, gridBagConstraints);
 
         panelDescLabel.setText(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.panelDescLabel.text")); // NOI18N
@@ -203,6 +192,20 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 10, 0);
         add(panelDescLabel, gridBagConstraints);
+
+        signedCheckBox.setText(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.signedCheckBox.text")); // NOI18N
+        signedCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        signedCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 4, 0, 0);
+        add(signedCheckBox, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void codebaseComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_codebaseComboBoxActionPerformed
@@ -288,8 +291,8 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         codebaseLabel.setEnabled(b);
         codebaseComboBox.setEnabled(b);
         codebaseTextField.setEnabled(b);
-        offlineLabel.setEnabled(b);
         offlineCheckBox.setEnabled(b);
+        signedCheckBox.setEnabled(b);
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -301,8 +304,8 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
     private javax.swing.JLabel iconLabel;
     private javax.swing.JTextField iconTextField;
     private javax.swing.JCheckBox offlineCheckBox;
-    private javax.swing.JLabel offlineLabel;
     private javax.swing.JLabel panelDescLabel;
+    private javax.swing.JCheckBox signedCheckBox;
     // End of variables declaration//GEN-END:variables
     
 }
