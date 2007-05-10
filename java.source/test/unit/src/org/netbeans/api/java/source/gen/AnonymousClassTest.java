@@ -84,7 +84,7 @@ public class AnonymousClassTest extends GeneratorTestMDRCompat {
             "\n" +
             "            public void run() {\n" +
             "            }\n" +
-            "});\n" +
+            "        });\n" +
             "    }}\n";
 
         JavaSource src = getJavaSource(testFile);

@@ -39,7 +39,6 @@ import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Position;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
 import org.netbeans.modules.java.source.save.ListMatcher;
@@ -311,12 +310,17 @@ public class CasualDiff {
         if (localPointer < insertHint)
             copyTo(localPointer, insertHint);
         localPointer = diffListImports(filterHidden(oldT.defs), filterHidden(newT.defs), insertHint, est, Measure.MEMBER, printer);
-        if (localPointer != -1)
-            copyTo(localPointer, bounds[1]);
         printer.enclClassName = origName;
         // the reference is no longer needed.
         origClassName = null;
         printer.undent(old);
+        if (localPointer != -1) {
+            if (origText.charAt(localPointer) == '}') {
+                // another stupid hack
+                printer.toLeftMargin();
+            }
+            copyTo(localPointer, bounds[1]);
+        }
         return bounds[1];
     }
 
@@ -524,10 +528,10 @@ public class CasualDiff {
         Name oldEnclosing = printer.enclClassName;
         printer.enclClassName = null;
         localPointer = diffListImports(oldT.stats, newT.stats, oldT.pos + 1, est, Measure.DEFAULT, printer);
+        printer.enclClassName = oldEnclosing;
         if (localPointer < endPos(oldT)) {
             copyTo(localPointer, localPointer = endPos(oldT));
         }
-        printer.enclClassName = oldEnclosing;
         printer.undent(old);
         return localPointer;
     }
