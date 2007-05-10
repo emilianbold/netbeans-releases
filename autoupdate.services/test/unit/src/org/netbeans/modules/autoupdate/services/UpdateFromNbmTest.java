@@ -68,7 +68,7 @@ public class UpdateFromNbmTest extends OperationsTestImpl {
         assertTrue(independentFile.exists());
         
         String source = "local-downloaded";
-        List<UpdateUnit> units =  UpdateUnitProviderFactory.getDefault ().create (source, new File[] {engineFile, independentFile}).getUpdateUnits (true);
+        List<UpdateUnit> units =  UpdateUnitProviderFactory.getDefault ().create (source, new File[] {engineFile, independentFile}).getUpdateUnits ();
         assertEquals(2, units.size());
         UpdateUnit nbmsEngine =  null;
         if (units.get(0).getCodeName().indexOf("engine") != -1) {
