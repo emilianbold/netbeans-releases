@@ -43,8 +43,8 @@ import org.netbeans.api.java.source.Comment.Style;
 import org.netbeans.modules.java.source.query.CommentHandler;
 import org.netbeans.modules.java.source.query.Query;
 
-import org.netbeans.modules.java.source.engine.TreeMakerInt;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
+import org.netbeans.modules.java.source.builder.TreeFactory;
 import org.netbeans.modules.java.source.save.PositionEstimator;
 import static org.netbeans.modules.java.source.save.PositionEstimator.*;
 
@@ -74,11 +74,11 @@ import static org.netbeans.modules.java.source.save.PositionEstimator.*;
  */
 public final class TreeMaker {
     
-    private TreeMakerInt delegate;
+    private TreeFactory delegate;
     private CommentHandler handler;
     private WorkingCopy copy;
     
-    TreeMaker(WorkingCopy copy, TreeMakerInt delegate) {
+    TreeMaker(WorkingCopy copy, TreeFactory delegate) {
         this.delegate = delegate;
         this.copy = copy;
         this.handler = CommentHandlerService.instance(copy.getJavacTask().getContext());

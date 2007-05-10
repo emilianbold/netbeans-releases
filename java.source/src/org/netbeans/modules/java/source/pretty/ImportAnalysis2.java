@@ -49,11 +49,11 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.source.builder.TreeFactory;
 import org.netbeans.modules.java.source.query.QueryEnvironment;
 import org.netbeans.modules.java.source.engine.ASTModel;
 import org.netbeans.modules.java.source.engine.EngineEnvironment;
 import org.netbeans.modules.java.source.transform.ChangeSet;
-import org.netbeans.modules.java.source.engine.TreeMakerInt;
 
 /**
  *
@@ -65,7 +65,7 @@ public class ImportAnalysis2 {
     private Types types;
     private Trees trees;
     private ASTModel model;
-    private TreeMakerInt make;
+    private TreeFactory make;
     private List<ImportTree> imports;
     private Set<Element> imported;
     private Stack<Set<Element>> visibleThroughClasses;

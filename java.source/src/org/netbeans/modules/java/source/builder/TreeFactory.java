@@ -22,7 +22,6 @@ package org.netbeans.modules.java.source.builder;
 import com.sun.tools.javac.model.JavacElements;
 import javax.lang.model.util.Elements;
 import org.netbeans.api.java.source.*;
-import org.netbeans.modules.java.source.engine.TreeMakerInt;
 import org.netbeans.modules.java.source.query.Query;
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
@@ -57,7 +56,7 @@ import org.netbeans.modules.java.source.engine.RootTree;
 /**
  * Factory for creating new com.sun.source.tree instances.
  */
-public class TreeFactory implements TreeMakerInt {
+public class TreeFactory {
     Name.Table names;
     ClassReader classReader;
     com.sun.tools.javac.tree.TreeMaker make;
