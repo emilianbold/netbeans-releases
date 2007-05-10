@@ -39,6 +39,7 @@ import javax.tools.JavaFileObject.Kind;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.code.Flags;
@@ -207,7 +208,8 @@ public class SourceUtils {
             throw new NullPointerException();
         
         CompilationUnitTree cut = info.getCompilationUnit();
-        Scope scope = info.getTrees().getScope(context);
+        final Trees trees = info.getTrees();
+        final Scope scope = trees.getScope(context);
         String qName = fqn;
         StringBuilder sqName = new StringBuilder();
         String sName = null;
@@ -215,7 +217,7 @@ public class SourceUtils {
         ElementUtilities eu = info.getElementUtilities();
         ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
             public boolean accept(Element e, TypeMirror type) {
-                return e.getKind().isClass() || e.getKind().isInterface();                
+                return (e.getKind().isClass() || e.getKind().isInterface()) && trees.isAccessible(scope, (TypeElement)e);
             }
         };
         while(qName != null && qName.length() > 0) {
@@ -241,10 +243,10 @@ public class SourceUtils {
                     }
                 }
                 if (!matchFound) {
-                    for(Element e : eu.getGlobalTypes(acceptor)) {
+                    for(TypeElement e : eu.getGlobalTypes(acceptor)) {
                         if (simple.contentEquals(e.getSimpleName())) {
                             //either a clash or already imported:
-                            if (qName.contentEquals(((TypeElement)e).getQualifiedName())) {
+                            if (qName.contentEquals(e.getQualifiedName())) {
                                 return sqName.toString();
                             } else if (fqn == qName) {
                                 clashing = true;
