@@ -294,10 +294,7 @@ public class Utilities {
         
         // wait for classpath scanning finish
         if (wait) {
-            ProjectSupport.waitScanFinished();
-            new QueueTool().waitEmpty(1000);
-            ProjectSupport.waitScanFinished();
-            
+            waitScanFinished();
             waitForPendingBackgroundTasks();
         }
     }
