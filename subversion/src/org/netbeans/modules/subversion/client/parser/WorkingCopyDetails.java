@@ -28,8 +28,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
-import java.util.regex.Pattern;
+import org.netbeans.modules.subversion.config.KVFile;
 import org.openide.ErrorManager;
 
 /**
@@ -54,8 +53,8 @@ public class WorkingCopyDetails {
     //private Properties parentProps;
     //These Properties store the working and base versions of the
     //SVN properties for the file
-    private Properties workingSvnProperties = null;
-    private Properties baseSvnProperties = null;
+    private Map<String, byte[]> workingSvnProperties = null;
+    private Map<String, byte[]> baseSvnProperties = null;
 
     protected File propertiesFile = null;
     private File basePropertiesFile = null;
@@ -186,14 +185,14 @@ public class WorkingCopyDetails {
         return textBaseFile;
     }
 
-    private Properties getWorkingSvnProperties() throws IOException {
+    private Map<String, byte[]> getWorkingSvnProperties() throws IOException {
         if (workingSvnProperties == null) {
             workingSvnProperties = loadProperties(getPropertiesFile());
         }
         return workingSvnProperties;
     }
 
-    private Properties getBaseSvnProperties() throws IOException {
+    private Map<String, byte[]> getBaseSvnProperties() throws IOException {
         if (baseSvnProperties == null) {
             baseSvnProperties = loadProperties(getBasePropertiesFile());
         }
@@ -239,81 +238,57 @@ public class WorkingCopyDetails {
             return false;
         }
 
-        Properties baseProps = getBaseSvnProperties();
-        Properties props = getWorkingSvnProperties();
+        Map<String, byte[]> baseProps = getBaseSvnProperties();
+        Map<String, byte[]> props = getWorkingSvnProperties();
         return !(baseProps.equals(props));
     }
 
-    private Properties loadProperties(File propsFile) throws IOException {
+    private Map<String, byte[]> loadProperties(File propsFile) throws IOException {
         if(propsFile == null || !propsFile.exists()) {
             return null;
-        }
-        Properties returnValue = new Properties();
-        BufferedReader fileReader = new BufferedReader(new java.io.FileReader(propsFile));
-        try {
-            String currentLine = fileReader.readLine();
-            String propKey = null;
-            String propValue = "";
-            boolean headerLine = true;
-            while (currentLine != null) {
-                if (!(headerLine)) {
-                    if (propKey == null) {
-                        propKey = currentLine;
-                    } else {
-                        propValue = currentLine;
-                        returnValue.setProperty(propKey, propValue);
-                        propKey = null;
-                        propValue = "";                                                 // NOI18N
-                    }
-                }
-                headerLine = !(headerLine);
-                currentLine = fileReader.readLine();
-            }
-        } finally {
-            fileReader.close();
-        }
-        return returnValue;
+        }        
+        KVFile kv = new KVFile(propsFile);
+        return kv.getNormalizedMap();                
     }
 
     public boolean textModified() throws IOException {
-        boolean returnValue = false;
-
         if (file.exists()) {
             File baseFile = getTextBaseFile();
             if ((file == null) && (baseFile != null)) {
                 return true;
             }
-
             if ((file != null) && (baseFile == null)) {
                 return true;
             }
-
             if ((file == null) && (baseFile == null)) {
                 return false;
             }
-
-            Properties workingSvnProps = getWorkingSvnProperties();
-            String value = "";
-            if(workingSvnProps!=null) {
-                value = workingSvnProps.getProperty("svn:special", "none");         // NOI18N
+            Map<String, byte[]> workingSvnProps = getWorkingSvnProperties();
+            if(workingSvnProps != null) {                
+                String svnSpecial = getPropertyValue(workingSvnProps, "svn:special");           // NOI18N
+                if (svnSpecial != null && svnSpecial.equals("*")) {                             // NOI18N
+                    if (isSymbolicLink()) {
+                        return false;
+                    }
+                }                   
+                String svnKeywords = getPropertyValue(workingSvnProps, "svn:keywords");         // NOI18N          
+                if (svnKeywords != null) {
+                    return isModifiedByLine(svnKeywords.trim());
+                } 
             }
-            if (value.equals("*")) {
-		if (isSymbolicLink()) {
-        	    returnValue = false;
-		}
-            } else {
-	        String rawKeywords = workingSvnProps != null ? workingSvnProps.getProperty("svn:keywords") : null;      // NOI18N
-	        if (rawKeywords != null) {
-                    returnValue = isModifiedByLine(rawKeywords.trim());
-	        } else {
-	            returnValue = isModifiedByByte();
-	        }
-            }
+            return isModifiedByByte();            
         }
-
-        return returnValue;
+        return false;
     }
 
+    private String getPropertyValue(Map<String, byte[]> props, String key) {
+        byte[] byteValue = props.get(key);
+        if(byteValue != null && byteValue.length > 0) {
+            return new String(byteValue);
+        }        
+        return  null;
+    }
+    
     private boolean isSymbolicLink() throws IOException {
         boolean returnValue = false;
 
@@ -387,30 +362,18 @@ public class WorkingCopyDetails {
      * Assumes that textBaseFile exists
      */
     private boolean isModifiedByLine(String rawKeywords) throws IOException {
+        if(rawKeywords == null || rawKeywords.equals("")) {
+            return false;
+        }
         boolean returnValue = false;
 
-        String[] keywords = rawKeywords.split(" ");
         List<String> keywordsList = new ArrayList<String>();
-        for (int i = 0; i < keywords.length; i++) {
-            String kw = keywords[i].toLowerCase();
-            if(kw.equals("date") || kw.equals("lastchangeddate")) {                                         // NOI18N
-                keywordsList.add("LastChangedDate");                                                        // NOI18N
-                keywordsList.add("Date");                                                                   // NOI18N
-            } else if(kw.equals("revision") || kw.equals("rev") || kw.equals("lastchangedrevision")) {      // NOI18N
-                keywordsList.add("LastChangedRevision");                                                    // NOI18N
-                keywordsList.add("Revision");                                                               // NOI18N
-                keywordsList.add("Rev");                                                                    // NOI18N
-            } else if(kw.equals("author") || kw.equals("lastchangedby")) {                                  // NOI18N
-                keywordsList.add("LastChangedBy");                                                          // NOI18N
-                keywordsList.add("Author");                                                                 // NOI18N
-            } else if(kw.equals("url") || kw.equals("headurl")) {                                           // NOI18N
-                keywordsList.add("HeadURL");                                                                // NOI18N
-                keywordsList.add("URL");                                                                    // NOI18N
-            } else {
-                keywordsList.add(keywords[i]);                
-            }            
-        }
-        keywords = keywordsList.toArray(new String[keywordsList.size()]);
+        
+        keywordsList.addAll(normalizeKeywords(rawKeywords.split(" ")));             // NOI18N  
+        keywordsList.addAll(normalizeKeywords(rawKeywords.split("\n")));            // NOI18N            
+        keywordsList.addAll(normalizeKeywords(rawKeywords.split("\t")));            // NOI18N    
+
+        String[] keywords = keywordsList.toArray(new String[keywordsList.size()]);
         
         BufferedReader baseReader = null;
         BufferedReader fileReader = null;
@@ -457,6 +420,30 @@ public class WorkingCopyDetails {
         return returnValue;
     }
 
+    private List<String> normalizeKeywords(String[] keywords) {
+        List<String> keywordsList = new ArrayList<String>();
+        for (int i = 0; i < keywords.length; i++) {
+            String kw = keywords[i].toLowerCase();
+            if(kw.equals("date") || kw.equals("lastchangeddate")) {                                         // NOI18N
+                keywordsList.add("LastChangedDate");                                                        // NOI18N
+                keywordsList.add("Date");                                                                   // NOI18N
+            } else if(kw.equals("revision") || kw.equals("rev") || kw.equals("lastchangedrevision")) {      // NOI18N
+                keywordsList.add("LastChangedRevision");                                                    // NOI18N
+                keywordsList.add("Revision");                                                               // NOI18N
+                keywordsList.add("Rev");                                                                    // NOI18N
+            } else if(kw.equals("author") || kw.equals("lastchangedby")) {                                  // NOI18N
+                keywordsList.add("LastChangedBy");                                                          // NOI18N
+                keywordsList.add("Author");                                                                 // NOI18N
+            } else if(kw.equals("url") || kw.equals("headurl")) {                                           // NOI18N
+                keywordsList.add("HeadURL");                                                                // NOI18N
+                keywordsList.add("URL");                                                                    // NOI18N
+            } else {
+                keywordsList.add(keywords[i]);                
+            }            
+        } 
+        return keywordsList;
+    }
+    
     private boolean compareKeywordLines(String modifiedLine, String baseLine, String[] keywords) {
 
         int modifiedIdx = 0;

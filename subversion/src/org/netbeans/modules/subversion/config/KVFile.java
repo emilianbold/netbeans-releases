@@ -106,13 +106,24 @@ public class KVFile {
      *
      * @return map
      */
-    public Map<Key, byte[]> getMap() {
+    private Map<Key, byte[]> getMap() {
         if(map==null) {
             map = new TreeMap<Key, byte[]>();
         }
         return map;
     }
 
+    public Map<String, byte[]> getNormalizedMap() {
+        Map<String, byte[]> ret = new HashMap<String, byte[]>(map.size());
+        Iterator<Map.Entry<Key, byte[]>> it = map.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry next = it.next();
+            // getKey().toString() == the normalization
+            ret.put(next.getKey().toString(), (byte[]) next.getValue());
+        }
+        return ret;
+    }
+    
     /**
      * Returns the Map holding the Keys
      *

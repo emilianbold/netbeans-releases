@@ -74,7 +74,7 @@ public final class PropertiesClient {
         }
         if (store != null && store.isFile()) {
             KVFile kv = new KVFile(store);
-            return normalize(kv.getMap());
+            return kv.getNormalizedMap();
         } else {
             return new HashMap<String, byte[]>();
         }
@@ -93,7 +93,7 @@ public final class PropertiesClient {
         }
         if (store != null && store.isFile()) {
             KVFile kv = new KVFile(store);
-            return normalize(kv.getMap());
+            return kv.getNormalizedMap();
         } else {
             return new HashMap<String, byte[]>();
         }
@@ -117,18 +117,7 @@ public final class PropertiesClient {
         } else {
             throw new SVNClientException("Unexpected value:" + info + " should be from type " + ParserSvnInfo.class);            
         }         
-    }
-    
-    private Map<String, byte[]> normalize(Map map) {
-        Map<String, byte[]> ret = new HashMap<String, byte[]>(map.size());
-        Iterator<Map.Entry> it = map.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry next = it.next();
-            // getKey().toString() == the normalization
-            ret.put(next.getKey().toString(), (byte[]) next.getValue());
-        }
-        return ret;
-    }
+    }    
 
     /** Not implemented. */
     public Map getProperties(int revision) throws IOException {
