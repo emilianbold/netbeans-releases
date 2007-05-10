@@ -288,12 +288,12 @@ public class ParserManagerImpl extends ParserManager {
         String mimeType = (String) doc.getProperty ("mimeType");
         Language l = getLanguage (mimeType);
         LLSyntaxAnalyser a = l.getAnalyser ();
-        long start = System.currentTimeMillis ();
+        //long start = System.currentTimeMillis ();
 
         TokenInput input = createTokenInput ();
-        long to = System.currentTimeMillis () - start;
+        //long to = System.currentTimeMillis () - start;
         ASTNode n = a.read (input, true);
-        System.out.println("parse " + doc.getProperty ("title") + " " + (System.currentTimeMillis () - start) + " " + to);
+        //S ystem.out.println("parse " + doc.getProperty ("title") + " " + (System.currentTimeMillis () - start) + " " + to);
         return n;
     }
 
