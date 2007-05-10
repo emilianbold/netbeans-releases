@@ -671,7 +671,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                     sb.append("\"}"); //NOI18N
                                     asTemplate = true;
                                 } else if (ta.getKind() == TypeKind.ERROR) {
-                                    sb.append(" default=\"\"}"); //NOI18N
+                                    sb.append(" default=\""); //NOI18N
+                                    sb.append(((ErrorType)ta).asElement().getSimpleName());
+                                    sb.append("\"}"); //NOI18N
                                     asTemplate = true;
                                 } else {
                                     sb.append(" type=\""); //NOI18N
@@ -2191,7 +2193,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                     sb.append(bound != null ? Utilities.getTypeName(bound, true) : "java.lang.Object"); //NOI18N
                                     sb.append("\"}"); //NOI18N
                                 } else if (ta.getKind() == TypeKind.ERROR) {
-                                    sb.append(" default=\"\"}"); //NOI18N
+                                    sb.append(" default=\""); //NOI18N
+                                    sb.append(((ErrorType)ta).asElement().getSimpleName());
+                                    sb.append("\"}"); //NOI18N
                                 } else {
                                     sb.append(" type=\""); //NOI18N
                                     sb.append(Utilities.getTypeName(ta, true));

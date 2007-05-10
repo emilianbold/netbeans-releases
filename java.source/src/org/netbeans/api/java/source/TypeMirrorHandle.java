@@ -18,6 +18,9 @@
  */
 package org.netbeans.api.java.source;
 
+import com.sun.tools.javac.code.Symtab;
+import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.Name;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -214,6 +217,12 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
                 return (T)info.getTypes().getWildcardType(extendsBound, superBound);
             case ERROR:
                 e = element.resolve(info);
+                if (e == null) {
+                    String[] signatures = element.getSignature();
+                    assert signatures.length == 1;
+                    Context context = info.getJavacTask().getContext();
+                    return (T)new com.sun.tools.javac.code.Type.ErrorType(Name.Table.instance(context).fromString(signatures[0]), Symtab.instance(context).rootPackage); 
+                }
                 if (!(e instanceof com.sun.tools.javac.code.Symbol.ClassSymbol))
                     return null;
                 return (T)new com.sun.tools.javac.code.Type.ErrorType((com.sun.tools.javac.code.Symbol.ClassSymbol)e);
