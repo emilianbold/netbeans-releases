@@ -46,6 +46,14 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
+    <testbag testattribs="stable, validation, csscompletion" executor="ide_as" name="CSS Syntax validation">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="**/CssCompletionTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
     <testbag testattribs="j2eecompletion" executor="ide_as" name="JSP Syntax EE5 validation">
         <testset dir="qa-functional/src">
             <patternset>
