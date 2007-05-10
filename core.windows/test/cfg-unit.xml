@@ -52,18 +52,32 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="stable" executor="ide" name="testbag_2">
         <testset dir="unit/src">
             <patternset>
-                <include name="org/netbeans/core/windows/persistence/*Test.class"/>
-                <include name="org/netbeans/core/windows/*Test.class"/>
                 <include name="org/netbeans/core/windows/services/*Test.class"/>
                 <include name="org/netbeans/core/windows/view/ui/*Test.class"/>
-                <exclude name="org/netbeans/core/windows/persistence/WindowManagerParserTest.class"/>
                 <exclude name="org/netbeans/core/windows/view/ui/StatusLineElementProviderTest.class"/>
             </patternset>
         </testset>
     </testbag>
 
+    <testbag testattribs="stable" executor="unit-executor" name="testbag_3">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="org/netbeans/core/windows/*Test.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+    <testbag testattribs="stable" executor="unit-executor" name="testbag_4">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="org/netbeans/core/windows/persistence/*Test.class"/>
+                <exclude name="org/netbeans/core/windows/persistence/WindowManagerParserTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
     <!-- WindowManager may delete some group data files needed by other unit test so run it in an extra bag --> 
-    <testbag testattribs="stable" executor="ide" name="testbag_3">
+    <testbag testattribs="stable" executor="unit-executor" name="testbag_5">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/netbeans/core/windows/persistence/WindowManagerParserTest.class"/>
