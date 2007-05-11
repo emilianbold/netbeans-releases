@@ -72,12 +72,12 @@ public interface DomProviderService {
 //    public boolean isValueBindingExpression(String value, boolean containsOK);
 
     // XXX Get rid of those.
-    public String computeFileName(Object location);
-    public int computeLineNumber(Object location, int lineno);
+//    public String computeFileName(Object location);
+//    public int computeLineNumber(Object location, int lineno);
 
-    public URL getDocumentUrl(Document document);
+//    public URL getDocumentUrl(Document document);
 
-    public void displayErrorForLocation(String message, Object location, int lineno, int column);
+//    public void displayErrorForLocation(String message, Object location, int lineno, int column);
 
     public Element getHtmlBodyForDocument(Document document);
     public DocumentFragment getHtmlDomFragmentForDocument(Document document);

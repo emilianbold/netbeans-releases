@@ -2528,20 +2528,20 @@ public class WebForm implements Designer {
 //            return false;
 //        }
 
-        public String computeFileName(Object location) {
-            return location == null ? null : location.toString();
-        }
+//        public String computeFileName(Object location) {
+//            return location == null ? null : location.toString();
+//        }
 
-        public int computeLineNumber(Object location, int lineno) {
-            return lineno;
-        }
+//        public int computeLineNumber(Object location, int lineno) {
+//            return lineno;
+//        }
 
-        public URL getDocumentUrl(org.w3c.dom.Document document) {
-            return null;
-        }
+//        public URL getDocumentUrl(org.w3c.dom.Document document) {
+//            return null;
+//        }
 
-        public void displayErrorForLocation(String message, Object location, int lineno, int column) {
-        }
+//        public void displayErrorForLocation(String message, Object location, int lineno, int column) {
+//        }
 
         public Element getHtmlBodyForDocument(org.w3c.dom.Document document) {
             return null;

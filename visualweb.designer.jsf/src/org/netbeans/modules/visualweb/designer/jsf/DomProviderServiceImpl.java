@@ -195,21 +195,21 @@ public class DomProviderServiceImpl implements DomProviderService {
 //        return DesignBeanNode.isValueBindingExpression(value, containsOK);
 //    }
 
-    public String computeFileName(Object location) {
-        return Util.computeFileName(location);
-    }
+//    public String computeFileName(Object location) {
+//        return Util.computeFileName(location);
+//    }
 
-    public int computeLineNumber(Object location, int lineno) {
-        return Util.computeLineNumber(location, lineno);
-    }
+//    public int computeLineNumber(Object location, int lineno) {
+//        return Util.computeLineNumber(location, lineno);
+//    }
 
-    public URL getDocumentUrl(Document document) {
-        return Util.getDocumentUrl(document);
-    }
+//    public URL getDocumentUrl(Document document) {
+//        return Util.getDocumentUrl(document);
+//    }
 
-    public void displayErrorForLocation(String message, Object location, int lineno, int column) {
-        Util.displayErrorForLocation(message, location, lineno, column);
-    }
+//    public void displayErrorForLocation(String message, Object location, int lineno, int column) {
+//        Util.displayErrorForLocation(message, location, lineno, column);
+//    }
 
     public Element getHtmlBodyForDocument(Document document) {
         return Util.getHtmlBodyForDocument(document);
