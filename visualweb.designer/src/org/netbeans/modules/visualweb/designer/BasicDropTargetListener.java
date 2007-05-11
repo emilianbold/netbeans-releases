@@ -239,7 +239,12 @@ class BasicDropTargetListener implements DropTargetListener, UIResource, ActionL
     public void dragEnter(DropTargetDragEvent e) {
 	component = getComponent(e);
 	TransferHandler th = component.getTransferHandler();
-	canImport = th.canImport(component, e.getCurrentDataFlavors());
+        if (th instanceof DesignerTransferHandler) {
+            // XXX #99457 Internal enhanced TransferHandler to provide more fine-grained decision (based on Transferable as well).
+            canImport = ((DesignerTransferHandler)th).canImport(component, e.getCurrentDataFlavors(), e.getTransferable());
+        } else {
+            canImport = th.canImport(component, e.getCurrentDataFlavors());
+        }
 	if (canImport) {
 	    saveComponentState(component);
 	    lastPosition = e.getLocation();

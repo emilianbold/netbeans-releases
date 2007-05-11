@@ -46,20 +46,24 @@ class DesignerTransferHandler extends TransferHandler {
 
 
     public boolean canImport(JComponent comp, DataFlavor[] transferFlavors) {
-        //the following assert is changed by an if statement
-        //assert comp == webform.getPane();
-        if(DesignerUtils.DEBUG) {
-            DesignerUtils.debugLog(getClass().getName() + ".canImport(JComponent, DataFlavor[])");
-        }
-        if(comp != webForm.getPane()) {
-            throw(new IllegalArgumentException("Wrong component.")); // NOI18N
-        }
-        if(transferFlavors == null) {
-            throw(new IllegalArgumentException("Transferable has not flavors.")); // NOI18N
-        }
+//        //the following assert is changed by an if statement
+//        //assert comp == webform.getPane();
+//        if(DesignerUtils.DEBUG) {
+//            DesignerUtils.debugLog(getClass().getName() + ".canImport(JComponent, DataFlavor[])");
+//        }
+//        if(comp != webForm.getPane()) {
+//            throw(new IllegalArgumentException("Wrong component.")); // NOI18N
+//        }
+//        if(transferFlavors == null) {
+//            throw(new IllegalArgumentException("Transferable has not flavors.")); // NOI18N
+//        }
 
         // XXX
-        return webForm.canImport(comp, transferFlavors);
+        return webForm.canImport(comp, transferFlavors, null);
+    }
+    
+    public boolean canImport(JComponent comp, DataFlavor[] transferFlavors, Transferable transferable) {
+        return webForm.canImport(comp, transferFlavors, transferable);
     }
 
     public boolean importData(JComponent comp, Transferable t) {

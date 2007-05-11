@@ -1723,8 +1723,8 @@ public class WebForm implements Designer {
 //        return domProvider.getImportFlavor(flavors);
 //    }
 
-    boolean canImport(JComponent comp, DataFlavor[] transferFlavors) {
-        return domProvider.canImport(comp, transferFlavors);
+    boolean canImport(JComponent comp, DataFlavor[] transferFlavors, Transferable transferable) {
+        return domProvider.canImport(comp, transferFlavors, transferable);
     }
 
 //    DesignBean[] pasteBeans(Transferable t, DesignBean parent, MarkupPosition pos, Point location, DomProvider.CoordinateTranslator coordinateTranslator) {

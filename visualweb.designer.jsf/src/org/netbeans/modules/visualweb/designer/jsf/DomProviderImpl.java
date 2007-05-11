@@ -176,9 +176,9 @@ class DomProviderImpl implements DomProvider {
 //        return getDndSupport().getImportFlavor(flavors);
 //    }
 
-    public boolean canImport(JComponent comp, DataFlavor[] transferFlavors) {
+    public boolean canImport(JComponent comp, DataFlavor[] transferFlavors, Transferable transferable) {
 //        return getFacesModel().getDnDSupport().canImport(comp, transferFlavors);
-        return getDndSupport().canImport(comp, transferFlavors);
+        return getDndSupport().canImport(comp, transferFlavors, transferable);
     }
 
 //    public DesignBean[] pasteBeans(Transferable t, DesignBean parent, MarkupPosition pos, Point location, DomProvider.CoordinateTranslator coordinateTranslator) {

@@ -163,7 +163,15 @@ private static final DropTargetListener DEFAULT_TRANSFER_HANDLER_DROP_TARGET_LIS
 	    JComponent c = (JComponent)e.getDropTargetContext().getComponent();
 	    TransferHandler importer = c.getTransferHandler();
             
-            if (importer != null && importer.canImport(c, flavors)) {
+//            if (importer != null && importer.canImport(c, flavors)) {
+            // XXX #99457 Internally enhanced TransferHandler to use also Transferable to compare.
+            boolean canImporterImport;
+            if (importer instanceof DesignerTransferHandler) {
+                canImporterImport = ((DesignerTransferHandler)importer).canImport(c, flavors, e.getTransferable());
+            } else {
+                canImporterImport = importer == null ? false : importer.canImport(c, flavors);
+            }
+            if (canImporterImport) {
                 canImport = true;
             } else {
                 canImport = false;

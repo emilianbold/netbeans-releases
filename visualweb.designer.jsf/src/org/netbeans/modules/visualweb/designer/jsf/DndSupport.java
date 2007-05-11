@@ -31,10 +31,15 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.netbeans.modules.visualweb.api.designer.DomProvider;
 import org.netbeans.modules.visualweb.api.designerapi.DesignTimeTransferDataCreator;
@@ -44,6 +49,7 @@ import org.netbeans.modules.visualweb.insync.models.FacesModel;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
 import org.w3c.dom.Element;
@@ -219,8 +225,56 @@ class DndSupport implements /*XXX*/FacesModel.JsfSupport {
         
         // XXX The other hacked transferables.
         if (rc == String.class/*Linux*/ || rc == List.class/*Windows/Solaris*/) {
-            // XXX #6468896 To be able to drop files (images) from the outside world (desktop).
-           return DROP_PARENTED;
+            if (rc == List.class) {
+                // XXX #99457 There needs to be more fine grained decision.
+                try {
+                    java.util.List list = (java.util.List) t.getTransferData(importFlavor);
+                    for (Object element : list) {
+                        if (element instanceof File) {
+                            File file = (File)element;
+                            // XXX Copy also in FacesDndSupport. 
+                            if (file.exists()) {
+                                String name = file.getName();
+                                String extension = name.substring(name.lastIndexOf(".") + 1); // NOI18N
+                    //            Project project = facesModel.getProject();
+                                Project project = jsfForm.getProject();
+
+                                // XXX #95601 Skip the file if it is already inside the project.
+                                if (FileOwnerQuery.getOwner(file.toURI()) == project) {
+                    //                return panel;
+                                    return DROP_DENIED;
+                                }
+
+                                //String mime = FileUtil.getMIMEType(extension);
+                                // They've only registered gif and jpg so not a big deal
+                                if (FacesDndSupport.isImage(extension)) {
+                    //                Location location =
+                    //                    computePositions(null, DROP_CENTER, null, getDropPoint(), insertPos, true);
+                    //                return panel;
+                                    return DROP_PARENTED;
+                                } else if (FacesDndSupport.isStylesheet(extension)) {
+                    //                return panel;
+                                    return DROP_PARENTED;
+                                }
+                                
+                                // XXX TODO Also missing how to check whether Importable.PageImportable can do the import.
+                            }
+                        }
+                    }
+                }
+                catch (UnsupportedFlavorException ex) {
+                    log(ex);
+                    return DROP_DENIED;
+                }
+                catch (IOException ex) {
+                    log(ex);
+                    return DROP_DENIED;
+                }
+            } else if (rc == String.class) {
+                // TODO Also more fine grained decision.
+                return DROP_PARENTED;
+            }
+            return DROP_DENIED;
         } else if (rc == org.openide.nodes.Node.class) {
             // XXX #6482097 Reflecting the impl in FacesDnDSupport.
             // FIXME Later the impl has to be improved and moved over there.
@@ -512,8 +566,8 @@ class DndSupport implements /*XXX*/FacesModel.JsfSupport {
 
     }
 
-    boolean canImport(JComponent comp, DataFlavor[] transferFlavors) {
-        return facesDndSupport.canImport(comp, transferFlavors);
+    boolean canImport(JComponent comp, DataFlavor[] transferFlavors, Transferable transferable) {
+        return facesDndSupport.canImport(comp, transferFlavors, transferable);
     }
 
     // XXX >>> JsfSupport
@@ -628,4 +682,10 @@ class DndSupport implements /*XXX*/FacesModel.JsfSupport {
             }
         }
     } // End of DnDListener.
+    
+    
+    private static void log(Exception ex) {
+        Logger logger = Logger.getLogger(DndSupport.class.getName());
+        logger.log(Level.INFO, null, ex);
+    }
 }

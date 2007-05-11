@@ -179,7 +179,7 @@ class FacesDndSupport {
      * @param flavors  The data formats available
      * @return  true if the data can be inserted into the component, false otherwise.
      */
-    public boolean canImport(JComponent comp, DataFlavor[] flavors) {
+    public boolean canImport(JComponent comp, DataFlavor[] flavors, Transferable transferable) {
         // TODO Moving to NB winsys
         // Ensure that the toolbox, if in auto-hide mode, hides such that
         // the entire drawing canvas is visible and usable as a drop location
@@ -202,7 +202,8 @@ class FacesDndSupport {
         //if (!(c.isEditable() && c.isEnabled())) {
         //    return false;
         //}
-        boolean canImport = getImportFlavor(flavors) != null;
+//        boolean canImport = getImportFlavor(flavors) != null;
+        boolean canImport = getImportFlavor(flavors, null) != null;
 
         return canImport;
     }
@@ -228,6 +229,10 @@ class FacesDndSupport {
      * </ol>
      */
     public static DataFlavor getImportFlavor(DataFlavor[] flavors) {
+        return getImportFlavor(flavors, null);
+    }
+    
+    private static DataFlavor getImportFlavor(DataFlavor[] flavors, Transferable transferable) {
         DataFlavor plainFlavor = null;
         DataFlavor refFlavor = null;
         DataFlavor stringFlavor = null;
