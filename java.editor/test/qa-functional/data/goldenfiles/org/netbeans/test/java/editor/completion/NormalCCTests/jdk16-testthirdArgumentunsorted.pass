@@ -5,7 +5,6 @@ TYPE
 bitCount#01#(int)
 byteValue#00#()
 compareTo#01#(Integer)
-compareTo#01#(Object)
 decode#01#(String)
 doubleValue#00#()
 equals#01#(Object)

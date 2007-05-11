@@ -8,7 +8,6 @@ TYPE
 byteValue#00#()
 compare#02#(float,float)
 compareTo#01#(Float)
-compareTo#01#(Object)
 doubleValue#00#()
 equals#01#(Object)
 floatToIntBits#01#(float)

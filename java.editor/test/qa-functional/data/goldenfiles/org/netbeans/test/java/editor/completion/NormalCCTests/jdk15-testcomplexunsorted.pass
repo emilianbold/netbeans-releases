@@ -1,7 +1,7 @@
 DECLARED
 PUBLIC
 equals#01#(Object)
-getAnnotation#01#(Class)
+getAnnotation#01#(Class<T>)
 getAnnotations#00#()
 getClass#00#()
 getDeclaredAnnotations#00#()
@@ -16,7 +16,7 @@ getParameterTypes#00#()
 getTypeParameters#00#()
 hashCode#00#()
 isAccessible#00#()
-isAnnotationPresent#01#(Class)
+isAnnotationPresent#01#(Class<? extends Annotation>)
 isSynthetic#00#()
 isVarArgs#00#()
 newInstance#01#(Object...)
