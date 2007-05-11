@@ -1,3 +1,4 @@
+#!/bin/bash
 set -x
 
 DIRNAME=`dirname $0`
@@ -10,17 +11,13 @@ source init.sh
 #
 ###################################################################
 
-BASE_DIR="/soft/visualweb/build"
-
-SRCROOT="${BASE_DIR}/src"
+SRCROOT="${NB_ALL}"
 CACHEROOT="${BASE_DIR}/cache"
 
-AS_KITSERVER="/net/balui.sfbay/cache/SunAppServer/v9.0/PE/v2/b33/"
-AS_BINARY="glassfish-installer-sol-sparc-v2-b33.jar"
 AS_ROOT="${BASE_DIR}/SUNWappserver"
 
 J2EE_HOME="${BASE_DIR}/SUNWappserver/glassfish"
-TESTROOT="${BASE_DIR}/src/visualweb/test"
+TESTROOT="${SRCROOT}/visualweb/test"
 
 ###################################################################
 #
@@ -30,8 +27,13 @@ TESTROOT="${BASE_DIR}/src/visualweb/test"
 
 # Download Application Server
 download() {
-    cp ${AS_KITSERVER}/${AS_BINARY} ${CACHEROOT}
-    ERROR_CODE=$?
+    if [ -f ${AS_KITSERVER}/${AS_BINARY} ]; then
+        cp ${AS_KITSERVER}/${AS_BINARY} ${CACHEROOT}
+        ERROR_CODE=$?
+    else
+	echo "ERROR: Please set AS_KITSERVER and AS_BINARY - ${AS_KITSERVER}/${AS_BINARY}"
+	exit 2;
+    fi
 
     if [ $ERROR_CODE != 0 ]; then
     	echo "ERROR: $ERROR_CODE - Can't download Glassfish"
@@ -49,21 +51,19 @@ install() {
     if [ -x $J2EE_HOME/bin/uninstall ]; then
 	$J2EE_HOME/bin/uninstall -silent
     fi
-    rm -rf ${J2EE_HOME} ~/.asadmin* ~/.asadminpass ~/.asadmintruststore
 
     # Creating statefile
     rm -f ${AS_ROOT}/sunappserver_statefile
     echo "A" > ${AS_ROOT}/sunappserver_statefile
 
-    if [ -d ${J2EE_HOME} ]; then
+    if [ -d ${J2EE_HOME} && ! -z ${J2EE_HOME} ]; then
 	rm -rf ${J2EE_HOME}
     fi
 
     chmod a+x ${CACHEROOT}/${AS_BINARY}
     cd ${AS_ROOT}
-    TEMP_DISPLAY="$DISPLAY"
-    DISPLAY=""
-    export DISPLAY
+    TEMP_DISPLAY="${DISPLAY}"
+    unset DISPLAY
     java -Xmx256m -jar ${CACHEROOT}/${AS_BINARY} < ${AS_ROOT}/sunappserver_statefile
 
     ERROR_CODE=$?
@@ -113,6 +113,11 @@ run_sanity() {
     fi
 }
 
+cleanup() {
+    if [ -d ${CACHEROOT} && ! -z ${CACHEROOT} ]; then
+        rm -rf ${CACHEROOT}
+    fi
+}
 
 ###################################################################
 #
@@ -124,3 +129,4 @@ download
 install
 setup
 run_sanity
+cleanup
