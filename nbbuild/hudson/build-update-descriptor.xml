@@ -9,6 +9,7 @@
                 <exclude name="org-netbeans-modules-debugger-jpda-heapwalk.nbm"/>
             </fileset>
         </makeupdatedesc>
+        <gzip src="workspace/nbbuild/nbms/updates.xml" destfile="workspace/nbbuild/nbms/updates.xml.gz"/>
 	<taskdef name="vuc" classname="org.netbeans.nbbuild.VerifyUpdateCenter" classpath="workspace/nbbuild/nbantext.jar"/>
 	<echo>Checking synchronic and diachronic consistency of NBMs; see http://wiki.netbeans.org/wiki/view/DevFaqImplementationDependency</echo>
 	<vuc updates="workspace/nbbuild/nbms/updates.xml" oldupdates="lastSuccessful/archive/nbbuild/nbms/updates.xml">
@@ -16,6 +17,5 @@
 	        <fileset dir="workspace/nbbuild/netbeans" includes="platform*/lib/*.jar"/>
 	    </classpath>
 	</vuc>
-        <gzip src="workspace/nbbuild/nbms/updates.xml" destfile="workspace/nbbuild/nbms/updates.xml.gz"/>
     </target>
 </project>
