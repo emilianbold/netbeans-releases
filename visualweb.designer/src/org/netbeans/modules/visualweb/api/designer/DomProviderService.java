@@ -22,11 +22,9 @@ package org.netbeans.modules.visualweb.api.designer;
 
 
 import java.awt.Image;
-import java.net.URL;
 
 import org.netbeans.modules.visualweb.api.designer.cssengine.StyleData;
 import org.openide.filesystems.FileObject;
-import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -99,12 +97,12 @@ public interface DomProviderService {
 
 //    public Element findHtmlElementDescendant(DocumentFragment df);
 
-    public void updateLocalStyleValuesForElement(Element e, StyleData[] setStyleData, StyleData[] removeStyleData);
+//    public void updateLocalStyleValuesForElement(Element e, StyleData[] setStyleData, StyleData[] removeStyleData);
 
 //    // XXX Bad architecture. Model itself should take care of this and not fire dummy events.
 //    public long getContextGenearation(DesignContext context);
 
-    public boolean isWebFormFileObject(FileObject fileObject);
+//    public boolean isWebFormFileObject(FileObject fileObject);
 
     public boolean isPrincipalElement(Element element, Element parentBoxElement);
     public boolean isFocusedElement(Element element);
@@ -151,7 +149,7 @@ public interface DomProviderService {
     public boolean isContainerTypeComponent(Element componentRootElement);
 
     // XXX Inline editing.
-    public String[] getEditablePropertyNames(Element componentRootElement);
+//    public String[] getEditablePropertyNames(Element componentRootElement);
     public String[] getEditableProperties(Element componentRootElement);
 
     public enum ResizeConstraint {

@@ -21,7 +21,6 @@ package org.netbeans.modules.visualweb.designer;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
-import java.util.prefs.PreferenceChangeListener;
 import javax.swing.ActionMap;
 import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.netbeans.modules.visualweb.api.designer.Designer.DesignerEvent;
@@ -2586,9 +2585,9 @@ public class WebForm implements Designer {
 //            return null;
 //        }
 
-        public void updateLocalStyleValuesForElement(Element e, StyleData[] setStyleData, StyleData[] removeStyleData) {
-            // XXX.
-        }
+//        public void updateLocalStyleValuesForElement(Element e, StyleData[] setStyleData, StyleData[] removeStyleData) {
+//            // XXX.
+//        }
 
 //        public boolean isTrayBean(DesignBean designBean) {
 //            return false;
@@ -2602,9 +2601,9 @@ public class WebForm implements Designer {
 //            return 0L;
 //        }
 
-        public boolean isWebFormFileObject(FileObject fileObject) {
-            return false;
-        }
+//        public boolean isWebFormFileObject(FileObject fileObject) {
+//            return false;
+//        }
 
         public boolean isPrincipalElement(Element element, Element parentBoxElement) {
             return false;
@@ -2690,9 +2689,9 @@ public class WebForm implements Designer {
             return false;
         }
 
-        public String[] getEditablePropertyNames(Element componentRootElement) {
-            return new String[0];
-        }
+//        public String[] getEditablePropertyNames(Element componentRootElement) {
+//            return new String[0];
+//        }
 
         public String[] getEditableProperties(Element componentRootElement) {
             return new String[0];

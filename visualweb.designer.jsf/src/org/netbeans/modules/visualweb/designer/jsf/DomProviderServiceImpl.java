@@ -25,9 +25,7 @@ import com.sun.rave.designtime.DesignInfo;
 import com.sun.rave.designtime.markup.MarkupTableDesignInfo;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.Image;
-import java.awt.Point;
 import java.beans.BeanDescriptor;
 import java.beans.BeanInfo;
 import java.beans.FeatureDescriptor;
@@ -46,7 +44,6 @@ import com.sun.rave.designtime.DesignProperty;
 import com.sun.rave.designtime.faces.FacesDesignContext;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
 import com.sun.rave.designtime.markup.MarkupMouseRegion;
-import org.netbeans.modules.visualweb.api.designtime.idebridge.DesigntimeIdeBridgeProvider;
 import org.netbeans.modules.visualweb.insync.InSyncServiceProvider;
 import org.netbeans.modules.visualweb.insync.Util;
 import org.netbeans.modules.visualweb.insync.faces.Entities;
@@ -55,7 +52,6 @@ import org.netbeans.modules.visualweb.insync.live.DesignBeanNode;
 import org.netbeans.modules.visualweb.insync.live.LiveUnit;
 import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
 import org.netbeans.modules.visualweb.xhtml.F_Verbatim;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import javax.faces.component.UIComponent;
@@ -266,10 +262,10 @@ public class DomProviderServiceImpl implements DomProviderService {
 //        return JsfSupportUtilities.findHtmlElementDescendant(df);
 //    }
 
-    public void updateLocalStyleValuesForElement(Element e, StyleData[] setStyleData, StyleData[] removeStyleData) {
-//        Util.updateLocalStyleValuesForElement(e, setStyleData, removeStyleData);
-        JsfSupportUtilities.updateLocalStyleValuesForElement(e, setStyleData, removeStyleData);
-    }
+//    public void updateLocalStyleValuesForElement(Element e, StyleData[] setStyleData, StyleData[] removeStyleData) {
+////        Util.updateLocalStyleValuesForElement(e, setStyleData, removeStyleData);
+//        JsfSupportUtilities.updateLocalStyleValuesForElement(e, setStyleData, removeStyleData);
+//    }
 
 //    public long getContextGenearation(DesignContext context) {
 //        if (context instanceof LiveUnit) {
@@ -278,10 +274,10 @@ public class DomProviderServiceImpl implements DomProviderService {
 //        return 0L;
 //    }
 
-    public boolean isWebFormFileObject(FileObject fileObject) {
-//        return FacesModel.getInstance(fileObject) != null;
-        return JsfSupportUtilities.isWebFormFileObject(fileObject);
-    }
+//    public boolean isWebFormFileObject(FileObject fileObject) {
+////        return FacesModel.getInstance(fileObject) != null;
+//        return JsfSupportUtilities.isWebFormFileObject(fileObject);
+//    }
 
     public boolean isFocusedElement(Element element) {
         if (element == null) {
@@ -704,15 +700,15 @@ public class DomProviderServiceImpl implements DomProviderService {
         return markupDesignBean.isContainer();
     }
     
-    /**
-     * If the given component supports inline text editing, return the
-     * String property name which stores the text that is inline
-     * editable.
-     */
-    public String[] getEditablePropertyNames(Element componentRootElement) {
-        DesignBean bean = MarkupUnit.getMarkupDesignBeanForElement(componentRootElement);
-        return getEditablePropertyNames(bean);
-    }
+//    /**
+//     * If the given component supports inline text editing, return the
+//     * String property name which stores the text that is inline
+//     * editable.
+//     */
+//    public String[] getEditablePropertyNames(Element componentRootElement) {
+//        DesignBean bean = MarkupUnit.getMarkupDesignBeanForElement(componentRootElement);
+//        return getEditablePropertyNames(bean);
+//    }
     
     public static String[] getEditablePropertyNames(DesignBean bean) {
         if (bean == null) {
