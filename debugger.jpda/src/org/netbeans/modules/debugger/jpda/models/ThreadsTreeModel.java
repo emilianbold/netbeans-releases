@@ -389,8 +389,8 @@ public class ThreadsTreeModel implements TreeModel {
                     if (task == null) {
                         task = createTask();
                     }
+                    task.schedule(500);
                 }
-                task.schedule(500);
             } else 
             if ( (e.getPropertyName () == debugger.PROP_STATE) &&
                  (debugger.getState () == debugger.STATE_RUNNING)
@@ -401,8 +401,8 @@ public class ThreadsTreeModel implements TreeModel {
                     if (task == null) {
                         task = createTask();
                     }
+                    task.schedule (2000);
                 }
-                task.schedule (2000);
             }
         }
         
@@ -415,8 +415,12 @@ public class ThreadsTreeModel implements TreeModel {
                 if (verbose)
                     System.out.println("TTM do R task " + task);
                 tm.fireTreeChanged ();
-                if (debugger.getState () == debugger.STATE_RUNNING) {
-                    task.schedule (2000);
+                synchronized (Listener.this) {
+                    if (debugger.getState () == debugger.STATE_RUNNING) {
+                        if (task != null) {
+                            task.schedule (2000);
+                        }
+                    }
                 }
             }
         }
