@@ -180,7 +180,7 @@ Microsystems, Inc. All Rights Reserved.
   <!-- build NBMs for selected modules -->
   <target name="build-nbms" depends="init">
       <mkdir dir="nbms" />
-      <property name="base.nbm.target.dir" location="nbms" />
+      <property name="nbm.target.dir" location="nbms" />
       
       <pathconvert property="modules.fullpath" >
           <path>

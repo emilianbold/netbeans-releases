@@ -288,8 +288,6 @@ Microsystems, Inc. All Rights Reserved.
     <target name="nbm" depends="init,netbeans,-nbm-prompt-for-storepass" description="Build NBM archive.">
         <mkdir dir="build"/>
         <property name="nbm.target.cluster" value=""/> <!-- fallback -->
-        <property name="nbm.target.dir" location="${base.nbm.target.dir}/${cluster.dir}"/>
-        <mkdir dir="${nbm.target.dir}"/>
         <makenbm file="build/${nbm}"
                  productdir="${cluster}"
                  module="${module.jar}"
