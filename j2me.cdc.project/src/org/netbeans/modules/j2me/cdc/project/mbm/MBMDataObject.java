@@ -18,7 +18,7 @@
  */
 
 
-package org.netbeans.modules.j2me.cdc.project.ui.mbm;
+package org.netbeans.modules.j2me.cdc.project.mbm;
 
 
 import java.awt.Graphics;
@@ -62,7 +62,7 @@ public class MBMDataObject extends MultiDataObject implements CookieSet.Factory 
     static final long serialVersionUID = -6035788991669336965L;
 
     /** Base for image resource. */
-    private static final String IMAGE_ICON_BASE = "/org/netbeans/modules/j2me/cdc/project/ui/mbm/imageObject.png"; // NOI18N
+    private static final String IMAGE_ICON_BASE = "/org/netbeans/modules/j2me/cdc/project/mbm/imageObject.png"; // NOI18N
     
     /** Constructor.
      * @param pf primary file object for this data object

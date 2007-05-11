@@ -17,7 +17,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.j2me.cdc.project.ui.mbm;
+package org.netbeans.modules.j2me.cdc.project.mbm;
 
 import javax.imageio.ImageIO;
 import org.openide.filesystems.FileObject;
@@ -60,6 +60,7 @@ public class MBMDataLoader extends UniFileLoader {
     protected String defaultDisplayName() {
         return NbBundle.getBundle(MBMDataLoader.class).getString("PROP_ImageLoader_Name");
     }
+
     
     /**
      * This methods uses the layer action context so it returns
