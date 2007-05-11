@@ -67,7 +67,7 @@ public final class EditableManifest {
         } catch (IOException e) {
             throw new AssertionError(e);
         }
-        sections = new ArrayList();
+        sections = new ArrayList<Section>();
     }
     
     /**
@@ -77,10 +77,10 @@ public final class EditableManifest {
      */
     public EditableManifest(InputStream is) throws IOException {
         BufferedReader r = new BufferedReader(new InputStreamReader(is, "UTF-8")); // NOI18N
-        sections = new LinkedList();
+        sections = new LinkedList<Section>();
         String text;
         int blankLines = 0;
-        List<Line> lines = new ArrayList();
+        List<Line> lines = new ArrayList<Line>();
         Section _mainSection = null;
         while (true) {
             text = r.readLine();
@@ -101,7 +101,7 @@ public final class EditableManifest {
                         if (lines.isEmpty()) {
                             throw new IOException("Continuation lines only allowed for attributes"); // NOI18N
                         }
-                        Line prev = (Line) lines.remove(lines.size() - 1);
+                        Line prev = lines.remove(lines.size() - 1);
                         line = new Line(prev.name, prev.value + text.substring(1), prev.text + System.getProperty("line.separator") + text);
                     } else {
                         line = new Line(text);
@@ -115,10 +115,8 @@ public final class EditableManifest {
             }
         }
         mainSection = _mainSection;
-        Set<String> names = new HashSet();
-        Iterator it = sections.iterator();
-        while (it.hasNext()) {
-            Section s = (Section) it.next();
+        Set<String> names = new HashSet<String>();
+        for (Section s : sections) {
             if (!names.add(s.name)) {
                 throw new IOException("Duplicated section names: " + s.name); // NOI18N
             }
@@ -133,9 +131,9 @@ public final class EditableManifest {
     public void write(OutputStream os) throws IOException {
         Writer w = new OutputStreamWriter(os, "UTF-8"); // NOI18N
         mainSection.write(w, !sections.isEmpty());
-        Iterator it = sections.iterator();
+        Iterator<Section> it = sections.iterator();
         while (it.hasNext()) {
-            ((Section) it.next()).write(w, it.hasNext());
+            it.next().write(w, it.hasNext());
         }
         w.flush();
     }
@@ -156,7 +154,7 @@ public final class EditableManifest {
         }
         int i;
         for (i = 0; i < sections.size(); i++) {
-            Section s = (Section) sections.get(i);
+            Section s = sections.get(i);
             if (s.name.compareTo(name) > 0) {
                 break;
             }
@@ -173,9 +171,9 @@ public final class EditableManifest {
         if (name == null) {
             throw new IllegalArgumentException();
         }
-        Iterator it = sections.iterator();
+        Iterator<Section> it = sections.iterator();
         while (it.hasNext()) {
-            Section s = (Section) it.next();
+            Section s = it.next();
             if (s.name.equals(name)) {
                 it.remove();
                 return;
@@ -189,10 +187,8 @@ public final class EditableManifest {
      * @return a list of section names
      */
     public Set<String> getSectionNames() {
-        Set<String> names = new HashSet();
-        Iterator it = sections.iterator();
-        while (it.hasNext()) {
-            Section s = (Section) it.next();
+        Set<String> names = new HashSet<String>();
+        for (Section s : sections) {
             names.add(s.name);
         }
         return names;
@@ -202,9 +198,7 @@ public final class EditableManifest {
         if (section == null) {
             return mainSection;
         } else {
-            Iterator it = sections.iterator();
-            while (it.hasNext()) {
-                Section s = (Section) it.next();
+            for (Section s : sections) {
                 if (s.name.equals(section)) {
                     return s;
                 }
@@ -322,19 +316,19 @@ public final class EditableManifest {
         private final int blankLinesAfter;
         
         public Section(List<Line> lines, boolean main, int blankLinesAfter) throws IOException {
-            this.lines = new ArrayList(lines);
+            this.lines = new ArrayList<Line>(lines);
             this.blankLinesAfter = blankLinesAfter;
             if (main) {
                 name = null;
                 if (!lines.isEmpty()) {
-                    Line first = (Line) lines.get(0);
+                    Line first = lines.get(0);
                     if (first.name.equalsIgnoreCase(NAME)) {
                         throw new IOException("Cannot start with a named section"); // NOI18N
                     }
                 }
             } else {
                 assert !lines.isEmpty();
-                Line first = (Line) lines.get(0);
+                Line first = lines.get(0);
                 if (!first.name.equalsIgnoreCase(NAME)) {
                     throw new IOException("Section did not start with " + NAME); // NOI18N
                 }
@@ -343,13 +337,13 @@ public final class EditableManifest {
                     throw new IOException("Cannot have a blank section name"); // NOI18N
                 }
             }
-            Set<String> attrNames = new HashSet();
-            Iterator it = lines.iterator();
+            Set<String> attrNames = new HashSet<String>();
+            Iterator<Line> it = lines.iterator();
             if (!main) {
                 it.next();
             }
             while (it.hasNext()) {
-                String name = ((Line) it.next()).name;
+                String name = it.next().name;
                 if (name.equals(NAME)) {
                     throw new IOException("Sections not separated by blank lines"); // NOI18N
                 } else if (!attrNames.add(name.toLowerCase(Locale.US))) {
@@ -360,18 +354,18 @@ public final class EditableManifest {
         
         public Section(String name) {
             this.name = name;
-            lines = new ArrayList();
+            lines = new ArrayList<Line>();
             lines.add(new Line(NAME, name)); // NOI18N
             blankLinesAfter = 1;
         }
         
         private Line findAttribute(String name) {
-            Iterator it = lines.iterator();
+            Iterator<Line> it = lines.iterator();
             if (this.name != null) {
                 it.next();
             }
             while (it.hasNext()) {
-                Line line = (Line) it.next();
+                Line line = it.next();
                 if (line.name.equalsIgnoreCase(name)) {
                     return line;
                 }
@@ -381,7 +375,7 @@ public final class EditableManifest {
         
         private int findAttributeIndex(String name) {
             for (int i = (this.name != null ? 1 : 0); i < lines.size(); i++) {
-                Line line = (Line) lines.get(i);
+                Line line = lines.get(i);
                 if (line.name.equalsIgnoreCase(name)) {
                     return i;
                 }
@@ -400,7 +394,7 @@ public final class EditableManifest {
         
         public void setAttribute(String name, String value) {
             for (int i = (this.name != null ? 1 : 0); i < lines.size(); i++) {
-                Line line = (Line) lines.get(i);
+                Line line = lines.get(i);
                 if (name.equalsIgnoreCase(line.name)) {
                     if (line.value.equals(value)) {
                         // No change, leave alone to preserve formatting.
@@ -420,7 +414,7 @@ public final class EditableManifest {
             } else {
                 insertionPoint = lines.size();
                 for (int i = (this.name != null ? 1 : 0); i < lines.size(); i++) {
-                    Line line = (Line) lines.get(i);
+                    Line line = lines.get(i);
                     int comp = line.name.compareToIgnoreCase(name);
                     assert comp != 0;
                     if (comp > 0 && !line.name.equalsIgnoreCase(MANIFEST_VERSION)) {
@@ -442,13 +436,13 @@ public final class EditableManifest {
         }
         
         public Set<String> getAttributeNames() {
-            Set<String> attrNames = new HashSet();
-            Iterator it = lines.iterator();
+            Set<String> attrNames = new HashSet<String>();
+            Iterator<Line> it = lines.iterator();
             if (name != null) {
                 it.next();
             }
             while (it.hasNext()) {
-                attrNames.add(((Line) it.next()).name);
+                attrNames.add(it.next().name);
             }
             return attrNames;
         }

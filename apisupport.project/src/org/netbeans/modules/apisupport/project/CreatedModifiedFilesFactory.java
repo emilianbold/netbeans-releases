@@ -154,17 +154,17 @@ public final class CreatedModifiedFilesFactory {
         
         public String[] getModifiedPaths() {
             String[] s = new String[getModifiedPathsSet().size()];
-            return (String[]) getModifiedPathsSet().toArray(s);
+            return getModifiedPathsSet().toArray(s);
         }
         
         public String[] getCreatedPaths() {
             String[] s = new String[getCreatedPathsSet().size()];
-            return (String[]) getCreatedPathsSet().toArray(s);
+            return getCreatedPathsSet().toArray(s);
         }
         
         public String[] getInvalidPaths() {
             String[] s = new String[getInvalidPathsSet().size()];
-            return (String[]) getInvalidPathsSet().toArray(s);
+            return getInvalidPathsSet().toArray(s);
             
         }
         
@@ -189,21 +189,21 @@ public final class CreatedModifiedFilesFactory {
         
         protected SortedSet<String> getCreatedPathsSet() {
             if (createdPaths == null) {
-                createdPaths = new TreeSet();
+                createdPaths = new TreeSet<String>();
             }
             return createdPaths;
         }
         
         protected SortedSet<String> getInvalidPathsSet() {
             if (invalidPaths == null) {
-                invalidPaths = new TreeSet();
+                invalidPaths = new TreeSet<String>();
             }
             return invalidPaths;
         }
         
         protected SortedSet<String> getModifiedPathsSet() {
             if (modifiedPaths == null) {
-                modifiedPaths = new TreeSet();
+                modifiedPaths = new TreeSet<String>();
             }
             return modifiedPaths;
         }
@@ -372,7 +372,7 @@ public final class CreatedModifiedFilesFactory {
             // and cross fingers because it can be in inconsistent state
             try {
                 DataObject dobj = DataObject.find(mfFO);
-                SaveCookie safe = (SaveCookie)dobj.getCookie(SaveCookie.class);
+                SaveCookie safe = dobj.getCookie(SaveCookie.class);
                 if (safe != null) {
                     safe.save();
                 }
@@ -433,11 +433,11 @@ public final class CreatedModifiedFilesFactory {
             FileObject service = FileUtil.createData(
                     getProject().getProjectDirectory(),interfaceClassPath);
             
-            String line = null;
-            List lines = new ArrayList();
+            List<String> lines = new ArrayList<String>();
             InputStream serviceIS = service.getInputStream();
             try {
                 BufferedReader br = new BufferedReader(new InputStreamReader(serviceIS, "UTF-8")); // NOI18N
+                String line;
                 while ((line = br.readLine()) != null) {
                     lines.add(line);
                 }
@@ -449,9 +449,10 @@ public final class CreatedModifiedFilesFactory {
             try {
                 PrintWriter pw = new PrintWriter(new OutputStreamWriter(service.getOutputStream(lock), "UTF-8")); // NOI18N
                 try {
-                    for (int i = 0; i < lines.size(); i++) {
-                        line = (String) lines.get(i);
-                        if (i != lines.size() - 1 || !line.trim().equals("")) {
+                    Iterator<String> it = lines.iterator();
+                    while (it.hasNext()) {
+                        String line = it.next();
+                        if (it.hasNext() || !line.trim().equals("")) {
                             pw.println(line);
                         }
                     }
@@ -518,7 +519,7 @@ public final class CreatedModifiedFilesFactory {
                 // really the second one would automatically generate a uniquified name... but close enough!
                 externalFiles = Collections.singleton(LayerUtils.findGeneratedName(parent, layerPath));
             } else {
-                externalFiles = Collections.EMPTY_SET;
+                externalFiles = Collections.emptySet();
             }
             layerOp = new LayerModifications(project, op, externalFiles, cmf);
             addPaths(layerOp);
@@ -577,12 +578,11 @@ public final class CreatedModifiedFilesFactory {
             }
             int slash = layerPath.lastIndexOf('/');
             String prefix = layerPath.substring(0, slash + 1);
-            SortedSet s = new TreeSet();
-            Iterator it = externalFiles.iterator();
-            while (it.hasNext()) {
-                s.add(prefix + (String) it.next());
+            SortedSet<String> s = new TreeSet<String>();
+            for (String file : externalFiles) {
+                s.add(prefix + file);
             }
-            return (String[]) s.toArray(new String[s.size()]);
+            return s.toArray(new String[s.size()]);
         }
         
         public String[] getInvalidPaths() {
@@ -597,14 +597,14 @@ public final class CreatedModifiedFilesFactory {
      */
     public static class ModifyManifest extends CreatedModifiedFilesFactory.OperationBase {
         private FileObject manifestFile;
-        private Map attributesToAdd;
+        private Map<String,Map<String,String>> attributesToAdd;
         
         /**
          * @param project
          */
         public ModifyManifest(final Project project) {
             super(project);
-            this.attributesToAdd = new HashMap();
+            this.attributesToAdd = new HashMap<String,Map<String,String>>();
             addModifiedFileObject(getManifestFile());
         }
         
@@ -626,9 +626,9 @@ public final class CreatedModifiedFilesFactory {
          * @param section the name of the section or null for the main section
          */
         public final void setAttribute(final String name, final String value, final  String section) {
-            Map attribs = getAttributes(section);
+            Map<String,String> attribs = attributesToAdd.get(section);
             if (attribs == null) {
-                attribs = new HashMap();
+                attribs = new HashMap<String,String>();
                 attributesToAdd.put(section, attribs);
             }
             attribs.put(name, value);
@@ -654,16 +654,11 @@ public final class CreatedModifiedFilesFactory {
             ensureSavingFirst();
             
             EditableManifest em = Util.loadManifest(getManifestFile());
-            for (Iterator sectionsIterator = attributesToAdd.keySet().iterator(); sectionsIterator.hasNext();) {
-                String section = (String) sectionsIterator.next();
-                Map attributes = getAttributes(section);
-                assert attributes != null;
-                
-                for (Iterator attrsIterator = attributes.entrySet().iterator(); attrsIterator.hasNext();) {
-                    Map.Entry entry = (Map.Entry) attrsIterator.next();
-                    String name = (String) entry.getKey();
-                    String value = (String) entry.getValue();
-                    performModification(em, name, value, (("null".equals(section)) ? null : section)); // NOI18N
+            for (Map.Entry<String,Map<String,String>> entry : attributesToAdd.entrySet()) {
+                String section = entry.getKey();
+                for (Map.Entry<String,String> subentry : entry.getValue().entrySet()) {
+                    performModification(em, subentry.getKey(), subentry.getValue(),
+                            (("null".equals(section)) ? null : section)); // NOI18N
                 }
             }
             
@@ -678,17 +673,12 @@ public final class CreatedModifiedFilesFactory {
             return manifestFile;
         }
         
-        private Map getAttributes(final String sectionName) {
-            Map attribs = (Map)attributesToAdd.get(sectionName);
-            return attribs;
-        }
-        
         private void ensureSavingFirst() throws IOException {
             //#65420 it can happen the manifest is currently being edited. save it
             // and cross fingers because it can be in inconsistent state
             try {
                 DataObject dobj = DataObject.find(getManifestFile());
-                SaveCookie safe = (SaveCookie)dobj.getCookie(SaveCookie.class);
+                SaveCookie safe = dobj.getCookie(SaveCookie.class);
                 if (safe != null) {
                     safe.save();
                 }
@@ -702,7 +692,7 @@ public final class CreatedModifiedFilesFactory {
      * Operation for making changes in properties
      */
     private  static class ModifyProperties extends CreatedModifiedFilesFactory.OperationBase {
-        private Map properties;
+        private Map<String,String> properties;
         private final String propertyPath;
         private EditableProperties ep;
         private FileObject propertiesFile;
@@ -738,9 +728,9 @@ public final class CreatedModifiedFilesFactory {
             return ep;
         }
         
-        protected final Map getProperties() {
+        protected final Map<String,String> getProperties() {
             if (properties == null) {
-                this.properties = new HashMap();
+                this.properties = new HashMap<String,String>();
             }
             return properties;
         }
