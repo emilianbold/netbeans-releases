@@ -91,6 +91,9 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
             
             final String oldName = FacesModelUtility.getViewIdFiltiered( (String) ev.getOldValue() );
             final String newName = FacesModelUtility.getViewIdFiltiered( (String) ev.getNewValue() );
+           
+            final Object source = ev.getSource();
+            final NavigationCase navCase = (source instanceof NavigationCase ? (NavigationCase)source : null);
             
             /* This code is only need if refactor calls rename of file before renaming the faces-config.
             if ( managedBeanClassModified && oldManagedBeanInfo != null && newManagedBeanInfo != null ) {
@@ -105,11 +108,10 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
             
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
-                    replaceFromViewIdToViewIdEventHandler(oldName, newName);
+                    replaceFromViewIdToViewIdEventHandler(navCase, oldName, newName);
                     //                    replaceFromViewIdToViewIdEventHandler(oldName, newName, refactoringIsLikely);
                 }
             });
-//            refactoringIsLikely = false;
         } else if ( ev.getPropertyName() == "from-outcome" ){
             final String oldName = (String) ev.getOldValue();
             final String newName = (String) ev.getNewValue();
@@ -132,7 +134,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
     }
     
     //    private final void replaceFromViewIdToViewIdEventHandler(String oldName, String newName, boolean possibleRefactor) {
-    private final void replaceFromViewIdToViewIdEventHandler(String oldName, String newName) {
+    private final void replaceFromViewIdToViewIdEventHandler(NavigationCase navCase, String oldName, String newName) {
         /* Going to have to do this another day. */
         Page oldPageNode = pfc.getPageName2Node(oldName);
         Page newPageNode = pfc.getPageName2Node(newName);
@@ -171,24 +173,75 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
             }
         }else if ( oldPageNode == null && !pfc.isPageInFacesConfig(oldName)) {
             //This means that oldPage has already been removed.  Do nothing.
+            
+        }else if ( navCase != null && newPageNode == null && pfc.isPageInFacesConfig(oldName)) {
+            NavigationCaseEdge newCaseEdge = null;
+            NavigationCaseEdge oldCaseEdge = null;
+            oldCaseEdge = pfc.getCase2Node(navCase);
+            oldCaseEdge = pfc.removeCase2Node(navCase);
+            newCaseEdge = new NavigationCaseEdge(view.getPageFlowController(), navCase);
+            pfc.putCase2Node(navCase, newCaseEdge);
+            navigationCaseEdgeEventHandler( newCaseEdge, oldCaseEdge);
+//            view.createNode(pfc.getPageName2Node(oldName), newName, glyphs)
+            //I am not sure if I want to do this yet?  Can I just re-use some of the navigationCaseEventHandler.
         } else {
             pfc.setupGraph();
         }
     }
     
     private final void navigationCaseEventHandler(NavigationCase myNewCase, NavigationCase myOldCase) {
-        
+        NavigationCaseEdge newCaseEdge = null;
+        NavigationCaseEdge oldCaseEdge = null;
         if( myNewCase != null ){
-            NavigationCaseEdge node = new NavigationCaseEdge(view.getPageFlowController(), myNewCase);
-            pfc.putCase2Node(myNewCase, node);//     case2Node.put(myNewCase, node);
-            pfc.createEdge(node);
+            newCaseEdge = new NavigationCaseEdge(view.getPageFlowController(), myNewCase);
+            pfc.putCase2Node(myNewCase, newCaseEdge);
+//            pfc.createEdge(newCaseEdge);
         }
         if ( myOldCase != null ){
-            NavigationCaseEdge caseNode = pfc.removeCase2Node(myOldCase);
-            if( caseNode != null ) {
-                view.removeEdge(caseNode);
+            oldCaseEdge = pfc.removeCase2Node(myOldCase);
+//            if( oldCaseEdge != null ) {
+//                view.removeEdge(oldCaseEdge);
+//                
+//                String toPage = oldCaseEdge.getToViewId();
+//                if( toPage != null ) {
+//                    Page pageNode = pfc.getPageName2Node(toPage);
+//                    if( pageNode != null && !pfc.isPageInFacesConfig(toPage)){
+//                        if( !pageNode.isDataNode() || pfc.isFacesConfigCurrentScope()){
+//                            view.removeNodeWithEdges(pageNode);
+//                            pfc.removePageName2Node(pageNode,true);
+//                            view.validateGraph();
+//                        }
+//                    }
+//                }
+//            }
+        }
+        navigationCaseEdgeEventHandler( newCaseEdge, oldCaseEdge);
+//        view.validateGraph();
+    }
+
+    private final void navigationCaseEdgeEventHandler( NavigationCaseEdge newCaseEdge, NavigationCaseEdge oldCaseEdge ){
+
+        if( newCaseEdge != null) {
+//            NavigationCaseEdge newCaseEdge = new NavigationCaseEdge(view.getPageFlowController(), newCase);
+//            pfc.putCase2Node(newCase, newCaseEdge);//     case2Node.put(myNewCase, node);
+            Page fromPage = pfc.getPageName2Node(newCaseEdge.getFromViewId());
+            Page toPage = pfc.getPageName2Node(newCaseEdge.getToViewId());
+            if( fromPage == null ){
+                fromPage = pfc.createPageFlowNode(newCaseEdge.getFromViewId());                
+                view.createNode(fromPage, null, null);
+            }
+            if( toPage == null ){
+                toPage = pfc.createPageFlowNode(newCaseEdge.getToViewId());            
+                view.createNode(toPage, null, null);
+            }
+            pfc.createEdge(newCaseEdge);
+        }
+        if ( oldCaseEdge != null ){
+//            NavigationCaseEdge oldCaseEdge = pfc.removeCase2Node(myOldCase);
+            if( oldCaseEdge != null ) {
+                view.removeEdge(oldCaseEdge);
                 
-                String toPage = caseNode.getToViewId();
+                String toPage = oldCaseEdge.getToViewId();
                 if( toPage != null ) {
                     Page pageNode = pfc.getPageName2Node(toPage);
                     if( pageNode != null && !pfc.isPageInFacesConfig(toPage)){
@@ -203,6 +256,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
         }
         view.validateGraph();
     }
+
     
     private final void navigationRuleEventHandler(NavigationRule myNewRule, NavigationRule myOldRule) {
         //This has side effects in PageFlowNode destroy.

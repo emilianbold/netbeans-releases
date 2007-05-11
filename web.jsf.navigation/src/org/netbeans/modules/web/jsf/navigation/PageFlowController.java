@@ -150,10 +150,10 @@ public class PageFlowController {
     }
     public boolean isProjectCurrentScope() {
         return getCurrentScope() == PageFlowUtilities.LBL_SCOPE_PROJECT;
-    }    
+    }
     
     
-
+    
     
     /**
      * Set From outcome by default.
@@ -167,7 +167,7 @@ public class PageFlowController {
         String sourceName = source.getDisplayName();
         int caseNum = 1;
         
-        configModel.startTransaction();        
+        configModel.startTransaction();
         FacesConfig facesConfig = configModel.getRootComponent();
         NavigationRule navRule = getRuleWithFromViewID(facesConfig, source.getDisplayName());
         NavigationCase navCase = configModel.getFactory().createNavigationCase();
@@ -320,7 +320,7 @@ public class PageFlowController {
             navRule2String.put(navRule, FacesModelUtility.getFromViewIdFiltered(navRule));
         }
         
-//        String currentScope = PageFlowUtilities.getInstance().getCurrentScope();
+        //        String currentScope = PageFlowUtilities.getInstance().getCurrentScope();
         Collection<String> pagesInConfig = getFacesConfigPageNames(rules);
         if ( isFacesConfigCurrentScope()){
             createFacesConfigPageNodes(pagesInConfig);
@@ -389,6 +389,17 @@ public class PageFlowController {
         return pageNode;
         
     }
+    
+    /*
+     * Create PageFlowNode with no backing page.
+     */
+    public Page createPageFlowNode( String pageName ){
+        Node tmpNode = new AbstractNode(Children.LEAF);
+        tmpNode.setName(pageName);
+        Page node = createPageFlowNode(tmpNode);
+        return node;
+    }
+    
     public java.util.Stack<String> PageFlowDestroyStack = new java.util.Stack<String>();
     int PageFlowDestroyCount = 0;
     public void destroyPageFlowNode(Page pageNode){
@@ -568,7 +579,7 @@ public class PageFlowController {
             //            view.removeEdge(navCaseNode);
         }
     }
-
+    
     
     /**
      * Remove all rules and cases with this pagename.
@@ -677,7 +688,7 @@ public class PageFlowController {
     public final NavigationCaseEdge getCase2Node(NavigationCase navCase){
         return case2Node.get(navCase);
     }
-            
+    
     
     public final NavigationCaseEdge removeCase2Node(NavigationCase navCase ){
         return case2Node.remove(navCase);
@@ -732,5 +743,5 @@ public class PageFlowController {
     public void serializeNodeLocations() {
         view.serializeNodeLocations();
     }
-
+    
 }
