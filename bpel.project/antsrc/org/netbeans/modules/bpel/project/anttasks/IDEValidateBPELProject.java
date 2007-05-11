@@ -68,7 +68,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Validates BPEL Module
  * @author Sreenivasan Genipudi
  */
 public class IDEValidateBPELProject extends Task {

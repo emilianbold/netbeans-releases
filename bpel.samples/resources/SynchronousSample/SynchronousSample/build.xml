@@ -70,7 +70,5 @@
         <property name="from.commandline" value="true"/>
     </target>
     <target name="pre-init" depends="-check-netbeans-home,-init-caps">
-        <echo>netbeans.home: ${netbeans.home}</echo>
-        <echo>netbeans.user: ${netbeans.user}</echo>
     </target>
 </project>

@@ -115,13 +115,7 @@ Microsystems, Inc. All Rights Reserved.
 
             <target name="pre-init">
                 <xsl:attribute name="depends">-check-netbeans-home,-init-caps</xsl:attribute>
-
-                <echo>netbeans.home: ${netbeans.home}</echo>
-                <echo>netbeans.user: ${netbeans.user}</echo>
             </target>
-
         </project>
-
     </xsl:template>
-    
 </xsl:stylesheet> 

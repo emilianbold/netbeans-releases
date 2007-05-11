@@ -163,15 +163,15 @@ class BpelproActionProvider implements ActionProvider {
 ////        }
 
 
-//        	if build command then build any depedent project
+//          if build command then build any depedent project
             if(command.equals(COMMAND_BUILD)) {
-            	try {
-            		buildDependentProjectsAndRunTask(targetNames, p);
-            	} catch (IOException e) {
+                try {
+                    buildDependentProjectsAndRunTask(targetNames, p);
+                } catch (IOException e) {
                     ErrorManager.getDefault().notify(e);
                 }
             } else {
-            	runTask(targetNames, p);
+                runTask(targetNames, p);
             }
 
 
@@ -179,8 +179,8 @@ class BpelproActionProvider implements ActionProvider {
     }
 
     private void runTask(String[] targetNames, Properties p)  {
-    	try {
-        	ActionUtils.runTarget(findBuildXml(), targetNames, p);
+        try {
+            ActionUtils.runTarget(findBuildXml(), targetNames, p);
         }
         catch (IOException e) {
             ErrorManager.getDefault().notify(e);
@@ -188,7 +188,7 @@ class BpelproActionProvider implements ActionProvider {
     }
 
     private void buildDependentProjectsAndRunTask(String[] targetNames, Properties p) throws IOException  {
-   	IcanproProjectProperties app = this.project.getProjectProperties();
+    IcanproProjectProperties app = this.project.getProjectProperties();
         List items = (List) app.get(IcanproProjectProperties.JAVAC_CLASSPATH);
         ArrayList artifacts = new ArrayList();
 
@@ -197,30 +197,30 @@ class BpelproActionProvider implements ActionProvider {
             AntArtifact aa = (AntArtifact) vi.getObject();
             String loc =  aa.getProject().getProjectDirectory().getPath() + "/" +  aa.getArtifactLocation().getPath();
             File asa = new File(loc);
-            log(" Dependent Project artifact jar: "+ loc + ", [" + (asa.exists()?"exist":"missing") + "]");
+            log("Dependent Project artifact jar: "+ loc + ", [" + (asa.exists()?"exist":"missing") + "]");
             if (! asa.exists()) {
-            	artifacts.add(aa);
+                artifacts.add(aa);
             }
         }
 
         if(artifacts.size() != 0) {
-	        //use AntTaskListener which invokes the target on
-        	//current project build script after all the depedent projects
-        	//are build
-        	AntTaskListener antTaskListener = new AntTaskListener(targetNames, p);
-	        antTaskListener.setTotalTasks(artifacts.size());
-	        Iterator it = artifacts.iterator();
-	        while(it.hasNext()) {
-	        	AntArtifact aa = (AntArtifact) it.next();
-	        	String loc =  aa.getProject().getProjectDirectory().getPath() + "/" +  aa.getArtifactLocation().getPath();
-	        	log(" Building dependent project "+ loc + "...");
-	        	ExecutorTask task = ActionUtils.runTarget(aa.getScriptFile(), new String[] { aa.getTargetName() }, null);
-	        	task.addTaskListener(antTaskListener);
-	        }
+            //use AntTaskListener which invokes the target on
+            //current project build script after all the depedent projects
+            //are build
+            AntTaskListener antTaskListener = new AntTaskListener(targetNames, p);
+            antTaskListener.setTotalTasks(artifacts.size());
+            Iterator it = artifacts.iterator();
+            while(it.hasNext()) {
+                AntArtifact aa = (AntArtifact) it.next();
+                String loc =  aa.getProject().getProjectDirectory().getPath() + "/" +  aa.getArtifactLocation().getPath();
+                log("Building dependent project "+ loc + "...");
+                ExecutorTask task = ActionUtils.runTarget(aa.getScriptFile(), new String[] { aa.getTargetName() }, null);
+                task.addTaskListener(antTaskListener);
+            }
         } else {
-        	//no need to build depedent projects
-        	//directly invoke target on current project build script;
-        	runTask(targetNames, p);
+            //no need to build depedent projects
+            //directly invoke target on current project build script;
+            runTask(targetNames, p);
         }
     }
 
@@ -246,25 +246,25 @@ class BpelproActionProvider implements ActionProvider {
     }
 
     class AntTaskListener implements TaskListener {
-    	int totalTaskCount;
-    	int finishedTaskCount = 0;
-    	private String[] mTargetNames;
-    	private Properties mProperties;
+        int totalTaskCount;
+        int finishedTaskCount = 0;
+        private String[] mTargetNames;
+        private Properties mProperties;
 
-    	public AntTaskListener(String[] targetNames, Properties p) {
-    		this.mTargetNames = targetNames;
-    		this.mProperties = p;
-    	}
+        public AntTaskListener(String[] targetNames, Properties p) {
+            this.mTargetNames = targetNames;
+            this.mProperties = p;
+        }
 
-    	public void setTotalTasks(int total) {
-    		this.totalTaskCount = total;
-    	}
+        public void setTotalTasks(int total) {
+            this.totalTaskCount = total;
+        }
 
-		public void taskFinished(Task task) {
-			finishedTaskCount++;
-			if(finishedTaskCount == totalTaskCount) {
-				runTask(this.mTargetNames, this.mProperties);
-			}
-		}
+        public void taskFinished(Task task) {
+            finishedTaskCount++;
+            if(finishedTaskCount == totalTaskCount) {
+                runTask(this.mTargetNames, this.mProperties);
+            }
+        }
 }
 }
