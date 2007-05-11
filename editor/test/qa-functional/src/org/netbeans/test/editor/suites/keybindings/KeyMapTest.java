@@ -229,9 +229,9 @@ public class KeyMapTest extends JellyTestCase{
             checkListContents(kmo.shortcuts(), new Object[]{});
             kmo.add().push();
             AddShortcutDialog asd = new AddShortcutDialog();
-            asd.txtJTextField().pushKey(KeyEvent.VK_I, InputEvent.CTRL_DOWN_MASK);
+            asd.txtJTextField().pushKey(KeyEvent.VK_B, InputEvent.CTRL_DOWN_MASK);
             asd.btOK().push();
-            checkListContents(kmo.shortcuts(), "Ctrl+I");
+            checkListContents(kmo.shortcuts(), "Ctrl+B");
             kmo.ok().push();
             closed = true;
             new EventTool().waitNoEvent(2000);
@@ -239,10 +239,10 @@ public class KeyMapTest extends JellyTestCase{
             new EventTool().waitNoEvent(100);
             editor.setCaretPosition(7, 1);
             ValueResolver vr = new ValueResolver() {
-                public Object getValue() {
-                    editor.setCaretPosition(7, 1);
-                    editor.pushKey(KeyEvent.VK_I, InputEvent.CTRL_DOWN_MASK);
+                public Object getValue() {                    
+                    editor.pushKey(KeyEvent.VK_B, InputEvent.CTRL_DOWN_MASK);
                     String selected = editor.txtEditorPane().getSelectedText();
+                    new EventTool().waitNoEvent(100);
                     if(selected==null) return false;
                     return selected.startsWith("        System.out.println(\"Hello\");");
                 }
@@ -306,11 +306,12 @@ public class KeyMapTest extends JellyTestCase{
                 public Object getValue() {
                     editor.setCaretPosition(7, 9);
                     editor.pushKey(KeyEvent.VK_UP, InputEvent.SHIFT_DOWN_MASK);
+                    new EventTool().waitNoEvent(200);
                     String text =  editor.txtEditorPane().getSelectedText();
                     return text!=null;
                 }
             };
-            waitMaxMilisForValue(3000, vr, Boolean.TRUE);
+            waitMaxMilisForValue(4000, vr, Boolean.TRUE);
             String text =  editor.txtEditorPane().getSelectedText();
             assertEquals("System",text);
         } finally {
@@ -509,7 +510,7 @@ public class KeyMapTest extends JellyTestCase{
             asd.btOK().push();
             checkListContents(kmo.shortcuts(), "Alt+C");
             kmo.ok().push();
-            new EventTool().waitNoEvent(1000);
+            new EventTool().waitNoEvent(2500);
             closed = true;
             // testing new shortcut
             editor.setCaretPosition(7, 12);
@@ -521,7 +522,7 @@ public class KeyMapTest extends JellyTestCase{
                     return editor.getText().contains("system.out.println");
                 }
             };
-            waitMaxMilisForValue(3000, res, Boolean.TRUE);
+            waitMaxMilisForValue(5000, res, Boolean.TRUE);
             assertTrue("Action not performed",editor.getText().contains("system.out.println"));
             kmo = KeyMapOperator.invoke();
             closed = false;
