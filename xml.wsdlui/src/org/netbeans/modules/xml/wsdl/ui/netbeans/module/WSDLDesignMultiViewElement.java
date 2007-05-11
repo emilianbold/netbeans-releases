@@ -57,6 +57,7 @@ import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.ui.multiview.ActivatedNodesMediator;
 import org.netbeans.modules.xml.xam.ui.multiview.CookieProxyLookup;
+import org.netbeans.modules.print.api.PrintManagerAccess;
 import org.openide.actions.SaveAction;
 import org.openide.awt.UndoRedo;
 import org.openide.explorer.ExplorerManager;
@@ -105,7 +106,7 @@ public class WSDLDesignMultiViewElement extends TopComponent
         // enabled in the context menu of the widgets, which are based
         // on the underlying nodes. In addition, the ExplorerUtils.
         // createLookup() call below is required.
-	explorerManager = new ExplorerManager();
+    explorerManager = new ExplorerManager();
         ActionMap map = getActionMap();
         map.put(DefaultEditorKit.copyAction, ExplorerUtils.actionCopy(explorerManager));
         map.put(DefaultEditorKit.cutAction, ExplorerUtils.actionCut(explorerManager));
@@ -169,7 +170,7 @@ public class WSDLDesignMultiViewElement extends TopComponent
     }
 
     public ExplorerManager getExplorerManager() {
-	return explorerManager;
+    return explorerManager;
     }
 
     @Override
@@ -196,7 +197,7 @@ public class WSDLDesignMultiViewElement extends TopComponent
 
     @Override
     public UndoRedo getUndoRedo() {
-	return wsdlDataObject.getWSDLEditorSupport().getUndoManager();
+    return wsdlDataObject.getWSDLEditorSupport().getUndoManager();
     }
 
 
@@ -218,13 +219,13 @@ public class WSDLDesignMultiViewElement extends TopComponent
     @Override
     public void componentActivated() {
         super.componentActivated();
-	ExplorerUtils.activateActions(explorerManager, true);
+    ExplorerUtils.activateActions(explorerManager, true);
         wsdlDataObject.getWSDLEditorSupport().syncModel();
     }
     
     @Override
     public void componentDeactivated() {
-	ExplorerUtils.activateActions(explorerManager, false);
+    ExplorerUtils.activateActions(explorerManager, false);
         super.componentDeactivated();
     }
     
@@ -294,6 +295,12 @@ public class WSDLDesignMultiViewElement extends TopComponent
                     mToolbar.setFloatable(false);
                     mToolbar.addSeparator();
                     graphComponent.addToolbarActions(mToolbar);
+
+                    // vlv: print // and search
+                    mToolbar.addSeparator();
+                    mToolbar.add(PrintManagerAccess.getManager().getPreviewAction());
+//                  toolbar.add(SearchManagerAccess.getManager().getSearchAction());
+
                     mToolbar.addSeparator();
                     mToolbar.add(new ValidateAction(model));
                 }
@@ -320,7 +327,7 @@ public class WSDLDesignMultiViewElement extends TopComponent
 
     @Override
     public HelpCtx getHelpCtx() {
-	return new HelpCtx(WSDLDesignMultiViewDesc.class);
+    return new HelpCtx(WSDLDesignMultiViewDesc.class);
     }
 
     @Override

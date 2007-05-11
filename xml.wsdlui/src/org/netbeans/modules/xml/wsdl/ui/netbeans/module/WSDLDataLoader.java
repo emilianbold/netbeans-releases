@@ -41,7 +41,7 @@ public class WSDLDataLoader extends UniFileLoader {
 //        which has text/xml-wsdl as mime type and even though
 //        we install out wsdl editor data object before their data object
 //        it still picks mime resolver registered by web servc module
-//        so work around is to use same mime resovlver as websvc
+//        so work around is to use same mime resolver as websvc
 //        we need to ask them to disable mime resolver there-->
         
 //    public static final String MIME_TYPE = "text/x-wsdl+xml";                 // NOI18N
@@ -70,7 +70,7 @@ public class WSDLDataLoader extends UniFileLoader {
     protected String actionsContext() {
         // Load actions from layer to avoid direct dependencies on
         // modules with non-public API.
-	return "Loaders/text/xml-wsdl/Actions/";
+    return "Loaders/text/xml-wsdl/Actions/";
     }
 
     protected MultiDataObject createMultiObject (FileObject primaryFile)

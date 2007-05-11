@@ -30,7 +30,7 @@
         which has text/xml-wsdl as mime type and even though
         we install out wsdl editor data object before their data object
         it still picks mime resolver registered by web servc module
-        so work around is to use same mime resovlver as websvc
+        so work around is to use same mime resolver as websvc
         we need to ask them to disable mime resolver there-->
         <!-- <resolver mime="text/x-wsdl+xml"> -->
         <resolver mime="text/xml-wsdl"/>
