@@ -215,6 +215,8 @@ public final class JavaSource {
     private static Map<Phase, String> phase2Key = new HashMap<Phase,String> ();
     private static Map<Phase, String> phase2Message = new HashMap<Phase,String> ();
     
+    private static final Object INTERNAL_LOCK = new Object ();
+    
     /**
      * Init the maps
      */
@@ -845,7 +847,7 @@ public final class JavaSource {
                 return;
             }
         }
-        synchronized (JavaSource.class) {
+        synchronized (INTERNAL_LOCK) {
             toRemove.add (task);
         }
     }
@@ -855,7 +857,7 @@ public final class JavaSource {
      * @task to reschedule
      */
     void rescheduleTask(CancellableTask<CompilationInfo> task) {
-        synchronized (JavaSource.class) {
+        synchronized (INTERNAL_LOCK) {
             JavaSource.Request request = this.currentRequest.getTaskToCancel (task);
             if ( request == null) {                
 out:            for (Iterator<Collection<Request>> it = finishedRequests.values().iterator(); it.hasNext();) {
@@ -920,7 +922,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 try {
                     RepositoryUpdater.getDefault().verifySourceLevel(root.getURL(), sourceLevel);
                 } catch (IOException ex) {
-                    Logger.getLogger(JavaSource.class.getName()).log(Level.FINE, null, ex);
+                    LOGGER.log(Level.FINE, null, ex);
                 }
             }
         }
@@ -1176,7 +1178,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         Request r = rst;
         rst = null;
         currentRequest.cancelCompleted(r);
-        synchronized (JavaSource.class) {
+        synchronized (INTERNAL_LOCK) {
             boolean reschedule, updateIndex;
             synchronized (this) {
                 reschedule = (this.flags & RESCHEDULE_FINISHED_TASKS) != 0;
@@ -1280,7 +1282,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             try {
                 while (true) {                   
                     try {
-                        synchronized (JavaSource.class) {
+                        synchronized (INTERNAL_LOCK) {
                             //Clean up toRemove tasks
                             if (!toRemove.isEmpty()) {
                                 for (Iterator<Collection<Request>> it = finishedRequests.values().iterator(); it.hasNext();) {
@@ -1337,7 +1339,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                                     assert js.files.size() <= 1;
                                     boolean jsInvalid;
                                     CompilationInfo ci;
-                                    synchronized (JavaSource.class) {
+                                    synchronized (INTERNAL_LOCK) {
                                         //jl:what does this comment mean?
                                         //Not only the finishedRequests for the current request.javaSource should be cleaned,
                                         //it will cause a starvation
@@ -1418,7 +1420,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                                         }
 
                                         if (r.reschedule) {                                            
-                                            synchronized (JavaSource.class) {
+                                            synchronized (INTERNAL_LOCK) {
                                                 boolean canceled = currentRequest.setCurrentTask(null);
                                                 synchronized (js) {
                                                     if ((js.flags & INVALID)!=0 || canceled) {
@@ -1721,8 +1723,12 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         }
     }
     
-    private static class CurrentRequestReference {                
-        
+    
+    /**
+     *  Only encapsulates current request. May be trasformed into 
+     *  JavaSource private static methods, but it may be less readable.
+     */
+    private static final class CurrentRequestReference {                        
         
         private JavaSource.Request reference;
         private JavaSource.Request canceledReference;
@@ -1730,14 +1736,14 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         private boolean canceled;
         private boolean mayCancelJavac;
         
-        public CurrentRequestReference () {
+        CurrentRequestReference () {
         }
         
-        public boolean setCurrentTask (JavaSource.Request reference) throws InterruptedException {
+        boolean setCurrentTask (JavaSource.Request reference) throws InterruptedException {
             boolean result = false;
-            synchronized (this) {
+            synchronized (INTERNAL_LOCK) {
                 while (this.canceledReference!=null) {
-                    this.wait();
+                    INTERNAL_LOCK.wait();
                 }
                 result = this.canceled;
                 this.canceled = this.mayCancelJavac = false;
@@ -1747,10 +1753,10 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             return result;
         }
         
-        public JavaSource.Request getTaskToCancel (final Priority priority) {
+        JavaSource.Request getTaskToCancel (final Priority priority) {
             JavaSource.Request request = null;
             if (!factory.isDispatchThread(Thread.currentThread())) {
-                synchronized (this) {
+                synchronized (INTERNAL_LOCK) {
                     if (this.reference != null && priority.compareTo(this.reference.priority) < 0) {
                         assert this.canceledReference == null;
                         request = this.reference;
@@ -1764,10 +1770,10 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             return request;
         }
         
-        public JavaSource.Request getTaskToCancel (final JavaSource js, final boolean mayCancelJavac) {
+        JavaSource.Request getTaskToCancel (final JavaSource js, final boolean mayCancelJavac) {
             JavaSource.Request request = null;
             if (!factory.isDispatchThread(Thread.currentThread())) {
-                synchronized (this) {
+                synchronized (INTERNAL_LOCK) {
                     if (this.reference != null && js.equals(this.reference.javaSource)) {
                         assert this.canceledReference == null;
                         request = this.reference;
@@ -1782,10 +1788,10 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             return request;
         }
         
-        public JavaSource.Request getTaskToCancel (final CancellableTask task) {
+        JavaSource.Request getTaskToCancel (final CancellableTask task) {
             JavaSource.Request request = null;
             if (!factory.isDispatchThread(Thread.currentThread())) {
-                synchronized (this) {
+                synchronized (INTERNAL_LOCK) {
                     if (this.reference != null && task == this.reference.task) {
                         assert this.canceledReference == null;
                         request = this.reference;
@@ -1798,10 +1804,10 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             return request;
         }
         
-        public JavaSource.Request getTaskToCancel () {
+        JavaSource.Request getTaskToCancel () {
             JavaSource.Request request = null;
             if (!factory.isDispatchThread(Thread.currentThread())) {                
-                synchronized (this) {
+                synchronized (INTERNAL_LOCK) {
                      request = this.reference;
                     if (request != null) {
                         assert this.canceledReference == null;
@@ -1825,12 +1831,12 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
          * @param request is filled by currently running task or null when there is no running task.
          * @return true when running task is background scan
          */
-        public boolean getUserTaskToCancel (JavaSource.Request[] request) {
+        boolean getUserTaskToCancel (JavaSource.Request[] request) {
             assert request != null;
             assert request.length == 1;
             boolean result = false;
             if (!factory.isDispatchThread(Thread.currentThread())) {                
-                synchronized (this) {
+                synchronized (INTERNAL_LOCK) {
                      request[0] = this.reference;
                     if (request[0] != null) {
                         result = request[0].phase == null;
@@ -1847,24 +1853,30 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             return result;
         }
         
-        public synchronized boolean isCanceled () {
-            return this.canceled;
+        boolean isCanceled () {
+            synchronized (INTERNAL_LOCK) {
+                return this.canceled;
+            }
         }
         
-        synchronized boolean isInterruptJavac () {
-            return this.mayCancelJavac;
+        boolean isInterruptJavac () {
+            synchronized (INTERNAL_LOCK) {
+                return this.mayCancelJavac;
+            }
         }
         
-        public synchronized long getCancelTime () {
-            return this.cancelTime;
+        long getCancelTime () {
+            synchronized (INTERNAL_LOCK) {
+                return this.cancelTime;
+            }
         }
         
-        public void cancelCompleted (final JavaSource.Request request) {
+        void cancelCompleted (final JavaSource.Request request) {
             if (request != null) {
-                synchronized (this) {
+                synchronized (INTERNAL_LOCK) {
                     assert request == this.canceledReference;
                     this.canceledReference = null;
-                    this.notify();
+                    INTERNAL_LOCK.notify();
                 }
             }
         }
