@@ -79,8 +79,8 @@ public interface DomProviderService {
 
 //    public void displayErrorForLocation(String message, Object location, int lineno, int column);
 
-    public Element getHtmlBodyForDocument(Document document);
-    public DocumentFragment getHtmlDomFragmentForDocument(Document document);
+//    public Element getHtmlBodyForDocument(Document document);
+//    public DocumentFragment getHtmlDomFragmentForDocument(Document document);
 
     // XXX Get rid of these
 //    public boolean isFacesBean(MarkupDesignBean bean);

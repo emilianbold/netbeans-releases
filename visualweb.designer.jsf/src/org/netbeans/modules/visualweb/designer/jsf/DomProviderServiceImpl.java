@@ -211,13 +211,13 @@ public class DomProviderServiceImpl implements DomProviderService {
 //        Util.displayErrorForLocation(message, location, lineno, column);
 //    }
 
-    public Element getHtmlBodyForDocument(Document document) {
-        return Util.getHtmlBodyForDocument(document);
-    }
+//    public Element getHtmlBodyForDocument(Document document) {
+//        return Util.getHtmlBodyForDocument(document);
+//    }
 
-    public DocumentFragment getHtmlDomFragmentForDocument(Document document) {
-        return Util.getHtmlDomFragmentForDocument(document);
-    }
+//    public DocumentFragment getHtmlDomFragmentForDocument(Document document) {
+//        return Util.getHtmlDomFragmentForDocument(document);
+//    }
 
 //    public boolean isFacesBean(MarkupDesignBean markupDesignBean) {
 //        return Util.getFacesBean(markupDesignBean) != null;

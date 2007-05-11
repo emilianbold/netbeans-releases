@@ -2543,13 +2543,13 @@ public class WebForm implements Designer {
 //        public void displayErrorForLocation(String message, Object location, int lineno, int column) {
 //        }
 
-        public Element getHtmlBodyForDocument(org.w3c.dom.Document document) {
-            return null;
-        }
+//        public Element getHtmlBodyForDocument(org.w3c.dom.Document document) {
+//            return null;
+//        }
 
-        public DocumentFragment getHtmlDomFragmentForDocument(org.w3c.dom.Document document) {
-            return null;
-        }
+//        public DocumentFragment getHtmlDomFragmentForDocument(org.w3c.dom.Document document) {
+//            return null;
+//        }
 
 //        public boolean editEventHandlerForDesignBean(DesignBean component) {
 //            return false;
