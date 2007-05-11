@@ -52,8 +52,6 @@ import org.openide.util.RequestProcessor;
  */
 public class MainClassUpdater extends FileChangeAdapter implements PropertyChangeListener {
     
-    private static RequestProcessor performer = new RequestProcessor();
-    
     private final Project project;
     private final PropertyEvaluator eval;
     private final UpdateHelper helper;
@@ -144,49 +142,43 @@ public class MainClassUpdater extends FileChangeAdapter implements PropertyChang
     }
     
     private void addFileChangeListener () {
-        performer.post( new Runnable () {
-            public void run() {
-                try {
-                    SourceUtils.waitScanFinished();
-                    synchronized (MainClassUpdater.this) {
-                        if (current != null) {
-                            current.removeFileChangeListener(MainClassUpdater.this);
-                            current = null;
-                        }            
-                    }
-                    final String mainClassName = org.netbeans.modules.java.j2seproject.MainClassUpdater.this.eval.getProperty(mainClassPropName);
-                    final FileObject[] _current = new FileObject[1];
-                    if (mainClassName != null) {
-                        FileObject[] roots = sourcePath.getRoots();
-                        if (roots.length>0) {
-                            ClassPath bootCp = ClassPath.getClassPath(roots[0], ClassPath.BOOT);
-                            ClassPath compileCp = ClassPath.getClassPath(roots[0], ClassPath.COMPILE);
-                            final ClasspathInfo cpInfo = ClasspathInfo.create(bootCp, compileCp, sourcePath);
-                            JavaSource js = JavaSource.create(cpInfo);
-                            js.runUserActionTask(new CancellableTask<CompilationController>() {
-                                public void cancel() {                    
-                                }
-                                public void run(CompilationController c) throws Exception {
-                                    TypeElement te = c.getElements().getTypeElement(mainClassName);
-                                    if (te != null) {
-                                        _current[0] = SourceUtils.getFile(te, cpInfo);                                        
+        synchronized (MainClassUpdater.this) {
+            if (current != null) {
+                current.removeFileChangeListener(MainClassUpdater.this);
+                current = null;
+            }            
+        }
+        final String mainClassName = org.netbeans.modules.java.j2seproject.MainClassUpdater.this.eval.getProperty(mainClassPropName);
+        if (mainClassName != null) {
+            try {
+                FileObject[] roots = sourcePath.getRoots();
+                if (roots.length>0) {
+                    ClassPath bootCp = ClassPath.getClassPath(roots[0], ClassPath.BOOT);
+                    ClassPath compileCp = ClassPath.getClassPath(roots[0], ClassPath.COMPILE);
+                    final ClasspathInfo cpInfo = ClasspathInfo.create(bootCp, compileCp, sourcePath);
+                    JavaSource js = JavaSource.create(cpInfo);
+                    js.runWhenScanFinished(new CancellableTask<CompilationController>() {
+
+                        public void cancel() {
+                        }
+
+                        public void run(CompilationController c) throws Exception {
+                            TypeElement te = c.getElements().getTypeElement(mainClassName);
+                             if (te != null) {
+                                synchronized (MainClassUpdater.this) {
+                                    current = SourceUtils.getFile(te, cpInfo);
+                                    if (current != null && sourcePath.contains(current)) {
+                                        current.addFileChangeListener(MainClassUpdater.this);
                                     }
-                                }                
-                            }, true);
+                                }
+                            }                            
                         }
-                    }
-                    synchronized (MainClassUpdater.this) {
-                        current = _current[0];
-                        if (current != null && sourcePath.contains(current)) {
-                            current.addFileChangeListener(MainClassUpdater.this);
-                        }
-                    }
-                } catch (InterruptedException e) {
-                    Exceptions.printStackTrace(e);
-                } catch (IOException e) {
-                    Exceptions.printStackTrace(e);
+
+                    }, true);
                 }
-            }});
+            } catch (IOException ioe) {
+            }
+        }        
     }
 
 }
