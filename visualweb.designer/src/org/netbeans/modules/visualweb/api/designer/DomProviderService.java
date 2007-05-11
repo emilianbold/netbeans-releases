@@ -95,9 +95,9 @@ public interface DomProviderService {
 //    public Element getMarkupBeanElement(DesignBean designBean);
     // XXX Modifying should be done outside of designer.
 //    public boolean setDesignProperty(MarkupDesignBean bean, String attribute, int value);
-    public boolean setStyleAttribute(Element componentRootElement, String attribute, int value);
+//    public boolean setStyleAttribute(Element componentRootElement, String attribute, int value);
 
-    public Element findHtmlElementDescendant(DocumentFragment df);
+//    public Element findHtmlElementDescendant(DocumentFragment df);
 
     public void updateLocalStyleValuesForElement(Element e, StyleData[] setStyleData, StyleData[] removeStyleData);
 

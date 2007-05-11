@@ -2578,13 +2578,13 @@ public class WebForm implements Designer {
 //        public boolean setDesignProperty(MarkupDesignBean bean, String attribute, int value) {
 //            return false;
 //        }
-        public boolean setStyleAttribute(Element componentRootElement, String attribute, int value) {
-            return false;
-        }
+//        public boolean setStyleAttribute(Element componentRootElement, String attribute, int value) {
+//            return false;
+//        }
 
-        public Element findHtmlElementDescendant(DocumentFragment df) {
-            return null;
-        }
+//        public Element findHtmlElementDescendant(DocumentFragment df) {
+//            return null;
+//        }
 
         public void updateLocalStyleValuesForElement(Element e, StyleData[] setStyleData, StyleData[] removeStyleData) {
             // XXX.

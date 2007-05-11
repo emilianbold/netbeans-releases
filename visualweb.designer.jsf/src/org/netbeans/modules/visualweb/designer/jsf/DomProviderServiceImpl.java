@@ -252,19 +252,19 @@ public class DomProviderServiceImpl implements DomProviderService {
 //    public boolean setDesignProperty(MarkupDesignBean markupDesignBean, String attribute, int value) {
 //        return Util.setDesignProperty(markupDesignBean, attribute, value);
 //    }
-    public boolean setStyleAttribute(Element componentRootElement, String attribute, int value) {
-//        MarkupDesignBean markupDesignBean = MarkupUnit.getMarkupDesignBeanForElement(componentRootElement);
-//        if (markupDesignBean == null) {
-//            return false;
-//        }
-//        return Util.setDesignProperty(markupDesignBean, attribute, value);
-        return JsfSupportUtilities.setStyleAttribute(componentRootElement, attribute, value);
-    }
+//    public boolean setStyleAttribute(Element componentRootElement, String attribute, int value) {
+////        MarkupDesignBean markupDesignBean = MarkupUnit.getMarkupDesignBeanForElement(componentRootElement);
+////        if (markupDesignBean == null) {
+////            return false;
+////        }
+////        return Util.setDesignProperty(markupDesignBean, attribute, value);
+//        return JsfSupportUtilities.setStyleAttribute(componentRootElement, attribute, value);
+//    }
 
-    public Element findHtmlElementDescendant(DocumentFragment df) {
-//        return Util.findDescendant(HtmlTag.HTML.name, df);
-        return JsfSupportUtilities.findHtmlElementDescendant(df);
-    }
+//    public Element findHtmlElementDescendant(DocumentFragment df) {
+////        return Util.findDescendant(HtmlTag.HTML.name, df);
+//        return JsfSupportUtilities.findHtmlElementDescendant(df);
+//    }
 
     public void updateLocalStyleValuesForElement(Element e, StyleData[] setStyleData, StyleData[] removeStyleData) {
 //        Util.updateLocalStyleValuesForElement(e, setStyleData, removeStyleData);
