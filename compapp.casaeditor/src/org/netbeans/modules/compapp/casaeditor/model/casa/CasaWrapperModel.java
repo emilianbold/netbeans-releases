@@ -142,7 +142,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         buildBindingComponentMaps();
         
         FileObject fo = org.openide.filesystems.Repository.getDefault().getDefaultFileSystem().findResource("Editors");
-        System.out.println(fo);
+//        System.out.println(fo);
     }
         
     public void removePropertyChangeListener(final PropertyChangeListener pcl) {
@@ -481,11 +481,11 @@ public class CasaWrapperModel extends CasaModelImpl {
         
         CasaWrapperModel casaWrapperModel = (CasaWrapperModel) casaPort.getModel();
         PortType portType = casaWrapperModel.getPortType(interfaceQName); //casaWrapperModel.getCasaPortType(casaPort);
-        System.out.println("Got WSDLEndpoint Action.. Pt: " + portType);
+//        System.out.println("Got WSDLEndpoint Action.. Pt: " + portType);
         
         String wsdlLocation = casaWrapperModel.getWSDLLocation(interfaceQName);
 
-        System.out.println("Got WSDL location: " + wsdlLocation);
+//        System.out.println("Got WSDL location: " + wsdlLocation);
         
         ExtensibilityElementTemplateFactory factory = new ExtensibilityElementTemplateFactory();
         Collection<TemplateGroup> groups = factory.getExtensibilityElementTemplateGroups();
@@ -988,7 +988,7 @@ public class CasaWrapperModel extends CasaModelImpl {
             String href = link.getHref();
             try {
                 PortType pt = (PortType) this.getWSDLComponentFromXLinkHref(href);
-                System.out.println("Got PortType: " + pt.getName());
+//                System.out.println("Got PortType: " + pt.getName());
                 if (interfaceQName.getNamespaceURI().equals( pt.getModel().getDefinitions().getTargetNamespace()) &&
                         interfaceQName.getLocalPart().equals(pt.getName())) {
                     return href.substring(0, href.indexOf("#xpointer")); // NOI18N
