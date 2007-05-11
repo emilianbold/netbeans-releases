@@ -170,7 +170,7 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
         log(":: Selected: "+objNode.getTreePath().toString());
         
         try {
-            new DeleteAction().performAPI(objNode);
+            new DeleteAction().performShortcut(objNode);
             String dialogCaption = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.navigation.Bundle", "MSG_ConfirmDeleteObjectTitle");
             new NbDialogOperator(dialogCaption).yes();
             
