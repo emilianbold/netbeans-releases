@@ -22,6 +22,7 @@ import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.FilesTabOperator;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.actions.PropertiesAction;
 import org.netbeans.jellytools.nodes.Node;
@@ -166,19 +167,19 @@ public class PropertyTest extends JellyTestCase {
     
     /** Test of setValue method */
     public void testSetValue() {
-        // opens properties window for Runtime|HTTP server node
-        Node node = RuntimeTabOperator.invoke().getRootNode();
-        // "HTTP Server
-        String httpServerLabel = Bundle.getString("org.netbeans.modules.httpserver.Bundle", "LBL_HTTPServerSettings");
-        node = new Node(node, httpServerLabel);
-        new PropertiesAction().performAPI(node);
-        PropertySheetOperator httpPso = new PropertySheetOperator(PropertySheetOperator.MODE_PROPERTIES_OF_ONE_OBJECT, httpServerLabel);
+        OptionsOperator optionsOperator = OptionsOperator.invoke();
+        optionsOperator.switchToClassicView();
+        // "IDE Configuration|System|Print Settings"
+        String printSettingsPath = 
+                Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration")+"|"+
+                Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration/System")+"|"+
+                Bundle.getString("org.netbeans.core.Bundle", "Services/org-openide-text-PrintSettings.settings");
+        PropertySheetOperator printPso = optionsOperator.getPropertySheet(printSettingsPath);
         try{
             // test boolean property
             
-            // find "Show Grant Access Dialog" property
-            String propertyName = Bundle.getString("org.netbeans.modules.httpserver.Bundle", "PROP_showGrantAccess");
-            Property booleanProperty = new Property(httpPso, propertyName);
+            // find "Wrap Lines" property
+            Property booleanProperty = new Property(printPso, "Wrap Lines");
             String oldValue = booleanProperty.getValue();
             // set to false
             booleanProperty.setValue(1);
@@ -193,17 +194,15 @@ public class PropertyTest extends JellyTestCase {
             
             // test text property
             
-            // "Port"
-            String portLabel = Bundle.getString("org.netbeans.modules.httpserver.Bundle", "PROP_Port");
-            Property portProperty = new Property(httpPso, portLabel);
+            Property portProperty = new Property(printPso, "Page Footer Format");
             oldValue = portProperty.getValue();
-            String expected = "8888"; // NOI18N
+            String expected = "Page {1}"; // NOI18N
             portProperty.setValue(expected);
             String newValue = portProperty.getValue();
             portProperty.setValue(oldValue);
             assertEquals("Wrong property value was set.", expected, newValue);
         } finally {
-            httpPso.close();
+            printPso.close();
         }
     }
 }
