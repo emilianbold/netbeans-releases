@@ -36,7 +36,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.FolderLookup;
 import org.openide.util.Lookup;
-import org.xml.sax.InputSource;
 
 /**
  * GrammarQuery service provider definition. Manager methods

@@ -21,8 +21,7 @@ package org.netbeans.modules.xml.api.model;
 
 import java.beans.FeatureDescriptor;
 import java.util.Enumeration;
-import org.openide.util.enum.EmptyEnumeration;
-import org.xml.sax.InputSource;
+import org.openide.util.Enumerations;
 
 /**
  *
@@ -44,7 +43,7 @@ public class SampleGrammarQueryManager extends GrammarQueryManager {
      *
      */
     public Enumeration enabled(GrammarEnvironment ctx) {
-        return EmptyEnumeration.EMPTY;
+        return Enumerations.empty();
     }
     
     /** @return detailed description.
@@ -77,7 +76,7 @@ public class SampleGrammarQueryManager extends GrammarQueryManager {
          *
          */
         public Enumeration queryAttributes(HintContext ctx) {
-            return EmptyEnumeration.EMPTY;
+            return Enumerations.empty();
         }
         
         /** @semantics Navigates through read-only Node tree to determine context and provide right results.
@@ -90,7 +89,7 @@ public class SampleGrammarQueryManager extends GrammarQueryManager {
          *
          */
         public Enumeration queryElements(HintContext ctx) {
-            return EmptyEnumeration.EMPTY;
+            return Enumerations.empty();
         }
         
         /** Allow to get names of <b>parsed general entities</b>.
@@ -98,7 +97,7 @@ public class SampleGrammarQueryManager extends GrammarQueryManager {
          *
          */
         public Enumeration queryEntities(String prefix) {
-            return EmptyEnumeration.EMPTY;
+            return Enumerations.empty();
         }
         
         /** Allow to get names of <b>declared notations</b>.
@@ -106,7 +105,7 @@ public class SampleGrammarQueryManager extends GrammarQueryManager {
          *
          */
         public Enumeration queryNotations(String prefix) {
-            return EmptyEnumeration.EMPTY;
+            return Enumerations.empty();
         }
         
         /** Return options for value at given context.
@@ -121,7 +120,7 @@ public class SampleGrammarQueryManager extends GrammarQueryManager {
          *
          */
         public Enumeration queryValues(HintContext ctx) {
-            return EmptyEnumeration.EMPTY;
+            return Enumerations.empty();
         }
         
     }
