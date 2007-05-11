@@ -804,7 +804,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
                 return new StringReader(NbBundle.getMessage(MultiDiffPanel.class, "LBL_Diff_NoBinaryDiff"));  // hexa-flexa txt? // NOI18N
             } else {
                 try {
-                    return new InputStreamReader(new ByteArrayInputStream(value), "utf8");  // XXX what encoding is used for storing property values in the text file?,  is it really UTF-8 // NOI18N
+                    return new InputStreamReader(new ByteArrayInputStream(value), "utf8");  // NOI18N
                 } catch (UnsupportedEncodingException ex) {
                     ErrorManager.getDefault().notify(ex);
                     return new StringReader("[ERROR: " + ex.getLocalizedMessage() + "]"); // NOI18N
