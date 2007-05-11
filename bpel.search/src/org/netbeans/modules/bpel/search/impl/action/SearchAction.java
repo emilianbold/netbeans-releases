@@ -26,6 +26,7 @@ import org.openide.util.actions.NodeAction;
 
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.search.api.SearchManagerAccess;
+import org.netbeans.modules.bpel.search.impl.util.Util;
 
 import static org.netbeans.modules.print.ui.PrintUI.*;
 
@@ -101,5 +102,22 @@ public final class SearchAction extends NodeAction {
     return "org/netbeans/modules/bpel/search/impl/util/image/search.gif"; // NOI18N
   }
 
+  // -----------------------------------------------------------------------------------------
+  public static final class Manager
+    extends org.netbeans.modules.print.ui.PrintUI.NodeAction
+  {
+    /**{@inheritDoc}*/
+    public Manager() {
+      super(
+        icon(Util.class, "search"), // NOI18N
+        i18n(Manager.class, "TLT_Search_Action")); // NOI18N
+    }
+
+    @Override     
+    protected void actionPerformed(Node node)
+    {
+      performAction(node);
+    }
+  }
   private org.netbeans.modules.bpel.search.impl.ui.Search mySearch;
 }

@@ -28,7 +28,7 @@ import org.netbeans.modules.bpel.search.api.SearchManager;
 import org.netbeans.modules.bpel.search.api.SearchMatch;
 import org.netbeans.modules.bpel.search.api.SearchPattern;
 import org.netbeans.modules.bpel.search.spi.SearchEngine;
-import org.netbeans.modules.bpel.search.impl.action.ManagerAction;
+import org.netbeans.modules.bpel.search.impl.action.SearchAction;
 import org.netbeans.modules.bpel.search.impl.ui.Find;
 import org.netbeans.modules.bpel.search.impl.ui.Search;
 import org.netbeans.modules.bpel.search.impl.util.Util;
@@ -72,7 +72,7 @@ public final class Manager implements SearchManager {
 
   /**{@inheritDoc}*/  
   public Action getSearchAction() {
-    return new ManagerAction();
+    return new SearchAction.Manager();
   }
 
   private List<SearchEngine> getEngines(Object source) {
