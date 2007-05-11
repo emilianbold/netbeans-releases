@@ -514,7 +514,11 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
             Color oldColor = g.getColor();
             Stroke oldStroke = g.getStroke();
             Paint oldPaint = g.getPaint();
-            g.setColor(Color.red);        	
+            Color c = UIManager.getColor("Panel.dropTargetGlassPane");
+            if (c == null) {
+                c = Color.red;
+            }
+            g.setColor(c);        	
 	
             g.setStroke(createIndicationStroke());
             g.setPaint(createPaint());
@@ -647,10 +651,14 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
         private TexturePaint createPaint() {
             BufferedImage image = new BufferedImage(2,2,BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2 = image.createGraphics();
-            g2.setColor(new Color(255, 90, 0));
+            Color c = UIManager.getColor("Panel.dropTargetGlassPane");
+            if (c == null) {
+                c = new Color(255, 90, 0);
+            }
+            g2.setColor(c);
             g2.fillRect(0,0,1,1);
             g2.fillRect(1,1,1,1);
-            g2.setColor(new Color(255, 90, 0, 0));
+            g2.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), 0));
             g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.75f));
             g2.fillRect(1,0,1,1);
             g2.fillRect(0,1,1,1);
