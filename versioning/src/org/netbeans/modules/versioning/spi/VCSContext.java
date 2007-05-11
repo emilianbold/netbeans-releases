@@ -64,6 +64,9 @@ public final class VCSContext {
     private final Set<File> rootFiles;
     private final Set<File> exclusions;
 
+    private Set<File>       computedFilesCached;
+    private FileFilter      fileFilterCached;
+
     /**
      * Constructs a VCSContext out of a set of files. These files are later available via getRootFiles().
      * 
@@ -71,7 +74,7 @@ public final class VCSContext {
      * @return VCSContext a context representing supplied set of Files
      */ 
     public static VCSContext forFiles(Set<File> rootFiles) {
-        return new VCSContext(null, Collections.unmodifiableSet(new HashSet<File>(rootFiles)), emptySet());
+        return new VCSContext(null, rootFiles, emptySet());
     }
 
     /**
@@ -119,7 +122,7 @@ public final class VCSContext {
         contextNodesCached = new WeakReference<Node []>(nodes);
         return ctx;
     }
-    
+        
     /**
      * Returns the smallest possible set of all files that lie under Root files and are NOT 
      * under some Excluded file. 
@@ -132,8 +135,12 @@ public final class VCSContext {
      * @param filter custom file filter
      * @return filtered set of files that must pass through the filter
      */
-    public Set<File> computeFiles(FileFilter filter) {
-        return substract(rootFiles, exclusions, filter);
+    public synchronized Set<File> computeFiles(FileFilter filter) {
+        if (computedFilesCached == null || filter != fileFilterCached) {
+            computedFilesCached = substract(rootFiles, exclusions, filter);
+            fileFilterCached = filter;
+        }
+        return computedFilesCached;
     }
     
     /**
@@ -250,11 +257,37 @@ public final class VCSContext {
         this.elements = nodes != null ? Lookups.fixed(nodes) : Lookups.fixed(new Node[0]);
         Set<File> tempRootFiles = new HashSet<File>(rootFiles);
         Set<File> tempExclusions = new HashSet<File>(exclusions);
-        // TODO remove all exclusions without some ancestor root 
-        removeDuplicates(tempRootFiles);
-        removeDuplicates(tempExclusions);
+        while (normalize(tempRootFiles, tempExclusions));
         this.rootFiles = Collections.unmodifiableSet(tempRootFiles);
         this.exclusions = Collections.unmodifiableSet(tempExclusions);
+    }
+
+    private boolean normalize(Set<File> rootFiles, Set<File> exclusions) {
+        for (Iterator i = rootFiles.iterator(); i.hasNext();) {
+            File root = (File) i.next();
+            for (Iterator j = exclusions.iterator(); j.hasNext();) {
+                File exclusion = (File) j.next();
+                if (Utils.isAncestorOrEqual(exclusion, root)) {
+                    j.remove();
+                    exclusionRemoved(exclusions, exclusion, root);
+                    return true;
+                }
+            }
+        }
+        removeDuplicates(rootFiles);
+        removeDuplicates(exclusions);
+        return false;
+    }
+    
+    private void exclusionRemoved(Set<File> exclusions, File exclusion, File root) {
+        File [] exclusionChildren = exclusion.listFiles();
+        if (exclusionChildren == null) return;
+        for (int i = 0; i < exclusionChildren.length; i++) {
+            File child = exclusionChildren[i];
+            if (!Utils.isAncestorOrEqual(root, child)) {
+                exclusions.add(child);
+            }
+        }
     }
 
     private static Set<File> substract(Set<File> roots, Set<File> exclusions, FileFilter filter) {
