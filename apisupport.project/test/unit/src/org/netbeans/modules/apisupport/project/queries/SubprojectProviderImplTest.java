@@ -79,8 +79,8 @@ public class SubprojectProviderImplTest extends TestBase {
     
     /** @see "#63824" */
     public void testAdHocSubprojects() throws Exception {
-        assertDepends("mdr/module", "mdr");
-        assertDepends("ide/applemenu", "ide/applemenu/eawtstub");
+        //assertDepends("mdr/module", "mdr");
+        assertDepends("core/applemenu", "core/applemenu/eawtstub");
     }
     
     /** @see "#77533" */
