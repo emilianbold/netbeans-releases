@@ -32,6 +32,9 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNodeFactory;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.AutoLayoutAction;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.BuildAction;
+
+import org.netbeans.modules.print.api.PrintManagerAccess;
+
 import org.openide.util.NbBundle;
 
 /**
@@ -171,6 +174,9 @@ public class CasaDesignView {
         mToolBar.add(createButton(mBuildAction,
                                   (String) mBuildAction.getValue(Action.NAME), // NOI18N
                                   (Icon)   mBuildAction.getValue(Action.SMALL_ICON))); // NOI18N
+        // vlv: print
+        mToolBar.addSeparator();
+        mToolBar.add(PrintManagerAccess.getManager().getPreviewAction());
     }
 
     private JButton createButton(Action action, String tooltip, Icon icon) {
