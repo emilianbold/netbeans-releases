@@ -232,7 +232,9 @@ public class UMLProjectProperties
             REFERENCED_JAVA_PROJECT_SRC, refJavaSrcRoots);
         
         projectProperties.setProperty(
-            CODE_GEN_TEMPLATES, getCodeGenTemplates());
+            CODE_GEN_TEMPLATES, codeGenTemplates);
+//        projectProperties.setProperty(
+//            CODE_GEN_TEMPLATES, getCodeGenTemplates());
         
         projectProperties.setProperty(UML_PROJECT_IMPORTS, umlImports);
        
@@ -420,5 +422,11 @@ public class UMLProjectProperties
     {
         return new ArrayList<String>(Arrays.asList(StringTokenizer2.toArray(
             getCodeGenTemplates(), TEMPLATE_DELIMITER))); // NOI18N
+    }
+
+    public void setCodeGenTemplates(List<String> val)
+    {
+        codeGenTemplates = 
+            StringTokenizer2.delimitedString(val.toArray(), TEMPLATE_DELIMITER);
     }
 }
