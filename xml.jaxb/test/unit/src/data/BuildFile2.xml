@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="_jaxb" default="default" basedir="..">
+<import file="build-impl.xml"/>
+<target name="xjc-typedef-target" depends="-init-project">
+<typedef classname="com.sun.tools.xjc.XJC2Task" name="xjc" xmlns:s="http://xml.netbeans.org/schema/JAXBWizConfig">
+<classpath path="${libs.jaxb20.classpath}"/>
+</typedef>
+</target>
+<target name="jaxb-code-generation" depends="xjc-typedef-target">
+<mkdir dir="build\generated\jaxb" xmlns:s="http://xml.netbeans.org/schema/JAXBWizConfig"/>
+<mkdir dir="build\classes" xmlns:s="http://xml.netbeans.org/schema/JAXBWizConfig"/>
+<xjc destdir="build\generated\jaxb">
+<schema file="src\META-INF\jaxb\XmlQosPmUtilSchema.xsd"/>
+<arg value="-xmlschema"/>
+</xjc>
+<xjc destdir="build\generated\jaxb">
+<schema file="src\META-INF\jaxb\XmlQosPmUtilSchema.xsd"/>
+<schema file="src\META-INF\jaxb\XmlVodafoneTroubleTicketSchema.xsd"/>
+<arg value="-xmlschema"/>
+</xjc>
+<javac destdir="build\classes" srcdir="build\generated\jaxb" xmlns:s="http://xml.netbeans.org/schema/JAXBWizConfig">
+<classpath path="${libs.jaxb20.classpath}"/>
+</javac>
+</target>
+</project>
