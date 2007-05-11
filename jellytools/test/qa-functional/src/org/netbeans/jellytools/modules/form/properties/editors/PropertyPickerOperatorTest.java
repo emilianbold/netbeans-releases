@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.modules.form.properties.editors;
@@ -60,8 +60,8 @@ public class PropertyPickerOperatorTest extends FormPropertiesEditorsTestCase {
         if(ppo == null) {
             // need to wait because combo box is not refreshed in time
             new EventTool().waitNoEvent(1000);
-            // set Form Connection panel
-            fceo.setMode(Bundle.getString("org.netbeans.modules.form.Bundle", "CTL_RADConn_DisplayName"));
+            // set "Value from existing component"
+            fceo.setMode(Bundle.getString("org.netbeans.modules.form.Bundle", "CTL_FormConnection_DisplayName"));
             ParametersPickerOperator paramPicker = new ParametersPickerOperator(PROPERTY_NAME);
             paramPicker.property();
             paramPicker.selectProperty();

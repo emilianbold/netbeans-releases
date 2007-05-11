@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.modules.form.properties.editors;
@@ -40,12 +40,8 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
  *      property.openEditor();
  *      FormCustomEditorOperator fceo = new FormCustomEditorOperator(propertyName);
  *      // ParametersPickerOperator
- *      fceo.setMode("Form Connection");
+ *      fceo.setMode("Value from existing component");
  *      ParametersPickerOperator paramPicker = new ParametersPickerOperator(propertyName);
- *      paramPicker.value();
- *      paramPicker.setValue("myValue");
- *      paramPicker.userCode();
- *      paramPicker.setUserCode("// my code");
  *
  *      // PropertyPickerOperator
  *      paramPicker.property();
@@ -77,10 +73,8 @@ public class ParametersPickerOperator extends FormCustomEditorOperator {
     
     /** Components operators. */
     private JLabelOperator _lblGetParameterFrom;
-    private JRadioButtonOperator _rbValue;
-    private JTextFieldOperator _txtValue;
-    private JRadioButtonOperator _rbBean;
-    private JComboBoxOperator _cboBean;
+    private JRadioButtonOperator _rbComponent;
+    private JComboBoxOperator _cboComponent;
     private JRadioButtonOperator _rbProperty;
     private JTextFieldOperator _txtProperty;
     private JButtonOperator _btSelectProperty;
@@ -97,60 +91,38 @@ public class ParametersPickerOperator extends FormCustomEditorOperator {
         super(propertyName);
     }
     
-    /** Returns operator of "Get Parameter From:" label.
-     * @return  JLabelOperator instance of "Get Parameter From:" label
+    /** Returns operator of "Get Value From:" label.
+     * @return  JLabelOperator instance of "Get Value From:" label
      */
     public JLabelOperator lblGetParameterFrom() {
         if(_lblGetParameterFrom == null) {
             _lblGetParameterFrom = new JLabelOperator(this, 
                             Bundle.getString("org.netbeans.modules.form.Bundle", 
-                                             "CTL_CW_GetParametersFrom"));
+                                             "ConnectionCustomEditor.jLabel1.text"));
         }
         return _lblGetParameterFrom;
     }
     
-    /** Returns operator of "Value:" radio button.
-     * @return  JRadioButtonOperator instance of "Value:" radio button
+    /** Returns operator of "Component:" radio button.
+     * @return  JRadioButtonOperator instance of "Component:" radio button
      */
-    public JRadioButtonOperator rbValue() {
-        if(_rbValue == null) {
-            _rbValue = new JRadioButtonOperator(this, 
+    public JRadioButtonOperator rbComponent() {
+        if(_rbComponent == null) {
+            _rbComponent = new JRadioButtonOperator(this, 
                             Bundle.getStringTrimmed("org.netbeans.modules.form.Bundle",
-                                                    "CTL_CW_Value"));
+                                                    "ConnectionCustomEditor.beanRadio.text"));
         }
-        return _rbValue;
+        return _rbComponent;
     }
     
-    /** Returns operator of "Value:" text field.
-     * @return  JTextFieldOperator instance of "Value:" text field
+    /** Returns operator of "Component:" combo box.
+     * @return  JComboBoxOperator instance of "Component:" combo box
      */
-    public JTextFieldOperator txtValue() {
-        if(_txtValue == null) {
-            _txtValue = new JTextFieldOperator(this, 0);
+    public JComboBoxOperator cboComponent() {
+        if(_cboComponent == null) {
+            _cboComponent = new JComboBoxOperator(this, 0);
         }
-        return _txtValue;
-    }
-    
-    /** Returns operator of "Bean:" radio button.
-     * @return  JRadioButtonOperator instance of "Bean:" radio button
-     */
-    public JRadioButtonOperator rbBean() {
-        if(_rbBean == null) {
-            _rbBean = new JRadioButtonOperator(this, 
-                            Bundle.getStringTrimmed("org.netbeans.modules.form.Bundle",
-                                                    "CTL_CW_Bean"));
-        }
-        return _rbBean;
-    }
-    
-    /** Returns operator of "Bean:" combo box.
-     * @return  JComboBoxOperator instance of "Bean:" combo box
-     */
-    public JComboBoxOperator cboBean() {
-        if(_cboBean == null) {
-            _cboBean = new JComboBoxOperator(this, 1);
-        }
-        return _cboBean;
+        return _cboComponent;
     }
     
     /** Returns operator of "Property:" radio button.
@@ -160,7 +132,7 @@ public class ParametersPickerOperator extends FormCustomEditorOperator {
         if(_rbProperty == null) {
             _rbProperty = new JRadioButtonOperator(this, 
                             Bundle.getStringTrimmed("org.netbeans.modules.form.Bundle",
-                                                    "CTL_CW_Property"));
+                                                    "ConnectionCustomEditor.propertyRadio.text"));
         }
         return _rbProperty;
     }
@@ -170,7 +142,7 @@ public class ParametersPickerOperator extends FormCustomEditorOperator {
      */
     public JTextFieldOperator txtProperty() {
         if(_txtProperty == null) {
-            _txtProperty = new JTextFieldOperator(this, 1);
+            _txtProperty = new JTextFieldOperator(this, 0);
         }
         return _txtProperty;
     }
@@ -192,7 +164,7 @@ public class ParametersPickerOperator extends FormCustomEditorOperator {
         if(_rbMethodCall == null) {
             _rbMethodCall = new JRadioButtonOperator(this, 
                             Bundle.getStringTrimmed("org.netbeans.modules.form.Bundle",
-                                                    "CTL_CW_Method"));
+                                                    "ConnectionCustomEditor.methodRadio.text"));
         }
         return _rbMethodCall;
     }
@@ -202,7 +174,7 @@ public class ParametersPickerOperator extends FormCustomEditorOperator {
      */
     public JTextFieldOperator txtMethodCall() {
         if(_txtMethodCall==null) {
-            _txtMethodCall = new JTextFieldOperator(this, 2);
+            _txtMethodCall = new JTextFieldOperator(this, 1);
         }
         return _txtMethodCall;
     }
@@ -217,54 +189,20 @@ public class ParametersPickerOperator extends FormCustomEditorOperator {
         return _btSelectMethod;
     }
     
-    /** Returns operator of "User Code:" radio button.
-     * @return  JRadioButtonOperator instance of "User Code:" radio button
-     */
-    public JRadioButtonOperator rbUserCode() {
-        if(_rbUserCode == null) {
-            _rbUserCode = new JRadioButtonOperator(this, 
-                            Bundle.getStringTrimmed("org.netbeans.modules.form.Bundle",
-                                                    "CTL_CW_UserCode"));
-        }
-        return _rbUserCode;
-    }
-    
-    /** Returns operator of "User Code:" text field.
-     * @return  JTextFieldOperator instance of "User Code:" text field
-     */
-    public JEditorPaneOperator txtUserCode() {
-        if(_txtUserCode == null) {
-            _txtUserCode = new JEditorPaneOperator(this);
-        }
-        return _txtUserCode;
-    }
-    
     //****************************************
     // Low-level functionality definition part
     //****************************************
     
-    /** Pushes "Value:" radion button. */
-    public void value() {
-        rbValue().push();
+    /** Pushes "Component:" radio button. */
+    public void component() {
+        rbComponent().push();
     }
     
-    /** Sets specified text into "Value" text field.
-     * @param text text to be set to text field
-     */
-    public void setValue(String text) {
-        txtValue().setText(text);
-    }
-    
-    /** Pushes "Bean:" radio button. */
-    public void bean() {
-        rbBean().push();
-    }
-    
-    /** Selects specified item from "Bean:" combo box.
+    /** Selects specified item from "Component:" combo box.
      * @param item item to be selected
      */
-    public void setBean(String item) {
-        cboBean().setSelectedItem(item);
+    public void setComponent(String item) {
+        cboComponent().setSelectedItem(item);
     }
     
     /** Pushes "Property:" radio button. */
@@ -289,34 +227,17 @@ public class ParametersPickerOperator extends FormCustomEditorOperator {
         btSelectMethod().pushNoBlock();
     }
     
-    /** Pushes "User Code:" radio button. */
-    public void userCode() {
-        rbUserCode().push();
-    }
-    
-    /** Sets specified text into "User Code" editor pane.
-     * @param text text to set to editor pane
-     */
-    public void setUserCode( String text ) {
-        txtUserCode().setText(text);
-    }
-    
-    
     /** Performs verification by accessing all sub-components */    
     public void verify() {
         lblGetParameterFrom();
         txtMethodCall();
         txtProperty();
-        txtUserCode();
-        txtValue();
-        rbBean();
+        rbComponent();
         rbMethodCall();
         rbProperty();
-        rbUserCode();
-        rbValue();
         btSelectMethod();
         btSelectProperty();
-        cboBean();
+        cboComponent();
         super.verify();
     }
 

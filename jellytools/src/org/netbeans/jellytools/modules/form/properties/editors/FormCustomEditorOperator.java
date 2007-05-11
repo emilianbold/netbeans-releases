@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,7 +25,6 @@ package org.netbeans.jellytools.modules.form.properties.editors;
  * Created on 6/13/02 11:58 AM
  */
 
-import javax.swing.JDialog;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jemmy.EventTool;
@@ -34,9 +33,8 @@ import org.netbeans.jemmy.operators.*;
 /** Dialog opened after click on "..." button in Component Inspector
  * (or property sheet can be docked to a different window).<p>
  * Contains Default, OK and Cancel buttons,
- * combobox enabling to change editor (DimensionEditor/Form Connection) and
- * button Advanced to call "Advanced Initialization Code" dialog (it is
- * FormCustomEditorAdvancedOperator).<p>
+ * combobox enabling to change editor (DimensionEditor/Value from existing component).
+ * <p>
  * Example:<p>
  * <pre>
  *  ...
@@ -58,22 +56,8 @@ public class FormCustomEditorOperator extends NbDialogOperator {
         super(title);
     }
 
-    private JButtonOperator _btAdvanced;
     private JButtonOperator _btDefault;
     private JComboBoxOperator _cboMode;
-
-    /** Tries to find Advanced... JButton in this dialog.
-     * @throws TimeoutExpiredException when component not found
-     * @return JButtonOperator
-     */
-    public JButtonOperator btAdvanced() {
-        if (_btAdvanced==null) {
-            _btAdvanced = new JButtonOperator(this, Bundle.getString(
-                                             "org.netbeans.modules.form.Bundle", 
-                                             "CTL_Advanced"));
-        }
-        return _btAdvanced;
-    }
 
     /** Tries to find "Default" JButton in this dialog.
      * @throws TimeoutExpiredException when component not found
@@ -96,13 +80,6 @@ public class FormCustomEditorOperator extends NbDialogOperator {
             _cboMode = new JComboBoxOperator(this);
         }
         return _cboMode;
-    }
-
-    /** clicks on Advanced... JButton.
-     * @throws TimeoutExpiredException when JButton not found
-     */
-    public void advanced() {
-        btAdvanced().pushNoBlock();
     }
 
     /** clicks on "Default" JButton
@@ -128,7 +105,6 @@ public class FormCustomEditorOperator extends NbDialogOperator {
 
     /** Performs verification by accessing all sub-components */    
     public void verify() {
-        btAdvanced();
         btDefault();
         cboMode();
     }
