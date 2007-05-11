@@ -166,14 +166,25 @@ public final class ObjectTranslation {
      */
     public Object translate (Mirror o, Object v) {
         Object r = null;
-        WeakReference wr = cache.get (o);
-        if (wr != null)
-            r = wr.get ();
-        if (r == null) {
-            r = createTranslation (o, v);
-            cache.put (o, new WeakReference<Object>(r));
+        synchronized (cache) {
+            WeakReference wr = cache.get (o);
+            if (wr != null)
+                r = wr.get ();
+            if (r == null) {
+                r = createTranslation (o, v);
+                cache.put (o, new WeakReference<Object>(r));
+            }
         }
         return r;
+    }
+    
+    /**
+     * Explicitly remove the translation of the mirror object.
+     */
+    public void remove(Mirror o) {
+        synchronized (cache) {
+            cache.remove(o);
+        }
     }
     
     public static ObjectTranslation createThreadTranslation(JPDADebuggerImpl debugger) {

@@ -25,6 +25,7 @@ import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.InvalidStackFrameException;
 import com.sun.jdi.LocalVariable;
 import com.sun.jdi.Method;
+import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StackFrame;
@@ -1053,7 +1054,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
         for (Iterator it = threads.iterator(); it.hasNext(); ) {
             Object threadOrGroup = it.next();
             if (threadOrGroup instanceof JPDAThreadImpl) {
-                ((JPDAThreadImpl) threadOrGroup).notifySuspended();
+                try {
+                    ((JPDAThreadImpl) threadOrGroup).notifySuspended();
+                } catch (ObjectCollectedException ocex) {
+                    threadsTranslation.remove(((JPDAThreadImpl) threadOrGroup).getThreadReference());
+                }
             }
         }
     }

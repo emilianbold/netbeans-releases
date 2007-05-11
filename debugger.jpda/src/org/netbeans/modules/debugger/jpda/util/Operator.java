@@ -100,8 +100,8 @@ public class Operator {
             params [2] = null;
             boolean processStaledEvents = false;
             
-             try {
-                 for (;;) {
+       loop: for (;;) {
+                 try {
                      EventSet eventSet = null;
                      if (processStaledEvents) {
                          synchronized (Operator.this) {
@@ -205,14 +205,7 @@ public class Operator {
                              synchronized (Operator.this) {
                                  stop = true;
                              }
-//                             disconnected = true;
-                             if (finalizer != null) finalizer.run ();
-                             //S ystem.out.println ("EVENT: " + e); // NOI18N
-                             //S ystem.out.println ("Operator end2"); // NOI18N
-                             finalizer = null;
-                             eventQueue = null;
-                             starter = null;
-                             return;
+                             break loop;
                          }
                          
                          if ((e instanceof VMStartEvent) && (starter != null)) {
@@ -245,10 +238,9 @@ public class Operator {
                                  synchronized (Operator.this) {
                                      stop = true;
                                  }
-                                 if (finalizer != null) finalizer.run ();
                                  //S ystem.out.println ("EVENT: " + e); // NOI18N
                                  //S ystem.out.println ("Operator end"); // NOI18N
-                                 return;
+                                 break loop;
                              } catch (Exception ex) {
                                  ErrorManager.getDefault().notify(ex);
                              }
@@ -278,12 +270,13 @@ public class Operator {
                              }
                          }
                      }
-                 }// for
-             } catch (VMDisconnectedException e) {   
-             //} catch (InterruptedException e) {
-             } catch (Exception e) {
-                 ErrorManager.getDefault().notify(e);
-             }
+                 } catch (VMDisconnectedException e) {
+                     break;
+                 //} catch (InterruptedException e) {
+                 } catch (Exception e) {
+                     ErrorManager.getDefault().notify(e);
+                 }
+             }// for
              if (finalizer != null) finalizer.run ();
              //S ystem.out.println ("Operator end"); // NOI18N
              finalizer = null;
