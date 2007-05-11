@@ -37,6 +37,8 @@ public class GuiTest extends EditorTestCase {
     
     public final String version;
     
+    private static boolean firstRun = true;
+    
     
     /** Creates a new instance of CreateConstructor */
     public GuiTest(String name) {
@@ -72,7 +74,12 @@ public class GuiTest extends EditorTestCase {
     }
     
     private void performCodeCompletion(String testFile, String prefix, int line,int itemNo, String pattern,boolean allsymbols) {
+        int delay;
         openSourceFile(defaultSamplePackage, testFile);
+        if(firstRun) {
+            new EventTool().waitNoEvent(10000);
+            firstRun = false;
+        }
         EditorOperator editor = new EditorOperator(testFile);
         try {
             editor.requestFocus();
@@ -84,12 +91,14 @@ public class GuiTest extends EditorTestCase {
                 }
             }
             if(allsymbols) {
-                editor.pushKey(KeyEvent.VK_SPACE, KeyEvent.CTRL_DOWN_MASK | KeyEvent.ALT_DOWN_MASK);
-                new EventTool().waitNoEvent(10000);
+                editor.pushKey(KeyEvent.VK_SPACE, KeyEvent.CTRL_DOWN_MASK | KeyEvent.ALT_DOWN_MASK);                
+                delay = 5000;
             } else {
                 editor.pushKey(KeyEvent.VK_SPACE, KeyEvent.CTRL_DOWN_MASK);
-                new EventTool().waitNoEvent(5000);
+                
+                delay = 2500;
             }
+            new EventTool().waitNoEvent(delay);
             while(itemNo>1) {
                 editor.pushKey(KeyEvent.VK_DOWN);
                 new EventTool().waitNoEvent(200);
