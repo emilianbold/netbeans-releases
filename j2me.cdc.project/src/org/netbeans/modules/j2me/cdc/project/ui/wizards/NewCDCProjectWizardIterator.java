@@ -68,10 +68,10 @@ import org.openide.util.NbBundle;
  */
 public class NewCDCProjectWizardIterator implements TemplateWizard.Iterator {
 
-    static final int TYPE_APP = 0;
-    static final int TYPE_LIB = 1;
-    static final int TYPE_EXT = 2;
-    static final int TYPE_SAMPLE = 3;
+    public static final int TYPE_APP = 0;
+    public static final int TYPE_LIB = 1;
+    public static final int TYPE_EXT = 2;
+    public static final int TYPE_SAMPLE = 3;
     
     static final String PROP_NAME_INDEX = "nameIndex";      //NOI18N
     static final String MANIFEST_FILE = "manifest.mf"; // NOI18N
@@ -165,7 +165,7 @@ public class NewCDCProjectWizardIterator implements TemplateWizard.Iterator {
     }
 
 
-    private static void generatePlatformProperties (CDCPlatform platform, String activeDevice, String activeProfile, EditableProperties props)  {
+    public static void generatePlatformProperties (CDCPlatform platform, String activeDevice, String activeProfile, EditableProperties props)  {
         Collection<FileObject> installFolders = platform.getInstallFolders();
         if (installFolders.size()>0) {            
             File jdkHome = FileUtil.toFile (installFolders.iterator().next());

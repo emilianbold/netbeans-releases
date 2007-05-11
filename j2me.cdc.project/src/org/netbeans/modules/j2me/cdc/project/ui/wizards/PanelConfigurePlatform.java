@@ -35,7 +35,7 @@ import org.openide.util.HelpCtx;
  *
  * @author suchys
  */
-final class PanelConfigurePlatform implements WizardDescriptor.Panel, WizardDescriptor.ValidatingPanel {
+final public class PanelConfigurePlatform implements WizardDescriptor.Panel, WizardDescriptor.ValidatingPanel {
     
     private WizardDescriptor wizardDescriptor;
     private PanelConfigurePlatformVisual component;

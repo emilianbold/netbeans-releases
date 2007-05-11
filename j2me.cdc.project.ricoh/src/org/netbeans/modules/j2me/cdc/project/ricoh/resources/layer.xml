@@ -81,4 +81,114 @@
             <attr name="ricoh/core" boolvalue="true"/>
         </folder>
     </folder>
+    
+    <folder name="Templates">
+        <folder name="Project">
+            <folder name="Samples">
+                <attr name="Standard/J2ME" boolvalue="true"/>
+                <attr name="Web/J2ME" boolvalue="true"/>
+                <attr name="Enterprise/J2ME" boolvalue="true"/>
+                <attr name="J2ME/Blueprints" boolvalue="true"/>
+                <folder name="J2ME">
+                    <attr name="MIDP2/CDC" boolvalue="true"/>
+                    <folder name="CDC">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
+                        <folder name="Ricoh">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
+                            <file name="ButtonTest.zip" url="samples/ButtonTest.zip">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
+                                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2me.cdc.project.ricoh.SamplesWizardIterator.createIterator"/>
+                                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ricoh/resources/samples/ButtonTest.html"/>
+                                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/cdcProject.png"/>
+                                <attr name="template" boolvalue="true"/>
+                                <attr name="platform" stringvalue="ricoh"/>
+                                <attr name="sampletype" stringvalue="xlet"/>
+                            </file>
+                            <file name="FormBrowser.zip" url="samples/FormBrowser.zip">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
+                                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2me.cdc.project.ricoh.SamplesWizardIterator.createIterator"/>
+                                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ricoh/resources/samples/FormBrowser.html"/>
+                                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/cdcProject.png"/>
+                                <attr name="template" boolvalue="true"/>
+                                <attr name="platform" stringvalue="ricoh"/>
+                                <attr name="sampletype" stringvalue="xlet"/>
+                            </file>
+                            <file name="HardKey.zip" url="samples/HardKey.zip">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
+                                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2me.cdc.project.ricoh.SamplesWizardIterator.createIterator"/>
+                                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ricoh/resources/samples/HardKey.html"/>
+                                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/cdcProject.png"/>
+                                <attr name="template" boolvalue="true"/>
+                                <attr name="platform" stringvalue="ricoh"/>
+                                <attr name="sampletype" stringvalue="xlet"/>
+                            </file>
+                            <file name="HelloServlet.zip" url="samples/HelloServlet.zip">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
+                                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2me.cdc.project.ricoh.SamplesWizardIterator.createIterator"/>
+                                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ricoh/resources/samples/HelloServlet.html"/>
+                                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/cdcProject.png"/>
+                                <attr name="template" boolvalue="true"/>
+                                <attr name="platform" stringvalue="ricoh"/>
+                                <attr name="sampletype" stringvalue="server"/>
+                            </file>
+                            <file name="Puzzle15Xlet.zip" url="samples/Puzzle15Xlet.zip">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
+                                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2me.cdc.project.ricoh.SamplesWizardIterator.createIterator"/>
+                                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ricoh/resources/samples/Puzzle15Xlet.html"/>
+                                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/cdcProject.png"/>
+                                <attr name="template" boolvalue="true"/>
+                                <attr name="platform" stringvalue="ricoh"/>
+                                <attr name="sampletype" stringvalue="xlet"/>
+                            </file>
+                            <file name="SampleLockControl.zip" url="samples/SampleLockControl.zip">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
+                                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2me.cdc.project.ricoh.SamplesWizardIterator.createIterator"/>
+                                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ricoh/resources/samples/SampleLockControl.html"/>
+                                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/cdcProject.png"/>
+                                <attr name="template" boolvalue="true"/>
+                                <attr name="platform" stringvalue="ricoh"/>
+                                <attr name="sampletype" stringvalue="xlet"/>
+                            </file>
+                            <file name="SoapClient.zip" url="samples/SoapClient.zip">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
+                                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2me.cdc.project.ricoh.SamplesWizardIterator.createIterator"/>
+                                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ricoh/resources/samples/SoapClient.html"/>
+                                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/cdcProject.png"/>
+                                <attr name="template" boolvalue="true"/>
+                                <attr name="platform" stringvalue="ricoh"/>
+                                <attr name="sampletype" stringvalue="xlet"/>
+                            </file>
+                            <file name="TIFFCopier.zip" url="samples/TIFFCopier.zip">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
+                                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2me.cdc.project.ricoh.SamplesWizardIterator.createIterator"/>
+                                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ricoh/resources/samples/TIFFCopier.html"/>
+                                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/cdcProject.png"/>
+                                <attr name="template" boolvalue="true"/>
+                                <attr name="platform" stringvalue="ricoh"/>
+                                <attr name="sampletype" stringvalue="xlet"/>
+                            </file>
+                            <file name="TimeSet.zip" url="samples/TimeSet.zip">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
+                                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2me.cdc.project.ricoh.SamplesWizardIterator.createIterator"/>
+                                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ricoh/resources/samples/TimeSet.html"/>
+                                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/cdcProject.png"/>
+                                <attr name="template" boolvalue="true"/>
+                                <attr name="platform" stringvalue="ricoh"/>
+                                <attr name="sampletype" stringvalue="xlet"/>
+                            </file>
+                            <file name="WidgetsDemoXlet.zip" url="samples/WidgetsDemoXlet.zip">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
+                                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2me.cdc.project.ricoh.SamplesWizardIterator.createIterator"/>
+                                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ricoh/resources/samples/WidgetsDemoXlet.html"/>
+                                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/cdcProject.png"/>
+                                <attr name="template" boolvalue="true"/>
+                                <attr name="platform" stringvalue="ricoh"/>
+                                <attr name="sampletype" stringvalue="xlet"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>

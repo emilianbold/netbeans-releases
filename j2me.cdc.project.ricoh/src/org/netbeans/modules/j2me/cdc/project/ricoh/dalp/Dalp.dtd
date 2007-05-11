@@ -1,0 +1,107 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!--
+    TODO define vocabulary indentification
+    PUBLIC ID: -//vendor//vocabulary//EN
+    SYSTEM ID: http://server/path/FormBrowser.dtd
+
+--><!--
+    An example how to use this DTD from your XML document:
+
+    <?xml version="1.0"?>
+
+    <!DOCTYPE dalp SYSTEM "FormBrowser.dtd">
+
+    <dalp>
+    ...
+    </dalp>
+-->
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT dalp (install|application-desc|resources|security|information)*>
+<!ATTLIST dalp
+    version CDATA #IMPLIED
+    dsdk CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT information (offline-allowed|application-ver|e-mail|fax|telephone|description|icon|vendor|title|product-id)*>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT product-id (#PCDATA)>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT title (#PCDATA)>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT vendor (#PCDATA)>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT icon (#PCDATA)>
+<!ATTLIST icon
+    location CDATA #IMPLIED
+    basepath CDATA #IMPLIED
+    href CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT description (#PCDATA)>
+<!ATTLIST description
+    type CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT telephone (#PCDATA)>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT fax (#PCDATA)>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT e-mail (#PCDATA)>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT application-ver (#PCDATA)>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT offline-allowed EMPTY>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT security (all-permissions)*>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT all-permissions EMPTY>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT resources (encode-file|jar|dsdk)*>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT dsdk EMPTY>
+<!ATTLIST dsdk
+    version CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT jar EMPTY>
+<!ATTLIST jar
+    main CDATA #IMPLIED
+    basepath CDATA #IMPLIED
+    version CDATA #IMPLIED
+    href CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT encode-file (#PCDATA)>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT application-desc EMPTY>
+<!ATTLIST application-desc
+    visible CDATA #IMPLIED
+    main-class CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT install EMPTY>
+<!ATTLIST install
+    destination CDATA #IMPLIED
+    mode CDATA #IMPLIED
+  >
