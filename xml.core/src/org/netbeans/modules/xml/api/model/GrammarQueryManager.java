@@ -115,7 +115,8 @@ public abstract class GrammarQueryManager {
         
         private Lookup.Result registrations;
         
-        private static ThreadLocal transaction = new ThreadLocal();
+        private static ThreadLocal<GrammarQueryManager> transaction =
+                new ThreadLocal<GrammarQueryManager>();
         
         public FeatureDescriptor getDescriptor() {
             FeatureDescriptor desc = new FeatureDescriptor();
@@ -126,7 +127,7 @@ public abstract class GrammarQueryManager {
         
         public GrammarQuery getGrammar(GrammarEnvironment ctx) {
             try {
-                GrammarQueryManager g = (GrammarQueryManager) transaction.get();
+                GrammarQueryManager g = transaction.get();
                 if (g != null) {
                     GrammarQuery query = g.getGrammar(ctx);
                     if (query == null) {
