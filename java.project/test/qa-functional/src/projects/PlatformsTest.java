@@ -101,6 +101,8 @@ public class PlatformsTest extends JellyTestCase {
         }
         
         // get folder from prop file
+        
+        // XXX add correct paths to platform.properties
         String folderJDK13Path = props.getProperty(hostName + "_jdk13_folder");
         TestProjectUtils.addPlatform(JDK13_NAME, folderJDK13Path);
         String folderJDK14Path = props.getProperty(hostName + "_jdk14_folder");

@@ -149,8 +149,10 @@ public class TestProjectUtils {
     }
     
     public static void addPlatform(String platName, String folderPath) {
-        
-        new ActionNoBlock("Tools|Java Platform Manager", null).performMenu();
+        if (folderPath == null) {
+            return ;
+        }
+        new ActionNoBlock("Tools|Java Platforms", null).performMenu();
         NbDialogOperator platManOper = new NbDialogOperator("Java Platform Manager");
         JButtonOperator addPlatformButtonOper = new JButtonOperator(platManOper, "Add Platform");
         addPlatformButtonOper.push();
