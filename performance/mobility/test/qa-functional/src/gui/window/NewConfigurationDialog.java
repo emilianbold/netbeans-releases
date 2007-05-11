@@ -54,18 +54,22 @@ public class NewConfigurationDialog  extends org.netbeans.performance.test.utili
     }
     public void prepare() {
         log(":: prepare");
+        testNode.select();
     }
 
     public ComponentOperator open() {
         log(":: open");
         String cmdName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.mobility.project.ui.customizer.Bundle", "LBL_VCS_AddConfiguration");
+        log(" Invoking '"+cmdName+"' command");
         new ActionNoBlock(null,cmdName).performPopup(testNode);
         return new NbDialogOperator(cmdName);
     }
     
     public void close() {
         log(":: close");
-        ((NbDialogOperator)testedComponentOperator).close();        
+        if(testedComponentOperator != null) {
+            ((NbDialogOperator)testedComponentOperator).close();
+        }
     }
 
 }
