@@ -134,10 +134,10 @@ public class NodeFactorySupport {
            return col;
        }
       
-        protected void addNotify() {
+        protected @Override void addNotify() {
             super.addNotify();
             keys = new HashMap<NodeList<?>, List<NodeListKeyWrapper>>();
-            result = createLookup().lookup(new Lookup.Template<NodeFactory>(NodeFactory.class));
+            result = createLookup().lookupResult(NodeFactory.class);
             for (NodeFactory factory : result.allInstances()) {
                 NodeList<?> lst = factory.createNodes(project);
                 assert lst != null : "Factory " + factory.getClass() + " has broken the NodeFactory contract."; //NOI18N
@@ -153,7 +153,7 @@ public class NodeFactorySupport {
             setKeys(createKeys());
         }
         
-        protected void removeNotify() {
+        protected @Override void removeNotify() {
             super.removeNotify();
             setKeys(Collections.<NodeListKeyWrapper>emptySet());
             for (NodeList elem : nodeLists) {
@@ -242,7 +242,7 @@ public class NodeFactorySupport {
             object = obj;
         }
         
-        public boolean equals(Object obj) {
+        public @Override boolean equals(Object obj) {
             if (! (obj instanceof NodeListKeyWrapper)) {
                 return false;
             }
@@ -253,7 +253,7 @@ public class NodeFactorySupport {
             return object.equals(other.object);
         }
         
-        public int hashCode() {
+        public @Override int hashCode() {
             return (17 * 37 + nodeList.hashCode()) * 37 + object.hashCode();
                     
         }
