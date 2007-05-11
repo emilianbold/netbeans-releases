@@ -68,7 +68,7 @@ public class MobilityProjectWorkflow extends org.netbeans.performance.test.utili
     
     public ComponentOperator open(){
         projectName = MPFootprintUtilities.createproject("Mobility", "Mobile Application", true); //NOI18N
-        
+        log("Created project name: "+projectName);
         // get opened editor
         Operator.StringComparator defaultOperator = Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(new Operator.DefaultStringComparator(true, true));
@@ -93,7 +93,9 @@ public class MobilityProjectWorkflow extends org.netbeans.performance.test.utili
     }
     
     public void close(){
+        log("Deleting project: "+projectName);
         MPFootprintUtilities.deleteProject(projectName);
+        log("Deleted...");
     }
     
     public static void main(java.lang.String[] args) {
