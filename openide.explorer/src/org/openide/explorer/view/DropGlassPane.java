@@ -18,6 +18,7 @@
  */
 package org.openide.explorer.view;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Rectangle;
@@ -148,6 +149,11 @@ final class DropGlassPane extends JPanel {
      * @param Graphics g Obtained graphics */
     public void paint(Graphics g) {
         if (line != null) {
+            Color c = UIManager.getColor("Tree.dropLine");
+            if (c != null) {
+                g.setColor(c);
+            }
+            
             // check bounds
             line = checkLineBounds(line);
 
