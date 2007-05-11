@@ -73,15 +73,15 @@ public class CreateProjectTest extends JellyTestCase {
         assertNotNull(Utilities.closeProject(projName1));
     }
      
-     public void testReopenAndDeleteProjectFolder_API_1() throws Exception {
-        String mainClass = "MyMain" + projName1; // NOI18N
-        File projectDir = new File(getWorkDir(), projName1);
-        projectDir.mkdir();
-        AntProjectHelper project = org.netbeans.modules.java.j2seproject.J2SEProjectGenerator.createProject(projectDir, projName1, mainClass, null);
-        Utilities.waitScanFinished();
-        Utilities.openProject(projectDir);
-        assertTrue(Utilities.deleteProjectFolder(project.getProjectDirectory().getPath()));
-    }
+//     public void testReopenAndDeleteProjectFolder_API_1() throws Exception {
+//        String mainClass = "MyMain" + projName1; // NOI18N
+//        File projectDir = new File(getWorkDir(), projName1);
+//        projectDir.mkdir();
+//        AntProjectHelper project = org.netbeans.modules.java.j2seproject.J2SEProjectGenerator.createProject(projectDir, projName1, mainClass, null);
+//        Utilities.waitScanFinished();
+//        Utilities.openProject(projectDir);
+//        assertTrue(Utilities.deleteProjectFolder(project.getProjectDirectory().getPath()));
+//    }
  
      
     public void testCreateAndOpenProject_API_2() throws Exception {
@@ -139,29 +139,29 @@ public class CreateProjectTest extends JellyTestCase {
         assertTrue(Utilities.closeProject(projName2));
 
     }
-    public void testReopenAndDeleteProjectFolder_API_2() throws Exception {
-        File projectDir = new File(getWorkDir(), projName2);
-        projectDir.mkdir();
-        
-        File[] sourceFolders = new File[2];
-        File src1 = new File(projectDir, "src1");
-        src1.mkdirs();
-        File src2 = new File(projectDir, "src2");
-        src2.mkdirs();
-        sourceFolders[0] = src1;
-        sourceFolders[1] = src2;
-        
-        File[] testFolders = new File[2];
-        File test1 = new File(projectDir, "test1");
-        test1.mkdirs();
-        File test2 = new File(projectDir, "test2");
-        test2.mkdirs();
-        testFolders[0] = test1;
-        testFolders[1] = test2;
-        
-        AntProjectHelper project = org.netbeans.modules.java.j2seproject.J2SEProjectGenerator.createProject(projectDir, projName2, sourceFolders, testFolders, null);
-        Utilities.waitScanFinished();
-        Utilities.openProject(projectDir);
-        assertTrue(Utilities.deleteProjectFolder(project.getProjectDirectory().getPath()));
-    }
+//    public void testReopenAndDeleteProjectFolder_API_2() throws Exception {
+//        File projectDir = new File(getWorkDir(), projName2);
+//        projectDir.mkdir();
+//        
+//        File[] sourceFolders = new File[2];
+//        File src1 = new File(projectDir, "src1");
+//        src1.mkdirs();
+//        File src2 = new File(projectDir, "src2");
+//        src2.mkdirs();
+//        sourceFolders[0] = src1;
+//        sourceFolders[1] = src2;
+//        
+//        File[] testFolders = new File[2];
+//        File test1 = new File(projectDir, "test1");
+//        test1.mkdirs();
+//        File test2 = new File(projectDir, "test2");
+//        test2.mkdirs();
+//        testFolders[0] = test1;
+//        testFolders[1] = test2;
+//        
+//        AntProjectHelper project = org.netbeans.modules.java.j2seproject.J2SEProjectGenerator.createProject(projectDir, projName2, sourceFolders, testFolders, null);
+//        Utilities.waitScanFinished();
+//        Utilities.openProject(projectDir);
+//        assertTrue(Utilities.deleteProjectFolder(project.getProjectDirectory().getPath()));
+//    }
 }
