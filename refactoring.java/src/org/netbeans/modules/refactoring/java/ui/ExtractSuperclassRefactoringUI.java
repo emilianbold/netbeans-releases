@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.refactoring.java.ui;
 
-import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -26,6 +25,7 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.ExtractSuperclassRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
@@ -47,16 +47,7 @@ public class ExtractSuperclassRefactoringUI implements RefactoringUI {
     
     public ExtractSuperclassRefactoringUI(TreePathHandle selectedHandle, CompilationInfo info) {
         TreePath path = selectedHandle.resolve(info);
-        Tree selectedTree = path.getLeaf();
-        while (selectedTree.getKind() != Tree.Kind.CLASS) {
-            path = path.getParentPath();
-            if (path == null) {
-                selectedTree = info.getCompilationUnit().getTypeDecls().get(0);
-                path = info.getTrees().getPath(info.getCompilationUnit(), selectedTree);
-                break;
-            }
-            selectedTree = path.getLeaf();
-        }
+        path = RetoucheUtils.findEnclosingClass(info, path, true, false, false, false, false);
         
         this.name = UiUtils.getHeader(path, info, UiUtils.PrintPart.NAME);
         this.sourceType = TreePathHandle.create(path, info);

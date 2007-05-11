@@ -28,6 +28,7 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.ExtractInterfaceRefactoring;
 import org.netbeans.modules.refactoring.java.ui.ExtractInterfaceAction;
 import org.netbeans.modules.refactoring.java.ui.ExtractInterfacePanel;
@@ -54,7 +55,11 @@ public final class ExtractInterfaceRefactoringUI implements RefactoringUI {
      */
     public ExtractInterfaceRefactoringUI(TreePathHandle selectedElement, CompilationInfo info) {
         // compute source type
-        sourceType = getSourceType(selectedElement, info);
+        TreePath path = selectedElement.resolve(info);
+        path = RetoucheUtils.findEnclosingClass(info, path, true, true, true, true, false);
+        
+        this.name = UiUtils.getHeader(path, info, UiUtils.PrintPart.NAME);
+        this.sourceType = TreePathHandle.create(path, info);
         // create an instance of pull up refactoring object
         refactoring = new ExtractInterfaceRefactoring(sourceType);
         refactoring.getContext().add(info.getClasspathInfo());
@@ -110,42 +115,6 @@ public final class ExtractInterfaceRefactoringUI implements RefactoringUI {
      */
     private void captureParameters() {
         panel.storeSettings();
-    }
-    
-    private TreePathHandle getSourceType(TreePathHandle selected, CompilationInfo javac) {
-        TreePathHandle srcType = null;
-        TreePath path = selected.resolve(javac);
-        Element sourceElm = javac.getTrees().getScope(path).getEnclosingClass();
-        sourceElm = resolveEnclosingClass(sourceElm);
-        if (sourceElm != null) {
-            srcType = TreePathHandle.create(
-                    javac.getTrees().getPath(sourceElm),
-                    javac);
-            name = UiUtils.getHeader(sourceElm, javac, UiUtils.PrintPart.NAME);
-        }
-        return srcType;
-    }
-    
-    /**
-     * returns enclosing class of element or directly the element in case it is
-     * class, enum, interface or annotation type and it is not localor anonymous.
-     */
-    private Element resolveEnclosingClass(Element e) {
-        do {
-            switch(e.getKind()) {
-            case CLASS:
-            case INTERFACE:
-            case ENUM:
-            case ANNOTATION_TYPE:
-                TypeElement te = (TypeElement) e;
-                if (te.getNestingKind() != NestingKind.ANONYMOUS && te.getNestingKind() != NestingKind.LOCAL) {
-                    return e;
-                }
-            default:
-                e = e.getEnclosingElement();
-            }
-        } while(e != null);
-        return null;
     }
     
 }

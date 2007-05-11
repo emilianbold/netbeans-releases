@@ -19,6 +19,9 @@
 
 package org.netbeans.modules.refactoring.java;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
@@ -63,6 +66,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -506,7 +510,7 @@ public class RetoucheUtils {
         return getClasspathInfoFor(getFileObject(handle));
     }
     
-/**
+    /**
      * Finds type parameters from <code>typeArgs</code> list that are referenced
      * by <code>tm</code> type.
      * @param utils compilation type utils
@@ -574,6 +578,51 @@ public class RetoucheUtils {
             typeArgs.add(elm.asType());
         }
         return typeArgs;
+    }
+    
+    /**
+     * finds the nearest enclosing ClassTree on <code>path</code> that
+     * is class or interface or enum or annotation type and is or is not annonymous.
+     * In case no ClassTree is found the first top level ClassTree is returned.
+     * 
+     * Especially useful for selecting proper tree to refactor.
+     * 
+     * @param javac javac
+     * @param path path to search
+     * @param isClass stop on class
+     * @param isInterface  stop on interface
+     * @param isEnum stop on enum
+     * @param isAnnotation stop on annotation type
+     * @param isAnonymous check if class or interface is annonymous
+     * @return path to the enclosing ClassTree
+     */
+    public static TreePath findEnclosingClass(CompilationInfo javac, TreePath path, boolean isClass, boolean isInterface, boolean isEnum, boolean isAnnotation, boolean isAnonymous) {
+        Tree selectedTree = path.getLeaf();
+        TreeUtilities utils = javac.getTreeUtilities();
+        while(true) {
+            if (Tree.Kind.CLASS == selectedTree.getKind()) {
+                ClassTree classTree = (ClassTree) selectedTree;
+                if (isEnum && utils.isEnum(classTree)
+                        || isInterface && utils.isInterface(classTree)
+                        || isAnnotation && utils.isAnnotation(classTree)
+                        || isClass && !(utils.isInterface(classTree) || utils.isEnum(classTree) || utils.isAnnotation(classTree))) {
+                    
+                    Tree.Kind parentKind = path.getParentPath().getLeaf().getKind();
+                    if (isAnonymous || Tree.Kind.NEW_CLASS != parentKind) {
+                        break;
+                    }
+                }
+            }
+            
+            path = path.getParentPath();
+            if (path == null) {
+                selectedTree = javac.getCompilationUnit().getTypeDecls().get(0);
+                path = javac.getTrees().getPath(javac.getCompilationUnit(), selectedTree);
+                break;
+            }
+            selectedTree = path.getLeaf();
+        }
+        return path;
     }
     
     private static class CompilerTask implements CancellableTask<CompilationController> {
