@@ -160,7 +160,7 @@ NAVIGATOR:command: {
     display_name: "<html><b><font color=000099>$keyword$</font></b>: $command0.selector$</html>";
 }
 
-HYPERLINK:value: org.netbeans.modules.languages.NBS.hyperlink  
+HYPERLINK:value: org.netbeans.modules.languages.ext.NBS.hyperlink  
 
 COMPLETION:S: {
     text1:        "TOKEN";
