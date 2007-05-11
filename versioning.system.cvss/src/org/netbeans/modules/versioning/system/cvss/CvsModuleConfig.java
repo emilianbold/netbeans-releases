@@ -241,33 +241,35 @@ public class CvsModuleConfig {
     
     // private methods ~~~~~~~~~~~~~~~~~~
        
+    private static final Pattern [] defaultIgnoredPatterns = new Pattern [] {
+                    Pattern.compile("cvslog\\..*"),  // NOI18N
+                    Pattern.compile("\\.make\\.state"), // NOI18N
+                    Pattern.compile("\\.nse_depinfo"), // NOI18N
+                    Pattern.compile(".*~"), // NOI18N
+                    Pattern.compile("#.*"), // NOI18N
+                    Pattern.compile("\\.#.*"), // NOI18N
+                    Pattern.compile(",.*"), // NOI18N
+                    Pattern.compile("_\\$.*"), // NOI18N
+                    Pattern.compile(".*\\$"), // NOI18N
+                    Pattern.compile(".*\\.old"), // NOI18N
+                    Pattern.compile(".*\\.bak"), // NOI18N
+                    Pattern.compile(".*\\.BAK"), // NOI18N
+                    Pattern.compile(".*\\.orig"), // NOI18N
+                    Pattern.compile(".*\\.rej"), // NOI18N
+                    Pattern.compile(".*\\.del-.*"), // NOI18N
+                    Pattern.compile(".*\\.a"), // NOI18N
+                    Pattern.compile(".*\\.olb"), // NOI18N
+                    Pattern.compile(".*\\.o"), // NOI18N
+                    Pattern.compile(".*\\.obj"), // NOI18N
+                    Pattern.compile(".*\\.so"), // NOI18N
+                    Pattern.compile(".*\\.exe"), // NOI18N
+                    Pattern.compile(".*\\.Z"), // NOI18N
+                    Pattern.compile(".*\\.elc"), // NOI18N
+                    Pattern.compile(".*\\.ln"), // NOI18N
+                };
+    
     private Pattern[] getDefaultFilePatterns() {
-        return new Pattern [] {
-                        Pattern.compile("cvslog\\..*"),  // NOI18N
-                        Pattern.compile("\\.make\\.state"), // NOI18N
-                        Pattern.compile("\\.nse_depinfo"), // NOI18N
-                        Pattern.compile(".*~"), // NOI18N
-                        Pattern.compile("#.*"), // NOI18N
-                        Pattern.compile("\\.#.*"), // NOI18N
-                        Pattern.compile(",.*"), // NOI18N
-                        Pattern.compile("_\\$.*"), // NOI18N
-                        Pattern.compile(".*\\$"), // NOI18N
-                        Pattern.compile(".*\\.old"), // NOI18N
-                        Pattern.compile(".*\\.bak"), // NOI18N
-                        Pattern.compile(".*\\.BAK"), // NOI18N
-                        Pattern.compile(".*\\.orig"), // NOI18N
-                        Pattern.compile(".*\\.rej"), // NOI18N
-                        Pattern.compile(".*\\.del-.*"), // NOI18N
-                        Pattern.compile(".*\\.a"), // NOI18N
-                        Pattern.compile(".*\\.olb"), // NOI18N
-                        Pattern.compile(".*\\.o"), // NOI18N
-                        Pattern.compile(".*\\.obj"), // NOI18N
-                        Pattern.compile(".*\\.so"), // NOI18N
-                        Pattern.compile(".*\\.exe"), // NOI18N
-                        Pattern.compile(".*\\.Z"), // NOI18N
-                        Pattern.compile(".*\\.elc"), // NOI18N
-                        Pattern.compile(".*\\.ln"), // NOI18N
-                    };
+        return defaultIgnoredPatterns;
     }
 
     /**
