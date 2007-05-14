@@ -20,6 +20,7 @@
 package org.netbeans.modules.autoupdate.services;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.autoupdate.DefaultTestCase;
@@ -29,7 +30,6 @@ import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
-import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -183,8 +183,8 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
             assertNotNull(toInstall.getInstalled());
 
             if (r == null) {
-                assertTrue(configModules.listFiles().length > configModulesSize);
-                assertTrue(modules.listFiles().length > modulesSize);
+                assertTrue("Config module files are more than before Install test, " + Arrays.asList (configModules.listFiles()), configModules.listFiles().length > configModulesSize);
+                assertTrue("Installed modules are more than before Install test, " + Arrays.asList (modules.listFiles()), modules.listFiles().length > modulesSize);
                 assertTrue(foConfigModules.getPath(), foConfigModules.getChildren().length > foConfigModulesSize);
                 assertEquals(configModules.listFiles()[0], FileUtil.toFile(foConfigModules.getChildren()[0]));
                 
