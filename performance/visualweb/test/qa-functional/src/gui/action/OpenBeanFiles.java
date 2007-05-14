@@ -124,10 +124,18 @@ public class OpenBeanFiles  extends org.netbeans.performance.test.utilities.Perf
     }
     
     public void close() {
-        ((EditorOperator)testedComponentOperator).close();
+        log(":: close");
+        if(testedComponentOperator != null)
+        {
+            ((EditorOperator)testedComponentOperator).close();
+            ((EditorOperator)testedComponentOperator).waitClosed();
+            testedComponentOperator = null;
+        }
+        
     }
     
     protected void shutdown(){
+        log(":: shutdown");
         EditorOperator.closeDiscardAll();
         repaintManager().resetRegionFilters();
     }
