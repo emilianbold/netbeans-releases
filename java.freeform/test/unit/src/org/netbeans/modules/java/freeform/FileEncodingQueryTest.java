@@ -84,14 +84,6 @@ public class FileEncodingQueryTest extends NbTestCase {
         sf.encoding = "UTF-16";
         sources.add(sf);
         
-        sf = new JavaProjectGenerator.SourceFolder();
-        sf.label = "libsrc";
-        sf.type = "java";
-        sf.style = "packages";
-        sf.location = "libsrc";
-        sf.encoding = "UTF-32";
-        sources.add(sf);
-        
         JavaProjectGenerator.putSourceFolders(helper, sources, null);
         JavaProjectGenerator.putSourceViews(helper, sources, null);
         
@@ -107,8 +99,6 @@ public class FileEncodingQueryTest extends NbTestCase {
         assertEquals("UTF-8", cset.name());
         cset = feq.getEncoding(FileUtil.toFileObject(testFile));
         assertEquals("UTF-16", cset.name());
-        cset = feq.getEncoding(FileUtil.toFileObject(libFile));
-        assertEquals("UTF-32", cset.name());
         // file not under any src root
         File lonelyFile = new File(prjBase, "testfile");
         lonelyFile.createNewFile();
