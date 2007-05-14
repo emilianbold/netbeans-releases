@@ -844,7 +844,7 @@ public final class UpdateTracking {
                 if ( ver.getVersion() != null )
                     e_version.setAttribute(ATTR_VERSION, ver.getVersion());
                 e_version.setAttribute(ATTR_ORIGIN, ver.getOrigin());
-                e_version.setAttribute(ATTR_LAST, new Boolean( ver.isLast() ).toString());
+                e_version.setAttribute(ATTR_LAST, Boolean.valueOf( ver.isLast() ).toString());
                 e_version.setAttribute(ATTR_INSTALL, Long.toString(ver.getInstall_time()));                
                 e_module.appendChild( e_version );
                 Iterator it3 = ver.getFiles().iterator();
