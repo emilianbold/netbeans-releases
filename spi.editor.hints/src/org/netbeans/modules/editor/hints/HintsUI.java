@@ -83,6 +83,7 @@ public class HintsUI implements MouseListener, KeyListener, ChangeListener, AWTE
     private JTextComponent comp;
     private LazyFixList hints = new StaticFixList();
     private Popup listPopup;
+    private Popup tooltipPopup;
     private JLabel hintIcon;
     private ScrollCompletionPane hintListComponent;
     private JLabel errorTooltip;
@@ -164,6 +165,9 @@ public class HintsUI implements MouseListener, KeyListener, ChangeListener, AWTE
     private void removePopup() {
         Toolkit.getDefaultToolkit().removeAWTEventListener(this);
         if (listPopup != null) {
+            if( tooltipPopup != null )
+                tooltipPopup.hide();
+            tooltipPopup = null;
             listPopup.hide();
             if (hintListComponent != null) {
                 hintListComponent.getView().removeMouseListener(this);
@@ -285,17 +289,30 @@ public class HintsUI implements MouseListener, KeyListener, ChangeListener, AWTE
         ToolTipManager.sharedInstance().setEnabled(true);
         Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.MOUSE_EVENT_MASK);
         
+        errorTooltip = new JLabel("<html>" + translate(description)); // NOI18N
+        errorTooltip.setBorder(new LineBorder(Color.BLACK));
+        errorTooltip.addMouseListener(this);
+        
         if (!fixes.isComputed() || fixes.getFixes().isEmpty()) {
             //show tooltip:
             assert listPopup == null;
-            errorTooltip = new JLabel("<html>" + translate(description)); // NOI18N
-            errorTooltip.setBorder(new LineBorder(Color.BLACK));
-            errorTooltip.addMouseListener(this);
             
             listPopup = getPopupFactory().getPopup(
                     comp, errorTooltip, p.x, p.y);
         } else {
             assert hintListComponent == null;
+            
+            try {
+                int pos = javax.swing.text.Utilities.getRowStart(comp, comp.getCaret().getDot());
+                Rectangle r = comp.modelToView (pos);
+
+                tooltipPopup = getPopupFactory().getPopup(
+                        comp, errorTooltip, p.x, p.y-r.height-errorTooltip.getPreferredSize().height);
+            } catch( BadLocationException blE ) {
+                ErrorManager.getDefault().notify (blE);
+                errorTooltip = null;
+            }
+            
             hintListComponent =
                     new ScrollCompletionPane(comp, fixes, null, null);
             
@@ -306,6 +323,8 @@ public class HintsUI implements MouseListener, KeyListener, ChangeListener, AWTE
                     comp, hintListComponent, p.x, p.y);
         }
         
+        if( tooltipPopup != null )
+            tooltipPopup.show();
         listPopup.show();
     }
     
@@ -424,13 +443,13 @@ public class HintsUI implements MouseListener, KeyListener, ChangeListener, AWTE
         }
         boolean bulbShowing = hintIcon != null && hintIcon.isShowing();
         boolean errorTooltipShowing = errorTooltip != null && errorTooltip.isShowing();
+        boolean popupShowing = hintListComponent != null && hintListComponent.isShowing();
         
-        if (errorTooltipShowing) {
+        if (errorTooltipShowing && !popupShowing) {
             //any key should disable the errorTooltip:
             removePopup();
             return ;
         }
-        boolean popupShowing = hintListComponent != null && hintListComponent.isShowing();
         if ( e.getKeyCode() == KeyEvent.VK_ENTER ) {
             if (   e.getModifiersEx() == (KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK)
                 || e.getModifiersEx() == KeyEvent.ALT_DOWN_MASK) {
