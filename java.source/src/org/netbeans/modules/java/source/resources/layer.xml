@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
@@ -36,11 +36,7 @@ Microsystems, Inc. All Rights Reserved.
               <file name="OpenAction.instance">
                 <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction" />
               </file>
-              <attr boolvalue="true" name="OpenAction.instance/FileSystemAction.instance" />
-              <file name="FileSystemAction.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction" />
-              </file>
-              <attr boolvalue="true" name="FileSystemAction.instance/Separator1.instance" />
+              <attr boolvalue="true" name="OpenAction.instance/Separator1.instance" />
               <file name="Separator1.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
               </file>
@@ -84,7 +80,15 @@ Microsystems, Inc. All Rights Reserved.
               <file name="Separator4.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
               </file>
-              <attr boolvalue="true" name="Separator4.instance/ToolsAction.instance" />
+              <attr boolvalue="true" name="Separator4.instance/FileSystemAction.instance" />
+              <file name="FileSystemAction.instance">
+                <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction" />
+              </file>
+              <attr boolvalue="true" name="FileSystemAction.instance/Separator5.instance" />
+              <file name="Separator5.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+              </file>
+              <attr boolvalue="true" name="Separator5.instance/ToolsAction.instance" />
               <file name="ToolsAction.instance">
                 <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction" />
               </file>
