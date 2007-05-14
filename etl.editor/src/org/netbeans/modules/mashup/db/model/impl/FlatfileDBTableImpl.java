@@ -461,7 +461,7 @@ public class FlatfileDBTableImpl implements FlatfileDBTable, Cloneable, Comparab
         List pkList = new ArrayList();
         SortedSet fields = new TreeSet(this.columns.values());
         Iterator it = this.columns.values().iterator();
-        StringBuffer buffer = new StringBuffer(100);
+        StringBuilder buffer = new StringBuilder(100);
         buffer.append("CREATE EXTERNAL TABLE \"").append(tableName).append("\" ("); // NOI18N
         
         int i = 0;
@@ -478,7 +478,7 @@ public class FlatfileDBTableImpl implements FlatfileDBTable, Cloneable, Comparab
         
         
         if (pkList.size() > 0) {
-            StringBuffer pkbuffer = new StringBuffer(20);
+            StringBuilder pkbuffer = new StringBuilder(20);
             pkbuffer.append(", PRIMARY KEY( ");
             it = pkList.iterator();
             int j = 0;
@@ -553,7 +553,7 @@ public class FlatfileDBTableImpl implements FlatfileDBTable, Cloneable, Comparab
             tableName = this.name;
         }
         
-        StringBuffer buffer = new StringBuffer("DROP TABLE IF EXISTS \""); // NOI18N
+        StringBuilder buffer = new StringBuilder("DROP TABLE IF EXISTS \""); // NOI18N
         return buffer.append(tableName).append("\"").toString();
     }
     
@@ -576,7 +576,7 @@ public class FlatfileDBTableImpl implements FlatfileDBTable, Cloneable, Comparab
     }
     
     public String getFlatfilePropertiesSQL() {
-        StringBuffer buf = new StringBuffer(100);
+        StringBuilder buf = new StringBuilder(100);
         
         // Create local copy of Map whose elements can be removed without
         // affecting the master copy.
@@ -751,7 +751,7 @@ public class FlatfileDBTableImpl implements FlatfileDBTable, Cloneable, Comparab
             throw new IllegalArgumentException("Must supply non-negative int value for parameter rows.");
         }
         
-        StringBuffer buffer = new StringBuffer(100);
+        StringBuilder buffer = new StringBuilder(100);
         buffer.append("SELECT ");
         
         Iterator it = getColumnList().iterator();
@@ -956,7 +956,7 @@ public class FlatfileDBTableImpl implements FlatfileDBTable, Cloneable, Comparab
      * @return table name.
      */
     public String toString() {
-        StringBuffer buf = new StringBuffer(50);
+        StringBuilder buf = new StringBuilder(50);
         
         if (parent != null) {
             buf.append(parent.getModelName());
@@ -976,7 +976,7 @@ public class FlatfileDBTableImpl implements FlatfileDBTable, Cloneable, Comparab
      * @return XML string
      */
     public String toXMLString(String prefix) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         if (prefix == null) {
             prefix = "";
         }
@@ -1071,7 +1071,7 @@ public class FlatfileDBTableImpl implements FlatfileDBTable, Cloneable, Comparab
     }
     
     private String getAttributeNameValues() {
-        StringBuffer sb = new StringBuffer(" ");
+        StringBuilder sb = new StringBuilder(" ");
         sb.append(ATTR_NAME);
         sb.append(EQUAL_START_QUOTE);
         sb.append(this.name);
@@ -1100,7 +1100,7 @@ public class FlatfileDBTableImpl implements FlatfileDBTable, Cloneable, Comparab
      * @return
      */
     private String getFullFilePath(String directory, String filename) {
-        StringBuffer fullpath = new StringBuffer(50);
+        StringBuilder fullpath = new StringBuilder(50);
         fullpath.append((StringUtil.isNullString(directory)) ? "" : directory);
         
         char separator = '/';
@@ -1119,7 +1119,7 @@ public class FlatfileDBTableImpl implements FlatfileDBTable, Cloneable, Comparab
     }
     
     private String getXMLColumnMap(String prefix) {
-        StringBuffer sb = new StringBuffer(prefix);
+        StringBuilder sb = new StringBuilder(prefix);
         sb.append("<map size=\"");
         sb.append(this.columns.size());
         sb.append("\">\n");
@@ -1130,7 +1130,7 @@ public class FlatfileDBTableImpl implements FlatfileDBTable, Cloneable, Comparab
     }
     
     private String getXMLColumnMapEntries(String prefix) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         FlatfileDBColumn column = null;
         if ((this.columns != null) && (this.columns.size() > 0)) {
             Iterator itr = columns.keySet().iterator();
@@ -1152,7 +1152,7 @@ public class FlatfileDBTableImpl implements FlatfileDBTable, Cloneable, Comparab
     }
     
     private String getXMLTableProperties(String prefix) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(prefix);
         sb.append("<map size=\"");
         if ((this.properties != null) && (this.properties.size() > 0)) {

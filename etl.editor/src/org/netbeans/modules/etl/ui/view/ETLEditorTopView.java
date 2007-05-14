@@ -254,7 +254,7 @@ public class ETLEditorTopView extends BasicTopView {
                     } catch (BaseException be) {
                         Logger.printThrowable(Logger.ERROR, ETLEditorTopView.class.getName(), this, "Failed to generate Core SQL", be);
                         
-                        StringBuffer msg = new StringBuffer();
+                        StringBuilder msg = new StringBuilder();
                         if (targetTable != null) {
                             msg.append(targetTable.getQualifiedName()).append(": ");
                         }

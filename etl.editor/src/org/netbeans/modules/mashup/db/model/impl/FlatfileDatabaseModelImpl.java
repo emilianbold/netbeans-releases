@@ -79,7 +79,7 @@ public class FlatfileDatabaseModelImpl implements FlatfileDatabaseModel, Cloneab
      */
     private static final String FQ_TBL_NAME_SEPARATOR = ".";
 
-    /* Initial buffer size for StringBuffer used in marshalling OTDs to XML */
+    /* Initial buffer size for StringBuilder used in marshalling OTDs to XML */
     private static final String LOG_CATEGORY = FlatfileDatabaseModelImpl.class.getName();
 
     private static final String QUOTE = "\"";
@@ -378,7 +378,7 @@ public class FlatfileDatabaseModelImpl implements FlatfileDatabaseModel, Cloneab
             throw new IllegalArgumentException("Must supply non-null String value for tblName.");
         }
 
-        StringBuffer buf = new StringBuffer(50);
+        StringBuilder buf = new StringBuilder(50);
 
         if (catName != null && catName.trim().length() != 0) {
             buf.append(catName.trim());
@@ -709,7 +709,7 @@ public class FlatfileDatabaseModelImpl implements FlatfileDatabaseModel, Cloneab
         if (prefix == null) {
             prefix = "";
         }
-        StringBuffer sb = new StringBuffer(prefix);
+        StringBuilder sb = new StringBuilder(prefix);
         sb.append(XML_DOC_HEADER);
         sb.append(prefix);
         sb.append("<");
@@ -848,7 +848,7 @@ public class FlatfileDatabaseModelImpl implements FlatfileDatabaseModel, Cloneab
     }
 
     private String getAttributeNameValues() {
-        StringBuffer sb = new StringBuffer(" ");
+        StringBuilder sb = new StringBuilder(" ");
         sb.append(ATTR_MAJOR_VERSION);
         sb.append(EQUAL_START_QUOTE);
         sb.append(this.majorVersion);
@@ -881,7 +881,7 @@ public class FlatfileDatabaseModelImpl implements FlatfileDatabaseModel, Cloneab
     }
 
     private String getXMLTableMapEntries(String prefix) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         FlatfileDBTable table = null;
         if ((this.tables != null) && (this.tables.size() > 0)) {
             Iterator itr = tables.keySet().iterator();
@@ -903,7 +903,7 @@ public class FlatfileDatabaseModelImpl implements FlatfileDatabaseModel, Cloneab
     }
 
     private String getXMLTablesMap(String prefix) {
-        StringBuffer sb = new StringBuffer(prefix);
+        StringBuilder sb = new StringBuilder(prefix);
         sb.append("<map size=\"");
         sb.append(this.tables.size());
         sb.append("\">\n");

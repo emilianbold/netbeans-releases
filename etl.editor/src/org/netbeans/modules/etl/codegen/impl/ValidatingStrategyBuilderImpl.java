@@ -73,7 +73,7 @@ public class ValidatingStrategyBuilderImpl extends PipelinedStrategyBuilderImpl 
     public String getScriptToDisplay(ETLStrategyBuilderContext context) throws BaseException {
         super.checkTargetConnectionDefinition(context);
 
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         TargetTable targetTable = context.getTargetTable();
 
         StatementContext stmtContext = new StatementContext();

@@ -82,7 +82,7 @@ public abstract class AbstractDBTable extends AbstractSQLObject implements SQLDB
     /** String to use in prefixing each line of a generated XML document */
     protected static final String INDENT = "\t";
 
-    /** Initial buffer size for StringBuffer used in marshalling SQLTable to XML */
+    /** Initial buffer size for StringBuilder used in marshalling SQLTable to XML */
     protected static final int INIT_XMLBUF_SIZE = 500;
 
     /** Constant for column model name tag. */
@@ -542,7 +542,7 @@ public abstract class AbstractDBTable extends AbstractSQLObject implements SQLDB
             throw new IllegalArgumentException("can not construct fully qualified table name, table name is null.");
         }
 
-        StringBuffer buf = new StringBuffer(50);
+        StringBuilder buf = new StringBuilder(50);
 
         if (catName != null && catName.trim().length() != 0) {
             buf.append(catName.trim());
@@ -627,7 +627,7 @@ public abstract class AbstractDBTable extends AbstractSQLObject implements SQLDB
      * @return qualified table name prefixed with alias
      */
     public String getQualifiedName() {
-        StringBuffer buf = new StringBuffer(50);
+        StringBuilder buf = new StringBuilder(50);
         String aName = this.getAliasName();
         if (aName != null && !aName.trim().equals("")) {
             buf.append("(");

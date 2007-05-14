@@ -303,7 +303,7 @@ public class VisibleSQLPredicateImpl extends SQLPredicateImpl implements Visible
      * @return XML representation of this SQLObject instance
      */
     public String toXMLString(String prefix) throws BaseException {
-        StringBuffer buffer = new StringBuffer(500);
+        StringBuilder buffer = new StringBuilder(500);
         if (prefix == null) {
             prefix = "";
         }

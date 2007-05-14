@@ -150,7 +150,7 @@ public class DefaultPropertyEditor {
         }
 
         private String getEncPassword(String val) {
-            StringBuffer buf = new StringBuffer(30);
+            StringBuilder buf = new StringBuilder(30);
 
             for (int i = 0; i < val.length(); i++) {
                 buf.append('*');

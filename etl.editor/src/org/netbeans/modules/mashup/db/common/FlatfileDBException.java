@@ -74,7 +74,7 @@ public class FlatfileDBException extends java.lang.Exception {
      * @return exception description.
      */
     public String toString() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
 
         buf.append(this.getMessage());
         if (null != rootCause) {

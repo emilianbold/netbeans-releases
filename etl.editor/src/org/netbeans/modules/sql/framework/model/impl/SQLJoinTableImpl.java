@@ -216,7 +216,7 @@ public class SQLJoinTableImpl extends AbstractSQLObject implements SQLJoinTable 
      * @see SQLObject#toXMLString(java.lang.String)
      */
     public String toXMLString(String prefix) throws BaseException {
-        StringBuffer buffer = new StringBuffer(500);
+        StringBuilder buffer = new StringBuilder(500);
         if (prefix == null) {
             prefix = "";
         }

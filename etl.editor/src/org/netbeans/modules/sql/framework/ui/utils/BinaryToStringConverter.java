@@ -54,7 +54,7 @@ public class BinaryToStringConverter {
             return null;
         }
 
-        StringBuffer buf = new StringBuffer(20);
+        StringBuilder buf = new StringBuilder(20);
         ConversionConstants convConst = getConstants(base);
 
         // Convert each byte and put into string buffer

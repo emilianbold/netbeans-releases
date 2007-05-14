@@ -121,7 +121,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.FinishablePanel
         FileObject targetFolder, String folderName, String newObjectName, String extension
     ) {
         if ((extension != null) && (extension.length() > 0)) {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append(newObjectName);
             sb.append('.'); // NOI18N
             sb.append(extension);

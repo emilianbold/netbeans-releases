@@ -196,7 +196,7 @@ public abstract class GraphView extends JGoView implements IGraphView {
         } catch (Exception ex) {
             e.rejectDrop();
             ex.printStackTrace();
-            StringBuffer msgBuf = new StringBuffer("Cannot create node in the canvas");
+            StringBuilder msgBuf = new StringBuilder("Cannot create node in the canvas");
             if (ex.getMessage() != null) {
                 msgBuf.append(": ").append(ex.getMessage());
             } else {

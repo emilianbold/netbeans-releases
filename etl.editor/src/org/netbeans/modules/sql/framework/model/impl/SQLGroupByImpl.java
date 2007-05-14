@@ -281,7 +281,7 @@ public class SQLGroupByImpl extends AbstractSQLObject implements SQLGroupBy, Clo
     }
 
     public String toString() {
-        StringBuffer strBuf = new StringBuffer(40);
+        StringBuilder strBuf = new StringBuilder(40);
         Iterator it = this.getColumns().iterator();
         while (it.hasNext()) {
             Object colObj = it.next();
@@ -310,7 +310,7 @@ public class SQLGroupByImpl extends AbstractSQLObject implements SQLGroupBy, Clo
      * @see org.netbeans.modules.sql.framework.model.SQLGroupBy#toXMLString(String)
      */
     public String toXMLString(String prefix) throws BaseException {
-        StringBuffer xml = new StringBuffer(500);
+        StringBuilder xml = new StringBuilder(500);
         final String indent = prefix + "\t";
 
         if (columns == null || columns.isEmpty()) {

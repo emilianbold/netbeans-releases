@@ -33,7 +33,7 @@ import com.sun.sql.framework.exception.BaseException;
  */
 public class ETLStrategyBuilderContext {
 
-    private StringBuffer dependentTasksForNextTask = new StringBuffer();
+    private StringBuilder dependentTasksForNextTask = new StringBuilder();
     private ETLTaskNode globalCleanUpTask;
 
     private ETLTaskNode initTask;
@@ -80,7 +80,7 @@ public class ETLStrategyBuilderContext {
     /**
      * @return Returns the dependentTasksForNextTask.
      */
-    public StringBuffer getDependentTasksForNextTask() {
+    public StringBuilder getDependentTasksForNextTask() {
         return dependentTasksForNextTask;
     }
 
@@ -136,7 +136,7 @@ public class ETLStrategyBuilderContext {
         return targetTable;
     }
 
-    public void setDependentTasksForNextTask(StringBuffer dependentTasksForNextTask) {
+    public void setDependentTasksForNextTask(StringBuilder dependentTasksForNextTask) {
         this.dependentTasksForNextTask = dependentTasksForNextTask;
     }
 

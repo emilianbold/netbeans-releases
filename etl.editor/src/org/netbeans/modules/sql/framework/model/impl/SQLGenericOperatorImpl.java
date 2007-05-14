@@ -572,7 +572,7 @@ public class SQLGenericOperatorImpl extends SQLConnectableObjectImpl implements 
      * @return XML representation of this SQLObject instance
      */
     public String toXMLString(String prefix) {
-        StringBuffer buffer = new StringBuffer(500);
+        StringBuilder buffer = new StringBuilder(500);
         if (prefix == null) {
             prefix = "";
         }

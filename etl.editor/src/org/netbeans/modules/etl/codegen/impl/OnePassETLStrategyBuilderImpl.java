@@ -161,7 +161,7 @@ public class OnePassETLStrategyBuilderImpl extends BaseETLStrategyBuilder {
 
     public String getScriptToDisplay(ETLStrategyBuilderContext context) throws BaseException {
         super.checkTargetConnectionDefinition(context);
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
 
         TargetTable tgtTable = context.getTargetTable();
         List sourceTables = tgtTable.getSourceTableList();

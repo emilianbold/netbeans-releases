@@ -72,7 +72,7 @@ public class SQLDBModelImpl extends AbstractSQLObject implements Cloneable, SQLD
     
     private static java.util.logging.Logger logger = java.util.logging.Logger.getLogger(SQLDBModelImpl.class.getName());
     
-    /** Initial buffer size for StringBuffer used in marshaling OTDs to XML */
+    /** Initial buffer size for StringBuilder used in marshaling OTDs to XML */
     protected static final int INIT_XMLBUF_SIZE = 1000;
     
         /*
@@ -84,7 +84,7 @@ public class SQLDBModelImpl extends AbstractSQLObject implements Cloneable, SQLD
     /* String to use in prefixing each line of a generated XML document */
     private static final String INDENT = "\t";
     
-    /* Initial buffer size for StringBuffer used in marshaling OTDs to XML */
+    /* Initial buffer size for StringBuilder used in marshaling OTDs to XML */
     private static final String LOG_CATEGORY = SQLDBModelImpl.class.getName();
     
     /** Connection definition used to retrieve metadata */
@@ -519,7 +519,7 @@ public class SQLDBModelImpl extends AbstractSQLObject implements Cloneable, SQLD
                         "Cannot construct fully qualified table name, table name is null.");
             }
             
-            StringBuffer buf = new StringBuffer(50);
+            StringBuilder buf = new StringBuilder(50);
             
             // since now we allow duplicate tables we need to make sure map
             // entries are
@@ -1026,7 +1026,7 @@ public class SQLDBModelImpl extends AbstractSQLObject implements Cloneable, SQLD
      *                exception
      */
     public String toXMLString(String prefix) throws BaseException {
-        StringBuffer xml = new StringBuffer(INIT_XMLBUF_SIZE);
+        StringBuilder xml = new StringBuilder(INIT_XMLBUF_SIZE);
         if (prefix == null) {
             prefix = "";
         }
@@ -1120,11 +1120,11 @@ public class SQLDBModelImpl extends AbstractSQLObject implements Cloneable, SQLD
      * @param prefix -
      *            prefix
      * @param xml -
-     *            StringBuffer
+     *            StringBuilder
      * @throws BaseException -
      *             exception
      */
-    protected void writeTables(String prefix, StringBuffer xml) throws BaseException {
+    protected void writeTables(String prefix, StringBuilder xml) throws BaseException {
         // Ensure tables are written out in ascending name order.
         List tblList = new ArrayList(tables.keySet());
         Collections.sort(tblList, new Comparator() {

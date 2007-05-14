@@ -147,7 +147,7 @@ public class SQLInputObjectImpl implements SQLInputObject {
      * @see SQLInputObject
      */
     public String toXMLString(String prefix) {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
 
         if (prefix == null) {
             prefix = "";

@@ -44,7 +44,7 @@ import com.sun.sql.framework.utils.Logger;
 public class DefaultProcessFlowGenerator extends BaseFlowGenerator {
     private static final String LOG_CATEGORY = DefaultProcessFlowGenerator.class.getName();
 
-    private StringBuffer dependentsForThreadCollector = new StringBuffer();
+    private StringBuilder dependentsForThreadCollector = new StringBuilder();
 
     public DefaultProcessFlowGenerator(SQLDefinition sqlD) throws BaseException {
         super(sqlD);

@@ -131,7 +131,7 @@ public class RuntimeDatabaseModelImpl extends SQLDBModelImpl implements RuntimeD
      * @exception BaseException - exception
      */
     public String toXMLString(String prefix) throws BaseException {
-        StringBuffer xml = new StringBuffer(INIT_XMLBUF_SIZE);
+        StringBuilder xml = new StringBuilder(INIT_XMLBUF_SIZE);
         if (prefix == null) {
             prefix = "";
         }

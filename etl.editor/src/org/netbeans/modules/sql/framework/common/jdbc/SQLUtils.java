@@ -711,7 +711,7 @@ public class SQLUtils {
         }
 
         // the string contains a "'"
-        StringBuffer newValue = new StringBuffer();
+        StringBuilder newValue = new StringBuilder();
         for (int i = 0; i < value.length(); i++) {
             char currChar = value.charAt(i);
             if (currChar == '\'') {

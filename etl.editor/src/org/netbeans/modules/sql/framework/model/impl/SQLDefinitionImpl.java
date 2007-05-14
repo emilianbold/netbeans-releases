@@ -863,11 +863,11 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
             Iterator itr = dbModels.iterator();
             SQLDBModel dbModel = null;
             Map catalogOverride = null;
-            StringBuffer sb = null;
+            StringBuilder sb = null;
             while (itr.hasNext()) {
                 dbModel = (SQLDBModel) itr.next();
-//                sb = new StringBuffer(dbModel.getSource().getOID());
-                sb = new StringBuffer();
+//                sb = new StringBuilder(dbModel.getSource().getOID());
+                sb = new StringBuilder();
                 if (dbModel.getObjectType() == SQLConstants.SOURCE_DBMODEL) {
                     sb.append(SQLConstants.SOURCE_DB_MODEL_NAME_SUFFIX);
                 } else {
@@ -888,10 +888,10 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
             Iterator itr = dbModels.iterator();
             SQLDBModel dbModel = null;
             Map catalogOverride = null;
-            StringBuffer sb = null;
+            StringBuilder sb = null;
             while (itr.hasNext()) {
                 dbModel = (SQLDBModel) itr.next();
-                sb = new StringBuffer();
+                sb = new StringBuilder();
                 if (dbModel.getObjectType() == SQLConstants.SOURCE_DBMODEL) {
                     sb.append(SQLConstants.SOURCE_DB_MODEL_NAME_SUFFIX);
                 } else {
@@ -1106,7 +1106,7 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
             prefix = "";
         }
 
-        StringBuffer xml = new StringBuffer(500);
+        StringBuilder xml = new StringBuilder(500);
         xml.append(prefix).append("<").append(getTagName());
 
         xml.append(" " + ATTR_DISPLAYNAME + "=\"");
@@ -1217,7 +1217,7 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
      * @return String containing XML representation of attributes
      */
     protected String toXMLAttributeTags(String prefix) {
-        StringBuffer buf = new StringBuffer(100);
+        StringBuilder buf = new StringBuilder(100);
 
         Iterator iter = attributes.values().iterator();
         while (iter.hasNext()) {
@@ -1913,7 +1913,7 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
 
     private String toXMLString(String prefix, Collection sqlObjects) throws BaseException {
         Iterator it = sqlObjects.iterator();
-        StringBuffer xml = new StringBuffer(" ");
+        StringBuilder xml = new StringBuilder(" ");
 
         int i = 0;
         while (it.hasNext()) {

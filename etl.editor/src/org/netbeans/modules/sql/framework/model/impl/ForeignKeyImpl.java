@@ -670,7 +670,7 @@ public class ForeignKeyImpl implements Cloneable, ForeignKey {
             prefix = "";
         }
 
-        StringBuffer buf = new StringBuffer(100);
+        StringBuilder buf = new StringBuilder(100);
 
         buf.append(prefix).append("<").append(ELEMENT_TAG).append(" ");
         if (fkName != null && fkName.trim().length() != 0) {

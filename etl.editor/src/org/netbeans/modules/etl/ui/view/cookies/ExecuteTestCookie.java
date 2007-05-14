@@ -172,7 +172,7 @@ public class ExecuteTestCookie implements Node.Cookie {
                 SwingUtilities.invokeLater(new CloseProgressBarTask());
                 try {
                     endTime = System.currentTimeMillis();
-                    StringBuffer msgBuf = new StringBuffer(100);
+                    StringBuilder msgBuf = new StringBuilder(100);
                     String msg = (event.getStatus() == ETLEngine.STATUS_COLLAB_COMPLETED) ?
                         "MSG_executed_success" : "MSG_executed_errors" ; // No I18N
                     msgBuf.append(NbBundle.getMessage(ExecuteTestCookie.class, msg));
@@ -263,7 +263,7 @@ public class ExecuteTestCookie implements Node.Cookie {
                 
                 writeToAppLog(throwableList);
                 
-                StringBuffer msgBuf = new StringBuffer(100);
+                StringBuilder msgBuf = new StringBuilder(100);
                 ListIterator iter = throwableList.listIterator();
                 while (iter.hasNext()) {
                     Throwable t = (Throwable) iter.next();

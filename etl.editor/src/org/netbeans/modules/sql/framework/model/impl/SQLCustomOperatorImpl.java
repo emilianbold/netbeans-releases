@@ -263,7 +263,7 @@ public class SQLCustomOperatorImpl extends SQLGenericOperatorImpl {
      * @return XML representation of this SQLObject instance
      */
     public String toXMLString(String prefix) {
-        StringBuffer buffer = new StringBuffer(500);
+        StringBuilder buffer = new StringBuilder(500);
         if (prefix == null) {
             prefix = "";
         }
@@ -307,7 +307,7 @@ public class SQLCustomOperatorImpl extends SQLGenericOperatorImpl {
             this.getOperatorDefinition().setArgList(inputArgs);
         }
     }
-    private void appendOperatorDefinition(StringBuffer buffer, String prefix) {
+    private void appendOperatorDefinition(StringBuilder buffer, String prefix) {
         SQLOperatorDefinition optDef = this.getOperatorDefinition();
         Iterator it = optDef.getArgList().iterator();
         //Write out input arguments

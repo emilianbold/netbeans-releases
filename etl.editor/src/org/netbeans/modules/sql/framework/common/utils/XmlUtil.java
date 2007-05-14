@@ -326,13 +326,13 @@ public class XmlUtil {
     }
     
     public static String toXmlString(Element element) {
-        StringBuffer buffer = new StringBuffer(200);
+        StringBuilder buffer = new StringBuilder(200);
         buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
         write(element, buffer, 0);
         return buffer.toString();
     }
     
-    private static void write(Element elem, StringBuffer buf, int indentLevel) {
+    private static void write(Element elem, StringBuilder buf, int indentLevel) {
         final String elementName = elem.getNodeName();
         
         buf.append("<");
@@ -355,7 +355,7 @@ public class XmlUtil {
         }
     }
 
-    private static void write(NodeList nodes, StringBuffer buf, int indentLevel) {
+    private static void write(NodeList nodes, StringBuilder buf, int indentLevel) {
         for (int i = 0; i < nodes.getLength(); i++) {
             Node aNode = nodes.item(i);
             if (aNode != null) {
@@ -383,7 +383,7 @@ public class XmlUtil {
      * @param attr
      * @param buf
      */
-    private static void write(Attr attr, StringBuffer buf) {
+    private static void write(Attr attr, StringBuilder buf) {
         buf.append(" ").append(attr.getName()).append("=\"");
         String value = attr.getValue();
         buf.append((value != null) ? XmlUtil.escapeXML(attr.getValue()) : "").append("\"");

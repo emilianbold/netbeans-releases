@@ -274,7 +274,7 @@ public class FlatfileDBConnectionDefinitionImpl implements FlatfileDBConnectionD
     }
 
     public String toXMLString(String prefix) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(prefix);
         sb.append("<");
         sb.append(TAG_CONNECTION_DEFINITION);

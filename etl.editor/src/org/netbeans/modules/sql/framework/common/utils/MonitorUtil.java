@@ -31,7 +31,7 @@ public class MonitorUtil implements Serializable{
     public static final String LOG_DETAILS_TABLE_PREFIX = "DETAILS_";
 
     public static String getDetailsTableName(String qName) {
-        StringBuffer detailsTableNameBuf = new StringBuffer(25);
+        StringBuilder detailsTableNameBuf = new StringBuilder(25);
 
         detailsTableNameBuf.append(LOG_DETAILS_TABLE_PREFIX);
         detailsTableNameBuf.append(qName.trim());
@@ -40,7 +40,7 @@ public class MonitorUtil implements Serializable{
     }
 
     public static String getDetailsTableName(TargetTable table) {
-        StringBuffer detailsTableNameBuf = new StringBuffer(25);
+        StringBuilder detailsTableNameBuf = new StringBuilder(25);
 
         detailsTableNameBuf.append(LOG_DETAILS_TABLE_PREFIX);
         detailsTableNameBuf.append(table.getAliasName());

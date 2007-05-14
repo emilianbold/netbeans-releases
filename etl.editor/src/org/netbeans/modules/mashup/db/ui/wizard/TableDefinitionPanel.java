@@ -348,7 +348,7 @@ public class TableDefinitionPanel implements ListSelectionListener,
         }
         
         public String toString() {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             
             buf.append("MapperEntry: tag ID = \"").append(tagId).append("\"").append(", name = \"").append(columnName).append("\"").append(
                     ", length = ").append(columnLength).append(", type = ").append(typeName);
@@ -508,7 +508,7 @@ public class TableDefinitionPanel implements ListSelectionListener,
         
         if (!getParseDataErrorMessages().isEmpty()) {
             Iterator iter = errorList.iterator();
-            StringBuffer buf = new StringBuffer(100);
+            StringBuilder buf = new StringBuilder(100);
             
             buf.append(NbBundle.getMessage(TableDefinitionPanel.class, "ERROR_import_layout_cantadvance_prefix"));
             while (iter.hasNext()) {

@@ -283,7 +283,7 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
         SQLPredicate rootPredicate = condition.getRootPredicate();
 
         String toolTip = null;
-        StringBuffer tBuffer = new StringBuffer("<html> <table border=0 cellspacing=0 cellpadding=0><tr><td>");
+        StringBuilder tBuffer = new StringBuilder("<html> <table border=0 cellspacing=0 cellpadding=0><tr><td>");
 
         if (rootPredicate != null) {
             toolTip = rootPredicate.toString();
@@ -824,12 +824,12 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
                 return NbBundle.getMessage(SQLBasicTableArea.class, "LBL_none");
             }
 
-            StringBuffer strBuf = null;
+            StringBuilder strBuf = null;
             Iterator it = pkVec.iterator();
             while (it.hasNext()) {
                 String str = (String) it.next();
                 if (strBuf == null) {
-                    strBuf = new StringBuffer(str);
+                    strBuf = new StringBuilder(str);
                 } else {
                     strBuf.append(str);
                 }

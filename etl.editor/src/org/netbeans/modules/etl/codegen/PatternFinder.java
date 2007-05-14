@@ -221,7 +221,7 @@ public class PatternFinder {
         int start = url.toUpperCase().indexOf("ALTERNATEID");
         if (start != -1) {
             int end = url.indexOf(';', start);
-            StringBuffer buf = new StringBuffer(60);
+            StringBuilder buf = new StringBuilder(60);
             buf.append(url.substring(0, start));
             if (end != -1) {
                 buf.append(url.substring(end + 1));

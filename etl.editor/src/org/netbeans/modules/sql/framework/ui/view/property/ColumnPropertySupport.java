@@ -45,12 +45,12 @@ public class ColumnPropertySupport {
             return "None";
         }
 
-        StringBuffer strBuf = null;
+        StringBuilder strBuf = null;
         Iterator it = pkVec.iterator();
         while (it.hasNext()) {
             String str = (String) it.next();
             if (strBuf == null) {
-                strBuf = new StringBuffer(str);
+                strBuf = new StringBuilder(str);
             } else {
                 strBuf.append(", ").append(str);
             }

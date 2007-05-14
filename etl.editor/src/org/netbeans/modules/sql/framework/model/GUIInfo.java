@@ -365,7 +365,7 @@ public class GUIInfo implements Cloneable {
      * @return XML document representing contents of this object
      */
     public String toXMLString(String prefix) {
-        StringBuffer xml = new StringBuffer(prefix + "<" + TAG_GUIINFO + ">\n");
+        StringBuilder xml = new StringBuilder(prefix + "<" + TAG_GUIINFO + ">\n");
         Iterator it = attrMap.entrySet().iterator();
 
         while (it.hasNext()) {

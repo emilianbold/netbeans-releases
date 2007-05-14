@@ -78,7 +78,7 @@ public class SimpleETLStrategyBuilderImpl extends BaseETLStrategyBuilder {
 
     public String getScriptToDisplay(ETLStrategyBuilderContext context) throws BaseException {
         super.checkTargetConnectionDefinition(context);
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         TargetTable targetTable = context.getTargetTable();
         DB targetDB = getDBFor(context.getModel().getConnectionDefinition(targetTable));
 

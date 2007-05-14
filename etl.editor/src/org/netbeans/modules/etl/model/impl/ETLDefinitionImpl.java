@@ -416,7 +416,7 @@ public class ETLDefinitionImpl implements ETLDefinition, Serializable {
             prefix = "";
         }
 
-        StringBuffer xml = new StringBuffer(500);
+        StringBuilder xml = new StringBuilder(500);
 
         xml.append("<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n");
         xml.append(prefix + "<" + getTagName() + ">\n");

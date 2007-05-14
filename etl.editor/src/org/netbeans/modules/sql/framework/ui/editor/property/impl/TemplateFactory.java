@@ -197,7 +197,7 @@ public class TemplateFactory {
         if (elm == null || elm.getName() == null) {
             return null;
         }
-        StringBuffer strBuf = new StringBuffer(elm.getName());
+        StringBuilder strBuf = new StringBuilder(elm.getName());
         IElement parent = elm.getParent();
 
         while (parent != null) {

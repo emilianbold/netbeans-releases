@@ -513,7 +513,7 @@ public class TagParserUtility {
      * @return String containing XML representation of attributes
      */
     public static String toXMLAttributeTags(Map attributes, String prefix) {
-        StringBuffer buf = new StringBuffer(100);
+        StringBuilder buf = new StringBuilder(100);
 
         Iterator iter = attributes.values().iterator();
         while (iter.hasNext()) {
@@ -537,7 +537,7 @@ public class TagParserUtility {
      */
     public static String toXMLInputTag(String prefix, List inputs) throws BaseException {
         Iterator it = inputs.iterator();
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
 
         while (it.hasNext()) {
             SQLObject obj = (SQLObject) it.next();
@@ -558,7 +558,7 @@ public class TagParserUtility {
      */
     public static String toXMLInputTag(String prefix, Map inputs) {
         Iterator it = inputs.values().iterator();
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
 
         while (it.hasNext()) {
             SQLInputObject obj = (SQLInputObject) it.next();
@@ -584,7 +584,7 @@ public class TagParserUtility {
             throw new BaseException("Must supply non-null SQLObject ref for param 'object'.");
         }
 
-        StringBuffer xml = new StringBuffer(prefix);
+        StringBuilder xml = new StringBuilder(prefix);
 
         xml.append("<" + TAG_OBJECTREF + " ");
         xml.append(ATTR_REFID + "=\"" + object.getId() + "\" ");

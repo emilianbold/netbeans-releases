@@ -55,7 +55,7 @@ public class GroupByPropertyEditor extends PropertyEditorSupport implements IPro
     }
 
     public String getAsText() {
-        StringBuffer text = new StringBuffer(50);
+        StringBuilder text = new StringBuilder(50);
         SQLGroupBy groupBy = (SQLGroupBy) this.getValue();
         if (groupBy != null) {
             List columns = groupBy.getColumns();

@@ -501,7 +501,7 @@ public class SourceTableImpl extends AbstractDBTable implements SourceTable {
      * @exception BaseException - exception
      */
     public String toXMLString(String prefix, boolean tableOnly) throws BaseException {
-        StringBuffer xml = new StringBuffer(INIT_XMLBUF_SIZE);
+        StringBuilder xml = new StringBuilder(INIT_XMLBUF_SIZE);
 
         xml.append(prefix).append("<").append(TABLE_TAG);
         xml.append(" ").append(TABLE_NAME_ATTR).append("=\"").append(name).append("\"");
@@ -653,7 +653,7 @@ public class SourceTableImpl extends AbstractDBTable implements SourceTable {
      * @param xml - buffer
      * @throws BaseException - exception
      */
-    protected void writeColumns(String prefix, StringBuffer xml) throws BaseException {
+    protected void writeColumns(String prefix, StringBuilder xml) throws BaseException {
         Comparator cmp = new AbstractDBTable.StringComparator();
         // Ensure columns are written out in ascending name order.
         List colList = new ArrayList(columns.keySet());
@@ -673,7 +673,7 @@ public class SourceTableImpl extends AbstractDBTable implements SourceTable {
      * @param prefix - prefix
      * @param xml - buffer
      */
-    protected void writeForeignKeys(String prefix, StringBuffer xml) {
+    protected void writeForeignKeys(String prefix, StringBuilder xml) {
         Comparator cmp = new AbstractDBTable.StringComparator();
         List fkNames = new ArrayList(foreignKeys.keySet());
         Collections.sort(fkNames, cmp);
@@ -691,7 +691,7 @@ public class SourceTableImpl extends AbstractDBTable implements SourceTable {
      * @param prefix - prefix
      * @param xml - buffer
      */
-    protected void writeIndices(String prefix, StringBuffer xml) {
+    protected void writeIndices(String prefix, StringBuilder xml) {
         Comparator cmp = new AbstractDBTable.StringComparator();
         List indexNames = new ArrayList(indexes.keySet());
         Collections.sort(indexNames, cmp);
@@ -709,7 +709,7 @@ public class SourceTableImpl extends AbstractDBTable implements SourceTable {
      * @param prefix - prefix
      * @param xml - buffer
      */
-    protected void writePrimaryKey(String prefix, StringBuffer xml) {
+    protected void writePrimaryKey(String prefix, StringBuilder xml) {
         if (primaryKey != null) {
             xml.append(primaryKey.toXMLString(prefix + INDENT));
         }

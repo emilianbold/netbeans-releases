@@ -265,7 +265,7 @@ public abstract class SQLConnectableObjectImpl extends AbstractSQLObject impleme
      * @return XML representation of this SQLObject instance
      */
     public String toXMLString(String prefix) throws BaseException {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         if (prefix == null) {
             prefix = "";
         }

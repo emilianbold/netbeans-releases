@@ -806,7 +806,7 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
      * @throws BaseException if error occurs
      */
     public String toXMLString(String prefix, boolean tableOnly) throws BaseException {
-        StringBuffer xml = new StringBuffer(INIT_XMLBUF_SIZE);
+        StringBuilder xml = new StringBuilder(INIT_XMLBUF_SIZE);
 
         xml.append(prefix).append("<").append(TABLE_TAG);
         xml.append(" ").append(TABLE_NAME_ATTR).append("=\"").append(name).append("\"");
@@ -954,13 +954,13 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
     }
 
     /**
-     * Writes out column information to the given StringBuffer.
+     * Writes out column information to the given StringBuilder.
      * 
      * @param prefix String to prepend to each column element or child node
-     * @param xml StringBuffer in which to write column information
+     * @param xml StringBuilder in which to write column information
      * @throws BaseException if error occurs during writing
      */
-    protected void writeColumns(String prefix, StringBuffer xml) throws BaseException {
+    protected void writeColumns(String prefix, StringBuilder xml) throws BaseException {
         Comparator cmp = new StringComparator();
         // Ensure columns are written out in ascending name order.
         List colList = new ArrayList(columns.keySet());
@@ -975,12 +975,12 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
     }
 
     /**
-     * Writes out foreign key information to the given StringBuffer.
+     * Writes out foreign key information to the given StringBuilder.
      * 
      * @param prefix String to prepend to each foreign key element or child node
-     * @param xml StringBuffer in which to write foreign key information
+     * @param xml StringBuilder in which to write foreign key information
      */
-    protected void writeForeignKeys(String prefix, StringBuffer xml) {
+    protected void writeForeignKeys(String prefix, StringBuilder xml) {
         Comparator cmp = new StringComparator();
         List fkNames = new ArrayList(foreignKeys.keySet());
         Collections.sort(fkNames, cmp);
@@ -993,12 +993,12 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
     }
 
     /**
-     * Writes out index information to the given StringBuffer.
+     * Writes out index information to the given StringBuilder.
      * 
      * @param prefix String to prepend to each index element or child node
-     * @param xml StringBuffer in which to write index information
+     * @param xml StringBuilder in which to write index information
      */
-    protected void writeIndices(String prefix, StringBuffer xml) {
+    protected void writeIndices(String prefix, StringBuilder xml) {
         Comparator cmp = new StringComparator();
         List indexNames = new ArrayList(indexes.keySet());
         Collections.sort(indexNames, cmp);
@@ -1011,12 +1011,12 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
     }
 
     /**
-     * Writes out primary key information to the given StringBuffer.
+     * Writes out primary key information to the given StringBuilder.
      * 
      * @param prefix String to prepend to each primary key element or child node
-     * @param xml StringBuffer in which to write primary key information
+     * @param xml StringBuilder in which to write primary key information
      */
-    protected void writePrimaryKey(String prefix, StringBuffer xml) {
+    protected void writePrimaryKey(String prefix, StringBuilder xml) {
         if (primaryKey != null) {
             xml.append(primaryKey.toXMLString(prefix + INDENT));
         }

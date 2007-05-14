@@ -431,7 +431,7 @@ public class ParseContentPanel implements PropertyChangeListener, VetoableChange
                 
                 br = new BufferedReader(new InputStreamReader(is, encoding), maxCharsToRead * 5);
                 
-                StringBuffer strBuf = new StringBuffer(maxCharsToRead);
+                StringBuilder strBuf = new StringBuilder(maxCharsToRead);
                 int sz = 0;
                 int ct = 0;
                 
@@ -445,7 +445,7 @@ public class ParseContentPanel implements PropertyChangeListener, VetoableChange
             } else {
                 Workbook spreadSheetData = Workbook.getWorkbook(is);
                 Sheet sheet = spreadSheetData.getSheet(table.getProperty("SHEET"));
-                StringBuffer buf = new StringBuffer();
+                StringBuilder buf = new StringBuilder();
                 for(int i = 0; i < sheet.getRows(); i++) {
                     if(i != 0) {
                         buf.append("\r\n");

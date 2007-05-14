@@ -206,7 +206,7 @@ public abstract class AbstractSQLObject implements SQLObject {
      * @see SQLObject#getFooter
      */
     public String getFooter() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append("</").append(TAG_SQLOBJECT).append(">\n");
         return buf.toString();
     }
@@ -222,7 +222,7 @@ public abstract class AbstractSQLObject implements SQLObject {
             Logger.print(Logger.ERROR, LOG_CATEGORY, "Failed to get type attr.");
             strType = "UNKNOWN_TYPE";
         }
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         buffer.append("<" + TAG_SQLOBJECT + " " + OBJECT_TYPE + "=\"");
         if (strType != null) {
             buffer.append(strType);
@@ -373,7 +373,7 @@ public abstract class AbstractSQLObject implements SQLObject {
      * @see SQLObject#toXMLString(java.lang.String)
      */
     public String toXMLString(String prefix) throws BaseException {
-        StringBuffer buf = new StringBuffer(200);
+        StringBuilder buf = new StringBuilder(200);
 
         buf.append(prefix).append(getHeader());
         buf.append(toXMLAttributeTags(prefix));
@@ -411,7 +411,7 @@ public abstract class AbstractSQLObject implements SQLObject {
      * @return String containing XML representation of attributes
      */
     protected String toXMLAttributeTags(String prefix) {
-        StringBuffer buf = new StringBuffer(100);
+        StringBuilder buf = new StringBuilder(100);
 
         Iterator iter = attributes.values().iterator();
         while (iter.hasNext()) {

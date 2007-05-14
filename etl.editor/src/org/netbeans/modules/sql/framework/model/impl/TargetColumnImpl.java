@@ -238,7 +238,7 @@ public class TargetColumnImpl extends AbstractDBColumn implements TargetColumn {
      * @see SQLObject#toXMLString
      */
     public String toXMLString(String prefix) {
-        StringBuffer xml = new StringBuffer(50);
+        StringBuilder xml = new StringBuilder(50);
         xml.append(prefix).append("<").append(ELEMENT_TAG);
 
         // Allow superclass to write its attributes out first.

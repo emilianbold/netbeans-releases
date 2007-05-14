@@ -229,7 +229,7 @@ public class FlatfileDBColumnImpl implements FlatfileDBColumn, Cloneable, Compar
      * @return debug output
      */
     public String debugOutput(String prefix) {
-        StringBuffer out = new StringBuffer(100);
+        StringBuilder out = new StringBuilder(100);
 
         out.append(prefix).append("Column name: " + getName() + "\n");
         out.append(prefix).append("Position: " + getOrdinalPosition() + "\n");
@@ -303,7 +303,7 @@ public class FlatfileDBColumnImpl implements FlatfileDBColumn, Cloneable, Compar
             }
         }
 
-        StringBuffer buffer = new StringBuffer(100);
+        StringBuilder buffer = new StringBuilder(100);
         buffer.append("\"").append(this.name).append(END_QUOTE_SPACE);
         buffer.append(SQLUtils.getStdSqlType(sqlTypeCode));
 
@@ -698,7 +698,7 @@ public class FlatfileDBColumnImpl implements FlatfileDBColumn, Cloneable, Compar
      * @return XML string
      */
     public String toXMLString(String prefix) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(prefix);
         sb.append("<");
         sb.append(TAG_STCDB_COLUMN);
@@ -708,7 +708,7 @@ public class FlatfileDBColumnImpl implements FlatfileDBColumn, Cloneable, Compar
     }
 
     private String getAttributeNameValues() {
-        StringBuffer sb = new StringBuffer(" ");
+        StringBuilder sb = new StringBuilder(" ");
         sb.append(ATTR_NAME);
         sb.append(EQUAL_START_QUOTE);
         sb.append(this.name);

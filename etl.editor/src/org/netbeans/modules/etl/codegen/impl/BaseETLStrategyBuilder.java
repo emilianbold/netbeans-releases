@@ -178,7 +178,7 @@ public abstract class BaseETLStrategyBuilder implements ETLStrategyBuilder {
 
     protected void createTargetTableIfNotExists(TargetTable table, ETLTaskNode taskNode, String trgtConnName, DB targetDB, StatementContext context) throws BaseException {
         if (table.isCreateTargetTable() && (!(targetDB instanceof AxionDB))) {
-            StringBuffer sqlBuffer = new StringBuffer(200);
+            StringBuilder sqlBuffer = new StringBuilder(200);
 
             Statements stmts = targetDB.getStatements();
 
@@ -642,7 +642,7 @@ public abstract class BaseETLStrategyBuilder implements ETLStrategyBuilder {
 	protected void truncateTableIfExists(SQLDBTable dbt, ETLTaskNode taskNode, String trgtConnName, Statements stmts, StatementContext sc) throws BaseException {
 		SQLPart ifExists = stmts.getTableExistsStatement(dbt, sc);
             String existsSql = (ifExists != null) ? ifExists.getSQL().trim() : null;
-            StringBuffer sqlBuffer = StringUtil.isNullString(existsSql) ? new StringBuffer(200) : new StringBuffer(existsSql);
+            StringBuilder sqlBuffer = StringUtil.isNullString(existsSql) ? new StringBuilder(200) : new StringBuilder(existsSql);
 
 		SQLPart doTruncate = stmts.getTruncateStatement(dbt, sc);
             String truncateSql = doTruncate.getSQL().trim();
@@ -667,7 +667,7 @@ public abstract class BaseETLStrategyBuilder implements ETLStrategyBuilder {
             // truncate statement. The delete and truncate statements are identical for
             // those DBs which do not have a separate 'truncate' command.
             if (!StringUtil.isNullString(deleteSql) && !deleteSql.equalsIgnoreCase(truncateSql)) {
-                sqlBuffer = StringUtil.isNullString(existsSql) ? new StringBuffer(200) : new StringBuffer(existsSql);
+                sqlBuffer = StringUtil.isNullString(existsSql) ? new StringBuilder(200) : new StringBuilder(existsSql);
                 if (sqlBuffer.length() != 0) {
                     sqlBuffer.append(SQLPart.STATEMENT_SEPARATOR);
                 }

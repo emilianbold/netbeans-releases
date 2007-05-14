@@ -170,7 +170,7 @@ public class PipelinedStrategyBuilderImpl extends BaseETLStrategyBuilder {
     public String getScriptToDisplay(ETLStrategyBuilderContext context) throws BaseException {
         super.checkTargetConnectionDefinition(context);
 
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         TargetTable targetTable = context.getTargetTable();
 
         StatementContext stmtContext = new StatementContext();
@@ -307,7 +307,7 @@ public class PipelinedStrategyBuilderImpl extends BaseETLStrategyBuilder {
 
     protected void createTargetTableIfNotExists(TargetTable table, ETLTaskNode taskNode, String trgtConnName, DB targetDB) throws BaseException {
         if (table.isCreateTargetTable()) {
-            StringBuffer sqlBuffer = new StringBuffer(200);
+            StringBuilder sqlBuffer = new StringBuilder(200);
 
             Statements tStmts = targetDB.getStatements();
             StatementContext context = new StatementContext();
@@ -389,7 +389,7 @@ public class PipelinedStrategyBuilderImpl extends BaseETLStrategyBuilder {
     }
 
     protected String getCreateDBLinkSQL(DBConnectionDefinition connDef, String linkName) throws BaseException {
-        StringBuffer stmtBuf = new StringBuffer(50);
+        StringBuilder stmtBuf = new StringBuilder(50);
 
         // Generate check for link existence + drop statement if necessary
         // Generate a "create DB link" statement using connection parameters in the
@@ -432,7 +432,7 @@ public class PipelinedStrategyBuilderImpl extends BaseETLStrategyBuilder {
     }
 
     private String getCreateRemoteTableSQL(SQLDBTable table, String localName, String linkName) throws BaseException {
-        StringBuffer stmtBuf = new StringBuffer(50);
+        StringBuilder stmtBuf = new StringBuilder(50);
         if (StringUtil.isNullString(localName)) {
             localName = table.getName();
         }

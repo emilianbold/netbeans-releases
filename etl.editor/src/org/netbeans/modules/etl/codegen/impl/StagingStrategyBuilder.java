@@ -129,7 +129,7 @@ public class StagingStrategyBuilder extends BaseETLStrategyBuilder {
             String waitDisplayName = msgMgr.getString("TEMPLATE_dn", msgMgr.getString("LBL_dn_extractorwait"), context.getTargetTable().getName());
             extractorWait.setDisplayName(waitDisplayName);
 
-            StringBuffer dependentTasks = new StringBuffer();
+            StringBuilder dependentTasks = new StringBuilder();
             String waitTaskId = extractorWait.getId();
             xformPredecessor = extractorWait;
 
@@ -194,7 +194,7 @@ public class StagingStrategyBuilder extends BaseETLStrategyBuilder {
 
     public String getScriptToDisplay(ETLStrategyBuilderContext context) throws BaseException {
         super.checkTargetConnectionDefinition(context);
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         TargetTable targetTable = context.getTargetTable();
         DB targetDB = getDBFor(context.getModel().getConnectionDefinition(targetTable));
 
@@ -313,7 +313,7 @@ public class StagingStrategyBuilder extends BaseETLStrategyBuilder {
     }
 
     private String getExtractorSQL(SourceTable srcTable, DB targetDB, TargetTable tt) throws BaseException {
-        StringBuffer buffer = new StringBuffer(50);
+        StringBuilder buffer = new StringBuilder(50);
 
         // Get the evaluator
         DBConnectionDefinition srcConDefn = this.builderModel.getConnectionDefinition(srcTable);

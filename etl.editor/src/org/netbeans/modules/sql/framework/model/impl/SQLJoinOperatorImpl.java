@@ -454,7 +454,7 @@ public class SQLJoinOperatorImpl extends SQLConnectableObjectImpl implements SQL
      * @throws BaseException if error occurs during XML creation
      */
     public String toXMLString(String prefix) throws BaseException {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
 
         buffer.append(prefix).append(getHeader());
         buffer.append(toXMLAttributeTags(prefix));

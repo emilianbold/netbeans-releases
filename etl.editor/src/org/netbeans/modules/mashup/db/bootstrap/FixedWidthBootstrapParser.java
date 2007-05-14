@@ -219,7 +219,7 @@ public class FixedWidthBootstrapParser implements FlatfileBootstrapParser {
     }
 
     private String getErrMessage(int fieldCount) {
-        StringBuffer errMsg = new StringBuffer(50);
+        StringBuilder errMsg = new StringBuilder(50);
         if (fieldCount == 0) {
             errMsg.append("Field count must be a non-zero integer value.\n");
         } else {

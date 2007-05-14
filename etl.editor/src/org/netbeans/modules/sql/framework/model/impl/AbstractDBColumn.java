@@ -363,7 +363,7 @@ public abstract class AbstractDBColumn extends AbstractSQLObject implements SQLD
      * @return qualified column name prefixed with alias
      */
     public String getQualifiedName() {
-        StringBuffer buf = new StringBuffer(50);
+        StringBuilder buf = new StringBuilder(50);
         SQLDBTable table = (SQLDBTable) this.getParent();
         if (table != null) {
             buf.append(table.getQualifiedName());
@@ -686,13 +686,13 @@ public abstract class AbstractDBColumn extends AbstractSQLObject implements SQLD
     public abstract String toXMLString(String prefix) throws BaseException;
 
     /**
-     * Appends attributes defined in this abstract class to the given StringBuffer.
+     * Appends attributes defined in this abstract class to the given StringBuilder.
      * 
-     * @param xml StringBuffer to receive XML attribute output
+     * @param xml StringBuilder to receive XML attribute output
      */
-    protected void appendXMLAttributes(StringBuffer xml) {
+    protected void appendXMLAttributes(StringBuilder xml) {
         if (xml == null) {
-            throw new IllegalArgumentException("Must supply non-null StringBuffer ref for parameter xml.");
+            throw new IllegalArgumentException("Must supply non-null StringBuilder ref for parameter xml.");
         }
 
         if (getId() != null) {

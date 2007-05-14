@@ -955,7 +955,7 @@ public class SQLConditionImpl implements SQLCondition, Cloneable {
             prefix = "";
         }
 
-        StringBuffer xml = new StringBuffer(500);
+        StringBuilder xml = new StringBuilder(500);
 
         xml.append(prefix + "<" + TAG_CONDITION);
 
@@ -1376,7 +1376,7 @@ public class SQLConditionImpl implements SQLCondition, Cloneable {
 
     private String toXMLString(String prefix, Collection sqlObjects) throws BaseException {
         Iterator it = sqlObjects.iterator();
-        StringBuffer xml = new StringBuffer(" ");
+        StringBuilder xml = new StringBuilder(" ");
 
         int i = 0;
         while (it.hasNext()) {

@@ -137,7 +137,7 @@ public abstract class UIUtil {
        boolean fk = column.isForeignKey();
        boolean indexed = column.isIndexed();
 
-       StringBuffer strBuf = new StringBuffer("<html> <table border=0 cellspacing=0 cellpadding=0 >");
+       StringBuilder strBuf = new StringBuilder("<html> <table border=0 cellspacing=0 cellpadding=0 >");
        strBuf.append("<tr> <td>&nbsp; Name </td> <td> &nbsp; : &nbsp; <b>");
        strBuf.append(column.getName()).append("</b> </td> </tr>");
        strBuf.append("<tr> <td>&nbsp; Type </td> <td> &nbsp; : &nbsp; <b>");
@@ -179,7 +179,7 @@ public abstract class UIUtil {
 
    private static String getForeignKeyString(DBColumn column) {
        String refString = column.getName() + " --> ";
-       StringBuffer str = new StringBuffer(refString);
+       StringBuilder str = new StringBuilder(refString);
        DBTable table = column.getParent();
        List list = table.getForeignKeys();
 
@@ -210,7 +210,7 @@ public abstract class UIUtil {
     * @return fully-resolved table name
     */
    public static String getResolvedTableName(SQLDBTable table) {
-       StringBuffer buf = new StringBuffer(16);
+       StringBuilder buf = new StringBuilder(16);
 
        String prefix = table.getTablePrefix();
        if (!StringUtil.isNullString(prefix)) {
@@ -235,7 +235,7 @@ public abstract class UIUtil {
     * @return String containing HTML-formatted table metadata
     */
    public static String getTableToolTip(SQLDBTable table) {
-       StringBuffer strBuf = new StringBuffer("<html> <table border=0 cellspacing=0 cellpadding=0 >");
+       StringBuilder strBuf = new StringBuilder("<html> <table border=0 cellspacing=0 cellpadding=0 >");
        boolean isUserDefinedTableName = !StringUtil.isNullString(table.getUserDefinedTableName());
        strBuf.append("<tr> <td>&nbsp; Table </td> <td> &nbsp; : &nbsp; <b>");
        if (isUserDefinedTableName) {

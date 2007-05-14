@@ -211,7 +211,7 @@ public class JDBCTablePanel implements WizardDescriptor.FinishablePanel {
     
     private void getCreateStatement(String schema, String table, String jdbcUrl,
             String user, String pass, String driver) {
-        StringBuffer createStatement = new StringBuffer();
+        StringBuilder createStatement = new StringBuilder();
         String catalog = "";
         try {
             SQLDBModel model = getModel(jdbcUrl, user, pass, driver, schema, catalog, table);
@@ -234,7 +234,7 @@ public class JDBCTablePanel implements WizardDescriptor.FinishablePanel {
     
     private String getCreateDBLinkSQL(AxionStatements stmts, DBConnectionDefinition connDef,
             String linkName, String pass) throws BaseException {
-        StringBuffer stmtBuf = new StringBuffer(50);
+        StringBuilder stmtBuf = new StringBuilder(50);
         
         stmtBuf.append(stmts.getCreateDBLinkStatement(connDef, linkName).getSQL());
         int start = stmtBuf.indexOf("PASSWORD='") + "PASSWORD='".length();
@@ -245,7 +245,7 @@ public class JDBCTablePanel implements WizardDescriptor.FinishablePanel {
     
     private String getCreateRemoteTableSQL(AxionStatements stmts, SQLDBTable table,
             String localName, String linkName) throws BaseException {
-        StringBuffer stmtBuf = new StringBuffer(50);
+        StringBuilder stmtBuf = new StringBuilder(50);
         if (StringUtil.isNullString(localName)) {
             localName = table.getName();
         }

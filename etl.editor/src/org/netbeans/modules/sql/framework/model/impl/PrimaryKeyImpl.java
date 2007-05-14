@@ -377,7 +377,7 @@ public class PrimaryKeyImpl implements Cloneable, PrimaryKey {
             prefix = "";
         }
 
-        StringBuffer buf = new StringBuffer(100);
+        StringBuilder buf = new StringBuilder(100);
 
         buf.append(prefix).append("<").append(ELEMENT_TAG).append(" ");
         if (name != null && name.trim().length() != 0) {

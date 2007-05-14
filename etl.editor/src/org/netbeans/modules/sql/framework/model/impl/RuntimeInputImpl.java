@@ -103,7 +103,7 @@ public class RuntimeInputImpl extends SourceTableImpl implements RuntimeInput {
      * @throws BaseException - exception
      */
     public String toXMLString(String prefix, boolean tableOnly) throws BaseException {
-        StringBuffer xml = new StringBuffer(INIT_XMLBUF_SIZE);
+        StringBuilder xml = new StringBuilder(INIT_XMLBUF_SIZE);
 
         xml.append(prefix).append("<").append(TAG_RUNTIME_INPUT);
         xml.append(" ").append(TABLE_NAME_ATTR).append("=\"").append(name).append("\"");

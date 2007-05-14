@@ -352,7 +352,7 @@ public class SQLJoinViewImpl extends AbstractSQLObject implements SQLJoinView {
      * @return qualified table name prefixed with alias
      */
     public String getQualifiedName() {
-        StringBuffer buf = new StringBuffer(50);
+        StringBuilder buf = new StringBuilder(50);
         String aName = this.getAliasName();
         if (aName != null && !aName.trim().equals("")) {
             buf.append("(");
@@ -599,7 +599,7 @@ public class SQLJoinViewImpl extends AbstractSQLObject implements SQLJoinView {
             prefix = "";
         }
 
-        StringBuffer buffer = new StringBuffer(500);
+        StringBuilder buffer = new StringBuilder(500);
         if (prefix == null) {
             prefix = "";
         }

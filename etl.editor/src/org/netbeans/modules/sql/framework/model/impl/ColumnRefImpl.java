@@ -295,7 +295,7 @@ public class ColumnRefImpl extends AbstractSQLObject implements ColumnRef {
      * @return XML representation of this SQLObject instance
      */
     public String toXMLString(String prefix) {
-        StringBuffer buf = new StringBuffer(200);
+        StringBuilder buf = new StringBuilder(200);
 
         buf.append(prefix).append(getHeader());
         buf.append(toXMLAttributeTags(prefix));

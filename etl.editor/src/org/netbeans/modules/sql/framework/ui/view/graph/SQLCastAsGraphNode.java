@@ -294,7 +294,7 @@ public class SQLCastAsGraphNode extends SQLOperatorGraphNode implements Property
                 int scale = castOp.getScale(); 
                     
                 String sqlTypeStr = SQLUtils.getStdSqlType(jdbcType);
-                StringBuffer labelBuffer = new StringBuffer(sqlTypeStr);
+                StringBuilder labelBuffer = new StringBuilder(sqlTypeStr);
                 
                 if (SQLUtils.isPrecisionRequired(jdbcType)) {
                     labelBuffer.append("(");

@@ -199,7 +199,7 @@ public class SQLWhenImpl extends SQLConnectableObjectImpl implements SQLWhen {
      * @throws BaseException if error occurs during XML creation
      */
     public String toXMLString(String prefix) throws BaseException {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         if (prefix == null) {
             prefix = "";
         }
