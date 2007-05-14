@@ -36,10 +36,10 @@ public class MPMeasureActions  {
         suite.addTest(new CreateMobilityProject("testCreateMobilityProject", "Create Mobile Application"));  
         suite.addTest(new CreateMobilityProject("testCreateMobilityLibrary", "Create Mobile Class Library"));
         suite.addTest(new OpenMIDletEditor("measureTime","Open a visual MIDlet"));
-        suite.addTest(new MIDletViewsSwitch("testFlowToDesignSwitch","Test Flow To Design Switch"));
-        suite.addTest(new MIDletViewsSwitch("testDesignToFlowSwitch","Test Design To Flow Switch"));
-        suite.addTest(new MIDletViewsSwitch("testFlowToSourceSwitch","Test Flow To Source Switch"));
-        suite.addTest(new MIDletViewsSwitch("testSourceToFlowSwitch","Test Source To Flow S witch"));
+        suite.addTest(new MIDletViewsSwitch("testFlowToDesignSwitch","Flow To Design Switch"));
+        suite.addTest(new MIDletViewsSwitch("testDesignToFlowSwitch","Design To Flow Switch"));
+        suite.addTest(new MIDletViewsSwitch("testFlowToSourceSwitch","Flow To Source Switch"));
+        suite.addTest(new MIDletViewsSwitch("testSourceToFlowSwitch","Source To Flow Switch"));
         suite.addTest(new CreateVisualMIDlet("measureTime","Create Visual MIDlet"));
         suite.addTest(new CreateMIDlet("measureTime","Create MIDlet"));
         return suite;
