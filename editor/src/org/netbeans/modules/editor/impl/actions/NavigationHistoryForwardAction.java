@@ -76,6 +76,8 @@ public final class NavigationHistoryForwardAction extends TextAction implements 
             nav.addPropertyChangeListener(WeakListeners.propertyChange(this, nav));
         } else {
             this.popupMenu = null;
+            putValue(SHORT_DESCRIPTION, NbBundle.getMessage(NavigationHistoryForwardAction.class, 
+                "NavigationHistoryForwardAction_Tooltip_simple")); //NOI18N
         }
     }
     
@@ -156,15 +158,15 @@ public final class NavigationHistoryForwardAction extends TextAction implements 
             String fileName = NavigationHistoryBackAction.getWaypointName(wpt);
             if (fileName != null) {
                 putValue(SHORT_DESCRIPTION, NbBundle.getMessage(NavigationHistoryForwardAction.class, 
-                    "NavigationHistoryForwardAction_Tooltip", fileName));
+                    "NavigationHistoryForwardAction_Tooltip", fileName)); //NOI18N
             } else {
                 putValue(SHORT_DESCRIPTION, NbBundle.getMessage(NavigationHistoryForwardAction.class, 
-                    "NavigationHistoryForwardAction_Tooltip_simple"));
+                    "NavigationHistoryForwardAction_Tooltip_simple")); //NOI18N
             }
             setEnabled(true);
         } else {
             putValue(SHORT_DESCRIPTION, NbBundle.getMessage(NavigationHistoryForwardAction.class, 
-                "NavigationHistoryForwardAction_Tooltip_simple"));
+                "NavigationHistoryForwardAction_Tooltip_simple")); //NOI18N
             setEnabled(false);
         }
     }

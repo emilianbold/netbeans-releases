@@ -91,6 +91,8 @@ public final class NavigationHistoryBackAction extends TextAction implements Con
             nav.addPropertyChangeListener(WeakListeners.propertyChange(this, nav));
         } else {
             this.popupMenu = null;
+            putValue(SHORT_DESCRIPTION, NbBundle.getMessage(NavigationHistoryBackAction.class, 
+                "NavigationHistoryBackAction_Tooltip_simple")); //NOI18N
         }
     }
     
@@ -107,7 +109,7 @@ public final class NavigationHistoryBackAction extends TextAction implements Con
             try {
                 history.markWaypoint(target, target.getCaret().getDot(), true, false);
             } catch (BadLocationException ble) {
-                LOG.log(Level.WARNING, "Can't mark current position", ble);
+                LOG.log(Level.WARNING, "Can't mark current position", ble); //NOI18N
             }
         }
         
@@ -181,16 +183,16 @@ public final class NavigationHistoryBackAction extends TextAction implements Con
             String fileName = getWaypointName(wpt);
             if (fileName != null) {
                 putValue(SHORT_DESCRIPTION, NbBundle.getMessage(NavigationHistoryBackAction.class, 
-                    "NavigationHistoryBackAction_Tooltip", fileName));
+                    "NavigationHistoryBackAction_Tooltip", fileName)); //NOI18N
             } else {
                 putValue(SHORT_DESCRIPTION, NbBundle.getMessage(NavigationHistoryBackAction.class, 
-                    "NavigationHistoryBackAction_Tooltip_simple"));
+                    "NavigationHistoryBackAction_Tooltip_simple")); //NOI18N
             }
             
             setEnabled(true);
         } else {
             putValue(SHORT_DESCRIPTION, NbBundle.getMessage(NavigationHistoryBackAction.class, 
-                "NavigationHistoryBackAction_Tooltip_simple"));
+                "NavigationHistoryBackAction_Tooltip_simple")); //NOI18N
             setEnabled(false);
         }
     }
@@ -221,7 +223,7 @@ public final class NavigationHistoryBackAction extends TextAction implements Con
                     try {
                         doc = editorCookie.openDocument();
                     } catch (IOException ioe) {
-                        LOG.log(Level.WARNING, "Can't open document", ioe);
+                        LOG.log(Level.WARNING, "Can't open document", ioe); //NOI18N
                     }
                 }
 
