@@ -85,7 +85,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Martin Matula, Jan Pokorsky
  */
-public class ExtractSuperclassRefactoringPlugin extends RetoucheRefactoringPlugin {
+public final class ExtractSuperclassRefactoringPlugin extends RetoucheRefactoringPlugin {
     /** Reference to the parent refactoring instance */
     private final ExtractSuperclassRefactoring refactoring;
     
@@ -166,10 +166,6 @@ public class ExtractSuperclassRefactoringPlugin extends RetoucheRefactoringPlugi
         }
 
         return null;
-    }
-
-    protected Problem fastCheckParameters(CompilationController javac) throws IOException {
-        throw new UnsupportedOperationException("Not supported."); // NOI18N
     }
 
     public Problem checkParameters() {
@@ -273,10 +269,6 @@ public class ExtractSuperclassRefactoringPlugin extends RetoucheRefactoringPlugi
             throw (RuntimeException) new RuntimeException().initCause(ex);
         }
         return null;
-    }
-
-    protected Problem prepare(WorkingCopy wc, RefactoringElementsBag bag) throws IOException {
-        throw new UnsupportedOperationException("Not supported."); // NOI18N
     }
     
     private static List<TypeMirror> findUsedGenericTypes(CompilationInfo javac, TypeElement javaClass,ExtractSuperclassRefactoring refactoring) {

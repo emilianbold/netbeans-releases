@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.refactoring.java.plugins;
@@ -30,11 +30,9 @@ import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.ModificationResult.Difference;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
@@ -49,7 +47,6 @@ import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle;
 
@@ -58,7 +55,7 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Matula
  */
-public class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
+public final class PullUpRefactoringPlugin extends RetoucheRefactoringPlugin {
     /** Reference to the parent refactoring instance */
     private final PullUpRefactoring refactoring;
     private TreePathHandle treePathHandle;
@@ -72,65 +69,42 @@ public class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
         this.treePathHandle = refactoring.getSourceType();
     }
     
-    private Problem problem;
-    /** Checks pre-conditions of the refactoring.
-     * @return Problems found or <code>null</code>.
-     */
-    public Problem preCheck() {
-        //TODO: wrong classpath
-        JavaSource source=JavaSource.forFileObject(treePathHandle.getFileObject());
+    protected Problem preCheck(CompilationController cc) throws IOException {
         fireProgressListenerStart(AbstractRefactoring.PRE_CHECK, 4);
-        final Problem result;
-        problem = null;
-        CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
-            
-            public void cancel() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            
-            public void run(CompilationController cc) throws Exception {
-                cc.toPhase(JavaSource.Phase.RESOLVED);
-                problem = isElementAvail(treePathHandle, cc);
-                if (problem != null) {
-                    // fatal error -> don't continue with further checks
-                    return;
-                }
-                if (!RetoucheUtils.isElementInOpenProject(treePathHandle.getFileObject())) {
-                    problem = new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ProjectNotOpened"));
-                    return;
-                }
-                
-                
-                // increase progress (step 1)
-                fireProgressListenerStep();
-                TypeElement e  = (TypeElement) treePathHandle.resolveElement(cc);
-                if (RetoucheUtils.getSuperTypes(e, cc, true).isEmpty()) {
-                    problem = new Problem(true, NbBundle.getMessage(PullUpRefactoringPlugin.class, "ERR_PullUp_NoSuperTypes")); // NOI18N
-                    return;
-                }
-                // increase progress (step 2)
-                fireProgressListenerStep();
-                // #2 - check if there are any members to pull up
-                Element el = treePathHandle.resolveElement(cc);
-                for (Element element : el.getEnclosedElements()) {
-                    if (element.getKind() != ElementKind.CONSTRUCTOR) {
-                        return;
-                    }
-                }
-                problem = new Problem(true, NbBundle.getMessage(PushDownRefactoringPlugin.class, "ERR_PushDown_NoMembers")); // NOI18N
-                // increase progress (step 3)
-                fireProgressListenerStep();
-            }
-            
-        };
         try {
-            source.runUserActionTask(task, true);
-        }catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            cc.toPhase(JavaSource.Phase.RESOLVED);
+            Problem problem = isElementAvail(treePathHandle, cc);
+            if (problem != null) {
+                // fatal error -> don't continue with further checks
+                return problem;
+            }
+            if (!RetoucheUtils.isElementInOpenProject(treePathHandle.getFileObject())) {
+                return new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ProjectNotOpened"));
+            }
+
+
+            // increase progress (step 1)
+            fireProgressListenerStep();
+            TypeElement e  = (TypeElement) treePathHandle.resolveElement(cc);
+            if (RetoucheUtils.getSuperTypes(e, cc, true).isEmpty()) {
+                return new Problem(true, NbBundle.getMessage(PullUpRefactoringPlugin.class, "ERR_PullUp_NoSuperTypes")); // NOI18N
+            }
+            // increase progress (step 2)
+            fireProgressListenerStep();
+            // #2 - check if there are any members to pull up
+            Element el = treePathHandle.resolveElement(cc);
+            for (Element element : el.getEnclosedElements()) {
+                if (element.getKind() != ElementKind.CONSTRUCTOR) {
+                    return null;
+                }
+            }
+            problem = new Problem(true, NbBundle.getMessage(PushDownRefactoringPlugin.class, "ERR_PushDown_NoMembers")); // NOI18N
+            // increase progress (step 3)
+            fireProgressListenerStep();
+            return problem;
         } finally {
             fireProgressListenerStop();
         }
-        return problem;
     }
     
     
@@ -158,107 +132,89 @@ public class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
         
         return null;
     }
-    
-    public Problem checkParameters() {
-        //TODO: wrong classpath
-        JavaSource source=JavaSource.forFileObject(treePathHandle.getFileObject());
+
+    protected Problem checkParameters(CompilationController cc) throws IOException {
         fireProgressListenerStart(AbstractRefactoring.PRE_CHECK, 4);
-        final Problem result;
-        problem = null;
-        CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
-            
-            public void cancel() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            
-            public void run(CompilationController cc) throws Exception {
-                TypeElement sourceType = (TypeElement) refactoring.getSourceType().resolveElement(cc);
-                Collection<Element> supers = RetoucheUtils.getSuperTypes(sourceType, cc);
-                TypeElement targetType = (TypeElement) refactoring.getTargetType().resolve(cc);
-                MemberInfo[] members = refactoring.getMembers();
-                
-                fireProgressListenerStart(AbstractRefactoring.PARAMETERS_CHECK, members.length + 1);
-                // #1 - check whether the target type is a legal super type
-                if (!supers.contains(targetType)) {
-                    problem = new Problem(true, NbBundle.getMessage(PullUpRefactoringPlugin.class, "ERR_PullUp_IllegalTargetType")); // NOI18N
-                    return;
-                }
-                
-                fireProgressListenerStep();
-                
-                // TODO: what the hell is this check
-                // #2 - check whether all the members are legal members that can be pulled up
-                //                    HashSet visitedSources = new HashSet();
-                //                    //            HashSet allMembers = new HashSet(Arrays.asList(members));
-                Problem problems = null;
-                //                    visitedSources.add(refactoring.getSourceType());
-                for (int i = 0; i < members.length; i++) {
-                    Element cls;
-                    Element member = members[i].getElementHandle().resolve(cc);
-                    if (members[i].getType()==0) {
-                        //                            // member is a feature (inner class, field or method)
-                        //                            cls = member.getEnclosingElement();
-                        //                        } else {
-                        //                            // member is an interface from implements clause
-                        //                            MultipartId ifcName = (MultipartId) member;
-                        //                            // get parent of the element (should be class if this is really
-                        //                            // a name from implements clause
-                        //                            Object parent = ifcName.refImmediateComposite();
-                        //                            // if parent is not a class, member is invalid
-                        //                            if (!(parent instanceof JavaClass)) {
-                        //                                cls = null;
-                        //                            } else {
-                        //                                // check if the parent class contains this MultipartId
-                        //                                // in interfaceNames
-                        //                                if (!((JavaClass) parent).getInterfaceNames().contains(ifcName)) {
-                        //                                    cls = null;
-                        //                                } else {
-                        //                                    cls = (ClassDefinition) parent;
-                        //                                }
-                        //                            }
-                        //                        }
-                        //                        // if the declaring class has not been visited yet, perform checks on it
-                        //                        if (visitedSources.add(cls)) {
-                        //                            // if the declaring class of a feature is not a JavaClass,
-                        //                            // or if it is not from the set of source type's supertypes
-                        //                            // or if the declaring class is not a subtype of target class
-                        //                            // then this member is illegal
-                        //                            if (!(cls instanceof JavaClass) || !supers.contains(cls) || cls.equals(targetType) || !cls.isSubTypeOf(targetType)) {
-                        //                                return createProblem(problems, true, NbBundle.getMessage(PullUpRefactoringPlugin.class, "ERR_PullUp_IllegalMember", member.getName())); // NOI18N
-                        //                            }
-                        //                        }
-                        // #3 - check if the member already exists in the target class
-                        
-                        if (RetoucheUtils.elementExistsIn(targetType, member, cc)) {
-                            problem =  createProblem(problems, true, NbBundle.getMessage(PullUpRefactoringPlugin.class, "ERR_PullUp_MemberAlreadyExists", member.getSimpleName())); // NOI18N
-                            return;
-                        }
-                        
-                        // #4 - check if the field does not use something that is not going to be pulled up
-                        //                Resource sourceResource = refactoring.getSourceType().getResource();
-                        //                Resource targetResource = targetType.getResource();
-                        //                if (!sourceResource.equals(targetResource)) {
-                        //                    problems = checkUsedByElement(member, allMembers, problems,
-                        //                            !sourceResource.equals(targetResource),
-                        //                            !sourceResource.getPackageName().equals(targetResource.getPackageName()));
-                        //                }
-                        
-                        fireProgressListenerStep();
-                    }
-                    
-                    // TODO: implement non-fatal checks
-                }
-            }
-            
-        };
         try {
-            source.runUserActionTask(task, true);
-        }catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            cc.toPhase(JavaSource.Phase.RESOLVED);
+            TypeElement sourceType = (TypeElement) refactoring.getSourceType().resolveElement(cc);
+            Collection<Element> supers = RetoucheUtils.getSuperTypes(sourceType, cc);
+            TypeElement targetType = (TypeElement) refactoring.getTargetType().resolve(cc);
+            MemberInfo[] members = refactoring.getMembers();
+
+            fireProgressListenerStart(AbstractRefactoring.PARAMETERS_CHECK, members.length + 1);
+            // #1 - check whether the target type is a legal super type
+            if (!supers.contains(targetType)) {
+                return new Problem(true, NbBundle.getMessage(PullUpRefactoringPlugin.class, "ERR_PullUp_IllegalTargetType")); // NOI18N
+            }
+
+            fireProgressListenerStep();
+
+            // TODO: what the hell is this check
+            // #2 - check whether all the members are legal members that can be pulled up
+            //                    HashSet visitedSources = new HashSet();
+            //                    //            HashSet allMembers = new HashSet(Arrays.asList(members));
+            Problem problems = null;
+            //                    visitedSources.add(refactoring.getSourceType());
+            for (int i = 0; i < members.length; i++) {
+                Element cls;
+                Element member = members[i].getElementHandle().resolve(cc);
+                if (members[i].getType()==0) {
+                    //                            // member is a feature (inner class, field or method)
+                    //                            cls = member.getEnclosingElement();
+                    //                        } else {
+                    //                            // member is an interface from implements clause
+                    //                            MultipartId ifcName = (MultipartId) member;
+                    //                            // get parent of the element (should be class if this is really
+                    //                            // a name from implements clause
+                    //                            Object parent = ifcName.refImmediateComposite();
+                    //                            // if parent is not a class, member is invalid
+                    //                            if (!(parent instanceof JavaClass)) {
+                    //                                cls = null;
+                    //                            } else {
+                    //                                // check if the parent class contains this MultipartId
+                    //                                // in interfaceNames
+                    //                                if (!((JavaClass) parent).getInterfaceNames().contains(ifcName)) {
+                    //                                    cls = null;
+                    //                                } else {
+                    //                                    cls = (ClassDefinition) parent;
+                    //                                }
+                    //                            }
+                    //                        }
+                    //                        // if the declaring class has not been visited yet, perform checks on it
+                    //                        if (visitedSources.add(cls)) {
+                    //                            // if the declaring class of a feature is not a JavaClass,
+                    //                            // or if it is not from the set of source type's supertypes
+                    //                            // or if the declaring class is not a subtype of target class
+                    //                            // then this member is illegal
+                    //                            if (!(cls instanceof JavaClass) || !supers.contains(cls) || cls.equals(targetType) || !cls.isSubTypeOf(targetType)) {
+                    //                                return createProblem(problems, true, NbBundle.getMessage(PullUpRefactoringPlugin.class, "ERR_PullUp_IllegalMember", member.getName())); // NOI18N
+                    //                            }
+                    //                        }
+                    // #3 - check if the member already exists in the target class
+
+                    if (RetoucheUtils.elementExistsIn(targetType, member, cc)) {
+                        return createProblem(problems, true, NbBundle.getMessage(PullUpRefactoringPlugin.class, "ERR_PullUp_MemberAlreadyExists", member.getSimpleName())); // NOI18N
+                    }
+
+                    // #4 - check if the field does not use something that is not going to be pulled up
+                    //                Resource sourceResource = refactoring.getSourceType().getResource();
+                    //                Resource targetResource = targetType.getResource();
+                    //                if (!sourceResource.equals(targetResource)) {
+                    //                    problems = checkUsedByElement(member, allMembers, problems,
+                    //                            !sourceResource.equals(targetResource),
+                    //                            !sourceResource.getPackageName().equals(targetResource.getPackageName()));
+                    //                }
+
+                    fireProgressListenerStep();
+                }
+
+                // TODO: implement non-fatal checks
+            }
         } finally {
             fireProgressListenerStop();
         }
-        return problem;
+        return null;
     }
     
     public Problem prepare(RefactoringElementsBag refactoringElements) {
@@ -287,8 +243,10 @@ public class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
         fireProgressListenerStop();
         return null;
     }
-    
-    
+
+    protected FileObject getFileObject() {
+        return treePathHandle.getFileObject();
+    }
     
     //    public Problem prepare(RefactoringElementsBag refactoringElements) {
     
@@ -596,5 +554,5 @@ public class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
             }
             fireProgressListenerStep();
         }
-    }   
+    }
 }

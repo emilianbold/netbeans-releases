@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.refactoring.java.plugins;
@@ -48,7 +48,6 @@ import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 
@@ -57,7 +56,7 @@ import org.openide.util.NbBundle;
  *
  * @author Pavel Flaska, Jan Becicka
  */
-public class PushDownRefactoringPlugin extends JavaRefactoringPlugin {
+public final class PushDownRefactoringPlugin extends RetoucheRefactoringPlugin {
     
     /** Reference to the parent refactoring instance */
     private final PushDownRefactoring refactoring;
@@ -69,72 +68,53 @@ public class PushDownRefactoringPlugin extends JavaRefactoringPlugin {
         treePathHandle = refactoring.getSourceType();
     }
     
-    Problem precheckProblem;
-    /** 
-     * Checks pre-conditions of the refactoring.
-     * 
-     * @return problems found or <tt>null</tt>.
-     */
-    public Problem preCheck() {
+    protected Problem preCheck(CompilationController cc) throws IOException {
         //TODO: wrong classpath
         JavaSource source=JavaSource.forFileObject(treePathHandle.getFileObject());
         fireProgressListenerStart(AbstractRefactoring.PRE_CHECK, 4);
-        final Problem result;
-        precheckProblem = null;
-        CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
-            
-            public void cancel() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            
-            public void run(CompilationController cc) throws Exception {
-                cc.toPhase(JavaSource.Phase.RESOLVED);
-                precheckProblem = isElementAvail(treePathHandle, cc);
-                if (precheckProblem != null) {
-                    // fatal error -> don't continue with further checks
-                    return;
-                }
-                if (!RetoucheUtils.isElementInOpenProject(treePathHandle.getFileObject())) {
-                    precheckProblem = new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ProjectNotOpened"));
-                    return;
-                }
-                
-
-                // increase progress (step 1)
-                fireProgressListenerStep();
-                ElementHandle eh = ElementHandle.create(treePathHandle.resolveElement(cc));
-                Set<FileObject> resources = cc.getClasspathInfo().getClassIndex().getResources(eh, EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS), EnumSet.of(ClassIndex.SearchScope.SOURCE));
-                if (resources.isEmpty()) {
-                    precheckProblem = new Problem(true, NbBundle.getMessage(PushDownRefactoringPlugin.class, "ERR_PushDOwn_NoSubtype")); // NOI18N
-                    return;
-                }
-                // increase progress (step 2)
-                fireProgressListenerStep();
-                // #2 - check if there are any members to pull up
-                Element el = treePathHandle.resolveElement(cc);
-                for (Element element : el.getEnclosedElements()) {
-                    if (element.getKind() != ElementKind.CONSTRUCTOR) {
-                        return;
-                    }
-                }
-                precheckProblem = new Problem(true, NbBundle.getMessage(PushDownRefactoringPlugin.class, "ERR_PushDown_NoMembers")); // NOI18N
-                // increase progress (step 3)
-                fireProgressListenerStep();
-            }
-            
-        };
         try {
-            source.runUserActionTask(task, true);
-        }catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            cc.toPhase(JavaSource.Phase.RESOLVED);
+            Problem precheckProblem = isElementAvail(treePathHandle, cc);
+            if (precheckProblem != null) {
+                // fatal error -> don't continue with further checks
+                return precheckProblem;
+            }
+            if (!RetoucheUtils.isElementInOpenProject(treePathHandle.getFileObject())) {
+                return new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ProjectNotOpened"));
+            }
+
+
+            // increase progress (step 1)
+            fireProgressListenerStep();
+            ElementHandle eh = ElementHandle.create(treePathHandle.resolveElement(cc));
+            Set<FileObject> resources = cc.getClasspathInfo().getClassIndex().getResources(eh, EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS), EnumSet.of(ClassIndex.SearchScope.SOURCE));
+            if (resources.isEmpty()) {
+                return new Problem(true, NbBundle.getMessage(PushDownRefactoringPlugin.class, "ERR_PushDOwn_NoSubtype")); // NOI18N
+            }
+            // increase progress (step 2)
+            fireProgressListenerStep();
+            // #2 - check if there are any members to pull up
+            Element el = treePathHandle.resolveElement(cc);
+            for (Element element : el.getEnclosedElements()) {
+                if (element.getKind() != ElementKind.CONSTRUCTOR) {
+                    return null;
+                }
+            }
+            precheckProblem = new Problem(true, NbBundle.getMessage(PushDownRefactoringPlugin.class, "ERR_PushDown_NoMembers")); // NOI18N
+            // increase progress (step 3)
+            fireProgressListenerStep();
+            return precheckProblem;
         } finally {
             fireProgressListenerStop();
         }
-        return precheckProblem;
     }
 
     public Problem checkParameters() {
         return null;
+    }
+
+    protected Problem checkParameters(CompilationController javac) throws IOException {
+        throw new UnsupportedOperationException();
     }
 
     public Problem fastCheckParameters() {
@@ -175,6 +155,10 @@ public class PushDownRefactoringPlugin extends JavaRefactoringPlugin {
         }
         fireProgressListenerStop();
         return null;    
+    }
+
+    protected FileObject getFileObject() {
+        return treePathHandle.getFileObject();
     }
     
 //    public JavaClass[] collectSubtypes() {
@@ -479,6 +463,6 @@ public class PushDownRefactoringPlugin extends JavaRefactoringPlugin {
             }
             fireProgressListenerStep();
         }
-    }    
+    }
     
 }

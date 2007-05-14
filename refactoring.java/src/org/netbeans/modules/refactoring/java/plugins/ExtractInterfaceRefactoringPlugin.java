@@ -248,14 +248,6 @@ public final class ExtractInterfaceRefactoringPlugin extends RetoucheRefactoring
         return null;
     }
     
-    protected Problem fastCheckParameters(CompilationController javac) throws IOException {
-        throw new UnsupportedOperationException();
-    }
-    
-    protected Problem prepare(WorkingCopy wc, RefactoringElementsBag bag) throws IOException {
-        throw new UnsupportedOperationException();
-    }
-    
     /**
      * Finds all type parameters of <code>javaClass</code> that are referenced by
      * any member that is going to be extract.
