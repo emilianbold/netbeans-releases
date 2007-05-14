@@ -1689,22 +1689,39 @@ public class Parser implements ExtendedParser, Localizable {
     protected void reportError(CSSParseException e) {
         errorHandler.error(e);
 
-        int cbraces = 1;
+// <rave> #96870 Trying to ignore the invalid rule sets,
+//        trying to recover after the next right curly brace.
+//        
+//        int cbraces = 1;
+//        for (;;) {
+//            switch (current) {
+//            case LexicalUnits.EOF:
+//                return;
+//            case LexicalUnits.SEMI_COLON:
+//            case LexicalUnits.RIGHT_CURLY_BRACE:
+//                if (--cbraces == 0) {
+//                    nextIgnoreSpaces();
+//                    return;
+//                }
+//            case LexicalUnits.LEFT_CURLY_BRACE:
+//                cbraces++;
+//            }
+//            nextIgnoreSpaces();
+//        }
+// ====
         for (;;) {
             switch (current) {
             case LexicalUnits.EOF:
                 return;
             case LexicalUnits.SEMI_COLON:
             case LexicalUnits.RIGHT_CURLY_BRACE:
-                if (--cbraces == 0) {
-                    nextIgnoreSpaces();
-                    return;
-                }
+                nextIgnoreSpaces();
+                return;
             case LexicalUnits.LEFT_CURLY_BRACE:
-                cbraces++;
             }
             nextIgnoreSpaces();
         }
+// </rave>
     }
 
     /**
