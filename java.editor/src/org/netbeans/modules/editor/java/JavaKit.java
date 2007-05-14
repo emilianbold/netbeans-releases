@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -221,6 +221,7 @@ public class JavaKit extends NbEditorKit {
                                    new JavaGenerateFoldPopupAction(),
                                    new JavaGoToDeclarationAction(),
                                    new JavaGoToSourceAction(),
+                                   new JavaGotoHelpAction(),
 				   new InstantRenameAction(),
                                    new JavaFixImports(),
                                    new GenerateCodeAction(),
@@ -656,5 +657,27 @@ public class JavaKit extends NbEditorKit {
             }
         }
     } // End of JavaFixImports action
+    
+    private static class JavaGotoHelpAction extends BaseAction {
+
+        public JavaGotoHelpAction() {
+            super(gotoHelpAction, ABBREV_RESET | MAGIC_POSITION_RESET
+                    | UNDO_MERGE_RESET |SAVE_POSITION);
+            putValue ("helpID", JavaGotoHelpAction.class.getName ()); // NOI18N
+            // fix of #25090; [PENDING] there should be more systematic solution for this problem
+            putValue(SHORT_DESCRIPTION, NbBundle.getBundle(JavaKit.class).getString("java-desc-goto-help"));
+        }
+
+        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+            if (target != null) {
+                GoToSupport.goToJavadoc(target.getDocument(), target.getCaretPosition());
+            }
+        }
+
+        public String getPopupMenuText(JTextComponent target) {
+            return NbBundle.getBundle(JavaKit.class).getString("show_javadoc"); // NOI18N
+        }
+
+    }
     
 }

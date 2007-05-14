@@ -31,6 +31,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.awt.Toolkit;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -60,6 +61,7 @@ import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 
@@ -80,14 +82,14 @@ public class GoToSupport {
     }
     
     public static String getGoToElementTooltip(Document doc, final int offset, final boolean goToSource) {
-        return performGoTo(doc, offset, goToSource, true);
+        return performGoTo(doc, offset, goToSource, true, false);
     }
     
     private static boolean isError(Element el) {
         return el == null || el.asType() == null || el.asType().getKind() == TypeKind.ERROR;
     }
     
-    private static String performGoTo(final Document doc, final int offset, final boolean goToSource, final boolean tooltip) {
+    private static String performGoTo(final Document doc, final int offset, final boolean goToSource, final boolean tooltip, final boolean javadoc) {
         try {
             final FileObject fo = getFileObject(doc);
             
@@ -188,6 +190,14 @@ public class GoToSupport {
                         v.visit(el, true);
                         
                         result[0] = "<html><body>" + v.result.toString();
+                    } else if (javadoc) {
+                        result[0] = null;
+                        URL url = SourceUtils.getJavadoc(el, controller.getClasspathInfo());
+                        if (url != null) {
+                            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+                        } else {
+                            CALLER.beep ();
+                        }
                     } else {
                         TreePath elpath = controller.getTrees().getPath(el);
                         Tree tree = elpath != null && path.getCompilationUnit() == elpath.getCompilationUnit()? elpath.getLeaf(): null;
@@ -233,7 +243,11 @@ public class GoToSupport {
     }
     
     public static void goTo(Document doc, int offset, boolean goToSource) {
-        performGoTo(doc, offset, goToSource, false);
+        performGoTo(doc, offset, goToSource, false, false);
+    }
+    
+    public static void goToJavadoc(Document doc, int offset) {
+        performGoTo(doc, offset, false, false, true);
     }
     
     private static final Set<JavaTokenId> USABLE_TOKEN_IDS = new HashSet<JavaTokenId>(Arrays.asList(JavaTokenId.IDENTIFIER, JavaTokenId.THIS, JavaTokenId.SUPER));
