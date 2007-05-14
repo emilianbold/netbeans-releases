@@ -21,6 +21,7 @@ package org.netbeans.modules.languages;
 
 import java.awt.Point;
 import java.io.InputStream;
+import java.util.List;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ParseException;
@@ -36,6 +37,7 @@ import org.openide.filesystems.FileObject;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -239,22 +241,22 @@ public class NBSLanguageReader {
         String keyword = commandNode.getTokenTypeIdentifier ("keyword");
         ASTNode command0Node = commandNode.getNode ("command0");
         ASTNode selectorNode = command0Node.getNode ("selector");
-        Selector selector = null;
-        Feature feature = null;
         if (selectorNode != null) {
-            ASTNode classNode = selectorNode.getNode ("class");
-            selector = Selector.create (readClass (classNode));
-            ASTNode command1Node = command0Node.getNode ("command1");
-            ASTNode valueNode = command1Node.getNode ("value");
-            if (valueNode != null)
-                feature = readValue (source, sourceName, keyword, selector, valueNode);
-            else
-                feature = Feature.create (keyword, selector);
+            //ASTNode classNode = selectorNode.getNode ("class");
+            Iterator<Selector> it = readSelector (selectorNode).iterator ();
+            while (it.hasNext ()) {
+                Selector selector =  it.next ();
+                ASTNode command1Node = command0Node.getNode ("command1");
+                ASTNode valueNode = command1Node.getNode ("value");
+                if (valueNode != null)
+                    language.addFeature (readValue (source, sourceName, keyword, selector, valueNode));
+                else
+                    language.addFeature (Feature.create (keyword, selector));
+            }
         } else {
             ASTNode valueNode = command0Node.getNode ("value");
-            feature = readValue (source, sourceName, keyword, selector, valueNode);
+            language.addFeature (readValue (source, sourceName, keyword, null, valueNode));
         }
-        language.addFeature (feature);
     }
     
     private static Feature readValue (
@@ -307,6 +309,27 @@ public class NBSLanguageReader {
             }
         }
         return Feature.create (keyword, selector, expressions, methods, patterns);
+    }
+    
+    
+    private static List<Selector> readSelector (ASTNode selectorNode) {
+        return readSelector (selectorNode, new ArrayList<Selector> ());
+    }
+    
+    private static List<Selector> readSelector (ASTNode selectorNode, List<Selector> result) {
+        Iterator<ASTItem> it = selectorNode.getChildren ().iterator ();
+        while (it.hasNext ()) {
+            ASTItem item =  it.next ();
+            if (item instanceof ASTNode) {
+                ASTNode node = (ASTNode) item;
+                if (node.getNT ().equals ("class"))
+                    result.add (Selector.create (readClass (node)));
+                else
+                if (node.getNT ().equals ("selector1"))
+                    readSelector (node, result);
+            }
+        }
+        return result;
     }
     
     private static String readClass (ASTNode cls) {

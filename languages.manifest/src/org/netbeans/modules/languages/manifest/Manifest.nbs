@@ -29,5 +29,29 @@ TOKEN:keyword:( [^"#"] [^ ":" "\n" "\r"]* ):<VALUE>
 
 <IN_VALUE> {
     TOKEN:whitespace:( ["\n" "\r"]+ ):<DEFAULT>
-    TOKEN:identifier:( ( [^ "\n" "\r"] | "\n " | "\r " | "\r\n " )* )
+    TOKEN:identifier:( [^ "\n" "\r"]+ )
 }
+
+COMPLETION:keyword, whitespace: {
+    text1:"Manifest-Version:";
+    text2:"Created-By:";
+    text3:"Signature-Version:";
+    text4:"Class-Path:";
+    text5:"Main-Class:";
+    text6:"Extension-List:";
+    text7:"Extension-Name:";
+    text8:"Implementation-Title:";
+    text9:"Implementation-Version:";
+    text10:"Implementation-Vendor:";
+    text11:"Implementation-Vendor-Id:";
+    text12:"Implementation-URL:";
+    text13:"Specification-Title:";
+    text14:"Specification-Version:";
+    text15:"Specification-Vendor:";
+    text16:"Sealed:";
+    text16:"Content-Type:";
+    text16:"Java-Bean:";
+    text16:"Magic:";
+}
+
+

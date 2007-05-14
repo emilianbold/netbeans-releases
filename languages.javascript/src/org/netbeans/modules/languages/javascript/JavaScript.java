@@ -277,14 +277,16 @@ public class JavaScript {
         List result = new ArrayList ();
         TokenSequence ts = context.getTokenSequence ();
         Token token = ts.token ();
+        while (token.id ().name ().endsWith ("whitespace") ||
+               token.id ().name ().endsWith ("comment")
+        ) {
+            token = previousToken (ts);
+        }
         String tokenText = token.text ().toString ();
         String libraryContext = null;
-        if (token.id ().name ().endsWith ("whitespace") ) {
-            token = previousToken (ts);
-            if (token.text ().toString ().equals ("new")) {
-                result.addAll (getLibrary ().getCompletionItems ("constructor"));
-                return result;
-            }
+        if (token.text ().toString ().equals ("new")) {
+            result.addAll (getLibrary ().getCompletionItems ("constructor"));
+            return result;
         }
         if (tokenText.equals (".")) {
             token = previousToken (ts);

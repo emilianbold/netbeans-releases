@@ -62,6 +62,24 @@ public class CompletionProviderImpl implements CompletionProvider {
     
     private static final String COMPLETION = "COMPLETION";
     
+    /**
+     * Append text after current end of token. This type of cc is used
+     * for comments.
+     */
+    static final String COMPLETION_APPEND = "append";
+    
+    /**
+     * Inserts text into current token, no prefix used. Used for whitespaces, 
+     * operators.
+     */
+    static final String COMPLETION_INSERT = "insert";
+    
+    /**
+     * Inserts text into current token, with current prefix. Used for keywords
+     * and identifiers.
+     */
+    static final String COMPLETION_COMPLETE = "complete";
+    
     
     public CompletionTask createTask (int queryType, JTextComponent component) {
         return new CompletionTaskImpl (component);
@@ -103,6 +121,16 @@ public class CompletionProviderImpl implements CompletionProvider {
         return r.getList ();
     }
     
+    static String getCompletionType (Feature feature, String tokenType) {
+        String completionType = feature == null ? null : (String) feature.getValue ("type");
+        if (completionType != null) return completionType;
+        if (tokenType.indexOf ("whitespace") >= 0)
+            return COMPLETION_INSERT;
+        else
+        if (tokenType.indexOf ("comment") >= 0)
+            return COMPLETION_APPEND;
+        return COMPLETION_COMPLETE;
+    }
     
     private static class CompletionTaskImpl implements CompletionTask {
         
@@ -155,15 +183,15 @@ public class CompletionProviderImpl implements CompletionProvider {
                 int tokenOffset = tokenSequence.offset();
                 String tokenType = token.id ().name ();
                 Feature feature = language.getFeature (Language.COMPLETION, tokenType);
-                String type = feature == null ? null : (String) feature.getValue ("type");
-                if ("operator".equals (type) && 
+                String completionType = getCompletionType (feature, tokenType);
+                if (COMPLETION_APPEND.equals (completionType) && 
                     offset < tokenOffset + token.length ()
                 ) {
                     return;
                 }
-                String start = ("operator".equals (type) || "whitespace".equals (type)) ? 
-                    "" :
-                    token.text().toString ().substring (0, offset - tokenOffset).trim ();
+                String start = COMPLETION_COMPLETE.equals (completionType) ? 
+                    token.text ().toString ().substring (0, offset - tokenOffset).trim () :
+                    "";
                 if (ignoreCase) start = start.toLowerCase ();
 
                 Iterator<CompletionItem> it = items.iterator ();
@@ -174,8 +202,8 @@ public class CompletionProviderImpl implements CompletionProvider {
                     if (s.startsWith (start))
                         resultSet.addItem (item);
                 }
-                if(feature == null) {
-                    refresh(tokenSequence.embedded(), offset, resultSet);
+                if (feature == null) {
+                    refresh (tokenSequence.embedded(), offset, resultSet);
                 }
                 //compute (resultSet);
             } catch (ParseException e) {
@@ -225,16 +253,16 @@ public class CompletionProviderImpl implements CompletionProvider {
                     getLanguage (mimeType);
                 String tokenType = token.id ().name ();
                 feature = language.getFeature (Language.COMPLETION, tokenType);
-                String type = feature == null ? null : (String) feature.getValue ("type");
+                String completionType = getCompletionType (feature, tokenType);
                 int tokenOffset = tokenSequence.offset();
-                if ("operator".equals (type) && 
+                if (completionType == COMPLETION_APPEND && 
                     offset < tokenOffset + token.length ()
                 ) {
                     return;
                 }
-                start = ("operator".equals (type) || "whitespace".equals (type)) ? 
-                    "" :
-                    start.substring (0, offset - tokenOffset).trim ();
+                start = COMPLETION_COMPLETE.equals (completionType) ? 
+                    start.substring (0, offset - tokenOffset).trim () :
+                    "";
                 ignoreCase = false;
                 Feature f = language.getFeature ("PROPERTIES");
                 if (f != null)
@@ -300,15 +328,15 @@ public class CompletionProviderImpl implements CompletionProvider {
             String tokenType = token.getType();
             Feature f = lang.getFeature (Language.COMPLETION, tokenType);
             int tokenOffset = token.getOffset();
-            String type = f == null ? null : (String) f.getValue ("type");
-            if ("operator".equals (type) && 
+            String completionType = getCompletionType (f, tokenType);
+            if (completionType == COMPLETION_APPEND && 
                 offset < tokenOffset + token.getLength ()
             ) {
                 return;
             }
-            String start = ("operator".equals (type) || "whitespace".equals (type)) ? 
-                "" :
-                token.getIdentifier ().substring (0, offset - tokenOffset).trim ();
+            String start = COMPLETION_COMPLETE.equals (completionType) ? 
+                token.getIdentifier ().substring (0, offset - tokenOffset).trim () :
+                "";
             
             //S ystem.out.println("CodeCompletion: (syntax) start=" + start + ": stoken=" + token);
             

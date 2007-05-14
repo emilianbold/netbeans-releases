@@ -180,14 +180,10 @@ public class CompletionSupport implements org.netbeans.spi.editor.completion.Com
                 String mimeType = sequence.language ().mimeType ();
                 Language l = LanguagesManager.getDefault ().getLanguage (mimeType);
                 Feature feature = l.getFeature (Language.COMPLETION, tokenType);
+                String completionType = CompletionProviderImpl.getCompletionType (feature, tokenType);
                 t = text;
-                String start = token.text().toString ();
-                start = start.substring (0, offset - sequence.offset ()).trim ();
-                String cType = feature != null ? (String)feature.getValue("type") : null;
-                int delta = feature != null && ("operator".equals(cType) || "whitespace".equals(cType)) ? 
-                    start.length() : 0;
-                if (!l.getSkipTokenTypes ().contains (token.id ().name ()))
-                    t = text.substring (offset - sequence.offset () - delta);
+                if (completionType == CompletionProviderImpl.COMPLETION_COMPLETE)
+                    t = text.substring (offset - sequence.offset ());
             } finally {
                 if (doc instanceof NbEditorDocument)
                     ((NbEditorDocument) doc).readUnlock ();

@@ -242,7 +242,9 @@ public class NBSLanguage {
         l.addRule (rule ("propertyValue", new Object[] {STRING}));
         l.addRule (rule ("propertyValue", new Object[] {"class"}));
         l.addRule (rule ("propertyValue", new Object[] {PARENTHESIS, "regularExpression", PARENTHESIS2}));
-        l.addRule (rule ("selector", new Object[] {"class"}));
+        l.addRule (rule ("selector", new Object[] {"class", "selector1"}));
+        l.addRule (rule ("selector1", new Object[] {COMMA, "class", "selector1"}));
+        l.addRule (rule ("selector1", new Object[] {}));
         l.addRule (rule ("class", new Object[] {IDENTIFIER, "class1"}));
         l.addRule (rule ("class1", new Object[] {DOT, IDENTIFIER, "class1"}));
         l.addRule (rule ("class1", new Object[] {}));
