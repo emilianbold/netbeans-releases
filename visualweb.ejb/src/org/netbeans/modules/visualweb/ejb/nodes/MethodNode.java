@@ -6,7 +6,7 @@
 
 package org.netbeans.modules.visualweb.ejb.nodes;
 import org.netbeans.modules.visualweb.api.designerapi.DesignerServiceHack;
-import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectClassPathExtender;
+//import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectClassPathExtender;
 import com.sun.rave.designtime.BeanCreateInfo;
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DisplayItem;
@@ -40,6 +40,7 @@ import org.openide.actions.PropertiesAction;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction;
 import org.openide.nodes.Sheet.Set;
@@ -55,7 +56,7 @@ import org.openide.util.datatransfer.ExTransferable;
  *
  * @author  cao
  */
-public class MethodNode extends AbstractNode /*implements RavePaletteItemSetCookie*/
+public class MethodNode extends AbstractNode implements Node.Cookie
 {
     private MethodInfo methodInfo;
     private EjbGroup ejbGroup;
@@ -445,7 +446,8 @@ public class MethodNode extends AbstractNode /*implements RavePaletteItemSetCook
         private Map getLibraryDefinitions() {
             Map libdefs = new HashMap();
             Library ejb20LibDef = EjbLibReferenceHelper.getEjb20LibDef();
-            libdefs.put( ejb20LibDef, new JsfProjectClassPathExtender.LibraryRole[] {JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN, JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY} );
+            //<MIGRATION Fix Me - Use latest API from project >
+            //libdefs.put( ejb20LibDef, new JsfProjectClassPathExtender.LibraryRole[] {JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN, JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY} );
             return libdefs;
         }
 
@@ -454,11 +456,12 @@ public class MethodNode extends AbstractNode /*implements RavePaletteItemSetCook
          */
         private Map getReferenceArchives() {
             Map jars = new HashMap();
-            jars.put( ejbGroup.getClientWrapperBeanJar(), new JsfProjectClassPathExtender.LibraryRole[] {JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN, JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY} );
-            jars.put( ejbGroup.getDesignInfoJar(), new JsfProjectClassPathExtender.LibraryRole[] { JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN } );
-            for( Iterator iter = ejbGroup.getClientJarFiles().iterator(); iter.hasNext(); ) { 
-                jars.put( iter.next(), new JsfProjectClassPathExtender.LibraryRole[] {JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN, JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY} );
-            }
+            //<MIGRATION Fix Me - Use latest API from project >
+//            jars.put( ejbGroup.getClientWrapperBeanJar(), new JsfProjectClassPathExtender.LibraryRole[] {JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN, JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY} );
+//            jars.put( ejbGroup.getDesignInfoJar(), new JsfProjectClassPathExtender.LibraryRole[] { JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN } );
+//            for( Iterator iter = ejbGroup.getClientJarFiles().iterator(); iter.hasNext(); ) { 
+//                jars.put( iter.next(), new JsfProjectClassPathExtender.LibraryRole[] {JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN, JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY} );
+//            }
             return jars;
         }
     } // End of MethodBeanCreateInfo.

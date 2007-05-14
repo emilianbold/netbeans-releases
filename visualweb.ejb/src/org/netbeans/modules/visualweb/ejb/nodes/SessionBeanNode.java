@@ -6,7 +6,7 @@
 
 package org.netbeans.modules.visualweb.ejb.nodes;
 import org.netbeans.modules.visualweb.api.designerapi.DesignerServiceHack;
-import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectClassPathExtender;
+//import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectClassPathExtender;
 import com.sun.rave.designtime.BeanCreateInfo;
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DisplayItem;
@@ -30,6 +30,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Utilities;
 import org.openide.actions.PropertiesAction;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction;
 import org.openide.nodes.Sheet.Set;
@@ -45,10 +46,10 @@ import org.openide.util.datatransfer.ExTransferable;
  *
  * @author cao
  */
-public class SessionBeanNode extends AbstractNode /*implements RavePaletteItemSetCookie*/ {
+public class SessionBeanNode extends AbstractNode implements Node.Cookie {
     private EjbGroup ejbGroup;
     private EjbInfo ejbInfo;
-//    private SessionBeanPaletteItem beanPaletteItem;
+    //    private SessionBeanPaletteItem beanPaletteItem;
     
     /** Creates a new instance of SessionBeanNode */
     public SessionBeanNode( EjbGroup ejbGroup, EjbInfo ejbInfo ) {
@@ -107,26 +108,26 @@ public class SessionBeanNode extends AbstractNode /*implements RavePaletteItemSe
         
         // EJB type - stateful or stateless
         ss.put( new PropertySupport.ReadOnly( "beanType", // NOI18N
-        String.class,
-        NbBundle.getMessage(EjbGroupNode.class, "EJB_TYPE"),
-        NbBundle.getMessage(EjbGroupNode.class, "EJB_TYPE") ) {
+                String.class,
+                NbBundle.getMessage(EjbGroupNode.class, "EJB_TYPE"),
+                NbBundle.getMessage(EjbGroupNode.class, "EJB_TYPE") ) {
             public Object getValue() {
                 switch( ejbInfo.getBeanType() ) {
-                    case EjbInfo.STATEFUL_SESSION_BEAN:
-                        return NbBundle.getMessage(EjbGroupNode.class, "STATEFUL_EJB");
-                    case EjbInfo.STATELESS_SESSION_BEAN:
-                        return NbBundle.getMessage(EjbGroupNode.class, "STATELESS_EJB");
-                    default:
-                        return NbBundle.getMessage(EjbGroupNode.class, "STATELESS_EJB");
+                case EjbInfo.STATEFUL_SESSION_BEAN:
+                    return NbBundle.getMessage(EjbGroupNode.class, "STATEFUL_EJB");
+                case EjbInfo.STATELESS_SESSION_BEAN:
+                    return NbBundle.getMessage(EjbGroupNode.class, "STATELESS_EJB");
+                default:
+                    return NbBundle.getMessage(EjbGroupNode.class, "STATELESS_EJB");
                 }
             }
         });
         
         // JNDI name
         ss.put( new PropertySupport.ReadOnly( "jndiName", // NOI18N
-        String.class,
-        NbBundle.getMessage(EjbGroupNode.class, "JNDI_NAME"),
-        NbBundle.getMessage(EjbGroupNode.class, "JNDI_NAME") ) {
+                String.class,
+                NbBundle.getMessage(EjbGroupNode.class, "JNDI_NAME"),
+                NbBundle.getMessage(EjbGroupNode.class, "JNDI_NAME") ) {
             public Object getValue() {
                 return ejbInfo.getJNDIName();
             }
@@ -134,9 +135,9 @@ public class SessionBeanNode extends AbstractNode /*implements RavePaletteItemSe
         
         // ejb-ref-name
         ss.put( new PropertySupport.ReadOnly( "webEjbRef", // NOI18N
-        String.class,
-        NbBundle.getMessage(EjbGroupNode.class, "WEB_EJB_REF_NAME"),
-        NbBundle.getMessage(EjbGroupNode.class, "WEB_EJB_REF_NAME") ) {
+                String.class,
+                NbBundle.getMessage(EjbGroupNode.class, "WEB_EJB_REF_NAME"),
+                NbBundle.getMessage(EjbGroupNode.class, "WEB_EJB_REF_NAME") ) {
             public Object getValue() {
                 return ejbInfo.getWebEjbRef();
             }
@@ -144,9 +145,9 @@ public class SessionBeanNode extends AbstractNode /*implements RavePaletteItemSe
         
         // Home interface
         ss.put( new PropertySupport.ReadOnly( "homeInterface", // NOI18N
-        String.class,
-        NbBundle.getMessage(EjbGroupNode.class, "HOME_INTERFACE"),
-        NbBundle.getMessage(EjbGroupNode.class, "HOME_INTERFACE") ) {
+                String.class,
+                NbBundle.getMessage(EjbGroupNode.class, "HOME_INTERFACE"),
+                NbBundle.getMessage(EjbGroupNode.class, "HOME_INTERFACE") ) {
             public Object getValue() {
                 return ejbInfo.getHomeInterfaceName();
             }
@@ -154,9 +155,9 @@ public class SessionBeanNode extends AbstractNode /*implements RavePaletteItemSe
         
         // Remote interface
         ss.put( new PropertySupport.ReadOnly( "remoteInterface", // NOI18N
-        String.class,
-        NbBundle.getMessage(EjbGroupNode.class, "REMOTE_INTERFACE"),
-        NbBundle.getMessage(EjbGroupNode.class, "REMOTE_INTERFACE") ) {
+                String.class,
+                NbBundle.getMessage(EjbGroupNode.class, "REMOTE_INTERFACE"),
+                NbBundle.getMessage(EjbGroupNode.class, "REMOTE_INTERFACE") ) {
             public Object getValue() {
                 return ejbInfo.getCompInterfaceName();
             }
@@ -177,10 +178,10 @@ public class SessionBeanNode extends AbstractNode /*implements RavePaletteItemSe
     
     public Transferable clipboardCopy() {
         
-//        // If the bean palette item is not initialized, lets create one 
-//        if( beanPaletteItem == null ) {
-//            beanPaletteItem = new SessionBeanPaletteItem( ejbGroup, ejbInfo );
-//        }
+        //        // If the bean palette item is not initialized, lets create one
+        //        if( beanPaletteItem == null ) {
+        //            beanPaletteItem = new SessionBeanPaletteItem( ejbGroup, ejbInfo );
+        //        }
         if (ejbGroup == null || ejbInfo == null) {
             try {
                 return super.clipboardCopy();
@@ -194,16 +195,15 @@ public class SessionBeanNode extends AbstractNode /*implements RavePaletteItemSe
             ExTransferable transferable = ExTransferable.create(super.clipboardCopy());
             // Now create the transferable
             transferable.put(
-//            new ExTransferable.Single(PaletteItemTransferable.FLAVOR_PALETTE_ITEM) {
-            new ExTransferable.Single(FLAVOR_EJB_DISPLAY_ITEM) {
+                    //            new ExTransferable.Single(PaletteItemTransferable.FLAVOR_PALETTE_ITEM) {
+                    new ExTransferable.Single(FLAVOR_EJB_DISPLAY_ITEM) {
                 protected Object getData() {
                     // return new SessionBeanPaletteItem( ejbGroup, ejbInfo );
-//                    return beanPaletteItem;
+                    //                    return beanPaletteItem;
                     return new EjbBeanCreateInfo(ejbGroup, ejbInfo);
                 } } );
                 return transferable;
-        }
-        catch (Exception ioe) {
+        } catch (Exception ioe) {
             System.err.println("SessionBeanNode.clipboardCopy: Error");
             ioe.printStackTrace();
             return null;
@@ -226,10 +226,10 @@ public class SessionBeanNode extends AbstractNode /*implements RavePaletteItemSe
         
         
         public String getBeanClassName() {
-//            return item.getBeanClassName();
+            //            return item.getBeanClassName();
             return ejbInfo.getCompInterfaceName();
         }
-
+        
         public Result beanCreatedSetup(DesignBean designBean) {
             // XXX Hack Jar ref adding.
             addJarRef();
@@ -239,85 +239,87 @@ public class SessionBeanNode extends AbstractNode /*implements RavePaletteItemSe
         private void addJarRef() {
             FileObject fileObject = DesignerServiceHack.getDefault().getCurrentFile();
             Project project = FileOwnerQuery.getOwner( fileObject );
-
+            
             // Add lib refs to the project
-            Map allLibDefs = getLibraryDefinitions(); 
-            EjbLibReferenceHelper.addLibRefsToProject( project, allLibDefs ); 
-
+            Map allLibDefs = getLibraryDefinitions();
+            EjbLibReferenceHelper.addLibRefsToProject( project, allLibDefs );
+            
             // Add archive refs to the project
             Map refArchives = getReferenceArchives();
             EjbLibReferenceHelper.addArchiveRefsToProject( project, refArchives );
-
+            
             // Add/update this ejb group to the ejb ref xml in the porject
             EjbLibReferenceHelper.addToEjbRefXmlToProject( project, ejbGroup );
         }
-
+        
         public String getDisplayName() {
-//            return item.getDisplayName();
+            //            return item.getDisplayName();
             return ejbInfo.getCompInterfaceName();
         }
-
+        
         public String getDescription() {
             return null;
         }
-
+        
         public Image getLargeIcon() {
             return null;
         }
-
+        
         public Image getSmallIcon() {
             return null;
         }
-
+        
         public String getHelpKey() {
             return null;
         }
         
         /**
-         * @return a map of (Library, JsfProjectClassPathExtender.LibraryRole[] ) 
+         * @return a map of (Library, JsfProjectClassPathExtender.LibraryRole[] )
          */
         private Map getLibraryDefinitions() {
             Map libdefs = new HashMap();
             Library ejb20LibDef = EjbLibReferenceHelper.getEjb20LibDef();
-            libdefs.put( ejb20LibDef, new JsfProjectClassPathExtender.LibraryRole[] {JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN} );
+            //<MIGRATION Fix Me - Use latest API from project >
+            //libdefs.put( ejb20LibDef, new JsfProjectClassPathExtender.LibraryRole[] {JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN} );
             return libdefs;
         }
-
+        
         /**
          * @return a map of (jar path, JsfProjectClassPathExtender.LibraryRole[])
          */
         private Map getReferenceArchives() {
             Map jars = new HashMap();
-            jars.put( ejbGroup.getClientWrapperBeanJar(), new JsfProjectClassPathExtender.LibraryRole[] {JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN, JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY} );
-            jars.put( ejbGroup.getDesignInfoJar(), new JsfProjectClassPathExtender.LibraryRole[] { JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN } );
-            for( Iterator iter = ejbGroup.getClientJarFiles().iterator(); iter.hasNext(); ) {
-                jars.put( iter.next(), new JsfProjectClassPathExtender.LibraryRole[] {JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN, JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY} );
-            }
+            //<MIGRATION Fix Me - Use latest API from project >
+//            jars.put( ejbGroup.getClientWrapperBeanJar(), new JsfProjectClassPathExtender.LibraryRole[] {JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN, JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY} );
+//            jars.put( ejbGroup.getDesignInfoJar(), new JsfProjectClassPathExtender.LibraryRole[] { JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN } );
+//            for( Iterator iter = ejbGroup.getClientJarFiles().iterator(); iter.hasNext(); ) {
+//                jars.put( iter.next(), new JsfProjectClassPathExtender.LibraryRole[] {JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN, JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY} );
+//            }
             return jars;
         }
     } // End of EjbBeanCreateInfo
     
     
-//    // Implements PaletteItemCookie
-//    public String[] getClassNames() {
-//        // Need to return a class name here. Otherwise, the cursor will not change to droppable over the designer
-//        // after click on an ejb node (bug 6273520)
-//        return new String[] { "java.lang.Object" };
-//    }
-//    
-//    // Implements PaletteItemCookie
-//    public boolean hasPaletteItems() {
-//        return true;
-//    }
-//    
-//    public Cookie getCookie(Class type) {
-//        if (type == RavePaletteItemSetCookie.class) {
-//            // Don't know why this wasn't automatic - I implement
-//            // Node.Cookie. This is automatic for data objects - not for
-//            // nodes I guess?
-//            return this;
-//        } else {
-//            return super.getCookie(type);
-//        }
-//    }
+    //    // Implements PaletteItemCookie
+    //    public String[] getClassNames() {
+    //        // Need to return a class name here. Otherwise, the cursor will not change to droppable over the designer
+    //        // after click on an ejb node (bug 6273520)
+    //        return new String[] { "java.lang.Object" };
+    //    }
+    //
+    //    // Implements PaletteItemCookie
+    //    public boolean hasPaletteItems() {
+    //        return true;
+    //    }
+    //
+    //    public Cookie getCookie(Class type) {
+    //        if (type == RavePaletteItemSetCookie.class) {
+    //            // Don't know why this wasn't automatic - I implement
+    //            // Node.Cookie. This is automatic for data objects - not for
+    //            // nodes I guess?
+    //            return this;
+    //        } else {
+    //            return super.getCookie(type);
+    //        }
+    //    }
 }

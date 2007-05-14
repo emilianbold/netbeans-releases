@@ -13,6 +13,7 @@ import java.io.File;
 import java.util.*;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
+import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import org.openide.util.NbBundle;
 import org.openide.modules.InstalledFileLocator;
@@ -599,7 +600,7 @@ public class EjbGroupPanel extends javax.swing.JPanel
         // Pop up FileChooser to let the user select a .ear or .jar file where
         // the EJB deployment descriptors are contained
         
-        JFileChooser ddFileChooser = com.sun.rave.extension.openide.awt.JFileChooser_RAVE.getJFileChooser();
+        JFileChooser ddFileChooser = new JFileChooser();
         ddFileChooser.setMultiSelectionEnabled( false );
         ddFileChooser.setFileFilter( new JarFileFilter( false ) );
         ddFileChooser.setFileSelectionMode( JFileChooser.FILES_ONLY );

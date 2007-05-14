@@ -6,9 +6,7 @@
 
 package org.netbeans.modules.visualweb.ejb.nodes;
 
-import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectClassPathExtender;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
-import org.netbeans.modules.visualweb.project.jsf.api.LibraryDefinition;
 import org.netbeans.modules.visualweb.ejb.EjbDataSourceManager;
 import org.netbeans.modules.visualweb.ejb.datamodel.EjbDataModel;
 import java.io.File;
@@ -79,16 +77,19 @@ public class EjbLibReferenceHelper {
                     String jarPath = (String)clientJars.get( i );
                     classpathURLs.add( new File( jarPath ).toURI().toURL() );
                 }
+
+                //<MIGRATION Fix Me - Use latest API from project >
                 
-                libDef = JsfProjectUtils.createJ2SELibrary( libraryName, 
-                             libraryDesc,
-                             localizingBundle,
-                             LibraryDefinition.LIBRARY_DOMAIN_USER,
-                             classpathURLs,
-                             null,  // No Souce
-                             null ); // no javadocs
+//                libDef = JsfProjectUtils.createJ2SELibrary( libraryName, 
+//                             libraryDesc,
+//                             localizingBundle,
+//                             LibraryDefinition.LIBRARY_DOMAIN_USER,
+//                             classpathURLs,
+//                             null,  // No Souce
+//                             null ); // no javadocs
                 //System.out.println( "########### SUCCESSFULLY created " + libDef.getName() );
                 
+                //</MIGRATION>
                 return libDef;
             }
             
@@ -127,14 +128,19 @@ public class EjbLibReferenceHelper {
                 // - DesignInfo jar
                 classpathURLs.add( designTimeJarFile.toURI().toURL() ); 
                 
-                libDef = JsfProjectUtils.createJ2SELibrary( libraryName, 
-                             libraryDesc,
-                             localizingBundle,
-                             LibraryDefinition.LIBRARY_DOMAIN_USER,
-                             classpathURLs,
-                             null,  // No Souce
-                             null ); // no javadocs
+                //<MIGRATION Fix Me - Use latest API from project >
+                
+//                libDef = JsfProjectUtils.createJ2SELibrary( libraryName, 
+//                             libraryDesc,
+//                             localizingBundle,
+//                             LibraryDefinition.LIBRARY_DOMAIN_USER,
+//                             classpathURLs,
+//                             null,  // No Souce
+//                             null ); // no javadocs
                 //System.out.println( "########### SUCCESSFULLY created " + libDef.getName() );
+                
+                //</MIGRATION>
+                 
                 
                 return libDef;
             }
@@ -157,11 +163,14 @@ public class EjbLibReferenceHelper {
     {
         // Get the jar files from the ejb group
         Map jars = new HashMap();
-        jars.put( ejbGroup.getClientWrapperBeanJar(), new JsfProjectClassPathExtender.LibraryRole[] {JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN, JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY} );
-        jars.put( ejbGroup.getDesignInfoJar(), new JsfProjectClassPathExtender.LibraryRole[] { JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN } );
-        for( Iterator iter = ejbGroup.getClientJarFiles().iterator(); iter.hasNext(); ) {
-            jars.put( iter.next(), new JsfProjectClassPathExtender.LibraryRole[] {JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN, JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY} );
-        }
+
+//<MIGRATION Fix Me - Use latest API from project >
+//        jars.put( ejbGroup.getClientWrapperBeanJar(), new JsfProjectClassPathExtender.LibraryRole[] {JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN, JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY} );
+//        jars.put( ejbGroup.getDesignInfoJar(), new JsfProjectClassPathExtender.LibraryRole[] { JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN } );
+//        for( Iterator iter = ejbGroup.getClientJarFiles().iterator(); iter.hasNext(); ) {
+//            jars.put( iter.next(), new JsfProjectClassPathExtender.LibraryRole[] {JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN, JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY} );
+//        }
+//</MIGRATION>
         
         // Update the jars in each open project
         for( int i = 0; i < projects.length; i ++ ) 
@@ -170,75 +179,77 @@ public class EjbLibReferenceHelper {
         }
     }
     
-    public static void updateArchiveRefsToProject( Project project, Map jars )
-    {
-        try {
-            // Obtain the path to the project's library directory
-            FileObject projectLibDir = JsfProjectUtils.getProjectLibraryDirectory( project );
-            FileObject ejbSubDir = projectLibDir.getFileObject( EjbDataSourceManager.EJB_DATA_SUB_DIR );
-            if( ejbSubDir == null )
-                // No ejbs in this project. Done
-                return;  
-            
-            Map role2JarsMap = new HashMap();
-            
-            // Copy over the jar files into the project library directory
-            for( Iterator iter = jars.keySet().iterator(); iter.hasNext(); ) {
-                String jarFilePath = (String)iter.next();
-                String jarFileName = Util.getFileName( jarFilePath );
-                
-                JsfProjectClassPathExtender.LibraryRole[] roles = (JsfProjectClassPathExtender.LibraryRole[])jars.get( jarFilePath ); 
-                
-                FileObject destJar = ejbSubDir.getFileObject( jarFileName );
-                if( destJar == null )
-                    // This jar is not in the project. Done
-                    return;
-                else
-                {
-                    // Copy over (overwrite) the jar to the project data directory
-                    OutputStream outStream = destJar.getOutputStream( destJar.lock() );
-                    DataOutputStream out = new DataOutputStream(outStream);
-                    DataInputStream in = new DataInputStream(new FileInputStream(new File(jarFilePath)));
-
-                    byte[] bytes = new byte[1024];
-                    int byteCount = in.read(bytes);
-
-                    while (byteCount > -1) {
-                        out.write(bytes, 0, byteCount);
-                        byteCount = in.read(bytes);
-                    }
-                    out.flush();
-                    out.close();
-                    outStream.close();
-                    in.close();
-                    
-                    // Add the FileOject jar to the role-jars map
-                    // Note: do not check whether the reference is in the project or not 
-                    // because it is an update. 
-                    for( int i = 0; i < roles.length; i ++ ) {
-                        ArrayList jarsForTheRole = (ArrayList)role2JarsMap.get( roles[i] );
-                        if( jarsForTheRole == null )
-                            jarsForTheRole = new ArrayList();
-                        jarsForTheRole.add( destJar );
-                        role2JarsMap.put( roles[i], jarsForTheRole );
-                    }
-                        
-                }
-            }
-            
-            // Finally, add the reference to the project
-            for( Iterator iter = role2JarsMap.keySet().iterator(); iter.hasNext(); ) {
-                JsfProjectClassPathExtender.LibraryRole role = (JsfProjectClassPathExtender.LibraryRole)iter.next();
-                FileObject[] jarFileObjects = (FileObject[])((ArrayList)role2JarsMap.get( role )).toArray( new FileObject[0] );
-                JsfProjectUtils.removeArchiveReferences( project, jarFileObjects, role );
-                JsfProjectUtils.addArchiveReferences( project, jarFileObjects, role );
-            }
-            
-        } catch( java.io.IOException ie ) {
-            ErrorManager.getDefault().notify(ie);
-            ie.printStackTrace();
-            return;
-        }
+    public static void updateArchiveRefsToProject( Project project, Map jars ){
+//<MIGRATION Fix Me - Use latest API from project >
+  
+//        try {
+//            // Obtain the path to the project's library directory
+//            FileObject projectLibDir = JsfProjectUtils.getProjectLibraryDirectory( project );
+//            FileObject ejbSubDir = projectLibDir.getFileObject( EjbDataSourceManager.EJB_DATA_SUB_DIR );
+//            if( ejbSubDir == null )
+//                // No ejbs in this project. Done
+//                return;  
+//            
+//            Map role2JarsMap = new HashMap();
+//            
+//            // Copy over the jar files into the project library directory
+//            for( Iterator iter = jars.keySet().iterator(); iter.hasNext(); ) {
+//                String jarFilePath = (String)iter.next();
+//                String jarFileName = Util.getFileName( jarFilePath );
+//                
+//                JsfProjectClassPathExtender.LibraryRole[] roles = (JsfProjectClassPathExtender.LibraryRole[])jars.get( jarFilePath ); 
+//                
+//                FileObject destJar = ejbSubDir.getFileObject( jarFileName );
+//                if( destJar == null )
+//                    // This jar is not in the project. Done
+//                    return;
+//                else
+//                {
+//                    // Copy over (overwrite) the jar to the project data directory
+//                    OutputStream outStream = destJar.getOutputStream( destJar.lock() );
+//                    DataOutputStream out = new DataOutputStream(outStream);
+//                    DataInputStream in = new DataInputStream(new FileInputStream(new File(jarFilePath)));
+//
+//                    byte[] bytes = new byte[1024];
+//                    int byteCount = in.read(bytes);
+//
+//                    while (byteCount > -1) {
+//                        out.write(bytes, 0, byteCount);
+//                        byteCount = in.read(bytes);
+//                    }
+//                    out.flush();
+//                    out.close();
+//                    outStream.close();
+//                    in.close();
+//                    
+//                    // Add the FileOject jar to the role-jars map
+//                    // Note: do not check whether the reference is in the project or not 
+//                    // because it is an update. 
+//                    for( int i = 0; i < roles.length; i ++ ) {
+//                        List jarsForTheRole = (ArrayList)role2JarsMap.get( roles[i] );
+//                        if( jarsForTheRole == null )
+//                            jarsForTheRole = new ArrayList();
+//                        jarsForTheRole.add( destJar );
+//                        role2JarsMap.put( roles[i], jarsForTheRole );
+//                    }
+//                        
+//                }
+//            }
+//            
+//            // Finally, add the reference to the project
+//            for( Iterator iter = role2JarsMap.keySet().iterator(); iter.hasNext(); ) {
+//                JsfProjectClassPathExtender.LibraryRole role = (JsfProjectClassPathExtender.LibraryRole)iter.next();
+//                FileObject[] jarFileObjects = (FileObject[])((ArrayList)role2JarsMap.get( role )).toArray( new FileObject[0] );
+//                JsfProjectUtils.removeArchiveReferences( project, jarFileObjects, role );
+//                JsfProjectUtils.addArchiveReferences( project, jarFileObjects, role );
+//            }
+//            
+//        } catch( java.io.IOException ie ) {
+//            ErrorManager.getDefault().notify(ie);
+//            ie.printStackTrace();
+//            return;
+//        }
+//</MIGRATION>
     }
     
     /**
@@ -287,72 +298,72 @@ public class EjbLibReferenceHelper {
      * @param project the project to be added to
      * @param jars jar files to be added to the project. It is a map of (jar file full path, JsfProjectClassPathExtender.LibraryRole[])
      */
-    public static void addArchiveRefsToProject( Project project, Map jars )
-    {
-        try {
-            // Obtain the path to the project's library directory
-            FileObject projectLibDir = JsfProjectUtils.getProjectLibraryDirectory( project );
-            FileObject ejbSubDir = projectLibDir.getFileObject( EjbDataSourceManager.EJB_DATA_SUB_DIR );
-            if( ejbSubDir == null )
-                ejbSubDir = projectLibDir.createFolder( EjbDataSourceManager.EJB_DATA_SUB_DIR );   
-            
-            Map role2JarsMap = new HashMap();
-            
-            // Copy over the jar files into the project library directory
-            for( Iterator iter = jars.keySet().iterator(); iter.hasNext(); ) {
-                String jarFilePath = (String)iter.next();
-                String jarFileName = Util.getFileName( jarFilePath );
-                
-                JsfProjectClassPathExtender.LibraryRole[] roles = (JsfProjectClassPathExtender.LibraryRole[])jars.get( jarFilePath ); 
-                
-                FileObject destJar = ejbSubDir.getFileObject( jarFileName );
-                if( destJar == null ) 
-                {
-                    // Copy the jar to the project data directory
-                    destJar = ejbSubDir.createData( jarFileName );
-                    
-                    OutputStream outStream = destJar.getOutputStream( destJar.lock() );
-                    DataOutputStream out = new DataOutputStream(outStream);
-                    DataInputStream in = new DataInputStream(new FileInputStream(new File(jarFilePath)));
-
-                    byte[] bytes = new byte[1024];
-                    int byteCount = in.read(bytes);
-
-                    while (byteCount > -1) {
-                        out.write(bytes, 0, byteCount);
-                        byteCount = in.read(bytes);
-                    }
-                    out.flush();
-                    out.close();
-                    outStream.close();
-                    in.close();
-                }
-                
-                // Add the FileOject jar to the role-jars map if the ref is not in the project yet
-                for( int i = 0; i < roles.length; i ++ ) {
-                    ArrayList jarsForTheRole = (ArrayList)role2JarsMap.get( roles[i] );
-                    if( jarsForTheRole == null )
-                        jarsForTheRole = new ArrayList();
-
-                    if( !JsfProjectUtils.hasArchiveReference(project,destJar, roles[i]) ) {
-                        jarsForTheRole.add( destJar );
-                        role2JarsMap.put( roles[i], jarsForTheRole );
-                    }
-                }
-            }
-            
-            // Finally, add the reference to the project
-            for( Iterator iter = role2JarsMap.keySet().iterator(); iter.hasNext(); ) {
-                JsfProjectClassPathExtender.LibraryRole role = (JsfProjectClassPathExtender.LibraryRole)iter.next();
-                FileObject[] jarFileObjects = (FileObject[])((ArrayList)role2JarsMap.get( role )).toArray( new FileObject[0] );
-                JsfProjectUtils.addArchiveReferences( project, jarFileObjects, role );
-            }
-            
-        } catch( java.io.IOException ie ) {
-            ErrorManager.getDefault().notify(ie);
-            ie.printStackTrace();
-            return;
-        }
+    public static void addArchiveRefsToProject( Project project, Map jars ){
+//<MIGRATION Fix Me - Use latest API from project >
+//        try {
+//            // Obtain the path to the project's library directory
+//            FileObject projectLibDir = JsfProjectUtils.getProjectLibraryDirectory( project );
+//            FileObject ejbSubDir = projectLibDir.getFileObject( EjbDataSourceManager.EJB_DATA_SUB_DIR );
+//            if( ejbSubDir == null )
+//                ejbSubDir = projectLibDir.createFolder( EjbDataSourceManager.EJB_DATA_SUB_DIR );   
+//            
+//            Map role2JarsMap = new HashMap();
+//            
+//            // Copy over the jar files into the project library directory
+//            for( Iterator iter = jars.keySet().iterator(); iter.hasNext(); ) {
+//                String jarFilePath = (String)iter.next();
+//                String jarFileName = Util.getFileName( jarFilePath );
+//                
+//                JsfProjectClassPathExtender.LibraryRole[] roles = (JsfProjectClassPathExtender.LibraryRole[])jars.get( jarFilePath ); 
+//                
+//                FileObject destJar = ejbSubDir.getFileObject( jarFileName );
+//                if( destJar == null ) 
+//                {
+//                    // Copy the jar to the project data directory
+//                    destJar = ejbSubDir.createData( jarFileName );
+//                    
+//                    OutputStream outStream = destJar.getOutputStream( destJar.lock() );
+//                    DataOutputStream out = new DataOutputStream(outStream);
+//                    DataInputStream in = new DataInputStream(new FileInputStream(new File(jarFilePath)));
+//
+//                    byte[] bytes = new byte[1024];
+//                    int byteCount = in.read(bytes);
+//
+//                    while (byteCount > -1) {
+//                        out.write(bytes, 0, byteCount);
+//                        byteCount = in.read(bytes);
+//                    }
+//                    out.flush();
+//                    out.close();
+//                    outStream.close();
+//                    in.close();
+//                }
+//                
+//                // Add the FileOject jar to the role-jars map if the ref is not in the project yet
+//                for( int i = 0; i < roles.length; i ++ ) {
+//                    ArrayList jarsForTheRole = (ArrayList)role2JarsMap.get( roles[i] );
+//                    if( jarsForTheRole == null )
+//                        jarsForTheRole = new ArrayList();
+//
+//                    if( !JsfProjectUtils.hasArchiveReference(project,destJar, roles[i]) ) {
+//                        jarsForTheRole.add( destJar );
+//                        role2JarsMap.put( roles[i], jarsForTheRole );
+//                    }
+//                }
+//            }
+//            
+//            // Finally, add the reference to the project
+//            for( Iterator iter = role2JarsMap.keySet().iterator(); iter.hasNext(); ) {
+//                JsfProjectClassPathExtender.LibraryRole role = (JsfProjectClassPathExtender.LibraryRole)iter.next();
+//                FileObject[] jarFileObjects = (FileObject[])((ArrayList)role2JarsMap.get( role )).toArray( new FileObject[0] );
+//                JsfProjectUtils.addArchiveReferences( project, jarFileObjects, role );
+//            }
+//            
+//        } catch( java.io.IOException ie ) {
+//            ErrorManager.getDefault().notify(ie);
+//            ie.printStackTrace();
+//            return;
+//        }
     }
     
     /**
@@ -361,45 +372,45 @@ public class EjbLibReferenceHelper {
      * @param project The project to be added to
      * @param libDefs The libraries to be added to the project. It is a map of( Library, JsfProjectClassPathExtender.LibraryRole[])
      */
-    public static void addLibRefsToProject( Project project, Map libDefs ) 
-    {
-        // A map of( role, lib defs for the role )
-        Map role2LibsMap = new HashMap();
-        for( Iterator iter = libDefs.keySet().iterator(); iter.hasNext(); ) 
-        {
-            Library libDef = (Library)iter.next();
-            JsfProjectClassPathExtender.LibraryRole[] roles = (JsfProjectClassPathExtender.LibraryRole[])libDefs.get( libDef );
-            for( int i = 0; i < roles.length; i ++ ) 
-            {
-                ArrayList libsForTheRole = (ArrayList)role2LibsMap.get( roles[i] );
-                if( libsForTheRole == null )
-                    libsForTheRole = new ArrayList();
-                
-                if( !JsfProjectUtils.hasLibraryReference( project, libDef, roles[i] ) ) {
-                    libsForTheRole.add( libDef );
-                    role2LibsMap.put( roles[i], libsForTheRole );
-                }
-            }
-        }
-        
-        try  
-        {
-            for( Iterator iter = role2LibsMap.keySet().iterator(); iter.hasNext(); ) {
-                JsfProjectClassPathExtender.LibraryRole role = (JsfProjectClassPathExtender.LibraryRole)iter.next();
-                Library[] libs = (Library[]) ((ArrayList)role2LibsMap.get(role)).toArray(new Library[0]);
-                
-                // NOTE: Add an existing lib ref to the project again return false. Mark will fix it.
-                // The if-else will be put back once Mark fixes the problem
-                JsfProjectUtils.addLibraryReferences( project, libs, role );
-                //if( !JsfProjectUtils.addLibraryReferences( project, libs, role ) )
-                //    ErrorManager.getDefault().getInstance( "org.netbeans.modules.visualweb.ejb.nodes.SessionBeanNode" ).log( ErrorManager.WARNING, "Failed to add " + role.getName() + " library reference to project. Most likely it's because it is already existed in the project.");
-                //else
-                //    ErrorManager.getDefault().getInstance( "org.netbeans.modules.visualweb.ejb.nodes.SessionBeanNode" ).log( ErrorManager.INFORMATIONAL, "########### SUCCESSFULLY added " + role.getName() + " library reference to project." );
-            }
-        } catch( java.io.IOException ie ) { 
-            ErrorManager.getDefault().getInstance( "org.netbeans.modules.visualweb.ejb.nodes.EjbLibReferenceHelper" ).log( ErrorManager.ERROR, "Failed to add library references to project. IOException" );
-            ie.printStackTrace();
-        } 
+    public static void addLibRefsToProject( Project project, Map libDefs ){
+//<MIGRATION Fix Me - Use latest API from project >
+//        // A map of( role, lib defs for the role )
+//        Map role2LibsMap = new HashMap();
+//        for( Iterator iter = libDefs.keySet().iterator(); iter.hasNext(); ) 
+//        {
+//            Library libDef = (Library)iter.next();
+//            JsfProjectClassPathExtender.LibraryRole[] roles = (JsfProjectClassPathExtender.LibraryRole[])libDefs.get( libDef );
+//            for( int i = 0; i < roles.length; i ++ ) 
+//            {
+//                ArrayList libsForTheRole = (ArrayList)role2LibsMap.get( roles[i] );
+//                if( libsForTheRole == null )
+//                    libsForTheRole = new ArrayList();
+//                
+//                if( !JsfProjectUtils.hasLibraryReference( project, libDef, roles[i] ) ) {
+//                    libsForTheRole.add( libDef );
+//                    role2LibsMap.put( roles[i], libsForTheRole );
+//                }
+//            }
+//        }
+//        
+//        try  
+//        {
+//            for( Iterator iter = role2LibsMap.keySet().iterator(); iter.hasNext(); ) {
+//                JsfProjectClassPathExtender.LibraryRole role = (JsfProjectClassPathExtender.LibraryRole)iter.next();
+//                Library[] libs = (Library[]) ((ArrayList)role2LibsMap.get(role)).toArray(new Library[0]);
+//                
+//                // NOTE: Add an existing lib ref to the project again return false. Mark will fix it.
+//                // The if-else will be put back once Mark fixes the problem
+//                JsfProjectUtils.addLibraryReferences( project, libs, role );
+//                //if( !JsfProjectUtils.addLibraryReferences( project, libs, role ) )
+//                //    ErrorManager.getDefault().getInstance( "org.netbeans.modules.visualweb.ejb.nodes.SessionBeanNode" ).log( ErrorManager.WARNING, "Failed to add " + role.getName() + " library reference to project. Most likely it's because it is already existed in the project.");
+//                //else
+//                //    ErrorManager.getDefault().getInstance( "org.netbeans.modules.visualweb.ejb.nodes.SessionBeanNode" ).log( ErrorManager.INFORMATIONAL, "########### SUCCESSFULLY added " + role.getName() + " library reference to project." );
+//            }
+//        } catch( java.io.IOException ie ) { 
+//            ErrorManager.getDefault().getInstance( "org.netbeans.modules.visualweb.ejb.nodes.EjbLibReferenceHelper" ).log( ErrorManager.ERROR, "Failed to add library references to project. IOException" );
+//            ie.printStackTrace();
+//        } 
     }
      
     /**
