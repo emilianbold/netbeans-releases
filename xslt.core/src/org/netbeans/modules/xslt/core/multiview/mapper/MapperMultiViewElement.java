@@ -49,8 +49,10 @@ import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
 
 import org.netbeans.core.spi.multiview.MultiViewFactory;
+import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
 import org.netbeans.modules.xslt.mapper.palette.XsltPaletteFactory;
 import org.netbeans.modules.xslt.mapper.view.XsltMapper;
+import org.openide.awt.UndoRedo;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.nodes.Node;
@@ -149,6 +151,7 @@ public class MapperMultiViewElement extends TopComponent
     
     public void componentActivated() {
         super.componentActivated();
+        addUndoManager();
     }
     
     public void componentClosed() {
@@ -177,6 +180,7 @@ public class MapperMultiViewElement extends TopComponent
         if (myMapperView != null) {
             myMapperView.setVisible(true);
         }
+        addUndoManager();
         updateXsltTcGroupVisibility(true);
     }
 
@@ -224,6 +228,10 @@ public class MapperMultiViewElement extends TopComponent
             myToolBarPanel = toolbar;
         }
         return myToolBarPanel;
+    }
+
+    public UndoRedo getUndoRedo() {
+        return getDataObject().getEditorSupport().getUndoManager();
     }
 
     public JComponent getVisualRepresentation() {
@@ -364,8 +372,24 @@ public class MapperMultiViewElement extends TopComponent
         return new ProxyLookup(new Lookup[] {
             myDataObject.getLookup(), // this lookup contain objects that are used in OM clients
             Lookups.fixed(new Object[] {
+                // required to perform search on associated TCs with this dataobject
+                getDataObject().getLookup(),
+                
                 getDataObject().getNodeDelegate(),
                 XsltPaletteFactory.getPalette()})
         });
     }
+
+    /**
+     * Adds the undo/redo manager to the bpel model as an undoable
+     * edit listener, so it receives the edits onto the queue.
+     */
+    private void addUndoManager() {
+        XSLTDataEditorSupport support = myDataObject.getEditorSupport();
+        if ( support!= null ){
+            QuietUndoManager undo = support.getUndoManager();
+            support.addUndoManagerToModel( undo );
+        }
+    }
+
 }

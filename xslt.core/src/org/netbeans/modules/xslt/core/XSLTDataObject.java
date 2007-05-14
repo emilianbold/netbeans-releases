@@ -85,6 +85,11 @@ public class XSLTDataObject extends MultiDataObject {
         List<Lookup> list = new LinkedList<Lookup>();
         //TODO m
         if (myLookup.get() == null) {
+            
+            list.add(Lookups.fixed( new Object[]{
+                    super.getLookup(), 
+                    this}));            
+            
             //
             // add lazy initialization elements
             InstanceContent.Convertor<Class, Object> conv =

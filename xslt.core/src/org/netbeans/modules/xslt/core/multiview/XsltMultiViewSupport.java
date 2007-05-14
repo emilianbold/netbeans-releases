@@ -20,7 +20,6 @@
 package org.netbeans.modules.xslt.core.multiview;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -32,13 +31,8 @@ import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.xslt.core.XSLTDataEditorSupport;
 import org.netbeans.modules.xslt.core.XSLTDataObject;
 import org.netbeans.modules.xslt.core.multiview.source.XSLTSourceMultiViewElementDesc;
-import org.netbeans.modules.xslt.core.multiview.designer.DesignerMultiViewElement;
-import org.netbeans.modules.xslt.core.multiview.designer.DesignerMultiViewElementDesc;
 import org.netbeans.modules.xslt.core.multiview.mapper.MapperMultiViewElementDesc;
-import org.netbeans.modules.xslt.core.multiview.spi.XsltMultiviewProvider;
 import org.openide.loaders.DataObject;
-import org.openide.util.Lookup;
-import org.openide.util.Lookup.Result;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
 
@@ -59,20 +53,13 @@ public class XsltMultiViewSupport {
     }
     
     public static CloneableTopComponent createMultiView( final XSLTDataObject
-            dataObject ) {
-        Collection coll = getMultiviewProviders();
-//        MultiViewDescription views[] = new MultiViewDescription[coll.size()+1];
+            dataObject ) 
+    {
         MultiViewDescription views[] =  {
             new XSLTSourceMultiViewElementDesc( dataObject ),
             new MapperMultiViewElementDesc( dataObject)
         };
-        // TODO a
-//        int i=0;
-//        for ( Object provider : coll ) {
-//            views[++i] = ((XsltMultiviewProvider)provider).
-//                createMultiview(dataObject);
-//        }
-        
+
         CloneableTopComponent multiview =
                 MultiViewFactory.createCloneableMultiView(
                 views,
@@ -124,11 +111,4 @@ public class XsltMultiViewSupport {
         }
         
     }
-    
-    private static Collection getMultiviewProviders() {
-        Result result = Lookup.getDefault().lookup(
-                new Lookup.Template(XsltMultiviewProvider.class));
-        return result.allInstances();
-    }
-    
 }

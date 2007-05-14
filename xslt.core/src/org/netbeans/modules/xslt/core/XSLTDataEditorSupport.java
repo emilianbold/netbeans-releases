@@ -28,15 +28,12 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.xml.cookies.CookieObserver;
-import org.netbeans.api.xml.cookies.ValidateXMLCookie;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.modules.print.spi.PrintProvider;
 import org.netbeans.modules.print.spi.PrintProviderCookie;
-import org.netbeans.modules.xml.axi.AXIComponent;
-import org.netbeans.modules.xml.axi.AXIModel;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.validation.ShowCookie;
 import org.netbeans.modules.xml.validation.ui.ValidationAnnotation;
@@ -48,19 +45,8 @@ import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
 import org.netbeans.modules.xslt.core.multiview.source.XSLTSourceMultiViewElementDesc;
 import org.netbeans.modules.xslt.core.multiview.XsltMultiViewSupport;
-//import org.netbeans.modules.xslt.core.xsltmap.MapperContextImpl;
-import org.netbeans.modules.xslt.core.transformmap.api.Operation;
-import org.netbeans.modules.xslt.core.transformmap.api.Service;
-import org.netbeans.modules.xslt.core.transformmap.api.TMapComponent;
-import org.netbeans.modules.xslt.core.transformmap.api.TMapModel;
-import org.netbeans.modules.xslt.core.transformmap.api.TransformMap;
 import org.netbeans.modules.xslt.core.transformmap.impl.MapperContextFactory;
-import org.netbeans.modules.xslt.core.transformmap.impl.MapperContextImpl;
-import org.netbeans.modules.xslt.core.xsltmap.XmlUtil;
 import org.netbeans.modules.xslt.core.xsltmap.util.Util;
-//import org.netbeans.modules.xslt.core.xsltmap.TransformationDesc;
-//import org.netbeans.modules.xslt.core.xsltmap.XsltMapAccessor;
-//import org.netbeans.modules.xslt.core.xsltmap.XsltMapModel;
 import org.netbeans.modules.xslt.mapper.model.MapperContext;
 import org.netbeans.modules.xslt.model.XslModel;
 import org.netbeans.modules.xslt.model.spi.XslModelFactory;
@@ -155,8 +141,9 @@ public class XSLTDataEditorSupport extends DataEditorSupport implements
      * @param resultItem Contains the error/warning source, message.
      */
     public void show(final ResultItem resultItem) {
-        if (!(resultItem.getModel() instanceof AbstractModel))
+        if (!(resultItem.getModel() instanceof AbstractModel)) {
             return;
+        }
         
         final Component componentEntity = resultItem.getComponents();
         
@@ -194,8 +181,7 @@ public class XSLTDataEditorSupport extends DataEditorSupport implements
                             mvh.requestActive(mvh.getPerspectives()[index1]);
                     }
                 }
-                
- 
+
 //TODO a                
                 // Set annotation or select element in the multiview.
 //                MultiViewPerspective mvp = mvh.getSelectedPerspective();
@@ -358,7 +344,6 @@ public class XSLTDataEditorSupport extends DataEditorSupport implements
 
         // Let the superclass handle the CloneableEditor instances.
         super.updateTitles();
-
         // We need to get the title updated on the MultiViewTopComponent.
         EventQueue.invokeLater(new Runnable() {
 
@@ -684,6 +669,45 @@ public class XSLTDataEditorSupport extends DataEditorSupport implements
         }
     }
 
+    /**
+     * Remove the undo manager from both the model and document, such that
+     * any changes made to either will not be added to the undo queue. The
+     * caller should invoke <code>resumeUndoRedo()</code> once the changes
+     * are completed.
+     *
+     * @return  a value that must be passed to <code>resumeUndoRedo()</code>.
+     */
+    public boolean suspendUndoRedo() {
+        QuietUndoManager undo = getUndoManager();
+        boolean compound;
+        synchronized (undo) {
+            compound = undo.isCompound();
+            if (compound) {
+                removeUndoManagerFromDocument();
+            }
+            removeUndoManagerFromModel();
+        }
+        return compound;
+    }
+
+    /**
+     * Add the undo manager as an undoable edit listener to either the
+     * Swing document or the XAM model, and set up the compound mode if
+     * that was in place previously.
+     * 
+     * @param  value  value returned from <code>suspendUndoRedo()</code>
+     */
+    public void resumeUndoRedo(boolean value) {
+        if (value) {
+            addUndoManagerToDocument();
+        } else {
+            QuietUndoManager undo = getUndoManager();
+            synchronized (undo) {
+                addUndoManagerToModel(undo);
+            }
+        }
+    }
+    
     private XslModelFactory getModelFactory() {
         XslModelFactory factory = (XslModelFactory) Lookup.getDefault()
             .lookup(XslModelFactory.class);
