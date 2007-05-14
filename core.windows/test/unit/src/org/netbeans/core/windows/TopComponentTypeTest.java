@@ -129,6 +129,12 @@ public class TopComponentTypeTest extends NbTestCase {
         assertTrue( res[0] );
         assertFalse( res[1] );
     }
+    
+    public void testNull() {
+        assertFalse( WindowManagerImpl.getInstance().isEditorMode( null ) );
+        assertFalse( WindowManagerImpl.getInstance().isEditorTopComponent( null ) );
+        assertFalse( WindowManagerImpl.getInstance().isOpenedEditorTopComponent( null ) );
+    }
 
     private class MyHandler extends Handler {
 
