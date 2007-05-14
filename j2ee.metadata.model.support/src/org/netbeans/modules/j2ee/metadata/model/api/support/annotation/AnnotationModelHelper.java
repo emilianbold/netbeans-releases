@@ -49,6 +49,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.RootsEvent;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TypesEvent;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.openide.util.Exceptions;
 import org.openide.util.WeakSet;
 
@@ -58,6 +59,7 @@ import org.openide.util.WeakSet;
  */
 public final class AnnotationModelHelper {
 
+    // XXX exception wrapping in runJavaSourceTask()
     // XXX ExecutionException for the future returned by runJavaSourceTaskWhenScanFinished()
 
     private final ClasspathInfo cpi;
@@ -153,14 +155,22 @@ public final class AnnotationModelHelper {
         }
         JavaSource newJavaSource = existingJavaSource != null ? existingJavaSource : JavaSource.create(cpi);
         final List<V> result = new ArrayList<V>();
-        newJavaSource.runUserActionTask(new CancellableTask<CompilationController>() {
-            public void run(CompilationController controller) throws Exception {
-                result.add(runCallable(callable, controller, notify));
+        try {
+            newJavaSource.runUserActionTask(new CancellableTask<CompilationController>() {
+                public void run(CompilationController controller) throws Exception {
+                    result.add(runCallable(callable, controller, notify));
+                }
+                public void cancel() {
+                    // we can't cancel
+                }
+            }, true);
+        } catch (IOException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof MetadataModelException) {
+                throw (MetadataModelException)cause;
             }
-            public void cancel() {
-                // we can't cancel
-            }
-        }, true);
+            throw e;
+        }
         return result.get(0);
     }
 
@@ -177,14 +187,22 @@ public final class AnnotationModelHelper {
         }
         JavaSource newJavaSource = existingJavaSource != null ? existingJavaSource : JavaSource.create(cpi);
         final DelegatingFuture<V> result = new DelegatingFuture<V>();
-        result.setDelegate(newJavaSource.runWhenScanFinished(new CancellableTask<CompilationController>() {
-            public void run(CompilationController controller) throws Exception {
-                result.setResult(runCallable(callable, controller, true));
+        try {
+            result.setDelegate(newJavaSource.runWhenScanFinished(new CancellableTask<CompilationController>() {
+                public void run(CompilationController controller) throws Exception {
+                    result.setResult(runCallable(callable, controller, true));
+                }
+                public void cancel() {
+                    // we can't cancel
+                }
+            }, true));
+        } catch (IOException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof MetadataModelException) {
+                throw (MetadataModelException)cause;
             }
-            public void cancel() {
-                // we can't cancel
-            }
-        }, true));
+            throw e;
+        }
         assert result.delegate != null;
         return result;
     }
@@ -205,13 +223,11 @@ public final class AnnotationModelHelper {
         controller.toPhase(Phase.ELEMENTS_RESOLVED);
         try {
             return callable.call();
-        } catch (Throwable t) {
-            if (t instanceof IOException) {
-                throw (IOException)t;
+        } catch (Exception e) {
+            if (e instanceof RuntimeException) {
+                throw (RuntimeException)e;
             } else {
-                IOException wrapper = new IOException(t.getMessage());
-                wrapper.initCause(t);
-                throw wrapper;
+                throw new MetadataModelException(e);
             }
         } finally {
             AnnotationModelHelper.this.controller = null;
@@ -455,6 +471,7 @@ public final class AnnotationModelHelper {
 
         private volatile Future<Void> delegate;
         private volatile V result;
+        private volatile ExecutionException executionException;
 
         public void setDelegate(Future<Void> delegate) {
             assert this.delegate == null;

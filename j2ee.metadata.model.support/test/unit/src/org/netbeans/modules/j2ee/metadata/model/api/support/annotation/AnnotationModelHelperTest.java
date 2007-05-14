@@ -25,14 +25,12 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.ClassIndex;
-import org.netbeans.api.java.source.ClassIndexListener;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.RootsEvent;
 import org.netbeans.api.java.source.TypesEvent;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 import org.netbeans.modules.j2ee.metadata.model.support.PersistenceTestCase;
@@ -177,6 +175,7 @@ public class AnnotationModelHelperTest extends PersistenceTestCase {
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
         final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicBoolean longTaskFinished = new AtomicBoolean();
         final Thread t = new Thread(new Runnable() {
             public void run() {
                 try {
@@ -185,7 +184,9 @@ public class AnnotationModelHelperTest extends PersistenceTestCase {
                 try {
                     helper.runJavaSourceTask(new Callable<Void>() {
                         public Void call() throws Exception {
-                            fail();
+                            if (!longTaskFinished.get()) {
+                                fail();
+                            }
                             return null;
                         }
                     });
@@ -199,7 +200,7 @@ public class AnnotationModelHelperTest extends PersistenceTestCase {
                 try {
                     Thread.sleep(5000);
                 } catch (InterruptedException e) {}
-                t.interrupt();
+                longTaskFinished.set(true);
                 return null;
             }
         });

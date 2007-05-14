@@ -22,14 +22,21 @@ package org.netbeans.modules.j2ee.metadata.model.support;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.source.ClassIndex;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.TypesEvent;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.ClassIndexAdapter;
+import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -38,6 +45,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -45,21 +53,28 @@ import org.openide.filesystems.URLMapper;
  */
 public abstract class JavaSourceTestCase extends NbTestCase {
 
-    protected static FileObject srcFO;
-    protected static List<FileObject> roots;
+    // XXX make thread-safe
 
-    protected static ClassPathImpl srcCPImpl;
-    protected static ClassPathImpl compileCPImpl;
+    private ClassPathProviderImpl cpProvider;
 
-    protected static ClassPath srcCP;
-    protected static ClassPath compileCP;
-    protected static ClassPath bootCP;
+    protected FileObject srcFO;
+    protected List<FileObject> roots;
+
+    protected ClassPathImpl srcCPImpl;
+    protected ClassPathImpl compileCPImpl;
+
+    protected ClassPath srcCP;
+    protected ClassPath compileCP;
+    protected ClassPath bootCP;
+
+    private CountDownLatch blockLatch;
 
     public JavaSourceTestCase(String testName) {
         super(testName);
     }
 
     protected void setUp() throws Exception {
+        MockLookup.setInstances();
         clearWorkDir();
         File userdir = new File(getWorkDir(), "userdir");
         userdir.mkdirs();
@@ -72,15 +87,19 @@ public abstract class JavaSourceTestCase extends NbTestCase {
         bootCP = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
         roots = new ArrayList<FileObject>();
         roots.add(srcFO);
-        MockServices.setServices(ClassPathProviderImpl.class);
+        cpProvider = new ClassPathProviderImpl();
+        MockLookup.setInstances(cpProvider);
     }
 
     protected void tearDown() {
-        MockServices.setServices();
+        if (blockLatch != null) {
+            resumeClassPathScan();
+        }
+        MockLookup.setInstances();
     }
 
     protected void addSourceRoots(List<FileObject> roots) {
-        JavaSourceTestCase.roots.addAll(roots);
+        this.roots.addAll(roots);
         List<URL> urls = new ArrayList<URL>(roots.size());
         for (FileObject root : roots) {
             urls.add(URLMapper.findURL(root, URLMapper.INTERNAL));
@@ -89,7 +108,7 @@ public abstract class JavaSourceTestCase extends NbTestCase {
     }
 
     protected void removeSourceRoots(List<FileObject> roots) {
-        JavaSourceTestCase.roots.removeAll(roots);
+        this.roots.removeAll(roots);
         List<URL> urls = new ArrayList<URL>(roots.size());
         for (FileObject root : roots) {
             urls.add(URLMapper.findURL(root, URLMapper.INTERNAL));
@@ -101,7 +120,38 @@ public abstract class JavaSourceTestCase extends NbTestCase {
         compileCPImpl.addResources(roots);
     }
 
-    public static class ClassPathProviderImpl implements ClassPathProvider {
+    protected void startAndBlockClassPathScan() throws IOException, InterruptedException {
+        if (blockLatch != null) {
+            resumeClassPathScan();
+        }
+        FileObject workDir = FileUtil.toFileObject(getWorkDir());
+        FileObject blockFO = FileUtil.createFolder(workDir, FileUtil.findFreeFolderName(workDir, "cp-scan-block-root"));
+        MockLookup.setInstances(cpProvider, new SimpleClassPathProvider(blockFO));
+        System.out.println(System.identityHashCode(ClassPath.getClassPath(blockFO, ClassPath.SOURCE)));
+        RepositoryUpdater.getDefault().scheduleCompilationAndWait(blockFO, blockFO).await();
+        final CountDownLatch waitLatch = new CountDownLatch(1);
+        blockLatch = new CountDownLatch(1);
+        ClassIndex index = ClasspathInfo.create(blockFO).getClassIndex();
+        index.addClassIndexListener(new ClassIndexAdapter() {
+            public void typesAdded(TypesEvent event) {
+                waitLatch.countDown();
+                try {
+                    blockLatch.await();
+                } catch (InterruptedException e) {
+                    throw new Error(e);
+                }
+            }
+        });
+        TestUtilities.copyStringToFileObject(blockFO, "Dummy.java", "public class Dummy {}");
+        waitLatch.await();
+    }
+
+    protected void resumeClassPathScan() {
+        blockLatch.countDown();
+        blockLatch = null;
+    }
+
+    public final class ClassPathProviderImpl implements ClassPathProvider {
 
         public ClassPath findClassPath(FileObject file, String type) {
             boolean found = false;
