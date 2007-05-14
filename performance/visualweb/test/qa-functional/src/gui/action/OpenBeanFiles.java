@@ -128,7 +128,6 @@ public class OpenBeanFiles  extends org.netbeans.performance.test.utilities.Perf
         if(testedComponentOperator != null)
         {
             ((EditorOperator)testedComponentOperator).close();
-            ((EditorOperator)testedComponentOperator).waitClosed();
             testedComponentOperator = null;
         }
         

@@ -102,7 +102,6 @@ public class OpenProjectFirstPage extends org.netbeans.performance.test.utilitie
         log("::close");
         if(testedComponentOperator != null) {
             ((WebFormDesignerOperator)testedComponentOperator).close();
-            ((WebFormDesignerOperator)testedComponentOperator).waitClosed();
             testedComponentOperator = null;
         }
     }
