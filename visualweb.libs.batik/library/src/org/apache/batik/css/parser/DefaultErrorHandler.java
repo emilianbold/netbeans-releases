@@ -50,6 +50,8 @@
 
 package org.apache.batik.css.parser;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.w3c.css.sac.CSSParseException;
 import org.w3c.css.sac.ErrorHandler;
 
@@ -77,14 +79,26 @@ public class DefaultErrorHandler implements ErrorHandler {
      * <b>SAC</b>: Implements {ErrorHandler#warning(CSSParseException)}.
      */
     public void warning(CSSParseException e) {
-        // Do nothing
+// <rave> #96870 At least provide logging of the problem.
+//        // Do nothing
+// ====
+        Logger logger = getLogger();
+        IllegalStateException ise = new IllegalStateException("Warning: " + e.getMessage(), e); // NOI18N
+        logger.log(Level.FINE, null, ise);
+// </rave>
     }
 
     /**
      * <b>SAC</b>: Implements {ErrorHandler#error(CSSParseException)}.
      */
     public void error(CSSParseException e) {
-        // Do nothing
+// <rave> #96870 At least provide logging of the problem.
+//        // Do nothing
+// ====
+        Logger logger = getLogger();
+        IllegalStateException ise = new IllegalStateException("Error: " + e.getMessage(), e); // NOI18N
+        logger.log(Level.FINE, null, ise);
+// </rave>
     }
 
     /**
@@ -93,4 +107,10 @@ public class DefaultErrorHandler implements ErrorHandler {
     public void fatalError(CSSParseException e) {
         throw e;
     }
+    
+// <rave>
+    private static Logger getLogger() {
+        return Logger.getLogger(DefaultErrorHandler.class.getName());
+    }
+// </rave>
 }
