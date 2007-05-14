@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 import javax.swing.text.EditorKit;
@@ -59,6 +60,8 @@ import org.openide.util.Utilities;
  * @author Jan Jancura
  */
 public final class EditorBridge extends KeymapManager {
+    
+    private static final Logger LOG = Logger.getLogger(EditorBridge.class.getName());
     
     private static final String EDITOR_BRIDGE = "EditorBridge";
     
@@ -455,14 +458,20 @@ public final class EditorBridge extends KeymapManager {
         public String getDisplayName () {
             if (name == null) {
                 name = (String) action.getValue (Action.SHORT_DESCRIPTION);
-                name = name.replaceAll ("&", "").trim ();
+                if (name == null) {
+                    LOG.warning("The action " + action + " doesn't provide short description, using its name."); //NOI18N
+                    name = getId();
+                }
+                name = name.replaceAll ("&", "").trim (); //NOI18N
             }
             return name;
         }
         
         public String getId () {
-            if (id == null)
+            if (id == null) {
                 id = (String) action.getValue (Action.NAME);
+                assert id != null : "Actions must have name, offending action: " + action;
+            }
             return id;
         }
         
@@ -483,7 +492,7 @@ public final class EditorBridge extends KeymapManager {
         }
         
         public String toString () {
-            return "EditorAction[" + getDisplayName() + ":" + getId() + "]";
+            return "EditorAction[" + getDisplayName() + ":" + getId() + "]"; //NOI18N
         }
     
         public ShortcutAction getKeymapManagerInstance(String keymapManagerName) {
