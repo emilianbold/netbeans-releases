@@ -43,6 +43,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -81,8 +82,11 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
         return "PageFlow";
     }
     
+//    private static final Image PageFlowImage = Utilities.loadImage("org/netbeans/modules/web/jsf/navigation/resources/navigation.gif");
+    private static final Image JSFConfigIcon = org.openide.util.Utilities.loadImage("org/netbeans/modules/web/jsf/resources/JSFConfigIcon.png"); // NOI18N
     public Image getIcon() {
-        return null;
+//        return PageFlowImage;
+        return JSFConfigIcon;
     }
     
     public HelpCtx getHelpCtx() {

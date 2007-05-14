@@ -53,8 +53,9 @@ public class JSFConfigMultiviewDescriptor implements MultiViewDescription, Seria
         return "XML";
     }
     
+    private static final Image JSFConfigIcon = org.openide.util.Utilities.loadImage("org/netbeans/modules/web/jsf/resources/JSFConfigIcon.png"); // NOI18N
     public Image getIcon() {
-        return null;
+        return JSFConfigIcon;
     }
     
     public HelpCtx getHelpCtx() {
