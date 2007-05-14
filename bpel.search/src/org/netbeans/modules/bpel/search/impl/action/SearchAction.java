@@ -42,7 +42,7 @@ public final class SearchAction extends NodeAction {
     performAction(nodes [0]);
   }
 
-  static synchronized void performAction(Node node) {
+  private static synchronized void performAction(Node node) {
     SearchManagerAccess.getManager().getUI(getBpelModel(node), null, true);
   }
 
