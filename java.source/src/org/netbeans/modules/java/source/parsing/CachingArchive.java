@@ -22,10 +22,12 @@ package org.netbeans.modules.java.source.parsing;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
@@ -33,22 +35,19 @@ import java.util.zip.ZipFile;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
-import org.netbeans.modules.java.source.util.Factory;
-import org.netbeans.modules.java.source.util.Iterators;
 import org.openide.util.Exceptions;
 
 public class CachingArchive implements Archive {
-
-
-
     private final File archiveFile;
     private final boolean keepOpened;
     private ZipFile zipFile;
         
-    // Cache
-    private Map<String,List<ZipRecord>> folders2files;
-    
-    // Constructors ------------------------------------------------------------    
+    byte[] names;// = new byte[16384];
+    private int nameOffset = 0;
+    final static int[] EMPTY = new int[0];
+    private Map<String, Folder> folders; // = new HashMap<String, Folder>();
+
+        // Constructors ------------------------------------------------------------    
     
     /** Creates a new instance of archive from zip file */
     public CachingArchive( File archiveFile, boolean keepOpened) {
@@ -58,34 +57,60 @@ public class CachingArchive implements Archive {
         
     // Archive implementation --------------------------------------------------
    
-    
     /** Gets all files in given folder
      */
-    public Iterable<JavaFileObject> getFiles( String folderName, ClassPath.Entry entry, JavaFileFilterImplementation filter) throws IOException {
+    public Iterable<JavaFileObject> getFiles( String folderName, ClassPath.Entry entry, JavaFileFilterImplementation filter ) throws IOException {
         doInit();        
-        List<ZipRecord> files = folders2files.get( folderName );        
+        Folder files = folders.get( folderName );        
         if (files == null) {
             return Collections.<JavaFileObject>emptyList();
         }
         else {
             assert !keepOpened || zipFile != null;
-            return Iterators.translating(files, new JFOFactory(folderName, archiveFile, zipFile));
+            List<JavaFileObject> l = new ArrayList<JavaFileObject>(files.idx / 4);
+            for (int i = 0; i < files.idx; i += 4){
+                l.add(create(folderName, files, i));
+            }
+            return l;
         }
     }          
     
+
+    private String getString(int off, int len) {
+        byte[] name = new byte[len];
+        System.arraycopy(names, off, name, 0, len);
+        try {
+            return new String(name, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new InternalError("No UTF-8");
+        }
+    }
+    
+    private JavaFileObject create(String pkg, Folder f, int off) {
+        String baseName = getString(f.indices[off], f.indices[off+1]);
+        long mtime = (((long)f.indices[off+3]) << 32) | f.indices[off+2];
+        if (zipFile == null) {
+            return FileObjects.zipFileObject(archiveFile, pkg, baseName, mtime);
+        } else {
+            return FileObjects.zipFileObject( zipFile, pkg, baseName, mtime);
+        }
+    }
     
     public synchronized void clear () {
-        this.folders2files = null;
+        folders = null;
+        names = null;
     }
                       
     // ILazzy implementation ---------------------------------------------------
     
     public synchronized boolean isInitialized() {
-        return folders2files != null;
+        return folders != null;
     }
     
     public synchronized void initialize() {
-        folders2files = createMap( archiveFile );
+        names = new byte[16384];
+        folders = createMap( archiveFile );
+        trunc();
     }
     
     // Private methods ---------------------------------------------------------
@@ -95,13 +120,25 @@ public class CachingArchive implements Archive {
             initialize();
         }
     }
-    
-    private Map<String,List<ZipRecord>> createMap(File file ) {        
+
+    private void trunc() {
+        // strip the name array:
+        byte[] newNames = new byte[nameOffset];
+        System.arraycopy(names, 0, newNames, 0, nameOffset);
+        names = newNames;
+
+        // strip all the indices arrays:
+        for (Iterator it = folders.values().iterator(); it.hasNext();) {
+            ((Folder) it.next()).trunc();
+        }
+    }
+
+    private Map<String,Folder> createMap(File file ) {        
         if (file.canRead()) {
             try {
                 ZipFile zip = new ZipFile (file);
                 try {
-                    final Map<String,List<ZipRecord>> map = new HashMap<String,List<ZipRecord>>();
+                    final Map<String,Folder> map = new HashMap<String,Folder>();
 
                     for ( Enumeration<? extends ZipEntry> e = zip.entries(); e.hasMoreElements(); ) {
                         ZipEntry entry = e.nextElement();
@@ -112,16 +149,15 @@ public class CachingArchive implements Archive {
                         if (basename.length() == 0) {
                             basename = null;
                         }
-                        List<ZipRecord> list = map.get(dirname);
-                        if (list == null) {
-                            list = new ArrayList<ZipRecord>();                
-                            map.put(dirname, list);
+                        Folder fld = map.get(dirname);
+                        if (fld == null) {
+                            fld = new Folder();                
+                            map.put(new String(dirname).intern(), fld);
                         }
 
                         if ( basename != null ) {
-                            list.add( new ZipRecord (basename, entry.getTime()));
+                            fld.appendEntry(this, basename, entry.getTime());
                         }
-
                     }
                     return map;
                 } finally {
@@ -140,44 +176,61 @@ public class CachingArchive implements Archive {
                 
             }
         }
-        return Collections.<String,List<ZipRecord>>emptyMap();
+        return Collections.<String,Folder>emptyMap();
     }
     
     // Innerclasses ------------------------------------------------------------
     
-    private static class JFOFactory implements Factory<JavaFileObject,ZipRecord>  {
-        
-        private final String pkg;
-        private final File archiveFile;
-        private final ZipFile zipFile;
-        
-        JFOFactory( String pkg, File archiveFile, ZipFile zipFile ) {
-            this.pkg = pkg;
-            this.archiveFile = archiveFile;
-            this.zipFile = zipFile;
-        } 
-        
-        public JavaFileObject create(final ZipRecord parameter) {
-            if (zipFile == null) {
-                return FileObjects.zipFileObject(archiveFile, pkg, parameter.baseName, parameter.mtime);
+    int putName(byte[] name) {
+        int start = nameOffset;
+
+        if ((start + name.length) > names.length) {
+            byte[] newNames = new byte[(names.length * 2) + name.length];
+            System.arraycopy(names, 0, newNames, 0, start);
+            names = newNames;
+        }
+
+        System.arraycopy(name, 0, names, start, name.length);
+        nameOffset += name.length;
+
+        return start;
+    }
+
+    
+    private static class Folder {
+        int[] indices = EMPTY; // off, len, mtimeL, mtimeH
+        int idx = 0;
+
+        public Folder() {
+        }
+
+        void appendEntry(CachingArchive outer, String name, long mtime) {
+            // ensure enough space
+            if ((idx + 4) > indices.length) {
+                int[] newInd = new int[(2 * indices.length) + 4];
+                System.arraycopy(indices, 0, newInd, 0, idx);
+                indices = newInd;
             }
-            else {
-                return FileObjects.zipFileObject( zipFile, pkg, parameter.baseName, parameter.mtime);
+
+            try {
+                byte[] bytes = name.getBytes("UTF-8");
+                indices[idx++] = outer.putName(bytes);
+                indices[idx++] = bytes.length;
+                indices[idx++] = (int)(mtime & 0xFFFFFFFF);
+                indices[idx++] = (int)(mtime >> 32);
+            } catch (UnsupportedEncodingException e) {
+                throw new InternalError("No UTF-8");
             }
         }
-    };
-    
-    
-    private static class ZipRecord {
-        private final long mtime;
-        private final String baseName;
-        
-        public ZipRecord (final String baseName, final long mtime) {
-            assert baseName != null;
-            this.mtime = mtime;
-            this.baseName = baseName;
+
+        void trunc() {
+            if (indices.length > idx) {
+                int[] newInd = new int[idx];
+                System.arraycopy(indices, 0, newInd, 0, idx);
+                indices = newInd;
+            }
         }
     }
-    
+
         
 }
