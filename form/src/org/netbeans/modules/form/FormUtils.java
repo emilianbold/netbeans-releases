@@ -733,6 +733,9 @@ public class FormUtils
             return 0;
 
         String beanClassName = beanClass.getName();
+        if ("javax.swing.JPopupMenu".equals(beanClassName)) { // NOI18N
+            return 1;
+        }
         for (int i=0; i < forbiddenContainers.length; i++)
             if (beanClassName.equals(forbiddenContainers[i]))
                 return 0; // cannot be container
