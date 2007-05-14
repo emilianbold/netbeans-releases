@@ -216,9 +216,22 @@ public class FmtOptions {
     
     private FmtOptions() {}
 
+    public static int getDefaultAsInt(String key) {
+        return Integer.parseInt(defaults.get(key));
+    }
+    
+    public static boolean getDefaultAsBoolean(String key) {
+        return Boolean.parseBoolean(defaults.get(key));
+    }
+        
+    public static String getDefaultAsString(String key) {
+        return defaults.get(key);
+    }
+    
     public static Preferences getPreferences(String profileId) {
         return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").node(profileId);
     }
+    
     
     public static void flush() {
         try {
@@ -251,7 +264,7 @@ public class FmtOptions {
     
     public static String getLastValue(String optionID) {
         Preferences p = lastValues == null ? getPreferences(getCurrentProfileId()) : lastValues;
-        return p.get(optionID, defaults.get(optionID));
+        return p.get(optionID, getDefaultAsString(optionID));
     }
  
     // Private section ---------------------------------------------------------
@@ -272,7 +285,7 @@ public class FmtOptions {
     private static final String BGS_LEAVE_ALONE = BracesGenerationStyle.LEAVE_ALONE.name(); 
     private static final String BGS_GENERATE = BracesGenerationStyle.GENERATE.name(); 
     
-    static Map<String,String> defaults;
+    private static Map<String,String> defaults;
     
     static {
         createDefaults();
@@ -291,14 +304,14 @@ public class FmtOptions {
             { rightMargin, "120"}, //NOI18N
 
             { preferLongerNames, TRUE}, //NOI18N
-            { fieldNamePrefix, ""}, //NOI18N
-            { fieldNameSuffix, ""}, //NOI18N
-            { staticFieldNamePrefix, ""}, //NOI18N
-            { staticFieldNameSuffix, ""}, //NOI18N
-            { parameterNamePrefix, ""}, //NOI18N
-            { parameterNameSuffix, ""}, //NOI18N
-            { localVarNamePrefix, ""}, //NOI18N
-            { localVarNameSuffix, ""}, //NOI18N
+            { fieldNamePrefix, ""}, //NOI18N // XXX null
+            { fieldNameSuffix, ""}, //NOI18N // XXX null
+            { staticFieldNamePrefix, ""}, //NOI18N // XXX null
+            { staticFieldNameSuffix, ""}, //NOI18N // XXX null
+            { parameterNamePrefix, ""}, //NOI18N // XXX null
+            { parameterNameSuffix, ""}, //NOI18N // XXX null
+            { localVarNamePrefix, ""}, //NOI18N // XXX null
+            { localVarNameSuffix, ""}, //NOI18N // XXX null
             { qualifyFieldAccess, FALSE}, //NOI18N // XXX
             { useIsForBooleanGetters, TRUE}, //NOI18N
             { addOverrideAnnotation, TRUE}, //NOI18N
@@ -314,7 +327,7 @@ public class FmtOptions {
             { redundantForBraces, BGS_GENERATE}, //NOI18N
             { redundantWhileBraces, BGS_GENERATE}, //NOI18N
             { redundantDoWhileBraces, BGS_GENERATE}, //NOI18N
-            { alignMultilineMethodParams, TRUE}, //NOI18N
+            { alignMultilineMethodParams, FALSE}, //NOI18N
             { alignMultilineCallArgs, FALSE}, //NOI18N
             { alignMultilineImplements, FALSE}, //NOI18N
             { alignMultilineThrows, FALSE}, //NOI18N
@@ -322,12 +335,12 @@ public class FmtOptions {
             { alignMultilineBinaryOp, FALSE}, //NOI18N
             { alignMultilineTernaryOp, FALSE}, //NOI18N
             { alignMultilineAssignment, FALSE}, //NOI18N
-            { alignMultilineFor, TRUE}, //NOI18N
+            { alignMultilineFor, FALSE}, //NOI18N
             { alignMultilineArrayInit, FALSE}, //NOI18N
-            { placeElseOnNewLine, TRUE}, //NOI18N
+            { placeElseOnNewLine, FALSE}, //NOI18N 
             { placeWhileOnNewLine, FALSE}, //NOI18N
-            { placeCatchOnNewLine, TRUE}, //NOI18N
-            { placeFinallyOnNewLine, TRUE}, //NOI18N
+            { placeCatchOnNewLine, FALSE}, //NOI18N 
+            { placeFinallyOnNewLine, FALSE}, //NOI18N 
             { placeNewLineAfterModifiers, FALSE}, //NOI18N
 
             { wrapExtendsImplementsKeyword, WRAP_NEVER}, //NOI18N
@@ -352,12 +365,12 @@ public class FmtOptions {
 
             { blankLinesBeforePackage, "0"}, //NOI18N
             { blankLinesAfterPackage, "1"}, //NOI18N
-            { blankLinesBeforeImports, "0"}, //NOI18N
+            { blankLinesBeforeImports, "1"}, //NOI18N 
             { blankLinesAfterImports, "1"}, //NOI18N
-            { blankLinesBeforeClass, "0"}, //NOI18N
-            { blankLinesAfterClass, "1"}, //NOI18N
-            { blankLinesAfterClassHeader, "0"}, //NOI18N
-            { blankLinesBeforeFields, "1"}, //NOI18N
+            { blankLinesBeforeClass, "1"}, //NOI18N 
+            { blankLinesAfterClass, "0"}, //NOI18N
+            { blankLinesAfterClassHeader, "1"}, //NOI18N 
+            { blankLinesBeforeFields, "0"}, //NOI18N 
             { blankLinesAfterFields, "0"}, //NOI18N
             { blankLinesBeforeMethods, "1"}, //NOI18N
             { blankLinesAfterMethods, "0"}, //NOI18N
@@ -416,7 +429,7 @@ public class FmtOptions {
 
             { useSingleClassImport, TRUE}, //NOI18N
             { useFQNs, FALSE}, //NOI18N
-            { countForUsingStarImport, "3"}, //NOI18N
+            { countForUsingStarImport, "5"}, //NOI18N
             { countForUsingStaticStarImport, "3"}, //NOI18N // XXX
             { packagesForStarImport, ""}, //NOI18N // XXX
             { importsOrder, ""}, //NOI18N // XXX
@@ -499,7 +512,7 @@ public class FmtOptions {
             
             
             try {
-                int rm = p.getInt(rightMargin, Integer.parseInt(defaults.get(rightMargin)));
+                int rm = p.getInt(rightMargin, getDefaultAsInt(rightMargin));
                 pane.putClientProperty("TextLimitLine", rm);
             }
             catch( NumberFormatException e ) {
@@ -621,16 +634,16 @@ public class FmtOptions {
             
             if ( jc instanceof JTextField ) {
                 JTextField field = (JTextField)jc;                
-                field.setText( node.get(optionID, defaults.get(optionID)) );
+                field.setText( node.get(optionID, getDefaultAsString(optionID)) );
             }
             else if ( jc instanceof JCheckBox ) {
                 JCheckBox checkBox = (JCheckBox)jc;
-                boolean df = Boolean.parseBoolean( defaults.get(optionID) );
+                boolean df = getDefaultAsBoolean(optionID);
                 checkBox.setSelected( node.getBoolean(optionID, df));                
             } 
             else if ( jc instanceof JComboBox) {
                 JComboBox cb  = (JComboBox)jc;
-                String value = node.get(optionID, defaults.get(optionID) );
+                String value = node.get(optionID, getDefaultAsString(optionID) );
                 ComboBoxModel model = createModel(value);
                 cb.setModel(model);
                 ComboItem item = whichItem(value, model);

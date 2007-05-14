@@ -359,7 +359,7 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
             Preferences node = getPreferences(getCurrentProfileId());
             
             for (Item item : items) {
-                boolean df = Boolean.parseBoolean( defaults.get(item.id) );
+                boolean df = FmtOptions.getDefaultAsBoolean(item.id);
                 item.value = node.getBoolean(item.id, df);
             }
 
