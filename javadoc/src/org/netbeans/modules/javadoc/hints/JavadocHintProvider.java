@@ -75,6 +75,7 @@ import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.api.lexer.TokenSequence;
@@ -121,7 +122,7 @@ public final class JavadocHintProvider extends AbstractHint {
     private JavadocHintProvider(boolean createJavadocKind) {
         this.createJavadocKind = createJavadocKind;
     }
-
+    
     public Set<Kind> getTreeKinds() {
         return EnumSet.of(Kind.METHOD, Kind.CLASS, Kind.VARIABLE);
     }
@@ -134,17 +135,17 @@ public final class JavadocHintProvider extends AbstractHint {
         }
         
         Severity severity;
-        HintSeverity hintSeverity = HintSeverity.values()[getPreferences().getInt(SEVERITY_KEY, AbstractHint.HintSeverity.CURRENT_LINE_WARNING.ordinal())]; 
+        HintSeverity hintSeverity = HintSeverity.values()[getPreferences().getInt(SEVERITY_KEY, AbstractHint.HintSeverity.CURRENT_LINE_WARNING.ordinal())];
         
         switch (hintSeverity) {
-            case ERROR: severity = Severity.ERROR; break;
-            case WARNING: severity = Severity.WARNING; break;
-            default:
-            case CURRENT_LINE_WARNING: severity = Severity.HINT; break;
+        case ERROR: severity = Severity.ERROR; break;
+        case WARNING: severity = Severity.WARNING; break;
+        default:
+        case CURRENT_LINE_WARNING: severity = Severity.HINT; break;
         }
         
-        Document doc = null; 
-                
+        Document doc = null;
+        
         try {
             doc = javac.getDocument();
         } catch (IOException e) {
@@ -215,7 +216,7 @@ public final class JavadocHintProvider extends AbstractHint {
         ts.move((int) lastKnownOffsetInHeader);
         
         while (ts.moveNext()) {
-            if (ts.token().id() == JavaTokenId.LBRACE) {
+            if (ts.token().id() == JavaTokenId.LBRACE || ts.token().id() == JavaTokenId.SEMICOLON) {
                 return offset < ts.offset();
             }
         }
@@ -368,7 +369,7 @@ public final class JavadocHintProvider extends AbstractHint {
                     processReturn(methodEl, methodTree, annDoc, errors);
                     processAnnTypeThrows(methodEl, methodTree, annDoc, errors);
                 }
-
+                
                 processDeprecatedAnnotation(elm, jDoc, errors);
             }
             return errors;
@@ -380,13 +381,13 @@ public final class JavadocHintProvider extends AbstractHint {
             boolean onLine = hintSeverity == HintSeverity.CURRENT_LINE_WARNING;
             switch (leaf.getKind()) {
             case CLASS:
-                return access.isAccessible(path, !onLine)
+                return access.isAccessible(javac, path, !onLine)
                         && (!onLine || isInHeader(javac, (ClassTree) leaf, caret));
             case METHOD:
-                return access.isAccessible(path, !onLine)
+                return access.isAccessible(javac, path, !onLine)
                         && (!onLine || isInHeader(javac, (MethodTree) leaf, caret));
             case VARIABLE:
-                return access.isAccessible(path, !onLine);
+                return access.isAccessible(javac, path, !onLine);
             }
             return false;
         }
@@ -460,7 +461,7 @@ public final class JavadocHintProvider extends AbstractHint {
                     Tag tag = tags[i];
                     addRemoveTagFix(tag,
                             NbBundle.getMessage(JavadocHintProvider.class,
-                                jdoc.isMethod()? "WRONG_RETURN_DESC": "WRONG_CONSTRUCTOR_RETURN_DESC"), // NOI18N
+                            jdoc.isMethod()? "WRONG_RETURN_DESC": "WRONG_CONSTRUCTOR_RETURN_DESC"), // NOI18N
                             exec, errors);
                 }
             } else {
@@ -489,7 +490,7 @@ public final class JavadocHintProvider extends AbstractHint {
                     Logger.getLogger(JavadocHintProvider.class.getName()).log(Level.INFO, ex.getMessage(), ex);
                 }
             }
-
+            
         }
         
         private void processThrows(ExecutableElement exec, MethodTree node, ExecutableMemberDoc jdoc, List<ErrorDescription> errors) {
@@ -534,7 +535,7 @@ public final class JavadocHintProvider extends AbstractHint {
                 
                 boolean exists = tagNames.remove(fqn) != null;
                 if (!exists && (jdoc.isConstructor() ||
-                        jdoc.isMethod() && 
+                        jdoc.isMethod() &&
                         JavadocUtilities.findThrowsTag(javac, (MethodDoc) jdoc, fqn, true) == null)) {
                     // missing @throws
                     try {
@@ -571,7 +572,7 @@ public final class JavadocHintProvider extends AbstractHint {
                         NbBundle.getMessage(JavadocHintProvider.class, "UNKNOWN_THROWABLE_DESC", throwsTag.name(), throwsTag.exceptionName()), // NOI18N
                         exec, errors);
             }
-
+            
         }
         
         private void processAnnTypeThrows(ExecutableElement exec, MethodTree node, AnnotationTypeElementDoc jdoc, List<ErrorDescription> errors) {
@@ -603,7 +604,7 @@ public final class JavadocHintProvider extends AbstractHint {
         
         private void processParameters(ExecutableElement exec, MethodTree node, ExecutableMemberDoc jdoc, List<ErrorDescription> errors) {
             final List<? extends VariableTree> params = node.getParameters();
-//            final ParamTag[] tags = doc.paramTags();
+            //            final ParamTag[] tags = doc.paramTags();
             final Tag[] tags = jdoc.tags("@param"); //NOI18N
             
             Map<String, ParamTag> tagNames = new HashMap<String, ParamTag>();
@@ -667,12 +668,12 @@ public final class JavadocHintProvider extends AbstractHint {
                         NbBundle.getMessage(JavadocHintProvider.class, "UNKNOWN_PARAM_DESC", paramTag.parameterName()), // NOI18N
                         exec, errors);
             }
-
+            
         }
         
         private void processTypeParameters(TypeElement elm, ClassTree node, ClassDoc jdoc, List<ErrorDescription> errors) {
             final List<? extends TypeParameterTree> params = node.getTypeParameters();
-//            final ParamTag[] tags = doc.typeParamTags();
+            //            final ParamTag[] tags = doc.typeParamTags();
             final Tag[] tags = jdoc.tags("@param"); // NOI18N
             
             Map<String, ParamTag> tagNames = new HashMap<String, ParamTag>();
@@ -731,7 +732,7 @@ public final class JavadocHintProvider extends AbstractHint {
         }
         
         /**
-         * creates start and end positions of the tree 
+         * creates start and end positions of the tree
          */
         Position[] createSignaturePositions(final Tree t) throws BadLocationException {
             final Position[] pos = new Position[2];
@@ -773,7 +774,7 @@ public final class JavadocHintProvider extends AbstractHint {
                     final int startOff = (int) javac.getTrees().getSourcePositions().
                             getStartPosition(javac.getCompilationUnit(), node);
                     final Position startPos = doc.createPosition(startOff);
-
+                    
                     for (GuardedSection guard : guards.getGuardedSections()) {
                         if (guard.contains(startPos, false)) {
                             return true;
@@ -824,10 +825,10 @@ public final class JavadocHintProvider extends AbstractHint {
             
             // XXX add Inherit javadoc
             
-//            Fix fixInherit = new JavadocFix("Inherit javadoc");
-//            fixes.add(fixInherit);
-//            fixes.add(new JavadocFix("Create missing javadoc"));
-//            fixes.add(new JavadocFix("Fix all missing javadocs"));
+            //            Fix fixInherit = new JavadocFix("Inherit javadoc");
+            //            fixes.add(fixInherit);
+            //            fixes.add(new JavadocFix("Create missing javadoc"));
+            //            fixes.add(new JavadocFix("Fix all missing javadocs"));
             return fixList;
         }
         
@@ -848,21 +849,21 @@ public final class JavadocHintProvider extends AbstractHint {
         
         public void addPropertyChangeListener(PropertyChangeListener l) {
         }
-
+        
         public void removePropertyChangeListener(PropertyChangeListener l) {
         }
-
+        
         public boolean probablyContainsFixes() {
             return true;
         }
-
+        
         public List<Fix> getFixes() {
             if (fixAll.isReady()) {
                 contexFixes.add(fixAll);
             }
             return contexFixes;
         }
-
+        
         public boolean isComputed() {
             return true;
         }
@@ -880,39 +881,39 @@ public final class JavadocHintProvider extends AbstractHint {
         public boolean isReady() {
             return allJavadocFixes.size() > 1;
         }
-    
+        
         public String getText() {
             return NbBundle.getMessage(JavadocHintProvider.class, "FIX_ALL_HINT"); // NOI18N
         }
-
+        
         public ChangeInfo implement() {
             for (GenerateJavadocFix javadocFix : allJavadocFixes) {
                 javadocFix.implement(false);
             }
-
+            
             return null;
         }
         
     }
-
+    
     private static final class GenerateJavadocFix implements Fix {
         private String name;
         private final ElementHandle handle;
         private final FileObject file;
         private Position position;
         private final SourceVersion spec;
-
+        
         GenerateJavadocFix(String name, ElementHandle handle, FileObject file, SourceVersion spec) {
             this.name = name;
             this.handle = handle;
             this.file = file;
             this.spec = spec;
         }
-
+        
         public String getText() {
             return NbBundle.getMessage(JavadocHintProvider.class, "MISSING_JAVADOC_HINT", name); // NOI18N
         }
-
+        
         public ChangeInfo implement() {
             return implement(true);
         }
@@ -969,11 +970,11 @@ public final class JavadocHintProvider extends AbstractHint {
                             String iJavadoc = JavadocGenerator.indentJavadoc(javadocForDocument[0], tab);
                             docs[0].insertString(position.getOffset(), iJavadoc, null);
                             // move the caret to proper position
-//                            System.out.println("javadoc:'" + iJavadoc + '\'');
+                            //                            System.out.println("javadoc:'" + iJavadoc + '\'');
                             int offset = iJavadoc.indexOf("\n");
-//                            System.out.println("offset1: " + offset);
+                            //                            System.out.println("offset1: " + offset);
                             offset = iJavadoc.indexOf("\n", offset + 1);
-//                            System.out.println("offset2: " + offset);
+                            //                            System.out.println("offset2: " + offset);
                             offset = position.getOffset() + offset - iJavadoc.length();
                             if (open) doOpen(file, offset);
                         } catch (BadLocationException ex) {
@@ -987,7 +988,7 @@ public final class JavadocHintProvider extends AbstractHint {
             return null;
         }
     }
-
+    
     private static final class RemoveTagFix implements Fix, CancellableTask<WorkingCopy> {
         
         private String tagName;
@@ -998,7 +999,7 @@ public final class JavadocHintProvider extends AbstractHint {
         
         private Position[] tagBounds;
         private Document doc;
-
+        
         RemoveTagFix(String tagName, TagHandle tagHandle, ElementHandle elmHandle, FileObject file, SourceVersion spec) {
             this.tagName = tagName;
             this.tagHandle = tagHandle;
@@ -1006,11 +1007,11 @@ public final class JavadocHintProvider extends AbstractHint {
             this.file = file;
             this.spec = spec;
         }
-
+        
         public String getText() {
             return NbBundle.getMessage(JavadocHintProvider.class, "REMOVE_TAG_HINT", tagName); // NOI18N
         }
-
+        
         public ChangeInfo implement() {
             return implement(true);
         }
@@ -1074,7 +1075,7 @@ public final class JavadocHintProvider extends AbstractHint {
         
         public void cancel() {
         }
-
+        
         public void run(WorkingCopy wc) throws Exception {
             wc.toPhase(JavaSource.Phase.RESOLVED);
             Element elm = handle.resolve(wc);
@@ -1106,7 +1107,7 @@ public final class JavadocHintProvider extends AbstractHint {
         String insertJavadoc;
         private int openOffset;
         Document doc;
-    
+        
         private AddTagFix(ElementHandle methodHandle, String paramName, int index,
                 FileObject file, SourceVersion spec, String descKey, Kind tagKind) {
             this.methodHandle = methodHandle;
@@ -1142,11 +1143,11 @@ public final class JavadocHintProvider extends AbstractHint {
                 FileObject file, SourceVersion spec) {
             return new AddTagFix(ElementHandle.create(elm), "", -1, file, spec, "MISSING_DEPRECATED_HINT", Kind.DEPRECATED); // NOI18N
         }
-
+        
         public String getText() {
             return NbBundle.getMessage(JavadocHintProvider.class, descKey, this.paramName);
         }
-
+        
         public ChangeInfo implement() {
             JavaSource js = JavaSource.forFileObject(file);
             try {
@@ -1166,7 +1167,7 @@ public final class JavadocHintProvider extends AbstractHint {
             }
             return null;
         }
-
+        
         public void run(final WorkingCopy wc) throws Exception {
             wc.toPhase(JavaSource.Phase.RESOLVED);
             final Element elm = methodHandle.resolve(wc);
@@ -1196,33 +1197,33 @@ public final class JavadocHintProvider extends AbstractHint {
             // find position where to add
             boolean[] isLastTag = new boolean[1];
             switch (this.kind) {
-                case PARAM:
-                    insertPosition = getParamInsertPosition(wc, doc, (ExecutableElement) elm, jdoc, isLastTag);
-                    insertJavadoc = "@param " + paramName + " "; // NOI18N
-                    break;
-                case TYPEPARAM:
-                    insertPosition = getTypeParamInsertPosition(wc, doc, (TypeElement) elm, jdoc, isLastTag);
-                    insertJavadoc = "@param " + paramName + " "; // NOI18N
-                    break;
-                case RETURN:
-                    insertPosition = getReturnInsertPosition(wc, doc, jdoc, isLastTag);
-                    insertJavadoc = "@return "; // NOI18N
-                    break;
-                case THROWS:
-                    insertPosition = getThrowsInsertPosition(wc, doc, (ExecutableMemberDoc) jdoc, isLastTag);
-                    insertJavadoc = "@throws " + paramName + " "; // NOI18N
-                    break;
-                case DEPRECATED:
-                    insertPosition = getDeprecatedInsertPosition(wc, doc, jdoc, isLastTag);
-                    insertJavadoc = "@deprecated "; // NOI18N
-                    break;
-                default:
-                    throw new IllegalStateException();
+            case PARAM:
+                insertPosition = getParamInsertPosition(wc, doc, (ExecutableElement) elm, jdoc, isLastTag);
+                insertJavadoc = "@param " + paramName + " "; // NOI18N
+                break;
+            case TYPEPARAM:
+                insertPosition = getTypeParamInsertPosition(wc, doc, (TypeElement) elm, jdoc, isLastTag);
+                insertJavadoc = "@param " + paramName + " "; // NOI18N
+                break;
+            case RETURN:
+                insertPosition = getReturnInsertPosition(wc, doc, jdoc, isLastTag);
+                insertJavadoc = "@return "; // NOI18N
+                break;
+            case THROWS:
+                insertPosition = getThrowsInsertPosition(wc, doc, (ExecutableMemberDoc) jdoc, isLastTag);
+                insertJavadoc = "@throws " + paramName + " "; // NOI18N
+                break;
+            case DEPRECATED:
+                insertPosition = getDeprecatedInsertPosition(wc, doc, jdoc, isLastTag);
+                insertJavadoc = "@deprecated "; // NOI18N
+                break;
+            default:
+                throw new IllegalStateException();
             }
             
             // create tag string
             // resolve indentation
-                // take start of javadoc and find /** and compute distance od \n and first *
+            // take start of javadoc and find /** and compute distance od \n and first *
             Position[] jdBounds = JavadocUtilities.findDocBounds(wc, doc, jdoc);
             int jdBeginLine = NbDocument.findLineNumber((StyledDocument) doc, jdBounds[0].getOffset());
             int jdEndLine = NbDocument.findLineNumber((StyledDocument) doc, jdBounds[1].getOffset());
@@ -1262,7 +1263,7 @@ public final class JavadocHintProvider extends AbstractHint {
                 }
             });
         }
-
+        
         public void cancel() {
         }
         
@@ -1272,7 +1273,7 @@ public final class JavadocHintProvider extends AbstractHint {
         }
         
         private Position getTypeParamInsertPosition(CompilationInfo wc, Document doc, TypeElement elm, Doc jdoc, boolean[] isLastTag) throws BadLocationException {
-                // 1. find @param tags + find index of param and try to apply on @param array
+            // 1. find @param tags + find index of param and try to apply on @param array
             Tag[] tags = jdoc.tags("@param"); // NOI18N
             Tag where = null;
             boolean insertBefore = true;
@@ -1291,7 +1292,7 @@ public final class JavadocHintProvider extends AbstractHint {
         }
         
         private Position getThrowsInsertPosition(CompilationInfo wc, Document doc, ExecutableMemberDoc jdoc, boolean[] isLastTag) throws BadLocationException {
-                // 1. find @param tags + find index of param and try to apply on @param array
+            // 1. find @param tags + find index of param and try to apply on @param array
             Tag[] tags = jdoc.throwsTags(); // NOI18N
             // XXX filter type params?
             Tag where = null;
@@ -1320,7 +1321,7 @@ public final class JavadocHintProvider extends AbstractHint {
         }
         
         private Position getReturnInsertPosition(CompilationInfo wc, Document doc, Doc jdoc, boolean[] isLastTag) throws BadLocationException {
-                // 1. find @param tags
+            // 1. find @param tags
             Tag[] tags = jdoc.tags("@param"); // NOI18N
             Tag where = null;
             boolean insertBefore = true;
@@ -1338,7 +1339,7 @@ public final class JavadocHintProvider extends AbstractHint {
         }
         
         private Position getParamInsertPosition(CompilationInfo wc, Document doc, ExecutableElement elm, Doc jdoc, boolean[] isLastTag) throws BadLocationException {
-                // 1. find @param tags + find index of param and try to apply on @param array
+            // 1. find @param tags + find index of param and try to apply on @param array
             Tag[] tags = jdoc.tags("@param"); // NOI18N
             // XXX filter type params?
             Tag where = null;
@@ -1401,8 +1402,8 @@ public final class JavadocHintProvider extends AbstractHint {
             EditorCookie ec = od.getCookie(EditorCookie.class);
             LineCookie lc = od.getCookie(LineCookie.class);
             
-            if (ec != null && lc != null && offset != -1) {                
-                StyledDocument doc = ec.openDocument();                
+            if (ec != null && lc != null && offset != -1) {
+                StyledDocument doc = ec.openDocument();
                 if (doc != null) {
                     int line = NbDocument.findLineNumber(doc, offset);
                     int lineOffset = NbDocument.findLineOffset(doc, line);
@@ -1445,22 +1446,22 @@ public final class JavadocHintProvider extends AbstractHint {
                 } else if ("package".equals(s)) { // NOI18N
                     return Access.PACKAGE;
                 }
-            } 
+            }
             return Access.PROTECTED;
         }
         
         public boolean isAccessible(Set<Modifier> flags) {
             switch(this) {
-                case PRIVATE:
-                    return true;
-                case PACKAGE:
-                    return !flags.contains(Modifier.PRIVATE);
-                case PROTECTED:
-                    return flags.contains(Modifier.PUBLIC) || flags.contains(Modifier.PROTECTED);
-                case PUBLIC:
-                    return flags.contains(Modifier.PUBLIC);
-                default:
-                    throw new IllegalStateException();
+            case PRIVATE:
+                return true;
+            case PACKAGE:
+                return !flags.contains(Modifier.PRIVATE);
+            case PROTECTED:
+                return flags.contains(Modifier.PUBLIC) || flags.contains(Modifier.PROTECTED);
+            case PUBLIC:
+                return flags.contains(Modifier.PUBLIC);
+            default:
+                throw new IllegalStateException();
             }
         }
         
@@ -1471,7 +1472,7 @@ public final class JavadocHintProvider extends AbstractHint {
          * @return is accessible
          * @see #isAccessible(Set)
          */
-        public boolean isAccessible(TreePath path, boolean alwaysAccessible) {
+        public boolean isAccessible(CompilationInfo javac, TreePath path, boolean alwaysAccessible) {
             TreePath parent = path.getParentPath();
             Tree leaf = path.getLeaf();
             if (parent != null) {
@@ -1481,29 +1482,47 @@ public final class JavadocHintProvider extends AbstractHint {
                     return false;
                 }
                 
-                if (!isAccessible(parent, alwaysAccessible)) {
+                if (!isAccessible(javac, parent, alwaysAccessible)) {
                     return false;
                 }
             }
             
+            Set<Modifier> flags;
             switch (leaf.getKind()) {
             case COMPILATION_UNIT: return true;
-            case CLASS: return alwaysAccessible || isAccessible(((ClassTree) leaf).getModifiers().getFlags());
-            case METHOD: return alwaysAccessible || isAccessible(((MethodTree) leaf).getModifiers().getFlags());
-            case VARIABLE: return alwaysAccessible || isAccessible(((VariableTree) leaf).getModifiers().getFlags());
+            case CLASS: flags = ((ClassTree) leaf).getModifiers().getFlags(); break;
+            case METHOD: flags = ((MethodTree) leaf).getModifiers().getFlags(); break;
+            case VARIABLE: flags = ((VariableTree) leaf).getModifiers().getFlags(); break;
             default: return false;
             }
+            
+            // all members of interface and annotation type are public by definition (JLS 9.1.5)
+            return alwaysAccessible || isInterfaceMember(javac, path) || isAccessible(flags);
+        }
+        
+        /**
+         * @return is member of interface or annotatin type
+         */
+        private boolean isInterfaceMember(CompilationInfo javac, TreePath path) {
+            TreePath parentPath = path.getParentPath();
+            if (parentPath == null) {
+                return false;
+            }
+            Tree parent = parentPath.getLeaf();
+            TreeUtilities utils = javac.getTreeUtilities();
+            return Tree.Kind.CLASS == parent.getKind()
+                    && (utils.isInterface((ClassTree) parent) || utils.isAnnotation((ClassTree) parent));
         }
     }
-
+    
     public String getId() {
         return JavadocHintProvider.class.getName();
     }
-
+    
     public String getDisplayName() {
         return NbBundle.getMessage(JavadocHintProvider.class, createJavadocKind ? "DN_CREATE_JAVADOC_HINT" : "DN_ERROR_IN_JAVADOC_HINT"); // NOI18N
     }
-
+    
     public String getDescription() {
         return NbBundle.getMessage(JavadocHintProvider.class, createJavadocKind ? "DESC_CREATE_JAVADOC_HINT" : "DESC_ERROR_IN_JAVADOC_HINT"); // NOI18N
     }
