@@ -36,7 +36,7 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 
 /**
  * Utility methods related to classpath in projects.
@@ -265,22 +265,18 @@ public class ClassPathUtils {
 	if(project==null)
 	    return false;
 	
-        ProjectClassPathExtender projectClassPath = (ProjectClassPathExtender)
-            project.getLookup().lookup(ProjectClassPathExtender.class);
-        if (projectClassPath == null)
-            return false; // not a project with classpath
-
         for (int i=0, n=classSource.getCPRootCount(); i < n; i++) {
             String type = classSource.getCPRootType(i);
             String name = classSource.getCPRootName(i);
 
             if (ClassSource.JAR_SOURCE.equals(type)) {
                 FileObject jarFile = FileUtil.toFileObject(new File(name));
-                projectClassPath.addArchiveFile(jarFile);
+                URL url = URLMapper.findURL(FileUtil.getArchiveRoot(jarFile), URLMapper.EXTERNAL);
+                ProjectClassPathModifier.addRoots(new URL[] {url}, fileInProject, ClassPath.COMPILE);
             }
             else if (ClassSource.LIBRARY_SOURCE.equals(type)) {
                 Library lib = LibraryManager.getDefault().getLibrary(name);
-                projectClassPath.addLibrary(lib);
+                ProjectClassPathModifier.addLibraries(new Library[] {lib}, fileInProject, ClassPath.COMPILE);
             }
             else if (ClassSource.PROJECT_SOURCE.equals(type)) {
                 File jarFile = new File(name);
@@ -288,9 +284,7 @@ public class ClassPathUtils {
                     AntArtifactQuery.findArtifactFromFile(jarFile);
                 if (artifact.getProject() != project) {
                     URI[] locs = artifact.getArtifactLocations();
-                    for (int y=0; y<locs.length; y++ ) {
-                        projectClassPath.addAntArtifact(artifact, locs[y]);
-                    }
+                    ProjectClassPathModifier.addAntArtifacts(new AntArtifact[] {artifact}, locs, fileInProject, ClassPath.COMPILE);
                 }
             }
         }
