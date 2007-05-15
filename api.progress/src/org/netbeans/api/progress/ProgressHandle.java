@@ -19,6 +19,8 @@
 
 package org.netbeans.api.progress;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import org.netbeans.progress.spi.InternalHandle;
@@ -30,9 +32,13 @@ import org.netbeans.progress.spi.InternalHandle;
  * @author Milos Kleint (mkleint@netbeans.org)
  */
 public final class ProgressHandle {
+
+    private static final Logger LOG = Logger.getLogger(ProgressHandle.class.getName());
+
     private InternalHandle internal;
     /** Creates a new instance of ProgressHandle */
     ProgressHandle(InternalHandle internal) {
+        LOG.fine(internal.getDisplayName());
         this.internal = internal;
     }
 
@@ -84,6 +90,7 @@ public final class ProgressHandle {
      * @since org.netbeans.api.progress/1 1.9
      */
     public void suspend(String message) {
+        LOG.log(Level.FINE, "{0}: {1}", new Object[] {internal.getDisplayName(), message});
         internal.toSilent(message);
     }
     
@@ -138,6 +145,7 @@ public final class ProgressHandle {
      * @param workunit a cumulative number of workunits completed so far
      */
     public void progress(String message, int workunit) {
+        LOG.log(Level.FINE, "{0}: {1}", new Object[] {internal.getDisplayName(), message});
         internal.progress(message, workunit);
     }
     
@@ -164,6 +172,7 @@ public final class ProgressHandle {
      * @since org.netbeans.api.progress 1.5
      */
     public void setDisplayName(String newDisplayName) {
+        LOG.fine(newDisplayName);
         internal.requestDisplayNameChange(newDisplayName);
     }
     
