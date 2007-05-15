@@ -25,7 +25,7 @@ import java.util.Collections;
 import org.netbeans.modules.vmd.api.io.DataEditorView;
 import org.netbeans.modules.vmd.api.io.DataEditorViewLookupFactory;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
-import org.netbeans.modules.vmd.api.properties.PropertiesNodesManager;
+import org.netbeans.modules.vmd.properties.PropertiesNodesManager;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
