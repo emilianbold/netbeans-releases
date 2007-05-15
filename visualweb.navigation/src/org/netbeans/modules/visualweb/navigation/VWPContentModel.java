@@ -22,6 +22,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.faces.component.ActionSource;
 import javax.faces.component.ActionSource2;
 import javax.swing.Action;
@@ -43,6 +46,8 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 
+
+
 /**
  *
  * @author joelle
@@ -52,6 +57,8 @@ public class VWPContentModel extends PageContentModel{
     private Collection<PageContentItem> pageContentItems = new ArrayList<PageContentItem>();
     private String pageName;
     
+    private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.web.jsf.navigation");
+    
     /** Creates a new instance of VWPContentModel
      * @param facesModel can not be null
      * @param pageName can not be null
@@ -60,7 +67,7 @@ public class VWPContentModel extends PageContentModel{
         this.facesModel = facesModel;
         this.pageName = pageName;
         updatePageContentItems();
-        initListeners();        
+        initListeners();
     }
     
     @Override
@@ -269,6 +276,7 @@ public class VWPContentModel extends PageContentModel{
         }
     }
     
+    
     private static FacesModel getFragmentModel(FacesModel model, DesignBean fragment) {
         
         DesignProperty prop = fragment.getProperty("file"); // NOI18N
@@ -401,7 +409,22 @@ public class VWPContentModel extends PageContentModel{
                                                         oldCaseOutcome = null;
                                                     }
                                                 }
-                                                mev.updateReturnStrings(oldCaseOutcome, caseOutcome);
+                                                try {
+                                                    mev.updateReturnStrings(oldCaseOutcome, caseOutcome);
+                                                }catch( NullPointerException npe ){
+                                                    LOGGER.severe("NullPointerException: Failed to update return strings\n" +
+                                                                  "Source Class: org.netbeans.modules.visualweb.navigation.VWPContentModel\n" + 
+                                                                  "Method: setCaseOutcome()\n" + 
+                                                                  "Call: mev.updateReturnStrings( " + oldCaseOutcome + ", " + caseOutcome + " )\n");
+//                                                    LogRecord record = new LogRecord(Level.WARNING, "Failed to update return strings.");
+//                                                    record.setSourceClassName("VWPContentModel");
+//                                                    record.setSourceMethodName("setCaseOutcome(VWPContentItem contentItem, String caseOutcome, DesignProperty addLinkToDP, boolean rename)");
+//                                                    record.setParameters(new Object[] {contentItem, caseOutcome, addLinkToDP, rename});
+//                                                    record.setThrown(npe);
+//                                                    LOGGER.log(record);
+                                                    throw npe;
+                                                }
+                                                
                                                 setValueSource = false;
                                             }
                                         }
