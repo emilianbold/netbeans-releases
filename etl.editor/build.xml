@@ -30,6 +30,7 @@
 		<copy todir="${cluster}/modules/ext/etl">
 			<fileset dir="../external">
 				<include name="*.jar" />
+                                <include name="mashupdb.zip" />
 			</fileset>
 		</copy>
 	</target>
