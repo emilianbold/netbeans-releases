@@ -34,9 +34,7 @@ import org.openide.text.CloneableEditorSupport;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.WeakHashMap;
-import org.netbeans.modules.vmd.io.editor.EditorViewElement;
-import org.openide.nodes.Node;
-import org.openide.windows.TopComponent;
+
 
 /**
  * Custom DataObject used by the IOSupport class must:
@@ -73,12 +71,7 @@ public final class IOSupport {
         return context;
     }
     
-    public static void setActivatedNodes(DataEditorView view, Node[] nodes) {
-        TopComponent tc = EditorViewElement.getTopComponent(view);
-        if (tc != null)
-            tc.setActivatedNodes(nodes);
-        
-    }
+   
     /**
      * Returns a document serializer related to specified data object.
      * @param dataObject the data object
