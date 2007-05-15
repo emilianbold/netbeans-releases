@@ -125,7 +125,7 @@ public class MultiFileSystem extends FileSystem {
     /**
      * Actually implements contract of FileSystem.refresh().
      */
-    public void refresh(boolean expected) {
+    public @Override void refresh(boolean expected) {
         Enumeration<AbstractFolder> en = getMultiRoot().existingSubFiles(true);
 
         while (en.hasMoreElements()) {
@@ -214,8 +214,9 @@ public class MultiFileSystem extends FileSystem {
         return getMultiRoot();
     }
 
-    /** Root of the filesystem.
-    */
+    /**
+     * @return the root of the filesystem
+     */
     private MultiFileObject getMultiRoot() {
         synchronized (MultiFileSystem.class) {
             if (root == null) {
@@ -228,7 +229,7 @@ public class MultiFileSystem extends FileSystem {
 
     /** Merge actions from all delegates.
     */
-    public SystemAction[] getActions() {
+    public @Override SystemAction[] getActions() {
         List<SystemAction> al = new ArrayList<SystemAction>(101); // randomly choosen constant
         Set<SystemAction> uniq = new HashSet<SystemAction>(101); // not that randommly choosen
 
@@ -251,7 +252,7 @@ public class MultiFileSystem extends FileSystem {
         return al.toArray(new SystemAction[al.size()]);
     }
 
-    public SystemAction[] getActions(final Set<FileObject> foSet) {
+    public @Override SystemAction[] getActions(final Set<FileObject> foSet) {
         List<SystemAction> al = new ArrayList<SystemAction>(101); // randomly choosen constant
         Set<SystemAction> uniq = new HashSet<SystemAction>(101); // not that randommly choosen
 
@@ -275,7 +276,7 @@ public class MultiFileSystem extends FileSystem {
     }
 
     @Deprecated // have to override for compat
-    public FileObject find(String aPackage, String name, String ext) {
+    public @Override FileObject find(String aPackage, String name, String ext) {
         // create enumeration of name to look for
         Enumeration<String> st = NbCollections.checkedEnumerationByFilter(new StringTokenizer(aPackage, "."), String.class, true); // NOI18N
         Enumeration<String> en;
@@ -468,7 +469,7 @@ public class MultiFileSystem extends FileSystem {
      * @deprecated Useless.
      */
     @Deprecated
-    public void prepareEnvironment(FileSystem.Environment env)
+    public @Override void prepareEnvironment(FileSystem.Environment env)
     throws EnvironmentNotSupportedException {
         FileSystem[] layers = getDelegates();
 
@@ -485,7 +486,7 @@ public class MultiFileSystem extends FileSystem {
 
     /** Notifies all encapsulated filesystems in advance
     * to superclass behaviour. */
-    public void addNotify() {
+    public @Override void addNotify() {
         super.addNotify();
 
         for (int i = 0; i < systems.length; i++) {
@@ -497,7 +498,7 @@ public class MultiFileSystem extends FileSystem {
 
     /** Notifies all encapsulated filesystems in advance
     * to superclass behaviour. */
-    public void removeNotify() {
+    public @Override void removeNotify() {
         super.removeNotify();
 
         for (int i = 0; i < systems.length; i++) {
@@ -510,39 +511,6 @@ public class MultiFileSystem extends FileSystem {
     //
     // Private methods
     //
-
-    /** Receives name of a resource and array of three elements and
-    * splits the name into folder, name and extension.
-    *
-    * @param res resource name
-    * @param store array to store data to
-    */
-    private static String[] split(String res, String[] store) {
-        if (store == null) {
-            store = new String[3];
-        }
-
-        int file = res.lastIndexOf('/');
-        int dot = res.lastIndexOf('.');
-
-        if (file == -1) {
-            store[0] = ""; // NOI18N
-        } else {
-            store[0] = res.substring(0, file);
-        }
-
-        file++;
-
-        if (dot == -1) {
-            store[1] = res.substring(file);
-            store[2] = ""; // NOI18N
-        } else {
-            store[1] = res.substring(file, dot);
-            store[2] = res.substring(dot + 1);
-        }
-
-        return store;
-    }
 
     /** Computes a list of FileObjects in the right order
     * that can represent this instance.
