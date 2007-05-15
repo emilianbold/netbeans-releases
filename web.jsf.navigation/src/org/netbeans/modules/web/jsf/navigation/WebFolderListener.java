@@ -104,7 +104,7 @@ public class WebFolderListener extends FileChangeAdapter{
         //DISPLAYNAME:
         String pageDisplayName = Page.getFolderDisplayName(webFolder, fileObj);
         
-        Page oldNode = pfc.getPageName2Node(pageDisplayName);
+        Page oldNode = pfc.getPageName2Page(pageDisplayName);
         if( oldNode != null ) {
             if( pfc.isPageInFacesConfig(oldNode.getDisplayName()) ) {
                 //                Node tmpNode = new AbstractNode(Children.LEAF);
@@ -114,7 +114,7 @@ public class WebFolderListener extends FileChangeAdapter{
                 pfc.changeToAbstractNode(oldNode, pageDisplayName );
             } else {
                 view.removeNodeWithEdges(oldNode);
-                pfc.removePageName2Node(oldNode, true);
+                pfc.removePageName2Page(oldNode, true);
             }
             view.validateGraph();   //Either action validate graph
         }
@@ -132,7 +132,7 @@ public class WebFolderListener extends FileChangeAdapter{
                 Node dataNode = dataObj.getNodeDelegate();
                 //                    PageFlowNode pageNode = pageName2Node.get(dataNode.getDisplayName());
                 //DISPLAYNAME:
-                Page pageNode = pfc.getPageName2Node(Page.getFolderDisplayName(webFolder, fileObj));
+                Page pageNode = pfc.getPageName2Page(Page.getFolderDisplayName(webFolder, fileObj));
                 if( pageNode != null  ) {
                     pageNode.replaceWrappedNode(dataNode);
                     view.resetNodeWidget(pageNode, false);
@@ -196,8 +196,8 @@ public class WebFolderListener extends FileChangeAdapter{
     
     private void renameFile(FileObject fileObj, String oldDisplayName, String newDisplayName ){
         
-        Page oldNode = pfc.getPageName2Node(oldDisplayName);        
-        Page abstractNode = pfc.getPageName2Node(newDisplayName); // I know I do this twice, but I am trying to keep it less confusing.
+        Page oldNode = pfc.getPageName2Page(oldDisplayName);        
+        Page abstractNode = pfc.getPageName2Page(newDisplayName); // I know I do this twice, but I am trying to keep it less confusing.
         
         if ( oldNode == null && abstractNode != null ){
             /* Probably a refactoring scenario */
@@ -232,7 +232,7 @@ public class WebFolderListener extends FileChangeAdapter{
                 pfc.changeToAbstractNode(oldNode, oldDisplayName);
             } else if ( oldNode != null ){
                 view.removeNodeWithEdges(oldNode);
-                pfc.removePageName2Node(oldNode, true);
+                pfc.removePageName2Page(oldNode, true);
             }
             abstractNode.replaceWrappedNode(newNodeDelegate);
             view.resetNodeWidget(abstractNode, true);

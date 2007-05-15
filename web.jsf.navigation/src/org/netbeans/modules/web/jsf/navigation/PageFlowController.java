@@ -67,7 +67,7 @@ public class PageFlowController {
     
     private final HashMap<NavigationCase,NavigationCaseEdge> case2Node = new HashMap<NavigationCase,NavigationCaseEdge>();
     private HashMap<NavigationRule,String> navRule2String = new HashMap<NavigationRule,String>();
-    private final HashMap<String,Page> pageName2Node = new HashMap<String,Page>();  //Should this be synchronized.
+    private final HashMap<String,Page> pageName2Page = new HashMap<String,Page>();  //Should this be synchronized.
     
     private static final String DEFAULT_DOC_BASE_FOLDER = "web"; //NOI18NF
     
@@ -305,7 +305,7 @@ public class PageFlowController {
         
         view.saveLocations();
         view.clearGraph();
-        clearPageName2Node();
+        clearPageName2Page();
         case2Node.clear();
         navRule2String.clear();
         
@@ -325,7 +325,7 @@ public class PageFlowController {
         if ( isFacesConfigCurrentScope()){
             createFacesConfigPageNodes(pagesInConfig);
         } else if ( isProjectCurrentScope() ) {
-            createAllProjectPageNodes(pagesInConfig);
+            createAllProjectPages(pagesInConfig);
         }
         createAllEdges(rules);
         //view.layoutGraph();
@@ -350,13 +350,13 @@ public class PageFlowController {
     public void createEdge(NavigationCaseEdge caseNode ){
         String fromPage = caseNode.getFromViewId();
         String toPage = caseNode.getToViewId();
-        if( getPageName2Node(fromPage) == null || getPageName2Node(toPage) == null ){
+        if( getPageName2Page(fromPage) == null || getPageName2Page(toPage) == null ){
             System.err.println("Why is this node null? CaseNode: " + caseNode );
             System.err.println("FromPage: " + fromPage );
             System.err.println("ToPage: " + toPage );
             Thread.dumpStack();
         } else {
-            view.createEdge(caseNode, getPageName2Node(fromPage), getPageName2Node(toPage));
+            view.createEdge(caseNode,getPageName2Page(fromPage),getPageName2Page(toPage));
         }
     }
     
@@ -393,7 +393,7 @@ public class PageFlowController {
     /*
      * Create PageFlowNode with no backing page.
      */
-    public Page createPageFlowNode( String pageName ){
+    public Page createPage( String pageName ){
         Node tmpNode = new AbstractNode(Children.LEAF);
         tmpNode.setName(pageName);
         Page node = createPageFlowNode(tmpNode);
@@ -409,7 +409,7 @@ public class PageFlowController {
         PageFlowDestroyCount++;
     }
     
-    private void createAllProjectPageNodes(Collection<String> pagesInConfig) {
+    private void createAllProjectPages(Collection<String> pagesInConfig) {
         
         Collection<String> pages = new HashSet<String>(pagesInConfig);
         
@@ -482,14 +482,14 @@ public class PageFlowController {
     }
     
     
-    public Page removePageName2Node(Page pageNode, boolean destroy  ){
-        return removePageName2Node(pageNode.getDisplayName(), destroy);
+    public Page removePageName2Page(Page pageNode, boolean destroy  ){
+        return removePageName2Page(pageNode.getDisplayName(), destroy);
     }
     
-    public Page removePageName2Node( String displayName, boolean destroy ) {
+    public Page removePageName2Page( String displayName, boolean destroy ) {
         printThreadInfo();
-        synchronized ( pageName2Node ) {
-            Page node = pageName2Node.remove(displayName);
+        synchronized ( pageName2Page ) {
+            Page node = pageName2Page.remove(displayName);
             if( destroy ) {
                 destroyPageFlowNode(node);
             }
@@ -502,58 +502,58 @@ public class PageFlowController {
      * Replace page name in PageName2Node HasMap
      * @param Page node, String newName, String oldName
      **/
-    public void replacePageName2Node(Page node, String newName, String oldName  ){
+    public void replacePageName2Page(Page node, String newName, String oldName  ){
         printThreadInfo();
-        synchronized ( pageName2Node ) {
-            Page node2 = pageName2Node.remove(oldName);
+        synchronized ( pageName2Page ) {
+            Page node2 = pageName2Page.remove(oldName);
             if( node == null || node2 == null ){
                 System.err.println("PageFlowEditor: Trying to add Page [" + oldName + "] but it is null.");
             }
-            pageName2Node.put(newName, node);
+            pageName2Page.put(newName, node);
         }
     }
     
-    public void clearPageName2Node(){
+    public void clearPageName2Page(){
         //        printThreadInfo();
         Set<String> keys;
-        synchronized ( pageName2Node ) {
-            keys = new HashSet<String>(pageName2Node.keySet());
+        synchronized ( pageName2Page ) {
+            keys = new HashSet<String>(pageName2Page.keySet());
         }
         for( String key : keys ){
-            Page node = removePageName2Node(key, true);
+            Page node = removePageName2Page(key, true);
         }
         //            pageName2Node.clear();
         //        }
     }
     
-    public void putPageName2Node(String displayName,Page pageNode){
+    public void putPageName2Page(String displayName,Page pageNode){
         printThreadInfo();
         if( pageNode == null ){
             throw new RuntimeException("PageFlowEditor: Trying to add Page [" + displayName + "] but it is null.");
         }
-        synchronized ( pageName2Node ) {
-            pageName2Node.put(displayName, pageNode);
+        synchronized ( pageName2Page ) {
+            pageName2Page.put(displayName, pageNode);
         }
     }
     
-    public Page getPageName2Node(String displayName){
+    public Page getPageName2Page(String displayName){
         printThreadInfo();
-        synchronized ( pageName2Node ) {
+        synchronized ( pageName2Page ) {
             /*
              * Begin Test
              */
-            Page pageNode = pageName2Node.remove(displayName);
+            Page pageNode = pageName2Page.remove(displayName);
             if( pageNode != null ) {
-                Page pageNode2 = pageName2Node.get(displayName);
+                Page pageNode2 = pageName2Page.get(displayName);
                 if( pageNode2 != null ){
                     throw new RuntimeException("Why are there two of the same page?: " + displayName +"\n PageNode1: " + pageNode + "\n PageNode2:" + pageNode2);
                 }
-                putPageName2Node(displayName, pageNode);
+                putPageName2Page(displayName, pageNode);
             }
             /*
              * End Test
              */
-            return pageName2Node.get(displayName);
+            return pageName2Page.get(displayName);
         }
     }
     

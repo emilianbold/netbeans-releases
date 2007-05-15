@@ -125,7 +125,7 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
             }
             
         }
-        pc.putPageName2Node(nodeDisplayName, this);
+        pc.putPageName2Page(nodeDisplayName, this);
     }
     
     public void updateNode_HACK(){
@@ -136,7 +136,7 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
     /* We may want this to notify listeners of changes.*/
     public void replaceWrappedNode(Node newNode ){
         //        pc.pageName2Node.remove(getDisplayName());
-        pc.removePageName2Node(getDisplayName(), false);
+        pc.removePageName2Page(getDisplayName(), false);
         setNode(newNode);
         //        pc.putPageName2Node(getDisplayName(), this);
     }

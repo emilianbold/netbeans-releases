@@ -147,8 +147,8 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
         final NavigationRule navRule = (source instanceof NavigationRule ? (NavigationRule)source : null);
         
         /* Going to have to do this another day. */
-        Page oldPageNode = pfc.getPageName2Node(oldName);
-        Page newPageNode = pfc.getPageName2Node(newName);
+        Page oldPageNode = pfc.getPageName2Page(oldName);
+        Page newPageNode = pfc.getPageName2Page(newName);
         LOGGER.finest("OldPageNode: " + oldPageNode + "\n" +
                 "NewPageNode: " + newPageNode + "\n");
         boolean isNewPageLinked = false;
@@ -282,14 +282,14 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
         if( newCaseEdge != null) {
             //            NavigationCaseEdge newCaseEdge = new NavigationCaseEdge(view.getPageFlowController(), newCase);
             //            pfc.putCase2Node(newCase, newCaseEdge);//     case2Node.put(myNewCase, node);
-            Page fromPage = pfc.getPageName2Node(newCaseEdge.getFromViewId());
-            Page toPage = pfc.getPageName2Node(newCaseEdge.getToViewId());
+            Page fromPage = pfc.getPageName2Page(newCaseEdge.getFromViewId());
+            Page toPage = pfc.getPageName2Page(newCaseEdge.getToViewId());
             if( fromPage == null ){
-                fromPage = pfc.createPageFlowNode(newCaseEdge.getFromViewId());
+                fromPage = pfc.createPage(newCaseEdge.getFromViewId());
                 view.createNode(fromPage, null, null);
             }
             if( toPage == null ){
-                toPage = pfc.createPageFlowNode(newCaseEdge.getToViewId());
+                toPage = pfc.createPage(newCaseEdge.getToViewId());
                 view.createNode(toPage, null, null);
             }
             pfc.createEdge(newCaseEdge);
@@ -301,11 +301,11 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
                 
                 String toPage = oldCaseEdge.getToViewId();
                 if( toPage != null ) {
-                    Page pageNode = pfc.getPageName2Node(toPage);
+                    Page pageNode = pfc.getPageName2Page(toPage);
                     if( pageNode != null && !pfc.isPageInFacesConfig(toPage)){
                         if( !pageNode.isDataNode() || pfc.isFacesConfigCurrentScope()){
                             view.removeNodeWithEdges(pageNode);
-                            pfc.removePageName2Node(pageNode,true);
+                            pfc.removePageName2Page(pageNode,true);
                             view.validateGraph();
                         }
                     }
@@ -323,11 +323,11 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
             String fromPage = pfc.removeNavRule2String(myOldRule);
             
             if( fromPage != null ){
-                Page pageNode = pfc.getPageName2Node(fromPage);
+                Page pageNode = pfc.getPageName2Page(fromPage);
                 if( pageNode != null && !pfc.isPageInFacesConfig(fromPage)){
                     if( !pageNode.isDataNode() || pfc.isFacesConfigCurrentScope()){
                         view.removeNodeWithEdges(pageNode);
-                        pfc.removePageName2Node(pageNode, true);
+                        pfc.removePageName2Page(pageNode, true);
                         view.validateGraph();
                     }
                 }
