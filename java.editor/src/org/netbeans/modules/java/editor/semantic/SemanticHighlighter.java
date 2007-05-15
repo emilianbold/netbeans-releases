@@ -107,9 +107,21 @@ import org.openide.text.NbDocument;
  */
 public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo> {
     
+    public static List<TreePathHandle> computeUnusedImports(CompilationInfo info) {
+        SemanticHighlighter sh = new SemanticHighlighter(info.getFileObject());
+        final List<TreePathHandle> result = new ArrayList<TreePathHandle>();
+        
+        sh.process(info, sh.getDocument(), new ErrorDescriptionSetter() {
+            public void setErrors(Document doc, List<ErrorDescription> errors, List<TreePathHandle> allUnusedImports) {
+                result.addAll(allUnusedImports);
+            }
+        });
+        
+        return result;
+    }
+    
     private FileObject file;
     
-    /** Creates a new instance of SemanticHighlighter */
     SemanticHighlighter(FileObject file) {
         this.file = file;
     }
@@ -146,27 +158,6 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
         
         Highlighter.getDefault().setHighlights(file, "semantic", highlights);
         OccurrencesMarkProvider.get(doc).setSematic(highlights);
-    }
-    
-    private void removeImport(Document doc, int start, int end) {
-        try {
-            int len = doc.getLength();
-            
-            while (start > 0 && "\t ".indexOf(doc.getText(start - 1, 1).charAt(0)) != (-1))
-                start--;
-            
-            boolean wasNewLine = start == 0 || "\n".equals(doc.getText(start - 1, 1));
-            
-            while (end < len && "\t ".indexOf(doc.getText(end, 1).charAt(0)) != (-1))
-                end++;
-            
-            if (wasNewLine && "\n".equals(doc.getText(end, 1)))
-                end++;
-            
-            doc.remove(start, end - start);
-        } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
-        }
     }
     
     private static class FixAllImportsFixList implements LazyFixList {
@@ -211,6 +202,10 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
     }
     
     Set<Highlight> process(CompilationInfo info, final Document doc) {
+        return process(info, doc, ERROR_DESCRIPTION_SETTER);
+    }
+    
+    Set<Highlight> process(CompilationInfo info, final Document doc, ErrorDescriptionSetter setter) {
         DetectorVisitor v = new DetectorVisitor(info, doc);
         
         long start = System.currentTimeMillis();
@@ -296,7 +291,7 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
         if (isCancelled())
             return Collections.emptySet();
         
-        ERROR_DESCRIPTION_SETTER.setErrors(doc, errors);
+        setter.setErrors(doc, errors, allUnusedImports);
         
         TimesCollector.getDefault().reportTime(((DataObject) doc.getProperty(Document.StreamDescriptionProperty)).getPrimaryFile(), "semantic", "Semantic", (System.currentTimeMillis() - start));
         
@@ -1084,13 +1079,13 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
     
     public static interface ErrorDescriptionSetter {
         
-        public void setErrors(Document doc, List<ErrorDescription> errors);
+        public void setErrors(Document doc, List<ErrorDescription> errors, List<TreePathHandle> allUnusedImports);
         
     }
     
     static ErrorDescriptionSetter ERROR_DESCRIPTION_SETTER = new ErrorDescriptionSetter() {
         
-        public void setErrors(Document doc, List<ErrorDescription> errors) {
+        public void setErrors(Document doc, List<ErrorDescription> errors, List<TreePathHandle> allUnusedImports) {
             HintsController.setErrors(doc, "semantic-highlighter", errors);
         }
         

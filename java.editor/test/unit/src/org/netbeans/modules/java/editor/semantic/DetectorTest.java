@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.java.editor.semantic;
@@ -38,6 +38,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.editor.highlights.HighlightComparator;
 import org.netbeans.modules.editor.highlights.spi.Highlight;
 import org.netbeans.modules.java.editor.semantic.TestBase.Performer;
@@ -367,7 +368,7 @@ public class DetectorTest extends TestBase {
         
         try {
             SemanticHighlighter.ERROR_DESCRIPTION_SETTER = new SemanticHighlighter.ErrorDescriptionSetter() {
-                public void setErrors(Document doc, List<ErrorDescription> errs) {
+                public void setErrors(Document doc, List<ErrorDescription> errs, List<TreePathHandle> allUnusedImports) {
                     errors.addAll(errs);
                 }
             };

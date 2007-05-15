@@ -19,12 +19,15 @@
 package org.netbeans.modules.java.editor.imports;
 
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ImportTree;
+import com.sun.source.util.TreePath;
 import java.awt.Dialog;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.prefs.Preferences;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -32,14 +35,17 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.editor.semantic.SemanticHighlighter;
 import org.netbeans.modules.editor.java.Utilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -47,6 +53,8 @@ import org.openide.util.NbBundle;
  */
 public class JavaFixAllImports {
     
+    private static final String PREFS_KEY = JavaFixAllImports.class.getName();
+    private static final String KEY_REMOVE_UNUSED_IMPORTS = "removeUnusedImports";
     private static final JavaFixAllImports INSTANCE = new JavaFixAllImports();
     
     public static JavaFixAllImports getDefault() {
@@ -77,6 +85,7 @@ public class JavaFixAllImports {
                     String[] defaults = new String[size];
                     Map<String, TypeElement> fqn2TE = new HashMap<String, TypeElement>();
                     Map<String, String> displayName2FQN = new HashMap<String, String>();
+                    Preferences prefs = NbPreferences.forModule(JavaFixAllImports.class).node(PREFS_KEY);
 
                     int index = 0;
 
@@ -133,7 +142,7 @@ public class JavaFixAllImports {
 
                     FixDuplicateImportStmts panel = new FixDuplicateImportStmts();
 
-                    panel.initPanel(names, variants, icons, defaults, true);
+                    panel.initPanel(names, variants, icons, defaults, prefs.getBoolean(KEY_REMOVE_UNUSED_IMPORTS, true));
 
                     DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(JavaFixAllImports.class, "FixDupImportStmts_Title")); //NOI18N
                     Dialog d = DialogDisplayer.getDefault().createDialog(dd);
@@ -144,6 +153,10 @@ public class JavaFixAllImports {
                     d.dispose();
 
                     if (dd.getValue() == DialogDescriptor.OK_OPTION) {
+                        boolean removeUnusedImports = panel.getRemoveUnusedImports();
+                        
+                        prefs.putBoolean(KEY_REMOVE_UNUSED_IMPORTS, removeUnusedImports);
+                        
                         //do imports:
                         List<String> toImport = new ArrayList<String>();
 
@@ -155,14 +168,26 @@ public class JavaFixAllImports {
                                 toImport.add(el.getQualifiedName().toString());
                             }
                         }
-
-                        try {
+                        
+                        CompilationUnitTree cut = wc.getCompilationUnit();
+                        
+                        if (removeUnusedImports) {
+                            //compute imports to remove:
+                            List<TreePathHandle> unusedImports = SemanticHighlighter.computeUnusedImports(wc);
+                            
                             // make the changes to the source
-                            CompilationUnitTree cut = SourceUtils.addImports(wc.getCompilationUnit(), toImport, wc.getTreeMaker());
-                            wc.rewrite(wc.getCompilationUnit(), cut);
-                        } catch (IOException ex) {
-                            ErrorManager.getDefault().notify(ex);
+                            for (TreePathHandle handle : unusedImports) {
+                                TreePath path = handle.resolve(wc);
+                                
+                                assert path != null;
+                                
+                                cut = wc.getTreeMaker().removeCompUnitImport(cut, (ImportTree) path.getLeaf());
+                            }
                         }
+                        
+                        cut = SourceUtils.addImports(cut, toImport, wc.getTreeMaker());
+                        
+                        wc.rewrite(wc.getCompilationUnit(), cut);
                     }
                 } catch (IOException ex) {
                     //TODO: ErrorManager
