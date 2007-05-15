@@ -65,7 +65,7 @@ public class PageFlowController {
     private Collection<FileObject> webFiles;
     private DataObject configDataObj;
     
-    private final HashMap<NavigationCase,NavigationCaseEdge> case2Node = new HashMap<NavigationCase,NavigationCaseEdge>();
+    private final HashMap<NavigationCase,NavigationCaseEdge> navCase2NavCaseEdge = new HashMap<NavigationCase,NavigationCaseEdge>();
     private HashMap<NavigationRule,String> navRule2String = new HashMap<NavigationRule,String>();
     private final HashMap<String,Page> pageName2Page = new HashMap<String,Page>();  //Should this be synchronized.
     
@@ -306,7 +306,7 @@ public class PageFlowController {
         view.saveLocations();
         view.clearGraph();
         clearPageName2Page();
-        case2Node.clear();
+        navCase2NavCaseEdge.clear();
         navRule2String.clear();
         
         FacesConfig facesConfig = configModel.getRootComponent();
@@ -340,7 +340,7 @@ public class PageFlowController {
             List<NavigationCase> navCases = rule.getNavigationCases();
             for( NavigationCase navCase : navCases ){
                 NavigationCaseEdge node = new NavigationCaseEdge(this, navCase);
-                case2Node.put(navCase, node);
+                navCase2NavCaseEdge.put(navCase, node);
                 
                 createEdge(node);
             }
@@ -685,17 +685,17 @@ public class PageFlowController {
     //    }
     
     // case2Node Wrappers
-    public final void putCase2Node(NavigationCase navCase,NavigationCaseEdge navCaseEdge ){
-        case2Node.put(navCase, navCaseEdge);
+    public final void putNavCase2NavCaseEdge(NavigationCase navCase,NavigationCaseEdge navCaseEdge ){
+        navCase2NavCaseEdge.put(navCase, navCaseEdge);
     }
     
-    public final NavigationCaseEdge getCase2Node(NavigationCase navCase){
-        return case2Node.get(navCase);
+    public final NavigationCaseEdge getNavCase2NavCaseEdge(NavigationCase navCase){
+        return navCase2NavCaseEdge.get(navCase);
     }
     
     
-    public final NavigationCaseEdge removeCase2Node(NavigationCase navCase ){
-        return case2Node.remove(navCase);
+    public final NavigationCaseEdge removeNavCase2NavCaseEdge(NavigationCase navCase ){
+        return navCase2NavCaseEdge.remove(navCase);
     }
     
     //NavRule2String wrappers
