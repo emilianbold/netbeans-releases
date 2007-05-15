@@ -134,7 +134,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
         }
     }
     private final void replaceFromOutcomeEventHandler( NavigationCase navCase, String oldName, String newName ){
-        NavigationCaseEdge edge = pfc.getCase2Node(navCase);
+        NavigationCaseEdge edge = pfc.getNavCase2NavCaseEdge(navCase);
         view.renameEdgeWidget(edge, newName, oldName);
         view.validateGraph();
     }
@@ -191,9 +191,9 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
             LOGGER.finest("CASE 3: NavCase is not null");
             NavigationCaseEdge newCaseEdge = null;
             NavigationCaseEdge oldCaseEdge = null;
-            oldCaseEdge = pfc.removeCase2Node(navCase);
+            oldCaseEdge = pfc.removeNavCase2NavCaseEdge(navCase);
             newCaseEdge = new NavigationCaseEdge(view.getPageFlowController(), navCase);
-            pfc.putCase2Node(navCase, newCaseEdge);
+            pfc.putNavCase2NavCaseEdge(navCase, newCaseEdge);
             navigationCaseEdgeEventHandler( newCaseEdge, oldCaseEdge );
             //            if ( !pfc.isPageInFacesConfig(oldName) ){
             //                LOGGER.finest("CASE 3b: OldPage no longer exists in faces config.");
@@ -210,9 +210,9 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
                 NavigationCaseEdge newCaseEdge = null;
                 NavigationCaseEdge oldCaseEdge = null;
                 //                oldCaseEdge = pfc.getCase2Node(thisNavCase);
-                oldCaseEdge = pfc.removeCase2Node(thisNavCase);
+                oldCaseEdge = pfc.removeNavCase2NavCaseEdge(thisNavCase);
                 newCaseEdge = new NavigationCaseEdge(view.getPageFlowController(), thisNavCase);
-                pfc.putCase2Node(navCase, newCaseEdge);
+                pfc.putNavCase2NavCaseEdge(navCase, newCaseEdge);
                 navigationCaseEdgeEventHandler( newCaseEdge, oldCaseEdge);
             }
             //            if ( !pfc.isPageInFacesConfig(oldName) ){
@@ -252,11 +252,11 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
         NavigationCaseEdge oldCaseEdge = null;
         if( myNewCase != null ){
             newCaseEdge = new NavigationCaseEdge(view.getPageFlowController(), myNewCase);
-            pfc.putCase2Node(myNewCase, newCaseEdge);
+            pfc.putNavCase2NavCaseEdge(myNewCase, newCaseEdge);
             //            pfc.createEdge(newCaseEdge);
         }
         if ( myOldCase != null ){
-            oldCaseEdge = pfc.removeCase2Node(myOldCase);
+            oldCaseEdge = pfc.removeNavCase2NavCaseEdge(myOldCase);
             //            if( oldCaseEdge != null ) {
             //                view.removeEdge(oldCaseEdge);
             //
