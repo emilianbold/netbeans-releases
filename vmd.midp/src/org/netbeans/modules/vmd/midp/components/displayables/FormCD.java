@@ -142,7 +142,7 @@ public final class FormCD extends ComponentDescriptor {
             DesignDocument document = getComponent().getDocument();
             Result result = super.accept(transferable);
             DesignComponent component = result.getComponents().iterator().next();
-            ComponentProducer ip = DocumentSupport.getComponentProducer(ImageCD.TYPEID);
+            ComponentProducer ip = DocumentSupport.getComponentProducer(getComponent().getDocument(), ImageCD.TYPEID);
             DesignComponent image = ip.createComponent(document).getComponents().iterator().next();
             component.writeProperty(ImageItemCD.PROP_IMAGE, PropertyValue.createComponentReference(image));
             image.writeProperty(ImageCD.PROP_RESOURCE_PATH, MidpTypes.createStringValue(getFilePath(transferable)));

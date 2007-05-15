@@ -48,7 +48,7 @@ public class InspectorPositionControllerSupport {
                         return false;
                     
                     for (DesignComponent childComponent : parentComponent.getComponents()) {
-                        if (childComponent.getComponentID() == folder.getComponentID())
+                        if (folder.getComponentID().equals(childComponent.getComponentID()))
                             return true;
                     }
                 }

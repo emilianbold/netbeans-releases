@@ -105,8 +105,9 @@ public abstract class FileAcceptPresenter extends AbstractAcceptPresenter {
         String propertyName = propertyNamesMap.get(fe);
         if (propertyName == null)
             return null;
-        final ComponentProducer producer = DocumentSupport.getComponentProducer(typeID);
-        final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
+        DesignDocument document = getComponent().getDocument();
+        final ComponentProducer producer = DocumentSupport.getComponentProducer(document, typeID);
+        //final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
         if (document == null)
             return null;
         DesignComponent newComponent  = producer.createComponent(document).getComponents().iterator().next();

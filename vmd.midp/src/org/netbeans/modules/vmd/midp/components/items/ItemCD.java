@@ -45,7 +45,6 @@ import org.netbeans.modules.vmd.midp.components.displayables.FormCD;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.components.general.RootCode;
 import org.netbeans.modules.vmd.midp.components.listeners.ItemCommandListenerCD;
-import org.netbeans.modules.vmd.midp.components.listeners.CommandListenerCD;
 import org.netbeans.modules.vmd.midp.components.sources.ItemCommandEventSourceCD;
 import org.netbeans.modules.vmd.midp.inspector.controllers.ComponentsCategoryPC;
 import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;

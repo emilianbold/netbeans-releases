@@ -54,14 +54,7 @@ public final class DisplayablesCategoryCD extends ComponentDescriptor {
     }
 
     private InspectorOrderingController[] creatOrderingControllers() {
-        
-       return new InspectorOrderingController[]{ new OrderingControllerByTypeID(10, AlertCD.TYPEID,
-                                                                                 CanvasCD.TYPEID,
-                                                                                 FormCD.TYPEID,
-                                                                                 ListCD.TYPEID,
-                                                                                 TextBoxCD.TYPEID
-                                                                                 )
-                                            };
+       return new InspectorOrderingController[]{ new OrderingControllerByTypeID(10,DisplayableCD.TYPEID)};
     }
     
     protected List<? extends Presenter> createPresenters() {

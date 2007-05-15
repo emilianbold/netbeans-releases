@@ -103,7 +103,7 @@ public final class MobileDeviceCD extends ComponentDescriptor {
             };
         }
         
-        public boolean isTypeIDSupported(TypeID typeID) {
+        public boolean isTypeIDSupported(DesignDocument document, TypeID typeID) {
             if (MobileDeviceStartEventSourceCD.TYPEID.equals(typeID) || MobileDeviceResumeEventSourceCD.TYPEID.equals(typeID))
                 return true;
             
