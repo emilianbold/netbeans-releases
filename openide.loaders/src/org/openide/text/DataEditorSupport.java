@@ -115,10 +115,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
     * @return the message or null if nothing should be displayed
     */
     protected String messageOpened () {
-        return NbBundle.getMessage (DataObject.class, "CTL_ObjectOpened", // NOI18N
-            obj.getPrimaryFile().getNameExt(),
-            FileUtil.getFileDisplayName(obj.getPrimaryFile())
-        );
+        return null;
     }
 
     /** Constructs message that should be displayed when the data object
