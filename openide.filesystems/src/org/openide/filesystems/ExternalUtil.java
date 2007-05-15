@@ -16,17 +16,21 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.filesystems;
 
+import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-
+import org.openide.util.NbCollections;
 
 /** Contains utility methods to deal with repository and error manager,
 * so we do not need to directly contact
@@ -35,7 +39,7 @@ import org.openide.util.LookupListener;
 */
 final class ExternalUtil extends Object {
     /** value for the repository & error manager */
-    private static Repository repository;
+    static Repository repository;
 
     /** Static method to find the Repository to use.
      * @return Repository instance
@@ -131,15 +135,42 @@ final class ExternalUtil extends Object {
     private static final class MainFS extends MultiFileSystem implements LookupListener {
         private static final Lookup.Result<FileSystem> ALL = Lookup.getDefault().lookupResult(FileSystem.class);
         private static final FileSystem MEMORY = FileUtil.createMemoryFileSystem();
+        private static final XMLFileSystem layers = new XMLFileSystem();
         
         public MainFS() {
             ALL.addLookupListener(this);
+            List<URL> layerUrls = new ArrayList<URL>();
+            ClassLoader l = Thread.currentThread().getContextClassLoader();
+            try {
+                for (URL manifest : NbCollections.iterable(l.getResources("META-INF/MANIFEST.MF"))) { // NOI18N
+                    InputStream is = manifest.openStream();
+                    try {
+                        Manifest mani = new Manifest(is);
+                        String layerLoc = mani.getMainAttributes().getValue("OpenIDE-Module-Layer"); // NOI18N
+                        if (layerLoc != null) {
+                            URL layer = l.getResource(layerLoc);
+                            if (layer != null) {
+                                layerUrls.add(layer);
+                            } else {
+                                LOG.warning("No such layer: " + layerLoc);
+                            }
+                        }
+                    } finally {
+                        is.close();
+                    }
+                }
+                layers.setXmlUrls(layerUrls.toArray(new URL[layerUrls.size()]));
+                LOG.log(Level.FINE, "Loading classpath layers: {0}", layerUrls);
+            } catch (Exception x) {
+                LOG.log(Level.WARNING, "Setting layer URLs: " + layerUrls, x);
+            }
             resultChanged(null); // run after add listener - see PN1 in #26338
         }
         
         private static FileSystem[] computeDelegates() {
             List<FileSystem> arr = new ArrayList<FileSystem>();
             arr.add(MEMORY);
+            arr.add(layers);
             arr.addAll(ALL.allInstances());
             return arr.toArray(new FileSystem[0]);
         }
