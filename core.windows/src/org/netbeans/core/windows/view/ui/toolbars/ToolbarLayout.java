@@ -226,6 +226,9 @@ public class ToolbarLayout implements LayoutManager2, java.io.Serializable {
                 (bounds.x + bounds.width > maxPosition)) {  // ... but with width it is over visible area ...
                 bounds.width = maxPosition - bounds.x;      // ... so width is cropped to max possible.
                 comp.setBounds(bounds);
+            } else if ((maxPosition == 0) || (maxPosition == 1)) {
+                bounds.width = maxPosition;
+                comp.setBounds(bounds);
             } else {
                 if (constr.getPosition() > maxPosition + HGAP) {
                     // mark toolbar as candidate for move to next row down
