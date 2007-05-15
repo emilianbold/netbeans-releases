@@ -27,9 +27,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.prefs.Preferences;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.modules.java.editor.semantic.ScanningCancellableTask;
+import org.netbeans.modules.java.hints.options.HintsSettings;
+import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.modules.java.hints.spi.TreeRule;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -89,10 +92,20 @@ public class SuggestionsTask extends ScanningCancellableTask<CompilationInfo> {
                         if (isCancelled())
                             return ;
                         
-                        List<ErrorDescription> errors = rule.run(info, tp);
+                        boolean enabled = true;
                         
-                        if (errors != null) {
-                            result.addAll(errors);
+                        if (rule instanceof AbstractHint) {
+                            Preferences p = HintsSettings.getPreferences((AbstractHint) rule);
+                            
+                            enabled = p.getBoolean(AbstractHint.ENABLED_KEY, AbstractHint.ENABLED_DEFAULT);
+                        }
+                        
+                        if (enabled) {
+                            List<ErrorDescription> errors = rule.run(info, tp);
+                            
+                            if (errors != null) {
+                                result.addAll(errors);
+                            }
                         }
                     }
                 }

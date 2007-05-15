@@ -26,9 +26,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.prefs.Preferences;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.modules.java.editor.semantic.ScanningCancellableTask;
+import org.netbeans.modules.java.hints.options.HintsSettings;
+import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.modules.java.hints.spi.TreeRule;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.HintsController;
@@ -78,10 +81,21 @@ public class HintsTask extends ScanningCancellableTask<CompilationInfo> {
                     if (isCanceled()) {
                         return ;
                     }
-                    List<ErrorDescription> errors = tr.run(info, path);
                     
-                    if (errors != null) {
-                        d.addAll(errors);
+                    boolean enabled = true;
+                    
+                    if (tr instanceof AbstractHint) {
+                        Preferences p = HintsSettings.getPreferences((AbstractHint) tr);
+                        
+                        enabled = p.getBoolean(AbstractHint.ENABLED_KEY, AbstractHint.ENABLED_DEFAULT);
+                    }
+                    
+                    if (enabled) {
+                        List<ErrorDescription> errors = tr.run(info, path);
+                        
+                        if (errors != null) {
+                            d.addAll(errors);
+                        }
                     }
                 }
             }

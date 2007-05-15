@@ -61,9 +61,6 @@ import static org.netbeans.modules.java.hints.spi.AbstractHint.*;
  */
 class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListener, ChangeListener, ActionListener {
 
-    private static final String HINTS = "hints"; // NOI18N
-    private static final String DEFAULT_PROFILE = "default"; // NOI18N
-
     private static final JPanel EMPTY_PANEL = new JPanel();
     
     private Map<AbstractHint,ModifiedPreferences> changes;
@@ -120,7 +117,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     synchronized void applyChanges() {
         for (AbstractHint hint : changes.keySet()) {
             ModifiedPreferences mn = changes.get(hint);
-            mn.store(getPreferences(hint));            
+            mn.store(HintsSettings.getPreferences(hint));            
         }
     }
     
@@ -132,13 +129,13 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     
     synchronized Preferences getCurrentPrefernces( AbstractHint hint ) {
         Preferences node = changes.get(hint);
-        return node == null ? getPreferences( hint ) : node;
+        return node == null ? HintsSettings.getPreferences( hint ) : node;
     }
     
     synchronized Preferences getPreferences4Modification( AbstractHint hint ) {        
         Preferences node = changes.get(hint);        
         if ( node == null ) {
-            node = new ModifiedPreferences( getPreferences( hint ) );
+            node = new ModifiedPreferences( HintsSettings.getPreferences( hint ) );
             changes.put( hint, (ModifiedPreferences)node);
         }        
         return node;                
@@ -283,22 +280,6 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     // Private methods ---------------------------------------------------------
     
        
-    private synchronized Preferences getPreferences( AbstractHint hint ) {
-                        
-        Preferences node = hint.getPreferences();
-        
-        if ( node == null ) {
-            Preferences preferences = NbPreferences.forModule(hint.getClass());
-            node = preferences.node(HINTS).node(getCurrentProfileId()).node(hint.getId());
-        }
-                
-        return node;
-    }
-    
-    private static String getCurrentProfileId() {
-        return DEFAULT_PROFILE;
-    }
-    
     private boolean toggle( TreePath treePath ) {
 
         if( treePath == null )
