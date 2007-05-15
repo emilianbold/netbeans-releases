@@ -37,6 +37,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.languages.Context;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.Feature;
+import org.netbeans.modules.languages.Feature.Type;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.languages.LanguagesManager;
@@ -356,6 +357,13 @@ public class CompletionProviderImpl implements CompletionProvider {
         private void addTags (Feature feature, String start, Context context, Result resultSet) {
             int j = 1;
             while (true) {
+                if (context instanceof SyntaxContext &&
+                    feature.getType ("text" + j) == Type.STRING &&
+                    ((SyntaxContext) context).getASTPath ().getLeaf () instanceof ASTToken
+                ) {
+                    j++;
+                    continue;
+                }
                 Object o = feature.getValue ("text" + j, context);
                 if (o == null) break;
                 if (o instanceof String)

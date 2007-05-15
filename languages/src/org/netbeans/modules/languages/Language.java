@@ -452,7 +452,7 @@ public class Language extends org.netbeans.api.languages.Language {
         if (m == null) return Collections.<Feature>emptyList ();
         Object last = null;
         int i = path.size () - 1;
-        for (; i > 0; i--) {
+        for (; i >= 0; i--) {
             ASTItem item = path.get (i);
             String name = item instanceof ASTToken ?
                 ((ASTToken) item).getType () :
