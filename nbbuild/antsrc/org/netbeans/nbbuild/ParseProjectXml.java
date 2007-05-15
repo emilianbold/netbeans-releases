@@ -587,14 +587,14 @@ public final class ParseProjectXml extends Task {
         }
 
         private boolean matches(Attributes attr) {
+            String givenCodeName = attr.getValue("OpenIDE-Module");
+            int slash = givenCodeName.indexOf('/');
+            int givenRelease = -1;
+            if (slash != -1) {
+                assert codenamebase.equals(givenCodeName.substring(0, slash));
+                givenRelease = Integer.parseInt(givenCodeName.substring(slash + 1));
+            }
             if (release != null) {
-                String givenCodeName = attr.getValue("OpenIDE-Module");
-                int slash = givenCodeName.indexOf('/');
-                int givenRelease = -1;
-                if (slash != -1) {
-                    assert codenamebase.equals(givenCodeName.substring(0, slash));
-                    givenRelease = Integer.parseInt(givenCodeName.substring(slash + 1));
-                }
                 int dash = release.indexOf('-');
                 if (dash == -1) {
                     if (Integer.parseInt(release) != givenRelease) {
@@ -606,6 +606,10 @@ public final class ParseProjectXml extends Task {
                     if (givenRelease < lower || givenRelease > upper) {
                         return false;
                     }
+                }
+            } else {
+                if (givenRelease != -1) {
+                    return false;
                 }
             }
             if (spec != null) {
