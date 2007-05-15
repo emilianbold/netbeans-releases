@@ -163,6 +163,7 @@ public class IDEValidateBPELProject extends Task {
 
     private void processBpelFilesFolderInBuildDir(File folder) {
       File files[] = folder.listFiles(new Util.BpelFileFilter());
+      checkBPELFiles(files);
 
       for(int i =0; i < files.length; i++) {
         File file = files[i];
@@ -173,6 +174,19 @@ public class IDEValidateBPELProject extends Task {
         else {
           processBpelFilesFolderInBuildDir(file);
         }
+      }
+    }
+
+    // vlv
+    private void checkBPELFiles(File [] files) throws BuildException {
+      for (File file : files) {
+        if ( !file.isFile()) {
+          continue;
+        }
+        if ( !file.getName().endsWith(".bpel")) {
+          continue;
+        }
+//System.out.println("!!!!!!!!!!!!!!!!!!!!!: " + file.getName());
       }
     }
 
