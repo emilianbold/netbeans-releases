@@ -37,12 +37,13 @@ public interface DesignBeanExt {
     
     /**
      * <p>Returns the Type Parameters of the DesignBean as an array</p>
-     * <p>If the DesignBean is of type Map&lt;String, Iteger&gt; <br/>
+     * <p>If the DesignBean is of type Map&lt;String, Integer&gt; <br/>
      *    then getTypeParameters returs array of java.lang.reflect.Type <br/>
-     *    (Ex: Class&lt;String&gt; and &lt;Iteger&gt; )
+     *    (Ex: Class&lt;String&gt; and &lt;Integer&gt; )
      * </P>
      *
      * @return  array of java.lang.reflect.Type
+     * @throws java.lang.ClassNotFoundException 
      */
-    Type[] getTypeParameters();
+    Type[] getTypeParameters() throws ClassNotFoundException;
 }
