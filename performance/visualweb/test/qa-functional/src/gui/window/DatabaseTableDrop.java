@@ -26,7 +26,7 @@ import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.PaletteOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.DeleteAction;
 
 import org.netbeans.jemmy.QueueTool;
@@ -77,7 +77,7 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
     
     protected void initialize() {
         log(":: initialize");
-        new Action("Window|Navigator",null).perform(); //NOI18N
+        new ActionNoBlock("Window|Navigator",null).perform(); //NOI18N
         
         rto = RuntimeTabOperator.invoke();
         Node travelBaseNode = new Node(rto.getRootNode(),"Databases"+"|"+DBRootName); // NOI18N
