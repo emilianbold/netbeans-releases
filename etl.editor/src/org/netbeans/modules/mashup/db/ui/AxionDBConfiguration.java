@@ -166,24 +166,25 @@ public class AxionDBConfiguration {
         String nbUsrDir = System.getProperty("netbeans.user");
         
         // Check for mashup driver under soa cluster.
-        String nbHomeDir = System.getProperty("netbeans.home") + File.separator +
-                ".." + File.separator + "soa1" + File.separator + "modules"
-                + File.separator + "ext" + File.separator + "etl"
+        String nbHomeDir = System.getProperty("netbeans.home") + File.separator + 
+                ".." + File.separator + "soa1" + File.separator + "modules" 
+                + File.separator + "ext" + File.separator + "etl" 
                 + File.separator + "mashupdb.zip";
         File driver = new File(nbHomeDir);
         if(!driver.exists()) {
             
             // check for mashup driver under extra cluster.
-            nbHomeDir = System.getProperty("netbeans.home") + File.separator
-                    + ".." + File.separator + "extra" + File.separator + "modules"
-                    + File.separator + "ext" + File.separator + "etl"
+            nbHomeDir = System.getProperty("netbeans.home") + File.separator 
+                    + ".." + File.separator + "extra" + File.separator + "modules" 
+                    + File.separator + "ext" + File.separator + "etl" 
                     + File.separator + "mashupdb.zip";
-            driver = new File(nbHomeDir);
-            if(!driver.exists()) {
-                nbHomeDir = "";
-            }
-        }        
-        String DEFAULT_DB_LOCATION = System.getProperty("netbeans.user")
+        }
+        driver = new File(nbHomeDir);
+        if(!driver.exists()) {
+            nbHomeDir = "";
+        }
+        
+        String DEFAULT_DB_LOCATION = System.getProperty("netbeans.user") 
                 + File.separator + "MashupDatabases";
         nbUsrDir = nbUsrDir + File.separator + "config" + File.separator +
                 "Databases" + File.separator + "MashupDB";
