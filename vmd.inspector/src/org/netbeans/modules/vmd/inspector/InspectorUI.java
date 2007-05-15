@@ -16,25 +16,20 @@ package org.netbeans.modules.vmd.inspector;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.GridBagLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-
-import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
-import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.openide.util.actions.Presenter;
-import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
@@ -45,46 +40,44 @@ import org.openide.windows.TopComponent;
  *
  * @author Karol Harezlak
  */
-final class InspectorUI  extends TopComponent implements ExplorerManager.Provider,
-        PropertyChangeListener,
-        InspectorAccessController.InspectorACListener,
-        ActiveDocumentSupport.Listener,
-        Presenter.Popup {
+
+//TODO DesignDocument change to WeakRef! > memory leaks!
+
+final class InspectorUI  extends TopComponent implements ExplorerManager.Provider, PropertyChangeListener, Presenter.Popup {
     
-    private ExplorerManager explorerManager;
-    private DesignDocument document;
-    private volatile boolean lockSelectionSetting;
-    private BeanTreeView inspectorBeanTreeView;
-    private InspectorWrapperTree folderWrapperTree;
-    private InspectorPanel panel;
+    private transient ExplorerManager explorerManager;
+    private transient volatile boolean lockSelectionSetting;
+    private transient BeanTreeView inspectorBeanTreeView;
+    private transient WeakReference<DesignDocument> document;
     
-    InspectorUI(InspectorPanel panel) {
+    InspectorUI(DesignDocument document) {
         lockSelectionSetting = false;
         explorerManager = new ExplorerManager();
         explorerManager.addPropertyChangeListener(this);
-        setLayout(new BorderLayout());
-        folderWrapperTree = new InspectorWrapperTree();
-        explorerManager = new ExplorerManager();
-        lockSelectionSetting = false;
-        explorerManager.addPropertyChangeListener(this);
-        ActiveDocumentSupport.getDefault().addActiveDocumentListener(this);
         initComponents();
-        activeDocumentChanged(null, ActiveDocumentSupport.getDefault().getActiveDocument());
-        this.panel = panel;
+        lockSelectionSetting = false;
         associateLookup(ExplorerUtils.createLookup(explorerManager, getActionMap()));
+        this.document = new WeakReference<DesignDocument>(document);
     }
     
-    
-    void initComponents(){
+    private void initComponents(){
         inspectorBeanTreeView = new InspectorBeanTreeView(explorerManager);
-        setLayout(new BorderLayout());
         inspectorBeanTreeView.setRootVisible(false);
+        setLayout(new BorderLayout());
+        add(inspectorBeanTreeView, BorderLayout.CENTER);
         setBackground(Color.WHITE);
-        setLayout(new GridBagLayout());
     }
     
     public ExplorerManager getExplorerManager() {
         return explorerManager;
+    }
+    
+    void setSelectedNodes(Node[] nodes) {
+        try {
+            getExplorerManager().setSelectedNodes(nodes);
+        } catch(PropertyVetoException e) {
+            e.printStackTrace();
+        }
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
@@ -93,11 +86,10 @@ final class InspectorUI  extends TopComponent implements ExplorerManager.Provide
         
         if (explorerManager.getSelectedNodes().length < 1)
             return;
-        panel.selectionChanged(explorerManager.getSelectedNodes());
-        final DesignDocument localDocument = this.document;
-        if (localDocument == null || localDocument.getTransactionManager().isAccess())
+        InspectorPanel.getInstance().selectionChanged(explorerManager.getSelectedNodes());
+        if (document.get() == null || document.get().getTransactionManager().isAccess())
             return;
-        localDocument.getTransactionManager().writeAccess(new Runnable() {
+        document.get().getTransactionManager().writeAccess(new Runnable() {
             public void run() {
                 if (lockSelectionSetting)
                     return;
@@ -108,12 +100,12 @@ final class InspectorUI  extends TopComponent implements ExplorerManager.Provide
                     for (Node node : selectedNodes) {
                         if (node instanceof InspectorFolderNode) {
                             Long componentID = ((InspectorFolderNode) node).getComponentID();
-                            DesignComponent component = componentID == null ? null : localDocument.getComponentByUID(componentID);
+                            DesignComponent component = componentID == null ? null : document.get().getComponentByUID(componentID);
                             if (component != null)
                                 selectedComponents.add(component);
                         }
                     }
-                    localDocument.setSelectedComponents(InspectorAccessController.INSPECTOR_ID, selectedComponents);
+                    document.get().setSelectedComponents(InspectorAccessController.INSPECTOR_ID, selectedComponents);
                 } finally {
                     lockSelectionSetting = false;
                 }
@@ -121,137 +113,31 @@ final class InspectorUI  extends TopComponent implements ExplorerManager.Provide
         });
     }
     
-    public void notifyUIContentChanged(final Collection<DesignComponent> createdComponents,final Collection<DesignComponent> affectedComponents) {
-        if (document == null)
-            return;
-        
-        folderWrapperTree.buildTree(createdComponents, affectedComponents);
-        expandNodes(folderWrapperTree.getFolderToUpdate());
-    }
-    
-    public void activeDocumentChanged(DesignDocument deactivatedDocument, DesignDocument activatedDocument) {
-        if (this.document != null) {
-            InspectorAccessController accessController = this.document.getListenerManager().getAccessController(InspectorAccessController.class);
-            accessController.removeListener(this);
-        }
-        document = activatedDocument;
-        
-        if (document != null && document.getListenerManager().getAccessController(InspectorAccessController.class) != null) {
-            InspectorAccessController accessController = this.document.getListenerManager().getAccessController(InspectorAccessController.class);
-            accessController.addListener(this);
-            
-            document.getTransactionManager().readAccess(new Runnable() {
-                public void run() {
-                    if (document.getRootComponent() == null)
-                        return;
-                    folderWrapperTree.setCurrentDesignDocument(document);
-                    initView();
-                    notifyUISelectionChanged();
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            setLayout(new BorderLayout());
-                            add(inspectorBeanTreeView, BorderLayout.CENTER);
-                            revalidate();
-                            repaint();
-                        }
-                    });
-                }
-            });
-            if (folderWrapperTree.getRootWrapperFolder() != null)
-                expandNodes(folderWrapperTree.getRootWrapperFolder().getChildren());
-        } else {
-            document = null;
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    remove(inspectorBeanTreeView);
-                    setLayout(new GridBagLayout());
-                    repaint();
-                }
-            });
-        }
-    }
-    
-    public void activeComponentsChanged(Collection<DesignComponent> activeComponents) {
-    }
-    
-    public void notifyUISelectionChanged() {
-        if (document == null || document.getListenerManager() == null)
-            return;
-        final InspectorAccessController accessController = document.getListenerManager().getAccessController(InspectorAccessController.class);
-        
-        if (accessController != null) {
-            if (folderWrapperTree.getRootWrapperFolder().getNode() != null) {
-                final Collection<Node> selectedNodes = getSelectedNodes(folderWrapperTree.getRootWrapperFolder());
-                if (selectedNodes != null) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            try {
-                                if (! selectedNodes.isEmpty())
-                                    explorerManager.setSelectedNodes(selectedNodes.toArray(new Node[selectedNodes.size()]));
-                            } catch(PropertyVetoException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    });
-                }
-            }
-        }
-        if (folderWrapperTree.getRootWrapperFolder().getNode() == null)
-            explorerManager.setRootContext(Node.EMPTY);
-    }
-    
-    private void expandNodes(final Collection<InspectorFolderWrapper> foldersToUpdate) {
+    void expandNodes(final Collection<InspectorFolderWrapper> foldersToUpdate) {
         if (foldersToUpdate == null)
             return;
+        for (InspectorFolderWrapper wrapper : foldersToUpdate) {
+            InspectorFolderNode node = wrapper.getNode();
+            if (node != null)
+                inspectorBeanTreeView.expandNode(node);
+        }
+    }
+    
+    synchronized void setRootNode(Node rootNode) {
+        getExplorerManager().setRootContext(rootNode);
+        refreshUI();
+    }
+    
+    private void refreshUI() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                for (InspectorFolderWrapper wrapper : foldersToUpdate) {
-                    InspectorFolderNode node = wrapper.getNode();
-                    if (node != null)
-                        inspectorBeanTreeView.expandNode(node);
-                }
+                revalidate();
+                repaint();
             }
         });
     }
     
-    private Collection<Node> getSelectedNodes(final InspectorFolderWrapper parentFolder) {
-        if (parentFolder == null || parentFolder.getChildren() == null)
-            return null;
-        
-        final Collection<Node> selectedNodes = new HashSet<Node>();
-        
-        if (document.getSelectedComponents().isEmpty())
-            return selectedNodes;
-        for (InspectorFolderWrapper folder : parentFolder.getChildren()) {
-            if (folder.getChildren() != null)
-                selectedNodes.addAll(getSelectedNodes(folder));
-            //TODO Selection based on the ComponentID and Display Name could be not enough it better to create smarter algorithm
-            for (DesignComponent component : document.getSelectedComponents()) {
-                Long  componentID = folder.getFolder().getComponentID();
-                if (componentID == null || componentID  != component.getComponentID())
-                    continue;
-                if (folder.getFolder().getDisplayName().equals(InfoPresenter.getDisplayName(component)) )
-                    selectedNodes.add(folder.getNode());
-            }
-        }
-        
-        return selectedNodes;
-    }
-    
-    private void initView() {
-        if (document == null || document.getListenerManager() == null)
-            return;
-        InspectorAccessController accessController = document.getListenerManager().getAccessController(InspectorAccessController.class);
-        if (accessController != null) {
-            if (folderWrapperTree.getRootWrapperFolder().getNode() != null) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        if (folderWrapperTree.getRootWrapperFolder().getNode() != null)
-                            explorerManager.setRootContext(folderWrapperTree.getRootWrapperFolder().getNode());
-                    }
-                });
-            }
-        }
+    public void activeComponentsChanged(Collection<DesignComponent> activeComponents) {
     }
     
     public Action[] getActions() {
@@ -261,4 +147,18 @@ final class InspectorUI  extends TopComponent implements ExplorerManager.Provide
     public JMenuItem getPopupPresenter() {
         return new JMenu("menu"); //NOI18N
     }
+    
+    public int getPersistenceType() {
+        return TopComponent.PERSISTENCE_NEVER;
+    }
+    
+    protected void componentActivated() {
+        super.componentActivated();
+        ExplorerUtils.activateActions(explorerManager, true);
+    }
+    protected void componentDeactivated() {
+        super.componentDeactivated();
+        ExplorerUtils.activateActions(explorerManager, false);
+    }
+    
 }

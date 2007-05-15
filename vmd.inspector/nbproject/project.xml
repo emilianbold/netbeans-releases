@@ -33,14 +33,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.api.visual</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>2.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.mobility.licensing</code-name-base>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
@@ -108,7 +100,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.0</specification-version>
+                        <specification-version>7.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -140,7 +132,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.6</specification-version>
+                        <specification-version>6.16</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>

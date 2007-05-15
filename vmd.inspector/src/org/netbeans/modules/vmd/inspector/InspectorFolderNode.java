@@ -48,6 +48,10 @@ final class InspectorFolderNode extends AbstractNode {
         super(new InspectorChildren(), lookup);
     }
     
+    InspectorFolderNode() {
+        super(new InspectorChildren());
+    }
+    
     Long getComponentID() {
         return componentID;
     }
@@ -69,7 +73,6 @@ final class InspectorFolderNode extends AbstractNode {
     public Action[] getActions(boolean context) {
         if (folder.getActions() == null)
             return EMPTY_ACTION_ARRAY;
-        
         return folder.getActions();
     }
     
@@ -109,11 +112,7 @@ final class InspectorFolderNode extends AbstractNode {
                 }
             });
         }
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                ((InspectorChildren) getChildren()).setKeys(folderWrapper.getChildrenNodes());
-            }
-        });
+        ((InspectorChildren) getChildren()).setKeys(folderWrapper.getChildrenNodes());
     }
     
     private void warmUp(Node node) {

@@ -58,7 +58,6 @@ final class InspectorBeanTreeView extends BeanTreeView {
                         return;
                 
                 Node[] rootNodes = explorerManager.getRootContext().getChildren().getNodes();
-                
                 for (Node node : rootNodes) {
                     deepDive(node);
                 }

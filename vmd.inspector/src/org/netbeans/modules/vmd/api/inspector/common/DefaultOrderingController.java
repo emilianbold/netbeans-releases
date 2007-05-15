@@ -29,6 +29,7 @@ import org.netbeans.modules.vmd.api.inspector.InspectorFolder;
 
 import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.TypeID;
 
 /**
@@ -54,10 +55,9 @@ public class DefaultOrderingController implements InspectorOrderingController {
         this.types = Arrays.asList(types);
     }
     
-    public List<InspectorFolder> getOrdered(DesignComponent component, Collection<InspectorFolder> folder) {
-        List<InspectorFolder> sortedList = new ArrayList<InspectorFolder>(folder);     
+    public List<InspectorFolder> getOrdered(DesignComponent component,Collection<InspectorFolder> folders) {
+        List<InspectorFolder> sortedList = new ArrayList<InspectorFolder>(folders);
         Collections.sort(sortedList, DEFAULT_STRING_COMPARATOR);
-   
         return sortedList;
     }
     
@@ -65,10 +65,9 @@ public class DefaultOrderingController implements InspectorOrderingController {
         return order;
     }
 
-    public boolean isTypeIDSupported(TypeID typeID) {
+    public boolean isTypeIDSupported(DesignDocument document, TypeID typeID) {
         if (types.contains(typeID))
             return true;
-        
         return false;
     }
     

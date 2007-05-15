@@ -37,7 +37,6 @@ public final class FolderPositionControllerFactory {
             public boolean isInside(InspectorFolderPath path, InspectorFolder folder, DesignComponent component) {
                 if (path.getPath().isEmpty())
                     return false;
-                
                 int parentIndex = path.getPath().size() - 1;
                 
                 if (path.getPath().get(parentIndex).getComponentID() != null && folder.getComponentID() != null ) {
@@ -49,7 +48,7 @@ public final class FolderPositionControllerFactory {
                         return false;
                     
                     for (DesignComponent childComponent : parentComponent.getComponents()) {
-                        if (childComponent.getComponentID() == folder.getComponentID())
+                        if (folder.getComponentID().equals(childComponent.getComponentID()))
                             return true;
                     }
                 }
@@ -77,13 +76,13 @@ public final class FolderPositionControllerFactory {
                         for (PropertyDescriptor pd : parentComponent.getComponentDescriptor().getPropertyDescriptors()){
                             if (pd.getType().getKind() == TypeID.Kind.COMPONENT) {
                                 DesignComponent referedComponent = parentComponent.readProperty(pd.getName()).getComponent();
-                                if (referedComponent != null && referedComponent.getComponentID() == folder.getComponentID())
+                                if (referedComponent != null && folder.getComponentID().equals(referedComponent.getComponentID()))
                                     return true;
                             }
                         }
                     } else if (parentComponent.getComponentDescriptor().getPropertyDescriptor(propertyName) != null) {
                         DesignComponent referedComponent  = parentComponent.readProperty(propertyName).getComponent();
-                        if (referedComponent  != null && referedComponent.getComponentID() == folder.getComponentID())
+                        if (referedComponent  != null &&  folder.getComponentID().equals(referedComponent.getComponentID()))
                             return true;
                     }
                 }

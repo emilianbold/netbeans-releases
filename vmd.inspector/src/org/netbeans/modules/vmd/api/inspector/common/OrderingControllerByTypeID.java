@@ -31,6 +31,7 @@ import org.netbeans.modules.vmd.api.inspector.InspectorFolder;
 
 import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.TypeID;
 
 /**
@@ -83,9 +84,11 @@ public class OrderingControllerByTypeID implements InspectorOrderingController {
         return order;
     }
 
-    public boolean isTypeIDSupported(TypeID typeID) {
-        if (types.contains(typeID))
+    public boolean isTypeIDSupported(DesignDocument document, TypeID typeID) {
+        for (TypeID supportedTypeID : types) {
+         if (document.getDescriptorRegistry().isInHierarchy(supportedTypeID, typeID))
             return true;
+        }
         
         return false;
     }

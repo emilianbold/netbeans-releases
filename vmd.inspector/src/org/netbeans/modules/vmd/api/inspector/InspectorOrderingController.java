@@ -22,6 +22,7 @@ package org.netbeans.modules.vmd.api.inspector;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.TypeID;
 
 
@@ -31,7 +32,7 @@ import org.netbeans.modules.vmd.api.model.TypeID;
  */
 public interface InspectorOrderingController {
 
-    boolean isTypeIDSupported(TypeID typeID);
+    boolean isTypeIDSupported(DesignDocument document, TypeID typeID);
 
     List<InspectorFolder> getOrdered(DesignComponent component, Collection<InspectorFolder> folders);
 

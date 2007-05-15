@@ -29,7 +29,6 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
-import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 
 /**
  *
@@ -49,13 +48,12 @@ public class ArrayPropertyOrderingController implements InspectorOrderingControl
     
     public List<InspectorFolder> getOrdered(DesignComponent component,Collection<InspectorFolder> folders) {
         List<InspectorFolder> orderedList = new ArrayList<InspectorFolder>(folders.size());
-        
         List<PropertyValue> array = component.readProperty(propertyName).getArray();
         
         for (PropertyValue propertyValue : array) {
             long componentID = propertyValue.getComponent().getComponentID();
             for(InspectorFolder f : folders) {
-                if (f.getComponentID() == componentID) {
+                if (f.getComponentID().equals(componentID)) {
                     orderedList.add(array.indexOf(propertyValue), f);
                 }
             }
@@ -68,12 +66,7 @@ public class ArrayPropertyOrderingController implements InspectorOrderingControl
         return order;
     }
     
-    public boolean isTypeIDSupported(TypeID typeID) {
-        DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
-        
-        if (document == null)
-            return false;
-        
+    public boolean isTypeIDSupported(DesignDocument document, TypeID typeID) {        
         if (document.getDescriptorRegistry().isInHierarchy(supportedTypeID, typeID))
             return true;
         

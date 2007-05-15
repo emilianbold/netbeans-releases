@@ -14,37 +14,49 @@ package org.netbeans.modules.vmd.inspector;
 
 
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 
 import javax.swing.*;
+import org.netbeans.modules.vmd.api.io.IOUtils;
+import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.spi.navigator.NavigatorPanel;
-import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.ExplorerUtils;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
-
 /**
  * @author Karol Harezlak
  */
 
-public final class InspectorPanel implements NavigatorPanel, LookupListener {
+public final class InspectorPanel implements NavigatorPanel, ActiveDocumentSupport.Listener {
+    
+    private static final JLabel emptyPanel = new JLabel(NbBundle.getMessage(InspectorPanel.class, "LBL_emptyPanel"), JLabel.CENTER); //NOI18N
     
     private static InspectorPanel INSTANCE;
     private Node[] nodesToRemove;
+    private JPanel panel;
+    //TODO Memory leak !!
+    private Map<DesignDocument, InspectorUI> uiMap;
+    
     public static InspectorPanel getInstance() {
         synchronized(InspectorPanel.class) {
-            if (INSTANCE == null)
+            if (INSTANCE == null) {
                 INSTANCE = new InspectorPanel();
+                ActiveDocumentSupport.getDefault().addActiveDocumentListener(INSTANCE);
+            }
             return INSTANCE;
         }
     }
     
-    private InspectorUI ui;
+    //private InspectorUI ui;
     private Lookup lookup;
     /** Dynamic Lookup content */
     private final InstanceContent ic;
@@ -52,6 +64,16 @@ public final class InspectorPanel implements NavigatorPanel, LookupListener {
     private InspectorPanel() {
         this.ic = new InstanceContent();
         this.lookup = new AbstractLookup(ic);
+        this.panel = new JPanel(new BorderLayout());
+        this.panel.setBackground(Color.WHITE);
+        this.uiMap = new HashMap<DesignDocument, InspectorUI>();
+    }
+    
+    synchronized InspectorUI getUI(DesignDocument document) {
+        InspectorUI ui = uiMap.get(document);
+        if (ui == null)
+            uiMap.put(document , new InspectorUI(document));
+        return uiMap.get(document);
     }
     
     public String getDisplayName() {
@@ -62,14 +84,8 @@ public final class InspectorPanel implements NavigatorPanel, LookupListener {
         return NbBundle.getMessage(InspectorPanel.class, "LBL_InspectorPanelHint"); //NOI18N
     }
     
-    public JComponent getComponent() {
-        return getUI();
-    }
-    
-    private InspectorUI getUI() {
-        if (ui == null)
-            ui = new InspectorUI(this);
-        return ui;
+    public synchronized JComponent getComponent() {
+        return panel;
     }
     
     public void panelActivated(Lookup lookup) {
@@ -81,12 +97,9 @@ public final class InspectorPanel implements NavigatorPanel, LookupListener {
     public Lookup getLookup() {
         return lookup;
     }
-    
-    public void resultChanged(LookupEvent ev) {
-    }
-    
+     
     synchronized void selectionChanged(final Node[] nodes) {
-        SwingUtilities.invokeLater(new Runnable() {
+        IOUtils.runInAWTNoBlocking(new Runnable() {
             public void run() {
                 if(nodesToRemove != null) {
                     for (Node node : nodesToRemove) {
@@ -99,5 +112,33 @@ public final class InspectorPanel implements NavigatorPanel, LookupListener {
                 nodesToRemove = nodes;
             }
         });
+    }
+    
+    public synchronized void activeDocumentChanged(DesignDocument deactivatedDocument,final DesignDocument activatedDocument) {
+        if (activatedDocument == null) {
+            IOUtils.runInAWTNoBlocking(new Runnable() {
+                public void run() {
+                    panel.removeAll();
+                    panel.add(emptyPanel, BorderLayout.CENTER);
+                    panel.revalidate();
+                    panel.repaint();
+                }
+            });
+            return;
+        }
+        
+        IOUtils.runInAWTNoBlocking(new Runnable() {
+            public void run() {
+                panel.removeAll();
+                InspectorUI ui = uiMap.get(activatedDocument);
+                if (ui != null)
+                    panel.add(ui, BorderLayout.CENTER);
+                panel.revalidate();
+                panel.repaint();
+            }
+        });
+    }
+    
+    public void activeComponentsChanged(Collection<DesignComponent> activeComponents) {
     }
 }

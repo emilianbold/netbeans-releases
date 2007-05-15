@@ -20,6 +20,7 @@
 package org.netbeans.modules.vmd.inspector;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,9 +35,8 @@ import java.util.TreeMap;
 import org.netbeans.modules.vmd.api.inspector.InspectorFolder;
 import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
 import org.netbeans.modules.vmd.api.inspector.common.DefaultOrderingController;
-import org.netbeans.modules.vmd.api.io.ActiveViewSupport;
-import org.netbeans.modules.vmd.api.io.DataEditorView;
-import org.netbeans.modules.vmd.api.model.Debug;
+import org.netbeans.modules.vmd.api.io.DataObjectContext;
+import org.netbeans.modules.vmd.api.io.providers.IOSupport;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.TypeID;
@@ -60,11 +60,11 @@ final class InspectorFolderWrapper {
     private List<InspectorFolderWrapper> tempChildren;
     private InspectorOrderingController defaultOrderingController;
     private List<AbstractNode> childrenNode;
+    private WeakReference<DesignDocument> document;
     
-    InspectorFolderWrapper(InspectorFolder folder) {
+    InspectorFolderWrapper(DesignDocument document, InspectorFolder folder) {
         this.folder = folder;
-        Lookup lookup = ActiveViewSupport.getDefault().getActiveView().getContext().getDataObject().getLookup();
-        node = new InspectorFolderNode(lookup);
+        this.document = new WeakReference<DesignDocument>(document);
     }
     
     List<InspectorFolderWrapper> getChildren() {
@@ -79,6 +79,7 @@ final class InspectorFolderWrapper {
             childrenNode = new ArrayList<AbstractNode>();
         else
             childrenNode.clear();
+
         for (InspectorFolderWrapper child : children) {
             childrenNode.add(child.getNode());
         }
@@ -86,7 +87,7 @@ final class InspectorFolderWrapper {
         return childrenNode;
     }
     
-    public boolean removeChild(InspectorFolder folder) {
+    boolean removeChild(InspectorFolder folder) {
         if (children == null)
             return false;
         if (toRemove == null)
@@ -126,11 +127,19 @@ final class InspectorFolderWrapper {
         return node;
     }
     
-    DesignComponent getComponent(){
+    DesignComponent getComponent() {
         return component;
     }
     
     void resolveFolder(DesignDocument document) {
+        if (node == null) {
+            DataObjectContext dc = IOSupport.getDataObjectForDocument(document);
+            if (dc != null) {
+                Lookup lookup = dc.getDataObject().getLookup();
+                node = new InspectorFolderNode(lookup);
+            } else  //TODO No Lookup for root node cause its creates inside of constructor
+                node = new InspectorFolderNode();
+        }
         if (folder.getComponentID() != null)
             component = document.getComponentByUID(folder.getComponentID());
         getNode().resolveNode(this, document );
@@ -141,23 +150,7 @@ final class InspectorFolderWrapper {
         return childrenFolders;
     }
     
-    public String toString() {
-        
-        StringBuffer buffer = new StringBuffer()
-                .append("[ ")  // NOI18N
-                .append(folder.getDisplayName())
-                .append(" ] TYPE : ")  // NOI18N
-                .append( folder.getTypeID())
-                .append(", ID : ") //NOI18N
-                .append(folder.getComponentID())
-                .append(", Children : ")  // NOI18N
-                .append(children == null ? 0 : children.size())
-                .append(super.toString());
-        
-        return buffer.toString();
-    }
-    
-    private void executeOrder(){
+    private void executeOrder() {
         if (children == null || children.isEmpty())
             return;
         
@@ -165,26 +158,29 @@ final class InspectorFolderWrapper {
             ocMap = new HashMap<InspectorOrderingController, List<InspectorFolder>>();
         else
             ocMap.clear();
+        
         if (sortedLists == null)
             sortedLists = new TreeMap<Integer, List<InspectorFolder>>();
         else
             sortedLists.clear();
+        
         if (tempChildren == null)
             tempChildren = new ArrayList<InspectorFolderWrapper>();
         else
             tempChildren.clear();
+        
         if (defaultOrderingController == null)
             defaultOrderingController = new DefaultOrderingController(Integer.MAX_VALUE, new TypeID(TypeID.Kind.COMPONENT, "Default")); //NOI18N
         
         // sorting of descriptors based on TypeID
         for (InspectorFolder fd : childrenFolders) {
             boolean isWrite = false;
-            if (this.getFolder().getOrderingControllers() != null){
+            if (this.getFolder().getOrderingControllers() != null) {
                 for(InspectorOrderingController orderingController :  this.getFolder().getOrderingControllers()) {
-                    if (orderingController.isTypeIDSupported(fd.getTypeID()) && ocMap.get(orderingController) == null) {
+                    if (orderingController.isTypeIDSupported(document.get(), fd.getTypeID()) && ocMap.get(orderingController) == null) {
                         ocMap.put(orderingController, new ArrayList<InspectorFolder>(Arrays.asList(fd)));
                         isWrite = true;
-                    } else if (orderingController.isTypeIDSupported(fd.getTypeID()) && ocMap.get(orderingController) != null) {
+                    } else if (orderingController.isTypeIDSupported(document.get(), fd.getTypeID()) && ocMap.get(orderingController) != null) {
                         ocMap.get(orderingController).add(fd);
                         isWrite = true;
                     }
@@ -200,10 +196,8 @@ final class InspectorFolderWrapper {
                     ocMap.get(defaultOrderingController).add(fd);
             }
         }
-        
         for(InspectorOrderingController oc : ocMap.keySet()) {
             List<InspectorFolder> sortedList = oc.getOrdered(component, Collections.unmodifiableList(ocMap.get(oc)));
-            
             
             if (sortedList == null)
                 throw new IllegalArgumentException("List returned from InspectorOrderingController is null, controller:" + oc); //NOI18N
@@ -218,17 +212,18 @@ final class InspectorFolderWrapper {
         }
         
         childrenFolders.clear();
+        
         for (List<InspectorFolder> fdList : sortedLists.values()) {
             childrenFolders.addAll(fdList);
         }
         
         for (InspectorFolder fd : childrenFolders) {
-            for (InspectorFolderWrapper wrapper : children ){
-                if (wrapper.getFolder() == fd && fd.getComponentID() == wrapper.getFolder().getComponentID())
+            for (InspectorFolderWrapper wrapper : children ) {
+                if (wrapper.getFolder() == fd && fd.getComponentID().equals(wrapper.getFolder().getComponentID()))
                     tempChildren.add(wrapper);
             }
         }
-        
+    
         children = new ArrayList<InspectorFolderWrapper>(tempChildren);
     }
     
@@ -257,6 +252,20 @@ final class InspectorFolderWrapper {
             wrapper.terminate();
         }
         children = null;
+    }
+
+    public String toString() {
+        StringBuffer buffer = new StringBuffer()
+                .append("[ ")  // NOI18N
+                .append(folder.getDisplayName())
+                .append(" ] TYPE : ")  // NOI18N
+                .append( folder.getTypeID())
+                .append(", ID : ") //NOI18N
+                .append(folder.getComponentID())
+                .append(", Children : ")  // NOI18N
+                .append(children == null ? 0 : children.size())
+                .append(" " + super.toString());
+        return buffer.toString();
     }
     
 }

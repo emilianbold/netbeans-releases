@@ -38,7 +38,6 @@ import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsSupport;
 import org.netbeans.modules.vmd.api.model.presenters.actions.AddAction;
 
-
 /**
  *
  * @author Karol Harezlak
@@ -47,7 +46,6 @@ import org.netbeans.modules.vmd.api.model.presenters.actions.AddAction;
 public abstract class InspectorFolderPresenter extends DynamicPresenter {
     
     public static InspectorFolderPresenter create(final boolean canRename,final String... propertyNames) {
-        
         return new InspectorFolderPresenter() {
             private ComponentFolder folder;
             
@@ -55,7 +53,6 @@ public abstract class InspectorFolderPresenter extends DynamicPresenter {
                 if (folder == null) {
                     folder = new ComponentFolder(canRename);
                 }
-                
                 return folder;
             }
             
@@ -64,7 +61,6 @@ public abstract class InspectorFolderPresenter extends DynamicPresenter {
                 for (String propertyName : propertyNames) {
                     filters.add(new DesignEventFilter().addDescentFilter(super.getComponent(), propertyName));
                 }
-                
                 return  new DesignEventFilter(filters.toArray(new DesignEventFilter[filters.size()]));
             }
             
@@ -77,7 +73,6 @@ public abstract class InspectorFolderPresenter extends DynamicPresenter {
     }
     
     public static InspectorFolderPresenter create(final boolean canRename) {
-        
         return new InspectorFolderPresenter() {
             private ComponentFolder folder;
             
@@ -85,7 +80,6 @@ public abstract class InspectorFolderPresenter extends DynamicPresenter {
                 if (folder == null) {
                     folder = new ComponentFolder(canRename);
                 }
-                
                 return folder;
             }
             
@@ -105,7 +99,6 @@ public abstract class InspectorFolderPresenter extends DynamicPresenter {
                 if (folder == null) {
                     folder = new CategoryFolder(displayName, typeID, icon, filtersTypeID, orderingControllers);
                 }
-                
                 return folder;
             }
             
@@ -153,11 +146,9 @@ public abstract class InspectorFolderPresenter extends DynamicPresenter {
                     InfoPresenter presenter =  getComponent().getPresenter(InfoPresenter.class);
                     if (presenter == null)
                         throw new IllegalStateException("No InfoPresenter for this component"); //NOI18N
-                    
                     icon = presenter.getIcon(InfoPresenter.IconType.COLOR_16x16);
                 }
             });
-            
             return icon;
         }
         
@@ -170,7 +161,6 @@ public abstract class InspectorFolderPresenter extends DynamicPresenter {
                         displayName = InfoPresenter.getDisplayName(getComponent());
                 }
             });
-            
             return displayName;
         }
         
@@ -183,7 +173,6 @@ public abstract class InspectorFolderPresenter extends DynamicPresenter {
                         displayName = InfoPresenter.getHtmlDisplayName(getComponent());
                 }
             });
-            
             return displayName;
         }
         
@@ -194,7 +183,6 @@ public abstract class InspectorFolderPresenter extends DynamicPresenter {
                         return true;
                 }
             }
-            
             return false;
         }
         
@@ -234,10 +222,8 @@ public abstract class InspectorFolderPresenter extends DynamicPresenter {
                     }
                 }
             });
-            
             if (ocs == null)
                 return null;
-            
             return ocs.toArray(new InspectorOrderingController[ocs.size()]);
             
         }
@@ -256,10 +242,11 @@ public abstract class InspectorFolderPresenter extends DynamicPresenter {
         private TypeID[] filtersTypeID;
         
         public CategoryFolder(String displayName,
-                TypeID typeID,
-                Image icon,
-                TypeID[] filtersTypeID,
-                InspectorOrderingController[] orderingControllers ) {
+                              TypeID typeID,
+                              Image icon,
+                              TypeID[] filtersTypeID,
+                              InspectorOrderingController[] orderingControllers ) {
+
             if (typeID == null)
                 throw new IllegalArgumentException("TypeID cant be null InspectorFolderPresenter: "+ getComponent()); //NOI18N
             
@@ -294,7 +281,6 @@ public abstract class InspectorFolderPresenter extends DynamicPresenter {
             if (addAction == null)
                 addAction = new AddAction[]{AddAction.getInstance(filtersTypeID)};
             addAction[0].setComponent(getComponent());
-            
             return addAction;
         }
         
@@ -307,9 +293,8 @@ public abstract class InspectorFolderPresenter extends DynamicPresenter {
         }
         
         public boolean isInside(InspectorFolderPath path, InspectorFolder folder, DesignComponent component) {
-            if (getComponent().getType() == path.getLastElement().getTypeID() &&  path.getLastElement().getComponentID() == getComponentID())
+            if (getComponent().getType() == path.getLastElement().getTypeID() &&  path.getLastElement().getComponentID().equals(getComponentID()))
                 return true;
-            
             return false;
         }
         
