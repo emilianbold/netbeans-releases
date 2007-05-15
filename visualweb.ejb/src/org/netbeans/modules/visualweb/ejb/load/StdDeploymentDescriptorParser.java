@@ -70,7 +70,7 @@ public class StdDeploymentDescriptorParser extends DefaultHandler
             // Log error
             String logMsg = "Error occured when trying to parse the standard EJB deployment descriptor. Cannot read file " + xmlFileName;
             // TODO - EjbJarXmlParser is not a valid class name
-            ErrorManager.getDefault().getInstance( "com.sun.rave.ejb.load.EjbJarXmlParser").log( ErrorManager.WARNING, logMsg );
+            ErrorManager.getDefault().getInstance( "org.netbeans.modules.visualweb.ejb.load.EjbJarXmlParser").log( ErrorManager.WARNING, logMsg );
             e.printStackTrace();
 
             // Throw up as SYSTEM_ERROR. Should never happen
@@ -80,7 +80,7 @@ public class StdDeploymentDescriptorParser extends DefaultHandler
         {
             // Log error
             String logMsg = "Error occured when trying to parse the standard EJB deployment descriptor file " + xmlFileName;
-            ErrorManager.getDefault().getInstance( "com.sun.rave.ejb.load.EjbJarXmlParser").log( ErrorManager.WARNING, logMsg );
+            ErrorManager.getDefault().getInstance( "org.netbeans.modules.visualweb.ejb.load.EjbJarXmlParser").log( ErrorManager.WARNING, logMsg );
             e.printStackTrace();
 
             String errMsg = NbBundle.getMessage( StdDeploymentDescriptorParser.class, "CANNOT_PARSE_STD_DD" );
@@ -90,7 +90,7 @@ public class StdDeploymentDescriptorParser extends DefaultHandler
         {
             // Log error
             String logMsg = "Error occured when trying to parse the standard EJB deployment descriptor file " + xmlFileName;
-            ErrorManager.getDefault().getInstance( "com.sun.rave.ejb.load.EjbJarXmlParser").log( ErrorManager.WARNING, logMsg );
+            ErrorManager.getDefault().getInstance( "org.netbeans.modules.visualweb.ejb.load.EjbJarXmlParser").log( ErrorManager.WARNING, logMsg );
             e.printStackTrace();
 
             String errMsg = NbBundle.getMessage( StdDeploymentDescriptorParser.class, "CANNOT_PARSE_STD_DD" );

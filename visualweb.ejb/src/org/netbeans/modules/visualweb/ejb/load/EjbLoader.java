@@ -36,7 +36,7 @@ public class EjbLoader {
     // Two jar files needed for compiling the generated data provider and wrapper classes
     public static final String ejb20Jar = InstalledFileLocator.getDefault().locate("modules/ext/ejb20.jar", null, false ).getAbsolutePath(); // NOI18N
     public static final String dataproviderJar = InstalledFileLocator.getDefault().locate("modules/ext/dataprovider.jar", null, false ).getAbsolutePath(); // NOI18N
-    public static final String designTimeJar = InstalledFileLocator.getDefault().locate( "modules/com-sun-rave-designtime.jar", null, false).getAbsolutePath(); // NOI18N
+    public static final String designTimeJar = InstalledFileLocator.getDefault().locate( "modules/ext/designtime.jar", null, false).getAbsolutePath(); // NOI18N
     
     private EjbGroup ejbGroup;
     private URLClassLoader classloader;
