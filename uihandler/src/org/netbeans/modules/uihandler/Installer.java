@@ -164,6 +164,10 @@ public class Installer extends ModuleInstall {
         }
     }
     
+
+    static int timesSubmitted() {
+        return prefs.getInt("submitted", 0);
+    }
     
     public static int getLogsSize() {
         return prefs.getInt("count", 0); // NOI18N
@@ -316,7 +320,7 @@ public class Installer extends ModuleInstall {
         boolean v = true;
         try {
             if (!explicit) {
-                boolean dontAsk = NbPreferences.forModule(Installer.class).getBoolean("ask.never.again." + msg, false); // NOI18N
+                boolean dontAsk = prefs.getBoolean("ask.never.again." + msg, false); // NOI18N
                 if (dontAsk) {
                     LOG.log(Level.INFO, "UI Gesture Collector's ask.never.again.{0} is true, exiting", msg); // NOI18N
                     return true;
@@ -791,6 +795,9 @@ public class Installer extends ModuleInstall {
         
         private void uploadAndPost(List<LogRecord> recs, URL u) {
             URL nextURL = null;
+            
+            prefs.putInt("submitted", 1 + prefs.getInt("submitted", 0)); // NOI18N
+            
             try {
                 nextURL = uploadLogs(u, findIdentity(), Collections.<String,String>emptyMap(), recs);
             } catch (IOException ex) {
