@@ -111,6 +111,12 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
             return false;
         }
 
+        // no support for non-web project
+        if (!JsfProjectUtils.isWebProject(project)) {
+            wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(SimpleTargetChooserPanel.class, "MSG_NotInWebProject")); // NOI18N
+            return false;
+        }
+
         // Check to make sure that the target name is not illegal
         String targetName = gui.getTargetName();
         if (!JsfProjectUtils.isValidJavaFileName(targetName)) {

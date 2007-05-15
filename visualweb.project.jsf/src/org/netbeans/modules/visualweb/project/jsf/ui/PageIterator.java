@@ -111,6 +111,11 @@ public class PageIterator implements TemplateWizard.Iterator {
             jc.putClientProperty ("WizardPanel_contentData", steps); // NOI18N
         }
 
+        // no support for non-web project
+        if (!JsfProjectUtils.isWebProject(project)) {
+            return;
+        }
+
         if (fileType.equals(FILETYPE_WEBFORM)) {
             // Always start with the document root or under
             FileObject docRoot = JsfProjectUtils.getDocumentRoot(project);
