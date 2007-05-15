@@ -18,7 +18,6 @@
  * Rights Reserved.
  */
 
-
 package org.netbeans.installer.infra.utils.comment;
 
 import java.io.BufferedReader;

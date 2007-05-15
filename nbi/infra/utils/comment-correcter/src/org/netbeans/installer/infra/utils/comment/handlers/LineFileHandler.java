@@ -18,7 +18,6 @@
  * Rights Reserved.
  */
 
-
 package org.netbeans.installer.infra.utils.comment.handlers;
 
 import org.netbeans.installer.infra.utils.comment.utils.Utils;
@@ -201,7 +200,7 @@ public abstract class LineFileHandler implements FileHandler {
             }
         }
         
-        // transfer the comment
+        // transfer the comment and an empty line
         builder.append(comment).append(Utils.NL);
         
         // transfer the rest of file
@@ -264,6 +263,13 @@ public abstract class LineFileHandler implements FileHandler {
         // skip the comment
         for (; i < lines.length; i++) {
             if (!commentPattern.matcher(lines[i]).matches()) {
+                break;
+            }
+        }
+        
+        // skip the empty lines after the comment
+        for (; i < lines.length; i++) {
+            if (!lines[i].trim().equals("")) {
                 break;
             }
         }

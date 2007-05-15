@@ -19,7 +19,6 @@
   Rights Reserved.
 -->
 
-
 <!-- some examples of how to customize the build. -->
 <!-- (If you delete it and reopen the project it will be recreated.) -->
 <project name="NewLine_Correcter" default="default" basedir=".">

@@ -18,7 +18,6 @@
  * Rights Reserved.
  */
 
-
 package org.netbeans.installer.infra.utils.comment.handlers;
 
 import org.netbeans.installer.infra.utils.comment.utils.Utils;
@@ -92,7 +91,8 @@ public class HtmlFileHandler extends BlockFileHandler {
      * The regular expression pattern which matches the initial comment.
      */
     private static final Pattern COMMENT_PATTERN = Pattern.compile(
-            "\\A\\s*(?:<\\?xml.*?\\?>)?\\s*<!DOCTYPE[^>]*>\\s*(<!--.*?-->)",// NOI18N
+            "\\A\\s*(?:<\\?xml.*?\\?>)?\\s*" + // NOI18N
+            "<!DOCTYPE[^>]*>\\s*(<!--.*?-->\\s*\n)", // NOI18N
             Pattern.MULTILINE | Pattern.DOTALL);
     
     /**
@@ -111,5 +111,5 @@ public class HtmlFileHandler extends BlockFileHandler {
      * The comment closing string.
      */
     private static final String COMMENT_END =
-            "-->"; // NOI18N
+            "-->" + Utils.NL; // NOI18N
 }

@@ -19,7 +19,6 @@
   Rights Reserved.
 -->
 
-
 <project name="Comment_Correcter" default="correct" basedir=".">
     <property name="src.dir" value="${basedir}/src"/>
     <property name="cls.dir" value="${basedir}/build/classes"/>

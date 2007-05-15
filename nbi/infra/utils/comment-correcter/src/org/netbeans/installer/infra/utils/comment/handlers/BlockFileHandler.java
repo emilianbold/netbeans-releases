@@ -18,11 +18,9 @@
  * Rights Reserved.
  */
 
-
 package org.netbeans.installer.infra.utils.comment.handlers;
 
 import org.netbeans.installer.infra.utils.comment.utils.Utils;
-import org.netbeans.installer.infra.utils.comment.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.regex.Matcher;
