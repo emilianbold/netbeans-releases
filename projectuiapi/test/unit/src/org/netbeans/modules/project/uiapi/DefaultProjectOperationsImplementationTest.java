@@ -81,6 +81,11 @@ public class DefaultProjectOperationsImplementationTest extends NbTestCase {
         assertNotNull(projectDirectory);
     }
     
+    @Override
+    protected boolean runInEQ() {
+        return true;
+    }
+    
     //<editor-fold defaultstate="collapsed" desc="Delete Operation">
     public void testDeleteProjectDeleteAll() throws Exception {
         TestUserInputHandler handler = new TestUserInputHandler(TestUserInputHandler.USER_OK_ALL);
