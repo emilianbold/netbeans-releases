@@ -275,6 +275,19 @@ public class UtilitiesTopologicalSortTest extends NbTestCase {
         
         List<Number> result = Utilities.topologicalSort(c, edges);
     }    
+    
+    public void testTopologicalSortIssue101820() throws Exception {
+        Object a = "a";
+        Object b = "b";
+        
+        Map<Object, Collection<Object>> deps = new HashMap<Object, Collection<Object>>();
+        
+        deps.put(a, Arrays.asList(b));
+        deps.put(b, Arrays.asList());
+        
+        assertEquals(Arrays.asList(a), Utilities.topologicalSort(Arrays.asList(a), deps));
+     }    
+
     public void testErrorReporting () throws Exception {
         Collection c = Arrays.asList(new String[] {"a", "b", "c", "d", "e", "f"});
         Map m = new HashMap ();

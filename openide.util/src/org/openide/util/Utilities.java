@@ -2250,6 +2250,9 @@ widthcheck:  {
         }
 
         Collections.reverse(r);
+        if (r.size() != c.size()) {
+            r.retainAll(c);
+        }
 
         return r;
     }
