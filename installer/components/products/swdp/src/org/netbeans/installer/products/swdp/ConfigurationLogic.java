@@ -17,6 +17,7 @@
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
  */
+
 package org.netbeans.installer.products.swdp;
 
 import java.io.File;
@@ -92,7 +93,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             GlassFishUtils.stopDefaultDomain(glassfishLocation);
         } catch (IOException e) {
             throw new InstallationException(
-                    getString("CL.install.error.stop.as"),  // NOI18N
+                    getString("CL.install.error.stop.as"), // NOI18N
                     e);
         }
 
@@ -109,7 +110,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     swdpInstaller.getAbsolutePath());
         } catch (IOException e) {
             throw new InstallationException(
-                    getString("CL.install.error.swdp.installer"),  // NOI18N
+                    getString("CL.install.error.swdp.installer"), // NOI18N
                     e);
         }
         
@@ -134,7 +135,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             GlassFishUtils.stopDefaultDomain(glassfishLocation);
         } catch (IOException e) {
             throw new UninstallationException(
-                    getString("CL.uninstall.error.stop.as"),  // NOI18N
+                    getString("CL.uninstall.error.stop.as"), // NOI18N
                     e);
         }
 
@@ -152,7 +153,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     ADDON_ID);
         } catch (IOException e) {
             throw new UninstallationException(
-                    getString("CL.uninstall.error.swdp.installer"),  // NOI18N
+                    getString("CL.uninstall.error.swdp.installer"), // NOI18N
                     e);
         }
     }

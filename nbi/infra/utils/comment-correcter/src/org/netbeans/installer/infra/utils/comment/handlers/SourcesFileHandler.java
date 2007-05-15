@@ -17,6 +17,8 @@
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
  */
+
+
 package org.netbeans.installer.infra.utils.comment.handlers;
 
 import java.io.File;
@@ -51,19 +53,19 @@ public class SourcesFileHandler extends BlockFileHandler {
     public boolean accept(final File file) {
         if (file == null) {
             throw new IllegalArgumentException(
-                    "The 'file' parameter cannot be null.");                // NOI18N
+                    "The 'file' parameter cannot be null."); // NOI18N
         }
         
         if (!file.isFile()) {
             return false;
         }
         
-        return file.getName().endsWith(".java") ||                          // NOI18N
-                file.getName().endsWith(".c") ||                            // NOI18N
-                file.getName().endsWith(".cpp") ||                          // NOI18N
-                file.getName().endsWith(".h") ||                            // NOI18N
-                file.getName().endsWith(".js") ||                           // NOI18N
-                file.getName().endsWith(".css");                            // NOI18N
+        return file.getName().endsWith(".java") || // NOI18N
+                file.getName().endsWith(".c") || // NOI18N
+                file.getName().endsWith(".cpp") || // NOI18N
+                file.getName().endsWith(".h") || // NOI18N
+                file.getName().endsWith(".js") || // NOI18N
+                file.getName().endsWith(".css"); // NOI18N
     }
     
     /////////////////////////////////////////////////////////////////////////////////
@@ -72,24 +74,24 @@ public class SourcesFileHandler extends BlockFileHandler {
      * The regular expression pattern which matches the initial comment.
      */
     private static final Pattern COMMENT_PATTERN = Pattern.compile(
-            "\\A\\s*(/\\*.*?\\*/)",                                         // NOI18N
+            "\\A\\s*(/\\*.*?\\*/)", // NOI18N
             Pattern.MULTILINE | Pattern.DOTALL);
     
     /**
      * The comment opening string.
      */
     private static final String COMMENT_START =
-            "/*" + Utils.NL;                                                // NOI18N
+            "/*" + Utils.NL; // NOI18N
     
     /**
      * The prefix which should be used for each line in the comment.
      */
     private static final String COMMENT_PREFIX =
-            " * ";                                                          // NOI18N
+            " * "; // NOI18N
     
     /**
      * The comment closing string.
      */
     private static final String COMMENT_END =
-            " */";                                                          // NOI18N
+            " */"; // NOI18N
 }

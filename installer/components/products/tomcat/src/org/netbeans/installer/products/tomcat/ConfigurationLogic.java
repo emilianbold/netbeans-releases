@@ -17,6 +17,7 @@
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
  */
+
 package org.netbeans.installer.products.tomcat;
 
 import java.io.File;
@@ -66,7 +67,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             SystemUtils.removeIrrelevantFiles(location);
         } catch (IOException e) {
             throw new InstallationException(
-                    getString("CL.install.error.irrelevant.files"),  // NOI18N
+                    getString("CL.install.error.irrelevant.files"), // NOI18N
                     e);
         }
         
@@ -77,7 +78,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             SystemUtils.correctFilesPermissions(location);
         } catch (IOException e) {
             throw new InstallationException(
-                    getString("CL.install.error.files.permissions"),  // NOI18N
+                    getString("CL.install.error.files.permissions"), // NOI18N
                     e);
         }
         //integrateWithIDE(progress, location); 
@@ -117,7 +118,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             }
         } catch (IOException e) {
             throw new InstallationException(
-                    getString("CL.install.error.ide.integration"),  // NOI18N
+                    getString("CL.install.error.ide.integration"), // NOI18N
                     e);
         }
     }

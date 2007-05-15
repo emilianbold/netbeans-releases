@@ -17,6 +17,8 @@
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
  */
+
+
 package org.netbeans.installer.infra.utils.comment;
 
 import java.io.BufferedReader;
@@ -85,24 +87,24 @@ public final class CommentCorrecter {
     public static void main(String[] args) throws IOException {
         if (args.length < 2) {                                              // NOMAGI
             System.out.println(
-                    "Wrong number of input parameters.");                   // NOI18N
+                    "Wrong number of input parameters."); // NOI18N
             System.out.println(
-                    "Usage:");                                              // NOI18N
+                    "Usage:"); // NOI18N
             System.out.println(
-                    "    java -jar comment-correcter.jar " +                // NOI18N
-                    "<file> <text> [length]");                              // NOI18N
+                    "    java -jar comment-correcter.jar " + // NOI18N
+                    "<file> <text> [length]"); // NOI18N
             System.out.println(
                     "        * <file> is a path to the directory/file on"); // NOI18N
             System.out.println(
-                    "          which ot perform the correction");           // NOI18N
+                    "          which ot perform the correction"); // NOI18N
             System.out.println(
-                    "        * <text> is a path to the file " +             // NOI18N
-                    "which contains the");                                  // NOI18N
+                    "        * <text> is a path to the file " + // NOI18N
+                    "which contains the"); // NOI18N
             System.out.println(
-                    "        * text of the comment");                       // NOI18N
+                    "        * text of the comment"); // NOI18N
             System.out.println(
-                    "        * [length] is the desired line length " +      // NOI18N
-                    "for the text");                                        // NOI18N
+                    "        * [length] is the desired line length " + // NOI18N
+                    "for the text"); // NOI18N
         }
         
         final File file = new File(args[0]);                                // NOMAGI
@@ -186,7 +188,7 @@ public final class CommentCorrecter {
     public void addHandler(final FileHandler handler) {
         if (handler == null) {
             throw new IllegalArgumentException(
-                    "The 'handler' parameter cannot be null.");             // NOI18N
+                    "The 'handler' parameter cannot be null."); // NOI18N
         }
         handlers.add(handler);
     }
@@ -201,7 +203,7 @@ public final class CommentCorrecter {
     public void setLineLength(final int lineLength) {
         if (lineLength <= 0) {
             throw new IllegalArgumentException(
-                    "The 'lineLength' parameter must be positive.");        // NOI18N
+                    "The 'lineLength' parameter must be positive."); // NOI18N
         }
         this.lineLength = lineLength;
     }
@@ -215,7 +217,7 @@ public final class CommentCorrecter {
     public void setText(final String text) {
         if (text == null) {
             throw new IllegalArgumentException(
-                    "The 'text' parameter cannot be null.");                // NOI18N
+                    "The 'text' parameter cannot be null."); // NOI18N
         }
         this.text = text;
     }
@@ -242,18 +244,18 @@ public final class CommentCorrecter {
         // basic validation
         if (file == null) {
             throw new IllegalArgumentException(
-                    "The 'file' parameter cannot be null.");                // NOI18N
+                    "The 'file' parameter cannot be null."); // NOI18N
         }
         if (text == null) {
             throw new IllegalStateException(
-                    "The 'text' property has not been initialized.");       // NOI18N
+                    "The 'text' property has not been initialized."); // NOI18N
         }
         
         // file validation
         if (!file.exists()) {
             throw new IOException(
-                    "The given file '" + file +                             // NOI18N
-                    "' does not exist.");                                   // NOI18N
+                    "The given file '" + file + // NOI18N
+                    "' does not exist."); // NOI18N
         }
         
         if (file.isDirectory()) {
@@ -271,28 +273,28 @@ public final class CommentCorrecter {
             if (handler != null) {
                 handler.load(file);
                 
-                final String comment = handler.getComment();
+                final String comment = handler.getCurrentComment();
                 
-                System.out.println("current initial comment:");             // NOI18N
+                System.out.println("current initial comment:"); // NOI18N
                 System.out.println();
                 System.out.println(
-                        comment != null ? comment : "<none>");              // NOI18N
+                        comment != null ? comment : "<none>"); // NOI18N
                 System.out.println();
                 
                 System.out.print(
-                        "Insert (I), Update (U), Skip? [Skip]: ");          // NOI18N
+                        "Insert (I), Update (U), Skip? [Skip]: "); // NOI18N
                 
                 final String input = new BufferedReader(
                         new InputStreamReader(System.in)).readLine();
                 
-                if (input.startsWith("I") ||                                // NOI18N
-                        input.startsWith("i")) {                            // NOI18N
+                if (input.startsWith("I") || // NOI18N
+                        input.startsWith("i")) { // NOI18N
                     handler.insertComment(text, lineLength);
                     handler.save(file);
                 }
                 
-                if (input.startsWith("U") ||                                // NOI18N
-                        input.startsWith("u")) {                            // NOI18N
+                if (input.startsWith("U") || // NOI18N
+                        input.startsWith("u")) { // NOI18N
                     handler.updateComment(text, lineLength);
                     handler.save(file);
                 }
@@ -300,7 +302,7 @@ public final class CommentCorrecter {
                 System.out.println();
             } else {
                 System.out.println(
-                        "   ...not recognized by any handler - skipping");  // NOI18N
+                        "   ...not recognized by any handler - skipping"); // NOI18N
                 System.out.println();
             }
         }
@@ -319,7 +321,7 @@ public final class CommentCorrecter {
     public FileHandler getHandler(final File file) {
         if (file == null) {
             throw new IllegalArgumentException(
-                    "The 'file' parameter cannot be null.");                // NOI18N
+                    "The 'file' parameter cannot be null."); // NOI18N
         }
         
         for (FileHandler handler: handlers) {

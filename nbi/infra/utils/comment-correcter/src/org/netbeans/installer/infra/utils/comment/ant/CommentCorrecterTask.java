@@ -17,6 +17,8 @@
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
  */
+
+
 package org.netbeans.installer.infra.utils.comment.ant;
 
 import java.io.File;
@@ -78,7 +80,7 @@ public final class CommentCorrecterTask extends Task {
     // setters //////////////////////////////////////////////////////////////////////
     /**
      * Setter for the <code>text</code> property.
-     * 
+     *
      * @param path New value for the <code>text</code> property.
      */
     public void setText(String path) {
@@ -87,7 +89,7 @@ public final class CommentCorrecterTask extends Task {
     
     /**
      * Setter for the <code>lineLength</code> property.
-     * 
+     *
      * @param string New value for the <code>text</code> property as a string - it
      *      will be converted to an integer.
      */
@@ -100,9 +102,9 @@ public final class CommentCorrecterTask extends Task {
     }
     
     /**
-     * Adds a new <code>FileSet</code> to the list. The list of file sets will be 
+     * Adds a new <code>FileSet</code> to the list. The list of file sets will be
      * used to perform the comment correction.
-     * 
+     *
      * @param fileset The file set to add to the list.
      */
     public void addFileSet(FileSet fileset) {
@@ -110,10 +112,10 @@ public final class CommentCorrecterTask extends Task {
     }
     
     /**
-     * Executes the ant task, performing initial comment correction on the set of 
+     * Executes the ant task, performing initial comment correction on the set of
      * files defined in <code>filesets</code>. Overrides the <code>execute()</code>
      * method in the <code>Task</code> class.
-     * 
+     *
      * @throws org.apache.tools.ant.BuildException if parameters validation fails or
      *      an I/O error occurs
      */
@@ -121,7 +123,7 @@ public final class CommentCorrecterTask extends Task {
     public void execute() throws BuildException {
         if (text == null) {
             throw new BuildException(
-                    "The 'text' attribute is required.");                   // NOI18N
+                    "The 'text' attribute is required."); // NOI18N
         }
         
         try {
@@ -132,7 +134,7 @@ public final class CommentCorrecterTask extends Task {
                         fileset.getDirectoryScanner(getProject());
                 
                 for (String filename: scanner.getIncludedFiles()) {
-                    final File file = 
+                    final File file =
                             new File(fileset.getDir(getProject()), filename);
                     
                     log(file.getAbsolutePath());
@@ -140,13 +142,30 @@ public final class CommentCorrecterTask extends Task {
                     final FileHandler handler =
                             CommentCorrecter.getInstance().getHandler(file);
                     if (handler != null) {
-                        log("    ...updating the initial comment");         // NOI18N
                         handler.load(file);
-                        handler.updateComment(comment, lineLength);
+                        
+                        final String current = handler.getCurrentComment();
+                        if (current == null) {
+                            log("    ...inserting " + // NOI18N
+                                    "the initial comment"); // NOI18N
+                            handler.insertComment(comment, lineLength);
+                        } else {
+                            final String correct =
+                                    handler.getCorrectComment(comment, lineLength);
+                            if (current.equals(correct)) {
+                                log("    ...skipping -- " + // NOI18N
+                                        "the comment is up to date"); // NOI18N
+                            } else {
+                                log("    ...updating " + // NOI18N
+                                        "the initial comment"); // NOI18N
+                                handler.updateComment(comment, lineLength);
+                            }
+                        }
+                        
                         handler.save(file);
                     } else {
-                        log("   ...not recognized by any " +                // NOI18N
-                                "handler - skipping");                      // NOI18N
+                        log("   ...skipping -- " + // NOI18N
+                                "not recognized by any handler"); // NOI18N
                     }
                 }
             }

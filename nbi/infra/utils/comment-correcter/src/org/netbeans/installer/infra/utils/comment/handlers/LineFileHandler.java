@@ -17,6 +17,8 @@
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
  */
+
+
 package org.netbeans.installer.infra.utils.comment.handlers;
 
 import org.netbeans.installer.infra.utils.comment.utils.Utils;
@@ -25,9 +27,9 @@ import java.io.IOException;
 import java.util.regex.Pattern;
 
 /**
- * The base class for handling file types in which line-based comments are used, 
+ * The base class for handling file types in which line-based comments are used,
  * such as java-style properties files or shell scripts.
- * 
+ *
  * @author Kirill Sorokin
  */
 public abstract class LineFileHandler implements FileHandler {
@@ -39,8 +41,8 @@ public abstract class LineFileHandler implements FileHandler {
     protected final Pattern commentPattern;
     
     /**
-     * The regular expression pattern which matches the line which should be 
-     * ignored. This is used to skip the non-whitespace lines that can preceed the 
+     * The regular expression pattern which matches the line which should be
+     * ignored. This is used to skip the non-whitespace lines that can preceed the
      * initial comment such as <code>#!/bin/sh</code> in shell scripts.
      */
     protected final Pattern ignorePattern;
@@ -59,16 +61,16 @@ public abstract class LineFileHandler implements FileHandler {
     
     // constructor //////////////////////////////////////////////////////////////////
     /**
-     * The constructor which should be called by the extending classes. It merely 
+     * The constructor which should be called by the extending classes. It merely
      * sets the class fields, performnig some basic validation.
-     * 
-     * @param commentPattern The regular expression pattern which matches the line 
+     *
+     * @param commentPattern The regular expression pattern which matches the line
      *      which is a comment.
-     * @param ignorePattern The regular expression pattern which matches the line 
+     * @param ignorePattern The regular expression pattern which matches the line
      *      which should be ignored.
-     * @param commentPrefix The prefix which should be used for each line in the 
+     * @param commentPrefix The prefix which should be used for each line in the
      *      comment.
-     * @throws java.lang.IllegalArgumentException if the parameters validation 
+     * @throws java.lang.IllegalArgumentException if the parameters validation
      *      fails.
      */
     protected LineFileHandler(
@@ -77,19 +79,19 @@ public abstract class LineFileHandler implements FileHandler {
             final String commentPrefix) {
         if (commentPattern == null) {
             throw new IllegalArgumentException(
-                    "The 'commentPattern' parameter cannot be null.");      // NOI18N
+                    "The 'commentPattern' parameter cannot be null."); // NOI18N
         }
         this.commentPattern = commentPattern;
         
         if (ignorePattern == null) {
             throw new IllegalArgumentException(
-                    "The 'ignorePattern' parameter cannot be null.");       // NOI18N
+                    "The 'ignorePattern' parameter cannot be null."); // NOI18N
         }
         this.ignorePattern = ignorePattern;
         
         if (commentPrefix == null) {
             throw new IllegalArgumentException(
-                    "The 'commentPrefix' parameter cannot be null.");       // NOI18N
+                    "The 'commentPrefix' parameter cannot be null."); // NOI18N
         }
         this.commentPrefix = commentPrefix;
     }
@@ -101,7 +103,7 @@ public abstract class LineFileHandler implements FileHandler {
     public final void load(final File file) throws IOException {
         if (file == null) {
             throw new IllegalArgumentException(
-                    "The 'file' parameter cannot be null.");                // NOI18N
+                    "The 'file' parameter cannot be null."); // NOI18N
         }
         
         contents = Utils.readFile(file);
@@ -113,11 +115,11 @@ public abstract class LineFileHandler implements FileHandler {
     public final void save(final File file) throws IOException {
         if (file == null) {
             throw new IllegalArgumentException(
-                    "The 'file' parameter cannot be null.");                // NOI18N
+                    "The 'file' parameter cannot be null."); // NOI18N
         }
         if (contents == null) {
             throw new IllegalStateException(
-                    "The contents cache has not been intialized.");         // NOI18N
+                    "The contents cache has not been intialized."); // NOI18N
         }
         
         Utils.writeFile(file, contents);
@@ -126,10 +128,10 @@ public abstract class LineFileHandler implements FileHandler {
     /**
      * {@inheritDoc}
      */
-    public final String getComment() {
+    public final String getCurrentComment() {
         if (contents == null) {
             throw new IllegalStateException(
-                    "The contents cache has not been intialized.");         // NOI18N
+                    "The contents cache has not been intialized."); // NOI18N
         }
         
         final StringBuilder builder = new StringBuilder();
@@ -139,7 +141,7 @@ public abstract class LineFileHandler implements FileHandler {
         
         // skip the leading whitespace and ignored lines
         for (; i < lines.length; i++) {
-            if (!lines[i].trim().equals("") && 
+            if (!lines[i].trim().equals("") &&
                     !ignorePattern.matcher(lines[i]).matches()) {
                 break;
             }
@@ -160,26 +162,32 @@ public abstract class LineFileHandler implements FileHandler {
     /**
      * {@inheritDoc}
      */
+    public final String getCorrectComment(final String text, final int lineLength) {
+        return commentPrefix + Utils.NL +
+                Utils.reformat(text, commentPrefix, lineLength) +
+                commentPrefix + Utils.NL;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
     public final void insertComment(final String text, final int lineLength) {
         if (text == null) {
             throw new IllegalArgumentException(
-                    "The 'text' parameter cannot be null.");                // NOI18N
+                    "The 'text' parameter cannot be null."); // NOI18N
         }
         if (lineLength <= 0) {
             throw new IllegalArgumentException(
-                    "The 'lineLength' parameter must be positive.");        // NOI18N
+                    "The 'lineLength' parameter must be positive."); // NOI18N
         }
         if (contents == null) {
             throw new IllegalStateException(
-                    "The contents cache has not been intialized.");         // NOI18N
+                    "The contents cache has not been intialized."); // NOI18N
         }
         
         final StringBuilder builder = new StringBuilder();
         final String[] lines = contents.split(Utils.NL_PATTERN);
-        final String comment =
-                commentPrefix + Utils.NL +
-                Utils.reformat(text, commentPrefix, lineLength) +
-                commentPrefix + Utils.NL;
+        final String comment = getCorrectComment(text, lineLength);
         
         int i = 0;
         
@@ -199,7 +207,7 @@ public abstract class LineFileHandler implements FileHandler {
         // transfer the rest of file
         for (; i < lines.length; i++) {
             builder.append(lines[i]).append(Utils.NL);
-        }        
+        }
         
         contents = builder.toString();
     }
@@ -210,28 +218,25 @@ public abstract class LineFileHandler implements FileHandler {
     public final void updateComment(final String text, final int lineLength) {
         if (text == null) {
             throw new IllegalArgumentException(
-                    "The 'text' parameter cannot be null.");                // NOI18N
+                    "The 'text' parameter cannot be null."); // NOI18N
         }
         if (lineLength <= 0) {
             throw new IllegalArgumentException(
-                    "The 'lineLength' parameter must be positive.");        // NOI18N
+                    "The 'lineLength' parameter must be positive."); // NOI18N
         }
         if (contents == null) {
             throw new IllegalStateException(
-                    "The contents cache has not been intialized.");         // NOI18N
+                    "The contents cache has not been intialized."); // NOI18N
         }
         
-        final String currentComment = getComment();
+        final String currentComment = getCurrentComment();
         
         if (currentComment == null) {
             insertComment(text, lineLength);
             return;
         }
         
-        final String correctComment =
-                commentPrefix + Utils.NL +
-                Utils.reformat(text, commentPrefix, lineLength) +
-                commentPrefix;
+        final String correctComment = getCorrectComment(text, lineLength);
         
         // we don't need to update anything if the current initial comment is the
         // same as the correct one
@@ -248,7 +253,7 @@ public abstract class LineFileHandler implements FileHandler {
         for (; i < lines.length; i++) {
             final String trimmed = lines[i].trim();
             
-            if (!trimmed.equals("") && 
+            if (!trimmed.equals("") &&
                     !ignorePattern.matcher(lines[i]).matches()) {
                 break;
             }

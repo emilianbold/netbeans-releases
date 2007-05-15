@@ -2,21 +2,23 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- *
+ * 
  *     "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
  */
+
+
 package org.netbeans.installer.infra.build.ant;
 
 import java.util.LinkedList;
@@ -142,7 +144,7 @@ public class ForEach extends Task implements TaskContainer {
         try {
             this.from = Integer.parseInt(from);
         } catch (NumberFormatException e) {
-            log("Wrong value for parameter 'from'.");                       // NOI18N
+            log("Wrong value for parameter 'from'."); // NOI18N
             wrongArgs = true;
         }
     }
@@ -156,7 +158,7 @@ public class ForEach extends Task implements TaskContainer {
         try {
             this.to = Integer.parseInt(to);
         } catch (NumberFormatException e) {
-            log("Wrong value for parameter 'to'.");                         // NOI18N
+            log("Wrong value for parameter 'to'."); // NOI18N
             wrongArgs = true;
         }
     }
@@ -170,7 +172,7 @@ public class ForEach extends Task implements TaskContainer {
         try {
             this.increment = Integer.parseInt(increment);
         } catch (NumberFormatException e) {
-            log("Wrong value for parameter 'increment'.");                  // NOI18N
+            log("Wrong value for parameter 'increment'."); // NOI18N
             wrongArgs = true;
         }
     }
@@ -197,7 +199,7 @@ public class ForEach extends Task implements TaskContainer {
     public void execute() throws BuildException {
         if (wrongArgs) {
             throw new BuildException(
-                    "Correct parameters were not supplied.");               // NOI18N
+                    "Correct parameters were not supplied."); // NOI18N
         }
         
         if (list != null) {
@@ -232,7 +234,7 @@ public class ForEach extends Task implements TaskContainer {
      * Default value for the 'separator' property.
      */
     private static final String DEFAULT_SEPARATOR =
-            " ";                                                            // NOI18N
+            " "; // NOI18N
     
     /**
      * Default value for the 'from' property.

@@ -2,21 +2,22 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- *
+ * 
  *     "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
  */
+
 package org.netbeans.installer.products.nb.base;
 
 import java.io.File;
@@ -76,7 +77,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             NetBeansUtils.setJavaHome(installLocation, jdkHome);
         } catch (IOException e) {
             throw new InstallationException(
-                    getString("CL.install.error.jdk.home"),  // NOI18N
+                    getString("CL.install.error.jdk.home"), // NOI18N
                     e);
         }
         
@@ -89,7 +90,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             NetBeansUtils.addCluster(installLocation, IDE_CLUSTER);
         } catch (IOException e) {
             throw new InstallationException(
-                    getString("CL.install.error.netbeans.clusters"),  // NOI18N
+                    getString("CL.install.error.netbeans.clusters"), // NOI18N
                     e);
         }
         
@@ -100,7 +101,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             filesList.add(NetBeansUtils.createProductId(installLocation));
         } catch (IOException e) {
             throw new InstallationException(
-                    getString("CL.install.error.product.id"),  // NOI18N
+                    getString("CL.install.error.product.id"), // NOI18N
                     e);
         }
         
@@ -112,7 +113,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     NetBeansUtils.createLicenseAcceptedMarker(installLocation));
         } catch (IOException e) {
             throw new InstallationException(
-                    getString("CL.install.error.license.accepted"),  // NOI18N
+                    getString("CL.install.error.license.accepted"), // NOI18N
                     e);
         }
         
@@ -127,7 +128,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             SystemUtils.removeIrrelevantFiles(ideCluster);
         } catch (IOException e) {
             throw new InstallationException(
-                    getString("CL.install.error.irrelevant.files"),  // NOI18N
+                    getString("CL.install.error.irrelevant.files"), // NOI18N
                     e);
         }
         
@@ -142,7 +143,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             SystemUtils.correctFilesPermissions(ideCluster);
         } catch (IOException e) {
             throw new InstallationException(
-                    getString("CL.install.error.files.permissions"),  // NOI18N
+                    getString("CL.install.error.files.permissions"), // NOI18N
                     e);
         }
         
@@ -156,7 +157,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                         LocationType.CURRENT_USER_DESKTOP);
             } catch (NativeException e) {
                 throw new InstallationException(
-                        getString("CL.install.error.desktop"),  // NOI18N
+                        getString("CL.install.error.desktop"), // NOI18N
                         e);
             }
         }
@@ -170,7 +171,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     LocationType.CURRENT_USER_START_MENU);
         } catch (NativeException e) {
             throw new InstallationException(
-                    getString("CL.install.error.start.menu"),  // NOI18N
+                    getString("CL.install.error.start.menu"), // NOI18N
                     e);
         }
         
@@ -191,7 +192,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             }
         } catch (IOException e) {
             throw new InstallationException(
-                    getString("CL.install.error.netbeans.conf"),  // NOI18N
+                    getString("CL.install.error.netbeans.conf"), // NOI18N
                     e);
         }
         
@@ -217,7 +218,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             }
         } catch (IOException e) {
             throw new InstallationException(
-                    getString("CL.install.error.glassfish.integration"),  // NOI18N
+                    getString("CL.install.error.glassfish.integration"), // NOI18N
                     e);
         }
         
@@ -240,7 +241,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     true);
         } catch (NativeException e) {
             throw new UninstallationException(
-                    getString("CL.uninstall.error.start.menu"),  // NOI18N
+                    getString("CL.uninstall.error.start.menu"), // NOI18N
                     e);
         }
         
@@ -255,7 +256,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                         false);
             } catch (NativeException e) {
                 throw new UninstallationException(
-                        getString("CL.uninstall.error.desktop"),  // NOI18N
+                        getString("CL.uninstall.error.desktop"), // NOI18N
                         e);
             }
         }

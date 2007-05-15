@@ -17,6 +17,8 @@
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
  */
+
+
 package org.netbeans.installer.infra.utils.comment.handlers;
 
 import java.io.File;
@@ -46,14 +48,14 @@ public class ShellFileHandler extends LineFileHandler {
     public boolean accept(final File file) {
         if (file == null) {
             throw new IllegalArgumentException(
-                    "The 'file' parameter cannot be null.");                // NOI18N
+                    "The 'file' parameter cannot be null."); // NOI18N
         }
         
         if (!file.isFile()) {
             return false;
         }
         
-        return file.getName().endsWith(".sh");                              // NOI18N
+        return file.getName().endsWith(".sh"); // NOI18N
     }
     
     /////////////////////////////////////////////////////////////////////////////////
@@ -62,18 +64,18 @@ public class ShellFileHandler extends LineFileHandler {
      * The regular expression pattern which matches the line which is a comment.
      */
     private static final Pattern COMMENT_PATTERN = Pattern.compile(
-            "^\\s*#.*");                                                    // NOI18N
+            "^\\s*#.*"); // NOI18N
     
     /**
      * The regular expression pattern which matches the line which should be
      * ignored.
      */
     private static final Pattern IGNORE_PATTERN = Pattern.compile(
-            "^\\S*#!.*");                                                   // NOI18N
+            "^\\S*#!.*"); // NOI18N
     
     /**
      * The prefix which should be used for each line in the comment.
      */
     private static final String COMMENT_PREFIX = 
-            "# ";                                                           // NOI18N
+            "# "; // NOI18N
 }

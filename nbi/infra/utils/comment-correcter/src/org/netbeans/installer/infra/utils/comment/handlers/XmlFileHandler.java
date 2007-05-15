@@ -17,6 +17,8 @@
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
  */
+
+
 package org.netbeans.installer.infra.utils.comment.handlers;
 
 import org.netbeans.installer.infra.utils.comment.utils.Utils;
@@ -51,7 +53,7 @@ public class XmlFileHandler extends BlockFileHandler {
     public boolean accept(final File file) {
         if (file == null) {
             throw new IllegalArgumentException(
-                    "The 'file' parameter cannot be null.");                // NOI18N
+                    "The 'file' parameter cannot be null."); // NOI18N
         }
         
         if (!file.isFile()) {
@@ -70,7 +72,7 @@ public class XmlFileHandler extends BlockFileHandler {
     public int getCommentPosition() {
         if (contents == null) {
             throw new IllegalStateException(
-                    "The contents cache has not been intialized.");         // NOI18N
+                    "The contents cache has not been intialized."); // NOI18N
         }
         
         final Matcher matcher = COMMENT_POSITION_PATTERN.matcher(contents);
@@ -84,31 +86,31 @@ public class XmlFileHandler extends BlockFileHandler {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
     private static final Pattern COMMENT_POSITION_PATTERN = Pattern.compile(
-            "\\A\\s*<\\?xml.*?\\?>\\s*(.*)",                                // NOI18N
+            "\\A\\s*<\\?xml.*?\\?>\\s*(.*)", // NOI18N
             Pattern.MULTILINE | Pattern.DOTALL);
     
     /**
      * The regular expression pattern which matches the initial comment.
      */
     private static final Pattern COMMENT_PATTERN = Pattern.compile(
-            "\\A\\s*<\\?xml.*?\\?>\\s*(<!--.*?-->)",                        // NOI18N
+            "\\A\\s*<\\?xml.*?\\?>\\s*(<!--.*?-->)", // NOI18N
             Pattern.MULTILINE | Pattern.DOTALL);
     
     /**
      * The comment opening string.
      */
     private static final String COMMENT_START =
-            "<!--" + Utils.NL;                                              // NOI18N
+            "<!--" + Utils.NL; // NOI18N
     
     /**
      * The prefix which should be used for each line in the comment.
      */
     private static final String COMMENT_PREFIX =
-            "  ";                                                           // NOI18N
+            "  "; // NOI18N
     
     /**
      * The comment closing string.
      */
     private static final String COMMENT_END =
-            "-->";                                                          // NOI18N
+            "-->"; // NOI18N
 }

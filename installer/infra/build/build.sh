@@ -1,67 +1,25 @@
 #!/bin/sh
 
-################################################################################
-# build-private.sh should define the following properties
-################################################################################
-#BUILD_NUMBER=
-#
-#OUTPUT_DIR=
-#
-#ANT_OPTS=
-#
-#BINARY_CACHE_HOST=
-#NB_BUILDS_HOST=
-#GLASSFISH_BUILDS_HOST=
-#OPENESB_BUILDS_HOST=
-#SJSAM_BUILDS_HOST=
-#
-#JDK_HOME=
-#
-#CVS_ROOT=
-#
-#GLASSFISH_HOME=
-#GLASSFISH_ASADMIN=
-#GLASSFISH_HTTP_PORT=
-#GLASSFISH_ADMIN_PORT=
-#GLASSFISH_HOST=
-#GLASSFISH_USER=
-#GLASSFISH_PASSWORD=
-#
-#REGISTRIES_HOME=
-#
-#JARSIGNER_KEYSTORE=
-#JARSIGNER_ALIAS=
-#JARSIGNER_STOREPASS=
-#
-#REMOTE_HOST_WINDOWS=
-#REMOTE_PORT_WINDOWS=
-#REMOTE_USER_WINDOWS=
-#
-#REMOTE_HOST_LINUX=
-#REMOTE_PORT_LINUX=
-#REMOTE_USER_LINUX=
-#
-#REMOTE_HOST_SOLARIS_X86=
-#REMOTE_PORT_SOLARIS_X86=
-#REMOTE_USER_SOLARIS_X86=
-#
-#REMOTE_HOST_SOLARIS_SPARC=
-#REMOTE_PORT_SOLARIS_SPARC=
-#REMOTE_USER_SOLARIS_SPARC=
-#
-#REMOTE_HOST_MACOSX=
-#REMOTE_PORT_MACOSX=
-#REMOTE_USER_MACOSX=
-#
-#SJSAS_IMAGE_HOSTNAME_WINDOWS=
-#SJSAS_IMAGE_HOSTNAME_LINUX=
-#SJSAS_IMAGE_HOSTNAME_SOLARIS_X86=
-#SJSAS_IMAGE_HOSTNAME_SOLARIS_SPARC=
-#SJSAS_IMAGE_HOSTNAME_MACOSX=
-#
-#ADDITIONAL_PARAMETERS=
-#
-################################################################################
+# 
+# The contents of this file are subject to the terms of the Common Development and
+# Distribution License (the License). You may not use this file except in compliance
+# with the License.
+# 
+# You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
+# http://www.netbeans.org/cddl.txt.
+# 
+# When distributing Covered Code, include this CDDL Header Notice in each file and
+# include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
+# the following below the CDDL Header, with the fields enclosed by brackets []
+# replaced by your own identifying information:
+# 
+#     "Portions Copyrighted [year] [name of copyright owner]"
+# 
+# The Original Software is NetBeans. The Initial Developer of the Original Software
+# is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
+# Rights Reserved.
+# 
+
 
 ################################################################################
 # get the path to the current directory and change to it

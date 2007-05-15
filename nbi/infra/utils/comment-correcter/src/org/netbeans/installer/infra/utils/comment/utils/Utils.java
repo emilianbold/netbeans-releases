@@ -17,6 +17,8 @@
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
  */
+
+
 package org.netbeans.installer.infra.utils.comment.utils;
 
 import java.io.BufferedReader;
@@ -57,19 +59,19 @@ public final class Utils {
         // basic validation
         if (file == null) {
             throw new IllegalArgumentException(
-                    "The 'file' parameter cannot be null.");                // NOI18N
+                    "The 'file' parameter cannot be null."); // NOI18N
         }
         
         // file validation
         if (!file.exists()) {
             throw new IOException(
-                    "The given file '" + file +                             // NOI18N
-                    "' does not exist.");                                   // NOI18N
+                    "The given file '" + file + // NOI18N
+                    "' does not exist."); // NOI18N
         }
         if (!file.isFile()) {
             throw new IOException(
-                    "The given file '" + file +                             // NOI18N
-                    "' exists but is a directory.");                        // NOI18N
+                    "The given file '" + file + // NOI18N
+                    "' exists but is a directory."); // NOI18N
         }
         
         // read the file
@@ -109,29 +111,29 @@ public final class Utils {
         // basic validation
         if (file == null) {
             throw new IllegalArgumentException(
-                    "The 'file' parameter cannot be null.");                // NOI18N
+                    "The 'file' parameter cannot be null."); // NOI18N
         }
         if (string == null) {
             throw new IllegalArgumentException(
-                    "The 'string' parameter cannot be null.");              // NOI18N
+                    "The 'string' parameter cannot be null."); // NOI18N
         }
         
         // file validation
         final File parent = file.getParentFile();
         if (file.exists() && !file.isFile()) {
             throw new IOException(
-                    "The given file '" + file +                             // NOI18N
-                    "' exists and is not a file.");                         // NOI18N
+                    "The given file '" + file + // NOI18N
+                    "' exists and is not a file."); // NOI18N
         }
         if (parent.exists() && !parent.isDirectory()) {
             throw new IOException(
-                    "The parent of the given file '" + parent +             // NOI18N
-                    "' exists and is not a directory.");                    // NOI18N
+                    "The parent of the given file '" + parent + // NOI18N
+                    "' exists and is not a directory."); // NOI18N
         }
         if (!parent.exists() && !parent.mkdirs()) {
             throw new IOException(
-                    "The parent of the given file '" + parent +             // NOI18N
-                    "' does not exist and could not be created.");          // NOI18N
+                    "The parent of the given file '" + parent + // NOI18N
+                    "' does not exist and could not be created."); // NOI18N
         }
         
         // write the file
@@ -174,15 +176,15 @@ public final class Utils {
         // basic validation
         if (string == null) {
             throw new IllegalArgumentException(
-                    "The 'string' parameter cannot be null.");              // NOI18N
+                    "The 'string' parameter cannot be null."); // NOI18N
         }
         if (prefix == null) {
             throw new IllegalArgumentException(
-                    "The 'prefix' parameter cannot be null.");              // NOI18N
+                    "The 'prefix' parameter cannot be null."); // NOI18N
         }
         if (length <= 0) {
             throw new IllegalArgumentException(
-                    "The 'length' parameter should be positive.");          // NOI18N
+                    "The 'length' parameter should be positive."); // NOI18N
         }
         
         final List<String> lines = new LinkedList<String>();
@@ -262,7 +264,7 @@ public final class Utils {
         // basic validation
         if (string == null) {
             throw new IllegalArgumentException(
-                    "The 'string' parameter cannot be null.");              // NOI18N
+                    "The 'string' parameter cannot be null."); // NOI18N
         }
         
         for (int i = offset; i > 0; i--) {
@@ -291,23 +293,23 @@ public final class Utils {
      * equal to \r\n on windows, \n on unices and \r on mac.
      */
     public static final String NL =
-            System.getProperty("line.separator");                           // NOI18N
+            System.getProperty("line.separator"); // NOI18N
     
     /**
      * Empty line constant.
      */
     public static final String EL =
-            "";                                                             // NOI18N
+            ""; // NOI18N
     
     /**
      * Space character constant.
      */
     public static final String SP =
-            " ";                                                            // NOI18N
+            " "; // NOI18N
     
     /**
      * A platform-agnostic pattern which will match the end of the line.
      */
     public static final String NL_PATTERN =
-            "\r\n|\n|\r";                                                   // NOI18N
+            "\r\n|\n|\r"; // NOI18N
 }

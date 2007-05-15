@@ -17,6 +17,8 @@
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
  */
+
+
 package org.netbeans.installer.infra.utils.comment.handlers;
 
 import java.io.File;
@@ -71,7 +73,16 @@ public interface FileHandler {
      * @throws java.lang.IllegalStateException if the file handler does not have 
      *      anything loaded.
      */
-    String getComment();
+    String getCurrentComment();
+    
+    /**
+     * Constructs the correct initial comment.
+     * 
+     * @param text The text of the initial comment.
+     * @param lineLength The desired line length for the comment.
+     * @return The correct, formatted, initial comment for this type of file.
+     */
+    String getCorrectComment(final String text, final int lineLength);
     
     /**
      * Inserts the initial comment to the cached file contents. If an intiial 

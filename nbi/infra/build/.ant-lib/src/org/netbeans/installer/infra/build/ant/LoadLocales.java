@@ -17,6 +17,8 @@
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
  */
+
+
 package org.netbeans.installer.infra.build.ant;
 
 import java.io.File;
@@ -75,15 +77,15 @@ public class LoadLocales extends Task {
     public void execute() throws BuildException {
         Utils.setProject(getProject());
         
-        String locales = "";                                                // NOI18N
+        String locales = ""; // NOI18N
         
         try {
             // handle the default locale
-            File file  = new File(basename + ".properties");                // NOI18N
+            File file  = new File(basename + ".properties"); // NOI18N
             if (!file.equals(file.getAbsoluteFile())) {
                 file = new File(
                         getProject().getBaseDir(), 
-                        basename + ".properties");                          // NOI18N
+                        basename + ".properties"); // NOI18N
             }
             
             Properties properties = new Properties();
@@ -91,20 +93,20 @@ public class LoadLocales extends Task {
             properties.load(new FileInputStream(file));
             for (Object key: properties.keySet()) {
                 getProject().setProperty(
-                        key + ".default",                                   // NOI18N
+                        key + ".default", // NOI18N
                         properties.get(key).toString());
             }
             
             for (Locale locale: Locale.getAvailableLocales()) {
-                file = new File(basename + "_" + locale + ".properties");   // NOI18N
+                file = new File(basename + "_" + locale + ".properties"); // NOI18N
                 if (file.exists()) {
-                    locales += " " + locale;                                // NOI18N
+                    locales += " " + locale; // NOI18N
                     properties = new Properties();
                     properties.load(new FileInputStream(file));
                     
                     for (Object key: properties.keySet()) {
                         getProject().setProperty(
-                                "" + key + "." + locale,                    // NOI18N
+                                "" + key + "." + locale, // NOI18N
                                 Utils.toAscii(properties.get(key).toString()));
                     }
                 }

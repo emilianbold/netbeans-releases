@@ -18,6 +18,7 @@
   is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
   Rights Reserved.
 -->
+
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.java.j2seproject</type>
     <configuration>

@@ -17,6 +17,7 @@
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
  */
+
 package org.netbeans.installer.infra.build.ant;
 
 import java.io.File;
@@ -90,7 +91,7 @@ public class BuildNumberNbIde extends Task {
                         matcher.group(1));                                  // NOMAGI
             } else {
                 throw new BuildException(
-                        "Cannot find build number");                        // NOI18N
+                        "Cannot find build number"); // NOI18N
             }
         } catch (IOException e) {
             throw new BuildException(e);
@@ -103,11 +104,11 @@ public class BuildNumberNbIde extends Task {
      * Pattern for which to look in the input file.
      */
     private static final Pattern PATTERN = Pattern.compile(
-            "netbeans-6_0-daily-bin-([0-9]+)-.*?\\.zip");                   // NOI18N
+            "netbeans-6_0-daily-bin-([0-9]+)-.*?\\.zip"); // NOI18N
 
     /**
      * Build number property suffix.
      */
     private static final String BUILD_NUMBER_SUFFIX = 
-            ".build.number";                                                // NOI18N
+            ".build.number"; // NOI18N
 }

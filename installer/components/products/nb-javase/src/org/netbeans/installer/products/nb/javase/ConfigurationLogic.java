@@ -17,6 +17,7 @@
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
  */
+
 package org.netbeans.installer.products.nb.javase;
 
 import org.netbeans.installer.product.components.NbClusterConfigurationLogic;

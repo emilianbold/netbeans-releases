@@ -17,6 +17,8 @@
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
  */
+
+
 package org.netbeans.installer.infra.build.ant.utils;
 
 import java.io.File;
@@ -62,7 +64,7 @@ public class VerifyFile {
                 if (getClassName(entry) != null) {
                     try {
                         System.out.println(
-                                "loading class " + getClassName(entry));    // NOI18N
+                                "loading class " + getClassName(entry)); // NOI18N
                         loader.loadClass(getClassName(entry));
                     } catch (NoClassDefFoundError e) {
                         // do nothing; this is OK - classpath issues
@@ -94,11 +96,11 @@ public class VerifyFile {
     private static String getClassName(JarEntry entry) {
         final String name = entry.getName();
         
-        if (name.endsWith(".class")) {                                      // NOI18N
+        if (name.endsWith(".class")) { // NOI18N
             final String className = 
                     name.substring(0, name.length() - 6).replace('/', '.'); // NOMAGI
             if (className.matches(
-                    "([a-zA-Z][a-zA-Z0-9_]+\\.)+[a-zA-Z][a-zA-Z0-9_]+")) {  // NOI18N
+                    "([a-zA-Z][a-zA-Z0-9_]+\\.)+[a-zA-Z][a-zA-Z0-9_]+")) { // NOI18N
                 return className;
             } else {
                 return null;

@@ -18,6 +18,7 @@
   is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
   Rights Reserved.
 -->
+
 <project name="NBI_Product:_NetBeans_Java_IDE" default="default" basedir=".">
     <import file="nbproject/build-impl.xml"/>
 </project>

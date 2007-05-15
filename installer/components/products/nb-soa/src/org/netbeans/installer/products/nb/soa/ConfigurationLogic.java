@@ -17,6 +17,7 @@
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
  */
+
 package org.netbeans.installer.products.nb.soa;
 
 import java.io.File;
@@ -104,7 +105,7 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
                     true);
         } catch (IOException e) {
             throw new InstallationException(
-                    getString("CL.install.error.netbeans.conf.am"),  // NOI18N
+                    getString("CL.install.error.netbeans.conf.am"), // NOI18N
                     e);
         }
     }

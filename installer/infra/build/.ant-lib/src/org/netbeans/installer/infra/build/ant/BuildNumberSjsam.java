@@ -2,21 +2,22 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- *
+ * 
  *     "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
  */
+
 package org.netbeans.installer.infra.build.ant;
 
 import java.io.File;
@@ -107,7 +108,7 @@ public class BuildNumberSjsam extends Task {
                         buildNumber);
             } else {
                 throw new BuildException(
-                        "Cannot find build number");                        // NOI18N
+                        "Cannot find build number"); // NOI18N
             }
         } catch (IOException e) {
             throw new BuildException(e);
@@ -122,30 +123,30 @@ public class BuildNumberSjsam extends Task {
      * Pattern for which to look in the input file.
      */
     private static final Pattern PATTERN = Pattern.compile(
-            "b([0-9]+)<A>\\s*([A-Za-z0-9-]+)" +                             // NOI18N
-            "\\s*[0-9:]+\\s*[0-9]+K\\s*<PRE>", Pattern.MULTILINE);          // NOI18N
+            "b([0-9]+)<A>\\s*([A-Za-z0-9-]+)" + // NOI18N
+            "\\s*[0-9:]+\\s*[0-9]+K\\s*<PRE>", Pattern.MULTILINE); // NOI18N
     
     /**
      * Date format used in the input file.
      */
     private static final DateFormat FORMAT_IN = 
-            new SimpleDateFormat("dd-MMM-yyyy", Locale.US);                 // NOI18N
+            new SimpleDateFormat("dd-MMM-yyyy", Locale.US); // NOI18N
     
     /**
      * Date format to use in the output properties.
      */
     private static final DateFormat FORMAT_OUT = 
-            new SimpleDateFormat("yyyyMMdd", Locale.US);                    // NOI18N
+            new SimpleDateFormat("yyyyMMdd", Locale.US); // NOI18N
     
     /**
      * Milestone number property suffix.
      */
     private static final String MILESTONE_NUMBER_SUFFIX = 
-            ".milestone.number";                                            // NOI18N
+            ".milestone.number"; // NOI18N
     
     /**
      * Build number property suffix.
      */
     private static final String BUILD_NUMBER_SUFFIX =
-            ".build.number";                                                // NOI18N
+            ".build.number"; // NOI18N
 }
