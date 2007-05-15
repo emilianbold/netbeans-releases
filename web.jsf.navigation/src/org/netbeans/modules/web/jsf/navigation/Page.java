@@ -245,10 +245,10 @@ public class Page extends PageSceneElement implements SaveCookie {
             original.destroy();
         } else if ( input == DialogDescriptor.NO_OPTION ) {
             pc.removeSceneNodeEdges(this);
-            if ( removePageName2NodeReference ) {  //HACK Should I remove the node myself until Petr fixes this bug?
-                //                pc.removePageName2Node(displayName);
-                destroy();
-            }
+//            if ( removePageName2NodeReference ) {  //HACK Should I remove the node myself until Petr fixes this bug?
+//                //                pc.removePageName2Node(displayName);
+//                destroy();
+//            }
             //            System.out.println("Only Node Removed");
         } else if ( input == DialogDescriptor.CANCEL_OPTION ) {
             //            System.out.println("Cancel... Do Nothing.");
