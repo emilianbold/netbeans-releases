@@ -234,7 +234,6 @@ public class IDEValidateBPELProject extends Task {
     }
 
     private void processBpelFile(File file) throws BuildException {
-//System.out.println("See !!!!!!!!!!!!!!!!!!!!!: " + file);
       // vlv
       BpelModel model = null;
 
@@ -251,13 +250,8 @@ public class IDEValidateBPELProject extends Task {
         if (bpel.getTargetNamespace().equals(targetNamespace)) {
           throw new BuildException(
             " \n" +
-            "BPEL files\n" +
-            bpel.getName() + "\n" +
-            "and\n" +
-            current.getName() + "\n" +
-            "have the same target name space:\n" +
-            targetNamespace +
-            " \n \n"
+            "BPEL files " + bpel.getName() + " and " + current.getName() + "\n" +
+            "have the same target name space: " + targetNamespace + " \n \n"
           );
         }
       }
@@ -288,7 +282,7 @@ public class IDEValidateBPELProject extends Task {
           model = IDEBPELCatalogModel.getDefault().getBPELModel(bpel);
         }
         catch (Exception ex) {
-          throw new RuntimeException(" Error while trying to create BPEL Model ",ex);
+          throw new RuntimeException("Error while trying to create BPEL Model ",ex);
         }
         Validation validation = new Validation();
         validation.validate((org.netbeans.modules.xml.xam.Model)model,  ValidationType.COMPLETE);
@@ -398,7 +392,13 @@ public class IDEValidateBPELProject extends Task {
       }
 
       public String getName() {
-        return myFile.toString();
+        String file = myFile.toString();
+        String path = myProject.toString();
+
+        if (file.startsWith(path)) {
+          return file.substring(path.length() + 1);
+        }
+        return file;
       }
 
       private File myFile;
