@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.languages.dataobject;
 
+import java.util.Collections;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.modules.editor.options.OptionSupport;
@@ -26,7 +27,12 @@ import org.netbeans.modules.languages.dataobject.LanguagesEditorKit;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import java.util.MissingResourceException;
+import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.Repository;
 
 /**
  *
@@ -34,8 +40,11 @@ import org.openide.filesystems.FileObject;
  */
 public class LanguagesOptions extends BaseOptions {
     
-    public static String LANGUAGES = "Languages"; // NOI18N
+    private static final Logger LOG = Logger.getLogger(LanguagesOptions.class.getName());
     
+    public static String LANGUAGES = "Languages"; // NOI18N
+    private static final String OPTIONS_LANGUAGES = "OPTIONS_" + LANGUAGES; //NOI18N
+
     public static final String CODE_FOLDING_ENABLE_PROP = "codeFoldingEnable"; //NOI18N
 
     private static LanguagesOptions defaultInstance;
@@ -102,10 +111,41 @@ public class LanguagesOptions extends BaseOptions {
      */
     protected String getString(String key) {
         try {
-            return NbBundle.getMessage(LanguagesOptions.class, key);
+            if (OPTIONS_LANGUAGES.equals(key)) {
+                return getMimeTypeDisplayName(getContentType());
+            } else {
+                return NbBundle.getMessage(LanguagesOptions.class, key);
+            }
         } catch (MissingResourceException e) {
             return super.getString(key);
         }
     }
-    
+
+    private static String getMimeTypeDisplayName(String mimeType) {
+        String displayName = null;
+        
+        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Editors/" + mimeType); //NOI18N
+        if (fo != null) {
+            try {
+                displayName = fo.getFileSystem().getStatus().annotateName(null, Collections.singleton(fo));
+            } catch (FileStateInvalidException ex) {
+            }
+
+            if (displayName == null) {
+                Object attrValue = fo.getAttribute("SystemFileSystem.localizingBundle"); //NOI18N
+                if (attrValue instanceof String) {
+                    try {
+                        ResourceBundle bundle = NbBundle.getBundle((String) attrValue);
+                        if (bundle != null) {
+                            displayName = bundle.getString(mimeType);
+                        }
+                    } catch (MissingResourceException mre) {
+                        LOG.log(Level.WARNING, "Can't find display name for mime type '" + mimeType + "'", mre); //NOI18N
+                    }
+                }
+            }
+        }
+        
+        return displayName == null ? mimeType : NbBundle.getMessage(LanguagesOptions.class, "Languages_options_name", displayName);
+    }
 }

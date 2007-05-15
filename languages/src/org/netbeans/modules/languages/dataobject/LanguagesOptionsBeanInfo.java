@@ -35,7 +35,7 @@ public class LanguagesOptionsBeanInfo extends BaseOptionsBeanInfo {
      * icon prefix.
      */
     public LanguagesOptionsBeanInfo() {
-        super("/org/netbeans/modules/languages/options/mfOptions"); // NOI18N
+        super("/org/netbeans/modules/languages/resources/options"); // NOI18N
     }
     
     /*
