@@ -176,7 +176,7 @@ final class PaletteSwitch implements Runnable, LookupListener {
             return null;
         
         PaletteController pc = (PaletteController)tc.getLookup().lookup( PaletteController.class );
-        if( null == pc && WindowManager.getDefault().isEditorTopComponent( tc ) ) {
+        if( null == pc && WindowManager.getDefault().isOpenedEditorTopComponent( tc ) ) {
             //check if there's any palette assigned to TopComponent's mime type
             Node[] activeNodes = tc.getActivatedNodes();
             if( null != activeNodes && activeNodes.length > 0 ) {
