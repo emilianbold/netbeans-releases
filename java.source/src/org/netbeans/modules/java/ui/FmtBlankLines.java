@@ -85,6 +85,8 @@ public class FmtBlankLines extends javax.swing.JPanel {
         aMethodsLabel = new javax.swing.JLabel();
         aMethodsField = new javax.swing.JTextField();
 
+        setOpaque(false);
+
         bPackageLabel.setLabelFor(bPackageField);
         org.openide.awt.Mnemonics.setLocalizedText(bPackageLabel, org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "LBL_blBeforePackage")); // NOI18N
 

@@ -29,10 +29,12 @@ public abstract class AbstractHint implements TreeRule {
     
     public static final String ENABLED_KEY = "enabled";         // NOI18N
     public static final String SEVERITY_KEY = "severity";       // NOI18N
+    public static final String SCOPE_KEY = "scope";             // NOI18N
     public static final String IN_TASK_LIST_KEY = "inTaskList"; // NOI18N
     
     public static final boolean ENABLED_DEFAULT = true;
     public static final HintSeverity SEVERITY_DEFAULT = HintSeverity.WARNING;
+    public static final String SCOPE_DEFAULT = "protected"; // NOI18N
     public static final boolean IN_TASK_LIST_DEFAULT = true;
             
     /** Gets preferences node which. Can return null (default impl. does) to get use the default

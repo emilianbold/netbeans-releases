@@ -95,6 +95,7 @@ public class FmtCodeGeneration extends javax.swing.JPanel {
         importUpButton = new javax.swing.JButton();
         importDownButton = new javax.swing.JButton();
 
+        setOpaque(false);
         setLayout(new java.awt.GridBagLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(preferLongerNamesLabel, org.openide.util.NbBundle.getMessage(FmtCodeGeneration.class, "LBL_Naming")); // NOI18N
@@ -106,6 +107,7 @@ public class FmtCodeGeneration extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(preferLongerNamesCheckBox, org.openide.util.NbBundle.getMessage(FmtCodeGeneration.class, "LBL_PreferLongerNames")); // NOI18N
         preferLongerNamesCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         preferLongerNamesCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        preferLongerNamesCheckBox.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -228,6 +230,7 @@ public class FmtCodeGeneration extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(qualifyFieldAccessCheckBox, org.openide.util.NbBundle.getMessage(FmtCodeGeneration.class, "LBL_QualifyFieldAccess")); // NOI18N
         qualifyFieldAccessCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         qualifyFieldAccessCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        qualifyFieldAccessCheckBox.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -237,6 +240,7 @@ public class FmtCodeGeneration extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(isForBooleanGettersCheckBox, org.openide.util.NbBundle.getMessage(FmtCodeGeneration.class, "LBL_UseIsForBooleanGetters")); // NOI18N
         isForBooleanGettersCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         isForBooleanGettersCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        isForBooleanGettersCheckBox.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -247,6 +251,7 @@ public class FmtCodeGeneration extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(addOverrideAnnortationCheckBox, org.openide.util.NbBundle.getMessage(FmtCodeGeneration.class, "LBL_AddOverrideAnnotation")); // NOI18N
         addOverrideAnnortationCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         addOverrideAnnortationCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        addOverrideAnnortationCheckBox.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -263,6 +268,7 @@ public class FmtCodeGeneration extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(parametersFinalCheckBox, org.openide.util.NbBundle.getMessage(FmtCodeGeneration.class, "LBL_ParametersFinal")); // NOI18N
         parametersFinalCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         parametersFinalCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        parametersFinalCheckBox.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -272,6 +278,7 @@ public class FmtCodeGeneration extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(localVarsFinalCheckBox, org.openide.util.NbBundle.getMessage(FmtCodeGeneration.class, "LBL_LocalVariablesFinal")); // NOI18N
         localVarsFinalCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         localVarsFinalCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        localVarsFinalCheckBox.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -285,6 +292,7 @@ public class FmtCodeGeneration extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         add(jLabel10, gridBagConstraints);
 
+        jPanel1.setOpaque(false);
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         importsOrderList.setModel(new javax.swing.AbstractListModel() {

@@ -119,11 +119,13 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
         keepMarks = new javax.swing.JCheckBox();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        setOpaque(false);
         setLayout(new java.awt.GridBagLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(onOffCheckBox, org.openide.util.NbBundle.getMessage(MarkOccurencesPanel.class, "CTL_OnOff_CheckBox")); // NOI18N
         onOffCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         onOffCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        onOffCheckBox.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -134,6 +136,7 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(typesCheckBox, org.openide.util.NbBundle.getMessage(MarkOccurencesPanel.class, "CTL_Types_CheckBox")); // NOI18N
         typesCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         typesCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        typesCheckBox.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -145,6 +148,7 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(methodsCheckBox, org.openide.util.NbBundle.getMessage(MarkOccurencesPanel.class, "CTL_Methods_CheckBox")); // NOI18N
         methodsCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         methodsCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        methodsCheckBox.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -154,6 +158,7 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(constantsCheckBox, org.openide.util.NbBundle.getMessage(MarkOccurencesPanel.class, "CTL_Constants_CheckBox")); // NOI18N
         constantsCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         constantsCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        constantsCheckBox.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -163,6 +168,7 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(fieldsCheckBox, org.openide.util.NbBundle.getMessage(MarkOccurencesPanel.class, "CTL_Fields_CheckBox")); // NOI18N
         fieldsCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         fieldsCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        fieldsCheckBox.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -172,6 +178,7 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(localVariablesCheckBox, org.openide.util.NbBundle.getMessage(MarkOccurencesPanel.class, "CTL_LocalVariables_CheckBox")); // NOI18N
         localVariablesCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         localVariablesCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        localVariablesCheckBox.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -181,6 +188,7 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(exceptionsCheckBox, org.openide.util.NbBundle.getMessage(MarkOccurencesPanel.class, "CTL_Exceptions_CheckBox")); // NOI18N
         exceptionsCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         exceptionsCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        exceptionsCheckBox.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -190,6 +198,7 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(exitCheckBox, org.openide.util.NbBundle.getMessage(MarkOccurencesPanel.class, "CTL_Exit_CheckBox")); // NOI18N
         exitCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         exitCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        exitCheckBox.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -199,6 +208,7 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(implementsCheckBox, org.openide.util.NbBundle.getMessage(MarkOccurencesPanel.class, "CTL_Implements_CheckBox")); // NOI18N
         implementsCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         implementsCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        implementsCheckBox.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -208,6 +218,7 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(overridesCheckBox, org.openide.util.NbBundle.getMessage(MarkOccurencesPanel.class, "CTL_Overrides_CheckBox")); // NOI18N
         overridesCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         overridesCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        overridesCheckBox.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -217,6 +228,7 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(breakContinueCheckBox, org.openide.util.NbBundle.getMessage(MarkOccurencesPanel.class, "CTL_BreakContinue_CheckBox")); // NOI18N
         breakContinueCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         breakContinueCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        breakContinueCheckBox.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -226,6 +238,7 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(keepMarks, org.openide.util.NbBundle.getBundle(MarkOccurencesPanel.class).getString("CTL_KeepMarks_CheckBox")); // NOI18N
         keepMarks.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         keepMarks.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        keepMarks.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;

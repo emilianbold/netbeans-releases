@@ -87,16 +87,23 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         severityComboBox = new javax.swing.JComboBox();
         toProblemCheckBox = new javax.swing.JCheckBox();
         customizerPanel = new javax.swing.JPanel();
+        scopeLabel = new javax.swing.JLabel();
+        scopeComboBox = new javax.swing.JComboBox();
+        jLabel1 = new javax.swing.JLabel();
         descriptionPanel = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         descriptionTextArea = new javax.swing.JTextArea();
+        descriptionLabel = new javax.swing.JLabel();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        setOpaque(false);
         setLayout(new java.awt.GridBagLayout());
 
+        jSplitPane1.setBorder(null);
         jSplitPane1.setDividerLocation(320);
-        jSplitPane1.setDividerSize(5);
+        jSplitPane1.setOpaque(false);
 
+        treePanel.setOpaque(false);
         treePanel.setLayout(new java.awt.BorderLayout());
 
         jScrollPane1.setViewportView(errorTree);
@@ -105,53 +112,89 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
 
         jSplitPane1.setLeftComponent(treePanel);
 
-        detailsPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        detailsPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 6, 0, 0));
+        detailsPanel.setOpaque(false);
         detailsPanel.setLayout(new java.awt.GridBagLayout());
 
-        optionsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(HintsPanel.class, "CTL_Options_Border"))); // NOI18N
+        optionsPanel.setOpaque(false);
         optionsPanel.setLayout(new java.awt.GridBagLayout());
 
         severityLabel.setLabelFor(severityComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(severityLabel, org.openide.util.NbBundle.getMessage(HintsPanel.class, "CTL_ShowAs_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(7, 7, 8, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
         optionsPanel.add(severityLabel, gridBagConstraints);
 
         severityComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(7, 7, 8, 7);
         optionsPanel.add(severityComboBox, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(toProblemCheckBox, org.openide.util.NbBundle.getMessage(HintsPanel.class, "CTL_InTasklist_CheckBox")); // NOI18N
         toProblemCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         toProblemCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 7, 6, 7);
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
         optionsPanel.add(toProblemCheckBox, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weighty = 1.0;
-        optionsPanel.add(customizerPanel, gridBagConstraints);
 
+        customizerPanel.setOpaque(false);
+        customizerPanel.setLayout(new java.awt.BorderLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 0.5;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
+        optionsPanel.add(customizerPanel, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(scopeLabel, org.openide.util.NbBundle.getMessage(HintsPanel.class, "CTL_Scope_Label")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 4);
+        optionsPanel.add(scopeLabel, gridBagConstraints);
+
+        scopeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "public", "protected", "package", "private" }));
+        scopeComboBox.setSelectedIndex(1);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
+        optionsPanel.add(scopeComboBox, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 10;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        optionsPanel.add(jLabel1, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 0.7;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         detailsPanel.add(optionsPanel, gridBagConstraints);
 
-        descriptionPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(HintsPanel.class, "CTL_Description_Border"))); // NOI18N
+        descriptionPanel.setOpaque(false);
         descriptionPanel.setLayout(new java.awt.GridBagLayout());
 
         descriptionTextArea.setColumns(20);
@@ -160,20 +203,29 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         jScrollPane2.setViewportView(descriptionTextArea);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(8, 8, 8, 8);
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         descriptionPanel.add(jScrollPane2, gridBagConstraints);
 
+        org.openide.awt.Mnemonics.setLocalizedText(descriptionLabel, org.openide.util.NbBundle.getMessage(HintsPanel.class, "CTL_Description_Border")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        descriptionPanel.add(descriptionLabel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 0.5;
+        gridBagConstraints.weighty = 0.3;
         detailsPanel.add(descriptionPanel, gridBagConstraints);
 
         jSplitPane1.setRightComponent(detailsPanel);
@@ -194,7 +246,7 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
             logic.disconnect();
         }
         logic = new HintsPanelLogic();
-        logic.connect(errorTree, severityComboBox, toProblemCheckBox, customizerPanel, descriptionTextArea);
+        logic.connect(errorTree, severityComboBox, scopeComboBox, toProblemCheckBox, customizerPanel, descriptionTextArea);
     }
     
     void cancel() {
@@ -258,14 +310,18 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel customizerPanel;
+    private javax.swing.JLabel descriptionLabel;
     private javax.swing.JPanel descriptionPanel;
     private javax.swing.JTextArea descriptionTextArea;
     private javax.swing.JPanel detailsPanel;
     private javax.swing.JTree errorTree;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JPanel optionsPanel;
+    private javax.swing.JComboBox scopeComboBox;
+    private javax.swing.JLabel scopeLabel;
     private javax.swing.JComboBox severityComboBox;
     private javax.swing.JLabel severityLabel;
     private javax.swing.JCheckBox toProblemCheckBox;

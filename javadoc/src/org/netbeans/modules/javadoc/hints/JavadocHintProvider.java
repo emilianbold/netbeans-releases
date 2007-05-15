@@ -116,7 +116,9 @@ public final class JavadocHintProvider extends AbstractHint {
     
     private static final int NOPOS = -2; // XXX copied from jackpot; should be in api
     
-    private static Access access;
+    private static final String DEFAULT_PROFILE = "default"; // NOI18N
+    private static final String HINTS = "hints"; // NOI18N
+    
     private boolean createJavadocKind;
     
     private JavadocHintProvider(boolean createJavadocKind) {
@@ -128,8 +130,6 @@ public final class JavadocHintProvider extends AbstractHint {
     }
     
     public List<ErrorDescription> run(CompilationInfo javac, TreePath path) {
-        readSettings();
-        
         if (Boolean.FALSE.equals(AccessibilityQuery.isPubliclyAccessible(javac.getFileObject().getParent()))) {
             return null;
         }
@@ -222,18 +222,6 @@ public final class JavadocHintProvider extends AbstractHint {
         }
         
         return false;
-    }
-    
-    // XXX Since there are no editor hint options yet, read the settings as system properties.
-    private static void readSettings() {
-        if (access != null) {
-            return;
-        }
-        
-        // accept [public|protected|package|private], default is protected
-        // according to http://java.sun.com/javase/6/docs/technotes/tools/solaris/javadoc.html#javadocoptions
-        String s = System.getProperty("org.netbeans.modules.javadoc.hints.Visibility"); // NOI18N
-        access = Access.resolve(s);
     }
     
     private static SourceVersion resolveSourceVersion(FileObject file) {
@@ -376,6 +364,7 @@ public final class JavadocHintProvider extends AbstractHint {
         }
         
         private boolean isValid(TreePath path) {
+            Access access = Access.resolve(getPreferences().get(SCOPE_KEY, SCOPE_DEFAULT));
             Tree leaf = path.getLeaf();
             int caret = CaretAwareJavaSourceTaskFactory.getLastPosition(javac.getFileObject());
             boolean onLine = hintSeverity == HintSeverity.CURRENT_LINE_WARNING;
@@ -1516,7 +1505,7 @@ public final class JavadocHintProvider extends AbstractHint {
     }
     
     public String getId() {
-        return JavadocHintProvider.class.getName();
+        return createJavadocKind ? "create-javadoc" : "error-in-javadoc"; //NOI18N //NOI18N
     }
     
     public String getDisplayName() {
@@ -1529,18 +1518,19 @@ public final class JavadocHintProvider extends AbstractHint {
     
     private HintSeverity getDefaultHintSeverity() {
         return createJavadocKind ? AbstractHint.HintSeverity.CURRENT_LINE_WARNING : AbstractHint.HintSeverity.WARNING;
-    }
     
-    private String getSettingsName() {
-        return createJavadocKind ? "create-javadoc" : "error-in-javadoc"; // NOI18N
+    }
+    private static String getCurrentProfileId() {
+        return DEFAULT_PROFILE;
     }
     
     @Override
     public Preferences getPreferences() {
-        Preferences p = NbPreferences.forModule(JavadocHintProvider.class).node(getSettingsName());
+        Preferences p = NbPreferences.forModule(JavadocHintProvider.class).node(HINTS).node(getCurrentProfileId()).node(getId());
         
         if (!p.getBoolean(INITIALIZED, false)) {
             p.putInt(AbstractHint.SEVERITY_KEY, getDefaultHintSeverity().ordinal());
+            p.put(AbstractHint.SCOPE_KEY,AbstractHint.SCOPE_DEFAULT);
             p.putBoolean(INITIALIZED, true);
         }
         

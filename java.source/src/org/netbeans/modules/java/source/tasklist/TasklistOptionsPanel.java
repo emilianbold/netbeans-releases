@@ -83,11 +83,13 @@ public class TasklistOptionsPanel extends javax.swing.JPanel {
         enableLintDivZero = new javax.swing.JCheckBox();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        setOpaque(false);
         setLayout(new java.awt.GridBagLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(enableTasklist, org.openide.util.NbBundle.getBundle(TasklistOptionsPanel.class).getString("jCheckBox1.text")); // NOI18N
         enableTasklist.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         enableTasklist.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        enableTasklist.setOpaque(false);
         enableTasklist.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 enableTasklistStateChanged(evt);
@@ -104,6 +106,7 @@ public class TasklistOptionsPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(enableDependencies, org.openide.util.NbBundle.getBundle(TasklistOptionsPanel.class).getString("jCheckBox2.text")); // NOI18N
         enableDependencies.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         enableDependencies.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        enableDependencies.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -117,6 +120,7 @@ public class TasklistOptionsPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(enableBadges, org.openide.util.NbBundle.getBundle(TasklistOptionsPanel.class).getString("jCheckBox1.text_1")); // NOI18N
         enableBadges.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         enableBadges.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        enableBadges.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -130,6 +134,7 @@ public class TasklistOptionsPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(enableLint, org.openide.util.NbBundle.getBundle(TasklistOptionsPanel.class).getString("enableLint.text")); // NOI18N
         enableLint.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         enableLint.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        enableLint.setOpaque(false);
         enableLint.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 enableLintStateChanged(evt);
@@ -148,6 +153,7 @@ public class TasklistOptionsPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(enableLintDeprecated, org.openide.util.NbBundle.getBundle(TasklistOptionsPanel.class).getString("enableLintDeprecated.text")); // NOI18N
         enableLintDeprecated.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         enableLintDeprecated.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        enableLintDeprecated.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -161,6 +167,7 @@ public class TasklistOptionsPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(enableLintUnchecked, org.openide.util.NbBundle.getBundle(TasklistOptionsPanel.class).getString("enableLintUnchecked.text")); // NOI18N
         enableLintUnchecked.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         enableLintUnchecked.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        enableLintUnchecked.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -174,6 +181,7 @@ public class TasklistOptionsPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(enableLintFallThrough, org.openide.util.NbBundle.getBundle(TasklistOptionsPanel.class).getString("enableLintFallThrough.text")); // NOI18N
         enableLintFallThrough.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         enableLintFallThrough.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        enableLintFallThrough.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -187,6 +195,7 @@ public class TasklistOptionsPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(enableLintSerial, org.openide.util.NbBundle.getBundle(TasklistOptionsPanel.class).getString("enableLintSerial.text")); // NOI18N
         enableLintSerial.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         enableLintSerial.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        enableLintSerial.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
@@ -200,6 +209,7 @@ public class TasklistOptionsPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(enableLintFinally, org.openide.util.NbBundle.getBundle(TasklistOptionsPanel.class).getString("enableLintFinally.text")); // NOI18N
         enableLintFinally.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         enableLintFinally.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        enableLintFinally.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 8;
@@ -213,6 +223,7 @@ public class TasklistOptionsPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(enableLintCast, org.openide.util.NbBundle.getBundle(TasklistOptionsPanel.class).getString("enableLintCast.text")); // NOI18N
         enableLintCast.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         enableLintCast.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        enableLintCast.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 9;
@@ -226,6 +237,7 @@ public class TasklistOptionsPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(enableLintEmpty, org.openide.util.NbBundle.getBundle(TasklistOptionsPanel.class).getString("enableLintEmpty.text")); // NOI18N
         enableLintEmpty.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         enableLintEmpty.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        enableLintEmpty.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 10;
@@ -239,6 +251,7 @@ public class TasklistOptionsPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(enableLintOverrides, org.openide.util.NbBundle.getBundle(TasklistOptionsPanel.class).getString("enableLintOverrides.text")); // NOI18N
         enableLintOverrides.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         enableLintOverrides.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        enableLintOverrides.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 11;
@@ -252,6 +265,7 @@ public class TasklistOptionsPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(enableLintDivZero, org.openide.util.NbBundle.getBundle(TasklistOptionsPanel.class).getString("enableLintDivZero.text")); // NOI18N
         enableLintDivZero.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         enableLintDivZero.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        enableLintDivZero.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 12;
