@@ -342,7 +342,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
             buildDefaults.put("cp", "${module.classpath}:${cp.extra}"); // NOI18N
             buildDefaults.put("run.cp", computeRuntimeModuleClasspath(ml) + ":${cp.extra}:${build.classes.dir}"); // NOI18N
             
-            baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
+            baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, providers.toArray(new PropertyProvider[providers.size()]));
             buildDefaults.put("test.unit.cp.extra", ""); // NOI18N
             String testJars; // #68685 - follow Ant script
             if (type == NbModuleProvider.NETBEANS_ORG) {
@@ -408,7 +408,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
             providers.add(PropertyUtils.fixedPropertyProvider(buildDefaults));
         }
         // skip a bunch of properties irrelevant here - NBM stuff, etc.
-        return PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
+        return PropertyUtils.sequentialPropertyEvaluator(predefs, providers.toArray(new PropertyProvider[providers.size()]));
     }
     
     private final class NbJdkProvider implements PropertyProvider, PropertyChangeListener { // #63541: JDK selection
@@ -424,7 +424,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         }
         
         public final Map<String,String> getProperties() {
-            Map<String,String> props = new HashMap();
+            Map<String,String> props = new HashMap<String,String>();
             String home = eval.getProperty("nbjdk.home"); // NOI18N
             if (home == null) {
                 String active = eval.getProperty("nbjdk.active"); // NOI18N
@@ -440,7 +440,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                 if (platform != null) {
                     Collection<FileObject> installs = platform.getInstallFolders();
                     if (installs.size() == 1) {
-                        home = FileUtil.toFile((FileObject) installs.iterator().next()).getAbsolutePath();
+                        home = FileUtil.toFile(installs.iterator().next()).getAbsolutePath();
                     }
                 }
             }
@@ -448,12 +448,11 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
             if (home != null) {
                 FileObject homeFO = FileUtil.toFileObject(new File(home));
                 if (homeFO != null) {
-                    JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
-                    for (int i = 0; i < platforms.length; i++) {
-                        if (new HashSet<FileObject>(platforms[i].getInstallFolders()).equals(Collections.singleton(homeFO))) {
+                    for (JavaPlatform platform : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
+                        if (new HashSet<FileObject>(platform.getInstallFolders()).equals(Collections.singleton(homeFO))) {
                             // Matching JDK is registered, so look up its real bootcp.
                             StringBuffer bootcpSB = new StringBuffer();
-                            ClassPath boot = platforms[i].getBootstrapLibraries();
+                            ClassPath boot = platform.getBootstrapLibraries();
                             boot.removePropertyChangeListener(weakListener);
                             boot.addPropertyChangeListener(weakListener);
                             for (ClassPath.Entry entry : boot.entries()) {
