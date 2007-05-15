@@ -175,13 +175,11 @@ public class DocumentSupport {
      * @param type of searching producer
      * @return the producer or null when producer for given type was not found 
      */
-    public static ComponentProducer getComponentProducer(TypeID typeID) {
-        DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
+    public static ComponentProducer getComponentProducer(DesignDocument document, TypeID typeID) {
         for (ComponentProducer producer : document.getDescriptorRegistry().getComponentProducers()) {
             if (producer.getComponentTypeID().equals(typeID))
                 return  producer;
         }
-        
         return null;
     }
     
