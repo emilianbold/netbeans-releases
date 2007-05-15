@@ -42,6 +42,7 @@ public class MPMeasureActions  {
         suite.addTest(new MIDletViewsSwitch("testSourceToFlowSwitch","Source To Flow Switch"));
         suite.addTest(new CreateVisualMIDlet("measureTime","Create Visual MIDlet"));
         suite.addTest(new CreateMIDlet("measureTime","Create MIDlet"));
+        suite.addTest(new SwitchConfiguration("measureTime","Switch Configuration"));
         return suite;
     }
     
