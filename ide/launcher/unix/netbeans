@@ -100,10 +100,16 @@ launchNbexec() {
             echo "$progdir"/../$X/lib/nbexec
         fi
     done | head -n 1`
+    sh=sh
+    # #73162: Ubuntu uses the ancient Bourne shell, which does not implement trap well.
+    if [ -x /bin/bash ]
+    then
+        sh=/bin/bash
+    fi
     if [ "${founduserdir}" = "yes" ]; then
-        exec sh "$nbexec" "$@"
+        exec $sh "$nbexec" "$@"
     else
-        exec sh "$nbexec" --userdir "${userdir}" "$@"
+        exec $sh "$nbexec" --userdir "${userdir}" "$@"
     fi
 }
 

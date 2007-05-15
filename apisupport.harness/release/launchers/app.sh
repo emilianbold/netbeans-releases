@@ -88,8 +88,14 @@ case "`uname`" in
             ${default_options} \
             $args
         ;;
-    *)
-        exec sh "$nbexec" \
+    *)  
+       sh=sh
+       # #73162: Ubuntu uses the ancient Bourne shell, which does not implement trap well.
+       if [ -x /bin/bash ]
+       then
+           sh=/bin/bash
+       fi
+       exec $sh "$nbexec" \
             --jdkhome "$jdkhome" \
             --branding "$APPNAME" \
             --clusters "$clusters" \
