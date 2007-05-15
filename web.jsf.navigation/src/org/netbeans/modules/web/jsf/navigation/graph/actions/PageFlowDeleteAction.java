@@ -18,7 +18,7 @@ import java.util.Queue;
 import java.util.Set;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.web.jsf.navigation.NavigationCaseEdge;
-import org.netbeans.modules.web.jsf.navigation.PinNode;
+import org.netbeans.modules.web.jsf.navigation.Pin;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowSceneElement;
 import org.openide.util.Exceptions;
@@ -118,7 +118,7 @@ public class PageFlowDeleteAction extends AbstractAction{
     }
     
     private void updateSourcePins(NavigationCaseEdge navCaseNode) {
-        PinNode source = scene.getEdgeSource(navCaseNode);
+        Pin source = scene.getEdgeSource(navCaseNode);
         if( source != null && !source.isDefault()) {
             source.setFromOutcome(null);
         } 

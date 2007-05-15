@@ -43,7 +43,7 @@ import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.TopComponent;
 import javax.swing.Action;
-import org.netbeans.modules.web.jsf.navigation.PinNode;
+import org.netbeans.modules.web.jsf.navigation.Pin;
 import org.openide.nodes.Node;
 
 /**
@@ -106,8 +106,8 @@ public class PageFlowPopupProvider implements PopupMenuProvider {
                     System.arraycopy(pageNodeActions, 0, actions, fileSystemActions.length, pageNodeActions.length);                    
                 }
                 return Utilities.actionsToPopup(actions, tc.getLookup());
-            } else if ( obj instanceof PinNode ){
-                PinNode pinNode = (PinNode)obj;
+            } else if ( obj instanceof Pin ){
+                Pin pinNode = (Pin)obj;
                 Action[] actions = pinNode.getActions();
                 return Utilities.actionsToPopup(actions, tc.getLookup());
             }

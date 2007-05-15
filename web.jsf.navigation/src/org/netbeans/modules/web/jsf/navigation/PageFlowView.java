@@ -239,7 +239,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         String pageName = pageNode.getDisplayName();
         //        widget.setNodeProperties(null /*IMAGE_LIST*/, pageName, type, glyphs);
         widget.setNodeProperties(pageNode.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16), pageName, type, glyphs);
-        scene.addPin(pageNode, new PinNode(pageNode));
+        scene.addPin(pageNode,new Pin(pageNode));
         
         setupPinsInNode(pageNode);
         
@@ -247,8 +247,8 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     }
     
     private void setupPinsInNode( Page pageNode ) {
-        Collection<PinNode> pinNodes = pageNode.getPinNodes();
-        for( PinNode pinNode : pinNodes ){
+        Collection<Pin> pinNodes = pageNode.getPinNodes();
+        for( Pin pinNode : pinNodes ){
             createPin( pageNode, pinNode );
         }
     }
@@ -261,7 +261,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
      * @param pinNode representing that page item.
      * @return
      */
-    protected VMDPinWidget createPin( Page pageNode, PinNode pinNode  ) {
+    protected VMDPinWidget createPin(  Page pageNode,Pin pinNode  ) {
         VMDPinWidget widget = (VMDPinWidget) scene.addPin(pageNode, pinNode);
         //        VMDPinWidget widget = (VMDPinWidget) graphScene.addPin(page, pin);
         //        if( navComp != null ){
@@ -292,9 +292,9 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     }
     
     private void setEdgeSourcePin(  NavigationCaseEdge navCaseNode,Page fromPageNode    ){
-        PinNode sourcePin = scene.getDefaultPin( fromPageNode);
-        Collection<PinNode> pinNodes = scene.getPins();
-        for (PinNode pinNode : pinNodes ){
+        Pin sourcePin = scene.getDefaultPin( fromPageNode);
+        Collection<Pin> pinNodes = scene.getPins();
+        for (Pin pinNode : pinNodes ){
             if (pinNode.getFromOutcome() != null &&
                     fromPageNode == pinNode.getPageFlowNode() &&
                     pinNode.getFromOutcome().equals(navCaseNode.getFromOuctome()) ) {
@@ -311,7 +311,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     }
     
     private void setEdgeTargePin(  NavigationCaseEdge navCaseNode,Page toPageNode  ){
-        PinNode targetPin = scene.getDefaultPin(toPageNode);
+        Pin targetPin = scene.getDefaultPin(toPageNode);
         //I need to remove extension so it matches the DataNode's pins.
         scene.setEdgeTarget(navCaseNode,  targetPin);
         
@@ -453,8 +453,8 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     private void redrawPinsAndEdges(Page pageNode ) {
         /* Gather the Edges */
         Collection<NavigationCaseEdge> redrawCaseNodes = new ArrayList<NavigationCaseEdge>();
-        Collection<PinNode> pinNodes = new ArrayList<PinNode>( scene.getPins() );
-        for( PinNode pinNode : pinNodes ){
+        Collection<Pin> pinNodes = new ArrayList<Pin>( scene.getPins() );
+        for( Pin pinNode : pinNodes ){
             if( pinNode.getPageFlowNode() == pageNode ){
                 assert pinNode.getPageFlowNode().getDisplayName().equals(pageNode.getDisplayName());
                 

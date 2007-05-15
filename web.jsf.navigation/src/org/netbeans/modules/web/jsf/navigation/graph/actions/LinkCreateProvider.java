@@ -35,7 +35,7 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
 import org.netbeans.modules.web.jsf.navigation.PageFlowController;
 import org.netbeans.modules.web.jsf.navigation.Page;
-import org.netbeans.modules.web.jsf.navigation.PinNode;
+import org.netbeans.modules.web.jsf.navigation.Pin;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 
 /**
@@ -47,7 +47,7 @@ public class LinkCreateProvider implements ConnectProvider {
     private PageFlowScene graphScene;
     Page source = null;
     Page target = null;
-    PinNode pinNode = null;
+    Pin pinNode = null;
     
     /**
      * Creates a new instance of LinkCreateProvider
@@ -64,7 +64,7 @@ public class LinkCreateProvider implements ConnectProvider {
         source = null;
         pinNode = null;
         if (graphScene.isPin(object)){
-            pinNode = (PinNode)object;
+            pinNode = (Pin)object;
             source = pinNode.getPageFlowNode();
         } else if ( graphScene.isNode(object) ){
             source = (Page)object;

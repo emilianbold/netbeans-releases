@@ -162,7 +162,7 @@ public class PageFlowController {
      * @param pinNode if null then it was not conntect to a pin.
      * @return
      */
-    public NavigationCase createLink(Page source,Page target, PinNode pinNode) {
+    public NavigationCase createLink(Page source,Page target,Pin pinNode) {
         
         String sourceName = source.getDisplayName();
         int caseNum = 1;

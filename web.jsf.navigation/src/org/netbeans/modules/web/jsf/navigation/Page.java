@@ -322,14 +322,14 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
         return pageContentModel.getPageContentItems();
     }
     
-    public Collection<PinNode> getPinNodes() {
+    public Collection<Pin> getPinNodes() {
         if( pageContentModel == null ){
             return Arrays.asList();
         }
         Collection<PageContentItem> pageContentItems = pageContentModel.getPageContentItems();
-        Collection<PinNode> pinNodes = new ArrayList<PinNode>(pageContentItems.size());
+        Collection<Pin> pinNodes = new ArrayList<Pin>(pageContentItems.size());
         for( PageContentItem pageContentItem : pageContentItems ){
-            pinNodes.add(new PinNode(this, pageContentItem));
+            pinNodes.add(new Pin(this, pageContentItem));
         }
         return pinNodes;
     }

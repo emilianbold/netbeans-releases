@@ -65,7 +65,7 @@ import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.modules.web.jsf.navigation.NavigationCaseEdge;
 import org.netbeans.modules.web.jsf.navigation.Page;
 import org.netbeans.modules.web.jsf.navigation.PageFlowView;
-import org.netbeans.modules.web.jsf.navigation.PinNode;
+import org.netbeans.modules.web.jsf.navigation.Pin;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.MapActionUtility;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowAcceptProvider;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowDeleteAction;
@@ -89,7 +89,7 @@ import org.openide.util.actions.SystemAction;
  * @author Joelle Lam
  */
 // TODO - remove popup menu action
-public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge, PinNode> {
+public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
     
     private LayerWidget backgroundLayer = new LayerWidget(this);
     private LayerWidget mainLayer = new LayerWidget(this);
@@ -348,12 +348,12 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge, PinNod
      * @param pageNode
      * @return
      */
-    public PinNode getDefaultPin( Page pageNode ){
-        Collection<PinNode> pins = getNodePins(pageNode);
+    public Pin getDefaultPin( Page pageNode ){
+        Collection<Pin> pins = getNodePins(pageNode);
         if( pins == null ){
             System.err.println("Node is null?: " + pageNode);
         }
-        for ( PinNode pin : pins ){
+        for ( Pin pin : pins ){
             if( pin.isDefault())
                 return pin;
         }
@@ -368,7 +368,7 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge, PinNod
      * @param pinNode
      * @return the widget attached to the pin, null, if it is a default pin
      */
-    protected Widget attachPinWidget(Page node, PinNode pinNode) {
+    protected Widget attachPinWidget(Page node,Pin pinNode) {
         assert node != null;
         
         if( pinNode.isDefault() ){
@@ -451,7 +451,9 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge, PinNod
      * @param oldSourcePin the old source pin
      * @param sourcePin the new source pin
      */
-    protected void attachEdgeSourceAnchor(NavigationCaseEdge edge, PinNode oldSourcePin, PinNode sourcePin) {
+    protected void attachEdgeSourceAnchor(NavigationCaseEdge edge,Pin oldSourcePin,
+    Pin sourcePin
+) {
         ((ConnectionWidget) findWidget(edge)).setSourceAnchor(getPinAnchor(sourcePin));
     }
     
@@ -463,7 +465,9 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge, PinNod
      * @param oldTargetPin the old target pin
      * @param targetPin the new target pin
      */
-    protected void attachEdgeTargetAnchor(NavigationCaseEdge edge, PinNode oldTargetPin, PinNode targetPin) {
+    protected void attachEdgeTargetAnchor(NavigationCaseEdge edge,Pin oldTargetPin,
+    Pin targetPin
+) {
         ((ConnectionWidget) findWidget(edge)).setTargetAnchor(getPinAnchor(targetPin));
     }
     
@@ -472,7 +476,7 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge, PinNod
      * @param pin The Pin
      * @return Anchor the anchor location
      */
-    private Anchor getPinAnchor(PinNode pin) {
+    private Anchor getPinAnchor(Pin pin) {
         if( pin == null ) {
             return null;
         }
@@ -535,7 +539,7 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge, PinNod
             String oldName = caseNode.getName();
             
             if ( caseNode.canRename() ) {
-                PinNode pin = getEdgeSource(caseNode);
+                Pin pin = getEdgeSource(caseNode);
                 caseNode.setName(pin, newName);
             }
             
