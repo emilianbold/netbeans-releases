@@ -18,7 +18,6 @@
  * Rights Reserved.
  */
 
-
 package org.netbeans.installer.sandbox.utils;
 
 import java.io.ByteArrayInputStream;

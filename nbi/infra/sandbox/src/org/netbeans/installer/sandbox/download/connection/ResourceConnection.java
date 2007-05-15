@@ -18,7 +18,6 @@
  * Rights Reserved.
  */
 
-
 package org.netbeans.installer.sandbox.download.connection;
 
 import java.io.FileNotFoundException;

@@ -19,8 +19,6 @@
  * Rights Reserved.
  */
 
-
-
 package org.netbeans.installer.sandbox.utils.installation.conditions;
 
 /**

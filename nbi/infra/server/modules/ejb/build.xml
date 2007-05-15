@@ -19,7 +19,6 @@
   Rights Reserved.
 -->
 
-
 <!-- some examples of how to customize the build. -->
 <!-- (If you delete it and reopen the project it will be recreated.) -->
 <project name="NBI_Server_-_EJB" default="default" basedir="." xmlns:ejbjarproject="http://www.netbeans.org/ns/j2ee-ejbjarproject/3">

@@ -18,8 +18,6 @@
  * Rights Reserved.
  */
 
-
-
 package org.netbeans.installer.sandbox.utils.installation.conditions;
 
 import org.netbeans.installer.utils.FileUtils;

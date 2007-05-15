@@ -18,7 +18,6 @@
  * Rights Reserved.
  */
 
-
 package org.netbeans.installer.utils.system.windows;
 
 import org.netbeans.installer.utils.StringUtils;

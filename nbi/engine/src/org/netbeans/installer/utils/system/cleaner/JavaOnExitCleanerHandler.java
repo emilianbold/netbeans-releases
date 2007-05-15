@@ -18,7 +18,6 @@
  * Rights Reserved.
  */
 
-
 package org.netbeans.installer.utils.system.cleaner;
 
 import java.io.File;

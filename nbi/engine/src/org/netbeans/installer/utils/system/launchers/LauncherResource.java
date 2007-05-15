@@ -18,7 +18,6 @@
  * Rights Reserved.
  */
 
-
 package org.netbeans.installer.utils.system.launchers;
 
 import java.io.File;

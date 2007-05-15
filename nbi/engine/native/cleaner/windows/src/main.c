@@ -18,7 +18,6 @@
  * Rights Reserved.
  */
 
-
 #include <windows.h>
 #include <wchar.h>
 

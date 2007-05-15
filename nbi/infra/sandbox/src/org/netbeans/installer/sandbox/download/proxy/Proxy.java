@@ -18,7 +18,6 @@
  * Rights Reserved.
  */
 
-
 package org.netbeans.installer.sandbox.download.proxy;
 
 import org.netbeans.installer.utils.helper.ErrorLevel;

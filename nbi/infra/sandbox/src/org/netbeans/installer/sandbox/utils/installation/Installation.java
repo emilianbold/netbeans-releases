@@ -18,8 +18,6 @@
  * Rights Reserved.
  */
 
-
-
 package org.netbeans.installer.sandbox.utils.installation;
 
 import java.io.File;

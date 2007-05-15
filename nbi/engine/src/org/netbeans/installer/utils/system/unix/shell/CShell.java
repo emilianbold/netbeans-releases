@@ -18,7 +18,6 @@
  * Rights Reserved.
  */
 
-
 package org.netbeans.installer.utils.system.unix.shell;
 
 import java.io.File;

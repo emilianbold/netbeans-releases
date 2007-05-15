@@ -18,7 +18,6 @@
  * Rights Reserved.
  */
 
-
 package org.netbeans.installer.utils.system.launchers.impl;
 
 import java.util.ArrayList;

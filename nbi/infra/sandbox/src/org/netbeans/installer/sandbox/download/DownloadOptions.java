@@ -18,7 +18,6 @@
  * Rights Reserved.
  */
 
-
 package org.netbeans.installer.sandbox.download;
 
 import java.util.Properties;

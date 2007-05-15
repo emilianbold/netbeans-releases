@@ -18,7 +18,6 @@
  * Rights Reserved.
  */
 
-
 package org.netbeans.installer.infra.server.ejb;
 
 import org.netbeans.installer.utils.helper.FinishHandler;

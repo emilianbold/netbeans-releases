@@ -18,8 +18,6 @@
  * Rights Reserved.
  */
 
-
-
 package org.netbeans.installer.sandbox.utils.installation.impl;
 
 import java.util.HashMap;

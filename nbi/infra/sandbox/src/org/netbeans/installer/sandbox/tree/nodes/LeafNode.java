@@ -18,7 +18,6 @@
  * Rights Reserved.
  */
 
-
 package org.netbeans.installer.sandbox.tree.nodes;
 
 import org.netbeans.installer.sandbox.tree.Node;
