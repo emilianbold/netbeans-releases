@@ -148,7 +148,7 @@ public class SvnConfigFiles {
             // no proxy host means no proxy at all                                                
             if(svnGlobalSection != null) {
                 // if there is a global section than get the no proxy settings                                                                 
-                mergeNonProxyKeys(svnGlobalSection, nbGlobalSection);                
+                mergeNonProxyKeys(svnGlobalSection, nbGlobalSection);
             }
         } else {            
             
@@ -478,7 +478,8 @@ public class SvnConfigFiles {
         return key.equals("http-proxy-host")     || // NOI18N
                key.equals("http-proxy-port")     || // NOI18N
                key.equals("http-proxy-username") || // NOI18N
-               key.equals("http-proxy-password");   // NOI18N
+               key.equals("http-proxy-password") || // NOI18N
+               key.equals("http-proxy-exceptions"); // NOI18N        
     }
     
     /**
