@@ -498,6 +498,10 @@ public class PageFlowController {
         }
     }
     
+    /**
+     * Replace page name in PageName2Node HasMap
+     * @param Page node, String newName, String oldName
+     **/
     public void replacePageName2Node(Page node, String newName, String oldName  ){
         printThreadInfo();
         synchronized ( pageName2Node ) {
