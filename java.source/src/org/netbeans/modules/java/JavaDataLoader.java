@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.java;
 
+import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.util.Date;
@@ -30,6 +31,7 @@ import org.netbeans.api.java.loaders.JavaDataSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.FileEntry;
 import org.openide.loaders.MultiDataObject;
@@ -242,6 +244,10 @@ public final class JavaDataLoader extends MultiFileLoader {
             if (cp != null) {
                 String pkgName = cp.getResourceName(f, '.', false);
                 JavaDataObject.renameFO(fo, pkgName, fo.getName(), origName);
+            
+                // unfortunately JavaDataObject.renameFO creates JavaDataObject but it is too soon
+                // in this stage. Loaders reusing this FileEntry will create further files.
+                destroyDataObject(fo);
             }
             return fo;
         }
@@ -271,7 +277,21 @@ public final class JavaDataLoader extends MultiFileLoader {
             }
             JavaDataObject.renameFO(fo, pkgName, name, getFile().getName());
             
+            // unfortunately JavaDataObject.renameFO creates JavaDataObject but it is too soon
+            // in this stage. Loaders reusing this FileEntry will create further files.
+            destroyDataObject(fo);
+            
             return fo;
+        }
+        
+        private void destroyDataObject(FileObject fo) throws IOException {
+            DataObject dobj = DataObject.find(fo);
+            DataObject orig = this.getDataObject();
+            try {
+                dobj.setValid(false);
+            } catch (PropertyVetoException ex) {
+                throw (IOException) new IOException().initCause(ex);
+            }
         }
 
     }
