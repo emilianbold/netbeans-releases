@@ -33,7 +33,7 @@ import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
-import org.netbeans.modules.web.jsf.navigation.graph.PageSceneElement;
+import org.netbeans.modules.web.jsf.navigation.graph.PageFlowSceneElement;
 import org.netbeans.modules.web.jsf.navigation.graph.SceneSerializer;
 import org.openide.ErrorManager;
 import org.openide.cookies.SaveCookie;
@@ -53,7 +53,7 @@ import org.openide.util.NbBundle;
  *
  * @author joelle
  */
-public final class NavigationCaseEdge extends PageSceneElement  {
+public final class NavigationCaseEdge extends PageFlowSceneElement  {
     private NavigationCase navCase = null;
     private String toViewID;
     private PageFlowController pc;

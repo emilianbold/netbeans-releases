@@ -17,7 +17,7 @@ import java.util.Collection;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.web.jsf.navigation.graph.PageSceneElement;
+import org.netbeans.modules.web.jsf.navigation.graph.PageFlowSceneElement;
 import org.netbeans.modules.web.jsf.navigation.pagecontentmodel.PageContentItem;
 import org.netbeans.modules.web.jsf.navigation.pagecontentmodel.PageContentModel;
 import org.netbeans.modules.web.jsf.navigation.pagecontentmodel.PageContentModelProvider;
@@ -38,7 +38,7 @@ import org.openide.util.actions.SystemAction;
  *
  * @author joelle
  */
-public class Page extends PageSceneElement implements SaveCookie {
+public class Page extends PageFlowSceneElement implements SaveCookie {
     
     public PageFlowController pc;
     private Node original;

@@ -615,8 +615,8 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge, PinNod
             
             Set<Node> selected = new HashSet<Node>();
             for( Object obj : newSelection ){
-                if( obj instanceof PageSceneElement ) {
-                    PageSceneElement element = (PageSceneElement)obj;
+                if( obj instanceof PageFlowSceneElement ) {
+                    PageFlowSceneElement element = (PageFlowSceneElement)obj;
                     
                     selected.add(element.getNode());
                 }
