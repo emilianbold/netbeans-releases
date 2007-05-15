@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.refactoring.java.api;
 
+import java.util.Set;
+import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
@@ -38,7 +40,7 @@ public final class ChangeParametersRefactoring extends AbstractRefactoring {
     // changes in order
     private ParameterInfo[] paramTable;
     // new modifier
-    private int modifier;
+    private Set<Modifier> modifiers;
     
     /**
      * Creates a new instance of change parameters refactoring.
@@ -61,8 +63,8 @@ public final class ChangeParametersRefactoring extends AbstractRefactoring {
      * Getter for new modifiers
      * @return modifiers
      */
-    public int getModifiers() {
-        return modifier;
+    public Set<Modifier> getModifiers() {
+        return modifiers;
     }
     
     /**
@@ -77,8 +79,8 @@ public final class ChangeParametersRefactoring extends AbstractRefactoring {
      * Sets modifiers for method
      * @param modifier new modifiers
      */
-    public void setModifiers(int modifier) {
-        this.modifier = modifier;
+    public void setModifiers(Set<Modifier> modifiers) {
+        this.modifiers = modifiers;
     }
     
     ////////////////////////////////////////////////////////////////////////////
@@ -93,7 +95,7 @@ public final class ChangeParametersRefactoring extends AbstractRefactoring {
     public static final class ParameterInfo {
         int origIndex;
         String name;
-        TypeMirrorHandle type;
+        String type;
         String defaultVal;
 
         /**
@@ -110,7 +112,7 @@ public final class ChangeParametersRefactoring extends AbstractRefactoring {
          * @param  defaultVal should be provided for the all new parameters.
          *                    For changed parameters, it is ignored.
          */
-        public ParameterInfo(int origIndex, String name, TypeMirrorHandle type, String defaultVal) {
+        public ParameterInfo(int origIndex, String name, String type, String defaultVal) {
             // new parameter
             // if (origIndex == -1 && (name == null || defaultVal == null || type == null || name.length() == 0 || defaultVal.length() == 0)) {
             //    throw new IllegalArgumentException(NbBundle.getMessage(ChangeParameters.class, "ERR_NoValues"));
@@ -154,7 +156,7 @@ public final class ChangeParametersRefactoring extends AbstractRefactoring {
          *
          * @return new type for parameter or null if it was not changed.
          */
-        public TypeMirrorHandle getType() { return type; }
+        public String getType() { return type; }
 
         /**
          * Returns value of the default value in case of the new parameter.

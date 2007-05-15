@@ -18,12 +18,38 @@
  */
 package org.netbeans.modules.refactoring.java.plugins;
 
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.util.TreePath;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Set;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ClassIndex;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.ModificationResult.Difference;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.ProgressListener;
+import org.netbeans.modules.refactoring.java.DiffElement;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring;
 import org.netbeans.modules.refactoring.java.plugins.JavaRefactoringPlugin;
+import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
 
 /**
  * Refactoring used for changing method signature. It changes method declaration
@@ -46,21 +72,142 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin implements Pro
     }
     
     public Problem preCheck() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        //TODO:
+        return null;
     }
 
     public Problem checkParameters() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        //TODO:
+        return null;
     }
 
     public Problem fastCheckParameters() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        //TODO:
+        return null;    
     }
 
-    public Problem prepare(RefactoringElementsBag refactoringElements) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+    private Set<ElementHandle<ExecutableElement>> allMethods;
+    
+    private Set<FileObject> getRelevantFiles() {
+        ClasspathInfo cpInfo = getClasspathInfo(refactoring);
+        final Set<FileObject> set = new HashSet<FileObject>();
+        JavaSource source = JavaSource.create(cpInfo, refactoring.getRefactoringSource().lookup(TreePathHandle.class).getFileObject());
+        
+        try {
+            source.runUserActionTask(new CancellableTask<CompilationController>() {
+                
+                public void cancel() {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+                
+                public void run(CompilationController info) throws Exception {
+                    final ClassIndex idx = info.getClasspathInfo().getClassIndex();
+                    info.toPhase(JavaSource.Phase.RESOLVED);
 
+                    //add all references of overriding methods
+                        TreePathHandle treePathHandle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
+                        Element el = treePathHandle.resolveElement(info);
+                    ElementHandle<TypeElement>  enclosingType = ElementHandle.create(SourceUtils.getEnclosingTypeElement(el));
+                        allMethods = new HashSet();
+                        allMethods.add(ElementHandle.create((ExecutableElement)el));
+                        for (ExecutableElement e:RetoucheUtils.getOverridingMethods((ExecutableElement)el, info)) {
+                            set.add(SourceUtils.getFile(e, info.getClasspathInfo()));
+                            ElementHandle<TypeElement> encl = ElementHandle.create(SourceUtils.getEnclosingTypeElement(e));
+                            set.addAll(idx.getResources(encl, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+                            allMethods.add(ElementHandle.create(e));
+                        }
+                        //add all references of overriden methods
+                        for (ExecutableElement e:RetoucheUtils.getOverridenMethods((ExecutableElement)el, info)) {
+                            set.add(SourceUtils.getFile(e, info.getClasspathInfo()));
+                            ElementHandle<TypeElement> encl = ElementHandle.create(SourceUtils.getEnclosingTypeElement(e));
+                            set.addAll(idx.getResources(encl, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+                            allMethods.add(ElementHandle.create(e));
+                        }
+                        set.addAll(idx.getResources(enclosingType, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+                        set.add(SourceUtils.getFile(el, info.getClasspathInfo()));
+                }
+            }, true);
+        } catch (IOException ioe) {
+            throw (RuntimeException) new RuntimeException().initCause(ioe);
+        }
+        return set;
+    }
+    
+    
+    public Problem prepare(RefactoringElementsBag elements) {
+        Set<FileObject> a = getRelevantFiles();
+        fireProgressListenerStart(ProgressEvent.START, a.size());
+        if (!a.isEmpty()) {
+            final Collection<ModificationResult> results = processFiles(a, new FindTask(elements));
+            elements.registerTransaction(new RetoucheCommit(results));
+            for (ModificationResult result:results) {
+                for (FileObject jfo : result.getModifiedFileObjects()) {
+                    for (Difference dif: result.getDifferences(jfo)) {
+                        String old = dif.getOldText();
+                        elements.add(refactoring,DiffElement.create(dif, jfo, result));
+                    }
+                }
+            }
+        }
+        fireProgressListenerStop();
+        return null;
+//        JavaMetamodel.getManager().getProgressSupport().addProgressListener(this);
+//        Problem problem = null;
+//        try {
+//            // get the original access modifier and check, if the original
+//            // modifier is weaker than the new modifier. If so, set checkMod
+//            // to true and in following code check, if all usages will have 
+//            // sufficient access privileges.
+//            int origAccessMods = method.getModifiers() & (Modifier.PUBLIC | Modifier.PROTECTED | Modifier.PRIVATE);
+//            boolean checkMod = compareModifiers(origAccessMods, modifier) == -1;
+//            // get all the callers and usages of the callable and add them
+//            // the the collection of refactored elements
+//            referencesIterator = ((CallableFeatureImpl) method).findDependencies(true, true, true).iterator();
+//            elements.add(refactoring, new SignatureElement(method, paramTable, modifier));
+//            int parNum = ((CallableFeature) refactoring.getRefactoredObject()).getParameters().size();
+//            while (referencesIterator.hasNext()) {
+//                if (cancelRequest) {
+//                    return null;
+//                }
+//                Object ref = referencesIterator.next();
+//                if (ref instanceof Invocation) {
+//                    // Callers. Refactored method has to have the same number
+//                    // of parameters as its caller. (see issue #53041 for details)
+//                    if (((Invocation) ref).getParameters().size() == parNum) {
+//                        if (problem == null && checkMod) {
+//                            // check the access to refactored method
+//                            Feature f = JavaModelUtil.getDeclaringFeature((Invocation)ref);
+//                            if (Modifier.isPrivate(modifier)) { // changing to private
+//                                if (!Utilities.compareObjects(getOutermostClass(f), getOutermostClass(method))) {
+//                                    String msg = getString("ERR_StrongAccMod"); // NOI18N
+//                                    problem = new Problem(false, new MessageFormat(msg).format(new Object[] { "private" })); // NOI18N
+//                                }
+//                            } else if (Modifier.isProtected(modifier)) { // changing to protected
+//                                if (!method.getResource().getPackageName().equals(f.getResource().getPackageName())) {
+//                                    String msg = getString("ERR_StrongAccMod"); // NOI18N
+//                                    problem = new Problem(false, new MessageFormat(msg).format(new Object[] { "protected" })); // NOI18N
+//                                }
+//                            } else if (modifier == 0) { // default modifier check
+//                                if (!f.getResource().getPackageName().equals(method.getResource().getPackageName())) {
+//                                    String msg = getString("ERR_StrongAccMod"); // NOI18N
+//                                    problem = new Problem(false, new MessageFormat(msg).format(new Object[] { "default" })); // NOI18N
+//                                }
+//                            }
+//                        }
+//                        elements.add(refactoring, new CallerElement((Invocation) ref, paramTable));
+//                    }
+//                } else {
+//                    // declaration/declarations (in case of overriden or overrides)
+//                    elements.add(refactoring, new SignatureElement((CallableFeature) ref, paramTable, modifier));
+//                }
+//            }
+//            return problem;
+//        } 
+//        finally {
+//            referencesIterator = null;
+//            JavaMetamodel.getManager().getProgressSupport().removeProgressListener(this);
+//        }
+    }
     
 
 //    RefObject selectedObject;
@@ -732,7 +879,38 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin implements Pro
     public void stop(ProgressEvent event) {
         fireProgressListenerStop();
     }
+    
 
-    // end private members
+    private class FindTask implements CancellableTask<WorkingCopy> {
+        
+        private RefactoringElementsBag elements;
+        
+        public FindTask(RefactoringElementsBag elements) {
+            super();
+            this.elements = elements;
+        }
+        
+        public void cancel() {
+        }
+        
+        public void run(WorkingCopy compiler) throws IOException {
+            compiler.toPhase(JavaSource.Phase.RESOLVED);
+            CompilationUnitTree cu = compiler.getCompilationUnit();
+            if (cu == null) {
+                ErrorManager.getDefault().log(ErrorManager.ERROR, "compiler.getCompilationUnit() is null " + compiler);
+                return;
+            }
+            Element el = refactoring.getRefactoringSource().lookup(TreePathHandle.class).resolveElement(compiler);
+            assert el != null;
+            
+            ChangeParamsTransformer findVisitor = new ChangeParamsTransformer(refactoring, compiler, allMethods);
+            findVisitor.scan(compiler.getCompilationUnit(), el);
+            
+            for (TreePath tree : findVisitor.getUsages()) {
+                ElementGripFactory.getDefault().put(compiler.getFileObject(), tree, compiler);
+            }
+            fireProgressListenerStep();
+        }
+    }    
 
 }

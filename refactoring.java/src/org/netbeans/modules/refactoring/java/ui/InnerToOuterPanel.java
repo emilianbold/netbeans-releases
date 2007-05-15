@@ -33,6 +33,7 @@ import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 /** UI panel for collecting refactoring parameters.
  *
  * @author Martin Matula
+ * @author Jan Becicka
  */
 public class InnerToOuterPanel extends JPanel implements CustomRefactoringPanel {
     // refactoring this panel provides parameters for
@@ -114,6 +115,7 @@ public class InnerToOuterPanel extends JPanel implements CustomRefactoringPanel 
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         dataPanel = new javax.swing.JPanel();
         classNameLabel = new javax.swing.JLabel();
         classNameField = new javax.swing.JTextField();
@@ -123,40 +125,38 @@ public class InnerToOuterPanel extends JPanel implements CustomRefactoringPanel 
         fieldNameLabel = new javax.swing.JLabel();
         fieldNameField = new javax.swing.JTextField();
 
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 11, 11));
         setLayout(new java.awt.BorderLayout());
 
-        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 11, 11));
+        dataPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         dataPanel.setLayout(new java.awt.BorderLayout(12, 0));
 
-        dataPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         classNameLabel.setLabelFor(classNameField);
-        org.openide.awt.Mnemonics.setLocalizedText(classNameLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/refactoring/ui/Bundle").getString("LBL_InnerToOuter_ClassName"));
+        org.openide.awt.Mnemonics.setLocalizedText(classNameLabel, org.openide.util.NbBundle.getBundle(InnerToOuterPanel.class).getString("LBL_InnerToOuter_ClassName")); // NOI18N
         dataPanel.add(classNameLabel, java.awt.BorderLayout.WEST);
-
         dataPanel.add(classNameField, java.awt.BorderLayout.CENTER);
-        classNameField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InnerToOuterPanel.class, "ACSD_nameField"));
-        classNameField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InnerToOuterPanel.class, "ACSD_nameField"));
-
-        fieldPanel.setLayout(new java.awt.BorderLayout());
+        classNameField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InnerToOuterPanel.class, "ACSD_nameField")); // NOI18N
+        classNameField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InnerToOuterPanel.class, "ACSD_nameField")); // NOI18N
 
         fieldPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 0, 0, 0));
-        org.openide.awt.Mnemonics.setLocalizedText(fieldCheckBox, org.openide.util.NbBundle.getMessage(InnerToOuterPanel.class, "LBL_InnerToOuter_DeclareField"));
+        fieldPanel.setLayout(new java.awt.BorderLayout());
+
+        org.openide.awt.Mnemonics.setLocalizedText(fieldCheckBox, org.openide.util.NbBundle.getMessage(InnerToOuterPanel.class, "LBL_InnerToOuter_DeclareField")); // NOI18N
         fieldCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 0, 4, 0));
         fieldCheckBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 fieldCheckBoxItemStateChanged(evt);
             }
         });
-
         fieldPanel.add(fieldCheckBox, java.awt.BorderLayout.NORTH);
-        fieldCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InnerToOuterPanel.class, "ACSD_DeclareFieldName"));
-        fieldCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InnerToOuterPanel.class, "ACSD_DeclareFieldDescription"));
-
-        fieldNamePanel.setLayout(new java.awt.BorderLayout(12, 0));
+        fieldCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InnerToOuterPanel.class, "ACSD_DeclareFieldName")); // NOI18N
+        fieldCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InnerToOuterPanel.class, "ACSD_DeclareFieldDescription")); // NOI18N
 
         fieldNamePanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 32, 0, 0));
+        fieldNamePanel.setLayout(new java.awt.BorderLayout(12, 0));
+
         fieldNameLabel.setLabelFor(fieldNameField);
-        org.openide.awt.Mnemonics.setLocalizedText(fieldNameLabel, org.openide.util.NbBundle.getMessage(InnerToOuterPanel.class, "LBL_InnerToOuter_FieldName"));
+        org.openide.awt.Mnemonics.setLocalizedText(fieldNameLabel, org.openide.util.NbBundle.getMessage(InnerToOuterPanel.class, "LBL_InnerToOuter_FieldName")); // NOI18N
         fieldNameLabel.setEnabled(false);
         fieldNamePanel.add(fieldNameLabel, java.awt.BorderLayout.WEST);
 
@@ -168,9 +168,7 @@ public class InnerToOuterPanel extends JPanel implements CustomRefactoringPanel 
         dataPanel.add(fieldPanel, java.awt.BorderLayout.SOUTH);
 
         add(dataPanel, java.awt.BorderLayout.NORTH);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     private void fieldCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_fieldCheckBoxItemStateChanged
         boolean enable = evt.getStateChange() == ItemEvent.SELECTED;

@@ -23,8 +23,10 @@ import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.api.*;
+import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring;
 import org.netbeans.modules.refactoring.java.api.ExtractInterfaceRefactoring;
 import org.netbeans.modules.refactoring.java.api.ExtractSuperclassRefactoring;
+import org.netbeans.modules.refactoring.java.api.InnerToOuterRefactoring;
 import org.netbeans.modules.refactoring.java.api.PullUpRefactoring;
 import org.netbeans.modules.refactoring.java.api.PushDownRefactoring;
 import org.netbeans.modules.refactoring.java.api.UseSuperTypeRefactoring;
@@ -77,6 +79,10 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
             return new PushDownRefactoringPlugin((PushDownRefactoring) refactoring);
         } else if (refactoring instanceof UseSuperTypeRefactoring) {
             return new UseSuperTypeRefactoringPlugin((UseSuperTypeRefactoring) refactoring);
+        } else if (refactoring instanceof InnerToOuterRefactoring) {
+            return new InnerToOuterRefactoringPlugin((InnerToOuterRefactoring) refactoring);
+        } else if (refactoring instanceof ChangeParametersRefactoring) {
+            return new ChangeParametersPlugin((ChangeParametersRefactoring) refactoring);
         }
         return null;
     }

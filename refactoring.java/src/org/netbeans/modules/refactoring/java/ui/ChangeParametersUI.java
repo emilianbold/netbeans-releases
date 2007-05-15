@@ -18,10 +18,19 @@
  */
 package org.netbeans.modules.refactoring.java.ui;
 
+import java.text.MessageFormat;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
@@ -30,7 +39,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Pavel Flaska
+ * @author  Pavel Flaska, Jan Becicka
  */
 public class ChangeParametersUI implements RefactoringUI {
     
@@ -39,24 +48,21 @@ public class ChangeParametersUI implements RefactoringUI {
     ChangeParametersRefactoring refactoring;
     
     /** Creates a new instance of ChangeMethodSignatureRefactoring */
-    public ChangeParametersUI(TreePathHandle refactoredObj) {
+    public ChangeParametersUI(TreePathHandle refactoredObj, CompilationInfo info) {
         this.refactoring = new ChangeParametersRefactoring(refactoredObj);
         this.refactoredObj = refactoredObj;
     }
     
     public String getDescription() {
-        return "TODO";
-//TODO:        
-//        String msg = NbBundle.getMessage(ChangeParametersUI.class, 
-//                                        "DSC_ChangeParsRootNode"); // NOI18N
-//        CallableFeature callable = ((CallableFeature) refactoredObj);
-//        boolean isMethod = callable instanceof Method;
-//        String name = isMethod ? callable.getName() : ((JavaClass) callable.getDeclaringClass()).getSimpleName();
-//        return new MessageFormat(msg).format(new Object[] { 
-//            name,
-//            NbBundle.getMessage(ChangeParametersUI.class, "DSC_ChangeParsRootNode" + (isMethod ? "Method" : "Constr")),
-//            panel.genDeclarationString()
-//       });
+        String msg = NbBundle.getMessage(ChangeParametersUI.class, 
+                                        "DSC_ChangeParsRootNode"); // NOI18N
+        String name = RetoucheUtils.getSimpleName(refactoredObj);
+        boolean isMethod = RetoucheUtils.getElementKind(refactoredObj).equals(ElementKind.METHOD);
+        return new MessageFormat(msg).format(new Object[] { 
+            name,
+            NbBundle.getMessage(ChangeParametersUI.class, "DSC_ChangeParsRootNode" + (isMethod ? "Method" : "Constr")),
+            panel.genDeclarationString()
+       });
     }
     
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
@@ -77,35 +83,32 @@ public class ChangeParametersUI implements RefactoringUI {
     }
     
     private Problem setParameters(boolean checkOnly) {
-        return null;
-        //TODO:
-//        List data = (List) panel.getTableModel().getDataVector();
-//        ChangeParametersRefactoring.ParameterInfo[] paramList = new ChangeParametersRefactoring.ParameterInfo[data.size()];
-//        JavaModelPackage pckg = (JavaModelPackage) refactoredObj.refImmediatePackage();
-//        int counter = 0;
-//        Problem problem = null;
-//        for (Iterator rowIt = data.iterator(); rowIt.hasNext(); ++counter) {
-//            List row = (List) rowIt.next();
-//            int origIndex = ((Integer) row.get(3)).intValue();
-//            String name = null;
-//            String defaultVal = null;
-//            Type type = null;
-//            if (origIndex == -1) {
-//                name = (String) row.get(0);
-//                type = pckg.getType().resolve((String) row.get(1));
-//                defaultVal = (String) row.get(2);
-//            }
-//            paramList[counter] = new ChangeParametersRefactoring.ParameterInfo(origIndex, name, type, defaultVal);
-//        }
-//        int modifier = panel.getModifier();
-//        refactoring.setParameterInfo(paramList);
-//        refactoring.setModifiers(modifier);
-//        if (checkOnly) {
-//            problem = refactoring.fastCheckParameters();
-//        } else {
-//            problem = refactoring.checkParameters();
-//        }
-//        return problem;
+        List data = (List) panel.getTableModel().getDataVector();
+        ChangeParametersRefactoring.ParameterInfo[] paramList = new ChangeParametersRefactoring.ParameterInfo[data.size()];
+        int counter = 0;
+        Problem problem = null;
+        for (Iterator rowIt = data.iterator(); rowIt.hasNext(); ++counter) {
+            List row = (List) rowIt.next();
+            int origIndex = ((Integer) row.get(3)).intValue();
+            String name = null;
+            String defaultVal = null;
+            String type = null;
+            if (origIndex == -1) {
+                name = (String) row.get(0);
+                type = (String) row.get(1);
+                defaultVal = (String) row.get(2);
+            }
+            paramList[counter] = new ChangeParametersRefactoring.ParameterInfo(origIndex, name, type, defaultVal);
+        }
+        Set<Modifier> modifier = panel.getModifier();
+        refactoring.setParameterInfo(paramList);
+        refactoring.setModifiers(modifier);
+        if (checkOnly) {
+            problem = refactoring.fastCheckParameters();
+        } else {
+            problem = refactoring.checkParameters();
+        }
+        return problem;
     }
     
     public String getName() {

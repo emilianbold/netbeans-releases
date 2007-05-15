@@ -22,32 +22,21 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.lang.reflect.Modifier;
-import java.util.Enumeration;
-import java.util.Vector;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JPanel;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.KeyStroke;
-import javax.swing.ListSelectionModel;
-import javax.swing.UIManager;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
+import java.io.IOException;
+import java.util.*;
+import java.util.Set;
+import java.util.Set;
+import javax.lang.model.element.*;
+import javax.lang.model.type.TypeMirror;
+import javax.swing.*;
+import javax.swing.event.*;
+import javax.swing.table.*;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.TypeMirrorHandle;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -55,7 +44,7 @@ import org.openide.util.NbBundle;
  * parameters, you can add parameters, reorder parameteres or remove not
  * used paramaters (not available yet). You can also change access modifier.
  *
- * @author  Pavel Flaska
+ * @author  Pavel Flaska, Jan Becicka
  */
 public class ChangeParametersPanel extends JPanel implements CustomRefactoringPanel {
 
@@ -64,6 +53,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     private ChangeListener parent;
     
     private static Action editAction = null;
+    private String returnType;
     
     private static final String[] modifierNames = {
         "public", // NOI18N
@@ -106,34 +96,57 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     
     private boolean initialized = false;
     public void initialize() {
-        if (initialized)
-            return ;
-//TODO:        
-//        ClassDefinition cd = ((CallableFeature) refactoredObj).getDeclaringClass();
-//        if (cd instanceof JavaClass) {
-//            if (((JavaClass)cd).isInterface()) {
-//                modifiersCombo.setEnabled(false);
-//            }
-//        }
-//        initTableData();
-//        setModifier();
-//        previewChange.setText(genDeclarationString());
-        initialized = true;
+        try {
+            if (initialized) {
+                return;
+            }
+            org.netbeans.api.java.source.JavaSource source = org.netbeans.api.java.source.JavaSource.forFileObject(org.netbeans.modules.refactoring.java.RetoucheUtils.getFileObject(refactoredObj));
+            source.runUserActionTask(new org.netbeans.api.java.source.CancellableTask<org.netbeans.api.java.source.CompilationController>() {
+                public void run(org.netbeans.api.java.source.CompilationController info) {
+                    try {
+                        info.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
+                        ExecutableElement e = (ExecutableElement) refactoredObj.resolveElement(info);
+                        returnType = e.getReturnType().toString();
+                        Element def = SourceUtils.getEnclosingTypeElement(e);
+                        if (def.getKind().isInterface()) {
+                            modifiersCombo.setEnabled(false);
+                        }
+                        initTableData(info);
+                        setModifier(e.getModifiers());
+                        previewChange.setText(genDeclarationString());
+                    }
+                    catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+
+                public void cancel() {
+                }
+            }, true);
+            initialized = true;
+        }
+        catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
     protected DefaultTableModel getTableModel() {
         return model;
     }
     
-    protected int getModifier() {
+    protected Set<Modifier> getModifier() {
+        modifiers.remove(Modifier.PRIVATE);
+        modifiers.remove(Modifier.PUBLIC);
+        modifiers.remove(Modifier.PROTECTED);
+        
         switch (modifiersCombo.getSelectedIndex()) {
-            case MOD_PRIVATE_INDEX: return Modifier.PRIVATE;
-            case MOD_DEFAULT_INDEX: return 0; /* no modifier */
-            case MOD_PROTECTED_INDEX: return Modifier.PROTECTED;
+        case MOD_PRIVATE_INDEX: modifiers.add(Modifier.PRIVATE);break;
+        case MOD_DEFAULT_INDEX: break; /* no modifier */
+        case MOD_PROTECTED_INDEX: modifiers.add(Modifier.PROTECTED); break;
+        case MOD_PUBLIC_INDEX: modifiers.add(Modifier.PUBLIC); break;
         }
-        return Modifier.PUBLIC;
+        return modifiers;
     }
-    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -158,15 +171,17 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         paramTitle = new javax.swing.JLabel();
         previewChange = new javax.swing.JLabel();
 
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 11, 11));
+        setAutoscrolls(true);
+        setName(getString("LBL_TitleChangeParameters"));
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 11, 11));
-        setName(getString("LBL_TitleChangeParameters"));
         modifiersPanel.setLayout(new java.awt.GridBagLayout());
 
         modifiersLabel.setDisplayedMnemonic(getString("LBL_ChangeParsMods_MNEM").charAt(0));
-        modifiersLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/refactoring/ui/Bundle").getString("LBL_ChangeParsMods"));
         modifiersLabel.setLabelFor(modifiersCombo);
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/refactoring/java/ui/Bundle"); // NOI18N
+        modifiersLabel.setText(bundle.getString("LBL_ChangeParsMods")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -178,14 +193,13 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                 modifiersComboActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         modifiersPanel.add(modifiersCombo, gridBagConstraints);
-        modifiersCombo.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/refactoring/ui/Bundle").getString("ACSD_modifiersCombo"));
+        modifiersCombo.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_modifiersCombo")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -197,78 +211,73 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
 
         eastPanel.setLayout(new java.awt.GridBagLayout());
 
+        buttonsPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 11, 1, 1));
         buttonsPanel.setLayout(new java.awt.GridBagLayout());
 
-        buttonsPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 11, 1, 1));
-        addButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/refactoring/ui/Bundle").getString("LBL_ChangeParsAdd"));
         addButton.setMnemonic(getString("LBL_ChangeParsAdd_MNEM").charAt(0));
+        addButton.setText(bundle.getString("LBL_ChangeParsAdd")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         buttonsPanel.add(addButton, gridBagConstraints);
-        addButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/refactoring/ui/Bundle").getString("ACSD_ChangeParsAdd"));
+        addButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ChangeParsAdd")); // NOI18N
 
-        removeButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/refactoring/ui/Bundle").getString("LBL_ChangeParsRemove"));
         removeButton.setMnemonic(getString("LBL_ChangeParsRemove_MNEM").charAt(0));
+        removeButton.setText(bundle.getString("LBL_ChangeParsRemove")); // NOI18N
         removeButton.setEnabled(false);
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         buttonsPanel.add(removeButton, gridBagConstraints);
-        removeButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/refactoring/ui/Bundle").getString("ACSD_ChangeParsRemove"));
+        removeButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ChangeParsRemove")); // NOI18N
 
-        moveUpButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/refactoring/ui/Bundle").getString("LBL_ChangeParsMoveUp"));
         moveUpButton.setMnemonic(getString("LBL_ChangeParsMoveUp_MNEM").charAt(0));
+        moveUpButton.setText(bundle.getString("LBL_ChangeParsMoveUp")); // NOI18N
         moveUpButton.setEnabled(false);
         moveUpButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 moveUpButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         buttonsPanel.add(moveUpButton, gridBagConstraints);
-        moveUpButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/refactoring/ui/Bundle").getString("ACSD_ChangeParsMoveUp"));
+        moveUpButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ChangeParsMoveUp")); // NOI18N
 
-        moveDownButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/refactoring/ui/Bundle").getString("LBL_ChangeParsMoveDown"));
         moveDownButton.setMnemonic(getString("LBL_ChangeParsMoveDown_MNEM").charAt(0));
+        moveDownButton.setText(bundle.getString("LBL_ChangeParsMoveDown")); // NOI18N
         moveDownButton.setEnabled(false);
         moveDownButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 moveDownButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         buttonsPanel.add(moveDownButton, gridBagConstraints);
-        moveDownButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/refactoring/ui/Bundle").getString("ACSD_ChangeParsMoveDown"));
+        moveDownButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ChangeParsMoveDown")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         eastPanel.add(buttonsPanel, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -283,6 +292,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         add(eastPanel, gridBagConstraints);
 
         westPanel.setPreferredSize(new java.awt.Dimension(453, 100));
+
         paramTable.setModel(model);
         initRenderer();
         paramTable.getSelectionModel().addListSelectionListener(getListener1());
@@ -296,9 +306,8 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         paramTable.setRowSelectionAllowed(true);
         paramTable.putClientProperty("JTable.autoStartsEdit", Boolean.FALSE); //NOI18N
         paramTable.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE); //NOI18N
-
         westPanel.setViewportView(paramTable);
-        paramTable.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/refactoring/ui/Bundle").getString("ACSD_paramTable"));
+        paramTable.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_paramTable")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -312,23 +321,21 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         paramTitle.setDisplayedMnemonic(getString("LBL_ChangeParsParameters_MNEM").charAt(0));
         paramTitle.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         paramTitle.setLabelFor(paramTable);
-        paramTitle.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/refactoring/ui/Bundle").getString("LBL_ChangeParsParameters"));
+        paramTitle.setText(bundle.getString("LBL_ChangeParsParameters")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
         add(paramTitle, gridBagConstraints);
 
-        previewChange.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getBundle(ChangeParametersPanel.class).getString("LBL_ChangeParsPreview")));
+        previewChange.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getBundle(ChangeParametersPanel.class).getString("LBL_ChangeParsPreview"))); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
         add(previewChange, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     // </editor-fold>                        
     // </editor-fold>                        
 
@@ -438,49 +445,44 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         };
     }
 
-    private void initTableData() {
-//TODO:        
-//        CallableFeature method = (CallableFeatureImpl) refactoredObj;
-//        
-//        List pars = ((CallableFeature) refactoredObj).getParameters();
-//
+    private void initTableData(CompilationController info) {
+        ExecutableElement method = (ExecutableElement) refactoredObj.resolveElement(info);
+        
+        List<? extends VariableElement> pars = method.getParameters();
+
 //        List typeList = new ArrayList();
 //        for (Iterator parIt = pars.iterator(); parIt.hasNext(); ) {
 //            Parameter par = (Parameter) parIt.next();
 //            typeList.add(par.getType());
 //        }
-//
-//        Collection allMethods = new ArrayList();
-//        if (method instanceof Method) {
-//            allMethods.addAll(CheckUtils.overrides((Method) method, method.getName(), typeList, true));
-//            allMethods.addAll(CheckUtils.isOverridden((Method) method, method.getName(), typeList));
-//        }
-//        allMethods.add(method);
-//        
-//        for (Iterator methods = allMethods.iterator(); methods.hasNext();) {
-//            int originalIndex = 0;
-//            List params = ((CallableFeature) methods.next()).getParameters();
-//            
-//            for (Iterator parIter = params.iterator(); parIter.hasNext(); ) {
-//                Parameter par = (Parameter) parIter.next();
-//                Type desc = par.getType();
-//                String typeRepresentation = getTypeStringRepresentation(desc);
-//                Boolean removable = Boolean.valueOf(par.getReferences().isEmpty());
-//                if (model.getRowCount()<=originalIndex) {
-//                    Object[] parRep = new Object[] { par.getName(), typeRepresentation, "", new Integer(originalIndex), removable };
-//                    model.addRow(parRep);
-//                } else {
-//                    removable = Boolean.valueOf(model.isRemovable(originalIndex) && removable.booleanValue());
-//                    ((Vector) model.getDataVector().get(originalIndex)).set(4, removable);
-//                }
-//                originalIndex++;
-//            }
-//        }
+
+        Collection<ExecutableElement> allMethods = new ArrayList();
+        allMethods.addAll(RetoucheUtils.getOverridenMethods(method, info));
+        allMethods.addAll(RetoucheUtils.getOverridingMethods(method, info));
+        allMethods.add(method);
+        
+        for (ExecutableElement currentMethod: allMethods) {
+            int originalIndex = 0;
+            for (VariableElement par:currentMethod.getParameters()) {
+                TypeMirror desc = par.asType();
+                String typeRepresentation = getTypeStringRepresentation(desc);
+                //TODO:
+                //Boolean removable = Boolean.valueOf(par.getReferences().isEmpty());
+                Boolean removable = Boolean.TRUE;
+                if (model.getRowCount()<=originalIndex) {
+                    Object[] parRep = new Object[] { par.toString(), typeRepresentation, "", new Integer(originalIndex), removable };
+                    model.addRow(parRep);
+                } else {
+                    removable = Boolean.valueOf(model.isRemovable(originalIndex) && removable.booleanValue());
+                    ((Vector) model.getDataVector().get(originalIndex)).set(4, removable);
+                }
+                originalIndex++;
+            }
+        }
     }
     
-    private static String getTypeStringRepresentation(TypeMirrorHandle desc) {
-        return "TODO!";
-        //return desc.getName();
+    private static String getTypeStringRepresentation(TypeMirror desc) {
+        return desc.toString();
     }
 
     private boolean acceptEditedValue() {
@@ -520,68 +522,64 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         }
     }
 
-    private void setModifier() {
-//TODO:        
-//        int mod = ((CallableFeature) refactoredObj).getModifiers();
-//        
-//        if (Modifier.isPrivate(mod))
-//            modifiersCombo.setSelectedIndex(MOD_PRIVATE_INDEX);
-//        else if (Modifier.isProtected(mod))
-//            modifiersCombo.setSelectedIndex(MOD_PROTECTED_INDEX);
-//        else if (Modifier.isPublic(mod))
-//            modifiersCombo.setSelectedIndex(MOD_PUBLIC_INDEX);
-//        else
-//            modifiersCombo.setSelectedIndex(MOD_DEFAULT_INDEX);
+    private Set<Modifier> modifiers = new HashSet();
+    private void setModifier(Set<Modifier> mods) {
+        this.modifiers.clear();
+        this.modifiers.addAll(mods);
+        if (mods.contains(Modifier.PRIVATE))
+            modifiersCombo.setSelectedIndex(MOD_PRIVATE_INDEX);
+        else if (mods.contains(Modifier.PROTECTED))
+            modifiersCombo.setSelectedIndex(MOD_PROTECTED_INDEX);
+        else if (mods.contains(Modifier.PUBLIC))
+            modifiersCombo.setSelectedIndex(MOD_PUBLIC_INDEX);
+        else
+            modifiersCombo.setSelectedIndex(MOD_DEFAULT_INDEX);
     }
 
     public String genDeclarationString() {
-        return "TODO";
-//TODO:        
-//        // generate preview for modifiers
-//        // access modifiers
-//        String mod = modifiersCombo.getSelectedIndex() != MOD_DEFAULT_INDEX /*default modifier?*/ ?
-//            (String) modifiersCombo.getSelectedItem() + ' ' : ""; // NOI18N
-//        
-//        StringBuffer buf = new StringBuffer(mod);
-//        // other than access modifiers - using data provided by the element
-//        // first of all, reset access modifier, because it is generated from combo value
+        // generate preview for modifiers
+        // access modifiers
+        String mod = modifiersCombo.getSelectedIndex() != MOD_DEFAULT_INDEX /*default modifier?*/ ?
+            (String) modifiersCombo.getSelectedItem() + ' ' : ""; // NOI18N
+        
+        StringBuffer buf = new StringBuffer(mod);
+        // other than access modifiers - using data provided by the element
+        // first of all, reset access modifier, because it is generated from combo value
 //        String otherMod = Modifier.toString(((CallableFeature) refactoredObj).getModifiers() & 0xFFFFFFF8);
 //        if (otherMod.length() != 0) {
 //            buf.append(otherMod);
 //            buf.append(' ');
 //        }
-//        // generate the return type for the method and name
-//        // for the both - method and constructor
-//        String name;
-//        if (refactoredObj instanceof Method) {
-//            Method method = (Method) refactoredObj;
-//            buf.append(getTypeStringRepresentation(method.getType()));
-//            buf.append(' ');
-//            name = method.getName();
-//        }
-//        else {
-//            // for constructor, get name from the declaring class
-//            name = ((JavaClass) ((CallableFeature) refactoredObj).getDeclaringClass()).getSimpleName();
-//        }
-//        buf.append(name);
-//        buf.append('(');
-//        // generate parameters to the preview string
-//        List[] parameters = (List[]) model.getDataVector().toArray(new List[0]);
-//        if (parameters.length > 0) {
-//            int i;
-//            for (i = 0; i < parameters.length - 1; i++) {
-//                buf.append((String) parameters[i].get(1));
-//                buf.append(' ');
-//                buf.append((String) parameters[i].get(0));
-//                buf.append(',').append(' ');
-//            }
-//            buf.append((String) parameters[i].get(1));
-//            buf.append(' ');
-//            buf.append((String) parameters[i].get(0));
-//        }
-//        buf.append(')'); //NOI18N
-//        
-//        return buf.toString();
+        // generate the return type for the method and name
+        // for the both - method and constructor
+        String name;
+        if (RetoucheUtils.getElementKind(refactoredObj) == ElementKind.METHOD) {
+            buf.append(returnType);
+            buf.append(' ');
+            name = RetoucheUtils.getSimpleName(refactoredObj);
+        } else {
+            // for constructor, get name from the declaring class
+            name = RetoucheUtils.getSimpleName(refactoredObj);
+        }
+        buf.append(name);
+        buf.append('(');
+        // generate parameters to the preview string
+        List[] parameters = (List[]) model.getDataVector().toArray(new List[0]);
+        if (parameters.length > 0) {
+            int i;
+            for (i = 0; i < parameters.length - 1; i++) {
+                buf.append((String) parameters[i].get(1));
+                buf.append(' ');
+                buf.append((String) parameters[i].get(0));
+                buf.append(',').append(' ');
+            }
+            buf.append((String) parameters[i].get(1));
+            buf.append(' ');
+            buf.append((String) parameters[i].get(0));
+        }
+        buf.append(')'); //NOI18N
+        
+        return buf.toString();
     }
 
     private static String getString(String key) {

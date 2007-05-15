@@ -499,9 +499,9 @@ public class RetoucheUtils {
         }
         
         ClassPath rcp = ClassPathSupport.createClassPath(dependentRoots.toArray(new URL[dependentRoots.size()]));
-//        ClassPath nullPath = ClassPathSupport.createClassPath(new FileObject[0]);
-        ClassPath boot = ClassPath.getClassPath(files[0], ClassPath.BOOT);
-        ClassPath compile = ClassPath.getClassPath(files[0], ClassPath.COMPILE);
+        ClassPath nullPath = ClassPathSupport.createClassPath(new FileObject[0]);
+        ClassPath boot = files[0]!=null?ClassPath.getClassPath(files[0], ClassPath.BOOT):nullPath;
+        ClassPath compile = files[0]!=null?ClassPath.getClassPath(files[0], ClassPath.COMPILE):nullPath;
         ClasspathInfo cpInfo = ClasspathInfo.create(boot, compile, rcp);
         return cpInfo;
     }

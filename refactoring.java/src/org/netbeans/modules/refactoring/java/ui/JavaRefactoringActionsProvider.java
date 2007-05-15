@@ -235,4 +235,70 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         }
     }
     
+    @Override
+    public boolean canChangeParameters(Lookup lookup) {
+        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
+        if(nodes.size() != 1)
+            return false;
+        Node node = nodes.iterator().next();
+        DataObject dObj = node.getCookie(DataObject.class);
+        if(null == dObj)
+            return false;
+        FileObject fileObj = dObj.getPrimaryFile();
+        if(null == fileObj || !RetoucheUtils.isRefactorable(fileObj))
+            return false;
+        
+        EditorCookie ec = lookup.lookup(EditorCookie.class);
+        if (RefactoringActionsProvider.isFromEditor(ec)) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void doChangeParameters(Lookup lookup) {
+        EditorCookie ec = lookup.lookup(EditorCookie.class);
+        new RefactoringActionsProvider.TextComponentRunnable(ec){
+            protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,
+                    int startOffset,
+                    int endOffset,
+                    CompilationInfo info) {
+                Element selected = selectedElement.resolveElement(info);
+                return new ChangeParametersUI(selectedElement, info);
+            }
+        }.run();
+    }
+    
+    @Override
+    public boolean canInnerToOuter(Lookup lookup) {
+        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
+        if(nodes.size() != 1)
+            return false;
+        Node node = nodes.iterator().next();
+        DataObject dObj = node.getCookie(DataObject.class);
+        if(null == dObj)
+            return false;
+        FileObject fileObj = dObj.getPrimaryFile();
+        if(null == fileObj || !RetoucheUtils.isRefactorable(fileObj))
+            return false;
+        
+        EditorCookie ec = lookup.lookup(EditorCookie.class);
+        if (RefactoringActionsProvider.isFromEditor(ec)) {
+            return true;
+        }
+        return false;    }
+
+    @Override
+    public void doInnerToOuter(Lookup lookup) {
+        EditorCookie ec = lookup.lookup(EditorCookie.class);
+        new RefactoringActionsProvider.TextComponentRunnable(ec){
+            protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,
+                    int startOffset,
+                    int endOffset,
+                    CompilationInfo info) {
+                Element selected = selectedElement.resolveElement(info);
+                return new InnerToOuterRefactoringUI(selectedElement, info);
+            }
+        }.run();
+    }    
 }

@@ -19,6 +19,7 @@
 package org.netbeans.modules.refactoring.java.ui;
 
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -33,6 +34,7 @@ import org.openide.util.NbBundle;
 /** Refactoring UI object for Move Inner To Outer Level refactoring.
  *
  * @author Martin Matula
+ * @author Jan Becicka
  */
 public class InnerToOuterRefactoringUI implements RefactoringUI {
     // reference to pull up refactoring this UI object corresponds to
@@ -43,7 +45,7 @@ public class InnerToOuterRefactoringUI implements RefactoringUI {
     /** Creates a new instance of InnerToOuterRefactoringUI
      * @param selectedElements Elements the refactoring action was invoked on.
      */
-    public InnerToOuterRefactoringUI(TreePathHandle sourceType) {
+    public InnerToOuterRefactoringUI(TreePathHandle sourceType, CompilationInfo info) {
         refactoring = new InnerToOuterRefactoring(sourceType);
     }
     
