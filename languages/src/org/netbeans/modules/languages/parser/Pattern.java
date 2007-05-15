@@ -54,6 +54,24 @@ public class Pattern {
         return new Pattern (ndg);
     }
     
+    private static Pattern createCaseInsensitive (StringBuffer input) throws ParseException {
+        int length = input.length();
+        Pattern pattern = new Pattern ();
+        for (int x = 0; x < length; x++) {
+            char c = input.charAt(x);
+            char up = Character.toUpperCase(c);
+            char down = Character.toLowerCase(c);
+            if (up != down) {
+                pattern = pattern.append(
+                        new Pattern(new Character(up)).merge(new Pattern(new Character(down)))
+                );
+            } else {
+                pattern = pattern.append(new Pattern(new Character(c)));
+            }
+        }
+        return pattern;
+    }
+    
     private static Pattern createIn (CharInput input) throws ParseException {
         Pattern pattern = new Pattern ();
         Pattern last = null;
@@ -101,6 +119,7 @@ public class Pattern {
                     input.read ();
                     if (last != null) pattern = pattern.append (last);
                     last = Pattern.create ();
+                    StringBuffer buf = new StringBuffer();
                     ch = input.next ();
                     while (ch != '"' && ch != '\'') {
                         if (ch == 0)
@@ -110,39 +129,27 @@ public class Pattern {
                             switch (input.next ()) {
                                 case '\\':
                                     input.read ();
-                                    last = last.append (new Pattern (
-                                        new Character ('\\')
-                                    ));
+                                    buf.append('\\');
                                     break;
                                 case 'n':
                                     input.read ();
-                                    last = last.append (new Pattern (
-                                        new Character ('\n')
-                                    ));
+                                    buf.append('\n');
                                     break;
                                 case 'r':
                                     input.read ();
-                                    last = last.append (new Pattern (
-                                        new Character ('\r')
-                                    ));
+                                    buf.append('\r');
                                     break;
                                 case 't':
                                     input.read ();
-                                    last = last.append (new Pattern (
-                                        new Character ('\t')
-                                    ));
+                                    buf.append('\t');
                                     break;
                                 case '"':
                                     input.read ();
-                                    last = last.append (new Pattern (
-                                        new Character ('"')
-                                    ));
+                                    buf.append('"');
                                     break;
                                 case '\'':
                                     input.read ();
-                                    last = last.append (new Pattern (
-                                        new Character ('\'')
-                                    ));
+                                    buf.append('\'');
                                     break;
                                 case 'u':
                                     input.read ();
@@ -162,20 +169,29 @@ public class Pattern {
                                         ch1 += ii * i;
                                         input.read ();
                                     }
-                                    last = last.append (new Pattern (
-                                        new Character ((char) ch1)
-                                    ));
+                                    buf.append((char) ch1);
                                     break;
                                 default:
                                     throw new ParseException ("Unexpected character after \\:" + input.next ());
                             }
                         } else {
-                            Character charr = new Character (input.read ());
-                            last = last.append (new Pattern (charr));
+                            buf.append(input.read());
                         }
                         ch = input.next ();
                     }
                     input.read ();
+                    ch = input.next();
+                    if (ch == 'i') {
+                        input.read();
+                        last = last.append(createCaseInsensitive(buf));
+                    } else {
+                        int length = buf.length();
+                        Pattern pat = new Pattern();
+                        for (int x = 0; x < length; x++) {
+                            pat = pat.append(new Pattern(new Character(buf.charAt(x))));
+                        }
+                        last = last.append(pat);
+                    }
                     break;
                 case '|':
                     input.read ();

@@ -67,6 +67,7 @@ public class NBSLanguage {
     static final ASTToken GT = ASTToken.create (NBS, "operator", ">", 0);
     static final ASTToken PARENTHESIS = ASTToken.create (NBS, "operator", "(", 0);
     static final ASTToken PARENTHESIS2 = ASTToken.create (NBS, "operator", ")", 0);
+    static final ASTToken IDENTIFIER_I = ASTToken.create (NBS, "identifier", "i", 0);
 
     
     static Language getNBSLanguage () throws ParseException {
@@ -190,6 +191,7 @@ public class NBSLanguage {
         l.addRule (rule ("reChoice1", new Object[] {"rePart", "reChoice1"}));
         l.addRule (rule ("reChoice1", new Object[] {}));
         l.addRule (rule ("rePart", new Object[] {STRING, "rePartOperatorOrMinus"}));
+        l.addRule (rule ("rePart", new Object[] {STRING, IDENTIFIER_I, "rePartOperatorOrMinus"}));
         l.addRule (rule ("rePart", new Object[] {DOT, "rePartOperator"}));
         l.addRule (rule ("rePart", new Object[] {"reClass", "rePartOperator"}));
         l.addRule (rule ("rePart", new Object[] {PARENTHESIS, "regularExpression", PARENTHESIS2, "rePartOperator"}));
