@@ -154,6 +154,7 @@ public class IDEValidateBPELProject extends Task {
           }
         }
       }
+      myBPELFiles = new ArrayList<BPELFile>();
       processBpelFilesFolderInBuildDir(this.mBuildDir);
       this.mDependentProjectDirs = projectDirs;
       ArrayList sourceDirs = new ArrayList();
@@ -163,7 +164,6 @@ public class IDEValidateBPELProject extends Task {
 
     private void processBpelFilesFolderInBuildDir(File folder) {
       File files[] = folder.listFiles(new Util.BpelFileFilter());
-      checkBPELFiles(files);
 
       for(int i =0; i < files.length; i++) {
         File file = files[i];
@@ -174,19 +174,6 @@ public class IDEValidateBPELProject extends Task {
         else {
           processBpelFilesFolderInBuildDir(file);
         }
-      }
-    }
-
-    // vlv
-    private void checkBPELFiles(File [] files) throws BuildException {
-      for (File file : files) {
-        if ( !file.isFile()) {
-          continue;
-        }
-        if ( !file.getName().endsWith(".bpel")) {
-          continue;
-        }
-//System.out.println("!!!!!!!!!!!!!!!!!!!!!: " + file.getName());
       }
     }
 
@@ -246,9 +233,38 @@ public class IDEValidateBPELProject extends Task {
       }
     }
 
-    private void processBpelFile(File bpelFile) {
-      if (isBpelFileModified(bpelFile)) {
-        loadAndValidateExistingBusinessProcess(bpelFile);
+    private void processBpelFile(File file) throws BuildException {
+//System.out.println("See !!!!!!!!!!!!!!!!!!!!!: " + file);
+      // vlv
+      BpelModel model = null;
+
+      try {
+        model = IDEBPELCatalogModel.getDefault().getBPELModel(file);
+      }
+      catch (Exception e) {
+        throw new RuntimeException("Error while trying to get BPEL Model", e);
+      }
+      String targetNamespace = model.getProcess().getTargetNamespace();
+      BPELFile current = new BPELFile(file, mSourceDir, targetNamespace);
+
+      for (BPELFile bpel : myBPELFiles) {
+        if (bpel.getTargetNamespace().equals(targetNamespace)) {
+          throw new BuildException(
+            " \n" +
+            "BPEL files\n" +
+            bpel.getName() + "\n" +
+            "and\n" +
+            current.getName() + "\n" +
+            "have the same target name space:\n" +
+            targetNamespace +
+            " \n \n"
+          );
+        }
+      }
+      myBPELFiles.add(current);
+
+      if (isBpelFileModified(file)) {
+        loadAndValidateExistingBusinessProcess(file);
       }
     }
 
@@ -368,6 +384,28 @@ public class IDEValidateBPELProject extends Task {
       }
     }
 
+    // ----------------------------
+    private static class BPELFile {
+      // vlv
+      public BPELFile(File file, File project, String targetNamespace) {
+        myFile = file;
+        myProject = project;
+        myTargetNamespace = targetNamespace;
+      }
+
+      public String getTargetNamespace() {
+        return myTargetNamespace;
+      }
+
+      public String getName() {
+        return myFile.toString();
+      }
+
+      private File myFile;
+      private File myProject;
+      private String myTargetNamespace;
+    }
+
     private String mSourceDirectory;
     private String mProjectClassPath;
     private String mBuildDirectory;
@@ -379,4 +417,5 @@ public class IDEValidateBPELProject extends Task {
     private boolean isFoundErrors = false;
     private boolean mAllowBuildWithError = false;
     private Logger logger = Logger.getLogger(IDEValidateBPELProject.class.getName());
+    private List<BPELFile> myBPELFiles;
 }
