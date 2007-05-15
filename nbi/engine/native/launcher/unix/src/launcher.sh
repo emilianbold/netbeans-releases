@@ -17,26 +17,8 @@
 # The Original Software is NetBeans. The Initial Developer of the Original Software
 # is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
 # Rights Reserved.
-#
-# Initializing variables:
-#  SYSTEM_LOCALE      - system locale name, e.g. en_US
-#  LAUNCHER_LOCALE     - current launcher locale name which language is used for output messages
-#  LAUNCHER_FULL_PATH - the full path to the running script
-#  CURRENT_DIRECTORY  - current directory
-#  LAUNCHER_NAME      - script name
-#  LAUNCHER_JAVA      - java to run the jar
-#  LAUNCHER_JAVA_EXE  - path to the java.exe to run the jar
-#  LAUNCHER_CLASSPATH - classpath to run the jvm
-#  EXTRACT_ONLY       - just extract all data and don`t run java
-#  LAUNCHER_TEMP          - temporary directory for random subdirectory
-#  LAUNCHER_EXTRACT_DIR - directory for extracting data if --extract was specified
-#  LAUNCHER_TEMP_RUNNING  - random temporary directory with all extracted data
-#  USE_DEBUG_OUTPUT   - use debug output
-#  OUTPUT_FILE        - use file for output
-#  TEST_JVM_FILE_PATH - path to the TestJVM file
-#  FILE_BLOCK_SIZE    - constant value for block size 
-#  LAUNCHER_STUB_SIZE - size of the launcher stub itself
-#  LAUNCHER_TRACKING_SIZE - size of the start of next extracting file
+# 
+
  
 ARG_JAVAHOME="--javahome"
 ARG_VERBOSE="--verbose"
