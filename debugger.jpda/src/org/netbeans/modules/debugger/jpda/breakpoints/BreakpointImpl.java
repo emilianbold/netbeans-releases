@@ -299,6 +299,9 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
                         thisThreadHasStep = true;
                     }
                 }
+                if (thisThreadHasStep) { // remove this if the debugger should warn you in the same thread as well. See #104101.
+                    return false;
+                }
                 if (activeStepRequests.size() > 0 && (thisThreadHasStep || suspendState == JPDABreakpoint.SUSPEND_ALL)) {
                     Boolean resumeDecission = debugger.getStepInterruptByBptResumeDecission();
                     if (resumeDecission != null) {
