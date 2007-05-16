@@ -1879,14 +1879,14 @@ public class JsfForm {
             Element sourceElement = markupDesignBean.getElement();
             Element renderedElement = MarkupService.getRenderedElementForElement(sourceElement);
             if (renderedElement == null || sourceElement == renderedElement) {
-                System.err.println("\nMarkup design bean not renderable, markup design bean=" + markupDesignBean); // NOI18N
+                log("\nMarkup design bean not renderable, markup design bean=" + markupDesignBean); // NOI18N
                 dumpHtmlMarkupDesignBeanHtml();
                 return;
             }
-            System.err.println("\nRendered markup design bean=" + markupDesignBean); // NOI18N
-            System.err.println(Util.getHtmlStream(renderedElement));
+            log("\nRendered markup design bean=" + markupDesignBean // NOI18N
+                    + "\n" + Util.getHtmlStream(renderedElement)); // NOI18N
         } else {
-            System.err.println("\nDesign bean not renderable, design bean=" + designBean); // NOI18N
+            log("\nDesign bean not renderable, design bean=" + designBean); // NOI18N
             dumpHtmlMarkupDesignBeanHtml();
         }
     }
@@ -1897,8 +1897,8 @@ public class JsfForm {
         if (html == null) {
             return;
         }
-        System.err.println("\nRendered html element markup design bean=" + MarkupUnit.getMarkupDesignBeanForElement(html)); // NOI18N
-        System.err.println(Util.getHtmlStream(html)); // NOI18N
+        log("\nRendered html element markup design bean=" + MarkupUnit.getMarkupDesignBeanForElement(html)
+                + "\n" + Util.getHtmlStream(html)); // NOI18N
     }
    
     public DocumentFragment getHtmlDomFragment() {
@@ -2689,6 +2689,14 @@ public class JsfForm {
     private static void log(Throwable ex) {
         Logger logger = getLogger();
         logger.log(Level.INFO, null, ex);
+    }
+    
+    private static void log(String message) {
+        Logger logger = getLogger();
+        String property = logger.getName() + ".level"; // NOI18N
+        System.setProperty(property, Level.INFO.getName());
+        logger.log(Level.INFO, message);
+        System.clearProperty(property);
     }
     
     private static void notify(Throwable ex) {
