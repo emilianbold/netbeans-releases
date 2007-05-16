@@ -2212,8 +2212,8 @@ widthcheck:  {
      * (as per hash/equals), nor duplicates among the edge lists.
      * The edge map need not contain an entry for every object, only if it
      * has some outgoing edges (empty but not null map values are permitted).
-     * The edge map may contain neither keys nor value entries for objects not
-     * in the collection to be sorted.
+     * The edge map shall not contain neither keys nor value entries for objects not
+     * in the collection to be sorted, if that happens they will be ignored (since version 7.9).
      * <p>The incoming parameters will not be modified; they must not be changed
      * during the call and possible calls to TopologicalSortException methods.
      * The returned list will support modifications.
