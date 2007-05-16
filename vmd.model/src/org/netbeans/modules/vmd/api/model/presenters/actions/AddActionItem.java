@@ -28,6 +28,7 @@ import org.openide.util.Utilities;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -40,16 +41,16 @@ public abstract class AddActionItem extends AbstractAction {
     
     public static final String TYPEID_KEY = "typeID"; //NOI18N
     
-    private static Map<String, AddActionItem> instances = new WeakHashMap<String, AddActionItem>();
+    private static Map<ComponentProducer, AddActionItem> instances = new WeakHashMap<ComponentProducer, AddActionItem>();
     
     public static final AddActionItem getInstance(final DesignComponent component, final ComponentProducer producer) {
-        AddActionItem action = instances.get(producer.getProducerID());
+        AddActionItem action = instances.get(producer);
         if (action != null) {
             action.resolveAction(component);
             return action;
         }
         action = create(component, producer);
-        instances.put(producer.getProducerID(), action);
+        instances.put(producer, action);
         
         return action;
     }
@@ -74,21 +75,21 @@ public abstract class AddActionItem extends AbstractAction {
     
     private static AddActionItem create(final DesignComponent component, final ComponentProducer producer) {
         return new AddActionItem(producer.getComponentTypeID(), component, producer) {
-            private DesignComponent component;
+            private WeakReference<DesignComponent> component;
             
             public void actionPerformed(ActionEvent e) {
                 if (producer == null)
                     throw new IllegalArgumentException("Argument typeID cant be null"); //NOI18N
-                this.component.getDocument().getTransactionManager().writeAccess(new Runnable() {
+                this.component.get().getDocument().getTransactionManager().writeAccess(new Runnable() {
                     public void run() {
-                        AcceptSupport.accept(component, producer);
+                        AcceptSupport.accept(component.get(), producer);
                     }
                 });
                 
             }
             
             public void resolveAction(DesignComponent component) {
-                this.component = component;
+                this.component = new WeakReference<DesignComponent>(component);
             }
         };
         

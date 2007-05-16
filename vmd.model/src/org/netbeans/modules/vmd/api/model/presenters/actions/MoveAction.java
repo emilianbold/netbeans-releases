@@ -20,6 +20,7 @@
 package org.netbeans.modules.vmd.api.model.presenters.actions;
 
 import java.awt.event.ActionEvent;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,7 +70,7 @@ public abstract class MoveAction extends AbstractAction implements ActionContext
         };
     }
 
-    private DesignComponent component;
+    private WeakReference<DesignComponent> component;
     private boolean isEnabled;
     private String arrayPropertyName;
     private TypeID newArrayTypeID;
@@ -80,13 +81,13 @@ public abstract class MoveAction extends AbstractAction implements ActionContext
     }
 
     protected DesignComponent getComponent() {
-        return component;
+        return component.get();
     }
 
     public boolean isEnabled() {
-        component.getDocument().getTransactionManager().readAccess(new Runnable() {
+        component.get().getDocument().getTransactionManager().readAccess(new Runnable() {
             public void run() {
-                if (component.getDocument().getSelectedComponents().size() > 1)
+                if (component.get().getDocument().getSelectedComponents().size() > 1)
                     isEnabled =  false;
                 else
                     isEnabled = true;
@@ -121,7 +122,7 @@ public abstract class MoveAction extends AbstractAction implements ActionContext
     }
 
     public void setComponent(DesignComponent component) {
-        this.component = component;
+        this.component = new WeakReference<DesignComponent>(component);
     }
 
     private String getArrayPropertyName() {

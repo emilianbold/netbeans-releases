@@ -24,6 +24,7 @@ import java.awt.Color;
 import java.awt.Font;
 
 import java.awt.event.ActionEvent;
+import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -67,7 +68,7 @@ public final class AddAction extends AbstractAction  implements ActionContext , 
     } 
     
     private JMenu menu;
-    private DesignComponent component;
+    private WeakReference<DesignComponent> component;
     private boolean enabled;
     private TypeID[] filtersTypeID =  new TypeID[0];
 
@@ -89,7 +90,7 @@ public final class AddAction extends AbstractAction  implements ActionContext , 
     }
     
     private JMenu getMenu() {
-        if (component == null)
+        if (component == null || component.get() == null)
             throw new IllegalStateException("This action has to be attached to exisitng DesignComponent");//NOI18N
         
         if (menu == null)
@@ -97,13 +98,13 @@ public final class AddAction extends AbstractAction  implements ActionContext , 
         else
             menu.removeAll();
         
-        component.getDocument().getTransactionManager().readAccess(new Runnable() {
+        component.get().getDocument().getTransactionManager().readAccess(new Runnable() {
             public void run() {
                 menu.setEnabled(isEnabled());
             }
         });
         
-        for (Action addAction : ActionsSupport.createAddActionArray(component, filtersTypeID)) {
+        for (Action addAction : ActionsSupport.createAddActionArray(component.get(), filtersTypeID)) {
             if (addAction.getValue(ActionsSupport.SEPERATOR_KEY) == null)
                 menu.add(addAction);
             else
@@ -114,12 +115,12 @@ public final class AddAction extends AbstractAction  implements ActionContext , 
     }
     
     public boolean isEnabled() {
-        if (component == null)
+        if (component == null || component.get() == null)
             throw new IllegalStateException("This action has to be attache to DesignComponent, component can not be null");//NOI18N
         
-        if (component.getDocument().getSelectedComponents().size() > 1 || component.getPresenters(AddActionPresenter.class).isEmpty())
+        if (component.get().getDocument().getSelectedComponents().size() > 1 || component.get().getPresenters(AddActionPresenter.class).isEmpty())
             enabled = false;
-        for (AddActionPresenter presenter : component.getPresenters(AddActionPresenter.class)) {
+        for (AddActionPresenter presenter : component.get().getPresenters(AddActionPresenter.class)) {
             AddActionItem[] addActionItems = presenter.getAddActionItems();
             if (addActionItems != null && addActionItems.length > 0)
                 enabled = true;
@@ -141,7 +142,7 @@ public final class AddAction extends AbstractAction  implements ActionContext , 
     }
 
     public void setComponent(DesignComponent component) {
-        this.component = component;
+        this.component = new WeakReference<DesignComponent>(component);
     }
    
 }
