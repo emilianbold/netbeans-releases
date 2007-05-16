@@ -21,6 +21,7 @@ package org.netbeans.modules.java.source.pretty;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import static com.sun.source.tree.Tree.*;
 import com.sun.source.tree.VariableTree;
 
@@ -42,6 +43,7 @@ import com.sun.tools.javac.tree.JCTree.*;
 import com.sun.tools.javac.tree.TreeInfo;
 
 import java.io.*;
+import org.netbeans.api.java.source.WorkingCopy;
 
 
 /** Prints out a tree as an indented Java source program.
@@ -66,6 +68,8 @@ public final class VeryPretty extends JCTree.Visitor {
     private int prec; // visitor argument: the current precedence level.
     private Comment pendingAppendComment = null;
     private JCTree lastCommentCheck = null;
+    private JCCompilationUnit origUnit;
+    private WorkingCopy workingCopy;
     
     public VeryPretty(Context context) {
         this(context, CodeStyle.getDefault(null));
@@ -144,6 +148,12 @@ public final class VeryPretty extends JCTree.Visitor {
         toLeftMargin();
 	t.accept(this);
         printTrailingComments(comment);
+    }
+    
+    public void print(JCTree t, WorkingCopy copy) {
+        this.workingCopy = copy;
+        origUnit = (JCCompilationUnit) copy.getCompilationUnit();
+        print(t);
     }
 
     /** Print a package declaration.
@@ -1076,6 +1086,12 @@ public final class VeryPretty extends JCTree.Visitor {
 	print(cs.spaceWithinTypeCastParens() ? " )" : ")");
         if (cs.spaceAfterTypeCast())
             needSpace();
+        if (origUnit != null && TreePath.getPath(origUnit, tree.expr) != null) {
+            int a = TreeInfo.getStartPos(tree.expr);
+            int b = TreeInfo.getEndPos(tree.expr, origUnit.endPositions);
+            print(workingCopy.getText().substring(a, b));
+            return;
+        }
 	printExpr(tree.expr, treeinfo.prefixPrec);
     }
 
