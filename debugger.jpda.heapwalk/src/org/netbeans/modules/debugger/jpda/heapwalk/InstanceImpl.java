@@ -208,11 +208,11 @@ public class InstanceImpl implements Instance {
         if (!(obj instanceof InstanceImpl)) {
             return false;
         }
-        return var.equals(((InstanceImpl) obj).var);
+        return var.getUniqueID() == ((InstanceImpl) obj).var.getUniqueID();
     }
 
     public int hashCode() {
-        return var.hashCode();
+        return (int) var.getUniqueID();
     }
     
 }

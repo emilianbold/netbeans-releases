@@ -32,7 +32,8 @@ import org.openide.windows.WindowManager;
  */
 public class InstancesView extends TopComponent {
     
-    javax.swing.JPanel hfwPanel;
+    private javax.swing.JPanel hfwPanel;
+    private HeapFragmentWalker hfw;
     
     /** Creates a new instance of InstancesView */
     public InstancesView() {
@@ -44,16 +45,7 @@ public class InstancesView extends TopComponent {
         ClassesCountsView cc = (ClassesCountsView) WindowManager.getDefault().findTopComponent("classes");
         HeapFragmentWalker hfw = cc.getCurrentFragmentWalker();
         if (hfw != null) {
-            setLayout (new BorderLayout ());
-            java.awt.Container header;
-            header = (java.awt.Container) hfw.getInstancesController().getFieldsBrowserController().getPanel().getComponent(0);
-            header.getComponent(1).setVisible(false);
-            header = (java.awt.Container) hfw.getInstancesController().getInstancesListController().getPanel().getComponent(0);
-            header.getComponent(1).setVisible(false);
-            header = (java.awt.Container) hfw.getInstancesController().getReferencesBrowserController().getPanel().getComponent(0);
-            header.getComponent(1).setVisible(false);
-            hfwPanel = hfw.getInstancesController().getPanel();
-            add(hfwPanel, "Center");
+            setHeapFragmentWalker(hfw);
         }
     }
     
@@ -63,6 +55,29 @@ public class InstancesView extends TopComponent {
             remove(hfwPanel);
             hfwPanel = null;
         }
+        hfw = null;
+    }
+    
+    public void setHeapFragmentWalker(HeapFragmentWalker hfw) {
+        if (hfwPanel != null) {
+            remove(hfwPanel);
+            hfwPanel = null;
+        }
+        this.hfw = hfw;
+        setLayout (new BorderLayout ());
+        java.awt.Container header;
+        header = (java.awt.Container) hfw.getInstancesController().getFieldsBrowserController().getPanel().getComponent(0);
+        header.getComponent(1).setVisible(false);
+        header = (java.awt.Container) hfw.getInstancesController().getInstancesListController().getPanel().getComponent(0);
+        header.getComponent(1).setVisible(false);
+        header = (java.awt.Container) hfw.getInstancesController().getReferencesBrowserController().getPanel().getComponent(0);
+        header.getComponent(1).setVisible(false);
+        hfwPanel = hfw.getInstancesController().getPanel();
+        add(hfwPanel, "Center");
+    }
+    
+    public HeapFragmentWalker getCurrentFragmentWalker() {
+        return hfw;
     }
     
     public String getName () {

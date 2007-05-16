@@ -108,6 +108,9 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
     // NEW JDK 1.6 Class Counts View:
 
     private void setUp() {
+        if (listener == null) {
+            listener = new EngineListener();
+        }
         listener.start();
         setContent();
     }
@@ -133,10 +136,10 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
             content = null;
         }
         if (debugger != null && debugger.canGetInstanceInfo()) {
-            Heap heap = new HeapImpl(debugger);
             setLayout (new BorderLayout ());
             ClassesController cc;
             synchronized (this) {
+                Heap heap = new HeapImpl(debugger);
                 hfw = new DebuggerHeapFragmentWalker(heap);
                 cc = hfw.getClassesController();
                 content = cc.getPanel();
@@ -166,9 +169,6 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
         if (IS_JDK15) {
             componentShowing_15();
         } else {
-            if (listener == null) {
-                listener = new EngineListener();
-            }
             setUp();
         }
     }

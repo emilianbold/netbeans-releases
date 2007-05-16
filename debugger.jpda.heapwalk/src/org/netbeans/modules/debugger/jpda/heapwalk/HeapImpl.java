@@ -47,6 +47,10 @@ public class HeapImpl implements Heap {
         this.debugger = debugger;
         this.instanceNumberCollector = new InstanceNumberCollector();
     }
+    
+    public JPDADebugger getDebugger() {
+        return debugger;
+    }
 
     public HeapSummary getSummary() {
         return new DebuggerHeapSummary(debugger);
