@@ -37,8 +37,6 @@ import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.subversion.ui.ignore.IgnoreAction;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
-import org.netbeans.modules.versioning.util.VersioningListener;
-import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 
