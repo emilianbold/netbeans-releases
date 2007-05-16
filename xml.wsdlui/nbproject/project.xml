@@ -359,6 +359,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
                 <friend>com.gestalt.netbeans.modules.wsdlextensions.sip</friend>
                 <friend>com.gestalt.netbeans.modules.wsdlextensions.uddi</friend>
                 <friend>com.gestalt.netbeans.modules.wsdlextensions.xmpp</friend>
+                <friend>com.gestalt.netbeans.modules.wsdlextensions.rss</friend>
                 <friend>it.imolinfo.jbi4cics.netbeansplugin.wsdlextension</friend>
                 <friend>it.imolinfo.jbi4corba.netbeansplugin.wsdlextension</friend>
                 <friend>org.netbeans.modules.compapp.casaeditor</friend>
@@ -377,8 +378,9 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
                 <friend>org.netbeans.modules.wsdlextensions.sap</friend>
                 <friend>org.netbeans.modules.wsdlextensions.smtp</friend>
                 <friend>org.netbeans.modules.wsdlextensions.snmp</friend>
+                <friend>org.netbeans.modules.wsdlextensions.swift</friend>
                 <friend>org.netbeans.modules.wsdlextensions.tcpip</friend>
-				<friend>org.netbeans.modules.wsdlextensions.ims</friend>
+		<friend>org.netbeans.modules.wsdlextensions.ims</friend>
                 <friend>org.netbeans.modules.xml.wsdl.refactoring</friend>
                 <friend>org.netbeans.modules.xml.wsdlextui</friend>
                 <friend>org.netbeans.modules.xslt.project</friend>
