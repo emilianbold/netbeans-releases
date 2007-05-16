@@ -58,7 +58,7 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener/*, Ac
     private WeakSet<DesignComponent> componentsToDelete;
     private WeakSet<DesignComponent> componentsToAdd;
     private WeakSet<DesignComponent> componentsToUndo;
-    private Set<InspectorFolderWrapper> foldersToUpdate;
+    private WeakSet<InspectorFolderWrapper> foldersToUpdate;
     private WeakSet<DesignComponent> deletedComponentsCash;
     private boolean lock = true;
     

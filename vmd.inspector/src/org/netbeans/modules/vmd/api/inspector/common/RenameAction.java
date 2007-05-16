@@ -20,6 +20,7 @@
 package org.netbeans.modules.vmd.api.inspector.common;
 
 import java.awt.event.ActionEvent;
+import java.lang.ref.WeakReference;
 
 import javax.swing.SwingUtilities;
 
@@ -44,7 +45,7 @@ public final class RenameAction extends SystemAction implements ActionContext {
     
     private NotifyDescriptor.InputLine descriptor;
     private boolean canRename;
-    private DesignComponent component;
+    private WeakReference<DesignComponent> component;
     
     
     public  void actionPerformed(ActionEvent e) {
@@ -53,11 +54,11 @@ public final class RenameAction extends SystemAction implements ActionContext {
         
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                if (component == null)
+                if (component == null || component.get() == null)
                     throw new IllegalArgumentException("No DesignComponent attached to DeleteAction"); //NOI18N
-                component.getDocument().getTransactionManager().writeAccess(new Runnable() {
+                component.get().getDocument().getTransactionManager().writeAccess(new Runnable() {
                     public void run() {
-                        InfoPresenter presenter = component.getPresenter(InfoPresenter.class);
+                        InfoPresenter presenter = component.get().getPresenter(InfoPresenter.class);
                         if (presenter == null) {
                             Debug.warning("No necessary presenter for this operation - component: "+ component); //NOI18N
                             return;
@@ -90,13 +91,13 @@ public final class RenameAction extends SystemAction implements ActionContext {
         if (component == null)
             return false;
         
-        component.getDocument().getTransactionManager().readAccess(new Runnable() {
+        component.get().getDocument().getTransactionManager().readAccess(new Runnable() {
             public void run() {
-                if (component.getDocument().getSelectedComponents().size() > 1) {
+                if (component.get().getDocument().getSelectedComponents().size() > 1) {
                     canRename = false;
                     return;
                 }
-                InspectorFolderPresenter presenter = component.getPresenter(InspectorFolderPresenter.class);
+                InspectorFolderPresenter presenter = component.get().getPresenter(InspectorFolderPresenter.class);
                 if (presenter != null)
                     canRename = presenter.getFolder().canRename();
                 else
@@ -112,7 +113,7 @@ public final class RenameAction extends SystemAction implements ActionContext {
     }
     
     public void setComponent(DesignComponent component) {
-        this.component = component;
+        this.component = new WeakReference<DesignComponent>(component);
     }
     
 }

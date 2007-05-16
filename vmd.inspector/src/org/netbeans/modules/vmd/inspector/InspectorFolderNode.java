@@ -24,10 +24,10 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Node;
 
 import javax.swing.*;
 import java.awt.*;
+import java.lang.ref.WeakReference;
 import org.netbeans.modules.vmd.api.properties.common.PropertiesSupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
@@ -41,7 +41,7 @@ final class InspectorFolderNode extends AbstractNode {
     private static final Action[] EMPTY_ACTION_ARRAY = new Action[0];
     
     private Long componentID;
-    private DesignComponent component;
+    private WeakReference<DesignComponent> component;
     private InspectorFolder folder;
     
     InspectorFolderNode(Lookup lookup) {
@@ -84,11 +84,11 @@ final class InspectorFolderNode extends AbstractNode {
         if (name == null)
             throw new IllegalArgumentException("Argument name cant be null");//NOI18N
         
-        if(component == null)
+        if(component == null || component.get() == null)
             return;
-        component.getDocument().getTransactionManager().writeAccess(new Runnable() {
+        component.get().getDocument().getTransactionManager().writeAccess(new Runnable() {
             public void run() {
-                InfoPresenter presenter = component.getPresenter(InfoPresenter.class);
+                InfoPresenter presenter = component.get().getPresenter(InfoPresenter.class);
                 if (presenter != null){
                     presenter.setEditableName(name);
                 }
@@ -107,15 +107,13 @@ final class InspectorFolderNode extends AbstractNode {
         if (componentID != null) {
             document.getTransactionManager().readAccess(new Runnable() {
                 public void run() {
-                    component = document.getComponentByUID(componentID);
+                    component = new WeakReference<DesignComponent>(document.getComponentByUID(componentID));
                 }
             });
         }
         ((InspectorChildren) getChildren()).setKeys(folderWrapper.getChildrenNodes());
     }
-    
-    
-    
+
     void terminate() {
         componentID = null;
         component = null;
@@ -123,8 +121,8 @@ final class InspectorFolderNode extends AbstractNode {
     }
     
     public Sheet createSheet() {
-        if (component != null)
-            return PropertiesSupport.createSheet(component);
+        if(component == null || component.get() == null)
+            return PropertiesSupport.createSheet(component.get());
         return super.createSheet();
     }
 }

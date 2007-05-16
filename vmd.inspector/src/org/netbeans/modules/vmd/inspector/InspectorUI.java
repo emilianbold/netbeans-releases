@@ -96,7 +96,7 @@ final class InspectorUI  extends TopComponent implements ExplorerManager.Provide
                 try {
                     lockSelectionSetting = true;
                     Node[] selectedNodes = explorerManager.getSelectedNodes();
-                    ArrayList<DesignComponent> selectedComponents = new ArrayList<DesignComponent> ();
+                    ArrayList<DesignComponent> selectedComponents = new ArrayList<DesignComponent>();
                     for (Node node : selectedNodes) {
                         if (node instanceof InspectorFolderNode) {
                             Long componentID = ((InspectorFolderNode) node).getComponentID();

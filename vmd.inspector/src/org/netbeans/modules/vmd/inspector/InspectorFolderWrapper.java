@@ -52,7 +52,7 @@ final class InspectorFolderWrapper {
     private List<InspectorFolderWrapper> children;
     private InspectorFolder folder;
     private InspectorFolderNode node;
-    private DesignComponent component;
+    private WeakReference<DesignComponent> component;
     private Collection<InspectorFolder> childrenFolders;
     private Set<InspectorFolderWrapper> toRemove;
     private Map<InspectorOrderingController, List<InspectorFolder>> ocMap;
@@ -79,7 +79,7 @@ final class InspectorFolderWrapper {
             childrenNode = new ArrayList<AbstractNode>();
         else
             childrenNode.clear();
-
+        
         for (InspectorFolderWrapper child : children) {
             childrenNode.add(child.getNode());
         }
@@ -128,7 +128,9 @@ final class InspectorFolderWrapper {
     }
     
     DesignComponent getComponent() {
-        return component;
+        if (component == null)
+            return null;
+        return component.get();
     }
     
     void resolveFolder(DesignDocument document) {
@@ -141,7 +143,7 @@ final class InspectorFolderWrapper {
                 node = new InspectorFolderNode();
         }
         if (folder.getComponentID() != null)
-            component = document.getComponentByUID(folder.getComponentID());
+            component = new WeakReference<DesignComponent>(document.getComponentByUID(folder.getComponentID()));
         executeOrder();
         getNode().resolveNode(this, document);
     }
@@ -197,8 +199,11 @@ final class InspectorFolderWrapper {
             }
         }
         for(InspectorOrderingController oc : ocMap.keySet()) {
-            List<InspectorFolder> sortedList = oc.getOrdered(component, Collections.unmodifiableList(ocMap.get(oc)));
-            
+            List<InspectorFolder> sortedList;
+            if (component != null)
+                sortedList = oc.getOrdered(component.get(), Collections.unmodifiableList(ocMap.get(oc)));
+            else
+                sortedList = oc.getOrdered(null, Collections.unmodifiableList(ocMap.get(oc)));
             if (sortedList == null)
                 throw new IllegalArgumentException("List returned from InspectorOrderingController is null, controller:" + oc); //NOI18N
             
@@ -223,7 +228,7 @@ final class InspectorFolderWrapper {
                     tempChildren.add(wrapper);
             }
         }
-    
+        
         children = new ArrayList<InspectorFolderWrapper>(tempChildren);
     }
     
@@ -253,7 +258,7 @@ final class InspectorFolderWrapper {
         }
         children = null;
     }
-
+    
     public String toString() {
         StringBuffer buffer = new StringBuffer()
                 .append("[ ")  // NOI18N

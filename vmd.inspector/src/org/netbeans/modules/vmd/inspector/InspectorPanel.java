@@ -19,6 +19,7 @@ import java.awt.Color;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.WeakHashMap;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.openide.util.Lookup;
@@ -44,7 +45,7 @@ public final class InspectorPanel implements NavigatorPanel, ActiveDocumentSuppo
     private Node[] nodesToRemove;
     private JPanel panel;
     //TODO Memory leak !!
-    private Map<DesignDocument, InspectorUI> uiMap;
+    private WeakHashMap<DesignDocument, InspectorUI> uiMap;
     
     public static InspectorPanel getInstance() {
         synchronized(InspectorPanel.class) {
@@ -66,7 +67,7 @@ public final class InspectorPanel implements NavigatorPanel, ActiveDocumentSuppo
         this.lookup = new AbstractLookup(ic);
         this.panel = new JPanel(new BorderLayout());
         this.panel.setBackground(Color.WHITE);
-        this.uiMap = new HashMap<DesignDocument, InspectorUI>();
+        this.uiMap = new WeakHashMap<DesignDocument, InspectorUI>();
     }
     
     synchronized InspectorUI getUI(DesignDocument document) {
