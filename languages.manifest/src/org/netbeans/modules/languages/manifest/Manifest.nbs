@@ -49,9 +49,28 @@ COMPLETION:keyword, whitespace: {
     text14:"Specification-Version:";
     text15:"Specification-Vendor:";
     text16:"Sealed:";
-    text16:"Content-Type:";
-    text16:"Java-Bean:";
-    text16:"Magic:";
+    text17:"Content-Type:";
+    text18:"Java-Bean:";
+    text19:"Magic:";
 }
 
+COMPLETION:keyword, whitespace: {
+    project_type:"apisupport";
+    text1:"OpenIDE-Module:";
+    text2:"OpenIDE-Module-Layer:";
+    text3:"OpenIDE-Module-Install:";
+    text4:"OpenIDE-Module-Localizing-Bundle:";
+    text5:"OpenIDE-Module-Module-Dependency-Message:";
+    text6:"OpenIDE-Module-Package-Dependency-Message:";
+    text7:"OpenIDE-Module-Specification-Version:";
+    text8:"OpenIDE-Module-Implementation-Version:";
+    text9:"OpenIDE-Module-Build-Version:";
+    text10:"OpenIDE-Module-Requires-Message:";
+    text11:"OpenIDE-Module-Class:";
+    text12:"OpenIDE-Module-Provides:";
+    text13:"OpenIDE-Module-Module-Dependencies:";
+    text14:"OpenIDE-Module-Package-Dependencies:";
+    text15:"OpenIDE-Module-Java-Dependencies:";
+    text16:"OpenIDE-Module-IDE-Dependencies:";
+}
 

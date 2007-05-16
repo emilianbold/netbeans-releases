@@ -446,6 +446,18 @@ public class Language extends org.netbeans.api.languages.Language {
         if (r.size () == 1) return r.get (0);
         throw new IllegalArgumentException ();
     }
+    
+    public List<Feature> getFeatures (String featureName, String id) {
+        Map m = (Map) featuresMap.get (featureName);
+        if (m == null) return Collections.<Feature>emptyList ();
+        Object o = m.get (id);
+        if (o instanceof Map)
+            o = ((Map) o).get (BLA);
+        if (o == null) return Collections.<Feature>emptyList ();
+        if (o instanceof Feature)
+            return Collections.<Feature>singletonList ((Feature) o);
+        return (List<Feature>) o;
+    }
 
     public List<Feature> getFeatures (String featureName, ASTPath path) {
         Map m = (Map) featuresMap.get (featureName);

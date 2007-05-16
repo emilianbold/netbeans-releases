@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.languages.features;
 
+import java.util.Iterator;
+import java.util.List;
 import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import java.awt.Color;
 import java.awt.Font;
@@ -163,7 +165,7 @@ public class CompletionSupport implements org.netbeans.spi.editor.completion.Com
             TokenHierarchy tokenHierarchy = TokenHierarchy.get (doc);
             if (doc instanceof NbEditorDocument)
                 ((NbEditorDocument) doc).readLock ();
-            String t;
+            String t = null;
             try {
                 TokenSequence sequence = tokenHierarchy.tokenSequence ();
 
@@ -179,11 +181,17 @@ public class CompletionSupport implements org.netbeans.spi.editor.completion.Com
                 String tokenType = token.id ().name ();
                 String mimeType = sequence.language ().mimeType ();
                 Language l = LanguagesManager.getDefault ().getLanguage (mimeType);
-                Feature feature = l.getFeature (Language.COMPLETION, tokenType);
-                String completionType = CompletionProviderImpl.getCompletionType (feature, tokenType);
-                t = text;
-                if (completionType == CompletionProviderImpl.COMPLETION_COMPLETE)
-                    t = text.substring (offset - sequence.offset ());
+                List<Feature> features = l.getFeatures (Language.COMPLETION, tokenType);
+                Iterator<Feature> it = features.iterator ();
+                while (it.hasNext ()) {
+                    Feature feature =  it.next ();
+                    String completionType = getCompletionType (feature, tokenType);
+                    t = text;
+                    if (completionType == CompletionProviderImpl.COMPLETION_COMPLETE) {
+                        t = text.substring (offset - sequence.offset ());
+                        break;
+                    }
+                }
             } finally {
                 if (doc instanceof NbEditorDocument)
                     ((NbEditorDocument) doc).readUnlock ();
@@ -249,6 +257,20 @@ public class CompletionSupport implements org.netbeans.spi.editor.completion.Com
 
     public CharSequence getInsertPrefix () {
         return text;
+    }
+    
+    private static String getCompletionType (Feature feature, String tokenType) {
+        String completionType = (String) feature.getValue ("type");
+        if (completionType != null) return completionType;
+        if (tokenType.indexOf ("whitespace") >= 0 ||
+            tokenType.indexOf ("operator") >= 0 || 
+            tokenType.indexOf ("separator") >= 0
+        )
+            return CompletionProviderImpl.COMPLETION_INSERT;
+        else
+        if (tokenType.indexOf ("comment") >= 0)
+            return CompletionProviderImpl.COMPLETION_APPEND;
+        return CompletionProviderImpl.COMPLETION_COMPLETE;
     }
 }
 

@@ -35,7 +35,10 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.languages.Context;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Feature.Type;
 import org.netbeans.modules.languages.Language;
@@ -47,12 +50,14 @@ import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
+import org.netbeans.spi.project.ActionProvider;
 import org.openide.ErrorManager;
 import org.openide.ErrorManager;
 import java.util.Iterator;
 import javax.swing.text.JTextComponent;
 import java.util.List;
 import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
+import org.openide.filesystems.FileObject;
 
 
 /**
@@ -122,24 +127,11 @@ public class CompletionProviderImpl implements CompletionProvider {
         return r.getList ();
     }
     
-    static String getCompletionType (Feature feature, String tokenType) {
-        String completionType = feature == null ? null : (String) feature.getValue ("type");
-        if (completionType != null) return completionType;
-        if (tokenType.indexOf ("whitespace") >= 0 ||
-            tokenType.indexOf ("operator") >= 0 || 
-            tokenType.indexOf ("separator") >= 0
-        )
-            return COMPLETION_INSERT;
-        else
-        if (tokenType.indexOf ("comment") >= 0)
-            return COMPLETION_APPEND;
-        return COMPLETION_COMPLETE;
-    }
-    
     private static class CompletionTaskImpl implements CompletionTask {
         
         private JTextComponent          component;
         private Document                doc;
+        private FileObject              fileObject;
         private boolean                 ignoreCase;
         private List<CompletionItem>    items = new ArrayList<CompletionItem> ();
         
@@ -155,20 +147,64 @@ public class CompletionProviderImpl implements CompletionProvider {
 
         public void refresh (CompletionResultSet resultSet) {
             if (resultSet == null) return;
-            
+            compute (new CompletionResult (resultSet));
+//            doc = component.getDocument ();
+//            fileObject = NbEditorUtilities.getFileObject (doc);
+//            TokenHierarchy tokenHierarchy = TokenHierarchy.get (doc);
+//            if (doc instanceof NbEditorDocument)
+//                ((NbEditorDocument) doc).readLock ();
+//            try {
+//                TokenSequence tokenSequence = tokenHierarchy.tokenSequence ();
+//                int offset = component.getCaret ().getDot ();
+//                refresh (tokenSequence, offset, resultSet);
+//                resultSet.finish();
+//            } finally {
+//                if (doc instanceof NbEditorDocument)
+//                    ((NbEditorDocument) doc).readUnlock ();
+//            }
+        }
+
+        public void cancel () {
+        }
+        
+        private void compute (Result resultSet) {
             doc = component.getDocument ();
+            fileObject = NbEditorUtilities.getFileObject (doc);
             TokenHierarchy tokenHierarchy = TokenHierarchy.get (doc);
             if (doc instanceof NbEditorDocument)
                 ((NbEditorDocument) doc).readLock ();
             try {
                 TokenSequence tokenSequence = tokenHierarchy.tokenSequence ();
                 int offset = component.getCaret ().getDot ();
-                refresh (tokenSequence, offset, resultSet);
-                resultSet.finish();
+                compute (tokenSequence, offset, resultSet, doc);
             } finally {
                 if (doc instanceof NbEditorDocument)
                     ((NbEditorDocument) doc).readUnlock ();
             }
+            addParserTags (resultSet);
+        }
+    
+        private String getCompletionType (Feature feature, String tokenType) {
+            String projectType = (String) feature.getValue("project_type");
+            if (projectType != null) {
+                Project p = FileOwnerQuery.getOwner (fileObject);
+                if (p == null) return null;
+                Object o = p.getLookup ().lookup (ActionProvider.class);
+                if (o == null) return null;
+                if (o.getClass ().getName ().indexOf (projectType) < 0)
+                    return null;
+            }
+            String completionType = (String) feature.getValue ("type");
+            if (completionType != null) return completionType;
+            if (tokenType.indexOf ("whitespace") >= 0 ||
+                tokenType.indexOf ("operator") >= 0 || 
+                tokenType.indexOf ("separator") >= 0
+            )
+                return COMPLETION_INSERT;
+            else
+            if (tokenType.indexOf ("comment") >= 0)
+                return COMPLETION_APPEND;
+            return COMPLETION_COMPLETE;
         }
         
         private void refresh (TokenSequence tokenSequence, int offset, CompletionResultSet resultSet) {
@@ -186,51 +222,34 @@ public class CompletionProviderImpl implements CompletionProvider {
                 Token token = tokenSequence.token ();
                 int tokenOffset = tokenSequence.offset();
                 String tokenType = token.id ().name ();
-                Feature feature = language.getFeature (Language.COMPLETION, tokenType);
-                String completionType = getCompletionType (feature, tokenType);
-                if (COMPLETION_APPEND.equals (completionType) && 
-                    offset < tokenOffset + token.length ()
-                ) {
-                    return;
-                }
-                String start = COMPLETION_COMPLETE.equals (completionType) ? 
-                    token.text ().toString ().substring (0, offset - tokenOffset).trim () :
-                    "";
-                if (ignoreCase) start = start.toLowerCase ();
-
-                Iterator<CompletionItem> it = items.iterator ();
+                List<Feature> features = language.getFeatures (Language.COMPLETION, tokenType);
+                Iterator<Feature> it = features.iterator ();
                 while (it.hasNext ()) {
-                    CompletionItem item = it.next ();
-                    CharSequence chs = item.getInsertPrefix ();
-                    String s = chs instanceof String ? (String) chs : chs.toString ();
-                    if (s.startsWith (start))
-                        resultSet.addItem (item);
+                    Feature feature = it.next ();
+                    String completionType = getCompletionType (feature, tokenType);
+                    if (completionType == null) continue;
+                    if (COMPLETION_APPEND.equals (completionType) && 
+                        offset < tokenOffset + token.length ()
+                    )
+                        continue;
+                    String start = COMPLETION_COMPLETE.equals (completionType) ? 
+                        token.text ().toString ().substring (0, offset - tokenOffset).trim () :
+                        "";
+                    if (ignoreCase) start = start.toLowerCase ();
+
+                    Iterator<CompletionItem> it2 = items.iterator ();
+                    while (it2.hasNext ()) {
+                        CompletionItem item = it2.next ();
+                        CharSequence chs = item.getInsertPrefix ();
+                        String s = chs instanceof String ? (String) chs : chs.toString ();
+                        if (s.startsWith (start))
+                            resultSet.addItem (item);
+                    }
                 }
-                if (feature == null) {
-                    refresh (tokenSequence.embedded(), offset, resultSet);
-                }
+                refresh (tokenSequence.embedded(), offset, resultSet);
                 //compute (resultSet);
             } catch (ParseException e) {
             }
-        }
-
-        public void cancel () {
-        }
-        
-        private void compute (Result resultSet) {
-            doc = component.getDocument ();
-            TokenHierarchy tokenHierarchy = TokenHierarchy.get (doc);
-            if (doc instanceof NbEditorDocument)
-                ((NbEditorDocument) doc).readLock ();
-            try {
-                TokenSequence tokenSequence = tokenHierarchy.tokenSequence ();
-                int offset = component.getCaret ().getDot ();
-                compute (tokenSequence, offset, resultSet, doc);
-            } finally {
-                if (doc instanceof NbEditorDocument)
-                    ((NbEditorDocument) doc).readUnlock ();
-            }
-            addParserTags (resultSet);
         }
         
         private void compute (
@@ -241,7 +260,6 @@ public class CompletionProviderImpl implements CompletionProvider {
         ) {
             if (tokenSequence == null) return;
             String mimeType = tokenSequence.language ().mimeType ();
-            Feature feature = null;
             String start = null;
             tokenSequence.move (offset - 1);
             if (!tokenSequence.moveNext ()) return;
@@ -256,28 +274,30 @@ public class CompletionProviderImpl implements CompletionProvider {
                 Language language = LanguagesManager.getDefault ().
                     getLanguage (mimeType);
                 String tokenType = token.id ().name ();
-                feature = language.getFeature (Language.COMPLETION, tokenType);
-                String completionType = getCompletionType (feature, tokenType);
-                int tokenOffset = tokenSequence.offset();
-                if (completionType == COMPLETION_APPEND && 
-                    offset < tokenOffset + token.length ()
-                ) {
-                    return;
+                List<Feature> features = language.getFeatures (Language.COMPLETION, tokenType);
+                Iterator<Feature> it = features.iterator ();
+                while (it.hasNext ()) {
+                    Feature feature =  it.next ();
+                    String completionType = getCompletionType (feature, tokenType);
+                    int tokenOffset = tokenSequence.offset();
+                    if (completionType == null) continue;
+                    if (completionType == COMPLETION_APPEND && 
+                        offset < tokenOffset + token.length ()
+                    ) 
+                        continue;
+                    start = COMPLETION_COMPLETE.equals (completionType) ? 
+                        start.substring (0, offset - tokenOffset).trim () :
+                        "";
+                    ignoreCase = false;
+                    Feature f = language.getFeature ("PROPERTIES");
+                    if (f != null)
+                        ignoreCase = f.getBoolean ("ignoreCase", false);
+                    if (ignoreCase) start = start.toLowerCase ();
+                    addTags (feature, start, Context.create (doc, tokenSequence), resultSet);
                 }
-                start = COMPLETION_COMPLETE.equals (completionType) ? 
-                    start.substring (0, offset - tokenOffset).trim () :
-                    "";
-                ignoreCase = false;
-                Feature f = language.getFeature ("PROPERTIES");
-                if (f != null)
-                    ignoreCase = f.getBoolean ("ignoreCase", false);
-                if (ignoreCase) start = start.toLowerCase ();
             } catch (LanguageDefinitionNotFoundException ex) {
             }
-            if (feature == null)
-                compute (tokenSequence.embedded (), offset, resultSet, doc);
-            else
-                addTags (feature, start, Context.create (doc, tokenSequence), resultSet);
+            compute (tokenSequence.embedded (), offset, resultSet, doc);
         }
 
         private void addParserTags (final Result resultSet) {
@@ -330,28 +350,27 @@ public class CompletionProviderImpl implements CompletionProvider {
                 return ;
             }
             String tokenType = token.getType();
-            Feature f = lang.getFeature (Language.COMPLETION, tokenType);
             int tokenOffset = token.getOffset();
-            String completionType = getCompletionType (f, tokenType);
-            if (completionType == COMPLETION_APPEND && 
-                offset < tokenOffset + token.getLength ()
-            ) {
-                return;
-            }
-            String start = COMPLETION_COMPLETE.equals (completionType) ? 
-                token.getIdentifier ().substring (0, offset - tokenOffset).trim () :
-                "";
-            
-            //S ystem.out.println("CodeCompletion: (syntax) start=" + start + ": stoken=" + token);
-            
+
             for (int i = path.size () - 1; i >= 0; i--) {
                 item = path.get (i);
                 try {
                     Language language = LanguagesManager.getDefault ().
                         getLanguage (item.getMimeType ());
-                    Feature feature = language.getFeature (COMPLETION, path.subPath (i));
-                    if (feature != null)
+                    List<Feature> features = language.getFeatures (COMPLETION, path.subPath (i));
+                    Iterator<Feature> it2 = features.iterator ();
+                    while (it2.hasNext ()) {
+                        Feature feature =  it2.next ();
+                        String completionType = getCompletionType (feature, tokenType);
+                        if (completionType == null) continue;
+                        if (completionType == COMPLETION_APPEND && 
+                            offset < tokenOffset + token.getLength ()
+                        ) continue;
+                        String start = COMPLETION_COMPLETE.equals (completionType) ? 
+                            token.getIdentifier ().substring (0, offset - tokenOffset).trim () :
+                            "";
                         addTags (feature, start, SyntaxContext.create (doc, path.subPath (i)), resultSet);
+                    }
                 } catch (ParseException ex) {
                 }
             }
