@@ -25,6 +25,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.*;
 import java.util.List;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.PreferenceChangeEvent;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.io.*;
@@ -42,11 +44,9 @@ import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.editor.fold.FoldHierarchyListener;
 import org.netbeans.api.editor.fold.FoldHierarchyEvent;
-import org.netbeans.modules.diff.builtin.visualizer.GraphicalDiffVisualizer;
-import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
+import org.netbeans.modules.diff.DiffModuleConfig;
 import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
 
-import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
@@ -61,7 +61,6 @@ import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.diff.DiffView;
 import org.netbeans.api.diff.DiffController;
 import org.netbeans.spi.diff.DiffProvider;
-import org.netbeans.spi.diff.DiffVisualizer;
 import org.netbeans.spi.diff.DiffControllerImpl;
 import org.openide.text.NbDocument;
 
@@ -71,14 +70,14 @@ import org.openide.text.NbDocument;
  * 
  * @author Maros Sandor
  */
-public class EditableDiffView extends DiffControllerImpl implements DiffView, DocumentListener, AncestorListener, PropertyChangeListener {
+public class EditableDiffView extends DiffControllerImpl implements DiffView, DocumentListener, AncestorListener, PropertyChangeListener, PreferenceChangeListener {
 
     private Stroke boldStroke = new BasicStroke(3);
     
     // === Default Diff Colors ===========================================================
-    private Color colorMissing = new Color(255, 160, 180);
-    private Color colorAdded   = new Color(180, 255, 180);
-    private Color colorChanged = new Color(160, 200, 255);
+    private Color colorMissing;
+    private Color colorAdded;
+    private Color colorChanged;
     private Color colorLines   = Color.DARK_GRAY;
     private Color COLOR_READONLY_BG = new Color(240,240,240);
 
@@ -307,20 +306,13 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     }
    
     private void initColors() {
-        Lookup.Result<DiffVisualizer> dv = Lookup.getDefault().lookup(new Lookup.Template<DiffVisualizer>(DiffVisualizer.class));
-        Collection c = dv.allInstances();
-        for (Iterator i = c.iterator(); i.hasNext();) {
-            Object o = i.next();
-            if (o instanceof GraphicalDiffVisualizer) {
-                GraphicalDiffVisualizer gdv = (GraphicalDiffVisualizer) o;
-                colorAdded = gdv.getColorAdded();
-                colorChanged = gdv.getColorChanged();
-                colorMissing = gdv.getColorMissing();
-            }
-        }
+        colorMissing = DiffModuleConfig.getDefault().getDeletedColor();
+        colorAdded = DiffModuleConfig.getDefault().getAddedColor(); 
+        colorChanged = DiffModuleConfig.getDefault().getChangedColor();
     }
 
     public void ancestorAdded(AncestorEvent event) {
+        DiffModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
         expandFolds();
         initGlobalSizes();
         addChangeListeners();
@@ -328,7 +320,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
 
         if (editableCookie == null) return;
         refreshEditableDocument();
-        editableCookie.addPropertyChangeListener(this); 
+        editableCookie.addPropertyChangeListener(this);
     }
 
     private void refreshEditableDocument() {
@@ -349,6 +341,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     }
 
     public void ancestorRemoved(AncestorEvent event) {
+        DiffModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
         if (editableCookie != null) {
             editableDocument.removeDocumentListener(this);
             saveModifiedDocument();
@@ -359,6 +352,12 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         }
     }
 
+    public void preferenceChange(PreferenceChangeEvent evt) {
+        initColors();
+        diffChanged();  // trigger re-calculation of hightlights in case diff stays the same
+        refreshDiff(20);
+    }
+    
     private void saveModifiedDocument() {
         DataObject dao = (DataObject) editableDocument.getProperty(Document.StreamDescriptionProperty);
         if (dao != null) {
@@ -892,10 +891,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                 ErrorManager.getDefault().notify(e);
             }
 
-            DiffProvider diff = Lookup.getDefault().lookup(DiffProvider.class);
-            if (diff == null) {
-                diff = new BuiltInDiffProvider();
-            }
+            DiffProvider diff = DiffModuleConfig.getDefault().getDefaultDiffProvider();
             try {
                 diffs = diff.computeDiff(first, second);
                 diffChanged();

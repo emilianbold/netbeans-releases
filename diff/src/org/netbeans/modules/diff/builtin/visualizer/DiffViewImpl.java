@@ -34,18 +34,16 @@ import javax.swing.*;
 import javax.swing.text.*;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
-import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
+import org.netbeans.modules.diff.DiffModuleConfig;
 
 import org.openide.actions.CopyAction;
 import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.CallbackSystemAction;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.Lookup;
 import org.openide.ErrorManager;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.spi.diff.DiffProvider;
-import org.netbeans.spi.diff.DiffVisualizer;
 import org.openide.text.CloneableEditorSupport;
 
 /**
@@ -56,20 +54,14 @@ import org.openide.text.CloneableEditorSupport;
  */
 public class DiffViewImpl extends javax.swing.JPanel implements org.netbeans.api.diff.DiffView, javax.swing.event.CaretListener {
 
-//    static final long serialVersionUID =3683458237532937983L;
-    
-    public static final java.awt.Color COLOR_MISSING    = new java.awt.Color(255, 160, 180);
-    public static final java.awt.Color COLOR_ADDED      = new java.awt.Color(180, 255, 180);
-    public static final java.awt.Color COLOR_CHANGED    = new java.awt.Color(160, 200, 255);
-    
     private Difference[] diffs = null;
     
     /** The shift of differences */
     private int[][] diffShifts;
     
-    private java.awt.Color colorMissing = COLOR_MISSING;
-    private java.awt.Color colorAdded   = COLOR_ADDED;
-    private java.awt.Color colorChanged = COLOR_CHANGED;
+    private java.awt.Color colorMissing;
+    private java.awt.Color colorAdded;
+    private java.awt.Color colorChanged;
     
     private int currentDiffLine = -1;
     
@@ -102,15 +94,9 @@ public class DiffViewImpl extends javax.swing.JPanel implements org.netbeans.api
     }
     
     public DiffViewImpl(StreamSource ss1, StreamSource ss2) throws IOException {
-        Lookup.Result<DiffVisualizer> dv = Lookup.getDefault().lookup(new Lookup.Template<DiffVisualizer>(DiffVisualizer.class));
-        for (DiffVisualizer diff: dv.allInstances()) {
-            if (diff instanceof GraphicalDiffVisualizer) {
-                GraphicalDiffVisualizer gdv = (GraphicalDiffVisualizer) diff;
-                colorAdded = gdv.getColorAdded();
-                colorChanged = gdv.getColorChanged();
-                colorMissing = gdv.getColorMissing();
-            }
-        }
+        colorMissing = DiffModuleConfig.getDefault().getDeletedColor();
+        colorAdded = DiffModuleConfig.getDefault().getAddedColor(); 
+        colorChanged = DiffModuleConfig.getDefault().getChangedColor();
         Reader r1 = ss1.createReader();
         Reader r2 = ss2.createReader();
         String title1 = ss1.getTitle();
@@ -137,10 +123,7 @@ public class DiffViewImpl extends javax.swing.JPanel implements org.netbeans.api
         if (source2 == null) jEditorPane2.setVisible(false);
 
         if (r1 != null && r2 != null) {
-            DiffProvider provider = (DiffProvider) Lookup.getDefault().lookup(DiffProvider.class);
-            if (provider == null) {
-                provider = new BuiltInDiffProvider();
-            }
+            DiffProvider provider = DiffModuleConfig.getDefault().getDefaultDiffProvider();
             diffs = provider.computeDiff(new StringReader(source1), new StringReader(source2));
         } else {
             diffs = new Difference[0];

@@ -185,7 +185,7 @@ class DiffContentPanel extends JComponent implements HighlightsContainer {
         }
     }
     
-    private void fireHilitingChanged() {
+    void fireHilitingChanged() {
         synchronized(listeners) {
             for (HighlightsChangeListener listener : listeners) {
               listener.highlightChanged(new HighlightsChangeEvent(this, 0, Integer.MAX_VALUE));

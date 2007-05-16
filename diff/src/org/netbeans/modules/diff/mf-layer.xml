@@ -104,6 +104,14 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         </folder>
     </folder>
+
+    <folder name="OptionsDialog">
+        <folder name="Advanced">
+            <file name="Diff.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.diff.DiffOptions"/>
+            </file>
+        </folder>
+    </folder>
     
 </filesystem>
 
