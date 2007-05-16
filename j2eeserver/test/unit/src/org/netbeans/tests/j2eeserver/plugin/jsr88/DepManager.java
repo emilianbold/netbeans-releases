@@ -43,7 +43,7 @@ public class DepManager implements DeploymentManager {
     public String getName() { return name ; }
     
     public DeploymentConfiguration createConfiguration(DeployableObject deployableObject) throws InvalidModuleException {
-        return new DepConfig(deployableObject,this);
+        return null;
     }
 
     public ProgressObject distribute(Target[] targets, final File file, File file2) throws java.lang.IllegalStateException {
