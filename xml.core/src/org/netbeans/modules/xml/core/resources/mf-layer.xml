@@ -20,12 +20,6 @@ Microsystems, Inc. All Rights Reserved.
 
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd" [
     <!ENTITY localize-it "<attr name='SystemFileSystem.localizingBundle' stringvalue='org.netbeans.modules.xml.core.resources.Bundle'/>">
-
-    <!-- DTD 'module' hosted entities -->
-    <!ENTITY dtd-grammar-registration SYSTEM "nbres:/org/netbeans/modules/xml/dtd/resources/mf-plugins.ent">
-
-    <!-- XSD 'module' hosted entities -->
-    <!ENTITY xsd-grammar-registration SYSTEM "nbres:/org/netbeans/modules/xml/xsd/resources/mf-plugins.ent">
 ]>
 
 <filesystem>
@@ -133,9 +127,11 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="XML">
             <folder name="GrammarQueryManagers">
                 <file name="semantics-grammar-to-generic-grammar-separator"/>
-                <attr name="semantics-grammar-to-generic-grammar-separator/generic-grammar-to-universal-grammar-separator" boolvalue="true"/>
+                <!-- register generic DTD grammar -->
+                <attr name="semantics-grammar-to-generic-grammar-separator/org-netbeans-modules-xml-dtd-grammar-DTDGrammarQueryProvider.instance" boolvalue="true"/>
+                <file name="org-netbeans-modules-xml-dtd-grammar-DTDGrammarQueryProvider.instance"/>
+                <attr name="org-netbeans-modules-xml-dtd-grammar-DTDGrammarQueryProvider.instance/generic-grammar-to-universal-grammar-separator" boolvalue="true"/>
                 <file name="generic-grammar-to-universal-grammar-separator"/>
-                &dtd-grammar-registration; <!-- &xsd-grammar-registration; -->
             </folder>
         </folder>
     </folder>
