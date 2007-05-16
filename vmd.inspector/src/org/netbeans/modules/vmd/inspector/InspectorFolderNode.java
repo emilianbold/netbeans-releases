@@ -121,7 +121,7 @@ final class InspectorFolderNode extends AbstractNode {
     }
     
     public Sheet createSheet() {
-        if(component == null || component.get() == null)
+        if(component != null && component.get() != null)
             return PropertiesSupport.createSheet(component.get());
         return super.createSheet();
     }

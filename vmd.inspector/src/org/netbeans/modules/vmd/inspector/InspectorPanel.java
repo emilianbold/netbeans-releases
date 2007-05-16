@@ -17,8 +17,6 @@ package org.netbeans.modules.vmd.inspector;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.WeakHashMap;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
