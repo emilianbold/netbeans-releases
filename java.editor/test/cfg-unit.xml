@@ -36,6 +36,7 @@ Microsystems, Inc. All Rights Reserved.
             <patternset>
                 <include name="**/**Test.class"/>
                 <exclude name="**/DetectorTest.class" />
+                <exclude name="**/DelegateMethodGeneratorTest.class" />
             </patternset>
         </testset>
     </testbag>
