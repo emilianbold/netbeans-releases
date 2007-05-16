@@ -46,6 +46,8 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
@@ -311,12 +313,13 @@ class OutlinePanel extends JPanel implements ExplorerManager.Provider, Lookup.Pr
     }
     
     private void dumpActivatedNodes() {
+        log("Activated nodes:"); // NOI18N
         Node[] nodes = getExplorerManager().getSelectedNodes();
         if (nodes == null) {
             return;
         }
         for (Node node : nodes) {
-            System.err.println(dumpNodeWithChildren(node, 0));
+            log(dumpNodeWithChildren(node, 0));
         }
     }
     
@@ -796,5 +799,13 @@ class OutlinePanel extends JPanel implements ExplorerManager.Provider, Lookup.Pr
         
     } // End of OutlineRootChildren.
 
+
+    private static void log(String message) {
+        Logger logger = getLogger();
+        logger.log(Level.INFO, message);
+    }
     
+    private static Logger getLogger() {
+        return Logger.getLogger(OutlinePanel.class.getName());
+    }
 }
