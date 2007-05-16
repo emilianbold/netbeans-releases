@@ -12,60 +12,21 @@
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  * 
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.visualweb.dataconnectivity.designtime;
-import com.sun.sql.rowset.CachedRowSetXImpl;
 
-import com.sun.rave.designtime.*;
+import com.sun.sql.rowset.CachedRowSetXImpl;
 
 /**
  *
- * @author David
+ * @author David Van Couvering
  */
-public class CachedRowSetXImplDesignInfo {
-
+public class CachedRowSetXImplDesignInfo extends CachedRowSetImplDesignInfo{
     public Class getBeanClass() {
         return CachedRowSetXImpl.class;
     }
 
-    public boolean acceptParent(DesignBean parentBean, DesignBean childBean, Class childClass) {
-        return true;
-    }
-
-    public boolean acceptChild(DesignBean parentBean, DesignBean childBean, Class childClass) {
-        return true;
-    }
-
-    public Result beanCreatedSetup(DesignBean bean) {
-        return Result.SUCCESS;
-    }
-
-    public Result beanPastedSetup(DesignBean bean) {
-        return Result.SUCCESS;
-    }
-
-    public Result beanDeletedCleanup(DesignBean bean) {
-        return Result.SUCCESS;
-    }
-
-    public DisplayAction[] getContextItems(DesignBean bean) {
-        return DisplayAction.EMPTY_ARRAY;
-    }
-
-    public boolean acceptLink(DesignBean targetBean, DesignBean sourceBean, Class sourceClass) {
-        return false;
-    }
-
-    public Result linkBeans(DesignBean targetBean, DesignBean sourceBean) {
-        return null;
-    }
-
-    public void beanContextActivated(DesignBean bean) {}
-    public void beanContextDeactivated(DesignBean bean) {}
-    public void instanceNameChanged(DesignBean bean, String oldInstanceName) {}
-    public void beanChanged(DesignBean bean) {}
-    public void propertyChanged(DesignProperty prop, Object oldValue) {}
-    public void eventChanged(DesignEvent event) {}
 }

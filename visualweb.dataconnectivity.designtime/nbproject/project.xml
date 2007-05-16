@@ -23,6 +23,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.visualweb.designtimeext</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.visualweb.jsfsupport.designtime</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -37,6 +46,14 @@
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>2.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.util</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.9</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
