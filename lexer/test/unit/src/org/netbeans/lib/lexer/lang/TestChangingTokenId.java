@@ -35,10 +35,9 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  * @author Miloslav Metelka
  */
 public enum TestChangingTokenId implements TokenId {
-
     
-
-    WHITESPACE,ADDED_AFTER_CHANGE;
+    TEXT, // any text
+    A; // "a"; added after change only
 
     private final String primaryCategory;
 
@@ -56,45 +55,50 @@ public enum TestChangingTokenId implements TokenId {
     
     private static boolean changed;
 
-    private static final LanguageHierarchy<TestChangingTokenId> languageHierarchy
-    = new LanguageHierarchy<TestChangingTokenId>() {
-        @Override
-        protected Collection<TestChangingTokenId> createTokenIds() {
-            return changed
-                    ? EnumSet.allOf(TestChangingTokenId.class)
-                    : EnumSet.of(WHITESPACE);
-        }
-        
-        @Override
-        protected Map<String,Collection<TestChangingTokenId>> createTokenCategories() {
-            Map<String,Collection<TestChangingTokenId>> cats = null;
-            if (changed) {
-                cats = new HashMap<String,Collection<TestChangingTokenId>>();
-                cats.put("test",EnumSet.of(ADDED_AFTER_CHANGE));
+    private static Language<TestChangingTokenId> createLanguage() {
+        return new LanguageHierarchy<TestChangingTokenId>() {
+            @Override
+            protected Collection<TestChangingTokenId> createTokenIds() {
+                return changed
+                        ? EnumSet.allOf(TestChangingTokenId.class)
+                        : EnumSet.of(TEXT);
             }
-            return cats;
-        }
 
-        @Override
-        protected Lexer<TestChangingTokenId> createLexer(LexerRestartInfo<TestChangingTokenId> info) {
-            return null;
-        }
+            @Override
+            protected Map<String,Collection<TestChangingTokenId>> createTokenCategories() {
+                Map<String,Collection<TestChangingTokenId>> cats = null;
+                if (changed) {
+                    cats = new HashMap<String,Collection<TestChangingTokenId>>();
+                    cats.put("test",EnumSet.of(A));
+                }
+                return cats;
+            }
 
-        @Override
-        protected String mimeType() {
-            return "text/x-changing";
-        }
-    };
+            @Override
+            protected Lexer<TestChangingTokenId> createLexer(LexerRestartInfo<TestChangingTokenId> info) {
+                return null;
+            }
 
-    private static final Language<TestChangingTokenId> language = languageHierarchy.language();
+            @Override
+            protected String mimeType() {
+                return MIME_TYPE;
+            }
+        }.language();
+    }
+
+    private static Language<TestChangingTokenId> language;
 
     public static Language<TestChangingTokenId> language() {
+        if (language == null)
+            language = createLanguage();
         return language;
     }
     
     public static void change() {
         changed = true;
-        language.refresh(); // Force call to createTokenIds() and createTokenCategories()
+        language = null;
     }
 
+    public static final String MIME_TYPE = "text/x-changing";
+    
 }

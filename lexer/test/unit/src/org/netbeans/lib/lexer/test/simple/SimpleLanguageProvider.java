@@ -28,6 +28,7 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.*;
+import org.netbeans.lib.lexer.lang.TestChangingTokenId;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.LanguageProvider;
@@ -61,9 +62,10 @@ public class SimpleLanguageProvider extends LanguageProvider {
     public Language<? extends TokenId> findLanguage(String mimePath) {
         if (LanguageManagerTest.MIME_TYPE_KNOWN.equals(mimePath)) {
             return new LH().language();
-        } else {
-            return null;
+        } else if (TestChangingTokenId.MIME_TYPE.equals(mimePath)) {
+            return TestChangingTokenId.language();
         }
+        return null;
     }
 
     public LanguageEmbedding<? extends TokenId> findLanguageEmbedding(

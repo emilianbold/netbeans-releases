@@ -27,6 +27,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.lib.lexer.lang.TestChangingTokenId;
 import org.netbeans.lib.lexer.lang.TestCharTokenId;
 import org.netbeans.lib.lexer.test.simple.SimpleLanguageProvider;
 import org.netbeans.lib.lexer.lang.TestPlainTokenId;

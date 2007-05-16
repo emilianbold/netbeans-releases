@@ -135,9 +135,9 @@ public abstract class LanguageHierarchy<T extends TokenId> {
      * should simply return <code>EnumSet.allOf(MyTokenId.class)</code>.
      *
      * <p>
-     * This method is called once by the infrastructure
-     * when constructing language and then every time when {@link Language#refresh()}
-     * gets called.
+     * This method is only called once by the infrastructure
+     * (when constructing language) so it does
+     * not need to cache its result.
      * <br>
      * This method is called in synchronized section.
      * If its implementation would use any synchronization
@@ -154,9 +154,9 @@ public abstract class LanguageHierarchy<T extends TokenId> {
      * The results of this method will be merged with the primary-category
      * information found in token ids.
      * <br>
-     * This method is called once by the infrastructure
-     * when constructing language and then every time when {@link Language#refresh()}
-     * gets called.
+     * This method is only called once by the infrastructure
+     * (when constructing language) so it does
+     * not need to cache its result.
      * <br>
      * This method is called in synchronized section.
      * If its implementation would use any synchronization
@@ -184,8 +184,6 @@ public abstract class LanguageHierarchy<T extends TokenId> {
     
     /**
      * Gets the mime type of the language constructed from this language hierarchy.
-     * <br/>
-     * The mime-type of the language hierarchy should never change.
      *
      * @return non-null language's mime type.
      * @see org.netbeans.api.lexer.LanguagePath#mimePath()

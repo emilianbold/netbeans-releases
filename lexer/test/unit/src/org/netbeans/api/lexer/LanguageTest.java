@@ -20,8 +20,10 @@
 package org.netbeans.api.lexer;
 
 import java.util.Set;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.lang.TestChangingTokenId;
+import org.netbeans.lib.lexer.test.simple.SimpleLanguageProvider;
 
 /**
  * Test of Language class.
@@ -33,22 +35,26 @@ public class LanguageTest extends NbTestCase {
     public LanguageTest(String name) {
         super(name);
     }
-
-    public void testRefresh() {
-        Language<TestChangingTokenId> lang = TestChangingTokenId.language();
-        Set<TestChangingTokenId> ids = lang.tokenIds();
+    
+    public void testTokenIdsChange() {
+        Language<?> lang = Language.find(TestChangingTokenId.MIME_TYPE);
+        assertNotNull(lang);
+        Set<?> ids = lang.tokenIds();
         assertEquals(1, ids.size());
-        assertTrue(ids.contains(TestChangingTokenId.WHITESPACE));
+        assertTrue(ids.contains(TestChangingTokenId.TEXT));
         Set<String> cats = lang.tokenCategories();
         assertTrue(cats.isEmpty());
         
         // Refresh
         TestChangingTokenId.change(); // Calls lang.refresh()
+        SimpleLanguageProvider.fireLanguageChange();
+        lang = Language.find(TestChangingTokenId.MIME_TYPE);
+        assertNotNull(lang);
         
-        Set<TestChangingTokenId> changedIds = lang.tokenIds();
+        Set<?> changedIds = lang.tokenIds();
         assertEquals(2, changedIds.size());
-        assertTrue(changedIds.contains(TestChangingTokenId.WHITESPACE));
-        assertTrue(changedIds.contains(TestChangingTokenId.ADDED_AFTER_CHANGE));
+        assertTrue(changedIds.contains(TestChangingTokenId.TEXT));
+        assertTrue(changedIds.contains(TestChangingTokenId.A));
         Set<String> changedCats = lang.tokenCategories();
         assertTrue(changedCats.contains("test"));
     }
