@@ -50,6 +50,10 @@ public final class ParseResult {
             @SuppressWarnings("unchecked") //NOI18N
             T typedValue = (T)value;
             return typedValue;
+        } else {
+            if (value != null) {
+                throw new IllegalStateException("Incorrect class token specified for the " + name + " element: was " + asType + ", should have been " + value.getClass()); // NOI18N
+            }
         }
         return null;
     }

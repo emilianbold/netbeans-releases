@@ -114,7 +114,9 @@ public final class AnnotationParser {
     }
 
     /**
-     * States that the parsed annotation contains a primitive type element.
+     * States that the parsed annotation contains a primitive type element. The
+     * value of the element will be available in the parse result as a primitive
+     * wrapper class (<code>Integer</code>, etc.).
      *
      * @param  name the element name.
      * @param  type a primitive wrapper class specifying the element type.
@@ -130,7 +132,9 @@ public final class AnnotationParser {
     }
 
     /**
-     * States that the parsed annotation contains a <code>String</code> element.
+     * States that the parsed annotation contains a <code>String</code> element. The
+     * value of the element will be available in the parse result as a <code>String</code>
+     * value.
      *
      * @param  name the element name.
      * @param  defaultProvider a {@link DefaultProvider} for the default value or null.
@@ -141,7 +145,9 @@ public final class AnnotationParser {
     }
 
     /**
-     * States that the parsed annotation contains a class element.
+     * States that the parsed annotation contains a class element. The value of the
+     * element will be available in the parse result as a <code>String</code>
+     * containing the fully-qualified name of the class.
      *
      * @param  name the element name.
      * @param  defaultProvider a {@link DefaultProvider} for the default value or null.
@@ -152,7 +158,9 @@ public final class AnnotationParser {
     }
 
     /**
-     * States that the parsed annotation contains an enum constant element.
+     * States that the parsed annotation contains an enum constant element. The value
+     * of the element will be available in the parse result as a <code>String</code>
+     * containing the name of the enum constant.
      *
      * @param  name the element name.
      * @param  enumType a {@link TypeMirror} specifying the enum type.
@@ -165,7 +173,10 @@ public final class AnnotationParser {
     }
 
     /**
-     * States that the parsed annotation contains an annotation element.
+     * States that the parsed annotation contains an annotation element. The value
+     * of the element will be available in the parse result as the result
+     * of the invocation of the <code>AnnotationValueHandler</code> passed in the
+     * <code>handler</code> parameter.
      *
      * @param  name the element name.
      * @param  annotationType a {@link TypeMirror} specifying the annotation type.
@@ -181,7 +192,10 @@ public final class AnnotationParser {
     }
 
     /**
-     * States that the parsed annotation contains a primitive array element.
+     * States that the parsed annotation contains a primitive array element. The value
+     * of the element will be available in the parse result as the result
+     * of the invocation of the <code>ArrayValueHandler</code> passed in the
+     * <code>handler</code> parameter.
      *
      * @param  name the element name.
      * @param  type a primitive wrapper class specifying the type of the array members.
@@ -197,7 +211,10 @@ public final class AnnotationParser {
     }
 
     /**
-     * States that the parsed annotation contains a <code>String</code> array element.
+     * States that the parsed annotation contains a <code>String</code> array element. The value
+     * of the element will be available in the parse result as the result
+     * of the invocation of the <code>ArrayValueHandler</code> passed in the
+     * <code>handler</code> parameter.
      *
      * @param  name the element name.
      * @param  handler an {@link ArrayValueHandler} which will be invoked to compute
@@ -211,7 +228,10 @@ public final class AnnotationParser {
     }
 
     /**
-     * States that the parsed annotation contains a class array element.
+     * States that the parsed annotation contains a class array element. The value
+     * of the element will be available in the parse result as the result
+     * of the invocation of the <code>ArrayValueHandler</code> passed in the
+     * <code>handler</code> parameter.
      *
      * @param  name the element name.
      * @param  handler an {@link ArrayValueHandler} which will be invoked to compute
@@ -225,7 +245,10 @@ public final class AnnotationParser {
     }
 
     /**
-     * States that the parsed annotation contains an enum constant array element.
+     * States that the parsed annotation contains an enum constant array element. The value
+     * of the element will be available in the parse result as the result
+     * of the invocation of the <code>ArrayValueHandler</code> passed in the
+     * <code>handler</code> parameter.
      *
      * @param  name the element name.
      * @param  enumType a {@link TypeMirror} specifying the type of the array members.
@@ -241,7 +264,10 @@ public final class AnnotationParser {
     }
 
     /**
-     * States that the parsed annotation contains an annotation array element.
+     * States that the parsed annotation contains an annotation array element. The value
+     * of the element will be available in the parse result as the result
+     * of the invocation of the <code>ArrayValueHandler</code> passed in the
+     * <code>handler</code> parameter.
      *
      * @param  name the element name.
      * @param  annotationType a {@link TypeMirror} specifying the type of the array members.
