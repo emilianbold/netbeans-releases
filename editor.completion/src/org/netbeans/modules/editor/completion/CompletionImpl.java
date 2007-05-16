@@ -208,10 +208,11 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                 synchronized (this) {
                     localCompletionResult = completionResult;
                 }
-                if (localCompletionResult != null) {
-                    for (Iterator it = localCompletionResult.getResultSets().iterator(); it.hasNext();) {
+                List<CompletionResultSetImpl> resultSets;
+                if (localCompletionResult != null && (resultSets = localCompletionResult.getResultSets()) != null) {
+                    for (Iterator it = resultSets.iterator(); it.hasNext();) {
                         CompletionResultSetImpl resultSet = (CompletionResultSetImpl)it.next();
-                        if (resultSet.getWaitText() != null) {
+                        if (resultSet != null && resultSet.getWaitText() != null) {
                             waitText = resultSet.getWaitText();
                             break;
                         }
