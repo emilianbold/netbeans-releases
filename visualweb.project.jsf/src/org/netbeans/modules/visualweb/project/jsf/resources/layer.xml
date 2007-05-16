@@ -59,7 +59,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org.netbeans.modules.html.htmlObject.gif"/>
                 <attr name="template" boolvalue="true" />
-                <attr name="templateCategory" stringvalue="servlet-types"/>
+                <attr name="templateCategory" stringvalue="web-types"/>
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.visualweb.project.jsf.ui.PageIterator.createWebFormIterator"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/WebFormTemplateHelp.html" />
             </file>
@@ -74,7 +74,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org.netbeans.modules.html.htmlObject.gif"/>
                 <attr name="template" boolvalue="true" />
-                <attr name="templateCategory" stringvalue="servlet-types"/>
+                <attr name="templateCategory" stringvalue="web-types"/>
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.visualweb.project.jsf.ui.PageIterator.createWebFormIterator"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/WebFormTemplateHelp.html" />
             </file>
@@ -89,7 +89,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="RequestBean.java" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/RequestBean.java.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
                 <attr name="template" boolvalue="true" />
-                <attr name="templateCategory" stringvalue="servlet-types"/>
+                <attr name="templateCategory" stringvalue="web-types"/>
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.visualweb.project.jsf.ui.PageIterator.createBeanIterator"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/requestBeanTemplateHelp.html" />
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
@@ -98,7 +98,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="SessionBean.java" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/SessionBean.java.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
                 <attr name="template" boolvalue="true" />
-                <attr name="templateCategory" stringvalue="servlet-types"/>
+                <attr name="templateCategory" stringvalue="web-types"/>
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.visualweb.project.jsf.ui.PageIterator.createBeanIterator"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/sessionBeanTemplateHelp.html" />
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
@@ -107,7 +107,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="ApplicationBean.java" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/ApplicationBean.java.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
                 <attr name="template" boolvalue="true" />
-                <attr name="templateCategory" stringvalue="servlet-types"/>
+                <attr name="templateCategory" stringvalue="web-types"/>
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.visualweb.project.jsf.ui.PageIterator.createBeanIterator"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/applicationBeanTemplateHelp.html" />
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
