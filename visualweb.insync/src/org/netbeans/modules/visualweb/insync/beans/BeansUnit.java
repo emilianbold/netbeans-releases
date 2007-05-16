@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.visualweb.insync.beans;
 
+import java.lang.reflect.Modifier;
 import org.netbeans.modules.visualweb.insync.java.EventMethod;
 import org.netbeans.modules.visualweb.insync.java.JavaClass;
 import org.netbeans.modules.visualweb.insync.java.Method;
@@ -400,9 +401,8 @@ public class BeansUnit implements Unit {
     /**
      * Return a new Bean instance bound to an existing field, getter & setter
      */
-    protected Bean newBoundBean(BeanInfo beanInfo, String name, Object/*VariableElement*/ field, 
-            Object/*ExecutableElement*/ getter, Object/*ExecutableElement*/ setter) {
-         return new Bean(this, beanInfo, name, field, getter, setter);
+    protected Bean newBoundBean(BeanInfo beanInfo, String name, List<String> typeNames) {
+         return new Bean(this, beanInfo, name, typeNames);
     }
 
     /**
@@ -444,7 +444,7 @@ public class BeansUnit implements Unit {
      */
     protected void bindBeans() {
         beans.clear();
-        HashMap<String, String> props = javaClass.getPropertiesNamesAndTypes();
+        HashMap<String, List<String>> props = javaClass.getPropertiesNameAndTypes();
         for(String key : props.keySet()) {
             Bean bean = bindBean(key, props.get(key));
             if(bean != null) {
@@ -465,15 +465,15 @@ public class BeansUnit implements Unit {
         }
     }
     
-    protected Bean bindBean(String name, String typeName) {
+    protected Bean bindBean(String name, List<String> typeNames) {
         // Scan all type/name pairs for later name generation
-        scanName(typeName, name);
+        scanName(typeNames.get(0), name);
         // make sure we can obtain the bean's beaninfo
-        BeanInfo bi = getBeanInfo(typeName);
+        BeanInfo bi = getBeanInfo(typeNames.get(0));
         if (bi == null) {
             return null;
         }
-        return newBoundBean(bi, name, null, null, null);
+        return newBoundBean(bi, name, typeNames.subList(1, typeNames.size()));
     }
     
     /**
@@ -799,6 +799,9 @@ public class BeansUnit implements Unit {
      * @return  The new instance of the given Class.
      */
     public Object instantiateBean(Class cls) {
+        if(cls.isInterface() || (cls.getModifiers() & Modifier.ABSTRACT) != 0) {
+            return null;
+        }
         // intercept Basic and Primitive types & just hand-construct them
         // Also, intercept classes that lack a null constructor
         if (cls == Boolean.TYPE || cls == Boolean.class)

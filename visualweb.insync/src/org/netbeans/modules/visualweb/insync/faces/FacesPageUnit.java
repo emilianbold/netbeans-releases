@@ -492,8 +492,7 @@ public class FacesPageUnit extends FacesUnit implements PropertyChangeListener {
     /*
      * @see org.netbeans.modules.visualweb.insync.beans.BeansUnit#newBoundBean(java.beans.BeanInfo, java.lang.String, org.netbeans.modules.visualweb.insync.java.Field, org.netbeans.modules.visualweb.insync.java.Method, org.netbeans.modules.visualweb.insync.java.Method)
      */
-    protected Bean newBoundBean(BeanInfo bi, String name, 
-            Object/*VariableElement*/ field, Object/*ExecutableElement*/ getter, Object/*ExecutableElement*/ setter) {
+    protected Bean newBoundBean(BeanInfo bi, String name, List<String> typeNames) {
         // Determine the source tag for this bean and thus if it is faces
         String tag = getBeanTagName(bi);
         String tlUri = getBeanTaglibUri(bi);
@@ -504,7 +503,7 @@ public class FacesPageUnit extends FacesUnit implements PropertyChangeListener {
 
         // if not a faces bean to bind, return new regular bean
         if (tag == null)
-            return super.newBoundBean(bi, name, field, getter, setter);
+            return super.newBoundBean(bi, name, typeNames);
 
         // locate source element in page dom (bound using field name), injecting a replacement if
         // lost
@@ -524,7 +523,7 @@ public class FacesPageUnit extends FacesUnit implements PropertyChangeListener {
 
         assert Trace.trace("insync.faces", "FU.newBoundBean binding:" + binding + " elem:" + element);
 
-        FacesBean fbean = new FacesBean(this, bi, name, field, getter, setter, element);
+        FacesBean fbean = new FacesBean(this, bi, name, element);
         fbean.setBindingProperties();
 
         // snag the form bean as it goes by for later use as the default parent

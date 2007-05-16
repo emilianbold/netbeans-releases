@@ -61,9 +61,8 @@ public class FacesBean extends MarkupBean {
      * @param setter
      * @param element
      */
-    FacesBean(FacesPageUnit unit, BeanInfo beanInfo, String name, Object/*VariableElement*/ field, Object/*ExecutableElement*/ getter,
-              Object/*ExecutableElement*/ setter, Element element) {
-        super(unit, beanInfo, name, field, getter, setter, element);
+    FacesBean(FacesPageUnit unit, BeanInfo beanInfo, String name, Element element) {
+        super(unit, beanInfo, name, element);
     }
 
     /**

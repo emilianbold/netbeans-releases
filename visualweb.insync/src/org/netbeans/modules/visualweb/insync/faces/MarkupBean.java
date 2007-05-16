@@ -60,9 +60,8 @@ public abstract class MarkupBean extends Bean {
      * @param getter
      * @param setter
      */
-    public MarkupBean(FacesPageUnit unit, BeanInfo beanInfo, String name, Object/*VariableElement*/ field, Object/*ExecutableElement*/ getter,
-                      Object/*ExecutableElement*/ setter, Element element) {
-        super(unit, beanInfo, name, field, getter, setter);
+    public MarkupBean(FacesPageUnit unit, BeanInfo beanInfo, String name, Element element) {
+        super(unit, beanInfo, name);
         this.element = element;
         children = isParentCapableBean(beanInfo) ? new ArrayList() : null;
 

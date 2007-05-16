@@ -142,30 +142,50 @@ public class JavaClass {
         }, fObj);        
     }    
     
-    /*
-     * For all the properties found in a class, its names and types are returned in a hashmap
+    /**
+     * Return map of properties name and type information for all the properties 
+     * The value entry of map is a list of strings, the first item is the property's type and 
+     * the subsequent ones are the type parameters only in case of parameterized type.
      */    
-    public HashMap<String, String> getPropertiesNamesAndTypes() {
-        HashMap<String, String> types = (HashMap<String, String>)ReadTaskWrapper.execute( new ReadTaskWrapper.Read() {
+    public HashMap<String, List<String>> getPropertiesNameAndTypes() {
+        return (HashMap<String, List<String>>)ReadTaskWrapper.execute( new ReadTaskWrapper.Read() {
             public Object run(CompilationInfo cinfo) {
                 TypeElement typeElement = typeElementHandle.resolve(cinfo);
-                HashMap<String, String> types = new HashMap<String, String>();
+                HashMap<String, List<String>> nameAndtypes = new HashMap<String, List<String>>();
                 for(ExecutableElement method : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
                     if(isBeanGetter(method)) {
                         TypeMirror type = method.getReturnType();
                         String typeName = type.toString();
+                        List<String> typeNames = new ArrayList<String>();
+
                         // In case of parameterized type, use the raw type
                         if(isParameterizedType(type)) {
                             typeName = cinfo.getTypes().erasure(type).toString();
+                            addTypeParameters(type, typeNames);
                         }
+                        typeNames.add(0, typeName);
                         String name = Naming.propertyName(method.getSimpleName().toString(), typeName.equals("boolean"));
-                        types.put(name, typeName);
+                        nameAndtypes.put(name, typeNames);
                     }
                 }
-                return types;
+                return nameAndtypes;
             }
         }, fObj);
-        return types;
+    }
+   
+    /**
+     * Extracts type parameters for a paramterized type recursively
+     */
+    private void addTypeParameters(TypeMirror type, List<String> argTypeNames) {
+        if(type.getKind() == TypeKind.DECLARED) {
+            for(TypeMirror argType : ((DeclaredType)type).getTypeArguments()) {
+                if(isParameterizedType(argType)) {
+                    addTypeParameters(argType, argTypeNames);
+                }else {
+                    argTypeNames.add(argType.toString());
+                }
+            }
+        }
     }
     
     /* 

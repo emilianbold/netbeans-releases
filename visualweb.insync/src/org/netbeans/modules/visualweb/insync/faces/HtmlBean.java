@@ -46,7 +46,7 @@ public class HtmlBean extends MarkupBean {
      * Construct a bean bound to existing field & accessor methods, and page element
      */
     HtmlBean(FacesPageUnit unit, BeanInfo beanInfo, String tag, Element element) {
-        super(unit, beanInfo, tag, null, null, null, element);
+        super(unit, beanInfo, tag, element);
     }
 
     /**

@@ -56,6 +56,7 @@ public class Bean extends BeansNode {
     protected final ArrayList eventSets = new ArrayList();
 
     private String name;
+    private List<String> typeParameterNames;
 
     //--------------------------------------------------------------------------------- Construction
 
@@ -77,13 +78,12 @@ public class Bean extends BeansNode {
      *
      * @param unit Owning host unit
      * @param beanInfo
-     * @param field
-     * @param getter
-     * @param setter
+     * @param name
+     * @param typeNames
      */
-    protected Bean(BeansUnit unit, BeanInfo beanInfo, String name,
-            Object/*VariableElement*/ field, Object/*ExecutableElement*/ getter, Object/*ExecutableElement*/ setter) {
+    protected Bean(BeansUnit unit, BeanInfo beanInfo, String name, List<String> typeNames) {
         this(unit, beanInfo, name);
+        typeParameterNames = typeNames;
         bindCleanup();
     }
 
@@ -595,6 +595,10 @@ public class Bean extends BeansNode {
             return true;
         }
         return false;
+    }
+    
+    public List<String> getTypeParameterNames() {
+        return typeParameterNames;
     }
 
 }

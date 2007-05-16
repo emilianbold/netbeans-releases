@@ -653,8 +653,12 @@ public class LiveUnit implements Unit, DesignContext, FacesDesignContext {
             return new FacesDesignBean(this, beanInfo, liveBeanInfo, parent, instance, (FacesBean) bean);
         }
         if (bean instanceof MarkupBean) {
-            return new org.netbeans.modules.visualweb.insync.live.MarkupDesignBean(this, beanInfo, liveBeanInfo, parent, instance, (MarkupBean) bean);
+            return new MarkupDesignBean(this, beanInfo, liveBeanInfo, parent, instance, (MarkupBean) bean);
         }
+        if(bean.getTypeParameterNames() != null) {
+            return new BeansDesignBeanExt(this, beanInfo, liveBeanInfo, parent, instance, bean);
+        }
+        
         return new BeansDesignBean(this, beanInfo, liveBeanInfo, parent, instance, bean);
     }
 
@@ -1212,8 +1216,15 @@ public class LiveUnit implements Unit, DesignContext, FacesDesignContext {
         for (int i = 0, n = lbeans.size(); i < n; i++) {
             DesignBean b = (DesignBean)lbeans.get(i);
             Object instance = b.getInstance();
-            if (instance != null && type.isAssignableFrom(instance.getClass()))
+            Class beanType;
+            if (instance != null ) {
+                beanType = instance.getClass();
+            } else {
+                beanType = b.getBeanInfo().getBeanDescriptor().getBeanClass();
+            }
+            if(type.isAssignableFrom(beanType)) {
                 bst.add(b);
+            }
         }
         return (DesignBean[])bst.toArray(new DesignBean[bst.size()]);
     }
