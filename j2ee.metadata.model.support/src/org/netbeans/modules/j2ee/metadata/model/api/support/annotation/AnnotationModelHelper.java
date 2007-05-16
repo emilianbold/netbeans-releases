@@ -96,7 +96,7 @@ public final class AnnotationModelHelper {
 
     public <T extends PersistentObject> PersistentObjectManager<T> createPersistentObjectManager(ObjectProvider<T> provider) {
         synchronized (this) {
-            PersistentObjectManager<T> manager = PersistentObjectManager.newInstance(this, provider);
+            PersistentObjectManager<T> manager = PersistentObjectManager.create(this, provider);
             registerPersistentObjectManager(manager);
             return manager;
         }

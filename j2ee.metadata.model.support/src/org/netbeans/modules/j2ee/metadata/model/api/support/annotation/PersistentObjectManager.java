@@ -49,13 +49,13 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
     private boolean initialized = false;
     private boolean temporary = false;
 
-    static <V extends PersistentObject> PersistentObjectManager<V> newInstance(AnnotationModelHelper helper, ObjectProvider<V> provider) {
-        PersistentObjectManager<V> newInstance = new PersistentObjectManager<V>(helper, provider);
+    static <V extends PersistentObject> PersistentObjectManager<V> create(AnnotationModelHelper helper, ObjectProvider<V> provider) {
+        PersistentObjectManager<V> pom = new PersistentObjectManager<V>(helper, provider);
         if (NO_EVENTS) {
             LOGGER.log(Level.FINE, "ignoring events"); // NOI18N
         }
-        helper.addJavaContextListener(newInstance);
-        return newInstance;
+        helper.addJavaContextListener(pom);
+        return pom;
     }
 
     private PersistentObjectManager(AnnotationModelHelper helper, ObjectProvider<T> provider) {
