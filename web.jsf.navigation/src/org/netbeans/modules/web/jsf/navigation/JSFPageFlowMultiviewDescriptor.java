@@ -178,7 +178,7 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
         
         public void componentClosed() {
             tc.unregstierListeners();
-            tc.serializeNodeLocations();
+            tc.serializeNodeLocations(tc.getStorageDatFile());
         }
         
         public void componentShowing() {

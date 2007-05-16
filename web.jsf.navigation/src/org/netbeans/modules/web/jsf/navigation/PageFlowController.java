@@ -297,13 +297,17 @@ public class PageFlowController {
      * Should only be called by init();
      *
      **/
-    public boolean setupGraph(){
+    public boolean setupGraph(){        
+        view.saveLocations();
+        return setupGraphNoSaveData();        
+    }
+    
+    public boolean setupGraphNoSaveData() {
         assert configModel !=null;
         assert webFolder != null;
         assert webFiles != null;
         
         
-        view.saveLocations();
         view.clearGraph();
         clearPageName2Page();
         navCase2NavCaseEdge.clear();
@@ -332,7 +336,6 @@ public class PageFlowController {
         view.validateGraph();
         
         return true;
-        
     }
     
     private void createAllEdges( List<NavigationRule> rules ){
@@ -745,7 +748,7 @@ public class PageFlowController {
     }
     
     public void serializeNodeLocations() {
-        view.serializeNodeLocations();
+        view.serializeNodeLocations(view.getStorageDatFile());
     }
     
 }

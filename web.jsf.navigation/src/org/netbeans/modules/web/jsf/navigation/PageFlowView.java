@@ -41,6 +41,7 @@ import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.navigation.JSFPageFlowMultiviewDescriptor.PageFlowElement;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
+import org.netbeans.modules.web.jsf.navigation.graph.PageFlowSceneData;
 import org.netbeans.modules.web.jsf.navigation.graph.SceneSerializer;
 import org.netbeans.spi.palette.PaletteActions;
 import org.netbeans.spi.palette.PaletteController;
@@ -67,21 +68,22 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     private JSFConfigModel configModel;
     private PageFlowController pfc;
     private PageFlowElement multiview;
-    
+    private PageFlowSceneData sceneData;
     
     PageFlowView(PageFlowElement multiview, JSFConfigEditorContext context){
         this.multiview = multiview;
         this.context = context;
-        initScene();
-        pfc = new PageFlowController( context,  this );
-        pfc.setupGraph();
-        setFocusable(true);
-        
+        scene = initializeScene();
+        pfc = new PageFlowController( context,  this );        
+        sceneData = new PageFlowSceneData(scene, PageFlowUtilities.getInstance(pfc));            
         
         FileObject nbprojectFolder = pfc.getWebFolder().getParent().getFileObject("nbproject", null);
         String fileName = pfc.getConfigDataObject().getPrimaryFile().getName() + ".NavData";
         navDataFile = new File(nbprojectFolder.getPath(), fileName);
-        loadNodelocations();
+        loadNodelocations(navDataFile);        
+            
+        pfc.setupGraphNoSaveData(); /* I don't want to override the loaded locations with empy sceneData */
+        setFocusable(true);
     }
     
     public void requestMultiViewActive() {
@@ -151,7 +153,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     /*
      * Initializes the Panel and the graph
      **/
-    private void initScene(){
+    private PageFlowScene initializeScene(){
         setLayout(new BorderLayout());
         
         scene = new PageFlowScene(this);
@@ -163,8 +165,9 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         
         add(pane, BorderLayout.CENTER);
         
-        setDefaultActivatedNode();
+        setDefaultActivatedNode();     
         
+        return scene;
     }
     
     /**
@@ -218,9 +221,12 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     }
     
     public void saveLocations() {
+        sceneData.saveCurrentSceneData();
 //        scene.saveLocations();
     }
     public void saveLocation(Page pageNode, String newDisplayName){
+        final String oldDisplayName = pageNode.getDisplayName();
+        sceneData.saveCurrentSceneItem(oldDisplayName, newDisplayName);
 //        scene.saveLocation(pageNode,newDisplayName);
     }
     
@@ -232,13 +238,16 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
      * @param glyphs
      * @return
      */
-    protected VMDNodeWidget createNode( Page pageNode, String type, List<Image> glyphs) {
-        assert pageNode.getDisplayName() != null;
+    protected VMDNodeWidget createNode( Page pageNode, String type, List<Image> glyphs) {        
+        String pageName = pageNode.getDisplayName();
+        
+        assert pageName != null;
         
         VMDNodeWidget widget = (VMDNodeWidget) scene.addNode(pageNode);
-        String pageName = pageNode.getDisplayName();
         //        widget.setNodeProperties(null /*IMAGE_LIST*/, pageName, type, glyphs);
-        widget.setNodeProperties(pageNode.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16), pageName, type, glyphs);
+        widget.setNodeProperties(pageNode.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16), pageName, type, glyphs);        
+        widget.setPreferredLocation(sceneData.getPageLocation(pageName));        
+        
         scene.addPin(pageNode,new Pin(pageNode));
         
         setupPinsInNode(pageNode);
@@ -492,19 +501,23 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         return myNavCases;
     }
     
-
-    
-    
-    File navDataFile;
-    public void serializeNodeLocations(){
-        //For long term storage;
-        SceneSerializer.serialize(scene, navDataFile);
+    private File navDataFile;
+    public File getStorageDatFile(){
+        return navDataFile;
     }
     
-    private void loadNodelocations() {
+    public void serializeNodeLocations(File navDataFile){
+        //For long term storage;
+//        SceneSerializer.serialize(scene, navDataFile);
+        saveLocations();
+        SceneSerializer.serialize(sceneData, navDataFile);
+    }
+    
+    private void loadNodelocations(File navDataFile) {
         if( navDataFile.exists() ) {
-            SceneSerializer.deserialize(scene, navDataFile);
-            validate();
+//            SceneSerializer.deserialize(scene, navDataFile);
+//            validate();
+            SceneSerializer.deserialize(sceneData, navDataFile);
         }
     }
 

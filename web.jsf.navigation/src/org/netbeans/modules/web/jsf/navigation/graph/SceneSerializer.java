@@ -11,7 +11,11 @@ import org.xml.sax.SAXParseException;
 
 import java.awt.*;
 import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
 import org.netbeans.modules.web.jsf.navigation.Page;
+import org.netbeans.modules.web.jsf.navigation.PageFlowUtilities;
 
 /**
  * @author David Kaspar
@@ -19,7 +23,13 @@ import org.netbeans.modules.web.jsf.navigation.Page;
 public class SceneSerializer {
     
     private static final String SCENE_ELEMENT = "Scene"; // NOI18N
-    private static final String VERSION_ATTR = "version"; // NOI18N
+    private static final String SCENE_LAST_USED_SCOPE_ATTR = "Scope"; // NOI18N
+    private static final String SCENE_SCOPE_ATTR = "Scope"; // NOI18N
+    private static final String SCENE_SCOPE_ELEMENT = "Scope"; // NOI18N
+    private static final String VERSION_ATTR = "version"; // NOI18NC
+    
+    private static final String SCENE_FACES_SCOPE = PageFlowUtilities.LBL_SCOPE_FACESCONFIG; //NOI18N
+    private static final String SCENE_PROJECT_SCOPE = PageFlowUtilities.LBL_SCOPE_PROJECT; //NOI18N
     
     private static final String SCENE_NODE_COUNTER_ATTR = "nodeIDcounter"; // NOI18N
     private static final String SCENE_EDGE_COUNTER_ATTR = "edgeIDcounter"; // NOI18N
@@ -35,6 +45,7 @@ public class SceneSerializer {
     private static final String EDGE_TARGET_ATTR = "target"; // NOI18N
     
     private static final String VERSION_VALUE_1 = "1"; // NOI18N
+    private static final String VERSION_VALUE_2 = "2"; // NOI18N
     
     // call in AWT to serialize scene
     public static void serialize(PageFlowScene scene, File file) {
@@ -42,6 +53,9 @@ public class SceneSerializer {
         
         Node sceneElement = document.getFirstChild();
         setAttribute(document, sceneElement, VERSION_ATTR, VERSION_VALUE_1);
+        
+        
+        
         //        setAttribute (document, sceneElement, SCENE_NODE_COUNTER_ATTR, Long.toString (scene.nodeIDcounter));
         //        setAttribute (document, sceneElement, SCENE_EDGE_COUNTER_ATTR, Long.toString (scene.edgeIDcounter));
         
@@ -86,11 +100,78 @@ public class SceneSerializer {
         }
     }
     
+    
+    public static void serialize(PageFlowSceneData sceneData, File file) {
+        LOG.entering("SceneSerializer", "serialize");
+        Document document = XMLUtil.createDocument(SCENE_ELEMENT, null, null, null);
+        
+        Node sceneElement = document.getFirstChild();
+        setAttribute(document, sceneElement, VERSION_ATTR, VERSION_VALUE_2);
+        setAttribute(document, sceneElement, SCENE_LAST_USED_SCOPE_ATTR, sceneData.getCurrentScope());
+        Node scopeFacesElement = createScopeElement(document, sceneData, SCENE_FACES_SCOPE);
+        if( scopeFacesElement != null ) {
+            sceneElement.appendChild( scopeFacesElement );
+        }
+        Node scopeProjectElement = createScopeElement(document, sceneData, SCENE_PROJECT_SCOPE);
+        if( scopeProjectElement != null ) {
+            sceneElement.appendChild( scopeProjectElement );
+        }
+        
+        writeToFile(document, file);
+        
+        LOG.exiting("SceneSerializer", "serialize");
+    }
+    /**
+     * @param Should be either SCENE_PROJECT_SCOPR or SCENE_FACES_SCOPE
+     **/
+    private final static Node createScopeElement( Document document, PageFlowSceneData sceneData, String scopeType ){
+        Node sceneScopeElement =  null;
+        Map<String,Point> facesConfigScopeMap = sceneData.getScopeData(scopeType);
+        if( facesConfigScopeMap != null ){
+            sceneScopeElement = document.createElement(SCENE_SCOPE_ELEMENT);
+            setAttribute(document, sceneScopeElement, SCENE_SCOPE_ATTR, scopeType);
+            
+            for( String key : facesConfigScopeMap.keySet()){
+                Point location = facesConfigScopeMap.get(key);
+                Element nodeElement = document.createElement(NODE_ELEMENT);
+                setAttribute(document, nodeElement, NODE_ID_ATTR, key);
+                setAttribute(document, nodeElement, NODE_X_ATTR, Integer.toString(location.x));
+                setAttribute(document, nodeElement, NODE_Y_ATTR, Integer.toString(location.y));
+                sceneScopeElement.appendChild(nodeElement);
+            }
+            
+        }
+        return sceneScopeElement;
+        
+    }
+    
+    private final static void writeToFile(Document document, File file ){
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(file);
+            XMLUtil.write(document, fos, "UTF-8"); // NOI18N
+        } catch (Exception e) {
+            Exceptions.printStackTrace(e);
+        } finally {
+            try {
+                if (fos != null) {
+                    fos.close();
+                }
+            } catch (Exception e) {
+                Exceptions.printStackTrace(e);
+            }
+        }
+    }
+    
+    
+    private final static Logger LOG = Logger.getLogger("org.netbeans.modules.web.jsf.navigation");
     // call in AWT to deserialize scene
     public static void deserialize(PageFlowScene scene, File file) {
+        LOG.entering("SceneSerializer", "deserialize");
         Node sceneElement = getRootNode(file);
         if (! VERSION_VALUE_1.equals(getAttributeValue(sceneElement, VERSION_ATTR)))
             return;
+        
         //        scene.nodeIDcounter = Long.parseLong (getAttributeValue (sceneElement, SCENE_NODE_COUNTER_ATTR));
         //        scene.edgeIDcounter = Long.parseLong (getAttributeValue (sceneElement, SCENE_EDGE_COUNTER_ATTR));
         for (Node element : getChildNode(sceneElement)) {
@@ -104,18 +185,46 @@ public class SceneSerializer {
                         Widget nodeWidget = scene.findWidget(pageNode);
                         nodeWidget.setPreferredLocation(new Point(x, y));
                     }
-                }                
-                //                Widget nodeWidget = scene.addNode (node);
+                }
             }
-            //            else if (EDGE_ELEMENT.equals (element.getNodeName ())) {
-            //                String edge = getAttributeValue (element, EDGE_ID_ATTR);
-            //                String sourceNode = getAttributeValue (element, EDGE_SOURCE_ATTR);
-            //                String targetNode = getAttributeValue (element, EDGE_TARGET_ATTR);
-            //                scene.addEdge (edge);
-            //                scene.setEdgeSource (edge, sourceNode);
-            //                scene.setEdgeTarget (edge, targetNode);
-            //            }
         }
+        
+        LOG.exiting("SceneSerializer", "deserialize");
+    }
+    
+    
+    public static void deserialize(PageFlowSceneData sceneData, File file) {
+        LOG.entering("SceneSerializer", "deserialize(PageFlowSceneData sceneData, File file)");
+        Node sceneElement = getRootNode(file);
+        if (! VERSION_VALUE_2.equals(getAttributeValue(sceneElement, VERSION_ATTR)))
+            return;
+        
+        String lastUsedScope = getAttributeValue(sceneElement, SCENE_LAST_USED_SCOPE_ATTR);
+        LOG.fine("Last Used Scope: " + lastUsedScope);
+        // TODO: Save the Last Used Scope
+        
+        
+        NodeList scopeNodes = sceneElement.getChildNodes();
+        for( int i = 0; i < scopeNodes.getLength(); i++ ){
+            Node scopeElement = scopeNodes.item(i);
+            if( scopeElement.getNodeName().equals(SCENE_SCOPE_ELEMENT) ){
+                String scope = getAttributeValue(scopeElement, SCENE_SCOPE_ATTR);
+                NodeList pageNodes = scopeElement.getChildNodes();
+                Map<String,Point> sceneInfo = new HashMap<String,Point>();
+                for( int j = 0; j < pageNodes.getLength(); j++ ){
+                    Node pageNode = pageNodes.item(j);
+                    if( pageNode.getNodeName().equals(NODE_ELEMENT)){
+                        String pageDisplayName = getAttributeValue(pageNode, NODE_ID_ATTR);
+                        int x = Integer.parseInt(getAttributeValue(pageNode, NODE_X_ATTR));
+                        int y = Integer.parseInt(getAttributeValue(pageNode, NODE_Y_ATTR));
+                        sceneInfo.put(pageDisplayName, new Point(x, y));
+                    }
+                }
+                sceneData.setScopeData(scope, sceneInfo);
+            }
+        }
+        
+        LOG.exiting("SceneSerializer", "deserialize(PageFlowSceneData sceneData, File file)");
     }
     
     private static void setAttribute(Document xml, Node node, String name, String value) {
