@@ -290,7 +290,10 @@ public class HintsUI implements MouseListener, KeyListener, ChangeListener, AWTE
         Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.MOUSE_EVENT_MASK);
         
         errorTooltip = new JLabel("<html>" + translate(description)); // NOI18N
-        errorTooltip.setBorder(new LineBorder(Color.BLACK));
+        errorTooltip.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Color.BLACK),
+            BorderFactory.createEmptyBorder(0, 3, 0, 3)
+        ));
         errorTooltip.addMouseListener(this);
         
         if (!fixes.isComputed() || fixes.getFixes().isEmpty()) {
@@ -307,7 +310,7 @@ public class HintsUI implements MouseListener, KeyListener, ChangeListener, AWTE
                 Rectangle r = comp.modelToView (pos);
 
                 tooltipPopup = getPopupFactory().getPopup(
-                        comp, errorTooltip, p.x, p.y-r.height-errorTooltip.getPreferredSize().height);
+                        comp, errorTooltip, p.x, p.y-r.height-errorTooltip.getPreferredSize().height-5);
             } catch( BadLocationException blE ) {
                 ErrorManager.getDefault().notify (blE);
                 errorTooltip = null;
