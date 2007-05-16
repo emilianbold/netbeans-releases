@@ -23,8 +23,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInput;
 import java.io.OutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.SequenceInputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.io.OutputStreamWriter;
@@ -146,39 +144,21 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
      * @see #saveFromKitToStream
      */
     protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
-        byte[] arr = new byte[4096];
-        int len = stream.read (arr, 0, arr.length);
-        String txt = new String (arr, 0, (len>=0)?len:0).toUpperCase();
-        // encoding
-        txt = findEncoding (txt);
-
-        // join the streams
-        if (len < arr.length) {
-            stream = new ByteArrayInputStream (arr, 0, len);
-        } else {
-            stream = new SequenceInputStream (
-                new ByteArrayInputStream (arr), stream
+        String encoding = ((HtmlDataObject)getDataObject()).getFileEncoding();
+        try {
+            InputStreamReader r = new InputStreamReader(stream, encoding);
+            kit.read (r, doc, 0);
+            return;
+        } catch (UnsupportedEncodingException ex) {
+            // ok unsupported encoding, lets go on
+        } catch (Exception ex) {
+            // annotate and try default read method
+            ErrorManager.getDefault ().annotate (
+                ex, NbBundle.getMessage(HtmlEditorSupport.class, "MSG_errorInReadingWithEnc", 
+                getDataObject().getPrimaryFile().getPath())
             );
+            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
         }
-        
-        if (txt != null) {
-            try {
-                InputStreamReader r = new InputStreamReader (stream, txt);
-                kit.read (r, doc, 0);
-                return;
-            } catch (UnsupportedEncodingException ex) {
-                // ok unsupported encoding, lets go on
-            } catch (Exception ex) {
-            	// annotate and try default read method
-            	ErrorManager.getDefault ().annotate (
-            	    ex, NbBundle.getMessage(HtmlEditorSupport.class, "MSG_errorInReadingWithEnc", 
-                    getDataObject().getPrimaryFile().getPath(),txt)
-            	);
-            	ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
-            }
-            	
-        }
-        
         // no or bad encoding, just read the stream
         kit.read (stream, doc, 0);
     }    
@@ -198,17 +178,22 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
         }
         String txt = doc.getText(0, len).toUpperCase();
         // encoding
-        txt = findEncoding (txt);
-
-        if (txt != null) {
-            // try to save in that encoding
-            try {
-                OutputStreamWriter w = new OutputStreamWriter (stream, txt);
-                kit.write (w, doc, 0, doc.getLength());
-                return;
-            } catch (UnsupportedEncodingException ex) {
-                // ok unsupported encoding, lets go on
-            }
+        String encoding = (String) getDataObject().getPrimaryFile().getAttribute(HtmlDataObject.PROP_ENCODING);;
+        if (encoding != null) {
+            encoding.trim();
+        } else {
+            encoding = findEncoding(txt);
+        }
+        if (encoding == null) {
+            encoding = HtmlDataObject.DEFAULT_ENCODING;
+        }
+        // try to save in that encoding
+        try {
+            OutputStreamWriter w = new OutputStreamWriter(stream, encoding);
+            kit.write (w, doc, 0, doc.getLength());
+            return;
+        } catch (UnsupportedEncodingException ex) {
+            // ok unsupported encoding, lets go on
         }
 
         // no encoding or unsupported => save in regular way
@@ -220,7 +205,7 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
      * @param txt the string to search in (should be in upper case)
      * @return the encoding or null if no has been found
      */
-    private static String findEncoding (String txt) {
+    static String findEncoding(String txt) {
         int headEndOffset = txt.indexOf (HEAD_END_TAG_NAME); // NOI18N
         headEndOffset = headEndOffset == -1 ? txt.indexOf(HEAD_END_TAG_NAME.toLowerCase()) : headEndOffset;
         

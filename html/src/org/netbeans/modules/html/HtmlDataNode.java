@@ -22,6 +22,7 @@ package org.netbeans.modules.html;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
@@ -31,30 +32,71 @@ import org.openide.util.NbBundle;
  * @author  Radim Kubacki
  */
 public class HtmlDataNode extends org.openide.loaders.DataNode {
+    public static final String PROP_FILE_ENCODING = "encoding"; //NOI18N
+    private static final String SHEETNAME_TEXT_PROPERTIES = "textProperties"; // NOI18N
     private Sheet sheet = null;
-
+    
     /** Creates new HtmlDataNode */
-    public HtmlDataNode (DataObject dobj, Children ch) {
-        super (dobj, ch);
-        setShortDescription (NbBundle.getMessage(HtmlDataNode.class, "LBL_htmlNodeShortDesc"));
+    public HtmlDataNode(DataObject dobj, Children ch) {
+        super(dobj, ch);
+        setShortDescription(NbBundle.getMessage(HtmlDataNode.class, "LBL_htmlNodeShortDesc"));
     }
-
+    
     public Node.PropertySet[] getPropertySets() {
-          if(sheet == null) {
+        if(sheet == null) {
             sheet = new Sheet();
-
+            
             Node.PropertySet[] tmp = super.getPropertySets();
+            Sheet.Set set;
             for(int i = 0; i < tmp.length; i++) {
-              Sheet.Set set = new Sheet.Set();
-              set.setName(tmp[i].getName());
-              set.setShortDescription(tmp[i].getShortDescription());
-              set.setDisplayName(tmp[i].getDisplayName());
-              set.setValue("helpID", HtmlDataNode.class.getName() + ".PropertySheet");// NOI18N
-              set.put(tmp[i].getProperties());
-              sheet.put(set);
-              }
-          }
-          
-          return sheet.toArray();
+                set = new Sheet.Set();
+                set.setName(tmp[i].getName());
+                set.setShortDescription(tmp[i].getShortDescription());
+                set.setDisplayName(tmp[i].getDisplayName());
+                set.setValue("helpID", HtmlDataNode.class.getName() + ".PropertySheet");// NOI18N
+                set.put(tmp[i].getProperties());
+                sheet.put(set);
+            }
+            // add encoding property
+            set = new Sheet.Set();
+            set.setName(SHEETNAME_TEXT_PROPERTIES);
+            set.setDisplayName(NbBundle.getBundle(HtmlDataNode.class).getString("PROP_textfileSetName")); // NOI18N
+            set.setShortDescription(NbBundle.getBundle(HtmlDataNode.class).getString("HINT_textfileSetName")); // NOI18N
+            set.put(new PropertySupport.ReadWrite(
+                    PROP_FILE_ENCODING,
+                    String.class,
+                    NbBundle.getBundle(HtmlDataNode.class).getString("PROP_fileEncoding"), //NOI18N
+                    NbBundle.getBundle(HtmlDataNode.class).getString("HINT_fileEncoding") //NOI18N
+                    ) {
+                public Object getValue() {
+                    return ((HtmlDataObject)getDataObject()).getFileEncoding();
+                }
+                public void setValue(Object val) {
+                    String oldVal = (String) getValue();
+                    if (!(val instanceof String)) {
+                        throw new IllegalArgumentException();
+                    }
+                    String enc = ((String) val).trim();
+                    if (enc.length()!=0 && !isSupportedEncoding(enc)) {
+                        enc = oldVal;
+                    }
+                    ((HtmlDataObject) getDataObject()).setFileEncoding(enc);
+                }
+            });
+            sheet.put(set);
+        }
+        return sheet.toArray();
     }
+    
+    private boolean isSupportedEncoding(String encoding){
+        boolean supported;
+        try{
+            supported = java.nio.charset.Charset.isSupported(encoding);
+        }
+        catch (java.nio.charset.IllegalCharsetNameException e){
+            supported = false;
+        }
+        return supported;
+    }
+
 }

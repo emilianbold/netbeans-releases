@@ -20,6 +20,9 @@
 package org.netbeans.modules.html;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import org.openide.ErrorManager;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.ViewCookie;
 import org.openide.filesystems.FileObject;
@@ -39,6 +42,8 @@ import org.openide.nodes.Node;
 */
 public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory {
 
+    public static final String PROP_ENCODING = "encoding"; // NOI18N
+    public static final String DEFAULT_ENCODING = new InputStreamReader(System.in).getEncoding();
     static final long serialVersionUID =8354927561693097159L;
     
     /** New instance.
@@ -80,6 +85,62 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
     // Package accessibility for HtmlEditorSupport:
     CookieSet getCookieSet0() {
         return getCookieSet();
+    }
+    
+    public String getFileEncoding() {
+        //read the encoding property and if not empty return it
+        String encoding = (String)getPrimaryFile().getAttribute(PROP_ENCODING);
+        if (encoding != null) {
+            return encoding;
+        }
+        //detect encoding from input stream
+        InputStream is = null;
+        try {
+            is = getPrimaryFile().getInputStream();
+            byte[] arr = new byte[4096];
+            int len = is.read(arr);
+            len = (len >= 0) ? len : 0;
+            //check UTF-16 mark
+            if (len > 1) {
+                int mark = (arr[0]&0xff)*0x100+(arr[1]&0xff);
+                if (mark == 0xfeff) {
+                    encoding = "UTF-16"; // NOI18N
+                }
+            }
+            if (encoding == null) {
+                encoding = DEFAULT_ENCODING;
+            }
+            String txt = new String(arr, 0, len, encoding).toUpperCase();
+            encoding = HtmlEditorSupport.findEncoding(txt);
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
+        } finally {
+            try {
+                if (is != null) {
+                    is.close();
+                }
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
+            }
+        }
+        // if cannot detect return default
+        if (encoding == null) {
+            encoding = DEFAULT_ENCODING;
+        }
+        encoding.trim();
+        return encoding;
+    }
+    
+    public void setFileEncoding(String encoding) {
+        encoding = encoding.trim();
+        if(encoding.length() == 0) {
+            encoding = null; //clear the property
+        }
+        try {
+            getPrimaryFile().setAttribute(PROP_ENCODING, encoding);
+        } catch(IOException e) {
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+        }
     }
     
     static final class ViewSupport implements ViewCookie {
