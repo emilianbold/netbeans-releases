@@ -54,6 +54,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 
@@ -85,6 +86,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
+import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
 import org.w3c.dom.Document;
@@ -1879,14 +1881,14 @@ public class JsfForm {
             Element sourceElement = markupDesignBean.getElement();
             Element renderedElement = MarkupService.getRenderedElementForElement(sourceElement);
             if (renderedElement == null || sourceElement == renderedElement) {
-                log("\nMarkup design bean not renderable, markup design bean=" + markupDesignBean); // NOI18N
+                log("Markup design bean not renderable, markup design bean=" + markupDesignBean); // NOI18N
                 dumpHtmlMarkupDesignBeanHtml();
                 return;
             }
-            log("\nRendered markup design bean=" + markupDesignBean // NOI18N
+            log("Rendered markup design bean=" + markupDesignBean // NOI18N
                     + "\n" + Util.getHtmlStream(renderedElement)); // NOI18N
         } else {
-            log("\nDesign bean not renderable, design bean=" + designBean); // NOI18N
+            log("Design bean not renderable, design bean=" + designBean); // NOI18N
             dumpHtmlMarkupDesignBeanHtml();
         }
     }
@@ -1897,7 +1899,7 @@ public class JsfForm {
         if (html == null) {
             return;
         }
-        log("\nRendered html element markup design bean=" + MarkupUnit.getMarkupDesignBeanForElement(html)
+        log("Rendered html element markup design bean=" + MarkupUnit.getMarkupDesignBeanForElement(html)
                 + "\n" + Util.getHtmlStream(html)); // NOI18N
     }
    
@@ -2693,10 +2695,7 @@ public class JsfForm {
     
     private static void log(String message) {
         Logger logger = getLogger();
-        String property = logger.getName() + ".level"; // NOI18N
-        System.setProperty(property, Level.INFO.getName());
         logger.log(Level.INFO, message);
-        System.clearProperty(property);
     }
     
     private static void notify(Throwable ex) {
