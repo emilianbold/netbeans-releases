@@ -1459,9 +1459,8 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
     Object resourcePropertyConvert(Object value, FormProperty property) {
         if (isInModel() && formModel.isUndoRedoRecording()
                 && property.getPropertyContext().getFormModel() != null) {
-            Object val = FormProperty.getEnclosedValue(value);
-            Object resVal = ResourceSupport.makeResource(val, property);
-            if (resVal != val)
+            Object resVal = ResourceSupport.makeResource(value, property);
+            if (resVal != value)
                 return resVal;
         }
         return value; // do nothing

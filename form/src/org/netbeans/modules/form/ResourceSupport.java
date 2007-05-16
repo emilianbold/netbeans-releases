@@ -123,7 +123,7 @@ public class ResourceSupport {
      * Converts given value to a resource. Called always when a component
      * property is being set.
      * This method is not called during undo/redo.
-     * @param value new value being set to the property
+     * @param value new value being set to the property (can be FormProperty.ValueWithEditor)
      * @param property the property to which the value is going to be set (still
      *        contains the previous value)
      */
@@ -137,7 +137,8 @@ public class ResourceSupport {
         }
         else { // check nested values (borders are the only meaningful example)
                // the same value is returned, but might have been changed inside
-            for (FormProperty prop : support.getNestedResourceProperties(value, property, PLAIN_VALUE)) {
+            for (FormProperty prop : support.getNestedResourceProperties(
+                    FormProperty.getEnclosedValue(value), property, PLAIN_VALUE)) {
                 boolean fire = prop.isChangeFiring();
                 prop.setChangeFiring(false);
                 try {
@@ -156,7 +157,9 @@ public class ResourceSupport {
         // the value is set to the property which leads to call of updateStoredValue
     }
 
-    private Object makeResource0(Object value, FormProperty property) {
+    private Object makeResource0(Object newValue, FormProperty property) {
+        Object value = FormProperty.getEnclosedValue(newValue);
+
         if (value instanceof ExternalValue) {
             // when a copy of resource or i18n value is created, it may have the
             // key set to COMPUTE_AUTO_KEY asking form editor to provide it
@@ -174,7 +177,7 @@ public class ResourceSupport {
         }
 
         if (value == null || !isConvertibleToResource(value) || isExcludedProperty0(property))
-            return value;
+            return newValue;
 
         Object prevValue;
         try {
@@ -182,18 +185,20 @@ public class ResourceSupport {
         }
         catch (Exception ex) { // should not happen
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-            return value;
+            return newValue;
         }
 
         if (prevValue instanceof I18nValue) {
-            if (getI18nService() != null)
-                value = i18nService.changeValue((I18nValue)prevValue, value.toString());
+            if (getI18nService() != null) {
+                newValue = i18nService.changeValue((I18nValue)prevValue, value.toString());
+            }
         }
         else if (prevValue instanceof ResourceValue) {
-            if (getResourceService() != null)
-                value = resourceService.changeValue((ResourceValue) prevValue,
-                                                    value,
-                                                    getStringValue(property, value));
+            if (getResourceService() != null) {
+                newValue = resourceService.changeValue((ResourceValue) prevValue,
+                                                       value,
+                                                       getStringValue(property, value));
+            }
         }
         else if (isI18nAutoMode()) {
             if (value instanceof String) {
@@ -204,22 +209,28 @@ public class ResourceSupport {
                                                    getSrcDataObject());
                 }
                 // also need to switch to the i18n property editor
-                value = new FormProperty.ValueWithEditor(i18nValue,
+                newValue = new FormProperty.ValueWithEditor(i18nValue,
                     i18nService.getPropertyEditor(property.getValueType(), property.getCurrentEditor()));
             }
         }
         else if (isResourceAutoMode()) {
+            // resource value does not have a particular property editor - respect
+            // the one comming from outside
+            PropertyEditor newPrEd = newValue instanceof FormProperty.ValueWithEditor ?
+                ((FormProperty.ValueWithEditor)newValue).getPropertyEditor() : null;
+
             ResourceValue resValue = searchDroppedResourceValue(property, value);
             if (resValue == null) {
-                value = resourceService.create(getDefaultKey(property),
-                                               property.getValueType(),
-                                               value,
-                                               getStringValue(property, value),
-                                               getSourceFile());
+                resValue = resourceService.create(getDefaultKey(property),
+                                                  property.getValueType(),
+                                                  value,
+                                                  getStringValue(property, value),
+                                                  getSourceFile());
             }
-            else value = resValue;
+            newValue = newPrEd != null ? new FormProperty.ValueWithEditor(resValue, newPrEd) : resValue;
         }
-        return value;
+
+        return newValue;
     }
 
     private I18nValue searchDroppedI18nValue(Object key, String expectedValue) {
