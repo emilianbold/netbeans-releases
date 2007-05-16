@@ -26,7 +26,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import javax.swing.AbstractListModel;
 import javax.swing.BorderFactory;
@@ -37,6 +40,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
 import org.netbeans.editor.LocaleSupport;
 import org.netbeans.modules.editor.hints.HintsUI;
+import org.netbeans.spi.editor.hints.EnhancedFix;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.LazyFixList;
 import org.openide.awt.HtmlRenderer;
@@ -162,7 +166,7 @@ public class ListCompletionView extends JList implements ListCellRenderer {
         private synchronized void update() {
             computed = data.isComputed();
             if (computed)
-                fixes = new ArrayList<Fix>(new LinkedHashSet<Fix>(data.getFixes()));
+                fixes = sortFixes(data.getFixes());
             else
                 data.getFixes();
         }
@@ -188,7 +192,51 @@ public class ListCompletionView extends JList implements ListCellRenderer {
                 }
             });
         }
+        
+        private List<Fix> sortFixes(Collection<Fix> fixes) {
+            fixes = new LinkedHashSet(fixes);
+            
+            List<EnhancedFix> sortableFixes = new ArrayList<EnhancedFix>();
+            List<Fix> other = new LinkedList<Fix>();
+            
+            for (Fix f : fixes) {
+                if (f instanceof EnhancedFix) {
+                    sortableFixes.add((EnhancedFix) f);
+                } else {
+                    other.add(f);
+                }
+            }
+            
+            Collections.sort(sortableFixes, new FixComparator());
+            
+            List<Fix> result = new ArrayList<Fix>();
+            
+            result.addAll(sortableFixes);
+            result.addAll(other);
+            
+            return result;
+        }
 
+        private static final class FixComparator implements Comparator<EnhancedFix> {
+
+            public int compare(EnhancedFix o1, EnhancedFix o2) {
+                return compareText(o1.getSortText(), o2.getSortText());
+            }
+            
+        }
+        
+        private static int compareText(CharSequence text1, CharSequence text2) {
+            int len = Math.min(text1.length(), text2.length());
+            for (int i = 0; i < len; i++) {
+                char ch1 = text1.charAt(i);
+                char ch2 = text2.charAt(i);
+                if (ch1 != ch2) {
+                    return ch1 - ch2;
+                }
+            }
+            return text1.length() - text2.length();
+        }
+        
     }
 
 }
