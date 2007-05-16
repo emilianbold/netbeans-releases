@@ -116,7 +116,7 @@ public class PropertyEditorTimeZone extends PropertyEditorUserCode {
             return (String) combobox.getSelectedItem();
         }
         
-        public JComponent getCustomEditor() {
+        public JComponent getCustomEditorComponent() {
             return combobox;
         }
         
@@ -162,7 +162,7 @@ public class PropertyEditorTimeZone extends PropertyEditorUserCode {
             return textField.getText();
         }
         
-        public JComponent getCustomEditor() {
+        public JComponent getCustomEditorComponent() {
             return textField;
         }
         

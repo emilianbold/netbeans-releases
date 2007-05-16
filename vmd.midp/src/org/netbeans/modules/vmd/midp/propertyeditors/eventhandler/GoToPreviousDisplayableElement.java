@@ -57,7 +57,7 @@ public class GoToPreviousDisplayableElement implements PropertyEditorEventHandle
     public void setText(String text) {
     }
     
-    public JComponent getCustomEditor() {
+    public JComponent getCustomEditorComponent() {
         return null;
     }
     

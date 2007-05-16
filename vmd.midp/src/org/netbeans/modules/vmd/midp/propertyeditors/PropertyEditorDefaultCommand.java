@@ -87,7 +87,7 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
         radioButton.addActionListener(customEditor);
     }
     
-    public JComponent getCustomEditor() {
+    public JComponent getCustomEditorComponent() {
         return customEditor;
     }
     

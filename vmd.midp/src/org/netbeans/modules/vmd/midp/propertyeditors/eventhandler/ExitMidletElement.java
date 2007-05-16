@@ -68,7 +68,7 @@ public class ExitMidletElement implements PropertyEditorEventHandlerElement {
     public void setText(String text) {
     }
     
-    public JComponent getCustomEditor() {
+    public JComponent getCustomEditorComponent() {
         return null;
     }
     

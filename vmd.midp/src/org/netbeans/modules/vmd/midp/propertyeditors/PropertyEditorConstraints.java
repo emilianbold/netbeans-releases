@@ -73,7 +73,7 @@ public class PropertyEditorConstraints extends PropertyEditorUserCode implements
         customEditor = new CustomEditorConstraints(0);
     }
     
-    public JComponent getCustomEditor() {
+    public JComponent getCustomEditorComponent() {
         return customEditor;
     }
     

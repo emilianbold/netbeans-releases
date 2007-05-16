@@ -107,7 +107,7 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
         customEditor.updateModel();
     }
     
-    public JComponent getCustomEditor() {
+    public JComponent getCustomEditorComponent() {
         return customEditor;
     }
     

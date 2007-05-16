@@ -70,7 +70,7 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
         customEditor = new CustomEditor();
     }
     
-    public JComponent getCustomEditor() {
+    public JComponent getCustomEditorComponent() {
         return customEditor;
     }
     

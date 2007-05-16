@@ -56,7 +56,7 @@ public class CallElement extends JPanel implements PropertyEditorEventHandlerEle
     public void setText(String text) {
     }
     
-    public JComponent getCustomEditor() {
+    public JComponent getCustomEditorComponent() {
         return this;
     }
     

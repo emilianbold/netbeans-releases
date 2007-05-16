@@ -82,7 +82,7 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
         document = component.getDocument();
     }
     
-    public JComponent getCustomEditor() {
+    public JComponent getCustomEditorComponent() {
         return customEditor;
     }
     
