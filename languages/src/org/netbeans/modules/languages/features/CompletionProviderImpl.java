@@ -125,7 +125,10 @@ public class CompletionProviderImpl implements CompletionProvider {
     static String getCompletionType (Feature feature, String tokenType) {
         String completionType = feature == null ? null : (String) feature.getValue ("type");
         if (completionType != null) return completionType;
-        if (tokenType.indexOf ("whitespace") >= 0)
+        if (tokenType.indexOf ("whitespace") >= 0 ||
+            tokenType.indexOf ("operator") >= 0 || 
+            tokenType.indexOf ("separator") >= 0
+        )
             return COMPLETION_INSERT;
         else
         if (tokenType.indexOf ("comment") >= 0)
