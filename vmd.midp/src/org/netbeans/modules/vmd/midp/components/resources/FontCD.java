@@ -69,6 +69,19 @@ public final class FontCD extends ComponentDescriptor {
     public static final String LABEL_KIND_STATIC = "Static"; // NOI18N
     public static final String LABEL_KIND_INPUT = "Input"; // NOI18N
 
+    public static final String LABEL_FACE_SYSTEM = "SYSTEM"; // NOI18N
+    public static final String LABEL_FACE_MONOSPACE = "MONOSPACE"; // NOI18N
+    public static final String LABEL_FACE_PROPORTIONAL = "PROPORTIONAL"; // NOI18N
+
+    public static final String LABEL_SIZE_MEDIUM = "MEDIUM"; // NOI18N
+    public static final String LABEL_SIZE_LARGE = "LARGE"; // NOI18N
+    public static final String LABEL_SIZE_SMALL = "SMALL"; // NOI18N
+
+    public static final String LABEL_STYLE_PLAIN = "PLAIN"; // NOI18N
+    public static final String LABEL_STYLE_BOLD = "BOLD"; // NOI18N
+    public static final String LABEL_STYLE_ITALIC = "ITALIC"; // NOI18N
+    public static final String LABEL_STYLE_UNDERLINED = "UNDERLINED"; // NOI18N
+
     private static Map<String, PropertyValue> kindTypes;
     private static Map<String, PropertyValue> faceTypes;
     private static Map<String, PropertyValue> sizeTypes;
@@ -117,7 +130,7 @@ public final class FontCD extends ComponentDescriptor {
     public static Map<String, PropertyValue> getKindTypes() {
         if (kindTypes == null) {
             kindTypes = new TreeMap<String, PropertyValue>();
-            kindTypes.put(LABEL_KIND_DEFAULT,MidpTypes.createIntegerValue(VALUE_KIND_DEFAULT)); // NOI18N
+            kindTypes.put(LABEL_KIND_DEFAULT, MidpTypes.createIntegerValue(VALUE_KIND_DEFAULT)); // NOI18N
             kindTypes.put(LABEL_KIND_CUSTOM, MidpTypes.createIntegerValue(VALUE_KIND_CUSTOM)); // NOI18N
             kindTypes.put(LABEL_KIND_STATIC, MidpTypes.createIntegerValue(VALUE_KIND_STATIC)); // NOI18N
             kindTypes.put(LABEL_KIND_INPUT, MidpTypes.createIntegerValue(VALUE_KIND_INPUT)); // NOI18N
@@ -128,9 +141,9 @@ public final class FontCD extends ComponentDescriptor {
     public static Map<String, PropertyValue> getFaceTypes() {
         if (faceTypes == null) {
             faceTypes = new TreeMap<String, PropertyValue>();
-            faceTypes.put("SYSTEM", MidpTypes.createIntegerValue(VALUE_FACE_SYSTEM));             // NOI18N
-            faceTypes.put("MONOSPACE", MidpTypes.createIntegerValue(VALUE_FACE_MONOSPACE));       // NOI18N
-            faceTypes.put("PROPORTIONAL", MidpTypes.createIntegerValue(VALUE_FACE_PROPORTIONAL)); // NOI18N
+            faceTypes.put(LABEL_FACE_SYSTEM, MidpTypes.createIntegerValue(VALUE_FACE_SYSTEM));
+            faceTypes.put(LABEL_FACE_MONOSPACE, MidpTypes.createIntegerValue(VALUE_FACE_MONOSPACE));
+            faceTypes.put(LABEL_FACE_PROPORTIONAL, MidpTypes.createIntegerValue(VALUE_FACE_PROPORTIONAL));
         }
         return faceTypes;
     }
@@ -138,9 +151,9 @@ public final class FontCD extends ComponentDescriptor {
     public static Map<String, PropertyValue>  getSizeTypes() {
         if (sizeTypes == null) {
             sizeTypes = new TreeMap<String, PropertyValue>();
-            sizeTypes.put("MEDIUM", MidpTypes.createIntegerValue(VALUE_SIZE_MEDIUM)); // NOI18N
-            sizeTypes.put("SMALL", MidpTypes.createIntegerValue(VALUE_SIZE_SMALL));   // NOI18N
-            sizeTypes.put("LARGE", MidpTypes.createIntegerValue(VALUE_SIZE_LARGE));   // NOI18N
+            sizeTypes.put(LABEL_SIZE_MEDIUM, MidpTypes.createIntegerValue(VALUE_SIZE_MEDIUM));
+            sizeTypes.put(LABEL_SIZE_SMALL, MidpTypes.createIntegerValue(VALUE_SIZE_SMALL));
+            sizeTypes.put(LABEL_SIZE_LARGE, MidpTypes.createIntegerValue(VALUE_SIZE_LARGE));
         }
         return sizeTypes;
     }
@@ -148,10 +161,10 @@ public final class FontCD extends ComponentDescriptor {
     public static Map<String, PropertyValue>  getStyleTypes() {
         if (styleTypes == null) {
             styleTypes = new TreeMap<String, PropertyValue>();
-            styleTypes.put("PLAIN", MidpTypes.createIntegerValue(VALUE_STYLE_PLAIN));          // NOI18N
-            styleTypes.put("BOLD", MidpTypes.createIntegerValue(VALUE_STYLE_BOLD));            // NOI18N
-            styleTypes.put("ITALIC", MidpTypes.createIntegerValue(VALUE_STYLE_ITALIC));        // NOI18N
-            styleTypes.put("UNDERLINE", MidpTypes.createIntegerValue(VALUE_STYLE_UNDERLINED)); // NOI18N
+            styleTypes.put(LABEL_STYLE_PLAIN, MidpTypes.createIntegerValue(VALUE_STYLE_PLAIN));
+            styleTypes.put(LABEL_STYLE_BOLD, MidpTypes.createIntegerValue(VALUE_STYLE_BOLD));
+            styleTypes.put(LABEL_STYLE_ITALIC, MidpTypes.createIntegerValue(VALUE_STYLE_ITALIC));
+            styleTypes.put(LABEL_STYLE_UNDERLINED, MidpTypes.createIntegerValue(VALUE_STYLE_UNDERLINED));
         }
         return styleTypes;
     }

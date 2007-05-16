@@ -72,7 +72,7 @@ public final class PropertyEditorTimeout extends PropertyEditorUserCode implemen
         customEditor = new CustomEditor();
     }
     
-    public JComponent getComponent() {
+    public JComponent getCustomEditor() {
         return customEditor;
     }
     

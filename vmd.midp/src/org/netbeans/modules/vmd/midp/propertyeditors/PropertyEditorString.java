@@ -93,7 +93,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         document = component.getDocument();
     }
     
-    public JComponent getComponent() {
+    public JComponent getCustomEditor() {
         return customEditor.getComponent();
     }
     

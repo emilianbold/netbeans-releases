@@ -56,7 +56,7 @@ public class SwitchToDisplayableElement extends JPanel implements PropertyEditor
     public void setText(String text) {
     }
     
-    public JComponent getComponent() {
+    public JComponent getCustomEditor() {
         return this;
     }
     

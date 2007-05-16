@@ -317,7 +317,7 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
      *
      * @return component
      */
-    public JComponent getComponent() {
+    public JComponent getCustomEditor() {
         return customEditor;
     }
     

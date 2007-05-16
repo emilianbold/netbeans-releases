@@ -184,7 +184,7 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
                 constraints.fill = GridBagConstraints.HORIZONTAL;
                 add(rb, constraints);
                 
-                Component component = element.getComponent();
+                Component component = element.getCustomEditor();
                 if (component != null) {
                     constraints.insets = new Insets(0, 32, 12, 12);
                     constraints.anchor = GridBagConstraints.NORTHWEST;

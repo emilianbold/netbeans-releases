@@ -93,7 +93,7 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
         document = component.getDocument();
     }
     
-    public JComponent getComponent() {
+    public JComponent getCustomEditor() {
         return customEditor;
     }
     
