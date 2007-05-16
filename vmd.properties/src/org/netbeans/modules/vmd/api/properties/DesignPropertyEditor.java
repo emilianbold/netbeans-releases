@@ -23,6 +23,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyEditorSupport;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.List;
@@ -47,7 +48,7 @@ import org.openide.nodes.PropertySupport;
 public abstract class DesignPropertyEditor extends PropertyEditorSupport implements ExPropertyEditor, Factory {
     
     private List<String> propertyNames;
-    private DesignComponent component;
+    private WeakReference<DesignComponent> component;
     private Object tempValue;
     private PropertyValue propertyValue;
     private PropertySupport propertySupport;
@@ -89,10 +90,10 @@ public abstract class DesignPropertyEditor extends PropertyEditorSupport impleme
         }
         
         final boolean[] isDefaultValue = new boolean[] { true };
-        component.getDocument().getTransactionManager().readAccess(new Runnable() {
+        component.get().getDocument().getTransactionManager().readAccess(new Runnable() {
             public void run() {
                 for (String propertyName : propertyNames) {
-                    if (! component.isDefaultValue(propertyName)) {
+                    if (! component.get().isDefaultValue(propertyName)) {
                         isDefaultValue[0] = false;
                         break;
                     }
@@ -121,10 +122,10 @@ public abstract class DesignPropertyEditor extends PropertyEditorSupport impleme
         }
         
         final boolean[] supportsDefaultValue = new boolean[] { true };
-        component.getDocument().getTransactionManager().readAccess(new Runnable() {
+        component.get().getDocument().getTransactionManager().readAccess(new Runnable() {
             public void run() {
                 for (String propertyName : propertyNames) {
-                    PropertyDescriptor propertyDescriptor = component.getComponentDescriptor().getPropertyDescriptor(propertyName);
+                    PropertyDescriptor propertyDescriptor = component.get().getComponentDescriptor().getPropertyDescriptor(propertyName);
                     if(! (propertyDescriptor.getDefaultValue().getKind() != PropertyValue.Kind.NULL || propertyDescriptor.isAllowNull())) {
                         supportsDefaultValue[0] = false;
                         break;
@@ -180,7 +181,8 @@ public abstract class DesignPropertyEditor extends PropertyEditorSupport impleme
                               PropertySupport propertySupport,
                               InplaceEditor inplaceEditor,
                               String propertyDisplayName) {
-        this.component = component;
+        
+        this.component = new WeakReference<DesignComponent>(component);
         this.propertyNames = propertyNames;
         this.tempValue = value;
         super.setValue(value);
@@ -200,12 +202,11 @@ public abstract class DesignPropertyEditor extends PropertyEditorSupport impleme
     public String getCustomEditorTitle() {
         if (component == null)
             return null;
-        component.getDocument().getTransactionManager().readAccess((new Runnable() {
+        component.get().getDocument().getTransactionManager().readAccess((new Runnable() {
             public void run() {
-                customEditorTitle = InfoPresenter.getDisplayName(component) + " - " + propertyDisplayName; //NOI18N
+                customEditorTitle = InfoPresenter.getDisplayName(component.get()) + " - " + propertyDisplayName; //NOI18N
             }
         }));
-        
         return customEditorTitle;
     }
     
@@ -259,9 +260,9 @@ public abstract class DesignPropertyEditor extends PropertyEditorSupport impleme
     }
     
     private PropertyValue readDefaultPropertyValue(final String propertyName) {
-        component.getDocument().getTransactionManager().readAccess(new Runnable() {
+        component.get().getDocument().getTransactionManager().readAccess(new Runnable() {
             public void run() {
-                propertyValue = component.getComponentDescriptor().getPropertyDescriptor(propertyName).getDefaultValue();
+                propertyValue = component.get().getComponentDescriptor().getPropertyDescriptor(propertyName).getDefaultValue();
             }
         });
         
