@@ -607,10 +607,8 @@ public final class ParseProjectXml extends Task {
                         return false;
                     }
                 }
-            } else {
-                if (givenRelease != -1) {
-                    return false;
-                }
+            } else if (run && givenRelease != -1) {
+                return false;
             }
             if (spec != null) {
                 String givenSpec = attr.getValue("OpenIDE-Module-Specification-Version");
