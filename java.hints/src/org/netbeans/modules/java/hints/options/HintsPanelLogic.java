@@ -243,6 +243,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
                 customizerPanel.add(c, BorderLayout.CENTER);
             }            
             customizerPanel.getParent().invalidate();
+            ((JComponent)customizerPanel.getParent()).revalidate();
             customizerPanel.getParent().repaint();
         }
         else { // Category or nonsense selected.
@@ -323,6 +324,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         if ( !enabled ) {
             customizerPanel.removeAll();
             customizerPanel.getParent().invalidate();
+            ((JComponent)customizerPanel.getParent()).revalidate();
             customizerPanel.getParent().repaint();
             severityComboBox.setSelectedIndex(severity2index.get(AbstractHint.SEVERITY_DEFAULT.ordinal()));
             tasklistCheckBox.setSelected(AbstractHint.IN_TASK_LIST_DEFAULT);
