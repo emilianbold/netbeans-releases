@@ -36,7 +36,7 @@ public class VWPMeasureActions  {
 //TODO do Open project through UI        suite.addTest(new OpenHugeWebPackProject("testOpenWebPackProject","Open Huge Web Project"));
         
         suite.addTest(new OpenProjectFirstPage("testOpenSmallProjectFirstPage","Open Small Project First Page"));
-//TODO disbale temporary - it takes minutes!- IZ 101604        suite.addTest(new OpenProjectFirstPage("testOpenLargeProjectFirstPage","Open Large Project First Page"));
+        suite.addTest(new OpenProjectFirstPage("testOpenLargeProjectFirstPage","Open Large Project First Page"));
         
         suite.addTest(new OpenBeanFiles("testApplicationBean","Open Application Bean"));
         suite.addTest(new OpenBeanFiles("testRequestBean","Open Request  Bean"));
@@ -48,7 +48,8 @@ public class VWPMeasureActions  {
         suite.addTest(new CreateWebPackFiles("testCreateJSPPage","Create JSP page for VWP project"));
 
         suite.addTest(new gui.window.DatabaseTableDrop("measureTime","Database table drop on Table time")); 
-//TODO Disabled because throws exception. See bugid #99202      suite.addTest(new ComponentAddTest("testAddTableComponent","Adding Table Component"));
+        //TODO Disabled because throws exception. See bugid #99202      
+        suite.addTest(new ComponentAddTest("testAddTableComponent","Adding Table Component"));
 	suite.addTest(new ComponentAddTest("testAddButtonComponent","Adding Button Component"));
 	suite.addTest(new ComponentAddTest("testAddListboxComponent","Adding Listbox Component"));
         
