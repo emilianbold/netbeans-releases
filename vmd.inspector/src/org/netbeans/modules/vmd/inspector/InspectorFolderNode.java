@@ -97,7 +97,6 @@ final class InspectorFolderNode extends AbstractNode {
     }
     
     void resolveNode(final InspectorFolderWrapper folderWrapper, final DesignDocument document) {
-        warmUp(this);
         this.folder = folderWrapper.getFolder();
         super.setDisplayName(folder.getDisplayName());
         this.componentID = folder.getComponentID();
@@ -115,10 +114,7 @@ final class InspectorFolderNode extends AbstractNode {
         ((InspectorChildren) getChildren()).setKeys(folderWrapper.getChildrenNodes());
     }
     
-    private void warmUp(Node node) {
-        for (Node child : node.getChildren().getNodes())
-            warmUp(child);
-    }
+    
     
     void terminate() {
         componentID = null;

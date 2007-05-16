@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.Action;
 
@@ -57,7 +58,7 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener/*, Ac
     private WeakSet<DesignComponent> componentsToDelete;
     private WeakSet<DesignComponent> componentsToAdd;
     private WeakSet<DesignComponent> componentsToUndo;
-    private Collection<InspectorFolderWrapper> foldersToUpdate;
+    private Set<InspectorFolderWrapper> foldersToUpdate;
     private WeakSet<DesignComponent> deletedComponentsCash;
     private boolean lock = true;
     
@@ -71,37 +72,43 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener/*, Ac
         rootFolderWrapper.resolveFolder(document);
     }
     
-    synchronized void buildTree(final Collection<DesignComponent> createdComponents,final Collection<DesignComponent> affectedComponents) {
+    synchronized void buildTree(final Collection<DesignComponent> fullyAffected, final Collection<DesignComponent> createdComponents,final Collection<DesignComponent> affectedComponents) {
         lock = true;
-        //System.out.println(">>>>>>>> Start changing tree " + this);
-        //long start = System.currentTimeMillis();
-        
         document.get().getTransactionManager().readAccess(new Runnable() {
             public void run() {
                 if (rootFolderWrapper.getChildren() != null) {
+                    if (fullyAffected != null && !fullyAffected.isEmpty())
+                        updateFolderToUpdate(fullyAffected, rootFolderWrapper);
                     updateChangedDescriptors(createdComponents, affectedComponents);
                     dive(InspectorFolderPath.createInspectorPath().add(rootFolderWrapper.getFolder()), rootFolderWrapper);
-                    updateViewChildren(rootFolderWrapper);
+                    updateTreeStructureView();
                     InspectorPanel.getInstance().getUI(document.get()).expandNodes(foldersToUpdate);
                 } else {
                     updateChangedDescriptors(markAllComponentsAsToAdd(), null);
                     dive(InspectorFolderPath.createInspectorPath().add(rootFolderWrapper.getFolder()), rootFolderWrapper);
-                    updateViewChildren(rootFolderWrapper);
+                    updateTreeStructureView();
                     Collection foldersToExpand = rootFolderWrapper.getChildren();
                     if (foldersToExpand != null)
                         InspectorPanel.getInstance().getUI(document.get()).expandNodes(foldersToExpand);
                 }
             }
         });
-         
         // cleaning up
         foldersToUpdate.clear();
         componentsToAdd.clear();
         componentsToDelete.clear();
         componentsToUndo.clear();
-        //long stop = System.currentTimeMillis();
-        //System.out.println(">>>>>>>> Time to build and refresh navigator tree"+ ((stop-start) * 0.001)+" s"); //NOI18N //Remove
         lock = false;
+    }
+    
+    private void updateFolderToUpdate(Collection<DesignComponent> fullyAffected, InspectorFolderWrapper parentWrapper) {
+        if (parentWrapper.getChildren() == null)
+            return;
+        for (InspectorFolderWrapper wrapper : parentWrapper.getChildren()) {
+            updateFolderToUpdate(fullyAffected, wrapper);
+            if (fullyAffected.contains(wrapper.getComponent()))
+                foldersToUpdate.add(wrapper);
+        }
     }
     
     boolean isLocked() {
@@ -124,13 +131,16 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener/*, Ac
             if (registryWrapperChildren != null)
                 wrapperChildren.addAll(registryWrapperChildren);
         }
+        
         if (wrapperChildren == null)
             wrapperChildren = parentWrapper.getChildren();
         else {
+            foldersToUpdate.add(parentWrapper);
             List<InspectorFolderWrapper> parentWrapperChildren = parentWrapper.getChildren();
             if (parentWrapperChildren != null)
                 wrapperChildren.addAll(parentWrapperChildren);
         }
+        
         if (wrapperChildren != null) {
             WeakSet<InspectorFolderWrapper> wrappersToDelete = null;
             for (InspectorFolderWrapper folder : wrapperChildren) {
@@ -345,7 +355,7 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener/*, Ac
     }
     
     
-    // ---------- Existing tree update view
+    // ---------- Existing tree update
     private void updateChangedDescriptors(final Collection<DesignComponent> createdComponents , final Collection<DesignComponent> affectedComponents) {
         if (createdComponents != null ) {
             for (DesignComponent component : createdComponents) {
@@ -368,14 +378,27 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener/*, Ac
         InspectorRegistry.getDefault().removeAll(componentsToDelete);
     }
     
-    private void updateViewChildren(InspectorFolderWrapper parentWrapper) {
+    private void updateTreeStructureView() {
+        updateTreeStructureView(rootFolderWrapper);
+        rootFolderWrapper.resolveFolder(document.get());
+        warmUp(rootFolderWrapper.getNode());
+    }
+    
+    private void updateTreeStructureView(InspectorFolderWrapper parentWrapper) {
         if (parentWrapper.getChildren() != null) {
-            for(InspectorFolderWrapper wrapper : parentWrapper.getChildren() ) {
-                updateViewChildren(wrapper);
-                wrapper.resolveFolder(document.get());
+            for(InspectorFolderWrapper wrapper : parentWrapper.getChildren()) {
+                updateTreeStructureView(wrapper);
+                if (foldersToUpdate.contains(wrapper))
+                    wrapper.resolveFolder(document.get());
             }
         }
-        parentWrapper.resolveFolder(document.get());
+        if (parentWrapper.getChildren() == null || parentWrapper.getChildren().isEmpty())
+            parentWrapper.resolveFolder(document.get());
+    }
+    
+    private void warmUp(Node node) {
+        for (Node child : node.getChildren().getNodes())
+            warmUp(child);
     }
     
     private void  updateRegistredFolders() {

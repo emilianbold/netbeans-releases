@@ -142,8 +142,8 @@ final class InspectorFolderWrapper {
         }
         if (folder.getComponentID() != null)
             component = document.getComponentByUID(folder.getComponentID());
-        getNode().resolveNode(this, document );
         executeOrder();
+        getNode().resolveNode(this, document);
     }
     
     Collection<InspectorFolder> getChildrenFolders() {
