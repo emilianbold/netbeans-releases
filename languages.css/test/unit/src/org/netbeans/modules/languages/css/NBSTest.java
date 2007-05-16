@@ -25,6 +25,7 @@ import org.netbeans.modules.languages.NBSLanguageReader;
 import org.netbeans.modules.languages.parser.AnalyserAnalyser;
 import org.netbeans.modules.languages.parser.Petra;
 import org.netbeans.modules.languages.parser.StringInput;
+import org.netbeans.modules.languages.parser.TokenInputUtils;
 
 
 /**
@@ -40,7 +41,7 @@ public class NBSTest extends TestCase {
     public void testFirst () {
         InputStream is = getClass ().getClassLoader ().getResourceAsStream ("org/netbeans/modules/languages/css/CSS.nbs");
         try {
-            Language l = NBSLanguageReader.readLanguage ("test", is, "test/css");
+            Language l = NBSLanguageReader.readLanguage (is, "test", "text/x-css");
             List r = l.getAnalyser ().getRules ();
             AnalyserAnalyser.printRules (r, null);
             AnalyserAnalyser.printUndefinedNTs (r, null);
@@ -58,7 +59,7 @@ public class NBSTest extends TestCase {
     
     public void test2 () throws ParseException, IOException {
         InputStream is = getClass ().getClassLoader ().getResourceAsStream ("org/netbeans/modules/languages/css/CSS.nbs");
-        Language l = NBSLanguageReader.readLanguage ("test", is, "test/css");
+        Language l = NBSLanguageReader.readLanguage (is, "test", "text/x-css");
 
         is = getClass ().getClassLoader ().getResourceAsStream ("org/netbeans/modules/languages/css/netbeans.css2");
         BufferedReader br = new BufferedReader (new InputStreamReader (is));
@@ -68,9 +69,9 @@ public class NBSTest extends TestCase {
             sb.append (ln).append ('\n');
             ln = br.readLine ();
         }
-        TokenInput ti = TokenInput.create (
+        TokenInput ti = TokenInputUtils.create ("text/x-css",
             l.getParser (), 
-            new StringInput (sb.toString (), "netbeans.css2"),
+            new StringInput (sb.toString ()),
             l.getSkipTokenTypes ()
         );
         ASTNode n = l.getAnalyser ().read (ti, false);
