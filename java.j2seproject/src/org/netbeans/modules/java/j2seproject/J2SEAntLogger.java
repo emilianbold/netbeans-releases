@@ -71,6 +71,14 @@ public final class J2SEAntLogger extends AntLogger {
                 }
             }
         }
+        // #43968: messages from subprojects are sent in AntEvent that has script 
+        // name build.xml and we are interested in those messages too
+        else if (script.getName().equals("build.xml")) { // NOI18N
+            File parent = script.getParentFile();
+            if (parent != null) {
+                return isJ2SEProject(parent);
+            }
+        }
         // Was not a J2SEProject's nbproject/build-impl.xml; ignore it.
         return false;
     }
