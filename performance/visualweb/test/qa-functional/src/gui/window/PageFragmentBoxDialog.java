@@ -23,7 +23,6 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.PaletteOperator;
 import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
@@ -99,7 +98,7 @@ public class PageFragmentBoxDialog extends org.netbeans.performance.test.utiliti
         
         dlgName = Bundle.getString("org.netbeans.modules.visualweb.xhtml.Bundle", "fragmentCustTitle"); //Select Page Fragment
         menuCmd = Bundle.getString("org.netbeans.modules.visualweb.xhtml.Bundle", "fragmentCustTitleEllipse"); // Select Page Fragment...
-        new ActionNoBlock("Window|Navigator",null).perform(); //NOI18N
+        new ActionNoBlock("Window|Navigating|Navigator",null).perform(); //NOI18N
         PaletteOperator.invoke();
 
         addPFBComponent();

@@ -77,7 +77,7 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
     
     protected void initialize() {
         log(":: initialize");
-        new ActionNoBlock("Window|Navigator",null).perform(); //NOI18N
+        new ActionNoBlock("Window|Navigating|Navigator",null).perform(); //NOI18N
         
         rto = RuntimeTabOperator.invoke();
         Node travelBaseNode = new Node(rto.getRootNode(),"Databases"+"|"+DBRootName); // NOI18N
