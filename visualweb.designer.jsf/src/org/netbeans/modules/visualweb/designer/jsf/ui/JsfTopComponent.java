@@ -29,6 +29,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.BufferedWriter;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.StringWriter;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1575,7 +1579,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
                     
 //            if (designBean == null) {
             if (componentRootElement == null) {
-                System.err.println("\nNode doesn't have design bean, node=" + node); // NOI18N
+                log("Node doesn't have design bean, node=" + node); // NOI18N
                 dumpRootComponentCssBoxes();
             } else {
 //                PageBox pageBox = webform.getPane().getPageBox();
@@ -1588,10 +1592,10 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
                 
 //                if (cssBox == null) {
                 if (box == null) {
-                    System.err.println("\nComponent doesn't have a corresponding css box, componentRootElement=" + componentRootElement); // NOI18N
+                    log("Component doesn't have a corresponding css box, componentRootElement=" + componentRootElement); // NOI18N
                     dumpRootComponentCssBoxes();
                 } else {
-                    System.err.println("\nCss boxes for componentRootElement=" + componentRootElement); // NOI18N
+                    log("Css boxes for componentRootElement=" + componentRootElement); // NOI18N
 //                    cssBox.list(System.err, 0);
                     box.list(System.err, 0);
                 }
@@ -1616,8 +1620,13 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         }
 //        System.err.println("\nCss boxes for html element markup design bean=" + MarkupUnit.getMarkupDesignBeanForElement(html));
 //        System.err.println("\nCss boxes for html element markup design bean=" + WebForm.getDomProviderService().getMarkupDesignBeanForElement(html));
-        System.err.println("\nCssBoxes for element=" + html);
-        pageBox.list(System.err, 0);
+        log("CssBoxes for element=" + html);
+        StringWriter stringWriter = new StringWriter();
+        PrintWriter writer = new PrintWriter(new BufferedWriter(stringWriter));
+        pageBox.list(writer, 0);
+        writer.flush();
+        log(stringWriter.toString());
+        writer.close();
     }
 
     protected void showKeyboardPopup() {
@@ -2611,7 +2620,16 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     } // End of JsfLookupProvider.
     
     private static void warn(String message) {
-        Logger logger = Logger.getLogger(JsfTopComponent.class.getName());
+        Logger logger = getLogger();
         logger.log(Level.WARNING, message);
+    }
+    
+    private static void log(String message) {
+        Logger logger = getLogger();
+        logger.log(Level.INFO, message);
+    }
+    
+    private static Logger getLogger() {
+        return Logger.getLogger(JsfTopComponent.class.getName());
     }
 }

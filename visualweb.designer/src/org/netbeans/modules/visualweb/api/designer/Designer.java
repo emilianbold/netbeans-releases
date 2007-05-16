@@ -27,6 +27,7 @@ import java.awt.Rectangle;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.EventListener;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -158,6 +159,7 @@ public interface Designer {
         public Box getPositionedBy();
         
         public void list(PrintStream outputStream, int indent);
+        public void list(PrintWriter writer, int indent);
     } // End of Box.
     
     
