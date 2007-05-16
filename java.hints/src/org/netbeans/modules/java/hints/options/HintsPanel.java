@@ -87,8 +87,6 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         severityComboBox = new javax.swing.JComboBox();
         toProblemCheckBox = new javax.swing.JCheckBox();
         customizerPanel = new javax.swing.JPanel();
-        scopeLabel = new javax.swing.JLabel();
-        scopeComboBox = new javax.swing.JComboBox();
         jLabel1 = new javax.swing.JLabel();
         descriptionPanel = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -153,30 +151,9 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
         optionsPanel.add(customizerPanel, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(scopeLabel, org.openide.util.NbBundle.getMessage(HintsPanel.class, "CTL_Scope_Label")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 4);
-        optionsPanel.add(scopeLabel, gridBagConstraints);
-
-        scopeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "public", "protected", "package", "private" }));
-        scopeComboBox.setSelectedIndex(1);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
-        optionsPanel.add(scopeComboBox, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 10;
         gridBagConstraints.gridy = 10;
@@ -246,7 +223,7 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
             logic.disconnect();
         }
         logic = new HintsPanelLogic();
-        logic.connect(errorTree, severityComboBox, scopeComboBox, toProblemCheckBox, customizerPanel, descriptionTextArea);
+        logic.connect(errorTree, severityComboBox, toProblemCheckBox, customizerPanel, descriptionTextArea);
     }
     
     void cancel() {
@@ -320,8 +297,6 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JPanel optionsPanel;
-    private javax.swing.JComboBox scopeComboBox;
-    private javax.swing.JLabel scopeLabel;
     private javax.swing.JComboBox severityComboBox;
     private javax.swing.JLabel severityLabel;
     private javax.swing.JCheckBox toProblemCheckBox;

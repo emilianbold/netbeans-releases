@@ -73,7 +73,6 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     
     private JTree errorTree;
     private JComboBox severityComboBox;
-    private JComboBox scopeComboBox;
     private JCheckBox tasklistCheckBox;
     private JPanel customizerPanel;
     private JTextArea descriptionTextArea;
@@ -82,14 +81,12 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         changes = new HashMap<AbstractHint, ModifiedPreferences>();        
     }
     
-    void connect( JTree errorTree, 
-                  JComboBox severityComboBox, JComboBox scopeComboBox,
+    void connect( JTree errorTree, JComboBox severityComboBox, 
                   JCheckBox tasklistCheckBox, JPanel customizerPanel,
                   JTextArea descriptionTextArea) {
         
         this.errorTree = errorTree;
         this.severityComboBox = severityComboBox;
-        this.scopeComboBox = scopeComboBox;
         this.tasklistCheckBox = tasklistCheckBox;
         this.customizerPanel = customizerPanel;
         this.descriptionTextArea = descriptionTextArea;        
@@ -99,7 +96,6 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         errorTree.getSelectionModel().addTreeSelectionListener(this);
             
         severityComboBox.addActionListener(this);
-        scopeComboBox.addActionListener(this);
         tasklistCheckBox.addChangeListener(this);
         
         valueChanged( null );
@@ -112,7 +108,6 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         errorTree.getSelectionModel().removeTreeSelectionListener(this);
             
         severityComboBox.removeActionListener(this);
-        scopeComboBox.removeActionListener(this);
         tasklistCheckBox.removeChangeListener(this);
                 
         componentsSetEnabled( false );
@@ -221,8 +216,6 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     public void valueChanged(TreeSelectionEvent ex) {            
         Object o = getUserObject(errorTree.getSelectionPath());
         
-//        customizerPanel.setVisible(false);
-        
         if ( o instanceof AbstractHint ) {
             AbstractHint hint = (AbstractHint) o;
             
@@ -235,9 +228,6 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
             
             int severity = p.getInt(AbstractHint.SEVERITY_KEY, AbstractHint.SEVERITY_DEFAULT.ordinal());
             severityComboBox.setSelectedIndex(severity2index.get(severity));
-            
-            String scope = p.get(AbstractHint.SCOPE_KEY, AbstractHint.SCOPE_DEFAULT);
-            scopeComboBox.setSelectedItem(scope);
             
             boolean toTasklist = p.getBoolean(AbstractHint.IN_TASK_LIST_KEY, AbstractHint.IN_TASK_LIST_DEFAULT);
             tasklistCheckBox.setSelected(toTasklist);
@@ -252,13 +242,12 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
             if ( c != null ) {               
                 customizerPanel.add(c, BorderLayout.CENTER);
             }            
+            customizerPanel.getParent().invalidate();
+            customizerPanel.getParent().repaint();
         }
         else { // Category or nonsense selected.
             componentsSetEnabled(false);
         }
-        
-//        customizerPanel.setVisible(true);
-        
     }
     
     // ActionListener implementation -------------------------------------------
@@ -269,16 +258,12 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         
         Object o = getUserObject(errorTree.getSelectionPath());
         
-        customizerPanel.setVisible(false);
-        
         if ( o instanceof AbstractHint ) {
             AbstractHint hint = (AbstractHint) o;
             Preferences p = getPreferences4Modification(hint);
             
             if( severityComboBox.equals( e.getSource() ) )
                 p.putInt(AbstractHint.SEVERITY_KEY, severityComboBox.getSelectedIndex());
-            else if( scopeComboBox.equals( e.getSource() ) )
-                p.put(AbstractHint.SCOPE_KEY, scopeComboBox.getSelectedItem().toString());
         }
     }
 
@@ -337,13 +322,14 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         
         if ( !enabled ) {
             customizerPanel.removeAll();
+            customizerPanel.getParent().invalidate();
+            customizerPanel.getParent().repaint();
             severityComboBox.setSelectedIndex(severity2index.get(AbstractHint.SEVERITY_DEFAULT.ordinal()));
             tasklistCheckBox.setSelected(AbstractHint.IN_TASK_LIST_DEFAULT);
             descriptionTextArea.setText(""); // NOI18N
         }
         
         severityComboBox.setEnabled(enabled);
-        scopeComboBox.setEnabled(enabled);
         tasklistCheckBox.setEnabled(enabled);
         descriptionTextArea.setEnabled(enabled);
     }

@@ -39,6 +39,11 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import java.awt.EventQueue;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -61,6 +66,11 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
@@ -119,6 +129,9 @@ public final class JavadocHintProvider extends AbstractHint {
     private static final String DEFAULT_PROFILE = "default"; // NOI18N
     private static final String HINTS = "hints"; // NOI18N
     
+    public static final String SCOPE_KEY = "scope";             // NOI18N
+    public static final String SCOPE_DEFAULT = "protected"; // NOI18N
+
     private boolean createJavadocKind;
     
     private JavadocHintProvider(boolean createJavadocKind) {
@@ -1530,11 +1543,56 @@ public final class JavadocHintProvider extends AbstractHint {
         
         if (!p.getBoolean(INITIALIZED, false)) {
             p.putInt(AbstractHint.SEVERITY_KEY, getDefaultHintSeverity().ordinal());
-            p.put(AbstractHint.SCOPE_KEY,AbstractHint.SCOPE_DEFAULT);
+            p.put(SCOPE_KEY,SCOPE_DEFAULT);
             p.putBoolean(INITIALIZED, true);
         }
         
         return p;
+    }
+    
+    @Override
+    public JComponent getCustomizer(final Preferences node) {
+        JPanel res = new JPanel( new GridBagLayout() );
+        res.setOpaque( false );
+        res.setBorder( BorderFactory.createTitledBorder(NbBundle.getMessage(JavadocHintProvider.class, "LBL_SCOPE") ) ); //NOI18N
+        ActionListener l = new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                JRadioButton rb = (JRadioButton)e.getSource();
+                node.put( SCOPE_KEY, rb.getText() );
+            }
+        };
+        ButtonGroup group = new ButtonGroup();
+        
+        int row = 0;
+        JRadioButton radio = new JRadioButton("public"); //NOI18N
+        radio.addActionListener( l );
+        group.add( radio );
+        radio.setSelected( radio.getText().equals( node.get(SCOPE_KEY, SCOPE_DEFAULT) ) );
+        radio.setOpaque(false);
+        res.add( radio, new GridBagConstraints(0,row++,1,1,0.0,0.0,GridBagConstraints.WEST,GridBagConstraints.HORIZONTAL, new Insets(8,8,0,8),0,0 ) );
+        
+        radio = new JRadioButton("protected"); //NOI18N
+        radio.addActionListener( l );
+        group.add( radio );
+        radio.setSelected( radio.getText().equals( node.get(SCOPE_KEY, SCOPE_DEFAULT) ) );
+        radio.setOpaque(false);
+        res.add( radio, new GridBagConstraints(0,row++,1,1,0.0,0.0,GridBagConstraints.WEST,GridBagConstraints.HORIZONTAL, new Insets(8,8,0,8),0,0 ) );
+        
+        radio = new JRadioButton("package"); //NOI18N
+        radio.addActionListener( l );
+        group.add( radio );
+        radio.setSelected( radio.getText().equals( node.get(SCOPE_KEY, SCOPE_DEFAULT) ) );
+        radio.setOpaque(false);
+        res.add( radio, new GridBagConstraints(0,row++,1,1,0.0,0.0,GridBagConstraints.WEST,GridBagConstraints.HORIZONTAL, new Insets(8,8,0,8),0,0 ) );
+        
+        radio = new JRadioButton("private"); //NOI18N
+        radio.addActionListener( l );
+        group.add( radio );
+        radio.setSelected( radio.getText().equals( node.get(SCOPE_KEY, SCOPE_DEFAULT) ) );
+        radio.setOpaque(false);
+        res.add( radio, new GridBagConstraints(0,row++,1,1,0.0,0.0,GridBagConstraints.WEST,GridBagConstraints.HORIZONTAL, new Insets(8,8,0,8),0,0 ) );
+        
+        return res;
     }
     
     private static final String INITIALIZED = "javadoc-hint-initialized"; // NOI18N
