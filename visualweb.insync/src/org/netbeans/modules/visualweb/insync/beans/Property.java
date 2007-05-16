@@ -166,6 +166,14 @@ public class Property extends BeansNode {
         }
     }
     
+    //org.netbeans.modules.visualweb.insync.java.Statement holds on to bean name because of bug #96387
+    //Until that bug is fixed, this is a workaround to fix #103122 
+    public void setBeanName(String name) {
+        if(stmt != null) {
+            stmt.setBeanName(name);
+        }
+    }
+    
     /**
      * 
      */

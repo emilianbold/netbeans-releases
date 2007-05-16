@@ -186,7 +186,17 @@ public class BeansDesignBean extends SourceDesignBean {
                         }
                     }
                 }
-            }                        
+            }
+            //org.netbeans.modules.visualweb.insync.java.Statement holds on to bean name because of bug #96387
+            //Until that bug is fixed, this is a workaround to fix #103122
+            Iterator pi = (properties != null) ? properties.iterator() : null;
+            while(ei != null && pi.hasNext()) {
+                BeansDesignProperty bdp = (BeansDesignProperty)pi.next();
+                if(bdp.property != null && bdp.getDesignBean().getInstanceName().equals(newname)) {
+                    bdp.property.setBeanName(newname);
+                }
+            }
+            
             if (!newname.equals(oldname)) {
                 String scope = unit.getBeansUnit().getBeanName() + ".";
                 unit.model.updateAllBeanElReferences(scope + oldname, scope + newname);
