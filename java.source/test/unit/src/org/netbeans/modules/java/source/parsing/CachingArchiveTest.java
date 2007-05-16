@@ -19,6 +19,7 @@
 package org.netbeans.modules.java.source.parsing;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.regex.Pattern;
 import org.netbeans.junit.NbTestCase;
 
@@ -64,4 +65,14 @@ public class CachingArchiveTest extends NbTestCase {
         a.putName(new byte[1]);
     }
 
+    public void testJoin() throws Exception {
+        long smallLong = ((long) Integer.MAX_VALUE) + 1;
+        
+        for (long mtime : Arrays.asList(3003611096031047874L, new Long(Integer.MAX_VALUE), smallLong, new Long(Integer.MIN_VALUE))) {
+            int  higher = (int)(mtime >> 32);
+            int  lower = (int)(mtime & 0xFFFFFFFF);
+            
+            assertEquals(mtime, CachingArchive.join(higher, lower));
+        }
+    }
 }

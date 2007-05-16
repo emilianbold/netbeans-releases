@@ -86,9 +86,13 @@ public class CachingArchive implements Archive {
         }
     }
     
+    static long join(int higher, int lower) {
+        return (((long)higher) << 32) | (((long) lower) & 0xFFFFFFFFL);
+    }
+    
     private JavaFileObject create(String pkg, Folder f, int off) {
         String baseName = getString(f.indices[off], f.indices[off+1]);
-        long mtime = (((long)f.indices[off+3]) << 32) | f.indices[off+2];
+        long mtime = join(f.indices[off+3], f.indices[off+2]);
         if (zipFile == null) {
             return FileObjects.zipFileObject(archiveFile, pkg, baseName, mtime);
         } else {
