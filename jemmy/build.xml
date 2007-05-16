@@ -22,8 +22,6 @@ Microsystems, Inc. All Rights Reserved.
   <!-- Properties not defined in this or above scripts are set in nbproject/project.properties -->
   <!-- Package name used in targets api and test -->
   <property name="package" value="org.netbeans.jemmy"/>
-  <!-- Excludes according to java.version -->
-  <property name="java.version.excludes" value="util/${ant.java.version}.excludes"/>
 
   <target name="java">
     <echo message="Using ${java.vm.version} java"/>
@@ -38,7 +36,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="compile" depends="init,java,timestamp">
     <filter token="BUILD_NUMBER" value="${buildnumber}"/>
     <mkdir dir="${build.classes.dir}"/>
-    <javac srcdir="${src.dir}" destdir="${build.classes.dir}" excludesfile="${java.version.excludes}" debug="on" source="1.4"/>
+    <javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="on" source="1.4"/>
     <copy file="${src.dir}/org/netbeans/jemmy/debug.timeouts" todir="${build.classes.dir}/org/netbeans/jemmy"/>
     <copy file="${src.dir}/org/netbeans/jemmy/version_info" tofile="${build.classes.dir}/org/netbeans/jemmy/version_info" filtering="on"/>
   </target>
@@ -126,7 +124,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="compiletest" depends="compile">
     <mkdir dir="${build.test.classes.dir}"/>
     <javac srcdir="${test.src.dir}" destdir="${build.test.classes.dir}" 
-    excludes="**/JUnit*.java;**/junit/*" excludesfile="${java.version.excludes}" debug="on" source="1.4">
+    excludes="**/JUnit*.java;**/junit/*" debug="on" source="1.4">
       <classpath>
         <pathelement location="${build.classes.dir}"/>
         <pathelement path="${java.class.path}"/>
