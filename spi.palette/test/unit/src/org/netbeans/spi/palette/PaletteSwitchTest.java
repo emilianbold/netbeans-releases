@@ -114,6 +114,7 @@ public class PaletteSwitchTest extends AbstractPaletteTestHid {
     public void testMimePalette() throws IOException {
         TopComponent tc = createTopComponentWithPalette( null );
         tc.setActivatedNodes( new Node[] { DataObject.find( dummyDocumentFile ).getNodeDelegate() } );
+        tc.open();
         
         PaletteSwitch paletteSwitch = PaletteSwitch.getDefault();
         
