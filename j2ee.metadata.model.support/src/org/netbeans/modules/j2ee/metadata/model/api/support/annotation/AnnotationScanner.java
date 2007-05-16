@@ -31,9 +31,11 @@ import org.netbeans.api.java.source.ClassIndex.SearchKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.TypeAnnotationHandler;
+import org.openide.util.Parameters;
 
 /**
+ * An utility class that can be used to find elements (types, methods, etc.)
+ * annotated with a given annotation.
  *
  * @author Andrei Badea
  */
@@ -45,11 +47,29 @@ public class AnnotationScanner {
 
     private final AnnotationModelHelper helper;
 
-    public AnnotationScanner(AnnotationModelHelper helper) {
+    AnnotationScanner(AnnotationModelHelper helper) {
         this.helper = helper;
     }
 
+    /**
+     * Finds all types annotated with the given annotation. This methods gets
+     * the name of the searched annotation and an instance of the
+     * {@link TypeAnnotationHandler} interface which will be used to
+     * pass the found annotation types back to the caller.
+     *
+     * @param  searchedTypeName the fully-qualified name of the annotation
+     *         to be searched for. Cannot be null.
+     * @param  handler a {@link TypeAnnotationHandler}. Its <code>typeAnnotation</code>
+     *         method will be invoked once for each type annotated with the annotation
+     *         passed in the <code>searchedTypeName</code> parameter, with
+     *         the <code>type</code> parameter set to the annotated type, and the
+     *         <code>annotation</code> parameter set to an {@link AnnotationMirror}
+     *         (of type <code>searchedTypeName</code>) which that type is annotated with.
+     *         Cannot be null.
+     */
     public void findAnnotatedTypes(final String searchedTypeName, final TypeAnnotationHandler handler) {
+        Parameters.notNull("searchedTypeName", searchedTypeName); // NOI18N
+        Parameters.notNull("handler", handler); // NOI18N
         LOGGER.log(Level.FINE, "findAnnotatedTypes called with {0}", searchedTypeName); // NOI18N
         CompilationController controller = helper.getCompilationController();
         TypeElement searchedType = controller.getElements().getTypeElement(searchedTypeName);
