@@ -39,6 +39,7 @@ import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.actions.AddActionPresenter;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
+import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
 import org.netbeans.modules.vmd.midp.codegen.MidpCodePresenterSupport;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
@@ -133,6 +134,7 @@ public final class PIMBrowserCD extends ComponentDescriptor {
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass(presenters, AddActionPresenter.class);
         DocumentSupport.removePresentersOfClass(presenters, DisplayableDisplayPresenter.class);
+        MidpActionsSupport.addUnusedCommandsAddActionForDisplayable(presenters);
         super.gatherPresenters(presenters);
     }
     
