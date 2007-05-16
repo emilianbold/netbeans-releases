@@ -31,6 +31,7 @@ import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.InstancePropertiesImpl;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeSupport;
 import java.util.*;
 
 
@@ -109,10 +110,7 @@ public abstract class InstanceProperties {
      */
     public static final String DEPLOYMENT_TIMEOUT = "deploymentTimeout";
 
-    /**
-     * List of listeners which listen to instance properties changes
-     */
-    private List/*<PropertyChangeListener>*/ changeListeners = Collections.synchronizedList(new LinkedList());
+    private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
     /**
      * Returns instance properties for the server instance.
@@ -249,7 +247,7 @@ public abstract class InstanceProperties {
      *
      */
     public void addPropertyChangeListener(PropertyChangeListener listener) {
-        changeListeners.add(listener);
+        propertyChangeSupport.addPropertyChangeListener(listener);
     }
     
     /**
@@ -260,18 +258,6 @@ public abstract class InstanceProperties {
      *   	and the property that has changed.
      */
     protected void firePropertyChange(PropertyChangeEvent evt) {
-        ArrayList cloned = null;
-        synchronized (this) {
-            if (changeListeners != null) {
-                cloned = new ArrayList();
-                cloned.addAll(changeListeners);
-            }
-        }
-        if (cloned != null) {
-            Iterator i = cloned.iterator();
-            while (i.hasNext()) {
-                ((PropertyChangeListener)i.next()).propertyChange(evt);
-            }
-        }
+        propertyChangeSupport.firePropertyChange(evt);
     }
 }
