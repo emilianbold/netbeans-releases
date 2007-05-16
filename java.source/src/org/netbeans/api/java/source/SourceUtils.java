@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -54,6 +54,7 @@ import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Name;
+import java.net.URISyntaxException;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -508,14 +509,12 @@ public class SourceUtils {
     /**
      * Finds {@link URL} of a javadoc page for given element when available. This method 
      * uses {@link JavadocForBinaryQuery} to find the javadoc page for the give element.
-     * For {@link TypeElement} or {@link Element}s enclosed by the {@link TypeElement}
-     * it returns the {@link URL} of the javadoc for top level {@link TypeElement}.
      * For {@link PackageElement} it returns the package-summary.html for given package.
      * @param element to find the Javadoc for
      * @param cpInfo classpaths used to resolve
      * @return the URL of the javadoc page or null when the javadoc is not available.
      */
-    public static URL getJavadoc (Element element, final ClasspathInfo cpInfo) {      
+    public static URL getJavadoc (final Element element, final ClasspathInfo cpInfo) {      
         if (element == null || cpInfo == null) {
             throw new IllegalArgumentException ("Cannot pass null as an argument of the SourceUtils.getJavadoc");  //NOI18N
         }
@@ -523,6 +522,7 @@ public class SourceUtils {
         ClassSymbol clsSym = null;
         String pkgName;
         String pageName;
+        boolean buildFragment = false;
         if (element.getKind() == ElementKind.PACKAGE) {
             List<? extends Element> els = element.getEnclosedElements();            
             for (Element e :els) {
@@ -539,9 +539,10 @@ public class SourceUtils {
         }
         else {
             Element prev = null;
-            while (element.getKind() != ElementKind.PACKAGE) {
-                prev = element;
-                element = element.getEnclosingElement();
+            Element enclosing = element;
+            while (enclosing.getKind() != ElementKind.PACKAGE) {
+                prev = enclosing;
+                enclosing = enclosing.getEnclosingElement();
             }
             if (prev == null || (!prev.getKind().isClass() && !prev.getKind().isInterface())) {
                 return null;
@@ -549,6 +550,7 @@ public class SourceUtils {
             clsSym = (ClassSymbol)prev;
             pkgName = FileObjects.convertPackage2Folder(clsSym.getEnclosingElement().getQualifiedName().toString());
             pageName = clsSym.getSimpleName().toString();
+            buildFragment = element != prev;
         }
         
         if (clsSym.completer != null) {
@@ -616,7 +618,21 @@ out:                for (URL e : roots) {
                 if (fo != null) {
                     for (FileObject child : fo.getChildren()) {
                         if (pageName.equals(child.getName()) && FileObjects.HTML.equalsIgnoreCase(child.getExt())) {
-                            return child.getURL();
+                            URL url = child.getURL();
+                            CharSequence fragment = null;
+                            if (url != null && buildFragment) {
+                                fragment = getFragment(element);
+                            }
+                            if (fragment != null && fragment.length() > 0) {
+                                try {
+                                    return new URI(url.toExternalForm() + '#' + fragment.toString()).toURL();
+                                } catch (URISyntaxException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                } catch (MalformedURLException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+                            return url;
                         }
                     }
                 }
@@ -631,6 +647,42 @@ out:                for (URL e : roots) {
         return null;
     }
     
+    private static CharSequence getFragment(Element e) {
+        StringBuilder sb = new StringBuilder();
+        if (!e.getKind().isClass() && !e.getKind().isInterface()) {
+            if (e.getKind() == ElementKind.CONSTRUCTOR) {
+                sb.append(e.getEnclosingElement().getSimpleName());
+            } else {
+                sb.append(e.getSimpleName());
+            }
+            if (e.getKind() == ElementKind.METHOD || e.getKind() == ElementKind.CONSTRUCTOR) {
+                ExecutableElement ee = (ExecutableElement)e;
+                sb.append('('); //NOI18N
+                for (Iterator<? extends VariableElement> it = ee.getParameters().iterator(); it.hasNext();) {
+                    VariableElement param = it.next();
+                    appendType(sb, param.asType(), ee.isVarArgs() && !it.hasNext());
+                    if (it.hasNext())
+                        sb.append(", ");
+                }
+                sb.append(')'); //NOI18N
+            }
+        }
+        return sb;
+    }
+    
+    private static void appendType(StringBuilder sb, TypeMirror type, boolean varArg) {
+        switch (type.getKind()) {
+            case ARRAY:
+                appendType(sb, ((ArrayType)type).getComponentType(), false);
+                sb.append(varArg ? "..." : "[]"); //NOI18N
+                break;
+            case DECLARED:
+                sb.append(((TypeElement)((DeclaredType)type).asElement()).getQualifiedName());
+                break;
+            default:
+                sb.append(type);
+        }
+    }
     
     /**
      * Tests whether the initial scan is in progress.

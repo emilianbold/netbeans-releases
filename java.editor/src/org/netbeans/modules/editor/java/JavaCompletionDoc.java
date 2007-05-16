@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -22,7 +22,6 @@ package org.netbeans.modules.editor.java;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.Hashtable;
@@ -100,14 +99,6 @@ public class JavaCompletionDoc implements CompletionDocumentation {
                 docURL = url;
             } else {
                 docURL = SourceUtils.getJavadoc(element, cpInfo);
-                if (docURL != null) {
-                    CharSequence fragment = getFragment(element);
-                    if (fragment.length() > 0) {
-                        try {
-                            docURL = new URL(docURL.toExternalForm() + "#" + fragment); //NOI18N
-                        } catch (MalformedURLException e) {}
-                    }
-                }
             }
         }
         this.content = prepareContent(eu);
