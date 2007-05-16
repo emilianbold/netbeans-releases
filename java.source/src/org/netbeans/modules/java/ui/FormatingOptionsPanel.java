@@ -112,7 +112,6 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
         jScrollPane1 = new javax.swing.JScrollPane();
         previewPane = new javax.swing.JEditorPane();
 
-        setOpaque(false);
         setLayout(new java.awt.GridBagLayout());
 
         jSplitPane1.setBorder(null);

@@ -94,7 +94,6 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         descriptionLabel = new javax.swing.JLabel();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        setOpaque(false);
         setLayout(new java.awt.GridBagLayout());
 
         jSplitPane1.setBorder(null);

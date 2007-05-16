@@ -83,7 +83,6 @@ public class TasklistOptionsPanel extends javax.swing.JPanel {
         enableLintDivZero = new javax.swing.JCheckBox();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        setOpaque(false);
         setLayout(new java.awt.GridBagLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(enableTasklist, org.openide.util.NbBundle.getBundle(TasklistOptionsPanel.class).getString("jCheckBox1.text")); // NOI18N
