@@ -78,6 +78,17 @@ public class InstallerTest extends NbTestCase {
         assertEquals("The right message is there", 
             "Something happened", Installer.getLogs().get(0).getMessage()
         );
+        log.warning("Something happened");
+        log.warning("Something happened");
+        log.warning("Something happened");
+        assertEquals("Four logs available: " + Installer.getLogs(), 4, Installer.getLogsSize());
+        
+        // upload done
+        Installer.clearLogs();
+        
+        log.warning("Something happened");
+        assertEquals("One log available: " + Installer.getLogs(), 1, Installer.getLogsSize());
+        
     }
 
     public void testWeCanGetLast1000If1500Logged() throws Exception {

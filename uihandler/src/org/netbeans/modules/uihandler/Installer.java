@@ -298,7 +298,8 @@ public class Installer extends ModuleInstall {
             }
             f.delete();
         }
-        
+    
+        logsSize = 0;
         prefs.putInt("count", 0);
         UIHandler.SUPPORT.firePropertyChange(null, null, null);
     }
