@@ -34,6 +34,7 @@ import java.util.prefs.Preferences;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
 
@@ -53,6 +54,10 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
         this.fopControler = fopControler;
         
         initComponents();
+        
+        if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
+            setOpaque( false );
+        
         previewPane.setContentType("text/x-java"); // NOI18N
         // Don't highlight caret row 
         previewPane.putClientProperty(

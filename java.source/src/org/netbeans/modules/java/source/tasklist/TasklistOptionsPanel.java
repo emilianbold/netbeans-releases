@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.prefs.Preferences;
 import javax.swing.JCheckBox;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.openide.util.ChangeSupport;
@@ -40,6 +41,9 @@ public class TasklistOptionsPanel extends javax.swing.JPanel {
     public TasklistOptionsPanel() {
         cs = new ChangeSupport(this);
         initComponents();
+        
+        if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
+            setOpaque( false );
         
         compilerSettings = new HashMap<JCheckBox, String>();
         

@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.JCheckBox;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.util.Exceptions;
@@ -42,6 +43,8 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
     /** Creates new form MarkOccurencesPanel */
     public MarkOccurencesPanel( MarkOccurencesOptionsPanelController controller ) {
         initComponents();
+        if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
+            setOpaque( false );
         fillBoxes();
         addListeners();
         load( controller );

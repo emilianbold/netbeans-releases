@@ -26,6 +26,7 @@ import java.util.prefs.Preferences;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JTree;
+import javax.swing.UIManager;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
@@ -48,6 +49,9 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
       
     HintsPanel() {        
         initComponents();
+        
+        if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
+            setOpaque( false );
         
         errorTree.setCellRenderer( this );
         errorTree.setRootVisible( false );
