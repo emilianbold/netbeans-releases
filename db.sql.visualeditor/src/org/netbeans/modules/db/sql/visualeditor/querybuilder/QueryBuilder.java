@@ -1673,10 +1673,10 @@ public class QueryBuilder extends TopComponent
         Log.getLogger().finest("Error occurred when trying to retrieve table information: " + e); // NOI18N
 
         String msg = 
-            (e.getErrorCode() == 17023) ?
-            // Oracle "Unsupported feature" error
-            NbBundle.getMessage(QueryBuilder.class, "UNSUPPORTED_FEATURE") :
-            e.getLocalizedMessage();
+            ((e.getErrorCode() == 17023) // Oracle "Unsupported feature" error
+	     || ("S1C00".equals(e.getSQLState())))  // MySQL "Optional feature not supported" error
+	    ? NbBundle.getMessage(QueryBuilder.class, "UNSUPPORTED_FEATURE")
+	    : e.getLocalizedMessage();
 
         // NbBundle.getMessage(QueryBuilder.class, key);
         String title = NbBundle.getMessage(QueryBuilder.class, "PROCESSING_ERROR");
