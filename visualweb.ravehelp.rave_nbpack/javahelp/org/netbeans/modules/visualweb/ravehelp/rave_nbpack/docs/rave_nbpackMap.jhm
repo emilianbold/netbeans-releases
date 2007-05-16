@@ -43,7 +43,6 @@
 	<mapID target="projrave_connect_data_about_data_binding" url="connect_data/about_data_binding.html"/>
 	<mapID target="projrave_connect_data_aboutcompdata" url="connect_data/aboutcompdata.html"/>
 	<mapID target="projrave_connect_data_howtodata_add_database" url="connect_data/howtodata/database_connect.html"/>
-	<mapID target="projrave_connect_data_howtodata_add_jdbc_driver" url="connect_data/howtodata/add_jdbc_driver.html"/>
 	<mapID target="projrave_connect_data_howtodata_add_tables2form" url="connect_data/howtodata/add_table_to_page.html"/>
 	<mapID target="projrave_connect_data_howtodata_add_web_service" url="connect_data/howtodata/add_web_service.html"/>
 	<mapID target="projrave_connect_data_howtodata_bind_components" url="connect_data/howtodata/bind_data_to_comp.html"/>
@@ -56,11 +55,7 @@
 	<mapID target="projrave_connect_data_howtodata_delete_table" url="connect_data/howtodata/delete_table.html"/>
 	<mapID target="projrave_connect_data_howtodata_howtoconnectdata" url="connect_data/howtodata/data_quickref.html"/>
 	<mapID target="projrave_connect_data_howtodata_modify_ds_properties" url="connect_data/howtodata/modify_db_conn_properties.html"/>
-	<mapID target="projrave_connect_data_howtodata_refresh_bundled_db" url="connect_data/howtodata/refresh_jav_db.html"/>
-	<mapID target="projrave_connect_data_howtodata_refresh_java_db" url="connect_data/howtodata/refresh_jav_db.html"/>
 	<mapID target="projrave_connect_data_howtodata_remove_data_source" url="connect_data/howtodata/remove_database_conn.html"/>
-	<mapID target="projrave_connect_data_howtodata_start_java_db" url="connect_data/howtodata/start_java_db.html"/>
-	<mapID target="projrave_connect_data_howtodata_stop_java_db" url="connect_data/howtodata/stop_java_db.html"/>
 	<mapID target="projrave_connect_data_howtodata_view_data" url="connect_data/howtodata/view_data.html"/>
 	<mapID target="projrave_connect_data_jdbc_type_conversions" url="connect_data/jdbc_type_conversions.html"/>
 	<mapID target="projrave_connect_data_sql_query_supported" url="connect_data/sql_query_supported.html"/>

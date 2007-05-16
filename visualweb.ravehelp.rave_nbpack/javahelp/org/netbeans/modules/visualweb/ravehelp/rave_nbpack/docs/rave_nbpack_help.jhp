@@ -7,7 +7,7 @@
 
 <helenProject version="1.0">
     <documents>
-		<directory title="C:/HelpProjects/Rave/cvstree/shortfin5-5-1/ravehelp/rave_nbpack/javahelp/com/sun/rave/modules/rave_nbpack/docs">
+		<directory title="C:/CVS/visualweb/ravehelp/rave_nbpack/javahelp/org/netbeans/modules/visualweb/ravehelp/rave_nbpack/docs">
 			<directory title="a11y">
 				<file title="abouta11y.html"/>
 				<file title="component_palette_shortcuts.html"/>
@@ -55,7 +55,6 @@
 			</directory>
 			<directory title="connect_data">
 				<directory title="howtodata">
-					<file title="add_jdbc_driver.html"/>
 					<file title="add_table_to_page.html"/>
 					<file title="add_web_service.html"/>
 					<file title="bind_data_to_comp.html"/>
@@ -70,10 +69,7 @@
 					<file title="edit_database_svr_type.html"/>
 					<file title="java_db_quickref.html"/>
 					<file title="modify_db_conn_properties.html"/>
-					<file title="refresh_jav_db.html"/>
 					<file title="remove_database_conn.html"/>
-					<file title="start_java_db.html"/>
-					<file title="stop_java_db.html"/>
 					<file title="view_data.html"/>
 				</directory>
 				<file title="about_data_binding.html"/>
@@ -334,7 +330,6 @@
 					<file title="open_project.html"/>
 					<file title="proj_main.html"/>
 					<file title="projects_quickref.html"/>
-					<file title="rename_page.html"/>
 					<file title="run_project.html"/>
 					<file title="save_project.html"/>
 					<file title="set_project_properties.html"/>

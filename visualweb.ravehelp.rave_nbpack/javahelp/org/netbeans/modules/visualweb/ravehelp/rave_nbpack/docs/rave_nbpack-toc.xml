@@ -115,7 +115,6 @@
 				<tocitem text="Setting Up Database Connections">
 					<tocitem text="Adding a Database Connection" target="projrave_connect_data_howtodata_add_database" />
 					<tocitem text="Adding a Data Source" target="projrave_ui_elements_dialogs_add_data_source_db" />
-					<tocitem text="Adding a JDBC Driver" target="projrave_connect_data_howtodata_add_jdbc_driver" />
 					<tocitem text="Deleting a Database Server Type" target="projrave_connect_data_howtodata_delete_server_type" />
 					<tocitem text="Deleting a JDBC Driver" target="projrave_connect_data_howtodata_delete_server_type" />
 					<tocitem text="Editing a Database Server Type" target="projrave_connect_data_howtodata_configure_jdbc_driver" />
@@ -134,11 +133,7 @@
 					<tocitem text="Viewing Data in a Database Table" target="projrave_connect_data_howtodata_view_data" />
 				</tocitem>
 				<tocitem text="Using the Java DB Database Server" expand="false">
-					<tocitem text="Java DB Database Status" target="projrave_connect_data_howtodata_refresh_bundled_db" />
 					<tocitem text="Java DB Database Tasks: Quick Reference" target="projrave_connect_data_howtodata_howtoconnectdata" />
-					<tocitem text="Refreshing the Java DB Database Server" target="projrave_connect_data_howtodata_refresh_java_db" />
-					<tocitem text="Starting the Java DB Database Server" target="projrave_connect_data_howtodata_start_java_db" />
-					<tocitem text="Stopping the Java DB Database Server" target="projrave_connect_data_howtodata_stop_java_db" />
 				</tocitem>
 			</tocitem>
 			<tocitem text="Web Services">
