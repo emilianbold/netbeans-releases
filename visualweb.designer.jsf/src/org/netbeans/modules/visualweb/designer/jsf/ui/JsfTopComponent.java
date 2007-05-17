@@ -85,6 +85,8 @@ import org.netbeans.modules.visualweb.designer.jsf.JsfForm;
 import org.netbeans.modules.visualweb.designer.jsf.JsfSupportUtilities;
 import org.netbeans.modules.visualweb.extension.openide.loaders.SystemFileSystemSupport;
 import org.openide.awt.Actions;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.actions.Presenter;
 import org.w3c.dom.DocumentFragment;
@@ -158,10 +160,10 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     private final DesignerListener designerListener = new JsfDesignerListener(this);
 //    private final PaletteController designerPaletteController;
     
-    private final JsfLookupProvider jsfLookupProvider = new JsfLookupProvider(this);
+    private final JsfLookupProvider jsfLookupProvider/* = new JsfLookupProvider(this)*/; // TEMP
 
     
-    public JsfTopComponent(/*WebForm webform*/ JsfForm jsfForm, Designer designer) {
+    public JsfTopComponent(/*WebForm webform*/ JsfForm jsfForm, Designer designer, DataObject jspDataObject) {
 //        super(webform);
         super(jsfForm, designer);
 
@@ -202,11 +204,13 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //        }
 //        designerPaletteController = controller;
         
+        jsfLookupProvider = new JsfLookupProvider(this, jspDataObject);
+        
         setName("Visual Design"); // NOI18N
         setDisplayName(NbBundle.getMessage(JsfTopComponent.class, "LBL_JsfDisplayName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(JsfTopComponent.class, "ACSD_DesignerTopComp"));
 
-        initActivatedNodes();
+        initActivatedNodes(jspDataObject);
 
         if (jsfForm.isValid()) {
             initDesigner();
@@ -226,10 +230,18 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     }
 
     
-    private void initActivatedNodes() {
-        // There needs to be non-null array to indicate this component can be activated.
-        setActivatedNodes(new Node[0]);
+    private void initActivatedNodes(DataObject jspDataObject) {
+        // XXX Providing dummy node containing the DataObject in the lookup -> needed by Navigator?!.
+        setActivatedNodes(new Node[] { new DummyNode(jspDataObject) });
     }
+
+    
+    private static class DummyNode extends AbstractNode {
+        public DummyNode(DataObject jspDataObject) {
+            super(Children.LEAF, Lookups.fixed(jspDataObject));
+        }
+    } // End of DummyNode.
+    
     
     private void initDesigner() {
         initDesignerComponent();
@@ -2554,70 +2566,43 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         if (isActivated()) {
             designerActivated();
         }
-        refreshLookup();
         
         revalidate();
         repaint();
     }
     
-    private void refreshLookup() {
-        jsfLookupProvider.clearLookup();
-        
-        // XXX #103300 Ugly API which even doesn't work as described (the commented out line).
-//        getLookup().lookup(Object.class);
-        getLookup().lookupResult(Object.class).allInstances();
-    }    
-    
     
     private static class JsfLookupProvider implements Lookup.Provider {
-        private final JsfTopComponent jsfTopComponent;
-        private Lookup lookup;
+        private final Lookup lookup;
         
-        public JsfLookupProvider(JsfTopComponent jsfTopComponent) {
-            this.jsfTopComponent = jsfTopComponent;
+        public JsfLookupProvider(JsfTopComponent jsfTopComponent, DataObject jspDataObject) {
+            this.lookup = createLookup(jsfTopComponent, jspDataObject);
         }
         
-        public synchronized Lookup getLookup() {
-            if (lookup == null) {
-                lookup = createLookup();
-            }
+        public Lookup getLookup() {
             return lookup;
         }
         
-        private Lookup createLookup() {
+        private Lookup createLookup(JsfTopComponent jsfTopComponent, DataObject jspDataObject) {
             List<Object> objects = new ArrayList<Object>();
             
-            boolean isJsfFormValid = jsfTopComponent.getJsfForm().isValid();
-            if (isJsfFormValid) {
-                DataObject jsfDobj = jsfTopComponent.getJsfForm().getJspDataObject();
-                if (jsfDobj == null) {
-                    warn("Loaded FacesModel doesn't provide JSP DataObject!" +
-                            "\nThe Designer lookup won't be fully inited. Outline won't work." +
-                            "\nVariable jsfForm=" + jsfTopComponent.getJsfForm()); // NOI18N
-                } else {
-                    objects.add(jsfDobj);
-                }
-            }
+            objects.add(jspDataObject);
             
             objects.add(jsfTopComponent.NAVIGATOR_HINT);
-            
-            if (isJsfFormValid) {
-                PaletteController paletteController = jsfTopComponent.getJsfForm().getPaletteController();
-                if (paletteController == null) {
-                    warn("Loaded FacesModel doesn't Project needed to create PaletteController!" +
-                            "\nThe Designer lookup won't be fully inited. Palete won't be loaded." +
-                            "\nVariable jsfForm=" + jsfTopComponent.getJsfForm()); // NOI18N
-                } else {
-                    objects.add(paletteController);
-                }
+  
+            PaletteController paletteController = jsfTopComponent.getJsfForm().getPaletteController();
+            if (paletteController == null) {
+                warn("Loaded FacesModel doesn't Project needed to create PaletteController!" +
+                        "\nThe Designer lookup won't be fully inited. Palete won't be loaded." +
+                        "\nVariable jsfForm=" + jsfTopComponent.getJsfForm()); // NOI18N
+            } else {
+                objects.add(paletteController);
             }
+            
             return Lookups.fixed(objects.toArray());
         }
-        
-        public synchronized void clearLookup() {
-            lookup = null;
-        }
     } // End of JsfLookupProvider.
+
     
     private static void warn(String message) {
         Logger logger = getLogger();

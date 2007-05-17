@@ -183,8 +183,9 @@ public class JsfForm {
 //        }
         setFacesModel(facesModel);
 
+        init(dataObject);
         if (isValid()) {
-            init(dataObject);
+            init();
         }
     }
     
@@ -192,10 +193,13 @@ public class JsfForm {
     private void init(DataObject dataObject) {
         // XXX This needs to be moved to insync.
         initFragmentProperty(dataObject);
+        
+        initPaletteController(dataObject);
+    }
+    
+    private void init() {
         // XXX This needs to be moved to insync.
         initPortletProperty();
-        
-        initPaletteController();
         
         initListening();
     }
@@ -215,8 +219,12 @@ public class JsfForm {
         }
     }
     
-    private void initPaletteController() {
-        paletteController = PaletteControllerFactory.getDefault().createJsfPaletteController(getFacesModel().getProject());
+    private void initPaletteController(DataObject jspDataObject) {
+        Project project = FileOwnerQuery.getOwner(jspDataObject.getPrimaryFile());
+        if (project == null) {
+            log(new NullPointerException("There is no project found for DataObject, jspDataObject=" + jspDataObject)); // NOI18N
+        }
+        paletteController = PaletteControllerFactory.getDefault().createJsfPaletteController(project);
     }
      
     private void initListening() {        
@@ -382,12 +390,12 @@ public class JsfForm {
         return multiViewElements.toArray(new JsfMultiViewElement[multiViewElements.size()]);
     }
     
-    static MultiViewElement createMultiViewElement(JsfForm jsfForm, Designer designer) {
+    static MultiViewElement createMultiViewElement(JsfForm jsfForm, Designer designer, DataObject jspDataObject) {
         if (jsfForm == null || designer == null) {
             return new NotAvailableMultiViewElement();
         }
         
-        JsfMultiViewElement jsfMultiViewElement = new JsfMultiViewElement(jsfForm, designer);
+        JsfMultiViewElement jsfMultiViewElement = new JsfMultiViewElement(jsfForm, designer, jspDataObject);
 //        synchronized (designer2jsfMultiViewElement) {
 //            designer2jsfMultiViewElement.put(designer, jsfMultiViewElement);
 //        }
@@ -2730,7 +2738,7 @@ public class JsfForm {
         
         EventQueue.invokeLater(new Runnable() {
             public void run() {
-                init(dataObject);
+                init();
                 notifyViewsModelLoaded();
             }
         });

@@ -28,6 +28,7 @@ import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.netbeans.modules.visualweb.designer.jsf.JsfForm;
 import org.openide.awt.UndoRedo;
+import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -46,12 +47,12 @@ public class JsfMultiViewElement implements MultiViewElement {
 
     
     /** Creates a new instance of DesignerMultiViewElement */
-    public JsfMultiViewElement(JsfForm jsfForm, Designer designer) {
+    public JsfMultiViewElement(JsfForm jsfForm, Designer designer, DataObject jspDataObject) {
 //        if (designer == null) {
 //            throw new NullPointerException("The designer parameter is null!"); // NOI18N
 //        }
 //        this.designer = designer;
-        jsfTopComponent = new JsfTopComponent(jsfForm, designer);
+        jsfTopComponent = new JsfTopComponent(jsfForm, designer, jspDataObject);
     }
 
     

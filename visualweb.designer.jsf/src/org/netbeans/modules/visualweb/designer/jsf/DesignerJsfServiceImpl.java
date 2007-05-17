@@ -59,7 +59,7 @@ public class DesignerJsfServiceImpl implements DesignerJsfService {
             return new NotAvailableMultiViewElement();
         }
 //        return designer == null ? new NotAvailableMultiViewElement() : new JsfMultiViewElement(jsfForm, designer);
-        return JsfForm.createMultiViewElement(jsfForm, designer);
+        return JsfForm.createMultiViewElement(jsfForm, designer, jsfJspDataObject);
     }
 
 }
