@@ -23,7 +23,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="text">
             <folder name="x-java">
                 <folder name="UpToDateStatusProvider">
-                    <file name="org-netbeans-modules-java-hints-JavaUpToDateStateProviderFactory.instance"/>
+                    <file name="org-netbeans-modules-java-hints-infrastructure-JavaUpToDateStateProviderFactory.instance"/>
                 </folder>
             </folder>
         </folder>
@@ -32,11 +32,11 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="org-netbeans-modules-java-hints">
         <folder name="rules">
             <folder name="errors">
-                <file name="org-netbeans-modules-java-hints-ImportClassEnabler.instance" />
-                <file name="org-netbeans-modules-java-hints-AddCastCreator.instance" />
-                <file name="org-netbeans-modules-java-hints-CreateElement.instance" />
-                <file name="org-netbeans-modules-java-hints-ImplementAllAbstractMethodsCreator.instance" />
-                <file name="org-netbeans-modules-java-hints-UncaughtExceptionCreator.instance" />
+                <file name="org-netbeans-modules-java-hints-errors-ImportClass.instance" />
+                <file name="org-netbeans-modules-java-hints-errors-AddCast.instance" />
+                <file name="org-netbeans-modules-java-hints-errors-CreateElement.instance" />
+                <file name="org-netbeans-modules-java-hints-errors-ImplementAllAbstractMethods.instance" />
+                <file name="org-netbeans-modules-java-hints-errors-UncaughtException.instance" />
             </folder>
         </folder>
     </folder>

@@ -1,0 +1,23 @@
+package org.netbeans.test.java.hints;
+
+import javax.swing.JList;
+import org.netbeans.test.java.hints.pkg.ImplementAbstractMethods8Usee;
+
+/**
+ * @author leon
+ */
+public class ImplementAbstractMethods8 {
+    
+    private static class Inner {
+        
+        private static class InnerInner extends ImplementAbstractMethods8Usee {
+            public void doStuff(JList list) {
+            }
+        }
+        
+    }
+    
+    public ImplementAbstractMethods8() {
+    }
+    
+}

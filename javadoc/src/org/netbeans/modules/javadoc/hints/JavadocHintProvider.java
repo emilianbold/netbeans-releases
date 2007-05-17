@@ -172,6 +172,12 @@ public final class JavadocHintProvider extends AbstractHint {
         Analyzer a = new Analyzer(javac, doc, path, severity, hintSeverity);
         return a.analyze();
     }
+
+    public void cancel() {
+        //XXX implement me;
+    }
+    
+    
     
     private static boolean isInHeader(CompilationInfo info, ClassTree tree, int offset) {
         CompilationUnitTree cut = info.getCompilationUnit();

@@ -41,7 +41,6 @@ public interface ErrorRule<T> extends Rule {//XXX: should ErrorRule extend Rule?
      */
     public List<Fix> run(CompilationInfo compilationInfo, String diagnosticKey, int offset, TreePath treePath, Data<T> data);
 
-    public void cancel();
     
     public static final class Data<T> {
         private T o;

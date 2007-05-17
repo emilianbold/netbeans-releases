@@ -34,7 +34,12 @@ public abstract class AbstractHint implements TreeRule {
     public static final boolean ENABLED_DEFAULT = true;
     public static final HintSeverity SEVERITY_DEFAULT = HintSeverity.WARNING;
     public static final boolean IN_TASK_LIST_DEFAULT = true;
-            
+
+//    public AbstractHint( boolean enable, boolean showInTaskList, HintSeverity severity) {
+//        
+//    }
+    
+    
     /** Gets preferences node which. Can return null (default impl. does) to get use the default
      * values and default behavior. 
      */
@@ -52,10 +57,21 @@ public abstract class AbstractHint implements TreeRule {
         return null;
     }
     
+    public abstract String getDescription();
+    
+    public HintSeverity getSeverity() {
+        String s = getPreferences().get(SEVERITY_KEY, null );
+        return s == null ? HintSeverity.WARNING : HintSeverity.valueOf(s);
+    }
+    
     public static enum HintSeverity {
         ERROR,
         WARNING,
         CURRENT_LINE_WARNING;        
     }
+    
+    // Private methods ---------------------------------------------------------
+    
+    
     
 }

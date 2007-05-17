@@ -33,14 +33,10 @@ public interface Rule {
     public String getId();
 
     /** Get's UI usable name of the rule
-     * XXX think of pushing this to subclasses
      */
     public String getDisplayName();
 
-    /** Gets longer description of the rule
-     * XXX think of pushing this to subclasses
-     */
-    public String getDescription();
     
-
+    public void cancel();
+    
 }

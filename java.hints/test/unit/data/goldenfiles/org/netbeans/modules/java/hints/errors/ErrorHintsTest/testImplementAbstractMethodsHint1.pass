@@ -1,0 +1,47 @@
+/*
+ * ImplementAbstractMethod1.java
+ *
+ * Created on March 12, 2005, 7:22 PM
+ */
+
+package org.netbeans.test.java.hints;
+
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import javax.swing.text.BadLocationException;
+
+/**
+ *
+ * @author lahvac
+ */
+public class ImplementAbstractMethods1 extends AbstractClass implements PropertyChangeListener, MouseListener {
+    
+    /** Creates a new instance of ImplementAbstractMethod1 */
+    public ImplementAbstractMethods1() {
+    }
+
+    public void test(int x, String y, String... args) throws IOException, BadLocationException {
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+    }
+
+    public void mouseClicked(MouseEvent e) {
+    }
+
+    public void mousePressed(MouseEvent e) {
+    }
+
+    public void mouseReleased(MouseEvent e) {
+    }
+
+    public void mouseEntered(MouseEvent e) {
+    }
+
+    public void mouseExited(MouseEvent e) {
+    }
+    
+}
