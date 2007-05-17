@@ -44,7 +44,9 @@ public class XTestActionTask extends Task {
     private static final String ACTION_RUN_TESTS = "runTests";
     private static final String ACTION_CLEAN_TESTS = "cleanTests";
     private static final String ACTION_CLEAN_RESULTS = "cleanResults";
+    /* Deprecated - use clean instead. */
     private static final String ACTION_CLEAN_ALL = "cleanAll";
+    private static final String ACTION_CLEAN = "clean";
     private static final String ACTION_VERSION = "version";
     private static final String ACTION_GENERATE_FAILED_CONFIG = "generateFailedConfig";
     private static final String ACTION_GENERATE_EXCLUDED_CONFIG = "generateExcludedConfig";
@@ -62,7 +64,9 @@ public class XTestActionTask extends Task {
     private static final String TARGET_RUN_TESTS = "runtests";
     private static final String TARGET_CLEAN_TESTS = "cleantests";
     private static final String TARGET_CLEAN_RESULTS = "cleanresults";
+    /* Deprecated - use clean instead. */
     private static final String TARGET_CLEAN_ALL    = "realclean";
+    private static final String TARGET_CLEAN    = "clean";
     private static final String TARGET_VERSION      = "version";
     private static final String TARGET_GENERATE_FAILED_CONFIG = "generateFailedConfig";
     private static final String TARGET_GENERATE_EXCLUDED_CONFIG = "generateExcludedConfig";
@@ -76,6 +80,7 @@ public class XTestActionTask extends Task {
         {ACTION_CLEAN_TESTS, TARGET_CLEAN_TESTS},
         {ACTION_CLEAN_RESULTS, TARGET_CLEAN_RESULTS},
         {ACTION_CLEAN_ALL, TARGET_CLEAN_ALL},
+        {ACTION_CLEAN, TARGET_CLEAN},
         {ACTION_VERSION, TARGET_VERSION},
         {ACTION_PREPARE_TESTS, TARGET_PREPARE_TESTS},
         {ACTION_GENERATE_FAILED_CONFIG, TARGET_GENERATE_FAILED_CONFIG},

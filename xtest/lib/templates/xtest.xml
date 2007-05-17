@@ -15,7 +15,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -70,9 +70,14 @@ Microsystems, Inc. All Rights Reserved.
     	<xtest executeAction="cleanResults"/>
     </target>
     
-    <!-- This target cleans both tests and results. -->
+    <!-- Deprecated - use clean instead. This target cleans both tests and results. -->
     <target name="realclean" description="Delete both test and results files.">
     	<xtest executeAction="cleanAll"/>
+    </target>
+    
+    <!-- This target cleans compiled tests and results. -->
+    <target name="clean" description="Clean compiled tests and results." depends="cleancoverage">
+    	<xtest executeAction="clean"/>
     </target>
     
     <!-- This target prints out default xtest configuration which will be used to run the tests. -->
