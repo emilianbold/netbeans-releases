@@ -39,7 +39,6 @@ public class EPMeasuringSetup extends NbTestSuite {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Setup suite for Enterprise Pack");
 
         suite.addTest(new EnterpriseSetupTest("closeMemoryToolbar"));
-        suite.addTest(new EnterpriseSetupTest("closeUIGesturesToolbar"));
         
         suite.addTest(new EnterpriseSetupTest("closeWelcome"));
         

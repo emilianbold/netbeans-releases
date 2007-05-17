@@ -76,7 +76,6 @@ public class PrepareIDEForWebPackComplexMeasurements  extends org.netbeans.jelly
         suite.addTest(new PrepareIDEForWebPackComplexMeasurements("closeWelcome"));
         suite.addTest(new PrepareIDEForWebPackComplexMeasurements("closeAllDocuments"));
         suite.addTest(new PrepareIDEForWebPackComplexMeasurements("closeMemoryToolbar"));
-        suite.addTest(new PrepareIDEForWebPackComplexMeasurements("closeUIGesturesToolbar"));
         suite.addTest(new PrepareIDEForWebPackComplexMeasurements("openFiles"));
         suite.addTest(new PrepareIDEForWebPackComplexMeasurements("saveStatus"));
         return suite;

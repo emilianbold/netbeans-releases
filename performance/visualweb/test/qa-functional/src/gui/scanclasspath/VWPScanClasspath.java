@@ -61,7 +61,6 @@ public class VWPScanClasspath extends gui.scanclasspath.ScanClasspath {
         NbTestSuite suite = new NbTestSuite();
         
         suite.addTest(new gui.setup.WebSetupTest("closeMemoryToolbar"));
-        suite.addTest(new gui.setup.WebSetupTest("closeUIGesturesToolbar"));
         suite.addTest(new gui.setup.WebSetupTest("closeAllDocuments"));
         suite.addTest(new VWPScanClasspath("openHugeAppProject"));
 

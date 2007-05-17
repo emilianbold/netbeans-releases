@@ -61,7 +61,6 @@ public class EPScanClasspath extends gui.scanclasspath.ScanClasspath {
         NbTestSuite suite = new NbTestSuite();
         
         suite.addTest(new EnterpriseSetupTest("closeMemoryToolbar"));
-        suite.addTest(new EnterpriseSetupTest("closeUIGesturesToolbar"));
         suite.addTest(new EnterpriseSetupTest("closeAllDocuments"));
         
         suite.addTest(new EnterpriseSetupTest("openReservationPartnerServicesProject"));

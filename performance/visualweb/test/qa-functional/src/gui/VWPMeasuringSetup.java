@@ -39,7 +39,6 @@ public class VWPMeasuringSetup extends NbTestSuite {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Setup suite for Visual Web Pack");
 
         suite.addTest(new WebSetupTest("closeMemoryToolbar"));
-        suite.addTest(new WebSetupTest("closeUIGesturesToolbar"));
         
         suite.addTest(new WebSetupTest("closeWelcome"));
         

@@ -68,7 +68,6 @@ public class J2EEProjectWorkflow extends org.netbeans.performance.test.utilities
         super.initialize();
         EPFootprintUtilities.closeAllDocuments();
         EPFootprintUtilities.closeMemoryToolbar();
-        EPFootprintUtilities.closeUIGesturesToolbar();
     }
     
     public ComponentOperator open(){
