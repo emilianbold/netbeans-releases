@@ -37,8 +37,6 @@ Microsystems, Inc. All Rights Reserved.
     </volume>
     <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst:///docs/jdk-doc.zip!/</resource>
-        <resource>jar:nbinst:///docs/javaee-doc.zip!/</resource>
         <resource>jar:nbinst:///docs/appbase-doc.zip!/</resource>
         <resource>jar:nbinst:///docs/dataprovider-doc.zip!/</resource>
         <resource>jar:nbinst:///docs/jsfcl-doc.zip!/</resource>
