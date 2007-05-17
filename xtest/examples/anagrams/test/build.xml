@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="anagram/test" basedir="." default="all">
@@ -89,8 +89,8 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <!-- This target cleans both tests and results -->
-    <target name="realclean">
-        <xtest executeAction="cleanAll"/>
+    <target name="clean">
+        <xtest executeAction="clean"/>
     </target>
     
     <!-- This target prints out default xtest configuration which will be used to run the tests -->

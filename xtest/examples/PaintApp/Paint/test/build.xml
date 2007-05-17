@@ -25,7 +25,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Home of XTest -->
     <property name="xtest.home" location="${netbeans.user}\xtest-distribution"/>
 
-    <!-- Imports buildtests, cleantests, runtest, cleanresults, realclean, printconfig targets. -->
+    <!-- Imports buildtests, cleantests, runtest, cleanresults, clean, printconfig targets. -->
     <import file="${xtest.home}/lib/templates/xtest.xml"/>
 
     <!-- default testtypes, attributes used when no value is supplied from command line -->

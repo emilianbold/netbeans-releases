@@ -62,12 +62,10 @@ Microsystems, Inc. All Rights Reserved.
              target="cleanresults"/>
     </target>
     
-    <target name="realclean">
+    <target name="clean">
         <ant dir="." antfile="${xtest.harness.antfile}"
-             target="realclean"/>
+             target="clean"/>
     </target>
-    
-    <target name="real-clean" depends="realclean"/>
     
     <target name="buildtestsdist">
         <ant dir="." antfile="${xtest.harness.antfile}"
