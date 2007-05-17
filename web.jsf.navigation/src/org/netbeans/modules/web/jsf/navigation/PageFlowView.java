@@ -225,7 +225,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
 //        scene.saveLocations();
     }
     public void saveLocation(String oldDisplayName, String newDisplayName){
-        sceneData.savePageWithNewName(oldDisplayName, newDisplayName);
+        //XXX does not compile: sceneData.savePageWithNewName(oldDisplayName, newDisplayName);
 //        scene.saveLocation(pageNode,newDisplayName);
     }
     
