@@ -115,6 +115,8 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
                     if(!isNewActionCreated()) {
                         updateFieldsFromAction(act);
                     }
+                } else {
+                    clearFieldsForNull();
                 }
             }
             
@@ -231,6 +233,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
             iconButtonSmall.setEnabled(true);
             selectedTextfield.setEnabled(true);
             enabledTextfield.setEnabled(true);
+            backgroundTaskCheckbox.setEnabled(true);
         }
         
         setFromActionProperty(textField,act,Action.NAME);
@@ -969,12 +972,27 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
     
     private void clearFieldsForNull() {
         textField.setEnabled(false);
+        textField.setText("");
         tooltipField.setEnabled(false);
+        tooltipField.setText("");
         acceleratorText.setEnabled(false);
+        acceleratorText.setText("");
         iconButtonLarge.setEnabled(false);
+        iconButtonLarge.setIcon(null);
         iconButtonSmall.setEnabled(false);
+        iconButtonSmall.setIcon(null);
         selectedTextfield.setEnabled(false);
+        selectedTextfield.setText("");
         enabledTextfield.setEnabled(false);
+        enabledTextfield.setText("");
+        
+        blockingDialogText.setEnabled(false);
+        blockingDialogText.setText("");
+        blockingDialogTitle.setEnabled(false);
+        blockingDialogTitle.setText("");
+        blockingType.setEnabled(false);
+        
+        backgroundTaskCheckbox.setEnabled(false);
     }
     
     private void clearFieldsForNewAction() {
