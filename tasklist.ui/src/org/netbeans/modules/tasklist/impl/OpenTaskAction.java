@@ -40,20 +40,6 @@ import org.openide.util.NbBundle;
 public class OpenTaskAction extends AbstractAction {
     
     private Task task;
-    /**
-     * if opening file using non-observable <code>EditorCookie</code>,
-     * how long should we wait (in milliseconds) between tries?
-     *
-     * @see  #openDocAtLine
-     */
-    private static final int OPEN_EDITOR_WAIT_PERIOD_MS = 100;
-    /**
-     * if opening file using non-observable <code>EditorCookie</code>,
-     * how long should we wait (in milliseconds) in total before giving up?
-     *
-     * @see  #openDocAtLine
-     */
-    private static final int OPEN_EDITOR_TOTAL_TIMEOUT_MS = 1000;
     
     /** Creates a new instance of OpenTaskAction */
     public OpenTaskAction( Task task ) {
@@ -85,8 +71,7 @@ public class OpenTaskAction extends AbstractAction {
         }
 
         LineCookie lineCookie = (LineCookie)dataObject.getCookie( LineCookie.class );
-        if( null != lineCookie ) {
-            openAt( lineCookie, line );
+        if( null != lineCookie && openAt( lineCookie, line ) ) {
             return;
         }
         
@@ -109,13 +94,20 @@ public class OpenTaskAction extends AbstractAction {
         }
     }
     
-    private void openAt( LineCookie lineCookie, int lineNo ) {
+    private boolean openAt( LineCookie lineCookie, int lineNo ) {
         Line.Set lines = lineCookie.getLineSet();
-        Line line = lines.getCurrent( lineNo );
-        if( null == line )
-            line = lines.getCurrent( 0 );
-        if( null != line )
-            line.show( Line.SHOW_TOFRONT );
+        try {
+            Line line = lines.getCurrent( lineNo );
+            if( null == line )
+                line = lines.getCurrent( 0 );
+            if( null != line ) {
+                line.show( Line.SHOW_TOFRONT );
+                return true;
+            }
+        } catch( IndexOutOfBoundsException e ) {
+            //probably the document has been modified but not saved yet
+        }
+        return false;
     }
 
     private boolean canOpenTask() {
