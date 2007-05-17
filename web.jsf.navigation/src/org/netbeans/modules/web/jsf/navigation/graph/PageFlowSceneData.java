@@ -66,8 +66,9 @@ public class PageFlowSceneData {
      * @param oldDisplayName String
      * @param newDisplayName String
      **/
-    public void saveCurrentSceneItem(String oldDisplayName, String newDisplayName) {
-        replaceSceneInfo(getCurrentSceneData(), oldDisplayName,  newDisplayName);
+    public void savePageWithNewName(String oldDisplayName, String newDisplayName) {
+        replaceSceneInfo(facesConfigSceneData, oldDisplayName,  newDisplayName);
+        replaceSceneInfo(projectSceneData, oldDisplayName,  newDisplayName);
     }
     
     /**
