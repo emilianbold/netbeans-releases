@@ -83,6 +83,7 @@ public final class ClassName implements Comparable, Comparator, Serializable {
      * "==" to test for equality.
      *
      * @param classType  the class type string, as defined by the JVM spec.
+     * @return the ClassName instance, or null if not found.
      * @throws IllegalArgumentException if classType isn't of the correct
      *                   format.
      */
@@ -129,6 +130,7 @@ public final class ClassName implements Comparable, Comparator, Serializable {
     /**
      * Create a ClassName object via its internal type name, as
      * defined by the JVM spec.
+     * @param type the internal type name
      */
     private ClassName(String type) {
         this.type = type;
@@ -142,6 +144,7 @@ public final class ClassName implements Comparable, Comparator, Serializable {
      * Returns the type string of this class, as stored in the 
      * classfile (it's "raw" form).  For example, an array of
      * Floats would have a type of "[java/lang/Float".
+     * @return the raw string format of the class type
      */
     public String getType() {
         return type;
@@ -155,6 +158,7 @@ public final class ClassName implements Comparable, Comparator, Serializable {
      * separated from their outer class with '$'; such as
      * "java/util/HashMap$Entry".  Array specifications are
      * stripped; use getType() instead.
+     * @return the internal name
      */
     public String getInternalName() {
         return internalName;
@@ -169,6 +173,8 @@ public final class ClassName implements Comparable, Comparator, Serializable {
      * "java.util.HashMap.Entry".  Arrays are shown as having one
      * or more "[]" characters behind the base classname, such
      * as "java.io.Files[]".
+     * @return the external name, with array characters if this ClassName 
+     *         is an array
      */
     public String getExternalName() {
         return getExternalName(false);
@@ -183,6 +189,8 @@ public final class ClassName implements Comparable, Comparator, Serializable {
      * "java.util.HashMap.Entry".  Unless suppressed, arrays are 
      * shown as having one or more "[]" characters behind the 
      * base classname, such as "java.io.Files[]".
+     * @param suppressArrays true if array characters should be included
+     * @return the external name
      */
     public String getExternalName(boolean suppressArrays) {
         initExternalName();
@@ -199,6 +207,7 @@ public final class ClassName implements Comparable, Comparator, Serializable {
 
     /**
      * Return the package portion of this classname.
+     * @return the package name
      */
     public String getPackage() {
         if (packageName == null)
@@ -214,6 +223,7 @@ public final class ClassName implements Comparable, Comparator, Serializable {
 
     /**
      * Returns the classname without any package specification.
+     * @return the simple name
      */
     public String getSimpleName() {
         if (simpleName == null)
@@ -234,8 +244,8 @@ public final class ClassName implements Comparable, Comparator, Serializable {
     public boolean equals(Object obj) {
         if (this == obj)
 	    return true;
-	return (obj instanceof ClassName) ? 
-	  (type.equals(((ClassName)obj).type)) : false;
+	return (obj instanceof ClassName) && 
+            type.equals(((ClassName) obj).type);
     }
 
     /**
@@ -250,8 +260,6 @@ public final class ClassName implements Comparable, Comparator, Serializable {
      *		greater than this string; and a value greater than
      *		<code>0</code> if the argument is a string lexicographically
      *		less than this string.
-     * @exception <code>ClassCastException</code> if the argument is not a
-     *		  <code>ClassName</code>. 
      * @see     java.lang.Comparable
      */
     public int compareTo(Object obj) {
@@ -326,7 +334,7 @@ public final class ClassName implements Comparable, Comparator, Serializable {
         cache.clear();
     }
 
-    /**
+    /*
      * Suppress multiple instances of the same type, as well as any
      * immutability attacks (unlikely as that might be).  For more information
      * on this technique, check out Effective Java, Item 57, by Josh Bloch.
