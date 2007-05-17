@@ -29,8 +29,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.lang.ref.WeakReference;
+import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
+import org.netbeans.modules.vmd.api.model.DesignDocument;
 
 /**
  *
@@ -76,16 +78,25 @@ public abstract class AddActionItem extends AbstractAction {
     private static AddActionItem create(final DesignComponent component, final ComponentProducer producer) {
         return new AddActionItem(producer.getComponentTypeID(), component, producer) {
             private WeakReference<DesignComponent> component;
+            //selectedComponent dont have to be weak is reseted right after is used. 
+            private DesignComponent selectedComponent;
             
-            public void actionPerformed(ActionEvent e) {
+            public synchronized void actionPerformed(ActionEvent e) {
                 if (producer == null)
-                    throw new IllegalArgumentException("Argument typeID cant be null"); //NOI18N
-                this.component.get().getDocument().getTransactionManager().writeAccess(new Runnable() {
+                    throw new IllegalArgumentException("Null argument typeID"); //NOI18N
+                final DesignDocument document = this.component.get().getDocument();
+                document.getTransactionManager().writeAccess(new Runnable() {
                     public void run() {
-                        AcceptSupport.accept(component.get(), producer);
+                        ComponentProducer.Result result = AcceptSupport.accept(component.get(), producer);
+                        selectedComponent = result.getMainComponent();
                     }
                 });
-                
+                document.getTransactionManager().writeAccess(new Runnable() {
+                    public void run() {
+                        document.setSelectedComponents(null, Collections.singleton(selectedComponent));
+                        selectedComponent = null;
+                    }
+                });
             }
             
             public void resolveAction(DesignComponent component) {

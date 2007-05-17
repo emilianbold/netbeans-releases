@@ -19,14 +19,17 @@
 package org.netbeans.modules.vmd.midp.actions;
 
 import java.awt.event.ActionEvent;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 
 import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.AddActionItem;
@@ -43,20 +46,45 @@ abstract class UnusedCommandsAddActionPresenter extends AddActionPresenter {
     
     public static final String DISPLAY_NAME_ADD = NbBundle.getMessage(UnusedCommandsAddActionPresenter.class, "NAME_UnusedCommandsAddActionPresenter"); //NOI18N
     
-    public static final Presenter createForDisplayable(String displayName, int order){
+    public static final Presenter createForDisplayable(String displayName, int order) {
         return new UnusedCommandsAddActionPresenter(displayName, order) {
-            protected void insideActionPerformed(DesignComponent unusedCommandComponent) {
-                MidpDocumentSupport.attachCommandToDisplayable(getComponent(), unusedCommandComponent);
+            private DesignComponent selectedCommandSource;
+            protected synchronized void insideActionPerformed(final DesignComponent unusedCommandComponent) {
+                final DesignDocument document = unusedCommandComponent.getDocument();
+                document.getTransactionManager().writeAccess(new Runnable() {
+                    public void run() {
+                        selectedCommandSource = MidpDocumentSupport.attachCommandToDisplayable(getComponent(), unusedCommandComponent);
+                    }
+                });
+                selectComponent(selectedCommandSource);
+                selectedCommandSource = null;
             }
         };
     }
     
-    public static final Presenter createForItem(String displayName, int order){
+    public static final Presenter createForItem(String displayName, int order) {
         return new UnusedCommandsAddActionPresenter(displayName, order) {
-            protected void insideActionPerformed(DesignComponent unusedCommandComponent) {
-                MidpDocumentSupport.attachCommandToItem(getComponent(), unusedCommandComponent);
+            private DesignComponent selectedCommandSource;
+            protected synchronized void insideActionPerformed(final DesignComponent unusedCommandComponent) {
+                final DesignDocument document = unusedCommandComponent.getDocument();
+                document.getTransactionManager().writeAccess(new Runnable() {
+                    public void run() {
+                        selectedCommandSource = MidpDocumentSupport.attachCommandToItem(getComponent(), unusedCommandComponent);
+                    }
+                });
+                selectComponent(selectedCommandSource);
+                selectedCommandSource = null;
             }
         };
+    }
+    
+    private static void selectComponent(final DesignComponent selectedCommandSource) {
+        final DesignDocument document = selectedCommandSource.getDocument();
+        document.getTransactionManager().writeAccess(new Runnable() {
+            public void run() {
+                 document.setSelectedComponents(null, Collections.singleton(selectedCommandSource));
+            }
+        });
     }
     
     private Integer order;
@@ -90,30 +118,29 @@ abstract class UnusedCommandsAddActionPresenter extends AddActionPresenter {
             final InfoPresenter infoPresenter = unusedCommand.getPresenter(InfoPresenter.class);
             if (infoPresenter == null)
                 throw new IllegalStateException("No Info Presenter for component: " + unusedCommand); //NOI18N
-            AddActionItem item = createUnusedCommandAction(unusedCommand, infoPresenter, this);
+            AddActionItem item = createUnusedCommandAction(new WeakReference<DesignComponent>(unusedCommand),
+                    new WeakReference<InfoPresenter>(infoPresenter),
+                    new WeakReference<UnusedCommandsAddActionPresenter>(this));
             item.resolveAction(getComponent());
             newAddActions.add(item);
         }
         return newAddActions.toArray(new AddActionItem[newAddActions.size()]);
     }
     
-    private static final AddActionItem createUnusedCommandAction(final DesignComponent unusedCommandComponent,
-                                                                 final InfoPresenter infoPresenter,
-                                                                 final UnusedCommandsAddActionPresenter presenter) {
+    private static final AddActionItem createUnusedCommandAction(final WeakReference<DesignComponent> unusedCommandComponent,
+            final WeakReference<InfoPresenter> infoPresenter,
+            final WeakReference<UnusedCommandsAddActionPresenter> presenter) {
         
-        return new AddActionItem(unusedCommandComponent.getType()) {
+        return new AddActionItem(unusedCommandComponent.get().getType()) {
             private ImageIcon icon;
             public void actionPerformed(ActionEvent event) {
-                unusedCommandComponent.getDocument().getTransactionManager().writeAccess(new Runnable() {
-                    public void run() {
-                        presenter.insideActionPerformed(unusedCommandComponent);
-                    }
-                });
+                ((UnusedCommandsAddActionPresenter) presenter.get()).insideActionPerformed(unusedCommandComponent.get());
             }
             
             public void resolveAction(DesignComponent component) {
-                icon = icon == null ? icon = new ImageIcon(infoPresenter.getIcon(InfoPresenter.IconType.COLOR_16x16)) : icon;
-                putValue(Action.NAME, infoPresenter.getDisplayName(InfoPresenter.NameType.PRIMARY));
+                InfoPresenter presenter = (InfoPresenter) infoPresenter.get();
+                icon = icon == null ? icon = new ImageIcon(presenter.getIcon(InfoPresenter.IconType.COLOR_16x16)) : icon;
+                putValue(Action.NAME, presenter.getDisplayName(InfoPresenter.NameType.PRIMARY));
                 putValue(Action.SMALL_ICON, icon);
             }
         };

@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.vmd.api.model.presenters.actions;
 
-
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -76,7 +74,6 @@ public abstract class AddActionPresenter extends Presenter {
                     }
                 }
                 Collections.sort(actions, ACTIONS_COMPARATOR);
-                
                 return actions.toArray( new AddActionItem[actions.size()]);
             }
             
