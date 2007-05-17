@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.tasklist.projectint;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -38,9 +40,11 @@ import org.openide.filesystems.FileObject;
 class MainProjectIterator implements Iterator<FileObject> {
     
     private Iterator<FileObject> iterator;
+    private Collection<FileObject> editedFiles;
     
     /** Creates a new instance of MainProjectIterator */
-    public MainProjectIterator() {
+    public MainProjectIterator( Collection<FileObject> editedFiles ) {
+        this.editedFiles = editedFiles;
     }
     
     public boolean hasNext() {
@@ -69,16 +73,16 @@ class MainProjectIterator implements Iterator<FileObject> {
             return new EmptyIterator();
         }
         
-        FileObjectIterator it = new FileObjectIterator();
+        ArrayList<FileObject> roots = new ArrayList<FileObject>(10);
         
-        addProject( mainProject, it );
+        addProject( mainProject, roots );
         
-        addDependantProjects( mainProject, it );
+        addDependantProjects( mainProject, roots );
         
-        return it;
+        return new FileObjectIterator( roots, editedFiles );
     }
     
-    private void addDependantProjects( Project mainProject, FileObjectIterator iterator ) {
+    private void addDependantProjects( Project mainProject, ArrayList<FileObject> roots ) {
         Project[] projects = OpenProjects.getDefault().getOpenProjects();
         for( int i=0; i<projects.length; i++ ) {
             if( projects[i].equals( mainProject ) )
@@ -86,17 +90,17 @@ class MainProjectIterator implements Iterator<FileObject> {
             
             SubprojectProvider subProjectProvider = projects[i].getLookup().lookup( SubprojectProvider.class );
             if( null != subProjectProvider && subProjectProvider.getSubprojects().contains( mainProject ) ) {
-                addProject( projects[i], iterator );
+                addProject( projects[i], roots );
             }
         }
     }
     
-    private void addProject( Project p, FileObjectIterator it ) {
+    private void addProject( Project p, ArrayList<FileObject> roots ) {
         Sources sources = ProjectUtils.getSources( p );
         SourceGroup[] groups = sources.getSourceGroups( Sources.TYPE_GENERIC );
         for( SourceGroup group : groups ) {
             FileObject rootFolder = group.getRootFolder();
-            it.addRoot( rootFolder );
+            roots.add( rootFolder );
         }
     }
 }

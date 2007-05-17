@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.tasklist.projectint;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -35,9 +37,11 @@ import org.openide.filesystems.FileObject;
 class OpenedProjectsIterator implements Iterator<FileObject> {
     
     private Iterator<FileObject> iterator;
+    private Collection<FileObject> editedFiles;
     
     /** Creates a new instance of OpenedProjectsIterator */
-    public OpenedProjectsIterator() {
+    public OpenedProjectsIterator( Collection<FileObject> editedFiles ) {
+        this.editedFiles = editedFiles;
     }
     
     public boolean hasNext() {
@@ -61,16 +65,16 @@ class OpenedProjectsIterator implements Iterator<FileObject> {
     }
     
     protected Iterator<FileObject> createIterator() {
-        FileObjectIterator it = new FileObjectIterator();
+        ArrayList<FileObject> roots = new ArrayList<FileObject>(10);
         Project[] projects = OpenProjects.getDefault().getOpenProjects();
         for( Project p : projects ) {
             Sources sources = ProjectUtils.getSources( p );
             SourceGroup[] groups = sources.getSourceGroups( Sources.TYPE_GENERIC );
             for( SourceGroup group : groups ) {
                 FileObject rootFolder = group.getRootFolder();
-                it.addRoot( rootFolder );
+                roots.add( rootFolder );
             }
         }
-        return it;
+        return new FileObjectIterator( roots, editedFiles );
     }
 }

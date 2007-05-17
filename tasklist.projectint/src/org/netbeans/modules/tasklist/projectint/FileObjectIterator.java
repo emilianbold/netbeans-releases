@@ -22,14 +22,10 @@ package org.netbeans.modules.tasklist.projectint;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 /**
  * Iterates all files and sub-folders under the given root folders.
@@ -38,27 +34,22 @@ import org.openide.windows.WindowManager;
  */
 class FileObjectIterator implements Iterator<FileObject> {
     
-    private ArrayList<FileObject> roots = new ArrayList<FileObject>( 50 );
+    private Collection<FileObject> roots;
+    private Collection<FileObject> editedFiles;
     
     private Iterator<FileObject> rootsIterator;
     private Iterator<FileObject> editedFilesIterator;
     private Enumeration<? extends FileObject> rootChildrenEnum;
     
     /** Creates a new instance of FileObjectIterator */
-    public FileObjectIterator() {
-    }
-    
-    /**
-     * @param folder Root folder whose children will be iterated.
-     */
-    void addRoot( FileObject folder ) {
-        assert folder.isFolder();
-        roots.add( folder );
+    public FileObjectIterator( Collection<FileObject> roots, Collection<FileObject> editedFiles ) {
+        this.roots = roots;
+        this.editedFiles = editedFiles;
     }
     
     public boolean hasNext() {
         if( null == rootsIterator ) {
-            collectEditedFiles();
+            checkEditedFiles();
             rootsIterator = roots.iterator();
             return rootsIterator.hasNext();
         }
@@ -90,27 +81,20 @@ class FileObjectIterator implements Iterator<FileObject> {
     public void remove() {
         throw new UnsupportedOperationException();
     }
-
-    /**
-     * Find files opened in editor so that they can be scanned first to improve user-perceived performance.
-     */
-    private void collectEditedFiles() {
-        Collection<TopComponent> comps = new ArrayList<TopComponent>( TopComponent.getRegistry().getOpened() );
-        
-        HashSet<FileObject> collectedFiles = new HashSet<FileObject>( comps.size() );
-        
-        for( final TopComponent tc : comps ) {
-            if( WindowManager.getDefault().isOpenedEditorTopComponent( tc ) ) {
-                DataObject dob = tc.getLookup().lookup( DataObject.class );
-                if( null != dob ) {
-                    FileObject fo = dob.getPrimaryFile();
-                    if( null != fo && isUnderRoots( fo ) ) {
-                        collectedFiles.add( fo );
-                    }
+    
+    private void checkEditedFiles() {
+        if( null != editedFiles ) {
+            ArrayList<FileObject> editedFilesUnderRoots = new ArrayList<FileObject>( editedFiles.size() );
+            for( FileObject fo : editedFiles ) {
+                if( isUnderRoots( fo ) ) {
+                    editedFilesUnderRoots.add( fo );
                 }
             }
+            editedFiles = null;
+            editedFilesIterator = editedFilesUnderRoots.iterator();
+        } else {
+            editedFilesIterator = new EmptyIterator();
         }
-        editedFilesIterator = collectedFiles.iterator();
     }
     
     private boolean isUnderRoots( FileObject fo ) {

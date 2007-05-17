@@ -25,6 +25,7 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import javax.swing.SwingUtilities;
 import org.netbeans.spi.tasklist.TaskScanningScope;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -41,9 +42,10 @@ import org.openide.windows.WindowManager;
  * 
  * @author S. Aubrecht
  */
-public class CurrentEditorScanningScope extends TaskScanningScope implements PropertyChangeListener {
+public class CurrentEditorScanningScope extends TaskScanningScope 
+        implements PropertyChangeListener, Runnable {
     
-    private FileObject lastActiveFile = null;
+    private FileObject currentFile = null;
     private Callback callback;
     private InstanceContent lookupContent = new InstanceContent();
     private Lookup lookup;
@@ -89,49 +91,57 @@ public class CurrentEditorScanningScope extends TaskScanningScope implements Pro
             WindowManager.getDefault().getRegistry().addPropertyChangeListener( this );
         } else if( null == newCallback && null != callback ) {
             WindowManager.getDefault().getRegistry().removePropertyChangeListener( this );
-            if (null != lastActiveFile) {
-                lookupContent.remove(lastActiveFile);
+            if (null != currentFile) {
+                lookupContent.remove(currentFile);
             }
-            lastActiveFile = null;
+            currentFile = null;
+        }
+        if( null != newCallback && newCallback != this.callback ) {
+            this.callback = newCallback;
+            if( SwingUtilities.isEventDispatchThread() ) {
+                run();
+            } else {
+                SwingUtilities.invokeLater( this );
+            }
         }
         this.callback = newCallback;
-        if( null != callback ) {
-            lastActiveFile = getCurrentFile();
-            if( null != lastActiveFile )
-                lookupContent.add(lastActiveFile);
-        }
     }
     
     public void propertyChange( PropertyChangeEvent e ) {
         if( TopComponent.Registry.PROP_ACTIVATED_NODES.equals( e.getPropertyName() )
             || TopComponent.Registry.PROP_OPENED.equals( e.getPropertyName() )
             || TopComponent.Registry.PROP_ACTIVATED.equals( e.getPropertyName() ) ) {
-            FileObject newActiveFile = getCurrentFile();
-            if( (null == lastActiveFile && null != newActiveFile)
-                || (null != lastActiveFile && null == newActiveFile )
-                || (null != lastActiveFile && null != newActiveFile 
-                    && !lastActiveFile.equals(newActiveFile)) ) {
-                
-                if( null != lastActiveFile )
-                    lookupContent.remove( lastActiveFile );
-                if( null != newActiveFile )
-                    lookupContent.add( newActiveFile );
-                //notify the TaskManager that user activated other file
-                if( null != callback )
-                    callback.refresh();
-            }
-            lastActiveFile = newActiveFile;
+            
+            run();
         }
+    }
+    
+    public void run() {
+        FileObject newActiveFile = getCurrentFile();
+        if( (null == currentFile && null != newActiveFile)
+            || (null != currentFile && null == newActiveFile )
+            || (null != currentFile && null != newActiveFile 
+                && !currentFile.equals(newActiveFile)) ) {
+
+            if( null != currentFile )
+                lookupContent.remove( currentFile );
+            if( null != newActiveFile )
+                lookupContent.add( newActiveFile );
+            //notify the TaskManager that user activated other file
+            if( null != callback )
+                callback.refresh();
+        }
+        currentFile = newActiveFile;
     }
     
     private FileObject getCurrentFile() {
         TopComponent.Registry registry = TopComponent.getRegistry();
         
         TopComponent activeTc = registry.getActivated();
-        FileObject currentFile = getFileFromTopComponent( activeTc );
+        FileObject newFile = getFileFromTopComponent( activeTc );
         
         ArrayList<FileObject> availableFiles = new ArrayList<FileObject>(3);
-        if( null == currentFile ) {
+        if( null == newFile ) {
             Collection<TopComponent> openedTcs = new ArrayList<TopComponent>( registry.getOpened());
             for( Iterator i=openedTcs.iterator(); i.hasNext(); ) {
                 TopComponent tc = (TopComponent)i.next();
@@ -141,12 +151,12 @@ public class CurrentEditorScanningScope extends TaskScanningScope implements Pro
                     availableFiles.add( file );
                 }
             }
-            if( null != lastActiveFile && (availableFiles.contains( lastActiveFile ) ) )
-                currentFile = lastActiveFile;
+            if( null != currentFile && (availableFiles.contains( currentFile ) ) )
+                newFile = currentFile;
             else if( availableFiles.size() > 0 )
-                currentFile = availableFiles.get( 0 );
+                newFile = availableFiles.get( 0 );
         }
-        return currentFile;
+        return newFile;
     }
     
     private FileObject getFileFromTopComponent( final TopComponent tc ) {
