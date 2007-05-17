@@ -51,6 +51,7 @@ public class ColumnModels {
         private Class type;
         private boolean defaultVisible;
         private PropertyEditor propertyEditor;
+        private boolean sortable;
         
         Properties properties = Properties.getDefault ().
             getProperties ("debugger").getProperties ("views");
@@ -68,12 +69,19 @@ public class ColumnModels {
         public AbstractColumn(String id, String displayName, String shortDescription,
                               Class type, boolean defaultVisible,
                               PropertyEditor propertyEditor) {
+            this(id, displayName, shortDescription, type, defaultVisible, propertyEditor, true);
+        }
+        
+        public AbstractColumn(String id, String displayName, String shortDescription,
+                              Class type, boolean defaultVisible,
+                              PropertyEditor propertyEditor, boolean sortable) {
             this.id = id;
             this.displayName = displayName;
             this.shortDescription = shortDescription;
             this.type = type;
             this.defaultVisible = defaultVisible;
             this.propertyEditor = propertyEditor;
+            this.sortable = sortable;
         }
         
         public String getID() {
@@ -112,7 +120,9 @@ public class ColumnModels {
          * @param sorted set true if column should be sorted by default 
          */
         public void setSorted (boolean sorted) {
-            properties.setBoolean (getID () + ".sorted", sorted);
+            if (sortable) {
+                properties.setBoolean (getID () + ".sorted", sorted);
+            }
         }
 
         /**
@@ -122,10 +132,12 @@ public class ColumnModels {
          *        sorted by default in descending order
          */
         public void setSortedDescending (boolean sortedDescending) {
-            properties.setBoolean (
-                getID () + ".sortedDescending", 
-                sortedDescending
-             );
+            if (sortable) {
+                properties.setBoolean (
+                    getID () + ".sortedDescending", 
+                    sortedDescending
+                 );
+            }
         }
     
         /**
@@ -175,6 +187,10 @@ public class ColumnModels {
         public boolean isVisible () {
             return properties.getBoolean (getID () + ".visible", defaultVisible);
         }
+        
+        public boolean isSortable() {
+            return sortable;
+        }
 
         /**
          * True if column should be sorted by default.
@@ -182,7 +198,11 @@ public class ColumnModels {
          * @return true if column should be sorted by default
          */
         public boolean isSorted () {
-            return properties.getBoolean (getID () + ".sorted", false);
+            if (sortable) {
+                return properties.getBoolean (getID () + ".sorted", false);
+            } else {
+                return false;
+            }
         }
 
         /**
@@ -192,10 +212,14 @@ public class ColumnModels {
          * order
          */
         public boolean isSortedDescending () {
-            return properties.getBoolean (
-                getID () + ".sortedDescending", 
-                false
-            );
+            if (sortable) {
+                return properties.getBoolean (
+                    getID () + ".sortedDescending", 
+                    false
+                );
+            } else {
+                return false;
+            }
         }
         
         /**
@@ -244,7 +268,7 @@ public class ColumnModels {
         return new AbstractColumn("DefaultCallStackColumn",
                 "CTL_CallstackView_Column_Name_Name",
                 "CTL_CallstackView_Column_Name_Desc",
-                null);
+                null, true, null, false);
     }
     
     /**
