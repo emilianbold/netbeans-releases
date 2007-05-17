@@ -135,13 +135,12 @@ public abstract class AXIContainer extends AXIComponent {
      * Returns the compositor.
      */
     public Compositor getCompositor() {
-        if(getChildren().size() > 0) {
-            AXIComponent component = getChildren().get(0);
-            if(component instanceof Compositor)
-                return (Compositor)component;
-        }
+        for(AXIComponent child: getChildren()) {
+            if(Compositor.class.isAssignableFrom(child.getClass()))
+                return (Compositor)child;
+        }        
         return null;
-    }    
+    }
     
     /**
      * Returns the list of attributes.

@@ -105,7 +105,12 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
     public <T extends NamedReferenceable>
             T resolve(String namespace, String localName, Class<T> type) 
     {
-        if (XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(namespace)){
+        if (XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(namespace) &&
+            XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(getSchema().getTargetNamespace())) {
+            return resolve(namespace, localName, type, null, new ArrayList<SchemaModel>());
+        }
+        
+        if (XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(namespace)) {
             SchemaModel sm = SchemaModelFactory.getDefault().getPrimitiveTypesModel();
             return sm.findByNameAndType(localName, type);
         }

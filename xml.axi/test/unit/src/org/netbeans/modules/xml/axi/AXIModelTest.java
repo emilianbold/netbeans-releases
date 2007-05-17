@@ -22,8 +22,6 @@ package org.netbeans.modules.xml.axi;
 import junit.framework.*;
 import org.netbeans.modules.xml.axi.util.FileUtil;
 import org.netbeans.modules.xml.axi.util.ModelValidator;
-import org.netbeans.modules.xml.schema.model.SchemaComponent;
-import org.netbeans.modules.xml.schema.model.SchemaModel;
 
 
 /**
@@ -38,6 +36,8 @@ public class AXIModelTest extends AbstractTestCase {
     
     public static final String TEST_XSD         = "resources/po.xsd";
     public static final String GLOBAL_ELEMENT   = "purchaseOrder";
+    public static final String META_XSD         = "resources/XMLSchema.xsd";
+    //public static final String META_XSD         = "resources/metaSchema.xsd";
     
     
     /**
@@ -58,13 +58,28 @@ public class AXIModelTest extends AbstractTestCase {
         TestSuite suite = new TestSuite(AXIModelTest.class);
         
         return suite;
-    }
+    }        
     
-    public void testAXIModel() {
+    public void testAXIModel() throws Exception {
         reverseEngineer();
         axiModel.setSchemaDesignPattern(SchemaGenerator.Pattern.GARDEN_OF_EDEN);
         forwardEngineer();
     }
+    
+    public void testAXIModelForMetaSchema() throws Exception {
+        loadModel(META_XSD);
+        AXIDocument document = axiModel.getRoot();
+        ContentModel schemaTop = findContentModel("schemaTop");
+        assert(schemaTop.getChildElements().size() == 7);
+        
+        Element schema = findAXIGlobalElement("schema");        
+        assert(schema.getAttributes().size() == 8);
+        assert(schema.getChildElements().size() == 12);
+        assert(schema.getCompositor() != null);
+//        for(AXIComponent child: schema.getChildElements()) {
+//            System.out.println(child);
+//        }
+    }    
     
     /**
      * Tests forward engineering of AXI model.
