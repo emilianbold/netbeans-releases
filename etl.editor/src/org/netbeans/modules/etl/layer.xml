@@ -1493,4 +1493,14 @@
             </file>
         </folder>
     </folder>
+    <folder name="Windows2">
+        <folder name="Components">
+            <file name="ETLOutputWindowTopComponent.settings" url="ETLOutputWindowTopComponentSettings.xml"/>
+        </folder>
+        <folder name="Modes">
+            <folder name="output">
+                <file name="ETLOutputWindowTopComponent.wstcref" url="ETLOutputWindowTopComponentWstcref.xml"/>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>

@@ -74,7 +74,11 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
         } catch (IOException ex) {
             //ignore
         }
-        return prop.getProperty(AxionDBConfiguration.PROP_DB_LOC);       
+        String defaultDir = prop.getProperty(AxionDBConfiguration.PROP_DB_LOC);       
+        if(!(defaultDir.endsWith("\\") || defaultDir.endsWith("/"))) {
+            defaultDir = defaultDir + File.separator;
+        }
+        return defaultDir;
     }
     
     public String getDBName(){

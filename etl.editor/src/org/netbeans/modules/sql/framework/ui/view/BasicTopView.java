@@ -20,23 +20,25 @@ package org.netbeans.modules.sql.framework.ui.view;
 
 import java.awt.Component;
 import java.awt.Dialog;
-import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.awt.BorderLayout;
+import javax.swing.JPanel;
 import java.util.List;
-
 import javax.swing.Action;
-import javax.swing.JSplitPane;
 
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
+        
 import org.netbeans.modules.etl.ui.DataObjectProvider;
 import org.netbeans.modules.etl.ui.ETLDataObject;
 import org.netbeans.modules.etl.ui.ETLEditorSupport;
-import org.netbeans.modules.etl.ui.ETLNode;
 import org.netbeans.modules.model.database.DBTable;
 import org.netbeans.modules.sql.framework.common.utils.FlatfileDBMarker;
 import org.netbeans.modules.sql.framework.model.SQLCondition;
@@ -64,18 +66,9 @@ import org.netbeans.modules.sql.framework.ui.view.property.FFTargetTableProperti
 import org.netbeans.modules.sql.framework.ui.view.property.SQLResourceManager;
 import org.netbeans.modules.sql.framework.ui.view.property.SourceTableProperties;
 import org.netbeans.modules.sql.framework.ui.view.property.TargetTableProperties;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
-import org.openide.actions.UndoAction;
-import org.openide.actions.RedoAction;
-import org.openide.util.actions.SystemAction;
-
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.etl.ui.view.ETLOutputWindowTopComponent;
 
 /**
  * Main view of SQL Framework
@@ -83,7 +76,7 @@ import com.sun.sql.framework.utils.Logger;
  * @author Wei Han
  * @version $Revision$
  */
-public abstract class BasicTopView extends JSplitPane implements IGraphViewContainer, IOutputViewContainer {
+public abstract class BasicTopView extends JPanel implements IGraphViewContainer, IOutputViewContainer {
     
     protected static abstract class ConditionValidator implements ActionListener {
         
@@ -341,8 +334,11 @@ public abstract class BasicTopView extends JSplitPane implements IGraphViewConta
      * Hides output view from bottom portion of a split pane.
      */
     public void hideSplitPaneView() {
-        this.setOneTouchExpandable(false);
-        this.setBottomComponent(null);
+        // close the output panel.
+        ETLOutputWindowTopComponent topComp = ETLOutputWindowTopComponent.findInstance();
+        if(topComp.isVisible()) {
+            topComp.setVisible(false);
+        }        
     }
     
     public void setModifiable(boolean b) {
@@ -365,25 +361,13 @@ public abstract class BasicTopView extends JSplitPane implements IGraphViewConta
      * @param c - component
      */
     public void showSplitPaneView(Component c) {
-        this.setBottomComponent(outputView);
-        this.setOneTouchExpandable(true);
-        Frame f = WindowManager.getDefault().getMainWindow();
-        Dimension d = f.getSize();
-        int divLocation = d.height * 3 / 5;
-        this.setDividerLocation(divLocation);
-        
-        // close the netbeans output window.
-        TopComponent topComponent =
-                WindowManager.getDefault().findTopComponent("output"); // NOI18N
-        
-        if (topComponent != null) {
-            if(topComponent.canClose()) {
-                topComponent.close();
-            }
-            topComponent.setVisible(false);
+        // add to output.
+        ETLOutputWindowTopComponent topComp = ETLOutputWindowTopComponent.findInstance();
+        if(!topComp.isOpened()) {
+            topComp.open();
         }
-        // now show component
-        outputView.showView(c);
+        topComp.setVisible(true);
+        topComp.addComponent(c);
     }
     
     public void setDirty(boolean dirty) {
@@ -516,15 +500,13 @@ public abstract class BasicTopView extends JSplitPane implements IGraphViewConta
         updateActions();
     }
     
-    private void initGui() {
+    private void initGui() {        
         BasicSQLViewFactory viewFactory = new BasicSQLViewFactory(sqlModel, this, this.getGraphActions(), this.getToolBarActions());
         this.collabView = new SQLCollaborationView(viewFactory);
         // create output view
         outputView = new SQLOutputView(this);
-        
-        this.setOrientation(VERTICAL_SPLIT);
-        this.setTopComponent(this.collabView);
-        this.setBottomComponent(null);
+        setLayout(new BorderLayout());
+        add(this.collabView, BorderLayout.CENTER);
     }
     
     private void showDataExtraction(SQLBasicTableArea gNode, SourceTable table) {
