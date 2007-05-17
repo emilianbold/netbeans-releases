@@ -22,6 +22,7 @@ package org.netbeans.modules.swingapp.actions;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.swingapp.GlobalActionTable;
+import org.openide.util.NbBundle;
 
 /**
  * A simple action which shows the global action table. It will be placed
@@ -33,7 +34,8 @@ public class ShowGlobalActionTableAction extends AbstractAction {
     
     /** Creates a new instance of ShowGlobalActionTableAction */
     public ShowGlobalActionTableAction() {
-        putValue(NAME, "Application Actions");
+        //putValue(NAME, "Application Actions");
+        putValue(NAME, NbBundle.getMessage(ShowGlobalActionTableAction.class, "CTL_GlobalActionTableAction"));
     }
     
     public void actionPerformed(ActionEvent e) {

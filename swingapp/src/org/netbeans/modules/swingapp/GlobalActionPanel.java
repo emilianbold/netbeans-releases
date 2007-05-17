@@ -22,7 +22,6 @@ package org.netbeans.modules.swingapp;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -39,11 +38,9 @@ import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
-import javax.swing.JTable;
 import java.awt.event.MouseAdapter;
 import java.beans.PropertyVetoException;
 import javax.swing.KeyStroke;
-import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -65,6 +62,7 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.TopComponentGroup;
 import org.openide.windows.WindowManager;
@@ -186,7 +184,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
         
         
         // set up the actions
-        deleteAction.putValue(Action.NAME,"Delete Action");
+        deleteAction.putValue(Action.NAME, getLocalizedString("deleteAction.text"));
         deleteAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("DELETE")); //NOI18N
         
         // do the first table load
@@ -195,7 +193,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
         attachTopComponentsListener();
     }
     
-    private final static String SHOW_ALL_CLASSES = "All Classes";
+    private final static String SHOW_ALL_CLASSES = getLocalizedString("classesFilter.allClasses");
     
     private String filterClass = null;
     
@@ -370,15 +368,15 @@ public class GlobalActionPanel extends javax.swing.JPanel {
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel2Layout.createSequentialGroup()
                 .add(jLabel3)
-                .addContainerGap(40, Short.MAX_VALUE))
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 163, Short.MAX_VALUE)
+                .addContainerGap(68, Short.MAX_VALUE))
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 191, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel2Layout.createSequentialGroup()
                 .add(jLabel3)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE))
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 121, Short.MAX_VALUE))
         );
 
         jSplitPane1.setRightComponent(jPanel2);
@@ -389,7 +387,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
             jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 672, Short.MAX_VALUE)
+                .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 700, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -419,7 +417,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(classCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 321, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 322, Short.MAX_VALUE)
                 .add(jLabel2)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(filterTextfield, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 80, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -490,7 +488,7 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         ActionEditor editor = new ActionEditor(actionManager.getFileForClass(defClassName));
         editor.setValue(act);
         Component comp = editor.getCustomEditor();
-        final DialogDescriptor dd = new DialogDescriptor(comp,"Edit Action Properties",true,null);
+        final DialogDescriptor dd = new DialogDescriptor(comp, getLocalizedString("editActionPropertiesDialog.title"), true, null);
         final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
         dialog.pack();
         dialog.setVisible(true);
@@ -531,8 +529,9 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         ProxyAction action = getSelectedAction();
         if(action == null) { return; }
         int retval = JOptionPane.showConfirmDialog(this,
-                "Are you sure you want to delete action: " + action.getId(),
-                "Delete Action",JOptionPane.OK_CANCEL_OPTION);
+                getLocalizedString("deleteActionQuestion")
+                 + action.getId(),
+                getLocalizedString("deleteActionButton.text"),JOptionPane.OK_CANCEL_OPTION);
         if(retval == JOptionPane.OK_OPTION) {
             actionManager.deleteAction(action);
             reloadTable();
@@ -550,7 +549,7 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         panel.setMode(ActionPropertyEditorPanel.Mode.NewActionGlobal);
         
         //final CreateNewActionPanel panel = new CreateNewActionPanel(fileInProject);
-        final DialogDescriptor dd = new DialogDescriptor(panel,"Create New Action");
+        final DialogDescriptor dd = new DialogDescriptor(panel,getLocalizedString("createNewActionDialog.title"));
         Dialog d = DialogDisplayer.getDefault().createDialog(dd);
         d.setVisible(true);
         while (dd.getValue() == DialogDescriptor.OK_OPTION) {
@@ -815,5 +814,8 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         }
     }
     
+    private static String getLocalizedString(String key) {
+        return NbBundle.getMessage(ActionPropertyEditorPanel.class, "GlobalActionPanel."+key);
+    }
     
 }

@@ -77,7 +77,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
     private ProxyAction newAction = null;
     private ProxyAction globalAction = null;
     private boolean globalMode = false;
-    private ProxyAction NEW_ACTION = new ProxyAction("-newaction-","-id-");
+    private ProxyAction NEW_ACTION = new ProxyAction("-newaction-","-id-"); // NOI18N
     private FileObject selectedSourceFile;
     
     
@@ -122,8 +122,8 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
             
         });
         
-        ((IconButton)iconButtonLarge).setIconText("large");
-        ((IconButton)iconButtonSmall).setIconText("small");
+        ((IconButton)iconButtonLarge).setIconText(NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.iconButtonLarge.text"));
+        ((IconButton)iconButtonSmall).setIconText(NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.iconButtonSmall.text"));
         iconButtonSmall.addActionListener(new IconButtonListener(property,iconButtonSmall, Action.SMALL_ICON));
         iconButtonLarge.addActionListener(new IconButtonListener(property,iconButtonLarge, LARGE_ICON_KEY));
         
@@ -146,15 +146,15 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         actionsCombo.setRenderer(new DefaultListCellRenderer() {
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 Component comp = super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
-                String text = "<none>";
+                String text = getLocalizedString("noneAction");
                 if(value instanceof ProxyAction) {
                     ProxyAction act = (ProxyAction)value;
                     if(value == NEW_ACTION) {
-                        text = "Create New Action ...";
+                        text = getLocalizedString("createNewAction");
                     } else {
-                        text = act != null ? act.getId() : "<none>";
+                        text = act != null ? act.getId() : getLocalizedString("noneAction");
                         if(act != null && act.isAppWide()) {
-                            text += " (global)";
+                            text += getLocalizedString("globalActionAppend");//" (global)";
                         }
                     }
                 }
@@ -259,7 +259,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
             actionsLabel.setText(act.getId());
             methodLabel.setText(sig.toString());
             classLabel.setText(act.getClassname());
-            backgroundTaskLabel.setText(act.isTaskEnabled() ? "yes" : "no");
+            backgroundTaskLabel.setText(act.isTaskEnabled() ? getLocalizedString("yes") : getLocalizedString("no"));
             backgroundTaskCheckbox.setSelected(act.isTaskEnabled());
         }
 
@@ -368,29 +368,29 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
 
         jPanel2.setOpaque(false);
 
-        jLabel2.setText("Text:");
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jLabel2.text_1")); // NOI18N
 
-        textField.setText("Save");
+        textField.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "textField.text")); // NOI18N
 
-        tooltipField.setText("Save the current document");
+        tooltipField.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "tooltipField.text")); // NOI18N
 
-        acceleratorText.setText("command+S");
+        acceleratorText.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "acceleratorText.text")); // NOI18N
 
-        jLabel5.setText("Icon:");
+        jLabel5.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jLabel5.text")); // NOI18N
 
         iconButtonSmall.setBackground(new java.awt.Color(255, 255, 255));
         iconButtonSmall.setBorder(null);
         iconButtonSmall.setContentAreaFilled(false);
 
-        jLabel7.setText("Accelerator:");
+        jLabel7.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jLabel7.text")); // NOI18N
 
-        jLabel4.setText("Tool Tip:");
+        jLabel4.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jLabel4.text_1")); // NOI18N
 
         iconButtonLarge.setBackground(new java.awt.Color(255, 255, 255));
         iconButtonLarge.setBorder(null);
         iconButtonLarge.setOpaque(false);
 
-        clearAccelButton.setText("Clear");
+        clearAccelButton.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.clearAccelButton.text")); // NOI18N
         clearAccelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 clearAccelButtonActionPerformed(evt);
@@ -417,11 +417,11 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
                         .add(iconButtonLarge, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 81, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(jPanel2Layout.createSequentialGroup()
                         .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, tooltipField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, textField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, tooltipField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 226, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, textField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 226, Short.MAX_VALUE)
                             .add(jPanel2Layout.createSequentialGroup()
                                 .add(acceleratorText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 114, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 19, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 37, Short.MAX_VALUE)
                                 .add(clearAccelButton)))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
                 .addContainerGap())
@@ -447,32 +447,32 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
                     .add(iconButtonSmall, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 43, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(iconButtonLarge, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 76, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel5))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(37, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab("Basic", jPanel2);
+        jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jPanel2.TabConstraints.tabTitle"), jPanel2); // NOI18N
 
         jPanel3.setOpaque(false);
 
-        jLabel6.setText("Blocking Dialog Text:");
+        jLabel6.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jLabel6.text")); // NOI18N
 
-        jLabel3.setText("Blocking Dialog Title:");
+        jLabel3.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jLabel3.text_1")); // NOI18N
 
         jLabel1.setLabelFor(blockingType);
-        jLabel1.setText("Blocking Type:");
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jLabel1.text_1")); // NOI18N
 
-        jLabel11.setText("Selected Property:");
+        jLabel11.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jLabel11.text")); // NOI18N
 
-        jLabel8.setText("Enabled Property:");
+        jLabel8.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jLabel8.text")); // NOI18N
 
         blockingType.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "None", "Action", "Component", "Window", "Application" }));
         blockingType.setEnabled(false);
         blockingType.setOpaque(false);
 
-        blockingDialogTitle.setText("jTextField1");
+        blockingDialogTitle.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "blockingDialogTitle.text")); // NOI18N
         blockingDialogTitle.setEnabled(false);
 
-        blockingDialogText.setText("jTextField2");
+        blockingDialogText.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "blockingDialogText.text")); // NOI18N
         blockingDialogText.setEnabled(false);
 
         org.jdesktop.layout.GroupLayout jPanel3Layout = new org.jdesktop.layout.GroupLayout(jPanel3);
@@ -485,11 +485,11 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
                     .add(jPanel3Layout.createSequentialGroup()
                         .add(jLabel8)
                         .add(36, 36, 36)
-                        .add(enabledTextfield, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE))
+                        .add(enabledTextfield, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE))
                     .add(jPanel3Layout.createSequentialGroup()
                         .add(jLabel11)
                         .add(33, 33, 33)
-                        .add(selectedTextfield, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE))
+                        .add(selectedTextfield, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE))
                     .add(jPanel3Layout.createSequentialGroup()
                         .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jLabel3)
@@ -498,8 +498,8 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(blockingType, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 128, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(blockingDialogText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE)
-                            .add(blockingDialogTitle, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE))))
+                            .add(blockingDialogText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE)
+                            .add(blockingDialogTitle, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -525,24 +525,24 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
                 .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel6)
                     .add(blockingDialogText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(25, Short.MAX_VALUE))
+                .addContainerGap(45, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab("Advanced", jPanel3);
+        jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jPanel3.TabConstraints.tabTitle"), jPanel3); // NOI18N
 
-        actionToEdit.setText("Action to edit:");
+        actionToEdit.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.actionToEdit.text")); // NOI18N
 
-        jLabel9.setText("Class:");
+        jLabel9.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jLabel9.text")); // NOI18N
 
-        jLabel12.setText("Method:");
+        jLabel12.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jLabel12.text")); // NOI18N
 
-        jLabel14.setText("Background Task:");
+        jLabel14.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jLabel14.text")); // NOI18N
 
-        jLabel17.setText("Attributes:");
+        jLabel17.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jLabel17.text")); // NOI18N
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        classLabel.setText("package.package.class");
+        classLabel.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.classLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -553,7 +553,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         jPanel1.add(classLabel, gridBagConstraints);
 
-        classField.setText("jTextField1");
+        classField.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "classField.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -562,7 +562,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         jPanel1.add(classField, gridBagConstraints);
 
-        targetClassButton.setText("Choose Class");
+        targetClassButton.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.targetClassButton.text")); // NOI18N
         targetClassButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 targetClassButtonActionPerformed(evt);
@@ -585,7 +585,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
 
         jPanel4.setLayout(new java.awt.GridBagLayout());
 
-        methodLabel.setText("Method()");
+        methodLabel.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "methodLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -593,7 +593,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         jPanel4.add(methodLabel, gridBagConstraints);
 
-        methodField.setText("jTextField1");
+        methodField.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "methodField.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -605,7 +605,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
 
         jPanel5.setLayout(new java.awt.GridBagLayout());
 
-        backgroundTaskLabel.setText("not selected");
+        backgroundTaskLabel.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.backgroundTaskLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -615,7 +615,6 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         jPanel5.add(backgroundTaskLabel, gridBagConstraints);
 
-        backgroundTaskCheckbox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         backgroundTaskCheckbox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         backgroundTaskCheckbox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -648,7 +647,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         jPanel6.add(actionsCombo, gridBagConstraints);
 
-        actionsLabel.setText("jLabel10");
+        actionsLabel.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "actionsLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -714,7 +713,7 @@ private void targetClassButtonActionPerformed(java.awt.event.ActionEvent evt) {/
         }
     },true,true);
 
-    cp.getDialog("Choose a Class", null).setVisible(true);
+    cp.getDialog(getLocalizedString("classChooserDialogTitle"), null).setVisible(true);
     if(cp.getSelectedFile() != null) {
         selectedSourceFile = cp.getSelectedFile();
         String selectedClass = AppFrameworkSupport.getClassNameForFile(cp.getSelectedFile());
@@ -1052,13 +1051,13 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
         if(newMethodName == null) {
             return false;
         }
-        if(newMethodName.trim().equals("")) {
+        if(newMethodName.trim().equals("")) { //NOI18N
             return false;
         }
-        if(newMethodName.contains(" ")) {
+        if(newMethodName.contains(" ")) { //NOI18N
             return false;
         }
-        if(newMethodName.matches("^\\d.*")) {
+        if(newMethodName.matches("^\\d.*")) { //NOI18N
             return false;
         }
         
@@ -1173,5 +1172,8 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
         System.out.println(s);
     }
  */
+    private String getLocalizedString(String key) {
+        return NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel."+key);
+    }
 }
 
