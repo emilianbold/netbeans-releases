@@ -113,7 +113,7 @@ public class WatchesActionsProvider implements NodeActionsProvider {
         if (node == TreeModel.ROOT) 
             return;
         if (node instanceof JPDAWatch) {
-            return;
+            customize((JPDAWatch) node);
         }
         throw new UnknownTypeException (node);
     }
