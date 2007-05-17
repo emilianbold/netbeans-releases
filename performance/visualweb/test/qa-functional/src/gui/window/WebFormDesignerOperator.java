@@ -41,18 +41,27 @@ import org.netbeans.jemmy.operators.Operator;
  * @author mkhramov@netbeans.org, mmirilovic@netbeans.org
  */
 public class WebFormDesignerOperator  extends TopComponentOperator {
-    private Component surface = null;
-    
+
+    private ComponentOperator  surfacecomp =  null;
     /**
      * Creates a new instance of WebFormDesignerOperator
+     * @param topComponentName creating component name
      */
     public WebFormDesignerOperator(String topComponentName) {
         this(topComponentName,0);
-        surface = this.findSubComponent(new DesignerPaneChooser());
     }
     
     public WebFormDesignerOperator(String topComponentName, int Index) {
         super(topComponentName,Index);
+        
+        long oldTimeout = this.getTimeouts().getTimeout("ComponentOperator.WaitComponentTimeout");
+        this.getTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout", 1000000);
+        try {
+            surfacecomp = new ComponentOperator(this, new DesignerPaneChooser());
+        } catch(TimeoutExpiredException tex) {
+            System.out.println("Timeout exceed "+tex.getMessage());            
+        }
+        this.getTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout",oldTimeout);        
     }
     
     /**
@@ -151,10 +160,8 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
     }
     
     public ComponentOperator getDesignerPaneComponentOperator() {
-        if(surface == null) {
-            throw new JemmyException("The design surface component is empty");
-        }
-        return new ComponentOperator(surface);
+        if(surfacecomp == null) { throw new JemmyException("The design surface component is empty"); }
+        return surfacecomp;
     }
     
     public void dump() {
@@ -186,6 +193,7 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
             System.out.println(component.getY());
             System.out.println(component.getWidth());
             System.out.println(component.getHeight());
+            
         }
         public String getDescription() {
             return "Designer Surface";
